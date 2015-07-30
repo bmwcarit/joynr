@@ -427,11 +427,12 @@ public class PublicationManagerImpl implements PublicationManager {
                 stopPublication(subscriptionId);
             } else {
                 PublicationTimer publicationTimer = publicationTimers.get(subscriptionId);
+                SubscriptionPublication publication = prepareAttributePublication(value, subscriptionId);
                 if (publicationTimer != null) {
                     // used by OnChangedWithKeepAlive
-                    publicationTimer.sendPublicationNow(value);
+                    publicationTimer.sendPublicationNow(publication);
                 } else {
-                    sendPublication(value, publicationInformation);
+                    sendPublication(publication, publicationInformation);
                 }
 
                 logger.info("attribute changed for subscription id: {} sending publication if delay > minInterval.",
@@ -451,7 +452,8 @@ public class PublicationManagerImpl implements PublicationManager {
             PublicationInformation publicationInformation = subscriptionId2PublicationInformation.get(subscriptionId);
 
             if (processFilterChain(publicationInformation, filters, values)) {
-                sendPublication(Arrays.asList(values), publicationInformation);
+                sendPublication(prepareBroadcastPublication(Arrays.asList(values), subscriptionId),
+                                publicationInformation);
                 logger.info("event occured changed for subscription id: {} sending publication: ", subscriptionId);
             }
 
@@ -508,9 +510,15 @@ public class PublicationManagerImpl implements PublicationManager {
         }
     }
 
-    private void sendPublication(Object value, PublicationInformation publicationInformation) {
-        SubscriptionPublication publication = new SubscriptionPublication(value,
-                                                                          publicationInformation.getSubscriptionId());
+    private SubscriptionPublication prepareAttributePublication(Object value, String subscriptionId) {
+        return new SubscriptionPublication(Arrays.asList(value), subscriptionId);
+    }
+
+    private SubscriptionPublication prepareBroadcastPublication(List<Object> values, String subscriptionId) {
+        return new SubscriptionPublication(values, subscriptionId);
+    }
+
+    private void sendPublication(SubscriptionPublication publication, PublicationInformation publicationInformation) {
         try {
             MessagingQos messagingQos = new MessagingQos();
             messagingQos.setTtl_ms(publicationInformation.subscriptionRequest.getQos().getPublicationTtl());
@@ -545,7 +553,8 @@ public class PublicationManagerImpl implements PublicationManager {
             @Override
             public void onFulfillment(Object... values) {
                 // attribute getters only return a single value
-                sendPublication(values[0], publicationInformation);
+                sendPublication(prepareAttributePublication(values[0], publicationInformation.getSubscriptionId()),
+                                publicationInformation);
             }
         });
     }

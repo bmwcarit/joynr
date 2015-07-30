@@ -25,6 +25,7 @@ import io.joynr.messaging.MessagingModule;
 import io.joynr.pubsub.SubscriptionQos;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 
 import joynr.JoynrMessage;
 import joynr.PeriodicSubscriptionQos;
@@ -90,7 +91,7 @@ public class JoynrMessageFactoryTest {
         SubscriptionQos subscriptionqos = new PeriodicSubscriptionQos(1000, 1, 1500, 1000);
         subscriptionRequest = new SubscriptionRequest(subscriptionId, attributeName, subscriptionqos);
         String response = "response";
-        publication = new SubscriptionPublication(response, subscriptionId);
+        publication = new SubscriptionPublication(Arrays.asList(response), subscriptionId);
 
         joynrMessageFactory = injector.getInstance(JoynrMessageFactory.class);
     }

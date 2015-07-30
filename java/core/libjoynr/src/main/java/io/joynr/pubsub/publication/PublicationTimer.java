@@ -34,6 +34,7 @@ import io.joynr.pubsub.publication.PublicationManagerImpl.PublicationInformation
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.TimerTask;
 
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
@@ -124,7 +125,7 @@ public class PublicationTimer extends PubSubTimerBase {
                         @Override
                         public void onFulfillment(Object... values) {
                             // attribute getters only return a single value
-                            SubscriptionPublication publication = new SubscriptionPublication(values[0],
+                            SubscriptionPublication publication = new SubscriptionPublication(Arrays.asList(values[0]),
                                                                                               publicationInformation.getSubscriptionId());
                             sendPublication(publication);
                         }
@@ -192,7 +193,7 @@ public class PublicationTimer extends PubSubTimerBase {
         }
     }
 
-    public void sendPublicationNow(Object value) {
+    public void sendPublicationNow(SubscriptionPublication publication) {
 
         // Only send the publication if the subscription has not expired
         // and the TTL is in the future.
@@ -201,8 +202,6 @@ public class PublicationTimer extends PubSubTimerBase {
             return;
         }
 
-        SubscriptionPublication publication = new SubscriptionPublication(value,
-                                                                          publicationInformation.getSubscriptionId());
         sendPublication(publication);
 
     }

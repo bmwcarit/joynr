@@ -337,9 +337,10 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
                 Object receivedObject;
                 if (TypeReference.class.isAssignableFrom(receivedType)) {
                     TypeReference<?> typeRef = (TypeReference<?>) receivedType.newInstance();
-                    receivedObject = objectMapper.convertValue(publication.getResponse(), typeRef);
+                    receivedObject = objectMapper.convertValue(((List<?>) publication.getResponse()).get(0), typeRef);
                 } else {
-                    receivedObject = objectMapper.convertValue(publication.getResponse(), receivedType);
+                    receivedObject = objectMapper.convertValue(((List<?>) publication.getResponse()).get(0),
+                                                               receivedType);
                 }
 
                 subscriptionManager.touchSubscriptionState(subscriptionId);

@@ -38,6 +38,7 @@ import io.joynr.pubsub.SubscriptionQos;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -98,7 +99,7 @@ public class PushingPublicationTest {
         proxyId = "proxyId";
         providerId = "providerId";
         attributeName = "testAttribute";
-        publication = new SubscriptionPublication(testAttribute, subscriptionId);
+        publication = new SubscriptionPublication(Arrays.asList(testAttribute), subscriptionId);
 
         requestCallerFactory = new RequestCallerFactory();
         requestCaller = requestCallerFactory.create(provider);

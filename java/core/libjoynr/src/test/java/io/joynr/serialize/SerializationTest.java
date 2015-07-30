@@ -381,7 +381,7 @@ public class SerializationTest {
 
         Object response = new GpsPosition(49.0065, 11.65);
         String subscriptionId = "1234";
-        SubscriptionPublication publication = new SubscriptionPublication(response, subscriptionId);
+        SubscriptionPublication publication = new SubscriptionPublication(Arrays.asList(response), subscriptionId);
 
         String writeValueAsString = objectMapper.writeValueAsString(publication);
 
