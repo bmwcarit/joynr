@@ -161,7 +161,7 @@ void WebSocketCcMessagingSkeleton::onServerError(QWebSocketProtocol::CloseCode c
 
 bool WebSocketCcMessagingSkeleton::isInitializationMessage(const QString& message)
 {
-    return message.startsWith("{\"_typeName\":\"joynr.system.QtWebSocketClientAddress\"");
+    return message.startsWith("{\"_typeName\":\"joynr.system.WebSocketClientAddress\"");
 }
 
 } // namespace joynr
