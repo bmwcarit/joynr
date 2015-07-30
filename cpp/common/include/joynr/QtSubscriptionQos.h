@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef SUBSCRIPTIONQOS_H
-#define SUBSCRIPTIONQOS_H
+#ifndef QTSUBSCRIPTIONQOS_H
+#define QTSUBSCRIPTIONQOS_H
 
 #include <QObject>
 #include <QDate>
@@ -212,4 +212,4 @@ private:
 Q_DECLARE_METATYPE(joynr::QtSubscriptionQos)
 Q_DECLARE_METATYPE(QSharedPointer<joynr::QtSubscriptionQos>)
 
-#endif // SUBSCRIPTIONQOS_H
+#endif // QTSUBSCRIPTIONQOS_H

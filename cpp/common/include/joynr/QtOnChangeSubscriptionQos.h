@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef ONCHANGESUBSCRIPTIONQOS_H
-#define ONCHANGESUBSCRIPTIONQOS_H
+#ifndef QTONCHANGESUBSCRIPTIONQOS_H
+#define QTONCHANGESUBSCRIPTIONQOS_H
 
 #include "joynr/QtSubscriptionQos.h"
 #include "joynr/JoynrCommonExport.h"
@@ -134,4 +134,4 @@ protected:
 Q_DECLARE_METATYPE(joynr::QtOnChangeSubscriptionQos)
 Q_DECLARE_METATYPE(QSharedPointer<joynr::QtOnChangeSubscriptionQos>)
 
-#endif // ONCHANGESUBSCRIPTIONQOS_H
+#endif // QTONCHANGESUBSCRIPTIONQOS_H

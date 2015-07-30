@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef BROADCASTFILTERPARAMETERS_H
-#define BROADCASTFILTERPARAMETERS_H
+#ifndef QTBROADCASTFILTERPARAMETERS_H
+#define QTBROADCASTFILTERPARAMETERS_H
 
 #include <QMap>
 #include <QString>
@@ -69,4 +69,4 @@ private:
 
 Q_DECLARE_METATYPE(joynr::QtBroadcastFilterParameters)
 Q_DECLARE_METATYPE(QSharedPointer<joynr::QtBroadcastFilterParameters>)
-#endif // BROADCASTFILTERPARAMETERS_H
+#endif // QTBROADCASTFILTERPARAMETERS_H

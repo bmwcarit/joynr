@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef STDONCHANGESUBSCRIPTIONQOS_H
-#define STDONCHANGESUBSCRIPTIONQOS_H
+#ifndef ONCHANGESUBSCRIPTIONQOS_H
+#define ONCHANGESUBSCRIPTIONQOS_H
 
 #include <stdint.h>
 #include "joynr/SubscriptionQos.h"
@@ -118,4 +118,4 @@ protected:
 
 } // namespace joynr
 
-#endif // STDONCHANGESUBSCRIPTIONQOS_H
+#endif // ONCHANGESUBSCRIPTIONQOS_H
