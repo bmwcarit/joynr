@@ -3,7 +3,7 @@ package io.joynr.pubsub;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,8 +32,8 @@ public abstract class SubscriptionQos implements JoynrType {
 
     public static final int IGNORE_VALUE = -1;
     public static final long INFINITE_SUBSCRIPTION = Long.MAX_VALUE;
-    private static final long MIN_PUBLICATION_TLL = 100L;
-    private static final long MAX_PUBLICATION_TLL = 2592000000L; // 30 days
+    private static final long MIN_PUBLICATION_TTL = 100L;
+    private static final long MAX_PUBLICATION_TTL = 2592000000L; // 30 days
 
     protected static final long DEFAULT_PUBLICATION_TTL = 10000;
 
@@ -73,8 +73,8 @@ public abstract class SubscriptionQos implements JoynrType {
      */
     public SubscriptionQos(long expiryDate, long publicationTtl) {
         setExpiryDate(expiryDate);
-        publicationTtl = publicationTtl < MIN_PUBLICATION_TLL ? MIN_PUBLICATION_TLL : publicationTtl;
-        publicationTtl = publicationTtl > MAX_PUBLICATION_TLL ? MAX_PUBLICATION_TLL : publicationTtl;
+        publicationTtl = publicationTtl < MIN_PUBLICATION_TTL ? MIN_PUBLICATION_TTL : publicationTtl;
+        publicationTtl = publicationTtl > MAX_PUBLICATION_TTL ? MAX_PUBLICATION_TTL : publicationTtl;
         this.publicationTtl = publicationTtl;
     }
 
