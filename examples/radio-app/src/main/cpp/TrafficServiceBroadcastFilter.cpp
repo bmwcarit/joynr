@@ -24,8 +24,8 @@ TrafficServiceBroadcastFilter::TrafficServiceBroadcastFilter()
 }
 
 bool TrafficServiceBroadcastFilter::filter(
-        const joynr::vehicle::RadioTypes::RadioStation& discoveredStation,
-        const joynr::vehicle::RadioTypes::GeoPosition& geoPosition,
+        const joynr::vehicle::RadioStation& discoveredStation,
+        const joynr::vehicle::GeoPosition& geoPosition,
         const vehicle::RadioNewStationDiscoveredBroadcastFilterParameters& filterParameters)
 {
     if (filterParameters.getHasTrafficService().empty()) {

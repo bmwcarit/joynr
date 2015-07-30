@@ -22,7 +22,7 @@ package vehicle
 	@description: Contains the user-defined datatypes used in the radio
 		interface.
 **>
-typeCollection RadioTypes {
+typeCollection {
 
 	<** @description: Enumeration specifying the country choices **>
 	enumeration Country {
@@ -107,7 +107,7 @@ interface Radio {
 			This attribute is subscribe-able and a getter
 			method is generated.
 	**>
-	attribute RadioTypes.RadioStation currentStation readonly
+	attribute RadioStation currentStation readonly
 
 	<**
 		@description: Chooses a new radio station randomly and
@@ -127,7 +127,7 @@ interface Radio {
 			<**
 				@description: The radio station to be added
 			**>
-			RadioTypes.RadioStation newFavouriteStation
+			RadioStation newFavouriteStation
 		}
 		out {
 			<**
@@ -149,12 +149,12 @@ interface Radio {
 			<**
 				@description: The country of the current station
 			**>
-			RadioTypes.Country country
+			Country country
 
 			<**
 				@description: The coordinates of the current station
 			**>
-			RadioTypes.GeoPosition location
+			GeoPosition location
 		}
 	}
 
@@ -167,7 +167,7 @@ interface Radio {
 			<**
 				@description: The radio station whose signal has weakened
 			**>
-			RadioTypes.RadioStation weakSignalStation
+			RadioStation weakSignalStation
 		}
 	}
 
@@ -189,7 +189,7 @@ interface Radio {
 			does any filtering or not must be defined on application
 			layer (e.g. by interpreting the absence of filter
 			parameters as filter deactivation).
-		@param: positionOfInterest (RadioTypes.GeoPosition) filter
+		@param: positionOfInterest (GeoPosition) filter
 			parameter that is used by the geocast filter and defines
 			the position of interest
 		@param: radiusOfInterestArea (Integer) filter parameter that
@@ -203,12 +203,12 @@ interface Radio {
 			<**
 				@description: The radio station just detected
 			**>
-			RadioTypes.RadioStation discoveredStation
+			RadioStation discoveredStation
 
 			<**
 				@description: The coordinates of the just detected station
 			**>
-			RadioTypes.GeoPosition geoPosition
+			GeoPosition geoPosition
 		}
 	}
 }

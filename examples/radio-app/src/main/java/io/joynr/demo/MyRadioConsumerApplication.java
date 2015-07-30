@@ -41,14 +41,14 @@ import java.util.Properties;
 import jline.console.ConsoleReader;
 import joynr.OnChangeSubscriptionQos;
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
+import joynr.vehicle.Country;
+import joynr.vehicle.GeoPosition;
 import joynr.vehicle.RadioBroadcastInterface;
 import joynr.vehicle.RadioBroadcastInterface.NewStationDiscoveredBroadcastFilterParameters;
 import joynr.vehicle.RadioBroadcastInterface.WeakSignalBroadcastAdapter;
 import joynr.vehicle.RadioProxy;
+import joynr.vehicle.RadioStation;
 import joynr.vehicle.RadioSync.GetLocationOfCurrentStationReturned;
-import joynr.vehicle.radiotypes.Country;
-import joynr.vehicle.radiotypes.GeoPosition;
-import joynr.vehicle.radiotypes.RadioStation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -21,10 +21,10 @@ package io.joynr.demo;
 
 import java.io.IOException;
 
+import joynr.vehicle.GeoPosition;
 import joynr.vehicle.RadioBroadcastInterface.NewStationDiscoveredBroadcastFilterParameters;
 import joynr.vehicle.RadioNewStationDiscoveredBroadcastFilter;
-import joynr.vehicle.radiotypes.GeoPosition;
-import joynr.vehicle.radiotypes.RadioStation;
+import joynr.vehicle.RadioStation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

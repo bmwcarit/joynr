@@ -40,7 +40,7 @@ public:
       * Get the current radio station
       */
     void getCurrentStation(
-            std::function<void(const joynr::vehicle::RadioTypes::RadioStation& result)> onSuccess);
+            std::function<void(const joynr::vehicle::RadioStation& result)> onSuccess);
 
     /**
       * Get the next radio station in a circular list of stations
@@ -50,24 +50,23 @@ public:
     /**
       * Add a favourite radio station
       */
-    void addFavouriteStation(const joynr::vehicle::RadioTypes::RadioStation& radioStation,
+    void addFavouriteStation(const joynr::vehicle::RadioStation& radioStation,
                              std::function<void(const bool& returnValue)> onSuccess);
 
     void fireWeakSignalBroadcast();
     void fireNewStationDiscoveredBroadcast();
     void getLocationOfCurrentStation(
-            std::function<void(const joynr::vehicle::RadioTypes::Country::Enum& country,
-                               const joynr::vehicle::RadioTypes::GeoPosition& location)> onSuccess);
+            std::function<void(const joynr::vehicle::Country::Enum& country,
+                               const joynr::vehicle::GeoPosition& location)> onSuccess);
 
 private:
     // Disallow copy and assign
     MyRadioProvider(const MyRadioProvider&);
     void operator=(const MyRadioProvider&);
 
-    int currentStationIndex;                                      // Index to the current station
-    QList<joynr::vehicle::RadioTypes::RadioStation> stationsList; // List of possible stations
-    QMap<joynr::vehicle::RadioTypes::Country::Enum, joynr::vehicle::RadioTypes::GeoPosition>
-            countryGeoPositionMap;
+    int currentStationIndex;                          // Index to the current station
+    QList<joynr::vehicle::RadioStation> stationsList; // List of possible stations
+    QMap<joynr::vehicle::Country::Enum, joynr::vehicle::GeoPosition> countryGeoPositionMap;
     QMutex mutex; // Providers need to be threadsafe
 
     static joynr::joynr_logging::Logger* logger;

@@ -27,11 +27,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import joynr.vehicle.Country;
+import joynr.vehicle.GeoPosition;
 import joynr.vehicle.RadioAbstractProvider;
 import joynr.vehicle.RadioProvider;
-import joynr.vehicle.radiotypes.Country;
-import joynr.vehicle.radiotypes.GeoPosition;
-import joynr.vehicle.radiotypes.RadioStation;
+import joynr.vehicle.RadioStation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
