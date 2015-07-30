@@ -79,7 +79,7 @@ public class JoynrAndroidExampleLauncher {
                                GpsLocation location = proxy.getLocation();
 
                                // Subscription example
-                               // subscribeToLocation(proxy);
+                               subscribeToLocation(proxy);
 
                                logToOutput("location: " + location + "\n");
                            } catch (JoynrArbitrationException e) {

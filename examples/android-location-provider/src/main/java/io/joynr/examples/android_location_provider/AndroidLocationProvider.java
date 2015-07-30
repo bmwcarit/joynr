@@ -53,7 +53,7 @@ public class AndroidLocationProvider extends DefaultGpsProvider {
         this.applicationContext = applicationContext;
         this.output = output;
         this.location = new GpsLocation();
-        if (keyword != null && keyword != "") {
+        if (keyword != null && !keyword.equals("")) {
             List<CustomParameter> qosParameterList = Lists.newArrayList();
             qosParameterList.add(new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, keyword));
             providerQos.setCustomParameters(qosParameterList);
