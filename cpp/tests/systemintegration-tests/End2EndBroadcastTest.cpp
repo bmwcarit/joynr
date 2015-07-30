@@ -217,7 +217,7 @@ public:
             QThreadSleep::msleep(50);
             delay+=50;
         }
-        assert(!testProvider->attributeListeners.value(attributeName).isEmpty());
+        EXPECT_FALSE(testProvider->attributeListeners.value(attributeName).isEmpty());
     }
 
     /*
@@ -234,7 +234,7 @@ public:
             QThreadSleep::msleep(50);
             delay+=50;
         }
-        assert(!testProvider->broadcastListeners.value(broadcastName).isEmpty());
+        EXPECT_FALSE(testProvider->broadcastListeners.value(broadcastName).isEmpty());
     }
 
     ~End2EndBroadcastTest(){
