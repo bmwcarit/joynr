@@ -36,7 +36,7 @@ public interface ChannelDirectory {
     /**
      * Returns a list of all channels currently stored in the directory.
      * 
-     * @return
+     * @return list of all channels currently stored in the directory.
      */
     public List<Channel> getChannels();
 
@@ -52,7 +52,7 @@ public interface ChannelDirectory {
     /**
      * Adds a new channel to the directory.
      * 
-     * @param channel
+     * @param channel the channel to be added
      */
     public void addChannel(Channel channel);
 

@@ -18,8 +18,8 @@
  */
 
 #include "joynr/JoynrMessagingConnectorFactory.h"
-#include "joynr/system/Address.h"
-#include "joynr/system/ChannelAddress.h"
+#include "joynr/system/QtAddress.h"
+#include "joynr/system/QtChannelAddress.h"
 
 #include <QSharedPointer>
 
@@ -28,15 +28,15 @@ namespace joynr
 
 JoynrMessagingConnectorFactory::JoynrMessagingConnectorFactory(
         IJoynrMessageSender* messageSender,
-        SubscriptionManager* subscriptionManager)
+        ISubscriptionManager* subscriptionManager)
         : messageSender(messageSender), subscriptionManager(subscriptionManager)
 {
 }
 
 bool JoynrMessagingConnectorFactory::canBeCreated(
-        const joynr::system::CommunicationMiddleware::Enum& connection)
+        const joynr::types::CommunicationMiddleware::Enum& connection)
 {
-    return connection == joynr::system::CommunicationMiddleware::JOYNR;
+    return connection == joynr::types::CommunicationMiddleware::JOYNR;
 }
 
 } // namespace joynr

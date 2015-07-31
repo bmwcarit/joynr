@@ -22,6 +22,7 @@
 
 #include <QDateTime>
 #include <cmath>
+#include <memory>
 
 namespace joynr
 {
@@ -104,27 +105,28 @@ QString ChannelUrlSelector::obtainUrl(const QString& channelId,
     LOG_DEBUG(logger,
               "obtainUrl: trying to obtain Urls from remote ChannelUrlDirectory for id = " +
                       channelId);
-    QSharedPointer<Future<types::ChannelUrlInformation>> proxyFuture(
-            new Future<types::ChannelUrlInformation>());
-    channelUrlDirectory->getUrlsForChannel(proxyFuture, channelId, timeout_ms);
+    std::shared_ptr<Future<types::ChannelUrlInformation>> proxyFuture(
+            channelUrlDirectory->getUrlsForChannelAsync(channelId.toStdString(), timeout_ms));
     status = proxyFuture->getStatus();
 
     if (status.successful()) {
         LOG_DEBUG(logger,
                   "obtainUrl: obtained Urls from remote ChannelUrlDirectory for id = " + channelId);
-        types::ChannelUrlInformation urlInformation = proxyFuture->getValue();
-        if (urlInformation.getUrls().isEmpty()) {
+        types::ChannelUrlInformation urlInformation;
+        proxyFuture->getValues(urlInformation);
+        if (urlInformation.getUrls().empty()) {
             LOG_DEBUG(logger, "obtainUrl: empty list of urls obtained from id = " + channelId);
             LOG_DEBUG(logger, "obtainUrl: constructing default url for id = " + channelId);
             status.setCode(RequestStatusCode::ERROR);
             url = constructDefaultUrl(channelId);
             return constructUrl(url);
         }
-        url = urlInformation.getUrls().first(); // return the first, store all
+        url = QString::fromStdString(urlInformation.getUrls().at(0)); // return the first, store all
         entries.insert(channelId,
-                       new ChannelUrlSelectorEntry(urlInformation,
-                                                   punishmentFactor,
-                                                   timeForOneRecouperation)); // deleted where?
+                       new ChannelUrlSelectorEntry(
+                               types::QtChannelUrlInformation::createQt(urlInformation),
+                               punishmentFactor,
+                               timeForOneRecouperation)); // deleted where?
         status.setCode(RequestStatusCode::OK);
         return constructUrl(url);
     } else {
@@ -182,7 +184,7 @@ QString ChannelUrlSelector::constructDefaultUrl(const QString& channelId)
     if (!useDefaultUrl)
         assert(false);
     QString url = bounceProxyUrl.getBounceProxyBaseUrl().toString() + channelId;
-    types::ChannelUrlInformation urlInformation;
+    types::QtChannelUrlInformation urlInformation;
     QList<QString> urls;
     urls << url;
     urlInformation.setUrls(urls);
@@ -203,9 +205,10 @@ QString ChannelUrlSelector::constructDefaultUrl(const QString& channelId)
 joynr_logging::Logger* ChannelUrlSelectorEntry::logger =
         joynr_logging::Logging::getInstance()->getLogger("MSG", "ChannelUrlSelectorEntry");
 
-ChannelUrlSelectorEntry::ChannelUrlSelectorEntry(const types::ChannelUrlInformation& urlInformation,
-                                                 double punishmentFactor,
-                                                 qint64 timeForOneRecouperation)
+ChannelUrlSelectorEntry::ChannelUrlSelectorEntry(
+        const types::QtChannelUrlInformation& urlInformation,
+        double punishmentFactor,
+        qint64 timeForOneRecouperation)
         : lastUpdate(QDateTime::currentMSecsSinceEpoch()),
           fitness(),
           urlInformation(urlInformation),

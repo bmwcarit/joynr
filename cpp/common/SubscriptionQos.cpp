@@ -23,33 +23,33 @@
 namespace joynr
 {
 
-const qint64& SubscriptionQos::DEFAULT_PUBLICATION_TTL()
+const int64_t& SubscriptionQos::DEFAULT_PUBLICATION_TTL()
 {
-    static const qint64 defaultPublicationTtl = 10000;
+    static const int64_t defaultPublicationTtl = 10000;
     return defaultPublicationTtl;
 }
 
-const qint64& SubscriptionQos::MIN_PUBLICATION_TTL()
+const int64_t& SubscriptionQos::MIN_PUBLICATION_TTL()
 {
-    static const qint64 minPublicationTtl = 100;
+    static const int64_t minPublicationTtl = 100;
     return minPublicationTtl;
 }
 
-const qint64& SubscriptionQos::MAX_PUBLICATION_TTL()
+const int64_t& SubscriptionQos::MAX_PUBLICATION_TTL()
 {
-    static const qint64 maxPublicationTtl = 2592000000UL;
+    static const int64_t maxPublicationTtl = 2592000000UL;
     return maxPublicationTtl;
 }
 
-const qint64& SubscriptionQos::NO_EXPIRY_DATE_TTL()
+const int64_t& SubscriptionQos::NO_EXPIRY_DATE_TTL()
 {
-    static const qint64 noExpiryDateTTL = std::numeric_limits<qint64>::max(); // 2^63-1
+    static const int64_t noExpiryDateTTL = std::numeric_limits<int64_t>::max(); // 2^63-1
     return noExpiryDateTTL;
 }
 
-const qint64& SubscriptionQos::NO_EXPIRY_DATE()
+const int64_t& SubscriptionQos::NO_EXPIRY_DATE()
 {
-    static qint64 noExpiryDate = 0;
+    static int64_t noExpiryDate = 0;
     return noExpiryDate;
 }
 
@@ -58,16 +58,14 @@ SubscriptionQos::SubscriptionQos() : expiryDate(-1), publicationTtl(DEFAULT_PUBL
     setValidity(1000);
 }
 
-SubscriptionQos::SubscriptionQos(const qint64& validity)
+SubscriptionQos::SubscriptionQos(const int64_t& validity)
         : expiryDate(-1), publicationTtl(DEFAULT_PUBLICATION_TTL())
 {
     setValidity(validity);
 }
 
 SubscriptionQos::SubscriptionQos(const SubscriptionQos& subscriptionQos)
-        : QObject(),
-          expiryDate(subscriptionQos.expiryDate),
-          publicationTtl(subscriptionQos.publicationTtl)
+        : expiryDate(subscriptionQos.expiryDate), publicationTtl(subscriptionQos.publicationTtl)
 {
 }
 
@@ -75,12 +73,12 @@ SubscriptionQos::~SubscriptionQos()
 {
 }
 
-qint64 SubscriptionQos::getPublicationTtl() const
+int64_t SubscriptionQos::getPublicationTtl() const
 {
     return publicationTtl;
 }
 
-void SubscriptionQos::setPublicationTtl(const qint64& publicationTtl)
+void SubscriptionQos::setPublicationTtl(const int64_t& publicationTtl)
 {
     this->publicationTtl = publicationTtl;
     if (this->publicationTtl > MAX_PUBLICATION_TTL()) {
@@ -91,12 +89,12 @@ void SubscriptionQos::setPublicationTtl(const qint64& publicationTtl)
     }
 }
 
-qint64 SubscriptionQos::getExpiryDate() const
+int64_t SubscriptionQos::getExpiryDate() const
 {
     return expiryDate;
 }
 
-void SubscriptionQos::setExpiryDate(const qint64& expiryDate)
+void SubscriptionQos::setExpiryDate(const int64_t& expiryDate)
 {
     this->expiryDate = expiryDate;
     if (this->expiryDate < QDateTime::currentMSecsSinceEpoch()) {
@@ -109,7 +107,7 @@ void SubscriptionQos::clearExpiryDate()
     this->expiryDate = NO_EXPIRY_DATE();
 }
 
-void SubscriptionQos::setValidity(const qint64& validity)
+void SubscriptionQos::setValidity(const int64_t& validity)
 {
     if (validity == -1) {
         setExpiryDate(joynr::SubscriptionQos::NO_EXPIRY_DATE());
@@ -131,11 +129,4 @@ bool SubscriptionQos::operator==(const SubscriptionQos& subscriptionQos) const
            publicationTtl == subscriptionQos.getPublicationTtl();
 }
 
-bool SubscriptionQos::equals(const QObject& other) const
-{
-    int typeThis = QMetaType::type(this->metaObject()->className());
-    int typeOther = QMetaType::type(other.metaObject()->className());
-    auto newOther = dynamic_cast<const SubscriptionQos*>(&other);
-    return typeThis == typeOther && *this == *newOther;
-}
 } // namespace joynr

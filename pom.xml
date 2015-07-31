@@ -20,7 +20,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.joynr</groupId>
 	<artifactId>joynr</artifactId>
-	<version>0.8.0</version>
+	<version>0.9.0</version>
 	<packaging>pom</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<url>http://joynr.io</url>
@@ -50,7 +50,7 @@
 		<!--
 			ATTENTION: Order of modules matters!
 			Tools must be build first in order to have build-resources available right
-			at the begining of the build.
+			at the beginning of the build.
 		-->
 		<module>tools</module>
 		<module>basemodel</module>
@@ -60,6 +60,17 @@
 	</modules>
 
 	<profiles>
+		<profile>
+			<!-- Build and test Android distribution -->
+			<id>android</id>
+			<modules>
+				<module>tools</module>
+				<module>basemodel</module>
+				<module>java</module>
+				<module>android</module>
+				<module>examples</module>
+			</modules>
+		</profile>
 		<profile>
 			<!--
 				This profile is extended in several submodules with packaging type WAR
@@ -71,7 +82,7 @@
 				<!--
 					maven-jgitflow-plugin will set the performRelease property during
 					release and thus automatically activate this profile during release.
-					NOTE: You need to install GPG [1] and publish your public key to a key 
+					NOTE: You need to install GPG [1] and publish your public key to a key
 					server.
 					The passphrase must be specified on the command line using -Dgpg.passphrase=thephrase
 					[2].
@@ -165,14 +176,14 @@
 			</properties>
 		</profile>
 		<profile>
-			<!-- 
+			<!--
 				NOTE: if you change activation or the profile ID here, your also must
 				change it in the following child modules that extend this profile:
 				* io.joynr.java.messaging.bounceproxy:bounceproxy-ui
 			-->
 			<id>carit-copyright</id>
 			<properties>
-				<licenseConfigurationVersion>1.0.5</licenseConfigurationVersion>
+				<licenseConfigurationVersion>1.0.6</licenseConfigurationVersion>
 			</properties>
 			<build>
 				<plugins>
@@ -237,9 +248,9 @@
 		<profile>
 			<id>carit-license</id>
 			<properties>
-				<licenseConfigurationVersion>1.0.4</licenseConfigurationVersion>
-				<!-- 
-					For unknown reasons useLicensesConfigFile and licensesConfigFile 
+				<licenseConfigurationVersion>1.0.5</licenseConfigurationVersion>
+				<!--
+					For unknown reasons useLicensesConfigFile and licensesConfigFile
 					configuration properties must be set as global properties. It is
 					not sufficient to specify them directly in the plugin configuration.
 				-->
@@ -276,8 +287,8 @@
 							<generateBundle>true</generateBundle>
 							<fileTemplate>license/joynr-third-party-file.ftl</fileTemplate>
 							<bundleThirdPartyPath>${project.artifactId}-LICENSES.html</bundleThirdPartyPath>
-							<!-- 
-								For unknown reasons useLicensesConfigFile and licensesConfigFile 
+							<!--
+								For unknown reasons useLicensesConfigFile and licensesConfigFile
 								configuration properties must be set as global properties. It is
 								not sufficient to specify them directly in the plugin configuration.
 							-->
@@ -363,7 +374,7 @@
 		<!--
 			Those versions should not be used outside of the superpom. All dependencies
 			that need those version numbers should be defined in the dependencyManagement
-			here, and should not have a version tag in the the pom-files where they 
+			here, and should not have a version tag in the the pom-files where they
 			are referenced.
 		-->
 		<jersey.version>1.17</jersey.version>
@@ -371,6 +382,11 @@
 		<guice.version>3.0</guice.version>
 		<jetty.version>9.2.2.v20140723</jetty.version>
 		<tycho.version>0.15.0</tycho.version>
+		<hibernate.version>4.3.8.Final</hibernate.version>
+		<android.platform.version>5.0.1_r2</android.platform.version>
+		<android.platform.level>21</android.platform.level>
+		<javaassist.version>3.12.1.GA</javaassist.version>
+		<skipTests>true</skipTests>
 	</properties>
 
 	<!--
@@ -379,11 +395,42 @@
 	-->
 	<dependencyManagement>
 		<dependencies>
+			<!-- The Android SDK must be deployed to the local repository using
+			     https://github.com/simpligility/maven-android-sdk-deployer
+			-->
+			<dependency>
+				<groupId>android</groupId>
+				<artifactId>android</artifactId>
+				<version>${android.platform.version}</version>
+				<scope>provided</scope>
+				<exclusions>
+					<exclusion>
+						<artifactId>xmlParserAPIs</artifactId>
+						<groupId>xerces</groupId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+			<dependency>
+				<groupId>javassist</groupId>
+				<artifactId>javassist</artifactId>
+				<version>${javaassist.version}</version>
+				<classifier>sources</classifier>
+			</dependency>
+			<dependency>
+				<groupId>javassist</groupId>
+				<artifactId>javassist</artifactId>
+				<version>${javaassist.version}</version>
+			</dependency>
 			<dependency>
 				<groupId>junit</groupId>
 				<artifactId>junit</artifactId>
 				<version>4.11</version>
 				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>xml-apis</groupId>
+				<artifactId>xml-apis</artifactId>
+				<version>1.4.01</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.code.findbugs</groupId>
@@ -699,6 +746,58 @@
 				<artifactId>dbus</artifactId>
 				<version>2.1.4</version>
 			</dependency>
+			<dependency>
+				<groupId>net.sf.ehcache</groupId>
+				<artifactId>ehcache</artifactId>
+				<version>2.8.1</version>
+			</dependency>
+			<dependency>
+				<groupId>org.hibernate</groupId>
+				<artifactId>hibernate-core</artifactId>
+				<version>${hibernate.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.hibernate</groupId>
+				<artifactId>hibernate-core</artifactId>
+				<version>${hibernate.version}</version>
+				<classifier>sources</classifier>
+			</dependency>
+			<dependency>
+				<groupId>org.hibernate</groupId>
+				<artifactId>hibernate-ehcache</artifactId>
+				<version>${hibernate.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.hibernate</groupId>
+				<artifactId>hibernate-entitymanager</artifactId>
+				<version>${hibernate.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.hibernate</groupId>
+				<artifactId>hibernate-entitymanager</artifactId>
+				<version>${hibernate.version}</version>
+				<classifier>sources</classifier>
+			</dependency>
+			<dependency>
+				<groupId>org.hibernate.javax.persistence</groupId>
+				<artifactId>hibernate-jpa-2.1-api</artifactId>
+				<version>1.0.0.Final</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.derby</groupId>
+				<artifactId>derby</artifactId>
+				<version>10.10.1.1</version>
+			</dependency>
+			<dependency>
+				<groupId>com.google.inject.extensions</groupId>
+				<artifactId>guice-assistedinject</artifactId>
+				<version>${guice.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.google.inject.extensions</groupId>
+				<artifactId>guice-persist</artifactId>
+				<version>${guice.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
@@ -826,6 +925,44 @@
 										</execute>
 									</action>
 								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											com.simpligility.maven.plugins
+										</groupId>
+										<artifactId>
+											android-maven-plugin
+										</artifactId>
+										<versionRange>
+											[4.1.0,)
+										</versionRange>
+										<goals>
+											<goal>emma</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											com.googlecode.jslint4java
+										</groupId>
+										<artifactId>
+											jslint4java-maven-plugin
+										</artifactId>
+										<versionRange>
+											[2.0.3,)
+										</versionRange>
+										<goals>
+											<goal>lint</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
 							</pluginExecutions>
 						</lifecycleMappingMetadata>
 					</configuration>
@@ -839,6 +976,7 @@
 						<!-- one JVM per test suite -->
 						<reuseForks>false</reuseForks>
 						<argLine>-Xmx1024m -XX:MaxPermSize=256m</argLine>
+						<skipTests>${skipTests}</skipTests>
 					</configuration>
 				</plugin>
 				<plugin>
@@ -864,7 +1002,7 @@
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>findbugs-maven-plugin</artifactId>
-					<version>2.5.2</version>
+					<version>3.0.1</version>
 					<configuration>
 						<failOnError>false</failOnError>
 						<threshold>Normal</threshold>
@@ -891,9 +1029,9 @@
 					</dependencies>
 				</plugin>
 				<plugin>
-					<groupId>com.jayway.maven.plugins.android.generation2</groupId>
+					<groupId>com.simpligility.maven.plugins</groupId>
 					<artifactId>android-maven-plugin</artifactId>
-					<version>3.9.0-rc.2</version>
+					<version>4.2.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.eclipse.tycho</groupId>
@@ -936,6 +1074,10 @@
 							<contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
 								<war>${project.build.directory}/discovery.war</war>
 								<contextPath>/discovery</contextPath>
+							</contextHandler>
+							<contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
+								<war>${project.build.directory}/accesscontrol.war</war>
+								<contextPath>/accesscontrol</contextPath>
 							</contextHandler>
 						</contextHandlers>
 						<systemProperties>
@@ -1031,9 +1173,8 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>2.3.2</version>
+					<version>3.3</version>
 					<configuration>
-						<compilerId>eclipse</compilerId>
 						<source>1.7</source>
 						<target>1.7</target>
 						<testSource>1.7</testSource>
@@ -1171,8 +1312,8 @@
 						<configuration>
 							<rules>
 								<requireMavenVersion>
-									<version>[3.0,3.3)</version>
-									<message>Wrong Maven version. You must use Maven 3.0.x, 3.1.x or 3.2.x to build joynr.</message>
+									<version>[3.1,3.3)</version>
+									<message>Wrong Maven version. You must use Maven 3.1.x or 3.2.x to build joynr.</message>
 								</requireMavenVersion>
 								<requireJavaVersion>
 									<version>1.7.0</version>
@@ -1356,7 +1497,7 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
 				<executions>
-					<!-- 
+					<!--
 						Workaraound: sets properties to skip execution of copying NOTICE file
 						and unpacking of LICENSE information on Maven projects with packaging pom.
 					-->

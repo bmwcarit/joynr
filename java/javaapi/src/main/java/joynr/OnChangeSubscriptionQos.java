@@ -40,7 +40,7 @@ public class OnChangeSubscriptionQos extends SubscriptionQos {
      * @param expiryDate
      *            The expiryDate is the end date of the subscription. This value is provided in milliseconds (since
      *            1970-01-01T00:00:00.000).
-     * @param publicationTtl
+     * @param publicationTtl_ms
      *            is the time-to-live for publication messages. NOTE minimum and maximum values apply.
      * @see SubscriptionQos#SubscriptionQos(long, long)
      */

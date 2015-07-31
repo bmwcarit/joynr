@@ -19,6 +19,11 @@ if(${WIN32})
     endif(${CMAKE_GENERATOR} MATCHES "Visual Studio")
 endif(${WIN32})
 
+# Suppress "... may be used uninitialized" warnings from GNU C++ compiler
+if(CMAKE_COMPILER_IS_GNUCXX)
+    set(CMAKE_CXX_FLAGS "-Wno-maybe-uninitialized")
+endif()
+
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(log4qt_HEADERS
@@ -115,7 +120,7 @@ add_library(
     ${log4qt_HEADERS}
     ${log4qt_SOURCES}
 )
-qt5_use_modules(log4qt Core)
+target_link_libraries(log4qt Qt5::Core)
 
 set_target_properties(
     log4qt

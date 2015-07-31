@@ -20,26 +20,26 @@
 
 using namespace joynr;
 
-const qint64& OnChangeWithKeepAliveSubscriptionQos::MAX_MAX_INTERVAL()
+const int64_t& OnChangeWithKeepAliveSubscriptionQos::MAX_MAX_INTERVAL()
 {
-    static qint64 defaultMaxInterval = 2592000000UL;
+    static int64_t defaultMaxInterval = 2592000000UL;
     return defaultMaxInterval;
 }
 
-const qint64& OnChangeWithKeepAliveSubscriptionQos::MAX_ALERT_AFTER_INTERVAL()
+const int64_t& OnChangeWithKeepAliveSubscriptionQos::MAX_ALERT_AFTER_INTERVAL()
 {
-    static qint64 maxAlertAfterInterval = 2592000000UL;
+    static int64_t maxAlertAfterInterval = 2592000000UL;
     return maxAlertAfterInterval;
 }
 
-const qint64& OnChangeWithKeepAliveSubscriptionQos::DEFAULT_ALERT_AFTER_INTERVAL()
+const int64_t& OnChangeWithKeepAliveSubscriptionQos::DEFAULT_ALERT_AFTER_INTERVAL()
 {
     return NO_ALERT_AFTER_INTERVAL();
 }
 
-const qint64& OnChangeWithKeepAliveSubscriptionQos::NO_ALERT_AFTER_INTERVAL()
+const int64_t& OnChangeWithKeepAliveSubscriptionQos::NO_ALERT_AFTER_INTERVAL()
 {
-    static qint64 noAlertAfterInterval = 0;
+    static int64_t noAlertAfterInterval = 0;
     return noAlertAfterInterval;
 }
 
@@ -51,10 +51,10 @@ OnChangeWithKeepAliveSubscriptionQos::OnChangeWithKeepAliveSubscriptionQos()
 }
 
 OnChangeWithKeepAliveSubscriptionQos::OnChangeWithKeepAliveSubscriptionQos(
-        const qint64& validity,
-        const qint64& minInterval,
-        const qint64& maxInterval,
-        const qint64& alertAfterInterval)
+        const int64_t& validity,
+        const int64_t& minInterval,
+        const int64_t& maxInterval,
+        const int64_t& alertAfterInterval)
         : OnChangeSubscriptionQos(validity, minInterval),
           maxInterval(getMinInterval()),
           alertAfterInterval(DEFAULT_ALERT_AFTER_INTERVAL())
@@ -71,7 +71,7 @@ OnChangeWithKeepAliveSubscriptionQos::OnChangeWithKeepAliveSubscriptionQos(
 {
 }
 
-void OnChangeWithKeepAliveSubscriptionQos::setMaxInterval(const qint64& maxInterval)
+void OnChangeWithKeepAliveSubscriptionQos::setMaxInterval(const int64_t& maxInterval)
 {
     this->maxInterval = maxInterval;
     if (this->maxInterval < this->getMinInterval()) {
@@ -85,19 +85,19 @@ void OnChangeWithKeepAliveSubscriptionQos::setMaxInterval(const qint64& maxInter
     }
 }
 
-qint64 OnChangeWithKeepAliveSubscriptionQos::getMaxInterval() const
+int64_t OnChangeWithKeepAliveSubscriptionQos::getMaxInterval() const
 {
     return this->maxInterval;
 }
 
-void OnChangeWithKeepAliveSubscriptionQos::setMinInterval(const qint64& minInterval)
+void OnChangeWithKeepAliveSubscriptionQos::setMinInterval(const int64_t& minInterval)
 {
     OnChangeSubscriptionQos::setMinInterval(minInterval);
     // corrects the maxinterval if minInterval changes
     setMaxInterval(this->maxInterval);
 }
 
-void OnChangeWithKeepAliveSubscriptionQos::setAlertAfterInterval(const qint64& alertAfterInterval)
+void OnChangeWithKeepAliveSubscriptionQos::setAlertAfterInterval(const int64_t& alertAfterInterval)
 {
     this->alertAfterInterval = alertAfterInterval;
     if (this->alertAfterInterval > MAX_ALERT_AFTER_INTERVAL()) {
@@ -108,7 +108,7 @@ void OnChangeWithKeepAliveSubscriptionQos::setAlertAfterInterval(const qint64& a
     }
 }
 
-qint64 OnChangeWithKeepAliveSubscriptionQos::getAlertAfterInterval() const
+int64_t OnChangeWithKeepAliveSubscriptionQos::getAlertAfterInterval() const
 {
     return alertAfterInterval;
 }
@@ -130,12 +130,4 @@ bool OnChangeWithKeepAliveSubscriptionQos::operator==(
     return expiryDate == other.getExpiryDate() && publicationTtl == other.getPublicationTtl() &&
            minInterval == other.getMinInterval() && maxInterval == other.getMaxInterval() &&
            alertAfterInterval == other.getAlertAfterInterval();
-}
-
-bool OnChangeWithKeepAliveSubscriptionQos::equals(const QObject& other) const
-{
-    int typeThis = QMetaType::type(this->metaObject()->className());
-    int typeOther = QMetaType::type(other.metaObject()->className());
-    auto newOther = dynamic_cast<const OnChangeWithKeepAliveSubscriptionQos*>(&other);
-    return typeThis == typeOther && *this == *newOther;
 }

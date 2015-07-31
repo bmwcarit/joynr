@@ -19,75 +19,103 @@
 #ifndef ONCHANGESUBSCRIPTIONQOS_H
 #define ONCHANGESUBSCRIPTIONQOS_H
 
+#include <stdint.h>
 #include "joynr/SubscriptionQos.h"
 #include "joynr/JoynrCommonExport.h"
-
-/*
-*  A subscription that will only send a notification if the subscribed value has changed
-* minInterval_ms can be used to prevent too many message being sent.
-* The subscription will automatically expire after invalidty_ms
-* If no publications is received for alertInterval a publicationMissed will be called.
-*/
 
 namespace joynr
 {
 
+/**
+ * @brief Class representing the quality of service settings for subscriptions based
+ * on changes
+ *
+ * Class that stores quality of service settings for subscriptions that will only
+ * send a notification if the subscribed value has changed. The subscription will
+ * automatically expire after validity ms. If no publications were received for
+ * alertInterval, a publicationMissed will be called.
+ * minInterval can be used to prevent too many messages being sent.
+ */
 class JOYNRCOMMON_EXPORT OnChangeSubscriptionQos : public SubscriptionQos
 {
 
-    Q_OBJECT
-
-    Q_PROPERTY(qint64 minInterval READ getMinInterval WRITE setMinInterval)
-
 public:
+    /** @brief Default constructor */
     OnChangeSubscriptionQos();
-    OnChangeSubscriptionQos(const OnChangeSubscriptionQos& other);
-    OnChangeSubscriptionQos(const qint64& validity, const qint64& minInterval);
 
     /**
-    * The provider will maintain at least a minimum interval idle time in milliseconds between
-    * successive notifications, even if on-change notifications are enabled and the value changes
-    *more
-    * often. This prevents the consumer from being flooded by updated values. The filtering happens
-    *on
-    * the provider's side, thus also preventing excessive network traffic.
-    *
-    * @return qint64 minInterval
-    *            The publisher will keep a minimum idle time of minInterval between two successive
-    *notifications.
-    */
-    virtual qint64 getMinInterval() const;
-
-    /**
-     * The provider will maintain at least a minimum interval idle time in milliseconds between
-     * successive notifications, even if on-change notifications are enabled and the value changes
-     *more
-     * often. This prevents the consumer from being flooded by updated values. The filtering happens
-     *on
-     * the provider's side, thus also preventing excessive network traffic.
-     *
-     * @param minInterval
-     *            The publisher will keep a minimum idle time of minInterval between two successive
-     *notifications.
+     * @brief Copy constructor for OnChangeSubscriptionQos object
+     * @param other The object instance to be copied from
      */
-    virtual void setMinInterval(const qint64& minInterval);
+    OnChangeSubscriptionQos(const OnChangeSubscriptionQos& other);
 
+    /**
+     * @brief Constructor with full parameter set.
+     * @param validity Time span in milliseconds during which publications will be sent
+     * @param minInterval Minimum interval in milliseconds.
+     *
+     * It is used to prevent flooding. Publications will be sent maintaining
+     * this minimum interval provided, even if the value changes more often.
+     * This prevents the consumer from being flooded by updated values.
+     * The filtering happens on the provider's side, thus also preventing
+     * excessive network traffic.
+     */
+    OnChangeSubscriptionQos(const int64_t& validity, const int64_t& minInterval);
+
+    /**
+     * @brief Gets the minimum interval in milliseconds
+     *
+     * The provider will maintain at least a minimum interval idle time in milliseconds between
+     * successive notifications, even if on-change notifications are enabled and the value
+     * changes more often. This prevents the consumer from being flooded by updated values.
+     * The filtering happens on the provider's side, thus also preventing excessive network
+     * traffic.
+     *
+     * @return Minimum interval in milliseconds
+     */
+    virtual int64_t getMinInterval() const;
+
+    /**
+     * @brief Sets minimum interval in milliseconds
+     *
+     * The provider will maintain at least a minimum interval idle time in milliseconds
+     * between successive notifications, even if on-change notifications are enabled
+     * and the value changes more often. This prevents the consumer from being flooded
+     * by updated values. The filtering happens on the provider's side, thus also
+     * preventing excessive network traffic.
+     *
+     * @param minInterval Minimum interval in milliseconds
+     */
+    virtual void setMinInterval(const int64_t& minInterval);
+
+    /** @brief Assignment operator */
     OnChangeSubscriptionQos& operator=(const OnChangeSubscriptionQos& other);
+
+    /** @brief Equality operator */
     virtual bool operator==(const OnChangeSubscriptionQos& other) const;
 
-    static const qint64& DEFAULT_MIN_INTERVAL();
-    static const qint64& MIN_MIN_INTERVAL();
-    static const qint64& MAX_MIN_INTERVAL();
+    /** @brief Returns the default value for the minimum interval setting */
+    static const int64_t& DEFAULT_MIN_INTERVAL();
 
-    virtual bool equals(const QObject& other) const;
+    /** @brief Returns the minimum value for the minimum interval setting */
+    static const int64_t& MIN_MIN_INTERVAL();
+
+    /** @brief Returns the maximum value for the minimum interval setting */
+    static const int64_t& MAX_MIN_INTERVAL();
 
 protected:
-    qint64 minInterval;
+    /**
+     * @brief The minimum interval in milliseconds
+     *
+     * It is used to prevent flooding. Publications will be sent maintaining
+     * this minimum interval provided, even if the value changes more often.
+     * This prevents the consumer from being flooded by updated values.
+     * The filtering happens on the provider's side, thus also preventing
+     * excessive network traffic.
+     */
+    int64_t minInterval;
 };
 
 } // namespace joynr
-
-Q_DECLARE_METATYPE(joynr::OnChangeSubscriptionQos)
-Q_DECLARE_METATYPE(QSharedPointer<joynr::OnChangeSubscriptionQos>)
 
 #endif // ONCHANGESUBSCRIPTIONQOS_H

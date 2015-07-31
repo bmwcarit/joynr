@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>io.joynr.java</groupId>
 		<artifactId>common</artifactId>
-		<version>0.8.0</version>
+		<version>0.9.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -37,23 +37,20 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>net.sf.ehcache</groupId>
+			<artifactId>ehcache</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>io.joynr.java</groupId>
 			<artifactId>javaapi</artifactId>
 			<version>${project.version}</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
-        <dependency>
-            <groupId>org.apache.derby</groupId>
-            <artifactId>derby</artifactId>
-            <version>10.10.1.1</version>
-            <scope>test</scope>
-        </dependency>
-		<!-- dependency>
-			<groupId>io.joynr.java.messaging</groupId>
-			<artifactId>messaging-common</artifactId>
-			<version>${project.version}</version>
-		</dependency-->
+		<dependency>
+			<groupId>org.apache.derby</groupId>
+			<artifactId>derby</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
-	
 </project>

@@ -95,7 +95,9 @@ public class ChannelServiceRestAdapter {
      *  The channel is closed automatically by the server at
      * regular intervals to ensure liveliness.
      * 
-     * @param ccid
+     * @param ccid cluster controller id
+     * @param cacheIndex cache index
+     * @param atmosphereTrackingId the tracking for atmosphere
      * @return new message(s), or nothing if the channel is closed by the servr
      */
     @GET
@@ -120,7 +122,9 @@ public class ChannelServiceRestAdapter {
      * HTTP POST to create a channel, returns location to new resource which can
      * then be long polled. Since the channel id may later change to be a UUID,
      * not using a PUT but rather POST with used id being returned
-     * 
+     * @param ccid cluster controller id
+     * @param atmosphereTrackingId tracking id for atmosphere
+     * @return location to new resource
      */
     @POST
     @Produces({ MediaType.TEXT_PLAIN })
@@ -166,8 +170,8 @@ public class ChannelServiceRestAdapter {
     /**
      * Remove the channel for the given cluster controller.
      * 
-     * @param ccid
-     * @return
+     * @param ccid the ID of the channel
+     * @return response ok if deletion was successful, else empty response
      */
     @DELETE
     @Path("/{ccid: [A-Z,a-z,0-9,_,\\-,\\.]+}")

@@ -21,35 +21,36 @@
 #include <QtDebug>
 
 #include "joynr/JsonSerializer.h"
-#include "joynr/types/GpsLocation.h"
-#include "joynr/types/Trip.h"
+#include "joynr/types/QtGpsLocation.h"
+#include "joynr/types/QtTrip.h"
 #include "joynr/JoynrMessage.h"
-#include "joynr/types/TStruct.h"
-#include "joynr/system/DiscoveryEntry.h"
-#include "joynr/system/WebSocketAddress.h"
+#include "joynr/types/QtTStruct.h"
+#include "joynr/types/QtDiscoveryEntry.h"
+#include "joynr/system/QtWebSocketAddress.h"
 
 using namespace joynr;
 
 namespace joynr {
 namespace types {
-    void PrintTo(const joynr::types::TStruct& value, ::std::ostream* os) {
+    void PrintTo(const joynr::types::QtTStruct& value, ::std::ostream* os) {
         *os << joynr::JsonSerializer::serialize(value).constData();
     }
 
-    void PrintTo(const joynr::types::GpsLocation& value, ::std::ostream* os) {
+    void PrintTo(const joynr::types::QtGpsLocation& value, ::std::ostream* os) {
         *os << joynr::JsonSerializer::serialize(value).constData();
     }
 
-    void PrintTo(const joynr::types::Trip& value, ::std::ostream* os) {
+    void PrintTo(const joynr::types::QtTrip& value, ::std::ostream* os) {
+        *os << JsonSerializer::serialize(value).constData() << std::endl;
+    }
+}
+namespace types {
+    void PrintTo(const joynr::types::QtDiscoveryEntry& value, ::std::ostream* os) {
         *os << JsonSerializer::serialize(value).constData() << std::endl;
     }
 }
 namespace system {
-    void PrintTo(const joynr::system::DiscoveryEntry& value, ::std::ostream* os) {
-        *os << JsonSerializer::serialize(value).constData() << std::endl;
-    }
-
-    void PrintTo(const joynr::system::WebSocketAddress& value, ::std::ostream* os) {
+    void PrintTo(const joynr::system::QtWebSocketAddress& value, ::std::ostream* os) {
         *os << JsonSerializer::serialize(value).constData() << std::endl;
     }
 }
@@ -74,18 +75,18 @@ void PrintTo(const QUrl& value, std::ostream* os)
 }
 
  void PrintTo(const RequestStatusCode& value, ::std::ostream* os) {
-     *os << value.toString().toStdString() << std::endl;
+     *os << value.toString() << std::endl;
  }
 
  void PrintTo(const RequestStatus& value, ::std::ostream* os) {
-     *os << value.toString().toStdString() << std::endl;
+     *os << value.toString() << std::endl;
  }
 
 
 // void initPretty(void) {
 // EXPECT_TRUE(false) << ::testing::PrintToString(QString("hello"));
 // EXPECT_TRUE(false) << ::testing::PrintToString(JoynrMessage());
-// EXPECT_TRUE(false) << ::testing::PrintToString(types::GpsLocation(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444));
-//// EXPECT_TRUE(false) << ::testing::PrintToString(Trip("tripName", GpsLocation(GpsFixEnum::MODE2D,1,2,3,0, 0, 0, 0, 0, 4), QList<types::GpsLocation>()));
+// EXPECT_TRUE(false) << ::testing::PrintToString(types::QtGpsLocation(1.1, 2.2, 3.3, types::QtGpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444));
+//// EXPECT_TRUE(false) << ::testing::PrintToString(QtTrip("tripName", QtGpsLocation(QtGpsFixEnum::MODE2D,1,2,3,0, 0, 0, 0, 0, 4), QList<types::QtGpsLocation>()));
 // }
 

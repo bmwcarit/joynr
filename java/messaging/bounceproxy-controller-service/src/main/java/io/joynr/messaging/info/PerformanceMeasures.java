@@ -86,6 +86,7 @@ public class PerformanceMeasures implements Serializable {
      * mapped to a known {@link Key}, the value is ignored without any warning.
      * 
      * @param valueMap
+     *   the measures to be added as a Map of string-integer key-value pairs
      */
     public void addMeasures(Map<String, Integer> valueMap) {
 
@@ -109,6 +110,7 @@ public class PerformanceMeasures implements Serializable {
      * @param key
      *            one of the available keys {@link Key} as string.
      * @param value
+     *            the value for the specified key
      */
     public void addMeasure(String key, int value) {
 
@@ -125,8 +127,8 @@ public class PerformanceMeasures implements Serializable {
      * Adds a measure. If the key is <code>null</code>, the measure is simply
      * ignored without any warning.
      * 
-     * @param key
-     * @param value
+     * @param key the key of the measure to be added to hash map
+     * @param value the value of the measure to be added to hash map
      */
     public void addMeasure(Key key, int value) {
 
@@ -140,8 +142,8 @@ public class PerformanceMeasures implements Serializable {
     /**
      * Returns the value for a measure key.
      * 
-     * @param key
-     * @return
+     * @param key key for which measure should be returned
+     * @return int value for the specified key
      */
     public int getMeasure(Key key) {
         return measures.get(key);
@@ -150,7 +152,7 @@ public class PerformanceMeasures implements Serializable {
     /**
      * Returns all measures.
      * 
-     * @return
+     * @return key-integer hash map of measures
      */
     public HashMap<Key, Integer> getMeasures() {
         return measures;

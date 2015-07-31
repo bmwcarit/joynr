@@ -25,6 +25,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import io.joynr.accesscontrol.AccessController;
 import io.joynr.common.ExpiryDate;
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.endpoints.JoynrMessagingEndpointAddress;
@@ -55,7 +57,10 @@ import joynr.Request;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,6 +68,7 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
+import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.util.Modules;
@@ -70,6 +76,7 @@ import com.google.inject.util.Modules;
 /**
  * This test mocks the Http Communication Manager out and tests only the functionality contained in the Dispatcher.
  */
+@RunWith(MockitoJUnitRunner.class)
 public class DispatcherTest {
     @SuppressWarnings("unused")
     private static final Logger logger = LoggerFactory.getLogger(DispatcherTest.class);
@@ -105,6 +112,8 @@ public class DispatcherTest {
     private RequestReplySender requestReplySender;
     private JoynrMessagingEndpointAddress dummyEndpointAddress;
     private ObjectMapper objectMapper;
+    @Mock
+    private AccessController accessControllerMock;
 
     @Before
     public void setUp() throws NoSuchMethodException, SecurityException, JsonGenerationException, IOException {
@@ -126,7 +135,13 @@ public class DispatcherTest {
         properties.put(MessagingPropertyKeys.CHANNELID, channelId);
         Injector injector = Guice.createInjector(Modules.override(new JoynrPropertiesModule(properties),
                                                                   new MessagingModule(),
-                                                                  new DispatcherTestModule())
+                                                                  new DispatcherTestModule(),
+                                                                  new AbstractModule() {
+                                                                      @Override
+                                                                      protected void configure() {
+                                                                          bind(AccessController.class).toInstance(accessControllerMock);
+                                                                      }
+                                                                  })
                                                         .with(new PreconfiguredEndpointDirectoryModule(messagingEndpointDirectory)));
 
         objectMapper = injector.getInstance(ObjectMapper.class);
@@ -224,6 +239,8 @@ public class DispatcherTest {
 
     @Test
     public void requestReplyMessagesActivateACallBack() throws Exception {
+        when(accessControllerMock.hasConsumerPermission(any(JoynrMessage.class))).thenReturn(true);
+
         TestRequestCaller testRequestCaller = new TestRequestCaller(1);
         dispatcher.addRequestCaller(testMessageResponderParticipantId, testRequestCaller);
 
@@ -241,7 +258,7 @@ public class DispatcherTest {
         String reply = (String) testRequestCaller.getSentPayloadFor(jsonRequest1);
         ArgumentCaptor<Reply> jsonReply = ArgumentCaptor.forClass(Reply.class);
         verify(replyCaller, timeout(TIME_OUT_MS).times(1)).messageCallBack(jsonReply.capture());
-        assertEquals(reply, jsonReply.getValue().getResponse());
+        assertEquals(reply, jsonReply.getValue().getResponse().get(0));
         assertEquals(2, messageSenderReceiverMock.getSentMessages().size());
     }
 
@@ -288,6 +305,7 @@ public class DispatcherTest {
 
     @Test
     public void queueMessagesForUnregisteredResponder() throws InterruptedException {
+        when(accessControllerMock.hasConsumerPermission(any(JoynrMessage.class))).thenReturn(true);
         messageToUnregisteredResponder1.setExpirationDate(ExpiryDate.fromRelativeTtl((int) (TIME_TO_LIVE * 0.03)));
         messageSenderReceiverMock.receiveMessage(messageToUnregisteredResponder1);
 
@@ -352,6 +370,8 @@ public class DispatcherTest {
     @Test
     public void requestReplyRoundtrip() throws JoynrMessageNotSentException, JoynrSendBufferFullException,
                                        JsonGenerationException, JsonMappingException, IOException {
+        when(accessControllerMock.hasConsumerPermission(any(JoynrMessage.class))).thenReturn(true);
+
         TestRequestCaller testResponder = new TestRequestCaller(1);
         dispatcher.addRequestCaller(testMessageResponderParticipantId, testResponder);
         ReplyCaller replyCaller = mock(ReplyCaller.class);

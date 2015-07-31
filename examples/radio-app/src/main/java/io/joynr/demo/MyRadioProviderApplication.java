@@ -19,7 +19,9 @@ package io.joynr.demo;
  * #L%
  */
 
-import io.joynr.exceptions.JoynrException;
+import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
+import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrApplication;
@@ -27,22 +29,24 @@ import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Properties;
 
 import jline.console.ConsoleReader;
-import joynr.vehicle.RadioProvider;
+import joynr.infrastructure.dactypes.MasterAccessControlEntry;
+import joynr.infrastructure.dactypes.Permission;
+import joynr.infrastructure.dactypes.TrustLevel;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
 import com.google.inject.Inject;
-import com.google.inject.Module;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 public class MyRadioProviderApplication extends AbstractJoynrApplication {
-    private static final String AUTH_TOKEN = "MyRadioProvider_authToken";
     private static final Logger LOG = LoggerFactory.getLogger(MyRadioProviderApplication.class);
     public static final String STATIC_PERSISTENCE_FILE = "provider-joynr.properties";
 
@@ -50,7 +54,7 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
     @Inject
     private ObjectMapper jsonSerializer;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         // run application from cmd line using Maven:
         // mvn exec:java -Dexec.mainClass="io.joynr.demo.MyRadioProviderApplication" -Dexec.args="<local-domain>"
         // Get the provider domain from the command line
@@ -125,12 +129,11 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
         // them on the JoynApplicationModule.
         Properties appConfig = new Properties();
 
-        // the following line is required in case of java<->javascript use case,
-        // as long as javascript is not using channelurldirectory and
-        // globalcapabilitiesdirectory
-        Module[] modules = new Module[]{}; // new DefaultUrlDirectoryModule()};
-        JoynrApplication joynrApplication = new JoynrInjectorFactory(joynrConfig, modules).createApplication(new JoynrApplicationModule(MyRadioProviderApplication.class,
-                                                                                                                                        appConfig));
+        // Use injected static provisioning of access control entries to allow access to anyone to this interface
+        provisionAccessControl(joynrConfig, localDomain);
+        JoynrApplication joynrApplication = new JoynrInjectorFactory(joynrConfig,
+                                                                     new StaticDomainAccessControlProvisioningModule()).createApplication(new JoynrApplicationModule(MyRadioProviderApplication.class,
+                                                                                                                                                                     appConfig));
         joynrApplication.run();
 
         joynrApplication.shutdown();
@@ -141,7 +144,7 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
         provider = new MyRadioProvider();
         provider.addBroadcastFilter(new TrafficServiceBroadcastFilter());
         provider.addBroadcastFilter(new GeocastBroadcastFilter(jsonSerializer));
-        runtime.registerCapability(localDomain, provider, RadioProvider.class, AUTH_TOKEN);
+        runtime.registerProvider(localDomain, provider);
 
         ConsoleReader console;
         try {
@@ -175,8 +178,8 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
         LOG.info("shutting down");
         if (provider != null) {
             try {
-                runtime.unregisterCapability(localDomain, provider, RadioProvider.class, AUTH_TOKEN);
-            } catch (JoynrException e) {
+                runtime.unregisterProvider(localDomain, provider);
+            } catch (JoynrRuntimeException e) {
                 LOG.error("unable to unregister capabilities {}", e.getMessage());
             }
         }
@@ -189,5 +192,25 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
             // do nothing; exiting application
         }
         System.exit(0);
+    }
+
+    private static void provisionAccessControl(Properties properties, String domain) throws Exception {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.enableDefaultTypingAsProperty(DefaultTyping.JAVA_LANG_OBJECT, "_typeName");
+        MasterAccessControlEntry newMasterAccessControlEntry = new MasterAccessControlEntry("*",
+                                                                                            domain,
+                                                                                            MyRadioProvider.INTERFACE_NAME,
+                                                                                            TrustLevel.LOW,
+                                                                                            Arrays.asList(TrustLevel.LOW),
+                                                                                            TrustLevel.LOW,
+                                                                                            Arrays.asList(TrustLevel.LOW),
+                                                                                            "*",
+                                                                                            Permission.YES,
+                                                                                            Arrays.asList(Permission.YES));
+
+        MasterAccessControlEntry[] provisionedAccessControlEntries = { newMasterAccessControlEntry };
+        String provisionedAccessControlEntriesAsJson = objectMapper.writeValueAsString(provisionedAccessControlEntries);
+        properties.setProperty(StaticDomainAccessControlProvisioning.PROPERTY_PROVISIONED_MASTER_ACCESSCONTROLENTRIES,
+                               provisionedAccessControlEntriesAsJson);
     }
 }

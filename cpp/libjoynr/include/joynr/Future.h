@@ -21,39 +21,140 @@
 
 #include "joynr/RequestStatus.h"
 #include "joynr/joynrlogging.h"
-#include "joynr/ICallback.h"
 
 #include <QSemaphore>
 #include <QSharedPointer>
 #include <cassert>
+#include <functional>
+#include <joynr/Util.h>
+#include <stdint.h>
+#include "joynr/TypeUtil.h"
 
 namespace joynr
 {
 
-template <class T>
 /**
- * @brief This class is used by applications to monitor the status of a request.
+ * @brief IntegerList
+ */
+template <size_t... N>
+struct IntegerList
+{
+    /**
+     * @brief struct PushBack
+     */
+    template <size_t M>
+    struct PushBack
+    {
+        /** @brief the Pushback's Type */
+        typedef IntegerList<N..., M> Type;
+    };
+};
+
+/** @brief IndexList */
+template <size_t MAX>
+struct IndexList
+{
+    /** @brief The IndexList's Type */
+    typedef typename IndexList<MAX - 1>::Type::template PushBack<MAX>::Type Type;
+};
+
+/** @brief IndexList */
+template <>
+struct IndexList<0>
+{
+    /** @brief The IndexList's Type */
+    typedef IntegerList<> Type;
+};
+
+/**
+ * @brief Create a tuple subset by indices
+ * @param tuple Input tuple to select from
+ * @param indices The indices
+ * @return the new tuple containing the subset
+ */
+template <size_t... Indices, typename Tuple>
+auto tupleSubset(const Tuple& tuple, IntegerList<Indices...> indices)
+        -> decltype(std::make_tuple(std::get<Indices>(tuple)...))
+{
+    return std::make_tuple(std::get<Indices>(tuple)...);
+}
+
+/**
+ * @brief Create a tuple subset
+ * @param tuple Input tuple to select from
+ * @return the tuple subset
+ */
+template <typename Head, typename... Tail>
+std::tuple<Tail...> tail(const std::tuple<Head, Tail...>& tuple)
+{
+    return tupleSubset(tuple, typename IndexList<sizeof...(Tail)>::Type());
+}
+
+template <class... Ts>
+/**
+ * @brief Class for monitoring the status of a request by applications.
+ *
  * Applications can periodically ask this class for its status and retrieve
  * descriptions and codes related to the request.
  * This class also contains a method to block until a response is received.
  *
  * Applications instantiate this class and pass it to asynchronous proxy methods.
  */
-class Future : public ICallback<T>
+class Future
 {
 
 public:
-    Future<T>()
-            : callback(NULL),
-              status(RequestStatusCode::IN_PROGRESS),
-              result(),
-              resultReceived(0),
-              callbackSupplied(false)
+    /**
+     * @brief Constructor
+     */
+    Future<Ts...>() : status(RequestStatusCode::IN_PROGRESS), results(), resultReceived(0)
     {
         LOG_INFO(logger,
                  QString("resultReceived.available():") +
                          QString::number(resultReceived.available()));
     }
+
+    // TODO
+    /** @brief ResultCopier */
+    template <typename T, typename Head, typename... Tail>
+    struct ResultCopier;
+
+    // TODO
+    /** @brief ResultCopier */
+    template <typename Head, typename... Tail>
+    struct ResultCopier<std::tuple<Head, Tail...>, Head, Tail...>
+    {
+        // TODO
+        /**
+         * @brief Copy function
+         * @param results The results to copy from
+         * @param value The value to copy to
+         * @param values The values to copy to
+         */
+        static void copy(const std::tuple<Head, Tail...>& results, Head& value, Tail&... values)
+        {
+            value = std::get<0>(results);
+            ResultCopier<std::tuple<Tail...>, Tail...>::copy(
+                    tail<Head, Tail...>(results), values...);
+        }
+    };
+
+    // TODO
+    /** @brief ResultCopier */
+    template <typename Head>
+    struct ResultCopier<std::tuple<Head>, Head>
+    {
+
+        /**
+         * @brief Copy results value
+         * @param results The results to copy from
+         * @param value destination to copy to
+         */
+        static void copy(const std::tuple<Head>& results, Head& value)
+        {
+            value = std::get<0>(results);
+        }
+    };
 
     /**
      * @brief Retrieves the return value for the request if one exists.
@@ -65,9 +166,9 @@ public:
      *
      * This method returns immediately.
      *
-     * @return T The typed value from the request.
+     * @param values The typed return values from the request.
      */
-    T getValue()
+    void getValues(Ts&... values)
     {
         if (!resultReceived.tryAcquire(1)) {
             LOG_FATAL(logger, "The request is not yet finished when calling getValue()");
@@ -79,11 +180,11 @@ public:
         if (code != RequestStatusCode::OK) {
             LOG_FATAL(logger,
                       "The request status code was not OK when calling getValue(), it was: " +
-                              code.toString());
+                              QString::fromStdString(code.toString()));
             assert(false);
         }
 
-        return result;
+        ResultCopier<std::tuple<Ts...>, Ts...>::copy(results, values...);
     }
 
     /**
@@ -97,31 +198,16 @@ public:
     }
 
     /**
-     * @brief Sets the delegating callback.  The future class acts as a wrapper to the real
-     * callback class so that it can report statuses back to the application and provide
-     * convenience wait methods.
-     * This should be set before being wrapped into a ReplyCaller class for the messaging
-     * layer.
-     *
-     * @param callback A shared pointer to the real application callback.
-     */
-    void setCallback(QSharedPointer<ICallback<T>> callback)
-    {
-        callbackSupplied = true;
-        this->callback = callback;
-    }
-
-    /**
      * @brief This is a blocking call which waits until the request finishes/an error
      * occurs/or times out.
      *
      * @param timeOut The maximum number of milliseconds to wait before this request times out
      * if no response is received.
-     * @return QSharedPointer<RequestStatus> Returns the RequestStatus for the completed request.
+     * @return Returns the RequestStatus for the completed request.
      */
-    RequestStatus waitForFinished(int timeOut)
+    RequestStatus waitForFinished(uint16_t timeOut)
     {
-        if (resultReceived.tryAcquire(1, timeOut)) {
+        if (resultReceived.tryAcquire(1, TypeUtil::toQt(timeOut))) {
             resultReceived.release(1);
         }
         return status;
@@ -129,9 +215,9 @@ public:
 
     /**
      * @brief This is a blocking call which waits until the request finishes/an error
-     * occurs.  Waits indefinitely.
+     * occurs.
      *
-     * @return QSharedPointer<RequestStatus> Returns the RequestStatus for the completed request.
+     * @return Returns the RequestStatus for the completed request.
      */
     RequestStatus waitForFinished()
     {
@@ -155,81 +241,84 @@ public:
 
     /**
      * @brief Callback which indicates the operation has finished and is successful.
+     * @param results The result of the operation, type T
      */
-    void onSuccess(const RequestStatus status, T result)
+    void onSuccess(Ts... results)
     {
         LOG_INFO(logger, "onSuccess has been invoked");
-        this->status = RequestStatus(status);
-        this->result = result;
+        status.setCode(RequestStatusCode::OK);
+        // transform variadic templates into a std::tuple
+        this->results = std::make_tuple(results...);
         resultReceived.release();
-        if (callbackSupplied) {
-            callback->onSuccess(status, result);
-        }
     }
 
     /**
      * @brief Callback which indicates the operation has finished and has failed.
+     * @param status The failure status
      */
-    void onFailure(const RequestStatus status)
+    void onError(const RequestStatus& status)
     {
         LOG_INFO(logger, "onFailure has been invoked");
         this->status = RequestStatus(status);
         resultReceived.release();
-        if (callbackSupplied) {
-            callback->onFailure(status);
-        }
     }
 
 private:
-    QSharedPointer<ICallback<T>> callback;
     RequestStatus status;
-    T result;
+    std::tuple<Ts...> results;
     QSemaphore resultReceived;
-    bool callbackSupplied;
 
     static joynr_logging::Logger* logger;
 };
 
-template <class T>
-joynr_logging::Logger* Future<T>::logger =
+template <class... Ts>
+joynr_logging::Logger* Future<Ts...>::logger =
         joynr_logging::Logging::getInstance()->getLogger("MSG", "Future");
 
 template <>
 /**
- * @brief The void specialisation of this class.
- *
+ * @brief Class specialization of the void Future class.
  */
-class Future<void> : public ICallback<void>
+class Future<void>
 {
 
 public:
-    Future<void>()
-            : callback(NULL),
-              status(RequestStatusCode::IN_PROGRESS),
-              resultReceived(0),
-              callbackSupplied(false)
+    Future<void>() : status(RequestStatusCode::IN_PROGRESS), resultReceived(0)
     {
     }
 
+    /**
+     * @brief Returns the current RequestStatus for the given request.
+     *
+     * @return RequestStatus
+     */
     RequestStatus& getStatus()
     {
         return status;
     }
 
-    void setCallback(QSharedPointer<ICallback<void>> callback)
+    /**
+     * @brief This is a blocking call which waits until the request finishes/an error
+     * occurs/or times out.
+     *
+     * @param timeOut The maximum number of milliseconds to wait before this request times out
+     * if no response is received.
+     * @return QSharedPointer<RequestStatus> Returns the RequestStatus for the completed request.
+     */
+    RequestStatus waitForFinished(uint16_t timeOut)
     {
-        callbackSupplied = true;
-        this->callback = callback;
-    }
-
-    RequestStatus waitForFinished(int timeOut)
-    {
-        if (resultReceived.tryAcquire(1, timeOut)) {
+        if (resultReceived.tryAcquire(1, TypeUtil::toQt(timeOut))) {
             resultReceived.release(1);
         }
         return status;
     }
 
+    /**
+     * @brief This is a blocking call which waits until the request finishes/an error
+     * occurs.
+     *
+     * @return QSharedPointer<RequestStatus> Returns the RequestStatus for the completed request.
+     */
     RequestStatus waitForFinished()
     {
         resultReceived.acquire(1);
@@ -237,34 +326,38 @@ public:
         return status;
     }
 
+    /**
+     * @brief Returns whether the status is Ok or not.
+     *
+     * @return Returns whether the status is Ok or not.
+     */
     bool isOk()
     {
         return status.successful();
     }
 
-    void onSuccess(const RequestStatus status)
+    /**
+     * @brief Callback which indicates the operation has finished and is successful.
+     */
+    void onSuccess()
     {
-        this->status = RequestStatus(status);
+        status.setCode(RequestStatusCode::OK);
         resultReceived.release(1);
-        if (callbackSupplied) {
-            callback->onSuccess(status);
-        }
     }
 
-    void onFailure(const RequestStatus status)
+    /**
+     * @brief Callback which indicates the operation has finished and has failed.
+     * @param status The failure status
+     */
+    void onError(const RequestStatus& status)
     {
         this->status = RequestStatus(status);
         resultReceived.release(1);
-        if (callbackSupplied) {
-            callback->onFailure(status);
-        }
     }
 
 private:
-    QSharedPointer<ICallback<void>> callback;
     RequestStatus status;
     QSemaphore resultReceived;
-    bool callbackSupplied;
 };
 
 } // namespace joynr

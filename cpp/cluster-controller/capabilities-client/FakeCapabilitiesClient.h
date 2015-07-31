@@ -31,9 +31,10 @@
 */
 
 #include <QString>
+#include <string>
 #include <QSharedPointer>
-#include <QList>
 #include <QSettings>
+#include <vector>
 
 namespace joynr
 {
@@ -54,37 +55,37 @@ public:
        Default constructor for the capabilities client.
        dispatcherPrt - pointer to a dispatcher instance created by the dispatcherFactory
       */
-    FakeCapabilitiesClient(const QString& localChannelId, const QString& settingsFileName);
+    FakeCapabilitiesClient(const std::string& localChannelId, const QString& settingsFileName);
 
     virtual ~FakeCapabilitiesClient();
     /*
        Add a capabilities record to the directory containing a list of capabilities and the
        channelId of the provider(the client's channelId)
       */
-    virtual void add(QList<types::CapabilityInformation> capabilitiesInformationList);
+    virtual void add(std::vector<types::CapabilityInformation> capabilitiesInformationList);
 
     /*
       Remove previously created capabilities directory entries.
       */
-    virtual void remove(QList<QString> participantIds);
+    virtual void remove(std::vector<std::string> participantIds);
 
     /*
       Channel id lookup for a known interfaceAddress.
       */
-    virtual QList<types::CapabilityInformation> lookup(const QString& domain,
-                                                       const QString& interfaceName);
+    virtual std::vector<types::CapabilityInformation> lookup(const std::string& domain,
+                                                             const std::string& interfaceName);
 
     /*
       Asynchronous channel id lookup for a known interfaceAddress.
       */
-    virtual void lookup(const QString& domain,
-                        const QString& interfaceName,
+    virtual void lookup(const std::string& domain,
+                        const std::string& interfaceName,
                         QSharedPointer<IGlobalCapabilitiesCallback> callback);
 
-    virtual void lookup(const QString& participantId,
+    virtual void lookup(const std::string& participantId,
                         QSharedPointer<IGlobalCapabilitiesCallback> callback);
 
-    virtual QString getLocalChannelId();
+    virtual std::string getLocalChannelId();
 
 private:
     DISALLOW_COPY_AND_ASSIGN(FakeCapabilitiesClient);
@@ -96,26 +97,27 @@ private:
                      MessagingQos qosSettings,
                      QSharedPointer<IReplyCaller> callBack);
 
-    QList<types::CapabilityInformation> createFakedCapInfoList(const QString& domain,
-                                                               const QString& interfaceName);
-    QList<types::CapabilityInformation> createFakedCapInfoListForChannelId(
-            const QString& channelId);
-    QList<types::CapabilityInformation> createFakedCapInfoListForParticipantId(
-            const QString& participantId);
-    QList<types::CapabilityInformation> createFakedCapInfoList();
+    std::vector<types::CapabilityInformation> createFakedCapInfoList(
+            const std::string& domain,
+            const std::string& interfaceName);
+    std::vector<types::CapabilityInformation> createFakedCapInfoListForChannelId(
+            const std::string& channelId);
+    std::vector<types::CapabilityInformation> createFakedCapInfoListForParticipantId(
+            const std::string& participantId);
+    std::vector<types::CapabilityInformation> createFakedCapInfoList();
 
     qint64 defaultRequestTTL;
     qint64 defaultRequestRoundtripTTL;
 
-    QString capabilitiesClientParticipantId;
-    QString localChannelId;
+    std::string capabilitiesClientParticipantId;
+    std::string localChannelId;
 
     QSettings configuration;
 
-    QString preconfiguredDomain;
-    QString preconfiguredInterfaceName;
-    QString preconfiguredChannelId;
-    QString preconfiguredParticipantId;
+    std::string preconfiguredDomain;
+    std::string preconfiguredInterfaceName;
+    std::string preconfiguredChannelId;
+    std::string preconfiguredParticipantId;
 };
 
 } // namespace joynr

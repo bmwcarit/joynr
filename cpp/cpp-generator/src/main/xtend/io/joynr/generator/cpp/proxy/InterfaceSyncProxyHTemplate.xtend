@@ -18,59 +18,72 @@ package io.joynr.generator.cpp.proxy
  */
 
 import com.google.inject.Inject
-import org.franca.core.franca.FInterface
+import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.InterfaceUtil
-import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
+import org.franca.core.franca.FInterface
 
 class InterfaceSyncProxyHTemplate implements InterfaceTemplate{
-	@Inject	extension JoynrCppGeneratorExtensions
-	@Inject	extension TemplateBase
-	
+	@Inject extension JoynrCppGeneratorExtensions
+	@Inject extension TemplateBase
+
+	@Inject extension CppStdTypeUtil
 	@Inject extension InterfaceUtil
 
-	override generate(FInterface serviceInterface) {
-		val interfaceName =  serviceInterface.joynrName
-		val className = interfaceName + "Proxy"
-		val syncClassName = interfaceName + "SyncProxy"
-		val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+"_"+interfaceName+"SyncProxy_h").toUpperCase
-		'''
-		«warning()»
-		
-		#ifndef «headerGuard»
-		#define «headerGuard»
+	override generate(FInterface serviceInterface)
+'''
+«val interfaceName =  serviceInterface.joynrName»
+«val className = interfaceName + "Proxy"»
+«val syncClassName = interfaceName + "SyncProxy"»
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+
+	"_"+interfaceName+"SyncProxy_h").toUpperCase»
+«warning()»
 
-		#include "joynr/PrivateCopyAssign.h"
-		«getDllExportIncludeStatement()»
-		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«className»Base.h"
-		
-		«getNamespaceStarter(serviceInterface)» 
-		class «getDllExportMacro()» «syncClassName»: virtual public «className»Base, virtual public I«interfaceName»Sync {
-		public:
-		    «syncClassName»(
-		            QSharedPointer<joynr::system::Address> messagingAddress,
-		            joynr::ConnectorFactory* connectorFactory,
-		            joynr::IClientCache* cache,
-		            const QString& domain,
-		            const joynr::ProxyQos& proxyQos,
-		            const joynr::MessagingQos& qosSettings,
-		            bool cached
-		    );
+#ifndef «headerGuard»
+#define «headerGuard»
 
-		    «produceSyncGetters(serviceInterface, false)»
-		    «produceSyncSetters(serviceInterface, false)»
-		    «produceSyncMethods(serviceInterface, false)»
-		
-		    friend class «className»;
-		
-		private:
-		    DISALLOW_COPY_AND_ASSIGN(«syncClassName»);
-		};
-		«getNamespaceEnder(serviceInterface)»
-		#endif // «headerGuard»
-		'''	
-	}	
-	
-			
+#include "joynr/PrivateCopyAssign.h"
+«getDllExportIncludeStatement()»
+#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«className»Base.h"
+
+«FOR parameterType: getRequiredIncludesFor(serviceInterface).addElements(includeForString)»
+	#include «parameterType»
+«ENDFOR»
+
+«getNamespaceStarter(serviceInterface)»
+/** @brief Synchronous proxy for interface «interfaceName» */
+class «getDllExportMacro()» «syncClassName»: virtual public «className»Base, virtual public I«interfaceName»Sync {
+public:
+	/**
+	 * @brief Parameterized constructor
+	 * @param messagingAddress The address
+	 * @param connectorFactory The connector factory
+	 * @param cache The client cache
+	 * @param domain The provider domain
+	 * @param qosSettings The quality of service settings
+	 * @param cached True, if cached, false otherwise
+	 */
+	«syncClassName»(
+			QSharedPointer<joynr::system::QtAddress> messagingAddress,
+			joynr::ConnectorFactory* connectorFactory,
+			joynr::IClientCache* cache,
+			const std::string& domain,
+			const joynr::MessagingQos& qosSettings,
+			bool cached
+	);
+
+	«produceSyncGetters(serviceInterface, false)»
+	«produceSyncSetters(serviceInterface, false)»
+	«produceSyncMethods(serviceInterface, false)»
+
+	friend class «className»;
+
+private:
+	DISALLOW_COPY_AND_ASSIGN(«syncClassName»);
+};
+«getNamespaceEnder(serviceInterface)»
+#endif // «headerGuard»
+'''
 }

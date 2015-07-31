@@ -22,20 +22,21 @@
 #include "joynr/MessageRouter.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/Dispatcher.h"
-#include "joynr/BroadcastSubscriptionCallback.h"
+#include "joynr/SubscriptionCallback.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionStop.h"
 #include "joynr/JoynrMessageFactory.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 #include "joynr/InterfaceRegistrar.h"
+#include "joynr/MetaTypeRegistrar.h"
 #include "joynr/tests/testRequestInterpreter.h"
 #include "tests/utils/MockObjects.h"
-#include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/QtOnChangeWithKeepAliveSubscriptionQos.h"
 #include <QString>
 #include "joynr/LibjoynrSettings.h"
 
-#include "joynr/types/GpsLocation.h"
+#include "joynr/types/QtGpsLocation.h"
 
 using namespace ::testing;
 
@@ -54,9 +55,9 @@ public:
     BroadcastSubscriptionTest() :
         mockMessageRouter(new MockMessageRouter()),
         mockRequestCaller(new MockTestRequestCaller()),
-        mockSubscriptionListenerOne(new MockSubscriptionListenerOneType<types::GpsLocation>()),
-        mockSubscriptionListenerTwo(new MockSubscriptionListenerTwoTypes<types::GpsLocation, double>()),
-        gpsLocation1(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444),
+        mockSubscriptionListenerOne(new MockSubscriptionListenerOneType<types::QtGpsLocation>()),
+        mockSubscriptionListenerTwo(new MockSubscriptionListenerTwoTypes<types::QtGpsLocation, double>()),
+        gpsLocation1(1.1, 2.2, 3.3, types::QtGpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444),
         speed1(100),
         qos(2000),
         providerParticipantId("providerParticipantId"),
@@ -72,7 +73,9 @@ public:
         QFile::remove(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
         subscriptionManager = new SubscriptionManager();
         dispatcher.registerSubscriptionManager(subscriptionManager);
-        InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::getInterfaceName());
+        InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
+        MetaTypeRegistrar::instance().registerMetaType<types::QtGpsLocation>();
+        MetaTypeRegistrar::instance().registerMetaType<types::QtGpsLocation, double>();
     }
 
     void TearDown(){
@@ -82,10 +85,10 @@ public:
 protected:
     QSharedPointer<MockMessageRouter> mockMessageRouter;
     QSharedPointer<MockTestRequestCaller> mockRequestCaller;
-    QSharedPointer<MockSubscriptionListenerOneType<types::GpsLocation> > mockSubscriptionListenerOne;
-    QSharedPointer<MockSubscriptionListenerTwoTypes<types::GpsLocation, double> > mockSubscriptionListenerTwo;
+    std::shared_ptr<MockSubscriptionListenerOneType<types::QtGpsLocation> > mockSubscriptionListenerOne;
+    std::shared_ptr<MockSubscriptionListenerTwoTypes<types::QtGpsLocation, double> > mockSubscriptionListenerTwo;
 
-    types::GpsLocation gpsLocation1;
+    types::QtGpsLocation gpsLocation1;
     double speed1;
 
     // create test data
@@ -112,12 +115,12 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
 
     // Use a semaphore to count and wait on calls to the mockSubscriptionListener
     QSemaphore semaphore(0);
-    EXPECT_CALL(*mockSubscriptionListenerOne, onReceive(A<types::GpsLocation>()))
+    EXPECT_CALL(*mockSubscriptionListenerOne, onReceive(A<const types::QtGpsLocation&>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     //register the subscription on the consumer side
     QString subscribeToName = "locationUpdate";
-    auto subscriptionQos = QSharedPointer<OnChangeSubscriptionQos>(new OnChangeWithKeepAliveSubscriptionQos(
+    auto subscriptionQos = QSharedPointer<QtOnChangeSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
                 80, // validity_ms
                 100, // minInterval_ms
                 200, // maxInterval_ms
@@ -125,17 +128,15 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
     ));
 
     BroadcastSubscriptionRequest subscriptionRequest;
-    //construct a reply containing a GpsLocation
+    //construct a reply containing a QtGpsLocation
     SubscriptionPublication subscriptionPublication;
     subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    QList<QVariant> responseList;
-    responseList.append(QVariant::fromValue(gpsLocation1));
-    QVariant response;
-    response.setValue(responseList);
+    QList<QVariant> response;
+    response.append(QVariant::fromValue(gpsLocation1));
     subscriptionPublication.setResponse(response);
 
-    QSharedPointer<BroadcastSubscriptionCallback<types::GpsLocation>> subscriptionCallback(
-            new BroadcastSubscriptionCallback<types::GpsLocation>(mockSubscriptionListenerOne));
+    QSharedPointer<SubscriptionCallback<types::QtGpsLocation>> subscriptionCallback(
+            new SubscriptionCallback<types::QtGpsLocation>(mockSubscriptionListenerOne));
 
 
     // subscriptionRequest is an out param
@@ -169,12 +170,12 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters )
 
     // Use a semaphore to count and wait on calls to the mockSubscriptionListener
     QSemaphore semaphore(0);
-    EXPECT_CALL(*mockSubscriptionListenerTwo, onReceive(A<types::GpsLocation>(), A<double>()))
+    EXPECT_CALL(*mockSubscriptionListenerTwo, onReceive(A<const types::QtGpsLocation&>(), A<const double&>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     //register the subscription on the consumer side
     QString subscribeToName = "locationUpdateWithSpeed";
-    auto subscriptionQos = QSharedPointer<OnChangeSubscriptionQos>(new OnChangeWithKeepAliveSubscriptionQos(
+    auto subscriptionQos = QSharedPointer<QtOnChangeSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
                 80, // validity_ms
                 100, // minInterval_ms
                 200, // maxInterval_ms
@@ -182,18 +183,16 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters )
     ));
 
     BroadcastSubscriptionRequest subscriptionRequest;
-    //construct a reply containing a GpsLocation
+    //construct a reply containing a QtGpsLocation
     SubscriptionPublication subscriptionPublication;
     subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    QList<QVariant> responseList;
-    responseList.append(QVariant::fromValue(gpsLocation1));
-    responseList.append(QVariant::fromValue(speed1));
-    QVariant response;
-    response.setValue(responseList);
+    QList<QVariant> response;
+    response.append(QVariant::fromValue(gpsLocation1));
+    response.append(QVariant::fromValue(speed1));
     subscriptionPublication.setResponse(response);
 
-    QSharedPointer<BroadcastSubscriptionCallback<types::GpsLocation, double>> subscriptionCallback(
-            new BroadcastSubscriptionCallback<types::GpsLocation, double>(mockSubscriptionListenerTwo));
+    QSharedPointer<SubscriptionCallback<types::QtGpsLocation, double>> subscriptionCallback(
+            new SubscriptionCallback<types::QtGpsLocation, double>(mockSubscriptionListenerTwo));
 
     // subscriptionRequest is an out param
     subscriptionManager->registerSubscription(

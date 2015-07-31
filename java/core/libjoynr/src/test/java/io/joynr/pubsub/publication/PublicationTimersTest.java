@@ -19,12 +19,18 @@ package io.joynr.pubsub.publication;
  * #L%
  */
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import io.joynr.dispatcher.RequestCaller;
 import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingQos;
-import io.joynr.provider.RequestCallerFactory;
+import io.joynr.provider.Deferred;
+import io.joynr.provider.Promise;
 import io.joynr.pubsub.PubSubTestProviderImpl;
 
 import java.io.IOException;
@@ -35,17 +41,13 @@ import java.util.concurrent.ScheduledExecutorService;
 import joynr.PeriodicSubscriptionQos;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
-import joynr.tests.testProxy;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,10 +58,15 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 public class PublicationTimersTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(PublicationTimersTest.class);
+    private final String attributeName = "testAttribute";
 
-    private SubscriptionRequest subscriptionRequest;
+    interface TestRequestCaller extends RequestCaller {
+        String getTestAttribute();
+    }
 
-    private RequestCaller requestCaller;
+    @Mock
+    private TestRequestCaller requestCaller;
+
     @Mock
     private RequestReplySender messageSender;
     @Mock
@@ -67,109 +74,48 @@ public class PublicationTimersTest {
 
     private ScheduledExecutorService cleanupScheduler = Executors.newSingleThreadScheduledExecutor();
 
-    private PeriodicSubscriptionQos qos;
-
-    private PublicationManager publicationManager;
-    private String attributeName;
-    private String providerId;
-    private String proxyId;
-    private String subscriptionId;
-
-    private RequestCallerFactory requestCallerFactory;
     @Mock
     private PubSubTestProviderImpl provider;
-    // @Mock
-    private SubscriptionPublication publication = new SubscriptionPublication(null, "subscriptionId");
-
-    private static final int period = 100;
-    private int numberOfPublications = 5;
-    private int missedPublicationAlertDelay = 10;
-    private long alertAfterInterval;
-
-    private long expiryDate;
 
     @Before
     public void setUp() {
-        alertAfterInterval = period + missedPublicationAlertDelay;
-
-        expiryDate = getExpiryDate();
-        qos = new PeriodicSubscriptionQos(period, expiryDate, alertAfterInterval, 1000);
-
-        subscriptionId = "subscriptionId";
-        proxyId = "proxyId";
-        providerId = "providerId";
-        attributeName = "testAttribute";
-
-        subscriptionRequest = new SubscriptionRequest(subscriptionId, attributeName, qos);
-        requestCallerFactory = new RequestCallerFactory();
-
-        requestCaller = requestCallerFactory.create(provider, testProxy.class);
-        publicationManager = new PublicationManagerImpl(attributePollInterpreter, messageSender, cleanupScheduler);
+        Deferred<String> testAttributeDeferred = new Deferred<String>();
+        testAttributeDeferred.resolve("testAttributeValue");
+        Promise<Deferred<String>> testAttributePromise = new Promise<Deferred<String>>(testAttributeDeferred);
+        Mockito.doReturn(testAttributePromise).when(attributePollInterpreter).execute(any(RequestCaller.class),
+                                                                                      any(Method.class));
     }
 
-    private long getExpiryDate() {
-        return System.currentTimeMillis() // the publication should start now
-                // time needed to publish numberOfMissedPublications publications
-                + period * numberOfPublications
-                // add enough time to the subscription to prevent minor timing gliches from failing the test, but not so
-                // much as to cause a further publication
-                + (period / 2);
-    }
-
-    final class DummyAnswer implements Answer<Void> {
-
-        int count = 0;
-
-        @Override
-        public Void answer(InvocationOnMock invocation) throws Throwable {
-            count++;
-            return null;
-        }
-    }
-
-    @Test(timeout = 3000)
-    public void timerIsStoppedWhenEnddateIsReached() throws InterruptedException, JoynrSendBufferFullException,
-                                                    JoynrMessageNotSentException, JsonGenerationException,
-                                                    JsonMappingException, IOException {
+    @Test(timeout = 4000)
+    public void publicationsSentUntilExpiryDate() throws InterruptedException, JoynrSendBufferFullException,
+                                                 JoynrMessageNotSentException, JsonGenerationException,
+                                                 JsonMappingException, IOException {
         LOG.debug("Starting PublicationTimersTest.timerIsStoppedWhenEnddateIsReached test");
+        int period = 500;
+        int subscriptionLength = 1100;
+        long expiryDate = System.currentTimeMillis() + subscriptionLength;
+        int publicationTtl = 1000;
+        PeriodicSubscriptionQos qos = new PeriodicSubscriptionQos(period, expiryDate, publicationTtl);
+        String subscriptionId = "subscriptionId";
+        String proxyId = "proxyId";
+        String providerId = "providerId";
 
-        DummyAnswer attributePollInterpreterAnswer = new DummyAnswer();
-        DummyAnswer messageSenderAnswer = new DummyAnswer();
-        Mockito.doAnswer(attributePollInterpreterAnswer)
-               .when(attributePollInterpreter)
-               .execute(Mockito.any(RequestCaller.class), Mockito.any(Method.class));
-        Mockito.doAnswer(messageSenderAnswer)
-               .when(messageSender)
-               .sendSubscriptionPublication(Mockito.eq(providerId),
-                                            Mockito.eq(proxyId),
-                                            Mockito.eq(publication),
-                                            Mockito.any(MessagingQos.class));
-
-        qos.setExpiryDate(getExpiryDate());
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(subscriptionId, attributeName, qos);
+        PublicationManager publicationManager = new PublicationManagerImpl(attributePollInterpreter,
+                                                                           messageSender,
+                                                                           cleanupScheduler);
         publicationManager.addSubscriptionRequest(proxyId, providerId, subscriptionRequest, requestCaller);
 
-        // the publication timer will send one publ ication at t=0, and then 5 further publications within the time
-        // alloted
-        // the publication will be sent at t=0, and then 5 further publications within the time alloted
-        while ((attributePollInterpreterAnswer.count != (numberOfPublications + 1) && messageSenderAnswer.count != (numberOfPublications + 1))
-                || (qos.getExpiryDate() + period < System.currentTimeMillis())) {
-            Thread.sleep(50);
-        }
+        Thread.sleep(subscriptionLength + period / 2);
 
-        LOG.debug("Number of attributePollInterpreter calls counted: " + attributePollInterpreterAnswer.count);
-        int oldAttributePollInterpreterCallCount = attributePollInterpreterAnswer.count;
-        int oldMessageSenderCallCount = messageSenderAnswer.count;
-        Thread.sleep(2 * period);
-        Assert.assertEquals(oldAttributePollInterpreterCallCount, attributePollInterpreterAnswer.count);
-        Assert.assertEquals(oldMessageSenderCallCount, messageSenderAnswer.count);
-        Mockito.verify(attributePollInterpreter, Mockito.times(oldAttributePollInterpreterCallCount))
-               .execute(Mockito.any(RequestCaller.class), Mockito.any(Method.class));
-        Mockito.verify(messageSender, Mockito.times(oldMessageSenderCallCount))
-               .sendSubscriptionPublication(Mockito.eq(providerId),
-                                            Mockito.eq(proxyId),
-                                            Mockito.eq(publication),
-                                            Mockito.any(MessagingQos.class));
-        Mockito.verifyNoMoreInteractions(attributePollInterpreter);
+        int publicationTimes = 1 + (subscriptionLength / period);
+        verify(messageSender, times(publicationTimes)).sendSubscriptionPublication(eq(providerId),
+                                                                                   eq(proxyId),
+                                                                                   any(SubscriptionPublication.class),
+                                                                                   any(MessagingQos.class));
+
+        Thread.sleep(subscriptionLength);
+        verifyNoMoreInteractions(messageSender);
     }
 
 }

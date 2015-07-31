@@ -33,7 +33,7 @@ public interface MessagingService {
     /**
      * Checks whether message receivers are registered for this channel.
      * 
-     * @param ccid
+     * @param ccid the channel id
      * @return <code>true</code> if there are message receivers on this channel,
      *         <code>false</code> if not.
      */
@@ -68,7 +68,7 @@ public interface MessagingService {
      * Check whether the messaging component was responsible before but the
      * channel has been assigned to a new messaging component in the mean time.
      * 
-     * @param ccid
+     * @param ccid the channel id
      * @return <code>true</code> if the messaging component was responsible
      *         before but isn't any more, <code>false</code> if it either never
      *         was responsible or still is responsible.

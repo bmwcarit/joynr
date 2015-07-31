@@ -1,0 +1,76 @@
+@startuml
+
+title Java Provider Hierarchy
+
+interface JoynrProvider {
+	+ProviderQos getProviderQos()
+	+Class<?> getProvidedInterface()
+	+String getInterfaceName()
+	+void registerAttributeListener(String attributeName, AttributeListener attributeListener)
+	+void unregisterAttributeListener(String attributeName, AttributeListener attributeListener)
+	+void registerBroadcastListener(String broadcastName, BroadcastListener attributeListener)
+	+void unregisterBroadcastListener(String broadcastName, BroadcastListener attributeListener)
+	+void addBroadcastFilter(BroadcastFilterImpl filter)
+}
+
+abstract AbstractJoynrProvider {
+	#void onAttributeValueChanged(String attributeName, Object value)
+	#void fireBroadcast(String broadcastName, List<BroadcastFilter> broadcastFilters, Object... values)
+	-- @Override --
+	+ProviderQos getProviderQos()
+	+void registerAttributeListener(String attributeName, AttributeListener attributeListener)
+	+void unregisterAttributeListener(String attributeName, AttributeListener attributeListener)
+	+void registerBroadcastListener(String broadcastName, BroadcastListener attributeListener)
+	+void unregisterBroadcastListener(String broadcastName, BroadcastListener attributeListener)
+	+void addBroadcastFilter(BroadcastFilterImpl filter)
+}
+
+interface "<Interface>Provider" {
+	+{static} String INTERFACE_NAME
+	__
+	.. Attributes ..
+	+Promise<...> get<Attribute>()
+	+Promise<...> set<Attribute>(...)
+	+void <attribute>Changed(...)
+	.. Methods ..
+	+Promise<...> <method>(...)
+	.. Broadcasts ..
+	+void fire<Broadcast>(...)
+}
+
+abstract "<Interface>AbstractProvider" {
+	-- @Override --
+	+Class<?> getProvidedInterface()
+	+String getInterfaceName()
+	.. Attributes ..
+	+void <attribute>Changed(...)
+	.. Broadcasts ..
+	+void fire<Broadcast>(...)
+}
+
+class "Default<Interface>Provider" {
+	#<Type> <attribute>
+	-- @Override --
+	.. Attributes ..
+	+Promise<...> get<Attribute>()
+	+Promise<...> set<Attribute>(...)
+	.. Methods ..
+	+Promise<...> <method>(...)
+}
+
+class "Option A: MyProviderImplementation" {
+	Put your provider implementation code here.
+}
+class "Option B: MyProivderImplementation" {
+	Put your provider implementation code here.
+}
+
+JoynrProvider <|-- "<Interface>Provider"
+JoynrProvider <|.. AbstractJoynrProvider
+AbstractJoynrProvider <|-- "<Interface>AbstractProvider"
+"<Interface>Provider" <|.. "<Interface>AbstractProvider"
+"<Interface>AbstractProvider" <|-- "Default<Interface>Provider"
+"<Interface>AbstractProvider" <|-- "Option A: MyProviderImplementation"
+"Default<Interface>Provider" <|-- "Option B: MyProivderImplementation"
+
+@enduml

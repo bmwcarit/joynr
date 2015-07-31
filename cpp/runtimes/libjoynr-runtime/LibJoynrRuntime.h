@@ -21,9 +21,9 @@
 #define LIBJOYNRRUNTIME_H
 
 #include <QtCore/QSemaphore>
-#include <QtCore/QString>
 #include <QtCore/QSharedPointer>
 #include <QtCore/QSettings>
+#include <string>
 
 #include "joynr/PrivateCopyAssign.h"
 
@@ -36,6 +36,7 @@
 #include "joynr/JoynrMessageSender.h"
 #include "joynr/CapabilitiesRegistrar.h"
 #include "runtimes/libjoynr-runtime/JoynrRuntimeExecutor.h"
+#include "joynr/SubscriptionManager.h"
 
 namespace joynr
 {
@@ -54,7 +55,7 @@ public:
     virtual ~LibJoynrRuntime();
 
     static LibJoynrRuntime* create(JoynrRuntimeExecutor* runtimeExecutor);
-    void unregisterCapability(QString participantId);
+    void unregisterProvider(const std::string& participantId);
 
 protected:
     ConnectorFactory* connectorFactory;
@@ -77,8 +78,8 @@ protected:
     virtual void startLibJoynrMessagingSkeleton(MessageRouter& messageRouter) = 0;
 
     void init(IMiddlewareMessagingStubFactory* middlewareMessagingStubFactory,
-              QSharedPointer<joynr::system::Address> libjoynrMessagingAddress,
-              QSharedPointer<joynr::system::Address> ccMessagingAddress);
+              QSharedPointer<joynr::system::QtAddress> libjoynrMessagingAddress,
+              QSharedPointer<joynr::system::QtAddress> ccMessagingAddress);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LibJoynrRuntime);

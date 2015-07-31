@@ -83,8 +83,7 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
 
     /**
      * If no notification was received within the last alert interval, a missed publication notification will be raised.
-     * 
-     * <p>
+     * <br>
      * <ul>
      * <li>The absolute minimum setting is {@value #MIN_ALERT_AFTER_INTERVAL} milliseconds. <br>
      * Any value less than this minimum will be treated at the absolute minimum setting of
@@ -93,7 +92,6 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
      * Any value bigger than this maximum will be treated at the absolute maximum setting of
      * {@value #MAX_ALERT_AFTER_INTERVAL} milliseconds.
      * </ul>
-     * 
      * <p>
      * Use {@link #clearAlertAfterInterval()} to remove missed publication notifications.
      * 
@@ -136,7 +134,7 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
     /**
      * The provider will periodically send notifications within the given interval in milliseconds.
      * 
-     * <p>
+     * <br>
      * <ul>
      * <li>The absolute minimum setting is {@value #MIN_PERIOD} milliseconds. <br>
      * Any value less than this minimum will be treated at the absolute minimum setting of {@value #MIN_PERIOD}

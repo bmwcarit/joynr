@@ -21,8 +21,7 @@
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrExport.h"
-
-#include <QString>
+#include "string"
 
 namespace joynr
 {
@@ -33,26 +32,26 @@ class IBroadcastListener;
 class JOYNR_EXPORT RequestCaller
 {
 public:
-    RequestCaller(const QString& interfaceName);
+    RequestCaller(const std::string& interfaceName);
     virtual ~RequestCaller();
 
-    QString getInterfaceName();
+    std::string getInterfaceName();
 
     // Get and set the attribute listeners listening on the provider
-    virtual void registerAttributeListener(const QString& attributeName,
+    virtual void registerAttributeListener(const std::string& attributeName,
                                            IAttributeListener* attributeListener) = 0;
-    virtual void unregisterAttributeListener(const QString& attributeName,
+    virtual void unregisterAttributeListener(const std::string& attributeName,
                                              IAttributeListener* attributeListener) = 0;
 
     // Get and set the broadcast listeners listening on the provider
-    virtual void registerBroadcastListener(const QString& broadcastName,
+    virtual void registerBroadcastListener(const std::string& broadcastName,
                                            IBroadcastListener* broadcastListener) = 0;
-    virtual void unregisterBroadcastListener(const QString& broadcastName,
+    virtual void unregisterBroadcastListener(const std::string& broadcastName,
                                              IBroadcastListener* broadcastListener) = 0;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(RequestCaller);
-    QString interfaceName;
+    std::string interfaceName;
 };
 
 } // namespace joynr

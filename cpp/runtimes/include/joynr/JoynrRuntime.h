@@ -33,21 +33,122 @@
 #include "joynr/LocalDiscoveryAggregator.h"
 #include "joynr/PublicationManager.h"
 #include "joynr/IBroadcastFilter.h"
+#include "joynr/TypeUtil.h"
 
-#include <QString>
 #include <QSharedPointer>
+#include <string>
 #include <cassert>
+#include <memory>
 
 namespace joynr
 {
 
+/**
+ * @brief Class representing the central Joynr Api object,
+ * used to register / unregister providers and create proxy builders
+ */
 class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrRuntime
 {
-
 public:
+    /**
+     * @brief Destroys a JoynrRuntime instance
+     */
+    virtual ~JoynrRuntime()
+    {
+        delete discoveryProxy;
+    }
+
+    /**
+     * @brief Registers a provider with the joynr communication framework.
+     * @tparam TIntfProvider The interface class of the provider to register. The corresponding
+     * template parameter of a Franca interface called "MyDemoIntf" is "MyDemoIntfProvider".
+     * @param domain The domain to register the provider on. Has to be
+     * identical at the client to be able to find the provider.
+     * @param provider The provider instance to register.
+     * @return The globaly unique participant ID of the provider. It is assigned by the joynr
+     * communication framework.
+     */
+    template <class TIntfProvider>
+    std::string registerProvider(const std::string& domain, std::shared_ptr<TIntfProvider> provider)
+    {
+        assert(capabilitiesRegistrar);
+        assert(!domain.empty());
+        return capabilitiesRegistrar->add<TIntfProvider>(domain, provider);
+    }
+
+    /**
+     * @brief Unregisters the provider from the joynr communication framework.
+     *
+     * Unregister a provider identified by its globaly unique participant ID. The participant ID is
+     * returned during the provider registration process.
+     * @param participantId The participantId of the provider which shall be unregistered
+     */
+    virtual void unregisterProvider(const std::string& participantId) = 0;
+
+    /**
+     * @brief Unregisters the provider from the joynr framework
+     * @tparam TIntfProvider The interface class of the provider to unregister. The corresponding
+     * template parameter of a Franca interface called "MyDemoIntf" is "MyDemoIntfProvider".
+     * @param domain The domain the provider was registered for.
+     * @param domain The domain to unregister the provider from. It must match the domain used
+     * during provider registration.
+     * @param provider The provider instance to unregister the provider from.
+     * @return The globaly unique participant ID of the provider. It is assigned by the joynr
+     * communication framework.
+     */
+    template <class TIntfProvider>
+    std::string unregisterProvider(const std::string& domain,
+                                   std::shared_ptr<TIntfProvider> provider)
+    {
+        assert(capabilitiesRegistrar);
+        assert(!domain.empty());
+        return capabilitiesRegistrar->remove<TIntfProvider>(domain, provider);
+    }
+
+    /**
+     * @brief Creates a new proxy builder for the given domain and interface.
+     *
+     * The proxy builder is used to create a proxy object for a remote provider. It is already
+     * bound to a domain and communication interface as defined in Franca. After configuration is
+     * finished, ProxyBuilder::build() is called to create the proxy object.
+     *
+     * @tparam TIntfProxy The interface class of the proxy to create. The corresponding template
+     * parameter of a Franca interface called "MyDemoIntf" is "MyDemoIntfProxy".
+     * @param domain The domain to connect this proxy to.
+     * @return Pointer to the proxybuilder<T> instance
+     * @return A proxy builder object that can be used to create proxies. The caller takes
+     * ownership of the returned object and must take care to clean up resources properly.
+     */
+    template <class TIntfProxy>
+    ProxyBuilder<TIntfProxy>* createProxyBuilder(const std::string& domain)
+    {
+        if (!proxyFactory) {
+            throw JoynrException("Exception in JoynrRuntime: Creating a proxy before "
+                                 "startMessaging was called is not yet supported.");
+        }
+        ProxyBuilder<TIntfProxy>* builder = new ProxyBuilder<TIntfProxy>(
+                proxyFactory, *discoveryProxy, domain, dispatcherAddress, messageRouter);
+        return builder;
+    }
+
+    /**
+     * @brief Create a JoynrRuntime object
+     * @param pathToLibjoynrSettings
+     * @param pathToMessagingSettings
+     * @return pointer to a JoynrRuntime instance
+     */
+    static JoynrRuntime* createRuntime(const std::string& pathToLibjoynrSettings,
+                                       const std::string& pathToMessagingSettings = "");
+
+protected:
     // NOTE: The implementation of the constructor and destructor must be inside this
     // header file because there are multiple implementations (cpp files) in folder
     // cluster-controller-runtime and libjoynr-runtime.
+
+    /**
+     * @brief Constructs a JoynrRuntime instance
+     * @param settings The system service settings
+     */
     JoynrRuntime(QSettings& settings)
             : proxyFactory(NULL),
               participantIdStorage(NULL),
@@ -61,56 +162,24 @@ public:
         systemServicesSettings.printSettings();
     }
 
-    virtual ~JoynrRuntime()
-    {
-        delete discoveryProxy;
-    }
-
-    template <class T>
-    QString registerCapability(const QString& domain,
-                               QSharedPointer<T> provider,
-                               const QString& authenticationToken)
-    {
-        assert(capabilitiesRegistrar);
-        assert(domain != "");
-        return capabilitiesRegistrar->add<T>(domain, provider, authenticationToken);
-    }
-
-    virtual void unregisterCapability(QString participantId) = 0;
-
-    template <class T>
-    QString unregisterCapability(const QString& domain,
-                                 QSharedPointer<T> provider,
-                                 const QString& authenticationToken)
-    {
-        assert(capabilitiesRegistrar);
-        assert(domain != "");
-        return capabilitiesRegistrar->remove<T>(domain, provider, authenticationToken);
-    }
-
-    template <class T>
-    ProxyBuilder<T>* getProxyBuilder(const QString& domain)
-    {
-        if (!proxyFactory) {
-            throw JoynrException("Exception in JoynrRuntime: Creating a proxy before "
-                                 "startMessaging was called is not yet supported.");
-        }
-        ProxyBuilder<T>* builder = new ProxyBuilder<T>(
-                proxyFactory, *discoveryProxy, domain, dispatcherAddress, messageRouter);
-        return builder;
-    }
-
-    static JoynrRuntime* createRuntime(const QString& pathToLibjoynrSettings,
-                                       const QString& pathToMessagingSettings = "");
-
-protected:
+    /** @brief Factory for creating proxy instances */
     ProxyFactory* proxyFactory;
+    /** @brief Creates and persists participant id */
     QSharedPointer<ParticipantIdStorage> participantIdStorage;
+    /** @brief Class that handles provider registration/deregistration */
     CapabilitiesRegistrar* capabilitiesRegistrar;
+    /** @brief System services settings */
     SystemServicesSettings systemServicesSettings;
-    QSharedPointer<joynr::system::Address> dispatcherAddress;
+    /** @brief Address of the dispatcher */
+    QSharedPointer<joynr::system::QtAddress> dispatcherAddress;
+    /** @brief MessageRouter instance */
     QSharedPointer<MessageRouter> messageRouter;
+    /** @brief Wrapper for discovery proxies */
     LocalDiscoveryAggregator* discoveryProxy;
+    /**
+     * @brief Publication manager receives subscription requests and prepares publications
+     * which are send back to the subscription manager.
+     */
     PublicationManager* publicationManager;
 
 private:

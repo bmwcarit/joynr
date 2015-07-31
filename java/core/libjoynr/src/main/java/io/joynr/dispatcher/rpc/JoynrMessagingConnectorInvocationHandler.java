@@ -30,6 +30,7 @@ import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ConnectorInvocationHandler;
 import io.joynr.proxy.Future;
+import io.joynr.proxy.ICallback;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
 import io.joynr.proxy.invocation.UnsubscribeInvocation;
@@ -109,7 +110,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         }
 
         int callbackIndex = methodMetaInformation.getCallbackIndex();
-        Callback<?> callback = (Callback<?>) params[callbackIndex];
+        ICallback callback = (ICallback) params[callbackIndex];
 
         Object[] paramsWithoutCallback = new Object[params.length - 1];
         copyArrayWithoutElement(params, paramsWithoutCallback, callbackIndex);
@@ -172,7 +173,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         if (method.getReturnType().equals(void.class)) {
             return null;
         }
-        return RpcUtils.reconstructReturnedObject(method, methodMetaInformation, response);
+        return RpcUtils.reconstructReturnedObject(method, methodMetaInformation, response.getResponse().toArray());
 
     }
 
@@ -248,6 +249,12 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
                                               requestObject,
                                               messagingQos,
                                               true);
+    }
+
+    @Override
+    public void unregisterSubscription(String subscriptionId) {
+        subscriptionManager.unregisterSubscription(subscriptionId);
+
     }
 
 }

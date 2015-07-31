@@ -57,7 +57,8 @@ public abstract class AbstractBounceProxyControllerServletConfig extends Abstrac
      * Returns a list of modules that defines which classes are bound for
      * persistence related task.
      * 
-     * @return
+     * @return the list of modules that defines which classes are bound
+     * for persistence related task
      */
     protected abstract List<AbstractModule> getPersistenceModules();
 
@@ -83,7 +84,7 @@ public abstract class AbstractBounceProxyControllerServletConfig extends Abstrac
      * that start with a joynr pattern
      * {@link #PATTERN_STARTS_WITH_JOYNR_BOUNCEPROXY_CONTROLLER}.
      * 
-     * @return
+     * @return system properties that start with a joynr pattern
      */
     protected Properties getJoynrSystemProperties() {
         return PropertyLoader.getPropertiesWithPattern(System.getProperties(),

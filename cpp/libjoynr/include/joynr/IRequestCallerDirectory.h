@@ -19,7 +19,7 @@
 #ifndef IREQUESTCALLERDIRECTORY_H
 #define IREQUESTCALLERDIRECTORY_H
 
-#include <QString>
+#include <string>
 
 namespace joynr
 {
@@ -32,8 +32,8 @@ public:
     virtual ~IRequestCallerDirectory()
     {
     }
-    virtual QSharedPointer<RequestCaller> lookupRequestCaller(const QString& participantId) = 0;
-    virtual bool containsRequestCaller(const QString& participantId) = 0;
+    virtual QSharedPointer<RequestCaller> lookupRequestCaller(const std::string& participantId) = 0;
+    virtual bool containsRequestCaller(const std::string& participantId) = 0;
 };
 
 } // namespace joynr

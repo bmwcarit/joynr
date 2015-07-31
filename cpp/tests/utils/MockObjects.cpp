@@ -21,9 +21,13 @@
 
 using namespace joynr;
 
-static const QString INTERFACE_NAME("test/interface");
-
-const QString IMockProviderInterface::getInterfaceName() 
+const std::string& IMockProviderInterface::INTERFACE_NAME()
 {
-	return INTERFACE_NAME;
+    static const std::string INTERFACE_NAME("test/interface");
+    return INTERFACE_NAME;
+}
+
+std::string MockProvider::getInterfaceName() const
+{
+    return INTERFACE_NAME();
 }

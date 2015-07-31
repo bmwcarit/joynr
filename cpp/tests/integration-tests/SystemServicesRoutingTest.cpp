@@ -19,8 +19,10 @@
 #include "PrettyPrint.h"
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <string>
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "tests/utils/MockObjects.h"
+#include "joynr/TypeUtil.h"
 
 #include "joynr/system/RoutingProxy.h"
 
@@ -30,7 +32,7 @@ class SystemServicesRoutingTest : public ::testing::Test {
 public:
     QString settingsFilename;
     QSettings* settings;
-    QString routingDomain;
+    std::string routingDomain;
     QString routingProviderParticipantId;
     JoynrClusterControllerRuntime* runtime;
     IMessageReceiver* mockMessageReceiver;
@@ -53,12 +55,12 @@ public:
     {
         SystemServicesSettings systemSettings(*settings);
         systemSettings.printSettings();
-        routingDomain = systemSettings.getDomain();
+        routingDomain = TypeUtil::toStd(systemSettings.getDomain());
         routingProviderParticipantId = systemSettings.getCcRoutingProviderParticipantId();
         
         discoveryQos.setCacheMaxAge(1000);
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
-        discoveryQos.addCustomParameter("fixedParticipantId", routingProviderParticipantId);
+        discoveryQos.addCustomParameter("fixedParticipantId", TypeUtil::toStd(routingProviderParticipantId));
         discoveryQos.setDiscoveryTimeout(50);
 
         QString channelId("SystemServicesRoutingTest.ChannelId");
@@ -82,7 +84,7 @@ public:
 
     void SetUp(){
         routingProxyBuilder = runtime
-                ->getProxyBuilder<joynr::system::RoutingProxy>(routingDomain);
+                ->createProxyBuilder<joynr::system::RoutingProxy>(routingDomain);
     }
 
     void TearDown(){
@@ -101,7 +103,7 @@ TEST_F(SystemServicesRoutingTest, routingProviderIsAvailable)
 {
     EXPECT_NO_THROW(
         routingProxy = routingProxyBuilder
-                ->setRuntimeQos(MessagingQos(5000))
+                ->setMessagingQos(MessagingQos(5000))
                 ->setCached(false)
                 ->setDiscoveryQos(discoveryQos)
                 ->build();
@@ -111,15 +113,14 @@ TEST_F(SystemServicesRoutingTest, routingProviderIsAvailable)
 TEST_F(SystemServicesRoutingTest, unknowParticipantIsNotResolvable)
 {
     routingProxy = routingProxyBuilder
-            ->setRuntimeQos(MessagingQos(5000))
+            ->setMessagingQos(MessagingQos(5000))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
-    RequestStatus status;
-    QString participantId("SystemServicesRoutingTest.ParticipantId.A");
+    std::string participantId("SystemServicesRoutingTest.ParticipantId.A");
     bool isResolvable = false;
-    routingProxy->resolveNextHop(status, isResolvable, participantId);
+    RequestStatus status(routingProxy->resolveNextHop(isResolvable, participantId));
     EXPECT_EQ(RequestStatusCode::OK, status.getCode());
     EXPECT_FALSE(isResolvable);
 }
@@ -128,23 +129,22 @@ TEST_F(SystemServicesRoutingTest, unknowParticipantIsNotResolvable)
 TEST_F(SystemServicesRoutingTest, addNextHop)
 {
     routingProxy = routingProxyBuilder
-            ->setRuntimeQos(MessagingQos(5000))
+            ->setMessagingQos(MessagingQos(5000))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
-    RequestStatus status;
-    QString participantId("SystemServicesRoutingTest.ParticipantId.A");
-    joynr::system::ChannelAddress address("SystemServicesRoutingTest.ChanneldId.A");
+    std::string participantId("SystemServicesRoutingTest.ParticipantId.A");
+    joynr::system::RoutingTypes::ChannelAddress address("SystemServicesRoutingTest.ChanneldId.A");
     bool isResolvable = false;
 
-    routingProxy->resolveNextHop(status, isResolvable, participantId);
+    RequestStatus status(routingProxy->resolveNextHop(isResolvable, participantId));
     EXPECT_EQ(RequestStatusCode::OK, status.getCode());
     EXPECT_FALSE(isResolvable);
 
-    routingProxy->addNextHop(status, participantId, address);
+    status = routingProxy->addNextHop(participantId, address);
     EXPECT_EQ(RequestStatusCode::OK, status.getCode());
-    routingProxy->resolveNextHop(status, isResolvable, participantId);
+    status = routingProxy->resolveNextHop(isResolvable, participantId);
     EXPECT_EQ(RequestStatusCode::OK, status.getCode());
     EXPECT_TRUE(isResolvable);
 }
@@ -152,29 +152,28 @@ TEST_F(SystemServicesRoutingTest, addNextHop)
 TEST_F(SystemServicesRoutingTest, removeNextHop)
 {
     routingProxy = routingProxyBuilder
-            ->setRuntimeQos(MessagingQos(5000))
+            ->setMessagingQos(MessagingQos(5000))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
-    RequestStatus status;
-    QString participantId("SystemServicesRoutingTest.ParticipantId.A");
-    joynr::system::ChannelAddress address("SystemServicesRoutingTest.ChanneldId.A");
+    std::string participantId("SystemServicesRoutingTest.ParticipantId.A");
+    joynr::system::RoutingTypes::ChannelAddress address("SystemServicesRoutingTest.ChanneldId.A");
     bool isResolvable = false;
 
-    routingProxy->resolveNextHop(status, isResolvable, participantId);
+    RequestStatus status(routingProxy->resolveNextHop(isResolvable, participantId));
     EXPECT_EQ(RequestStatusCode::OK, status.getCode());
     EXPECT_FALSE(isResolvable);
 
-    routingProxy->addNextHop(status, participantId, address);
+    status = routingProxy->addNextHop(participantId, address);
     EXPECT_EQ(RequestStatusCode::OK, status.getCode());
-    routingProxy->resolveNextHop(status, isResolvable, participantId);
+    status = routingProxy->resolveNextHop(isResolvable, participantId);
     EXPECT_EQ(RequestStatusCode::OK, status.getCode());
     EXPECT_TRUE(isResolvable);
 
-    routingProxy->removeNextHop(status, participantId);
+    status = routingProxy->removeNextHop(participantId);
     EXPECT_EQ(RequestStatusCode::OK, status.getCode());
-    routingProxy->resolveNextHop(status, isResolvable, participantId);
+    status = routingProxy->resolveNextHop(isResolvable, participantId);
     EXPECT_EQ(RequestStatusCode::OK, status.getCode());
     EXPECT_FALSE(isResolvable);
 }

@@ -31,15 +31,14 @@ Logger* AbstractJoynrMessagingConnector::logger =
 
 AbstractJoynrMessagingConnector::AbstractJoynrMessagingConnector(
         IJoynrMessageSender* joynrMessageSender,
-        SubscriptionManager* subscriptionManager,
-        const QString& domain,
-        const QString& interfaceName,
-        const QString proxyParticipantId,
-        const QString& providerParticipantId,
+        ISubscriptionManager* subscriptionManager,
+        const std::string& domain,
+        const std::string& interfaceName,
+        const std::string proxyParticipantId,
+        const std::string& providerParticipantId,
         const MessagingQos& qosSettings,
         IClientCache* cache,
-        bool cached,
-        const qint64 reqCacheDataFreshness_ms)
+        bool cached)
         : joynrMessageSender(joynrMessageSender),
           subscriptionManager(subscriptionManager),
           domain(domain),
@@ -48,8 +47,7 @@ AbstractJoynrMessagingConnector::AbstractJoynrMessagingConnector(
           providerParticipantId(providerParticipantId),
           qosSettings(qosSettings),
           cache(cache),
-          cached(cached),
-          reqCacheDataFreshness_ms(reqCacheDataFreshness_ms)
+          cached(cached)
 {
 }
 
@@ -58,11 +56,9 @@ bool AbstractJoynrMessagingConnector::usesClusterController() const
     return true;
 }
 
-void AbstractJoynrMessagingConnector::operationRequest(RequestStatus& status,
-                                                       QSharedPointer<IReplyCaller> replyCaller,
+void AbstractJoynrMessagingConnector::operationRequest(QSharedPointer<IReplyCaller> replyCaller,
                                                        const Request& request)
 {
-    status.setCode(RequestStatusCode::IN_PROGRESS);
     sendRequest(request, replyCaller);
 }
 

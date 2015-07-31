@@ -18,10 +18,11 @@
  */
 #include "joynr/DefaultArbitrator.h"
 #include "joynr/system/IDiscovery.h"
-#include "joynr/system/DiscoveryEntry.h"
-#include "joynr/system/ChannelAddress.h"
+#include "joynr/types/QtDiscoveryEntry.h"
+#include "joynr/system/QtChannelAddress.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/RequestStatus.h"
+#include <vector>
 
 namespace joynr
 {
@@ -29,8 +30,8 @@ namespace joynr
 joynr_logging::Logger* DefaultArbitrator::logger =
         joynr_logging::Logging::getInstance()->getLogger("DIS", "DefaultArbitrator");
 
-DefaultArbitrator::DefaultArbitrator(const QString& domain,
-                                     const QString& interfaceName,
+DefaultArbitrator::DefaultArbitrator(const std::string& domain,
+                                     const std::string& interfaceName,
                                      joynr::system::IDiscoverySync& discoveryProxy,
                                      const DiscoveryQos& discoveryQos)
         : ProviderArbitrator(domain, interfaceName, discoveryProxy, discoveryQos)
@@ -39,31 +40,31 @@ DefaultArbitrator::DefaultArbitrator(const QString& domain,
 
 void DefaultArbitrator::attemptArbitration()
 {
-    joynr::RequestStatus status;
-    QList<joynr::system::DiscoveryEntry> result;
-    discoveryProxy.lookup(status, result, domain, interfaceName, systemDiscoveryQos);
+    std::vector<joynr::types::DiscoveryEntry> result;
+    joynr::RequestStatus status(
+            discoveryProxy.lookup(result, domain, interfaceName, systemDiscoveryQos));
     if (status.successful()) {
         receiveCapabilitiesLookupResults(result);
     } else {
         LOG_ERROR(logger,
                   QString("Unable to lookup provider (domain: %1, interface: %2) "
                           "from discovery. Status code: %3.")
-                          .arg(domain)
-                          .arg(interfaceName)
-                          .arg(status.getCode().toString()));
+                          .arg(QString::fromStdString(domain))
+                          .arg(QString::fromStdString(interfaceName))
+                          .arg(QString::fromStdString(status.getCode().toString())));
     }
 }
 
 void DefaultArbitrator::receiveCapabilitiesLookupResults(
-        const QList<joynr::system::DiscoveryEntry>& discoveryEntries)
+        const std::vector<joynr::types::DiscoveryEntry>& discoveryEntries)
 {
     // Check for empty results
     if (discoveryEntries.size() == 0)
         return;
 
     // default arbitrator picks first entry
-    joynr::system::DiscoveryEntry discoveredProvider = discoveryEntries.first();
-    joynr::system::CommunicationMiddleware::Enum preferredConnection(
+    joynr::types::DiscoveryEntry discoveredProvider = discoveryEntries.front();
+    joynr::types::CommunicationMiddleware::Enum preferredConnection(
             selectPreferredCommunicationMiddleware(discoveredProvider.getConnections()));
     updateArbitrationStatusParticipantIdAndAddress(ArbitrationStatus::ArbitrationSuccessful,
                                                    discoveredProvider.getParticipantId(),

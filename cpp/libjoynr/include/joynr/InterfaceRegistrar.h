@@ -26,7 +26,7 @@
 
 #include <QMutex>
 #include <QHash>
-#include <QString>
+#include <string>
 
 namespace joynr
 {
@@ -50,17 +50,17 @@ public:
       * Register a request interpreter of type T for the interface with the given name
       */
     template <class T>
-    void registerRequestInterpreter(const QString& interfaceName);
+    void registerRequestInterpreter(const std::string& interfaceName);
 
     /**
       * Unregister a request interpreter for the given interface
       */
-    void unregisterRequestInterpreter(const QString& interfaceName);
+    void unregisterRequestInterpreter(const std::string& interfaceName);
 
     /**
       * Get a request interpreter for the given interface
       */
-    QSharedPointer<IRequestInterpreter> getRequestInterpreter(const QString& interfaceName);
+    QSharedPointer<IRequestInterpreter> getRequestInterpreter(const std::string& interfaceName);
 
     /**
       * Reset the InterfaceRegistrar - for use in tests
@@ -82,15 +82,15 @@ private:
 };
 
 template <class T>
-void InterfaceRegistrar::registerRequestInterpreter(const QString& interfaceName)
+void InterfaceRegistrar::registerRequestInterpreter(const std::string& interfaceName)
 {
     QMutexLocker locker(&requestInterpretersMutex);
-
-    if (!requestInterpreters.contains(interfaceName)) {
-        requestInterpreters.insert(interfaceName, QSharedPointer<IRequestInterpreter>(new T()));
-        requestInterpreterCounts.insert(interfaceName, 1);
+    QString qInterfaceName(QString::fromStdString(interfaceName));
+    if (!requestInterpreters.contains(qInterfaceName)) {
+        requestInterpreters.insert(qInterfaceName, QSharedPointer<IRequestInterpreter>(new T()));
+        requestInterpreterCounts.insert(qInterfaceName, 1);
     } else {
-        ++requestInterpreterCounts[interfaceName];
+        ++requestInterpreterCounts[qInterfaceName];
     }
 }
 

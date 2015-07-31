@@ -67,6 +67,12 @@ public:
      */
     static const QString& HEADER_MESSAGE_ID();
     /**
+     * @brief HEADER_CREATOR_USER_ID The "creator user ID" header contains a unique user ID
+     * of the message creator.
+     * @return the name/key for the "creator user ID" header.
+     */
+    static const QString& HEADER_CREATOR_USER_ID();
+    /**
      * @brief HEADER_NAME_TO The "to" header stores the receiver participant ID.
      * @return the name/key for the "to" header.
      */
@@ -170,6 +176,28 @@ public:
      */
     void setHeaderMessageId(const QString& msgId);
 
+    /**
+     * @brief containsHeaderCreatorUserId Tests whether the "creator user ID" header of the message
+     * is set or not.
+     * @return true, if the "creator user ID" header is set; false, otherwise.
+     * @see JoynrMessage::HEADER_CREATOR_USER_ID()
+     */
+    bool containsHeaderCreatorUserId() const;
+    /**
+     * @brief getHeaderCreatorUserId Gets the message creator user ID. Use
+     * JoynrMessage::containsHeaderCreatorUserId() to check whether the header is available or not.
+     * @return the "creator user ID" header of the message.
+     * @see JoynrMessage::HEADER_CREATOR_USER_ID()
+     */
+    QString getHeaderCreatorUserId() const;
+    /**
+     * @brief setHeaderCreatorUserId Sets the ID of the message. If the header is already set, its
+     * value is replaced with the new one. Use JoynrMessage::containsHeaderCreatorUserId() to check
+     * whether the header is already set or not.
+     * @param creatorUserId the "creator user ID" header to be set on the message.
+     * @see JoynrMessage::HEADER_CREATOR_USER_ID()
+     */
+    void setHeaderCreatorUserId(const QString& creatorUserId);
     /**
      * @brief containsHeaderTo Tests whether the "to" header of the message is set or not.
      * @return true, if the "to" header is set; false, otherwise.

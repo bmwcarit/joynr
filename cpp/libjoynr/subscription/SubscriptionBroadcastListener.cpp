@@ -33,7 +33,7 @@ SubscriptionBroadcastListener::SubscriptionBroadcastListener(const QString& subs
 
 void SubscriptionBroadcastListener::broadcastOccurred(
         const QList<QVariant>& values,
-        const QList<QSharedPointer<IBroadcastFilter>>& filters)
+        const QList<std::shared_ptr<IBroadcastFilter>>& filters)
 {
     publicationManager.broadcastOccurred(subscriptionId, values, filters);
 }

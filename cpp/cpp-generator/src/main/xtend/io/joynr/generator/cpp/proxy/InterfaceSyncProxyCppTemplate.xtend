@@ -18,112 +18,110 @@ package io.joynr.generator.cpp.proxy
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
-import org.franca.core.franca.FInterface
 import io.joynr.generator.util.InterfaceTemplate
+import org.franca.core.franca.FInterface
 
 class InterfaceSyncProxyCppTemplate  implements InterfaceTemplate{
-	@Inject	extension JoynrCppGeneratorExtensions
+	@Inject extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
+	@Inject extension CppStdTypeUtil
 
-	override generate(FInterface fInterface) {
-		val interfaceName =  fInterface.joynrName
-		val className = interfaceName + "Proxy"
-		val syncClassName = interfaceName + "SyncProxy"
-		'''
-		«warning()»
-		
-		#include "«getPackagePathWithJoynrPrefix(fInterface, "/")»/«syncClassName».h"
-		#include "joynr/Request.h"
-		#include "joynr/Reply.h"
-		#include "joynr/Dispatcher.h"
-		#include "joynr/DispatcherUtils.h"
-		#include "joynr/exceptions.h"
-		
-		«FOR datatype: getRequiredIncludesFor(fInterface)»
-			#include "«datatype»"
-		«ENDFOR»
-		
-		«getNamespaceStarter(fInterface)» 
-		// The proxies will contain all arbitration checks
-		// the connectors will contain the JSON related code
-		
-		«syncClassName»::«syncClassName»(
-		        QSharedPointer<joynr::system::Address> messagingAddress,
-		        joynr::ConnectorFactory* connectorFactory,
-		        joynr::IClientCache *cache,
-		        const QString &domain,
-		        const joynr::ProxyQos &proxyQos,
-		        const joynr::MessagingQos &qosSettings,
-		        bool cached
-		) :
-		        joynr::ProxyBase(connectorFactory, cache, domain, getInterfaceName(), proxyQos, qosSettings, cached),
-		        «className»Base(messagingAddress, connectorFactory, cache, domain, proxyQos, qosSettings, cached)
+	override generate(FInterface fInterface)
+'''
+«val interfaceName =  fInterface.joynrName»
+«val className = interfaceName + "Proxy"»
+«val syncClassName = interfaceName + "SyncProxy"»
+«warning()»
+
+#include "«getPackagePathWithJoynrPrefix(fInterface, "/")»/«syncClassName».h"
+#include "joynr/Request.h"
+#include "joynr/Reply.h"
+#include "joynr/Dispatcher.h"
+#include "joynr/DispatcherUtils.h"
+#include "joynr/exceptions.h"
+#include "joynr/RequestStatus.h"
+
+«FOR datatype: getRequiredIncludesFor(fInterface)»
+	#include «datatype»
+«ENDFOR»
+
+«getNamespaceStarter(fInterface)»
+// The proxies will contain all arbitration checks
+// the connectors will contain the JSON related code
+
+«syncClassName»::«syncClassName»(
+		QSharedPointer<joynr::system::QtAddress> messagingAddress,
+		joynr::ConnectorFactory* connectorFactory,
+		joynr::IClientCache *cache,
+		const std::string &domain,
+		const joynr::MessagingQos &qosSettings,
+		bool cached
+) :
+		joynr::ProxyBase(connectorFactory, cache, domain, INTERFACE_NAME(), qosSettings, cached),
+		«className»Base(messagingAddress, connectorFactory, cache, domain, qosSettings, cached)
+{
+}
+
+«FOR attribute: getAttributes(fInterface)»
+	«var attributeName = attribute.joynrName»
+	«var attributeType = attribute.typeName»
+	«var getAttribute = "get" + attributeName.toFirstUpper»
+	«var setAttribute = "set" + attributeName.toFirstUpper»
+	«IF attribute.readable»
+		joynr::RequestStatus «syncClassName»::«getAttribute»(«attributeType»& result)
 		{
+			if (connector==NULL){
+				«val errorMsg = "proxy cannot invoke " + getAttribute + " because the communication end partner is not (yet) known"»
+				LOG_WARN(logger, "«errorMsg»");
+				return joynr::RequestStatus(joynr::RequestStatusCode::ERROR, "«errorMsg»");
+			}
+			else{
+				return connector->«getAttribute»(result);
+			}
 		}
-
-		«FOR attribute: getAttributes(fInterface)»
-			«var attributeName = attribute.joynrName»
-			«var attributeType = getMappedDatatypeOrList(attribute)» 
-			«var getAttribute = "get" + attributeName.toFirstUpper» 
-			«var setAttribute = "set" + attributeName.toFirstUpper» 
-			«IF attribute.readable»
-			void «syncClassName»::«getAttribute»(joynr::RequestStatus& status, «attributeType»& result)
-			{
-			    if (connector==NULL){
-			        LOG_WARN(logger, "proxy cannot invoke «getAttribute», because the communication end partner is not (yet) known");
-			    }
-			    else{
-			        connector->«getAttribute»(status, result);
-			    }
+	«ENDIF»
+	«IF attribute.writable»
+		joynr::RequestStatus «syncClassName»::«setAttribute»(const «attributeType»& value)
+		{
+			if (connector==NULL){
+				«val errorMsg = "proxy cannot invoke " + setAttribute + " because the communication end partner is not (yet) known"»
+				LOG_WARN(logger, "«errorMsg»");
+				return joynr::RequestStatus(joynr::RequestStatusCode::ERROR, "«errorMsg»");
 			}
-			«ENDIF»
-
-			«IF attribute.writable»
-			void «syncClassName»::«setAttribute»(joynr::RequestStatus& status, const «attributeType»& value)
-			{
-			    if (connector==NULL){
-			        LOG_WARN(logger, "proxy cannot invoke «setAttribute», because the communication end partner is not (yet) known");
-			    }
-			    else{
-			        connector->«setAttribute»(status, value);
-			    }
+			else{
+				return connector->«setAttribute»(value);
 			}
-			«ENDIF»
-			
-		«ENDFOR»
-		«FOR method: getMethods(fInterface)»
-			«var methodName = method.name»
-			«var paramsSignature = prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»
-			«var params = prependCommaIfNotEmpty(getCommaSeperatedUntypedParameterList(method))»
-			/*
-			 * «methodName»
-			 */
-			«IF getMappedOutputParameter(method).head=="void"»
-			    void «syncClassName»::«methodName»(joynr::RequestStatus& status «paramsSignature»)
-			    {
-			        if (connector==NULL){
-			            LOG_WARN(logger, "proxy cannot invoke «methodName» because the communication end partner is not (yet) known");
-			        }
-			        else{
-			            connector->«methodName»(status «params»);
-			        }
-			    }	
-			«ELSE»
-			    void «syncClassName»::«methodName»(joynr::RequestStatus& status, «getMappedOutputParameter(method).head» &result «paramsSignature»)
-			    {
-			        if (connector==NULL){
-			            LOG_WARN(logger, "proxy cannot invoke «methodName» because the communication end partner is not (yet) known");
-			        }
-			        else{
-			            connector->«methodName»(status, result «params»);
-			        }
-			    }
-		    «ENDIF»
+		}
+	«ENDIF»
 
-		«ENDFOR»
-		«getNamespaceEnder(fInterface)»
-		'''
-	}	
+«ENDFOR»
+«FOR method: getMethods(fInterface)»
+	«var methodName = method.name»
+	«var inputTypedParamList = method.commaSeperatedTypedConstInputParameterList»
+	«val outputTypedParamList = method.commaSeperatedTypedOutputParameterList»
+	«val outputUntypedParamList = getCommaSeperatedUntypedOutputParameterList(method)»
+	«var params = getCommaSeperatedUntypedInputParameterList(method)»
+	/*
+	 * «methodName»
+	 */
+
+	joynr::RequestStatus «syncClassName»::«methodName»(
+		«outputTypedParamList»«IF method.outputParameters.size > 0 && method.inputParameters.size > 0», «ENDIF»«inputTypedParamList»)
+	{
+		if (connector==NULL){
+			«val errorMsg = "proxy cannot invoke " + methodName + " because the communication end partner is not (yet) known"»
+			LOG_WARN(logger, "«errorMsg»");
+			return joynr::RequestStatus(joynr::RequestStatusCode::ERROR, "«errorMsg»");
+		}
+		else{
+			return connector->«methodName»(«outputUntypedParamList»«IF method.outputParameters.size > 0 && method.inputParameters.size > 0», «ENDIF»«params»);
+		}
+	}
+
+«ENDFOR»
+«getNamespaceEnder(fInterface)»
+'''
 }

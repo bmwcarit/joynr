@@ -20,44 +20,44 @@
 
 using namespace joynr;
 
-const qint64& PeriodicSubscriptionQos::MIN_PERIOD()
+const int64_t& PeriodicSubscriptionQos::MIN_PERIOD()
 {
-    static qint64 minPeriod = 50;
+    static int64_t minPeriod = 50;
     return minPeriod;
 }
 
-const qint64& PeriodicSubscriptionQos::MAX_PERIOD()
+const int64_t& PeriodicSubscriptionQos::MAX_PERIOD()
 {
-    static qint64 maxPeriod = 2592000000UL;
+    static int64_t maxPeriod = 2592000000UL;
     return maxPeriod;
 }
 
-const qint64& PeriodicSubscriptionQos::MAX_ALERT_AFTER_INTERVAL()
+const int64_t& PeriodicSubscriptionQos::MAX_ALERT_AFTER_INTERVAL()
 {
-    static qint64 maxAlertAfterInterval = 2592000000UL;
+    static int64_t maxAlertAfterInterval = 2592000000UL;
     return maxAlertAfterInterval;
 }
 
-const qint64& PeriodicSubscriptionQos::DEFAULT_ALERT_AFTER_INTERVAL()
+const int64_t& PeriodicSubscriptionQos::DEFAULT_ALERT_AFTER_INTERVAL()
 {
     return NO_ALERT_AFTER_INTERVAL();
 }
 
-const qint64& PeriodicSubscriptionQos::NO_ALERT_AFTER_INTERVAL()
+const int64_t& PeriodicSubscriptionQos::NO_ALERT_AFTER_INTERVAL()
 {
-    static qint64 noAlertAfterInterval = 0;
+    static int64_t noAlertAfterInterval = 0;
     return noAlertAfterInterval;
 }
 
 PeriodicSubscriptionQos::PeriodicSubscriptionQos()
-        : SubscriptionQos(), period(-1), alterAfterInterval(DEFAULT_ALERT_AFTER_INTERVAL())
+        : SubscriptionQos(), period(-1), alertAfterInterval(DEFAULT_ALERT_AFTER_INTERVAL())
 {
 }
 
-PeriodicSubscriptionQos::PeriodicSubscriptionQos(const qint64& validity,
-                                                 const qint64& period,
-                                                 const qint64& alertAfterInterval)
-        : SubscriptionQos(validity), period(-1), alterAfterInterval(DEFAULT_ALERT_AFTER_INTERVAL())
+PeriodicSubscriptionQos::PeriodicSubscriptionQos(const int64_t& validity,
+                                                 const int64_t& period,
+                                                 const int64_t& alertAfterInterval)
+        : SubscriptionQos(validity), period(-1), alertAfterInterval(DEFAULT_ALERT_AFTER_INTERVAL())
 {
     setPeriod(period);
     setAlertAfterInterval(alertAfterInterval);
@@ -66,11 +66,11 @@ PeriodicSubscriptionQos::PeriodicSubscriptionQos(const qint64& validity,
 PeriodicSubscriptionQos::PeriodicSubscriptionQos(const PeriodicSubscriptionQos& other)
         : SubscriptionQos(other),
           period(other.getPeriod()),
-          alterAfterInterval(other.getAlertAfterInterval())
+          alertAfterInterval(other.getAlertAfterInterval())
 {
 }
 
-void PeriodicSubscriptionQos::setPeriod(const qint64& period)
+void PeriodicSubscriptionQos::setPeriod(const int64_t& period)
 {
     this->period = period;
     if (this->period > MAX_PERIOD()) {
@@ -79,35 +79,35 @@ void PeriodicSubscriptionQos::setPeriod(const qint64& period)
     if (this->period < MIN_PERIOD()) {
         this->period = MIN_PERIOD();
     }
-    if (this->alterAfterInterval != 0 && this->alterAfterInterval < period) {
-        this->alterAfterInterval = period;
+    if (this->alertAfterInterval != 0 && this->alertAfterInterval < period) {
+        this->alertAfterInterval = period;
     }
 }
 
-qint64 PeriodicSubscriptionQos::getPeriod() const
+int64_t PeriodicSubscriptionQos::getPeriod() const
 {
     return this->period;
 }
 
-void PeriodicSubscriptionQos::setAlertAfterInterval(const qint64& alertAfterInterval)
+void PeriodicSubscriptionQos::setAlertAfterInterval(const int64_t& alertAfterInterval)
 {
-    this->alterAfterInterval = alertAfterInterval;
-    if (this->alterAfterInterval > MAX_ALERT_AFTER_INTERVAL()) {
-        this->alterAfterInterval = MAX_ALERT_AFTER_INTERVAL();
+    this->alertAfterInterval = alertAfterInterval;
+    if (this->alertAfterInterval > MAX_ALERT_AFTER_INTERVAL()) {
+        this->alertAfterInterval = MAX_ALERT_AFTER_INTERVAL();
     }
-    if (this->alterAfterInterval != 0 && this->alterAfterInterval < period) {
-        this->alterAfterInterval = period;
+    if (this->alertAfterInterval != 0 && this->alertAfterInterval < period) {
+        this->alertAfterInterval = period;
     }
 }
 
-qint64 PeriodicSubscriptionQos::getAlertAfterInterval() const
+int64_t PeriodicSubscriptionQos::getAlertAfterInterval() const
 {
-    return alterAfterInterval;
+    return alertAfterInterval;
 }
 
 void PeriodicSubscriptionQos::clearAlertAfterInterval()
 {
-    this->alterAfterInterval = NO_ALERT_AFTER_INTERVAL();
+    this->alertAfterInterval = NO_ALERT_AFTER_INTERVAL();
 }
 
 PeriodicSubscriptionQos& PeriodicSubscriptionQos::operator=(const PeriodicSubscriptionQos& other)
@@ -115,20 +115,12 @@ PeriodicSubscriptionQos& PeriodicSubscriptionQos::operator=(const PeriodicSubscr
     expiryDate = other.getExpiryDate();
     publicationTtl = other.getPublicationTtl();
     period = other.getPeriod();
-    alterAfterInterval = other.getAlertAfterInterval();
+    alertAfterInterval = other.getAlertAfterInterval();
     return *this;
 }
 
 bool PeriodicSubscriptionQos::operator==(const PeriodicSubscriptionQos& other) const
 {
     return expiryDate == other.getExpiryDate() && publicationTtl == other.getPublicationTtl() &&
-           period == other.getPeriod() && alterAfterInterval == other.getAlertAfterInterval();
-}
-
-bool PeriodicSubscriptionQos::equals(const QObject& other) const
-{
-    int typeThis = QMetaType::type(this->metaObject()->className());
-    int typeOther = QMetaType::type(other.metaObject()->className());
-    auto newOther = dynamic_cast<const PeriodicSubscriptionQos*>(&other);
-    return typeThis == typeOther && *this == *newOther;
+           period == other.getPeriod() && alertAfterInterval == other.getAlertAfterInterval();
 }

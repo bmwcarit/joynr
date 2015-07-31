@@ -65,7 +65,7 @@ public class AtmosphereModule extends AbstractModule {
      * These are parameters that would be used as init-params in web.xml if not
      * configured with Guice.
      * 
-     * @return
+     * @return Parameter Map with key-value pairs
      */
     public Map<String, String> getParameters() {
         return params;

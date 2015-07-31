@@ -19,7 +19,6 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 #include "joynr/ReplyCaller.h"
-#include "joynr/ICallback.h"
 #include "tests/utils/MockObjects.h"
 
 using ::testing::Property;
@@ -39,61 +38,72 @@ using namespace joynr;
 class ReplyCallerTest : public ::testing::Test {
 public:
     ReplyCallerTest()
-        : intCallback(new MockIntCallback()),
-          intFixture(intCallback),
-          voidCallback(new MockVoidCallback()),
-          voidFixture(voidCallback) {}
+        : intCallback(new MockCallback<int>()),
+          intFixture(std::bind(&MockCallback<int>::onSuccess, intCallback, std::placeholders::_2),
+                     std::bind(&MockCallback<int>::onError, intCallback, std::placeholders::_1)),
+          voidCallback(new MockCallback<void>()),
+          voidFixture(std::bind(&MockCallback<void>::onSuccess, voidCallback),
+                      std::bind(&MockCallback<void>::onError, voidCallback, std::placeholders::_1)) {}
 
-    QSharedPointer<MockIntCallback> intCallback;
+    QSharedPointer<MockCallback<int>> intCallback;
     ReplyCaller<int> intFixture;
-    QSharedPointer<MockVoidCallback> voidCallback;
+    QSharedPointer<MockCallback<void>> voidCallback;
     ReplyCaller<void> voidFixture;
 };
 
 typedef ReplyCallerTest ReplyCallerDeathTest;
 
 TEST_F(ReplyCallerTest, getType) {
-    ASSERT_EQ(qMetaTypeId<int>(), intFixture.getTypeId());
+    ASSERT_EQ(Util::getTypeId<int>(), intFixture.getTypeId());
 }
 
 TEST_F(ReplyCallerTest, getTypeQInt64) {
-    ReplyCaller<qint64> qint64ReplyCaller(QSharedPointer<MockQInt64Callback>(new MockQInt64Callback()));
-    ASSERT_EQ(qMetaTypeId<qint64>(), qint64ReplyCaller.getTypeId());
+    QSharedPointer<MockCallback<qint64>> callback(new MockCallback<qint64>());
+    ReplyCaller<qint64> qint64ReplyCaller(
+                [callback](const RequestStatus& status, const qint64& value) {
+                    callback->onSuccess(value);
+                },
+                [](const RequestStatus& status){
+                });
+    ASSERT_EQ(Util::getTypeId<qint64>(), qint64ReplyCaller.getTypeId());
 }
 
 TEST_F(ReplyCallerTest, getTypeQInt8) {
-    ReplyCaller<qint8> qint8ReplyCaller(QSharedPointer<MockQInt8Callback>(new MockQInt8Callback()));
-    ASSERT_EQ(qMetaTypeId<qint8>(), qint8ReplyCaller.getTypeId());
+    QSharedPointer<MockCallback<qint8>> callback(new MockCallback<qint8>());
+    ReplyCaller<qint8> qint8ReplyCaller(
+                [callback](const RequestStatus& status, const qint8& value) {
+                    callback->onSuccess(value);
+                },
+                [](const RequestStatus& status){
+                });
+    ASSERT_EQ(Util::getTypeId<qint8>(), qint8ReplyCaller.getTypeId());
 }
 
 TEST_F(ReplyCallerTest, getTypeForVoid) {
-    QString type = voidFixture.getTypeName();
-    ASSERT_EQ("void", type);
+    int typeId = voidFixture.getTypeId();
+    ASSERT_EQ(Util::getTypeId<void>(), typeId);
 }
 
 
 TEST_F(ReplyCallerTest, timeOut) {
-    EXPECT_CALL(*intCallback, onFailure(
-                    Property(&RequestStatus::getCode, RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE)));
+    EXPECT_CALL(*intCallback, onError(
+                    Property(&RequestStatus::getCode, RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE)));
     intFixture.timeOut();
 }
 
 TEST_F(ReplyCallerTest, timeOutForVoid) {
-    EXPECT_CALL(*voidCallback, onFailure(
-                    Property(&RequestStatus::getCode, RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE)));
+    EXPECT_CALL(*voidCallback, onError(
+                    Property(&RequestStatus::getCode, RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE)));
     voidFixture.timeOut();
 }
 
 TEST_F(ReplyCallerTest, resultReceived) {
-    EXPECT_CALL(*intCallback, onSuccess(
-                    Property(&RequestStatus::getCode, RequestStatusCode::OK),
-                    7));
+    EXPECT_CALL(*intCallback, onSuccess(7));
     intFixture.returnValue(7);
 }
 
 TEST_F(ReplyCallerTest, resultReceivedForVoid) {
-    EXPECT_CALL(*voidCallback, onSuccess(
-                    Property(&RequestStatus::getCode, RequestStatusCode::OK)));
+    EXPECT_CALL(*voidCallback, onSuccess());
     voidFixture.returnValue();
 }
 

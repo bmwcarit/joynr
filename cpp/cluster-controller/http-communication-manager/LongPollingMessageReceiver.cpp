@@ -24,9 +24,9 @@
 #include "cluster-controller/httpnetworking/HttpResult.h"
 #include "joynr/ILocalChannelUrlDirectory.h"
 #include "joynr/Future.h"
-#include "joynr/types/ChannelUrlInformation.h"
+#include "joynr/types/QtChannelUrlInformation.h"
 #include "joynr/JoynrMessage.h"
-#include "joynr/system/ChannelAddress.h"
+#include "joynr/system/QtChannelAddress.h"
 #include "joynr/MessageRouter.h"
 #include "joynr/JoynrMessage.h"
 
@@ -105,16 +105,12 @@ void LongPollingMessageReceiver::run()
       */
     assert(channelUrlDirectory != NULL);
     types::ChannelUrlInformation urlInformation;
-    QList<QString> urls;
-    // urls << channelUrl + QString("pseudoDirectUrlForTestingPurpose");  //for testing purpose
-    // (bogus Url)
-    urls << channelUrl;
+    std::vector<std::string> urls = {channelUrl.toStdString()};
     urlInformation.setUrls(urls);
     LOG_INFO(logger,
              "Adding channelId and Url of cluster controller to remote ChannelUrlDirectory" +
-                     urls.first());
-    QSharedPointer<Future<void>> future(new Future<void>());
-    channelUrlDirectory->registerChannelUrls(future, channelId, urlInformation);
+                     channelUrl);
+    channelUrlDirectory->registerChannelUrlsAsync(channelId.toStdString(), urlInformation);
 
     while (!isInterrupted()) {
 
@@ -173,6 +169,12 @@ void LongPollingMessageReceiver::processReceivedInput(const QByteArray& received
 void LongPollingMessageReceiver::processReceivedQjsonObjects(const QByteArray& jsonObject)
 {
     JoynrMessage* msg = JsonSerializer::deserialize<JoynrMessage>(jsonObject);
+    if (msg == Q_NULLPTR) {
+        LOG_ERROR(logger,
+                  QString("Unable to deserialize message. Raw message: %1")
+                          .arg(QString::fromUtf8(jsonObject)));
+        return;
+    }
     if (msg->getType().isEmpty()) {
         LOG_ERROR(logger, "received empty message - dropping Messages");
         return;
@@ -188,8 +190,9 @@ void LongPollingMessageReceiver::processReceivedQjsonObjects(const QByteArray& j
         msg->getType() == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
         // TODO ca: check if replyTo header info is available?
         QString replyChannelId = msg->getHeaderReplyChannelId();
-        QSharedPointer<system::ChannelAddress> address(new system::ChannelAddress(replyChannelId));
-        messageRouter->addNextHop(msg->getHeaderFrom(), address);
+        QSharedPointer<system::QtChannelAddress> address(
+                new system::QtChannelAddress(replyChannelId));
+        messageRouter->addNextHop(msg->getHeaderFrom().toStdString(), address);
     }
 
     // messageRouter.route passes the message reference to the MessageRunnable, which copies it.

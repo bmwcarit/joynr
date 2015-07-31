@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,48 +18,76 @@
  */
 package system
 
-typeCollection LoggingTypes {
+typeCollection {
+	
+	<** @description: The log level **>
 	enumeration JoynrLogLevel {
+		<** @description: No logging **>
 		OFF
+		<** @description: Logging level for fatal errors **>
 		FATAL
+		<** @description: Logging level for generic errors **>
 		ERROR
+		<** @description: Logging level for warnings **>
 		WARN
+		<** @description: Logging level for informations **>
 		INFO
+		<** @description: Logging level for debugging info **>
 		DEBUG
+		<** @description: Logging level for tracing info **>
 		TRACE
 	}
-	
+
+	<** @description: The classification of the exception **>
 	struct JoynrLoggedError {
+		<** @description: The classification of the exception **>
 		String exceptionClass
+		<** @description: The message describing the exception **>
 		String exceptionMessage
 	}
-	
+
+	<** @description: Context information record for log event **>
 	struct JoynrLoggingContextTag {
+		<** @description: The key of a context tag entry **>
 		String key
+		<** @description: The value of a context tag entry **>
 		String value
 	}
-	
+
+	<** @description: Record describing a log event **>
 	struct JoynrLogEvent {
+		<** @description: The time the logging event happened **>
 		Int64 timestamp
+		<** @description: The version of the event **>
 		String eventVersion
+		<** @description: The host **>
 		String host
+		<** @description: The path **>
 		String path
+		<** @description: The message **>
 		String message
+		<** @description: The priority **>
 		JoynrLogLevel priority
+		<** @description: The event **>
 		JoynrLoggedError errorEvent
+		<** @description: List of text classifying the event **>
 		JoynrLoggingContextTag[] tags
-	}	
+	}
 }
 
-<** @description : "The logging interface is implemented by log4j and log4javascript appenders. Do not use directly" **>
+<**
+	@description : "The logging interface is implemented by log4j and
+		log4javascript appenders. Do not use directly"
+**>
 interface Logging  {
 
-	/**
-	 * An operation with return value and parameters.
-	 */
+	<**
+		@description: log a number of events
+	**>
 	method log {
 		in {
-			LoggingTypes.JoynrLogEvent[] logEvents
+			<** @description: The list of events to be logged **>
+			JoynrLogEvent[] logEvents
 		}
 	}
 }

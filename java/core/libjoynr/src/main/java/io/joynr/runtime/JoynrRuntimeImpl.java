@@ -18,7 +18,7 @@ package io.joynr.runtime;
  * limitations under the License.
  * #L%
  */
-
+import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import io.joynr.capabilities.CapabilitiesRegistrar;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.capabilities.RegistrationFuture;
@@ -28,11 +28,11 @@ import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderDefaultImpl;
-import io.joynr.pubsub.publication.PublicationManager;
-import io.joynr.pubsub.subscription.SubscriptionManager;
+import io.joynr.proxy.ProxyInvocationHandlerFactory;
 import io.joynr.subtypes.JoynrType;
 
 import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
 
 import joynr.BroadcastSubscriptionRequest;
 import joynr.Reply;
@@ -47,8 +47,10 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 public class JoynrRuntimeImpl implements JoynrRuntime {
+
     private static final Logger logger = LoggerFactory.getLogger(JoynrRuntimeImpl.class);
 
     @Inject
@@ -60,11 +62,13 @@ public class JoynrRuntimeImpl implements JoynrRuntime {
     @Inject
     private RequestReplyDispatcher dispatcher;
     @Inject
-    private SubscriptionManager subscriptionManager;
-    @Inject
-    private PublicationManager publicationManager;
-    @Inject
     public ObjectMapper objectMapper;
+    @Inject
+    private ProxyInvocationHandlerFactory proxyInvocationHandlerFactory;
+
+    @Inject
+    @Named(JOYNR_SCHEDULER_CLEANUP)
+    ScheduledExecutorService cleanupScheduler;
 
     @Inject
     public JoynrRuntimeImpl(ObjectMapper objectMapper) {
@@ -93,25 +97,17 @@ public class JoynrRuntimeImpl implements JoynrRuntime {
         return new ProxyBuilderDefaultImpl<T>(localCapabilitiesDirectory,
                                               domain,
                                               interfaceClass,
-                                              messageSender,
-                                              dispatcher,
-                                              subscriptionManager);
+                                              proxyInvocationHandlerFactory);
     }
 
     @Override
-    public <T extends JoynrInterface> RegistrationFuture registerCapability(String domain,
-                                                                            JoynrProvider provider,
-                                                                            Class<T> providedInterface,
-                                                                            String authenticationToken) {
-        return capabilitiesRegistrar.registerCapability(domain, provider, providedInterface, authenticationToken);
+    public RegistrationFuture registerProvider(String domain, JoynrProvider provider) {
+        return capabilitiesRegistrar.registerProvider(domain, provider);
     }
 
     @Override
-    public <T extends JoynrInterface> void unregisterCapability(String domain,
-                                                                JoynrProvider provider,
-                                                                Class<T> providedInterface,
-                                                                String authenticationToken) {
-        capabilitiesRegistrar.unregisterCapability(domain, provider, providedInterface, authenticationToken);
+    public void unregisterProvider(String domain, JoynrProvider provider) {
+        capabilitiesRegistrar.unregisterProvider(domain, provider);
 
     }
 
@@ -138,15 +134,9 @@ public class JoynrRuntimeImpl implements JoynrRuntime {
         }
 
         try {
-            publicationManager.shutdown();
+            cleanupScheduler.shutdownNow();
         } catch (Exception e) {
-            logger.error("error shutting down publicationManager", e);
-        }
-
-        try {
-            subscriptionManager.shutdown();
-        } catch (Exception e) {
-            logger.error("error shutting down subscriptionManager", e);
+            logger.error("error shutting down queue cleanup scheduler: {}", e.getMessage());
         }
 
     }

@@ -22,17 +22,17 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/InProcessAddress.h"
-#include "joynr/system/CommunicationMiddleware.h"
+#include "joynr/types/QtCommunicationMiddleware.h"
 #include "joynr/IRequestCallerDirectory.h"
 
-#include <QString>
 #include <QSharedPointer>
+#include <string>
 
 namespace joynr
 {
 
 class InProcessPublicationSender;
-class SubscriptionManager;
+class ISubscriptionManager;
 class PublicationManager;
 
 // Default implementation for the InProcessConnectorFactoryHelper
@@ -41,10 +41,10 @@ template <class T>
 class InProcessConnectorFactoryHelper
 {
 public:
-    T* create(SubscriptionManager* subscriptionManager,
+    T* create(ISubscriptionManager* subscriptionManager,
               PublicationManager* publicationManager,
-              const QString& proxyParticipantId,
-              const QString& providerParticipantId,
+              const std::string& proxyParticipantId,
+              const std::string& providerParticipantId,
               QSharedPointer<InProcessAddress> address)
     {
         Q_UNUSED(subscriptionManager);
@@ -62,18 +62,18 @@ public:
 class JOYNR_EXPORT InProcessConnectorFactory
 {
 public:
-    InProcessConnectorFactory(SubscriptionManager* subscriptionManager,
+    InProcessConnectorFactory(ISubscriptionManager* subscriptionManager,
                               PublicationManager* publicationManager,
                               InProcessPublicationSender* inProcessPublicationSender,
                               IRequestCallerDirectory* requestCallerDirectory);
 
-    bool canBeCreated(const joynr::system::CommunicationMiddleware::Enum& connection);
+    bool canBeCreated(const joynr::types::CommunicationMiddleware::Enum& connection);
     virtual ~InProcessConnectorFactory()
     {
     }
 
     template <class T>
-    T* create(const QString& proxyParticipantId, const QString& providerParticipantId)
+    T* create(const std::string& proxyParticipantId, const std::string& providerParticipantId)
     {
         QSharedPointer<RequestCaller> requestCaller =
                 requestCallerDirectory->lookupRequestCaller(providerParticipantId);
@@ -90,7 +90,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(InProcessConnectorFactory);
-    SubscriptionManager* subscriptionManager;
+    ISubscriptionManager* subscriptionManager;
     PublicationManager* publicationManager;
     InProcessPublicationSender* inProcessPublicationSender;
     IRequestCallerDirectory* requestCallerDirectory;

@@ -21,9 +21,10 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/joynrlogging.h"
 
+#include <vector>
 #include "joynr/ProviderArbitrator.h"
 #include <QSharedPointer>
-#include <QString>
+#include <string>
 
 namespace joynr
 {
@@ -31,7 +32,7 @@ namespace joynr
 namespace system
 {
 class IDiscoverySync;
-class DiscoveryEntry;
+class QtDiscoveryEntry;
 }
 
 class FixedParticipantArbitrator : public ProviderArbitrator
@@ -40,8 +41,8 @@ public:
     virtual ~FixedParticipantArbitrator()
     {
     }
-    FixedParticipantArbitrator(const QString& domain,
-                               const QString& interfaceName,
+    FixedParticipantArbitrator(const std::string& domain,
+                               const std::string& interfaceName,
                                joynr::system::IDiscoverySync& discoveryProxy,
                                const DiscoveryQos& discoveryQos);
 
@@ -53,7 +54,7 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(FixedParticipantArbitrator);
     static joynr_logging::Logger* logger;
-    QString participantId;
+    std::string participantId;
     qint64 reqCacheDataFreshness;
 };
 

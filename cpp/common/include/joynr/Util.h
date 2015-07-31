@@ -62,6 +62,18 @@ public:
         return QLatin1String(metaEnum.valueToKey(value));
     }
 
+    /**
+      * Converts an enum value to a QVariant for use by the serializer
+      * \param T, the qt class that surrounds the enum
+      * \param value, the enum value to convert
+      */
+    template <class T>
+    static QVariant convertEnumToVariant(typename T::Enum value)
+    {
+        QMetaEnum metaEnum = T::staticMetaObject.enumerator(0);
+        return QVariant(metaEnum.valueToKey(value));
+    }
+
     static QString attributeGetterFromName(const QString& attributeName);
 
     template <class T>
@@ -72,14 +84,25 @@ public:
     }
 
     template <class T>
-    static QList<typename T::Enum> convertVariantListToEnumList(const QVariantList& variantList)
+    static QList<QVariant> convertEnumListToVariantList(const QList<typename T::Enum>& enumList)
     {
-        QList<typename T::Enum> ret;
-        ret.reserve(variantList.length());
-        foreach (const QVariant& v, variantList) {
-            ret.append(convertVariantToEnum<T>(v));
+        QList<QVariant> variantList;
+        variantList.reserve(enumList.length());
+        foreach (const typename T::Enum e, enumList) {
+            variantList.append(convertEnumToVariant<T>(e));
         }
-        return ret;
+        return variantList;
+    }
+
+    template <class T>
+    static QList<typename T::Enum> convertVariantListToEnumList(const QList<QVariant>& variantList)
+    {
+        QList<typename T::Enum> enumList;
+        enumList.reserve(variantList.length());
+        foreach (const QVariant& v, variantList) {
+            enumList.append(convertVariantToEnum<T>(v));
+        }
+        return enumList;
     }
 
     template <class T>
@@ -116,6 +139,17 @@ public:
         return ret;
     }
 
+    template <class T>
+    static QList<int> convertEnumListToIntList(const QList<T>& enumList)
+    {
+        QList<int> enumAsIntList;
+        enumAsIntList.reserve(enumList.length());
+        foreach (const T& e, enumList) {
+            enumAsIntList.append(e);
+        }
+        return enumAsIntList;
+    }
+
     /**
      * Create a Uuid for use in Joynr.
      *
@@ -140,7 +174,10 @@ public:
                                      const QString& message);
 
     template <typename... Ts>
-    static int getBroadcastTypeId();
+    static int getTypeId();
+
+    template <typename T>
+    static T valueOf(const QVariant& variant);
 
     template <int TupleSize>
     struct ExpandTupleIntoFunctionArguments
@@ -190,27 +227,76 @@ private:
     static int getTypeId_split()
     {
         int prime = 31;
-        return prime * qMetaTypeId<T>() + prime * getBroadcastTypeId<Ts...>();
+        return prime * qMetaTypeId<T>() + prime * getTypeId<Ts...>();
     }
 
     template <typename T, typename... Ts>
     static std::tuple<T, Ts...> toValueTuple_split(QList<QVariant> list)
     {
-        T value = list.first().value<T>();
+        T value = valueOf<T>(list.first());
         list.removeFirst();
 
         return std::tuple_cat(std::make_tuple(value), toValueTuple<Ts...>(list));
     }
 };
 
+template <typename T>
+inline T Util::valueOf(const QVariant& variant)
+{
+    return variant.value<T>();
+}
+
+// concrete specilization for lists of primitive datatypes
+template <>
+inline QList<int> Util::valueOf<QList<int>>(const QVariant& variant)
+{
+    return joynr::Util::convertVariantListToList<int>(variant.value<QVariantList>());
+}
+
+template <>
+inline QList<bool> Util::valueOf<QList<bool>>(const QVariant& variant)
+{
+    return joynr::Util::convertVariantListToList<bool>(variant.value<QVariantList>());
+}
+
+template <>
+inline QList<qint8> Util::valueOf<QList<qint8>>(const QVariant& variant)
+{
+    return joynr::Util::convertVariantListToList<qint8>(variant.value<QVariantList>());
+}
+
+template <>
+inline QList<qint64> Util::valueOf<QList<qint64>>(const QVariant& variant)
+{
+    return joynr::Util::convertVariantListToList<qint64>(variant.value<QVariantList>());
+}
+
+template <>
+inline QList<double> Util::valueOf<QList<double>>(const QVariant& variant)
+{
+    return joynr::Util::convertVariantListToList<double>(variant.value<QVariantList>());
+}
+
+template <>
+inline QList<QString> Util::valueOf<QList<QString>>(const QVariant& variant)
+{
+    return joynr::Util::convertVariantListToList<QString>(variant.value<QVariantList>());
+}
+
+template <>
+inline QList<QByteArray> Util::valueOf<QList<QByteArray>>(const QVariant& variant)
+{
+    return joynr::Util::convertVariantListToList<QByteArray>(variant.value<QVariantList>());
+}
+
 template <typename... Ts>
-inline int Util::getBroadcastTypeId()
+inline int Util::getTypeId()
 {
     return getTypeId_split<Ts...>();
 }
 
 template <>
-inline int Util::getBroadcastTypeId<>()
+inline int Util::getTypeId<>()
 {
     return 0;
 }
@@ -240,6 +326,7 @@ template <>
 inline std::tuple<> Util::toValueTuple<>(QList<QVariant> list)
 {
     assert(list.empty());
+    Q_UNUSED(list);
     return std::make_tuple();
 }
 

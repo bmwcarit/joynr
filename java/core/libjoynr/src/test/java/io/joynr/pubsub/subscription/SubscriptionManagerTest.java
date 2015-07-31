@@ -35,6 +35,7 @@ import java.util.concurrent.TimeUnit;
 
 import joynr.OnChangeSubscriptionQos;
 import joynr.PeriodicSubscriptionQos;
+import joynr.tests.testBroadcastInterface.LocationUpdateBroadcastListener;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -44,6 +45,7 @@ import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.collect.Maps;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SubscriptionManagerTest {
@@ -84,6 +86,7 @@ public class SubscriptionManagerTest {
                                                           missedPublicationTimers,
                                                           subscriptionEndFutures,
                                                           subscriptionAttributeTypes,
+                                                          Maps.<String, Class<?>[]> newConcurrentMap(),
                                                           cleanupScheduler);
         subscriptionId = "testSubscription";
 
@@ -146,16 +149,16 @@ public class SubscriptionManagerTest {
     @Test
     public void registerBroadcastSubscription() {
         String broadcastName = "broadcastName";
-        BroadcastSubscriptionListener broadcastSubscriptionCallback = mock(BroadcastSubscriptionListener.class);
+        BroadcastSubscriptionListener broadcastSubscriptionListener = mock(LocationUpdateBroadcastListener.class);
         BroadcastSubscribeInvocation subscriptionRequest = new BroadcastSubscribeInvocation(broadcastName,
-                                                                                            broadcastSubscriptionCallback,
+                                                                                            broadcastSubscriptionListener,
                                                                                             onChangeQos,
                                                                                             null);
         subscriptionManager.registerBroadcastSubscription(subscriptionRequest);
         subscriptionId = subscriptionRequest.getSubscriptionId();
 
         Mockito.verify(broadcastSubscriptionDirectory).put(Mockito.anyString(),
-                                                           Mockito.eq(broadcastSubscriptionCallback));
+                                                           Mockito.eq(broadcastSubscriptionListener));
         Mockito.verify(subscriptionStates).put(Mockito.anyString(), Mockito.any(PubSubState.class));
 
         Mockito.verify(cleanupScheduler).schedule(Mockito.any(Runnable.class),
@@ -198,17 +201,5 @@ public class SubscriptionManagerTest {
 
         Mockito.verify(subscriptionStates).get(Mockito.eq(subscriptionId));
         Mockito.verify(subscriptionState).stop();
-    }
-
-    @Test
-    public void touchSubscriptionState() {
-        Mockito.when(subscriptionStates.containsKey(subscriptionId)).thenReturn(true);
-        Mockito.when(subscriptionStates.get(subscriptionId)).thenReturn(subscriptionState);
-        subscriptionManager.touchSubscriptionState(subscriptionId);
-
-        Mockito.verify(subscriptionStates).containsKey(subscriptionId);
-        Mockito.verify(subscriptionStates).get(subscriptionId);
-        Mockito.verify(subscriptionState).updateTimeOfLastPublication();
-
     }
 }

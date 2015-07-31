@@ -18,24 +18,26 @@ package io.joynr.dispatcher;
  * limitations under the License.
  * #L%
  */
-
+import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
+import io.joynr.accesscontrol.AccessController;
 import io.joynr.common.ExpiryDate;
-import io.joynr.dispatcher.rpc.Callback;
-import io.joynr.dispatcher.rpc.JsonRequestInterpreter;
+import io.joynr.dispatcher.rpc.RequestInterpreter;
 import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 import io.joynr.exceptions.JoynrCommunicationException;
-import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.messaging.IMessageReceivers;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.ReceiverStatusListener;
+import io.joynr.proxy.Callback;
 import io.joynr.pubsub.publication.PublicationManager;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 import io.joynr.pubsub.subscription.SubscriptionManager;
+import io.joynr.security.PlatformSecurityManager;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -85,7 +87,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
     private MessagingEndpointDirectory messagingEndpointDirectory;
     protected RequestReplySender messageSender;
 
-    private JsonRequestInterpreter jsonRequestInterpreter;
+    private RequestInterpreter requestInterpreter;
 
     private static final Logger logger = LoggerFactory.getLogger(RequestReplyDispatcherImpl.class);
 
@@ -101,6 +103,8 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
 
     private boolean registering = false;
     private ScheduledExecutorService cleanupScheduler;
+    private AccessController accessController;
+    private PlatformSecurityManager securityManager;
 
     @Inject
     // CHECKSTYLE:OFF
@@ -113,8 +117,10 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
                                       ObjectMapper objectMapper,
                                       PublicationManager publicationManager,
                                       SubscriptionManager subscriptionManager,
-                                      JsonRequestInterpreter jsonRequestInterpreter,
-                                      @Named("joynr.scheduler.cleanup") ScheduledExecutorService cleanupScheduler) {
+                                      RequestInterpreter requestInterpreter,
+                                      @Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler,
+                                      AccessController accessController,
+                                      PlatformSecurityManager securityManager) {
         // CHECKSTYLE:ON
         this.messageSender = messageSender;
         this.messageReceiver = messageReceiver;
@@ -124,8 +130,10 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
         this.objectMapper = objectMapper;
         this.publicationManager = publicationManager;
         this.subscriptionManager = subscriptionManager;
-        this.jsonRequestInterpreter = jsonRequestInterpreter;
+        this.requestInterpreter = requestInterpreter;
         this.cleanupScheduler = cleanupScheduler;
+        this.accessController = accessController;
+        this.securityManager = securityManager;
 
         // TODO would be better not to have this in the constructor to prevent
         // any race condition issues with messages being
@@ -271,27 +279,33 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
 
     @Override
     public void messageArrived(final JoynrMessage message) {
-        if (message != null) {
-            long incomingExpiryDate = message.getExpiryDate();
-            if (!DispatcherUtils.isExpired(incomingExpiryDate)) {
-                String type = message.getType();
-                if (JoynrMessage.MESSAGE_TYPE_REPLY.equals(type)) {
-                    handleReplyMessageReceived(message);
-                } else if (JoynrMessage.MESSAGE_TYPE_REQUEST.equals(type)) {
-                    handleRequestMessageReceived(message);
-                } else if (JoynrMessage.MESSAGE_TYPE_ONE_WAY.equals(type)) {
-                    handleOneWayMessageReceived(message);
-                } else if (JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST.equals(type)
-                        || JoynrMessage.MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST.equals(type)) {
-                    handleSubscriptionRequestReceived(message);
-                } else if (JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_STOP.equals(type)) {
-                    handleSubscriptionStopReceived(message);
-                } else if (JoynrMessage.MESSAGE_TYPE_PUBLICATION.equals(type)) {
-                    handlePublicationReceived(message);
-                }
-            } else {
-                logger.debug("TTL expired, discarding message : {}", message.toLogMessage());
-            }
+        if (message == null) {
+            logger.error("received messaage was null");
+            return;
+        }
+        if (!securityManager.validate(message)) {
+            logger.error("unable to validate received message, discarding message: {}", message.toLogMessage());
+            return;
+        }
+        if (DispatcherUtils.isExpired(message.getExpiryDate())) {
+            logger.debug("TTL expired, discarding message : {}", message.toLogMessage());
+            return;
+        }
+
+        String type = message.getType();
+        if (JoynrMessage.MESSAGE_TYPE_REPLY.equals(type)) {
+            handleReplyMessageReceived(message);
+        } else if (JoynrMessage.MESSAGE_TYPE_REQUEST.equals(type)) {
+            handleRequestMessageReceived(message);
+        } else if (JoynrMessage.MESSAGE_TYPE_ONE_WAY.equals(type)) {
+            handleOneWayMessageReceived(message);
+        } else if (JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST.equals(type)
+                || JoynrMessage.MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST.equals(type)) {
+            handleSubscriptionRequestReceived(message);
+        } else if (JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_STOP.equals(type)) {
+            handleSubscriptionStopReceived(message);
+        } else if (JoynrMessage.MESSAGE_TYPE_PUBLICATION.equals(type)) {
+            handlePublicationReceived(message);
         }
     }
 
@@ -305,24 +319,33 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
         try {
             publication = objectMapper.readValue(message.getPayload(), SubscriptionPublication.class);
             String subscriptionId = publication.getSubscriptionId();
-            Class<?> receivedType = subscriptionManager.getType(subscriptionId);
-
-            Object receivedObject;
-            if (TypeReference.class.isAssignableFrom(receivedType)) {
-                TypeReference<?> typeRef = (TypeReference<?>) receivedType.newInstance();
-                receivedObject = objectMapper.convertValue(publication.getResponse(), typeRef);
-            } else {
-                receivedObject = objectMapper.convertValue(publication.getResponse(), receivedType);
-            }
-
-            subscriptionManager.touchSubscriptionState(subscriptionId);
-
             if (subscriptionManager.isBroadcast(subscriptionId)) {
-                callBroadcastListener(subscriptionId, receivedObject);
+                Class<?>[] broadcastOutParameterTypes = subscriptionManager.getBroadcastOutParameterTypes(subscriptionId);
+                List<?> broadcastOutParamterValues = (List<?>) publication.getResponse();
+                if (broadcastOutParameterTypes.length != broadcastOutParamterValues.size()) {
+                    throw new JoynrRuntimeException("number of received broadcast out parameter values do not match with number of broadcast out parameter types.");
+                }
+                Object[] broadcastValues = new Object[broadcastOutParameterTypes.length];
+                for (int i = 0; i < broadcastOutParameterTypes.length; i++) {
+                    broadcastValues[i] = objectMapper.convertValue(broadcastOutParamterValues.get(i),
+                                                                   broadcastOutParameterTypes[i]);
+                }
+                callBroadcastListener(subscriptionId, broadcastValues);
             } else {
+                Class<?> receivedType = subscriptionManager.getAttributeType(subscriptionId);
+
+                Object receivedObject;
+                if (TypeReference.class.isAssignableFrom(receivedType)) {
+                    TypeReference<?> typeRef = (TypeReference<?>) receivedType.newInstance();
+                    receivedObject = objectMapper.convertValue(((List<?>) publication.getResponse()).get(0), typeRef);
+                } else {
+                    receivedObject = objectMapper.convertValue(((List<?>) publication.getResponse()).get(0),
+                                                               receivedType);
+                }
+
+                subscriptionManager.touchSubscriptionState(subscriptionId);
                 callSubscriptionListener(subscriptionId, receivedObject);
             }
-
         } catch (Exception e) {
             logger.error("Error delivering publication: {} : {}", e.getClass(), e.getMessage());
         }
@@ -337,13 +360,11 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
         }
     }
 
-    private void callBroadcastListener(String subscriptionId, Object receivedObject) throws NoSuchMethodException,
-                                                                                    IllegalAccessException,
-                                                                                    InvocationTargetException {
+    private void callBroadcastListener(String subscriptionId, Object[] broadcastValues) throws NoSuchMethodException,
+                                                                                       IllegalAccessException,
+                                                                                       InvocationTargetException {
         BroadcastSubscriptionListener broadcastSubscriptionListener = subscriptionManager.getBroadcastSubscriptionListener(subscriptionId);
 
-        List<?> receivedList = (List<?>) receivedObject;
-        Object[] broadcastValues = receivedList.toArray(new Object[receivedList.size()]);
         Class<?>[] broadcastTypes = getParameterTypesForBroadcastPublication(broadcastValues);
         Method receive = broadcastSubscriptionListener.getClass().getDeclaredMethod("onReceive", broadcastTypes);
         if (!receive.isAccessible()) {
@@ -439,22 +460,25 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
     }
 
     private void handleRequestMessageReceived(final JoynrMessage message) {
+        // handle only if this message creator (userId) has permissions
+        if (accessController.hasConsumerPermission(message)) {
+            String fromParticipantId = message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID);
+            String toParticipantId = message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID);
+            String replyToChannelId = message.getHeaderValue(JoynrMessage.HEADER_NAME_REPLY_CHANNELID);
+            if (replyToChannelId != null && !replyToChannelId.isEmpty()) {
+                messagingEndpointDirectory.put(fromParticipantId, new JoynrMessagingEndpointAddress(replyToChannelId));
+            }
 
-        String fromParticipantId = message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID);
-        String toParticipantId = message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID);
-        String replyToChannelId = message.getHeaderValue(JoynrMessage.HEADER_NAME_REPLY_CHANNELID);
-        if (replyToChannelId != null && !replyToChannelId.isEmpty()) {
-            messagingEndpointDirectory.put(fromParticipantId, new JoynrMessagingEndpointAddress(replyToChannelId));
-        }
-        // TODO make sure that all requests (ie not one-way) also have replyTo
-        // set, otherwise log an error
+            // TODO make sure that all requests (ie not one-way) also have replyTo
+            // set, otherwise log an error
 
-        if (requestCallerDirectory.containsKey(toParticipantId)) {
-            executeRequestAndReply(requestCallerDirectory.get(toParticipantId), message);
+            if (requestCallerDirectory.containsKey(toParticipantId)) {
+                executeRequestAndReply(requestCallerDirectory.get(toParticipantId), message);
 
-        } else {
-            putMessage(toParticipantId, message, ExpiryDate.fromAbsolute(message.getExpiryDate()));
-            logger.info("No requestCaller found for participantId: {} queuing request message.", toParticipantId);
+            } else {
+                putMessage(toParticipantId, message, ExpiryDate.fromAbsolute(message.getExpiryDate()));
+                logger.info("No requestCaller found for participantId: {} queuing request message.", toParticipantId);
+            }
         }
     }
 
@@ -464,39 +488,30 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
             Request request = objectMapper.readValue(message.getPayload(), Request.class);
             logger.debug("executing request from message: {} request: {}", message.getId(), request.getRequestReplyId());
 
-            if (requestCaller instanceof RequestCallerAsync) {
-                jsonRequestInterpreter.execute(new Callback<Reply>() {
+            requestInterpreter.execute(new Callback<Reply>() {
 
-                    @Override
-                    public void onSuccess(Reply reply) {
-                        try {
-                            if (!DispatcherUtils.isExpired(message.getExpiryDate())) {
-                                sendReply(message, reply);
-                            } else {
-                                logger.error("Error: reply {} is not send to caller, as the expiryDate of the requesting message {} has been reached.",
-                                             reply,
-                                             new Date(message.getExpiryDate()));
-                            }
-                        } catch (Exception e) {
-                            logger.error("Error processing message: \r\n {} : error : {}", message, e);
+                @Override
+                public void onSuccess(Reply reply) {
+                    try {
+                        if (!DispatcherUtils.isExpired(message.getExpiryDate())) {
+                            sendReply(message, reply);
+                        } else {
+                            logger.error("Error: reply {} is not send to caller, as the expiryDate of the requesting message {} has been reached.",
+                                         reply,
+                                         new Date(message.getExpiryDate()));
                         }
+                    } catch (Exception e) {
+                        logger.error("Error processing message: \r\n {} : error : {}", message, e);
                     }
+                }
 
-                    @Override
-                    public void onFailure(JoynrException error) {
-                        logger.error("Error processing message: \r\n {} ; error: {}", message, error);
-                    }
-                },
-                                               (RequestCallerAsync) requestCaller,
-                                               request);
-            } else if (requestCaller instanceof RequestCallerSync) {
-                Reply reply = jsonRequestInterpreter.execute((RequestCallerSync) requestCaller, request);
-                sendReply(message, reply);
-            } else {
-                logger.error("Error processing message: \r\n {}. RequestCaller type {} unknown.",
-                             message,
-                             requestCaller.getClass().getName());
-            }
+                @Override
+                public void onFailure(JoynrRuntimeException error) {
+                    logger.error("Error processing message: \r\n {} ; error: {}", message, error);
+                }
+            },
+                                       requestCaller,
+                                       request);
         } catch (Throwable e) {
             logger.error("Error processing message: \r\n {}", message, e);
         }

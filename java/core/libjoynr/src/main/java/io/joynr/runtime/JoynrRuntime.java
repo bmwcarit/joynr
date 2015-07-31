@@ -21,71 +21,49 @@ package io.joynr.runtime;
 
 import io.joynr.capabilities.RegistrationFuture;
 import io.joynr.dispatcher.rpc.JoynrInterface;
-import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.ProxyBuilder;
 
 /**
  * Central Joyn Api object, used to register / unregister providers and create proxy builders
- * 
+ *
  */
 public interface JoynrRuntime {
 
     /**
      * Registers a provider in the joynr framework
-     * 
+     *
      * @param domain
      *            The domain the provider should be registered for. Has to be identical at the client to be able to find
      *            the provider.
      * @param provider
      *            Instance of the provider implementation (has to extend a generated ...AbstractProvider).
-     * @param providedInterface
-     *            Provided interface class.
-     * @param authenticationToken
-     *            Token to authenticate the provider. Should be persistent between application startups.
      * @return Returns a RegistrationFuture which can be used to check the local and global registration status.
      */
-    <T extends JoynrInterface> RegistrationFuture registerCapability(String domain,
-                                                                     JoynrProvider provider,
-                                                                     Class<T> providedInterface,
-                                                                     String authenticationToken);
+    RegistrationFuture registerProvider(String domain, JoynrProvider provider);
 
     /**
      * Unregisters the provider from the joynr framework. It can no longer be used or discovered.
-     * 
+     *
      * @param domain
      *            The domain the provider was registered for.
      * @param provider
      *            The provider instance.
-     * @param providedInterface
-     *            The provided interface class.
      */
-    <T extends JoynrInterface> void unregisterCapability(String domain,
-                                                         JoynrProvider provider,
-                                                         Class<T> providedInterface,
-                                                         String authenticationToken);
+    void unregisterProvider(String domain, JoynrProvider provider);
 
     /**
      * Returns a proxy builder instance to build a proxy object.
-     * 
-     * @param participantId
-     *            ParticipantId for the created proxy.
-     * @param proxyInterface
-     *            Interface the proxy should implement (extending async, sync & subscription interfaces)
-     * @param syncInterface
-     *            Synchronous interface of the service.
-     * @param asyncInterface
-     *            Asynchronous interface of the service.
+     *
+     * @param <T> interface
      * @param domain
      *            Domain of the provider.
      * @param interfaceClass
      *            Interface the provider offers.
      * @return After setting arbitration, proxy and messaging QoS parameters the returned ProxyBuilder can be used to
      *         build the proxy instance.
-     * @throws JoynrIllegalStateException
      */
-    <T extends JoynrInterface> ProxyBuilder<T> getProxyBuilder(final String domain, final Class<T> interfaceClass)
-                                                                                                                  throws JoynrIllegalStateException;
+    <T extends JoynrInterface> ProxyBuilder<T> getProxyBuilder(final String domain, final Class<T> interfaceClass);
 
     /**
      * Shutdown the joynr instance:
@@ -93,7 +71,7 @@ public interface JoynrRuntime {
      * <li>Discards pending outgoing messages
      * <li>Does not wait for incoming messages
      * </ul>
-     * 
+     *
      * @param clear
      *            If true, the instance removes all artifacts it created:
      *            <ul>

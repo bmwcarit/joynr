@@ -19,7 +19,7 @@ package io.joynr.util;
  * #L%
  */
 
-import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -54,14 +54,15 @@ public class JoynrUtil {
     };
 
     public static String getStringFromOS(OS os) {
-        if (os == OS.WIN32)
+        if (os == OS.WIN32) {
             return "win32";
-        else if (os == OS.LINUX) {
+        } else if (os == OS.LINUX) {
             return "linux";
         } else if (os == OS.TEST) {
             return "test";
-        } else
+        } else {
             return "undefined";
+        }
     }
 
     @CheckForNull
@@ -129,6 +130,10 @@ public class JoynrUtil {
             }
 
             String[] children = sourceLocation.list();
+            if (children == null) {
+                return;
+            }
+
             for (int i = 0; i < children.length; i++) {
                 copyDirectory(new File(sourceLocation, children[i]), new File(targetLocation, children[i]));
             }
@@ -140,10 +145,12 @@ public class JoynrUtil {
                 out = new FileOutputStream(targetLocation);
                 copyStream(in, out);
             } finally {
-                if (in != null)
+                if (in != null) {
                     in.close();
-                if (out != null)
+                }
+                if (out != null) {
                     out.close();
+                }
             }
         }
     }
@@ -181,14 +188,15 @@ public class JoynrUtil {
     }
 
     public static OS getOSFromString(String os) {
-        if (os.equalsIgnoreCase("win32"))
+        if (os.equalsIgnoreCase("win32")) {
             return OS.WIN32;
-        else if (os.equalsIgnoreCase("linux")) {
+        } else if (os.equalsIgnoreCase("linux")) {
             return OS.LINUX;
         } else if (os.equalsIgnoreCase("test")) {
             return OS.TEST;
-        } else
+        } else {
             return OS.UNDEFINED;
+        }
     }
 
     public static void copyDirectoryFromJar(String jarName, String srcDir, File tmpDir) throws IOException {
@@ -295,7 +303,7 @@ public class JoynrUtil {
 
     }
 
-    private static Object getResource(InputStream inputStream, boolean asByteArray) throws JoynrException {
+    private static Object getResource(InputStream inputStream, boolean asByteArray) throws JoynrRuntimeException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream(1024);
         byte[] bytes = new byte[512];
 
@@ -320,7 +328,7 @@ public class JoynrUtil {
             outputStream.close();
             return result;
         } catch (IOException e) {
-            throw new JoynrException(e.getMessage(), e) {
+            throw new JoynrRuntimeException(e.getMessage(), e) {
                 private static final long serialVersionUID = 1L;
             };
         }

@@ -17,18 +17,18 @@
  * #L%
  */
 #include "joynr/BroadcastFilterParameters.h"
-#include <QMapIterator>
 
 namespace joynr
 {
 
-BroadcastFilterParameters::BroadcastFilterParameters() : filterParameters(QMap<QString, QVariant>())
+BroadcastFilterParameters::BroadcastFilterParameters()
+        : filterParameters(std::map<std::string, std::string>())
 {
 }
 
 BroadcastFilterParameters::BroadcastFilterParameters(
         const BroadcastFilterParameters& filterParameters)
-        : QObject(), filterParameters(filterParameters.filterParameters)
+        : filterParameters(filterParameters.filterParameters)
 {
 }
 
@@ -45,63 +45,50 @@ BroadcastFilterParameters::~BroadcastFilterParameters()
 
 bool BroadcastFilterParameters::operator==(const BroadcastFilterParameters& filterParameters) const
 {
-    bool equal = this->filterParameters.keys() == filterParameters.filterParameters.keys();
+    return filterParameters.getFilterParameters().size() == this->filterParameters.size() &&
+           std::equal(this->filterParameters.begin(),
+                      this->filterParameters.end(),
+                      filterParameters.getFilterParameters().begin());
+}
 
-    QList<QVariant> values1 = this->filterParameters.values();
-    QList<QVariant> values2 = this->filterParameters.values();
+void BroadcastFilterParameters::setFilterParameter(const std::string& parameter,
+                                                   const std::string& value)
+{
+    filterParameters.insert(std::pair<std::string, std::string>(parameter, value));
+}
 
-    if (equal) {
-        for (int i = 0; i < values1.size(); i++) {
-            if (!(equal = equal && values1[i].toString() == values2[i].toString())) {
-                break;
-            }
-        }
+std::map<std::string, std::string> BroadcastFilterParameters::getFilterParameters() const
+{
+    std::map<std::string, std::string> fiterParameters;
+    for (std::map<std::string, std::string>::const_iterator iterator =
+                 this->filterParameters.begin();
+         iterator != this->filterParameters.end();
+         iterator++) {
+        fiterParameters.insert(
+                std::pair<std::string, std::string>(iterator->first, iterator->second));
     }
-
-    return equal;
+    return fiterParameters;
 }
 
-void BroadcastFilterParameters::setFilterParameter(const QString& parameter, const QString& value)
+std::string BroadcastFilterParameters::getFilterParameter(const std::string& parameter) const
 {
-    filterParameters.insert(parameter, value);
-}
-
-QMap<QString, QString> BroadcastFilterParameters::getFilterParameters() const
-{
-    QMap<QString, QString> stringParams;
-    QMapIterator<QString, QVariant> i(filterParameters);
-    while (i.hasNext()) {
-        i.next();
-        stringParams.insert(i.key(), i.value().toString());
-    }
-    return stringParams;
-}
-
-QString BroadcastFilterParameters::getFilterParameter(const QString& parameter) const
-{
-    if (filterParameters.contains(parameter)) {
-        return filterParameters.value(parameter).toString();
+    std::map<std::string, std::string>::const_iterator iterator = filterParameters.find(parameter);
+    if (iterator != filterParameters.end()) {
+        return iterator->second;
     } else {
-        return QString();
+        return std::string();
     }
 }
 
-void BroadcastFilterParameters::setFilterParameters(const QMap<QString, QString>& value)
+void BroadcastFilterParameters::setFilterParameters(const std::map<std::string, std::string>& value)
 {
     filterParameters.clear();
-    QMapIterator<QString, QString> i(value);
-    while (i.hasNext()) {
-        i.next();
-        filterParameters.insert(i.key(), QVariant(i.value()));
+    for (std::map<std::string, std::string>::const_iterator iterator = value.begin();
+         iterator != value.end();
+         iterator++) {
+        filterParameters.insert(
+                std::pair<std::string, std::string>(iterator->first, iterator->second));
     }
-}
-
-bool BroadcastFilterParameters::equals(const QObject& other) const
-{
-    int typeThis = QMetaType::type(this->metaObject()->className());
-    int typeOther = QMetaType::type(other.metaObject()->className());
-    auto newOther = dynamic_cast<const BroadcastFilterParameters*>(&other);
-    return typeThis == typeOther && *this == *newOther;
 }
 
 } // namespace joynr

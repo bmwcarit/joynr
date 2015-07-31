@@ -26,7 +26,7 @@ import javax.ws.rs.core.MediaType;
 
 @Path("/time")
 /**
- * ChanelService is used by the messaging service of a cluster controller
+ * ChannelService is used by the messaging service of a cluster controller
  * to register for messages from other cluster controllers
  *
  * The following characters are allowed in the id
@@ -38,6 +38,7 @@ public class TimeService {
 
     /**
      * get server time in ms
+     * @return the server time in ms
      */
     @GET
     @Produces({ MediaType.TEXT_PLAIN })

@@ -22,7 +22,7 @@
 
 #include "joynr/Dispatcher.h"
 #include "joynr/InProcessDispatcher.h"
-#include "joynr/system/CommonApiDbusAddress.h"
+#include "joynr/system/QtCommonApiDbusAddress.h"
 #include "joynr/PublicationManager.h"
 #include "joynr/SubscriptionManager.h"
 #include "joynr/InProcessPublicationSender.h"
@@ -33,6 +33,7 @@
 #include "joynr/MessagingStubFactory.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include "joynr/system/DiscoveryProxy.h"
+#include "joynr/TypeUtil.h"
 
 #include "joynr/Util.h"
 
@@ -77,8 +78,8 @@ LibJoynrRuntime::~LibJoynrRuntime()
 }
 
 void LibJoynrRuntime::init(IMiddlewareMessagingStubFactory* middlewareMessagingStubFactory,
-                           QSharedPointer<joynr::system::Address> libjoynrMessagingAddress,
-                           QSharedPointer<joynr::system::Address> ccMessagingAddress)
+                           QSharedPointer<joynr::system::QtAddress> libjoynrMessagingAddress,
+                           QSharedPointer<joynr::system::QtAddress> ccMessagingAddress)
 {
     // create messaging stub factory
     MessagingStubFactory* messagingStubFactory = new MessagingStubFactory();
@@ -98,7 +99,7 @@ void LibJoynrRuntime::init(IMiddlewareMessagingStubFactory* middlewareMessagingS
     // create the inprocess skeleton for the dispatcher
     dispatcherMessagingSkeleton = QSharedPointer<InProcessMessagingSkeleton>(
             new InProcessLibJoynrMessagingSkeleton(joynrDispatcher));
-    dispatcherAddress = QSharedPointer<joynr::system::Address>(
+    dispatcherAddress = QSharedPointer<joynr::system::QtAddress>(
             new InProcessMessagingAddress(dispatcherMessagingSkeleton));
 
     publicationManager = new PublicationManager();
@@ -121,8 +122,8 @@ void LibJoynrRuntime::init(IMiddlewareMessagingStubFactory* middlewareMessagingS
 
     // Set up the persistence file for storing provider participant ids
     QString persistenceFilename = libjoynrSettings->getParticipantIdsPersistenceFilename();
-    participantIdStorage =
-            QSharedPointer<ParticipantIdStorage>(new ParticipantIdStorage(persistenceFilename));
+    participantIdStorage = QSharedPointer<ParticipantIdStorage>(
+            new ParticipantIdStorage(persistenceFilename.toStdString()));
 
     // initialize the dispatchers
     QList<IDispatcher*> dispatcherList;
@@ -134,7 +135,7 @@ void LibJoynrRuntime::init(IMiddlewareMessagingStubFactory* middlewareMessagingS
 
     discoveryProxy = new LocalDiscoveryAggregator(
             *dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher), systemServicesSettings);
-    QString systemServicesDomain = systemServicesSettings.getDomain();
+    std::string systemServicesDomain = TypeUtil::toStd(systemServicesSettings.getDomain());
     QString routingProviderParticipantId =
             systemServicesSettings.getCcRoutingProviderParticipantId();
 
@@ -143,15 +144,17 @@ void LibJoynrRuntime::init(IMiddlewareMessagingStubFactory* middlewareMessagingS
     routingProviderDiscoveryQos.setArbitrationStrategy(
             DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
     routingProviderDiscoveryQos.addCustomParameter(
-            "fixedParticipantId", routingProviderParticipantId);
+            "fixedParticipantId", TypeUtil::toStd(routingProviderParticipantId));
     routingProviderDiscoveryQos.setDiscoveryTimeout(50);
 
-    auto routingProxyBuilder = getProxyBuilder<joynr::system::RoutingProxy>(systemServicesDomain);
-    auto routingProxy = routingProxyBuilder->setRuntimeQos(MessagingQos(5000))
+    auto routingProxyBuilder =
+            createProxyBuilder<joynr::system::RoutingProxy>(systemServicesDomain);
+    auto routingProxy = routingProxyBuilder->setMessagingQos(MessagingQos(10000))
                                 ->setCached(false)
                                 ->setDiscoveryQos(routingProviderDiscoveryQos)
                                 ->build();
-    messageRouter->setParentRouter(routingProxy, ccMessagingAddress, routingProviderParticipantId);
+    messageRouter->setParentRouter(
+            routingProxy, ccMessagingAddress, routingProviderParticipantId.toStdString());
     delete routingProxyBuilder;
 
     // setup discovery
@@ -162,12 +165,12 @@ void LibJoynrRuntime::init(IMiddlewareMessagingStubFactory* middlewareMessagingS
     discoveryProviderDiscoveryQos.setArbitrationStrategy(
             DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
     discoveryProviderDiscoveryQos.addCustomParameter(
-            "fixedParticipantId", discoveryProviderParticipantId);
+            "fixedParticipantId", TypeUtil::toStd(discoveryProviderParticipantId));
     discoveryProviderDiscoveryQos.setDiscoveryTimeout(1000);
 
     ProxyBuilder<joynr::system::DiscoveryProxy>* discoveryProxyBuilder =
-            getProxyBuilder<joynr::system::DiscoveryProxy>(systemServicesDomain);
-    discoveryProxy->setDiscoveryProxy(discoveryProxyBuilder->setRuntimeQos(MessagingQos(5000))
+            createProxyBuilder<joynr::system::DiscoveryProxy>(systemServicesDomain);
+    discoveryProxy->setDiscoveryProxy(discoveryProxyBuilder->setMessagingQos(MessagingQos(10000))
                                               ->setCached(false)
                                               ->setDiscoveryQos(discoveryProviderDiscoveryQos)
                                               ->build());
@@ -179,7 +182,7 @@ void LibJoynrRuntime::init(IMiddlewareMessagingStubFactory* middlewareMessagingS
                                                       messageRouter);
 }
 
-void LibJoynrRuntime::unregisterCapability(QString participantId)
+void LibJoynrRuntime::unregisterProvider(const std::string& participantId)
 {
     assert(capabilitiesRegistrar);
     capabilitiesRegistrar->remove(participantId);

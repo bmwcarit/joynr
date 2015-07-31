@@ -29,9 +29,9 @@ joynr_logging::Logger* CapabilitiesRegistrar::logger =
 CapabilitiesRegistrar::CapabilitiesRegistrar(
         QList<IDispatcher*> dispatcherList,
         joynr::system::IDiscoverySync& discoveryProxy,
-        QSharedPointer<joynr::system::Address> messagingStubAddress,
+        QSharedPointer<joynr::system::QtAddress> messagingStubAddress,
         QSharedPointer<ParticipantIdStorage> participantIdStorage,
-        QSharedPointer<joynr::system::Address> dispatcherAddress,
+        QSharedPointer<joynr::system::QtAddress> dispatcherAddress,
         QSharedPointer<MessageRouter> messageRouter)
         : dispatcherList(dispatcherList),
           discoveryProxy(discoveryProxy),
@@ -42,25 +42,29 @@ CapabilitiesRegistrar::CapabilitiesRegistrar(
 {
 }
 
-void CapabilitiesRegistrar::remove(const QString& participantId)
+void CapabilitiesRegistrar::remove(const std::string& participantId)
 {
     foreach (IDispatcher* currentDispatcher, dispatcherList) {
         currentDispatcher->removeRequestCaller(participantId);
     }
-    joynr::RequestStatus status;
-    discoveryProxy.remove(status, participantId);
+    joynr::RequestStatus status(discoveryProxy.remove(participantId));
     if (!status.successful()) {
         LOG_ERROR(logger,
                   QString("Unable to remove provider (participant ID: %1) "
                           "to discovery. Status code: %2.")
-                          .arg(participantId)
-                          .arg(status.getCode().toString()));
+                          .arg(QString::fromStdString(participantId))
+                          .arg(QString::fromStdString(status.getCode().toString())));
     }
-    messageRouter->removeNextHop(status, participantId);
-    if (!status.successful()) {
+
+    QSharedPointer<joynr::Future<void>> future(new Future<void>());
+    auto onSuccess = [future]() { future->onSuccess(); };
+    messageRouter->removeNextHop(participantId, onSuccess);
+    future->waitForFinished();
+
+    if (!future->getStatus().successful()) {
         LOG_ERROR(logger,
                   QString("Unable to remove next hop (participant ID: %1) from message router.")
-                          .arg(participantId));
+                          .arg(QString::fromStdString(participantId)));
     }
 }
 

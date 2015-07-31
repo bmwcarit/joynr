@@ -46,7 +46,7 @@ public interface JoynrErrorCode {
     /**
      * Returns a description of the error.
      * 
-     * @return
+     * @return the description of the error.
      */
     public String getDescription();
 

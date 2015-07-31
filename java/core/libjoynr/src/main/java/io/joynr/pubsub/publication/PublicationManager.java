@@ -28,20 +28,22 @@ import joynr.SubscriptionRequest;
 public interface PublicationManager {
 
     /**
-     * @brief Adds SubscriptionRequest when the Provider is not yet registered and there is no RequestCaller as yet.
+     * Adds SubscriptionRequest when the Provider is not yet registered and there is no RequestCaller as yet.
      * 
-     * @param subscriptionRequest
+     * @param fromParticipantId origin participant id
+     * @param toParticipantId destination participant id
+     * @param subscriptionRequest request to be added
      */
     void addSubscriptionRequest(String fromParticipantId,
                                 String toParticipantId,
                                 SubscriptionRequest subscriptionRequest);
 
     /**
-     * @brief Adds the SubscriptionRequest for event or attribute
-     * @param fromParticipantId
-     * @param toParticipantId
-     * @param subscriptionRequest
-     * @param requestCaller
+     * Adds the SubscriptionRequest for event or attribute
+     * @param fromParticipantId origin participant id
+     * @param toParticipantId destination participant id
+     * @param subscriptionRequest request to be added
+     * @param requestCaller caller of the request
      */
     void addSubscriptionRequest(String fromParticipantId,
                                 String toParticipantId,
@@ -49,37 +51,34 @@ public interface PublicationManager {
                                 RequestCaller requestCaller);
 
     /**
-     * @brief Stops the sending of publications
+     * Stops the sending of publications
      * 
-     * @param subscriptionId
+     * @param subscriptionId id of subscription ot be stopped
      */
     void stopPublication(final String subscriptionId);
 
     /**
-     * @brief Stops all publications for a provider
+     * Stops all publications for a provider
      * 
-     * @param providerId
+     * @param providerId provider for which all publication should be stopped
      */
     void stopPublicationByProviderId(String providerId);
 
     /**
-     * @brief Called by the Dispatcher every time a provider is registered to check whether there are already
-     *        subscriptionRequests waiting.
+     * Called by the Dispatcher every time a provider is registered to check whether there are already
+     * subscriptionRequests waiting.
      * 
-     * @param providerId
-     * @param requestCaller
+     * @param providerId provider id
+     * @param requestCaller request caller
      */
     void restoreQueuedSubscription(final String providerId, RequestCaller requestCaller);
 
     /**
-     * @brief Call passed through from ProviderListener when an attribute on the provider is changed.
-     * @param subscriptionId
-     * @param value
+     * Call passed through from ProviderListener when an attribute on the provider is changed.
+     * @param subscriptionId subscription id
+     * @param value value
      */
     void attributeValueChanged(String subscriptionId, Object value);
 
     void broadcastOccurred(String subscriptionId, List<BroadcastFilter> filters, Object... values);
-
-    void shutdown();
-
 }

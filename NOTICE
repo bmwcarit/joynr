@@ -16,6 +16,10 @@ specific language governing permissions and limitations
 under the License.
 
 This project has dependencies to:
+  Accessibility Test Framework under Apache License, Version 2.0
+  android under Apache License, Version 2.0
+  ant-launcher under Apache License, Version 2.0
+  AntLR Parser Generator under BSD License
   AOP alliance under Public Domain
   Apache Commons Lang under The Apache Software License, Version 2.0
   Apache Derby Database Engine and Embedded JDBC Driver under Apache 2
@@ -29,14 +33,20 @@ This project has dependencies to:
   Apache Log4j SLF4J Binding under The Apache Software License, Version 2.0
   Apache XBean :: ASM 4 shaded (repackaged) under Apache License, Version 2.0
   Apache XBean :: Reflect under The Apache Software License, Version 2.0
-  ASM Core under Apache License, Version 2.0
+  ASM Analysis under BSD
+  ASM Commons under BSD
+  ASM Core under BSD
+  ASM Tree under BSD
+  ASM Util under BSD
   atmosphere-annotations under CDDL or Apache License 2.0
   atmosphere-guice under Apache License 2.0
   atmosphere-jersey under CDDL or Apache License 2.0
   atmosphere-runtime under CDDL or Apache License 2.0
   Backport of JSR 166 under Public Domain
   Bean Validation API under Apache License, Version 2.0
+  Bouncy Castle Provider under Bouncy Castle Licence
   CDI APIs under Apache License, Version 2.0
+  classworlds under BSD Style License
   codegen under Eclipse Public License - v 1.0
   Common Annotations 1.1 API under lgpl
   Commons Codec under The Apache Software License, Version 2.0
@@ -46,9 +56,11 @@ This project has dependencies to:
   Commons Pool under The Apache Software License, Version 2.0
   Connector Architecture 1.5 API under lgpl
   core under Mozilla Public License Version 2.0
+  Core Hibernate O/RM functionality under GNU Lesser General Public License
   CSS Parser under GNU Lesser General Public License
   Data Mapper for Jackson under The Apache Software License, Version 2.0
   dbus under Mozilla Public License Version 2.0
+  Default Plexus Container under Apache License, Version 2.0
   dom4j under BSD License
   Eclipse Xbase Runtime Library under Eclipse Public License - v 1.0
   Eclipse Xtend Macro Library under Eclipse Public License - v 1.0
@@ -58,9 +70,8 @@ This project has dependencies to:
   Expression Language 2.2 API under lgpl
   FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
-  Google Android Java ME Library (Khronos) under Apache 2.0
-  Google Android Library under Apache 2.0
   Google Guice - Core Library under The Apache Software License, Version 2.0
+  Google Guice - Extensions - AssistedInject under The Apache Software License, Version 2.0
   Google Guice - Extensions - Persist under The Apache Software License, Version 2.0
   Google Guice - Extensions - Servlet under The Apache Software License, Version 2.0
   google-collect under The Apache Software License, Version 2.0
@@ -74,24 +85,30 @@ This project has dependencies to:
   Guava: Google Core Libraries for Java under The Apache Software License, Version 2.0
   Hamcrest Core under New BSD License
   Hamcrest library under New BSD License
+  Hibernate Commons Annotations under GNU Lesser General Public License
+  Hibernate JPA Support under GNU Lesser General Public License
   HtmlUnit under Apache License, Version 2.0
   HtmlUnit Core JS under Mozilla Public License version 2.0
   HttpComponents Client for Android under Apache License, Version 2.0
+  ICU4J under ICU License
   INFOMAS ASL :: Annotation Detector under The Apache Software License, Version 2.0
   Interceptors 1.1 API under lgpl
+  io.joynr.android:robolectric-unittests under The Apache Software License, Version 2.0
   io.joynr.cpp:common-api-model under The Apache Software License, Version 2.0
   io.joynr.cpp:cpp-generator under The Apache Software License, Version 2.0
   io.joynr.cpp:libjoynr under The Apache Software License, Version 2.0
   io.joynr.cpp:libs under The Apache Software License, Version 2.0
   io.joynr.cpp:tests under The Apache Software License, Version 2.0
-  io.joynr.examples:android-example under The Apache Software License, Version 2.0
+  io.joynr.examples:android-location-consumer under The Apache Software License, Version 2.0
   io.joynr.examples:android-location-provider under The Apache Software License, Version 2.0
+  io.joynr.examples:location-tester under The Apache Software License, Version 2.0
   io.joynr.examples:radio-app under The Apache Software License, Version 2.0
   io.joynr.java.android:joynr-android-runtime under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:capabilities-directory under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:channel-url-directory under The Apache Software License, Version 2.0
-  io.joynr.java.backend-services:discovery under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:discovery-directory-servlet under The Apache Software License, Version 2.0
+  io.joynr.java.backend-services:domain-access-controller under The Apache Software License, Version 2.0
+  io.joynr.java.backend-services:domain-access-controller-servlet under The Apache Software License, Version 2.0
   io.joynr.java.common:distributed-logging-appender under The Apache Software License, Version 2.0
   io.joynr.java.common:guice-integration under The Apache Software License, Version 2.0
   io.joynr.java.common:infrastructure-common under The Apache Software License, Version 2.0
@@ -115,7 +132,6 @@ This project has dependencies to:
   io.joynr.java.messaging:messaging-servlet under The Apache Software License, Version 2.0
   io.joynr.java.messaging:service-common under The Apache Software License, Version 2.0
   io.joynr.java.messaging:servlet-common under The Apache Software License, Version 2.0
-  io.joynr.java:android under The Apache Software License, Version 2.0
   io.joynr.java:backend-services under The Apache Software License, Version 2.0
   io.joynr.java:common under The Apache Software License, Version 2.0
   io.joynr.java:core under The Apache Software License, Version 2.0
@@ -130,6 +146,7 @@ This project has dependencies to:
   io.joynr.tools:build-resources under The Apache Software License, Version 2.0
   io.joynr.tools:generator under The Apache Software License, Version 2.0
   io.joynr.tools:license-check under The Apache Software License, Version 2.0
+  io.joynr:android under The Apache Software License, Version 2.0
   io.joynr:basemodel under The Apache Software License, Version 2.0
   io.joynr:cpp under The Apache Software License, Version 2.0
   io.joynr:examples under The Apache Software License, Version 2.0
@@ -144,24 +161,30 @@ This project has dependencies to:
   Jackson-JAXRS-base under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
   Jackson-JAXRS-JSON under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
   Jackson-module-JAXB-annotations under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
+  Java Annotation Indexer under AL 2.0
   Java API for XML Based RPC under CDDL-1.0
   Java API for XML Registries 1.0 under lgpl
   Java API for XML Web Services 2.2 under lgpl
   Java API for XML-Based RPC (JAX-RPC) 1.1 under lgpl
   Java Architecture for XML Binding 2.2 under lgpl
+  Java Persistence API, Version 2.1 under Eclipse Public License (EPL), Version 1.0 or Eclipse Distribution License (EDL), Version 1.0
   Java Servlet 3.0 API under lgpl
   Java Servlet API under CDDL + GPLv2 with classpath exception
+  Java Transaction API under Common Development and Distribution License or GNU General Public License, Version 2 with the Classpath Exception
   Java(TM) EE 6 Specification APIs under CDDL + GPLv2 with classpath exception
   JavaBeans Activation Framework (JAF) under Common Development and Distribution License (CDDL) v1.0
   JavaEE Application Deployment 1.2 API under lgpl
   JavaMail API under CDDL or GPLv2+CE
-  Javassist under MPL 1.1 or LGPL 2.1
+  Javassist under MPL 1.1 or LGPL 2.1 or Apache License 2.0
   javax.inject under The Apache Software License, Version 2.0
+  javax.interceptor API under CDDL + GPLv2 with classpath exception
   javax.servlet API v.3.0 under CDDL + GPLv2 with classpath exception
   JAX-RS Core API under Apache License, Version 2.0
   JBoss Java Authentication SPI for Containers 1.0 API under lgpl
   JBoss Java EE 6.0 API Aggregate under lgpl
   JBoss Java Server Pages 2.2 API under lgpl
+  JBoss Logging 3 under Apache License, version 2.0
+  JBoss Logging I18n Annotations under Public Domain
   Jersey Test Framework - Core under CDDL 1.1 or GPL2 w/ CPE
   Jersey Test Framework - Grizzly 2 Module under CDDL 1.1 or GPL2 w/ CPE
   jersey-client under CDDL 1.1 or GPL2 w/ CPE
@@ -190,7 +213,6 @@ This project has dependencies to:
   JMS 1.1 under The Apache Software License, Version 2.0
   JMS 1.1 API under lgpl
   JPA 2.0 API under Sun Binary Code License
-  JSON (JavaScript Object Notation) under provided without support or warranty
   JSON Small and Fast Parser under The Apache Software License, Version 2.0
   json-path under Apache 2.0
   JSON.simple under The Apache Software License, Version 2.0
@@ -199,8 +221,10 @@ This project has dependencies to:
   JTA 1.1 under The Apache Software License, Version 2.0
   JUnit under Common Public License Version 1.0
   Logging under The Apache Software License, Version 2.0
+  Maven Ant Tasks under The Apache Software License, Version 2.0
   Maven Artifact under The Apache Software License, Version 2.0
   Maven Artifact Manager under The Apache Software License, Version 2.0
+  Maven Error Diagnostics under The Apache Software License, Version 2.0
   Maven Local Settings Model under The Apache Software License, Version 2.0
   Maven Model under The Apache Software License, Version 2.0
   Maven Plugin API under The Apache Software License, Version 2.0
@@ -209,9 +233,11 @@ This project has dependencies to:
   Maven Project Builder under The Apache Software License, Version 2.0
   Maven Repository Metadata Model under The Apache Software License, Version 2.0
   Maven Wagon API under The Apache Software License, Version 2.0
+  Maven Wagon File Provider under The Apache Software License, Version 2.0
+  Maven Wagon HTTP Shared Library under The Apache Software License, Version 2.0
+  Maven Wagon Lightweight HTTP Provider under The Apache Software License, Version 2.0
   MIME streaming extension under Dual license consisting of the CDDL v1.1 and GPL v2
   Mockito under The MIT License
-  MXP1: Xml Pull Parser 3rd Edition (XPP3) under Indiana University Extreme! Lab Software License, vesion 1.1.1 or Public Domain or Apache Software License, version 1.1
   Neko HTML under The Apache Software License, Version 2.0
   Objenesis under MIT License
   OpenJPA JDBC under Apache Software License 2.0
@@ -219,6 +245,7 @@ This project has dependencies to:
   OpenJPA Persistence under Apache Software License 2.0
   OpenJPA Persistence JDBC under Apache Software License 2.0
   OpenJPA Utilities Library under Apache Software License 2.0
+  org.apache.tools.ant under Apache License, Version 2.0
   org.eclipse.xtend.standalone under Eclipse Public License - v 1.0
   org.franca.core under Eclipse Public License - v 1.0
   org.franca.core.dsl under Eclipse Public License - v 1.0
@@ -231,18 +258,26 @@ This project has dependencies to:
   REST Assured under Apache 2.0
   rest-assured-common under Apache 2.0
   RoboGuice under Apache 2
+  robolectric under MIT license
+  robolectric-annotations under MIT license
+  robolectric-resources under MIT license
+  robolectric-utils under MIT license
   Serp under BSD
+  shadows-core under MIT license
   Simple API for CSS under The W3C Software License
   SLF4J API and Google Android Binding under The MIT License
   SLF4J API Module under MIT License
   SLF4J LOG4J-12 Binding under MIT License
   SOAP with Attachments API for Java 1.3 under lgpl
+  sqlite4java under The Apache Software License, Version 2.0
   StAX API under The Apache Software License, Version 2.0
   TagSoup under Apache License 2.0
   Transaction 1.1 API under lgpl
+  vtd-xml under GNU GENERAL PUBLIC LICENSE Version 2, June 1991
   Xalan Java under The Apache Software License, Version 2.0
   Xalan Java Serializer under The Apache Software License, Version 2.0
   Xerces2-j under The Apache Software License, Version 2.0
+  xercesMinimal under Apache License, Version 2.0
   XML Commons External Components XML APIs under The Apache Software License, Version 2.0 or The SAX License or The W3C License
   xml-path under Apache 2.0
 

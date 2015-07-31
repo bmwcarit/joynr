@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,112 +18,65 @@
  */
 package system
 
-import types.ExtendedTypes.* from "../common/Types.fidl"
+import types.* from "DiscoveryTypes.fidl"
 
-typeCollection DiscoveryTypes {
-    enumeration DiscoveryScope  {
-        LOCAL_ONLY
-        LOCAL_THEN_GLOBAL
-        LOCAL_AND_GLOBAL
-        GLOBAL_ONLY
-    }
-
-    enumeration CommunicationMiddleware {
-        JOYNR
-        COMMONAPI_DBUS
-        BROWSER
-        WEBSOCKET
-        SOME_IP
-        IN_PROCESS
-        NONE
-    }
-
-    struct DiscoveryQos {
-        Int64 cacheMaxAge
-        DiscoveryScope discoveryScope
-        Boolean providerMustSupportOnChange
-    }
-
-    struct DiscoveryEntry {
-        String domain
-        String interfaceName
-        String participantId
-        ProviderQos qos
-        CommunicationMiddleware[] connections
-    }
-}
-
-/**
- * The <code>Discovery</code> interface is a joynr internal interface. This
- * interface is used by libjoynr to add, lookup or remove provider to joynr
- * discovery. Internally joynr discovery consists of a centralized discovery
- * directory (<code>GlobalCapabilitiesDirectory</code>) that is distributed
- * to all cluster controller (<code>LocalCapabilitiesDirectory</code>).
- */
+<**
+	@description: The <code>Discovery</code> interface is a joynr internal
+		interface. This interface is used by libjoynr to add, lookup or
+		remove provider to joynr discovery. Internally joynr discovery
+		consists of a centralized discovery directory
+		(<code>GlobalCapabilitiesDirectory</code>) that is distributed to
+		all cluster controller (<code>LocalCapabilitiesDirectory</code>).
+**>
 interface Discovery {
 
 	version {major 0 minor 1}
 
-	/**
-	 * Adds a provider to the joynr discovery.
-	 *
-	 * @param domain the domain to register the provider with
-	 * @param interfaceName the name of the provider interface
-	 * @param participantId the participant ID of the provider
-	 * @param qos the qos of the provider
-	 * @param connections a list of communications middlewares that can be used to access the provider
-	 */
+	<** @description: Adds a provider to the joynr discovery. **>
     method add {
         in {
-            DiscoveryTypes.DiscoveryEntry discoveryEntry
+			<** @description: the new DiscoveryEntry to be added **>
+            DiscoveryEntry discoveryEntry
         }
     }
 
-	/**
-	 * Looks up a providers in the joynr discovery that match the requested QoS.
-	 * 
-	 * @param domain the domain to search for provider
-	 * @param interfaceName the interface the provider must implement
-	 * @param qos [not implemented yet] the minimum QoS the provider must offer
-	 * @param discoveryQos the QoS used for the lookup
-	 * 
-	 * @return a list of matching providers
-	 */
+	<**
+		@description: Looks up a providers in the joynr discovery that match
+			the requested QoS.
+		@param: qos [not implemented yet] the minimum QoS the provider must offer
+	**>
     method lookup {
         in {
-            String domain
-            String interfaceName
-            DiscoveryTypes.DiscoveryQos discoveryQos
+			<** @description: the domain to search for provider **>
+			String domain
+			<** @description: the interface the provider must implement **>
+			String interfaceName
+			<** @description: the QoS used for the lookup **>
+            DiscoveryQos discoveryQos
         }
         out {
-            DiscoveryTypes.DiscoveryEntry[] result
+			<** @description: a list of matching providers **>
+            DiscoveryEntry[] result
         }
     }
 
-	/**
-	 * Looks up a specific provider in the joynr discovery.
-	 * 
-	 * @param participantId the participant ID of the provider to look up
-	 * 
-	 * @return the provider matching the participant ID
-	 */
+	<** @description: Looks up a specific provider in the joynr discovery. **>
     method lookup {
         in {
+			<** @description: the participant ID of the provider to look up **>
             String participantId
         }
         out {
-            DiscoveryTypes.DiscoveryEntry result
+			<** @description: the provider matching the participant ID **>
+            DiscoveryEntry result
         }
     }
 
-	/**
-	 * Removes a provider from joynr discovery.
-	 *
-	 * @param participantId the participant ID of the provider to remove
-	 */
-    method remove {
-        in {
-            String participantId
-        }
-    }
+	<** @description: Removes a provider from joynr discovery. **>
+	method remove {
+		in {
+			<** @description: the participant ID of the provider to remove **>
+			String participantId
+		}
+	}
 }

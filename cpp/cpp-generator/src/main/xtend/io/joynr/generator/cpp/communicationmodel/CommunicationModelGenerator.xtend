@@ -40,10 +40,22 @@ class CommunicationModelGenerator {
 	EnumHTemplate enumh;
 
 	@Inject
+	StdEnumHTemplate stdEnumH;
+
+	@Inject
+	StdEnumCppTemplate stdEnumCpp;
+
+	@Inject
 	TypeHTemplate typeH;
 
 	@Inject
 	TypeCppTemplate typeCpp;
+
+	@Inject
+	StdTypeHTemplate stdTypeH;
+
+	@Inject
+	StdTypeCppTemplate stdTypeCpp;
 
 	def doGenerate(FModel fModel,
 		IFileSystemAccess sourceFileSystem,
@@ -60,32 +72,69 @@ class CommunicationModelGenerator {
 
 		for( type: getComplexDataTypes(fModel)){
 			if(type instanceof FCompoundType) {
-				val sourcepath = dataTypePath + getPackageSourceDirectory(type) + File::separator
-				val headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
+				var sourcepath = dataTypePath + getPackageSourceDirectory(type) + File::separator
+				var headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
 
 				generateFile(
 					headerFileSystem,
-					headerpath + type.joynrName + ".h",
+					headerpath + type.joynrNameQt + ".h",
 					typeH,
+					type
+				)
+				
+				generateFile(
+					sourceFileSystem,
+					sourcepath + type.joynrNameQt + ".cpp",
+					typeCpp,
+					type
+				)
+
+				if (type.isPartOfTypeCollection) {
+					headerpath += type.typeCollectionName + File::separator
+					sourcepath += type.typeCollectionName + File::separator
+				}
+
+				generateFile(
+					headerFileSystem,
+					headerpath + type.joynrNameStd + ".h",
+					stdTypeH,
 					type
 				)
 
 				generateFile(
 					sourceFileSystem,
-					sourcepath + type.joynrName + ".cpp",
-					typeCpp,
+					sourcepath + type.joynrNameStd + ".cpp",
+					stdTypeCpp,
 					type
 				)
 			}
 		}
 
-		for( type: getEnumDataTypes(fModel)){
-			val headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
-			
+		for (type : getEnumDataTypes(fModel)) {
+			var sourcepath = dataTypePath + getPackageSourceDirectory(type) + File::separator
+			var headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
 			generateFile(
 				headerFileSystem,
-				headerpath + type.joynrName + ".h",
+				headerpath + type.joynrNameQt + ".h",
 				enumh,
+				type as FEnumerationType
+			)
+
+			if (type.isPartOfTypeCollection) {
+				headerpath += type.typeCollectionName + File::separator
+				sourcepath += type.typeCollectionName + File::separator
+			}
+
+			generateFile(
+				headerFileSystem,
+				headerpath + type.joynrNameStd + ".h",
+				stdEnumH,
+				type as FEnumerationType
+			)
+			generateFile(
+				sourceFileSystem,
+				sourcepath + type.joynrNameStd + ".cpp",
+				stdEnumCpp,
 				type as FEnumerationType
 			)
 		}

@@ -18,6 +18,9 @@
  */
 
 #include <QFileInfo>
+#include <string>
+#include <stdint.h>
+#include <memory>
 
 #include "MyRadioHelper.h"
 #include "joynr/vehicle/RadioProxy.h"
@@ -30,6 +33,7 @@
 #include <cassert>
 #include <limits>
 #include "joynr/JsonSerializer.h"
+#include "joynr/TypeUtil.h"
 
 using namespace joynr;
 using joynr_logging::Logger;
@@ -52,11 +56,11 @@ public:
             delete logger;
     }
 
-    void onReceive(vehicle::RadioStation value)
+    void onReceive(const vehicle::RadioStation& value)
     {
-        MyRadioHelper::prettyLog(
-                logger,
-                QString("ATTRIBUTE SUBSCRIPTION current station: %1").arg(value.toString()));
+        MyRadioHelper::prettyLog(logger,
+                                 QString("ATTRIBUTE SUBSCRIPTION current station: %1")
+                                         .arg(QString::fromStdString(value.toString())));
     }
 
     void onError()
@@ -85,10 +89,11 @@ public:
             delete logger;
     }
 
-    void onReceive(vehicle::RadioStation value)
+    void onReceive(const vehicle::RadioStation& value)
     {
-        MyRadioHelper::prettyLog(
-                logger, QString("BROADCAST SUBSCRIPTION weak signal: %1").arg(value.toString()));
+        MyRadioHelper::prettyLog(logger,
+                                 QString("BROADCAST SUBSCRIPTION weak signal: %1")
+                                         .arg(QString::fromStdString(value.toString())));
     }
 
 private:
@@ -113,72 +118,18 @@ public:
             delete logger;
     }
 
-    void onReceive(vehicle::RadioStation discoveredStation, vehicle::GeoPosition geoPosition)
+    void onReceive(const vehicle::RadioStation& discoveredStation,
+                   const vehicle::GeoPosition& geoPosition)
     {
         MyRadioHelper::prettyLog(logger,
                                  QString("BROADCAST SUBSCRIPTION new station discovered: %1 at %2")
-                                         .arg(discoveredStation.toString())
-                                         .arg(geoPosition.toString()));
+                                         .arg(QString::fromStdString(discoveredStation.toString()))
+                                         .arg(QString::fromStdString(geoPosition.toString())));
     }
 
 private:
     Logger* logger;
 };
-
-// Run a subscription
-QString runSubscription(vehicle::RadioProxy* proxy)
-{
-    Logger* logger = Logging::getInstance()->getLogger(
-            "DEMO", "MyRadioConsumerApplication::runSubscription");
-
-    // Set the Quality of Service parameters for the subscription
-
-    // The provider will send a notification whenever the value changes. The number of sent
-    // notifications
-    // may be limited by the min interval QoS.
-    // NOTE: The provider must support on-change notifications in order to use this feature by
-    // calling
-    //       the <attribute>Changed method of the <interface>AbstractProvider class whenever the
-    //       <attribute>
-    //       value changes.
-    QSharedPointer<OnChangeWithKeepAliveSubscriptionQos> subscriptionQos(
-            new OnChangeWithKeepAliveSubscriptionQos());
-    // The provider will maintain at least a minimum interval idle time in milliseconds between
-    // successive notifications, even if on-change notifications are enabled and the value changes
-    // more
-    // often. This prevents the consumer from being flooded by updated values. The filtering happens
-    // on
-    // the provider's side, thus also preventing excessive network traffic.
-    subscriptionQos->setMinInterval(5 * 1000);
-    // The provider will send notifications every maximum interval in milliseconds, even if the
-    // value didn't
-    // change. It will send notifications more often if on-change notifications are enabled,
-    // the value changes more often, and the minimum interval QoS does not prevent it. The maximum
-    // interval
-    // can thus be seen as a sort of heart beat.
-    subscriptionQos->setMaxInterval(8 * 1000);
-    // The provider will send notifications until the end date is reached. The consumer will not
-    // receive any
-    // notifications (neither value notifications nor missed publication notifications) after
-    // this date.
-    // setValidity_ms will set the end date to current time millis + validity_ms
-    subscriptionQos->setValidity(60 * 1000);
-    // Notification messages will be sent with this time-to-live. If a notification message can not
-    // be
-    // delivered within its TTL, it will be deleted from the system.
-    // NOTE: If a notification message is not delivered due to an expired TTL, it might raise a
-    //       missed publication notification (depending on the value of the alert interval QoS).
-    subscriptionQos->setAlertAfterInterval(10 * 1000);
-
-    // Subscriptions go to a listener object
-    QSharedPointer<ISubscriptionListener<vehicle::RadioStation>> listener(
-            new RadioStationListener());
-
-    // Subscribe to the radio station.
-    QString subscriptionId = proxy->subscribeToCurrentStation(listener, subscriptionQos);
-
-    return subscriptionId;
-}
 
 //------- Main entry point -------------------------------------------------------
 
@@ -195,8 +146,10 @@ int main(int argc, char* argv[])
     }
 
     // Get the provider domain
-    QString providerDomain(argv[1]);
-    LOG_INFO(logger, QString("Creating proxy for provider on domain \"%1\"").arg(providerDomain));
+    std::string providerDomain(argv[1]);
+    LOG_INFO(logger,
+             QString("Creating proxy for provider on domain \"%1\"")
+                     .arg(TypeUtil::toQt(providerDomain)));
 
     // Get the current program directory
     QString dir(QFileInfo(programName).absolutePath());
@@ -205,12 +158,12 @@ int main(int argc, char* argv[])
     QString pathToMessagingSettings(dir + QString("/resources/radio-app-consumer.settings"));
     QString pathToLibJoynrSettings(dir +
                                    QString("/resources/radio-app-consumer.libjoynr.settings"));
-    JoynrRuntime* runtime =
-            JoynrRuntime::createRuntime(pathToLibJoynrSettings, pathToMessagingSettings);
+    JoynrRuntime* runtime = JoynrRuntime::createRuntime(
+            TypeUtil::toStd(pathToLibJoynrSettings), TypeUtil::toStd(pathToMessagingSettings));
 
     // Create proxy builder
     ProxyBuilder<vehicle::RadioProxy>* proxyBuilder =
-            runtime->getProxyBuilder<vehicle::RadioProxy>(providerDomain);
+            runtime->createProxyBuilder<vehicle::RadioProxy>(providerDomain);
 
     // Messaging Quality of service
     qlonglong qosMsgTtl = 30000;                // Time to live is 30 secs in one direction
@@ -236,18 +189,17 @@ int main(int argc, char* argv[])
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
 
     // Build a proxy
-    vehicle::RadioProxy* proxy = proxyBuilder->setRuntimeQos(MessagingQos(qosMsgTtl))
-                                         ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))
+    vehicle::RadioProxy* proxy = proxyBuilder->setMessagingQos(MessagingQos(qosMsgTtl))
                                          ->setCached(false)
                                          ->setDiscoveryQos(discoveryQos)
                                          ->build();
 
-    RequestStatus status;
-
     vehicle::RadioStation currentStation;
-    proxy->getCurrentStation(status, currentStation);
+    RequestStatus status(proxy->getCurrentStation(currentStation));
     assert(status.successful());
-    MyRadioHelper::prettyLog(logger, QString("ATTRIBUTE GET: %1").arg(currentStation.toString()));
+    MyRadioHelper::prettyLog(
+            logger,
+            QString("ATTRIBUTE GET: %1").arg(QString::fromStdString(currentStation.toString())));
     // Run a short subscription using the proxy
     // Set the Quality of Service parameters for the subscription
 
@@ -256,35 +208,35 @@ int main(int argc, char* argv[])
     // NOTE: The provider must support on-change notifications in order to use this feature by
     //       calling the <attribute>Changed method of the <interface>Provider class whenever the
     //       <attribute> value changes.
-    QSharedPointer<OnChangeWithKeepAliveSubscriptionQos> subscriptionQos(
-            new OnChangeWithKeepAliveSubscriptionQos());
+    OnChangeWithKeepAliveSubscriptionQos subscriptionQos;
     // The provider will maintain at least a minimum interval idle time in milliseconds between
     // successive notifications, even if on-change notifications are enabled and the value changes
     // more often. This prevents the consumer from being flooded by updated values. The filtering
     // happens on the provider's side, thus also preventing excessive network traffic.
-    subscriptionQos->setMinInterval(5 * 1000);
+    subscriptionQos.setMinInterval(5 * 1000);
     // The provider will send notifications every maximum interval in milliseconds, even if the
     // value didn't change. It will send notifications more often if on-change notifications are
     // enabled, the value changes more often, and the minimum interval QoS does not prevent it. The
     // maximum interval can thus be seen as a sort of heart beat.
-    subscriptionQos->setMaxInterval(8 * 1000);
+    subscriptionQos.setMaxInterval(8 * 1000);
     // The provider will send notifications until the end date is reached. The consumer will not
     // receive any notifications (neither value notifications nor missed publication notifications)
     // after this date.
     // setValidity_ms will set the end date to current time millis + validity_ms
-    subscriptionQos->setValidity(60 * 1000);
+    subscriptionQos.setValidity(60 * 1000);
     // Notification messages will be sent with this time-to-live. If a notification message can not
     // be delivered within its TTL, it will be deleted from the system.
     // NOTE: If a notification message is not delivered due to an expired TTL, it might raise a
     //       missed publication notification (depending on the value of the alert interval QoS).
-    subscriptionQos->setAlertAfterInterval(10 * 1000);
+    subscriptionQos.setAlertAfterInterval(10 * 1000);
 
     // Subscriptions go to a listener object
-    QSharedPointer<ISubscriptionListener<vehicle::RadioStation>> listener(
+    std::shared_ptr<ISubscriptionListener<vehicle::RadioStation>> listener(
             new RadioStationListener());
 
     // Subscribe to the radio station.
-    QString subscriptionId = proxy->subscribeToCurrentStation(listener, subscriptionQos);
+    std::string currentStationSubscriptionId =
+            proxy->subscribeToCurrentStation(listener, subscriptionQos);
 
     // broadcast subscription
 
@@ -293,60 +245,71 @@ int main(int argc, char* argv[])
     // NOTE: The provider must support on-change notifications in order to use this feature by
     //       calling the <broadcast>EventOccurred method of the <interface>Provider class whenever
     //       the <broadcast> should be triggered.
-    QSharedPointer<OnChangeSubscriptionQos> weakSignalBroadcastSubscriptionQos(
-            new OnChangeSubscriptionQos());
+    OnChangeSubscriptionQos weakSignalBroadcastSubscriptionQos;
     // The provider will maintain at least a minimum interval idle time in milliseconds between
     // successive notifications, even if on-change notifications are enabled and the value changes
     // more often. This prevents the consumer from being flooded by updated values. The filtering
     // happens on the provider's side, thus also preventing excessive network traffic.
-    weakSignalBroadcastSubscriptionQos->setMinInterval(1 * 1000);
+    weakSignalBroadcastSubscriptionQos.setMinInterval(1 * 1000);
     // The provider will send notifications until the end date is reached. The consumer will not
     // receive any notifications (neither value notifications nor missed publication notifications)
     // after this date.
     // setValidity_ms will set the end date to current time millis + validity_ms
-    weakSignalBroadcastSubscriptionQos->setValidity(60 * 1000);
-    QSharedPointer<ISubscriptionListener<vehicle::RadioStation>> weakSignalBroadcastListener(
+    weakSignalBroadcastSubscriptionQos.setValidity(60 * 1000);
+    std::shared_ptr<ISubscriptionListener<vehicle::RadioStation>> weakSignalBroadcastListener(
             new WeakSignalBroadcastListener());
-    proxy->subscribeToWeakSignalBroadcast(
+    std::string weakSignalBroadcastSubscriptionId = proxy->subscribeToWeakSignalBroadcast(
             weakSignalBroadcastListener, weakSignalBroadcastSubscriptionQos);
 
     // selective broadcast subscription
 
-    QSharedPointer<OnChangeSubscriptionQos> newStationDiscoveredBroadcastSubscriptionQos(
-            new OnChangeSubscriptionQos());
-    newStationDiscoveredBroadcastSubscriptionQos->setMinInterval(2 * 1000);
-    newStationDiscoveredBroadcastSubscriptionQos->setValidity(180 * 1000);
-    QSharedPointer<ISubscriptionListener<vehicle::RadioStation, vehicle::GeoPosition>>
+    OnChangeSubscriptionQos newStationDiscoveredBroadcastSubscriptionQos;
+    newStationDiscoveredBroadcastSubscriptionQos.setMinInterval(2 * 1000);
+    newStationDiscoveredBroadcastSubscriptionQos.setValidity(180 * 1000);
+    std::shared_ptr<ISubscriptionListener<vehicle::RadioStation, vehicle::GeoPosition>>
             newStationDiscoveredBroadcastListener(new NewStationDiscoveredBroadcastListener());
     vehicle::RadioNewStationDiscoveredBroadcastFilterParameters
             newStationDiscoveredBroadcastFilterParams;
     newStationDiscoveredBroadcastFilterParams.setHasTrafficService("true");
-    vehicle::GeoPosition positionOfInterest(48.1351250, 11.5819810); // Munich
+    vehicle::QtGeoPosition positionOfInterest(48.1351250, 11.5819810); // Munich
     QString positionOfInterestJson(JsonSerializer::serialize(positionOfInterest));
-    newStationDiscoveredBroadcastFilterParams.setPositionOfInterest(positionOfInterestJson);
+    newStationDiscoveredBroadcastFilterParams.setPositionOfInterest(
+            TypeUtil::toStd(positionOfInterestJson));
     newStationDiscoveredBroadcastFilterParams.setRadiusOfInterestArea("200000"); // 200 km
-    proxy->subscribeToNewStationDiscoveredBroadcast(newStationDiscoveredBroadcastFilterParams,
-                                                    newStationDiscoveredBroadcastListener,
-                                                    newStationDiscoveredBroadcastSubscriptionQos);
+    std::string newStationDiscoveredBroadcastSubscriptionId =
+            proxy->subscribeToNewStationDiscoveredBroadcast(
+                    newStationDiscoveredBroadcastFilterParams,
+                    newStationDiscoveredBroadcastListener,
+                    newStationDiscoveredBroadcastSubscriptionQos);
     // add favorite radio station
     vehicle::RadioStation favouriteStation("99.3 The Fox Rocks", false, vehicle::Country::CANADA);
     bool success;
-    proxy->addFavouriteStation(status, success, favouriteStation);
-    MyRadioHelper::prettyLog(
-            logger,
-            QString("METHOD: added favourite station: %1").arg(favouriteStation.toString()));
+    proxy->addFavouriteStation(success, favouriteStation);
+    MyRadioHelper::prettyLog(logger,
+                             QString("METHOD: added favourite station: %1")
+                                     .arg(QString::fromStdString(favouriteStation.toString())));
 
     // shuffle the stations
     MyRadioHelper::prettyLog(logger, QString("METHOD: calling shuffle stations"));
-    proxy->shuffleStations(status);
-
+    proxy->shuffleStations();
     // Run until the user hits q
     int key;
+
     while ((key = MyRadioHelper::getch()) != 'q') {
-        joynr::RequestStatus status;
+        joynr::vehicle::GeoPosition location;
+        joynr::vehicle::Country::Enum country;
         switch (key) {
         case 's':
-            proxy->shuffleStations(status);
+            proxy->shuffleStations();
+            break;
+        case 'm':
+            proxy->getLocationOfCurrentStation(country, location);
+            MyRadioHelper::prettyLog(
+                    logger,
+                    QString("METHOD: getLocationOfCurrentStation: country: %1, location: %2")
+                            .arg(QString::fromStdString(
+                                    joynr::vehicle::Country::getLiteral(country)))
+                            .arg(QString::fromStdString(location.toString())));
             break;
         default:
             MyRadioHelper::prettyLog(logger,
@@ -358,7 +321,10 @@ int main(int argc, char* argv[])
     }
 
     // unsubscribe
-    proxy->unsubscribeFromCurrentStation(subscriptionId);
+    proxy->unsubscribeFromCurrentStation(currentStationSubscriptionId);
+    proxy->unsubscribeFromWeakSignalBroadcast(weakSignalBroadcastSubscriptionId);
+    proxy->unsubscribeFromNewStationDiscoveredBroadcast(
+            newStationDiscoveredBroadcastSubscriptionId);
 
     delete proxy;
     delete proxyBuilder;

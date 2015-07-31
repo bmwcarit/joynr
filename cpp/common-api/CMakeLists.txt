@@ -55,14 +55,14 @@ if(${ENABLE_CLANG_FORMATTER})
     set(COMMENT "${COMMENT}\nprocessing header files:\n${JoynrCommonAPI_HEADERS}")
     set(COMMENT "${COMMENT}\nprocessing source files:\n${JoynrCommonAPI_SOURCES}")
 
-    add_custom_command(
-        TARGET JoynrCommonAPI
-        PRE_BUILD
+    add_custom_target(
+        TARGET format-JoynrCommonAPI
         COMMAND clang-format -i ${JoynrCommonAPI_HEADERS} ${JoynrCommonAPI_SOURCES}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         COMMENT "${COMMENT}"
         VERBATIM
     )
+    add_dependencies(JoynrCommonAPI format-JoynrCommonAPI)
 endif(${ENABLE_CLANG_FORMATTER})
 
 set_target_properties(

@@ -22,12 +22,11 @@ package io.joynr.generator.util;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import io.joynr.generator.loading.ModelLoader;
 
 import java.net.URL;
 import java.util.ArrayList;
-
-import io.joynr.generator.loading.ModelLoader;
 
 import org.eclipse.emf.ecore.resource.Resource;
 import org.franca.core.franca.FBroadcast;

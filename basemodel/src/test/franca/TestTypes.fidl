@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,37 @@ typeCollection TestTypes {
 	}
 
 	struct Word {
-		Vowel[] vowels 
+		Vowel[] vowels
+	}
+
+	struct TEverythingStruct {
+		Int8 tInt8
+		UInt8 tUInt8
+		Int16 tInt16
+		UInt16 tUInt16
+		Int32 tInt32
+		UInt32 tUInt32
+		Int64 tInt64
+		UInt64 tUInt64
+		Double tDouble
+		Float tFloat
+		String tString
+		Boolean tBoolean
+		ByteBuffer tByteBuffer
+		UInt8[] tUInt8Array
+		TEnum tEnum
+		TEnum[] tEnumArray
+		String[] tStringArray
+		Word word
+		Word[] wordArray
+	}
+
+	struct TEverythingExtendedStruct extends TEverythingStruct {
+		Boolean tBooleanExtended
+		String	tStringExtended
+	}
+
+	struct TEverythingExtendedExtendedStruct extends TEverythingExtendedStruct {
+		String	tStringExtendedExtended
 	}
 }

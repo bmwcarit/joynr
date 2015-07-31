@@ -20,7 +20,6 @@ package io.joynr.generator.cpp
 import com.google.common.collect.Sets
 import io.joynr.generator.IJoynrGenerator
 import io.joynr.generator.cpp.communicationmodel.CommunicationModelGenerator
-import io.joynr.generator.cpp.defaultProvider.DefaultProviderGenerator
 import io.joynr.generator.cpp.filter.FilterGenerator
 import io.joynr.generator.cpp.inprocess.InProcessGenerator
 import io.joynr.generator.cpp.joynrmessaging.JoynrMessagingGenerator
@@ -37,6 +36,7 @@ import org.franca.core.dsl.FrancaPersistenceManager
 import org.franca.core.franca.FModel
 
 import static com.google.common.base.Preconditions.*
+import io.joynr.generator.cpp.defaultProvider.DefaultInterfaceProviderGenerator
 
 class JoynrCppGenerator implements IJoynrGenerator{
 
@@ -62,7 +62,7 @@ class JoynrCppGenerator implements IJoynrGenerator{
 	JoynrMessagingGenerator joynrMessagingGenerator
 
 	@Inject
-	DefaultProviderGenerator defaultProviderGenerator
+	DefaultInterfaceProviderGenerator defaultProviderGenerator
 
 	@Inject
 	IFileSystemAccess outputHeaderFileSystem;

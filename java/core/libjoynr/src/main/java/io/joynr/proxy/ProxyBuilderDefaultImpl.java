@@ -23,13 +23,10 @@ import io.joynr.arbitration.Arbitrator;
 import io.joynr.arbitration.ArbitratorFactory;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
-import io.joynr.dispatcher.RequestReplyDispatcher;
-import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.exceptions.JoynrArbitrationException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.MessagingQos;
-import io.joynr.pubsub.subscription.SubscriptionManager;
 
 import java.util.UUID;
 
@@ -40,28 +37,22 @@ public class ProxyBuilderDefaultImpl<T extends JoynrInterface> implements ProxyB
     private static final Logger logger = LoggerFactory.getLogger(ProxyBuilderDefaultImpl.class);
 
     private DiscoveryQos discoveryQos;
-    // private ProxyQos proxyQos;
     private MessagingQos messagingQos;
     private Arbitrator arbitrator;
     private LocalCapabilitiesDirectory localCapabilitiesDirectory;
     private String domain;
-    private RequestReplySender messageSender;
-    private RequestReplyDispatcher dispatcher;
     private String proxyParticipantId;
     private boolean buildCalled;
     Class<T> myClass;
     private final String interfaceName;
     private DiscoveryAgent discoveryAgent;
-
-    private SubscriptionManager subscriptionManager;
+    private ProxyInvocationHandlerFactory proxyInvocationHandlerFactory;
 
     public ProxyBuilderDefaultImpl(LocalCapabilitiesDirectory capabilitiesDirectory,
                                    String domain,
                                    Class<T> interfaceClass,
-                                   RequestReplySender messageSender,
-                                   RequestReplyDispatcher dispatcher,
-                                   SubscriptionManager subscriptionManager) {
-        this.subscriptionManager = subscriptionManager;
+                                   ProxyInvocationHandlerFactory proxyInvocationHandlerFactory) {
+        this.proxyInvocationHandlerFactory = proxyInvocationHandlerFactory;
         try {
             interfaceName = (String) interfaceClass.getField("INTERFACE_NAME").get(String.class);
         } catch (Exception e) {
@@ -74,8 +65,6 @@ public class ProxyBuilderDefaultImpl<T extends JoynrInterface> implements ProxyB
 
         this.localCapabilitiesDirectory = capabilitiesDirectory;
         this.domain = domain;
-        this.messageSender = messageSender;
-        this.dispatcher = dispatcher;
         this.discoveryAgent = new DiscoveryAgent();
         discoveryQos = new DiscoveryQos();
         arbitrator = ArbitratorFactory.create(domain, interfaceName, discoveryQos, localCapabilitiesDirectory);
@@ -127,16 +116,6 @@ public class ProxyBuilderDefaultImpl<T extends JoynrInterface> implements ProxyB
         return this;
     }
 
-    // Proxy Qos not yet supported
-    // /**
-    // * @param proxyQos
-    // * @return
-    // */
-    // public ProxyBuilder<T> setProxyQos(final ProxyQos proxyQos) {
-    // this.proxyQos = proxyQos;
-    // return this;
-    // }
-
     /*
      * (non-Javadoc)
      * 
@@ -173,28 +152,25 @@ public class ProxyBuilderDefaultImpl<T extends JoynrInterface> implements ProxyB
         }
     }
 
-    // Method called by both synchronous and asynchronous build() to create a ProxyInvocationHandler 
+    // Method called by both synchronous and asynchronous build() to create a ProxyInvocationHandler
     private ProxyInvocationHandler createProxyInvocationHandler() {
         if (buildCalled) {
             throw new JoynrIllegalStateException("Proxy builder was already used to build a proxy. Please create a new proxy builder for each proxy.");
         }
         buildCalled = true;
 
-        ProxyInvocationHandler ret = new ProxyInvocationHandler(domain,
-                                                                interfaceName,
-                                                                proxyParticipantId,
-                                                                discoveryQos,
-                                                                messagingQos,
-                                                                messageSender,
-                                                                dispatcher,
-                                                                subscriptionManager);
+        ProxyInvocationHandler proxyInvocationHandler = proxyInvocationHandlerFactory.create(domain,
+                                                                                             interfaceName,
+                                                                                             proxyParticipantId,
+                                                                                             discoveryQos,
+                                                                                             messagingQos);
 
         // This order is necessary because the Arbitrator might return early
         // But if the listener is set after the ProxyInvocationHandler the 
         // Arbitrator cannot return early
-        discoveryAgent.setProxyInvocationHandler(ret);
+        discoveryAgent.setProxyInvocationHandler(proxyInvocationHandler);
         arbitrator.setArbitrationListener(this.discoveryAgent);
 
-        return ret;
+        return proxyInvocationHandler;
     }
 }

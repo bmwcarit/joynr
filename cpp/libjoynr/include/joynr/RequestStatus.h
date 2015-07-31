@@ -21,14 +21,18 @@
 
 #include "joynr/JoynrExport.h"
 
+#include <string>
+#include <list>
+
 #include "joynr/RequestStatusCode.h"
-#include <QStringList>
 
 namespace joynr
 {
 
 /**
- * @brief This class will house all the status information needed by callers to
+ * @brief Class representing the status and error description information about a request
+ *
+ * This class will house all the status information needed by callers to
  * work out what (if it did) went wrong.  It will contain a status code, which
  * are predefined Joynr middleware constants, and a description string with additional
  * information.
@@ -37,17 +41,29 @@ class JOYNR_EXPORT RequestStatus
 {
 public:
     /**
-     * @brief Creates a request status with an empty description and a default request
+     * @brief Default Constructor
+     *
+     * Creates a request status with an empty description and a default request
      * status signifying that it has not started.
      */
     RequestStatus();
 
     /**
-     * @brief Creates a RequestStatus with the supplied status code.
+     * @brief Constructor with full parameters
+     *
+     * Creates a RequestStatus with the supplied status code.
      *
      * @param requestCode What the RequestStatus will be initialised to.
      */
     RequestStatus(RequestStatusCode requestCode);
+
+    /**
+     * @brief Creates a RequestStatus with the supplied status code and description.
+     *
+     * @param requestCode What the RequestStatus will be initialised to.
+     * @param description the initial description of the RequestStatus.
+     */
+    RequestStatus(RequestStatusCode requestCode, const std::string& description);
 
     /**
      * @brief A convenience method that checks whether the request was successful.
@@ -73,28 +89,28 @@ public:
     /**
      * @brief Returns a detailed description of the request.
      *
-     * @return QStringList A list of descriptions detailing the progress of a request.
+     * @return The list of descriptions detailing the progress of a request.
      */
-    QStringList getDescription();
+    std::list<std::string> getDescription() const;
 
     /**
      * @brief Adds a sentence describing a state of the request to the list of descriptions.
      *
      * @param description The detail to add to the description list.
      */
-    void addDescription(const QString& description);
+    void addDescription(const std::string& description);
 
     /**
-     * @brief A convenience method to prints this object to string.
+     * @brief A convenience method to print this object to string.
      *
-     * @return QString The String representation of this object, to be used in error
-     *messages/logging etc.
+     * @return The String representation of this object, to be used in error
+     * messages/logging etc.
      */
-    QString toString() const;
+    std::string toString() const;
 
 private:
     RequestStatusCode code;
-    QStringList description;
+    std::list<std::string> description;
 };
 
 } // namespace joynr

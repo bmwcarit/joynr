@@ -20,9 +20,9 @@ package io.joynr.dispatcher.rpc;
  */
 
 import io.joynr.dispatcher.ReplyCaller;
-import io.joynr.exceptions.JoynrException;
-import io.joynr.exceptions.JoynrInvalidInnvocationException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.proxy.Future;
+import io.joynr.proxy.ICallback;
 
 import java.lang.reflect.Method;
 
@@ -31,18 +31,21 @@ import javax.annotation.CheckForNull;
 import joynr.MethodMetaInformation;
 import joynr.Reply;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class RpcAsyncRequestReplyCaller<T> implements ReplyCaller {
 
     @CheckForNull
-    private Callback<T> callback;
+    private ICallback callback;
     private Method method;
     private MethodMetaInformation methodMetaInformation;
     private Future<T> future;
-    // private static final Logger logger = LoggerFactory.getLogger(RpcAsyncRequestReplyCaller.class);
+    private static final Logger logger = LoggerFactory.getLogger(RpcAsyncRequestReplyCaller.class);
     private String requestReplyId;
 
     public RpcAsyncRequestReplyCaller(String requestReplyId,
-                                      @CheckForNull Callback<T> callback,
+                                      @CheckForNull ICallback callback,
                                       Future<T> future,
                                       Method method,
                                       MethodMetaInformation methodMetaInformation) {
@@ -57,45 +60,38 @@ public class RpcAsyncRequestReplyCaller<T> implements ReplyCaller {
     @Override
     public void messageCallBack(Reply payload) {
 
-        Object reply = null;
-        try {
-            reply = RpcUtils.reconstructCallbackReplyObject(method, methodMetaInformation, payload);
-        } catch (Throwable e) {
-            error(new JoynrInvalidInnvocationException(e));
-            return;
-        }
+        Object[] response = null;
+        response = RpcUtils.reconstructCallbackReplyObject(method, methodMetaInformation, payload);
 
         try {
-
             // Callback must be called first before releasing the future
             if (callback != null) {
-                callback.onSuccess((T) reply);
+                callback.resolve(response);
             }
 
             if (future != null) {
-                future.onSuccess((T) reply);
+                future.resolve(response);
             }
-
-        } catch (Throwable e) {
-            // ignore
+        } catch (Exception e) {
+            logger.error("Error calling async method: {} error: {}", method.getName(), e.getMessage());
         }
     }
 
     @Override
     public void error(Throwable error) {
-        JoynrException joynrException;
-        // wrap non-joynr exceptions in a JoynException
-        if (error instanceof JoynrException) {
-            joynrException = (JoynrException) error;
+        JoynrRuntimeException joynrRuntimeException;
+        // wrap non-joynr exceptions in a JoynrRuntimeException
+        if (error instanceof JoynrRuntimeException) {
+            joynrRuntimeException = (JoynrRuntimeException) error;
         } else {
-            joynrException = new JoynrException(error);
+            joynrRuntimeException = new JoynrRuntimeException(error);
         }
 
         if (callback != null) {
-            callback.onFailure(joynrException);
+            callback.onFailure(joynrRuntimeException);
         }
         if (future != null) {
-            future.onFailure(joynrException);
+            future.onFailure(joynrRuntimeException);
         }
     }
 

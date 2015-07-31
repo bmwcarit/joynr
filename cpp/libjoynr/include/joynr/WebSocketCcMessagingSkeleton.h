@@ -30,7 +30,7 @@
 #include "joynr/MessageRouter.h"
 #include "joynr/IMessaging.h"
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
-#include "joynr/system/WebSocketAddress.h"
+#include "joynr/system/QtWebSocketAddress.h"
 
 #include "joynr/JoynrExport.h"
 
@@ -46,7 +46,7 @@ class JOYNR_EXPORT WebSocketCcMessagingSkeleton : public QObject, public IMessag
 public:
     WebSocketCcMessagingSkeleton(MessageRouter& messageRouter,
                                  WebSocketMessagingStubFactory& messagingStubFactory,
-                                 const system::WebSocketAddress& serverAddress);
+                                 const system::QtWebSocketAddress& serverAddress);
 
     ~WebSocketCcMessagingSkeleton();
 

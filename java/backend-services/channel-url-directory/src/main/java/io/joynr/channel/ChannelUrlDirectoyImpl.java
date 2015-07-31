@@ -19,20 +19,16 @@ package io.joynr.channel;
  * #L%
  */
 
-import io.joynr.dispatcher.rpc.Callback;
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
-import io.joynr.provider.AbstractJoynrProvider;
+import io.joynr.provider.DeferredVoid;
+import io.joynr.provider.Promise;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.annotation.CheckForNull;
-
-import joynr.infrastructure.ChannelUrlDirectoryProviderAsync;
+import joynr.infrastructure.ChannelUrlDirectoryAbstractProvider;
 import joynr.types.ChannelUrlInformation;
-import joynr.types.ProviderQos;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,17 +41,15 @@ import com.google.inject.name.Named;
 
 /**
  * The channelurldirectory stores channelIds mapped to channelUrls.
- * 
- * 
+ *
+ *
  * channelurls are stored in a concurrentHashMap. Using a in memory database could be possible optimization.
  */
 // TODO Evaluate pro /cons of a in memory database
 
 @Singleton
-public class ChannelUrlDirectoyImpl extends AbstractJoynrProvider implements ChannelUrlDirectoryProviderAsync {
+public class ChannelUrlDirectoyImpl extends ChannelUrlDirectoryAbstractProvider {
     private static final Logger logger = LoggerFactory.getLogger(ChannelUrlDirectoyImpl.class);
-
-    protected ProviderQos providerQos = new ProviderQos();
 
     public static final String CHANNELURL_INACTIVE_TIME_IN_MS = "joynr.channel.channelurlinactivetime";
 
@@ -67,7 +61,7 @@ public class ChannelUrlDirectoyImpl extends AbstractJoynrProvider implements Cha
 
     private Thread cleanupThread;
 
-    private Map<String, List<Callback<ChannelUrlInformation>>> pendingCallbackMap;
+    private Map<String, List<GetUrlsForChannelDeferred>> pendingDeferredsMap;
 
     ConcurrentHashMap<String, ChannelUrlInformation> getRegisteredChannels() {
         return registeredChannels;
@@ -76,7 +70,7 @@ public class ChannelUrlDirectoyImpl extends AbstractJoynrProvider implements Cha
     @Inject
     public ChannelUrlDirectoyImpl(@Named(CHANNELURL_INACTIVE_TIME_IN_MS) long inactiveTimeInMS) {
         channelurInactiveTimeInMS = inactiveTimeInMS;
-        pendingCallbackMap = Maps.newConcurrentMap();
+        pendingDeferredsMap = Maps.newConcurrentMap();
         cleanupThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -97,8 +91,9 @@ public class ChannelUrlDirectoyImpl extends AbstractJoynrProvider implements Cha
                 } else {
                     long currentTime = System.currentTimeMillis();
                     long timeToSleep = -1;
-                    for (String channelId : inactiveChannelIds.keySet()) {
-                        long passedTime = currentTime - inactiveChannelIds.get(channelId);
+                    for (Entry<String, Long> inactiveChannelId : inactiveChannelIds.entrySet()) {
+                        String channelId = inactiveChannelId.getKey();
+                        long passedTime = currentTime - inactiveChannelId.getValue();
                         if (passedTime >= channelurInactiveTimeInMS) {
                             logger.debug("GLOBAL unregisterChannelUrls channelId: {}", channelId);
                             registeredChannels.remove(channelId);
@@ -121,64 +116,59 @@ public class ChannelUrlDirectoyImpl extends AbstractJoynrProvider implements Cha
     }
 
     @Override
-    public void getUrlsForChannel(Callback<ChannelUrlInformation> callback, String channelId) {
+    public Promise<GetUrlsForChannelDeferred> getUrlsForChannel(String channelId) {
+        GetUrlsForChannelDeferred deferred = new GetUrlsForChannelDeferred();
 
         ChannelUrlInformation channelUrlInformation = registeredChannels.get(channelId);
         if (channelUrlInformation == null) {
-            addPendingCallback(callback, channelId);
+            addPendingCallback(deferred, channelId);
             logger.warn("GLOBAL getUrlsForChannel for Channel: {} found nothing. Invoke callbacks once ChannelUrlInformation becomes available",
                         channelId);
         } else {
             logger.debug("GLOBAL getUrlsForChannel ChannelUrls for channelId {} found: {}",
                          channelId,
                          channelUrlInformation);
-            callback.onSuccess(channelUrlInformation);
+            deferred.resolve(channelUrlInformation);
         }
-
+        return new Promise<GetUrlsForChannelDeferred>(deferred);
     }
 
-    private synchronized void addPendingCallback(Callback<ChannelUrlInformation> callback, String channelId) {
-        if (pendingCallbackMap.get(channelId) == null) {
-            pendingCallbackMap.put(channelId, Lists.<Callback<ChannelUrlInformation>> newArrayList());
+    private synchronized void addPendingCallback(GetUrlsForChannelDeferred deferred, String channelId) {
+        if (pendingDeferredsMap.get(channelId) == null) {
+            pendingDeferredsMap.put(channelId, Lists.<GetUrlsForChannelDeferred> newArrayList());
         }
-        pendingCallbackMap.get(channelId).add(callback);
+        pendingDeferredsMap.get(channelId).add(deferred);
         // TODO drop the newly added callback from the pendingCallbackMap after a while, avoiding a continuously growing
         // map
     }
 
     @Override
-    @CheckForNull
-    public ProviderQos getProviderQos() {
-        return providerQos;
-    }
-
-    @Override
-    public synchronized void registerChannelUrls(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                                 @JoynrRpcParam("channelId") String channelId,
-                                                 @JoynrRpcParam("channelUrlInformation") ChannelUrlInformation channelUrlInformation) {
+    public Promise<DeferredVoid> registerChannelUrls(String channelId, ChannelUrlInformation channelUrlInformation) {
         logger.debug("GLOBAL registerChannelUrls channelId: {} channelUrls: {}", channelId, channelUrlInformation);
+        DeferredVoid deferred = new DeferredVoid();
         registeredChannels.put(channelId, channelUrlInformation);
         inactiveChannelIds.remove(channelId);
-        if (callback != null) {
-            callback.onSuccess(null);
+        if (deferred != null) {
+            deferred.resolve();
         }
-        List<Callback<ChannelUrlInformation>> pendingCallbacks = pendingCallbackMap.remove(channelId);
-        if (pendingCallbacks != null) {
-            for (Callback<ChannelUrlInformation> pendingCallback : pendingCallbacks) {
-                pendingCallback.onSuccess(channelUrlInformation);
+        List<GetUrlsForChannelDeferred> pendingDeferreds = pendingDeferredsMap.remove(channelId);
+        if (pendingDeferreds != null) {
+            for (GetUrlsForChannelDeferred pendingDeferred : pendingDeferreds) {
+                pendingDeferred.resolve(channelUrlInformation);
             }
         }
+        return new Promise<DeferredVoid>(deferred);
     }
 
     @Override
-    public synchronized void unregisterChannelUrls(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                                   @JoynrRpcParam("channelId") String channelId) {
+    public Promise<DeferredVoid> unregisterChannelUrls(String channelId) {
+        DeferredVoid deferred = new DeferredVoid();
         inactiveChannelIds.put(channelId, System.currentTimeMillis());
         synchronized (cleanupThread) {
             cleanupThread.notify();
         }
-        if (callback != null) {
-            callback.onSuccess(null);
-        }
+
+        deferred.resolve();
+        return new Promise<DeferredVoid>(deferred);
     }
 }

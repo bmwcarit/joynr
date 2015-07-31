@@ -28,8 +28,8 @@ public class Utilities {
     /**
      * return an array of the params, useful for logging in slf4j
      * 
-     * @param args
-     * @return
+     * @param args Arguments which should be returned as array.
+     * @return array build from arguments
      */
     public static Object[] toArray(Object... args) {
         return args;
@@ -38,9 +38,11 @@ public class Utilities {
     /**
      * This method splits the input string into several json objects. This is
      * needed because Atmosphere sends more than one json in a single response.
-     * <p/>
+     * <br>
      * For example for the input {{test}{test2}}{test3} it would produce the
      * following list: [{{test}{test2}}, {test3}]
+     * @param combinedJsonString The JSON input to be splitted
+     * @return List of JSON strings
      */
     public static List<String> splitJson(String combinedJsonString) {
         List<String> result = Lists.newArrayList();
@@ -86,7 +88,7 @@ public class Utilities {
      *            the url to check
      * @param sessionIdName
      *            the name of the session ID, e.g. jsessionid
-     * @return
+     * @return boolean value, true if session ID is encoded into the URL.
      */
     public static boolean isSessionEncodedInUrl(String encodedUrl, String sessionIdName) {
         int sessionIdIndex = encodedUrl.indexOf(getSessionIdSubstring(sessionIdName));
@@ -121,6 +123,7 @@ public class Utilities {
      * @param sessionIdName
      *            the name of the session ID, e.g. jsessionid
      * @return
+     *            the session ID
      */
     public static String getSessionId(String url, String sessionIdName) {
         String sessionIdSubstring = getSessionIdSubstring(sessionIdName);
@@ -143,7 +146,7 @@ public class Utilities {
      * @param url the URL to encode
      * @param sessionIdName the name of the session ID, e.g. jsessionid
      * @param sessionId the session ID
-     * @return
+     * @return URL with the session encoded into the URL
      */
     public static String getSessionEncodedUrl(String url, String sessionIdName, String sessionId) {
         return url + getSessionIdSubstring(sessionIdName) + sessionId;

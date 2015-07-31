@@ -19,7 +19,6 @@ package io.joynr.capabilities;
  * #L%
  */
 
-import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.guice.LowerCaseProperties;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
@@ -32,9 +31,8 @@ import java.util.Properties;
 import java.util.UUID;
 
 import joynr.infrastructure.ChannelUrlDirectoryProvider;
-import joynr.infrastructure.ChannelUrlDirectoryProviderAsync;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryProvider;
-import joynr.infrastructure.GlobalCapabilitiesDirectoryProviderAsync;
+import joynr.infrastructure.GlobalDomainAccessControllerProvider;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,35 +48,35 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
     private String persistenceFileName;
     private Properties joynrProperties;
     private String channelUrlDirectoryParticipantId;
-    private String capabiliitesDirectoryParticipantId;
+    private String capabilitiesDirectoryParticipantId;
+    private String domainAccessControllerParticipantId;;
 
     @Inject
     public PropertiesFileParticipantIdStorage(@Named(MessagingPropertyKeys.JOYNR_PROPERTIES) Properties joynrProperties,
                                               @Named(ConfigurableMessagingSettings.PROPERTY_PARTICIPANTIDS_PERSISISTENCE_FILE) String persistenceFileName,
                                               @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_PARTICIPANT_ID) String channelUrlDirectoryParticipantId,
-                                              @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID) String capabiliitesDirectoryParticipantId) {
+                                              @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID) String capabilitiesDirectoryParticipantId,
+                                              @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID) String domainAccessControllerParticipantId) {
         this.joynrProperties = joynrProperties;
         this.persistenceFileName = persistenceFileName;
         this.channelUrlDirectoryParticipantId = channelUrlDirectoryParticipantId;
-        this.capabiliitesDirectoryParticipantId = capabiliitesDirectoryParticipantId;
+        this.capabilitiesDirectoryParticipantId = capabilitiesDirectoryParticipantId;
+        this.domainAccessControllerParticipantId = domainAccessControllerParticipantId;
         File persistenceFile = new File(persistenceFileName);
         persistedParticipantIds = new LowerCaseProperties(PropertyLoader.loadProperties(persistenceFile));
     }
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see io.joynr.capabilities.ParticipantIdStorage#
      * getProviderParticipantId(java.lang.String, java.lang.Class, java.lang.String,
      * java.lang.String)
      */
     @Override
-    public <T extends JoynrInterface> String getProviderParticipantId(String domain,
-                                                                      Class<T> providedInterface,
-                                                                      String authenticationToken,
-                                                                      String defaultValue) {
+    public String getProviderParticipantId(String domain, Class<?> providedInterface, String defaultValue) {
 
-        String token = getProviderParticipantIdKey(domain, providedInterface, authenticationToken);
+        String token = getProviderParticipantIdKey(domain, providedInterface);
 
         String participantId;
 
@@ -89,12 +87,12 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
         } else if (defaultValue != null) {
             participantId = defaultValue;
             // if no default value, generate one and save it to the persistence file
-        } else if (ChannelUrlDirectoryProvider.class.isAssignableFrom(providedInterface)
-                || ChannelUrlDirectoryProviderAsync.class.isAssignableFrom(providedInterface)) {
+        } else if (ChannelUrlDirectoryProvider.class.isAssignableFrom(providedInterface)) {
             participantId = channelUrlDirectoryParticipantId;
-        } else if (GlobalCapabilitiesDirectoryProvider.class.isAssignableFrom(providedInterface)
-                || GlobalCapabilitiesDirectoryProviderAsync.class.isAssignableFrom(providedInterface)) {
-            participantId = capabiliitesDirectoryParticipantId;
+        } else if (GlobalCapabilitiesDirectoryProvider.class.isAssignableFrom(providedInterface)) {
+            participantId = capabilitiesDirectoryParticipantId;
+        } else if (GlobalDomainAccessControllerProvider.class.isAssignableFrom(providedInterface)) {
+            participantId = domainAccessControllerParticipantId;
         } else {
 
             participantId = UUID.randomUUID().toString();
@@ -118,9 +116,7 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
         return participantId;
     }
 
-    private static <T extends JoynrInterface> String getProviderParticipantIdKey(String domain,
-                                                                                 Class<T> providedInterface,
-                                                                                 String authenticationToken) {
+    private static String getProviderParticipantIdKey(String domain, Class<?> providedInterface) {
         String interfaceName = providedInterface.getName();
         try {
             if (providedInterface.getField("INTERFACE_NAME") != null) {
@@ -128,20 +124,18 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
             }
         } catch (Exception e) {
         }
-        String token = "joynr.participant." + domain + "." + interfaceName + "." + authenticationToken;
+        String token = "joynr.participant." + domain + "." + interfaceName;
         return token.replace('/', '.');
     }
 
     @Override
-    public <T extends JoynrInterface> String getProviderParticipantId(String domain,
-                                                                      Class<T> providedInterface,
-                                                                      String authenticationToken) {
+    public String getProviderParticipantId(String domain, Class<?> providedInterface) {
         String defaultParticipantId = null;
-        String providerParticipantIdKey = getProviderParticipantIdKey(domain, providedInterface, authenticationToken).toLowerCase();
+        String providerParticipantIdKey = getProviderParticipantIdKey(domain, providedInterface).toLowerCase();
         if (joynrProperties.containsKey(providerParticipantIdKey)) {
             defaultParticipantId = joynrProperties.getProperty(providerParticipantIdKey);
         }
-        return getProviderParticipantId(domain, providedInterface, authenticationToken, defaultParticipantId);
+        return getProviderParticipantId(domain, providedInterface, defaultParticipantId);
     }
 
 }

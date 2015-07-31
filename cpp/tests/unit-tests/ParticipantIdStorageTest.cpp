@@ -19,11 +19,12 @@
 
 #include "gtest/gtest.h"
 #include "joynr/ParticipantIdStorage.h"
+#include <string>
 
 #include <QFile>
 using namespace joynr;
 
-static const QString storageFile("participantIdStorageTest.settings");
+static const std::string storageFile("participantIdStorageTest.settings");
 
 class ParticipantIdStorageTest : public ::testing::Test {
 public:
@@ -31,7 +32,7 @@ public:
 
     void SetUp()
     {
-        QFile::remove(storageFile);
+        QFile::remove(QString::fromStdString(storageFile));
     }
 
 };
@@ -42,11 +43,11 @@ TEST_F(ParticipantIdStorageTest, defaultProviderParticipantId)
 {
     ParticipantIdStorage store(storageFile);
 
-    QString participantId = store.getProviderParticipantId("domain.myDomain",
+    std::string participantId = store.getProviderParticipantId("domain.myDomain",
                                                            "interface.mytest",
-                                                           "myauthtoken",
-                                                           "defaultParticipantId");
-    ASSERT_EQ(QString("defaultParticipantId"), participantId);
+                                                           "defaultParticipantId",
+                                                           "myauthtoken");
+    ASSERT_EQ(std::string("defaultParticipantId"), participantId);
 }
 
 // Test that a participant id is created when no provider exists and
@@ -54,10 +55,10 @@ TEST_F(ParticipantIdStorageTest, defaultProviderParticipantId)
 TEST_F(ParticipantIdStorageTest, newProviderParticipantId)
 {
     ParticipantIdStorage store(storageFile);
-    QString participantId = store.getProviderParticipantId("domain.myDomain",
+    std::string participantId = store.getProviderParticipantId("domain.myDomain",
                                                            "interface.mytest",
-                                                           "myauthtoken",
-                                                           QString());
+                                                           std::string(),
+                                                           "myauthtoken");
     // Check that the id is long enough to be a UUID
     ASSERT_TRUE(participantId.size() > 32);
 }
@@ -67,11 +68,11 @@ TEST_F(ParticipantIdStorageTest, persistedProviderParticipantId)
 {
     ParticipantIdStorage *store = new ParticipantIdStorage(storageFile);
 
-    QString participantId = store->getProviderParticipantId("domain.myDomain",
+    std::string participantId = store->getProviderParticipantId("domain.myDomain",
                                                             "interface.mytest",
-                                                            "myauthtoken",
-                                                            "persistMe");
-    ASSERT_EQ(QString("persistMe"), participantId);
+                                                            "persistMe",
+                                                            "myauthtoken");
+    ASSERT_EQ(std::string("persistMe"), participantId);
 
     // Delete the current store and create a new one
     delete store;
@@ -80,10 +81,10 @@ TEST_F(ParticipantIdStorageTest, persistedProviderParticipantId)
     // Check that the setting was persisted
     participantId = store->getProviderParticipantId("domain.myDomain",
                                                     "interface.mytest",
-                                                    "myauthtoken",
-                                                    QString());
+                                                    std::string(),
+                                                    "myauthtoken");
 
-    ASSERT_EQ(QString("persistMe"), participantId);
+    ASSERT_EQ(std::string("persistMe"), participantId);
     delete store;
 }
 

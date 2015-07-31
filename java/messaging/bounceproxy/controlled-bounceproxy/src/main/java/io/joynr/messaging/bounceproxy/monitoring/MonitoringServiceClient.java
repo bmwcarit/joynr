@@ -46,7 +46,11 @@ public class MonitoringServiceClient implements BounceProxyLifecycleMonitor {
      * Creates a new reporter for monitoring data.
      * 
      * @param startupReporter
+     *   bounce proxy startup reporter instance
      * @param shutdownReporter
+     *   bounce proxy shutdown reporter instance
+     * @param performanceReporter
+     *   bounce proxy performance reporter instance
      */
     @Inject
     public MonitoringServiceClient(BounceProxyStartupReporter startupReporter,

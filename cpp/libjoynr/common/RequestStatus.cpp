@@ -18,6 +18,11 @@
  */
 #include "joynr/RequestStatus.h"
 
+#include <sstream>
+#include <iostream>
+
+#include "joynr/TypeUtil.h"
+
 namespace joynr
 {
 
@@ -27,6 +32,12 @@ RequestStatus::RequestStatus() : code(RequestStatusCode::NOT_STARTED), descripti
 
 RequestStatus::RequestStatus(RequestStatusCode requestStatus) : code(requestStatus), description()
 {
+}
+
+RequestStatus::RequestStatus(RequestStatusCode requestStatus, const std::string& description)
+        : code(requestStatus), description()
+{
+    addDescription(description);
 }
 
 bool RequestStatus::successful() const
@@ -44,28 +55,29 @@ void RequestStatus::setCode(const RequestStatusCode& code)
     this->code = code;
 }
 
-QStringList RequestStatus::getDescription()
+std::list<std::string> RequestStatus::getDescription() const
 {
     return description;
 }
 
-void RequestStatus::addDescription(const QString& description)
+void RequestStatus::addDescription(const std::string& description)
 {
-    this->description.append(description);
+    this->description.push_back(description);
 }
 
-QString RequestStatus::toString() const
+std::string RequestStatus::toString() const
 {
-    QString desc;
-    for (int i = 0; i < description.size(); i++) {
-        if (i != 0) {
-            desc.append("\n");
-        }
-        desc.append(i + ": ");
-        desc.append(description.at(i));
+    std::ostringstream typeAsString;
+    typeAsString << "RequestStatus{";
+    typeAsString << "code:" + getCode().toString();
+    typeAsString << ", ";
+    typeAsString << "description: [ ";
+    for (std::string desc : description) {
+        typeAsString << desc << ", ";
     }
-
-    return "[RequestStatus code: " + code.toString() + "description: " + desc + "]";
+    typeAsString.seekp(2, std::ios_base::end);
+    typeAsString << "] }";
+    return typeAsString.str();
 }
 
 } // namespace joynr

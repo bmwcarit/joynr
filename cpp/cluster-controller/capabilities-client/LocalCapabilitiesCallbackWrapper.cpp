@@ -27,8 +27,8 @@ namespace joynr
 LocalCapabilitiesCallbackWrapper::LocalCapabilitiesCallbackWrapper(
         LocalCapabilitiesDirectory* localCapabilitiesDirectory,
         QSharedPointer<ILocalCapabilitiesCallback> wrappedCallback,
-        const QString& participantId,
-        const joynr::system::DiscoveryQos& discoveryQos)
+        const std::string& participantId,
+        const joynr::types::DiscoveryQos& discoveryQos)
         : localCapabilitiesDirectory(localCapabilitiesDirectory),
           wrappedCallback(wrappedCallback),
           participantId(participantId),
@@ -41,7 +41,7 @@ LocalCapabilitiesCallbackWrapper::LocalCapabilitiesCallbackWrapper(
         LocalCapabilitiesDirectory* localCapabilitiesDirectory,
         QSharedPointer<ILocalCapabilitiesCallback> wrappedCallback,
         const InterfaceAddress& interfaceAddress,
-        const joynr::system::DiscoveryQos& discoveryQos)
+        const joynr::types::DiscoveryQos& discoveryQos)
         : localCapabilitiesDirectory(localCapabilitiesDirectory),
           wrappedCallback(wrappedCallback),
           participantId(""),
@@ -51,35 +51,40 @@ LocalCapabilitiesCallbackWrapper::LocalCapabilitiesCallbackWrapper(
 }
 
 void LocalCapabilitiesCallbackWrapper::capabilitiesReceived(
-        QList<types::CapabilityInformation> results)
+        std::vector<types::CapabilityInformation> results)
 {
-    QMap<QString, CapabilityEntry> capabilitiesMap;
-    QList<CapabilityEntry> mergedEntries;
+    QMap<std::string, CapabilityEntry> capabilitiesMap;
+    std::vector<CapabilityEntry> mergedEntries;
 
     foreach (types::CapabilityInformation capInfo, results) {
-        QList<joynr::system::CommunicationMiddleware::Enum> connections;
-        connections.append(joynr::system::CommunicationMiddleware::JOYNR);
-        CapabilityEntry capEntry(capInfo.getDomain(),
-                                 capInfo.getInterfaceName(),
-                                 capInfo.getProviderQos(),
-                                 capInfo.getParticipantId(),
+        QList<joynr::types::QtCommunicationMiddleware::Enum> connections;
+        connections.append(joynr::types::QtCommunicationMiddleware::JOYNR);
+        CapabilityEntry capEntry(QString::fromStdString(capInfo.getDomain()),
+                                 QString::fromStdString(capInfo.getInterfaceName()),
+                                 types::QtProviderQos::createQt(capInfo.getProviderQos()),
+                                 QString::fromStdString(capInfo.getParticipantId()),
                                  connections,
                                  true);
         capabilitiesMap.insertMulti(capInfo.getChannelId(), capEntry);
-        mergedEntries.append(capEntry);
+        mergedEntries.push_back(capEntry);
     }
     localCapabilitiesDirectory->registerReceivedCapabilities(capabilitiesMap);
 
-    if (discoveryQos.getDiscoveryScope() == joynr::system::DiscoveryScope::LOCAL_THEN_GLOBAL ||
-        discoveryQos.getDiscoveryScope() == joynr::system::DiscoveryScope::LOCAL_AND_GLOBAL) {
+    if (discoveryQos.getDiscoveryScope() == joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL ||
+        discoveryQos.getDiscoveryScope() == joynr::types::DiscoveryScope::LOCAL_AND_GLOBAL) {
         // look if in the meantime there are some local providers registered
         // lookup in the local directory to get local providers which were registered in the
         // meantime.
-        if (participantId.isEmpty()) {
-            mergedEntries +=
-                    localCapabilitiesDirectory->getCachedLocalCapabilities(interfaceAddress);
+        if (participantId.empty()) {
+            std::vector<CapabilityEntry> cachedCaps(
+                    localCapabilitiesDirectory->getCachedLocalCapabilities(interfaceAddress));
+            mergedEntries.insert(mergedEntries.end(), cachedCaps.begin(), cachedCaps.end());
+            ;
         } else {
-            mergedEntries += localCapabilitiesDirectory->getCachedLocalCapabilities(participantId);
+            std::vector<CapabilityEntry> cachedCaps(
+                    localCapabilitiesDirectory->getCachedLocalCapabilities(participantId));
+            mergedEntries.insert(mergedEntries.end(), cachedCaps.begin(), cachedCaps.end());
+            ;
         }
     }
     wrappedCallback->capabilitiesReceived(mergedEntries);

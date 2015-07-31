@@ -27,7 +27,6 @@ import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingTestModule;
 import io.joynr.messaging.ReceiverStatusListener;
-import io.joynr.messaging.http.operation.LongPollingMessageReceiver;
 import io.joynr.runtime.JoynrBaseModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 

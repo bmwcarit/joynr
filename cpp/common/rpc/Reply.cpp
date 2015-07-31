@@ -49,12 +49,12 @@ void Reply::setRequestReplyId(QString requestReplyId)
     this->requestReplyId = requestReplyId;
 }
 
-QVariant Reply::getResponse() const
+QList<QVariant> Reply::getResponse() const
 {
     return response;
 }
 
-void Reply::setResponse(QVariant response)
+void Reply::setResponse(QList<QVariant> response)
 {
     this->response = response;
 }

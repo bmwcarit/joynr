@@ -19,8 +19,10 @@
 #include "PrettyPrint.h"
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <string>
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "tests/utils/MockObjects.h"
+#include "joynr/TypeUtil.h"
 
 #include "joynr/system/DiscoveryProxy.h"
 
@@ -30,7 +32,7 @@ class SystemServicesDiscoveryTest : public ::testing::Test {
 public:
     QString settingsFilename;
     QSettings* settings;
-    QString discoveryDomain;
+    std::string discoveryDomain;
     QString discoveryProviderParticipantId;
     JoynrClusterControllerRuntime* runtime;
     IMessageReceiver* mockMessageReceiver;
@@ -51,12 +53,12 @@ public:
     {
         SystemServicesSettings systemSettings(*settings);
         systemSettings.printSettings();
-        discoveryDomain = systemSettings.getDomain();
+        discoveryDomain = TypeUtil::toStd(systemSettings.getDomain());
         discoveryProviderParticipantId = systemSettings.getCcDiscoveryProviderParticipantId();
 
         discoveryQos.setCacheMaxAge(1000);
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
-        discoveryQos.addCustomParameter("fixedParticipantId", discoveryProviderParticipantId);
+        discoveryQos.addCustomParameter("fixedParticipantId", TypeUtil::toStd(discoveryProviderParticipantId));
         discoveryQos.setDiscoveryTimeout(50);
 
         QString channelId("SystemServicesDiscoveryTest.ChannelId");
@@ -80,7 +82,7 @@ public:
 
     void SetUp(){
         discoveryProxyBuilder = runtime
-                ->getProxyBuilder<joynr::system::DiscoveryProxy>(discoveryDomain);
+                ->createProxyBuilder<joynr::system::DiscoveryProxy>(discoveryDomain);
     }
 
     void TearDown(){
@@ -99,7 +101,7 @@ TEST_F(SystemServicesDiscoveryTest, discoveryProviderIsAvailable)
 {
     EXPECT_NO_THROW(
         discoveryProxy = discoveryProxyBuilder
-                ->setRuntimeQos(MessagingQos(5000))
+                ->setMessagingQos(MessagingQos(5000))
                 ->setCached(false)
                 ->setDiscoveryQos(discoveryQos)
                 ->build();
@@ -109,73 +111,73 @@ TEST_F(SystemServicesDiscoveryTest, discoveryProviderIsAvailable)
 TEST_F(SystemServicesDiscoveryTest, lookupUnknowParticipantReturnsEmptyResult)
 {
     discoveryProxy = discoveryProxyBuilder
-            ->setRuntimeQos(MessagingQos(5000))
+            ->setMessagingQos(MessagingQos(5000))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
-    RequestStatus status;
-    QList<joynr::system::DiscoveryEntry> result;
-    QString domain("SystemServicesDiscoveryTest.Domain.A");
-    QString interfaceName("SystemServicesDiscoveryTest.InterfaceName.A");
-    joynr::system::DiscoveryQos discoveryQos(
+    std::vector<joynr::types::DiscoveryEntry> result;
+    std::string domain("SystemServicesDiscoveryTest.Domain.A");
+    std::string interfaceName("SystemServicesDiscoveryTest.InterfaceName.A");
+    joynr::types::DiscoveryQos discoveryQos(
                 5000,                                      // max cache age
-                joynr::system::DiscoveryScope::LOCAL_ONLY, // discovery scope
+                joynr::types::DiscoveryScope::LOCAL_ONLY, // discovery scope
                 false                                      // provider must support on change subscriptions
     );
 
-    discoveryProxy->lookup(status, result, domain, interfaceName, discoveryQos);
+    RequestStatus status(discoveryProxy->lookup(result, domain, interfaceName, discoveryQos));
     EXPECT_EQ(RequestStatusCode::OK, status.getCode());
-    EXPECT_TRUE(result.isEmpty());
+    EXPECT_TRUE(result.empty());
 }
 
 
 TEST_F(SystemServicesDiscoveryTest, add)
 {
     discoveryProxy = discoveryProxyBuilder
-            ->setRuntimeQos(MessagingQos(5000))
+            ->setMessagingQos(MessagingQos(5000))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
     RequestStatus status;
-    QList<joynr::system::DiscoveryEntry> result;
-    QString domain("SystemServicesDiscoveryTest.Domain.A");
-    QString interfaceName("SystemServicesDiscoveryTest.InterfaceName.A");
-    QString participantId("SystemServicesDiscoveryTest.ParticipantID.A");
-    joynr::system::DiscoveryQos discoveryQos(
+    std::vector<joynr::types::DiscoveryEntry> result;
+    std::string domain("SystemServicesDiscoveryTest.Domain.A");
+    std::string interfaceName("SystemServicesDiscoveryTest.InterfaceName.A");
+    std::string participantId("SystemServicesDiscoveryTest.ParticipantID.A");
+    joynr::types::DiscoveryQos discoveryQos(
                 5000,                                      // max cache age
-                joynr::system::DiscoveryScope::LOCAL_ONLY, // discovery scope
+                joynr::types::DiscoveryScope::LOCAL_ONLY, // discovery scope
                 false                                      // provider must support on change subscriptions
     );
     joynr::types::ProviderQos providerQos(
-                QList<joynr::types::CustomParameter>(), // custom provider parameters
+                std::vector<joynr::types::CustomParameter>(), // custom provider parameters
                 1,                                      // provider version
                 1,                                      // priority
                 joynr::types::ProviderScope::LOCAL,     // scope for provider registration
                 false                                   // provider supports on change subscriptions
     );
-    QList<joynr::system::CommunicationMiddleware::Enum> connections;
-    connections << joynr::system::CommunicationMiddleware::JOYNR;
-    QList<joynr::system::DiscoveryEntry> expectedResult;
-    joynr::system::DiscoveryEntry discoveryEntry(
+    std::vector<joynr::types::CommunicationMiddleware::Enum> connections {
+            joynr::types::CommunicationMiddleware::JOYNR
+    };
+    std::vector<joynr::types::DiscoveryEntry> expectedResult;
+    joynr::types::DiscoveryEntry discoveryEntry(
                 domain,
                 interfaceName,
                 participantId,
                 providerQos,
                 connections
     );
-    expectedResult.append(discoveryEntry);
+    expectedResult.push_back(discoveryEntry);
 
 
-    discoveryProxy->lookup(status, result, domain, interfaceName, discoveryQos);
+    status = discoveryProxy->lookup(result, domain, interfaceName, discoveryQos);
     EXPECT_EQ(RequestStatusCode::OK, status.getCode());
-    EXPECT_TRUE(result.isEmpty());
+    EXPECT_TRUE(result.empty());
 
-    discoveryProxy->add(status, discoveryEntry);
+    status = discoveryProxy->add(discoveryEntry);
     EXPECT_EQ(RequestStatusCode::OK, status.getCode());
 
-    discoveryProxy->lookup(status, result, domain, interfaceName, discoveryQos);
+    status = discoveryProxy->lookup(result, domain, interfaceName, discoveryQos);
     EXPECT_EQ(RequestStatusCode::OK, status.getCode());
     EXPECT_EQ(expectedResult, result);
 }
@@ -183,52 +185,52 @@ TEST_F(SystemServicesDiscoveryTest, add)
 TEST_F(SystemServicesDiscoveryTest, remove)
 {
     discoveryProxy = discoveryProxyBuilder
-            ->setRuntimeQos(MessagingQos(5000))
+            ->setMessagingQos(MessagingQos(5000))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
-    RequestStatus status;
-    QString domain("SystemServicesDiscoveryTest.Domain.A");
-    QString interfaceName("SystemServicesDiscoveryTest.InterfaceName.A");
-    QString participantId("SystemServicesDiscoveryTest.ParticipantID.A");
-    joynr::system::DiscoveryQos discoveryQos(
+    std::string domain("SystemServicesDiscoveryTest.Domain.A");
+    std::string interfaceName("SystemServicesDiscoveryTest.InterfaceName.A");
+    std::string participantId("SystemServicesDiscoveryTest.ParticipantID.A");
+    joynr::types::DiscoveryQos discoveryQos(
                 5000,                                      // max cache age
-                joynr::system::DiscoveryScope::LOCAL_ONLY, // discovery scope
+                joynr::types::DiscoveryScope::LOCAL_ONLY, // discovery scope
                 false                                      // provider must support on change subscriptions
     );
     joynr::types::ProviderQos providerQos(
-                QList<joynr::types::CustomParameter>(), // custom provider parameters
+                std::vector<joynr::types::CustomParameter>(), // custom provider parameters
                 1,                                      // provider version
                 1,                                      // priority
                 joynr::types::ProviderScope::LOCAL,     // scope for provider registration
                 false                                   // provider supports on change subscriptions
     );
-    QList<joynr::system::CommunicationMiddleware::Enum> connections;
-    connections << joynr::system::CommunicationMiddleware::JOYNR;
-    QList<joynr::system::DiscoveryEntry> expectedResult;
-    joynr::system::DiscoveryEntry discoveryEntry(
+    std::vector<joynr::types::CommunicationMiddleware::Enum> connections {
+            joynr::types::CommunicationMiddleware::JOYNR
+    };
+    std::vector<joynr::types::DiscoveryEntry> expectedResult;
+    joynr::types::DiscoveryEntry discoveryEntry(
                 domain,
                 interfaceName,
                 participantId,
                 providerQos,
                 connections
     );
-    expectedResult.append(discoveryEntry);
+    expectedResult.push_back(discoveryEntry);
 
-    discoveryProxy->add(status, discoveryEntry);
+    RequestStatus status(discoveryProxy->add(discoveryEntry));
     EXPECT_EQ(RequestStatusCode::OK, status.getCode());
 
-    QList<joynr::system::DiscoveryEntry> result;
-    discoveryProxy->lookup(status, result, domain, interfaceName, discoveryQos);
+    std::vector<joynr::types::DiscoveryEntry> result;
+    status = discoveryProxy->lookup(result, domain, interfaceName, discoveryQos);
     EXPECT_EQ(RequestStatusCode::OK, status.getCode());
     EXPECT_EQ(expectedResult, result);
 
-    discoveryProxy->remove(status, participantId);
+    status = discoveryProxy->remove(participantId);
     EXPECT_EQ(RequestStatusCode::OK, status.getCode());
 
     result.clear();
-    discoveryProxy->lookup(status, result, domain, interfaceName, discoveryQos);
+    status = discoveryProxy->lookup(result, domain, interfaceName, discoveryQos);
     EXPECT_EQ(RequestStatusCode::OK, status.getCode());
-    EXPECT_TRUE(result.isEmpty());
+    EXPECT_TRUE(result.empty());
 }

@@ -18,7 +18,7 @@
  */
 #include "JoynrMessagingStubFactory.h"
 
-#include "joynr/system/ChannelAddress.h"
+#include "joynr/system/QtChannelAddress.h"
 #include "joynr/IMessageSender.h"
 #include "cluster-controller/messaging/joynr-messaging/JoynrMessagingStub.h"
 
@@ -31,16 +31,16 @@ JoynrMessagingStubFactory::JoynrMessagingStubFactory(QSharedPointer<IMessageSend
 {
 }
 
-bool JoynrMessagingStubFactory::canCreate(const joynr::system::Address& destAddress)
+bool JoynrMessagingStubFactory::canCreate(const joynr::system::QtAddress& destAddress)
 {
-    return destAddress.inherits(system::ChannelAddress::staticMetaObject.className());
+    return destAddress.inherits(system::QtChannelAddress::staticMetaObject.className());
 }
 
 QSharedPointer<IMessaging> JoynrMessagingStubFactory::create(
-        const joynr::system::Address& destAddress)
+        const joynr::system::QtAddress& destAddress)
 {
-    const system::ChannelAddress* channelAddress =
-            dynamic_cast<const system::ChannelAddress*>(&destAddress);
+    const system::QtChannelAddress* channelAddress =
+            dynamic_cast<const system::QtChannelAddress*>(&destAddress);
     return QSharedPointer<IMessaging>(new JoynrMessagingStub(
             messageSender, channelAddress->getChannelId(), receiveChannelId));
 }

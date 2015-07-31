@@ -19,13 +19,13 @@
 #include "joynr/PrivateCopyAssign.h"
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <memory>
 #include "tests/utils/MockObjects.h"
-#include <QString>
 #include "joynr/LibjoynrSettings.h"
-#include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/QtOnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/tests/TestLocationUpdateSelectiveBroadcastFilterParameters.h"
 
-#include "joynr/types/GpsLocation.h"
+#include "joynr/types/QtGpsLocation.h"
 #include "libjoynr/subscription/SubscriptionBroadcastListener.h"
 
 using namespace ::testing;
@@ -40,7 +40,7 @@ using namespace joynr::tests;
 class BroadcastPublicationTest : public ::testing::Test {
 public:
     BroadcastPublicationTest() :
-        gpsLocation1(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444),
+        gpsLocation1(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444),
         speed1(100),
         providerParticipantId("providerParticipantId"),
         proxyParticipantId("proxyParticipantId"),
@@ -67,22 +67,22 @@ public:
         request.setSubscriptionId(subscriptionId);
 
         auto subscriptionQos =
-                QSharedPointer<OnChangeSubscriptionQos>(new OnChangeWithKeepAliveSubscriptionQos(
+                QSharedPointer<QtOnChangeSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
                     80, // validity_ms
                     100, // minInterval_ms
                     200, // maxInterval_ms
                     80 // alertInterval_ms
         ));
         request.setQos(subscriptionQos);
-        request.setFilterParameters(filterParameters);
+        request.setFilterParameters(QtBroadcastFilterParameters::createQt(filterParameters));
 
         requestCaller->registerBroadcastListener(
                     "locationUpdateSelective",
                     subscriptionBroadcastListener);
 
         publicationManager->add(
-                    proxyParticipantId,
-                    providerParticipantId,
+                    QString::fromStdString(proxyParticipantId),
+                    QString::fromStdString(providerParticipantId),
                     requestCaller,
                     request,
                     publicationSender);
@@ -92,26 +92,30 @@ public:
     }
 
     void TearDown(){
+        delete publicationManager;
         delete publicationSender;
+        delete subscriptionBroadcastListener;
+        EXPECT_TRUE(Mock::VerifyAndClearExpectations(filter1.get()));
+        EXPECT_TRUE(Mock::VerifyAndClearExpectations(filter2.get()));
     }
 
 protected:
-    types::GpsLocation gpsLocation1;
+    types::Localisation::GpsLocation gpsLocation1;
     double speed1;
 
-    QString providerParticipantId;
-    QString proxyParticipantId;
+    std::string providerParticipantId;
+    std::string proxyParticipantId;
     QString subscriptionId;
     PublicationManager* publicationManager;
     MockPublicationSender* publicationSender;
     BroadcastSubscriptionRequest request;
     SubscriptionBroadcastListener* subscriptionBroadcastListener;
 
-    QSharedPointer<MockTestProvider> provider;
+    std::shared_ptr<MockTestProvider> provider;
     QSharedPointer<RequestCaller> requestCaller;
     TestLocationUpdateSelectiveBroadcastFilterParameters filterParameters;
-    QSharedPointer<MockLocationUpdatedSelectiveFilter> filter1;
-    QSharedPointer<MockLocationUpdatedSelectiveFilter> filter2;
+    std::shared_ptr<MockLocationUpdatedSelectiveFilter> filter1;
+    std::shared_ptr<MockLocationUpdatedSelectiveFilter> filter2;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(BroadcastPublicationTest);

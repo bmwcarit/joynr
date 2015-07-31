@@ -1,6 +1,6 @@
 [messaging]
 bounce-proxy-url=https://localhost:8443/bounceproxy
-discovery-directories-domain=https://localhost:8443/discovery/channels/
+discovery-directories-domain=com.bmw
 channel-url-directory-url=https://localhost:8443/discovery/channels/discoverydirectory_channelid/
 capabilities-directory-url=https://localhost:8443/discovery/channels/discoverydirectory_channelid/
 

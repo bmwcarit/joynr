@@ -1,5 +1,7 @@
 package joynr;
 
+import java.util.List;
+
 /*
  * #%L
  * %%
@@ -22,12 +24,12 @@ package joynr;
 public class SubscriptionPublication implements JoynrMessageType {
 
     private String subscriptionId;
-    private Object response;
+    private List<? extends Object> response;
 
     public SubscriptionPublication() {
     }
 
-    public SubscriptionPublication(Object response, String subscriptionId) {
+    public SubscriptionPublication(List<? extends Object> response, String subscriptionId) {
         this.response = response;
         this.subscriptionId = subscriptionId;
     }

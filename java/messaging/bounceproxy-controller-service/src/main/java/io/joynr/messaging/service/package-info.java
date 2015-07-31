@@ -1,9 +1,7 @@
-@edu.umd.cs.findbugs.annotations.ReturnValuesAreNonnullByDefault
 package io.joynr.messaging.service;
 
 /*
  * #%L
- * joynr::java::messaging::bounceproxy-controller-service
  * %%
  * Copyright (C) 2011 - 2013 BMW Car IT GmbH
  * %%

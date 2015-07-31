@@ -19,9 +19,10 @@ package io.joynr.messaging;
  * #L%
  */
 
-import io.joynr.dispatcher.rpc.Callback;
-import io.joynr.exceptions.JoynrException;
-import joynr.infrastructure.ChannelUrlDirectoryProxy;
+import io.joynr.capabilities.LocalCapabilitiesDirectory;
+import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.proxy.Callback;
+import io.joynr.proxy.ProxyInvocationHandlerFactory;
 import joynr.types.ChannelUrlInformation;
 
 import org.slf4j.Logger;
@@ -36,18 +37,24 @@ public class LocalChannelUrlDirectoryClientImpl implements LocalChannelUrlDirect
 
     private static final Logger logger = LoggerFactory.getLogger(LocalChannelUrlDirectoryClient.class);
 
-    private final ChannelUrlDirectoryProxy channelUrlDirectoryClient;
+    private final GlobalChannelUrlDirectoryClient channelUrlDirectoryClient;
     private final ChannelUrlStore channelUrlStore;
 
     @Inject
-    public LocalChannelUrlDirectoryClientImpl(ChannelUrlDirectoryProxy channelUrlDirectoryClient,
-                                              ChannelUrlStore channelUrlStore,
+    // CHECKSTYLE:OFF
+    public LocalChannelUrlDirectoryClientImpl(@Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN) String discoveryDirectoriesDomain,
                                               @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_CHANNEL_ID) String channelUrlDirectoryChannelId,
                                               @Named(MessagingPropertyKeys.CHANNELURLDIRECTORYURL) String channelUrlDirectoryUrl,
                                               @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID) String capabilitiesDirectoryChannelId,
                                               @Named(MessagingPropertyKeys.CAPABILITIESDIRECTORYURL) String capabilitiesDirectoryUrl,
-                                              MessagingSettings settings) {
-        this.channelUrlDirectoryClient = channelUrlDirectoryClient;
+                                              LocalCapabilitiesDirectory localCapabilitiesDirectory,
+                                              ChannelUrlStore channelUrlStore,
+                                              MessagingSettings settings,
+                                              ProxyInvocationHandlerFactory proxyInvocationHandlerFactory) {
+        // CHECKSTYLE:ON
+        this.channelUrlDirectoryClient = new GlobalChannelUrlDirectoryClient(discoveryDirectoriesDomain,
+                                                                             localCapabilitiesDirectory,
+                                                                             proxyInvocationHandlerFactory);
         this.channelUrlStore = channelUrlStore;
         channelUrlStore.registerChannelUrl(channelUrlDirectoryChannelId, channelUrlDirectoryUrl);
         channelUrlStore.registerChannelUrl(capabilitiesDirectoryChannelId, capabilitiesDirectoryUrl);
@@ -70,14 +77,14 @@ public class LocalChannelUrlDirectoryClientImpl implements LocalChannelUrlDirect
                 }
 
                 @Override
-                public void onFailure(JoynrException e) {
+                public void onFailure(JoynrRuntimeException e) {
                     //Currently not retrying. Using long TTL instead.
                     logger.error("exception while registering channelId: {} reason: {}", channelId, e.getMessage());
 
                 }
             }, channelId, channelUrlInformation);
 
-        } catch (JoynrException e) {
+        } catch (JoynrRuntimeException e) {
             logger.error("exception while registering channelId: {} reason: {}", channelId, e.getMessage());
         }
     }
@@ -101,12 +108,11 @@ public class LocalChannelUrlDirectoryClientImpl implements LocalChannelUrlDirect
             synchronized (channelUrlInformation) {
                 if (channelUrlInformation.getUrls().isEmpty()) {
                     ChannelUrlInformation remoteChannelUrlInformation = channelUrlDirectoryClient.getUrlsForChannel(channelId);
-                    if (remoteChannelUrlInformation != null) {
-                        channelUrlInformation.setUrls(remoteChannelUrlInformation.getUrls());
-                    }
                     if (remoteChannelUrlInformation == null || remoteChannelUrlInformation.getUrls() == null
-                            || remoteChannelUrlInformation.getUrls().size() == 0) {
+                            || remoteChannelUrlInformation.getUrls().isEmpty()) {
                         logger.error("No channelurls found for channel {}", channelId);
+                    } else {
+                        channelUrlInformation.setUrls(remoteChannelUrlInformation.getUrls());
                     }
                 }
             }

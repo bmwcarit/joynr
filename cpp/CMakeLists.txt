@@ -2,12 +2,12 @@
 # that is available under Creative Commons Attribution 2.5 Generic (CC BY 2.5, http://creativecommons.org/licenses/by/2.5/).
 # There are no attributions specified by the author.
 
-cmake_minimum_required(VERSION 2.8.9)
+cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(joynr-0.8.0)
+project(joynr-0.9.0)
 set(JOYNR_MAJOR_VERSION 0)
-set(JOYNR_MINOR_VERSION 8)
+set(JOYNR_MINOR_VERSION 9)
 set(JOYNR_PATCH_VERSION 0)
 set(
     JOYNR_VERSION
@@ -69,6 +69,13 @@ option(
 message(STATUS "option ENABLE_GCOV=" ${ENABLE_GCOV})
 
 option(
+    ENABLE_DOXYGEN
+    "Use DOXYGEN to build documentation?"
+    ON
+)
+message(STATUS "option ENABLE_DOXYGEN=" ${ENABLE_DOXYGEN})
+
+option(
     ENABLE_CLANG_FORMATTER
     "Use clang-formatter to format source code?"
     ON
@@ -86,7 +93,10 @@ message(STATUS "variable CMAKE_BUILD_TYPE=" ${CMAKE_BUILD_TYPE})
 
 message(STATUS "variable CMAKE_MODULE_PATH=" ${CMAKE_MODULE_PATH})
 message(STATUS "variable CMAKE_PREFIX_PATH=" ${CMAKE_PREFIX_PATH})
+message(STATUS "variable CMAKE_VERSION=" ${CMAKE_VERSION})
 message(STATUS "variable CMAKE_ROOT=" ${CMAKE_ROOT})
+message(STATUS "variable CMAKE_SOURCE_DIR=" ${CMAKE_SOURCE_DIR})
+message(STATUS "variable CMAKE_CURRENT_SOURCE_DIR=" ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Set the binary directory
 set(JOYNR_BINARY_DIR ${CMAKE_BINARY_DIR}/bin)
@@ -115,22 +125,52 @@ message(STATUS "############ Import: Qt5 ############")
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 # Tell CMake to run moc when necessary:
 set(CMAKE_AUTOMOC ON)
+
+# Doxygen documentation build
+if(ENABLE_DOXYGEN)
+    find_package(Doxygen REQUIRED)
+    message(STATUS "doxygen DOXYGEN_FOUND=${DOXYGEN_FOUND}")
+    add_custom_target(doxygen
+        COMMAND ${CMAKE_SOURCE_DIR}/run_doxygen.sh ${DOXYGEN_EXECUTABLE} ${CMAKE_SOURCE_DIR}
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        COMMENT "Creating doxygen documentation"
+        VERBATIM
+    )
+endif(ENABLE_DOXYGEN)
+
 find_package(Qt5Core REQUIRED)
 
 message(STATUS "variable Qt5Core_VERSION_STRING=${Qt5Core_VERSION_STRING}")
 message(STATUS "variable Qt5Core_INCLUDE_DIRS=${Qt5Core_INCLUDE_DIRS}")
+get_target_property(Qt5Core_LOCATION Qt5::Core LOCATION)
+message(STATUS "variable Qt5::Core LOCATION=${Qt5Core_LOCATION}")
 message(STATUS "variable Qt5Core_LIBRARIES=${Qt5Core_LIBRARIES}")
 message(STATUS "variable Qt5Core_DEFINITIONS=${Qt5Core_DEFINITIONS}")
 
 find_package(Qt5WebSockets REQUIRED)
 message(STATUS "variable Qt5WebSockets_VERSION_STRING=${Qt5WebSockets_VERSION_STRING}")
 message(STATUS "variable Qt5WebSockets_INCLUDE_DIRS=${Qt5WebSockets_INCLUDE_DIRS}")
+get_target_property(Qt5WebSockets_LOCATION Qt5::WebSockets LOCATION)
+message(STATUS "variable Qt5::WebSockets LOCATION=${Qt5WebSockets_LOCATION}")
 message(STATUS "variable Qt5WebSockets_LIBRARIES=${Qt5WebSockets_LIBRARIES}")
 message(STATUS "variable Qt5WebSockets_DEFINITIONS=${Qt5WebSockets_DEFINITIONS}")
+
+find_package(Qt5Test REQUIRED)
+message(STATUS "variable Qt5Test_VERSION_STRING=${Qt5Test_VERSION_STRING}")
+message(STATUS "variable Qt5Test_INCLUDE_DIRS=${Qt5Test_INCLUDE_DIRS}")
+get_target_property(Qt5Test_LOCATION Qt5::Test LOCATION)
+message(STATUS "variable Qt5::Test LOCATION=${Qt5Test_LOCATION}")
+message(STATUS "variable Qt5Test_LIBRARIES=${Qt5Test_LIBRARIES}")
+message(STATUS "variable Qt5Test_DEFINITIONS=${Qt5Test_DEFINITIONS}")
 
 include_directories(
     SYSTEM ${Qt5Core_INCLUDE_DIRS} ${Qt5WebSockets_INCLUDE_DIRS}
 )
+find_package(Qt5Sql REQUIRED)
+message(STATUS "variable Qt5Sql_VERSION_STRING=${Qt5Sql_VERSION_STRING}")
+message(STATUS "variable Qt5Sql_INCLUDE_DIRS=${Qt5Sql_INCLUDE_DIRS}")
+message(STATUS "variable Qt5Sql_LIBRARIES=${Qt5Sql_LIBRARIES}")
+message(STATUS "variable Qt5Sql_DEFINITIONS=${Qt5Sql_DEFINITIONS}")
 
 message(STATUS "############ Import: cURL ############")
 if(${WIN32})
@@ -296,7 +336,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 endif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++11 --stdlib=libc++")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++11 --stdlib=libc++ -Wno-unknown-pragmas")
     add_definitions(-DGTEST_USE_OWN_TR1_TUPLE=1)
 endif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 

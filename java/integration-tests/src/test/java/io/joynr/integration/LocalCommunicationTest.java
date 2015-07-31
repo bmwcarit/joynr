@@ -46,7 +46,6 @@ import java.util.UUID;
 import joynr.OnChangeSubscriptionQos;
 import joynr.PeriodicSubscriptionQos;
 import joynr.tests.testProxy;
-import joynr.tests.testSync;
 
 import org.junit.After;
 import org.junit.Before;
@@ -94,7 +93,7 @@ public class LocalCommunicationTest {
         provider = new PubSubTestProviderImpl();
         domain = "TestDomain" + System.currentTimeMillis();
 
-        runtimeA.registerCapability(domain, provider, testSync.class, "LocalCommunicationTest");
+        runtimeA.registerProvider(domain, provider);
 
         ProxyBuilder<testProxy> proxyBuilder;
 

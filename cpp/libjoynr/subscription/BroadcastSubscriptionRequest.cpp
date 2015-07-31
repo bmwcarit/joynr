@@ -30,8 +30,8 @@ Logger* BroadcastSubscriptionRequest::logger =
 
 BroadcastSubscriptionRequest::BroadcastSubscriptionRequest() : filterParameters()
 {
-    qRegisterMetaType<BroadcastFilterParameters>("BroadcastFilterParameters");
-    qRegisterMetaType<QSharedPointer<BroadcastFilterParameters>>();
+    qRegisterMetaType<QtBroadcastFilterParameters>("QtBroadcastFilterParameters");
+    qRegisterMetaType<QSharedPointer<QtBroadcastFilterParameters>>();
 }
 
 BroadcastSubscriptionRequest::BroadcastSubscriptionRequest(
@@ -61,7 +61,7 @@ bool BroadcastSubscriptionRequest::operator==(
 
 void BroadcastSubscriptionRequest::setFilterParametersData(QVariant filterParameters)
 {
-    this->filterParameters = filterParameters.value<BroadcastFilterParameters>();
+    this->filterParameters = filterParameters.value<QtBroadcastFilterParameters>();
 }
 
 QString BroadcastSubscriptionRequest::toQString() const
@@ -69,7 +69,7 @@ QString BroadcastSubscriptionRequest::toQString() const
     return JsonSerializer::serialize(*this);
 }
 
-void BroadcastSubscriptionRequest::setQos(QSharedPointer<OnChangeSubscriptionQos> qos)
+void BroadcastSubscriptionRequest::setQos(QSharedPointer<QtOnChangeSubscriptionQos> qos)
 {
     SubscriptionRequest::setQos(qos);
 }
@@ -79,13 +79,13 @@ QVariant BroadcastSubscriptionRequest::getFilterParametersData() const
     return QVariant::fromValue(filterParameters);
 }
 
-BroadcastFilterParameters BroadcastSubscriptionRequest::getFilterParameters() const
+QtBroadcastFilterParameters BroadcastSubscriptionRequest::getFilterParameters() const
 {
     return filterParameters;
 }
 
 void BroadcastSubscriptionRequest::setFilterParameters(
-        const BroadcastFilterParameters& filterParameters)
+        const QtBroadcastFilterParameters& filterParameters)
 {
     this->filterParameters = filterParameters;
 }

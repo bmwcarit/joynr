@@ -20,7 +20,7 @@ package io.joynr.messaging.bounceproxy.runtime;
  * #L%
  */
 
-import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.bounceproxy.BounceProxyPropertyKeys;
 import io.joynr.runtime.PropertyLoader;
 
@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
  * called {@value #CONTROLLED_BOUNCE_PROXY_SYSTEM_PROPERTIES} located on the
  * classpath. System properties have precedence over properties defined in the
  * file<br>
- * 
+ *
  * The class supports the specification of variables in the properties file,
  * e.g.
  * <p>
@@ -50,9 +50,9 @@ import org.slf4j.LoggerFactory;
  * All variables used in {@value #CONTROLLED_BOUNCE_PROXY_SYSTEM_PROPERTIES}
  * have to be available by calling {@link System#getProperty(String)} with the
  * variable as property key.
- * 
+ *
  * @author christina.strobel
- * 
+ *
  */
 public class BounceProxySystemPropertyLoader {
 
@@ -67,11 +67,13 @@ public class BounceProxySystemPropertyLoader {
      * {@link BounceProxyPropertyKeys#bounceProxySystemPropertyKeys}) or in the
      * file {@value #CONTROLLED_BOUNCE_PROXY_SYSTEM_PROPERTIES}. System
      * properties have precedence over the file.
-     * 
+     *
      * @return
-     * @throws JoynrException
-     *             if not all of the properties were set so that bounce proxy
-     *             won't be able to start up correctly
+     *   all properties for the bounce proxy that have to be set as
+     *   system properties
+     * @throws JoynrRuntimeException
+     *   if not all of the properties were set so that bounce proxy
+     *   won't be able to start up correctly
      */
     public static Properties loadProperties() {
 
@@ -86,7 +88,7 @@ public class BounceProxySystemPropertyLoader {
                 value = loadPropertyFromFile(key);
 
                 if (value == null) {
-                    throw new JoynrException("No value for system property '" + key
+                    throw new JoynrRuntimeException("No value for system property '" + key
                             + "' set. Unable to start Bounce Proxy");
                 }
             }
@@ -121,13 +123,13 @@ public class BounceProxySystemPropertyLoader {
     /**
      * Replaces a variable defined by <code>${variable}</code> by a system
      * property with the key <code>variable</code>.
-     * 
+     *
      * @param value
      *            a string with any number of variables defined
      * @return a string in which each occurrence of <code>${variable}</code> is
      *         replaced by {@link System#getProperty(String)} with
      *         <code>variable</code> as property key.
-     * @throws JoynrException
+     * @throws JoynrRuntimeException
      *             if the property key for the variable does not exist
      */
     @CheckForNull
@@ -146,7 +148,7 @@ public class BounceProxySystemPropertyLoader {
             String systemProperty = System.getProperty(propertyName);
 
             if (systemProperty == null) {
-                throw new JoynrException("No value for system property '" + propertyName
+                throw new JoynrRuntimeException("No value for system property '" + propertyName
                         + "' set as defined in property file. Unable to start Bounce Proxy");
             } else {
                 value = value.substring(0, startVariableIndex) + systemProperty + value.substring(endVariableIndex + 1);

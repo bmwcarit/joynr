@@ -18,160 +18,225 @@ package io.joynr.generator.cpp.proxy
  */
 
 import com.google.inject.Inject
-import org.franca.core.franca.FInterface
-import io.joynr.generator.cpp.util.TemplateBase
+import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
+import org.franca.core.franca.FInterface
 
 class InterfaceProxyHTemplate implements InterfaceTemplate{
-	@Inject	extension JoynrCppGeneratorExtensions
+	@Inject extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
+	@Inject extension CppStdTypeUtil
 
-	override generate(FInterface serviceInterface) {
-		val interfaceName =  serviceInterface.joynrName
-		val className = interfaceName + "Proxy"
-		val asyncClassName = interfaceName + "AsyncProxy"
-		val syncClassName = interfaceName + "SyncProxy"
-		val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+"_"+interfaceName+"Proxy_h").toUpperCase
-		'''
-		«warning()»
+	override generate(FInterface serviceInterface)
+'''
+«val interfaceName =  serviceInterface.joynrName»
+«val className = interfaceName + "Proxy"»
+«val asyncClassName = interfaceName + "AsyncProxy"»
+«val syncClassName = interfaceName + "SyncProxy"»
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+
+	"_"+interfaceName+"Proxy_h").toUpperCase»
+«warning()»
 
-		#ifndef «headerGuard»
-		#define «headerGuard»
+#ifndef «headerGuard»
+#define «headerGuard»
 
-		#include "joynr/PrivateCopyAssign.h"
-		«FOR parameterType: getRequiredIncludesFor(serviceInterface)»
-		#include "«parameterType»"
-		«ENDFOR»
-		«getDllExportIncludeStatement()»
-		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«syncClassName».h"
-		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«asyncClassName».h"
-		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName».h"
+#include "joynr/PrivateCopyAssign.h"
+«FOR parameterType: getRequiredIncludesFor(serviceInterface).addElements(includeForString)»
+	#include «parameterType»
+«ENDFOR»
+#include <memory>
 
-		#ifdef _MSC_VER
-		    // Visual C++ gives a warning which is caused by diamond inheritance, but this is
-		    // not relevant when using pure virtual methods:
-		    // http://msdn.microsoft.com/en-us/library/6b3sy7ae(v=vs.80).aspx
-		    #pragma warning( disable : 4250 )
-		#endif
+«getDllExportIncludeStatement()»
+#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«syncClassName».h"
+#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«asyncClassName».h"
+#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName».h"
 
-		«getNamespaceStarter(serviceInterface)»
-		class «getDllExportMacro()» «className» : virtual public I«interfaceName», virtual public «syncClassName», virtual public «asyncClassName» {
-		public:
-		    «className»(
-		            QSharedPointer<joynr::system::Address> messagingAddress,
-		            joynr::ConnectorFactory* connectorFactory,
-		            joynr::IClientCache* cache,
-		            const QString& domain,
-		            const joynr::ProxyQos& proxyQos,
-		            const joynr::MessagingQos& qosSettings,
-		            bool cached
-		    );
+#ifdef _MSC_VER
+	// Visual C++ gives a warning which is caused by diamond inheritance, but this is
+	// not relevant when using pure virtual methods:
+	// http://msdn.microsoft.com/en-us/library/6b3sy7ae(v=vs.80).aspx
+	#pragma warning( disable : 4250 )
+#endif
 
-		    «FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.notifiable]»
-		    	«var attributeName = attribute.joynrName»
-		    	«val returnType = getMappedDatatypeOrList(attribute)»
-		    	void unsubscribeFrom«attributeName.toFirstUpper»(QString &subscriptionId) {
-		    	    «className»Base::unsubscribeFrom«attributeName.toFirstUpper»(subscriptionId);
-		    	}
+«getNamespaceStarter(serviceInterface)»
+/** @brief Proxy class for interface «interfaceName» */
+class «getDllExportMacro()» «className» : virtual public I«interfaceName», virtual public «syncClassName», virtual public «asyncClassName» {
+public:
+	/**
+	 * @brief Parameterized constructor
+	 * @param messagingAddress The address
+	 * @param connectorFactory The connector factory
+	 * @param cache The client cache
+	 * @param domain The provider domain
+	 * @param qosSettings The quality of service settings
+	 * @param cached True, if cached, false otherwise
+	 */
+	«className»(
+			QSharedPointer<joynr::system::QtAddress> messagingAddress,
+			joynr::ConnectorFactory* connectorFactory,
+			joynr::IClientCache* cache,
+			const std::string& domain,
+			const joynr::MessagingQos& qosSettings,
+			bool cached
+	);
+	«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.notifiable]»
+		«var attributeName = attribute.joynrName»
+		«val returnType = attribute.typeName»
 
-		    	QString subscribeTo«attributeName.toFirstUpper»(
-		    	            QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-		    	            QSharedPointer<joynr::SubscriptionQos> subscriptionQos){
-		    	    return «className»Base::subscribeTo«attributeName.toFirstUpper»(
-		    	                subscriptionListener,
-		    	                subscriptionQos);
-		    	}
+		/**
+		 * @brief unsubscribes from attribute «attributeName.toFirstUpper»
+		 * @param subscriptionId The subscription id returned earlier on creation of the subscription
+		 */
+		void unsubscribeFrom«attributeName.toFirstUpper»(std::string &subscriptionId) {
+			«className»Base::unsubscribeFrom«attributeName.toFirstUpper»(subscriptionId);
+		}
 
-		    	QString subscribeTo«attributeName.toFirstUpper»(
-		    	            QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-		    	            QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
-		    	            QString& subscriptionId){
-		    	    return «className»Base::subscribeTo«attributeName.toFirstUpper»(
-		    	                subscriptionListener,
-		    	                subscriptionQos,
-		    	                subscriptionId);
-		    	}
-		    «ENDFOR»
+		/**
+		 * @brief creates a new subscription to attribute «attributeName.toFirstUpper»
+		 * @param subscriptionListener The listener callback providing methods to call on publication and failure
+		 * @param subscriptionQos The subscription quality of service settings
+		 * @return the subscription id as string
+		 */
+		std::string subscribeTo«attributeName.toFirstUpper»(
+					std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
+					const joynr::SubscriptionQos& subscriptionQos){
+			return «className»Base::subscribeTo«attributeName.toFirstUpper»(
+						subscriptionListener,
+						subscriptionQos);
+		}
 
-		    «FOR broadcast: serviceInterface.broadcasts»
-		    	«var broadcastName = broadcast.joynrName»
-		    	«val returnTypes = getMappedOutputParameterTypesCommaSeparated(broadcast)»
-		    	void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(QString &subscriptionId) {
-		    	    «className»Base::unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(subscriptionId);
-		    	}
+		/**
+		 * @brief updates an existing subscription to attribute «attributeName.toFirstUpper»
+		 * @param subscriptionListener The listener callback providing methods to call on publication and failure
+		 * @param subscriptionQos The subscription quality of service settings
+		 * @param subscriptionId The subscription id returned earlier on creation of the subscription
+		 * @return the subscription id as string
+		 */
+		std::string subscribeTo«attributeName.toFirstUpper»(
+					std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
+					const joynr::SubscriptionQos& subscriptionQos,
+					std::string& subscriptionId){
+			return «className»Base::subscribeTo«attributeName.toFirstUpper»(
+						subscriptionListener,
+						subscriptionQos,
+						subscriptionId);
+		}
+	«ENDFOR»
 
-		    	«IF isSelective(broadcast)»
-		    	QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
-		    	            «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
-		    	            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-		    	            QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos){
-		    	    return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
-		    	                filterParameters,
-		    	                subscriptionListener,
-		    	                subscriptionQos);
-		    	}
+	«FOR broadcast: serviceInterface.broadcasts»
+		«var broadcastName = broadcast.joynrName»
+		«val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
 
-		    	QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
-		    	            «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters,
-		    	            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-		    	            QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos,
-		    	            QString& subscriptionId){
-		    	    return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
-		    	                filterParameters,
-		    	                subscriptionListener,
-		    	                subscriptionQos,
-		    	                subscriptionId);
-		    	}
-		    	«ELSE»
-		    	QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
-		    	            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-		    	            QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos){
-		    	    return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
-		    	                subscriptionListener,
-		    	                subscriptionQos);
-		    	}
-		    	QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
-		    	            QSharedPointer<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-		    	            QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos,
-		    	            QString& subscriptionId){
-		    	    return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
-		    	                subscriptionListener,
-		    	                subscriptionQos,
-		    	                subscriptionId);
-		    	}
-		    	«ENDIF»
-		    «ENDFOR»
+		/**
+		 * @brief unsubscribes from broadcast «broadcastName.toFirstUpper»
+		 * @param subscriptionId The subscription id returned earlier on creation of the subscription
+		 */
+		void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(std::string &subscriptionId) {
+			«className»Base::unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(subscriptionId);
+		}
 
-		    virtual ~«className»();
+		«IF isSelective(broadcast)»
+			/**
+			 * @brief subscribes to selective broadcast «broadcastName.toFirstUpper» with filter parameters
+			 * @param filterParameters The filter parameters for selection of suitable broadcasts
+			 * @param subscriptionListener The listener callback providing methods to call on publication and failure
+			 * @param subscriptionQos The subscription quality of service settings
+			 * @return the subscription id as string
+			 */
+			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
+						const «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
+						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+						const joynr::OnChangeSubscriptionQos& subscriptionQos){
+				return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
+							filterParameters,
+							subscriptionListener,
+							subscriptionQos);
+			}
 
-		    // attributes
-		    «FOR attribute: getAttributes(serviceInterface)»
-		    	«var attributeName = attribute.joynrName»
-		    	«IF attribute.readable»
-		    	using «asyncClassName»::get«attributeName.toFirstUpper»;
-		    	using «syncClassName»::get«attributeName.toFirstUpper»;
-		    	«ENDIF»
-		    	«IF attribute.writable»
-		    	using «asyncClassName»::set«attributeName.toFirstUpper»;
-		    	using «syncClassName»::set«attributeName.toFirstUpper»;
-		    	«ENDIF»
-		    «ENDFOR»
+			/**
+			 * @brief updates an existing subscription to selective broadcast «broadcastName.toFirstUpper» with filter parameters
+			 * @param filterParameters The filter parameters for selection of suitable broadcasts
+			 * @param subscriptionListener The listener callback providing methods to call on publication and failure
+			 * @param subscriptionQos The subscription quality of service settings
+			 * @param subscriptionId The subscription id returned earlier on creation of the subscription
+			 * @return the subscription id as string
+			 */
+			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
+						const «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
+						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+						const joynr::OnChangeSubscriptionQos& subscriptionQos,
+						std::string& subscriptionId){
+				return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
+							filterParameters,
+							subscriptionListener,
+							subscriptionQos,
+							subscriptionId);
+			}
+		«ELSE»
+			/**
+			 * @brief subscribes to broadcast «broadcastName.toFirstUpper»
+			 * @param subscriptionListener The listener callback providing methods to call on publication and failure
+			 * @param subscriptionQos The subscription quality of service settings
+			 * @return the subscription id as string
+			 */
+			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
+						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+						const joynr::OnChangeSubscriptionQos& subscriptionQos){
+				return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
+							subscriptionListener,
+							subscriptionQos);
+			}
 
-		    // operations
-		    «FOR methodName: getUniqueMethodNames(serviceInterface)»
-		    	using «asyncClassName»::«methodName»;
-		    	using «syncClassName»::«methodName»;
+			/**
+			 * @brief updates an existing subscription to broadcast «broadcastName.toFirstUpper»
+			 * @param filterParameters The filter parameters for selection of suitable broadcasts
+			 * @param subscriptionListener The listener callback providing methods to call on publication and failure
+			 * @param subscriptionQos The subscription quality of service settings
+			 * @param subscriptionId The subscription id returned earlier on creation of the subscription
+			 * @return the subscription id as string
+			 */
+			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
+						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
+						const joynr::OnChangeSubscriptionQos& subscriptionQos,
+						std::string& subscriptionId){
+				return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
+							subscriptionListener,
+							subscriptionQos,
+							subscriptionId);
+			}
+		«ENDIF»
+	«ENDFOR»
 
-		    «ENDFOR»
-		private:
-		    DISALLOW_COPY_AND_ASSIGN(«className»);
-		};
+	/** @brief Destructor */
+	virtual ~«className»();
 
-		«getNamespaceEnder(serviceInterface)»
+	// attributes
+	«FOR attribute: getAttributes(serviceInterface)»
+		«var attributeName = attribute.joynrName»
+		«IF attribute.readable»
+			using «asyncClassName»::get«attributeName.toFirstUpper»Async;
+			using «syncClassName»::get«attributeName.toFirstUpper»;
+		«ENDIF»
+		«IF attribute.writable»
+			using «asyncClassName»::set«attributeName.toFirstUpper»Async;
+			using «syncClassName»::set«attributeName.toFirstUpper»;
+		«ENDIF»
+	«ENDFOR»
 
-		#endif // «headerGuard»
-		'''
-	}
+	// operations
+	«FOR methodName: getUniqueMethodNames(serviceInterface)»
+		using «asyncClassName»::«methodName»Async;
+		using «syncClassName»::«methodName»;
 
+	«ENDFOR»
+private:
+	DISALLOW_COPY_AND_ASSIGN(«className»);
+};
+
+«getNamespaceEnder(serviceInterface)»
+
+#endif // «headerGuard»
+'''
 }

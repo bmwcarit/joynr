@@ -18,7 +18,7 @@ package io.joynr.arbitration;
  * limitations under the License.
  * #L%
  */
-
+import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_ARBITRATION_MINIMUMRETRYDELAY;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.exceptions.JoynrArbitrationException;
 
@@ -28,7 +28,7 @@ import com.google.inject.name.Named;
 public final class ArbitratorFactory {
 
     @Inject
-    @Named("joynr.arbitration.minimumretrydelay")
+    @Named(PROPERTY_ARBITRATION_MINIMUMRETRYDELAY)
     private static long minimumArbitrationRetryDelay;
 
     private ArbitratorFactory() {
@@ -37,7 +37,7 @@ public final class ArbitratorFactory {
 
     /**
      * Creates an arbitrator defined by the arbitrationStrategy set in the discoveryQos.
-     * 
+     *
      * @param domain
      *            Domain of the provider.
      * @param interfaceName
@@ -46,9 +46,8 @@ public final class ArbitratorFactory {
      *            Arbitration settings like arbitration strategy, timeout and strategy specific parameters.
      * @param capabilitiesSource
      *            Source for capabilities lookup.
-     * @param minimumArbitrationRetryDelay
-     * @return
-     * @throws JoynrArbitrationException
+     * @return the created Arbitrator object
+     * @throws JoynrArbitrationException if arbitration strategy is unknown
      */
     public static Arbitrator create(final String domain,
                                     final String interfaceName,
@@ -57,19 +56,34 @@ public final class ArbitratorFactory {
 
         switch (discoveryQos.getArbitrationStrategy()) {
         case FixedChannel:
-            return new FixedParticipantArbitrator(discoveryQos, capabilitiesSource, minimumArbitrationRetryDelay);
+            return new Arbitrator(domain,
+                                  interfaceName,
+                                  discoveryQos,
+                                  capabilitiesSource,
+                                  minimumArbitrationRetryDelay,
+                                  new FixedParticipantArbitrationStrategyFunction());
         case Keyword:
-            return new KeywordArbitrator(domain,
-                                         interfaceName,
-                                         discoveryQos,
-                                         capabilitiesSource,
-                                         minimumArbitrationRetryDelay);
+            return new Arbitrator(domain,
+                                  interfaceName,
+                                  discoveryQos,
+                                  capabilitiesSource,
+                                  minimumArbitrationRetryDelay,
+                                  new KeywordArbitrationStrategyFunction());
         case HighestPriority:
-            return new HighestPriorityArbitrator(domain,
-                                                 interfaceName,
-                                                 discoveryQos,
-                                                 capabilitiesSource,
-                                                 minimumArbitrationRetryDelay);
+            return new Arbitrator(domain,
+                                  interfaceName,
+                                  discoveryQos,
+                                  capabilitiesSource,
+                                  minimumArbitrationRetryDelay,
+                                  new HighestPriorityArbitrationStrategyFunction());
+        case Custom:
+            return new Arbitrator(domain,
+                                  interfaceName,
+                                  discoveryQos,
+                                  capabilitiesSource,
+                                  minimumArbitrationRetryDelay,
+                                  discoveryQos.getArbitrationStrategyFunction());
+
         default:
             throw new JoynrArbitrationException("Arbitration failed: domain: " + domain + " interface: "
                     + interfaceName + " qos: " + discoveryQos + ": unknown arbitration strategy or strategy not set!");

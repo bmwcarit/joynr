@@ -25,6 +25,8 @@
 #include "joynr/ProxyBuilder.h"
 
 #include "joynr/system/IDiscovery.h"
+#include <string>
+#include <vector>
 
 namespace joynr
 {
@@ -34,7 +36,7 @@ class SystemServicesSettings;
 
 namespace system
 {
-class DiscoveryEntry;
+class QtDiscoveryEntry;
 class DiscoveryQos;
 class DiscoveryProxy;
 }
@@ -55,31 +57,27 @@ public:
      * (discovery proxy) pointer.
      */
     LocalDiscoveryAggregator(IRequestCallerDirectory& requestCallerDirectory,
-                             const SystemServicesSettings& systemServicesSettings,
-                             joynr::system::IDiscoverySync* localCapabilitiesDirectory = NULL);
+                             const SystemServicesSettings& systemServicesSettings);
 
     virtual ~LocalDiscoveryAggregator();
 
     void setDiscoveryProxy(joynr::system::IDiscoverySync* discoveryProxy);
 
     // inherited from joynr::system::IDiscoverySync
-    virtual void add(joynr::RequestStatus& joynrInternalStatus,
-                     joynr::system::DiscoveryEntry entry);
+    virtual joynr::RequestStatus add(const joynr::types::DiscoveryEntry& entry);
 
     // inherited from joynr::system::IDiscoverySync
-    virtual void lookup(joynr::RequestStatus& joynrInternalStatus,
-                        QList<joynr::system::DiscoveryEntry>& result,
-                        QString domain,
-                        QString interfaceName,
-                        joynr::system::DiscoveryQos discoveryQos);
+    virtual joynr::RequestStatus lookup(std::vector<joynr::types::DiscoveryEntry>& result,
+                                        const std::string& domain,
+                                        const std::string& interfaceName,
+                                        const joynr::types::DiscoveryQos& discoveryQos);
 
     // inherited from joynr::system::IDiscoverySync
-    virtual void lookup(joynr::RequestStatus& joynrInternalStatus,
-                        joynr::system::DiscoveryEntry& result,
-                        QString participantId);
+    virtual joynr::RequestStatus lookup(joynr::types::DiscoveryEntry& result,
+                                        const std::string& participantId);
 
     // inherited from joynr::system::IDiscoverySync
-    virtual void remove(joynr::RequestStatus& joynrInternalStatus, QString participantId);
+    virtual joynr::RequestStatus remove(const std::string& participantId);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalDiscoveryAggregator);
@@ -92,13 +90,13 @@ private:
      * @param discoveryEntry Discovery entry to check for local availability.
      */
     void checkForLocalAvailabilityAndAddInProcessConnection(
-            joynr::system::DiscoveryEntry& discoveryEntry);
+            joynr::types::DiscoveryEntry& discoveryEntry);
 
     // this pointer doesn't hold ownership in case the proxy builder is not set
     joynr::system::IDiscoverySync* discoveryProxy;
     bool hasOwnershipOfDiscoveryProxy;
     IRequestCallerDirectory& requestCallerDirectory;
-    QMap<QString, joynr::system::DiscoveryEntry> provisionedDiscoveryEntries;
+    QMap<std::string, joynr::types::QtDiscoveryEntry> provisionedDiscoveryEntries;
     const SystemServicesSettings& systemServicesSettings;
 };
 } // namespace joynr

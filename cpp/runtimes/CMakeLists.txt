@@ -77,8 +77,6 @@ add_library(
     ${JoynrClusterControllerRuntime_HEADERS}
     ${JoynrClusterControllerRuntime_SOURCES}
 )
-qt5_use_modules(JoynrClusterControllerRuntime Core)
-
 
 if(${ENABLE_CLANG_FORMATTER})
     set(COMMENT "running C++ code formatter: clang-format")
@@ -86,14 +84,14 @@ if(${ENABLE_CLANG_FORMATTER})
     set(COMMENT "${COMMENT}\nprocessing header files:\n${JoynrClusterControllerRuntime_HEADERS}")
     set(COMMENT "${COMMENT}\nprocessing source files:\n${JoynrClusterControllerRuntime_SOURCES}")
 
-    add_custom_command(
-        TARGET JoynrClusterControllerRuntime
-        PRE_BUILD
+    add_custom_target(
+        format-JoynrClusterControllerRuntime
         COMMAND clang-format -i ${JoynrClusterControllerRuntime_HEADERS} ${JoynrClusterControllerRuntime_SOURCES}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         COMMENT "${COMMENT}"
         VERBATIM
     )
+    add_dependencies(JoynrClusterControllerRuntime format-JoynrClusterControllerRuntime)
 endif(${ENABLE_CLANG_FORMATTER})
 
 set_target_properties(
@@ -177,7 +175,6 @@ add_library(
     ${JoynrWsRuntime_PRIVATE_HEADERS}
     ${JoynrWsRuntime_SOURCES}
 )
-qt5_use_modules(JoynrWsRuntime Core)
 
 if(${ENABLE_CLANG_FORMATTER})
     set(COMMENT "running C++ code formatter: clang-format")
@@ -185,9 +182,8 @@ if(${ENABLE_CLANG_FORMATTER})
     set(COMMENT "${COMMENT}\nprocessing header files:\n${JoynrRuntime_PRIVATE_HEADERS};${JoynrWsRuntime_PRIVATE_HEADERS}")
     set(COMMENT "${COMMENT}\nprocessing source files:\n${JoynrRuntime_SOURCES};${JoynrWsRuntime_SOURCES}")
 
-    add_custom_command(
-        TARGET JoynrWsRuntime
-        PRE_BUILD
+    add_custom_target(
+        format-JoynrWsRuntime
         COMMAND clang-format -i
             ${JoynrRuntime_PRIVATE_HEADERS}
             ${JoynrWsRuntime_PRIVATE_HEADERS}
@@ -197,6 +193,7 @@ if(${ENABLE_CLANG_FORMATTER})
         COMMENT "${COMMENT}"
         VERBATIM
     )
+    add_dependencies(JoynrWsRuntime format-JoynrWsRuntime)
 endif(${ENABLE_CLANG_FORMATTER})
 
 target_link_libraries(
@@ -270,7 +267,6 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         ${JoynrDbusRuntime_PRIVATE_HEADERS}
         ${JoynrDbusRuntime_SOURCES}
     )
-    qt5_use_modules(JoynrDbusRuntime Core)
 
     if(${ENABLE_CLANG_FORMATTER})
         set(COMMENT "running C++ code formatter: clang-format")
@@ -278,14 +274,14 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         set(COMMENT "${COMMENT}\nprocessing header files:\n${JoynrDbusRuntime_PRIVATE_HEADERS}")
         set(COMMENT "${COMMENT}\nprocessing source files:\n${JoynrDbusRuntime_SOURCES}")
 
-        add_custom_command(
-            TARGET JoynrDbusRuntime
-            PRE_BUILD
+        add_custom_target(
+            format-JoynrDbusRuntime
             COMMAND clang-format -i ${JoynrDbusRuntime_PRIVATE_HEADERS} ${JoynrDbusRuntime_SOURCES}
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
             COMMENT "${COMMENT}"
             VERBATIM
         )
+    add_dependencies(JoynrDbusRuntime format-JoynrDbusRuntime)
     endif(${ENABLE_CLANG_FORMATTER})
 
     target_link_libraries(
@@ -335,7 +331,6 @@ set(
 )
 
 add_executable(cluster-controller StartClusterController.cpp)
-qt5_use_modules(cluster-controller Core)
 
 if(${ENABLE_CLANG_FORMATTER})
     set(COMMENT "running C++ code formatter: clang-format")
@@ -343,14 +338,14 @@ if(${ENABLE_CLANG_FORMATTER})
     set(COMMENT "${COMMENT}\nprocessing header files:\n${cluster-controller_HEADERS}")
     set(COMMENT "${COMMENT}\nprocessing source files:\n${cluster-controller_SOURCES}")
 
-    add_custom_command(
-        TARGET cluster-controller
-        PRE_BUILD
+    add_custom_target(
+        format-cluster-controller
         COMMAND clang-format -i ${cluster-controller_HEADERS} ${cluster-controller_SOURCES}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         COMMENT "${COMMENT}"
         VERBATIM
     )
+    add_dependencies(cluster-controller format-cluster-controller)
 endif(${ENABLE_CLANG_FORMATTER})
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})

@@ -37,6 +37,7 @@ public class JoynrMessage implements JoynrType {
     public static final String HEADER_NAME_CONTENT_TYPE = "contentType";
     public static final String HEADER_NAME_EXPIRY_DATE = "expiryDate";
     public static final String HEADER_NAME_MESSAGE_ID = "msgId";
+    public static final String HEADER_NAME_CREATOR_USER_ID = "creator";
 
     public static final String HEADER_NAME_TO_PARTICIPANT_ID = "to";
     public static final String HEADER_NAME_FROM_PARTICIPANT_ID = "from";
@@ -204,6 +205,16 @@ public class JoynrMessage implements JoynrType {
     @JsonIgnore
     public String getId() {
         return getHeaderValue(JoynrMessage.HEADER_NAME_MESSAGE_ID);
+    }
+
+    @JsonIgnore
+    public String getCreatorUserId() {
+        return getHeaderValue(HEADER_NAME_CREATOR_USER_ID);
+    }
+
+    @JsonIgnore
+    public void setCreatorUserId(String creatorUserId) {
+        setHeaderValue(HEADER_NAME_CREATOR_USER_ID, creatorUserId);
     }
 
     @JsonIgnore

@@ -68,6 +68,9 @@ public class InvocationArguments {
     }
 
     public InvocationArguments(String[] args) throws IllegalStateException {
+        if (args.length == 0) {
+            throw new IllegalStateException("No parameters provided!" + dumpCorrectInvocation());
+        }
         parseArguments(args);
 
         if (!new File(modelpath).exists()) {
@@ -103,7 +106,7 @@ public class InvocationArguments {
         result += ("       -outputPath <path to output directory>\n");
         result += ("      Also one of:\n");
         result += ("       -rootGenerator <full name of template root> OR\n");
-        result += ("       -generationLanguage <cpp|java|javascript>\n");
+        result += ("       -generationLanguage <cpp|java>\n");
         result += ("      Optional: \n");
         result += ("       -templatesDir <folder name of templates directory>\n");
         result += ("       -templatesEncoding <encoding of templates>\n");
@@ -116,33 +119,33 @@ public class InvocationArguments {
 
     public void parseArguments(String[] args) {
         for (int i = 0; i < args.length; i++) {
-            if (args[i].equals("-templatesDir")) {
+            if (args[i].equalsIgnoreCase("-templatesDir")) {
                 setTemplatesDir(new File(args[i + 1]).getAbsolutePath());
                 i++;
-            } else if (args[i].equals("-modelpath")) {
+            } else if (args[i].equalsIgnoreCase("-modelpath")) {
                 setModelpath(args[i + 1]);
                 i++;
-            } else if (args[i].equals("-rootGenerator")) {
+            } else if (args[i].equalsIgnoreCase("-rootGenerator")) {
                 setRootGenerator(args[i + 1].replace("\"", ""));
                 i++;
-            } else if (args[i].equals("-generationLanguage")) {
+            } else if (args[i].equalsIgnoreCase("-generationLanguage")) {
                 setGenerationLanguage(args[i + 1].replace("\"", ""));
                 i++;
-            } else if (args[i].equals("-outputPath")) {
+            } else if (args[i].equalsIgnoreCase("-outputPath")) {
                 setOutputPath(new File(args[i + 1]).getAbsolutePath());
                 i++;
-            } else if (args[i].equals("-templatesEncoding")) {
+            } else if (args[i].equalsIgnoreCase("-templatesEncoding")) {
                 setTemplatesEncoding(args[i + 1].replace("\"", ""));
                 i++;
-            } else if (args[i].equals("-generationId")) {
+            } else if (args[i].equalsIgnoreCase("-generationId")) {
                 setGenerationId(args[i + 1].replace("\"", ""));
                 i++;
-            } else if (args[i].equals("-outputHeaderPath")) {
+            } else if (args[i].equalsIgnoreCase("-outputHeaderPath")) {
                 setParameterElement("outputHeaderPath", args[i + 1].replace("\"", ""));
                 i++;
-            } else if (args[i].equals("-clean")) {
+            } else if (args[i].equalsIgnoreCase("-clean")) {
                 setClean(true);
-            } else if (args[i].equals("-generate")) {
+            } else if (args[i].equalsIgnoreCase("-generate")) {
                 setGenerate(args[i + 1].equalsIgnoreCase("true"));
                 i++;
             }

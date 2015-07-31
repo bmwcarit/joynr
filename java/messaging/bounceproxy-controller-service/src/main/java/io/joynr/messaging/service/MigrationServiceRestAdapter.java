@@ -42,8 +42,8 @@ public class MigrationServiceRestAdapter {
     /**
      * Migrates all bounce proxies of one cluster to a different cluster.
      * 
-     * @param clusterId
-     * @return
+     * @param clusterId the identifier of the cluster to migrate
+     * @return response with status 202 (accepted)
      */
     @DELETE
     @Path("/clusters/{clusterid: ([A-Z,a-z,0-9,_,\\-]+)}")
@@ -60,8 +60,8 @@ public class MigrationServiceRestAdapter {
      * 
      * Migrates a single bounce proxy to a different cluster.
      * 
-     * @param bpId
-     * @return
+     * @param bpId bounce proxy id
+     * @return response with status 501 (not implemented)
      */
     @DELETE
     @Path("/bps/{bpid}")
@@ -73,6 +73,8 @@ public class MigrationServiceRestAdapter {
      * TODO placeholder for future implementation
      * 
      * Migrates a single channel to a different bounce proxy.
+     * @param ccid cluster controller id
+     * @return response with status 501 (not implemented)
      */
     @DELETE
     @Path("/channels/{ccid}")

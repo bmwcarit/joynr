@@ -19,12 +19,14 @@
 #include "joynr/PrivateCopyAssign.h"
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <memory>
+#include <string>
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "joynr/vehicle/GpsProxy.h"
 #include "joynr/tests/testProxy.h"
-#include "joynr/types/Trip.h"
-#include "joynr/types/GpsLocation.h"
+#include "joynr/types/QtTrip.h"
+#include "joynr/types/QtGpsLocation.h"
 #include "joynr/CapabilitiesRegistrar.h"
 #include "utils/QThreadSleep.h"
 #include "PrettyPrint.h"
@@ -50,19 +52,18 @@ public:
     JoynrClusterControllerRuntime* runtime2;
     QSettings settings1;
     QSettings settings2;
-    QString baseUuid;
-    QString uuid;
-    QString domain;
+    std::string baseUuid;
+    std::string uuid;
+    std::string domain;
 
     End2EndPerformanceTest() :
         runtime1(NULL),
         runtime2(NULL),
         settings1("test-resources/SystemIntegrationTest1.settings", QSettings::IniFormat),
         settings2("test-resources/SystemIntegrationTest2.settings", QSettings::IniFormat),
-        baseUuid(QUuid::createUuid().toString()),
-        uuid( "_" + baseUuid.mid(1,baseUuid.length()-2 )),
-        domain(QString("cppEnd2EndPerformancesTestDomain") + "_" + uuid)
-
+        baseUuid(TypeUtil::toStd(QUuid::createUuid().toString())),
+        uuid( "_" + baseUuid.substr(1, baseUuid.length()-2)),
+        domain("cppEnd2EndPerformancesTestDomain" + uuid)
     {
         QSettings* settings_1 = SettingsMerger::mergeSettings(QString("test-resources/SystemIntegrationTest1.settings"));
         SettingsMerger::mergeSettings(QString("test-resources/libjoynrSystemIntegration1.settings"), settings_1);
@@ -73,17 +74,15 @@ public:
     }
 
     void SetUp() {
-        runtime1->startMessaging();
-        runtime1->waitForChannelCreation();
-        runtime2->startMessaging();
-        runtime2->waitForChannelCreation();
+        runtime1->start();
+        runtime2->start();
     }
 
     void TearDown() {
-        runtime1->deleteChannel(); //cleanup the channels so they dont remain on the bp
-        runtime2->deleteChannel(); //cleanup the channels so they dont remain on the bp
-        runtime1->stopMessaging();
-        runtime2->stopMessaging();
+        bool deleteChannel = true;
+        runtime1->stop(deleteChannel);
+        runtime2->stop(deleteChannel);
+
         // Remove participant id persistence file
         QFile::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME());
     }
@@ -103,40 +102,37 @@ TEST_F(End2EndPerformanceTest, sendManyRequests) {
 
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
-    QSharedPointer<tests::testProvider> testProvider(new MockTestProvider(providerQos));
+    std::shared_ptr<tests::testProvider> testProvider(new MockTestProvider(providerQos));
 
-    runtime1->registerCapability<tests::testProvider>(domain,testProvider, QString());
+    runtime1->registerProvider<tests::testProvider>(domain, testProvider);
 
     QThreadSleep::msleep(2000);
 
 
-    ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->getProxyBuilder<tests::testProxy>(domain);
+    ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
 
     qlonglong qosRoundTripTTL = 50000;
-    qlonglong qosCacheDataFreshnessMs = 400000;
 
     // Send a message and expect to get a result
     QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
-                                               ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
-                                               ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))
+                                               ->setMessagingQos(MessagingQos(qosRoundTripTTL))
                                                ->setCached(false)
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
     qint64 startTime = QDateTime::currentMSecsSinceEpoch();
-    QList<QSharedPointer<Future<int> > >testFutureList;
+    QList<std::shared_ptr<Future<int> > >testFutureList;
     int numberOfMessages = 150;
     int successFullMessages = 0;
     for (int i=0; i<numberOfMessages; i++){
-        testFutureList.append(QSharedPointer<Future<int> >(new Future<int>() ) );
-        QList<int> list;
-        list.append(2);
-        list.append(4);
-        list.append(8);
-        list.append(i);
-        testProxy->sumInts(testFutureList.at(i), list);
+        std::vector<int> list;
+        list.push_back(2);
+        list.push_back(4);
+        list.push_back(8);
+        list.push_back(i);
+        testFutureList.append(testProxy->sumIntsAsync(list));
     }
 
     for (int i=0; i<numberOfMessages; i++){
@@ -144,7 +140,9 @@ TEST_F(End2EndPerformanceTest, sendManyRequests) {
         int expectedValue = 2+4+8+i;
         if (testFutureList.at(i)->getStatus().successful()) {
             successFullMessages++;
-            EXPECT_EQ(expectedValue, testFutureList.at(i)->getValue());
+            int actualValue;
+            testFutureList.at(i)->getValues(actualValue);
+            EXPECT_EQ(expectedValue, actualValue);
         }
     }
     qint64 stopTime = QDateTime::currentMSecsSinceEpoch();

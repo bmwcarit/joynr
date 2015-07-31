@@ -25,12 +25,9 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>java</artifactId>
-		<version>0.8.0</version>
+		<version>0.9.0</version>
 	</parent>
 
-	<properties>
-		<grizzly-version>1.9.50</grizzly-version>
-	</properties>
 	<dependencies>
 		<dependency>
 			<groupId>com.jayway.restassured</groupId>
@@ -41,10 +38,10 @@
 			<groupId>org.codehaus.groovy</groupId>
 			<artifactId>groovy-all</artifactId>
 			<scope>test</scope>
-		</dependency>					
+		</dependency>
 		<dependency>
-			<groupId>io.joynr.java.backend-services</groupId>
-			<artifactId>discovery</artifactId>
+			<groupId>io.joynr.java.core</groupId>
+			<artifactId>libjoynr</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
@@ -53,12 +50,19 @@
 			<artifactId>libjoynr</artifactId>
 			<version>${project.version}</version>
 			<type>test-jar</type>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.java</groupId>
 			<artifactId>javaapi</artifactId>
 			<version>${project.version}</version>
 			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>messaging-common</artifactId>
+			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -100,10 +104,10 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-		    <groupId>org.apache.httpcomponents</groupId>
-		    <artifactId>httpclient</artifactId>
-		    <type>test-jar</type>
-		    <scope>test</scope>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<type>test-jar</type>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.messaging</groupId>
@@ -129,6 +133,17 @@
 		<dependency>
 			<groupId>io.joynr.java.backend-services</groupId>
 			<artifactId>discovery-directory-servlet</artifactId>
+			<version>${project.version}</version>
+			<type>war</type>
+		</dependency>
+		<!--
+			This dependency is needed to ensure the correct build order.
+			Some artifacts is needed by the maven-dependency-plugin, which
+			copies them to the currrent build directory.
+		-->
+		<dependency>
+			<groupId>io.joynr.java.backend-services</groupId>
+			<artifactId>domain-access-controller-servlet</artifactId>
 			<version>${project.version}</version>
 			<type>war</type>
 		</dependency>
@@ -165,14 +180,13 @@
 		<dependency>
 			<groupId>net.sf.ehcache</groupId>
 			<artifactId>ehcache</artifactId>
-			<version>2.8.1</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-	        <groupId>org.slf4j</groupId>
-	        <artifactId>slf4j-log4j12</artifactId>
-	    </dependency>
-	    <dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>net.sourceforge.htmlunit</groupId>
 			<artifactId>htmlunit</artifactId>
 			<version>2.14</version>
@@ -220,6 +234,14 @@
 									<type>war</type>
 									<outputDirectory>${project.build.directory}</outputDirectory>
 									<destFileName>discovery.war</destFileName>
+								</artifactItem>
+								<artifactItem>
+									<groupId>io.joynr.java.backend-services</groupId>
+									<artifactId>domain-access-controller-servlet</artifactId>
+									<version>${project.version}</version>
+									<type>war</type>
+									<outputDirectory>${project.build.directory}</outputDirectory>
+									<destFileName>accesscontrol.war</destFileName>
 								</artifactItem>
 								<artifactItem>
 									<groupId>io.joynr.java.messaging.bounceproxy</groupId>

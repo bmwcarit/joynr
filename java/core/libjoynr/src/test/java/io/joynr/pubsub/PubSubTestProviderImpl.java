@@ -19,12 +19,15 @@ package io.joynr.pubsub;
  * #L%
  */
 
+import io.joynr.provider.Deferred;
+import io.joynr.provider.Promise;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import joynr.tests.DefaulttestProvider;
-import joynr.types.GpsFixEnum;
-import joynr.types.GpsLocation;
+import joynr.types.localisation.GpsFixEnum;
+import joynr.types.localisation.GpsLocation;
 
 public class PubSubTestProviderImpl extends DefaulttestProvider {
 
@@ -41,14 +44,22 @@ public class PubSubTestProviderImpl extends DefaulttestProvider {
     }
 
     @Override
-    public Integer getTestAttribute() {
-        return testAttribute++;
+    public Promise<Deferred<Integer>> getTestAttribute() {
+        Deferred<Integer> deferred = new Deferred<Integer>();
+        deferred.resolve(testAttribute++);
+        return new Promise<Deferred<Integer>>(deferred);
     }
 
     @Override
-    public List<Integer> getListOfInts() {
+    public Promise<Deferred<List<Integer>>> getListOfInts() {
+        Deferred<List<Integer>> deferred = new Deferred<List<Integer>>();
         list.add(testAttribute++);
-        return list;
+        deferred.resolve(list);
+        return new Promise<Deferred<List<Integer>>>(deferred);
+    }
+
+    public GpsLocation getComplexTestAttributeSync() {
+        return complexTestAttribute;
     }
 
 }

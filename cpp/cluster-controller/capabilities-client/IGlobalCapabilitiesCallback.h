@@ -21,6 +21,7 @@
 
 #include "joynr/types/CapabilityInformation.h"
 #include "joynr/joynrlogging.h"
+#include <vector>
 
 namespace joynr
 {
@@ -30,9 +31,9 @@ namespace joynr
  * Now that Code is generated the new interface for callbacks using ICallback.h is needed
  * to access the proxy.
  * For this reason, we currently have two callbacks: One GlobalCapabilitiesInformationCallback :
- * ICallback<types::CapabilityInformation> for the proxy
+ * ICallback<types::QtCapabilityInformation> for the proxy
  * and one IGlobalCapabilitiesCallback for the application. The
- * ICallback<types::CapabilityInformation> just calls the
+ * ICallback<types::QtCapabilityInformation> just calls the
  * IGlobalCapabilitiesCallback.
  * Those two callbacks should be merged into one.
  */
@@ -43,7 +44,7 @@ public:
     virtual ~IGlobalCapabilitiesCallback()
     {
     }
-    virtual void capabilitiesReceived(QList<types::CapabilityInformation> results) = 0;
+    virtual void capabilitiesReceived(std::vector<types::CapabilityInformation> results) = 0;
 
 private:
     static joynr_logging::Logger* logger;

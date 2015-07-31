@@ -24,10 +24,12 @@ import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import com.google.common.collect.Collections2
 import java.util.HashSet
 import io.joynr.generator.util.InterfaceTemplate
+import io.joynr.generator.util.JavaTypeUtil
 
 class InterfaceSubscriptionTemplate implements InterfaceTemplate{
 	@Inject	extension JoynrJavaGeneratorExtensions
-	@Inject extension TemplateBase	
+	@Inject extension JavaTypeUtil
+	@Inject extension TemplateBase
 
 	override generate(FInterface serviceInterface) {
 		val interfaceName =  serviceInterface.joynrName
@@ -53,27 +55,27 @@ class InterfaceSubscriptionTemplate implements InterfaceTemplate{
 		«ENDIF»
 		«ENDIF»
 
-		«FOR datatype: getRequiredIncludesFor(serviceInterface, false, true, false, false)»
+		«FOR datatype: getRequiredIncludesFor(serviceInterface, false, false, false, true, false)»
 			import «datatype»;
 		«ENDFOR»
 
 		public interface «subscriptionClassName» extends JoynrSubscriptionInterface, «interfaceName» {
 
-		«val attrTypeset = new HashSet(Collections2::transform(getAttributes(serviceInterface), [attribute | attribute.getMappedDatatypeOrList()]))»
+		«val attrTypeset = new HashSet(Collections2::transform(getAttributes(serviceInterface), [attribute | attribute.typeName]))»
 
 			«FOR attributeType: attrTypeset»
-			public static class «getTokenTypeForArrayType(attributeType)»Reference extends TypeReference<«attributeType»> {}
+			public static class «attributeType.tokenTypeForArrayType»Reference extends TypeReference<«attributeType»> {}
 			«ENDFOR»
 
 		«FOR attribute: getAttributes(serviceInterface)»
 		«var attributeName = attribute.joynrName»
-		«var attributeType = getObjectDataTypeForPlainType(getMappedDatatypeOrList(attribute))» 
-			«IF isReadable(attribute)»
+		«var attributeType = attribute.typeName.objectDataTypeForPlainType»
+			«IF isNotifiable(attribute)»
 
-				@JoynrRpcSubscription(attributeName = "«attributeName»", attributeType = «getTokenTypeForArrayType(attributeType)»Reference.class)
+				@JoynrRpcSubscription(attributeName = "«attributeName»", attributeType = «attributeType.tokenTypeForArrayType»Reference.class)
 				public String subscribeTo«attributeName.toFirstUpper»(AttributeSubscriptionListener<«attributeType»> listener, SubscriptionQos subscriptionQos);
 
-				@JoynrRpcSubscription(attributeName = "«attributeName»", attributeType = «getTokenTypeForArrayType(attributeType)»Reference.class)
+				@JoynrRpcSubscription(attributeName = "«attributeName»", attributeType = «attributeType.tokenTypeForArrayType»Reference.class)
 				public String subscribeTo«attributeName.toFirstUpper»(AttributeSubscriptionListener<«attributeType»> listener, SubscriptionQos subscriptionQos, String subscriptionId);
 
 				public void unsubscribeFrom«attributeName.toFirstUpper»(String subscriptionId);

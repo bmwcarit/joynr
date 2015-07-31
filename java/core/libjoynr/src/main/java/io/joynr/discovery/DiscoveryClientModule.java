@@ -23,19 +23,17 @@ import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.ArbitratorFactory;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
+import io.joynr.capabilities.CapabilitiesCache;
 import io.joynr.capabilities.CapabilitiesProvisioning;
 import io.joynr.capabilities.CapabilitiesRegistrar;
 import io.joynr.capabilities.CapabilitiesRegistrarImpl;
 import io.joynr.capabilities.CapabilitiesStore;
 import io.joynr.capabilities.CapabilitiesStoreImpl;
 import io.joynr.capabilities.DefaultCapabilitiesProvisioning;
-import io.joynr.capabilities.GlobalCapabilitiesDirectoryClient;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.capabilities.LocalCapabilitiesDirectoryImpl;
 import io.joynr.capabilities.ParticipantIdStorage;
 import io.joynr.capabilities.PropertiesFileParticipantIdStorage;
-import io.joynr.dispatcher.RequestReplyDispatcher;
-import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.messaging.ChannelUrlStore;
 import io.joynr.messaging.ChannelUrlStoreImpl;
 import io.joynr.messaging.ConfigurableMessagingSettings;
@@ -44,13 +42,14 @@ import io.joynr.messaging.LocalChannelUrlDirectoryClientImpl;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderDefaultImpl;
-import io.joynr.pubsub.subscription.SubscriptionManager;
+import io.joynr.proxy.ProxyInvocationHandlerFactory;
 
 import javax.annotation.CheckForNull;
 
 import joynr.infrastructure.ChannelUrlDirectoryProxy;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.Provider;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -65,6 +64,7 @@ public class DiscoveryClientModule extends AbstractModule {
         bind(CapabilitiesRegistrar.class).to(CapabilitiesRegistrarImpl.class);
         bind(LocalChannelUrlDirectoryClient.class).to(LocalChannelUrlDirectoryClientImpl.class).in(Singleton.class);
         bind(CapabilitiesStore.class).to(CapabilitiesStoreImpl.class);
+        bind(CapabilitiesCache.class);
         bind(ParticipantIdStorage.class).to(PropertiesFileParticipantIdStorage.class);
         requestStaticInjection(ArbitratorFactory.class);
     }
@@ -73,11 +73,9 @@ public class DiscoveryClientModule extends AbstractModule {
     @Provides
     @Singleton
     ChannelUrlDirectoryProxy provideChannelUrlDirectoryClient(LocalCapabilitiesDirectory localCapabilitiesDirectory,
-                                                              RequestReplySender messageSender,
-                                                              RequestReplyDispatcher dispatcher,
                                                               @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN) String discoveryDirectoriesDomain,
                                                               @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT) long discoveryRequestTimeoutMs,
-                                                              SubscriptionManager subscriptionManager) {
+                                                              Provider<ProxyInvocationHandlerFactory> proxyInvocationHandlerFactoryProvider) {
         MessagingQos messagingQos = new MessagingQos(discoveryRequestTimeoutMs);
 
         DiscoveryQos discoveryQos = new DiscoveryQos(1000,
@@ -88,9 +86,7 @@ public class DiscoveryClientModule extends AbstractModule {
         ProxyBuilder<ChannelUrlDirectoryProxy> proxyBuilder = new ProxyBuilderDefaultImpl<ChannelUrlDirectoryProxy>(localCapabilitiesDirectory,
                                                                                                                     discoveryDirectoriesDomain,
                                                                                                                     ChannelUrlDirectoryProxy.class,
-                                                                                                                    messageSender,
-                                                                                                                    dispatcher,
-                                                                                                                    subscriptionManager);
+                                                                                                                    proxyInvocationHandlerFactoryProvider.get());
 
         ChannelUrlDirectoryProxy proxy = null;
 
@@ -98,40 +94,4 @@ public class DiscoveryClientModule extends AbstractModule {
 
         return proxy;
     }
-
-    @CheckForNull
-    @Provides
-    public// @Singleton
-    GlobalCapabilitiesDirectoryClient provideCapabilitiesDirectoryClient(LocalCapabilitiesDirectory localCapabilitiesDirectory,
-                                                                         RequestReplySender messageSender,
-                                                                         RequestReplyDispatcher dispatcher,
-                                                                         @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN) String discoveryDirectoriesDomain,
-                                                                         @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT) long discoveryRequestTimeoutMs,
-                                                                         SubscriptionManager subscriptionManager) {
-
-        MessagingQos messagingQos = new MessagingQos(discoveryRequestTimeoutMs);
-        DiscoveryQos discoveryQos = new DiscoveryQos(discoveryRequestTimeoutMs,
-                                                     ArbitrationStrategy.HighestPriority,
-                                                     Long.MAX_VALUE,
-                                                     DiscoveryScope.LOCAL_THEN_GLOBAL);
-
-        // ProxyBuilder<GlobalCapabilitiesDirectoryClient> proxyBuilder =
-        // runtime.getProxyBuilder(CapabilitiesDirectory.CAPABILITIES_DIRECTORY_PARTICIPANTID,
-        // CapabilitiesDirectory.CAPABILITIES_DIRECTORY_DOMAIN,
-        // GlobalCapabilitiesDirectoryClient.class);
-
-        ProxyBuilder<GlobalCapabilitiesDirectoryClient> proxyBuilder = new ProxyBuilderDefaultImpl<GlobalCapabilitiesDirectoryClient>(localCapabilitiesDirectory,
-                                                                                                                                      discoveryDirectoriesDomain,
-                                                                                                                                      GlobalCapabilitiesDirectoryClient.class,
-                                                                                                                                      messageSender,
-                                                                                                                                      dispatcher,
-                                                                                                                                      subscriptionManager);
-
-        GlobalCapabilitiesDirectoryClient proxy = null;
-
-        proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
-
-        return proxy;
-    }
-
 }

@@ -27,52 +27,62 @@ class InterfaceRequestInterpreterHTemplate implements InterfaceTemplate{
 
 	@Inject
 	private extension TemplateBase
-	
+
 	@Inject
 	private extension JoynrCppGeneratorExtensions
 
-	override generate(FInterface serviceInterface) {
-		val interfaceName = serviceInterface.joynrName
-		val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+"_"+interfaceName+"RequestInterpreter_h").toUpperCase
-		'''
-		«warning()»
-		
-		#ifndef «headerGuard»
-		#define «headerGuard»
+	override generate(FInterface serviceInterface)
+'''
+«val interfaceName = serviceInterface.joynrName»
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+
+	"_"+interfaceName+"RequestInterpreter_h").toUpperCase»
+«warning()»
 
-		#include "joynr/PrivateCopyAssign.h"
-		«getDllExportIncludeStatement()»
-		#include "joynr/IRequestInterpreter.h"
-		
-		#include "joynr/joynrlogging.h"
-		
-		#include <QVariant>
-		#include <QSharedPointer>
-		
-		«getNamespaceStarter(serviceInterface)» 
-		
-		class «getDllExportMacro()» «interfaceName»RequestInterpreter: public joynr::IRequestInterpreter {
-		public:
-		    «interfaceName»RequestInterpreter();
-		    virtual ~«interfaceName»RequestInterpreter(){}
-		
-		    /**
-		      * Implements \class IRequestInterpreter.execute().
-		      * Executes method \param methodName with parameters \param methodParams
-		      * on the \param requestCaller object.
-		      */
-		    QVariant execute(QSharedPointer<joynr::RequestCaller> requestCaller,
-		                     const QString& methodName,
-		                     const QList<QVariant>& paramValues,
-		                     const QList<QVariant>& paramTypes);
-		
-		private:
-		    DISALLOW_COPY_AND_ASSIGN(«interfaceName»RequestInterpreter);
-		    static joynr::joynr_logging::Logger* logger;
-		};
-		
-		«getNamespaceEnder(serviceInterface)» 
-		#endif // «headerGuard»
-		'''
-	}
+#ifndef «headerGuard»
+#define «headerGuard»
+
+#include "joynr/PrivateCopyAssign.h"
+«getDllExportIncludeStatement()»
+#include "joynr/IRequestInterpreter.h"
+
+#include "joynr/joynrlogging.h"
+
+#include <QVariant>
+#include <QSharedPointer>
+
+«getNamespaceStarter(serviceInterface)»
+
+/** @brief RequestInterpreter class for interface «interfaceName» */
+class «getDllExportMacro()» «interfaceName»RequestInterpreter: public joynr::IRequestInterpreter {
+public:
+	/** @brief Default constructor */
+	«interfaceName»RequestInterpreter();
+
+	/** @brief Destructor */
+	virtual ~«interfaceName»RequestInterpreter(){}
+
+	/**
+	 * @brief Implements IRequestInterpreter.execute().
+	 * Executes method methodName with given parameters on the requestCaller object.
+	 * @param requestCaller Object on which the method is to be executed
+	 * @param methodName The name of the method to be executed
+	 * @param paramValues The list of parameter values
+	 * @param paramTypes The list of parameter types
+	 * @param callbackFct A callback function to be called once the asynchronous computation has
+	 * finished. It must expect the method out parameters.
+	 */
+	void execute(QSharedPointer<joynr::RequestCaller> requestCaller,
+					 const QString& methodName,
+					 const QList<QVariant>& paramValues,
+					 const QList<QVariant>& paramTypes,
+					 std::function<void (const QList<QVariant>& outParams)> callbackFct);
+
+private:
+	DISALLOW_COPY_AND_ASSIGN(«interfaceName»RequestInterpreter);
+	static joynr::joynr_logging::Logger* logger;
+};
+
+«getNamespaceEnder(serviceInterface)»
+#endif // «headerGuard»
+'''
 }

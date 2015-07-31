@@ -20,13 +20,14 @@
 #define IBROADCASTFILTER_H
 
 #include "joynr/JoynrExport.h"
-#include "joynr/BroadcastFilterParameters.h"
+#include "joynr/QtBroadcastFilterParameters.h"
 
 template <typename K, typename V>
 class QMap;
 
 class QVariant;
 class QString;
+#include <string>
 
 typedef QMap<QString, QVariant> QVariantMap;
 
@@ -35,25 +36,28 @@ namespace joynr
 
 /**
   * \class IBroadcastFilter
-  * \brief The IBroadcastFilter class provides an interface for filer logic implementation.
+  * \brief The IBroadcastFilter class provides an interface for filter logic implementation.
   */
 class JOYNR_EXPORT IBroadcastFilter
 {
 public:
-    IBroadcastFilter(QString name) : name(name)
+    IBroadcastFilter(std::string name) : name(name)
+    {
+    }
+    virtual ~IBroadcastFilter()
     {
     }
 
     virtual bool filter(const QList<QVariant>& eventValues,
                         const BroadcastFilterParameters& filterParameters) = 0;
 
-    const QString& getName()
+    const std::string& getName()
     {
         return name;
     }
 
 private:
-    QString name;
+    std::string name;
 };
 
 } // namespace joynr

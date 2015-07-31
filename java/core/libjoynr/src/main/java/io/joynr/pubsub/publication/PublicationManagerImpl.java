@@ -18,12 +18,14 @@ package io.joynr.pubsub.publication;
  * limitations under the License.
  * #L%
  */
-
+import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import io.joynr.dispatcher.RequestCaller;
 import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.dispatcher.rpc.ReflectionUtils;
-import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.provider.Promise;
+import io.joynr.provider.PromiseListener;
 import io.joynr.pubsub.HeartbeatSubscriptionInformation;
 import io.joynr.pubsub.PubSubState;
 import io.joynr.pubsub.SubscriptionQos;
@@ -150,7 +152,7 @@ public class PublicationManagerImpl implements PublicationManager {
     @Inject
     public PublicationManagerImpl(AttributePollInterpreter attributePollInterpreter,
                                   RequestReplySender requestReplySender,
-                                  @Named("joynr.scheduler.cleanup") ScheduledExecutorService cleanupScheduler) {
+                                  @Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler) {
         super();
         this.requestReplySender = requestReplySender;
         this.cleanupScheduler = cleanupScheduler;
@@ -306,10 +308,16 @@ public class PublicationManagerImpl implements PublicationManager {
 
     protected void removePublication(String subscriptionId) {
         PublicationInformation publicationInformation = subscriptionId2PublicationInformation.remove(subscriptionId);
+        if (publicationInformation == null) {
+            return;
+        }
 
-        // Remove (eventually) queued susbcriptionRequest
-        queuedSubscriptionRequests.get(publicationInformation.getProviderParticipantId())
-                                  .remove(publicationInformation);
+        // Remove (eventually) queued subcriptionRequest
+        Collection<PublicationInformation> queuedSubscriptionRequestsForParticipant = queuedSubscriptionRequests.get(publicationInformation.getProviderParticipantId());
+
+        if (queuedSubscriptionRequestsForParticipant != null) {
+            queuedSubscriptionRequestsForParticipant.remove(publicationInformation);
+        }
 
         PublicationTimer publicationTimer = publicationTimers.remove(subscriptionId);
         if (publicationTimer != null) {
@@ -419,11 +427,12 @@ public class PublicationManagerImpl implements PublicationManager {
                 stopPublication(subscriptionId);
             } else {
                 PublicationTimer publicationTimer = publicationTimers.get(subscriptionId);
+                SubscriptionPublication publication = prepareAttributePublication(value, subscriptionId);
                 if (publicationTimer != null) {
                     // used by OnChangedWithKeepAlive
-                    publicationTimer.sendPublicationNow(value);
+                    publicationTimer.sendPublicationNow(publication);
                 } else {
-                    sendPublication(value, publicationInformation);
+                    sendPublication(publication, publicationInformation);
                 }
 
                 logger.info("attribute changed for subscription id: {} sending publication if delay > minInterval.",
@@ -443,7 +452,8 @@ public class PublicationManagerImpl implements PublicationManager {
             PublicationInformation publicationInformation = subscriptionId2PublicationInformation.get(subscriptionId);
 
             if (processFilterChain(publicationInformation, filters, values)) {
-                sendPublication(Arrays.asList(values), publicationInformation);
+                sendPublication(prepareBroadcastPublication(Arrays.asList(values), subscriptionId),
+                                publicationInformation);
                 logger.info("event occured changed for subscription id: {} sending publication: ", subscriptionId);
             }
 
@@ -500,9 +510,15 @@ public class PublicationManagerImpl implements PublicationManager {
         }
     }
 
-    private void sendPublication(Object value, PublicationInformation publicationInformation) {
-        SubscriptionPublication publication = new SubscriptionPublication(value,
-                                                                          publicationInformation.getSubscriptionId());
+    private SubscriptionPublication prepareAttributePublication(Object value, String subscriptionId) {
+        return new SubscriptionPublication(Arrays.asList(value), subscriptionId);
+    }
+
+    private SubscriptionPublication prepareBroadcastPublication(List<Object> values, String subscriptionId) {
+        return new SubscriptionPublication(values, subscriptionId);
+    }
+
+    private void sendPublication(SubscriptionPublication publication, PublicationInformation publicationInformation) {
         try {
             MessagingQos messagingQos = new MessagingQos();
             messagingQos.setTtl_ms(publicationInformation.subscriptionRequest.getQos().getPublicationTtl());
@@ -511,7 +527,7 @@ public class PublicationManagerImpl implements PublicationManager {
                                                            publication,
                                                            messagingQos);
             // TODO handle exceptions during publication. See JOYNR-2113
-        } catch (JoynrException e) {
+        } catch (JoynrRuntimeException e) {
             logger.error("sendPublication error: {}", e.getMessage());
         } catch (JsonGenerationException e) {
             logger.error("sendPublication error: {}", e.getMessage());
@@ -522,21 +538,31 @@ public class PublicationManagerImpl implements PublicationManager {
         }
     }
 
-    private void triggerPublication(PublicationInformation publicationInformation,
+    private void triggerPublication(final PublicationInformation publicationInformation,
                                     RequestCaller requestCaller,
                                     Method method) {
-        sendPublication(attributePollInterpreter.execute(requestCaller, method), publicationInformation);
+        Promise<?> attributeGetterPromise = attributePollInterpreter.execute(requestCaller, method);
+        attributeGetterPromise.then(new PromiseListener() {
+
+            @Override
+            public void onRejection(JoynrRuntimeException error) {
+                // TODO transmit application layer exception to proxy
+
+            }
+
+            @Override
+            public void onFulfillment(Object... values) {
+                // attribute getters only return a single value
+                sendPublication(prepareAttributePublication(values[0], publicationInformation.getSubscriptionId()),
+                                publicationInformation);
+            }
+        });
     }
 
     private Method findGetterForAttributeName(Class<?> clazz, String attributeName) throws NoSuchMethodException {
         String attributeGetterName = "get" + attributeName.toUpperCase().charAt(0)
                 + attributeName.subSequence(1, attributeName.length());
         return ReflectionUtils.findMethodByParamTypes(clazz, attributeGetterName, new Class[]{});
-
-    }
-
-    @Override
-    public void shutdown() {
 
     }
 }

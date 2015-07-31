@@ -49,7 +49,7 @@ public class JoynrMessagingError {
     /**
      * Copy Constructor
      * 
-     * @param messageWrapper
+     * @param error The JoynrMessagingError object to be copied from
      */
     public JoynrMessagingError(JoynrMessagingError error) {
         this.code = error.code;
@@ -59,7 +59,7 @@ public class JoynrMessagingError {
     /**
      * Overriden to provide string represention of the message object for Atmosphere used in response.
      * 
-     * @return
+     * @return the string representation of the message object
      */
     @Override
     public String toString() {

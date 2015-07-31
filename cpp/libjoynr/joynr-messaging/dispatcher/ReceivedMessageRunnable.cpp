@@ -38,7 +38,12 @@ ReceivedMessageRunnable::ReceivedMessageRunnable(const JoynrMessage& message,
 
 void ReceivedMessageRunnable::run()
 {
-    LOG_DEBUG(logger, "Running ReceivedMessageRunnable for message type: " + message.getType());
+    LOG_DEBUG(logger,
+              QString("Running ReceivedMessageRunnable for message type: %1, msg ID: %2 and "
+                      "payload: %3")
+                      .arg(message.getType())
+                      .arg(message.getHeaderMessageId())
+                      .arg(QString(message.getPayload())));
     if (isExpired()) {
         LOG_DEBUG(logger, "Dropping ReceivedMessageRunnable message, because it is expired: ");
         return;

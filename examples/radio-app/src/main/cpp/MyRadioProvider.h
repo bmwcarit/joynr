@@ -19,10 +19,9 @@
 #ifndef MY_RADIO_PROVIDER_H
 #define MY_RADIO_PROVIDER_H
 
-#include "joynr/vehicle/RadioProvider.h"
-#include "joynr/vehicle/RadioStation.h"
-#include "joynr/vehicle/Country.h"
-#include "joynr/types/ProviderQos.h"
+#include "joynr/vehicle/DefaultRadioProvider.h"
+#include "joynr/vehicle/QtRadioStation.h"
+#include "joynr/vehicle/QtCountry.h"
 #include "joynr/joynrlogging.h"
 #include <QList>
 #include <QMap>
@@ -31,37 +30,34 @@
 /**
   * A Radio Provider with a circular list of radio stations
   */
-class MyRadioProvider : public joynr::vehicle::RadioProvider
+class MyRadioProvider : public joynr::vehicle::DefaultRadioProvider
 {
 public:
-    MyRadioProvider(const joynr::types::ProviderQos& providerQos);
+    MyRadioProvider();
     ~MyRadioProvider();
 
     /**
       * Get the current radio station
       */
-    void getCurrentStation(joynr::RequestStatus& status, joynr::vehicle::RadioStation& result);
-
-    /**
-      * Set the current radio station
-      */
-    void setCurrentStation(joynr::RequestStatus& status,
-                           joynr::vehicle::RadioStation currentStation);
+    void getCurrentStation(
+            std::function<void(const joynr::vehicle::RadioStation& result)> onSuccess);
 
     /**
       * Get the next radio station in a circular list of stations
       */
-    void shuffleStations(joynr::RequestStatus& status);
+    void shuffleStations(std::function<void()> onSuccess);
 
     /**
       * Add a favourite radio station
       */
-    void addFavouriteStation(joynr::RequestStatus& status,
-                             bool& returnValue,
-                             joynr::vehicle::RadioStation radioStation);
+    void addFavouriteStation(const joynr::vehicle::RadioStation& radioStation,
+                             std::function<void(const bool& returnValue)> onSuccess);
 
     void fireWeakSignalBroadcast();
     void fireNewStationDiscoveredBroadcast();
+    void getLocationOfCurrentStation(
+            std::function<void(const joynr::vehicle::Country::Enum& country,
+                               const joynr::vehicle::GeoPosition& location)> onSuccess);
 
 private:
     // Disallow copy and assign

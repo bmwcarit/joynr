@@ -22,9 +22,11 @@ import io.joynr.generator.util.TemplateBase
 import org.franca.core.franca.FInterface
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import io.joynr.generator.util.InterfaceTemplate
+import io.joynr.generator.util.JavaTypeUtil
 
 class InterfaceBroadcastTemplate implements InterfaceTemplate{
 	@Inject extension JoynrJavaGeneratorExtensions
+	@Inject extension JavaTypeUtil
 	@Inject extension TemplateBase
 
 	override generate(FInterface serviceInterface) {
@@ -42,80 +44,80 @@ import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 import joynr.OnChangeSubscriptionQos;
 import joynr.BroadcastFilterParameters;
 
-«FOR datatype: getRequiredIncludesFor(serviceInterface, false, false, false, true)»
+«FOR datatype: getRequiredIncludesFor(serviceInterface, false, false, false, false, true)»
 	import «datatype»;
 «ENDFOR»
 
 public interface «broadcastClassName» extends JoynrBroadcastSubscriptionInterface, «interfaceName» {
 
-		«FOR broadcast : serviceInterface.broadcasts»
-			«val broadcastName = broadcast.joynrName»
-			«val filterParameters = getFilterParameters(broadcast)»
-			«val filterParameterType = broadcastName.toFirstUpper + "BroadcastFilterParameters"»
-			«val listenerInterface = broadcastName.toFirstUpper + "BroadcastListener"»
+«FOR broadcast : serviceInterface.broadcasts»
+	«val broadcastName = broadcast.joynrName»
+	«val filterParameters = getFilterParameters(broadcast)»
+	«val filterParameterType = broadcastName.toFirstUpper + "BroadcastFilterParameters"»
+	«val listenerInterface = broadcastName.toFirstUpper + "BroadcastListener"»
 
-			public interface «listenerInterface» extends BroadcastSubscriptionListener {
-				public void onReceive(«getMappedOutputParametersCommaSeparated(broadcast, false)»);
-				public void onError();
-			}
+	public interface «listenerInterface» extends BroadcastSubscriptionListener {
+		public void onReceive(«broadcast.commaSeperatedTypedOutputParameterList»);
+		public void onError();
+	}
 
-			public class «broadcastName.toFirstUpper»BroadcastAdapter implements «listenerInterface» {
-				public void onReceive(«getMappedOutputParametersCommaSeparated(broadcast, false)») {
-					// empty implementation
-				}
-				public void onError() {
-					// empty implementation
-				}
-			}
+	public class «broadcastName.toFirstUpper»BroadcastAdapter implements «listenerInterface» {
+		public void onReceive(«broadcast.commaSeperatedTypedOutputParameterList») {
+			// empty implementation
+		}
+		public void onError() {
+			// empty implementation
+		}
+	}
 
-			«IF isSelective(broadcast)»
-			public class «filterParameterType» extends BroadcastFilterParameters {
-				public «filterParameterType»() {};
+	«IF isSelective(broadcast)»
+		public class «filterParameterType» extends BroadcastFilterParameters {
+			public «filterParameterType»() {};
 
-				«IF filterParameters.size > 0»
-				public «filterParameterType»(«getCommaSeperatedTypedFilterParameterList(broadcast)») {
-					«FOR filterPrameter : filterParameters»
-					super.setFilterParameter("«filterPrameter»", «filterPrameter»);
+			«IF filterParameters.size > 0»
+				public «filterParameterType»(«broadcast.commaSeperatedTypedFilterParameterList») {
+					«FOR filterParameter : filterParameters»
+						super.setFilterParameter("«filterParameter»", «filterParameter»);
 					«ENDFOR»
 				}
-				«ENDIF»
-				«FOR filterPrameter : filterParameters»
-					public void set«filterPrameter.toFirstUpper»(String «filterPrameter») {
-						super.setFilterParameter("«filterPrameter»", «filterPrameter»);
-					}
-					public String get«filterPrameter.toFirstUpper»() {
-						return super.getFilterParameter("«filterPrameter»");
-					}
-				«ENDFOR»
-			}
-
-			@JoynrRpcBroadcast(broadcastName = "«broadcastName»")
-			abstract String subscribeTo«broadcastName.toFirstUpper»Broadcast(
-					«listenerInterface» broadcastListener,
-					OnChangeSubscriptionQos subscriptionQos,
-					«filterParameterType» filterParameters);
-
-			@JoynrRpcBroadcast(broadcastName = "«broadcastName»")
-			abstract String subscribeTo«broadcastName.toFirstUpper»Broadcast(
-					«listenerInterface» broadcastListener,
-					OnChangeSubscriptionQos subscriptionQos,
-					«filterParameterType» filterParameters,
-					String subscriptionId);
-			«ELSE»
-			@JoynrRpcBroadcast(broadcastName = "«broadcastName»")
-			abstract String subscribeTo«broadcastName.toFirstUpper»Broadcast(
-					«listenerInterface» subscriptionListener,
-					OnChangeSubscriptionQos subscriptionQos);
-
-			@JoynrRpcBroadcast(broadcastName = "«broadcastName»")
-			abstract String subscribeTo«broadcastName.toFirstUpper»Broadcast(
-					«listenerInterface» subscriptionListener,
-					OnChangeSubscriptionQos subscriptionQos,
-					String subscriptionId);
 			«ENDIF»
+			«FOR filterParameter : filterParameters»
+				public void set«filterParameter.toFirstUpper»(String «filterParameter») {
+					super.setFilterParameter("«filterParameter»", «filterParameter»);
+				}
+				public String get«filterParameter.toFirstUpper»() {
+					return super.getFilterParameter("«filterParameter»");
+				}
+			«ENDFOR»
+		}
 
-			abstract void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(String subscriptionId);
-		«ENDFOR»
+		@JoynrRpcBroadcast(broadcastName = "«broadcastName»")
+		abstract String subscribeTo«broadcastName.toFirstUpper»Broadcast(
+				«listenerInterface» broadcastListener,
+				OnChangeSubscriptionQos subscriptionQos,
+				«filterParameterType» filterParameters);
+
+		@JoynrRpcBroadcast(broadcastName = "«broadcastName»")
+		abstract String subscribeTo«broadcastName.toFirstUpper»Broadcast(
+				«listenerInterface» broadcastListener,
+				OnChangeSubscriptionQos subscriptionQos,
+				«filterParameterType» filterParameters,
+				String subscriptionId);
+	«ELSE»
+		@JoynrRpcBroadcast(broadcastName = "«broadcastName»")
+		abstract String subscribeTo«broadcastName.toFirstUpper»Broadcast(
+				«listenerInterface» subscriptionListener,
+				OnChangeSubscriptionQos subscriptionQos);
+
+		@JoynrRpcBroadcast(broadcastName = "«broadcastName»")
+		abstract String subscribeTo«broadcastName.toFirstUpper»Broadcast(
+				«listenerInterface» subscriptionListener,
+				OnChangeSubscriptionQos subscriptionQos,
+				String subscriptionId);
+	«ENDIF»
+
+	abstract void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(String subscriptionId);
+«ENDFOR»
 }
 '''
 	}

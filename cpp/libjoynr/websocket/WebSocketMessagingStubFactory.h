@@ -34,9 +34,9 @@ namespace joynr
 
 namespace system
 {
-class Address;
-class WebSocketAddress;
-class WebSocketClientAddress;
+class QtAddress;
+class QtWebSocketAddress;
+class QtWebSocketClientAddress;
 }
 
 class WebSocketMessagingStubFactory : public QObject, public IMiddlewareMessagingStubFactory
@@ -45,21 +45,21 @@ class WebSocketMessagingStubFactory : public QObject, public IMiddlewareMessagin
 
 public:
     WebSocketMessagingStubFactory(QObject* parent = Q_NULLPTR);
-    QSharedPointer<IMessaging> create(const joynr::system::Address& destAddress);
-    bool canCreate(const joynr::system::Address& destAddress);
-    void addClient(const joynr::system::WebSocketClientAddress& clientAddress,
+    QSharedPointer<IMessaging> create(const joynr::system::QtAddress& destAddress);
+    bool canCreate(const joynr::system::QtAddress& destAddress);
+    void addClient(const joynr::system::QtWebSocketClientAddress& clientAddress,
                    QWebSocket* webSocket);
-    void removeClient(const joynr::system::WebSocketClientAddress& clientAddress);
-    void addServer(const joynr::system::WebSocketAddress& serverAddress, QWebSocket* webSocket);
+    void removeClient(const joynr::system::QtWebSocketClientAddress& clientAddress);
+    void addServer(const joynr::system::QtWebSocketAddress& serverAddress, QWebSocket* webSocket);
 
-    static QUrl convertWebSocketAddressToUrl(const joynr::system::WebSocketAddress& address);
+    static QUrl convertWebSocketAddressToUrl(const joynr::system::QtWebSocketAddress& address);
 
 private Q_SLOTS:
-    void onMessagingStubClosed(const joynr::system::Address& address);
+    void onMessagingStubClosed(const joynr::system::QtAddress& address);
 
 private:
-    QHash<joynr::system::WebSocketAddress, QSharedPointer<IMessaging>> serverStubMap;
-    QHash<joynr::system::WebSocketClientAddress, QSharedPointer<IMessaging>> clientStubMap;
+    QHash<joynr::system::QtWebSocketAddress, QSharedPointer<IMessaging>> serverStubMap;
+    QHash<joynr::system::QtWebSocketClientAddress, QSharedPointer<IMessaging>> clientStubMap;
     QMutex mutex;
 
     static joynr_logging::Logger* logger;

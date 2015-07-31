@@ -19,10 +19,12 @@
 #include "joynr/QosArbitrator.h"
 
 #include "joynr/system/IDiscovery.h"
-#include "joynr/system/DiscoveryEntry.h"
+#include "joynr/types/QtDiscoveryEntry.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/RequestStatus.h"
-#include "joynr/types/ProviderQos.h"
+#include "joynr/types/QtProviderQos.h"
+
+#include "joynr/TypeUtil.h"
 
 #include <cassert>
 
@@ -34,57 +36,56 @@ using namespace joynr_logging;
 Logger* QosArbitrator::logger =
         joynr_logging::Logging::getInstance()->getLogger("Arbi", "QosArbitrator");
 
-QosArbitrator::QosArbitrator(const QString& domain,
-                             const QString& interfaceName,
+QosArbitrator::QosArbitrator(const std::string& domain,
+                             const std::string& interfaceName,
                              joynr::system::IDiscoverySync& discoveryProxy,
                              const DiscoveryQos& discoveryQos)
-        : ProviderArbitrator(domain, interfaceName, discoveryProxy, discoveryQos),
-          keyword(discoveryQos.getCustomParameter("keyword").getValue())
+        : ProviderArbitrator(domain, interfaceName, discoveryProxy, discoveryQos)
 {
 }
 
 void QosArbitrator::attemptArbitration()
 {
-    joynr::RequestStatus status;
-    QList<joynr::system::DiscoveryEntry> result;
-    discoveryProxy.lookup(status, result, domain, interfaceName, systemDiscoveryQos);
+    std::vector<joynr::types::DiscoveryEntry> result;
+    joynr::RequestStatus status(
+            discoveryProxy.lookup(result, domain, interfaceName, systemDiscoveryQos));
     if (status.successful()) {
         receiveCapabilitiesLookupResults(result);
     } else {
         LOG_ERROR(logger,
                   QString("Unable to lookup provider (domain: %1, interface: %2) "
                           "from discovery. Status code: %3.")
-                          .arg(domain)
-                          .arg(interfaceName)
-                          .arg(status.getCode().toString()));
+                          .arg(QString::fromStdString(domain))
+                          .arg(QString::fromStdString(interfaceName))
+                          .arg(QString::fromStdString(status.getCode().toString())));
     }
 }
 
 // Returns true if arbitration was successful, false otherwise
 void QosArbitrator::receiveCapabilitiesLookupResults(
-        const QList<joynr::system::DiscoveryEntry>& discoveryEntries)
+        const std::vector<joynr::types::DiscoveryEntry>& discoveryEntries)
 {
-    QString res = "";
-    joynr::system::CommunicationMiddleware::Enum preferredConnection(
-            joynr::system::CommunicationMiddleware::NONE);
+    std::string res = "";
+    joynr::types::CommunicationMiddleware::Enum preferredConnection(
+            joynr::types::CommunicationMiddleware::NONE);
 
     // Check for empty results
     if (discoveryEntries.size() == 0)
         return;
 
     qint64 highestPriority = -1;
-    QListIterator<joynr::system::DiscoveryEntry> discoveryEntriesIterator(discoveryEntries);
-    while (discoveryEntriesIterator.hasNext()) {
-        joynr::system::DiscoveryEntry discoveryEntry = discoveryEntriesIterator.next();
+    for (const joynr::types::DiscoveryEntry discoveryEntry : discoveryEntries) {
         types::ProviderQos providerQos = discoveryEntry.getQos();
-        LOG_TRACE(logger, "Looping over capabilitiesEntry: " + discoveryEntry.toString());
+        LOG_TRACE(logger,
+                  QString("Looping over capabilitiesEntry: %1")
+                          .arg(QString::fromStdString(discoveryEntry.toString())));
         if (discoveryQos.getProviderMustSupportOnChange() &&
             !providerQos.getSupportsOnChangeSubscriptions()) {
             continue;
         }
         if (providerQos.getPriority() > highestPriority) {
             res = discoveryEntry.getParticipantId();
-            LOG_TRACE(logger, "setting res to " + res);
+            LOG_TRACE(logger, QString("setting res to %1").arg(QString::fromStdString(res)));
             preferredConnection =
                     selectPreferredCommunicationMiddleware(discoveryEntry.getConnections());
             highestPriority = providerQos.getPriority();

@@ -19,13 +19,14 @@
 #ifndef SUBSCRIPTIONCALLBACK_H
 #define SUBSCRIPTIONCALLBACK_H
 #include "joynr/PrivateCopyAssign.h"
-#include <QSharedPointer>
+#include <memory>
 #include <QMetaType>
 
 #include "joynr/ISubscriptionCallback.h"
 #include "joynr/ISubscriptionListener.h"
 #include "joynr/TrackableObject.h"
 #include "joynr/joynrlogging.h"
+#include "joynr/Util.h"
 
 namespace joynr
 {
@@ -35,11 +36,12 @@ namespace joynr
   * \brief
   */
 
-template <class T>
+template <typename T, typename... Ts>
 class SubscriptionCallback : public ISubscriptionCallback
 {
 public:
-    SubscriptionCallback(QSharedPointer<ISubscriptionListener<T>> listener) : listener(listener)
+    SubscriptionCallback(std::shared_ptr<ISubscriptionListener<T, Ts...>> listener)
+            : listener(listener)
     {
     }
 
@@ -49,14 +51,14 @@ public:
         LOG_TRACE(logger, "destructor: leaving...");
     }
 
-    void publicationMissed()
+    virtual void onError()
     {
         listener->onError();
     }
 
-    void attributeChanged(const T& value)
+    void onSuccess(const T& value, const Ts&... values)
     {
-        listener->onReceive(value);
+        listener->onReceive(value, values...);
     }
 
     void timeOut()
@@ -66,17 +68,19 @@ public:
 
     int getTypeId() const
     {
-        return qMetaTypeId<T>();
+        return Util::getTypeId<T, Ts...>();
     }
+
+protected:
+    std::shared_ptr<ISubscriptionListener<T, Ts...>> listener;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(SubscriptionCallback);
-    QSharedPointer<ISubscriptionListener<T>> listener;
     static joynr_logging::Logger* logger;
 };
 
-template <typename T>
-joynr_logging::Logger* SubscriptionCallback<T>::logger =
+template <typename T, typename... Ts>
+joynr_logging::Logger* SubscriptionCallback<T, Ts...>::logger =
         joynr_logging::Logging::getInstance()->getLogger("MSG", "SubscriptionCallback");
 
 } // namespace joynr

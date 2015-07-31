@@ -21,31 +21,44 @@ package io.joynr.capabilities;
 
 import io.joynr.arbitration.DiscoveryQos;
 
+import javax.annotation.CheckForNull;
+
 public interface LocalCapabilitiesDirectory {
     /**
      * Adds a capability to the list of registered local capabilities. May also transmit the updated list to the
      * capabilities directory.
-     * 
-     * @return
+     *
+     * @param capabilityEntry The capability to be added.
+     * @return future to get the async result of the call
      */
     RegistrationFuture add(CapabilityEntry capabilityEntry);
 
     /**
      * Removes capabilities from the list of local capabilities and at the capabilities directory.
-     * 
-     * @param interfaces
+     *
+     * @param capabilityEntry entry to remove
      */
     void remove(CapabilityEntry capabilityEntry);
 
     /**
+     * Adds a listener for capability changes to the directory.
+     * @param listener the listener to add.
+     */
+    void addCapabilityListener(CapabilityListener listener);
+
+    /**
+     * Removes a listener for capability changes from the directory.
+     * @param listener the listener to remove.
+     */
+    void removeCapabilityListener(CapabilityListener listener);
+
+    /**
      * Searches for capabilities by domain and interface name.
-     * 
-     * @param domain
-     * @param interfaceName
-     * @param requestedQos
-     * @param discoveryQos
-     * @param capabilitiesCallback
-     * @return
+     *
+     * @param domain The Domain for which the search is to be done.
+     * @param interfaceName The interface for which the search is to be done.
+     * @param discoveryQos The discovery quality of service for the search.
+     * @param capabilitiesCallback Callback to deliver the results asynchronously.
      */
     void lookup(String domain,
                 String interfaceName,
@@ -53,14 +66,25 @@ public interface LocalCapabilitiesDirectory {
                 CapabilitiesCallback capabilitiesCallback);
 
     /**
-     * Searches for capability by participantId.
-     * 
-     * @param participantId
-     * @param discoveryQos
-     * @param callback
-     * @return
+     * Searches for capability by participantId. This is an asynchronous method.
+     *
+     * @param participantId The participant id to search for.
+     * @param discoveryQos The discovery quality of service for the search.
+     * @param callback called if the capability with the given participant ID
+     *      is retrieved. Or null if not found.
      */
+    @CheckForNull
     void lookup(String participantId, DiscoveryQos discoveryQos, CapabilityCallback callback);
+
+    /**
+     * Searches for capability by participantId.
+     *
+     * @param participantId The participant id to search for.
+     * @param discoveryQos The discovery quality of service for the search.
+     * @return the capability with the given participant ID. Or null if not found.
+     */
+    @CheckForNull
+    CapabilityEntry lookup(String participantId, DiscoveryQos discoveryQos);
 
     /**
      * Shuts down the local capabilities directory and all used thread pools.

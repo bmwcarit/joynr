@@ -27,9 +27,11 @@ This project has dependencies to:
   Commons Lang under The Apache Software License, Version 2.0
   Data Mapper for Jackson under The Apache Software License, Version 2.0
   dom4j under BSD License
+  ehcache under The Apache Software License, Version 2.0
   FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
   Google Guice - Core Library under The Apache Software License, Version 2.0
+  Google Guice - Extensions - AssistedInject under The Apache Software License, Version 2.0
   Google Guice - Extensions - Servlet under The Apache Software License, Version 2.0
   Groovy under The Apache Software License, Version 2.0
   Gson under The Apache Software License, Version 2.0
@@ -73,6 +75,6 @@ This project has dependencies to:
   rest-assured-common under Apache 2.0
   SLF4J API Module under MIT License
   TagSoup under Apache License 2.0
-  XML Commons External Components XML APIs under The Apache Software License, Version 2.0
+  XML Commons External Components XML APIs under The Apache Software License, Version 2.0 or The SAX License or The W3C License
   xml-path under Apache 2.0
 

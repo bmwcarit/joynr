@@ -42,6 +42,7 @@ file(
 file(
     GLOB_RECURSE JoynrClusterController_PRIVATE_HEADERS
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    "access-control/*.h"
     "capabilities-client/*.h"
     "http-communication-manager/*.h"
     "httpnetworking/*.h"
@@ -62,6 +63,7 @@ set(
 file(
     GLOB JoynrClusterController_SOURCES
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    "access-control/*.cpp"
     "capabilities-client/*.cpp"
     "http-communication-manager/*.cpp"
     "httpnetworking/*.cpp"
@@ -95,12 +97,12 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         ${JoynrClusterController_DBUS_SOURCES}
     )
 
-    set(
-        JoynrClusterController_TARGET_LIBRARIES
+    list(
+        APPEND JoynrClusterController_TARGET_LIBRARIES
         ${DBUS1_LIBRARIES}
         ${COMMONAPI_LIBRARIES}
         ${COMMONAPI_DBUS_LIBRARIES}
-        ${JoynrClusterController_TARGET_LIBRARIES}
+        Qt5::Sql
     )
 
     get_target_property(common_api_PUBLIC_INCLUDE_DIRECTORY JoynrCommonAPI PUBLIC_INCLUDE_DIRECTORY)
@@ -120,8 +122,6 @@ add_library(
     ${JoynrClusterController_HEADERS}
     ${JoynrClusterController_SOURCES}
 )
-qt5_use_modules(JoynrClusterController Core WebSockets)
-
 
 if(${ENABLE_CLANG_FORMATTER})
     set(COMMENT "running C++ code formatter: clang-format")
@@ -129,14 +129,14 @@ if(${ENABLE_CLANG_FORMATTER})
     set(COMMENT "${COMMENT}\nprocessing header files:\n${JoynrClusterController_HEADERS}")
     set(COMMENT "${COMMENT}\nprocessing source files:\n${JoynrClusterController_SOURCES}")
 
-    add_custom_command(
-        TARGET JoynrClusterController
-        PRE_BUILD
+    add_custom_target(
+        format-JoynrClusterController
         COMMAND clang-format -i ${JoynrClusterController_HEADERS} ${JoynrClusterController_SOURCES}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         COMMENT "${COMMENT}"
         VERBATIM
     )
+    add_dependencies(JoynrClusterController format-JoynrClusterController)
 endif(${ENABLE_CLANG_FORMATTER})
 
 set_target_properties(

@@ -19,11 +19,22 @@ package io.joynr.capabilities.directory;
  * #L%
  */
 
-import io.joynr.capabilities.GlobalCapabilitiesDirectoryClient;
+import io.joynr.capabilities.CapabilitiesProvisioning;
+import io.joynr.capabilities.CapabilitiesStore;
+import io.joynr.capabilities.CapabilitiesStorePersisted;
+import io.joynr.capabilities.CapabilityEntry;
+import io.joynr.capabilities.CapabilityEntryPersisted;
+import io.joynr.capabilities.CustomParameterPersisted;
+import io.joynr.capabilities.DefaultCapabilitiesProvisioning;
+import io.joynr.capabilities.ProviderQosPersisted;
+import io.joynr.endpoints.EndpointAddressBase;
+import io.joynr.endpoints.EndpointAddressBasePersisted;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.runtime.AbstractJoynrApplication;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryAbstractProvider;
+import joynr.types.CustomParameter;
+import joynr.types.ProviderQos;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
@@ -34,8 +45,13 @@ public class CapabilitiesDirectoryModule extends AbstractModule {
     @Override
     protected void configure() {
         bind(GlobalCapabilitiesDirectoryAbstractProvider.class).to(CapabilitiesDirectoryImpl.class);
-        bind(GlobalCapabilitiesDirectoryClient.class).to(CapabilitiesClientDummy.class);
+        bind(CapabilitiesStore.class).to(CapabilitiesStorePersisted.class);
+        bind(CapabilityEntry.class).to(CapabilityEntryPersisted.class);
+        bind(CustomParameter.class).to(CustomParameterPersisted.class);
+        bind(ProviderQos.class).to(ProviderQosPersisted.class);
+        bind(EndpointAddressBase.class).to(EndpointAddressBasePersisted.class);
 
+        bind(CapabilitiesProvisioning.class).to(DefaultCapabilitiesProvisioning.class);
     }
 
     @Provides

@@ -18,10 +18,12 @@ package io.joynr.generator.cpp.provider
  */
 
 import com.google.inject.Inject
-import org.franca.core.franca.FInterface
-import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
+import org.franca.core.franca.FInterface
+import org.franca.core.franca.FType
+import io.joynr.generator.cpp.util.QtTypeUtil
 
 class InterfaceProviderCppTemplate implements InterfaceTemplate{
 
@@ -29,84 +31,68 @@ class InterfaceProviderCppTemplate implements InterfaceTemplate{
 	private extension TemplateBase
 
 	@Inject
+	private extension QtTypeUtil
+
+	@Inject
 	private extension JoynrCppGeneratorExtensions
 	override generate(FInterface serviceInterface)
-	'''
-		«warning()»
-		«val interfaceName = serviceInterface.joynrName»
-		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»Provider.h"
-		#include "joynr/InterfaceRegistrar.h"
-		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestInterpreter.h"
-		#include "joynr/RequestStatus.h"
+'''
+«warning()»
+«val interfaceName = serviceInterface.joynrName»
+#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»Provider.h"
+#include "joynr/InterfaceRegistrar.h"
+#include "joynr/MetaTypeRegistrar.h"
 
+#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestInterpreter.h"
+#include "joynr/RequestStatus.h"
+#include "joynr/TypeUtil.h"
+«FOR parameterType: getRequiredIncludesFor(serviceInterface)»
+	#include «parameterType»
+«ENDFOR»
 
-		«getNamespaceStarter(serviceInterface)»
-		«interfaceName»Provider::«interfaceName»Provider(const joynr::types::ProviderQos &providerQos) :
-			I«interfaceName»Base(),
-			«FOR attribute: getAttributes(serviceInterface)»
-				«attribute.joynrName»(),
-			«ENDFOR»
-		    subscriptionManager(NULL),
-		    domain(),
-		    interfaceName(),
-		    providerQos(providerQos)
+«getNamespaceStarter(serviceInterface)»
+«interfaceName»Provider::«interfaceName»Provider()
+{
+	// Register a request interpreter to interpret requests to this interface
+	joynr::InterfaceRegistrar::instance().registerRequestInterpreter<«interfaceName»RequestInterpreter>(INTERFACE_NAME());
+
+	«val typeObjs = getAllComplexAndEnumTypes(serviceInterface)»
+
+	«IF !typeObjs.isEmpty()»
+		joynr::MetaTypeRegistrar& registrar = joynr::MetaTypeRegistrar::instance();
+	«ENDIF»
+	«FOR typeobj : typeObjs»
+		«val datatype = typeobj as FType»
+
+		// Register metatype «datatype.typeName»
+		«IF isEnum(datatype)»
 		{
-			// Register a request interpreter to interpret requests to this interface
-			joynr::InterfaceRegistrar::instance().registerRequestInterpreter<«interfaceName»RequestInterpreter>(getInterfaceName());
+			«registerMetatypeStatement(getEnumContainer(datatype))»
+			int id = «registerMetatypeStatement(datatype.typeName)»
+			registrar.registerEnumMetaType<«getEnumContainer(datatype)»>();
+			QJson::Serializer::registerEnum(id, «getEnumContainer(datatype)»::staticMetaObject.enumerator(0));
 		}
-		
-		«interfaceName»Provider::~«interfaceName»Provider()
-		{
-			// Unregister the request interpreter
-			joynr::InterfaceRegistrar::instance().unregisterRequestInterpreter(getInterfaceName());
-		}
-		
-		void «interfaceName»Provider::setSubscriptionManager(joynr::SubscriptionManager* subscriptionManager) {
-		    this->subscriptionManager = subscriptionManager;
-		}
-		
-		void «interfaceName»Provider::setDomainAndInterface(const QString &domain, const QString &interfaceName) {
-		    this->domain = domain;
-		    this->interfaceName = interfaceName;
-		}
-		
-		joynr::types::ProviderQos «interfaceName»Provider::getProviderQos() const {
-		    return providerQos;
-		}
-		
-		«FOR attribute: getAttributes(serviceInterface)»
-			«var attributeType = getMappedDatatypeOrList(attribute)»
-			«var attributeName = attribute.joynrName»
-			void «interfaceName»Provider::get«attributeName.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, «attributeType»& result) {
-			    result = «attributeName»;
-			    joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
-			}
-			
-			void «interfaceName»Provider::set«attributeName.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, const «attributeType»& «attributeName») {
-			    «attributeName»Changed(«attributeName»); 
-			    joynrInternalStatus.setCode(joynr::RequestStatusCode::OK);
-			}
+		«ELSE»
+			«registerMetatypeStatement(datatype.typeName)»
+			registrar.registerMetaType<«datatype.typeName»>();
+		«ENDIF»
+	«ENDFOR»
+}
 
-			void «interfaceName»Provider::«attributeName»Changed(const «attributeType»& «attributeName») {
-			    if(this->«attributeName» == «attributeName») {
-			        // the value didn't change, no need for notification
-			        return;
-			    }
-			    this->«attributeName» = «attributeName»;
-			    onAttributeValueChanged("«attributeName»", QVariant::fromValue(«attributeName»));
-			}
-		«ENDFOR»
+«interfaceName»Provider::~«interfaceName»Provider()
+{
+	// Unregister the request interpreter
+	joynr::InterfaceRegistrar::instance().unregisterRequestInterpreter(
+			INTERFACE_NAME()
+	);
+}
 
-		«FOR broadcast: serviceInterface.broadcasts»
-			«var broadcastName = broadcast.joynrName»
-			void «interfaceName»Provider::fire«broadcastName.toFirstUpper»(«getMappedOutputParametersCommaSeparated(broadcast, true)») {
-			    QList<QVariant> broadcastValues;
-				«FOR parameter: getOutputParameters(broadcast)»
-				    broadcastValues.append(QVariant::fromValue(«parameter.name»));
-				«ENDFOR»
-			    fireBroadcast("«broadcastName»", broadcastValues);
-			}
-		«ENDFOR»
-		«getNamespaceEnder(serviceInterface)»
-	'''
+const std::string& «interfaceName»Provider::INTERFACE_NAME()
+{
+	static const std::string INTERFACE_NAME("«getPackagePathWithoutJoynrPrefix(serviceInterface, "/")»/«interfaceName.toLowerCase»");
+	return INTERFACE_NAME;
+}
+
+«getNamespaceEnder(serviceInterface)»
+'''
 }

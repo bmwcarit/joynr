@@ -33,6 +33,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <QSharedPointer>
+#include <string>
 
 using ::testing::A;
 using ::testing::_;
@@ -42,20 +43,22 @@ using namespace joynr;
 class RequestInterpreterTest : public ::testing::Test {
 public:
     RequestInterpreterTest()
-        : gpsInterfaceName(vehicle::IGpsBase::getInterfaceName())
+        : gpsInterfaceName(vehicle::IGpsBase::INTERFACE_NAME())
     {
 
     }
 
 protected:
-    QString gpsInterfaceName;
+    std::string gpsInterfaceName;
 };
 
 
 TEST_F(RequestInterpreterTest, execute_callsMethodOnRequestCaller) {
     QSharedPointer<MockTestRequestCaller> mockCaller(new MockTestRequestCaller());
-    EXPECT_CALL(*mockCaller,
-                getLocation(A<RequestStatus&>(), A<types::GpsLocation&>()))
+    EXPECT_CALL(
+            *mockCaller,
+            getLocation(A<std::function<void(const types::Localisation::GpsLocation&)>>())
+    )
             .Times(1);
 
     tests::testRequestInterpreter interpreter;
@@ -63,7 +66,8 @@ TEST_F(RequestInterpreterTest, execute_callsMethodOnRequestCaller) {
     QVariantList paramValues;
     QVariantList paramDatatypes;
 
-    interpreter.execute(mockCaller, methodName, paramValues, paramDatatypes);
+    std::function<void(const QVariant& response)> callbackFct = [] (const QVariant& response) {};
+    interpreter.execute(mockCaller, methodName, paramValues, paramDatatypes, callbackFct);
 }
 
 

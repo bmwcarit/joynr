@@ -25,9 +25,9 @@
 #include <assert.h>
 
 #include "websocket/WebSocketMessagingStub.h"
-#include "joynr/system/Address.h"
-#include "joynr/system/WebSocketAddress.h"
-#include "joynr/system/WebSocketClientAddress.h"
+#include "joynr/system/QtAddress.h"
+#include "joynr/system/QtWebSocketAddress.h"
+#include "joynr/system/QtWebSocketClientAddress.h"
 
 namespace joynr
 {
@@ -40,19 +40,19 @@ WebSocketMessagingStubFactory::WebSocketMessagingStubFactory(QObject* parent)
 {
 }
 
-bool WebSocketMessagingStubFactory::canCreate(const joynr::system::Address& destAddress)
+bool WebSocketMessagingStubFactory::canCreate(const joynr::system::QtAddress& destAddress)
 {
-    return destAddress.inherits(system::WebSocketAddress::staticMetaObject.className()) ||
-           destAddress.inherits(system::WebSocketClientAddress::staticMetaObject.className());
+    return destAddress.inherits(system::QtWebSocketAddress::staticMetaObject.className()) ||
+           destAddress.inherits(system::QtWebSocketClientAddress::staticMetaObject.className());
 }
 
 QSharedPointer<IMessaging> WebSocketMessagingStubFactory::create(
-        const joynr::system::Address& destAddress)
+        const joynr::system::QtAddress& destAddress)
 {
     // if destination is a WS client address
-    if (destAddress.inherits(system::WebSocketClientAddress::staticMetaObject.className())) {
-        const system::WebSocketClientAddress* webSocketClientAddress =
-                qobject_cast<const system::WebSocketClientAddress*>(&destAddress);
+    if (destAddress.inherits(system::QtWebSocketClientAddress::staticMetaObject.className())) {
+        const system::QtWebSocketClientAddress* webSocketClientAddress =
+                qobject_cast<const system::QtWebSocketClientAddress*>(&destAddress);
         // lookup address
         {
             QMutexLocker locker(&mutex);
@@ -65,9 +65,9 @@ QSharedPointer<IMessaging> WebSocketMessagingStubFactory::create(
         return clientStubMap.value(*webSocketClientAddress, QSharedPointer<IMessaging>());
     }
     // if destination is a WS server address
-    if (destAddress.inherits(system::WebSocketAddress::staticMetaObject.className())) {
-        const system::WebSocketAddress* webSocketServerAddress =
-                qobject_cast<const system::WebSocketAddress*>(&destAddress);
+    if (destAddress.inherits(system::QtWebSocketAddress::staticMetaObject.className())) {
+        const system::QtWebSocketAddress* webSocketServerAddress =
+                qobject_cast<const system::QtWebSocketAddress*>(&destAddress);
         // lookup address
         {
             QMutexLocker locker(&mutex);
@@ -84,11 +84,11 @@ QSharedPointer<IMessaging> WebSocketMessagingStubFactory::create(
 }
 
 void WebSocketMessagingStubFactory::addClient(
-        const joynr::system::WebSocketClientAddress& clientAddress,
+        const joynr::system::QtWebSocketClientAddress& clientAddress,
         QWebSocket* webSocket)
 {
     WebSocketMessagingStub* wsClientStub = new WebSocketMessagingStub(
-            new joynr::system::WebSocketClientAddress(clientAddress), webSocket);
+            new joynr::system::QtWebSocketClientAddress(clientAddress), webSocket);
     connect(wsClientStub,
             &WebSocketMessagingStub::closed,
             this,
@@ -98,16 +98,16 @@ void WebSocketMessagingStubFactory::addClient(
 }
 
 void WebSocketMessagingStubFactory::removeClient(
-        const joynr::system::WebSocketClientAddress& clientAddress)
+        const joynr::system::QtWebSocketClientAddress& clientAddress)
 {
     clientStubMap.remove(clientAddress);
 }
 
-void WebSocketMessagingStubFactory::addServer(const system::WebSocketAddress& serverAddress,
+void WebSocketMessagingStubFactory::addServer(const system::QtWebSocketAddress& serverAddress,
                                               QWebSocket* webSocket)
 {
     WebSocketMessagingStub* wsServerStub = new WebSocketMessagingStub(
-            new joynr::system::WebSocketAddress(serverAddress), webSocket);
+            new joynr::system::QtWebSocketAddress(serverAddress), webSocket);
     connect(wsServerStub,
             &WebSocketMessagingStub::closed,
             this,
@@ -116,23 +116,23 @@ void WebSocketMessagingStubFactory::addServer(const system::WebSocketAddress& se
     serverStubMap.insert(serverAddress, serverStub);
 }
 
-void WebSocketMessagingStubFactory::onMessagingStubClosed(const system::Address& address)
+void WebSocketMessagingStubFactory::onMessagingStubClosed(const system::QtAddress& address)
 {
     LOG_DEBUG(logger, QString("removing messaging stub for addres: %0").arg(address.toString()));
-    if (address.inherits(system::WebSocketClientAddress::staticMetaObject.className())) {
-        const system::WebSocketClientAddress* wsClientAddress =
-                qobject_cast<const system::WebSocketClientAddress*>(&address);
+    if (address.inherits(system::QtWebSocketClientAddress::staticMetaObject.className())) {
+        const system::QtWebSocketClientAddress* wsClientAddress =
+                qobject_cast<const system::QtWebSocketClientAddress*>(&address);
         clientStubMap.remove(*wsClientAddress);
     }
-    if (address.inherits(system::WebSocketAddress::staticMetaObject.className())) {
-        const system::WebSocketAddress* wsServerAddress =
-                qobject_cast<const system::WebSocketAddress*>(&address);
+    if (address.inherits(system::QtWebSocketAddress::staticMetaObject.className())) {
+        const system::QtWebSocketAddress* wsServerAddress =
+                qobject_cast<const system::QtWebSocketAddress*>(&address);
         serverStubMap.remove(*wsServerAddress);
     }
 }
 
 QUrl WebSocketMessagingStubFactory::convertWebSocketAddressToUrl(
-        const system::WebSocketAddress& address)
+        const system::QtWebSocketAddress& address)
 {
     return QUrl(QString("%0://%1:%2%3")
                         .arg(address.getProtocolInternal().toLower())

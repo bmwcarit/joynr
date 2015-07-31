@@ -18,12 +18,15 @@
  */
 #ifndef ILOCALCHANNELURLDIRECTORY_H_
 #define ILOCALCHANNELURLDIRECTORY_H_
-#include <QString>
-#include <QSharedPointer>
+#include <memory>
+#include <functional>
+#include <string>
+#include <QtGlobal>
 
 namespace joynr
 {
-template <class T>
+class RequestStatus;
+template <class... T>
 class Future;
 namespace types
 {
@@ -48,33 +51,42 @@ public:
      *
      * @param channelId
      * @param channelUrlInformation
-     * @param status
+     * @param onSuccess
+     * @param onError
      */
-    virtual void registerChannelUrls(QSharedPointer<Future<void>> future,
-                                     const QString& channelId,
-                                     types::ChannelUrlInformation channelUrlInformation) = 0;
+    virtual std::shared_ptr<joynr::Future<void>> registerChannelUrlsAsync(
+            const std::string& channelId,
+            types::ChannelUrlInformation channelUrlInformation,
+            std::function<void(void)> onSuccess = nullptr,
+            std::function<void(const joynr::RequestStatus&)> onError = nullptr) = 0;
 
     /**
      * @brief Unregister ALL Url's registered for this channelId
      *
-     * @param status
      * @param channelId
+     * @param onSuccess
+     * @param onError
      */
-    virtual void unregisterChannelUrls(QSharedPointer<Future<void>> future,
-                                       const QString& channelId) = 0;
+    virtual std::shared_ptr<joynr::Future<void>> unregisterChannelUrlsAsync(
+            const std::string& channelId,
+            std::function<void(void)> onSuccess = nullptr,
+            std::function<void(const joynr::RequestStatus&)> onError = nullptr) = 0;
 
     /**
      * @brief Get ALL Url's registered in the remoteChannelUrlDirectory. Uses caching, i.e. once an
      * entry is obtained it is stored and returned from there on (instead of starting another remote
      *request).
      *
-     * @param future
      * @param channelId
-     * @param timeout
+     * @param onSuccess
+     * @param onError
      */
-    virtual void getUrlsForChannel(QSharedPointer<Future<types::ChannelUrlInformation>> future,
-                                   const QString& channelId,
-                                   const qint64& timeout_ms) = 0;
+    virtual std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>>
+    getUrlsForChannelAsync(
+            const std::string& channelId,
+            const qint64& timeout_ms,
+            std::function<void(const types::ChannelUrlInformation&)> onSuccess = nullptr,
+            std::function<void(const joynr::RequestStatus&)> onError = nullptr) = 0;
 };
 
 } // namespace joynr

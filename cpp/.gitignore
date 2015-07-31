@@ -15,6 +15,8 @@ libjoynr/proxy/generated/
 runtimes/include/joynr/JoynrClusterControllerRuntimeExport.h
 runtimes/include/joynr/JoynrRuntimeExport.h
 common-api/joynr/
+common-api/src-gen
 /.project
 /.settings
 tests/gen/
+/docs

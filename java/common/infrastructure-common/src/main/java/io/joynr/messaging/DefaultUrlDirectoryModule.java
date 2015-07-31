@@ -20,11 +20,11 @@ package io.joynr.messaging;
  */
 
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
-import io.joynr.dispatcher.rpc.Callback;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcReturn;
 import io.joynr.exceptions.JoynrArbitrationException;
+import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 
 import java.util.ArrayList;
@@ -76,15 +76,21 @@ public class DefaultUrlDirectoryModule extends AbstractModule {
             }
 
             @Override
-            public void unregisterChannelUrls(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                              @JoynrRpcParam("channelId") String channelId) {
-
+            public Future<Void> unregisterChannelUrls(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
+                                                      @JoynrRpcParam("channelId") String channelId) {
+                Future<Void> future = new Future<Void>();
+                future.onSuccess(null);
+                return future;
             }
 
             @Override
-            public void registerChannelUrls(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                            @JoynrRpcParam("channelId") String channelId,
-                                            @JoynrRpcParam("channelUrlInformation") ChannelUrlInformation channelUrlInformation) {
+            public Future<Void> registerChannelUrls(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
+                                                    @JoynrRpcParam("channelId") String channelId,
+                                                    @JoynrRpcParam("channelUrlInformation") ChannelUrlInformation channelUrlInformation) {
+
+                Future<Void> future = new Future<Void>();
+                future.onSuccess(null);
+                return future;
 
             }
 

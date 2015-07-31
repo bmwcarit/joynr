@@ -33,18 +33,21 @@ import org.junit.BeforeClass;
  */
 public class MessagingIntegrationTest extends AbstractMessagingIntegrationTest {
 
-    private static Server server;
+    private static Server jettyServer;
 
     @BeforeClass
     public static void startServer() throws Exception {
-        server = ServersUtil.startBounceproxy();
         System.setProperty(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS, "10");
         System.setProperty(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT, "200");
+        System.setProperty(ConfigurableMessagingSettings.PROPERTY_ARBITRATION_MINIMUMRETRYDELAY, "200");
+
+        jettyServer = ServersUtil.startBounceproxy();
+
     }
 
     @AfterClass
     public static void stopServer() throws Exception {
-        server.stop();
+        jettyServer.stop();
     }
 
 }

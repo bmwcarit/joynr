@@ -28,7 +28,7 @@
 #include "joynr/IPublicationSender.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
-#include "joynr/BroadcastFilterParameters.h"
+#include "joynr/QtBroadcastFilterParameters.h"
 #include "joynr/Util.h"
 #include "joynr/IBroadcastFilter.h"
 #include "libjoynr/subscription/SubscriptionRequestInformation.h"
@@ -205,9 +205,9 @@ PublicationManager::PublicationManager(int maxThreads)
     loadSavedBroadcastSubscriptionRequestsMap();
 }
 
-bool isSubscriptionExpired(QSharedPointer<SubscriptionQos> qos, int offset = 0)
+bool isSubscriptionExpired(QSharedPointer<QtSubscriptionQos> qos, int offset = 0)
 {
-    return qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE() &&
+    return qos->getExpiryDate() != joynr::QtSubscriptionQos::NO_EXPIRY_DATE() &&
            qos->getExpiryDate() < (QDateTime::currentMSecsSinceEpoch() + offset);
 }
 
@@ -260,12 +260,12 @@ void PublicationManager::handleAttributeSubscriptionRequest(
         addOnChangePublication(subscriptionId, requestInfo, publication);
 
         // Schedule a runnable to remove the publication when it finishes
-        QSharedPointer<SubscriptionQos> qos = requestInfo->getQos();
+        QSharedPointer<QtSubscriptionQos> qos = requestInfo->getQos();
         qint64 publicationEndDelay = qos->getExpiryDate() - QDateTime::currentMSecsSinceEpoch();
 
         // check for a valid publication end date
         if (!isSubscriptionExpired(qos)) {
-            if (qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
+            if (qos->getExpiryDate() != joynr::QtSubscriptionQos::NO_EXPIRY_DATE()) {
                 publication->publicationEndRunnableHandle = delayedScheduler->schedule(
                         new PublicationEndRunnable(*this, subscriptionId), publicationEndDelay);
                 LOG_DEBUG(
@@ -299,7 +299,8 @@ void PublicationManager::addOnChangePublication(
 
         // Register the attribute listener
         QSharedPointer<RequestCaller> requestCaller = publication->requestCaller;
-        requestCaller->registerAttributeListener(request->getSubscribeToName(), attributeListener);
+        requestCaller->registerAttributeListener(
+                request->getSubscribeToName().toStdString(), attributeListener);
 
         // Make note of the attribute listener so that it can be unregistered
         publication->attributeListener = attributeListener;
@@ -321,7 +322,8 @@ void PublicationManager::addBroadcastPublication(
 
     // Register the broadcast listener
     QSharedPointer<RequestCaller> requestCaller = publication->requestCaller;
-    requestCaller->registerBroadcastListener(request->getSubscribeToName(), broadcastListener);
+    requestCaller->registerBroadcastListener(
+            request->getSubscribeToName().toStdString(), broadcastListener);
 
     // Make note of the attribute listener so that it can be unregistered
     publication->broadcastListener = broadcastListener;
@@ -405,12 +407,12 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
         addBroadcastPublication(subscriptionId, requestInfo, publication);
 
         // Schedule a runnable to remove the publication when it finishes
-        QSharedPointer<SubscriptionQos> qos = requestInfo->getQos();
+        QSharedPointer<QtSubscriptionQos> qos = requestInfo->getQos();
         qint64 publicationEndDelay = qos->getExpiryDate() - QDateTime::currentMSecsSinceEpoch();
 
         // check for a valid publication end date
         if (!isSubscriptionExpired(qos)) {
-            if (qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
+            if (qos->getExpiryDate() != joynr::QtSubscriptionQos::NO_EXPIRY_DATE()) {
                 publication->publicationEndRunnableHandle = delayedScheduler->schedule(
                         new PublicationEndRunnable(*this, subscriptionId), publicationEndDelay);
                 LOG_DEBUG(
@@ -734,7 +736,7 @@ void PublicationManager::removeBroadcastPublication(const QString& subscriptionI
         // Remove listener
         QSharedPointer<RequestCaller> requestCaller = publication->requestCaller;
         requestCaller->unregisterBroadcastListener(
-                request->getSubscribeToName(), publication->broadcastListener);
+                request->getSubscribeToName().toStdString(), publication->broadcastListener);
         publication->broadcastListener = NULL;
 
         removePublicationEndRunnable(publication);
@@ -755,7 +757,7 @@ void PublicationManager::removeOnChangePublication(
         // Unregister and delete the attribute listener
         QSharedPointer<RequestCaller> requestCaller = publication->requestCaller;
         requestCaller->unregisterAttributeListener(
-                request->getSubscribeToName(), publication->attributeListener);
+                request->getSubscribeToName().toStdString(), publication->attributeListener);
         publication->attributeListener = NULL;
     }
     removePublicationEndRunnable(publication);
@@ -777,17 +779,19 @@ void PublicationManager::removePublicationEndRunnable(QSharedPointer<Publication
 // This function assumes that a read lock is already held
 bool PublicationManager::processFilterChain(const QString& subscriptionId,
                                             const QList<QVariant>& broadcastValues,
-                                            const QList<QSharedPointer<IBroadcastFilter>>& filters)
+                                            const QList<std::shared_ptr<IBroadcastFilter>>& filters)
 {
     bool success = true;
 
     QReadLocker subscriptionLocker(&subscriptionLock);
     QSharedPointer<BroadcastSubscriptionRequestInformation> subscriptionRequest(
             subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId));
-    BroadcastFilterParameters filterParameters = subscriptionRequest->getFilterParameters();
+    QtBroadcastFilterParameters filterParameters = subscriptionRequest->getFilterParameters();
 
-    foreach (QSharedPointer<IBroadcastFilter> filter, filters) {
-        success = success && filter->filter(broadcastValues, filterParameters);
+    foreach (std::shared_ptr<IBroadcastFilter> filter, filters) {
+        success = success &&
+                  filter->filter(broadcastValues,
+                                 QtBroadcastFilterParameters::createStd(filterParameters));
     }
 
     return success;
@@ -809,7 +813,7 @@ void PublicationManager::sendPublication(
         QSharedPointer<Publication> publication,
         QSharedPointer<SubscriptionInformation> subscriptionInformation,
         QSharedPointer<SubscriptionRequest> request,
-        const QVariant& value)
+        const QList<QVariant>& value)
 {
     LOG_DEBUG(logger, "sending subscriptionreply");
     MessagingQos mQos;
@@ -823,10 +827,11 @@ void PublicationManager::sendPublication(
     SubscriptionPublication subscriptionPublication;
     subscriptionPublication.setSubscriptionId(request->getSubscriptionId());
     subscriptionPublication.setResponse(value);
-    publicationSender->sendSubscriptionPublication(subscriptionInformation->getProviderId(),
-                                                   subscriptionInformation->getProxyId(),
-                                                   mQos,
-                                                   subscriptionPublication);
+    publicationSender->sendSubscriptionPublication(
+            subscriptionInformation->getProviderId().toStdString(),
+            subscriptionInformation->getProxyId().toStdString(),
+            mQos,
+            subscriptionPublication);
 
     // Make note of when this publication was sent
     qint64 now = QDateTime::currentMSecsSinceEpoch();
@@ -864,7 +869,7 @@ void PublicationManager::pollSubscription(const QString& subscriptionId)
     {
         QMutexLocker publicationLocker(&(publication->mutex));
         // See if the publication is needed
-        QSharedPointer<SubscriptionQos> qos(subscriptionRequest->getQos());
+        QSharedPointer<QtSubscriptionQos> qos(subscriptionRequest->getQos());
         qint64 now = QDateTime::currentMSecsSinceEpoch();
         qint64 publicationInterval = SubscriptionUtil::getPeriodicPublicationInterval(qos.data());
 
@@ -895,19 +900,23 @@ void PublicationManager::pollSubscription(const QString& subscriptionId)
                 InterfaceRegistrar::instance().getRequestInterpreter(
                         requestCaller->getInterfaceName()));
 
+        std::function<void(const QList<QVariant>&)> callbackFct =
+                [publication, publicationInterval, qos, subscriptionRequest, this, subscriptionId](
+                        const QList<QVariant>& response) {
+            sendPublication(publication, subscriptionRequest, subscriptionRequest, response);
+
+            // Reschedule the next poll
+            if (publicationInterval > 0 && (!isSubscriptionExpired(qos))) {
+                LOG_DEBUG(logger,
+                          QString("rescheduling runnable with delay: %1").arg(publicationInterval));
+                delayedScheduler->schedule(
+                        new PublisherRunnable(*this, subscriptionId), publicationInterval);
+            }
+        };
+
         LOG_DEBUG(logger, QString("run: executing requestInterpreter= %1").arg(attributeGetter));
-        QVariant response(requestInterpreter->execute(
-                requestCaller, attributeGetter, QList<QVariant>(), QList<QVariant>()));
-
-        sendPublication(publication, subscriptionRequest, subscriptionRequest, response);
-
-        // Reschedule the next poll
-        if (publicationInterval > 0 && (!isSubscriptionExpired(qos))) {
-            LOG_DEBUG(logger,
-                      QString("rescheduling runnable with delay: %1").arg(publicationInterval));
-            delayedScheduler->schedule(
-                    new PublisherRunnable(*this, subscriptionId), publicationInterval);
-        }
+        requestInterpreter->execute(
+                requestCaller, attributeGetter, QList<QVariant>(), QList<QVariant>(), callbackFct);
     }
 }
 
@@ -953,7 +962,9 @@ void PublicationManager::attributeValueChanged(const QString& subscriptionId, co
 
             if (timeUntilNextPublication == 0) {
                 // Send the publication
-                sendPublication(publication, subscriptionRequest, subscriptionRequest, value);
+                QList<QVariant> values;
+                values.append(value);
+                sendPublication(publication, subscriptionRequest, subscriptionRequest, values);
             } else {
                 reschedulePublication(subscriptionId, timeUntilNextPublication);
             }
@@ -963,7 +974,7 @@ void PublicationManager::attributeValueChanged(const QString& subscriptionId, co
 
 void PublicationManager::broadcastOccurred(const QString& subscriptionId,
                                            const QList<QVariant>& values,
-                                           const QList<QSharedPointer<IBroadcastFilter>>& filters)
+                                           const QList<std::shared_ptr<IBroadcastFilter>>& filters)
 {
     LOG_DEBUG(logger,
               QString("broadcastOccurred for subscription %1. Number of values: %2")
@@ -998,8 +1009,7 @@ void PublicationManager::broadcastOccurred(const QString& subscriptionId,
             // Execute broadcast filters
             if (processFilterChain(subscriptionId, values, filters)) {
                 // Send the publication
-                QVariant value = QVariant::fromValue(values);
-                sendPublication(publication, subscriptionRequest, subscriptionRequest, value);
+                sendPublication(publication, subscriptionRequest, subscriptionRequest, values);
             }
         } else {
             LOG_DEBUG(
@@ -1021,7 +1031,7 @@ bool PublicationManager::isPublicationAlreadyScheduled(const QString& subscripti
 }
 
 qint64 PublicationManager::getTimeUntilNextPublication(QSharedPointer<Publication> publication,
-                                                       QSharedPointer<SubscriptionQos> qos)
+                                                       QSharedPointer<QtSubscriptionQos> qos)
 {
     QMutexLocker publicationLocker(&(publication->mutex));
     // Check the last publication time against the min interval

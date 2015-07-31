@@ -29,6 +29,7 @@ import io.joynr.dispatcher.ReplyCaller;
 import io.joynr.dispatcher.RequestReplyDispatcher;
 import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.dispatcher.RequestReplySenderImpl;
+import io.joynr.dispatcher.rpc.JoynrMessagingConnectorFactory;
 import io.joynr.dispatcher.rpc.JoynrSyncInterface;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 import io.joynr.endpoints.EndpointAddressBase;
@@ -69,8 +70,7 @@ public class ProxyArbitrationTest {
     @Mock
     private Reply jsonReply;
 
-    ProxyInvocationHandler proxyHandler;
-    private RequestReplySender requestReplySender;
+    ProxyInvocationHandlerImpl proxyHandler;
 
     private MessagingEndpointDirectory messagingEndpointDirectory;
     private String participantId;
@@ -101,16 +101,19 @@ public class ProxyArbitrationTest {
         messagingEndpointDirectory.put(participantId, wrongEndpointAddress);
         messagingEndpointDirectory.put(participantId, correctEndpointAddress);
 
-        requestReplySender = new RequestReplySenderImpl(joynrMessageFactory, messageSender, messagingEndpointDirectory);
-
-        proxyHandler = new ProxyInvocationHandler("domain",
-                                                  "interfaceName",
-                                                  participantId,
-                                                  discoveryQos,
-                                                  messagingQos,
-                                                  requestReplySender,
-                                                  dispatcher,
-                                                  subscriptionManager);
+        RequestReplySender requestReplySender = new RequestReplySenderImpl(joynrMessageFactory,
+                                                                           messageSender,
+                                                                           messagingEndpointDirectory);
+        JoynrMessagingConnectorFactory joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(requestReplySender,
+                                                                                                           dispatcher,
+                                                                                                           subscriptionManager);
+        ConnectorFactory connectorFactory = new ConnectorFactory(joynrMessagingConnectorFactory);
+        proxyHandler = new ProxyInvocationHandlerImpl("domain",
+                                                      "interfaceName",
+                                                      participantId,
+                                                      discoveryQos,
+                                                      messagingQos,
+                                                      connectorFactory);
         List<EndpointAddressBase> endpoints = Lists.newArrayList(correctEndpointAddress);
 
         DiscoveryAgent discoveryAgent = new DiscoveryAgent();
@@ -153,8 +156,7 @@ public class ProxyArbitrationTest {
     @Test
     public void proxyUsesCorrectEndpointToSendRequest() throws IllegalArgumentException, SecurityException,
                                                        InterruptedException, NoSuchMethodException, Throwable {
-        proxyHandler.executeSyncMethod(TestSyncInterface.class.getDeclaredMethod("demoMethod2", new Class<?>[]{}),
-                                       new Object[]{});
+        proxyHandler.invoke(TestSyncInterface.class.getDeclaredMethod("demoMethod2", new Class<?>[]{}), new Object[]{});
         Mockito.verify(messageSender).sendMessage(Mockito.eq(CORRECT_CHANNELID), Mockito.<JoynrMessage> any());
     }
 

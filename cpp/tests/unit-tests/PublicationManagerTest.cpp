@@ -25,8 +25,8 @@
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/IAttributeListener.h"
 #include "joynr/IBroadcastListener.h"
-#include "joynr/PeriodicSubscriptionQos.h"
-#include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/QtPeriodicSubscriptionQos.h"
+#include "joynr/QtOnChangeSubscriptionQos.h"
 #include "joynr/LibjoynrSettings.h"
 
 using ::testing::A;
@@ -39,6 +39,7 @@ using ::testing::MatcherInterface;
 using ::testing::MatchResultListener;
 using ::testing::Matcher;
 using ::testing::MakeMatcher;
+#include <string>
 
 using namespace joynr;
 
@@ -73,10 +74,10 @@ TEST_F(PublicationManagerTest, add_requestCallerIsCalledCorrectlyByPublisherRunn
     QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
 
     // Register the request interpreter that calls the request caller
-    InterfaceRegistrar::instance().registerRequestInterpreter<joynr::tests::testRequestInterpreter>("tests/Test");
+    InterfaceRegistrar::instance().registerRequestInterpreter<joynr::tests::testRequestInterpreter>(joynr::tests::testProvider::INTERFACE_NAME());
 
     MockPublicationSender mockPublicationSender;
-    MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
+    MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller(Between(3, 5));
 
     // NOTE: it depends on the timing and especially on the CPU load of
     // the current machine how often the publication is exectuted. Hence,
@@ -85,29 +86,25 @@ TEST_F(PublicationManagerTest, add_requestCallerIsCalledCorrectlyByPublisherRunn
                 sendSubscriptionPublication(_,_,_,_))
             .Times(Between(3, 5));
 
-    EXPECT_CALL(*mockTestRequestCaller,
-                getLocation(_,_))
-            .Times(Between(3, 5));
-
     QSharedPointer<MockTestRequestCaller> requestCaller(mockTestRequestCaller);
     PublicationManager publicationManager;
 
     //SubscriptionRequest
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
-    QString attributeName = "Location";
+    std::string attributeName("Location");
     // SUbscriptionQos
     qint64 period_ms = 100;
     qint64 validity_ms = 500;
     qint64 alertInterval_ms = 2000;
-    QSharedPointer<SubscriptionQos> qos(new PeriodicSubscriptionQos(
+    QSharedPointer<QtSubscriptionQos> qos(new QtPeriodicSubscriptionQos(
                         validity_ms,
                         period_ms,
                         alertInterval_ms));
 
     // will be deleted by the publication manager
     SubscriptionRequest subscriptionRequest;
-    subscriptionRequest.setSubscribeToName(attributeName);
+    subscriptionRequest.setSubscribeToName(QString::fromStdString(attributeName));
     subscriptionRequest.setQos(qos);
     LOG_DEBUG(logger, "adding request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
@@ -118,7 +115,7 @@ TEST_F(PublicationManagerTest, add_requestCallerIsCalledCorrectlyByPublisherRunn
 TEST_F(PublicationManagerTest, stop_publications) {
     QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
     MockPublicationSender mockPublicationSender;
-    MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
+    MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller(AtMost(2));
 
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
@@ -127,28 +124,24 @@ TEST_F(PublicationManagerTest, stop_publications) {
                 sendSubscriptionPublication(_,_,_,_))
             .Times(AtMost(2));
 
-    EXPECT_CALL(*mockTestRequestCaller,
-                getLocation(_,_))
-            .Times(AtMost(2));
-
     QSharedPointer<MockTestRequestCaller> requestCaller(mockTestRequestCaller);
     PublicationManager publicationManager;
 
     //SubscriptionRequest
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
-    QString attributeName = "Location";
-    //SubscriptionQos
+    std::string attributeName("Location");
+    //QtSubscriptionQos
     qint64 period_ms = 100;
     qint64 validity_ms = 10000;
     qint64 alertInterval_ms = 1000;
-    QSharedPointer<SubscriptionQos> qos(new PeriodicSubscriptionQos(
+    QSharedPointer<QtSubscriptionQos> qos(new QtPeriodicSubscriptionQos(
                         validity_ms,
                         period_ms,
                         alertInterval_ms));
 
     SubscriptionRequest subscriptionRequest;
-    subscriptionRequest.setSubscribeToName(attributeName);
+    subscriptionRequest.setSubscribeToName(QString::fromStdString(attributeName));
     subscriptionRequest.setQos(qos);
 
     publicationManager.add(
@@ -166,7 +159,7 @@ TEST_F(PublicationManagerTest, stop_publications) {
 TEST_F(PublicationManagerTest, remove_all_publications) {
     QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
     MockPublicationSender mockPublicationSender;
-    MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
+    MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller(AtMost(2));
 
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
@@ -175,28 +168,24 @@ TEST_F(PublicationManagerTest, remove_all_publications) {
                 sendSubscriptionPublication(_,_,_,_))
             .Times(AtMost(2));
 
-    EXPECT_CALL(*mockTestRequestCaller,
-                getLocation(_,_))
-            .Times(AtMost(2));
-
     QSharedPointer<MockTestRequestCaller> requestCaller(mockTestRequestCaller);
     PublicationManager publicationManager;
 
     //SubscriptionRequest
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
-    QString attributeName = "Location";
-    //SubscriptionQos
+    std::string attributeName("Location");
+    //QtSubscriptionQos
     qint64 period_ms = 100;
     qint64 validity_ms = 10000;
     qint64 alertInterval_ms = 1000;
-    QSharedPointer<SubscriptionQos> qos(new PeriodicSubscriptionQos(
+    QSharedPointer<QtSubscriptionQos> qos(new QtPeriodicSubscriptionQos(
                         validity_ms,
                         period_ms,
                         alertInterval_ms));
 
     SubscriptionRequest subscriptionRequest;
-    subscriptionRequest.setSubscribeToName(attributeName);
+    subscriptionRequest.setSubscribeToName(QString::fromStdString(attributeName));
     subscriptionRequest.setQos(qos);
 
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
@@ -207,45 +196,38 @@ TEST_F(PublicationManagerTest, remove_all_publications) {
 
 TEST_F(PublicationManagerTest, restore_publications) {
     QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME());
-    qRegisterMetaType<PeriodicSubscriptionQos>("PeriodicSubscriptionQos");
+    qRegisterMetaType<QtPeriodicSubscriptionQos>("QtPeriodicSubscriptionQos");
     MockPublicationSender mockPublicationSender;
 
     //the first publicationManager will get this requestCaller:
-    QSharedPointer<MockTestRequestCaller> requestCaller(new MockTestRequestCaller());
+    QSharedPointer<MockTestRequestCaller> requestCaller(new MockTestRequestCaller(Between(1,3)));
 
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
-    EXPECT_CALL(*requestCaller,
-                getLocation(_,_))
-            .Times(Between(1,3));
 
     //the second publicationManager will get this requestCaller
     //if restoring works, this caller will be called as well.
-    QSharedPointer<MockTestRequestCaller> requestCaller2(new MockTestRequestCaller());
-
-    EXPECT_CALL(*requestCaller2,
-                getLocation(_,_))
-            .Times(AtLeast(2));
+    QSharedPointer<MockTestRequestCaller> requestCaller2(new MockTestRequestCaller(AtLeast(2)));
 
     PublicationManager* publicationManager = new PublicationManager() ;
 
     //SubscriptionRequest
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
-    QString attributeName = "Location";
-    //SubscriptionQos
+    std::string attributeName("Location");
+    //QtSubscriptionQos
     qint64 period_ms = 100;
     qint64 validity_ms = 1000;
     qint64 alertInterval_ms = 1000;
-    QSharedPointer<SubscriptionQos> qos(new PeriodicSubscriptionQos(
+    QSharedPointer<QtSubscriptionQos> qos(new QtPeriodicSubscriptionQos(
                         validity_ms,
                         period_ms,
                         alertInterval_ms));
 
     // will be delete by the publication manager (destructor PublicationState)
     SubscriptionRequest subscriptionRequest;
-    subscriptionRequest.setSubscribeToName(attributeName);
+    subscriptionRequest.setSubscribeToName(QString::fromStdString(attributeName));
     subscriptionRequest.setQos(qos);
 
     publicationManager->add(senderId, receiverId,requestCaller,subscriptionRequest,&mockPublicationSender);
@@ -271,14 +253,16 @@ TEST_F(PublicationManagerTest, add_onChangeSubscription) {
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // The attribute will change to this value
-    joynr::types::GpsLocation gpsLocation;
+    joynr::types::QtGpsLocation gpsLocation;
     QVariant attributeValue = QVariant::fromValue(gpsLocation);
 
     SubscriptionRequest subscriptionRequest;
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    expectedPublication.setResponse(attributeValue);
+    QList<QVariant> response;
+    response.append(attributeValue);
+    expectedPublication.setResponse(response);
     // Expect an attribute change to send a publication as well as during registering subscription request
     EXPECT_CALL(
                 mockPublicationSender,
@@ -292,7 +276,7 @@ TEST_F(PublicationManagerTest, add_onChangeSubscription) {
             .Times(Between(1, 2));
 
     // Expect a call to set up the on change subscription
-    QString attributeName = "Location";
+    std::string attributeName = "Location";
     IAttributeListener* attributeListener;
     EXPECT_CALL(
                 *mockTestRequestCaller,
@@ -314,15 +298,15 @@ TEST_F(PublicationManagerTest, add_onChangeSubscription) {
     //SubscriptionRequest
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
-    //SubscriptionQos
+    //QtSubscriptionQos
     qint64 minInterval_ms = 50;
     qint64 validity_ms = 500;
-    QSharedPointer<SubscriptionQos> qos(new OnChangeSubscriptionQos(
+    QSharedPointer<QtSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
 
     // will be deleted by the publication manager
-    subscriptionRequest.setSubscribeToName(attributeName);
+    subscriptionRequest.setSubscribeToName(QString::fromStdString(attributeName));
     subscriptionRequest.setQos(qos);
     LOG_DEBUG(logger, "adding request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
@@ -343,14 +327,16 @@ TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // The attribute will change to this value
-    joynr::types::GpsLocation gpsLocation;
+    joynr::types::QtGpsLocation gpsLocation;
     QVariant attributeValue = QVariant::fromValue(gpsLocation);
 
     SubscriptionRequest subscriptionRequest;
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    expectedPublication.setResponse(attributeValue);
+    QList<QVariant> response;
+    response.append(attributeValue);
+    expectedPublication.setResponse(response);
     // Expect a single attribute change to send a publication + one publication when registering sub request -> 2
     EXPECT_CALL(
                 mockPublicationSender,
@@ -364,7 +350,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
             .Times(2);
 
     // Expect calls to register an unregister an attribute listener
-    QString attributeName = "Location";
+    std::string attributeName("Location");
     IAttributeListener* attributeListener;
 
     EXPECT_CALL(*mockTestRequestCaller,registerAttributeListener(attributeName, _))
@@ -379,15 +365,15 @@ TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
     //SubscriptionRequest
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
-    //SubscriptionQos
+    //QtSubscriptionQos
     qint64 minInterval_ms = 500;
     qint64 validity_ms = -1; //no expiry date -> infinite subscription
-    QSharedPointer<SubscriptionQos> qos(new OnChangeSubscriptionQos(
+    QSharedPointer<QtSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
 
     // will be deleted by the publication manager
-    subscriptionRequest.setSubscribeToName(attributeName);
+    subscriptionRequest.setSubscribeToName(QString::fromStdString(attributeName));
     subscriptionRequest.setQos(qos);
     LOG_DEBUG(logger, "adding request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
@@ -416,14 +402,16 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval) {
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // The attribute will change to this value
-    joynr::types::GpsLocation gpsLocation;
+    joynr::types::QtGpsLocation gpsLocation;
     QVariant attributeValue = QVariant::fromValue(gpsLocation);
 
     SubscriptionRequest subscriptionRequest;
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    expectedPublication.setResponse(attributeValue);
+    QList<QVariant> response;
+    response.append(attributeValue);
+    expectedPublication.setResponse(response);
     // Expect a single attribute change to send a publication + one publication when registering sub request -> 2
     EXPECT_CALL(
                 mockPublicationSender,
@@ -437,7 +425,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval) {
             .Times(2);
 
     // Expect calls to register an unregister an attribute listener
-    QString attributeName = "Location";
+    std::string attributeName("Location");
     IAttributeListener* attributeListener;
 
     EXPECT_CALL(*mockTestRequestCaller,registerAttributeListener(attributeName, _))
@@ -452,14 +440,14 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval) {
     //SubscriptionRequest
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
-    //SubscriptionQos
+    //QtSubscriptionQos
     qint64 minInterval_ms = 500;
     qint64 validity_ms = 600;
-    QSharedPointer<SubscriptionQos> qos(new OnChangeSubscriptionQos(
+    QSharedPointer<QtSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
 
-    subscriptionRequest.setSubscribeToName(attributeName);
+    subscriptionRequest.setSubscribeToName(QString::fromStdString(attributeName));
     subscriptionRequest.setQos(qos);
     LOG_DEBUG(logger, "adding request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
@@ -491,18 +479,20 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
     MockPublicationSender mockPublicationSender2;
 
     // The attribute will change to this value
-    joynr::types::GpsLocation gpsLocation;
+    joynr::types::QtGpsLocation gpsLocation;
     QVariant attributeValue = QVariant::fromValue(gpsLocation);
 
     // Expect calls to register an unregister an attribute listener
-    QString attributeName = "Location";
+    std::string attributeName("Location");
     IAttributeListener* attributeListener;
 
     SubscriptionRequest subscriptionRequest;
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    expectedPublication.setResponse(attributeValue);
+    QList<QVariant> response;
+    response.append(attributeValue);
+    expectedPublication.setResponse(response);
     EXPECT_CALL(
                 mockPublicationSender,
                 sendSubscriptionPublication(
@@ -545,16 +535,16 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
     //SubscriptionRequest
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
-    //SubscriptionQos
+    //QtSubscriptionQos
     qint64 minInterval_ms = 100;
     qint64 validity_ms = 600;
-    QSharedPointer<OnChangeSubscriptionQos> qos(new OnChangeSubscriptionQos(
+    QSharedPointer<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
 
     qos->setExpiryDate(QDateTime::currentMSecsSinceEpoch() + 5000);
 
-    subscriptionRequest.setSubscribeToName(attributeName);
+    subscriptionRequest.setSubscribeToName(QString::fromStdString(attributeName));
     subscriptionRequest.setQos(qos);
     LOG_DEBUG(logger, "adding attribute subscription request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
@@ -614,18 +604,20 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // The attribute will change to this value
-    joynr::types::GpsLocation gpsLocation;
+    joynr::types::QtGpsLocation gpsLocation;
     QVariant attributeValue = QVariant::fromValue(gpsLocation);
 
     // Expect calls to register an unregister an attribute listener
-    QString attributeName = "Location";
+    std::string attributeName("Location");
     IAttributeListener* attributeListener;
 
     SubscriptionRequest subscriptionRequest;
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    expectedPublication.setResponse(attributeValue);
+    QList<QVariant> response;
+    response.append(attributeValue);
+    expectedPublication.setResponse(response);
     EXPECT_CALL(
                 mockPublicationSender,
                 sendSubscriptionPublication(
@@ -650,18 +642,18 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
     //SubscriptionRequest
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
-    //SubscriptionQos
+    //QtSubscriptionQos
     qint64 minInterval_ms = 50;
     qint64 validity_ms = 600;
     qint64 testRelExpiryDate = 500;
     qint64 testAbsExpiryDate = QDateTime::currentMSecsSinceEpoch() + testRelExpiryDate;
-    QSharedPointer<OnChangeSubscriptionQos> qos(new OnChangeSubscriptionQos(
+    QSharedPointer<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
 
     qos->setExpiryDate(testAbsExpiryDate);
 
-    subscriptionRequest.setSubscribeToName(attributeName);
+    subscriptionRequest.setSubscribeToName(QString::fromStdString(attributeName));
     subscriptionRequest.setQos(qos);
 
     LOG_DEBUG(logger, "adding attribute subscription request");
@@ -705,18 +697,20 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // The attribute will change to this value
-    joynr::types::GpsLocation gpsLocation;
+    joynr::types::QtGpsLocation gpsLocation;
     QVariant attributeValue = QVariant::fromValue(gpsLocation);
 
     // Expect calls to register an unregister an attribute listener
-    QString attributeName = "Location";
+    std::string attributeName("Location");
     IAttributeListener* attributeListener;
 
     SubscriptionRequest subscriptionRequest;
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    expectedPublication.setResponse(attributeValue);
+    QList<QVariant> response;
+    response.append(attributeValue);
+    expectedPublication.setResponse(response);
     EXPECT_CALL(
                 mockPublicationSender,
                 sendSubscriptionPublication(
@@ -741,19 +735,19 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
     //SubscriptionRequest
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
-    //SubscriptionQos
+    //QtSubscriptionQos
     qint64 minInterval_ms = 50;
     qint64 validity_ms = 600;
     qint64 testExpiryDate_shift = 2500;
     qint64 testRelExpiryDate = 500 + testExpiryDate_shift;
     qint64 testAbsExpiryDate = QDateTime::currentMSecsSinceEpoch() + testRelExpiryDate;
-    QSharedPointer<OnChangeSubscriptionQos> qos(new OnChangeSubscriptionQos(
+    QSharedPointer<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
 
     qos->setExpiryDate(testAbsExpiryDate);
 
-    subscriptionRequest.setSubscribeToName(attributeName);
+    subscriptionRequest.setSubscribeToName(QString::fromStdString(attributeName));
     subscriptionRequest.setQos(qos);
     LOG_DEBUG(logger, "adding attribute subscription request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
@@ -800,14 +794,14 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     MockPublicationSender mockPublicationSender2;
 
     // The broacast will fire this value
-    joynr::types::GpsLocation gpsLocation;
+    joynr::types::QtGpsLocation gpsLocation;
     QList<QVariant> broadcastValues;
     broadcastValues.append(QVariant::fromValue(gpsLocation));
 
-    QList<QSharedPointer<IBroadcastFilter> > filters;
+    QList<std::shared_ptr<IBroadcastFilter> > filters;
 
     // Expect calls to register an unregister an broadcast listener
-    QString broadcastName = "Location";
+    std::string broadcastName("Location");
     IBroadcastListener* broadcastListener;
 
     BroadcastSubscriptionRequest subscriptionRequest;
@@ -858,16 +852,16 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     //SubscriptionRequest
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
-    //SubscriptionQos
+    //QtSubscriptionQos
     qint64 minInterval_ms = 100;
     qint64 validity_ms = 600;
-    QSharedPointer<OnChangeSubscriptionQos> qos(new OnChangeSubscriptionQos(
+    QSharedPointer<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
 
     qos->setExpiryDate(QDateTime::currentMSecsSinceEpoch() + 5000);
 
-    subscriptionRequest.setSubscribeToName(broadcastName);
+    subscriptionRequest.setSubscribeToName(QString::fromStdString(broadcastName));
     subscriptionRequest.setQos(qos);
     LOG_DEBUG(logger, "adding broadcast subscription request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
@@ -920,14 +914,14 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // The value will be fired by the broadcast
-    joynr::types::GpsLocation gpsLocation;
+    joynr::types::QtGpsLocation gpsLocation;
     QList<QVariant> broadcastValues;
     broadcastValues.append(QVariant::fromValue(gpsLocation));
 
-    QList<QSharedPointer<IBroadcastFilter> > filters;
+    QList<std::shared_ptr<IBroadcastFilter> > filters;
 
     // Expect calls to register an unregister a broadcast listener
-    QString broadcastName = "Location";
+    std::string broadcastName("Location");
     IBroadcastListener* broadcastListener;
 
     BroadcastSubscriptionRequest subscriptionRequest;
@@ -960,18 +954,18 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     //SubscriptionRequest
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
-    //SubscriptionQos
+    //QtSubscriptionQos
     qint64 minInterval_ms = 50;
     qint64 validity_ms = 600;
     qint64 testRelExpiryDate = 500;
     qint64 testAbsExpiryDate = QDateTime::currentMSecsSinceEpoch() + testRelExpiryDate;
-    QSharedPointer<OnChangeSubscriptionQos> qos(new OnChangeSubscriptionQos(
+    QSharedPointer<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
 
     qos->setExpiryDate(testAbsExpiryDate);
 
-    subscriptionRequest.setSubscribeToName(broadcastName);
+    subscriptionRequest.setSubscribeToName(QString::fromStdString(broadcastName));
     subscriptionRequest.setQos(qos);
     LOG_DEBUG(logger, "add broadcast subscription request");
     publicationManager.add(senderId, receiverId, requestCaller, subscriptionRequest, &mockPublicationSender);
@@ -1008,14 +1002,14 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // The broadcast will fire this value
-    joynr::types::GpsLocation gpsLocation;
+    joynr::types::QtGpsLocation gpsLocation;
     QList<QVariant> broadcastValues;
     broadcastValues.append(QVariant::fromValue(gpsLocation));
 
-    QList<QSharedPointer<IBroadcastFilter> > filters;
+    QList<std::shared_ptr<IBroadcastFilter> > filters;
 
     // Expect calls to register an unregister a broadcast listener
-    QString broadcastName = "Location";
+    std::string broadcastName("Location");
     IBroadcastListener* broadcastListener;
 
     BroadcastSubscriptionRequest subscriptionRequest;
@@ -1048,19 +1042,19 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     //SubscriptionRequest
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
-    //SubscriptionQos
+    //QtSubscriptionQos
     qint64 minInterval_ms = 50;
     qint64 validity_ms = 600;
     qint64 testExpiryDate_shift = 2500;
     qint64 testRelExpiryDate = 500 + testExpiryDate_shift;
     qint64 testAbsExpiryDate = QDateTime::currentMSecsSinceEpoch() + testRelExpiryDate;
-    QSharedPointer<OnChangeSubscriptionQos> qos(new OnChangeSubscriptionQos(
+    QSharedPointer<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
 
     qos->setExpiryDate(testAbsExpiryDate);
 
-    subscriptionRequest.setSubscribeToName(broadcastName);
+    subscriptionRequest.setSubscribeToName(QString::fromStdString(broadcastName));
     subscriptionRequest.setQos(qos);
     LOG_DEBUG(logger, "adding broadcast subscription request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
@@ -1112,7 +1106,7 @@ TEST_F(PublicationManagerTest, remove_onChangeSubscription) {
             .Times(1);
 
     // Expect calls to register an unregister an attribute listener
-    QString attributeName = "Location";
+    std::string attributeName("Location");
     IAttributeListener* attributeListener;
 
     EXPECT_CALL(*mockTestRequestCaller,registerAttributeListener(attributeName, _))
@@ -1127,16 +1121,16 @@ TEST_F(PublicationManagerTest, remove_onChangeSubscription) {
     //SubscriptionRequest
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
-    //SubscriptionQos
+    //QtSubscriptionQos
     qint64 minInterval_ms = 1;
     qint64 validity_ms = 100;
-    QSharedPointer<SubscriptionQos> qos(new OnChangeSubscriptionQos(
+    QSharedPointer<QtSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
 
     // will be deleted by the publication manager
     SubscriptionRequest subscriptionRequest;
-    subscriptionRequest.setSubscribeToName(attributeName);
+    subscriptionRequest.setSubscribeToName(QString::fromStdString(attributeName));
     subscriptionRequest.setQos(qos);
     LOG_DEBUG(logger, "adding request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);

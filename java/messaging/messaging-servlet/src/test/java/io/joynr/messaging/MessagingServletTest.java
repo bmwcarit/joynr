@@ -39,8 +39,8 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.UUID;
 
-import joynr.chat.Message;
 import joynr.chat.MessengerSync;
+import joynr.chat.messagetypecollection.Message;
 
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.DefaultServlet;
@@ -65,15 +65,15 @@ import com.jayway.restassured.specification.RequestSpecification;
  * "de.bmw" packages to be seached for instances of AbstractJoynApplication which are then started. In this test,
  * ServletJoynChatApplication should be found and run. The ServletJoynChatApplication is a provider for the
  * chat.Messager interface.
- * 
+ *
  * NOTE: other classes implementing AbstractJoynApplication may also be found and started if they are on the classpath.
  * Classes that should not be loaded and started should TODO
- * 
+ *
  * This provider implementation prepends the senderId to the message. The test does a getMessage after the set, and
  * checks that the prepend indeed happened.
- * 
+ *
  * @author david.katz
- * 
+ *
  */
 public class MessagingServletTest {
 
@@ -105,7 +105,8 @@ public class MessagingServletTest {
         // String hostName = allMyIps[4].getHostAddress();
         String hostName = InetAddress.getLocalHost().getHostAddress();
 
-        System.getProperties().setProperty("hostPath", "http://" + hostName + ":" + port);
+        System.getProperties().setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH,
+                                           "http://" + hostName + ":" + port);
         logger.debug("setting hostPath to: http://" + hostName + ":" + port);
         serverDomain = "domain_" + UUID.randomUUID().toString();
         System.getProperties().setProperty(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, serverDomain);
@@ -178,7 +179,7 @@ public class MessagingServletTest {
 
     /**
      * initialize a RequestSpecification with the given timeout
-     * 
+     *
      * @param timeout_ms
      *            : a SocketTimeoutException will be thrown if no response is received in this many milliseconds
      * @return

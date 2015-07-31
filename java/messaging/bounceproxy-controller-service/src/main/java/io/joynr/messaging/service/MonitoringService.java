@@ -28,22 +28,22 @@ import java.util.List;
 
 /**
  * Interface for monitoring service implementation.
- * 
+ *
  * @author christina.strobel
- * 
+ *
  */
 public interface MonitoringService {
 
     /**
      * Returns a list of registered bounce proxies.
-     * 
-     * @return
+     *
+     * @return list of registered bounce proxies
      */
     public List<BounceProxyStatusInformation> getRegisteredBounceProxies();
 
     /**
      * Registers a new bounce proxy.
-     * 
+     *
      * @param bpId
      *            the ID of the bounce proxy
      * @param urlForCc
@@ -62,7 +62,7 @@ public interface MonitoringService {
      * have to take into account that any status measures for this bounce proxy
      * are the results of monitoring reports before shutdown or crash of the
      * bounce proxy.
-     * 
+     *
      * @param bpId
      *            the ID of the bounce proxy
      * @param urlForCc
@@ -76,7 +76,7 @@ public interface MonitoringService {
 
     /**
      * Updates performance measures for a bounce proxy.
-     * 
+     *
      * @param bpId
      *            the ID of the bounce proxy
      * @param performanceMeasures
@@ -86,7 +86,7 @@ public interface MonitoringService {
 
     /**
      * Updates status for a bounce proxy.
-     * 
+     *
      * @param bpId
      *            the ID of the bounce proxy
      * @param status
@@ -97,10 +97,11 @@ public interface MonitoringService {
     /**
      * Returns if a bounce proxy instance with the same ID has already been
      * registered.
-     * 
-     * @param bpId
-     * @return <code>true</code> if there's already a bounce proxy instance
-     *         registered with this ID or <code><code>false</code> if not.
+     *
+     * @param bpId the ID of the bounce proxy
+     * @return {@literal <code>true</code>} if there's already a bounce proxy
+     * instance registered with this ID or {@literal <code><code>false</code>}
+     * if not.
      */
     boolean isRegistered(String bpId);
 

@@ -19,8 +19,8 @@ package io.joynr.capabilities;
  * #L%
  */
 
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import io.joynr.dispatcher.RequestCaller;
@@ -89,29 +89,32 @@ public class CapabilitiesRegistrarTests {
     public void registerWithCapRegistrar() {
 
         when(provider.getProviderQos()).thenReturn(providerQos);
-        when(participantIdStorage.getProviderParticipantId(eq(domain), eq(ProvidedInterface.class), anyString())).thenReturn(participantId);
-        when(requestCallerFactory.create(provider, ProvidedInterface.class)).thenReturn(requestCaller);
+        doReturn(ProvidedInterface.class).when(provider).getProvidedInterface();
+        when(participantIdStorage.getProviderParticipantId(eq(domain), eq(ProvidedInterface.class))).thenReturn(participantId);
+        when(requestCallerFactory.create(provider)).thenReturn(requestCaller);
 
-        registrar.registerCapability(domain, provider, ProvidedInterface.class, "registerWithCapRegistrar");
-        verify(localCapabilitiesDirectory).add(eq(new CapabilityEntry(domain,
-                                                                      TestInterface.class,
-                                                                      providerQos,
-                                                                      participantId)));
-        verify(requestCallerFactory).create(provider, ProvidedInterface.class);
+        registrar.registerProvider(domain, provider);
+        verify(localCapabilitiesDirectory).add(eq(new CapabilityEntryImpl(domain,
+                                                                          TestInterface.INTERFACE_NAME,
+                                                                          providerQos,
+                                                                          participantId,
+                                                                          System.currentTimeMillis())));
+        verify(requestCallerFactory).create(provider);
 
         verify(dispatcher).addRequestCaller(participantId, requestCaller);
     }
 
     @Test
-    public void unregisterCapability() {
+    public void unregisterProvider() {
         when(provider.getProviderQos()).thenReturn(providerQos);
-        when(participantIdStorage.getProviderParticipantId(eq(domain), eq(ProvidedInterface.class), anyString())).thenReturn(participantId);
-        registrar.unregisterCapability(domain, provider, ProvidedInterface.class, "unregisterWithRegistrar");
+        when(participantIdStorage.getProviderParticipantId(eq(domain), eq(ProvidedInterface.class))).thenReturn(participantId);
+        registrar.unregisterProvider(domain, provider);
 
-        verify(localCapabilitiesDirectory).remove(eq(new CapabilityEntry(domain,
-                                                                         TestInterface.class,
-                                                                         providerQos,
-                                                                         participantId)));
+        verify(localCapabilitiesDirectory).remove(eq(new CapabilityEntryImpl(domain,
+                                                                             TestInterface.INTERFACE_NAME,
+                                                                             providerQos,
+                                                                             participantId,
+                                                                             System.currentTimeMillis())));
         verify(dispatcher).removeRequestCaller(eq(participantId));
     }
 

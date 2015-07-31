@@ -18,6 +18,7 @@
  */
 #include "common/dbus/DbusMessagingStubAdapter.h"
 #include "common/dbus/DbusMessagingUtil.h"
+#include "joynr/JoynrMessage.h"
 #include <CommonAPI/CommonAPI.h>
 
 namespace joynr
@@ -38,7 +39,9 @@ DbusMessagingStubAdapter::DbusMessagingStubAdapter(QString serviceAddress)
 
 void DbusMessagingStubAdapter::transmit(JoynrMessage& message)
 {
-    logMethodCall("transmit");
+    logMethodCall(QString("transmit message with ID: %1 and payload: %2")
+                          .arg(message.getHeaderMessageId())
+                          .arg(QString(message.getPayload())));
     // copy joynr message
     joynr::messaging::IMessaging::JoynrMessage dbusMsg;
     DbusMessagingUtil::copyJoynrMsgToDbusMsg(message, dbusMsg);

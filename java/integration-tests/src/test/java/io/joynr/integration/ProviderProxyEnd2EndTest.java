@@ -26,15 +26,13 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.dispatcher.rpc.Callback;
 import io.joynr.dispatcher.rpc.RequestStatusCode;
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 import io.joynr.exceptions.JoynrArbitrationException;
-import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrIllegalStateException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrTimeoutException;
 import io.joynr.exceptions.JoynrWaitExpiredException;
 import io.joynr.integration.util.DummyJoynrApplication;
@@ -42,37 +40,39 @@ import io.joynr.integration.util.ServersUtil;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.provider.Deferred;
+import io.joynr.provider.Promise;
+import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
-import io.joynr.pubsub.publication.AttributeListener;
-import io.joynr.pubsub.publication.BroadcastListener;
+import io.joynr.pubsub.publication.BroadcastFilter;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.PropertyLoader;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.Semaphore;
 
 import joynr.OnChangeSubscriptionQos;
-import joynr.tests.AnotherDerivedStruct;
-import joynr.tests.BaseStruct;
-import joynr.tests.ComplexTestType;
-import joynr.tests.ComplexTestType2;
 import joynr.tests.DefaulttestProvider;
-import joynr.tests.DerivedStruct;
-import joynr.tests.TestEnum;
+import joynr.tests.testAsync.MethodWithMultipleOutputParametersCallback;
 import joynr.tests.testBroadcastInterface.LocationUpdateWithSpeedBroadcastAdapter;
-import joynr.tests.testProviderAsync;
 import joynr.tests.testProxy;
-import joynr.types.GpsFixEnum;
-import joynr.types.GpsLocation;
-import joynr.types.ProviderQos;
-import joynr.types.Trip;
-import joynr.types.Vowel;
+import joynr.tests.testSync.MethodWithMultipleOutputParametersReturned;
+import joynr.tests.testtypes.AnotherDerivedStruct;
+import joynr.tests.testtypes.ComplexTestType;
+import joynr.tests.testtypes.ComplexTestType2;
+import joynr.tests.testtypes.DerivedStruct;
+import joynr.tests.testtypes.TestEnum;
+import joynr.types.localisation.GpsFixEnum;
+import joynr.types.localisation.GpsLocation;
+import joynr.types.localisation.Trip;
 
 import org.eclipse.jetty.server.Server;
 import org.junit.After;
@@ -91,13 +91,28 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ProviderProxyEnd2EndTest {
+public class ProviderProxyEnd2EndTest extends JoynrEnd2EndTest {
     private static final Logger logger = LoggerFactory.getLogger(ProviderProxyEnd2EndTest.class);
 
     private static final int CONST_DEFAULT_TEST_TIMEOUT = 3000;
     TestProvider provider;
     String domain;
     String domainAsync;
+
+    public static final String TEST_STRING = "Test String";
+    public static final Integer TEST_INTEGER = 633536;
+    private static final TestEnum TEST_ENUM = TestEnum.TWO;
+    public static final GpsLocation TEST_COMPLEXTYPE = new GpsLocation(1.0,
+                                                                       2.0,
+                                                                       2.5,
+                                                                       GpsFixEnum.MODE2D,
+                                                                       3.0,
+                                                                       4.0,
+                                                                       5.0,
+                                                                       6.0,
+                                                                       7L,
+                                                                       89L,
+                                                                       Integer.MAX_VALUE);
 
     long timeTookToRegisterProvider;
 
@@ -122,17 +137,25 @@ public class ProviderProxyEnd2EndTest {
 
     private static Server jettyServer;
 
+    private static Properties originalProperties;
+
     @BeforeClass
     public static void startServer() throws Exception {
-        jettyServer = ServersUtil.startServers();
+        originalProperties = System.getProperties();
+        System.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_SKIP_LONGPOLL_DEREGISTRATION, "true");
         // keep delays and timeout low for tests
         System.setProperty(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS, "10");
-        System.setProperty(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT, "1000");
+        System.setProperty(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT, "200");
+        System.setProperty(ConfigurableMessagingSettings.PROPERTY_ARBITRATION_MINIMUMRETRYDELAY, "200");
+
+        provisionDiscoveryDirectoryAccessControlEntries();
+        jettyServer = ServersUtil.startServers();
     }
 
     @AfterClass
     public static void stopServer() throws Exception {
         jettyServer.stop();
+        System.setProperties(originalProperties);
     }
 
     @Before
@@ -141,6 +164,11 @@ public class ProviderProxyEnd2EndTest {
         // prints the tests name in the log so we know what we are testing
         String methodName = name.getMethodName();
         logger.info(methodName + " setup beginning...");
+
+        domain = "ProviderProxyEnd2EndTest." + name.getMethodName() + System.currentTimeMillis();
+        domainAsync = domain + "Async";
+        provisionPermissiveAccessControlEntry(domain, TestProvider.INTERFACE_NAME);
+        provisionPermissiveAccessControlEntry(domainAsync, TestProvider.INTERFACE_NAME);
 
         // use channelNames = test name
         String channelIdProvider = "JavaTest-" + methodName + UUID.randomUUID().getLeastSignificantBits()
@@ -154,7 +182,8 @@ public class ProviderProxyEnd2EndTest {
         joynrConfigProvider.put(MessagingPropertyKeys.CHANNELID, channelIdProvider);
         joynrConfigProvider.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
 
-        dummyProviderApplication = (DummyJoynrApplication) new JoynrInjectorFactory(joynrConfigProvider).createApplication(DummyJoynrApplication.class);
+        dummyProviderApplication = (DummyJoynrApplication) new JoynrInjectorFactory(joynrConfigProvider,
+                                                                                    new StaticDomainAccessControlProvisioningModule()).createApplication(DummyJoynrApplication.class);
 
         Properties joynrConfigConsumer = PropertyLoader.loadProperties("testMessaging.properties");
         joynrConfigConsumer.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, "localdomain."
@@ -165,21 +194,19 @@ public class ProviderProxyEnd2EndTest {
         dummyConsumerApplication = (DummyJoynrApplication) new JoynrInjectorFactory(joynrConfigConsumer).createApplication(DummyJoynrApplication.class);
 
         provider = new TestProvider();
-        domain = "ProviderProxyEnd2EndTest." + name.getMethodName() + System.currentTimeMillis();
 
         providerAsync = new TestAsyncProviderImpl();
-        domainAsync = domain + "Async";
 
         // check that registerProvider does not block
         long startTime = System.currentTimeMillis();
         dummyProviderApplication.getRuntime()
-                                .registerCapability(domain, provider, joynr.tests.testProvider.class, "authToken")
+                                .registerProvider(domain, provider)
                                 .waitForFullRegistration(CONST_DEFAULT_TEST_TIMEOUT);
         long endTime = System.currentTimeMillis();
         timeTookToRegisterProvider = endTime - startTime;
 
         dummyProviderApplication.getRuntime()
-                                .registerCapability(domainAsync, providerAsync, testProviderAsync.class, "authToken")
+                                .registerProvider(domainAsync, providerAsync)
                                 .waitForFullRegistration(CONST_DEFAULT_TEST_TIMEOUT);
 
         messagingQos = new MessagingQos(5000);
@@ -211,25 +238,48 @@ public class ProviderProxyEnd2EndTest {
         public TestProvider() {
         }
 
+        // change visibility from protected to public for testing purposes
         @Override
-        public Integer methodWithEnumParameter(TestEnum input) {
-            if (TestEnum.ONE.equals(input))
-                return 1;
-            if (TestEnum.TWO.equals(input))
-                return 2;
-            if (TestEnum.ZERO.equals(input))
-                return 0;
-
-            return 42;
+        public void fireBroadcast(String broadcastName, List<BroadcastFilter> broadcastFilters, Object... values) {
+            super.fireBroadcast(broadcastName, broadcastFilters, values);
         }
 
         @Override
-        public Integer addNumbers(Integer first, Integer second, Integer third) {
-            return first + second + third;
+        public Promise<MethodWithMultipleOutputParametersDeferred> methodWithMultipleOutputParameters() {
+            MethodWithMultipleOutputParametersDeferred deferred = new MethodWithMultipleOutputParametersDeferred();
+            String aString = TEST_STRING;
+            Integer aNumber = TEST_INTEGER;
+            GpsLocation aComplexDataType = TEST_COMPLEXTYPE;
+            TestEnum anEnumResult = TEST_ENUM;
+            deferred.resolve(aString, aNumber, aComplexDataType, anEnumResult);
+            return new Promise<MethodWithMultipleOutputParametersDeferred>(deferred);
         }
 
         @Override
-        public String waitTooLong(Long ttl_ms) {
+        public Promise<MethodWithEnumParameterDeferred> methodWithEnumParameter(TestEnum input) {
+            MethodWithEnumParameterDeferred deferred = new MethodWithEnumParameterDeferred();
+            if (TestEnum.ONE.equals(input)) {
+                deferred.resolve(1);
+            } else if (TestEnum.TWO.equals(input)) {
+                deferred.resolve(2);
+            } else if (TestEnum.ZERO.equals(input)) {
+                deferred.resolve(0);
+            } else {
+                deferred.resolve(42);
+            }
+            return new Promise<MethodWithEnumParameterDeferred>(deferred);
+        }
+
+        @Override
+        public Promise<AddNumbersDeferred> addNumbers(Integer first, Integer second, Integer third) {
+            AddNumbersDeferred deferred = new AddNumbersDeferred();
+            deferred.resolve(first + second + third);
+            return new Promise<AddNumbersDeferred>(deferred);
+        }
+
+        @Override
+        public Promise<WaitTooLongDeferred> waitTooLong(Long ttl_ms) {
+            WaitTooLongDeferred deferred = new WaitTooLongDeferred();
             String returnString = "";
             long enteredAt = System.currentTimeMillis();
             try {
@@ -237,401 +287,87 @@ public class ProviderProxyEnd2EndTest {
             } catch (InterruptedException e) {
                 returnString += "InterruptedException... ";
             }
-            return returnString + "time: " + (System.currentTimeMillis() - enteredAt);
+            deferred.resolve(returnString + "time: " + (System.currentTimeMillis() - enteredAt));
+            return new Promise<WaitTooLongDeferred>(deferred);
         }
 
         @Override
-        public List<TestEnum> methodWithEnumListReturn(Integer input) {
-            return Arrays.asList(new TestEnum[]{ TestEnum.ordinalToEnumValues.get(input) });
+        public Promise<MethodWithEnumListReturnDeferred> methodWithEnumListReturn(Integer input) {
+            MethodWithEnumListReturnDeferred deferred = new MethodWithEnumListReturnDeferred();
+            deferred.resolve(Arrays.asList(new TestEnum[]{ TestEnum.getEnumValue(input) }));
+            return new Promise<MethodWithEnumListReturnDeferred>(deferred);
         }
 
         @Override
-        public String sayHello() {
-            return "Hello";
+        public Promise<SayHelloDeferred> sayHello() {
+            SayHelloDeferred deferred = new SayHelloDeferred();
+            deferred.resolve("Hello");
+            return new Promise<SayHelloDeferred>(deferred);
         }
 
         @Override
-        public String toLowerCase(String inputString) {
-            return inputString.toLowerCase();
+        public Promise<ToLowerCaseDeferred> toLowerCase(String inputString) {
+            ToLowerCaseDeferred deferred = new ToLowerCaseDeferred();
+            deferred.resolve(inputString.toLowerCase());
+            return new Promise<ToLowerCaseDeferred>(deferred);
         }
 
         @Override
-        public Trip optimizeTrip(Trip input) {
-            return input;
+        public Promise<OptimizeTripDeferred> optimizeTrip(Trip input) {
+            OptimizeTripDeferred deferred = new OptimizeTripDeferred();
+            deferred.resolve(input);
+            return new Promise<OptimizeTripDeferred>(deferred);
         }
 
         @Override
-        public String overloadedOperation(DerivedStruct s) {
-            return "DerivedStruct";
+        public Promise<OverloadedOperation1Deferred> overloadedOperation(DerivedStruct s) {
+            OverloadedOperation1Deferred deferred = new OverloadedOperation1Deferred();
+            deferred.resolve("DerivedStruct");
+            return new Promise<OverloadedOperation1Deferred>(deferred);
         }
 
         @Override
-        public String overloadedOperation(AnotherDerivedStruct s) {
-            return "AnotherDerivedStruct";
+        public Promise<OverloadedOperation1Deferred> overloadedOperation(AnotherDerivedStruct s) {
+            OverloadedOperation1Deferred deferred = new OverloadedOperation1Deferred();
+            deferred.resolve("AnotherDerivedStruct");
+            return new Promise<OverloadedOperation1Deferred>(deferred);
         }
 
         @Override
-        public ComplexTestType overloadedOperation(String input) {
+        public Promise<OverloadedOperation2Deferred> overloadedOperation(String input) {
+            OverloadedOperation2Deferred deferred = new OverloadedOperation2Deferred();
             int result = Integer.parseInt(input);
-            return new ComplexTestType(result, result);
+            deferred.resolve(new ComplexTestType(result, result));
+            return new Promise<OverloadedOperation2Deferred>(deferred);
         }
 
         @Override
-        public ComplexTestType2 overloadedOperation(String input1, String input2) {
-            return new ComplexTestType2(Integer.parseInt(input1), Integer.parseInt(input2));
-        }
-
-        @Override
-        public void voidOperation() {
-            super.voidOperation();
+        public Promise<OverloadedOperation3Deferred> overloadedOperation(String input1, String input2) {
+            OverloadedOperation3Deferred deferred = new OverloadedOperation3Deferred();
+            deferred.resolve(new ComplexTestType2(Integer.parseInt(input1), Integer.parseInt(input2)));
+            return new Promise<OverloadedOperation3Deferred>(deferred);
         }
     }
 
-    protected static class TestAsyncProviderImpl implements testProviderAsync {
+    protected static class TestAsyncProviderImpl extends DefaulttestProvider {
 
-        private ProviderQos providerQos = new ProviderQos();
-        private TestEnum enumAttribute;
-        private GpsLocation location = new GpsLocation();
-        private Trip myTrip = new Trip();
-        private List<String> listOfStrings;
-        private Integer testAttribute;
-        private GpsLocation complexTestAttribute;
-
-        @Override
-        public ProviderQos getProviderQos() {
-            return providerQos;
-        }
-
-        @Override
-        public void registerAttributeListener(String attributeName, AttributeListener attributeListener) {
-        }
-
-        @Override
-        public void unregisterAttributeListener(String attributeName, AttributeListener attributeListener) {
-        }
-
-        @Override
-        public void registerBroadcastListener(String broadcastName, BroadcastListener broadcastListener) {
-        }
-
-        @Override
-        public void unregisterBroadcastListener(String broadcastName, BroadcastListener broadcastListener) {
-        }
-
-        @Override
-        public void getEnumAttribute(@JoynrRpcCallback(deserialisationType = TestEnumToken.class) Callback<TestEnum> callback) {
-            callback.onSuccess(enumAttribute);
-        }
-
-        @Override
-        public void setEnumAttribute(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                     @JoynrRpcParam(value = "enumAttribute", deserialisationType = TestEnumToken.class) TestEnum enumAttribute) {
-            this.enumAttribute = enumAttribute;
-            callback.onSuccess(null);
-        }
-
-        @Override
-        public void getLocation(@JoynrRpcCallback(deserialisationType = GpsLocationToken.class) Callback<GpsLocation> callback) {
-            callback.onSuccess(location);
-        }
-
-        @Override
-        public void getMytrip(@JoynrRpcCallback(deserialisationType = TripToken.class) Callback<Trip> callback) {
-            callback.onSuccess(myTrip);
-        }
-
-        @Override
-        public void getYourLocation(@JoynrRpcCallback(deserialisationType = GpsLocationToken.class) Callback<GpsLocation> callback) {
-            callback.onSuccess(new GpsLocation());
-        }
-
-        @Override
-        public void getFirstPrime(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback) {
-            callback.onSuccess(10);
-        }
-
-        @Override
-        public void getListOfInts(@JoynrRpcCallback(deserialisationType = ListIntegerToken.class) Callback<List<Integer>> callback) {
-            callback.onSuccess(new ArrayList<Integer>());
-        }
-
-        @Override
-        public void getListOfLocations(@JoynrRpcCallback(deserialisationType = ListGpsLocationToken.class) Callback<List<GpsLocation>> callback) {
-            callback.onSuccess(new ArrayList<GpsLocation>());
-        }
-
-        @Override
-        public void getListOfStrings(@JoynrRpcCallback(deserialisationType = ListStringToken.class) Callback<List<String>> callback) {
-            callback.onSuccess(listOfStrings);
-        }
-
-        @Override
-        public void setListOfStrings(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                     @JoynrRpcParam(value = "listOfStrings", deserialisationType = ListStringToken.class) List<String> listOfStrings) {
-            this.listOfStrings = listOfStrings;
-            callback.onSuccess(null);
-        }
-
-        @Override
-        public void getTestAttribute(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback) {
-            callback.onSuccess(testAttribute);
-        }
-
-        @Override
-        public void setTestAttribute(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                     @JoynrRpcParam(value = "testAttribute", deserialisationType = IntegerToken.class) Integer testAttribute) {
-            this.testAttribute = testAttribute;
-            callback.onSuccess(null);
-        }
-
-        @Override
-        public void getComplexTestAttribute(@JoynrRpcCallback(deserialisationType = GpsLocationToken.class) Callback<GpsLocation> callback) {
-            callback.onSuccess(complexTestAttribute);
-        }
-
-        @Override
-        public void setComplexTestAttribute(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                            @JoynrRpcParam(value = "complexTestAttribute", deserialisationType = GpsLocationToken.class) GpsLocation complexTestAttribute) {
-            this.complexTestAttribute = complexTestAttribute;
-            callback.onSuccess(null);
-        }
-
-        @Override
-        public void getReadWriteAttribute(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback) {
-        }
-
-        @Override
-        public void setReadWriteAttribute(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                          @JoynrRpcParam(value = "readWriteAttribute", deserialisationType = IntegerToken.class) Integer readWriteAttribute) {
-        }
-
-        @Override
-        public void getReadOnlyAttribute(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback) {
-        }
-
-        @Override
-        public void getWriteOnly(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback) {
-        }
-
-        @Override
-        public void setWriteOnly(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                 @JoynrRpcParam(value = "writeOnly", deserialisationType = IntegerToken.class) Integer writeOnly) {
-        }
-
-        @Override
-        public void getNotifyWriteOnly(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback) {
-        }
-
-        @Override
-        public void setNotifyWriteOnly(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                       @JoynrRpcParam(value = "notifyWriteOnly", deserialisationType = IntegerToken.class) Integer notifyWriteOnly) {
-        }
-
-        @Override
-        public void getNotifyReadOnly(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback) {
-        }
-
-        @Override
-        public void getNotifyReadWrite(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback) {
-        }
-
-        @Override
-        public void setNotifyReadWrite(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                       @JoynrRpcParam(value = "notifyReadWrite", deserialisationType = IntegerToken.class) Integer notifyReadWrite) {
-        }
-
-        @Override
-        public void getNotify(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback) {
-        }
-
-        @Override
-        public void setNotify(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                              @JoynrRpcParam(value = "notify", deserialisationType = IntegerToken.class) Integer notify) {
-        }
-
-        @Override
-        public void getATTRIBUTEWITHCAPITALLETTERS(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback) {
-        }
-
-        @Override
-        public void setATTRIBUTEWITHCAPITALLETTERS(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                                   @JoynrRpcParam(value = "aTTRIBUTEWITHCAPITALLETTERS", deserialisationType = IntegerToken.class) Integer aTTRIBUTEWITHCAPITALLETTERS) {
-        }
-
-        @Override
-        public void addNumbers(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback,
-                               @JoynrRpcParam("first") Integer first,
-                               @JoynrRpcParam("second") Integer second,
-                               @JoynrRpcParam("third") Integer third) {
-        }
-
-        @Override
-        public void sumInts(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback,
-                            @JoynrRpcParam(value = "ints", deserialisationType = ListIntegerToken.class) List<Integer> ints) {
-        }
-
-        @Override
-        public void methodWithNoInputParameters(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback) {
-        }
-
-        @Override
-        public void methodWithEnumParameter(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback,
-                                            @JoynrRpcParam("input") TestEnum input) {
-        }
-
-        @Override
-        public void methodWithEnumListParameter(@JoynrRpcCallback(deserialisationType = IntegerToken.class) Callback<Integer> callback,
-                                                @JoynrRpcParam(value = "input", deserialisationType = ListTestEnumToken.class) List<TestEnum> input) {
-        }
-
-        @Override
-        public void methodWithEnumReturn(@JoynrRpcCallback(deserialisationType = TestEnumToken.class) Callback<TestEnum> callback,
-                                         @JoynrRpcParam("input") Integer input) {
-        }
-
-        @Override
-        public void methodWithEnumListReturn(@JoynrRpcCallback(deserialisationType = ListTestEnumToken.class) Callback<List<TestEnum>> callback,
-                                             @JoynrRpcParam("input") Integer input) {
-        }
-
-        @Override
-        public void methodWithByteArray(@JoynrRpcCallback(deserialisationType = ListByteToken.class) Callback<List<Byte>> callback,
-                                        @JoynrRpcParam(value = "input", deserialisationType = ListByteToken.class) List<Byte> input) {
-        }
-
-        @Override
-        public void methodEnumDoubleParameters(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                               @JoynrRpcParam("enumParam") TestEnum enumParam,
-                                               @JoynrRpcParam("doubleParam") Double doubleParam) {
-        }
-
-        @Override
-        public void methodWithEnumReturnValue(Callback<TestEnum> callback) {
-            callback.onSuccess(TestEnum.TWO);
-        }
-
-        @Override
-        public void getEnumAttributeReadOnly(Callback<TestEnum> callback) {
-            callback.onSuccess(TestEnum.ONE);
-        }
-
-        @Override
-        public void methodStringDoubleParameters(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                                 @JoynrRpcParam("stringParam") String stringParam,
-                                                 @JoynrRpcParam("doubleParam") Double doubleParam) {
-            callback.onSuccess(null);
-        }
-
-        @Override
-        public void methodCustomCustomParameters(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                                 @JoynrRpcParam("customParam1") ComplexTestType customParam1,
-                                                 @JoynrRpcParam("customParam2") ComplexTestType2 customParam2) {
-        }
-
-        @Override
-        public void methodStringDoubleListParameters(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                                     @JoynrRpcParam("stringParam") String stringParam,
-                                                     @JoynrRpcParam(value = "doubleListParam", deserialisationType = ListDoubleToken.class) List<Double> doubleListParam) {
-        }
-
-        @Override
-        public void methodCustomCustomListParameters(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                                     @JoynrRpcParam("customParam") ComplexTestType customParam,
-                                                     @JoynrRpcParam(value = "customListParam", deserialisationType = ListComplexTestType2Token.class) List<ComplexTestType2> customListParam) {
-        }
-
-        @Override
-        public void customTypeAndListParameter(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                               @JoynrRpcParam("complexTestType") ComplexTestType complexTestType,
-                                               @JoynrRpcParam(value = "complexArray", deserialisationType = ListBaseStructToken.class) List<BaseStruct> complexArray) {
-        }
-
-        @Override
-        public void voidOperation(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback) {
-        }
-
-        @Override
-        public void stringAndBoolParameters(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                            @JoynrRpcParam("stringParam") String stringParam,
-                                            @JoynrRpcParam("boolParam") Boolean boolParam) {
-        }
-
-        @Override
-        public void returnPrimeNumbers(@JoynrRpcCallback(deserialisationType = ListIntegerToken.class) Callback<List<Integer>> callback,
-                                       @JoynrRpcParam("upperBound") Integer upperBound) {
-        }
-
-        @Override
-        public void optimizeTrip(@JoynrRpcCallback(deserialisationType = TripToken.class) Callback<Trip> callback,
-                                 @JoynrRpcParam("input") Trip input) {
-        }
-
-        @Override
-        public void overloadedOperation(@JoynrRpcCallback(deserialisationType = StringToken.class) Callback<String> callback,
-                                        @JoynrRpcParam("input") DerivedStruct input) {
-        }
-
-        @Override
-        public void overloadedOperation(@JoynrRpcCallback(deserialisationType = StringToken.class) Callback<String> callback,
-                                        @JoynrRpcParam("input") AnotherDerivedStruct input) {
-        }
-
-        @Override
-        public void overloadedOperation(@JoynrRpcCallback(deserialisationType = ComplexTestTypeToken.class) Callback<ComplexTestType> callback,
-                                        @JoynrRpcParam("input") String input) {
-        }
-
-        @Override
-        public void overloadedOperation(@JoynrRpcCallback(deserialisationType = ComplexTestType2Token.class) Callback<ComplexTestType2> callback,
-                                        @JoynrRpcParam("input1") String input1,
-                                        @JoynrRpcParam("input2") String input2) {
-        }
-
-        @Override
-        public void optimizeLocations(@JoynrRpcCallback(deserialisationType = ListGpsLocationToken.class) Callback<List<GpsLocation>> callback,
-                                      @JoynrRpcParam(value = "input", deserialisationType = ListGpsLocationToken.class) List<GpsLocation> input) {
-        }
-
-        @Override
-        public void toLowerCase(@JoynrRpcCallback(deserialisationType = StringToken.class) Callback<String> callback,
-                                @JoynrRpcParam("inputString") String inputString) {
-        }
-
-        @Override
-        public void waitTooLong(@JoynrRpcCallback(deserialisationType = StringToken.class) Callback<String> callback,
-                                @JoynrRpcParam("ttl_ms") Long ttl_ms) {
-        }
-
-        @Override
-        public void sayHello(@JoynrRpcCallback(deserialisationType = StringToken.class) Callback<String> callback) {
-        }
-
-        @Override
-        public void checkVowel(@JoynrRpcCallback(deserialisationType = BooleanToken.class) Callback<Boolean> callback,
-                               @JoynrRpcParam("inputVowel") Vowel inputVowel) {
-        }
-
-        @Override
-        public void optimizeLocationList(@JoynrRpcCallback(deserialisationType = ListGpsLocationToken.class) Callback<List<GpsLocation>> callback,
-                                         @JoynrRpcParam(value = "inputList", deserialisationType = ListGpsLocationToken.class) List<GpsLocation> inputList) {
-        }
-
-        @Override
-        public void setLocation(Callback<Void> callback, GpsLocation location) {
-        }
-
         @Override
-        public void setFirstPrime(Callback<Void> callback, Integer firstPrime) {
+        public Promise<MethodWithEnumReturnValueDeferred> methodWithEnumReturnValue() {
+            MethodWithEnumReturnValueDeferred deferred = new MethodWithEnumReturnValueDeferred();
+            deferred.resolve(TestEnum.TWO);
+            return new Promise<MethodWithEnumReturnValueDeferred>(deferred);
         }
 
         @Override
-        public void setListOfInts(Callback<Void> callback, List<Integer> listOfInts) {
+        public Promise<Deferred<TestEnum>> getEnumAttributeReadOnly() {
+            Deferred<TestEnum> deferred = new Deferred<TestEnum>();
+            deferred.resolve(TestEnum.ONE);
+            return new Promise<Deferred<TestEnum>>(deferred);
         }
 
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
-    @Ignore
     public void registerProviderCreateProxyAndCallMethod() throws JoynrArbitrationException,
                                                           JoynrIllegalStateException, InterruptedException {
         int result;
@@ -644,7 +380,6 @@ public class ProviderProxyEnd2EndTest {
 
     }
 
-    @Ignore
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void sendObjectsAsArgumentAndReturnValue() throws JoynrArbitrationException, JoynrIllegalStateException,
                                                      InterruptedException {
@@ -676,7 +411,7 @@ public class ProviderProxyEnd2EndTest {
         Assert.assertEquals(RequestStatusCode.OK, future.getStatus().getCode());
         String expected = "Hello";
         Assert.assertEquals(expected, answer);
-        verify(callback).onSuccess(expected);
+        verify(callback).resolve(expected);
         verifyNoMoreInteractions(callback);
 
         @SuppressWarnings("unchecked")
@@ -688,8 +423,88 @@ public class ProviderProxyEnd2EndTest {
         String expected2 = "argument";
 
         Assert.assertEquals(expected2, answer2);
-        verify(callback2).onSuccess(expected2);
+        verify(callback2).resolve(expected2);
         verifyNoMoreInteractions(callback2);
+
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void calledMethodReturnsMultipleOutputParameters() throws Exception {
+        ProxyBuilder<testProxy> proxyBuilder = dummyConsumerApplication.getRuntime().getProxyBuilder(domain,
+                                                                                                     testProxy.class);
+        testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        MethodWithMultipleOutputParametersReturned result = proxy.methodWithMultipleOutputParameters();
+        assertEquals(TEST_INTEGER, result.aNumber);
+        assertEquals(TEST_STRING, result.aString);
+        assertEquals(TEST_COMPLEXTYPE, result.aComplexDataType);
+        assertEquals(TEST_ENUM, result.anEnumResult);
+
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void calledMethodReturnsMultipleOutputParametersAsyncCallback() throws Exception {
+        ProxyBuilder<testProxy> proxyBuilder = dummyConsumerApplication.getRuntime().getProxyBuilder(domain,
+                                                                                                     testProxy.class);
+        testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+
+        final Object untilCallbackFinished = new Object();
+        final Map<String, Object> result = new HashMap<String, Object>();
+
+        proxy.methodWithMultipleOutputParameters(new MethodWithMultipleOutputParametersCallback() {
+
+            @Override
+            public void onFailure(JoynrRuntimeException error) {
+                logger.error("error in calledMethodReturnsMultipleOutputParametersAsyncCallback", error);
+            }
+
+            @Override
+            public void onSuccess(String aString, Integer aNumber, GpsLocation aComplexDataType, TestEnum anEnumResult) {
+                result.put("receivedString", aString);
+                result.put("receivedNumber", aNumber);
+                result.put("receivedComplexDataType", aComplexDataType);
+                result.put("receivedEnum", anEnumResult);
+                synchronized (untilCallbackFinished) {
+                    untilCallbackFinished.notify();
+                }
+            }
+        });
+
+        synchronized (untilCallbackFinished) {
+            untilCallbackFinished.wait(CONST_DEFAULT_TEST_TIMEOUT);
+        }
+
+        assertEquals(TEST_INTEGER, result.get("receivedNumber"));
+        assertEquals(TEST_STRING, result.get("receivedString"));
+        assertEquals(TEST_COMPLEXTYPE, result.get("receivedComplexDataType"));
+        assertEquals(TEST_ENUM, result.get("receivedEnum"));
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void calledMethodReturnsMultipleOutputParametersAsyncFuture() throws Exception {
+        ProxyBuilder<testProxy> proxyBuilder = dummyConsumerApplication.getRuntime().getProxyBuilder(domain,
+                                                                                                     testProxy.class);
+        testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+
+        Future<MethodWithMultipleOutputParametersReturned> future = proxy.methodWithMultipleOutputParameters(new MethodWithMultipleOutputParametersCallback() {
+            @Override
+            public void onFailure(JoynrRuntimeException error) {
+                logger.error("error in calledMethodReturnsMultipleOutputParametersAsyncCallback", error);
+            }
+
+            @Override
+            public void onSuccess(String aString, Integer aNumber, GpsLocation aComplexDataType, TestEnum anEnumResult) {
+                Assert.assertEquals(TEST_INTEGER, aNumber);
+                Assert.assertEquals(TEST_STRING, aString);
+                Assert.assertEquals(TEST_COMPLEXTYPE, aComplexDataType);
+                Assert.assertEquals(TEST_ENUM, anEnumResult);
+            }
+        });
+
+        MethodWithMultipleOutputParametersReturned reply = future.getReply();
+        Assert.assertEquals(TEST_INTEGER, reply.aNumber);
+        Assert.assertEquals(TEST_STRING, reply.aString);
+        Assert.assertEquals(TEST_COMPLEXTYPE, reply.aComplexDataType);
+        Assert.assertEquals(TEST_ENUM, reply.anEnumResult);
 
     }
 
@@ -723,7 +538,7 @@ public class ProviderProxyEnd2EndTest {
         }
         Assert.assertEquals(true, timeoutExceptionThrown);
         Assert.assertEquals(RequestStatusCode.ERROR, waitTooLongFuture.getStatus().getCode());
-        verify(callback).onFailure(any(JoynrException.class));
+        verify(callback).onFailure(any(JoynrRuntimeException.class));
         verifyNoMoreInteractions(callback);
 
     }
@@ -742,7 +557,6 @@ public class ProviderProxyEnd2EndTest {
 
     }
 
-    @Ignore
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void testVoidOperation() throws JoynrArbitrationException, JoynrIllegalStateException, InterruptedException {
         ProxyBuilder<testProxy> proxyBuilder = dummyConsumerApplication.getRuntime().getProxyBuilder(domain,
@@ -758,8 +572,8 @@ public class ProviderProxyEnd2EndTest {
             }
 
             @Override
-            public void onFailure(JoynrException error) {
-                future.onFailure(new JoynrException());
+            public void onFailure(JoynrRuntimeException error) {
+                future.onFailure(error);
             }
 
         });
@@ -768,7 +582,7 @@ public class ProviderProxyEnd2EndTest {
         assertTrue(reply);
     }
 
-    @Test
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void testAsyncProviderCall() {
         ProxyBuilder<testProxy> proxyBuilder = dummyConsumerApplication.getRuntime().getProxyBuilder(domainAsync,
                                                                                                      testProxy.class);
@@ -877,7 +691,7 @@ public class ProviderProxyEnd2EndTest {
         Assert.assertEquals(RequestStatusCode.OK, future.getStatus().getCode());
         String expected = "argument";
         Assert.assertEquals(expected, answer);
-        verify(callback).onSuccess(expected);
+        verify(callback).resolve(expected);
         verifyNoMoreInteractions(callback);
 
     }
@@ -895,7 +709,7 @@ public class ProviderProxyEnd2EndTest {
         Assert.assertEquals(RequestStatusCode.OK, future.getStatus().getCode());
         Integer expected = 6;
         Assert.assertEquals(expected, reply);
-        verify(callbackInteger).onSuccess(expected);
+        verify(callbackInteger).resolve(expected);
         verifyNoMoreInteractions(callbackInteger);
 
     }
@@ -913,7 +727,7 @@ public class ProviderProxyEnd2EndTest {
         Integer expected = 2;
         Assert.assertEquals(RequestStatusCode.OK, future.getStatus().getCode());
         Assert.assertEquals(expected, reply);
-        verify(callbackInteger).onSuccess(expected);
+        verify(callbackInteger).resolve(expected);
         verifyNoMoreInteractions(callbackInteger);
 
     }

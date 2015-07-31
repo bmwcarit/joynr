@@ -18,17 +18,21 @@ package io.joynr.generator.cpp.inprocess
  */
 
 import com.google.inject.Inject
-import org.franca.core.franca.FInterface
+import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.InterfaceSubscriptionUtil
 import io.joynr.generator.cpp.util.InterfaceUtil
-import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
+import org.franca.core.franca.FInterface
 
 class InterfaceInProcessConnectorHTemplate implements InterfaceTemplate{
 
 	@Inject
 	private extension TemplateBase
+
+	@Inject
+	private extension CppStdTypeUtil
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
@@ -39,116 +43,139 @@ class InterfaceInProcessConnectorHTemplate implements InterfaceTemplate{
 	@Inject
 	private extension InterfaceSubscriptionUtil
 
-	override  generate(FInterface serviceInterface){
-		val interfaceName = serviceInterface.joynrName
-		val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+"_"+interfaceName+"InProcessConnector_h").toUpperCase
-		'''
-		«warning()»
+	override  generate(FInterface serviceInterface)
+'''
+«val interfaceName = serviceInterface.joynrName»
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+
+	"_"+interfaceName+"InProcessConnector_h").toUpperCase»
+«warning()»
 
-		#ifndef «headerGuard»
-		#define «headerGuard»
+#ifndef «headerGuard»
+#define «headerGuard»
 
-		#include "joynr/PrivateCopyAssign.h"
-		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName»Connector.h"
-		#include "joynr/InProcessPublicationSender.h"
-		#include "joynr/InProcessConnectorFactory.h"
-		#include "joynr/SubscriptionRequest.h"
-		#include "joynr/BroadcastSubscriptionRequest.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName»Connector.h"
+#include "joynr/InProcessPublicationSender.h"
+#include "joynr/InProcessConnectorFactory.h"
+#include "joynr/SubscriptionRequest.h"
+#include "joynr/BroadcastSubscriptionRequest.h"
+#include "joynr/SubscriptionQos.h"
+#include "joynr/OnChangeSubscriptionQos.h"
 
-		#include <QString>
-		#include <QSharedPointer>
+#include <QSharedPointer>
+#include "joynr/TypeUtil.h"
 
-		namespace joynr {
-		    class RequestStatus;
-		    class InProcessAddress;
-		    class SubscriptionManager;
-		    class PublicationManager;
-		}
+«FOR parameterType: getRequiredIncludesFor(serviceInterface).addElements(includeForString)»
+	#include «parameterType»
+«ENDFOR»
+#include <memory>
 
-		«getNamespaceStarter(serviceInterface)»
+namespace joynr {
+	class RequestStatus;
+	class InProcessAddress;
+	class ISubscriptionManager;
+	class PublicationManager;
+}
 
-		class «interfaceName»InProcessConnector : public I«interfaceName»Connector {
-		private:
-		«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.notifiable]»
-		«val returnType = getMappedDatatypeOrList(attribute)»
-		    QString subscribeTo«attribute.joynrName.toFirstUpper»(
-		                QSharedPointer<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-		                QSharedPointer<joynr::SubscriptionQos> subscriptionQos,
-		                SubscriptionRequest& subscriptionRequest);
-		«ENDFOR»
-		«FOR broadcast: serviceInterface.broadcasts»
-		«val returnTypes = getMappedOutputParameterTypesCommaSeparated(broadcast)»
-		«val broadcastName = broadcast.joynrName»
-		    QString subscribeTo«broadcastName.toFirstUpper»Broadcast(
-		            QSharedPointer<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-		            QSharedPointer<joynr::OnChangeSubscriptionQos> subscriptionQos,
-		            BroadcastSubscriptionRequest& subscriptionRequest);
-		«ENDFOR»
-		public:
+«getNamespaceStarter(serviceInterface)»
 
-		    «interfaceName»InProcessConnector(
-		                joynr::SubscriptionManager* subscriptionManager,
-		                joynr::PublicationManager* publicationManager,
-		                joynr::InProcessPublicationSender* inProcessPublicationSender,
-		                const QString& proxyParticipantId,
-		                const QString& providerParticipantId,
-		                QSharedPointer<joynr::InProcessAddress> address
-		    );
+/** @brief InProcessConnector class for interface «interfaceName» */
+class «interfaceName»InProcessConnector : public I«interfaceName»Connector {
+private:
+«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.notifiable]»
+	«val returnType = attribute.typeName»
+	std::string subscribeTo«attribute.joynrName.toFirstUpper»(
+				std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
+				const joynr::SubscriptionQos& subscriptionQos,
+				SubscriptionRequest& subscriptionRequest);
+«ENDFOR»
+«FOR broadcast: serviceInterface.broadcasts»
+«val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
+«val broadcastName = broadcast.joynrName»
+	std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
+			std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
+			const joynr::OnChangeSubscriptionQos& subscriptionQos,
+			BroadcastSubscriptionRequest& subscriptionRequest);
+«ENDFOR»
+public:
 
-		    virtual bool usesClusterController() const;
+	/**
+	 * @brief Parameterized constructor
+	 * @param subscriptionManager Subscription manager instance
+	 * @param publicationManager Publication manager instance
+	 * @param inProcessPublicationSender InProcessPublicationSender instance,
+	 * used to transfer publications from the PublicationManager to the (local) SubscriptionManager.
+	 * @param proxyParticipantId The participant id of the proxy
+	 * @param providerParticipantId The participant id of the provider
+	 * @param address The address
+	 */
+	«interfaceName»InProcessConnector(
+				joynr::ISubscriptionManager* subscriptionManager,
+				joynr::PublicationManager* publicationManager,
+				joynr::InProcessPublicationSender* inProcessPublicationSender,
+				const std::string& proxyParticipantId,
+				const std::string& providerParticipantId,
+				QSharedPointer<joynr::InProcessAddress> address
+	);
 
-		    «produceSyncGetters(serviceInterface, false)»
-		    «produceSyncSetters(serviceInterface, false)»
-		    «produceSyncMethods(serviceInterface, false)»
-		    «produceAsyncGetters(serviceInterface, false)»
-		    «produceAsyncSetters(serviceInterface, false)»
-		    «produceAsyncMethods(serviceInterface, false)»
+	/**
+	 * @brief Checks whether cluster controller is used
+	 * @return true, if cluster controller is used
+	 */
+	virtual bool usesClusterController() const;
 
-		    «produceSubscribeUnsubscribeMethods(serviceInterface, false)»
+	«produceSyncGetters(serviceInterface, false)»
+	«produceSyncSetters(serviceInterface, false)»
+	«produceSyncMethods(serviceInterface, false)»
+	«produceAsyncGetters(serviceInterface, false)»
+	«produceAsyncSetters(serviceInterface, false)»
+	«produceAsyncMethods(serviceInterface, false)»
 
-		private:
-		    static joynr::joynr_logging::Logger* logger;
+	«produceSubscribeUnsubscribeMethods(serviceInterface, false)»
 
-		    DISALLOW_COPY_AND_ASSIGN(«interfaceName»InProcessConnector);
-		    QString proxyParticipantId;
-		    QString providerParticipantId;
-		    QSharedPointer<joynr::InProcessAddress> address;
-		    joynr::SubscriptionManager* subscriptionManager;
-		    joynr::PublicationManager* publicationManager;
-		    joynr::InProcessPublicationSender* inProcessPublicationSender;
-		};
-		«getNamespaceEnder(serviceInterface)»
+private:
+	static joynr::joynr_logging::Logger* logger;
 
-		namespace joynr {
+	DISALLOW_COPY_AND_ASSIGN(«interfaceName»InProcessConnector);
+	std::string proxyParticipantId;
+	std::string providerParticipantId;
+	QSharedPointer<joynr::InProcessAddress> address;
+	joynr::ISubscriptionManager* subscriptionManager;
+	joynr::PublicationManager* publicationManager;
+	joynr::InProcessPublicationSender* inProcessPublicationSender;
+};
+«getNamespaceEnder(serviceInterface)»
 
-		«var packagePrefix = getPackagePathWithJoynrPrefix(serviceInterface, "::")»
+namespace joynr {
 
-		// Helper class for use by the InProcessConnectorFactory
-		// This class creates instances of «interfaceName»InProcessConnector
-		template <>
-		class InProcessConnectorFactoryHelper <«packagePrefix»::I«interfaceName»Connector> {
-		public:
-		    «packagePrefix»::«interfaceName»InProcessConnector* create(
-		            SubscriptionManager* subscriptionManager,
-		            PublicationManager* publicationManager,
-		            InProcessPublicationSender* inProcessPublicationSender,
-		            const QString& proxyParticipantId,
-		            const QString& providerParticipantId,
-		            QSharedPointer<InProcessAddress> address
-		        ) {
-		        return new «packagePrefix»::«interfaceName»InProcessConnector(
-		                subscriptionManager,
-		                publicationManager,
-		                inProcessPublicationSender,
-		                proxyParticipantId,
-		                providerParticipantId,
-		                address
-		        );
-		    }
-		};
-		} // namespace joynr
+«var packagePrefix = getPackagePathWithJoynrPrefix(serviceInterface, "::")»
 
-		#endif // «headerGuard»
-		'''
+// Helper class for use by the InProcessConnectorFactory
+// This class creates instances of «interfaceName»InProcessConnector
+template <>
+class InProcessConnectorFactoryHelper <«packagePrefix»::I«interfaceName»Connector> {
+public:
+	«packagePrefix»::«interfaceName»InProcessConnector* create(
+			ISubscriptionManager* subscriptionManager,
+			PublicationManager* publicationManager,
+			InProcessPublicationSender* inProcessPublicationSender,
+			const std::string& proxyParticipantId,
+			const std::string& providerParticipantId,
+			QSharedPointer<InProcessAddress> address
+		) {
+		return new «packagePrefix»::«interfaceName»InProcessConnector(
+				subscriptionManager,
+				publicationManager,
+				inProcessPublicationSender,
+				proxyParticipantId,
+				providerParticipantId,
+				address
+		);
 	}
+};
+} // namespace joynr
+
+#endif // «headerGuard»
+'''
+
 }

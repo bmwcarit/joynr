@@ -79,7 +79,7 @@ public class MessageSenderImpl implements MessageSender {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see io.joynr.messaging.MessageSender#sendMessage(java.lang.String, io.joynr.messaging.JoynrMessage, long)
      */
     @Override
@@ -159,8 +159,9 @@ public class MessageSenderImpl implements MessageSender {
                 logger.error("!!!! ERROR SENDING: messageId: {} on Channel: {}. Error: {}", new String[]{
                         message.getId(), channelId, error.getMessage() });
 
+                messageContainer.incrementRetries();
                 long delay_ms = settings.getSendMsgRetryIntervalMs();
-                delay_ms += exponentialWait(messageContainer.getTries());
+                delay_ms += exponentialBackoff(delay_ms, messageContainer.getRetries());
 
                 // TODO Discuss how to report errors to the replycaller
                 // This would remove the replyCaller and future replies will not be received
@@ -219,7 +220,7 @@ public class MessageSenderImpl implements MessageSender {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see io.joynr.messaging.MessageSender#shutdown()
      */
     @Override
@@ -233,7 +234,7 @@ public class MessageSenderImpl implements MessageSender {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see io.joynr.messaging.MessageSender#getChannelId()
      */
     @Override
@@ -242,9 +243,10 @@ public class MessageSenderImpl implements MessageSender {
         return ownChannelId;
     }
 
-    private long exponentialWait(int tries) {
-        logger.debug("TRIES: " + tries);
-        long millis = (2 ^ tries) * SECONDS;
+    private long exponentialBackoff(long delay_ms, int retries) {
+        logger.debug("TRIES: " + retries);
+        long millis = delay_ms + (long) ((2 ^ (retries)) * delay_ms * Math.random());
+        logger.debug("MILLIS: " + millis);
         return millis;
     }
 }

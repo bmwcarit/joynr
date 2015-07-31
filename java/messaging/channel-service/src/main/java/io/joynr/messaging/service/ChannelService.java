@@ -40,7 +40,7 @@ public interface ChannelService {
     /**
      * Returns a list of registered channels.
      * 
-     * @return
+     * @return list of channel informations for registered channels
      */
     public List<ChannelInformation> listChannels();
 
@@ -59,25 +59,26 @@ public interface ChannelService {
     /**
      * Opens a long poll channel.
      * 
-     * @param ccid
-     * @param cacheIndex
-     * @param atmosphereTrackingId
-     * @return
+     * @param ccid channel id
+     * @param cacheIndex cache index
+     * @param atmosphereTrackingId tracking id for atmosphere
+     * @return Broadcastable object
      */
     public Broadcastable openChannel(String ccid, Integer cacheIndex, String atmosphereTrackingId);
 
     /**
      * Creates a channel for a channelId
      * 
-     * @param ccid
-     * @param trackingId
+     * @param ccid channel id
+     * @param trackingId tracking id
+     * @return created channel
      */
     public Channel createChannel(String ccid, String trackingId);
 
     /**
      * Deletes a channel for a channelId
      * 
-     * @param ccid
+     * @param ccid channel id
      * @return <code>true</code> if the channel was actually deleted,
      *         <code>false</code> if not (e.g. because it never existed)
      */

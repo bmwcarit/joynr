@@ -27,12 +27,14 @@
 #include "joynr/SubscriptionReply.h"
 #include "joynr/SubscriptionStop.h"
 #include "joynr/Util.h"
+#include "joynr-messaging/DummyPlatformSecurityManager.h"
 
 namespace joynr
 {
 
 JoynrMessageFactory::JoynrMessageFactory()
-        : logger(joynr_logging::Logging::getInstance()->getLogger(QString("LIB"),
+        : securityManager(new DummyPlatformSecurityManager()),
+          logger(joynr_logging::Logging::getInstance()->getLogger(QString("LIB"),
                                                                   QString("JoynrMessageFactory")))
 {
     qRegisterMetaType<Reply>();
@@ -43,6 +45,11 @@ JoynrMessageFactory::JoynrMessageFactory()
     qRegisterMetaType<SubscriptionStop>();
     qRegisterMetaType<SubscriptionPublication>();
     qRegisterMetaType<JoynrMessage>();
+}
+
+JoynrMessageFactory::~JoynrMessageFactory()
+{
+    delete securityManager;
 }
 
 JoynrMessage JoynrMessageFactory::createRequest(const QString& senderId,
@@ -142,6 +149,7 @@ void JoynrMessageFactory::initMsg(JoynrMessage& msg,
                                   const qint64 ttl,
                                   const QObject& payload)
 {
+    msg.setHeaderCreatorUserId(securityManager->getCurrentProcessUserId());
     msg.setHeaderFrom(senderParticipantId);
     msg.setHeaderTo(receiverParticipantId);
 

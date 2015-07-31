@@ -39,10 +39,13 @@ class CommunicationModelGenerator {
 	def doGenerate(FModel fModel, IFileSystemAccess fsa){
 		for( type: getComplexDataTypes(fModel)){
 			if(type instanceof FCompoundType) {
-				val path = getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
+				var path = getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
+				if (type.isPartOfTypeCollection) {
+					path += type.typeCollectionName + File::separator
+				}
 				generateFile(
 					fsa,
-					path + type.joynrName + ".java",
+					path.toLowerCase + type.joynrName + ".java",
 					complexTypeTemplate,
 					type
 				)
@@ -50,11 +53,14 @@ class CommunicationModelGenerator {
 		}
 
 		for( type: getEnumDataTypes(fModel)){
-			val path = getPackagePathWithJoynrPrefix(type, File::separator) + File::separator 
+			var path = getPackagePathWithJoynrPrefix(type, File::separator) + File::separator 
+			if (type.isPartOfTypeCollection) {
+				path += type.typeCollectionName + File::separator
+			}
 			if(type instanceof FEnumerationType) {
 				generateFile(
 					fsa,
-					path + type.joynrName + ".java",
+					path.toLowerCase + type.joynrName + ".java",
 					enumTemplate,
 					type
 				)

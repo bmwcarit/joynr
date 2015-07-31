@@ -19,10 +19,13 @@
 #include "joynr/FixedParticipantArbitrator.h"
 #include "joynr/ArbitrationStatus.h"
 #include "joynr/system/IDiscovery.h"
-#include "joynr/system/DiscoveryEntry.h"
-#include "joynr/system/ChannelAddress.h"
+#include "joynr/types/QtDiscoveryEntry.h"
+#include "joynr/types/DiscoveryEntry.h"
+#include "joynr/system/QtChannelAddress.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/DiscoveryQos.h"
+
+#include "joynr/TypeUtil.h"
 
 #include <cassert>
 
@@ -33,8 +36,8 @@ joynr_logging::Logger* FixedParticipantArbitrator::logger =
         joynr_logging::Logging::getInstance()->getLogger("Arb", "FixedParticipantArbitrator");
 
 FixedParticipantArbitrator::FixedParticipantArbitrator(
-        const QString& domain,
-        const QString& interfaceName,
+        const std::string& domain,
+        const std::string& interfaceName,
         joynr::system::IDiscoverySync& discoveryProxy,
         const DiscoveryQos& discoveryQos)
         : ProviderArbitrator(domain, interfaceName, discoveryProxy, discoveryQos),
@@ -45,11 +48,10 @@ FixedParticipantArbitrator::FixedParticipantArbitrator(
 
 void FixedParticipantArbitrator::attemptArbitration()
 {
-    joynr::RequestStatus status;
-    joynr::system::DiscoveryEntry result;
-    discoveryProxy.lookup(status, result, participantId);
+    joynr::types::DiscoveryEntry result;
+    joynr::RequestStatus status(discoveryProxy.lookup(result, participantId));
     if (status.successful()) {
-        joynr::system::CommunicationMiddleware::Enum preferredConnection(
+        joynr::types::CommunicationMiddleware::Enum preferredConnection(
                 selectPreferredCommunicationMiddleware(result.getConnections()));
         updateArbitrationStatusParticipantIdAndAddress(
                 ArbitrationStatus::ArbitrationSuccessful, participantId, preferredConnection);
@@ -57,9 +59,9 @@ void FixedParticipantArbitrator::attemptArbitration()
         LOG_ERROR(logger,
                   QString("Unable to lookup provider (domain: %1, interface: %2) "
                           "from discovery. Status code: %3.")
-                          .arg(domain)
-                          .arg(interfaceName)
-                          .arg(status.getCode().toString()));
+                          .arg(QString::fromStdString(domain))
+                          .arg(QString::fromStdString(interfaceName))
+                          .arg(QString::fromStdString(status.getCode().toString())));
     }
 }
 

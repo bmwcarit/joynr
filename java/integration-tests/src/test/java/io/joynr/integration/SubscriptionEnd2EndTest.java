@@ -19,7 +19,6 @@ package io.joynr.integration;
  * #L%
  */
 
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeast;
@@ -28,6 +27,7 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.JoynrArbitrationException;
@@ -45,7 +45,6 @@ import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.PropertyLoader;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -55,9 +54,11 @@ import joynr.OnChangeSubscriptionQos;
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
 import joynr.PeriodicSubscriptionQos;
 import joynr.tests.testProxy;
-import joynr.types.GpsLocation;
+import joynr.tests.testtypes.TestEnum;
+import joynr.types.localisation.GpsLocation;
 
 import org.eclipse.jetty.server.Server;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -71,8 +72,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @RunWith(MockitoJUnitRunner.class)
-@Ignore
-public class SubscriptionEnd2EndTest {
+public class SubscriptionEnd2EndTest extends JoynrEnd2EndTest {
     private static final Logger logger = LoggerFactory.getLogger(SubscriptionEnd2EndTest.class);
 
     private static final long expected_latency_ms = 50;
@@ -83,70 +83,87 @@ public class SubscriptionEnd2EndTest {
     public TestName name = new TestName();
 
     private static PubSubTestProviderImpl provider;
-    private static String domain;
+    private String domain;
     private static testProxy proxy;
 
     // private SubscriptionQos subscriptionQos;
-    private static DummyJoynrApplication providingApplication;
-    private static DummyJoynrApplication consumingApplication;
+    private DummyJoynrApplication providingApplication;
+    private DummyJoynrApplication consumingApplication;
 
     private int period_ms = 200;
 
-    private static Server server;
+    private static Server jettyServer;
+
+    private static Properties originalProperties;
 
     @BeforeClass
-    public static void setupEndpoints() throws Exception {
-        server = ServersUtil.startServers();
-        domain = "TestDomain" + System.currentTimeMillis();
-        setupProvidingApplication();
-        setupConsumingApplication();
+    public static void startServer() throws Exception {
+        originalProperties = System.getProperties();
+        System.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_SKIP_LONGPOLL_DEREGISTRATION, "true");
+        // keep delays and timeout low for tests
+        System.setProperty(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS, "10");
+        System.setProperty(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT, "200");
+        System.setProperty(ConfigurableMessagingSettings.PROPERTY_ARBITRATION_MINIMUMRETRYDELAY, "200");
+
+        provisionDiscoveryDirectoryAccessControlEntries();
+        jettyServer = ServersUtil.startServers();
     }
 
     @Before
-    public void setUp() throws JoynrArbitrationException, InterruptedException, IOException {
-        Thread.sleep(200);
-        Object methodName = name.getMethodName();
+    public void setUp() throws Exception {
+        String methodName = name.getMethodName();
         logger.info("Starting {} ...", methodName);
+        domain = "ProviderDomain-SubscriptionEnd2End-" + methodName + "-" + System.currentTimeMillis();
+        provisionPermissiveAccessControlEntry(domain, PubSubTestProviderImpl.INTERFACE_NAME);
+
+        setupProvidingApplication(methodName);
+        setupConsumingApplication(methodName);
+    }
+
+    @After
+    public void tearDown() throws InterruptedException {
+        providingApplication.shutdown();
+        providingApplication = null;
+
+        consumingApplication.shutdown();
+        consumingApplication = null;
     }
 
     @AfterClass
-    public static void tearDownEndpoints() throws Exception {
-        providingApplication.shutdown();
-        providingApplication = null;
-        Thread.sleep(200);
-        consumingApplication.shutdown();
-        consumingApplication = null;
-        server.stop();
+    public static void stopServer() throws Exception {
+        System.setProperties(originalProperties);
+
+        jettyServer.stop();
     }
 
-    private static void setupProvidingApplication() throws InterruptedException {
+    private void setupProvidingApplication(String methodName) throws InterruptedException {
         Properties factoryPropertiesProvider;
 
         String channelIdProvider = "JavaTest-" + UUID.randomUUID().getLeastSignificantBits()
-                + "-Provider-SubscriptionEnd2EndTest";
+                + "-Provider-SubscriptionEnd2EndTest-" + methodName;
 
         factoryPropertiesProvider = PropertyLoader.loadProperties("testMessaging.properties");
         factoryPropertiesProvider.put(MessagingPropertyKeys.CHANNELID, channelIdProvider);
         factoryPropertiesProvider.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
-        factoryPropertiesProvider.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, "localdomain-"
-                + UUID.randomUUID().toString());
-        providingApplication = (DummyJoynrApplication) new JoynrInjectorFactory(factoryPropertiesProvider).createApplication(DummyJoynrApplication.class);
+        factoryPropertiesProvider.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, domain);
+        providingApplication = (DummyJoynrApplication) new JoynrInjectorFactory(factoryPropertiesProvider,
+                                                                                new StaticDomainAccessControlProvisioningModule()).createApplication(DummyJoynrApplication.class);
 
         provider = new PubSubTestProviderImpl();
         providingApplication.getRuntime()
-                            .registerCapability(domain, provider, joynr.tests.testSync.class, "SubscriptionEnd2End")
+                            .registerProvider(domain, provider)
                             .waitForFullRegistration(CONST_DEFAULT_TEST_TIMEOUT);
     }
 
-    private static void setupConsumingApplication() throws JoynrArbitrationException, JoynrIllegalStateException,
-                                                   InterruptedException {
+    private void setupConsumingApplication(String methodName) throws JoynrArbitrationException,
+                                                             JoynrIllegalStateException, InterruptedException {
         String channelIdConsumer = "JavaTest-" + UUID.randomUUID().getLeastSignificantBits()
-                + "-Consumer-SubscriptionEnd2EndTest";
+                + "-Consumer-SubscriptionEnd2EndTest-" + methodName;
 
         Properties factoryPropertiesB = PropertyLoader.loadProperties("testMessaging.properties");
         factoryPropertiesB.put(MessagingPropertyKeys.CHANNELID, channelIdConsumer);
         factoryPropertiesB.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
-        factoryPropertiesB.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, "localdomain-"
+        factoryPropertiesB.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, "ClientDomain-" + methodName + "-"
                 + UUID.randomUUID().toString());
 
         consumingApplication = (DummyJoynrApplication) new JoynrInjectorFactory(factoryPropertiesB).createApplication(DummyJoynrApplication.class);
@@ -163,12 +180,6 @@ public class SubscriptionEnd2EndTest {
         proxy.getFirstPrime();
         logger.trace("Sync call to proxy finished");
 
-    }
-
-    @Test
-    public void testSystemPropertiesUnchanged() {
-        assertTrue(System.getProperty(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) == null);
-        assertTrue(System.getProperty(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT) == null);
     }
 
     @Test
@@ -206,9 +217,30 @@ public class SubscriptionEnd2EndTest {
         Thread.sleep(subscriptionDuration);
         // 100 2100 4100 6100
         verify(gpsListener, times(0)).onError();
-        verify(gpsListener, atLeast(4)).onReceive(eq(provider.getComplexTestAttribute()));
+        verify(gpsListener, atLeast(4)).onReceive(eq(provider.getComplexTestAttributeSync()));
 
         proxy.unsubscribeFromComplexTestAttribute(subscriptionId);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void subscribeToEnumAttribute() throws InterruptedException {
+        AttributeSubscriptionListener<TestEnum> testEnumListener = mock(AttributeSubscriptionListener.class);
+        TestEnum expectedTestEnum = TestEnum.TWO;
+        provider.setEnumAttribute(expectedTestEnum);
+
+        int subscriptionDuration = (period_ms * 4);
+        long alertInterval_ms = 500;
+        long expiryDate_ms = System.currentTimeMillis() + subscriptionDuration;
+        SubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(period_ms, expiryDate_ms, alertInterval_ms, 0);
+
+        String subscriptionId = proxy.subscribeToEnumAttribute(testEnumListener, subscriptionQos);
+        Thread.sleep(subscriptionDuration);
+        // 100 2100 4100 6100
+        verify(testEnumListener, times(0)).onError();
+        verify(testEnumListener, atLeast(4)).onReceive(eq(expectedTestEnum));
+
+        proxy.unsubscribeFromEnumAttribute(subscriptionId);
     }
 
     @SuppressWarnings("unchecked")
@@ -438,6 +470,7 @@ public class SubscriptionEnd2EndTest {
 
     @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NP_NULL_ON_SOME_PATH_EXCEPTION", justification = "NPE in test would fail test")
     @SuppressWarnings("unchecked")
+    @Ignore
     @Test
     public void testSubscribeToNonExistentDomain() throws InterruptedException {
         AttributeSubscriptionListener<Integer> integerListener = mock(AttributeSubscriptionListener.class);

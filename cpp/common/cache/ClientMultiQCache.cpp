@@ -17,6 +17,9 @@
  * #L%
  */
 #include "common/cache/ClientMultiQCache.h"
+
+#include <QDateTime>
+
 #include "joynr/CachedValue.h"
 
 namespace joynr

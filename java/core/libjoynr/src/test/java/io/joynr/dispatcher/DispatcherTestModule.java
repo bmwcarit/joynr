@@ -19,10 +19,7 @@ package io.joynr.dispatcher;
  * #L%
  */
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
-
+import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import io.joynr.dispatcher.rpc.JoynrMessagingConnectorFactory;
 import io.joynr.dispatcher.rpc.RpcUtils;
 import io.joynr.messaging.IMessageReceivers;
@@ -33,6 +30,11 @@ import io.joynr.pubsub.publication.PublicationManager;
 import io.joynr.pubsub.publication.PublicationManagerImpl;
 import io.joynr.pubsub.subscription.SubscriptionManager;
 import io.joynr.pubsub.subscription.SubscriptionManagerImpl;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+
 import joynr.Request;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -56,7 +58,7 @@ public class DispatcherTestModule extends AbstractModule {
 
         ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.Cleanup-%d").build();
         ScheduledExecutorService cleanupExecutor = Executors.newSingleThreadScheduledExecutor(namedThreadFactory);
-        bind(ScheduledExecutorService.class).annotatedWith(Names.named("joynr.scheduler.cleanup"))
+        bind(ScheduledExecutorService.class).annotatedWith(Names.named(JOYNR_SCHEDULER_CLEANUP))
                                             .toInstance(cleanupExecutor);
     }
 

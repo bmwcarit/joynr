@@ -20,29 +20,47 @@
 #define IARBITRATIONLISTENER_H
 
 #include "joynr/ArbitrationStatus.h"
-#include "joynr/system/CommunicationMiddleware.h"
+#include "joynr/types/CommunicationMiddleware.h"
 
-#include <QString>
 #include <QSharedPointer>
+#include <string>
 
 namespace joynr
 {
 
-/*
- *  IArbitrationListener is an interface used by ProviderArbitrator
- *  to norify the AbstractProxy about a successful completion
- *  of the arbitration process.
+/**
+ * @brief Class interface used by ProviderArbitrator
+ *
+ * IArbitrationListener is an interface used by ProviderArbitrator
+ * to notify the AbstractProxy about a successful completion
+ * of the arbitration process.
  */
 class IArbitrationListener
 {
 public:
+    /** @brief Destructor */
     virtual ~IArbitrationListener()
     {
     }
+
+    /**
+     * @brief Set the status of the arbitration
+     * @param arbitrationStatus The status of the arbitration
+     */
     virtual void setArbitrationStatus(
             ArbitrationStatus::ArbitrationStatusType arbitrationStatus) = 0;
-    virtual void setParticipantId(const QString& participantId) = 0;
-    virtual void setConnection(const joynr::system::CommunicationMiddleware::Enum& connection) = 0;
+
+    /**
+     * @brief Set the participant id
+     * @param participantId The id of the participant
+     */
+    virtual void setParticipantId(const std::string& participantId) = 0;
+
+    /**
+     * @brief Set the connection middleware used
+     * @param connection The connection middleware used
+     */
+    virtual void setConnection(const joynr::types::CommunicationMiddleware::Enum& connection) = 0;
 };
 
 } // namespace joynr

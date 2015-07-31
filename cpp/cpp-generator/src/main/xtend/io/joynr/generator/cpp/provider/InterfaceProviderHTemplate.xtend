@@ -18,10 +18,11 @@ package io.joynr.generator.cpp.provider
  */
 
 import com.google.inject.Inject
-import org.franca.core.franca.FInterface
-import io.joynr.generator.cpp.util.TemplateBase
+import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
+import org.franca.core.franca.FInterface
 
 class InterfaceProviderHTemplate implements InterfaceTemplate{
 	@Inject
@@ -30,107 +31,155 @@ class InterfaceProviderHTemplate implements InterfaceTemplate{
 	@Inject
 	private extension JoynrCppGeneratorExtensions
 
-	override generate(FInterface serviceInterface) {
-		val interfaceName = serviceInterface.joynrName
-		val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+"_"+interfaceName+"Provider_h").toUpperCase
-	'''
-	«warning()»
-	#ifndef «headerGuard»
-	#define «headerGuard»
+	@Inject
+	private extension CppStdTypeUtil
 
-	#include "joynr/PrivateCopyAssign.h"
+	override generate(FInterface serviceInterface)
+'''
+«val interfaceName = serviceInterface.joynrName»
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+
+	"_"+interfaceName+"Provider_h").toUpperCase»
+«warning()»
+#ifndef «headerGuard»
+#define «headerGuard»
 
-	#include "joynr/Provider.h"
-	#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName».h"
-	#include "joynr/DeclareMetatypeUtil.h"
-	#include "joynr/types/ProviderQos.h"
-	#include "joynr/RequestCallerFactory.h"
-	#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestCaller.h"
+#include <string>
 
-	«FOR parameterType: getRequiredIncludesFor(serviceInterface)»
-		#include "«parameterType»"
+#include "joynr/PrivateCopyAssign.h"
+
+#include "joynr/IJoynrProvider.h"
+#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName».h"
+#include "joynr/DeclareMetatypeUtil.h"
+#include "joynr/RequestCallerFactory.h"
+#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestCaller.h"
+
+«FOR parameterType: getRequiredIncludesFor(serviceInterface)»
+	#include «parameterType»
+«ENDFOR»
+
+#include <memory>
+«getDllExportIncludeStatement()»
+
+«getNamespaceStarter(serviceInterface)»
+
+/** @brief Provider class for interface «interfaceName» */
+class «getDllExportMacro()» «interfaceName»Provider : public virtual IJoynrProvider
+{
+
+public:
+	/** @brief Default constructor */
+	«interfaceName»Provider();
+
+	//for each Attribute the provider needs setters, sync and async getters.
+	//They have default implementation for pushing Providers and can be overwritten by pulling Providers.
+
+	/** @brief Destructor */
+	virtual ~«interfaceName»Provider();
+
+	static const std::string& INTERFACE_NAME();
+
+	«IF !serviceInterface.attributes.empty»
+		// attributes
+	«ENDIF»
+	«FOR attribute : serviceInterface.attributes»
+		«var attributeName = attribute.joynrName»
+		«IF attribute.readable»
+			/**
+			 * @brief Gets «attributeName.toFirstUpper»
+			 * @param callbackFct A callback function to be called once the asynchronous computation has
+			 * finished. It must expect a request status object as well as the attribute value.
+			 * @return the value of the attribute «attributeName.toFirstUpper»
+			 */
+			virtual void get«attributeName.toFirstUpper»(
+					std::function<void(
+							const «attribute.typeName»&
+					)> onSuccess
+			) = 0;
+		«ENDIF»
+		«IF attribute.writable»
+			/**
+			 * @brief Sets «attributeName.toFirstUpper»
+			 * @param «attributeName» the new value of the attribute
+			 * @param callbackFct A callback function to be called once the asynchronous computation has
+			 * finished. It must expect a request status object.
+			 */
+			virtual void set«attributeName.toFirstUpper»(
+					const «attribute.typeName»& «attributeName»,
+					std::function<void()> onSuccess
+			) = 0;
+		«ENDIF»
+		«IF attribute.notifiable»
+			/**
+			 * @brief «attributeName»Changed must be called by a concrete provider
+			 * to signal attribute modifications. It is used to implement onchange
+			 * subscriptions.
+			 * @param «attributeName» the new attribute value
+			 */
+			virtual void «attributeName»Changed(
+					const «attribute.typeName»& «attributeName»
+			) = 0;
+		«ENDIF»
+
 	«ENDFOR»
+	«IF !serviceInterface.methods.empty»
+		// methods
+	«ENDIF»
+	«FOR method : serviceInterface.methods»
+		«val outputTypedParamList = method.commaSeperatedTypedConstOutputParameterList»
+		«val inputTypedParamList = getCommaSeperatedTypedConstInputParameterList(method)»
+		/**
+		 * @brief Implementation of the Franca method «method.joynrName»
+		 * @param callbackFct A callback function to be called once the asynchronous computation has
+		 * finished. It must expect a request status object as well as the method out parameters.
+		 */
+		virtual void «method.joynrName»(
+				«IF !method.inputParameters.empty»
+					«inputTypedParamList.substring(1)»,
+				«ENDIF»
+				«IF method.outputParameters.empty»
+					std::function<void()> onSuccess
+				«ELSE»
+					std::function<void(
+							«outputTypedParamList.substring(1)»
+					)> onSuccess
+				«ENDIF»
+		) = 0;
 
-	«getDllExportIncludeStatement()»
+	«ENDFOR»
+	«IF !serviceInterface.broadcasts.empty»
+		// broadcasts
+	«ENDIF»
+	«FOR broadcast : serviceInterface.broadcasts»
+		«var broadcastName = broadcast.joynrName»
+		/**
+		 * @brief fire«broadcastName.toFirstUpper» must be called by a concrete
+		 * provider to signal an occured event. It is used to implement broadcast
+		 * publications.
+		 * @param «broadcastName» the new broadcast value
+		 */
+		virtual void fire«broadcastName.toFirstUpper»(
+				«broadcast.commaSeperatedTypedConstOutputParameterList»
+		) = 0;
 
-	namespace joynr { class SubscriptionManager; }
+	«ENDFOR»
+private:
+	DISALLOW_COPY_AND_ASSIGN(«interfaceName»Provider);
+};
+«getNamespaceEnder(serviceInterface)»
 
-	«getNamespaceStarter(serviceInterface)»
+namespace joynr {
 
-	class «getDllExportMacro()» «interfaceName»Provider : public «getPackagePathWithJoynrPrefix(serviceInterface, "::")»::I«interfaceName»Sync, public joynr::Provider {
-
-	public:
-	    //TODO remove default value for ProviderQos and pass in real qos parameters
-	    «interfaceName»Provider(const joynr::types::ProviderQos& providerQos);
-	    //for each Attribute the provider needs setters, sync and async getters.
-	    //They have default implementation for pushing Providers and can be overwritten by pulling Providers.
-	    virtual ~«interfaceName»Provider();
-
-	    // request status, result, (params......)*
-
-		«FOR attribute: getAttributes(serviceInterface)»
-			«var attributeName = attribute.joynrName»
-			virtual void get«attributeName.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, «getMappedDatatypeOrList(attribute)»& result);
-			virtual void set«attributeName.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, const «getMappedDatatypeOrList(attribute)»& «attributeName»);
-			/**
-			* @brief «attributeName»Changed must be called by a concrete provider to signal attribute
-			* modifications. It is used to implement onchange subscriptions.
-			* @param «attributeName» the new attribute value
-			*/
-			void «attributeName»Changed(const «getMappedDatatypeOrList(attribute)»& «attributeName»);
-		«ENDFOR»
-		«FOR method: getMethods(serviceInterface)»
-			«val outputParameterType = getMappedOutputParameter(method)»
-			«IF outputParameterType.head=="void"»
-				virtual void «method.name»(joynr::RequestStatus& joynrInternalStatus«prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))») = 0;
-			«ELSE»
-				virtual void «method.name»(joynr::RequestStatus& joynrInternalStatus«prependCommaIfNotEmpty(getCommaSeperatedTypedOutputParameterList(method))»«prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))») = 0;
-			«ENDIF»
-		«ENDFOR»
-
-		«FOR broadcast: serviceInterface.broadcasts»
-			«var broadcastName = broadcast.joynrName»
-			/**
-			* @brief fire«broadcastName.toFirstUpper» must be called by a concrete provider to signal an occured
-			* event. It is used to implement broadcast publications.
-			* @param «broadcastName» the new broadcast value
-			*/
-			void fire«broadcastName.toFirstUpper»(«getMappedOutputParametersCommaSeparated(broadcast, true)»);
-		«ENDFOR»
-
-	    void setSubscriptionManager(joynr::SubscriptionManager* subscriptionManager);
-	    void setDomainAndInterface(const QString& domain, const QString& interfaceName);
-
-	    joynr::types::ProviderQos getProviderQos() const;
-
-	protected:
-		«FOR attribute: getAttributes(serviceInterface)»
-		    «getMappedDatatypeOrList(attribute)» «attribute.joynrName»;
-		«ENDFOR»
-
-	private:
-	    DISALLOW_COPY_AND_ASSIGN(«interfaceName»Provider);
-	    joynr::SubscriptionManager* subscriptionManager;
-	    QString domain;
-	    QString interfaceName;
-	    joynr::types::ProviderQos providerQos;
-	};
-	«getNamespaceEnder(serviceInterface)»
-
-	namespace joynr {
-
-	// Helper class for use by the RequestCallerFactory.
-	// This class creates instances of «interfaceName»RequestCaller
-	template<>
-	class RequestCallerFactoryHelper<«getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»Provider> {
-	public:
-		QSharedPointer<joynr::RequestCaller> create(QSharedPointer<«getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»Provider> provider) {
-			return QSharedPointer<joynr::RequestCaller>(new «getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»RequestCaller(provider));
-	    }
-	};
-	} // namespace joynr	
-
-	#endif // «headerGuard»
-	'''
+// Helper class for use by the RequestCallerFactory.
+// This class creates instances of «interfaceName»RequestCaller
+template<>
+class RequestCallerFactoryHelper<«getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»Provider> {
+public:
+	QSharedPointer<joynr::RequestCaller> create(std::shared_ptr<«getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»Provider> provider) {
+		return QSharedPointer<joynr::RequestCaller>(new «getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»RequestCaller(provider));
 	}
+};
+} // namespace joynr
+
+#endif // «headerGuard»
+'''
 }

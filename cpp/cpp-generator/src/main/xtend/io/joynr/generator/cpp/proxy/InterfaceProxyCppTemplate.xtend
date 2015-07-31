@@ -27,40 +27,35 @@ class InterfaceProxyCppTemplate implements InterfaceTemplate{
 	@Inject	extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
 
-	override generate(FInterface fInterface) {
-		val interfaceName =  fInterface.joynrName
-		val className = interfaceName + "Proxy"
-		val asyncClassName = interfaceName + "AsyncProxy"
-		val syncClassName = interfaceName + "SyncProxy"
+	override generate(FInterface fInterface)
+'''
+«val interfaceName =  fInterface.joynrName»
+«val className = interfaceName + "Proxy"»
+«val asyncClassName = interfaceName + "AsyncProxy"»
+«val syncClassName = interfaceName + "SyncProxy"»
+«warning()»
 
-		'''
-		«warning()»
+#include "«getPackagePathWithJoynrPrefix(fInterface, "/")»/«className».h"
 
-		#include "«getPackagePathWithJoynrPrefix(fInterface, "/")»/«className».h"
+«getNamespaceStarter(fInterface)»
+«className»::«className»(
+		QSharedPointer<joynr::system::QtAddress> messagingAddress,
+		joynr::ConnectorFactory* connectorFactory,
+		joynr::IClientCache *cache,
+		const std::string &domain,
+		const joynr::MessagingQos &qosSettings,
+		bool cached
+) :
+		joynr::ProxyBase(connectorFactory, cache, domain, INTERFACE_NAME(), qosSettings, cached),
+		«className»Base(messagingAddress, connectorFactory, cache, domain, qosSettings, cached),
+		«syncClassName»(messagingAddress, connectorFactory, cache, domain, qosSettings, cached),
+		«asyncClassName»(messagingAddress, connectorFactory, cache, domain, qosSettings, cached)
+{
+}
 
-		«getNamespaceStarter(fInterface)» 
-		«className»::«className»(
-		        QSharedPointer<joynr::system::Address> messagingAddress,
-		        joynr::ConnectorFactory* connectorFactory,
-		        joynr::IClientCache *cache,
-		        const QString &domain,
-		        const joynr::ProxyQos& proxyQos,
-		        const joynr::MessagingQos &qosSettings,
-		        bool cached
-		) :
-		        joynr::ProxyBase(connectorFactory, cache, domain, getInterfaceName(), proxyQos, qosSettings, cached),
-		        «className»Base(messagingAddress, connectorFactory, cache, domain, proxyQos, qosSettings, cached),
-		        «syncClassName»(messagingAddress, connectorFactory, cache, domain, proxyQos, qosSettings, cached),
-		        «asyncClassName»(messagingAddress, connectorFactory, cache, domain, proxyQos, qosSettings, cached)
-		{
-		}
-
-		«className»::~«className»()
-		{
-		}
-		«getNamespaceEnder(fInterface)»
-		'''
-	}
-
-
+«className»::~«className»()
+{
+}
+«getNamespaceEnder(fInterface)»
+'''
 }

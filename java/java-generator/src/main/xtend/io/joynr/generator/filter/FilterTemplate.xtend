@@ -23,9 +23,11 @@ import io.joynr.generator.util.TemplateBase
 import org.franca.core.franca.FBroadcast
 import org.franca.core.franca.FInterface
 import io.joynr.generator.util.BroadcastTemplate
+import io.joynr.generator.util.JavaTypeUtil
 
 class FilterTemplate implements BroadcastTemplate{
-	@Inject	extension JoynrJavaGeneratorExtensions
+	@Inject extension JoynrJavaGeneratorExtensions
+	@Inject extension JavaTypeUtil
 	@Inject extension TemplateBase
 
 	override generate(FInterface serviceInterface, FBroadcast broadcast) {
@@ -51,7 +53,7 @@ class FilterTemplate implements BroadcastTemplate{
 			* Override this method to provide a filter logic implementation.
 			*/
 			public abstract boolean filter(
-					«getCommaSeperatedTypedOutputParameterListLinebreak(broadcast)»,
+					«broadcast.commaSeperatedTypedOutputParameterListLinebreak»,
 					«serviceInterface.joynrName»BroadcastInterface.«broadcastName.toFirstUpper»BroadcastFilterParameters filterParameters);
 		};
 

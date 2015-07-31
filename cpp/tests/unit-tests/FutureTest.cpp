@@ -51,79 +51,58 @@ protected:
 };
 
 TEST_F(FutureTest, getValueAndStatusAfterResultReceived) {
-    intFuture.onSuccess(RequestStatus(RequestStatusCode::OK), 10);
-    ASSERT_EQ(10, intFuture.getValue());
+    intFuture.onSuccess(10);
+    int actualValue;
+    intFuture.getValues(actualValue);
+    ASSERT_EQ(10, actualValue);
     ASSERT_EQ(RequestStatusCode::OK, intFuture.getStatus().getCode());
 
     // try retrieving the values a second time
-    ASSERT_EQ(10, intFuture.getValue());
+    intFuture.getValues(actualValue);
+    ASSERT_EQ(10, actualValue);
     ASSERT_EQ(RequestStatusCode::OK, intFuture.getStatus().getCode());
 
 }
 
 TEST_F(FutureTest, isOKReturnsTrueWhenStatusIsOk) {
     ASSERT_FALSE(intFuture.isOk());
-    intFuture.onSuccess(RequestStatus(RequestStatusCode::OK), 10);
+    intFuture.onSuccess(10);
     ASSERT_TRUE(intFuture.isOk());
 }
 
 TEST_F(FutureTest, getValueAndStatusAfterFailiureReceived) {
-    intFuture.onFailure(RequestStatus(RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE));
-    ASSERT_EQ(RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE, intFuture.getStatus().getCode());
-    ASSERT_DEATH_IF_SUPPORTED(intFuture.getValue(), ".");
+    intFuture.onError(RequestStatus(RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE));
+    ASSERT_EQ(RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE, intFuture.getStatus().getCode());
+    int actualValue;
+
+    ASSERT_DEATH_IF_SUPPORTED(intFuture.getValues(actualValue), ".");
 }
 
 TEST_F(FutureTest, getValueAndStatusBeforeOperationFinishes) {
     ASSERT_EQ(RequestStatusCode::IN_PROGRESS, intFuture.getStatus().getCode());
-    ASSERT_DEATH_IF_SUPPORTED(intFuture.getValue(), ".");
+    int actualValue;
+    ASSERT_DEATH_IF_SUPPORTED(intFuture.getValues(actualValue), ".");
 }
 
 TEST_F(FutureTest, getStatusForVoidAfterResultReceived) {
-    voidFuture.onSuccess(RequestStatusCode::OK);
+    voidFuture.onSuccess();
     ASSERT_EQ(RequestStatusCode::OK, voidFuture.getStatus().getCode());
 }
 
 TEST_F(FutureTest, getStatusForVoidAfterFailureReceived) {
-    voidFuture.onFailure(RequestStatus(RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE));
-    ASSERT_EQ(RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE, voidFuture.getStatus().getCode());
+    voidFuture.onError(RequestStatus(RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE));
+    ASSERT_EQ(RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE, voidFuture.getStatus().getCode());
 }
 
 TEST_F(FutureTest, getStatusForVoidBeforeOperationFinishes) {
     ASSERT_EQ(RequestStatusCode::IN_PROGRESS, voidFuture.getStatus().getCode());
 }
 
-TEST_F(FutureTest, checkDelegateToCallbackOnSuccess) {
-    QSharedPointer<MockIntCallback> mockIntCallback = QSharedPointer<MockIntCallback>(new MockIntCallback());
-    intFuture.setCallback(mockIntCallback);
-    EXPECT_CALL(*(mockIntCallback), onSuccess(Property(&RequestStatus::getCode, RequestStatusCode::OK), 7));
-    intFuture.onSuccess(RequestStatus(RequestStatusCode::OK), 7);
-}
-
-TEST_F(FutureTest, checkDelegateToCallbackOnFailure) {
-    QSharedPointer<MockIntCallback> mockIntCallback = QSharedPointer<MockIntCallback>(new MockIntCallback());
-    intFuture.setCallback(mockIntCallback);
-    EXPECT_CALL(*(mockIntCallback), onFailure(Property(&RequestStatus::getCode, RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE)));
-    intFuture.onFailure(RequestStatus(RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE));
-}
-
-TEST_F(FutureTest, checkDelegateToVoidCallbackOnSuccess) {
-    QSharedPointer<MockVoidCallback> mockVoidCallback = QSharedPointer<MockVoidCallback>(new MockVoidCallback());
-    voidFuture.setCallback(mockVoidCallback);
-    EXPECT_CALL(*(mockVoidCallback), onSuccess(Property(&RequestStatus::getCode, RequestStatusCode::OK)));
-    voidFuture.onSuccess(RequestStatus(RequestStatusCode::OK));
-}
-
-TEST_F(FutureTest, checkDelegateToVoidCallbackOnFailure) {
-    QSharedPointer<MockVoidCallback> mockVoidCallback = QSharedPointer<MockVoidCallback>(new MockVoidCallback());
-    voidFuture.setCallback(mockVoidCallback);
-    EXPECT_CALL(*(mockVoidCallback), onFailure(Property(&RequestStatus::getCode, RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE)));
-    voidFuture.onFailure(RequestStatus(RequestStatusCode::ERROR_TIME_OUT_WAITING_FOR_RESPONSE));
-}
-
 TEST_F(FutureTest, waitForFinishWithTimer) {
     RequestStatus requestStatus = intFuture.waitForFinished(5);
     EXPECT_EQ(RequestStatusCode::IN_PROGRESS, requestStatus.getCode());
-    ASSERT_DEATH_IF_SUPPORTED(intFuture.getValue(), ".");
+    int actualValue;
+    ASSERT_DEATH_IF_SUPPORTED(intFuture.getValues(actualValue), ".");
 }
 
 TEST_F(FutureTest, waitForFinishWithTimerForVoid) {

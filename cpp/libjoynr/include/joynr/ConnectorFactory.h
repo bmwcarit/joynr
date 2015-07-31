@@ -26,9 +26,9 @@
 #include "joynr/MessagingQos.h"
 #include "joynr/InProcessConnectorFactory.h"
 #include "joynr/JoynrMessagingConnectorFactory.h"
-#include "joynr/system/CommunicationMiddleware.h"
+#include "joynr/types/QtCommunicationMiddleware.h"
 
-#include <QString>
+#include <string>
 #include <QSharedPointer>
 
 namespace joynr
@@ -36,7 +36,7 @@ namespace joynr
 
 namespace system
 {
-class Address;
+class QtAddress;
 }
 class InProcessDispatcher;
 
@@ -47,14 +47,13 @@ public:
                      JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory);
     ~ConnectorFactory();
     template <class T>
-    T* create(const QString& domain,
-              const QString proxyParticipantId,
-              const QString& providerParticipantId,
+    T* create(const std::string& domain,
+              const std::string proxyParticipantId,
+              const std::string& providerParticipantId,
               const MessagingQos& qosSettings,
               IClientCache* cache,
               bool cached,
-              qint64 reqCacheDataFreshness_ms,
-              const joynr::system::CommunicationMiddleware::Enum& connection)
+              const joynr::types::CommunicationMiddleware::Enum& connection)
     {
 
         if (inProcessConnectorFactory->canBeCreated(connection)) {
@@ -62,13 +61,8 @@ public:
         }
 
         if (joynrMessagingConnectorFactory->canBeCreated(connection)) {
-            return joynrMessagingConnectorFactory->create<T>(domain,
-                                                             proxyParticipantId,
-                                                             providerParticipantId,
-                                                             qosSettings,
-                                                             cache,
-                                                             cached,
-                                                             reqCacheDataFreshness_ms);
+            return joynrMessagingConnectorFactory->create<T>(
+                    domain, proxyParticipantId, providerParticipantId, qosSettings, cache, cached);
         }
 
         LOG_ERROR(logger, "Can not create Connector: Unknown address type.");

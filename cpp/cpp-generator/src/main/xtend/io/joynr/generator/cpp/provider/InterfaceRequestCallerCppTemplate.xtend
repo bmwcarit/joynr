@@ -18,10 +18,11 @@ package io.joynr.generator.cpp.provider
  */
 
 import com.google.inject.Inject
-import org.franca.core.franca.FInterface
-import io.joynr.generator.cpp.util.TemplateBase
+import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
+import org.franca.core.franca.FInterface
 
 class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 
@@ -29,74 +30,105 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 	private extension TemplateBase
 
 	@Inject
+	private extension CppStdTypeUtil
+
+	@Inject
 	private extension JoynrCppGeneratorExtensions
 
-	override generate(FInterface serviceInterface){
-	var interfaceName = serviceInterface.joynrName;
-	'''
-		«warning()»
-		
-		
-		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestCaller.h"
-		«FOR datatype: getRequiredIncludesFor(serviceInterface)»
-			#include "«datatype»"
-		«ENDFOR»
-		#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»Provider.h"
-		
-		«getNamespaceStarter(serviceInterface)»
-		«interfaceName»RequestCaller::«interfaceName»RequestCaller(QSharedPointer<«getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»Provider> provider)
-		    : joynr::RequestCaller(I«interfaceName»::getInterfaceName()),
-		      provider(provider)
-		{
+	override generate(FInterface serviceInterface)
+'''
+«var interfaceName = serviceInterface.joynrName»
+«warning()»
+#include <functional>
+
+#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestCaller.h"
+«FOR datatype: getRequiredIncludesFor(serviceInterface)»
+	#include «datatype»
+«ENDFOR»
+#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»Provider.h"
+«IF !serviceInterface.methods.empty || !serviceInterface.attributes.empty»
+	#include "joynr/RequestStatus.h"
+	#include "joynr/TypeUtil.h"
+«ENDIF»
+
+«getNamespaceStarter(serviceInterface)»
+«interfaceName»RequestCaller::«interfaceName»RequestCaller(std::shared_ptr<«getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»Provider> provider)
+	: joynr::RequestCaller(provider->getInterfaceName()),
+	  provider(provider)
+{
+}
+
+«IF !serviceInterface.attributes.empty»
+	// attributes
+«ENDIF»
+«FOR attribute : serviceInterface.attributes»
+	«var attributeName = attribute.joynrName»
+	«val returnType = attribute.typeName»
+	«IF attribute.readable»
+		void «interfaceName»RequestCaller::get«attributeName.toFirstUpper»(
+				std::function<void(
+						const «returnType»& «attributeName.toFirstLower»
+				)> onSuccess
+		) {
+			provider->get«attributeName.toFirstUpper»(onSuccess);
 		}
-		
-		«FOR attribute: getAttributes(serviceInterface)»
-		«var attributeName = attribute.joynrName»
-		   	void «interfaceName»RequestCaller::get«attributeName.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, «getMappedDatatypeOrList(attribute)» &«attributeName»){
-		   		provider->get«attributeName.toFirstUpper»(joynrInternalStatus, «attributeName»); 
-		   	}
+	«ENDIF»
+	«IF attribute.writable»
+		void «interfaceName»RequestCaller::set«attributeName.toFirstUpper»(
+				const «returnType»& «attributeName.toFirstLower»,
+				std::function<void()> onSuccess
+		) {
+			provider->set«attributeName.toFirstUpper»(«attributeName.toFirstLower», onSuccess);
+		}
+	«ENDIF»
 
-		   	void «interfaceName»RequestCaller::set«attributeName.toFirstUpper»(joynr::RequestStatus& joynrInternalStatus, const «getMappedDatatypeOrList(attribute)»& «attributeName»){
-		   		provider->set«attributeName.toFirstUpper»(joynrInternalStatus, «attributeName»);
-		   	}
-
-		«ENDFOR»
-		«FOR method: getMethods(serviceInterface)»
-			«val outputParameterType = getMappedOutputParameter(method)»
-			«val methodName = method.joynrName»
-			«IF outputParameterType.head=="void"»
-				void «interfaceName»RequestCaller::«methodName»(joynr::RequestStatus& status«prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))» ){
-					provider->«methodName»(status«prependCommaIfNotEmpty(getCommaSeperatedUntypedParameterList(method))»); 
-				}
+«ENDFOR»
+«IF !serviceInterface.methods.empty»
+	// methods
+«ENDIF»
+«FOR method : serviceInterface.methods»
+	«val outputTypedParamList = method.commaSeperatedTypedConstOutputParameterList»
+	«val inputTypedParamList = method.commaSeperatedTypedConstInputParameterList»
+	«val inputUntypedParamList = getCommaSeperatedUntypedInputParameterList(method)»
+	«val methodName = method.joynrName»
+	void «interfaceName»RequestCaller::«methodName»(
+			«IF !method.inputParameters.empty»«inputTypedParamList»,«ENDIF»
+			«IF method.outputParameters.empty»
+				std::function<void()> onSuccess
 			«ELSE»
-				void «interfaceName»RequestCaller::«methodName»(joynr::RequestStatus& joynrInternalStatus«prependCommaIfNotEmpty(getCommaSeperatedTypedOutputParameterList(method))»«prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»){
-					provider->«methodName»(joynrInternalStatus«prependCommaIfNotEmpty(getCommaSeperatedUntypedOutputParameterList(method))»«prependCommaIfNotEmpty(getCommaSeperatedUntypedParameterList(method))»); 
-				}
+				std::function<void(
+						«outputTypedParamList.substring(1)»
+				)> onSuccess
 			«ENDIF»
-
-		«ENDFOR»
-		
-		void «interfaceName»RequestCaller::registerAttributeListener(const QString& attributeName, joynr::IAttributeListener* attributeListener)
-		{
-			provider->registerAttributeListener(attributeName, attributeListener);
-		}
-		
-		void «interfaceName»RequestCaller::unregisterAttributeListener(const QString& attributeName, joynr::IAttributeListener* attributeListener)
-		{
-			provider->unregisterAttributeListener(attributeName, attributeListener);
-		}
-
-		void «interfaceName»RequestCaller::registerBroadcastListener(const QString& broadcastName, joynr::IBroadcastListener* broadcastListener)
-		{
-			provider->registerBroadcastListener(broadcastName, broadcastListener);
-		}
-
-		void «interfaceName»RequestCaller::unregisterBroadcastListener(const QString& broadcastName, joynr::IBroadcastListener* broadcastListener)
-		{
-			provider->unregisterBroadcastListener(broadcastName, broadcastListener);
-		}
-		
-		«getNamespaceEnder(serviceInterface)»
-	'''
+	) {
+		provider->«methodName»(
+				«IF !method.inputParameters.empty»«inputUntypedParamList»,«ENDIF»
+				onSuccess
+		);
 	}
+
+«ENDFOR»
+
+void «interfaceName»RequestCaller::registerAttributeListener(const std::string& attributeName, joynr::IAttributeListener* attributeListener)
+{
+	provider->registerAttributeListener(attributeName, attributeListener);
+}
+
+void «interfaceName»RequestCaller::unregisterAttributeListener(const std::string& attributeName, joynr::IAttributeListener* attributeListener)
+{
+	provider->unregisterAttributeListener(attributeName, attributeListener);
+}
+
+void «interfaceName»RequestCaller::registerBroadcastListener(const std::string& broadcastName, joynr::IBroadcastListener* broadcastListener)
+{
+	provider->registerBroadcastListener(broadcastName, broadcastListener);
+}
+
+void «interfaceName»RequestCaller::unregisterBroadcastListener(const std::string& broadcastName, joynr::IBroadcastListener* broadcastListener)
+{
+	provider->unregisterBroadcastListener(broadcastName, broadcastListener);
+}
+
+«getNamespaceEnder(serviceInterface)»
+'''
 }

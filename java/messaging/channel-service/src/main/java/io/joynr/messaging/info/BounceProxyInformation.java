@@ -54,6 +54,8 @@ public class BounceProxyInformation implements Serializable {
      * cluster controllers.
      * 
      * @param location
+     *   URI of the bounce proxy which is reachable for
+     *   cluster controllers
      */
     public void setLocation(URI location) {
         this.location = location;

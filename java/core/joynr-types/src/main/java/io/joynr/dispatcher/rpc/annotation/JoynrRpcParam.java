@@ -35,15 +35,26 @@ import com.fasterxml.jackson.core.type.TypeReference;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PARAMETER)
 public @interface JoynrRpcParam {
-    /** The name of the parameter */
+    /** Returns the name of the parameter
+     * @return The name of the parameter.
+     */
     String value();
 
-    /** A type token. This is needed to correctly deserialize collection types because their type information is erased after compilation in Java */
+    /** Returns the deserialization type token.
+     * This is needed to correctly deserialize collection types because their type information is erased after compilation in Java
+     * @return The deserialisation type
+     */
     Class<? extends TypeReference<?>> deserialisationType() default DefaultTypeReference.class;
 
-    /** A default value for the parameter. It is used if a parameter is missing in the function call. This one can only be used for simple types. */
+    /** Returns the default value for the parameter.
+     * It is used if a parameter is missing in the function call. This one can only be used for simple types.
+     * @return The default value for the parameter.
+     */
     String defaultValue() default "";
 
-    /** A default value for the parameter as JSON String. It is used if a parameter is missing in the function call. This one can be used for all types. */
+    /** Returns the default value for the parameter as JSON String.
+     * It is used if a parameter is missing in the function call. This one can be used for all types.
+     * @return The default value as JSON Strnig.
+     */
     String defaultJsonValue() default "";
 }

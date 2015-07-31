@@ -20,6 +20,7 @@
 #include <gmock/gmock.h>
 #include <QSettings>
 #include <QFile>
+#include <string>
 #include "joynr/MessagingSettings.h"
 #include "joynr/LocalChannelUrlDirectory.h"
 #include "utils/QThreadSleep.h"
@@ -39,12 +40,19 @@ using ::testing::Invoke;
 using namespace joynr;
 
 // global function used for calls to the MockChannelUrlSelectorProxy
-void localChannelUrlDirectoryTestPseudoGetChannelUrls(QSharedPointer<Future<types::ChannelUrlInformation> > future , QString channelId) {
+std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> localChannelUrlDirectoryTestPseudoGetChannelUrls(
+        const std::string& channelId,
+        std::function<void(types::ChannelUrlInformation& urls)> onSuccess,
+        std::function<void(RequestStatus& status)> onError) {
+    std::ignore = channelId;
+    std::ignore = onError;
     types::ChannelUrlInformation urlInformation;
-    QList<QString> urls;
-    urls << "firstUrl" << "secondUrl" << "thirdUrl";
+    std::vector<std::string> urls = { "firstUrl", "secondUrl", "thirdUrl" };
     urlInformation.setUrls(urls);
-    future->onSuccess(RequestStatus(RequestStatusCode::OK), urlInformation);
+    std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> future(new joynr::Future<types::ChannelUrlInformation>());
+    future->onSuccess(urlInformation);
+    onSuccess(urlInformation);
+    return future;
 }
 
 class LocalChannelUrlDirectoryTest : public ::testing::Test {
@@ -76,59 +84,64 @@ protected:
 
 
 TEST_F(LocalChannelUrlDirectoryTest, getChannelUrlsUsesInternalProxy) {
-    QSharedPointer<MockChannelUrlDirectoryProxy> mockChannelUrlDirectoryProxy =
-            QSharedPointer<MockChannelUrlDirectoryProxy>(new MockChannelUrlDirectoryProxy());
+    QSharedPointer<MockChannelUrlDirectoryProxy> mockChannelUrlDirectoryProxy(new MockChannelUrlDirectoryProxy());
 
-    EXPECT_CALL(*mockChannelUrlDirectoryProxy, getUrlsForChannel(
-                    A<QSharedPointer<Future<types::ChannelUrlInformation> > >(),
-                    A<QString>()))
+    EXPECT_CALL(*mockChannelUrlDirectoryProxy, getUrlsForChannelAsync(
+                    A<const std::string&>(),
+                    A<std::function<void(const types::ChannelUrlInformation& urls)>>(),
+                    A<std::function<void(const RequestStatus& status)>>()))
             .WillOnce(Invoke(localChannelUrlDirectoryTestPseudoGetChannelUrls));
 
     LocalChannelUrlDirectory localDirectory(messagingSettings, mockChannelUrlDirectoryProxy);
-    QSharedPointer<Future<types::ChannelUrlInformation> > futureUrls = QSharedPointer<Future<types::ChannelUrlInformation> >(
-                new Future<types::ChannelUrlInformation>());
-    localDirectory.getUrlsForChannel(futureUrls,"pseudoChannelID", 20000);
+    std::shared_ptr<Future<types::ChannelUrlInformation> > futureUrls(
+                localDirectory.getUrlsForChannelAsync(
+                    "pseudoChannelID",
+                    20000,
+                    [](const types::ChannelUrlInformation& url) {},
+                    [](const RequestStatus& status) {}));
 
     EXPECT_EQ(true, futureUrls->getStatus().successful());
 
-    types::ChannelUrlInformation channelInf = futureUrls->getValue();
+    types::ChannelUrlInformation channelInf;
+    futureUrls->getValues(channelInf);
     types::ChannelUrlInformation urlInformation;
-    QList<QString> urls;
-    urls << "firstUrl" << "secondUrl" << "thirdUrl";
+    std::vector<std::string> urls = { "firstUrl", "secondUrl", "thirdUrl" };
     urlInformation.setUrls(urls);
 
     EXPECT_EQ(urlInformation,channelInf);
 }
 
 TEST_F(LocalChannelUrlDirectoryTest, registerChannelUrls) {
-    QSharedPointer<MockChannelUrlDirectoryProxy> mockChannelUrlDirectoryProxy =
-            QSharedPointer<MockChannelUrlDirectoryProxy>(new MockChannelUrlDirectoryProxy());
+    QSharedPointer<MockChannelUrlDirectoryProxy> mockChannelUrlDirectoryProxy(new MockChannelUrlDirectoryProxy());
 
-    EXPECT_CALL(*mockChannelUrlDirectoryProxy, registerChannelUrls(
-                    A<QSharedPointer<Future<void > > >(),
-                    A<QString>(),
-                    _)).Times(1);
+    EXPECT_CALL(*mockChannelUrlDirectoryProxy, registerChannelUrlsAsync(
+                    A<const std::string&>(),
+                    _,
+                    A<std::function<void(void)>>(),
+                    A<std::function<void(const RequestStatus& status)>>()))
+            .Times(1)
+            .WillOnce(Return(std::shared_ptr<joynr::Future<void>>(
+                                 new joynr::Future<void>())));
 
     LocalChannelUrlDirectory localDirectory(messagingSettings, mockChannelUrlDirectoryProxy);
 
     types::ChannelUrlInformation urlInformation;
-    QSharedPointer<Future<void> > future(new Future<void>());
-    localDirectory.registerChannelUrls(future, "myChannelId", urlInformation );
+    localDirectory.registerChannelUrlsAsync("myChannelId", urlInformation);
 }
 
 TEST_F(LocalChannelUrlDirectoryTest, unregisterChannelUrls) {
-    QSharedPointer<MockChannelUrlDirectoryProxy> mockChannelUrlDirectoryProxy =
-            QSharedPointer<MockChannelUrlDirectoryProxy>(new MockChannelUrlDirectoryProxy());
+    QSharedPointer<MockChannelUrlDirectoryProxy> mockChannelUrlDirectoryProxy(new MockChannelUrlDirectoryProxy());
 
-    EXPECT_CALL(*mockChannelUrlDirectoryProxy, unregisterChannelUrls(
-                    A<QSharedPointer<Future<void > > >(),
-                    _)).Times(1);
+    EXPECT_CALL(*mockChannelUrlDirectoryProxy, unregisterChannelUrlsAsync(
+                    A<const std::string&>(),
+                    A<std::function<void()>>(),
+                    A<std::function<void(const RequestStatus& status)>>()))
+            .Times(1)
+            .WillOnce(Return(std::shared_ptr<joynr::Future<void>>(new joynr::Future<void>())));
 
     LocalChannelUrlDirectory localDirectory(messagingSettings, mockChannelUrlDirectoryProxy);
 
-    types::ChannelUrlInformation urlInformation;
-    QSharedPointer<Future<void> > future(new Future<void>());
-    localDirectory.unregisterChannelUrls(future,"pseudoChannelId");
+    localDirectory.unregisterChannelUrlsAsync("pseudoChannelId");
 }
 
 

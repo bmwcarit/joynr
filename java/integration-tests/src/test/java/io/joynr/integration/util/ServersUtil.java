@@ -57,6 +57,7 @@ public class ServersUtil {
     public static final String BOUNCEPROXY_CONTEXT = "/bounceproxy";
 
     public static final String DISCOVERY_CONTEXT = "/discovery";
+    public static final String ACCESSCONTROL_CONTEXT = "/accesscontrol";
 
     public static final String BOUNCEPROXYCONTROLLER_CONTEXT = "/controller";
 
@@ -67,7 +68,7 @@ public class ServersUtil {
             // use existing bounceproxy
             return;
         }
-        String serverUrl = System.getProperties().getProperty("hostPath");
+        String serverUrl = System.getProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH);
         String bounceProxyUrl = serverUrl + BOUNCEPROXY_CONTEXT + "/";
         System.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL, bounceProxyUrl);
     }
@@ -78,7 +79,7 @@ public class ServersUtil {
             // use existing discovery
             return;
         }
-        String serverUrl = System.getProperties().getProperty("hostPath");
+        String serverUrl = System.getProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH);
         String directoriesUrl = serverUrl + DISCOVERY_CONTEXT + "/channels/discoverydirectory_channelid/";
 
         System.setProperty(MessagingPropertyKeys.CAPABILITIESDIRECTORYURL, directoriesUrl);
@@ -87,23 +88,26 @@ public class ServersUtil {
 
     public static Server startServers() throws Exception {
         ContextHandlerCollection contexts = new ContextHandlerCollection();
-        contexts.setHandlers(new Handler[]{ createBounceproxyWebApp(), discoveryWebApp() });
+        contexts.setHandlers(new Handler[]{ createBounceproxyWebApp(), discoveryWebApp(), accessControlWebApp() });
 
         System.setProperty("log4j.configuration", Resources.getResource("log4j_backend.properties").toString());
 
         Server server = startServer(contexts);
-        setBounceProxyUrl();
-        setDirectoriesUrl();
         return server;
     }
 
     public static Server startSSLServers(SSLSettings settings) throws Exception {
-        ContextHandlerCollection contexts = new ContextHandlerCollection();
-        contexts.setHandlers(new Handler[]{ createBounceproxyWebApp(), discoveryWebApp() });
+        final int port = ServletUtil.findFreePort();
+        return startSSLServers(settings, port);
+    }
 
-        Server server = startSSLServer(contexts, settings);
+    public static Server startSSLServers(SSLSettings settings, int port) throws Exception {
+        ContextHandlerCollection contexts = new ContextHandlerCollection();
+        contexts.setHandlers(new Handler[]{ createBounceproxyWebApp(), discoveryWebApp(), accessControlWebApp() });
+        Server server = startSSLServer(contexts, settings, port);
         setBounceProxyUrl();
         setDirectoriesUrl();
+
         return server;
     }
 
@@ -111,8 +115,8 @@ public class ServersUtil {
         ContextHandlerCollection contexts = new ContextHandlerCollection();
         contexts.setHandlers(new Handler[]{ createBounceproxyWebApp() });
 
-        Server server = startServer(contexts);
-        setBounceProxyUrl();
+        final int port = ServletUtil.findFreePort();
+        Server server = startServer(contexts, port);
         return server;
     }
 
@@ -151,35 +155,30 @@ public class ServersUtil {
         ContextHandlerCollection contexts = new ContextHandlerCollection();
         contexts.setHandlers(new Handler[]{ createBounceproxyControllerWebApp(warFileName, "", null) });
 
-        Server server = startServer(contexts);
-        String serverUrl = System.getProperties().getProperty("hostPath");
+        final int port = ServletUtil.findFreePort();
+        Server server = startServer(contexts, port);
+        String serverUrl = "http://localhost:" + port;
         String bounceProxyUrl = serverUrl + "/controller/";
         System.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL, bounceProxyUrl);
         return server;
     }
 
-    private static Server startServer(ContextHandlerCollection contexts) throws IOException, Exception {
+    private static Server startServer(ContextHandlerCollection contexts) throws Exception {
         final int port = ServletUtil.findFreePort();
         return startServer(contexts, port);
     }
 
-    private static Server startSSLServer(ContextHandlerCollection contexts, SSLSettings settings) throws IOException,
-                                                                                                 Exception {
-        final int port = ServletUtil.findFreePort();
-        return startSSLServer(contexts, settings, port);
-    }
+    private static Server startServer(ContextHandlerCollection contexts, int port) throws Exception {
+        System.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH, "http://localhost:" + port);
+        setBounceProxyUrl();
+        setDirectoriesUrl();
+        logger.info("HOST PATH: {}", System.getProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH));
 
-    private static Server startServer(ContextHandlerCollection contexts, int port) throws IOException, Exception {
-
-        logger.info("PORT: http://localhost:{}", port);
         final Server jettyServer = new Server();
         ServerConnector connector = new ServerConnector(jettyServer, new HttpConnectionFactory(new HttpConfiguration()));
         connector.setPort(port);
         connector.setAcceptQueueSize(1);
         jettyServer.setConnectors(new Connector[]{ connector });
-
-        String serverUrl = "http://localhost:" + port;
-        System.getProperties().setProperty("hostPath", serverUrl);
 
         jettyServer.setHandler(contexts);
         jettyServer.start();
@@ -191,7 +190,8 @@ public class ServersUtil {
                                                                                                            throws IOException,
                                                                                                            Exception {
 
-        logger.info("PORT: https://localhost:{}", port);
+        System.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH, "http://localhost:" + port);
+        logger.info("PORT: {}", System.getProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH));
         final Server jettyServer = new Server();
 
         HttpConfiguration https_config = new HttpConfiguration();
@@ -217,7 +217,7 @@ public class ServersUtil {
         jettyServer.setConnectors(new Connector[]{ connector });
 
         String serverUrl = "https://localhost:" + port;
-        System.getProperties().setProperty("hostPath", serverUrl);
+        System.getProperties().setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH, serverUrl);
 
         jettyServer.setHandler(contexts);
         jettyServer.start();
@@ -271,7 +271,7 @@ public class ServersUtil {
      * Creates a context path with slashes set at the right positions, i.e. a
      * leading slash, a single slash between each context and no slash at the
      * end.
-     * 
+     *
      * @param contexts
      *            the contexts to add to the path. The contexts are added in the
      *            same order as given as parameters.
@@ -306,10 +306,17 @@ public class ServersUtil {
         return discoveryWebapp;
     }
 
+    private static WebAppContext accessControlWebApp() {
+        WebAppContext accessControlWebapp = new WebAppContext();
+        accessControlWebapp.setContextPath(ACCESSCONTROL_CONTEXT);
+        accessControlWebapp.setWar("target/accesscontrol.war");
+        return accessControlWebapp;
+    }
+
     /**
      * Waits until all bounce proxies are registered with a single bounce proxy
      * controller or until the timeout is reached.
-     * 
+     *
      * @param timeout_ms
      *            the timeout in milliseconds
      * @param wait_time_ms

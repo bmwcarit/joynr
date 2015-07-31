@@ -44,7 +44,7 @@ class MessageRouter;
 
 namespace system
 {
-class Address;
+class QtAddress;
 }
 
 /**

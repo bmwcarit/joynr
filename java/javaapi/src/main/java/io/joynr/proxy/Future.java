@@ -21,7 +21,7 @@ package io.joynr.proxy;
 
 import io.joynr.dispatcher.rpc.RequestStatus;
 import io.joynr.dispatcher.rpc.RequestStatusCode;
-import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrWaitExpiredException;
 
 import java.util.concurrent.TimeUnit;
@@ -32,17 +32,17 @@ import java.util.concurrent.locks.ReentrantLock;
 public class Future<T> {
 
     private T reply;
-    private JoynrException exception = null;
+    private JoynrRuntimeException exception = null;
     RequestStatus status = new RequestStatus(RequestStatusCode.IN_PROGRESS);
     private Lock statusLock = new ReentrantLock();
     private Condition statusLockChangedCondition = statusLock.newCondition();
 
     /**
-     * 
+     *
      * @param timeout_ms
      *            time to wait until throwing a JoynWaitExpiredException
      * @return the result of the method call
-     * @throws InterruptedException
+     * @throws InterruptedException if the thread is interrupted.
      * @throws JoynrWaitExpiredException
      *             if timeout_ms expires
      */
@@ -76,7 +76,7 @@ public class Future<T> {
     }
 
     /**
-     * 
+     *
      * @return the result of the method call
      * @throws InterruptedException
      *             - if the current thread is interrupted (and interruption of thread suspension is supported)
@@ -91,19 +91,19 @@ public class Future<T> {
 
     /**
      * Resolves the future using the given result
-     * 
-     * @param status
+     *
      * @param result
+     *            the result of the asynchronous call
      */
     public void onSuccess(T result) {
         try {
             statusLock.lock();
             reply = result;
-            statusLockChangedCondition.signal();
             status = new RequestStatus(RequestStatusCode.OK);
+            statusLockChangedCondition.signalAll();
         } catch (Throwable e) {
             status = new RequestStatus(RequestStatusCode.ERROR);
-            exception = new JoynrException(e);
+            exception = new JoynrRuntimeException(e);
         } finally {
             statusLock.unlock();
         }
@@ -111,18 +111,29 @@ public class Future<T> {
 
     /**
      * Terminates the future in error
-     * 
-     * @param exception
+     *
+     * @param newException
      *            that caused the failure
      */
-    public void onFailure(JoynrException newException) {
+    public void onFailure(JoynrRuntimeException newException) {
         exception = newException;
         status = new RequestStatus(RequestStatusCode.ERROR);
         try {
             statusLock.lock();
-            statusLockChangedCondition.signal();
+            statusLockChangedCondition.signalAll();
         } finally {
             statusLock.unlock();
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public void resolve(Object... response) {
+        if (response.length == 0) {
+            onSuccess(null);
+        } else if (response[0] instanceof JoynrRuntimeException) {
+            onFailure((JoynrRuntimeException) response[0]);
+        } else {
+            onSuccess((T) response[0]);
         }
     }
 }

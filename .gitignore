@@ -9,8 +9,12 @@ src/main/generated/
 bounceproxy.build-.log
 /java/messaging/messaging-service/logs
 THIRD-PARTY.properties
-*-build
+/*-build/
 .DS_Store
 .idea/
 *.iml
-
+logs/
+examples/radio-app/gps-provider-joynr.properties
+joynrpersistence/
+derby.log
+/build/

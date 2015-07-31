@@ -18,14 +18,13 @@ package io.joynr.pubsub.subscription;
  * limitations under the License.
  * #L%
  */
-
+import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
 import io.joynr.pubsub.HeartbeatSubscriptionInformation;
 import io.joynr.pubsub.PubSubState;
 import io.joynr.pubsub.SubscriptionQos;
 
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
@@ -46,6 +45,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
     private ConcurrentMap<String, AttributeSubscriptionListener<?>> subscriptionListenerDirectory;
     private ConcurrentMap<String, BroadcastSubscriptionListener> broadcastSubscriptionListenerDirectory;
     private ConcurrentMap<String, Class<?>> subscriptionTypes;
+    private ConcurrentMap<String, Class<?>[]> subscriptionBroadcastTypes;
     private ConcurrentMap<String, PubSubState> subscriptionStates;
     private ConcurrentMap<String, MissedPublicationTimer> missedPublicationTimers;
     private ConcurrentMap<String, ScheduledFuture<?>> subscriptionEndFutures; // These futures will be needed if a
@@ -56,7 +56,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
     private ScheduledExecutorService cleanupScheduler;
 
     @Inject
-    public SubscriptionManagerImpl(@Named("joynr.scheduler.cleanup") ScheduledExecutorService cleanupScheduler) {
+    public SubscriptionManagerImpl(@Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler) {
         super();
         this.cleanupScheduler = cleanupScheduler;
         this.subscriptionListenerDirectory = Maps.newConcurrentMap();
@@ -65,15 +65,18 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         this.missedPublicationTimers = Maps.newConcurrentMap();
         this.subscriptionEndFutures = Maps.newConcurrentMap();
         this.subscriptionTypes = Maps.newConcurrentMap();
+        this.subscriptionBroadcastTypes = Maps.newConcurrentMap();
 
     }
 
+    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public SubscriptionManagerImpl(ConcurrentMap<String, AttributeSubscriptionListener<?>> attributeSubscriptionDirectory,
                                    ConcurrentMap<String, BroadcastSubscriptionListener> broadcastSubscriptionDirectory,
                                    ConcurrentMap<String, PubSubState> subscriptionStates,
                                    ConcurrentMap<String, MissedPublicationTimer> missedPublicationTimers,
                                    ConcurrentMap<String, ScheduledFuture<?>> subscriptionEndFutures,
                                    ConcurrentMap<String, Class<?>> subscriptionAttributeTypes,
+                                   ConcurrentMap<String, Class<?>[]> subscriptionBroadcastTypes,
                                    ScheduledExecutorService cleanupScheduler) {
         super();
         this.subscriptionListenerDirectory = attributeSubscriptionDirectory;
@@ -82,6 +85,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         this.missedPublicationTimers = missedPublicationTimers;
         this.subscriptionEndFutures = subscriptionEndFutures;
         this.subscriptionTypes = subscriptionAttributeTypes;
+        this.subscriptionBroadcastTypes = subscriptionBroadcastTypes;
         this.cleanupScheduler = cleanupScheduler;
     }
 
@@ -152,7 +156,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         String subscriptionId = subscriptionRequest.getSubscriptionId();
         registerSubscription(subscriptionRequest.getQos(), subscriptionId);
         logger.info("Attribute subscription registered with Id: " + subscriptionId);
-        subscriptionTypes.put(subscriptionId, List.class);
+        subscriptionBroadcastTypes.put(subscriptionId, subscriptionRequest.getOutParameterTypes());
         broadcastSubscriptionListenerDirectory.put(subscriptionId,
                                                    subscriptionRequest.getBroadcastSubscriptionListener());
     }
@@ -206,8 +210,13 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
     }
 
     @Override
-    public Class<?> getType(final String subscriptionId) {
+    public Class<?> getAttributeType(final String subscriptionId) {
         return subscriptionTypes.get(subscriptionId);
+    }
+
+    @Override
+    public Class<?>[] getBroadcastOutParameterTypes(String subscriptionId) {
+        return subscriptionBroadcastTypes.get(subscriptionId);
     }
 
     protected void removeSubscription(String subscriptionId) {
@@ -240,10 +249,4 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         }
 
     }
-
-    @Override
-    public void shutdown() {
-
-    }
-
 }

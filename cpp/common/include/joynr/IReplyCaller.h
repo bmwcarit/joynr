@@ -56,14 +56,6 @@ public:
      */
     virtual void timeOut() = 0;
 
-    /**
-     * @brief This method should return the name of the type that this reply caller should return.
-     * This is required by the ReplyInterpreterFactory to create an interpreter for the type in
-     * Dispatcher::handleReplyReceived.
-     *
-     * @return QString The name of the type, e.g. "int".
-     */
-    virtual QString getTypeName() const = 0;
     virtual int getTypeId() const = 0;
 };
 

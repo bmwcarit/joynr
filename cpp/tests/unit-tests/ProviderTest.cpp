@@ -19,26 +19,38 @@
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <string>
 
-#include "joynr/Provider.h"
-#include "joynr/types/ProviderQos.h"
+#include "joynr/AbstractJoynrProvider.h"
+#include "joynr/types/QtProviderQos.h"
 #include "joynr/IAttributeListener.h"
 #include "libjoynr/subscription/SubscriptionAttributeListener.h"
 #include "tests/utils/MockObjects.h"
 
 using namespace joynr;
 
-class DummyProvider : public Provider {
+class DummyProvider : public AbstractJoynrProvider {
 public:
     types::ProviderQos getProviderQos() const {
         types::ProviderQos ret;
         return ret;
     }
+    std::string getInterfaceName() const {
+        return "DummyProviderInterface";
+    }
+
+    void onAttributeValueChanged(const std::string& attributeName, const QVariant& value) {
+        AbstractJoynrProvider::onAttributeValueChanged(attributeName, value);
+    }
+
+    void fireBroadcast(const std::string& broadcastName, const QList<QVariant>& values) {
+        AbstractJoynrProvider::fireBroadcast(broadcastName, values);
+    }
 };
 
 TEST(ProviderTest, register_attributeListener) {
     MockPublicationManager publicationManager;
-    QString attributeName("testAttribute");
+    std::string attributeName("testAttribute");
     QString subscriptionId("test-subscription-id");
     QVariant attributeValue(42);
 
@@ -56,7 +68,7 @@ TEST(ProviderTest, register_attributeListener) {
 
 TEST(ProviderTest, unregister_attributeListener) {
     MockPublicationManager publicationManager;
-    QString attributeName("testAttribute");
+    std::string attributeName("testAttribute");
     QString subscriptionId("test-subscription-id");
     QVariant attributeValue(42);
 

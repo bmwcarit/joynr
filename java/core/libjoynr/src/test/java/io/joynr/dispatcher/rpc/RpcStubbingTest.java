@@ -24,11 +24,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import io.joynr.accesscontrol.AccessController;
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.dispatcher.DispatcherTestModule;
-import io.joynr.dispatcher.RequestCallerSync;
+import io.joynr.dispatcher.RequestCaller;
 import io.joynr.dispatcher.RequestReplyDispatcher;
 import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.dispatcher.SynchronizedReplyCaller;
@@ -37,11 +39,17 @@ import io.joynr.endpoints.EndpointAddressBase;
 import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingModule;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.provider.Deferred;
+import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.JoynrProvider;
+import io.joynr.provider.Promise;
 import io.joynr.provider.RequestCallerFactory;
+import io.joynr.proxy.Callback;
+import io.joynr.proxy.Future;
 import io.joynr.pubsub.subscription.SubscriptionManager;
 import io.joynr.runtime.PropertyLoader;
 
@@ -52,8 +60,8 @@ import java.util.UUID;
 
 import joynr.Reply;
 import joynr.Request;
-import joynr.types.GpsFixEnum;
-import joynr.types.GpsLocation;
+import joynr.types.localisation.GpsFixEnum;
+import joynr.types.localisation.GpsLocation;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -66,14 +74,15 @@ import org.mockito.stubbing.Answer;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 /**
  * Simulates consumer-side call to JoynMessagingConnectorInvocationHandler, with the request being
- * 
+ *
  * @author david.katz
- * 
+ *
  */
 @RunWith(MockitoJUnitRunner.class)
 public class RpcStubbingTest {
@@ -93,8 +102,10 @@ public class RpcStubbingTest {
             new GpsLocation(3.0d, 4.0d, 0d, GpsFixEnum.MODE2D, 0d, 0d, 0d, 0d, 0l, 0l, 0) });
 
     private static final long DEFAULT_TTL = 2000L;
+    @Mock
+    private AccessController accessControllerMock;
 
-    public static interface TestSyncInterface extends JoynrSyncInterface {
+    public static interface TestSync extends JoynrSyncInterface {
         public GpsLocation returnsGpsLocation();
 
         public List<GpsLocation> returnsGpsLocationList();
@@ -104,16 +115,14 @@ public class RpcStubbingTest {
         public void noParamsNoReturnValue();
     }
 
-    public static interface TestAsyncInterface extends JoynrAsyncInterface {
+    public static interface TestProvider extends JoynrInterface, JoynrProvider {
+        public Promise<Deferred<GpsLocation>> returnsGpsLocation();
 
-    }
+        public Promise<Deferred<List<GpsLocation>>> returnsGpsLocationList();
 
-    public static interface TestInterface extends JoynrInterface, TestSyncInterface, TestAsyncInterface {
+        public Promise<DeferredVoid> takesTwoSimpleParams(@JoynrRpcParam("a") Integer a, @JoynrRpcParam("b") String b);
 
-    }
-
-    public interface TestProviderInterface extends TestInterface, JoynrProvider {
-
+        public Promise<DeferredVoid> noParamsNoReturnValue();
     }
 
     @Mock
@@ -124,7 +133,7 @@ public class RpcStubbingTest {
     private RequestReplySender messageSender;
 
     @Mock
-    private TestProviderInterface testMock;
+    private TestProvider testMock;
 
     // private String domain;
     // private String interfaceName;
@@ -141,9 +150,18 @@ public class RpcStubbingTest {
     @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NP_NULL_PARAM_DEREF", justification = "NPE in test would fail test")
     public void setUp() throws JoynrCommunicationException, JoynrSendBufferFullException, JsonGenerationException,
                        JsonMappingException, IOException, JoynrMessageNotSentException {
+        doReturn(TestProvider.class).when(testMock).getProvidedInterface();
 
-        when(testMock.returnsGpsLocation()).thenReturn(gpsValue);
-        when(testMock.returnsGpsLocationList()).thenReturn(gpsList);
+        Deferred<GpsLocation> deferredGpsLocation = new Deferred<GpsLocation>();
+        deferredGpsLocation.resolve(gpsValue);
+        when(testMock.returnsGpsLocation()).thenReturn(new Promise<Deferred<GpsLocation>>(deferredGpsLocation));
+        Deferred<List<GpsLocation>> deferredGpsLocationList = new Deferred<List<GpsLocation>>();
+        deferredGpsLocationList.resolve(gpsList);
+        when(testMock.returnsGpsLocationList()).thenReturn(new Promise<Deferred<List<GpsLocation>>>(deferredGpsLocationList));
+        DeferredVoid deferredVoid = new DeferredVoid();
+        deferredVoid.resolve();
+        when(testMock.noParamsNoReturnValue()).thenReturn(new Promise<DeferredVoid>(deferredVoid));
+        when(testMock.takesTwoSimpleParams(any(Integer.class), any(String.class))).thenReturn(new Promise<DeferredVoid>(deferredVoid));
 
         fromParticipantId = UUID.randomUUID().toString();
         toParticipantId = UUID.randomUUID().toString();
@@ -151,9 +169,15 @@ public class RpcStubbingTest {
         // required to inject static members of JoynMessagingConnectorFactory
         injector = Guice.createInjector(new MessagingModule(),
                                         new JoynrPropertiesModule(PropertyLoader.loadProperties("defaultMessaging.properties")),
-                                        new DispatcherTestModule());
+                                        new DispatcherTestModule(),
+                                        new AbstractModule() {
+                                            @Override
+                                            protected void configure() {
+                                                bind(AccessController.class).toInstance(accessControllerMock);
+                                            }
+                                        });
 
-        final JsonRequestInterpreter jsonRequestInterpreter = injector.getInstance(JsonRequestInterpreter.class);
+        final RequestInterpreter requestInterpreter = injector.getInstance(RequestInterpreter.class);
         final RequestCallerFactory requestCallerFactory = injector.getInstance(RequestCallerFactory.class);
 
         when(messageSender.sendSyncRequest(eq(fromParticipantId),
@@ -163,11 +187,9 @@ public class RpcStubbingTest {
                                            any(SynchronizedReplyCaller.class),
                                            eq(DEFAULT_TTL))).thenAnswer(new Answer<Reply>() {
 
-            private RequestCallerSync requestCaller = (RequestCallerSync) requestCallerFactory.create(testMock,
-                                                                                                      TestSyncInterface.class);
-
             @Override
             public Reply answer(InvocationOnMock invocation) throws Throwable {
+                RequestCaller requestCaller = requestCallerFactory.create(testMock);
                 Object[] args = invocation.getArguments();
                 Request request = null;
                 for (Object arg : args) {
@@ -176,16 +198,29 @@ public class RpcStubbingTest {
                         break;
                     }
                 }
+                final Future<Reply> future = new Future<Reply>();
+                Callback<Reply> callback = new Callback<Reply>() {
 
-                return jsonRequestInterpreter.execute(requestCaller, request);
+                    @Override
+                    public void onSuccess(Reply result) {
+                        future.onSuccess(result);
+                    }
+
+                    @Override
+                    public void onFailure(JoynrRuntimeException error) {
+                        future.onFailure(error);
+                    }
+                };
+                requestInterpreter.execute(callback, requestCaller, request);
+                return future.getReply();
             }
         });
 
         MessagingQos qosSettings = new MessagingQos(DEFAULT_TTL);
-        connector = JoynrMessagingConnectorFactory.create(dispatcher,
-                                                          subscriptionManager,
-                                                          messageSender,
-                                                          fromParticipantId,
+        JoynrMessagingConnectorFactory joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(messageSender,
+                                                                                                           dispatcher,
+                                                                                                           subscriptionManager);
+        connector = joynrMessagingConnectorFactory.create(fromParticipantId,
                                                           toParticipantId,
                                                           endpointAddress,
                                                           qosSettings);
@@ -198,8 +233,7 @@ public class RpcStubbingTest {
                                       IllegalAccessException, NoSuchMethodException {
         // Send
         String methodName = "noParamsNoReturnValue";
-        Object result = connector.executeSyncMethod(TestSyncInterface.class.getDeclaredMethod(methodName,
-                                                                                              new Class<?>[]{}),
+        Object result = connector.executeSyncMethod(TestSync.class.getDeclaredMethod(methodName, new Class<?>[]{}),
                                                     new Object[]{});
 
         assertNull(result);
@@ -225,9 +259,9 @@ public class RpcStubbingTest {
 
         String methodName = "takesTwoSimpleParams";
         Object[] args = new Object[]{ 3, "abc" };
-        Object response = connector.executeSyncMethod(TestSyncInterface.class.getDeclaredMethod(methodName,
-                                                                                                Integer.class,
-                                                                                                String.class), args);
+        Object response = connector.executeSyncMethod(TestSync.class.getDeclaredMethod(methodName,
+                                                                                       Integer.class,
+                                                                                       String.class), args);
 
         // no return value expected
         assertNull(response);
@@ -252,8 +286,7 @@ public class RpcStubbingTest {
                                 IllegalAccessException, NoSuchMethodException {
         // Send
         String methodName = "returnsGpsLocation";
-        Object response = connector.executeSyncMethod(TestSyncInterface.class.getDeclaredMethod(methodName),
-                                                      new Object[]{});
+        Object response = connector.executeSyncMethod(TestSync.class.getDeclaredMethod(methodName), new Object[]{});
 
         ArgumentCaptor<Request> requestCaptor = ArgumentCaptor.forClass(Request.class);
         verify(messageSender).sendSyncRequest(eq(fromParticipantId),
@@ -275,8 +308,7 @@ public class RpcStubbingTest {
                                     IllegalAccessException, NoSuchMethodException {
         // Send
         String methodName = "returnsGpsLocationList";
-        Object response = connector.executeSyncMethod(TestSyncInterface.class.getDeclaredMethod(methodName),
-                                                      new Object[]{});
+        Object response = connector.executeSyncMethod(TestSync.class.getDeclaredMethod(methodName), new Object[]{});
 
         ArgumentCaptor<Request> requestCaptor = ArgumentCaptor.forClass(Request.class);
         verify(messageSender).sendSyncRequest(eq(fromParticipantId),

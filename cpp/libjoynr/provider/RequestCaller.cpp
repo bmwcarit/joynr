@@ -22,7 +22,7 @@
 namespace joynr
 {
 
-RequestCaller::RequestCaller(const QString& interfaceName) : interfaceName(interfaceName)
+RequestCaller::RequestCaller(const std::string& interfaceName) : interfaceName(interfaceName)
 {
 }
 
@@ -30,7 +30,7 @@ RequestCaller::~RequestCaller()
 {
 }
 
-QString RequestCaller::getInterfaceName()
+std::string RequestCaller::getInterfaceName()
 {
     return interfaceName;
 }

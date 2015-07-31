@@ -17,52 +17,55 @@ package io.joynr.generator.cpp.util
  * limitations under the License.
  */
 
+import com.google.common.collect.Iterators
 import com.google.inject.Inject
 import com.google.inject.name.Named
+import io.joynr.generator.util.JoynrGeneratorExtensions
 import java.io.File
-import java.util.Collections
-import java.util.HashMap
 import java.util.Iterator
-import java.util.Map
-import java.util.TreeSet
-import org.franca.core.franca.FArgument
 import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FBroadcast
-import org.franca.core.franca.FCompoundType
 import org.franca.core.franca.FInterface
-import org.franca.core.franca.FMethod
 import org.franca.core.franca.FModelElement
 import org.franca.core.franca.FType
 import org.franca.core.franca.FTypeRef
 import org.franca.core.franca.FTypedElement
+import org.franca.core.franca.FBasicTypeId
+import org.franca.core.franca.FAnnotationType
 
-class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
-	
+class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
+
 	@Inject @Named("generationId")
 	String dllExportName;
-
-	private Map<FBasicTypeId,String> primitiveDataTypeDefaultMap;
-
-	// Convert ByteBuffers into QByteArrays
-	override getPrimitiveTypeName(FBasicTypeId basicType) {
-		if (basicType == FBasicTypeId::BYTE_BUFFER) {
-			return "QByteArray"
-		}
-		super.getPrimitiveTypeName(basicType)
-	}
 
 	def String getNamespaceStarter(FInterface interfaceType) {
 		getNamespaceStarter(getPackageNames(interfaceType));
 	}
 
 	def String getNamespaceStarter(FType datatype) {
-		getNamespaceStarter(getPackageNames(datatype));
+		return getNamespaceStarter(datatype, false);
+	}
+
+	def String[] getNamespaces(FType datatype, boolean includeTypeCollection) {
+				var String packagePath = datatype.getPackagePathWithoutJoynrPrefix(".");
+		if (includeTypeCollection && datatype.isPartOfTypeCollection) {
+			packagePath += "." + datatype.typeCollectionName;
+		}
+		return packagePath.split("\\.");
+	}
+
+	def String getNamespaceStarter(FType datatype, boolean includeTypeCollection) {
+		return getNamespaceStarter(Iterators::forArray(getNamespaces(datatype, includeTypeCollection)));
 	}
 
 	def String getNamespaceEnder(FInterface interfaceType) {
 		getNamespaceEnder(getPackageNames(interfaceType));
 	}
-	
+
+	def String getNamespaceEnder(FType datatype, boolean includeTypeCollection) {
+		return getNamespaceEnder(Iterators::forArray(getNamespaces(datatype, includeTypeCollection)));
+	}
+
 	def String getNamespaceEnder(FType datatype) {
 		getNamespaceEnder(getPackageNames(datatype));
 	}
@@ -93,117 +96,11 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 		return sb.toString();
 	}
 
-	new () {
-/*
-		val Map<FBasicTypeId,String> aMap = new HashMap<FBasicTypeId,String>();
-		aMap.put(FBasicTypeId::BOOLEAN, "bool");
-		aMap.put(FBasicTypeId::STRING, "QString");
-		aMap.put(FBasicTypeId::DOUBLE,"double");
-		aMap.put(FBasicTypeId::INT16,"int");
-		aMap.put(FBasicTypeId::INT32,"int");
-		aMap.put(FBasicTypeId::INT64,"qint64");
-		aMap.put(FBasicTypeId::INT8,"qint8");
-		aMap.put(FBasicTypeId::UNDEFINED,"void");
-		primitiveDataTypeNameMap = Collections::unmodifiableMap(aMap);
-*/
-
-	val Map<FBasicTypeId,String> bMap = new HashMap<FBasicTypeId,String>();
-		bMap.put(FBasicTypeId::BOOLEAN, "false");
-		bMap.put(FBasicTypeId::INT8, "-1");
-		bMap.put(FBasicTypeId::UINT8, "-1");
-		bMap.put(FBasicTypeId::INT16, "-1");
-		bMap.put(FBasicTypeId::UINT16, "-1");
-		bMap.put(FBasicTypeId::INT32, "-1");
-		bMap.put(FBasicTypeId::UINT32, "-1");
-		bMap.put(FBasicTypeId::INT64, "-1");
-		bMap.put(FBasicTypeId::UINT64, "-1");
-		bMap.put(FBasicTypeId::FLOAT, "-1");
-		bMap.put(FBasicTypeId::DOUBLE, "-1");
-		bMap.put(FBasicTypeId::STRING, "\"\"");
-		bMap.put(FBasicTypeId::BYTE_BUFFER, "\"\"");
-		bMap.put(FBasicTypeId::UNDEFINED,"");
-
-		primitiveDataTypeDefaultMap = Collections::unmodifiableMap(bMap);
-	}
-
-	def getCommaSeperatedTypedOutputParameterList(
-		Iterable<FArgument> arguments,
-		boolean constParameters,
-		boolean linebreak
-	) {
-		val returnStringBuilder = new StringBuilder();
-		for(FArgument argument : arguments){
-
-			if (constParameters) {
-				returnStringBuilder.append("const ");
-			}
-
-			returnStringBuilder.append(getMappedDatatypeOrList(argument));
-			returnStringBuilder.append("& ");
-			returnStringBuilder.append(argument.joynrName);
-			returnStringBuilder.append(",");
-
-			if (linebreak) {
-				returnStringBuilder.append("\n");
-			}
-			else {
-				returnStringBuilder.append(" ");
-			}
-		}
-        val returnString = returnStringBuilder.toString();
-        if (returnString.length() == 0) {
-            return "";
-        }
-        else{
-	        return returnString.substring(0, returnString.length() - 2); //remove the last " ," or "\n,"
-        }
-	}
-
-	def getCommaSeperatedTypedOutputParameterList(FMethod method) {
-		return getCommaSeperatedTypedOutputParameterList(getOutputParameters(method), false, false)
-	}
-
-	def getCommaSeperatedTypedOutputParameterList(FBroadcast broadcast) {
-		return getCommaSeperatedTypedOutputParameterList(getOutputParameters(broadcast), false, false)
-	}
-
-	def getCommaSeperatedTypedOutputParameterListConstLinebreak(FBroadcast broadcast) {
-		return getCommaSeperatedTypedOutputParameterList(getOutputParameters(broadcast), true, true)
-	}
-
-	def getCommaSeperatedUntypedOutputParameterList(FMethod method) {
-		val returnStringBuilder = new StringBuilder();
-		for(FArgument argument : getOutputParameters(method)){
-			returnStringBuilder.append(argument.joynrName);
-			returnStringBuilder.append(", ");
-		}
-        val returnString = returnStringBuilder.toString();
-        if (returnString.length() == 0) {
-            return "";
-        }
-        else{
-	        return returnString.substring(0, returnString.length() - 2); //remove the last ,
-        }
-	}
-
-	def getCommaSeperatedTypedParameterList(FMethod method) {
-		val returnStringBuilder = new StringBuilder();
-		for (param : getInputParameters(method)) {
-			returnStringBuilder.append(getMappedDatatypeOrList(param));
-			returnStringBuilder.append(" ");
-			returnStringBuilder.append(param.joynrName);
-			returnStringBuilder.append(", ");
-		}
-		val returnString = returnStringBuilder.toString();
-		if (returnString.length() == 0) {
-			return "";
-		}
-		else{
-			return returnString.substring(0, returnString.length() - 2); //remove the last ,
-		}
-	}
-
 	def buildPackagePath(FType datatype, String separator) {
+		return buildPackagePath(datatype, separator, false);
+	}
+
+	def buildPackagePath(FType datatype, String separator, boolean includeTypeCollection) {
 		if (datatype == null) {
 			return "";
 		}
@@ -212,109 +109,57 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 			packagepath = getPackagePathWithJoynrPrefix(datatype, separator);
 		} catch (IllegalStateException e){
 			//	if an illegal StateException has been thrown, we tried to get the package for a primitive type, so the packagepath stays empty.
-		} 
-		if (packagepath!="") { 
+		}
+		if (packagepath!="") {
 			packagepath = packagepath + separator;
 		};
+		if (includeTypeCollection && datatype.partOfTypeCollection) {
+			packagepath += datatype.typeCollectionName + separator;
+		}
 		return packagepath;
 	}
 
-	override getMappedDatatype(FType datatype) {
-		val packagepath = buildPackagePath(datatype, "::");
-		if (isEnum(datatype)){
-			return  packagepath + datatype.joynrName+ "::" + getNestedEnumName();
-		}
-		else{
-			return  packagepath + datatype.joynrName  //if we don't know the type, we have to assume its a complex datatype defined somewhere else.
-		}
-	}
+	// for classes and methods
+	def appendDoxygenSummaryAndWriteSeeAndDescription(FModelElement element, String prefix)'''
+		«IF element.comment != null»
+			«FOR comment : element.comment.elements»
+				«IF comment.type == FAnnotationType::DESCRIPTION»
+					«prefix» @brief «comment.comment.replaceAll("\\s+", " ").replaceAll("\n", "\n" + prefix)»
+				«ENDIF»
+			«ENDFOR»
+			«FOR comment : element.comment.elements»
+				«IF comment.type == FAnnotationType::SEE»
+					«prefix» @see «comment.comment.replaceAll("\\s+", " ").replaceAll("\n", "\n" + prefix)»
+				«ENDIF»
+				«IF comment.type == FAnnotationType::DETAILS»
+					«prefix»
+					«prefix» «comment.comment.replaceAll("\\s+", " ").replaceAll("\n", "\n" + prefix)»
+				«ENDIF»
+			«ENDFOR»
+		«ENDIF»
+	'''
 
-	override getMappedDatatypeOrList(FType datatype, boolean array) {
-		val mappedDatatype = getMappedDatatype(datatype);
-		if (array) {
-			return "QList<" + mappedDatatype + "> ";
-		} else {
-			return mappedDatatype;
-		}
-	}
+	// for parts
+	def appendDoxygenComment(FModelElement element, String prefix)'''
+		«IF element.comment != null»
+			«FOR comment : element.comment.elements»
+				«IF comment.type == FAnnotationType::DESCRIPTION»
+					«comment.comment.replaceAll("\\s+", " ").replaceAll("\n", "\n" + prefix)»
+				«ENDIF»
+			«ENDFOR»
+		«ENDIF»
+	'''
 
-	override getMappedDatatypeOrList(FBasicTypeId datatype, boolean array) {
-		val mappedDatatype = getPrimitiveTypeName(datatype);
-		if (array) {
-			return "QList<" + mappedDatatype + "> ";
-		} else {
-			return mappedDatatype;
-		}
-	}
-
-	override getDefaultValue(FTypedElement element) {
-		//default values are not supported (currently) by the Franca IDL 
-		/*if (member.getDEFAULTVALUE()!=null && !member.getDEFAULTVALUE().isEmpty()){
-			if (isEnum(member)){
-				val ENUMDATATYPETYPE enumDatatype = getDatatype(id) as ENUMDATATYPETYPE
-				for (ENUMELEMENTTYPE element : getEnumElements(enumDatatype)){
-					if (element.VALUE == member.DEFAULTVALUE){
-						return enumDatatype.SHORTNAME.toFirstUpper + "::" + element.SYNONYM
-					}
-				}
-				return getPackagePath(enumDatatype, "::") + "::" + enumDatatype.SHORTNAME.toFirstUpper + "::" +  (enumDatatype.ENUMERATIONELEMENTS.ENUMELEMENT.get(0) as ENUMELEMENTTYPE).SYNONYM
-			}
-			else if (isLong(member.getDATATYPEREF().getIDREF())){
-				return member.getDEFAULTVALUE() + "L"
-			}
-			else if (isDouble(member.getDATATYPEREF().getIDREF())){
-				return member.getDEFAULTVALUE() + "d"
-			}
-			else{
-				return member.getDEFAULTVALUE();
-			}
-		} else */if (isComplex(element.type)) {
-			return "";
-		} else if (isArray(element)){
-			return "";
-		} else if (isEnum(element.type)){
-			return " /* should have enum default value here */";
-		} else if (!primitiveDataTypeDefaultMap.containsKey(element.type.predefined)) {
- 			return "NaN";
- 		} else {
-			return primitiveDataTypeDefaultMap.get(element.type.predefined);
-		}
-
-	}
-
-
-	def Iterable<String> getRequiredIncludesFor(FCompoundType datatype){
-		val members = getComplexAndEnumMembers(datatype);
-
-		val typeList = new TreeSet<String>();
-		if (hasExtendsDeclaration(datatype)){
-			typeList.add(getIncludeOf(getExtendedType(datatype)))
-		}
-
-		for (member : members) {
-			val type = getDatatype(member.type);
-			if (type instanceof FType){
-				typeList.add(getIncludeOf(type));
-			}
-		}
-		return typeList;
-	}
-
-	def Iterable<String> getRequiredIncludesFor(FInterface serviceInterface){
-		val includeSet = new TreeSet<String>();
-		for(datatype: getAllComplexAndEnumTypes(serviceInterface)){
-			if (datatype instanceof FType){
-				includeSet.add(getIncludeOf(datatype));
-			}
-		}
-
-		for (broadcast: serviceInterface.broadcasts) {
-			if (isSelective(broadcast)) {
-				includeSet.add(getIncludeOfFilterParametersContainer(serviceInterface, broadcast));
-			}
-		}
-		return includeSet;
-	}
+	// for parameters
+	def appendDoxygenParameter(FModelElement element, String prefix)'''
+		«IF element.comment != null»
+			«FOR comment : element.comment.elements»
+				«IF comment.type == FAnnotationType::DESCRIPTION»
+					«prefix» @param «element.joynrName» «comment.comment.replaceAll("\\s+", " ").replaceAll("\n", "\n" + prefix)»
+				«ENDIF»
+			«ENDFOR»
+		«ENDIF»
+	'''
 
 	override String getOneLineWarning() {
 		//return ""
@@ -324,7 +169,7 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 	// Get the class that encloses a known enum
 	def String getEnumContainer(FType enumeration) {
 		var packagepath = buildPackagePath(enumeration, "::");
-		return packagepath + enumeration.joynrName;
+		return packagepath + enumeration.joynrNameQt;
 	}
 
 	// Get the class that encloses a known enum
@@ -345,7 +190,7 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 
 		switch datatype {
 		case isArray(element)     : "List"
-		case isEnum(datatypeRef)  : getPackagePathWithJoynrPrefix(datatype, ".") + 
+		case isEnum(datatypeRef)  : getPackagePathWithJoynrPrefix(datatype, ".") +
 									"." + datatype.joynrName
 		case isString(predefined) : "String"
 		case isInt(predefined)    : "Integer"
@@ -354,9 +199,9 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 		case isFloat(predefined)  : "Double"
 		case isBool(predefined)   : "Boolean"
 		case isByte(predefined)   : "Byte"
-		case datatype != null     : getPackagePathWithJoynrPrefix(datatype, ".") + 
+		case datatype != null     : getPackagePathWithJoynrPrefix(datatype, ".") +
 									"." + datatype.joynrName
-        default                   : throw new RuntimeException("Unhandled primitive type: " + predefined.getName)
+		default                   : throw new RuntimeException("Unhandled primitive type: " + predefined.getName)
 		}
 	}
 
@@ -364,7 +209,7 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 	// from DLLs when compiling with VC++
 	def String getDllExportMacro() {
 		if (!dllExportName.isEmpty()) {
-			return dllExportName.toUpperCase() + "_EXPORT";
+			return dllExportName.toUpperCase() + "_EXPORT ";
 		}
 		return "";
 	}
@@ -378,14 +223,21 @@ class JoynrCppGeneratorExtensions extends CommonApiJoynrGeneratorExtensions {
 		return "";
 	}
 
-	def String getIncludeOf(FType dataType) {
-		val path = getPackagePathWithJoynrPrefix(dataType, "/")
-		return path + "/" + dataType.joynrName + ".h";
+	def joynrNameQt(FType type){
+		return "Qt" + type.joynrName
+	}
+
+	def joynrNameStd(FType type){
+		return type.joynrName
+	}
+
+	def getAllPrimitiveTypes(FInterface serviceInterface) {
+		serviceInterface.allRequiredTypes.filter[type | type instanceof FBasicTypeId].map[type | type as FBasicTypeId]
 	}
 
 	def String getIncludeOfFilterParametersContainer(FInterface serviceInterface, FBroadcast broadcast) {
 		return getPackagePathWithJoynrPrefix(serviceInterface, "/")
-			+ "/" + serviceInterface.name.toFirstUpper 
+			+ "/" + serviceInterface.name.toFirstUpper
 			+ broadcast.joynrName.toFirstUpper
 			+ "BroadcastFilterParameters.h"
 	}

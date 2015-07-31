@@ -34,15 +34,15 @@ MessagingStubFactory::~MessagingStubFactory()
 }
 
 MessagingStubFactory::MessagingStubFactory()
-        : partId2MessagingStubDirectory(QString("MessagingStubFactory-MessagingStubDirectory")),
+        : partId2MessagingStubDirectory("MessagingStubFactory-MessagingStubDirectory"),
           factoryList(),
           mutex()
 {
 }
 
 QSharedPointer<IMessaging> MessagingStubFactory::create(
-        QString destParticipantId,
-        const joynr::system::Address& destinationAddress)
+        std::string destParticipantId,
+        const joynr::system::QtAddress& destinationAddress)
 {
     {
         QMutexLocker locker(&this->mutex);
@@ -66,12 +66,12 @@ QSharedPointer<IMessaging> MessagingStubFactory::create(
     return partId2MessagingStubDirectory.lookup(destParticipantId);
 }
 
-void MessagingStubFactory::remove(QString destParticipantId)
+void MessagingStubFactory::remove(std::string destParticipantId)
 {
     partId2MessagingStubDirectory.remove(destParticipantId);
 }
 
-bool MessagingStubFactory::contains(QString destParticipantId)
+bool MessagingStubFactory::contains(std::string destParticipantId)
 {
     return partId2MessagingStubDirectory.contains(destParticipantId);
 }

@@ -19,7 +19,7 @@
 #ifndef MOCKCAPABILITIESRESULTCALLBACK_H_
 #define MOCKCAPABILITIESRESULTCALLBACK_H_
 
-#include <QList>
+#include <vector>
 #include <QSemaphore>
 #include "joynr/ILocalCapabilitiesCallback.h"
 
@@ -28,15 +28,15 @@ class MockLocalCapabilitiesDirectoryCallback : public joynr::ILocalCapabilitiesC
 public:
     MockLocalCapabilitiesDirectoryCallback();
 
-    virtual void capabilitiesReceived(QList<joynr::CapabilityEntry> capabilities);
+    virtual void capabilitiesReceived(std::vector<joynr::CapabilityEntry> capabilities);
 
-    QList<joynr::CapabilityEntry> getResults(int timeout);
+    std::vector<joynr::CapabilityEntry> getResults(int timeout);
     void clearResults();
 
     virtual ~MockLocalCapabilitiesDirectoryCallback();
 
 private:
-    QList<joynr::CapabilityEntry> results;
+    std::vector<joynr::CapabilityEntry> results;
     QSemaphore semaphore;
 };
 

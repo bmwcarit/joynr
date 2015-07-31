@@ -22,6 +22,7 @@ package io.joynr.pubsub.publication;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
@@ -32,7 +33,9 @@ import static org.mockito.Mockito.when;
 import io.joynr.dispatcher.RequestCaller;
 import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.provider.Deferred;
 import io.joynr.provider.JoynrProvider;
+import io.joynr.provider.Promise;
 import io.joynr.provider.RequestCallerFactory;
 import io.joynr.pubsub.SubscriptionQos;
 
@@ -51,10 +54,9 @@ import joynr.tests.testBroadcastInterface;
 import joynr.tests.testLocationUpdateSelectiveBroadcastFilter;
 import joynr.tests.testLocationUpdateWithSpeedSelectiveBroadcastFilter;
 import joynr.tests.testProvider;
-import joynr.types.GpsFixEnum;
-import joynr.types.GpsLocation;
+import joynr.types.localisation.GpsFixEnum;
+import joynr.types.localisation.GpsLocation;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -94,23 +96,23 @@ public class PublicationManagerTest {
     @Mock
     private JoynrProvider provider;
 
-    Object valueToPublish = "valuePublished";
+    String valueToPublish = "valuePublished";
 
     @Before
     public void setUp() {
+        Deferred<String> valueToPublishDeferred = new Deferred<String>();
+        valueToPublishDeferred.resolve(valueToPublish);
+        Promise<Deferred<String>> valueToPublishPromise = new Promise<Deferred<String>>(valueToPublishDeferred);
+        doReturn(testProvider.class).when(provider).getProvidedInterface();
 
         cleanupScheduler = new ScheduledThreadPoolExecutor(1);
         publicationManager = new PublicationManagerImpl(attributePollInterpreter, messageSender, cleanupScheduler);
 
         RequestCallerFactory requestCallerFactory = new RequestCallerFactory();
-        requestCaller = requestCallerFactory.create(provider, testProvider.class);
+        requestCaller = requestCallerFactory.create(provider);
 
-        when(attributePollInterpreter.execute(eq(requestCaller), any(Method.class))).thenReturn(valueToPublish);
-    }
-
-    @After
-    public void tearDown() {
-        publicationManager.shutdown();
+        doReturn(valueToPublishPromise).when(attributePollInterpreter).execute(any(RequestCaller.class),
+                                                                               any(Method.class));
     }
 
     @Test(timeout = 3000)

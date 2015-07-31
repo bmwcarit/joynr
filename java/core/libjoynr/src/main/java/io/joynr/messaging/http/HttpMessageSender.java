@@ -97,10 +97,11 @@ public class HttpMessageSender {
 
         // execute http command to send
         CloseableHttpResponse response = null;
+        String sendUrl = null;
         try {
 
             String serializedMessage = messageContainer.getSerializedMessage();
-            final String sendUrl = urlResolver.getSendUrl(messageContainer.getChannelId());
+            sendUrl = urlResolver.getSendUrl(messageContainer.getChannelId());
             logger.debug("SENDING message channelId: {}, messageId: {} toUrl: {}", new String[]{ channelId, messageId,
                     sendUrl });
             if (sendUrl == null) {
@@ -151,8 +152,9 @@ public class HttpMessageSender {
                             + statusCode + " error: " + error.getCode() + "reason:" + error.getReason()));
                     break;
                 default:
-                    logger.error("SEND error channelId: {}, messageId: {} error: {} code: {} reason: {} ",
-                                 new Object[]{ channelId, messageId, statusText, error.getCode(), error.getReason() });
+                    logger.error("SEND error channelId: {}, messageId: {} url: {} error: {} code: {} reason: {} ",
+                                 new Object[]{ channelId, messageId, sendUrl, statusText, error.getCode(),
+                                         error.getReason() });
                     failureAction.execute(new JoynrCommunicationException("Http Error while communicating: "
                             + statusText + body + " error: " + error.getCode() + "reason:" + error.getReason()));
                     break;
@@ -164,8 +166,12 @@ public class HttpMessageSender {
                 break;
             }
         } catch (Exception e) {
-            logger.error("SEND error channelId: {}, messageId: {} error: {}", new Object[]{ channelId, messageId,
-                    e.getMessage() });
+            // An exception occured - this could still be a communication error (e.g Connection refused)
+            logger.error("SEND error channelId: {}, messageId: {} url: {} error: {}", new Object[]{ channelId,
+                    messageId, sendUrl, e.getMessage() });
+
+            failureAction.execute(new JoynrCommunicationException(e.getClass().getName()
+                    + "Exception while communicating. error: " + e.getMessage()));
         } finally {
             if (response != null) {
                 try {

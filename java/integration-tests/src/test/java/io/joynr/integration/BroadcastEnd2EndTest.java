@@ -21,7 +21,7 @@ package io.joynr.integration;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.JoynrArbitrationException;
@@ -36,7 +36,6 @@ import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.PropertyLoader;
 
-import java.io.IOException;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.Semaphore;
@@ -48,11 +47,14 @@ import joynr.tests.testBroadcastInterface;
 import joynr.tests.testBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters;
 import joynr.tests.testLocationUpdateSelectiveBroadcastFilter;
 import joynr.tests.testProxy;
-import joynr.types.GpsFixEnum;
-import joynr.types.GpsLocation;
+import joynr.tests.testtypes.TestEnum;
+import joynr.types.localisation.GpsFixEnum;
+import joynr.types.localisation.GpsLocation;
 
 import org.eclipse.jetty.server.Server;
+import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -64,7 +66,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @RunWith(MockitoJUnitRunner.class)
-public class BroadcastEnd2EndTest {
+public class BroadcastEnd2EndTest extends JoynrEnd2EndTest {
     private static final Logger logger = LoggerFactory.getLogger(BroadcastEnd2EndTest.class);
 
     private static final int CONST_DEFAULT_TEST_TIMEOUT = 3000;
@@ -73,14 +75,14 @@ public class BroadcastEnd2EndTest {
     public TestName name = new TestName();
 
     private static DefaulttestProvider provider;
-    private static String domain;
     private static testProxy proxy;
+    private String domain;
 
     // private SubscriptionQos subscriptionQos;
-    private static DummyJoynrApplication providingApplication;
-    private static DummyJoynrApplication consumingApplication;
+    private DummyJoynrApplication providingApplication;
+    private DummyJoynrApplication consumingApplication;
 
-    private static Server server;
+    private static Server jettyServer;
     private static GpsLocation expectedLocation = new GpsLocation(1.0,
                                                                   2.0,
                                                                   3.0,
@@ -94,59 +96,75 @@ public class BroadcastEnd2EndTest {
                                                                   23);
     private static Double expectedSpeed = 100.0;
 
+    private static Properties originalProperties;
+
     @BeforeClass
-    public static void setupEndpoints() throws Exception {
-        server = ServersUtil.startServers();
-        domain = "TestDomain" + System.currentTimeMillis();
-        setupProvidingApplication();
-        setupConsumingApplication();
+    public static void startServer() throws Exception {
+        originalProperties = System.getProperties();
+        System.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_SKIP_LONGPOLL_DEREGISTRATION, "true");
+        // keep delays and timeout low for tests
+        System.setProperty(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS, "10");
+        System.setProperty(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT, "200");
+        System.setProperty(ConfigurableMessagingSettings.PROPERTY_ARBITRATION_MINIMUMRETRYDELAY, "200");
+
+        provisionDiscoveryDirectoryAccessControlEntries();
+        jettyServer = ServersUtil.startServers();
+
     }
 
     @Before
-    public void setUp() throws JoynrArbitrationException, InterruptedException, IOException {
-        Thread.sleep(200);
-        Object methodName = name.getMethodName();
+    public void setUp() throws Exception {
+        String methodName = name.getMethodName();
+        domain = "ProviderDomain-BroadcastEnd2End-" + methodName + "-" + System.currentTimeMillis();
+        provisionPermissiveAccessControlEntry(domain, DefaulttestProvider.INTERFACE_NAME);
+        setupProvidingApplication(methodName);
+        setupConsumingApplication(methodName);
         logger.info("Starting {} ...", methodName);
     }
 
-    @AfterClass
-    public static void tearDownEndpoints() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         providingApplication.shutdown();
         providingApplication = null;
         Thread.sleep(200);
         consumingApplication.shutdown();
         consumingApplication = null;
-        server.stop();
     }
 
-    private static void setupProvidingApplication() throws InterruptedException {
+    @AfterClass
+    public static void stopServer() throws Exception {
+        jettyServer.stop();
+        System.setProperties(originalProperties);
+    }
+
+    private void setupProvidingApplication(String methodName) throws InterruptedException {
         Properties factoryPropertiesProvider;
 
         String channelIdProvider = "JavaTest-" + UUID.randomUUID().getLeastSignificantBits()
-                + "-Provider-BroadcastEnd2EndTest";
+                + "-Provider-BroadcastEnd2EndTest-" + methodName;
 
         factoryPropertiesProvider = PropertyLoader.loadProperties("testMessaging.properties");
         factoryPropertiesProvider.put(MessagingPropertyKeys.CHANNELID, channelIdProvider);
         factoryPropertiesProvider.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
-        factoryPropertiesProvider.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, "localdomain-"
-                + UUID.randomUUID().toString());
-        providingApplication = (DummyJoynrApplication) new JoynrInjectorFactory(factoryPropertiesProvider).createApplication(DummyJoynrApplication.class);
+        factoryPropertiesProvider.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, domain);
+        providingApplication = (DummyJoynrApplication) new JoynrInjectorFactory(factoryPropertiesProvider,
+                                                                                new StaticDomainAccessControlProvisioningModule()).createApplication(DummyJoynrApplication.class);
 
         provider = new DefaulttestProvider();
         providingApplication.getRuntime()
-                            .registerCapability(domain, provider, joynr.tests.testSync.class, "BroadcastEnd2End")
+                            .registerProvider(domain, provider)
                             .waitForFullRegistration(CONST_DEFAULT_TEST_TIMEOUT);
     }
 
-    private static void setupConsumingApplication() throws JoynrArbitrationException, JoynrIllegalStateException,
-                                                   InterruptedException {
+    private void setupConsumingApplication(String methodName) throws JoynrArbitrationException,
+                                                             JoynrIllegalStateException, InterruptedException {
         String channelIdConsumer = "JavaTest-" + UUID.randomUUID().getLeastSignificantBits()
-                + "-Consumer-BroadcastEnd2EndTest";
+                + "-Consumer-BroadcastEnd2EndTest-" + methodName;
 
         Properties factoryPropertiesB = PropertyLoader.loadProperties("testMessaging.properties");
         factoryPropertiesB.put(MessagingPropertyKeys.CHANNELID, channelIdConsumer);
         factoryPropertiesB.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
-        factoryPropertiesB.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, "localdomain-"
+        factoryPropertiesB.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, "ClientDomain-" + methodName + "-"
                 + UUID.randomUUID().toString());
 
         consumingApplication = (DummyJoynrApplication) new JoynrInjectorFactory(factoryPropertiesB).createApplication(DummyJoynrApplication.class);
@@ -163,12 +181,6 @@ public class BroadcastEnd2EndTest {
         proxy.getFirstPrime();
         logger.trace("Sync call to proxy finished");
 
-    }
-
-    @Test
-    public void testSystemPropertiesUnchanged() {
-        assertTrue(System.getProperty(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) == null);
-        assertTrue(System.getProperty(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT) == null);
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
@@ -221,6 +233,35 @@ public class BroadcastEnd2EndTest {
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void subscribeToBroadcastWithEnumOutput() throws InterruptedException {
+        final Semaphore broadcastReceived = new Semaphore(0);
+        final TestEnum expectedTestEnum = TestEnum.TWO;
+
+        long minInterval = 0;
+        long ttl = CONST_DEFAULT_TEST_TIMEOUT;
+        long expiryDate_ms = System.currentTimeMillis() + CONST_DEFAULT_TEST_TIMEOUT;
+        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval, expiryDate_ms, ttl);
+        proxy.subscribeToBroadcastWithEnumOutputBroadcast(new testBroadcastInterface.BroadcastWithEnumOutputBroadcastListener() {
+
+                                                              @Override
+                                                              public void onReceive(TestEnum testEnum) {
+                                                                  assertEquals(expectedTestEnum, testEnum);
+                                                                  broadcastReceived.release();
+                                                              }
+
+                                                              @Override
+                                                              public void onError() {
+                                                                  Assert.fail("Error while receiving broadcast");
+                                                              }
+                                                          },
+                                                          subscriptionQos);
+        Thread.sleep(300);
+
+        provider.fireBroadcastWithEnumOutput(expectedTestEnum);
+        broadcastReceived.acquire();
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void subscribeAndUnsubscribeFromBroadcast() throws InterruptedException {
 
         final Semaphore broadcastReceived = new Semaphore(0);
@@ -255,6 +296,7 @@ public class BroadcastEnd2EndTest {
 
         //unsubscribe correct subscription -> now, no more broadcast shall be received
         proxy.unsubscribeFromLocationUpdateWithSpeedBroadcast(subscriptionId);
+        Thread.sleep(300);
         provider.fireLocationUpdateWithSpeed(expectedLocation, expectedSpeed);
         assertFalse(broadcastReceived.tryAcquire(300, TimeUnit.MILLISECONDS));
     }

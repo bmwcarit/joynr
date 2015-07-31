@@ -29,9 +29,9 @@ import com.google.inject.name.Named;
 /**
  * Convenience class to retrieve URLs for different services of the Bounce Proxy
  * Controller.
- * 
+ *
  * @author christina.strobel
- * 
+ *
  */
 public class BounceProxyControllerUrl {
 
@@ -45,8 +45,9 @@ public class BounceProxyControllerUrl {
 
     /**
      * Creates a new Bounce Proxy Controller URL class from a base URL.
-     * 
-     * @param baseUrl
+     *
+     * @param baseUrl the base URL
+     * @param bounceProxyId the id of the bounce proxy
      */
     @Inject
     public BounceProxyControllerUrl(@Named(BounceProxyPropertyKeys.PROPERTY_BOUNCE_PROXY_CONTROLLER_BASE_URL) final String baseUrl,
@@ -63,9 +64,9 @@ public class BounceProxyControllerUrl {
     /**
      * Returns the URL including query parameters to report bounce proxy
      * startup.
-     * 
+     *
      * @param controlledBounceProxyUrl
-     * 
+     *   the URL of the bounce proxy
      * @return the url including encoded query parameters
      * @throws UnsupportedEncodingException
      *             if urls passed as query parameters could not be encoded
@@ -85,8 +86,8 @@ public class BounceProxyControllerUrl {
     /**
      * Returns the URL including path and query parameters to report bounce
      * proxy shutdown.
-     * 
-     * @return
+     *
+     * @return the URL to report bounce proxy shutdown (incl. path and query params)
      */
     public String buildReportShutdownUrl() {
         return this.baseUrl + this.bounceProxyId + "/" + LIFECYCLE_PATH + "?status=shutdown";
@@ -95,7 +96,7 @@ public class BounceProxyControllerUrl {
     /**
      * Returns the URL including path and query parameters to report performance
      * measures of the bounce proxy instance.
-     * 
+     *
      * @return the url to send performance reports to
      */
     public String buildReportPerformanceUrl() {

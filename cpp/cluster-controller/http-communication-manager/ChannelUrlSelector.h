@@ -24,8 +24,9 @@
 #include "joynr/joynrlogging.h"
 #include "cluster-controller/http-communication-manager/IChannelUrlSelector.h"
 #include "joynr/ILocalChannelUrlDirectory.h"
-#include "joynr/types/ChannelUrlInformation.h"
+#include "joynr/types/QtChannelUrlInformation.h"
 #include "joynr/BounceProxyUrl.h"
+#include <QtGlobal>
 
 // Forward declare test classes
 class ChannelUrlSelectorTest_punishTest_Test;
@@ -124,7 +125,7 @@ private:
 class JOYNRCLUSTERCONTROLLER_EXPORT ChannelUrlSelectorEntry
 {
 public:
-    ChannelUrlSelectorEntry(const types::ChannelUrlInformation& urlInformation,
+    ChannelUrlSelectorEntry(const types::QtChannelUrlInformation& urlInformation,
                             double punishmentFactor,
                             qint64 timeForOneRecouperation);
     ~ChannelUrlSelectorEntry();
@@ -167,7 +168,7 @@ private:
 
     qint64 lastUpdate;
     QList<double> fitness;
-    types::ChannelUrlInformation urlInformation;
+    types::QtChannelUrlInformation urlInformation;
     double punishmentFactor;
     qint64 timeForOneRecouperation;
     static joynr_logging::Logger* logger;

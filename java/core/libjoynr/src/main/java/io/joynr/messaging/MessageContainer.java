@@ -48,7 +48,7 @@ public class MessageContainer {
 
     private JoynrMessage message;
 
-    private int tries = 0;
+    private int retries = 0;
 
     public MessageContainer(final String channelId,
                             final JoynrMessage message,
@@ -88,7 +88,11 @@ public class MessageContainer {
         return message.toString();
     }
 
-    public int getTries() {
-        return tries;
+    public int getRetries() {
+        return retries;
+    }
+
+    public void incrementRetries() {
+        retries++;
     }
 }

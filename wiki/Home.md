@@ -1,171 +1,96 @@
-joynr is an Internet-ready communications framework, designed to communicate between:
+# Joynr
+## What is joynr?
 
-* Hand-held devices
-* PCs
-* Backend Services
-* Vehicles
-* ...
+joynr is a fault-tolerant, typed communications-middleware abstraction framework for applications and services deployed to vehicles, consumer devices, web browsers and backend servers that need to interact with each other.
 
-joynr supports three communication paradigms
+joynr simplifies data access and data exchange by abstracting the pub/sub, RPC and broadcast/event paradigms found in many modern middleware solutions. This abstraction allows the use of a range of technical middleware solutions, depending on the needs of the deployment.
 
-1. attribute Get/Set and Subscriptions (Pub/Sub),
-1. Remote Procedure Call (RPC),
-1. and Broadcasts or event subscriptions.
+## Key benefits
 
-joynr is made up of three layers:
+### Formally-specified, typed interfaces
 
-1. Interface definitions, defined using the Franca Interface Definition Language (IDL)
-1. Java or C++ programming interfaces that are used to provide or consume the attributes and
-operations defined in Franca IDL.
-1. Messaging Layer, which sends joynr messages via http, serialised as json.
+* joynr helps prevent programming errors related to interface incompatibility by
+having interfaces modelled in a special Interface Definition Language (IDL).
 
-# Development Environment
-## Modelling
-Modelling is done using Franca IDL, which can be written in any text editor.
+* The data exchanged is also typed, so that there is no confusion about what has been received.
 
-We recommend using the Franca Eclipse tooling to simplify the process (syntax highlighting, code
-completion, model validation etc.): Franca IDL (https://code.google.com/a/eclipselabs.org/p/franca/)
+* Formally-specified interfaces also provide the ability to automate testing, generate documentation etc.
 
-Code generation itself is integrated into the Maven build process. See the Radio App tutorial and
-sample code for more information.
+* joynr uses Franca IDL as an open-source industry standard that has already been adopted by the automobile industry for use with the likewise open-source C++ API CommonAPI. This allows for a high degree of interoperability between CommonAPI and joynr.
 
-## Java Development
+### Logical Peer-to-Peer Networking
 
-* JDK 1.7
-* Maven 3
+* joynr enables network topologies that cannot (for technical or other reasons) be spanned by a single
+transport middleware.
 
-NOTE: we implement in Eclipse with the following plugins:
-* M2E - Maven Integration for Eclipse
-* M2E connector for build-helper-maven-plugin
-* M2E connector for the Eclipse JDT Compiler
+* For example, using joynr:
 
-and optionally for Android development:
-* Android for Maven Eclipse
-* Android Development Tools
+ * dbus may be spoken at the device-level
+ * Web Sockets may be used between devices
+ * HTTP Long Polling may be used to the backend
 
-... but any IDE should work just fine. Netbeans for instance also has nice Maven integration.
+* Since joynr is transport middleware agnostic, operations may swap out middleware implementations and infrastructure without requiring application rewrites. For example, a joynr network could replace HTTP Long Polling with Web Sockets without requiring the applications using joynr to be modified or even recompiled.
 
-Tip: If using Eclipse, use the Maven importer to import your project from the POM. After a change to
-your model, execute Maven install (select `Run As -> Maven install` from the context menu) in order
-to regenerate the interfaces etc.
+### Built-in Access Control
 
-## C++ Development
+* joynr supports interface and method-level access control using distributed Access Control Lists.
 
-* CMake (2.8.12)
-* Qt SDK (5.3.2, http://qt-project.org/downloads)
-* cURL (7.32.0)
-* GNU (4.8.3)
+* joynr defines programming interfaces to existing Public Key Infrastructure, in order to reuse infrastructure
+already in place for other personalisation and security use cases.
 
-Versions mentioned in parentheses are currently used to build joynr by our continuous integration
-system and therefore verified to be working. However, also slightly different versions of these
-dependencies might work too.
+### Language Bindings for C++, Java
 
-# Building joynr
-## Building Code Generators and joynr Java
-Use Maven to build joynr Code Generators and joynr Java. To speed up the build process you can skip
-test execution.
+* joynr supports the C++ and Java to target a wide range of possible endpoints, from backend servlet-based systems, to ECUs in vehicles or other embedded platforms.
 
-```bash
-<JOYNR>$ mvn clean install -DskipTests
-```
+### Remote Procedure Call (RPC), Publish/Subscribe (pub/sub), Filtered Broadcasts
 
-This command will build and install following components (listed by subfolder):
+joynr supports all three of the most common calling paradigms supported by modern transport protocols.
 
-* `tools`
-  * build resources needed during build
-  * dependency libraries needed during build not available in Maven Central
-  * generator framework and a corresponding Maven Plugin
-* `basemodel`
-  * Franca files describing communication interfaces to infrastructure services
-* `java`
-  * Java code generator
-  * joynr Java API
-  * generated Java source code (needed to access infrastructure services and tests)
-  * infrastructure services (bounceproxy and discovery directories)
-* `cpp`
-  * C++ code generator
-  * generated C++ source code (needed to access infrastructure services and tests)
-* `examples`
-  * Radio app example (including code generation for Java and C++)
+* Remote Procedure Call (RPC) allows modelling services similar to a normal function call
+* pub/sub allows data-centeric modelling, when an attribute's value is of interest (Get/Set and Subscriptions)
+* Filtered Broadcast or event subscriptions, while similar to pub/sub, allow a richer modelling of events that do not map to a single attribute value
 
-## Building C++
-Use CMake and Make to build joynr C++.
-```bash
-# PREREQUISITE: tools and basemodel are built and installed
-<JOYNR>$ cd cpp
-# generate C++ sources needed to access infrastructure services
-<JOYNR>/cpp$ mvn generate-sources
-# build joynr C++
-# disable tests and code formatter
-<JOYNR>/cpp$ mkdir build
-<JOYNR>/cpp$ cd build
-<JOYNR>/cpp/build$ cmake -DBUILD_TESTS=OFF -DENABLE_CLANG_FORMATTER=OFF ..
-<JOYNR>/cpp/build$ make -j8
-```
+## Layered architecture
+joynr employs the following layers in its implementations, decreasing in level of abstraction: 
 
-# Runtime Environment
-joynr requires the following components to run:
-## Bounceproxy
-Responsible for message store and forward using Comet (currently long poll), based on the Atmosphere
-Framework.
+**Formally specified interface**
 
-For test purposes you can run the bounceproxy directly within Maven. Just go into the bounceproxy
-project and run
-```bash
-<JOYNR>$ mvn clean install -DskipTests
-<JOYNR>$ cd java/messaging/bounceproxy/single-bounceproxy
-<JOYNR>/java/messaging/bounceproxy/single-bounceproxy$ mvn jetty:run
-```
+ * Formal specification of the communication interface of a distributed application, which are defined using the Franca Interface Definition Language (IDL).
 
-The bounceproxy is also tested with glassfish 3.1.2.2. See [Glassfish settings]
-(Glassfish-settings.md) for configuration details.
+**APIs**
 
-## Discovery Directories
-Centralized directory to discover providers for a given domain and interface.
+Programming interfaces used for discovery, provider registration, or to consume data / services.
+ * joynr generators for consumers and providers (C++, Java)
+ * Provider registration / discovery API
 
-Run the discovery directories locally along with the bounceproxy:
+**Middleware abstraction for RPC / pub/sub / broadcasts**
 
-1. Use maven to build and install the whole joynr project from the root directory
-1. start directories and bounceproxy on default jetty port 8080
+Full featured communication paradigms mapped to a middleware-agnostic messaging layer (RPC Manager, Pub/Sub Manager, Discovery/Registration, AccessControl)
 
-```bash
-<JOYNR>$ mvn clean install -DskipTests
-<JOYNR>$ cd java/backend-services/discovery-directory-servlet
-<JOYNR>/java/backend-services/discovery-directory-servlet$ mvn jetty:run
-```
+**Messaging adaption**
 
-Use the following links to check whether all components are running:
+Mapping of middleware-agnostic messaging to a specific transport middleware implementation (Atmosphere-, WebSocket-, Dbus messaging adaption)
 
-| Service Link | Description |
-| ------------ | ----------- |
-| <http://localhost:8080/bounceproxy/time/> | Returns the current time in current milliseconds since Unix Epoch. This can be used to test whether the bounceproxy is up and running. |
-| <http://localhost:8080/bounceproxy/channels.html> | Lists all channels (message queues) that are currently registered on the bounceproxy instance |
-| <http://localhost:8080/discovery/capabilities.html> | Lists all capabilities (providers) currently registered with joynr. Note: After starting the discovery directories and the bounceproxy only, there must be two capabilities registered (channel URL directory and global capabilities directory). |
+**Messaging implementation**
 
-You can also deploy one or more joynr applications to a servlet engine without reconfiguring the
-applications themselves:
 
-1. Simply create a WAR maven project
-1. include your application(s) as dependency in the pom.xml
-1. include messaging-servlet as a dependency in the pom.xml.
-1. create the war file (mvn package)
-1. The war created should contain JARs for each of your applications plus the messaging-servlet
-   (and other transitive dependencies).
-1. Set the JVM properties etc for your servlet engine as described on [Glassfish settings]
-   (Glassfish-settings.md).
-1. deploy this war to your servlet engine.
+ Open Source industry standard implementations are preferred.
+ Currently:
 
-All applications deployed should then register themselves with the discovery directory. Messages
-will be sent directly to the url registered in hostPath.
+ * Atmosphere-based via HTTP
+ * WebSockets
+ * dbus
 
-# Tutorials
+**OSI Transport Layer**
 
-* **[A tour through a simple radio application](Tutorial.md):**
-This tutorial guides you through a simple joynr application, explaining essential concepts such as
-communication interfaces, consumers, providers and how they communicate.
-* **[Using selective broadcast to implement a geocast](Broadcast-Tutorial.md):**
-In this tutorial [RadioApp example](Tutorial.md) is extended by a selective broadcast and filter
-logics that implements a [geocast](http://en.wikipedia.org/wiki/Geocast).
+TCP, Sockets, etc. depending on the needs of the messaging implementation.
 
-# Releases
-joynr is currently at released version 0.8.0. See the [release notes](ReleaseNotes.md).
+
+Per default, joynr ships with a REST-based messaging middleware that addresses requirements such as reliability, stability, performance, memory footprint, CPU usage, and operating system independence required of distributed applications running on embedded devices over unreliable networks.
+
+## Releases
+joynr is currently at released version 0.9.0. See the [release notes](ReleaseNotes.md).
+
+## Further Reading
+
+[Using joynr](using_joynr.md)

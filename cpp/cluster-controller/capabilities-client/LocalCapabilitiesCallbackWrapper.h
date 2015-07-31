@@ -22,10 +22,10 @@
 
 #include "cluster-controller/capabilities-client/IGlobalCapabilitiesCallback.h"
 #include "common/InterfaceAddress.h"
-#include "joynr/system/DiscoveryQos.h"
+#include "joynr/types/QtDiscoveryQos.h"
 
 #include <QSharedPointer>
-#include <QString>
+#include <string>
 
 namespace joynr
 {
@@ -38,21 +38,21 @@ class LocalCapabilitiesCallbackWrapper : public IGlobalCapabilitiesCallback
 public:
     LocalCapabilitiesCallbackWrapper(LocalCapabilitiesDirectory* localCapabilitiesDirectory,
                                      QSharedPointer<ILocalCapabilitiesCallback> wrappedCallback,
-                                     const QString& participantId,
-                                     const joynr::system::DiscoveryQos& discoveryQos);
+                                     const std::string& participantId,
+                                     const joynr::types::DiscoveryQos& discoveryQos);
     LocalCapabilitiesCallbackWrapper(LocalCapabilitiesDirectory* localCapabilitiesDirectory,
                                      QSharedPointer<ILocalCapabilitiesCallback> wrappedCallback,
                                      const InterfaceAddress& interfaceAddress,
-                                     const joynr::system::DiscoveryQos& discoveryQos);
+                                     const joynr::types::DiscoveryQos& discoveryQos);
 
-    void capabilitiesReceived(QList<types::CapabilityInformation> results);
+    void capabilitiesReceived(std::vector<types::CapabilityInformation> results);
 
 private:
     LocalCapabilitiesDirectory* localCapabilitiesDirectory;
     QSharedPointer<ILocalCapabilitiesCallback> wrappedCallback;
-    QString participantId;
+    std::string participantId;
     InterfaceAddress interfaceAddress;
-    joynr::system::DiscoveryQos discoveryQos;
+    joynr::types::DiscoveryQos discoveryQos;
 
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesCallbackWrapper);
 };

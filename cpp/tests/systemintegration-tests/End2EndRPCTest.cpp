@@ -19,6 +19,8 @@
 #include "joynr/PrivateCopyAssign.h"
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <memory>
+#include <string>
 #include "tests/utils/MockObjects.h"
 
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
@@ -27,10 +29,11 @@
 #include "joynr/tests/testProvider.h"
 #include "joynr/tests/testProxy.h"
 #include "joynr/vehicle/GpsProxy.h"
-#include "joynr/types/ProviderQos.h"
+#include "joynr/types/QtProviderQos.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/Future.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/TypeUtil.h"
 
 using namespace ::testing;
 
@@ -39,7 +42,7 @@ using namespace joynr;
 
 class End2EndRPCTest : public Test{
 public:
-    QString domain;
+    std::string domain;
     JoynrClusterControllerRuntime* runtime;
     QSharedPointer<vehicle::GpsProvider> gpsProvider;
 
@@ -55,23 +58,22 @@ public:
         //Normally a new datatype is registered in all datatypes that use the new datatype.
         //However, when receiving a datatype as a returnValue of a RPC, the constructor has never been called before
         //so the datatype is not registered, and cannot be deserialized.
-        qRegisterMetaType<joynr::types::ProviderQos>("joynr::types::ProviderQos");
-        qRegisterMetaType<joynr__types__ProviderQos>("joynr__types__ProviderQos");
+        qRegisterMetaType<joynr::types::QtProviderQos>("joynr::types::ProviderQos");
+        qRegisterMetaType<joynr__types__QtProviderQos>("joynr__types__ProviderQos");
 
-        QString uuid = QUuid::createUuid().toString();
-        uuid = uuid.mid(1,uuid.length()-2);
+        std::string uuid = TypeUtil::toStd(QUuid::createUuid().toString());
+        uuid = uuid.substr(1, uuid.length()-2);
         domain = "cppEnd2EndRPCTest_Domain_" + uuid;
     }
     // Sets up the test fixture.
     void SetUp(){
-       runtime->startMessaging();
-       runtime->waitForChannelCreation();
+       runtime->start();
     }
 
     // Tears down the test fixture.
     void TearDown(){
-        runtime->deleteChannel(); //cleanup the channels so they dont remain on the bp
-        runtime->stopMessaging();
+        bool deleteChannel = true;
+        runtime->stop(deleteChannel);
 
         // Remove participant id persistence file
         QFile::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME());
@@ -90,108 +92,108 @@ private:
 TEST_F(End2EndRPCTest, call_rpc_method_and_get_expected_result)
 {
 
-    QSharedPointer<MockGpsProvider> mockProvider(new MockGpsProvider());
-    types::GpsLocation gpsLocation1(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4);
+    std::shared_ptr<MockGpsProvider> mockProvider(new MockGpsProvider());
+    types::Localisation::GpsLocation gpsLocation1(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4);
 
-    runtime->registerCapability<vehicle::GpsProvider>(domain, mockProvider, QString());
+    runtime->registerProvider<vehicle::GpsProvider>(domain, mockProvider);
     QThreadSleep::msleep(550);
 
-    ProxyBuilder<vehicle::GpsProxy>* gpsProxyBuilder = runtime->getProxyBuilder<vehicle::GpsProxy>(domain);
+    ProxyBuilder<vehicle::GpsProxy>* gpsProxyBuilder = runtime->createProxyBuilder<vehicle::GpsProxy>(domain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
 
     qlonglong qosRoundTripTTL = 40000;
-    qlonglong qosCacheDataFreshnessMs = 400000;
     QSharedPointer<vehicle::GpsProxy> gpsProxy(gpsProxyBuilder
-            ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
-            ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))
+            ->setMessagingQos(MessagingQos(qosRoundTripTTL))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build());
-    QSharedPointer<Future<int> >gpsFuture (new Future<int>());
-    gpsProxy->calculateAvailableSatellites(gpsFuture);
+    std::shared_ptr<Future<int> >gpsFuture (gpsProxy->calculateAvailableSatellitesAsync());
     gpsFuture->waitForFinished();
     int expectedValue = 42; //as defined in MockGpsProvider
-    EXPECT_EQ(expectedValue, gpsFuture->getValue());
+    int actualValue;
+    gpsFuture->getValues(actualValue);
+    EXPECT_EQ(expectedValue, actualValue);
     //TODO CA: shared pointer for proxy builder?
     delete gpsProxyBuilder;
     // This is not yet implemented in CapabilitiesClient
-    // runtime->unregisterCapability("Fake_ParticipantId_vehicle/gpsDummyProvider");
+    // runtime->unregisterProvider("Fake_ParticipantId_vehicle/gpsDummyProvider");
 }
 
 TEST_F(End2EndRPCTest, call_void_operation)
 {
 
-    QSharedPointer<MockTestProvider> mockProvider(new MockTestProvider(types::ProviderQos(QList<types::CustomParameter>(),1,1,types::ProviderScope::GLOBAL,false)));
+    std::shared_ptr<MockTestProvider> mockProvider(new MockTestProvider(types::ProviderQos(
+            std::vector<types::CustomParameter>(),
+            1,
+            1,
+            types::ProviderScope::GLOBAL,
+            false
+    )));
 
-    runtime->registerCapability<tests::testProvider>(domain, mockProvider, QString());
+    runtime->registerProvider<tests::testProvider>(domain, mockProvider);
     QThreadSleep::msleep(550);
 
-    ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime->getProxyBuilder<tests::testProxy>(domain);
+    ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime->createProxyBuilder<tests::testProxy>(domain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
 
     qlonglong qosRoundTripTTL = 40000;
-    qlonglong qosCacheDataFreshnessMs = 400000;
     tests::testProxy* testProxy = testProxyBuilder
-            ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
-            ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))
+            ->setMessagingQos(MessagingQos(qosRoundTripTTL))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build();
-    RequestStatus status;
-    testProxy->voidOperation(status);
+    RequestStatus status(testProxy->voidOperation());
 //    EXPECT_EQ(expectedValue, gpsFuture->getValue());
     //TODO CA: shared pointer for proxy builder?
     delete testProxy;
     delete testProxyBuilder;
     // This is not yet implemented in CapabilitiesClient
-    // runtime->unregisterCapability("Fake_ParticipantId_vehicle/gpsDummyProvider");
+    // runtime->unregisterProvider("Fake_ParticipantId_vehicle/gpsDummyProvider");
 }
 
 // tests in process subscription
 TEST_F(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
 {
-    QSharedPointer<MockTestProvider> mockProvider(new MockTestProvider());
-    types::GpsLocation gpsLocation1(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4);
-    runtime->registerCapability<tests::testProvider>(domain, mockProvider, QString());
+    std::shared_ptr<MockTestProvider> mockProvider(new MockTestProvider());
+    types::Localisation::GpsLocation gpsLocation1(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4);
+    runtime->registerProvider<tests::testProvider>(domain, mockProvider);
 
     QThreadSleep::msleep(550);
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder =
-            runtime->getProxyBuilder<tests::testProxy>(domain);
+            runtime->createProxyBuilder<tests::testProxy>(domain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
 
     qlonglong qosRoundTripTTL = 40000;
-    qlonglong qosCacheDataFreshnessMs = 400000;
     QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
-            ->setRuntimeQos(MessagingQos(qosRoundTripTTL))
-            ->setProxyQos(ProxyQos(qosCacheDataFreshnessMs))
+            ->setMessagingQos(MessagingQos(qosRoundTripTTL))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build());
 
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
-    QSharedPointer<ISubscriptionListener<types::GpsLocation> > subscriptionListener(
+    std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation> > subscriptionListener(
                 mockListener);
 
-    EXPECT_CALL(*mockListener, onReceive(A<types::GpsLocation>()))
+    EXPECT_CALL(*mockListener, onReceive(A<const types::Localisation::GpsLocation&>()))
             .Times(AtLeast(2));
 
-    auto subscriptionQos = QSharedPointer<SubscriptionQos>(new OnChangeWithKeepAliveSubscriptionQos(
+    OnChangeWithKeepAliveSubscriptionQos subscriptionQos(
                 800, // validity_ms
                 100, // minInterval_ms
                 200, // maxInterval_ms
                 1000 // alertInterval_ms
-    ));
+    );
     testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
     QThreadSleep::msleep(1500);
     //TODO CA: shared pointer for proxy builder?
     delete testProxyBuilder;
     // This is not yet implemented in CapabilitiesClient
-    // runtime->unregisterCapability("Fake_ParticipantId_vehicle/gpsDummyProvider");
+    // runtime->unregisterProvider("Fake_ParticipantId_vehicle/gpsDummyProvider");
 }

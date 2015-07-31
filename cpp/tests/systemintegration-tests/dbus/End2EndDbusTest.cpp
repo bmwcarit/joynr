@@ -19,6 +19,9 @@
 #include "joynr/PrivateCopyAssign.h"
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <memory>
+#include <string>
+#include <stdint.h>
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "runtimes/libjoynr-runtime/dbus/LibJoynrDbusRuntime.h"
@@ -32,6 +35,8 @@
 #include "tests/utils/MockObjects.h"
 
 #include "joynr/Future.h"
+#include <memory>
+#include "joynr/TypeUtil.h"
 
 using namespace ::testing;
 
@@ -48,7 +53,7 @@ public:
 
     tests::testProxy* testProxy;
 
-    QString domain;
+    std::string domain;
     QSemaphore semaphore;
 
     End2EndDbusTest() :
@@ -95,20 +100,18 @@ public:
 
     void registerTestProvider() {
         // create provider
-        QString authenticationToken("authToken");
-
         types::ProviderQos providerQos;
         providerQos.setPriority(QDateTime::currentDateTime().toMSecsSinceEpoch());
 
-        QSharedPointer<tests::testProvider> provider(new MockTestProvider(providerQos));
+        std::shared_ptr<tests::testProvider> provider(new MockTestProvider(providerQos));
 
         // register provider
-        QString participantId = runtime1->registerCapability(domain, provider, authenticationToken);
-        ASSERT_TRUE(participantId != NULL);
+        std::string participantId = runtime1->registerProvider(domain, provider);
+        ASSERT_TRUE(!participantId.empty());
     }
 
     void connectProxy() {
-        auto proxyBuilder = runtime2->getProxyBuilder<tests::testProxy>(domain);
+        auto proxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domain);
         ASSERT_TRUE(proxyBuilder != NULL);
 
         // start arbitration
@@ -151,11 +154,10 @@ TEST_F(End2EndDbusTest, call_sync_method)
     connectProxy();
 
     // call method
-    RequestStatus status;
-    QString result;
-    testProxy->sayHello(status, result);
+    std::string actualValue;
+    RequestStatus status(testProxy->sayHello(actualValue));
     ASSERT_TRUE(status.successful());
-    ASSERT_TRUE(result == "Hello World");
+    ASSERT_EQ("Hello World", actualValue);
 }
 
 TEST_F(End2EndDbusTest, call_async_method)
@@ -166,11 +168,12 @@ TEST_F(End2EndDbusTest, call_async_method)
     // connect the proxy
     connectProxy();
 
-    QSharedPointer<Future<QString>> sayHelloFuture(new Future<QString>());
-    testProxy->sayHello(sayHelloFuture);
+    std::shared_ptr<Future<std::string>> sayHelloFuture(testProxy->sayHelloAsync());
     sayHelloFuture->waitForFinished();
     ASSERT_TRUE(sayHelloFuture->isOk());
-    ASSERT_EQ(sayHelloFuture->getValue(), "Hello World");
+    std::string actualValue;
+    sayHelloFuture->getValues(actualValue);
+    ASSERT_EQ("Hello World", actualValue);
 }
 
 TEST_F(End2EndDbusTest, get_set_attribute_sync)
@@ -182,12 +185,11 @@ TEST_F(End2EndDbusTest, get_set_attribute_sync)
     connectProxy();
 
     // synchonous
-    RequestStatus status;
-    testProxy->setTestAttribute(status, 15);
+    RequestStatus status(testProxy->setTestAttribute(15));
     ASSERT_TRUE(status.successful());
 
     int result = 0;
-    testProxy->getTestAttribute(status, result);
+    status = testProxy->getTestAttribute(result);
     ASSERT_TRUE(status.successful());
     ASSERT_EQ(15, result);
 }
@@ -201,16 +203,16 @@ TEST_F(End2EndDbusTest, get_set_attribute_async)
     connectProxy();
 
     // asynchronous
-    QSharedPointer<Future<void>> setAttributeFuture(new Future<void>());
-    testProxy->setTestAttribute(setAttributeFuture, 18);
+    std::shared_ptr<Future<void>> setAttributeFuture(testProxy->setTestAttributeAsync(18));
     setAttributeFuture->waitForFinished();
     ASSERT_TRUE(setAttributeFuture->isOk());
 
-    QSharedPointer<Future<int>> getAttributeFuture(new Future<int>());
-    testProxy->getTestAttribute(getAttributeFuture);
+    std::shared_ptr<Future<int>> getAttributeFuture(testProxy->getTestAttributeAsync());
     getAttributeFuture->waitForFinished();
     ASSERT_TRUE(getAttributeFuture->isOk());
-    ASSERT_EQ(getAttributeFuture->getValue(), 18);
+    int actualValue;
+    getAttributeFuture->getValues(actualValue);
+    ASSERT_EQ(18, actualValue);
 }
 
 TEST_F(End2EndDbusTest, subscriptionlistener)
@@ -223,15 +225,15 @@ TEST_F(End2EndDbusTest, subscriptionlistener)
 
     // use semaphore to count recieves
     auto mockListener = new MockSubscriptionListenerOneType<int>();
-    EXPECT_CALL(*mockListener, onReceive(A<int>())).WillRepeatedly(ReleaseSemaphore(&semaphore));
-    QSharedPointer<ISubscriptionListener<int> > subscriptionListener(mockListener);
+    EXPECT_CALL(*mockListener, onReceive(A<const int&>())).WillRepeatedly(ReleaseSemaphore(&semaphore));
+    std::shared_ptr<ISubscriptionListener<int> > subscriptionListener(mockListener);
 
-    auto subscriptionQos = QSharedPointer<SubscriptionQos>(new OnChangeWithKeepAliveSubscriptionQos(
+    OnChangeWithKeepAliveSubscriptionQos subscriptionQos(
                 500000, // validity_ms
                 2000, // minInterval_ms
                 3000, // maxInterval_ms
                 4000 // alertInterval_ms
-    ));
+    );
     testProxy->subscribeToTestAttribute(subscriptionListener, subscriptionQos);
 
     // Wait for 2 subscription messages to arrive
@@ -246,25 +248,26 @@ TEST_F(End2EndDbusTest, performance_sendManyRequests) {
     connectProxy();
 
     qint64 startTime = QDateTime::currentMSecsSinceEpoch();
-    QList<QSharedPointer<Future<int> > >testFutureList;
+    QList<std::shared_ptr<Future<int32_t> > >testFutureList;
     int numberOfMessages = 500;
     int successFullMessages = 0;
-    for (int i=0; i<numberOfMessages; i++){
-        testFutureList.append(QSharedPointer<Future<int> >(new Future<int>() ) );
-        QList<int> list;
-        list.append(2);
-        list.append(4);
-        list.append(8);
-        list.append(i);
-        testProxy->sumInts(testFutureList.at(i), list);
+    for (int32_t i=0; i<numberOfMessages; i++){
+        std::vector<int32_t> list;
+        list.push_back(2);
+        list.push_back(4);
+        list.push_back(8);
+        list.push_back(i);
+        testFutureList.append(testProxy->sumIntsAsync(list));
     }
 
     for (int i=0; i<numberOfMessages; i++){
         testFutureList.at(i)->waitForFinished(25 * numberOfMessages);
-        int expectedValue = 2+4+8+i;
+        int32_t expectedValue = 2+4+8+i;
         if (testFutureList.at(i)->getStatus().successful()) {
             successFullMessages++;
-            EXPECT_EQ(expectedValue, testFutureList.at(i)->getValue());
+            int actualValue;
+            testFutureList.at(i)->getValues(actualValue);
+            EXPECT_EQ(expectedValue, actualValue);
         }
     }
 

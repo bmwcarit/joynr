@@ -18,64 +18,145 @@ package io.joynr.generator.provider
  */
 
 import com.google.inject.Inject
-import io.joynr.generator.util.TemplateBase
-import org.franca.core.franca.FInterface
-import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import io.joynr.generator.util.InterfaceTemplate
+import io.joynr.generator.util.JavaTypeUtil
+import io.joynr.generator.util.JoynrJavaGeneratorExtensions
+import io.joynr.generator.util.TemplateBase
+import java.util.ArrayList
+import java.util.HashMap
+import org.franca.core.franca.FInterface
+import org.franca.core.franca.FMethod
 
 class InterfaceProviderTemplate implements InterfaceTemplate{
-	@Inject	extension JoynrJavaGeneratorExtensions
+	@Inject extension JoynrJavaGeneratorExtensions
+	@Inject extension JavaTypeUtil
 	@Inject extension TemplateBase
 
+	def init(FInterface serviceInterface, HashMap<FMethod, String> methodToDeferredName) {
+		init(serviceInterface, methodToDeferredName, new ArrayList<FMethod>());
+	}
+
+	def init(FInterface serviceInterface, HashMap<FMethod, String> methodToDeferredName, ArrayList<FMethod> uniqueMethodsToCreateDeferreds) {
+		var uniqueMethodSignatureToPromiseName = new HashMap<String, String>();
+		var methodNameToCount = overloadedMethodCounts(getMethods(serviceInterface));
+		var methodNameToIndex = new HashMap<String, Integer>();
+
+		for (FMethod method : getMethods(serviceInterface)) {
+			if (method.outputParameters.isEmpty) {
+				// void method
+				methodToDeferredName.put(method, "DeferredVoid");
+			} else if (methodNameToCount.get(method.name) == 1) {
+				// method not overloaded, so no index needed
+				methodToDeferredName.put(method, method.name.toFirstUpper + "Deferred");
+				uniqueMethodsToCreateDeferreds.add(method);
+			} else {
+				// initialize index if not existent
+				if (!methodNameToIndex.containsKey(method.name)) {
+					methodNameToIndex.put(method.name, 0);
+				}
+				val methodSignature = createMethodSignature(method);
+				if (!uniqueMethodSignatureToPromiseName.containsKey(methodSignature)) {
+					var Integer index = methodNameToIndex.get(method.name);
+					index++;
+					methodNameToIndex.put(method.name, index);
+					uniqueMethodSignatureToPromiseName.put(methodSignature, method.name.toFirstUpper + index);
+					uniqueMethodsToCreateDeferreds.add(method);
+				}
+
+				methodToDeferredName.put(method, uniqueMethodSignatureToPromiseName.get(methodSignature) + "Deferred");
+			}
+		}
+	}
+
 	override generate(FInterface serviceInterface) {
+		var methodToDeferredName = new HashMap<FMethod, String>();
+		var uniqueMethodsToCreateDeferreds = new ArrayList<FMethod>();
+		init(serviceInterface, methodToDeferredName, uniqueMethodsToCreateDeferreds);
+
 		val interfaceName =  serviceInterface.joynrName
 		val className = interfaceName + "Provider"
-		val syncClassName = interfaceName + "Sync"
 		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
 
 		'''
+«warning()»
+package «packagePath»;
 
-		«warning()»
-		package «packagePath»;
+«IF needsListImport(serviceInterface)»
+	import java.util.List;
+«ENDIF»
+«IF getMethods(serviceInterface).size > 0 || hasReadAttribute(serviceInterface)»
+	import io.joynr.provider.Promise;
+«ENDIF»
+«IF hasReadAttribute(serviceInterface)»
+	import io.joynr.provider.Deferred;
+«ENDIF»
+«IF !uniqueMethodsToCreateDeferreds.isEmpty»
+	import io.joynr.provider.AbstractDeferred;
+«ENDIF»
+«IF hasWriteAttribute(serviceInterface) || hasMethodWithArguments(serviceInterface)»
+	import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
+«ENDIF»
+«IF hasWriteAttribute(serviceInterface) || hasMethodWithoutReturnValue(serviceInterface)»
+	import io.joynr.provider.DeferredVoid;
+«ENDIF»
 
-		import java.util.List;
-		import java.util.ArrayList;
-		import java.util.Map;
+import io.joynr.provider.JoynrProvider;
 
-		import io.joynr.provider.JoynrProvider;
+«FOR datatype: getRequiredIncludesFor(serviceInterface)»
+	import «datatype»;
+«ENDFOR»
 
-		«FOR datatype: getRequiredIncludesFor(serviceInterface)»
-			import «datatype»;
-		«ENDFOR»
-		//TODO: Only include the necessary imports in the xtend template. This needs to be checked depending on the Franca model.
-		@SuppressWarnings("unused")
+public interface «className» extends JoynrProvider {
+	public static final String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(serviceInterface, "/")»/«interfaceName.toLowerCase»";
+	«FOR attribute : getAttributes(serviceInterface)»
+		«var attributeName = attribute.joynrName»
+		«var attributeType = attribute.typeName.objectDataTypeForPlainType»
 
-		public interface «className» extends «syncClassName» {
+		«IF isReadable(attribute)»
+			Promise<Deferred<«attributeType»>> get«attributeName.toFirstUpper»();
+		«ENDIF»
+		«IF isWritable(attribute)»
+			Promise<DeferredVoid> set«attributeName.toFirstUpper»(«attributeType» «attributeName»);
+		«ENDIF»
+		«IF isNotifiable(attribute)»
+			public void «attributeName»Changed(«attributeType» «attributeName»);
+		«ENDIF»
+	«ENDFOR»
+	«FOR method : getMethods(serviceInterface)»
+		«var methodName = method.joynrName»
+		«var params = method.typedParameterListJavaRpc»
+		«var comments = method.javadocCommentsParameterListJavaRpc»
 
-			«FOR attribute: getAttributes(serviceInterface)»
-				«val attributeName = attribute.joynrName»
-				«val attributeType = getMappedDatatypeOrList(attribute)»
-				«IF isReadable(attribute)»
-					@Override
-					public «attributeType» get«attributeName.toFirstUpper»();
-				«ENDIF»
+		/**
+		 * «methodName»
+		«IF !comments.equals("")»«comments»«ENDIF»
+		 * @return promise for asynchronous handling
+		 */
+		public Promise<«methodToDeferredName.get(method)»> «methodName»(
+				«IF !params.equals("")»«params»«ENDIF»
+		);
+	«ENDFOR»
+	«FOR method : uniqueMethodsToCreateDeferreds»
 
-				«IF isNotifiable(attribute)»
-					public void «attributeName»Changed(«attributeType» «attributeName»);
-				«ENDIF»
-
-				«IF isWritable(attribute)»
-					@Override
-					public void set«attributeName.toFirstUpper»(«attributeType» «attributeName»);
-				«ENDIF»
-			«ENDFOR»
-
-			«FOR broadcast: serviceInterface.broadcasts SEPARATOR '\n'»
-				«val broadcastName = broadcast.joynrName»
-				public void fire«broadcastName.toFirstUpper»(«getMappedOutputParametersCommaSeparated(broadcast, false)»);
-			«ENDFOR»
-
+		public class «methodToDeferredName.get(method)» extends AbstractDeferred {
+		«IF method.outputParameters.empty»
+			public synchronized boolean resolve() {
+				values = new Object[] {};
+				return super.resolve();
+			}
+		«ELSE»
+			public synchronized boolean resolve(«method.commaSeperatedTypedOutputParameterList») {
+				return super.resolve(«method.commaSeperatedUntypedOutputParameterList»);
+			}
+		«ENDIF»
 		}
+	«ENDFOR»
+	«FOR broadcast : serviceInterface.broadcasts»
+		«val broadcastName = broadcast.joynrName»
+
+		public void fire«broadcastName.toFirstUpper»(«broadcast.commaSeperatedTypedOutputParameterList»);
+	«ENDFOR»
+}
 		'''
 	}
 }

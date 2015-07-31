@@ -36,10 +36,14 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
     // public static final String PROPERTY_JOYNR_MESSAGING_CHANNELURLDIRECTORYURL =
     // "joynr.messaging.channelUrlDirectoryUrl";
     // public static final String PROPERTY_BOUNCE_PROXY_URL = "joynr.messaging.bounceProxyUrl";
+    public static final String PROPERTY_ARBITRATION_MINIMUMRETRYDELAY = "joynr.arbitration.minimumretrydelay";
     public static final String PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID = "joynr.messaging.capabilitiesdirectoryparticipantid";
     public static final String PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID = "joynr.messaging.capabilitiesdirectorychannelid";
     public static final String PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN = "joynr.messaging.discoverydirectoriesdomain";
     public static final String PROPERTY_DISCOVERY_REQUEST_TIMEOUT = "joynr.discovery.requesttimeout";
+
+    public static final String PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID = "joynr.messaging.domainaccesscontrollerparticipantid";
+    public static final String PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID = "joynr.messaging.domainaccesscontrollerchannelid";
 
     public static final String PROPERTY_CHANNEL_URL_DIRECTORY_PARTICIPANT_ID = "joynr.messaging.channelurldirectoryparticipantid";
     public static final String PROPERTY_CHANNEL_URL_DIRECTORY_CHANNEL_ID = "joynr.messaging.channelurldirectorychannelid";
@@ -49,7 +53,6 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
     public static final String PROPERTY_SEND_MSG_RETRY_INTERVAL_MS = "joynr.messaging.sendmsgretryintervalms";
     public static final String PROPERTY_LONG_POLL_RETRY_INTERVAL_MS = "joynr.messaging.longpollretryintervalms";
     public static final String PROPERTY_MAX_RETRY_COUNT = "joynr.messaging.maxretriescount";
-    public static final String PROPERTY_AUTHTOKEN = "joynr.security.authtoken";
     public static final String PROPERTY_PARTICIPANTIDS_PERSISISTENCE_FILE = "joynr.discovery.participantids_persistence_file";
     public static final String DEFAULT_PARTICIPANTIDS_PERSISTENCE_FILE = "joynr_participantIds.properties";
 

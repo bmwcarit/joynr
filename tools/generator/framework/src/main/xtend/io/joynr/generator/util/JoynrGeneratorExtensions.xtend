@@ -23,7 +23,6 @@ import java.io.BufferedReader
 import java.io.IOException
 import java.io.StringReader
 import java.util.ArrayList
-import java.util.Arrays
 import java.util.HashMap
 import java.util.HashSet
 import org.eclipse.emf.ecore.impl.BasicEObjectImpl
@@ -51,6 +50,10 @@ import org.franca.core.franca.FTypedElement
 import org.franca.core.franca.FUnionType
 import com.google.inject.Inject
 import com.google.inject.name.Named
+import org.eclipse.emf.common.util.EList
+import org.eclipse.emf.common.util.BasicEList
+import org.eclipse.emf.ecore.util.EcoreUtil
+import org.franca.core.franca.FTypeCollection
 
 abstract class JoynrGeneratorExtensions {
 
@@ -74,8 +77,7 @@ abstract class JoynrGeneratorExtensions {
 			return new HashSet<FArgument>
 		}
 		else{
-			// method.getOutArgs().filterNull
-			Arrays::asList(method.getOutArgs().filterNull.head)
+			return method.outArgs.filterNull
 		}
 	}
 
@@ -84,7 +86,7 @@ abstract class JoynrGeneratorExtensions {
 			return new HashSet<FArgument>
 		}
 		else{
-			event.outArgs.filterNull
+			return event.outArgs.filterNull
 		}
 	}
 
@@ -95,31 +97,6 @@ abstract class JoynrGeneratorExtensions {
 		else{
 			return method.inArgs.filterNull
 		}
-	}
-
-	// Convert an collection of output parameters to their typenames
-	def Iterable<String> mapOutputParameters(Iterable<FArgument> parameters) {
-		val result = new HashSet<String>();
-		if (parameters.empty) {
-			result.add("void");
-		} else {
-			for (FArgument parameter : parameters) {
-				result.add(getMappedDatatypeOrList(parameter))
-			}
-		}
-		return result;
-	}
-
-	def Iterable<String> getMappedOutputParameter(FMethod method) {
-		val result = new HashSet<String>();
-		val types = getOutputParameters(method);
-		if (types.empty) {
-			result.add("void");
-		}
-		for (FArgument argument : types) {
-			result.add(getMappedDatatypeOrList(argument));
-		}
-		return result;
 	}
 
 	def String getPackageNameInternal(FModelElement fModelElement, boolean useOwnName) {
@@ -160,97 +137,21 @@ abstract class JoynrGeneratorExtensions {
 		return getPackageName(fModelElement).replace('.', separator)
 	}
 
-	def String getMappedDatatype(FTypedElement typedElement){
-		getMappedDatatype(typedElement.type)
+	def boolean isPartOfTypeCollection(FType datatype) {
+		return datatype.eContainer instanceof FTypeCollection &&
+			!(datatype.eContainer instanceof FInterface) &&
+			(datatype.eContainer as FTypeCollection).name != "" &&
+			(datatype.eContainer as FTypeCollection).name != null;
 	}
 
-	def String getMappedDatatype(FTypeRef type){
-		if (type.derived != null){
-			getMappedDatatype(type.derived)
+	def String getTypeCollectionName(FType datatype) {
+		if(!datatype.isPartOfTypeCollection) {
+			throw new IllegalStateException(
+					"Datatype " + datatype.joynrName + " is not part of a type collection."
+					+ " Please call isPartOfTypeCollection before calling this method."
+			);
 		}
-		else{
-			getPrimitiveTypeName(type.predefined)
-		}
-	}
-
-	def String getPrimitiveTypeName(FBasicTypeId basicType)
-
-	def String getMappedDatatypeOrList(FTypedElement typedElement){
-		if (typedElement.type.derived != null){
-			var result = getMappedDatatypeOrList(typedElement.type.derived, typedElement.array == '[]')
-			if (result == null){
-				throw new IllegalStateException ("Datatype for element " + typedElement.joynrName + " could not be found");
-			}
-			return result;
-		}
-		else{
-			var result = getMappedDatatypeOrList(typedElement.type.predefined, typedElement.array == '[]')
-			if (result == null){
-				throw new IllegalStateException ("Datatype for element " + typedElement.joynrName + " could not be found");
-			}
-			return result;
-		}
-	}
-
-	def String getMappedDatatype(FType datatype)
-
-	def String getMappedDatatypeOrList(FType datatype, boolean array)
-
-	def String getMappedDatatypeOrList(FBasicTypeId datatype, boolean array)
-
-	def String getMappedOutputParameterTypesCommaSeparated(FBroadcast broadcast) {
-		val commaSeparatedParams = new StringBuilder();
-		for (parameter : mapOutputParameters(getOutputParameters(broadcast))) {
-			commaSeparatedParams.append(parameter);
-			commaSeparatedParams.append(", ");
-		}
-		val returnString = commaSeparatedParams.toString();
-		if (returnString.length() == 0) {
-			return "";
-		}
-		else{
-			return returnString.substring(0, returnString.length() - 2); //remove the last ,
-		}
-	}
-
-	def String getMappedOutputParametersCommaSeparated(FBroadcast broadcast, boolean constRef) {
-		val commaSeparatedParams = new StringBuilder();
-		for (parameter : getOutputParameters(broadcast)) {
-			commaSeparatedParams.append("\n        ")
-			if (constRef) {
-				commaSeparatedParams.append("const ")
-			}
-			commaSeparatedParams.append(getMappedDatatypeOrList(parameter));
-			if (constRef) {
-				commaSeparatedParams.append("& ")
-			} else {
-				commaSeparatedParams.append(" ")
-			}
-			commaSeparatedParams.append(parameter.name);
-			commaSeparatedParams.append(",");
-		}
-		val returnString = commaSeparatedParams.toString();
-		if (returnString.length() == 0) {
-			return "";
-		}
-		else{
-			return returnString.substring(0, returnString.length() - 1); //remove the last ","
-		}
-	}
-	
-		def String getOutputParametersCommaSeparated(FBroadcast broadcast) {
-		val commaSeparatedParams = new StringBuilder();
-		for (parameter : getOutputParameters(broadcast)) {
-			commaSeparatedParams.append(parameter.name);
-			commaSeparatedParams.append(", ");
-		}
-		val returnString = commaSeparatedParams.toString();
-		if (returnString.length() == 0) {
-			return "";
-		}
-		else{
-			return returnString.substring(0, returnString.length() - 2); //remove the last ","
-		}
+		return (datatype.eContainer as FTypeCollection).joynrName;
 	}
 
 	def getMethods(FInterface fInterface) {
@@ -286,39 +187,63 @@ abstract class JoynrGeneratorExtensions {
 		return paramList
 	}
 
-	def getAllComplexAndEnumTypes(FInterface fInterface, Boolean includingTransitiveTypes) {
-		getAllComplexAndEnumTypes(fInterface, includingTransitiveTypes, true, true, true, true)
+	def getAllRequiredTypes(FInterface fInterface) {
+		getAllRequiredTypes(fInterface, false)
 	}
 
-	def getAllComplexAndEnumTypes(FInterface fInterface, Boolean includingTransitiveTypes, boolean methods, boolean readAttributes, boolean writeAttributes, boolean broadcasts){
+	def getAllRequiredTypes(FInterface fInterface, Boolean includingTransitiveTypes) {
+		getAllRequiredTypes(fInterface, includingTransitiveTypes, true, true, true, true, true);
+	}
+
+	def getAllComplexAndEnumTypes(FInterface fInterface, Boolean includingTransitiveTypes) {
+		getAllComplexAndEnumTypes(fInterface, includingTransitiveTypes, true, true, true, true, true)
+	}
+
+	def getAllComplexAndEnumTypes(
+			FInterface fInterface,
+			Boolean includingTransitiveTypes,
+			boolean methods,
+			boolean readAttributes,
+			boolean writeAttributes,
+			boolean notifyAttributes,
+			boolean broadcasts
+	) {
+		getAllRequiredTypes(fInterface, includingTransitiveTypes, methods, readAttributes, writeAttributes, notifyAttributes, broadcasts).
+			filterComplexAndEnum
+	}
+
+	def filterComplexAndEnum(Iterable<Object> iterable) {
+		iterable.filter[type | type instanceof FType && ((type as FType).complex || (type as FType).enum) ]
+	}
+
+	def getAllRequiredTypes(
+			FInterface fInterface,
+			Boolean includingTransitiveTypes,
+			boolean methods,
+			boolean readAttributes,
+			boolean writeAttributes,
+			boolean notifyAttributes,
+			boolean broadcasts
+	) {
 		val typeList = new HashSet<Object>();
 		if (methods){
 			for (method : fInterface.methods) {
-				for(returnParameter : getOutputParameters(method)){
-				if (returnParameter != null && (isComplex(returnParameter.type) || isEnum(returnParameter.type))) {
-					typeList.add(getDatatype(returnParameter.type));
-				}
-
-				}
-				for (inputParameter : getInputParameters(method)) {
-					if (inputParameter != null && (isComplex(inputParameter.type) || isEnum(inputParameter.type))) {
-						typeList.add(getDatatype(inputParameter.type));
-					}
-				}
+				typeList.addAll(getAllRequiredTypes(method))
 			}
 		}
 
 		for (attribute : getAttributes(fInterface)) {
-			if ((readAttributes && attribute.readable) || writeAttributes && attribute.writable){
-				if (isComplex(attribute.type) || isEnum(attribute.type)) {
-					typeList.add(getDatatype(attribute.type));
-				}
+			if ((readAttributes && attribute.readable)
+					|| (writeAttributes && attribute.writable)
+					|| (notifyAttributes && attribute.notifiable)
+			) {
+				typeList.add(getDatatype(attribute.type));
 			}
 		}
 
 		if (broadcasts) {
 			for (broadcast : fInterface.broadcasts) {
-				typeList.addAll(getAllComplexAndEnumTypes(broadcast));
+				typeList.addAll(getAllRequiredTypes(broadcast))
 			}
 		}
 
@@ -332,14 +257,27 @@ abstract class JoynrGeneratorExtensions {
 		}
 	}
 
-	def getAllComplexAndEnumTypes(FBroadcast broadcast) {
-		val typeList = new HashSet<Object>();
-		for (outParameter : getOutputParameters(broadcast)) {
-			if (outParameter != null && (isComplex(outParameter.type) || isEnum(outParameter.type))) {
-				typeList.add(getDatatype(outParameter.type));
-			}
+	def getAllRequiredTypes(FMethod method) {
+		var typeList = new HashSet<Object>();
+		for(returnParameter : getOutputParameters(method).filterNull){
+			typeList.add(getDatatype(returnParameter.type));
 		}
-		return typeList;
+		for (inputParameter : getInputParameters(method).filterNull) {
+			typeList.add(getDatatype(inputParameter.type));
+		}
+		return typeList
+	}
+
+	def getAllRequiredTypes(FBroadcast broadcast) {
+		var typeList = new HashSet<Object>();
+		for (outParameter : broadcast.outputParameters.filterNull) {
+			typeList.add(getDatatype(outParameter.type));
+		}
+		return typeList
+	}
+
+	def getAllComplexAndEnumTypes(FBroadcast broadcast) {
+		broadcast.allRequiredTypes.filterComplexAndEnum
 	}
 
 	def private getAllReferredDatatypes(HashSet<Object> list, HashSet<Object> cache) {
@@ -357,8 +295,15 @@ abstract class JoynrGeneratorExtensions {
 		getAllComplexAndEnumTypes(fInterface, false)
 	}
 
-	def getAllComplexAndEnumTypes(FInterface fInterface, boolean methods, boolean readAttributes, boolean writeAttributes, boolean broadcasts) {
-		getAllComplexAndEnumTypes(fInterface, false, methods, readAttributes, writeAttributes, broadcasts)
+	def getAllComplexAndEnumTypes(
+			FInterface fInterface,
+			boolean methods,
+			boolean readAttributes,
+			boolean writeAttributes,
+			boolean notifyAttributes,
+			boolean broadcasts
+	) {
+		getAllComplexAndEnumTypes(fInterface, false, methods, readAttributes, writeAttributes, notifyAttributes, broadcasts)
 	}
 
 	def getDataTypes(FModel fModel) {
@@ -385,6 +330,20 @@ abstract class JoynrGeneratorExtensions {
 
 	def getEnumElements(FEnumerationType enumType) {
 		enumType.enumerators
+	}
+
+	def EList<FEnumerator> getEnumElementsAndBaseEnumElements(FEnumerationType enumType) {
+		if (hasExtendsDeclaration(enumType)) {
+			val baseEnumType = getExtendedType(enumType)
+			var enumAndBaseEnumElements = new BasicEList<FEnumerator>()
+			val baseEnumElements = getEnumElementsAndBaseEnumElements(baseEnumType)
+			enumAndBaseEnumElements.addAll(EcoreUtil.copyAll(baseEnumElements))
+			val enumElements = getEnumElements(enumType)
+			enumAndBaseEnumElements.addAll(EcoreUtil.copyAll(enumElements))
+			return enumAndBaseEnumElements
+		} else {
+			return getEnumElements(enumType)
+		}
 	}
 
 	def Iterable<FField> getMembersRecursive(FType datatype) {
@@ -426,13 +385,13 @@ abstract class JoynrGeneratorExtensions {
 			return null;
 		}
 		if (type instanceof FArrayType){
-			return getComplexType((type as FArrayType).elementType)
+			return getComplexType(type.elementType)
 		}
 		else if (type instanceof FCompoundType){
-			return type as FCompoundType;
+			return type;
 		}
 		else if (type instanceof FTypeDef){
-			return getComplexType((type as FTypeDef).actualType)
+			return getComplexType(type.actualType)
 		}
 	}
 
@@ -459,13 +418,13 @@ abstract class JoynrGeneratorExtensions {
 			return null;
 		}
 		if (type instanceof FArrayType){
-			return getEnumType((type as FArrayType).elementType)
+			return getEnumType(type.elementType)
 		}
 		else if (type instanceof FEnumerationType){
-			return type as FEnumerationType;
+			return type;
 		}
 		else if (type instanceof FTypeDef){
-			return getEnumType((type as FTypeDef).actualType)
+			return getEnumType(type.actualType)
 		}
 	}
 
@@ -474,13 +433,13 @@ abstract class JoynrGeneratorExtensions {
 			return false
 		}
 		if (type instanceof FArrayType){
-			return isComplex((type as FArrayType).elementType)
+			return isComplex(type.elementType)
 		}
 		if (type instanceof FCompoundType){
 			return true
 		}
 		if (type instanceof FTypeDef){
-			return isComplex((type as FTypeDef).actualType)
+			return isComplex(type.actualType)
 		}
 		if (type instanceof FEnumerationType){
 			return false
@@ -508,13 +467,13 @@ abstract class JoynrGeneratorExtensions {
 			return false
 		}
 		if (type instanceof FArrayType){
-			isEnum((type as FArrayType).elementType)
+			isEnum(type.elementType)
 		}
 		if (type instanceof FStructType || type instanceof FUnionType){
 			return false
 		}
 		if (type instanceof FTypeDef){
-			isEnum((type as FTypeDef).actualType)
+			isEnum(type.actualType)
 		}
 		if (type instanceof FEnumerationType){
 			return true
@@ -556,10 +515,10 @@ abstract class JoynrGeneratorExtensions {
 		}
 		else {
 			if (type instanceof FArrayType){
-				return isPrimitive((type as FArrayType).elementType)
+				return isPrimitive(type.elementType)
 			}
 			if (type instanceof FTypeDef){
-				return isPrimitive((type as FTypeDef).actualType)
+				return isPrimitive(type.actualType)
 			}
 		}
 		return false;
@@ -570,10 +529,10 @@ abstract class JoynrGeneratorExtensions {
 			return null;
 		}
 		if (type instanceof FArrayType){
-			return getPrimitive((type as FArrayType).elementType)
+			return getPrimitive(type.elementType)
 		}
 		if (type instanceof FTypeDef){
-			return getPrimitive((type as FTypeDef).actualType)
+			return getPrimitive(type.actualType)
 		}
 	}
 
@@ -586,12 +545,12 @@ abstract class JoynrGeneratorExtensions {
 		}
 	}
 
-	def String typeName(Object type) {
+	def String joynrNameQt(Object type) {
 		if (type instanceof FType){
-			(type as FType).joynrName
+			type.joynrName
 		}
 		else if (type instanceof FBasicTypeId){
-			(type as FBasicTypeId).joynrName
+			type.joynrName
 		}
 		else{
 			return null;
@@ -605,10 +564,10 @@ abstract class JoynrGeneratorExtensions {
 			for (returnParameter : getOutputParameters(method)) {
 				if (returnParameter != null) {
 					val datatype = getDatatype(returnParameter.type)
-					val typename = datatype.typeName;
+					val typename = datatype.joynrNameQt;
 					if (typename != null){
 						if (!typeList.containsKey(typename)){
-							typeList.put(datatype.typeName, datatype);
+							typeList.put(datatype.joynrNameQt, datatype);
 						}
 					}
 					else {
@@ -620,10 +579,10 @@ abstract class JoynrGeneratorExtensions {
 			for (inputParameter : getInputParameters(method)) {
 				if (inputParameter != null) {
 					val datatype = getDatatype(inputParameter.type)
-					val typename = datatype.typeName;
+					val typename = datatype.joynrNameQt;
 					if (typename != null){
 						if (!typeList.containsKey(typename)){
-							typeList.put(datatype.typeName, datatype);
+							typeList.put(datatype.joynrNameQt, datatype);
 						}
 					}
 					else {
@@ -634,33 +593,18 @@ abstract class JoynrGeneratorExtensions {
 		}
 		for (attribute : getAttributes(fInterface)) {
 			val datatype = getDatatype(attribute.type)
-			if (!typeList.containsKey(datatype.typeName)){
-				typeList.put(datatype.typeName, datatype);
+			if (!typeList.containsKey(datatype.joynrNameQt)){
+				typeList.put(datatype.joynrNameQt, datatype);
 			}
 		}
 		return typeList.values;
 	}
-
-	def String getDefaultValue(FTypedElement element)
 
 	def prependCommaIfNotEmpty(String input) {
 		if (input.equals("")) {
 			return input;
 		}
 		return ", " + input;
-	}
-
-	def getCommaSeperatedUntypedParameterList(FMethod method) {
-		val returnStringBuilder = new StringBuilder();
-		for (param : getInputParameters(method)) {
-			returnStringBuilder.append(param.joynrName)
-			returnStringBuilder.append(", ")
-		}
-		val returnString = returnStringBuilder.toString();
-		if (returnString.length() == 0) {
-			return "";
-		}
-		return returnString.substring(0, returnString.length() - 2); //remove the last ,
 	}
 
 	def String getOneLineWarning()
@@ -694,9 +638,13 @@ abstract class JoynrGeneratorExtensions {
 		return field.observable
 	}
 
-	def boolean isReadonly(FAttribute field)
+	def boolean isReadonly(FAttribute fAttribute) {
+		fAttribute.readonly
+	}
 
-	def boolean isObservable(FAttribute field)
+	def boolean isObservable(FAttribute fAttribute) {
+		!fAttribute.noSubscriptions
+	}
 
 	def boolean needsListImport (FInterface serviceInterface) {
 		needsListImport(serviceInterface, true, true);
@@ -743,6 +691,13 @@ abstract class JoynrGeneratorExtensions {
 		return false
 	}
 
+	def boolean hasExtendsDeclaration(FEnumerationType datatype) {
+		if (datatype.base!=null) {
+			return true
+		}
+		return false
+	}
+
 	def FCompoundType getExtendedType(FCompoundType datatype) {
 		if (datatype instanceof FStructType && (datatype as FStructType).base!=null) {
 			return (datatype as FStructType).base
@@ -752,15 +707,22 @@ abstract class JoynrGeneratorExtensions {
 		return null
 	}
 
+	def FEnumerationType getExtendedType(FEnumerationType datatype) {
+		if (datatype.base!=null) {
+			return datatype.base
+		}
+		return null
+	}
+
 	def getDatatype(FType type){
 		if (type instanceof FArrayType){
-			return getDatatype((type as FArrayType).elementType)
+			return getDatatype(type.elementType)
 		}
 		if (type instanceof FCompoundType){
 			return type
 		}
 		if (type instanceof FTypeDef){
-			return getDatatype((type as FTypeDef).actualType)
+			return getDatatype(type.actualType)
 		}
 		if (type instanceof FEnumerationType){
 			return type
@@ -903,6 +865,23 @@ abstract class JoynrGeneratorExtensions {
 		return broadcast.selective != null
 	}
 
+	/**
+	 * @return a mapping from method names to the number of their overloads.
+	 */
+	def overloadedMethodCounts(Iterable<FMethod> methods) {
+		var methodNameToCount = new HashMap<String, Integer>();
+
+		for (FMethod method : methods) {
+			var Integer count = 1;
+			if (methodNameToCount.containsKey(method.name)) {
+				count = methodNameToCount.get(method.name);
+				count++;
+			}
+			methodNameToCount.put(method.name, count);
+		}
+		return methodNameToCount;
+	}
+
 	def generateFile(
 		IFileSystemAccess fsa,
 		String path,
@@ -957,5 +936,30 @@ abstract class JoynrGeneratorExtensions {
 		if (generate) {
 			fsa.generateFile(path, generator.generate(compoundType).toString);
 		}
+	}
+
+	def hasArray (FInterface fInterface) {
+		for (method : fInterface.methods) {
+			for (args : Iterables::concat(method.inputParameters, method.outputParameters)) {
+				if (args.isArray) {
+					return true
+				}
+			}
+		}
+
+		for (broadcast : fInterface.broadcasts) {
+			for (args : broadcast.outputParameters) {
+				if (args.isArray) {
+					return true
+				}
+			}
+		}
+
+		for (attribute : getAttributes(fInterface)) {
+			if (attribute.isArray) {
+				return true
+			}
+		}
+		return false
 	}
 }

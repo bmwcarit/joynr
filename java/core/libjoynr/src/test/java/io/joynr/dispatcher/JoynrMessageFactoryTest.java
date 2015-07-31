@@ -19,11 +19,13 @@ package io.joynr.dispatcher;
  * #L%
  */
 
+import static org.junit.Assert.assertNotNull;
 import io.joynr.common.ExpiryDate;
 import io.joynr.messaging.MessagingModule;
 import io.joynr.pubsub.SubscriptionQos;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 
 import joynr.JoynrMessage;
 import joynr.PeriodicSubscriptionQos;
@@ -89,7 +91,7 @@ public class JoynrMessageFactoryTest {
         SubscriptionQos subscriptionqos = new PeriodicSubscriptionQos(1000, 1, 1500, 1000);
         subscriptionRequest = new SubscriptionRequest(subscriptionId, attributeName, subscriptionqos);
         String response = "response";
-        publication = new SubscriptionPublication(response, subscriptionId);
+        publication = new SubscriptionPublication(Arrays.asList(response), subscriptionId);
 
         joynrMessageFactory = injector.getInstance(JoynrMessageFactory.class);
     }
@@ -110,6 +112,7 @@ public class JoynrMessageFactoryTest {
         Assert.assertEquals(String.valueOf(expiryDate.getValue()),
                             message.getHeaderValue(JoynrMessage.HEADER_NAME_EXPIRY_DATE));
         Assert.assertTrue(message.getPayload() != null);
+        assertNotNull(message.getCreatorUserId());
     }
 
     @Test
@@ -126,6 +129,7 @@ public class JoynrMessageFactoryTest {
                             message.getHeaderValue(JoynrMessage.HEADER_NAME_CONTENT_TYPE));
 
         Assert.assertTrue(message.getPayload() != null);
+        assertNotNull(message.getCreatorUserId());
     }
 
     @Test
@@ -143,7 +147,7 @@ public class JoynrMessageFactoryTest {
         Assert.assertEquals(replyToChannelId, message.getHeaderValue(JoynrMessage.HEADER_NAME_REPLY_CHANNELID));
 
         Assert.assertTrue(message.getPayload() != null);
-
+        assertNotNull(message.getCreatorUserId());
     }
 
     @Test
@@ -157,6 +161,6 @@ public class JoynrMessageFactoryTest {
         Assert.assertEquals(toParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID));
 
         Assert.assertTrue(message.getPayload() != null);
-
+        assertNotNull(message.getCreatorUserId());
     }
 }

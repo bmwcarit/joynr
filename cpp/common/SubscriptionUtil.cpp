@@ -18,48 +18,49 @@
  */
 #include "joynr/SubscriptionUtil.h"
 
-#include "joynr/OnChangeSubscriptionQos.h"
-#include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
-#include "joynr/PeriodicSubscriptionQos.h"
+#include "joynr/QtOnChangeSubscriptionQos.h"
+#include "joynr/QtOnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/QtPeriodicSubscriptionQos.h"
 
 namespace joynr
 {
 
-bool SubscriptionUtil::isOnChangeSubscription(SubscriptionQos* qos)
+bool SubscriptionUtil::isOnChangeSubscription(QtSubscriptionQos* qos)
 {
-    return qos->inherits(OnChangeSubscriptionQos::staticMetaObject.className()) ||
-           qos->inherits(OnChangeWithKeepAliveSubscriptionQos::staticMetaObject.className());
+    return qos->inherits(QtOnChangeSubscriptionQos::staticMetaObject.className()) ||
+           qos->inherits(QtOnChangeWithKeepAliveSubscriptionQos::staticMetaObject.className());
 }
 
-qint64 SubscriptionUtil::getAlertInterval(SubscriptionQos* qos)
+qint64 SubscriptionUtil::getAlertInterval(QtSubscriptionQos* qos)
 {
-    if (qos->inherits(PeriodicSubscriptionQos::staticMetaObject.className())) {
-        return (qobject_cast<PeriodicSubscriptionQos*>(qos))->getAlertAfterInterval();
+    if (qos->inherits(QtPeriodicSubscriptionQos::staticMetaObject.className())) {
+        return (qobject_cast<QtPeriodicSubscriptionQos*>(qos))->getAlertAfterInterval();
     }
-    if (qos->inherits(OnChangeWithKeepAliveSubscriptionQos::staticMetaObject.className())) {
-        return (qobject_cast<OnChangeWithKeepAliveSubscriptionQos*>(qos))->getAlertAfterInterval();
+    if (qos->inherits(QtOnChangeWithKeepAliveSubscriptionQos::staticMetaObject.className())) {
+        return (qobject_cast<QtOnChangeWithKeepAliveSubscriptionQos*>(qos))
+                ->getAlertAfterInterval();
     }
     return -1;
 }
 
-qint64 SubscriptionUtil::getMinInterval(SubscriptionQos* qos)
+qint64 SubscriptionUtil::getMinInterval(QtSubscriptionQos* qos)
 {
-    if (qos->inherits(OnChangeSubscriptionQos::staticMetaObject.className())) {
-        return (qobject_cast<OnChangeSubscriptionQos*>(qos))->getMinInterval();
+    if (qos->inherits(QtOnChangeSubscriptionQos::staticMetaObject.className())) {
+        return (qobject_cast<QtOnChangeSubscriptionQos*>(qos))->getMinInterval();
     }
-    if (qos->inherits(OnChangeWithKeepAliveSubscriptionQos::staticMetaObject.className())) {
-        return (qobject_cast<OnChangeWithKeepAliveSubscriptionQos*>(qos))->getMinInterval();
+    if (qos->inherits(QtOnChangeWithKeepAliveSubscriptionQos::staticMetaObject.className())) {
+        return (qobject_cast<QtOnChangeWithKeepAliveSubscriptionQos*>(qos))->getMinInterval();
     }
     return -1;
 }
 
-qint64 SubscriptionUtil::getPeriodicPublicationInterval(SubscriptionQos* qos)
+qint64 SubscriptionUtil::getPeriodicPublicationInterval(QtSubscriptionQos* qos)
 {
-    if (qos->inherits(OnChangeWithKeepAliveSubscriptionQos::staticMetaObject.className())) {
-        return (qobject_cast<OnChangeWithKeepAliveSubscriptionQos*>(qos))->getMaxInterval();
+    if (qos->inherits(QtOnChangeWithKeepAliveSubscriptionQos::staticMetaObject.className())) {
+        return (qobject_cast<QtOnChangeWithKeepAliveSubscriptionQos*>(qos))->getMaxInterval();
     }
-    if (qos->inherits(PeriodicSubscriptionQos::staticMetaObject.className())) {
-        return (qobject_cast<PeriodicSubscriptionQos*>(qos))->getPeriod();
+    if (qos->inherits(QtPeriodicSubscriptionQos::staticMetaObject.className())) {
+        return (qobject_cast<QtPeriodicSubscriptionQos*>(qos))->getPeriod();
     }
     return -1;
 }

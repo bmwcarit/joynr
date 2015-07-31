@@ -24,7 +24,7 @@
 namespace joynr
 {
 
-ParticipantIdStorage::ParticipantIdStorage(const QString& filename) : filename(filename)
+ParticipantIdStorage::ParticipantIdStorage(const std::string& filename) : filename(filename)
 {
 }
 
@@ -34,61 +34,66 @@ const QString& ParticipantIdStorage::STORAGE_FORMAT_STRING()
     return value;
 }
 
-void ParticipantIdStorage::setProviderParticipantId(const QString& domain,
-                                                    const QString& interfaceName,
-                                                    const QString& authenticationToken,
-                                                    const QString& participantId)
+void ParticipantIdStorage::setProviderParticipantId(const std::string& domain,
+                                                    const std::string& interfaceName,
+                                                    const std::string& participantId,
+                                                    const std::string& authenticationToken)
 {
     // Access the persistence file through a threadsafe QSettings object
-    QSettings settings(filename, QSettings::IniFormat);
+    QSettings settings(QString::fromStdString(filename), QSettings::IniFormat);
 
-    QString providerKey = createProviderKey(domain, interfaceName, authenticationToken);
-    settings.setValue(providerKey, participantId);
+    std::string providerKey = createProviderKey(domain, interfaceName, authenticationToken);
+    settings.setValue(QString::fromStdString(providerKey), QString::fromStdString(participantId));
     settings.sync();
 }
 
-QString ParticipantIdStorage::getProviderParticipantId(const QString& domain,
-                                                       const QString& interfaceName,
-                                                       const QString& authenticationToken)
+std::string ParticipantIdStorage::getProviderParticipantId(const std::string& domain,
+                                                           const std::string& interfaceName,
+                                                           const std::string& authenticationToken)
 {
-    return getProviderParticipantId(domain, interfaceName, authenticationToken, QString());
+    return getProviderParticipantId(domain, interfaceName, "", authenticationToken);
 }
 
-QString ParticipantIdStorage::getProviderParticipantId(const QString& domain,
-                                                       const QString& interfaceName,
-                                                       const QString& authenticationToken,
-                                                       const QString& defaultValue)
+std::string ParticipantIdStorage::getProviderParticipantId(const std::string& domain,
+                                                           const std::string& interfaceName,
+                                                           const std::string& defaultValue,
+                                                           const std::string& authenticationToken)
 {
     // Access the persistence file through a threadsafe QSettings object
-    QSettings settings(filename, QSettings::IniFormat);
+    QSettings settings(QString::fromStdString(filename), QSettings::IniFormat);
 
     // Arrange the provider ids by authentication token
-    QString authToken = (!authenticationToken.isEmpty()) ? authenticationToken : QString("default");
-    QString providerKey = createProviderKey(domain, interfaceName, authToken);
+    std::string authToken =
+            (!authenticationToken.empty()) ? authenticationToken : std::string("default");
+    std::string providerKey = createProviderKey(domain, interfaceName, authToken);
 
     // Lookup the participant id
-    QString participantId;
-    QVariant value = settings.value(providerKey);
+    std::string participantId;
+    QVariant value = settings.value(QString::fromStdString(providerKey));
 
     if (!value.isValid()) {
         // Persist a new participant Id, using the defaultValue if possible
-        participantId = (!defaultValue.isEmpty()) ? defaultValue : Util::createUuid();
-        settings.setValue(providerKey, participantId);
+        participantId = (!defaultValue.empty()) ? defaultValue : Util::createUuid().toStdString();
+        settings.setValue(
+                QString::fromStdString(providerKey), QString::fromStdString(participantId));
         settings.sync();
     } else {
-        participantId = value.toString();
+        participantId = value.toString().toStdString();
     }
 
     return participantId;
 }
 
-QString ParticipantIdStorage::createProviderKey(const QString& domain,
-                                                const QString& interfaceName,
-                                                const QString& authenticationToken)
+std::string ParticipantIdStorage::createProviderKey(const std::string& domain,
+                                                    const std::string& interfaceName,
+                                                    const std::string& authenticationToken)
 {
-    QString key = STORAGE_FORMAT_STRING().arg(domain).arg(interfaceName).arg(authenticationToken);
+    QString key = STORAGE_FORMAT_STRING()
+                          .arg(QString::fromStdString(domain))
+                          .arg(QString::fromStdString(interfaceName))
+                          .arg(QString::fromStdString(authenticationToken));
 
-    return key.replace("/", ".");
+    return key.replace("/", ".").toStdString();
 }
 
 } // namespace joynr

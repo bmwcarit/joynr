@@ -26,9 +26,8 @@
 #include "joynr/IMessaging.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/system/RoutingProxy.h"
-#include "joynr/system/RoutingProvider.h"
+#include "joynr/system/RoutingAbstractProvider.h"
 #include "joynr/RequestStatus.h"
-#include "joynr/ICallback.h"
 #include "joynr/Directory.h"
 #include "joynr/MessageQueue.h"
 
@@ -40,22 +39,24 @@
 #include <QMap>
 #include <QSet>
 #include <QMutex>
+#include <string>
+#include <QReadWriteLock>
 
 namespace joynr
 {
 
 class IMessagingStubFactory;
 class JoynrMessagingEndpointAddress;
+class IAccessController;
+class IPlatformSecurityManager;
 namespace joynr_logging
 {
 class Logger;
 }
-class DelayedScheduler;
-class ThreadPoolDelayedScheduler;
 class MessageQueueCleanerRunnable;
 namespace system
 {
-class Address;
+class QtAddress;
 }
 
 /**
@@ -71,17 +72,16 @@ class Address;
   *  In sending, a ThreadPool of default size 6 is used with a 500ms default retry interval.
   */
 
-class JOYNR_EXPORT MessageRouter : public joynr::system::RoutingProvider
+class JOYNR_EXPORT MessageRouter : public joynr::system::RoutingAbstractProvider
 {
 public:
     MessageRouter(IMessagingStubFactory* messagingStubFactory,
-                  int messageSendRetryInterval = 500,
+                  IPlatformSecurityManager* securityManager,
                   int maxThreads = 6,
                   MessageQueue* messageQueue = new MessageQueue());
 
     MessageRouter(IMessagingStubFactory* messagingStubFactory,
-                  QSharedPointer<joynr::system::Address> incomingAddress,
-                  int messageSendRetryInterval = 500,
+                  QSharedPointer<joynr::system::QtAddress> incomingAddress,
                   int maxThreads = 6,
                   MessageQueue* messageQueue = new MessageQueue());
 
@@ -96,95 +96,78 @@ public:
      */
     virtual void route(const JoynrMessage& message);
 
-    // inherited method from joynr::system::RoutingProvider
-    virtual void addNextHop(joynr::RequestStatus& joynrInternalStatus,
-                            QString participantId,
-                            joynr::system::ChannelAddress channelAddress);
-    // inherited method from joynr::system::RoutingProvider
-    virtual void addNextHop(joynr::RequestStatus& joynrInternalStatus,
-                            QString participantId,
-                            joynr::system::CommonApiDbusAddress commonApiDbusAddress);
-    // inherited method from joynr::system::RoutingProvider
-    virtual void addNextHop(joynr::RequestStatus& joynrInternalStatus,
-                            QString participantId,
-                            joynr::system::BrowserAddress browserAddress);
-    // inherited method from joynr::system::RoutingProvider
-    virtual void addNextHop(joynr::RequestStatus& joynrInternalStatus,
-                            QString participantId,
-                            joynr::system::WebSocketAddress webSocketAddress);
-    // inherited method from joynr::system::RoutingProvider
-    virtual void addNextHop(joynr::RequestStatus& joynrInternalStatus,
-                            QString participantId,
-                            joynr::system::WebSocketClientAddress webSocketClientAddress);
-    // inherited method from joynr::system::RoutingProvider
-    virtual void removeNextHop(joynr::RequestStatus& joynrInternalStatus, QString participantId);
-    // inherited method from joynr::system::RoutingProvider
-    virtual void resolveNextHop(joynr::RequestStatus& joynrInternalStatus,
-                                bool& resolved,
-                                QString participantId);
+    virtual void addNextHop(const std::string& participantId,
+                            const joynr::system::RoutingTypes::ChannelAddress& channelAddress,
+                            std::function<void()> onSuccess);
+    virtual void addNextHop(
+            const std::string& participantId,
+            const joynr::system::RoutingTypes::CommonApiDbusAddress& commonApiDbusAddress,
+            std::function<void()> onSuccess);
+    virtual void addNextHop(const std::string& participantId,
+                            const joynr::system::RoutingTypes::BrowserAddress& browserAddress,
+                            std::function<void()> onSuccess);
+    virtual void addNextHop(const std::string& participantId,
+                            const joynr::system::RoutingTypes::WebSocketAddress& webSocketAddress,
+                            std::function<void()> onSuccess);
+    virtual void addNextHop(
+            const std::string& participantId,
+            const joynr::system::RoutingTypes::WebSocketClientAddress& webSocketClientAddress,
+            std::function<void()> onSuccess);
+    virtual void removeNextHop(const std::string& participantId,
+                               std::function<void()> onSuccess = nullptr);
+    virtual void resolveNextHop(const std::string& participantId,
+                                std::function<void(const bool& resolved)> onSuccess);
 
-    void addProvisionedNextHop(QString participantId,
-                               QSharedPointer<joynr::system::Address> address);
+    void addProvisionedNextHop(std::string participantId,
+                               QSharedPointer<joynr::system::QtAddress> address);
+
+    void setAccessController(QSharedPointer<IAccessController> accessController);
 
     void setParentRouter(joynr::system::RoutingProxy* parentRouter,
-                         QSharedPointer<joynr::system::Address> parentAddress,
-                         QString parentParticipantId);
+                         QSharedPointer<joynr::system::QtAddress> parentAddress,
+                         std::string parentParticipantId);
 
-    virtual void addNextHop(QString participantId,
-                            QSharedPointer<joynr::system::Address> inprocessAddress);
+    virtual void addNextHop(const std::string& participantId,
+                            const QSharedPointer<joynr::system::QtAddress>& inprocessAddress,
+                            std::function<void()> onSuccess = nullptr);
 
     friend class MessageRunnable;
-    friend class ResolveCallBack;
+    friend class ConsumerPermissionCallback;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MessageRouter);
     IMessagingStubFactory* messagingStubFactory;
-    Directory<QString, joynr::system::Address> routingTable;
-    QMutex routingTableMutex;
+    Directory<std::string, joynr::system::QtAddress> routingTable;
+    QReadWriteLock routingTableLock;
     QThreadPool threadPool;
-    ThreadPoolDelayedScheduler* delayedScheduler;
     joynr::system::RoutingProxy* parentRouter;
-    QSharedPointer<joynr::system::Address> parentAddress;
-    QSharedPointer<joynr::system::Address> incomingAddress;
+    QSharedPointer<joynr::system::QtAddress> parentAddress;
+    QSharedPointer<joynr::system::QtAddress> incomingAddress;
     static joynr_logging::Logger* logger;
 
     MessageQueue* messageQueue;
     MessageQueueCleanerRunnable* messageQueueCleanerRunnable;
     QSet<QString>* runningParentResolves;
+    QSharedPointer<IAccessController> accessController;
+    IPlatformSecurityManager* securityManager;
     mutable QMutex parentResolveMutex;
 
-    void init(int messageSendRetryInterval, int maxThreads);
-    void addNextHopToParent(joynr::RequestStatus& joynrInternalStatus, QString participantId);
+    void init(int maxThreads);
+    void addNextHopToParent(std::string participantId,
+                            std::function<void(void)> callbackFct = nullptr);
 
     void sendMessage(const JoynrMessage& message,
-                     QSharedPointer<joynr::system::Address> destAddress);
+                     QSharedPointer<joynr::system::QtAddress> destAddress);
 
-    void sendMessages(QString& destinationPartId, QSharedPointer<joynr::system::Address> address);
+    void sendMessages(const std::string& destinationPartId,
+                      QSharedPointer<joynr::system::QtAddress> address);
 
     bool isChildMessageRouter();
 
-    void addToRoutingTable(QString participantId, QSharedPointer<joynr::system::Address> address);
+    void addToRoutingTable(std::string participantId,
+                           QSharedPointer<joynr::system::QtAddress> address);
 
-    void removeRunningParentResolvers(QString& destinationPartId);
-};
-
-/**
- * Class to handle callbacks from resolve requests to the parent message router.
- */
-
-class ResolveCallBack : public joynr::ICallback<bool>
-{
-public:
-    ResolveCallBack(MessageRouter& messageRouter, QString destinationParticipantId);
-
-    void onFailure(const RequestStatus status);
-
-    void onSuccess(const RequestStatus status, bool resolved);
-
-private:
-    MessageRouter& messageRouter;
-    QString destinationPartId;
-    static joynr_logging::Logger* logger;
+    void removeRunningParentResolvers(const QString& destinationPartId);
 };
 
 /**

@@ -20,18 +20,18 @@
 #define CLUSTERCONTROLLERDIRECTORIES_H
 
 #include "joynr/Directory.h"
-#include <QString>
+#include <string>
 
 namespace joynr
 {
 
 namespace system
 {
-class Address;
+class QtAddress;
 }
 class IMessaging;
 
-typedef Directory<QString, IMessaging> MessageStubDirectory;
+typedef Directory<std::string, IMessaging> MessageStubDirectory;
 
 } // namespace joynr
 #endif

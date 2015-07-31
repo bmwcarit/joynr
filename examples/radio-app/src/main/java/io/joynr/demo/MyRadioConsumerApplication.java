@@ -23,8 +23,11 @@ import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.JoynrArbitrationException;
 import io.joynr.exceptions.JoynrCommunicationException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.proxy.Callback;
+import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.pubsub.subscription.AttributeSubscriptionAdapter;
 import io.joynr.runtime.AbstractJoynrApplication;
@@ -45,6 +48,7 @@ import joynr.vehicle.RadioBroadcastInterface.NewStationDiscoveredBroadcastFilter
 import joynr.vehicle.RadioBroadcastInterface.WeakSignalBroadcastAdapter;
 import joynr.vehicle.RadioProxy;
 import joynr.vehicle.RadioStation;
+import joynr.vehicle.RadioSync.GetLocationOfCurrentStationReturned;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,7 +78,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
      * Main method. This method is responsible for: 1. Instantiating the consumer application. 2. Injecting the instance
      * with Guice bindings 3. Starting the application. 4. Ending the application so that the necessary clean up calls
      * are made.
-     * 
+     *
      * @throws IOException
      */
     public static void main(String[] args) throws IOException {
@@ -315,6 +319,30 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
             currentStation = radioProxy.getCurrentStation();
             LOG.info(PRINT_BORDER + "The current radio station after shuffling is: " + currentStation + PRINT_BORDER);
 
+            // add favourite radio station async
+            RadioStation radioStation = new RadioStation("99.4 AFN", false, Country.GERMANY);
+            Callback<Boolean> callback = new Callback<Boolean>() {
+                @Override
+                public void onSuccess(Boolean result) {
+                    LOG.info(PRINT_BORDER + "ASYNC METHOD: added favourite station: callback onSuccess" + PRINT_BORDER);
+                }
+
+                @Override
+                public void onFailure(JoynrRuntimeException error) {
+                    LOG.info(PRINT_BORDER + "ASYNC METHOD: added favourite station: callback onFailure" + PRINT_BORDER);
+                }
+            };
+            Future<Boolean> future = radioProxy.addFavouriteStation(callback, radioStation);
+            try {
+                long timeoutInMilliseconds = 8000;
+                Boolean reply = future.getReply(timeoutInMilliseconds);
+                LOG.info(PRINT_BORDER + "ASYNC METHOD: added favourite station: " + radioStation + ": " + reply
+                        + PRINT_BORDER);
+            } catch (InterruptedException|JoynrRuntimeException e) {
+                LOG.info(PRINT_BORDER + "ASYNC METHOD: added favourite station: " + radioStation
+                        + ": " + e.getClass().getSimpleName() + "!");
+            }
+
             ConsoleReader console;
             try {
                 console = new ConsoleReader();
@@ -323,7 +351,11 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
                     switch (key) {
                     case 's':
                         radioProxy.shuffleStations();
+                        LOG.info("called shuffleStations");
                         break;
+                    case 'm':
+                        GetLocationOfCurrentStationReturned locationOfCurrentStation = radioProxy.getLocationOfCurrentStation();
+                        LOG.info("called getLocationOfCurrentStation. country: " + locationOfCurrentStation.country + ", location: " + locationOfCurrentStation.location);
                     default:
                         LOG.info("\n\nUSAGE press\n" + " q\tto quit\n" + " s\tto shuffle stations\n");
                         break;

@@ -20,21 +20,21 @@
 
 using namespace joynr;
 
-const qint64& OnChangeSubscriptionQos::DEFAULT_MIN_INTERVAL()
+const int64_t& OnChangeSubscriptionQos::DEFAULT_MIN_INTERVAL()
 {
-    static qint64 defaultMinInterval = 1000;
+    static int64_t defaultMinInterval = 1000;
     return defaultMinInterval;
 }
 
-const qint64& OnChangeSubscriptionQos::MIN_MIN_INTERVAL()
+const int64_t& OnChangeSubscriptionQos::MIN_MIN_INTERVAL()
 {
-    static qint64 minMinInterval = 50;
+    static int64_t minMinInterval = 50;
     return minMinInterval;
 }
 
-const qint64& OnChangeSubscriptionQos::MAX_MIN_INTERVAL()
+const int64_t& OnChangeSubscriptionQos::MAX_MIN_INTERVAL()
 {
-    static qint64 maxMinInterval = 2592000000UL;
+    static int64_t maxMinInterval = 2592000000UL;
     return maxMinInterval;
 }
 
@@ -43,7 +43,8 @@ OnChangeSubscriptionQos::OnChangeSubscriptionQos()
 {
 }
 
-OnChangeSubscriptionQos::OnChangeSubscriptionQos(const qint64& validity, const qint64& minInterval)
+OnChangeSubscriptionQos::OnChangeSubscriptionQos(const int64_t& validity,
+                                                 const int64_t& minInterval)
         : SubscriptionQos(validity), minInterval(DEFAULT_MIN_INTERVAL())
 {
     setMinInterval(minInterval);
@@ -54,12 +55,12 @@ OnChangeSubscriptionQos::OnChangeSubscriptionQos(const OnChangeSubscriptionQos& 
 {
 }
 
-qint64 OnChangeSubscriptionQos::getMinInterval() const
+int64_t OnChangeSubscriptionQos::getMinInterval() const
 {
     return minInterval;
 }
 
-void OnChangeSubscriptionQos::setMinInterval(const qint64& minInterval)
+void OnChangeSubscriptionQos::setMinInterval(const int64_t& minInterval)
 {
     this->minInterval = minInterval;
     if (this->minInterval < MIN_MIN_INTERVAL()) {
@@ -82,12 +83,4 @@ bool OnChangeSubscriptionQos::operator==(const OnChangeSubscriptionQos& other) c
 {
     return expiryDate == other.getExpiryDate() && publicationTtl == other.getPublicationTtl() &&
            minInterval == other.getMinInterval();
-}
-
-bool OnChangeSubscriptionQos::equals(const QObject& other) const
-{
-    int typeThis = QMetaType::type(this->metaObject()->className());
-    int typeOther = QMetaType::type(other.metaObject()->className());
-    auto newOther = dynamic_cast<const OnChangeSubscriptionQos*>(&other);
-    return typeThis == typeOther && *this == *newOther;
 }

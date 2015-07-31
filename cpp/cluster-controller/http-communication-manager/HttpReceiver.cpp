@@ -172,8 +172,7 @@ bool HttpReceiver::tryToDeleteChannel()
     if (statusCode == 200) {
         channelCreatedSemaphore->tryAcquire(1, 5000); // Reset the channel created Semaphore.
         LOG_INFO(logger, "channel deletion successfull");
-        QSharedPointer<Future<void>> future(new Future<void>());
-        channelUrlDirectory->unregisterChannelUrls(future, channelId);
+        channelUrlDirectory->unregisterChannelUrlsAsync(channelId.toStdString());
         LOG_INFO(logger, "Sendeing unregister request to ChannelUrlDirectory ...");
 
         return true;

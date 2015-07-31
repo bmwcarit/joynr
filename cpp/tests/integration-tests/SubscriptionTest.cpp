@@ -32,13 +32,15 @@
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 #include "joynr/InterfaceRegistrar.h"
+#include "joynr/MetaTypeRegistrar.h"
 #include "joynr/tests/testRequestInterpreter.h"
 #include "tests/utils/MockObjects.h"
-#include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/QtOnChangeWithKeepAliveSubscriptionQos.h"
 #include <QString>
+#include <string>
 #include "joynr/LibjoynrSettings.h"
 
-#include "joynr/types/GpsLocation.h"
+#include "joynr/types/QtGpsLocation.h"
 
 using namespace ::testing;
 
@@ -56,11 +58,16 @@ class SubscriptionTest : public ::testing::Test {
 public:
     SubscriptionTest() :
         mockMessageRouter(new MockMessageRouter()),
-        mockCallback(new MockCallback<types::GpsLocation>()),
+        mockCallback(new MockCallback<types::QtGpsLocation>()),
         mockRequestCaller(new MockTestRequestCaller()),
-        mockReplyCaller(new MockReplyCaller<types::GpsLocation>(mockCallback)),
-        mockSubscriptionListener(new MockSubscriptionListenerOneType<types::GpsLocation>()),
-        gpsLocation1(1.1, 2.2, 3.3, types::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444),
+        mockReplyCaller(new MockReplyCaller<types::QtGpsLocation>(
+                [this](const RequestStatus& status, const types::QtGpsLocation& location) {
+                    mockCallback->onSuccess(location);
+                },
+                [] (const RequestStatus status){
+                })),
+        mockSubscriptionListener(new MockSubscriptionListenerOneType<types::QtGpsLocation>()),
+        gpsLocation1(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444),
         qos(2000),
         providerParticipantId("providerParticipantId"),
         proxyParticipantId("proxyParticipantId"),
@@ -79,7 +86,8 @@ public:
         publicationManager = new PublicationManager();
         dispatcher.registerPublicationManager(publicationManager);
         dispatcher.registerSubscriptionManager(subscriptionManager);
-        InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::getInterfaceName());
+        InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
+        MetaTypeRegistrar::instance().registerMetaType<types::QtGpsLocation>();
     }
 
     void TearDown(){
@@ -88,18 +96,18 @@ public:
 
 protected:
     QSharedPointer<MockMessageRouter> mockMessageRouter;
-    QSharedPointer<MockCallback<types::GpsLocation> > mockCallback;
+    QSharedPointer<MockCallback<types::QtGpsLocation> > mockCallback;
 
     QSharedPointer<MockTestRequestCaller> mockRequestCaller;
-    QSharedPointer<MockReplyCaller<types::GpsLocation> > mockReplyCaller;
-    QSharedPointer<MockSubscriptionListenerOneType<types::GpsLocation> > mockSubscriptionListener;
+    QSharedPointer<MockReplyCaller<types::QtGpsLocation> > mockReplyCaller;
+    std::shared_ptr<MockSubscriptionListenerOneType<types::QtGpsLocation> > mockSubscriptionListener;
 
-    types::GpsLocation gpsLocation1;
+    types::Localisation::GpsLocation gpsLocation1;
 
     // create test data
     MessagingQos qos;
-    QString providerParticipantId;
-    QString proxyParticipantId;
+    std::string providerParticipantId;
+    std::string proxyParticipantId;
     QString requestReplyId;
 
     JoynrMessageFactory messageFactory;
@@ -118,16 +126,19 @@ private:
   *             the MockCaller for the attribute.
   */
 TEST_F(SubscriptionTest, receive_subscriptionRequestAndPollAttribute) {
-    qRegisterMetaType<OnChangeWithKeepAliveSubscriptionQos>("OnChangeWithKeepAliveSubscriptionQos");
+    qRegisterMetaType<QtOnChangeWithKeepAliveSubscriptionQos>("QtOnChangeWithKeepAliveSubscriptionQos");
     qRegisterMetaType<SubscriptionRequest>("SubscriptionRequest");
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
     QSemaphore semaphore(0);
-    EXPECT_CALL(*mockRequestCaller, getLocation(_, _))
-            .WillRepeatedly(ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*mockRequestCaller, getLocation(_))
+            .WillRepeatedly(
+                DoAll(
+                    Invoke(mockRequestCaller.data(), &MockTestRequestCaller::invokeOnSuccessFct),
+                    ReleaseSemaphore(&semaphore)));
 
     QString attributeName = "Location";
-    auto subscriptionQos = QSharedPointer<SubscriptionQos>(new OnChangeWithKeepAliveSubscriptionQos(
+    auto subscriptionQos = QSharedPointer<QtSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
                 80, // validity_ms
                 100, // minInterval_ms
                 200, // maxInterval_ms
@@ -140,8 +151,8 @@ TEST_F(SubscriptionTest, receive_subscriptionRequestAndPollAttribute) {
     subscriptionRequest.setQos(subscriptionQos);
 
     JoynrMessage msg = messageFactory.createSubscriptionRequest(
-                proxyParticipantId,
-                providerParticipantId,
+                QString::fromStdString(proxyParticipantId),
+                QString::fromStdString(providerParticipantId),
                 qos,
                 subscriptionRequest);
 
@@ -164,16 +175,16 @@ TEST_F(SubscriptionTest, receive_publication ) {
 
     // getType is used by the ReplyInterpreterFactory to create an interpreter for the reply
     // so this has to match with the type being passed to the dispatcher in the reply
-    ON_CALL(*mockReplyCaller, getType()).WillByDefault(Return(QString("GpsLocation")));
+    ON_CALL(*mockReplyCaller, getType()).WillByDefault(Return(QString("QtGpsLocation")));
 
     // Use a semaphore to count and wait on calls to the mockSubscriptionListener
     QSemaphore semaphore(0);
-    EXPECT_CALL(*mockSubscriptionListener, onReceive(A<types::GpsLocation>()))
+    EXPECT_CALL(*mockSubscriptionListener, onReceive(A<const types::QtGpsLocation&>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     //register the subscription on the consumer side
     QString attributeName = "Location";
-    auto subscriptionQos = QSharedPointer<SubscriptionQos>(new OnChangeWithKeepAliveSubscriptionQos(
+    auto subscriptionQos = QSharedPointer<QtSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
                 80, // validity_ms
                 100, // minInterval_ms
                 200, // maxInterval_ms
@@ -181,15 +192,15 @@ TEST_F(SubscriptionTest, receive_publication ) {
     ));
 
     SubscriptionRequest subscriptionRequest;
-    //construct a reply containing a GpsLocation
+    //construct a reply containing a QtGpsLocation
     SubscriptionPublication subscriptionPublication;
     subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    QVariant response;
-    response.setValue(gpsLocation1);
+    QList<QVariant> response;
+    response.append(QVariant::fromValue(types::QtGpsLocation::createQt(gpsLocation1)));
     subscriptionPublication.setResponse(response);
 
-    QSharedPointer<SubscriptionCallback<types::GpsLocation>> subscriptionCallback(
-            new SubscriptionCallback<types::GpsLocation>(mockSubscriptionListener));
+    QSharedPointer<SubscriptionCallback<types::QtGpsLocation>> subscriptionCallback(
+            new SubscriptionCallback<types::QtGpsLocation>(mockSubscriptionListener));
 
 
     // subscriptionRequest is an out param
@@ -200,8 +211,8 @@ TEST_F(SubscriptionTest, receive_publication ) {
                 subscriptionRequest);
     // incoming publication from the provider
     JoynrMessage msg = messageFactory.createSubscriptionPublication(
-                providerParticipantId,
-                proxyParticipantId,
+                QString::fromStdString(providerParticipantId),
+                QString::fromStdString(proxyParticipantId),
                 qos,
                 subscriptionPublication);
 
@@ -221,18 +232,21 @@ TEST_F(SubscriptionTest, receive_publication ) {
   */
 TEST_F(SubscriptionTest, receive_RestoresSubscription) {
 
-    qRegisterMetaType<OnChangeWithKeepAliveSubscriptionQos>("OnChangeWithKeepAliveSubscriptionQos");
+    qRegisterMetaType<QtOnChangeWithKeepAliveSubscriptionQos>("QtOnChangeWithKeepAliveSubscriptionQos");
     qRegisterMetaType<SubscriptionRequest>("SubscriptionRequest");
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
     QSemaphore semaphore(0);
-    EXPECT_CALL(*mockRequestCaller, getLocation(A<RequestStatus&>(), A<types::GpsLocation&>()))
-            .WillOnce(DoAll( SetArgReferee<1>(gpsLocation1),
-                             ReleaseSemaphore(&semaphore))
-                          );
-
+    EXPECT_CALL(
+            *mockRequestCaller,
+            getLocation(A<std::function<void(const types::Localisation::GpsLocation&)>>())
+    )
+            .WillOnce(DoAll(
+                    Invoke(mockRequestCaller.data(), &MockTestRequestCaller::invokeOnSuccessFct),
+                    ReleaseSemaphore(&semaphore)
+            ));
     QString attributeName = "Location";
-    auto subscriptionQos = QSharedPointer<SubscriptionQos>(new OnChangeWithKeepAliveSubscriptionQos(
+    auto subscriptionQos = QSharedPointer<QtSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
                 80, // validity_ms
                 100, // minInterval_ms
                 200, // maxInterval_ms
@@ -246,8 +260,8 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription) {
     subscriptionRequest.setQos(subscriptionQos);
 
     JoynrMessage msg = messageFactory.createSubscriptionRequest(
-                proxyParticipantId,
-                providerParticipantId,
+                QString::fromStdString(proxyParticipantId),
+                QString::fromStdString(providerParticipantId),
                 qos,
                 subscriptionRequest);
     // first received message with subscription request
@@ -265,18 +279,21 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription) {
   * Expected:   The PublicationManager stops all subscriptions for this provider
   */
 TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications) {
-    qRegisterMetaType<OnChangeWithKeepAliveSubscriptionQos>("OnChangeWithKeepAliveSubscriptionQos");
+    qRegisterMetaType<QtOnChangeWithKeepAliveSubscriptionQos>("QtOnChangeWithKeepAliveSubscriptionQos");
     qRegisterMetaType<SubscriptionRequest>("SubscriptionRequest");
     qRegisterMetaType<SubscriptionStop>("SubscriptionStop");
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
     QSemaphore semaphore(0);
-    EXPECT_CALL(*mockRequestCaller, getLocation(_, _))
-            .WillRepeatedly(ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*mockRequestCaller, getLocation(_))
+            .WillRepeatedly(
+                DoAll(
+                    Invoke(mockRequestCaller.data(), &MockTestRequestCaller::invokeOnSuccessFct),
+                    ReleaseSemaphore(&semaphore)));
 
     dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
     QString attributeName = "Location";
-    auto subscriptionQos = QSharedPointer<SubscriptionQos>(new OnChangeWithKeepAliveSubscriptionQos(
+    auto subscriptionQos = QSharedPointer<QtSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
                 1200, // validity_ms
                 10, // minInterval_ms
                 100, // maxInterval_ms
@@ -289,8 +306,8 @@ TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications) {
     subscriptionRequest.setQos(subscriptionQos);
 
     JoynrMessage msg = messageFactory.createSubscriptionRequest(
-                proxyParticipantId,
-                providerParticipantId,
+                QString::fromStdString(proxyParticipantId),
+                QString::fromStdString(providerParticipantId),
                 qos,
                 subscriptionRequest);
     // first received message with subscription request
@@ -310,17 +327,20 @@ TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications) {
   */
 TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
 
-    qRegisterMetaType<OnChangeWithKeepAliveSubscriptionQos>("OnChangeWithKeepAliveSubscriptionQos");
+    qRegisterMetaType<QtOnChangeWithKeepAliveSubscriptionQos>("QtOnChangeWithKeepAliveSubscriptionQos");
     qRegisterMetaType<SubscriptionRequest>("SubscriptionRequest");
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
     QSemaphore semaphore(0);
-    EXPECT_CALL(*mockRequestCaller, getLocation(_, _))
-            .WillRepeatedly(ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*mockRequestCaller, getLocation(_))
+            .WillRepeatedly(
+                DoAll(
+                    Invoke(mockRequestCaller.data(), &MockTestRequestCaller::invokeOnSuccessFct),
+                    ReleaseSemaphore(&semaphore)));
 
     dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
     QString attributeName = "Location";
-    auto subscriptionQos = QSharedPointer<SubscriptionQos>(new OnChangeWithKeepAliveSubscriptionQos(
+    auto subscriptionQos = QSharedPointer<QtSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
                 1200, // validity_ms
                 10, // minInterval_ms
                 100, // maxInterval_ms
@@ -333,8 +353,8 @@ TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
     subscriptionRequest.setQos(subscriptionQos);
 
     JoynrMessage msg = messageFactory.createSubscriptionRequest(
-                proxyParticipantId,
-                providerParticipantId,
+                QString::fromStdString(proxyParticipantId),
+                QString::fromStdString(providerParticipantId),
                 qos,
                 subscriptionRequest);
     // first received message with subscription request
@@ -347,8 +367,8 @@ TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
     subscriptionStop.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     // receive a subscription stop message
     msg = messageFactory.createSubscriptionStop(
-                proxyParticipantId,
-                providerParticipantId,
+                QString::fromStdString(proxyParticipantId),
+                QString::fromStdString(providerParticipantId),
                 qos,
                 subscriptionStop);
     dispatcher.receive(msg);

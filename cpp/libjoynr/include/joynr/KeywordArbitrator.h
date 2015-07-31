@@ -21,16 +21,20 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrExport.h"
 
+#include <vector>
 #include "joynr/ProviderArbitrator.h"
 #include <QString>
 #include <QSharedPointer>
-
+#include <string>
 namespace joynr
 {
 
 namespace system
 {
 class IDiscoverySync;
+}
+namespace types
+{
 class DiscoveryEntry;
 }
 
@@ -48,8 +52,8 @@ public:
     {
     }
 
-    KeywordArbitrator(const QString& domain,
-                      const QString& interfaceName,
+    KeywordArbitrator(const std::string& domain,
+                      const std::string& interfaceName,
                       joynr::system::IDiscoverySync& discoveryProxy,
                       const DiscoveryQos& discoveryQos);
 
@@ -61,17 +65,17 @@ public:
     /*
      * The key of the keyword parameter in the provider Qos parameters
      */
-    static const QString KEYWORD_PARAMETER_KEY();
+    static const std::string KEYWORD_PARAMETER_KEY();
 
     /*
      * Made public for testing purposes
      */
     void receiveCapabilitiesLookupResults(
-            const QList<joynr::system::DiscoveryEntry>& discoveryEntries);
+            const std::vector<joynr::types::DiscoveryEntry>& discoveryEntries);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(KeywordArbitrator);
-    QString keyword;
+    std::string keyword;
     static int ARBITRATION_RETRY_INTERVAL;
     joynr_logging::Logger* logger;
 };

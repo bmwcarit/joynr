@@ -19,6 +19,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <string>
 #include "tests/utils/MockObjects.h"
 #include "joynr/ProxyBuilder.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
@@ -29,7 +30,7 @@
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionStop.h"
 #include "joynr/SubscriptionReply.h"
-#include "joynr/system/ChannelAddress.h"
+#include "joynr/system/QtChannelAddress.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 
@@ -57,12 +58,11 @@ public:
         mockClientCache(new MockClientCache()),
         mockJoynrMessageSender(new MockJoynrMessageSender()),
         domain("cppProxyIntegrationTestDomain"),
-        proxyQos(),
         messagingQos(),
-        endPointAddress(new system::ChannelAddress("endPointAddress"))
+        endPointAddress(new system::QtChannelAddress("endPointAddress"))
     {
         //moved to initializationlist
-        //endPointAddress = QSharedPointer<system::ChannelAddress>(new system::ChannelAddress("endPointAddress"));
+        //endPointAddress = QSharedPointer<system::QtChannelAddress>(new system::QtChannelAddress("endPointAddress"));
     }
 
     // Sets up the test fixture.
@@ -85,10 +85,9 @@ protected:
     MockInProcessConnectorFactory* mockInProcessConnectorFactory;
     MockClientCache* mockClientCache;
     MockJoynrMessageSender* mockJoynrMessageSender;
-    QString domain;
-    ProxyQos proxyQos;
+    std::string domain;
     MessagingQos messagingQos;
-    QSharedPointer<system::ChannelAddress> endPointAddress;
+    QSharedPointer<system::QtChannelAddress> endPointAddress;
 
 
 private:
@@ -103,6 +102,6 @@ TEST_F(ProxyIntegrationTest, proxyInitialisation)
     JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(mockJoynrMessageSender, NULL);
     ConnectorFactory* connectorFactory = new ConnectorFactory(mockInProcessConnectorFactory, joynrMessagingConnectorFactory);
     EXPECT_CALL(*mockInProcessConnectorFactory, canBeCreated(_)).WillRepeatedly(Return(false));
-    vehicle::GpsProxy* proxy =  new vehicle::GpsProxy(endPointAddress, connectorFactory, mockClientCache, domain, proxyQos, messagingQos, false);
+    vehicle::GpsProxy* proxy =  new vehicle::GpsProxy(endPointAddress, connectorFactory, mockClientCache, domain, messagingQos, false);
     ASSERT_TRUE(proxy != NULL);
 }

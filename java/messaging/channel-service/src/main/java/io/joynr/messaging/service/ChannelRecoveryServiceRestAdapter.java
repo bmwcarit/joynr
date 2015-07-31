@@ -41,9 +41,9 @@ import com.google.inject.Inject;
 /**
  * Channel service extension for scenarios in which a channel error is reported
  * to a controller that then tries to recover that channel.
- * 
+ *
  * @author christina.strobel
- * 
+ *
  */
 @Path("channels")
 public class ChannelRecoveryServiceRestAdapter {
@@ -61,13 +61,22 @@ public class ChannelRecoveryServiceRestAdapter {
      * Query to recover a channel that previously rejected messages or was
      * unreachable. <br>
      * The interface has been introduced for controlled bounce proxies.
-     * 
+     *
      * @param ccid
-     *            identifier of the channel to recover
+     *   identifier of the channel to recover
      * @param bpId
-     *            identifier of the bounce proxy handling this channel
-     * @param status
+     *   identifier of the bounce proxy handling this channel
+     * @param statusParam
+     *   the channel status
+     * @param atmosphereTrackingId
+     *   the atmosphere tracking id
      * @return
+     *   response builder object for either empty response
+     *   ((a) if channel recovered on previously assigned bounce proxy or
+     *   (b) bounce proxy reachable by bounce proxy controller,
+     *   but possibly no by cluster controllers),
+     *   with ok status ((c) if channel was moved to another bounce proxy),
+     *   or for a created resource ((d) in case bounce proxy controller lost data).
      */
     @PUT
     @Path("/{ccid: [A-Z,a-z,0-9,_,\\-,\\.]+}")

@@ -23,6 +23,7 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/joynrlogging.h"
+#include "joynr/IPlatformSecurityManager.h"
 
 namespace joynr
 {
@@ -44,9 +45,7 @@ class JOYNR_EXPORT JoynrMessageFactory
 {
 public:
     JoynrMessageFactory();
-    virtual ~JoynrMessageFactory()
-    {
-    }
+    virtual ~JoynrMessageFactory();
 
     JoynrMessage createRequest(const QString& senderId,
                                const QString& receiverId,
@@ -97,6 +96,7 @@ private:
                  const qint64 ttl,
                  const QObject& payload);
 
+    IPlatformSecurityManager* securityManager;
     joynr_logging::Logger* logger;
 };
 

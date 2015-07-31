@@ -20,7 +20,7 @@ package io.joynr.messaging.bounceproxy.runtime;
  * #L%
  */
 
-import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -143,7 +143,7 @@ public class BounceProxySystemPropertyLoaderTest {
             String value = "${testproperty}";
             BounceProxySystemPropertyLoader.replaceVariableBySystemProperty(value);
             Assert.fail("Should throw a runtime exception");
-        } catch (JoynrException e) {
+        } catch (JoynrRuntimeException e) {
 
         }
     }

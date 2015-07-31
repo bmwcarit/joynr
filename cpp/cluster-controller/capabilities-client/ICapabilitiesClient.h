@@ -21,32 +21,37 @@
 
 #include "joynr/types/CapabilityInformation.h"
 
-#include <QString>
-#include <QList>
 #include <QSharedPointer>
+#include <functional>
+#include <string>
+#include <vector>
 
 namespace joynr
 {
 
 class IGlobalCapabilitiesCallback;
-
+class RequestStatus;
 class ICapabilitiesClient
 {
 public:
     virtual ~ICapabilitiesClient()
     {
     }
-    virtual void add(QList<types::CapabilityInformation> capabilitiesInformationList) = 0;
-    virtual void remove(const QString& participantId) = 0;
-    virtual void remove(QList<QString> capabilitiesInformationList) = 0;
-    virtual QList<types::CapabilityInformation> lookup(const QString& domain,
-                                                       const QString& interfaceName) = 0;
-    virtual void lookup(const QString& domain,
-                        const QString& interfaceName,
-                        QSharedPointer<IGlobalCapabilitiesCallback> callback) = 0;
-    virtual void lookup(const QString& participantId,
-                        QSharedPointer<IGlobalCapabilitiesCallback> callback) = 0;
-    virtual QString getLocalChannelId() = 0;
+    virtual void add(std::vector<types::CapabilityInformation> capabilitiesInformationList) = 0;
+    virtual void remove(const std::string& participantId) = 0;
+    virtual void remove(std::vector<std::string> capabilitiesInformationList) = 0;
+    virtual std::vector<types::CapabilityInformation> lookup(const std::string& domain,
+                                                             const std::string& interfaceName) = 0;
+    virtual void lookup(const std::string& domain,
+                        const std::string& interfaceName,
+                        std::function<void(const std::vector<joynr::types::CapabilityInformation>&
+                                                   capabilities)> onSuccess,
+                        std::function<void(const RequestStatus& status)> onError = nullptr) = 0;
+    virtual void lookup(const std::string& participantId,
+                        std::function<void(const std::vector<joynr::types::CapabilityInformation>&
+                                                   capabilities)> onSuccess,
+                        std::function<void(const RequestStatus& status)> onError = nullptr) = 0;
+    virtual std::string getLocalChannelId() = 0;
 };
 
 } // namespace joynr

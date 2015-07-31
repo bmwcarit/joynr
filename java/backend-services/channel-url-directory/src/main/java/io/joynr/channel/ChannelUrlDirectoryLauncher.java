@@ -28,7 +28,6 @@ import io.joynr.runtime.JoynrInjectorFactory;
 import java.util.Properties;
 
 import joynr.infrastructure.ChannelUrlDirectoryAbstractProvider;
-import joynr.infrastructure.ChannelUrlDirectoryProvider;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +37,6 @@ import com.google.inject.name.Named;
 
 public class ChannelUrlDirectoryLauncher extends AbstractJoynrApplication {
 
-    private static final String AUTH_TOKEN = "ChannelUrlDirectoryLauncher";
     Logger logger = LoggerFactory.getLogger(ChannelUrlDirectoryLauncher.class);
 
     @Inject
@@ -61,16 +59,15 @@ public class ChannelUrlDirectoryLauncher extends AbstractJoynrApplication {
         channelUrlDirectoryLauncher.run();
     }
 
+    @Override
     public void run() {
-        runtime.registerCapability(discoveryDirectoriesDomain,
-                                   channelUrlDirectoryProvider,
-                                   ChannelUrlDirectoryProvider.class,
-                                   AUTH_TOKEN);
+        runtime.registerProvider(discoveryDirectoriesDomain, channelUrlDirectoryProvider);
     }
 
+    @Override
     public void shutdown() {
         logger.error("SHUTDOWN!");
-        // runtime.unregisterCapability(channelUrlDirectoryDomain,
+        // runtime.unregisterProvider(channelUrlDirectoryDomain,
         // channelUrlDirectoryProvider,
         // ChannelUrlDirectoryProvider.class);
     }

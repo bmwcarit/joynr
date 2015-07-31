@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,88 +18,94 @@
  */
 package infrastructure
 
-import types.ExtendedTypes.* from "../common/Types.fidl"
+import types.* from "DiscoveryTypes.fidl"
 
-/**
- * The <code>GlobalCapabilitiesDirectory</code> is a joynr internal interface. When a provider
- * that is globally available is registered with joynr, the framework creates an entry for that
- * provider in the global capabilities directory. These <code>{@link CapabilityInformation}</code>
- * entries contain access information as well as supported QoS. The information is later used in the
- * arbitration process to pick a provider for a proxy.  
- */
+<**
+	@description: The <code>GlobalCapabilitiesDirectory</code> is a joynr
+		internal interface. When a provider that is globally available is
+		registered with joynr, the framework creates an entry for that provider
+		in the global capabilities directory. These
+		<code>CapabilityInformation</code> entries contain access
+		information as well as supported QoS. The information is later used in
+		the arbitration process to pick a provider for a proxy.
+	@see: CapabilityInformation
+**>
 interface GlobalCapabilitiesDirectory{
 
 	version {major 0 minor 1}
 
-	/**
-	 * Registers a list of capability information with the directory.
-	 * @param capabilities the list of capabilities to register
-	 */
+	<**
+		@description: Registers a list of capability information with the
+			directory.
+	**>
 	method add {
-		in { 
+		in {
+			<** @description: the list of capabilities to register **>
 			CapabilityInformation[] capabilities
 		}
 	}
 
-	/**
-	 * Registers capability information with the directory.
-	 * @param capability the capability to register
-	 */
+	<** @description: Registers capability information with the directory. **>
 	method add {
 		in {
+			<** @description: the capability to register **>
 			CapabilityInformation capability
-		} 
+		}
 	}
-	
-	/**
-	 * Looks up a list of capabilities for a given domain, interface name and provider QoS.
-	 * @param domain the name of the domain
-	 * @param interfaceName the interface name of the capability
-	 * @param qos the required minimal provider QoS
-	 * @return a list of matching capabilities
-	 */
+
+	<**
+		@description: Looks up a list of capabilities for a given domain,
+			interface name and provider QoS.
+	**>
 	method lookup {
 		in {
+			<** @description: the name of the domain **>
 			String domain
+			<** @description: the interface name of the capability **>
 			String interfaceName
 		}
-		
+
 		out {
+			<** @description: a list of matching capabilities **>
 			CapabilityInformation[] result
 		}
 	}
 
-	/**
-	 * Looks up the capability information for a given participant ID.
-	 * @param participantId the participant ID identifying the provider
-	 * @return the matching capability
-	 */
+	<**
+		@description: Looks up the capability information for a given
+			participant ID.
+	**>
 	method lookup {
 		in {
+			<** @description: the participant ID identifying the provider **>
 			String participantId
 		}
-		
 		out{
+			<** @description: the matching capability **>
 			CapabilityInformation result
 		}
 	}
-	/**
-	 * Unregisters a list of capabilities from the directory.
-	 * @param participantIds the list of participant IDs, for which the capability has to be removed
-	 */
+	<**
+		@description: Unregisters a list of capabilities from the directory.
+	**>
 	method remove {
 		in {
+			<**
+				@description: the list of participant IDs, for which the
+					capability has to be removed
+			**>
 			String[] participantIds
 		}
 	}
 
-	/**
-	 * Unregisters a capability from the directory.
-	 * @param participantId the participant ID for which the capability has to be removed 
-	 */
+	<** @description: Unregisters a capability from the directory. **>
 	method remove {
 		in {
+			<**
+				@description: the participant ID for which the capability has
+					to be removed
+			**>
 			String participantId
 		}
-	}	
+	}
 }

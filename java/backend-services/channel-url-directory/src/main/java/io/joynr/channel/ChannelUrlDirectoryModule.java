@@ -19,26 +19,20 @@ package io.joynr.channel;
  * #L%
  */
 
-import io.joynr.capabilities.GlobalCapabilitiesDirectoryClient;
-import io.joynr.capabilities.LocalCapabilitiesDirectory;
-import io.joynr.discovery.DiscoveryClientModule;
-import io.joynr.dispatcher.RequestReplyDispatcher;
-import io.joynr.dispatcher.RequestReplySender;
-import io.joynr.dispatcher.rpc.Callback;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
+import io.joynr.exceptions.JoynrIllegalStateException;
+import io.joynr.exceptions.JoynrRequestInterruptedException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.provider.PromiseKeeper;
+import io.joynr.provider.PromiseListener;
+import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
-import io.joynr.pubsub.subscription.SubscriptionManager;
 import io.joynr.runtime.AbstractJoynrApplication;
-
-import java.util.List;
-
 import joynr.infrastructure.ChannelUrlDirectoryAbstractProvider;
-import joynr.infrastructure.ChannelUrlDirectoryProviderAsync;
 import joynr.infrastructure.ChannelUrlDirectoryProxy;
-import joynr.types.CapabilityInformation;
 import joynr.types.ChannelUrlInformation;
 
 import com.google.inject.AbstractModule;
@@ -49,15 +43,15 @@ import com.google.inject.name.Names;
 
 /**
  * Overrides the ChannelUrlDirectoryClient Provider to return a NO-OP provider
- * 
+ *
  * @author david.katz
- * 
+ *
  */
 public class ChannelUrlDirectoryModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(ChannelUrlDirectoryProviderAsync.class).to(ChannelUrlDirectoyImpl.class);
+        bind(ChannelUrlDirectoryAbstractProvider.class).to(ChannelUrlDirectoyImpl.class);
         bind(Long.class).annotatedWith(Names.named(ChannelUrlDirectoyImpl.CHANNELURL_INACTIVE_TIME_IN_MS))
                         .toInstance(5000l);
     }
@@ -76,7 +70,7 @@ public class ChannelUrlDirectoryModule extends AbstractModule {
 
     /**
      * passes local queries for channelurls to itself (ie asks global via method call and not via joynr proxy)
-     * 
+     *
      * @param channelUrlDirectory
      * @return
      */
@@ -88,146 +82,101 @@ public class ChannelUrlDirectoryModule extends AbstractModule {
 
             @Override
             public ChannelUrlInformation getUrlsForChannel(String channelId) {
-                return channelUrlDirectory.getUrlsForChannel(channelId);
+                try {
+                    PromiseKeeper keeper = new PromiseKeeper();
+                    channelUrlDirectory.getUrlsForChannel(channelId).then(keeper);
+                    Object[] outValues = keeper.getValues();
+                    if (outValues == null) {
+                        throw new JoynrIllegalStateException("Calling method with out parameters didn't return anything.");
+                    }
+                    return (ChannelUrlInformation) outValues[0];
+                } catch (InterruptedException e) {
+                    throw new JoynrRequestInterruptedException("interrupted while calling getUrlsForChannel("
+                            + channelId + ")");
+                }
             }
 
             @Override
-            public void registerChannelUrls(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                            @JoynrRpcParam("channelId") String channelId,
-                                            @JoynrRpcParam("channelUrlInformation") ChannelUrlInformation channelUrlInformation) {
+            public Future<Void> registerChannelUrls(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
+                                                    @JoynrRpcParam("channelId") String channelId,
+                                                    @JoynrRpcParam("channelUrlInformation") ChannelUrlInformation channelUrlInformation) {
                 channelUrlDirectory.registerChannelUrls(channelId, channelUrlInformation);
+
                 callback.onSuccess(null);
+                Future<Void> future = new Future<Void>();
+                future.onSuccess(null);
+                return future;
             }
 
             @Override
-            public void unregisterChannelUrls(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                              @JoynrRpcParam("channelId") String channelId) {
-                channelUrlDirectory.unregisterChannelUrls(channelId);
-                callback.onSuccess(null);
+            public Future<Void> unregisterChannelUrls(@JoynrRpcCallback(deserialisationType = VoidToken.class) final Callback<Void> callback,
+                                                      @JoynrRpcParam("channelId") String channelId) {
+                final Future<Void> future = new Future<Void>();
+                channelUrlDirectory.unregisterChannelUrls(channelId).then(new PromiseListener() {
+
+                    @Override
+                    public void onRejection(JoynrRuntimeException error) {
+                        future.onFailure(error);
+                        callback.onFailure(error);
+                    }
+
+                    @Override
+                    public void onFulfillment(Object... values) {
+                        future.onSuccess(null);
+                        callback.onSuccess(null);
+                    }
+                });
+                ;
+                return future;
             }
 
             @Override
-            public Future<ChannelUrlInformation> getUrlsForChannel(@JoynrRpcCallback(deserialisationType = joynr.infrastructure.ChannelUrlDirectorySync.ChannelUrlInformationToken.class) Callback<ChannelUrlInformation> callback,
+            public Future<ChannelUrlInformation> getUrlsForChannel(@JoynrRpcCallback(deserialisationType = joynr.infrastructure.ChannelUrlDirectorySync.ChannelUrlInformationToken.class) final Callback<ChannelUrlInformation> callback,
                                                                    @JoynrRpcParam("channelId") String channelId) {
-                callback.onSuccess(channelUrlDirectory.getUrlsForChannel(channelId));
-                Future<ChannelUrlInformation> future = new Future<ChannelUrlInformation>();
-                future.onSuccess(channelUrlDirectory.getUrlsForChannel(channelId));
+                final Future<ChannelUrlInformation> future = new Future<ChannelUrlInformation>();
+                channelUrlDirectory.getUrlsForChannel(channelId).then(new PromiseListener() {
+
+                    @Override
+                    public void onRejection(JoynrRuntimeException error) {
+                        callback.onFailure(error);
+                        future.onFailure(error);
+                    }
+
+                    @Override
+                    public void onFulfillment(Object... values) {
+                        ChannelUrlInformation channelUrlInfo = (ChannelUrlInformation) values[0];
+                        callback.onSuccess(channelUrlInfo);
+                        future.onSuccess(channelUrlInfo);
+                    }
+                });
                 return future;
             }
 
             @Override
             public void registerChannelUrls(@JoynrRpcParam("channelId") String channelId,
                                             @JoynrRpcParam("channelUrlInformation") ChannelUrlInformation channelUrlInformation) {
-                channelUrlDirectory.registerChannelUrls(channelId, channelUrlInformation);
+                PromiseKeeper keeper = new PromiseKeeper();
+                channelUrlDirectory.registerChannelUrls(channelId, channelUrlInformation).then(keeper);
+                try {
+                    keeper.waitForSettlement();
+                } catch (InterruptedException e) {
+                    throw new JoynrRequestInterruptedException("interrupted while calling registerChannelUrls("
+                            + channelId + ", " + channelUrlInformation + ")");
+                }
             }
 
             @Override
             public void unregisterChannelUrls(@JoynrRpcParam("channelId") String channelId) {
-                channelUrlDirectory.unregisterChannelUrls(channelId);
+                PromiseKeeper keeper = new PromiseKeeper();
+                channelUrlDirectory.unregisterChannelUrls(channelId).then(keeper);
+                try {
+                    keeper.waitForSettlement();
+                } catch (InterruptedException e) {
+                    throw new JoynrRequestInterruptedException("interrupted while calling unregisterChannelUrls("
+                            + channelId + ")");
+                }
             }
 
         };
-    }
-
-    @Provides
-    // @Singleton
-    protected GlobalCapabilitiesDirectoryClient provideCapabilitiesDirectoryClient(LocalCapabilitiesDirectory localCapabilitiesDirectory,
-                                                                                   RequestReplySender messageSender,
-                                                                                   RequestReplyDispatcher dispatcher,
-                                                                                   @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN) String capabilitiesDirectoryDomain,
-                                                                                   @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT) long discoveryRequestTimeoutMs,
-                                                                                   SubscriptionManager subscriptionManager) {
-
-        DiscoveryClientModule discoveryClientModule = new DiscoveryClientModule();
-        final GlobalCapabilitiesDirectoryClient proxy = discoveryClientModule.provideCapabilitiesDirectoryClient(localCapabilitiesDirectory,
-                                                                                                                 messageSender,
-                                                                                                                 dispatcher,
-                                                                                                                 capabilitiesDirectoryDomain,
-                                                                                                                 discoveryRequestTimeoutMs,
-                                                                                                                 subscriptionManager);
-
-        return new GlobalCapabilitiesDirectoryClient() {
-
-            @Override
-            public void remove(String participantId) {
-                // Don't register capabilities globally for channelUrlDirectory
-                return;
-            }
-
-            @Override
-            public void remove(List<String> participantIds) {
-                // Don't register capabilities globally for channelUrlDirectory
-                return;
-            }
-
-            @Override
-            public void add(CapabilityInformation capability) {
-                // Don't register capabilities globally for channelUrlDirectory
-                return;
-
-            }
-
-            @Override
-            public void add(List<CapabilityInformation> capabilities) {
-                // Don't register capabilities globally for channelUrlDirectory
-                return;
-
-            }
-
-            @Override
-            public void add(Callback<Void> callback, List<CapabilityInformation> capabilities) {
-                // Don't register capabilities globally for channelUrlDirectory
-                callback.onSuccess(null);
-                return;
-
-            }
-
-            @Override
-            public void add(Callback<Void> callback, CapabilityInformation capability) {
-                // Don't register capabilities globally for channelUrlDirectory
-                callback.onSuccess(null);
-                return;
-
-            }
-
-            @Override
-            public Future<List<CapabilityInformation>> lookup(Callback<List<CapabilityInformation>> callback,
-                                                              String domain,
-                                                              String interfaceName) {
-                return proxy.lookup(callback, domain, interfaceName);
-            }
-
-            @Override
-            public Future<CapabilityInformation> lookup(Callback<CapabilityInformation> callback, String participantId) {
-
-                return proxy.lookup(callback, participantId);
-            }
-
-            @Override
-            public void remove(Callback<Void> callback, List<String> participantIds) {
-                proxy.remove(callback, participantIds);
-
-            }
-
-            @Override
-            public void remove(Callback<Void> callback, String participantId) {
-                proxy.remove(callback, participantId);
-
-            }
-
-            @Override
-            public List<CapabilityInformation> lookup(String domain, String interfaceName) {
-
-                return proxy.lookup(domain, interfaceName);
-            }
-
-            @Override
-            public CapabilityInformation lookup(String participantId) {
-
-                return proxy.lookup(participantId);
-            }
-
-        };
-
     }
 }

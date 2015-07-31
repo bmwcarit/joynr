@@ -19,6 +19,7 @@ package io.joynr.runtime;
  * #L%
  */
 
+import io.joynr.accesscontrol.AccessControlClientModule;
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.discovery.DiscoveryClientModule;
 import io.joynr.messaging.LongPollingMessagingModule;
@@ -48,6 +49,7 @@ public class JoynrBaseModule implements Module {
                                   new LongPollingMessagingModule(),
                                   new PubSubModule(),
                                   new DiscoveryClientModule(),
-                                  new DefaultRuntimeModule()).with(modules);
+                                  new DefaultRuntimeModule(),
+                                  new AccessControlClientModule()).with(modules);
     }
 }

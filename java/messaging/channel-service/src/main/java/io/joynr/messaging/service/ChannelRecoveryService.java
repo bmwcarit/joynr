@@ -48,7 +48,11 @@ public interface ChannelRecoveryService extends ChannelService {
      * without assigning the channel to the bounce proxy.
      * 
      * @param ccid
+     *            the ID of the channel
      * @param atmosphereTrackingId
+     *            the atmosphere tracking id
+     * @return
+     *            the recovered channel
      */
     public Channel recoverChannel(String ccid, String atmosphereTrackingId);
 

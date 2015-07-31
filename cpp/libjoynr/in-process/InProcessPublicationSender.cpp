@@ -35,14 +35,14 @@ InProcessPublicationSender::~InProcessPublicationSender()
 {
 }
 
-InProcessPublicationSender::InProcessPublicationSender(SubscriptionManager* subscriptionManager)
+InProcessPublicationSender::InProcessPublicationSender(ISubscriptionManager* subscriptionManager)
         : subscriptionManager(subscriptionManager)
 {
 }
 
 void InProcessPublicationSender::sendSubscriptionPublication(
-        const QString& senderParticipantId,
-        const QString& receiverParticipantId,
+        const std::string& senderParticipantId,
+        const std::string& receiverParticipantId,
         const MessagingQos& qos,
         const SubscriptionPublication& subscriptionPublication)
 {

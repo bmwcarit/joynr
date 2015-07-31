@@ -17,27 +17,36 @@ package io.joynr.generator.util
  * limitations under the License.
  */
 
-import java.util.Collections
-import java.util.HashMap
 import java.util.Iterator
-import java.util.Map
 import java.util.TreeSet
-import org.franca.core.franca.FArgument
-import org.franca.core.franca.FAttribute
-import org.franca.core.franca.FBasicTypeId
-import org.franca.core.franca.FCompoundType
-import org.franca.core.franca.FInterface
-import org.franca.core.franca.FMethod
-import org.franca.core.franca.FType
-import org.franca.core.franca.FTypedElement
+import org.franca.core.franca.FAnnotation
+import org.franca.core.franca.FAnnotationType
 import org.franca.core.franca.FBroadcast
+import org.franca.core.franca.FCompoundType
+import org.franca.core.franca.FEnumerationType
+import org.franca.core.franca.FInterface
+import org.franca.core.franca.FModelElement
+import org.franca.core.franca.FType
 
 class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 
-//	@Inject private extension FrancaGeneratorExtensions
-
-	private Map<FBasicTypeId,String> primitiveDataTypeDefaultMap;
-//	private Map<FBasicTypeId,String> primitiveDataTypeNameMap;
+	def buildPackagePath(FType datatype, String separator, boolean includeTypeCollection) {
+		if (datatype == null) {
+			return "";
+		}
+		var packagepath = "";
+		try {
+			packagepath = getPackagePathWithJoynrPrefix(datatype, separator);
+		} catch (IllegalStateException e){
+			//	if an illegal StateException has been thrown, we tried to get the package for a primitive type, so the packagepath stays empty.
+		}
+		if (packagepath!="") {
+			if (includeTypeCollection && datatype.partOfTypeCollection) {
+				packagepath += separator + datatype.typeCollectionName.toLowerCase;
+			}
+		};
+		return packagepath;
+	}
 
 	def String getNamespaceStarter(FInterface interfaceType) {
 		getNamespaceStarter(getPackageNames(interfaceType));
@@ -75,7 +84,25 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 
 	def boolean hasMethodWithReturnValue(FInterface interfaceType){
 		for(method: interfaceType.methods){
-			if (getMappedOutputParameter(method).iterator.next!="void"){
+			if (!method.outputParameters.empty){
+				return true
+			}
+		}
+		return false
+	}
+
+	def boolean hasMethodWithoutReturnValue(FInterface interfaceType) {
+		for (method: interfaceType.methods) {
+			if (method.outputParameters.empty) {
+				return true
+			}
+		}
+		return false
+	}
+
+	def boolean hasMethodWithImplicitErrorEnum(FInterface interfaceType){
+		for(method: interfaceType.methods){
+			if (method.errors != null) {
 				return true
 			}
 		}
@@ -115,201 +142,6 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 		return sb.toString();
 	}
 
-	new () {
-/*
-		val Map<FBasicTypeId,String> aMap = new HashMap<FBasicTypeId,String>();
-		aMap.put(FBasicTypeId::BOOLEAN, "bool");
-		aMap.put(FBasicTypeId::STRING, "QString");
-		aMap.put(FBasicTypeId::DOUBLE,"double");
-		aMap.put(FBasicTypeId::INT16,"int");
-		aMap.put(FBasicTypeId::INT32,"int");
-		aMap.put(FBasicTypeId::INT64,"qint64");
-		aMap.put(FBasicTypeId::INT8,"qint8");
-		aMap.put(FBasicTypeId::UNDEFINED,"void");
-		primitiveDataTypeNameMap = Collections::unmodifiableMap(aMap);
-*/
-
-	val Map<FBasicTypeId,String> bMap = new HashMap<FBasicTypeId,String>();
-		bMap.put(FBasicTypeId::BOOLEAN, "false");
-		bMap.put(FBasicTypeId::INT8, "0");
-		bMap.put(FBasicTypeId::UINT8, "0");
-		bMap.put(FBasicTypeId::INT16, "0");
-		bMap.put(FBasicTypeId::UINT16, "0");
-		bMap.put(FBasicTypeId::INT32, "0");
-		bMap.put(FBasicTypeId::UINT32, "0");
-		bMap.put(FBasicTypeId::INT64, "0L");
-		bMap.put(FBasicTypeId::UINT64, "0l");
-		//see bug JOYN-1521: floats are interpreted as double
-		bMap.put(FBasicTypeId::FLOAT, "0d");
-		bMap.put(FBasicTypeId::DOUBLE, "0d");
-		bMap.put(FBasicTypeId::STRING, "\"\"");
-		bMap.put(FBasicTypeId::BYTE_BUFFER, "new byte[0]");
-		bMap.put(FBasicTypeId::UNDEFINED,"");
-
-		primitiveDataTypeDefaultMap = Collections::unmodifiableMap(bMap);
-	}
-
-	def getCommaSeperatedTypedOutputParameterList(
-		Iterable<FArgument> arguments,
-		boolean linebreak
-	) {
-		val returnStringBuilder = new StringBuilder();
-		for(FArgument argument : arguments){
-
-			returnStringBuilder.append(getMappedDatatypeOrList(argument));
-			returnStringBuilder.append(" ");
-			returnStringBuilder.append(argument.joynrName);
-			returnStringBuilder.append(",");
-
-			if (linebreak) {
-				returnStringBuilder.append("\n");
-			}
-			else {
-				returnStringBuilder.append(" ");
-			}
-		}
-		val returnString = returnStringBuilder.toString();
-		if (returnString.length() == 0) {
-			return "";
-		}
-		else{
-			return returnString.substring(0, returnString.length() - 2); //remove the last " ," or "\n,"
-		}
-	}
-
-	def getCommaSeperatedTypedOutputParameterList(FMethod method) {
-		return getCommaSeperatedTypedOutputParameterList(getOutputParameters(method), false)
-	}
-
-	def getCommaSeperatedTypedOutputParameterList(FBroadcast broadcast) {
-		return getCommaSeperatedTypedOutputParameterList(getOutputParameters(broadcast), false)
-	}
-
-	def getCommaSeperatedTypedOutputParameterListLinebreak(FBroadcast broadcast) {
-		return getCommaSeperatedTypedOutputParameterList(getOutputParameters(broadcast), true)
-	}
-
-	def getCommaSeperatedUntypedOutputParameterList(FMethod method) {
-		val returnStringBuilder = new StringBuilder();
-		for(FArgument argument : getOutputParameters(method)){
-			returnStringBuilder.append(argument.joynrName);
-			returnStringBuilder.append(", ");
-		}
-		val returnString = returnStringBuilder.toString();
-		if (returnString.length() == 0) {
-			return "";
-		}
-		else{
-			return returnString.substring(0, returnString.length() - 2); //remove the last ,
-		}
-	}
-
-	def getCommaSeperatedTypedParameterList(FMethod method) {
-		val returnStringBuilder = new StringBuilder();
-		for (param : getInputParameters(method)) {
-			returnStringBuilder.append(getMappedDatatypeOrList(param));
-			returnStringBuilder.append(" ");
-			returnStringBuilder.append(param.joynrName);
-			returnStringBuilder.append(", ");
-		}
-		val returnString = returnStringBuilder.toString();
-		if (returnString.length() == 0) {
-			return "";
-		}
-		else{
-			return returnString.substring(0, returnString.length() - 2); //remove the last ,
-		}
-	}
-
-	def getCommaSeperatedTypedFilterParameterList(FBroadcast broadcast) {
-		val returnStringBuilder = new StringBuilder();
-		for (filterParameter : getFilterParameters(broadcast)) {
-			returnStringBuilder.append("String ");
-			returnStringBuilder.append(filterParameter);
-			returnStringBuilder.append(", ");
-		}
-		val returnString = returnStringBuilder.toString();
-		if (returnString.length() == 0) {
-			return "";
-		}
-		else{
-			return returnString.substring(0, returnString.length() - 2); //remove the last ,
-		}
-	}
-
-	override getMappedDatatype(FType datatype) {
-		return datatype.typeName
-	}
-
-	override getMappedDatatypeOrList(FType datatype, boolean array) {
-		val mappedDatatype = getMappedDatatype(datatype);
-		if (array) {
-			return "List<" + getObjectDataTypeForPlainType(mappedDatatype) + ">";
-		} else {
-			return mappedDatatype;
-		}
-	}
-
-	override getMappedDatatypeOrList(FBasicTypeId datatype, boolean array) {
-		val mappedDatatype = getPrimitiveTypeName(datatype);
-		if (array) {
-			return "List<" + getObjectDataTypeForPlainType(mappedDatatype) + ">";
-		} else {
-			return mappedDatatype;
-		}
-	}
-
-	override getDefaultValue(FTypedElement element) {
-		getDefaultValue(element, "");
-	}
-
-	def getDefaultValue(FTypedElement element, String constructorParams) {
-		//default values are not supported (currently) by the Franca IDL 
-/*		if (member.getDEFAULTVALUE()!=null && !member.getDEFAULTVALUE().isEmpty()){
-			if (isEnum(member)){
-				val ENUMDATATYPETYPE enumDatatype = getDatatype(id) as ENUMDATATYPETYPE
-				for (ENUMELEMENTTYPE element : getEnumElements(enumDatatype)){
-					if (element.VALUE == member.DEFAULTVALUE){
-						return enumDatatype.SHORTNAME.toFirstUpper + "::" + element.SYNONYM
-					}
-				}
-				return getPackagePath(enumDatatype, "::") + "::" + enumDatatype.SHORTNAME.toFirstUpper + "::" +  (enumDatatype.ENUMERATIONELEMENTS.ENUMELEMENT.get(0) as ENUMELEMENTTYPE).SYNONYM
-			}
-			else if (isLong(member.getDATATYPEREF().getIDREF())){
-				return member.getDEFAULTVALUE() + "L"
-			}
-			else if (isDouble(member.getDATATYPEREF().getIDREF())){
-				return member.getDEFAULTVALUE() + "d"
-			}
-			else{
-				return member.getDEFAULTVALUE();
-			}
-		} else */ if (isComplex(element.type)) {
-			if ((isArray(element))){
-				return "new ArrayList<" + element.type.complexType.joynrName + ">(" + constructorParams + ")";
-			}
-			else{
-				return "new " + element.type.complexType.joynrName + "(" + constructorParams + ")";
-			}
-		} else if (isEnum(element.type)){
-			if ((isArray(element))){
-				return "new ArrayList<" + element.type.enumType.joynrName + ">(" + constructorParams + ")";
-			}
-			else{
-				return  element.type.enumType.joynrName + "." + element.type.enumType.enumerators.get(0).joynrName;
-			}
-		} else if (!primitiveDataTypeDefaultMap.containsKey(element.type.predefined)) {
- 			return "NaN";
- 		} else if (isPrimitive(element.type)) {
-			if ((isArray(element))){
-				return "new ArrayList<" + getPrimitiveTypeName(getPrimitive(element.type)) + ">(" + constructorParams + ")";
-			}
-			else{
-				return primitiveDataTypeDefaultMap.get(element.type.predefined);
-			}
-		}
-	}
-
 	def Iterable<String> getRequiredIncludesFor(FCompoundType datatype){
 		getRequiredIncludesFor(datatype, true);
 	}
@@ -335,13 +167,20 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 		return typeList;
 	}
 
-	def Iterable<String> getRequiredIncludesFor(FInterface serviceInterface){
-		getRequiredIncludesFor(serviceInterface, true, true, true, true);
+	def Iterable<String> getRequiredIncludesFor(FInterface serviceInterface) {
+		getRequiredIncludesFor(serviceInterface, true, true, true, true, true);
 	}
 
-	def Iterable<String> getRequiredIncludesFor(FInterface serviceInterface, boolean methods, boolean readAttributes, boolean writeAttributes, boolean broadcasts){
+	def Iterable<String> getRequiredIncludesFor(
+			FInterface serviceInterface,
+			boolean methods,
+			boolean readAttributes,
+			boolean writeAttributes,
+			boolean notifyAttributes,
+			boolean broadcasts
+	) {
 		val includeSet = new TreeSet<String>();
-		for(datatype: getAllComplexAndEnumTypes(serviceInterface, methods, readAttributes, writeAttributes, broadcasts)){
+		for(datatype : getAllComplexAndEnumTypes(serviceInterface, methods, readAttributes, writeAttributes, notifyAttributes, broadcasts)) {
 			if (datatype instanceof FType){
 				includeSet.add(getIncludeOf(datatype));
 			}
@@ -362,113 +201,59 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 		return includeSet;
 	}
 
+	def ReformatComment(FAnnotation comment, String prefixForNewLines) {
+		return comment.comment.replaceAll("\\s+", " ").replaceAll("\n", "\n" + prefixForNewLines)
+	}
+
+	// for classes and methods
+	def appendJavadocSummaryAndWriteSeeAndDescription(FModelElement element, String prefixForNewLines)'''
+		«IF element.comment != null»
+			«FOR comment : element.comment.elements»
+				«IF comment.type == FAnnotationType::DESCRIPTION»
+					«prefixForNewLines» «ReformatComment(comment, prefixForNewLines)»
+				«ENDIF»
+			«ENDFOR»
+			«FOR comment : element.comment.elements»
+				«IF comment.type == FAnnotationType::SEE»
+					«prefixForNewLines» @see «ReformatComment(comment, prefixForNewLines)»
+				«ENDIF»
+				«IF comment.type == FAnnotationType::DETAILS»
+					«prefixForNewLines»
+					«prefixForNewLines» «ReformatComment(comment, prefixForNewLines)»
+				«ENDIF»
+			«ENDFOR»
+		«ENDIF»
+	'''
+
+	// for parts
+	def appendJavadocComment(FModelElement element, String prefixForNewLines)'''
+		«IF element.comment != null»
+			«FOR comment : element.comment.elements»
+				«IF comment.type == FAnnotationType::DESCRIPTION»
+					«ReformatComment(comment, prefixForNewLines)»
+				«ENDIF»
+			«ENDFOR»
+		«ENDIF»
+	'''
+
+	// for parameters
+	def appendJavadocParameter(FModelElement element, String prefixForNewLines)'''
+		«IF element.comment != null»
+			«FOR comment : element.comment.elements»
+				«IF comment.type == FAnnotationType::DESCRIPTION»
+					«prefixForNewLines» @param «element.joynrName» «ReformatComment(comment, prefixForNewLines)»
+				«ENDIF»
+			«ENDFOR»
+		«ENDIF»
+	'''
+
 	def String getIncludeOf(FType dataType) {
-		return getPackagePathWithJoynrPrefix(dataType, ".") + "." + dataType.joynrName;
+		return dataType.buildPackagePath(".", true) + "." + dataType.joynrName;
 	}
 
 	override String getOneLineWarning() {
 		//return ""
 		return "/* Generated Code */  "
-	}
-
-	def String getTypedParameterListJavaRpc(FMethod method){
-		var sb = new StringBuilder();
-		val params = getInputParameters(method)
-		var i = 0;
-		while (i < params.size) {
-			val param = params.get(i);
-			// is it a list type?
-			if(! getMappedDatatypeOrList(param).contains("List")){
-				sb.append("@JoynrRpcParam")
-				sb.append("(\"" + param.joynrName + "\")")
-				sb.append(" "+ getMappedDatatypeOrList(param))
-				sb.append(" "+ param.joynrName)
-				if (i != params.size-1){
-					sb.append(",\n")
-				}
-			}else { //TODO clean this up, move to javaGeneratorUtil.xtend!
-				sb.append("@JoynrRpcParam") 
-				sb.append("(value=\"" + param.joynrName 
-						+ "\", deserialisationType=List"
-						+ getMappedDatatypeOrList(param).substring(5, getMappedDatatypeOrList(param).length()-1) 
-						+ "Token.class)")
-				sb.append(" "+ getMappedDatatypeOrList(param))
-				sb.append(" "+ param.joynrName)
-				if (i != params.size-1){
-					sb.append(",\n")
-				}
-			}
-			i = i+1;
-		}
-		return sb.toString
-	}
-
-	def String getTypedParameterListJavaTypeReference(FMethod method){
-		val sb = new StringBuilder()
-		val params = getInputParameters(method)
-		for (param : params) {
-			sb.append("public static class "+getMappedDatatypeOrList(param)+ "Token extends TypeReference<"+getMappedDatatypeOrList(param)+" > {}\n")
-		}
-		sb.append("public static class "+ getMappedOutputParameter(method)+ "Token extends TypeReference<"+getMappedOutputParameter(method)+" > {}\n")
-		if (sb.length()==0){
-			return ""
-		}
-		return sb.toString
-	}
-
-	override isReadonly(FAttribute fAttribute) { fAttribute.readonly }
-
-	override isObservable(FAttribute fAttribute) { !fAttribute.noSubscriptions }
-
-	override getPrimitiveTypeName(FBasicTypeId basicType) {
-		switch basicType {
-			case FBasicTypeId::BOOLEAN: "Boolean"
-			case FBasicTypeId::INT8: "Byte"
-			case FBasicTypeId::UINT8: "Byte"
-			case FBasicTypeId::INT16: "Integer"
-			case FBasicTypeId::UINT16: "Integer"
-			case FBasicTypeId::INT32: "Integer"
-			case FBasicTypeId::UINT32: "Integer"
-			case FBasicTypeId::INT64: "Long"
-			case FBasicTypeId::UINT64: "Long"
-			case FBasicTypeId::FLOAT: "Double"
-			case FBasicTypeId::DOUBLE: "Double"
-			case FBasicTypeId::STRING: "String"
-			case FBasicTypeId::BYTE_BUFFER: "byte[]"
-			default: throw new IllegalArgumentException("Unsupported basic type: " + basicType.joynrName)
-		}
-	}
-
-	def String getObjectDataTypeForPlainType(String plainType) {
-		var type = plainType.toLowerCase
-		switch (plainType) {
-			case FBasicTypeId::BOOLEAN.getName: type = "Boolean"
-			case FBasicTypeId::INT8.getName: type = "Byte"
-			case FBasicTypeId::UINT8.getName: type = "Byte"
-			case FBasicTypeId::INT16.getName: type = "Integer"
-			case FBasicTypeId::UINT16.getName: type = "Integer"
-			case FBasicTypeId::INT32.getName: type = "Integer"
-			case FBasicTypeId::UINT32.getName: type = "Integer"
-			case FBasicTypeId::INT64.getName: type = "Long"
-			case FBasicTypeId::UINT64.getName: type = "Long"
-			case FBasicTypeId::FLOAT.getName: type = "Double"
-			case FBasicTypeId::DOUBLE.getName: type = "Double"
-			case FBasicTypeId::STRING.getName: type = "String"
-			case FBasicTypeId::BYTE_BUFFER.getName: type = "byte[]"
-			case "void": type = "Void"
-			default :  type = plainType
-		}
-
-		return type
-	}
-
-	def String getTokenTypeForArrayType(String plainType) {
-		if(plainType.contains("List<")) {
-			return "List" + getObjectDataTypeForPlainType(plainType.substring(5, plainType.length-1));
-		}
-		else{
-			return getObjectDataTypeForPlainType(plainType);
-		}
 	}
 
 	// Returns true if a class or superclass has array members
@@ -485,7 +270,7 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 		return false
 	}
 
-	// Returns true if a class has to create lists in its constructor	
+	// Returns true if a class has to create lists in its constructor
 	def boolean hasListsInConstructor(FCompoundType datatype){
 		for (member : datatype.members) {
 			if (isArray(member)){
@@ -495,23 +280,58 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 		return false
 	}
 
-	def String getJoynFullyQualifiedTypeName(FTypedElement typedElement){
-		if (typedElement.array == '[]'){
-			return "List"
-		}
-		if (typedElement.type.derived != null){
-			getJoynFullyQualifiedTypeName(typedElement.type.derived)
-		}
-		else{
-			getPrimitiveTypeName(typedElement.type.predefined)
-		}
-	}
-
-	def getJoynFullyQualifiedTypeName(FType type) {
-		joynTypePackagePrefix + "." + type.mappedDatatype
-	}
-
 	def getJoynTypePackagePrefix(){
 		joynrGenerationPrefix
+	}
+
+	def generateEnumCode(FEnumerationType enumType) {
+		val typeName = enumType.joynrName
+'''
+/**
+«appendJavadocSummaryAndWriteSeeAndDescription(enumType, " *")»
+ */
+public enum «typeName» {
+	«FOR enumValue : getEnumElementsAndBaseEnumElements(enumType) SEPARATOR ","»
+	/**
+	 * «appendJavadocComment(enumValue, "* ")»
+	 */
+	«enumValue.joynrName»
+	«ENDFOR»;
+
+	static final Map<Integer, «typeName»> ordinalToEnumValues = new HashMap<Integer, «typeName»>();
+
+	static{
+		«var i = -1»
+		«FOR enumValue : getEnumElementsAndBaseEnumElements(enumType)»
+		ordinalToEnumValues.put(Integer.valueOf(«IF enumValue.value==null|| enumValue.value.equals("")»«i=i+1»«ELSE»«enumValue.value»«ENDIF»), «enumValue.joynrName»);
+		«ENDFOR»
+	}
+
+	/**
+	 * Get the matching enum for an ordinal number
+	 * @param ordinal The ordinal number
+	 * @return The matching enum for the given ordinal number
+	 */
+	public static «typeName» getEnumValue(Integer ordinal) {
+		return ordinalToEnumValues.get(ordinal);
+	}
+
+	/**
+	 * Get the matching ordinal number for this enum
+	 * @return The ordinal number representing this enum
+	 */
+	public Integer getOrdinal() {
+		// TODO should we use a bidirectional map from a third-party library?
+		Integer ordinal = null;
+		for(Entry<Integer, «typeName»> entry : ordinalToEnumValues.entrySet()) {
+			if(this == entry.getValue()) {
+				ordinal = entry.getKey();
+				break;
+			}
+		}
+		return ordinal;
+	}
+}
+'''
 	}
 }

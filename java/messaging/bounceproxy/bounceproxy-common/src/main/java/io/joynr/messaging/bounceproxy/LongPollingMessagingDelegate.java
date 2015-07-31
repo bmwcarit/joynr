@@ -58,7 +58,7 @@ public class LongPollingMessagingDelegate {
     /**
      * Gets a list of all channel information.
      * 
-     * @return
+     * @return list of all channel informations
      */
     public List<ChannelInformation> listChannels() {
         LinkedList<ChannelInformation> entries = new LinkedList<ChannelInformation>();

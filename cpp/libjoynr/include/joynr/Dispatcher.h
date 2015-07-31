@@ -28,7 +28,7 @@
 #include "joynr/PrivateCopyAssign.h"
 
 #include "joynr/JoynrExport.h"
-#include <QString>
+#include <string>
 #include <QSharedPointer>
 #include "joynr/IDispatcher.h"
 #include "joynr/LibJoynrDirectories.h"
@@ -54,20 +54,20 @@ public:
 
     virtual ~Dispatcher();
 
-    virtual void addReplyCaller(const QString& requestReplyId,
+    virtual void addReplyCaller(const std::string& requestReplyId,
                                 QSharedPointer<IReplyCaller> replyCaller,
                                 const MessagingQos& qosSettings);
 
-    virtual void removeReplyCaller(const QString& requestReplyId);
+    virtual void removeReplyCaller(const std::string& requestReplyId);
 
-    virtual void addRequestCaller(const QString& participantId,
+    virtual void addRequestCaller(const std::string& participantId,
                                   QSharedPointer<RequestCaller> requestCaller);
 
-    virtual void removeRequestCaller(const QString& participantId);
+    virtual void removeRequestCaller(const std::string& participantId);
 
     virtual void receive(const JoynrMessage& message);
 
-    virtual void registerSubscriptionManager(SubscriptionManager* subscriptionManager);
+    virtual void registerSubscriptionManager(ISubscriptionManager* subscriptionManager);
 
     virtual void registerPublicationManager(PublicationManager* publicationManager);
 
@@ -85,7 +85,7 @@ private:
     RequestCallerDirectory requestCallerDirectory;
     ReplyCallerDirectory replyCallerDirectory;
     PublicationManager* publicationManager;
-    SubscriptionManager* subscriptionManager;
+    ISubscriptionManager* subscriptionManager;
     QThreadPool handleReceivedMessageThreadPool;
     static joynr_logging::Logger* logger;
     QMutex subscriptionHandlingMutex;

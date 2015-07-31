@@ -34,9 +34,9 @@ public interface SubscriptionManager {
 
     void touchSubscriptionState(final String subscriptionId);
 
-    Class<?> getType(String subscriptionId);
+    Class<?> getAttributeType(String subscriptionId);
 
-    void shutdown();
+    Class<?>[] getBroadcastOutParameterTypes(String subscriptionId);
 
     boolean isBroadcast(String subscriptionId);
 

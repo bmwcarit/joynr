@@ -142,7 +142,7 @@ public class BounceProxyEntity {
      * If a channel with the channel ID already exists in the set of assigned
      * channels, the element isn't added.
      * 
-     * @param channelEntity
+     * @param channelEntity Channel description
      */
     public void addChannel(ChannelEntity channelEntity) {
         channels.add(channelEntity);

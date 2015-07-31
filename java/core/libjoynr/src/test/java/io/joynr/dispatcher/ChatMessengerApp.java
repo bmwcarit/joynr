@@ -23,6 +23,7 @@ import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.pubsub.publication.AttributeListener;
+import io.joynr.pubsub.publication.BroadcastFilterImpl;
 import io.joynr.pubsub.publication.BroadcastListener;
 import io.joynr.runtime.JoynrBaseModule;
 import io.joynr.runtime.JoynrInjectorFactory;
@@ -78,7 +79,7 @@ public class ChatMessengerApp implements PayloadListener<String>, ReplyCaller {
         }
     }
 
-    static class ChatMessangerAppRequestCaller implements RequestCaller {
+    static class ChatMessengerAppRequestCaller implements RequestCaller {
 
         public Object respond(Object payload) {
             return "Reply to " + payload.toString();
@@ -111,6 +112,28 @@ public class ChatMessengerApp implements PayloadListener<String>, ReplyCaller {
         public void unregisterBroadcastListener(String broadcastName, BroadcastListener broadcastListener) {
             // TODO Auto-generated method stub
 
+        }
+
+        @Override
+        public void addBroadcastFilter(BroadcastFilterImpl filter) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void addBroadcastFilter(BroadcastFilterImpl... filters) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public Class<?> getProvidedInterface() {
+            return getClass();
+        }
+
+        @Override
+        public String getInterfaceName() {
+            return "chatmessagnerapp";
         }
 
     }
@@ -168,7 +191,7 @@ public class ChatMessengerApp implements PayloadListener<String>, ReplyCaller {
         // TODO register EndpointAddresses for participantIds
 
         // dispatcher.addListener(ownParticipant, this);
-        dispatcher.addRequestCaller(ownParticipant, new ChatMessangerAppRequestCaller());
+        dispatcher.addRequestCaller(ownParticipant, new ChatMessengerAppRequestCaller());
 
         try {
             messageSender.sendOneWay(ownParticipant,

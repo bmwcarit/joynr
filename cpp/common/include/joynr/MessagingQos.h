@@ -20,44 +20,73 @@
 #ifndef MESSAGINGQOS_H
 #define MESSAGINGQOS_H
 
-#include "joynr/JoynrCommonExport.h"
+#include <cstdint>
+#include <string>
 
-#include <QtGlobal>
-#include <QObject>
-#include <QVariantMap>
-#include <QDateTime>
+#include "joynr/JoynrCommonExport.h"
 
 namespace joynr
 {
 
 /**
-  * Data Class that stores QoS Settings like Ttl
+  * @brief Class for messaging quality of service settings
   */
-class JOYNRCOMMON_EXPORT MessagingQos : public QObject
+class JOYNRCOMMON_EXPORT MessagingQos
 {
-    Q_OBJECT
-
-    Q_PROPERTY(qint64 ttl READ getTtl WRITE setTtl)
-
 public:
+    /**
+     * @brief Base constructor
+     * @param ttl The time to live in milliseconds
+     */
+    MessagingQos(uint64_t ttl = 60000);
+    /** @brief Copy constructor */
     MessagingQos(const MessagingQos& other);
-    MessagingQos(qint64 ttl = 60000);
 
-    qint64 getTtl() const;
-    void setTtl(const qint64& ttl);
+    /** @brief Destructor */
+    virtual ~MessagingQos() = default;
 
-    MessagingQos& operator=(const MessagingQos& other);
+    /**
+     * @brief Stringifies the class
+     * @return stringified class content
+     */
+    virtual std::string toString() const;
+
+    /**
+     * @brief Gets the current time to live settings
+     * @return time to live in milliseconds
+     */
+    uint64_t getTtl() const;
+
+    /**
+     * @brief Sets the time to live
+     * @param ttl Time to live in milliseconds
+     */
+    void setTtl(const uint64_t& ttl);
+
+    /** @brief assignment operator */
+    MessagingQos& operator=(const MessagingQos& other) = default;
+    /** @brief equality operator */
     bool operator==(const MessagingQos& other) const;
 
 private:
-    qint64 ttl;
+    /** @brief The time to live in milliseconds */
+    uint64_t ttl;
+
+    /**
+      * @brief printing MessagingQos with google-test and google-mock
+      * @param messagingQos the object to be printed
+      * @param os the destination output stream the print should go into
+      */
+    friend void PrintTo(const MessagingQos& messagingQos, ::std::ostream* os);
 };
 
 // printing MessagingQos with google-test and google-mock
-void PrintTo(const joynr::MessagingQos& value, ::std::ostream* os);
+/**
+ * @brief Print values of MessagingQos object
+ * @param messagingQos The current object instance
+ * @param os The output stream to send the output to
+ */
+void PrintTo(const joynr::MessagingQos& messagingQos, ::std::ostream* os);
 
 } // namespace joynr
-
-Q_DECLARE_METATYPE(joynr::MessagingQos)
-
 #endif // MESSAGINGQOS_H

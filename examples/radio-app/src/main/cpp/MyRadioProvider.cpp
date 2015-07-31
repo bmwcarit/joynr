@@ -18,6 +18,9 @@
  */
 
 #include "MyRadioProvider.h"
+
+#include <QDateTime>
+
 #include "MyRadioHelper.h"
 #include "joynr/RequestStatus.h"
 
@@ -26,13 +29,18 @@ using namespace joynr;
 joynr_logging::Logger* MyRadioProvider::logger =
         joynr_logging::Logging::getInstance()->getLogger("DEMO", "MyRadioProvider");
 
-MyRadioProvider::MyRadioProvider(const types::ProviderQos& providerQos)
-        : RadioProvider(providerQos),
+MyRadioProvider::MyRadioProvider()
+        : DefaultRadioProvider(),
           currentStationIndex(0),
           stationsList(),
           countryGeoPositionMap(),
           mutex()
 {
+    // Initialise the quality of service settings
+    // Set the priority so that the consumer application always uses the most recently
+    // started provider
+    providerQos.setPriority(QDateTime::currentDateTime().toMSecsSinceEpoch());
+
     stationsList << vehicle::RadioStation("ABC Trible J", true, vehicle::Country::AUSTRALIA)
                  << vehicle::RadioStation("Radio Popolare", false, vehicle::Country::ITALY)
                  << vehicle::RadioStation("JAZZ.FM91", false, vehicle::Country::CANADA)
@@ -52,16 +60,17 @@ MyRadioProvider::~MyRadioProvider()
 {
 }
 
-void MyRadioProvider::getCurrentStation(RequestStatus& status, vehicle::RadioStation& result)
+void MyRadioProvider::getCurrentStation(std::function<void(const vehicle::RadioStation&)> onSuccess)
 {
     QMutexLocker locker(&mutex);
 
-    result = currentStation;
-    MyRadioHelper::prettyLog(logger, QString("getCurrentStation -> %1").arg(result.toString()));
-    status.setCode(RequestStatusCode::OK);
+    MyRadioHelper::prettyLog(logger,
+                             QString("getCurrentStation -> %1")
+                                     .arg(QString::fromStdString(currentStation.toString())));
+    onSuccess(currentStation);
 }
 
-void MyRadioProvider::shuffleStations(RequestStatus& status)
+void MyRadioProvider::shuffleStations(std::function<void()> onSuccess)
 {
     QMutexLocker locker(&mutex);
 
@@ -69,29 +78,46 @@ void MyRadioProvider::shuffleStations(RequestStatus& status)
     ++currentStationIndex;
     currentStationIndex %= stationsList.size();
     currentStationChanged(stationsList.at(currentStationIndex));
+    currentStation = stationsList.at(currentStationIndex);
     MyRadioHelper::prettyLog(logger,
-                             QString("shuffleStations: %1 -> %2").arg(oldStation.toString()).arg(
-                                     currentStation.toString()));
-    status.setCode(RequestStatusCode::OK);
+                             QString("shuffleStations: %1 -> %2")
+                                     .arg(QString::fromStdString(oldStation.toString()))
+                                     .arg(QString::fromStdString(currentStation.toString())));
+    onSuccess();
 }
 
-void MyRadioProvider::addFavouriteStation(RequestStatus& status,
-                                          bool& returnValue,
-                                          vehicle::RadioStation radioStation)
+void MyRadioProvider::addFavouriteStation(const vehicle::RadioStation& radioStation,
+                                          std::function<void(const bool& returnValue)> onSuccess)
 {
     QMutexLocker locker(&mutex);
 
-    MyRadioHelper::prettyLog(
-            logger, QString("addFavouriteStation(%1)").arg(radioStation.toString()));
+    MyRadioHelper::prettyLog(logger,
+                             QString("addFavouriteStation(%1)")
+                                     .arg(QString::fromStdString(radioStation.toString())));
     stationsList.append(radioStation);
-    returnValue = true;
-    status.setCode(RequestStatusCode::OK);
+    onSuccess(true);
+}
+
+void MyRadioProvider::getLocationOfCurrentStation(
+        std::function<void(const joynr::vehicle::Country::Enum& country,
+                           const joynr::vehicle::GeoPosition& location)> onSuccess)
+{
+    joynr::vehicle::Country::Enum country(currentStation.getCountry());
+    joynr::vehicle::GeoPosition location(countryGeoPositionMap.value(country));
+    MyRadioHelper::prettyLog(
+            logger,
+            QString("getLocationOfCurrentStation: return country \"%1\" and location \"%2\"")
+                    .arg(QString::fromStdString(
+                            joynr::vehicle::Country::getLiteral(currentStation.getCountry())))
+                    .arg(QString::fromStdString(location.toString())));
+    onSuccess(country, location);
 }
 
 void MyRadioProvider::fireWeakSignalBroadcast()
 {
-    MyRadioHelper::prettyLog(
-            logger, QString("fire weakSignalBroadacst: %1").arg(currentStation.toString()));
+    MyRadioHelper::prettyLog(logger,
+                             QString("fire weakSignalBroadacst: %1")
+                                     .arg(QString::fromStdString(currentStation.toString())));
     fireWeakSignal(currentStation);
 }
 
@@ -101,26 +127,7 @@ void MyRadioProvider::fireNewStationDiscoveredBroadcast()
     vehicle::GeoPosition geoPosition(countryGeoPositionMap.value(discoveredStation.getCountry()));
     MyRadioHelper::prettyLog(logger,
                              QString("fire newStationDiscoveredBroadcast: %1 at %2")
-                                     .arg(discoveredStation.toString())
-                                     .arg(geoPosition.toString()));
+                                     .arg(QString::fromStdString(discoveredStation.toString()))
+                                     .arg(QString::fromStdString(geoPosition.toString())));
     fireNewStationDiscovered(discoveredStation, geoPosition);
-}
-
-void MyRadioProvider::setCurrentStation(RequestStatus& status, vehicle::RadioStation currentStation)
-{
-    QMutexLocker locker(&mutex);
-
-    int index = stationsList.indexOf(currentStation);
-
-    if (index == -1) {
-        // the station is not known
-        stationsList.append(currentStation);
-        index = stationsList.indexOf(currentStation);
-    }
-
-    currentStationIndex = index;
-    currentStationChanged(stationsList.at(currentStationIndex));
-    MyRadioHelper::prettyLog(
-            logger, QString("setCurrentStation(%1)").arg(currentStation.toString()));
-    status.setCode(RequestStatusCode::OK);
 }

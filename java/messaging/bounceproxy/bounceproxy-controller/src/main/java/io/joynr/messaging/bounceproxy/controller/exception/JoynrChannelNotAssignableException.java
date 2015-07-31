@@ -4,7 +4,7 @@ package io.joynr.messaging.bounceproxy.controller.exception;
  * #%L
  * joynr::java::messaging::bounceproxy::bounceproxy-controller
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ package io.joynr.messaging.bounceproxy.controller.exception;
  * #L%
  */
 
-import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
 
 /**
  * Thrown if an assignment of a channel to a bounce proxy instance failed.
@@ -28,7 +28,7 @@ import io.joynr.exceptions.JoynrException;
  * @author christina.strobel
  *
  */
-public class JoynrChannelNotAssignableException extends JoynrException {
+public class JoynrChannelNotAssignableException extends JoynrRuntimeException {
 
     private static final long serialVersionUID = 212450268038844695L;
 
@@ -38,7 +38,7 @@ public class JoynrChannelNotAssignableException extends JoynrException {
     private String ccid;
 
     /**
-     * @param message
+     * @param message problem description
      * @param ccid the channel ID that could not be assigned.
      */
     public JoynrChannelNotAssignableException(String message, String ccid) {
@@ -48,5 +48,35 @@ public class JoynrChannelNotAssignableException extends JoynrException {
 
     public String getChannelId() {
         return ccid;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result + ((ccid == null) ? 0 : ccid.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!super.equals(obj)) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        JoynrChannelNotAssignableException other = (JoynrChannelNotAssignableException) obj;
+        if (ccid == null) {
+            if (other.ccid != null) {
+                return false;
+            }
+        } else if (!ccid.equals(other.ccid)) {
+            return false;
+        }
+        return true;
     }
 }

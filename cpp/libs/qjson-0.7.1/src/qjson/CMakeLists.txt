@@ -40,7 +40,7 @@ add_library(
     ${qjson_HEADERS}
     ${qjson_SOURCES}
 )
-qt5_use_modules(qjson Core)
+target_link_libraries(qjson Qt5::Core)
 
 set_target_properties(
     qjson

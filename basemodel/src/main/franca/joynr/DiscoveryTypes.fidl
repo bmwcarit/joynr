@@ -1,0 +1,154 @@
+/*
+ * #%L
+ * %%
+ * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+package types
+
+typeCollection {
+
+	<** @description: a custom parameter consisting of a name and a value **>
+	struct CustomParameter {
+		<** @description: the name of the custom parameter **>
+		String name
+		<** @description: the value of the custom parameter **>
+		String value
+	}
+
+	<** @description: the scope in which the provider is registered **>
+	enumeration ProviderScope{
+		<** @description: indicates that the provider is for use with the local and global cluster controller **>
+		GLOBAL
+		<** @description: indicates that the provider is only for use with the local cluster controller **>
+		LOCAL
+	}
+
+	<** @description: the provider quality of service settings **>
+	struct ProviderQos {
+		<**
+			@description: the list of Provider-Specific and InterfaceSpecific
+				QoS Parameters
+		**>
+		CustomParameter[] customParameters
+
+		/*
+		 * the following QosParameters are joyn-internal, and
+		 * need to be implemented by every provider
+		 */
+
+		<**
+			@description: the version of the provider
+		**>
+		Int32 providerVersion
+
+		<**
+			@description: the priority value of the provider used for discovery
+		**>
+		Int64 priority
+
+		<**
+			@description: the scope of the provider (e.g. if it is to be used only
+			with the local cluster controller)
+		**>
+		ProviderScope scope
+
+		<**
+			@description: true, if the provider supports onChangeSubscriptions,
+			false otherwise
+		**>
+		Boolean supportsOnChangeSubscriptions
+	}
+
+	<** @description: Enumeration specifying the discovery scope choices **>
+	enumeration DiscoveryScope	{
+		<** @description: Consider only entries from local cache **>
+		LOCAL_ONLY
+		<** @description: Consider only entries from local cache, in no results are found, query global cache as well **>
+		LOCAL_THEN_GLOBAL
+		<** @description: Consider both local and global entries **>
+		LOCAL_AND_GLOBAL
+		<** @description: Consider only global entries **>
+		GLOBAL_ONLY
+	}
+
+	<** @description: Enumeration specifying the different means for communication **>
+	enumeration CommunicationMiddleware {
+		<** @description: Joynr internal communication **>
+		JOYNR
+		<** @description: Communication using CommonAPI over DBus **>
+		COMMONAPI_DBUS
+		<** @description: Communication using Browser **>
+		BROWSER
+		<** @description: Communication using web sockets **>
+		WEBSOCKET
+		<** @description: Communication using Some IP protocol **>
+		SOME_IP
+		<** @description: Communication using in process means **>
+		IN_PROCESS
+		<** @description: None of the above **>
+		NONE
+	}
+
+	<** @description: Discovery quality of service settings **>
+	struct DiscoveryQos {
+		<** @description: The maximum age of a cached entry in milliseconds **>
+		Int64 cacheMaxAge
+		<** @description: The discovery scope **>
+		DiscoveryScope discoveryScope
+		<** @description: True, if the provider is required to support the OnChange publication **>
+		Boolean providerMustSupportOnChange
+	}
+
+	struct DiscoveryEntry {
+		<** @description: the domain to register the provider with **>
+		String domain
+		<** @description: the name of the provider interface **>
+		String interfaceName
+		<** @description: the participant ID of the provider **>
+		String participantId
+		<** @description: the qos of the provider **>
+		ProviderQos qos
+		<**
+			@description: a list of communications middlewares that can be used
+				to access the provider
+		**>
+		CommunicationMiddleware[] connections
+	}
+
+	<** @description: the capability information holding the information for a provider **>
+	struct CapabilityInformation {
+		<** @description: the domain name of the provider **>
+		String domain
+
+		<** @description: the name of the interface of the provider **>
+		String interfaceName
+
+		<** @description: the provider quality of service settings **>
+		ProviderQos providerQos
+
+		<** @description: the channel id of the provider **>
+		String channelId
+
+		<** @description: the participant id of the provider **>
+		String participantId
+	}
+
+	<** @description: the channel URL information **>
+	struct ChannelUrlInformation {
+		<** @description: a list of urls **>
+		String[] urls
+	}
+}

@@ -63,7 +63,6 @@ public abstract class AbstractGuiceServletConfig extends GuiceServletContextList
      * Registers the Guice filter that is usually defined in web.xml
      * programmatically.
      * 
-     * @param servletContextEvent
      */
     //    private void registerGuiceFilter(ServletContextEvent servletContextEvent) {
     //

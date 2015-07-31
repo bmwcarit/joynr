@@ -218,7 +218,7 @@ QString HttpSender::SendMessageRunnable::resolveUrlForChannelId(qint64 curlTimeo
     if (!status.successful()) {
         LOG_ERROR(logger,
                   "Issue while trying to obtained URl from the ChannelUrlDirectory: " +
-                          status.toString());
+                          QString::fromStdString(status.toString()));
     }
     if (url.isNull() || url.isEmpty()) {
         LOG_DEBUG(logger,

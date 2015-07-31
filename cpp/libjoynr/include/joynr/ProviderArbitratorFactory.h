@@ -26,8 +26,8 @@
 #include "joynr/KeywordArbitrator.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/QosArbitrator.h"
-#include <QString>
 #include <QSharedPointer>
+#include <string>
 
 namespace joynr
 {
@@ -44,8 +44,8 @@ public:
     /*
      *  Creates an arbitrator object using the type specified in the qosParameters.
      */
-    static ProviderArbitrator* createArbitrator(const QString& domain,
-                                                const QString& interfaceName,
+    static ProviderArbitrator* createArbitrator(const std::string& domain,
+                                                const std::string& interfaceName,
                                                 joynr::system::IDiscoverySync& discoveryProxy,
                                                 const DiscoveryQos& discoveryQos);
 };

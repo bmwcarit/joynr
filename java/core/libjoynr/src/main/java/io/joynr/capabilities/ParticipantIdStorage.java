@@ -19,17 +19,10 @@ package io.joynr.capabilities;
  * #L%
  */
 
-import io.joynr.dispatcher.rpc.JoynrInterface;
-
 public interface ParticipantIdStorage {
 
-    public abstract <T extends JoynrInterface> String getProviderParticipantId(String domain,
-                                                                               Class<T> providedInterface,
-                                                                               String authToken);
+    String getProviderParticipantId(String domain, Class<?> providedInterface);
 
-    public abstract <T extends JoynrInterface> String getProviderParticipantId(String domain,
-                                                                               Class<T> providedInterface,
-                                                                               String authToken,
-                                                                               String defaultValue);
+    String getProviderParticipantId(String domain, Class<?> providedInterface, String defaultValue);
 
 }

@@ -46,6 +46,12 @@ class ProviderGenerator {
 	@Inject
 	InterfaceProviderHTemplate interfaceProviderHTemplate;
 
+	@Inject
+	InterfaceAbstractProviderCppTemplate interfaceAbstractProviderCppTemplate;
+
+	@Inject
+	InterfaceAbstractProviderHTemplate interfaceAbstractProviderHTemplate;
+
 	def doGenerate(
 		FModel model,
 		IFileSystemAccess sourceFileSystem,
@@ -97,6 +103,20 @@ class ProviderGenerator {
 				headerFileSystem,
 				headerPath + serviceName + "Provider.h",
 				interfaceProviderHTemplate,
+				serviceInterface
+			);
+
+			generateFile(
+				sourceFileSystem,
+				sourcePath + serviceName + "AbstractProvider.cpp",
+				interfaceAbstractProviderCppTemplate,
+				serviceInterface
+			);
+
+			generateFile(
+				headerFileSystem,
+				headerPath + serviceName + "AbstractProvider.h",
+				interfaceAbstractProviderHTemplate,
 				serviceInterface
 			);
 		}

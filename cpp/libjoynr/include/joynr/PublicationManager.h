@@ -31,6 +31,7 @@
 #include <QMutex>
 #include <QReadWriteLock>
 #include <QThreadPool>
+#include <memory>
 
 namespace joynr
 {
@@ -43,7 +44,7 @@ class SubscriptionRequestInformation;
 class SubscriptionInformation;
 class IPublicationSender;
 class RequestCaller;
-class SubscriptionQos;
+class QtSubscriptionQos;
 class IBroadcastFilter;
 
 /**
@@ -147,7 +148,7 @@ public:
       */
     virtual void broadcastOccurred(const QString& subscriptionId,
                                    const QList<QVariant>& values,
-                                   const QList<QSharedPointer<IBroadcastFilter>>& filters);
+                                   const QList<std::shared_ptr<IBroadcastFilter>>& filters);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(PublicationManager);
@@ -199,7 +200,7 @@ private:
     QMutex currentScheduledPublicationsMutex;
 
     // Filters registered for broadcasts. Keyed by broadcast name.
-    QMap<QString, QList<QSharedPointer<IBroadcastFilter>>> broadcastFilters;
+    QMap<QString, QList<std::shared_ptr<IBroadcastFilter>>> broadcastFilters;
 
     // Read/write lock for broadcast filters
     mutable QReadWriteLock broadcastFilterLock;
@@ -238,7 +239,7 @@ private:
      *          -1 on error
      */
     qint64 getTimeUntilNextPublication(QSharedPointer<Publication> publication,
-                                       QSharedPointer<SubscriptionQos> qos);
+                                       QSharedPointer<QtSubscriptionQos> qos);
 
     void saveSubscriptionRequestsMap(const QList<QVariant>& subscriptionList,
                                      const QString& storageFilename);
@@ -258,7 +259,7 @@ private:
     void sendPublication(QSharedPointer<Publication> publication,
                          QSharedPointer<SubscriptionInformation> subscriptionInformation,
                          QSharedPointer<SubscriptionRequest> subscriptionRequest,
-                         const QVariant& value);
+                         const QList<QVariant>& value);
     void handleAttributeSubscriptionRequest(
             QSharedPointer<SubscriptionRequestInformation> requestInfo,
             QSharedPointer<RequestCaller> requestCaller,
@@ -282,7 +283,7 @@ private:
 
     bool processFilterChain(const QString& subscriptionId,
                             const QList<QVariant>& broadcastValues,
-                            const QList<QSharedPointer<IBroadcastFilter>>& filters);
+                            const QList<std::shared_ptr<IBroadcastFilter>>& filters);
 };
 
 } // namespace joynr

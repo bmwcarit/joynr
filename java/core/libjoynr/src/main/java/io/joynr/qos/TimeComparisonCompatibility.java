@@ -27,7 +27,8 @@ package io.joynr.qos;
 public interface TimeComparisonCompatibility {
 
     /**
-     * The time stamp in milliseconds.
+     * get the stored time stamp of the object in milliseconds.
+     * @return the stored time stamp of the object in milliseconds
      */
     Long getTimeInMilliSec();
 }

@@ -21,7 +21,6 @@ package io.joynr.capabilities;
 
 import io.joynr.dispatcher.RequestCaller;
 import io.joynr.dispatcher.RequestReplyDispatcher;
-import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.RequestCallerFactory;
 import io.joynr.pubsub.publication.PublicationManager;
@@ -53,23 +52,19 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
 
     /*
      * (non-Javadoc)
-     * 
-     * @see io.joynr.capabilities.CapabilitiesRegistrar# registerCapability(java.lang.String,
+     *
+     * @see io.joynr.capabilities.CapabilitiesRegistrar# registerProvider(java.lang.String,
      * io.joynr.provider.JoynrProvider, java.lang.Class)
      */
     @Override
-    public <T extends JoynrInterface> RegistrationFuture registerCapability(final String domain,
-                                                                            JoynrProvider provider,
-                                                                            final Class<T> providedInterface,
-                                                                            String authenticationToken) {
-        String participantId = participantIdStorage.getProviderParticipantId(domain,
-                                                                             providedInterface,
-                                                                             authenticationToken);
-        CapabilityEntry capabilityEntry = new CapabilityEntry(domain,
-                                                              providedInterface,
-                                                              provider.getProviderQos(),
-                                                              participantId);
-        RequestCaller requestCaller = requestCallerFactory.create(provider, providedInterface);
+    public RegistrationFuture registerProvider(final String domain, JoynrProvider provider) {
+        String participantId = participantIdStorage.getProviderParticipantId(domain, provider.getProvidedInterface());
+        CapabilityEntry capabilityEntry = new CapabilityEntryImpl(domain,
+                                                                  provider.getInterfaceName(),
+                                                                  provider.getProviderQos(),
+                                                                  participantId,
+                                                                  System.currentTimeMillis());
+        RequestCaller requestCaller = requestCallerFactory.create(provider);
 
         dispatcher.addRequestCaller(participantId, requestCaller);
         RegistrationFuture ret = localCapabilitiesDirectory.add(capabilityEntry);
@@ -78,17 +73,14 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
     }
 
     @Override
-    public <T extends JoynrInterface> void unregisterCapability(String domain,
-                                                                JoynrProvider provider,
-                                                                final Class<T> providedInterface,
-                                                                String authenticationToken) {
-        String participantId = participantIdStorage.getProviderParticipantId(domain,
-                                                                             providedInterface,
-                                                                             authenticationToken);
-        CapabilityEntry capabilityEntry = new CapabilityEntry(domain,
-                                                              providedInterface,
-                                                              provider.getProviderQos(),
-                                                              participantId);
+    public void unregisterProvider(String domain, JoynrProvider provider) {
+
+        String participantId = participantIdStorage.getProviderParticipantId(domain, provider.getProvidedInterface());
+        CapabilityEntry capabilityEntry = new CapabilityEntryImpl(domain,
+                                                                  provider.getInterfaceName(),
+                                                                  provider.getProviderQos(),
+                                                                  participantId,
+                                                                  System.currentTimeMillis());
         localCapabilitiesDirectory.remove(capabilityEntry);
         dispatcher.removeRequestCaller(participantId);
         publicationManager.stopPublicationByProviderId(participantId);

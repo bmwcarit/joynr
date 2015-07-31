@@ -19,12 +19,13 @@
 #include "joynr/PrivateCopyAssign.h"
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <string>
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "joynr/vehicle/GpsProxy.h"
 #include "joynr/tests/testProxy.h"
-#include "joynr/types/Trip.h"
-#include "joynr/types/GpsLocation.h"
+#include "joynr/types/QtTrip.h"
+#include "joynr/types/QtGpsLocation.h"
 #include "joynr/CapabilitiesRegistrar.h"
 #include "utils/QThreadSleep.h"
 #include "PrettyPrint.h"
@@ -35,6 +36,7 @@
 #include "joynr/joynrlogging.h"
 #include "cluster-controller/messaging/MessagingPropertiesPersistence.h"
 #include "joynr/SettingsMerger.h"
+#include "joynr/TypeUtil.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -54,7 +56,7 @@ public:
     JoynrClusterControllerRuntime* runtime;
     QSettings settings;
     MessagingSettings messagingSettings;
-    QString channelId;
+    std::string channelId;
 
     CapabilitiesClientTest() :
         logger(joynr_logging::Logging::getInstance()->getLogger("TEST", "CapabilitiesClientTest")),
@@ -64,20 +66,19 @@ public:
     {
         messagingSettings.setMessagingPropertiesPersistenceFilename(messagingPropertiesPersistenceFileName);
         MessagingPropertiesPersistence storage(messagingSettings.getMessagingPropertiesPersistenceFilename());
-        channelId = storage.getChannelId();
+        channelId = storage.getChannelId().toStdString();
         QSettings* settings = SettingsMerger::mergeSettings(settingsFilename);
         SettingsMerger::mergeSettings(libJoynrSettingsFilename, settings);
         runtime = new JoynrClusterControllerRuntime(NULL, settings);
     }
 
     void SetUp() {
-        runtime->startMessaging();
-        runtime->waitForChannelCreation();
+        runtime->start();
     }
 
     void TearDown() {
-        runtime->deleteChannel(); //cleanup the channels so they dont remain on the bp
-        runtime->stopMessaging();
+        bool deleteChannel = true;
+        runtime->stop(deleteChannel);
     }
 
     ~CapabilitiesClientTest(){
@@ -90,48 +91,53 @@ private:
 };
 
 TEST_F(CapabilitiesClientTest, registerAndRetrieveCapability) {
-    LOG_TRACE(logger, "Waiting for Channel creation");
-    runtime->waitForChannelCreation();
-    LOG_TRACE(logger, "Finished Waiting for Channel creation");
     CapabilitiesClient* capabilitiesClient = new CapabilitiesClient(channelId);// ownership of this is not transferred
     ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>* capabilitiesProxyBuilder =
-            runtime->getProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(
-                messagingSettings.getDiscoveryDirectoriesDomain()
+            runtime->createProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(
+                TypeUtil::toStd(messagingSettings.getDiscoveryDirectoriesDomain())
             );
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY); //actually only one provider should be available
     QSharedPointer<infrastructure::GlobalCapabilitiesDirectoryProxy> cabilitiesProxy (
         capabilitiesProxyBuilder
-            ->setRuntimeQos(MessagingQos(10000)) //TODO magic values.
+            ->setMessagingQos(MessagingQos(10000)) //TODO magic values.
             ->setCached(true)
             ->setDiscoveryQos(discoveryQos)
             ->build()
         );
     capabilitiesClient->init(cabilitiesProxy);
 
-    QList<types::CapabilityInformation> capabilitiesInformationList;
-    QString capDomain("testDomain");
-    QString capInterface("testInterface");
+    std::vector<types::CapabilityInformation> capabilitiesInformationList;
+    std::string capDomain("testDomain");
+    std::string capInterface("testInterface");
     types::ProviderQos capProviderQos;
-    QString capChannelId("testChannelId");
-    QString capParticipantId("testParticipantId");
+    std::string capChannelId("testChannelId");
+    std::string capParticipantId("testParticipantId");
 
-    capabilitiesInformationList.append(types::CapabilityInformation(capDomain, capInterface, capProviderQos, capChannelId, capParticipantId));
+    capabilitiesInformationList.push_back(types::CapabilityInformation(capDomain, capInterface, capProviderQos, capChannelId, capParticipantId));
     LOG_DEBUG(logger,"Registering capabilities");
     capabilitiesClient->add(capabilitiesInformationList);
     LOG_DEBUG(logger,"Registered capabilities");
     //sync methods are not yet implemented
-//    QList<types::CapabilityInformation> capResultList = capabilitiesClient->lookup(capDomain, capInterface);
+//    std::vector<types::QtCapabilityInformation> capResultList = capabilitiesClient->lookup(capDomain, capInterface);
 //    EXPECT_EQ(capResultList, capabilitiesInformationList);
-    QSharedPointer<IGlobalCapabilitiesCallbackMock> callback(new IGlobalCapabilitiesCallbackMock());
+    QSharedPointer<GlobalCapabilitiesMock> callback(new GlobalCapabilitiesMock());
 
     // use a semaphore to wait for capabilities to be received
     QSemaphore semaphore(0);
-    EXPECT_CALL(*callback, capabilitiesReceived(A<QList<types::CapabilityInformation> >()))
-            .WillRepeatedly(ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*callback, capabilitiesReceived(A<const std::vector<types::CapabilityInformation>&>()))
+           .WillRepeatedly(
+                DoAll(
+                    ReleaseSemaphore(&semaphore),
+                    Return(RequestStatus(RequestStatusCode::OK))
+                ));
+    std::function<void(const std::vector<types::CapabilityInformation>&)> onSuccess =
+            [&](const std::vector<types::CapabilityInformation>& capabilities) {
+                callback->capabilitiesReceived(capabilities);
+            };
 
     LOG_DEBUG(logger,"get capabilities");
-    capabilitiesClient->lookup(capDomain, capInterface, callback);
+    capabilitiesClient->lookup(capDomain, capInterface, onSuccess);
     semaphore.tryAcquire(1,10000);
     LOG_DEBUG(logger,"finished get capabilities");
 

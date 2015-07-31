@@ -31,9 +31,9 @@
 *
 */
 
-#include <QString>
 #include <QSharedPointer>
-#include <QList>
+#include <string>
+#include <vector>
 
 namespace joynr
 {
@@ -60,7 +60,7 @@ public:
         has to be used.
        Todo: Ownership of libjoynr is not transferred, should not be a pointer.
     */
-    CapabilitiesClient(const QString& localChannelId);
+    CapabilitiesClient(const std::string& localChannelId);
 
     /*
       * The init method has to be caleld before any calls to the CapabilitiesClient are made.
@@ -71,37 +71,43 @@ public:
        Add a capabilities record to the directory containing a list of capabilities and the
        channelId of the provider(the client's channelId)
       */
-    virtual void add(QList<types::CapabilityInformation> capabilitiesInformationList);
+    virtual void add(std::vector<types::CapabilityInformation> capabilitiesInformationList);
 
     /*
       Remove previously created capabilities directory entries.
       */
-    virtual void remove(QList<QString> participantIds);
+    virtual void remove(std::vector<std::string> participantIds);
 
     /*
       Remove previously created capability directroy entry
      */
-    virtual void remove(const QString& participantId);
+    virtual void remove(const std::string& participantId);
 
     /*
       Synchronous lookup of capabilities for domain and interface.
       */
-    virtual QList<types::CapabilityInformation> lookup(const QString& domain,
-                                                       const QString& interfaceName);
+    virtual std::vector<types::CapabilityInformation> lookup(const std::string& domain,
+                                                             const std::string& interfaceName);
 
     /*
       Asynchronous lookup of capabilities for domain and interface.
       */
-    virtual void lookup(const QString& domain,
-                        const QString& interfaceName,
-                        QSharedPointer<IGlobalCapabilitiesCallback> callback);
+    virtual void lookup(
+            const std::string& domain,
+            const std::string& interfaceName,
+            std::function<void(const std::vector<joynr::types::CapabilityInformation>& result)>
+                    onSuccess,
+            std::function<void(const RequestStatus& status)> onError = nullptr);
 
-    virtual void lookup(const QString& participantId,
-                        QSharedPointer<IGlobalCapabilitiesCallback> callback);
+    virtual void lookup(
+            const std::string& participantId,
+            std::function<void(const std::vector<joynr::types::CapabilityInformation>& result)>
+                    onSuccess,
+            std::function<void(const RequestStatus& status)> onError = nullptr);
 
     virtual ~CapabilitiesClient();
 
-    virtual QString getLocalChannelId();
+    virtual std::string getLocalChannelId();
 
 private:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesClient);
@@ -116,11 +122,13 @@ private:
     qint64 defaultRequestTTL;
     qint64 defaultRequestRoundtripTTL;
 
-    QString capabilitiesClientParticipantId;
-    QString localChannelId;
+    std::string capabilitiesClientParticipantId;
+    std::string localChannelId;
 
     // capabilitiesProxy is a QSP, because ownership is shared between CapabilitiesClient and Joynr
     QSharedPointer<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy;
+
+    static joynr_logging::Logger* logger;
 };
 
 } // namespace joynr

@@ -25,6 +25,8 @@
 #include "joynr/infrastructure/ChannelUrlDirectoryProxy.h"
 #include "joynr/types/ChannelUrlInformation.h"
 #include "joynr/MessagingSettings.h"
+#include <string>
+#include <memory>
 
 namespace joynr
 {
@@ -50,40 +52,50 @@ public:
      *
      * @param channelId
      * @param channelUrlInformation
-     * @param status
+     * @param onSuccess
+     * @param onError
      */
-    virtual void registerChannelUrls(QSharedPointer<Future<void>> future,
-                                     const QString& channelId,
-                                     types::ChannelUrlInformation channelUrlInformation);
+    virtual std::shared_ptr<joynr::Future<void>> registerChannelUrlsAsync(
+            const std::string& channelId,
+            types::ChannelUrlInformation channelUrlInformation,
+            std::function<void(void)> onSuccess = nullptr,
+            std::function<void(const RequestStatus& status)> onError = nullptr);
 
     /**
      * @brief Unregister ALL Url's registered for this channelId
      *
-     * @param status
      * @param channelId
+     * @param onSuccess
+     * @param onError
      */
-    virtual void unregisterChannelUrls(QSharedPointer<Future<void>> future,
-                                       const QString& channelId);
+    virtual std::shared_ptr<joynr::Future<void>> unregisterChannelUrlsAsync(
+            const std::string& channelId,
+            std::function<void(void)> onSuccess = nullptr,
+            std::function<void(const RequestStatus& status)> onError = nullptr);
 
     /**
      * @brief Get ALL Url's registered in the remoteChannelUrlDirectory. Uses caching, i.e. once an
      * entry is obtained it is stored and returned from there on (instead of starting another remote
      *request).
      *
-     * @param future
      * @param channelId
      * @param timeout
+     * @param onSuccess
+     * @param onError
      */
-    virtual void getUrlsForChannel(QSharedPointer<Future<types::ChannelUrlInformation>> future,
-                                   const QString& channelId,
-                                   const qint64& timeout_ms);
+    virtual std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>>
+    getUrlsForChannelAsync(const std::string& channelId,
+                           const qint64& timeout_ms,
+                           std::function<void(const types::ChannelUrlInformation& channelUrls)>
+                                   onSuccess = nullptr,
+                           std::function<void(const RequestStatus& status)> onError = nullptr);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalChannelUrlDirectory);
     void init();
     MessagingSettings& messagingSettings;
     QSharedPointer<infrastructure::ChannelUrlDirectoryProxy> channelUrlDirectoryProxy;
-    QMap<QString, types::ChannelUrlInformation> localCache;
+    QMap<QString, types::QtChannelUrlInformation> localCache;
     static joynr_logging::Logger* logger;
 };
 

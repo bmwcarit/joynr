@@ -25,11 +25,11 @@
 #include <QtWebSockets/QWebSocket>
 
 #include "joynr/IMessaging.h"
-#include "joynr/system/WebSocketAddress.h"
-#include "joynr/system/WebSocketClientAddress.h"
-#include "joynr/system/ChannelAddress.h"
-#include "joynr/system/CommonApiDbusAddress.h"
-#include "joynr/system/BrowserAddress.h"
+#include "joynr/system/QtWebSocketAddress.h"
+#include "joynr/system/QtWebSocketClientAddress.h"
+#include "joynr/system/QtChannelAddress.h"
+#include "joynr/system/QtCommonApiDbusAddress.h"
+#include "joynr/system/QtBrowserAddress.h"
 
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
 #include "libjoynr/websocket/WebSocketMessagingStub.h"
@@ -40,7 +40,7 @@ class WebSocketMessagingStubFactoryTest : public testing::Test {
 public:
     WebSocketMessagingStubFactoryTest() :
         logger(joynr_logging::Logging::getInstance()->getLogger("TST", "WebSocketMessagingStubFactoryTest")),
-        webSocketServerAddress(joynr::system::WebSocketProtocol::WS, "localhost", 42, "path"),
+        webSocketServerAddress(joynr::system::QtWebSocketProtocol::WS, "localhost", 42, "path"),
         webSocketClientAddress("clientId"),
         channelAddress("channelId"),
         commonApiDbusAddress("domain", "serviceName", "participantId"),
@@ -53,11 +53,11 @@ public:
 
 protected:
     joynr_logging::Logger* logger;
-    joynr::system::WebSocketAddress webSocketServerAddress;
-    joynr::system::WebSocketClientAddress webSocketClientAddress;
-    joynr::system::ChannelAddress channelAddress;
-    joynr::system::CommonApiDbusAddress commonApiDbusAddress;
-    joynr::system::BrowserAddress browserAddress;
+    joynr::system::QtWebSocketAddress webSocketServerAddress;
+    joynr::system::QtWebSocketClientAddress webSocketClientAddress;
+    joynr::system::QtChannelAddress channelAddress;
+    joynr::system::QtCommonApiDbusAddress commonApiDbusAddress;
+    joynr::system::QtBrowserAddress browserAddress;
 };
 
 TEST_F(WebSocketMessagingStubFactoryTest, canCreateWebSocketAddressses) {
@@ -99,7 +99,7 @@ TEST_F(WebSocketMessagingStubFactoryTest, closedMessagingStubsAreRemoved) {
     factory.addClient(webSocketClientAddress, websocket);
     QSharedPointer<joynr::IMessaging> messagingStub(factory.create(webSocketClientAddress));
     QSharedPointer<joynr::WebSocketMessagingStub> wsMessagingStub(messagingStub.dynamicCast<joynr::WebSocketMessagingStub>());
-    QSignalSpy wsMessagingStubClosedSpy(wsMessagingStub.data(), SIGNAL(closed(joynr::system::Address)));
+    QSignalSpy wsMessagingStubClosedSpy(wsMessagingStub.data(), SIGNAL(closed(joynr::system::QtAddress)));
     EXPECT_FALSE(messagingStub.isNull());
 
     QTimer::singleShot(0, wsMessagingStub.data(), SLOT(onSocketDisconnected()));
@@ -119,8 +119,8 @@ TEST_F(WebSocketMessagingStubFactoryTest, removeClientRemovesMessagingStub) {
 }
 
 TEST_F(WebSocketMessagingStubFactoryTest, convertWebSocketAddressToUrl) {
-    joynr::system::WebSocketAddress wsAddress(
-                joynr::system::WebSocketProtocol::WS,
+    joynr::system::QtWebSocketAddress wsAddress(
+                joynr::system::QtWebSocketProtocol::WS,
                 "localhost",
                 42,
                 "/some/path/"
@@ -130,8 +130,8 @@ TEST_F(WebSocketMessagingStubFactoryTest, convertWebSocketAddressToUrl) {
     QUrl wsUrl(WebSocketMessagingStubFactory::convertWebSocketAddressToUrl(wsAddress));
     EXPECT_EQ(expectedWsUrl, wsUrl);
 
-    joynr::system::WebSocketAddress wssAddress(
-                joynr::system::WebSocketProtocol::WSS,
+    joynr::system::QtWebSocketAddress wssAddress(
+                joynr::system::QtWebSocketProtocol::WSS,
                 "localhost",
                 42,
                 "/some/path"

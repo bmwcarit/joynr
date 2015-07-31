@@ -9,3 +9,4 @@ bin
 src/main/generated*
 logs
 /target
+/joynr.properties

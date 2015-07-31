@@ -21,6 +21,8 @@
 
 #include "joynr/vehicle/RadioNewStationDiscoveredBroadcastFilter.h"
 
+#include "joynr/joynrlogging.h"
+
 using namespace joynr;
 
 class GeocastBroadcastFilter : public vehicle::RadioNewStationDiscoveredBroadcastFilter
@@ -32,6 +34,9 @@ public:
             const joynr::vehicle::RadioStation& discoveredStation,
             const joynr::vehicle::GeoPosition& geoPosition,
             const vehicle::RadioNewStationDiscoveredBroadcastFilterParameters& filterParameters);
+
+private:
+    static joynr_logging::Logger* logger;
 };
 
 #endif // GEOCASTBROADCASTFILTER_H

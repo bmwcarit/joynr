@@ -19,12 +19,10 @@ package io.joynr.capabilities;
  * #L%
  */
 
-import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.endpoints.EndpointAddressBase;
-
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.Set;
+
+import javax.annotation.CheckForNull;
 
 public interface CapabilitiesStore {
 
@@ -36,18 +34,14 @@ public interface CapabilitiesStore {
 
     public abstract void remove(Collection<String> participantIds);
 
-    public abstract ArrayList<CapabilityEntry> findCapabilitiesForEndpointAddress(EndpointAddressBase endpoint,
-                                                                                  long cacheMaxAge);
-
-    public abstract ArrayList<CapabilityEntry> findCapabilitiesForEndpointAddress(EndpointAddressBase endpoint);
-
     public abstract Collection<CapabilityEntry> lookup(String domain, String interfaceName, long cacheMaxAge);
 
     public abstract Collection<CapabilityEntry> lookup(String domain, String interfaceName);
 
-    public abstract CapabilityEntry lookup(String participantId, DiscoveryQos discoveryQos);
+    @CheckForNull
+    public abstract CapabilityEntry lookup(String participantId, long cacheMaxAge);
 
-    public abstract HashSet<CapabilityEntry> getAllCapabilities();
+    public abstract Set<CapabilityEntry> getAllCapabilities();
 
     public abstract boolean hasCapability(CapabilityEntry capabilityEntry);
 

@@ -18,168 +18,143 @@ package io.joynr.generator.cpp.proxy
  */
 
 import com.google.inject.Inject
-import org.franca.core.franca.FInterface
-import io.joynr.generator.cpp.util.TemplateBase
+import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.InterfaceTemplate
+import org.franca.core.franca.FInterface
 
 class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 	@Inject	extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
+	@Inject extension CppStdTypeUtil
 
-	override generate(FInterface fInterface) {
-		val interfaceName =  fInterface.joynrName
-		val className = interfaceName + "Proxy"
-		val asyncClassName = interfaceName + "AsyncProxy"
-		'''
-		«warning()»
+	override generate(FInterface fInterface)
+'''
+«val interfaceName =  fInterface.joynrName»
+«val className = interfaceName + "Proxy"»
+«val asyncClassName = interfaceName + "AsyncProxy"»
+«warning()»
 
-		#include "«getPackagePathWithJoynrPrefix(fInterface, "/")»/«asyncClassName».h"
-		«FOR datatype: getRequiredIncludesFor(fInterface)»
-			#include "«datatype»"
-		«ENDFOR»
+#include "«getPackagePathWithJoynrPrefix(fInterface, "/")»/«asyncClassName».h"
+«FOR parameterType: getRequiredIncludesFor(fInterface).addElements(includeForString)»
+	#include «parameterType»
+«ENDFOR»
 
-		#include "joynr/exceptions.h"
-		#include "joynr/Request.h"
-		#include "joynr/Reply.h"
-		#include <cassert>
+#include "joynr/Future.h"
+#include "joynr/exceptions.h"
+#include "joynr/Request.h"
+#include "joynr/Reply.h"
+#include "joynr/RequestStatus.h"
+#include "joynr/RequestStatusCode.h"
+#include <cassert>
 
-		«getNamespaceStarter(fInterface)» 
-		«asyncClassName»::«asyncClassName»(
-		        QSharedPointer<joynr::system::Address> messagingAddress,
-		        joynr::ConnectorFactory* connectorFactory,
-		        joynr::IClientCache *cache,
-		        const QString &domain,
-		        const joynr::ProxyQos& proxyQos,
-		        const joynr::MessagingQos &qosSettings,
-		        bool cached
-		) :
-		    joynr::ProxyBase(connectorFactory, cache, domain, getInterfaceName(), proxyQos, qosSettings, cached),
-		    «className»Base(messagingAddress, connectorFactory, cache, domain, proxyQos, qosSettings, cached)
+«getNamespaceStarter(fInterface)»
+«asyncClassName»::«asyncClassName»(
+		QSharedPointer<joynr::system::QtAddress> messagingAddress,
+		joynr::ConnectorFactory* connectorFactory,
+		joynr::IClientCache *cache,
+		const std::string &domain,
+		const joynr::MessagingQos &qosSettings,
+		bool cached
+) :
+	joynr::ProxyBase(connectorFactory, cache, domain, INTERFACE_NAME(), qosSettings, cached),
+	«className»Base(messagingAddress, connectorFactory, cache, domain, qosSettings, cached)
+{
+}
+
+«FOR attribute: getAttributes(fInterface)»
+	«var attributeName = attribute.joynrName»
+	«var attributeType = attribute.typeName»
+	«IF attribute.readable»
+		«var getAttribute = "get" + attributeName.toFirstUpper»
+		/*
+		 * «getAttribute»
+		 */
+
+		std::shared_ptr<joynr::Future<«attributeType»>> «asyncClassName»::«getAttribute»Async(
+				std::function<void(const «attributeType»& «attributeName»)> onSuccess,
+				std::function<void(const joynr::RequestStatus& status)> onError
+		)
 		{
+			if (connector==NULL){
+				«val errorMsg = "proxy cannot invoke " + getAttribute + ", because the communication end partner is not (yet) known"»
+				LOG_WARN(logger, "«errorMsg»");
+				joynr::RequestStatus status(RequestStatusCode::ERROR, "«errorMsg»");
+				if (onError) {
+					onError(status);
+				}
+				std::shared_ptr<joynr::Future<«attributeType»>> future(new joynr::Future<«attributeType»>());
+				future->onError(status);
+				return future;
+			}
+			else{
+				return connector->«getAttribute»Async(onSuccess);
+			}
 		}
 
-		«FOR attribute: getAttributes(fInterface)»
-			«var attributeName = attribute.joynrName»
-			«var attributeType = getMappedDatatypeOrList(attribute)»
+	«ENDIF»
+	«IF attribute.writable»
+		«var setAttribute = "set" + attributeName.toFirstUpper»
+		/*
+		 * «setAttribute»
+		 */
 
-			«IF attribute.readable»
-			«var getAttribute = "get" + attributeName.toFirstUpper»
-			/*
-			 * «getAttribute»
-			 */
-
-			void «asyncClassName»::«getAttribute»(QSharedPointer<joynr::Future< «attributeType» > > future, QSharedPointer< joynr::ICallback< «attributeType» > > callback)
-			{
-			    assert (!future.isNull());
-			    if (connector==NULL){
-			        LOG_WARN(logger, "proxy cannot invoke «getAttribute», because the communication end partner is not (yet) known");
-			    }
-			    else{
-			        connector->«getAttribute»(future, callback);
-			    }
+		std::shared_ptr<joynr::Future<void>> «asyncClassName»::«setAttribute»Async(
+				«attributeType» «attributeName»,
+				std::function<void(void)> onSuccess,
+				std::function<void(const joynr::RequestStatus& status)> onError
+		)
+		{
+			if (connector==NULL){
+				«val errorMsg = "proxy cannot invoke " + setAttribute + ", because the communication end partner is not (yet) known"»
+				LOG_WARN(logger, "«errorMsg»");
+				joynr::RequestStatus status(RequestStatusCode::ERROR, "«errorMsg»");
+				if (onError) {
+					onError(status);
+				}
+				std::shared_ptr<joynr::Future<void>> future(new joynr::Future<void>());
+				future->onError(status);
+				return future;
 			}
-			void «asyncClassName»::«getAttribute»(QSharedPointer<joynr::Future< «attributeType» > > future)
-			{
-			    assert (!future.isNull());
-			    if (connector==NULL){
-			        LOG_WARN(logger, "proxy cannot invoke «getAttribute», because the communication end partner is not (yet) known");
-			    }
-			    else{
-			        connector->«getAttribute»(future);
-			    }
+			else{
+				return connector->«setAttribute»Async(«attributeName», onSuccess);
 			}
+		}
 
-			void «asyncClassName»::«getAttribute»(QSharedPointer<joynr::ICallback< «attributeType» > > callback)
-			{
-			    if (connector==NULL){
-			        LOG_WARN(logger, "proxy cannot invoke «getAttribute», because the communication end partner is not (yet) known");
-			    }
-			    else{
-			        connector->«getAttribute»(callback);
-			    }
+	«ENDIF»
+«ENDFOR»
+«FOR method: getMethods(fInterface)»
+	«var methodName = method.joynrName»
+	«var outputParameters = method.commaSeparatedOutputParameterTypes»
+	«var outputTypedParamList = method.commaSeperatedTypedConstOutputParameterList»
+	«var inputParamList = getCommaSeperatedUntypedInputParameterList(method)»
+	/*
+	 * «methodName»
+	 */
+	std::shared_ptr<joynr::Future<«outputParameters»> > «asyncClassName»::«methodName»Async(
+			«IF !method.inputParameters.empty»«method.commaSeperatedTypedConstInputParameterList»,«ENDIF»
+			std::function<void(«outputTypedParamList»)> onSuccess,
+			std::function<void(const joynr::RequestStatus& status)> onError
+	)
+	{
+		if (connector==NULL){
+			«val errorMsg = "proxy cannot invoke " + methodName + ", because the communication end partner is not (yet) known"»
+			LOG_WARN(logger, "«errorMsg»");
+			joynr::RequestStatus status(RequestStatusCode::ERROR, "«errorMsg»");
+			if (onError) {
+				onError(status);
 			}
-			«ENDIF»
-
-			«IF attribute.writable»
-			«var setAttribute = "set" + attributeName.toFirstUpper» 
-			/*
-			 * «setAttribute»
-			 */
-
-			void «asyncClassName»::«setAttribute»(QSharedPointer<joynr::Future<void> > future, QSharedPointer< joynr::ICallback<void> > callback, «attributeType» attributeValue) {
-			    assert (!future.isNull());
-			    if (connector==NULL){
-			        LOG_WARN(logger, "proxy cannot invoke «setAttribute», because the communication end partner is not (yet) known");
-			    }
-			    else{
-			        connector->«setAttribute»(future, callback, attributeValue);
-			    }
-			}
-
-			void «asyncClassName»::«setAttribute»(QSharedPointer<joynr::Future<void> > future, «attributeType» attributeValue) {
-			    assert (!future.isNull());
-			    if (connector==NULL){
-			        LOG_WARN(logger, "proxy cannot invoke «setAttribute», because the communication end partner is not (yet) known");
-			    }
-			    else{
-			        connector->«setAttribute»(future, attributeValue);
-			    }
-			}
-
-			void «asyncClassName»::«setAttribute»(QSharedPointer< joynr::ICallback<void> > callBack, «attributeType» attributeValue) {
-			    if (connector==NULL){
-			        LOG_WARN(logger, "proxy cannot invoke «setAttribute», because the communication end partner is not (yet) known");
-			    }
-			    else{
-			        connector->«setAttribute»(callBack, attributeValue);
-			    }
-			}
-			«ENDIF»
-
-		«ENDFOR»
-		«FOR method: getMethods(fInterface)»
-			«var methodName = method.joynrName»
-			«var outType = getMappedOutputParameter(method).head»
-			«var paramsSignature = prependCommaIfNotEmpty(getCommaSeperatedTypedParameterList(method))»
-			«var params = prependCommaIfNotEmpty(getCommaSeperatedUntypedParameterList(method))»
-
-			/*
-			 * «methodName»
-			 */
-
-			void «asyncClassName»::«methodName»(QSharedPointer<joynr::Future<«outType»> > future, QSharedPointer< joynr::ICallback<«outType»> > callback «paramsSignature»)
-			{
-			    assert (!future.isNull());
-			    if (connector==NULL){
-			        LOG_WARN(logger, "proxy cannot invoke «methodName», because the communication end partner is not (yet) known");
-			    }
-			    else{
-			        connector->«methodName»(future, callback «params»);
-			    }
-			}
-
-			void «asyncClassName»::«methodName»(QSharedPointer<joynr::Future<«outType»> > future «paramsSignature») {
-			    assert (!future.isNull());
-			    if (connector==NULL){
-			        LOG_WARN(logger, "proxy cannot invoke «methodName», because the communication end partner is not (yet) known");
-			    }
-			    else{
-			        connector->«methodName»(future «params»);
-			    }
-			}
-
-			void «asyncClassName»::«methodName»(QSharedPointer<joynr::ICallback<«outType»> > callback «paramsSignature») { 
-			    if (connector==NULL){
-			        LOG_WARN(logger, "proxy cannot invoke «methodName», because the communication end partner is not (yet) known");
-			    }
-			    else{
-			        connector->«methodName»(callback «params»);
-			    }
-			}
-
-		«ENDFOR»
-		«getNamespaceEnder(fInterface)»
-		'''
+			std::shared_ptr<joynr::Future<«outputParameters»>> future(new joynr::Future<«outputParameters»>());
+			future->onError(status);
+			return future;
+		}
+		else{
+			return connector->«methodName»Async(«inputParamList»«IF !method.inputParameters.empty», «ENDIF»onSuccess);
+		}
 	}
+
+«ENDFOR»
+«getNamespaceEnder(fInterface)»
+'''
 }

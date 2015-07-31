@@ -27,7 +27,7 @@
 	<parent>
 		<groupId>io.joynr.java</groupId>
 		<artifactId>messaging</artifactId>
-		<version>0.8.0</version>
+		<version>0.9.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -50,10 +50,6 @@
 		<dependency>
 			<groupId>com.google.inject</groupId>
 			<artifactId>guice</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.sun.jersey</groupId>
-			<artifactId>jersey-core</artifactId>
 		</dependency>
 	</dependencies>
 </project>

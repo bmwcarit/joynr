@@ -27,6 +27,7 @@
 
 #include <QMutex>
 #include <QRunnable>
+#include <string>
 
 namespace joynr
 {
@@ -44,14 +45,14 @@ public:
 
     qint64 queueMessage(const JoynrMessage& message);
 
-    MessageQueueItem* getNextMessageForParticipant(const QString destinationPartId);
+    MessageQueueItem* getNextMessageForParticipant(const std::string destinationPartId);
 
     qint64 removeOutdatedMessages();
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MessageQueue);
 
-    QMap<QString, MessageQueueItem*>* queue;
+    QMap<std::string, MessageQueueItem*>* queue;
     mutable QMutex queueMutex;
 };
 

@@ -27,9 +27,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.annotation.Nullable;
+import javax.annotation.CheckForNull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,15 +38,15 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 /**
  * The CapabilitiesStore stores a list of provider channelIds and the interfaces
  * they offer.
- * 
- * 
  * Capability informations are stored in a concurrentHashMap. Using a in memory
  * database could be possible optimization.
  */
+@Singleton
 public class CapabilitiesStoreImpl implements CapabilitiesStore {
 
     private static final Logger logger = LoggerFactory.getLogger(CapabilitiesStoreImpl.class);
@@ -64,10 +65,6 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
     // Fixes FindBug warning: DL: Synchronization on Boolean
     private Object capsLock = new Object();
 
-    public CapabilitiesStoreImpl() {
-        logger.debug("creating empty capabiltities store {}", this);
-    }
-
     @Inject
     public CapabilitiesStoreImpl(CapabilitiesProvisioning staticProvisioning) {
         logger.debug("creating CapabilitiesStore {} with static provisioning", this);
@@ -76,28 +73,27 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
 
     /*
      * (non-Javadoc)
-     * 
      * @see io.joynr.capabilities.CapabilitiesStore#add(io.joynr.
      * capabilities .CapabilityEntry)
      */
     @Override
     public void add(CapabilityEntry capabilityEntry) {
         if (capabilityEntry.getDomain() == null || capabilityEntry.getInterfaceName() == null
-                || capabilityEntry.participantId == null || capabilityEntry.endpointAddresses == null
-                || capabilityEntry.endpointAddresses.isEmpty()) {
+                || capabilityEntry.getParticipantId() == null || capabilityEntry.getEndpointAddresses() == null
+                || capabilityEntry.getEndpointAddresses().isEmpty()) {
             String message = "capabilityEntry being registered is not complete: " + capabilityEntry;
             logger.error(message);
             throw new JoynrCommunicationException(message);
         }
 
         synchronized (capsLock) {
-            String capabilityEntryId = getInterfaceAddressParticipantKeyForCapability(capabilityEntry.domain,
-                                                                                      capabilityEntry.interfaceName,
-                                                                                      capabilityEntry.participantId);
+            String capabilityEntryId = getInterfaceAddressParticipantKeyForCapability(capabilityEntry.getDomain(),
+                                                                                      capabilityEntry.getInterfaceName(),
+                                                                                      capabilityEntry.getParticipantId());
             CapabilityEntry entry = capabilityKeyToCapabilityMapping.get(capabilityEntryId);
             // check if a capabilityEntry with the same ID already exists
             if (entry != null) {
-                remove(capabilityEntry.participantId);
+                remove(capabilityEntry.getParticipantId());
             }
 
             // update participantId to capability mapping
@@ -111,8 +107,8 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
             registeredCapabilitiesTime.put(capabilityEntryId, System.currentTimeMillis());
 
             // update interfaceDomain to capability mapping
-            String domainInterfaceId = getInterfaceAddressKeyForCapability(capabilityEntry.domain,
-                                                                           capabilityEntry.interfaceName);
+            String domainInterfaceId = getInterfaceAddressKeyForCapability(capabilityEntry.getDomain(),
+                                                                           capabilityEntry.getInterfaceName());
 
             // if domainInterfaceId not in the mapping, map it to an empty map,
             // otherwise use the mapping that is
@@ -129,7 +125,7 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
             mapping.add(capabilityEntryId);
 
             // update participantId to capability mapping
-            String participantId = capabilityEntry.participantId;
+            String participantId = capabilityEntry.getParticipantId();
 
             participantIdToCapabilityMapping.put(participantId, capabilityEntryId);
 
@@ -186,7 +182,6 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
 
     /*
      * (non-Javadoc)
-     * 
      * @see
      * io.joynr.capabilities.CapabilitiesStore#add(java.util
      * .Collection)
@@ -202,7 +197,6 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
 
     /*
      * (non-Javadoc)
-     * 
      * @see io.joynr.capabilities.CapabilitiesStore#remove(String)
      */
     @Override
@@ -290,7 +284,6 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
 
     /*
      * (non-Javadoc)
-     * 
      * @see
      * io.joynr.capabilities.CapabilitiesStore#remove(java.util.Collection)
      */
@@ -301,60 +294,12 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * io.joynr.capabilities.CapabilitiesStore#findCapabilitiesForEndpointAddress
-     * (io.joynr.capabilities.EndpointAddressBase)
-     */
-    @Override
-    public ArrayList<CapabilityEntry> findCapabilitiesForEndpointAddress(EndpointAddressBase endpoint) {
-        return findCapabilitiesForEndpointAddress(endpoint, DiscoveryQos.NO_MAX_AGE);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * io.joynr.capabilities.CapabilitiesStore#findCapabilitiesForEndpointAddress
-     * (io.joynr.capabilities.EndpointAddressBase, long)
-     */
-    @Override
-    public ArrayList<CapabilityEntry> findCapabilitiesForEndpointAddress(EndpointAddressBase endpoint, long cacheMaxAge) {
-        ArrayList<CapabilityEntry> capabilitiesList = new ArrayList<CapabilityEntry>();
-
-        synchronized (capsLock) {
-            List<String> mapping = endPointAddressToCapabilityMapping.get(endpoint);
-            if (mapping != null) {
-                for (String capId : mapping) {
-                    CapabilityEntry ce = capabilityKeyToCapabilityMapping.get(capId);
-                    if (ce == null) {
-                        logger.warn("no mapping found for {}", capId);
-                        continue;
-                    }
-                    if (checkAge(registeredCapabilitiesTime.get(capId), cacheMaxAge)) {
-                        for (EndpointAddressBase ep : ce.endpointAddresses) {
-                            if (ep.equals(endpoint)) {
-                                capabilitiesList.add(ce);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        logger.debug("Capabilities for endpoint {} found: {}", endpoint, capabilitiesList.toString());
-
-        return capabilitiesList;
-    }
-
     private boolean checkAge(Long timeStamp, long maxAcceptedAge) {
         return timeStamp != null && ((System.currentTimeMillis() - timeStamp) <= maxAcceptedAge);
     }
 
     /*
      * (non-Javadoc)
-     * 
      * @see
      * io.joynr.capabilities.CapabilitiesStore#lookup
      * (java.lang.String, java.lang.String)
@@ -366,7 +311,6 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
 
     /*
      * (non-Javadoc)
-     * 
      * @see
      * io.joynr.capabilities.CapabilitiesStore#lookup
      * (java.lang.String, java.lang.String, long)
@@ -400,14 +344,13 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
 
     /*
      * (non-Javadoc)
-     * 
      * @see
      * io.joynr.capabilities.CapabilitiesStore#lookup
      * (java.lang.String, io.joynr.arbitration.DiscoveryQos)
      */
     @Override
-    @Nullable
-    public CapabilityEntry lookup(String participantId, DiscoveryQos discoveryQos) {
+    @CheckForNull
+    public CapabilityEntry lookup(String participantId, long cacheMaxAge) {
 
         synchronized (capsLock) {
             String capabilityEntryId = participantIdToCapabilityMapping.get(participantId);
@@ -417,7 +360,7 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
 
             CapabilityEntry capabilityEntry = capabilityKeyToCapabilityMapping.get(capabilityEntryId);
             logger.debug("Capability for participantId {} found: {}", participantId, capabilityEntry);
-            if (checkAge(registeredCapabilitiesTime.get(capabilityEntryId), discoveryQos.getCacheMaxAge())) {
+            if (checkAge(registeredCapabilitiesTime.get(capabilityEntryId), cacheMaxAge)) {
                 return capabilityEntry;
             }
 
@@ -427,23 +370,25 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
 
     /*
      * (non-Javadoc)
-     * 
      * @see io.joynr.capabilities.CapabilitiesStore#getAllCapabilities()
      */
     @Override
-    public HashSet<CapabilityEntry> getAllCapabilities() {
+    public Set<CapabilityEntry> getAllCapabilities() {
         synchronized (capsLock) {
-            return new HashSet<CapabilityEntry>(Collections2.transform(registeredCapabilitiesTime.keySet(),
-                                                                       new Function<String, CapabilityEntry>() {
-                                                                           @Override
-                                                                           public CapabilityEntry apply(String input) {
-                                                                               // prevent warning about potential use of null as
-                                                                               // param to capabilityKeyToCapabilityMapping.get(input)
-                                                                               if (input == null)
-                                                                                   return null;
-                                                                               return capabilityKeyToCapabilityMapping.get(input);
-                                                                           }
-                                                                       }));
+            Set<String> keySet = registeredCapabilitiesTime.keySet();
+            Collection<CapabilityEntry> transform = Collections2.transform(keySet,
+                                                                           new Function<String, CapabilityEntry>() {
+                                                                               @Override
+                                                                               public CapabilityEntry apply(String input) {
+                                                                                   // prevent warning about potential use of null as
+                                                                                   // param to capabilityKeyToCapabilityMapping.get(input)
+                                                                                   if (input == null) {
+                                                                                       return null;
+                                                                                   }
+                                                                                   return capabilityKeyToCapabilityMapping.get(input);
+                                                                               }
+                                                                           });
+            return new HashSet<CapabilityEntry>(transform);
         }
     }
 
@@ -454,7 +399,7 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
         // TODO implement ProviderQosRequirements and adjust this section
         /*
          * if (providerQos.getPriority() != requestedQos ... priority)
-         * 
+         *
          * for (Map.Entry<String, String> qosEntry :
          * capInfo.getProviderQos().getQos()) { String requestedValue =
          * requestedQos.get(qosEntry.getKey()); if
@@ -467,7 +412,6 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
 
     /*
      * (non-Javadoc)
-     * 
      * @see
      * io.joynr.capabilities.CapabilitiesStore#hasCapability(io.joynr.capabilities
      * .CapabilityEntry)
@@ -475,9 +419,9 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
     @Override
     public boolean hasCapability(CapabilityEntry capabilityEntry) {
         synchronized (capsLock) {
-            String capabilityEntryId = getInterfaceAddressParticipantKeyForCapability(capabilityEntry.domain,
-                                                                                      capabilityEntry.interfaceName,
-                                                                                      capabilityEntry.participantId);
+            String capabilityEntryId = getInterfaceAddressParticipantKeyForCapability(capabilityEntry.getDomain(),
+                                                                                      capabilityEntry.getInterfaceName(),
+                                                                                      capabilityEntry.getParticipantId());
             return registeredCapabilitiesTime.containsKey(capabilityEntryId);
         }
     }

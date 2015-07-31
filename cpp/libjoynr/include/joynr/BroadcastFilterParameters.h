@@ -19,12 +19,8 @@
 #ifndef BROADCASTFILTERPARAMETERS_H
 #define BROADCASTFILTERPARAMETERS_H
 
-#include <QMap>
-#include <QString>
-#include <QVariant>
-#include <QObject>
-#include <QSharedPointer>
-#include <QMetaType>
+#include <map>
+#include <string>
 
 #include "joynr/JoynrCommonExport.h"
 
@@ -34,35 +30,28 @@ namespace joynr
 /**
  * \class BroadcastFilterParameters
  * \brief The BroadcastFilterParameters class represents generic filter parameters
- * for selective broadcasts
+ * for selective broadcasts by using std types
  */
-class JOYNRCOMMON_EXPORT BroadcastFilterParameters : public QObject
+class JOYNRCOMMON_EXPORT BroadcastFilterParameters
 {
-    Q_OBJECT
-
-    Q_PROPERTY(QMap filterParameters MEMBER filterParameters)
 
 public:
     BroadcastFilterParameters();
     BroadcastFilterParameters(const BroadcastFilterParameters& filterParameters);
     BroadcastFilterParameters& operator=(const BroadcastFilterParameters& filterParameters);
-    ~BroadcastFilterParameters();
+    virtual ~BroadcastFilterParameters();
     bool operator==(const BroadcastFilterParameters& filterParameters) const;
 
-    void setFilterParameter(const QString& parameter, const QString& value);
-    void setFilterParameters(const QMap<QString, QString>& value);
+    void setFilterParameter(const std::string& parameter, const std::string& value);
+    void setFilterParameters(const std::map<std::string, std::string>& value);
 
-    virtual bool equals(const QObject& other) const;
-
-    QMap<QString, QString> getFilterParameters() const;
-    QString getFilterParameter(const QString& parameter) const;
+    std::map<std::string, std::string> getFilterParameters() const;
+    std::string getFilterParameter(const std::string& parameter) const;
 
 private:
-    QMap<QString, QVariant> filterParameters;
+    std::map<std::string, std::string> filterParameters;
 };
 
 } // namespace joynr
 
-Q_DECLARE_METATYPE(joynr::BroadcastFilterParameters)
-Q_DECLARE_METATYPE(QSharedPointer<joynr::BroadcastFilterParameters>)
 #endif // BROADCASTFILTERPARAMETERS_H

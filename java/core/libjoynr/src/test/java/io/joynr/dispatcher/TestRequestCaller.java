@@ -21,8 +21,10 @@ package io.joynr.dispatcher;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
+import io.joynr.provider.Deferred;
+import io.joynr.provider.Promise;
 import io.joynr.pubsub.publication.AttributeListener;
+import io.joynr.pubsub.publication.BroadcastFilterImpl;
 import io.joynr.pubsub.publication.BroadcastListener;
 
 import java.util.Collection;
@@ -35,7 +37,7 @@ import joynr.types.ProviderQos;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TestRequestCaller extends WaitTillCondition implements RequestCallerSync {
+public class TestRequestCaller extends WaitTillCondition implements RequestCaller {
 
     // maps from request payload to response
     private Map<Object, Object> sentPayloads = new HashMap<Object, Object>();
@@ -45,13 +47,15 @@ public class TestRequestCaller extends WaitTillCondition implements RequestCalle
         super(numberOfMessagesExpected);
     }
 
-    public String respond(@JoynrRpcParam("payload") String payload) {
+    public Promise<Deferred<String>> respond(String payload) {
+        Deferred<String> deferred = new Deferred<String>();
         logger.info("Responding to payload: " + payload.toString());
         String response = "response to " + payload.toString();
         sentPayloads.put(payload, response);
 
         releaseSemaphorePermit();
-        return response;
+        deferred.resolve(response);
+        return new Promise<Deferred<String>>(deferred);
     }
 
     public Collection<Object> getSentPayloads() {
@@ -107,5 +111,27 @@ public class TestRequestCaller extends WaitTillCondition implements RequestCalle
     public void unregisterBroadcastListener(String broadcastName, BroadcastListener broadcastListener) {
         // TODO Auto-generated method stub
 
+    }
+
+    @Override
+    public void addBroadcastFilter(BroadcastFilterImpl filter) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void addBroadcastFilter(BroadcastFilterImpl... filters) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public Class<?> getProvidedInterface() {
+        return getClass();
+    }
+
+    @Override
+    public String getInterfaceName() {
+        return "test";
     }
 }

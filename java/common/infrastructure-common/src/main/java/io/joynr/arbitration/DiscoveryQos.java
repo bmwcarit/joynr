@@ -20,12 +20,13 @@ package io.joynr.arbitration;
  */
 
 import java.util.HashMap;
+import java.util.Map;
 
 import com.google.common.collect.Maps;
 
 /**
  * Storage class to pass all settings to an arbitrator defining the strategy and conditions for provider arbitration.
- * 
+ *
  */
 
 public class DiscoveryQos {
@@ -35,6 +36,7 @@ public class DiscoveryQos {
     private static final long DEFAULT_DISCOVERYTIMEOUT = 30000;
 
     private ArbitrationStrategy arbitrationStrategy;
+    private ArbitrationStrategyFunction arbitrationStrategyFunction;
     private static final ArbitrationStrategy DEFAULT_ARBITRATIONSTRATEGY = ArbitrationStrategy.HighestPriority;
 
     long cacheMaxAge;
@@ -50,7 +52,7 @@ public class DiscoveryQos {
     private DiscoveryScope discoveryScope;
     private static final DiscoveryScope DEFAULT_DISCOVERYSCOPE = DiscoveryScope.LOCAL_AND_GLOBAL;
 
-    private HashMap<String, Object> customParameters = Maps.newHashMap();
+    private HashMap<String, String> customParameters = Maps.newHashMap();
 
     /**
      * DiscoveryQos object with default values.
@@ -85,6 +87,19 @@ public class DiscoveryQos {
     /**
      * @param discoveryTimeout
      *            Timeout for rpc calls to wait for arbitration to finish.
+     * @param arbitrationStrategyFunction
+     *            function that chooses the appropriate provider from the list returned by the capabilities directory
+     * @param cacheMaxAge
+     *            Maximum age of entries in the localCapabilitiesDirectory. If this value filters out all entries of the
+     *            local capabilities directory a lookup in the global capabilitiesDirectory will take place.
+     */
+    public DiscoveryQos(long discoveryTimeout, ArbitrationStrategyFunction arbitrationStrategyFunction, long cacheMaxAge) {
+        this(discoveryTimeout, arbitrationStrategyFunction, cacheMaxAge, DEFAULT_DISCOVERYSCOPE);
+    }
+
+    /**
+     * @param discoveryTimeout
+     *            Timeout for rpc calls to wait for arbitration to finish.
      * @param arbitrationStrategy
      *            Strategy for choosing the appropriate provider from the list returned by the capabilities directory
      * @param cacheMaxAge
@@ -105,32 +120,57 @@ public class DiscoveryQos {
                         ArbitrationStrategy arbitrationStrategy,
                         long cacheMaxAge,
                         DiscoveryScope discoveryScope) {
-        this(discoveryScope, cacheMaxAge);
+        if (arbitrationStrategy.equals(ArbitrationStrategy.Custom)) {
+            throw new IllegalStateException("A Custom strategy can only be set by passing an arbitration strategy function to the DisocveryQos constructor");
+        }
+
+        this.cacheMaxAge = cacheMaxAge;
+        this.discoveryScope = discoveryScope;
         this.discoveryTimeout = discoveryTimeout;
         this.arbitrationStrategy = arbitrationStrategy;
+        this.retryInterval = DEFAULT_RETRYINTERVAL;
+        this.providerMustSupportOnChange = DEFAULT_PROVIDERMUSTSUPPORTONCHANGE;
     }
 
+    @Deprecated
     public DiscoveryQos(DiscoveryScope discoveryScope, long cacheMaxAge) {
         this();
         setCacheMaxAge(cacheMaxAge);
         this.discoveryScope = discoveryScope;
     }
 
+    public DiscoveryQos(long discoveryTimeout,
+                        ArbitrationStrategyFunction arbitrationStrategyFunction,
+                        long cacheMaxAge,
+                        DiscoveryScope discoveryScope) {
+
+        this.arbitrationStrategy = ArbitrationStrategy.Custom;
+        this.discoveryTimeout = discoveryTimeout;
+        this.arbitrationStrategyFunction = arbitrationStrategyFunction;
+        this.cacheMaxAge = cacheMaxAge;
+        this.discoveryScope = discoveryScope;
+        this.retryInterval = DEFAULT_RETRYINTERVAL;
+        this.providerMustSupportOnChange = DEFAULT_PROVIDERMUSTSUPPORTONCHANGE;
+    }
+
     /**
      * The discovery process outputs a list of matching providers. The arbitration strategy then chooses one or more of
      * them to be used by the proxy.
-     * 
+     *
      * @param arbitrationStrategy
      *            Defines the strategy used to choose the "best" provider.
      */
     public void setArbitrationStrategy(ArbitrationStrategy arbitrationStrategy) {
+        if (arbitrationStrategy.equals(ArbitrationStrategy.Custom)) {
+            throw new IllegalStateException("A Custom strategy can only be set by passing an arbitration strategy function to the DisocveryQos constructor");
+        }
         this.arbitrationStrategy = arbitrationStrategy;
     }
 
     /**
      * The discovery process outputs a list of matching providers. The arbitration strategy then chooses one or more of
      * them to be used by the proxy.
-     * 
+     *
      * @return the arbitration strategy used to pick the "best" provider of the list of matching providers
      */
     public ArbitrationStrategy getArbitrationStrategy() {
@@ -141,7 +181,7 @@ public class DiscoveryQos {
      * As soon as the arbitration QoS is set on the proxy builder, discovery of suitable providers is triggered. If the
      * discovery process does not find matching providers within the arbitration timeout duration it will be terminated
      * and you will get an arbitration exception.
-     * 
+     *
      * @param discoveryTimeout
      *            Sets the amount of time the arbitrator keeps trying to find a suitable provider. The arbitration
      *            lookup might happen multiple times during this time span.
@@ -154,7 +194,7 @@ public class DiscoveryQos {
      * As soon as the arbitration QoS is set on the proxy builder, discovery of suitable providers is triggered. If the
      * discovery process does not find matching providers within the arbitration timeout duration it will be terminated
      * and you will get an arbitration exception.
-     * 
+     *
      * @return the duration used to discover matching providers
      */
     public long getDiscoveryTimeout() {
@@ -164,19 +204,20 @@ public class DiscoveryQos {
     /**
      * addCustomParameter allows to add special parameters to the DiscoveryQos which will be used only by some
      * strategies.
-     * 
+     *
      * @param key
      *            String to identify the arbitration parameter
      * @param value
      *            Any object used by the arbitrator to choose a provider.
      */
-    public void addCustomParameter(String key, Object value) {
+    public void addCustomParameter(String key, String value) {
         customParameters.put(key, value);
     }
 
     /**
      * getCustomParameter returns the parameters previously specified by addParameter
-     * 
+     *
+     * @param key key to identify the custom parameter
      * @return Returns the value to which the specified key is mapped, or null if the map of additional parameters
      *         contains no mapping for the key
      */
@@ -192,7 +233,7 @@ public class DiscoveryQos {
      * NOTE: Valid cache entries might prevent triggering a lookup in the global capabilities directory. Therefore,
      * providers registered with the global capabilities after the last lookup and before the cacheMaxAge expires will
      * not be discovered.
-     * 
+     *
      * @return the maximum age of locally cached provider entries to be used during discovery and arbitration before
      *         refreshing from the global directory
      */
@@ -208,7 +249,7 @@ public class DiscoveryQos {
      * NOTE: Valid cache entries might prevent triggering a lookup in the global capabilities directory. Therefore,
      * providers registered with the global capabilities after the last lookup and before the cacheMaxAge expires will
      * not be discovered.
-     * 
+     *
      * @param cacheMaxAge
      *            Maximum age of entries in the localCapabilitiesDirectory. If this value filters out all entries of the
      *            local capabilities directory a lookup in the global capabilitiesDirectory will take place.
@@ -222,7 +263,7 @@ public class DiscoveryQos {
     }
 
     /**
-     * 
+     *
      * @return the interval used for retrying discovery if the previous attempt was unsuccessful
      */
     public long getRetryInterval() {
@@ -240,7 +281,7 @@ public class DiscoveryQos {
 
     /**
      * Indicates if arbitration should only consider providers that support onChange subscriptions
-     * 
+     *
      * @return true if only providers that support onChange subscriptions are considered
      */
     public boolean getProviderMustSupportOnChange() {
@@ -249,7 +290,7 @@ public class DiscoveryQos {
 
     /**
      * Indicates if arbitration should only consider providers that support onChange subscriptions
-     * 
+     *
      * @param providerMustSupportOnChange
      *            true if only providers that support onChange subscriptions should be considered
      */
@@ -257,8 +298,25 @@ public class DiscoveryQos {
         this.providerMustSupportOnChange = providerMustSupportOnChange;
     }
 
+    /**
+     * @param discoveryScope selects capability registries to choose from for provider discovery
+     */
+    public void setDiscoveryScope(DiscoveryScope discoveryScope) {
+        this.discoveryScope = discoveryScope;
+    }
+
+    /**
+     * @return scope criteria to select from capability registries for provider discovery
+     */
     public DiscoveryScope getDiscoveryScope() {
         return discoveryScope;
     }
 
+    ArbitrationStrategyFunction getArbitrationStrategyFunction() {
+        return arbitrationStrategyFunction;
+    }
+
+    public Map<String, String> getCustomParameters() {
+        return customParameters;
+    }
 }

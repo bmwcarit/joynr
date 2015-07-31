@@ -29,6 +29,7 @@
 #include "joynr/JsonSerializer.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/RequestStatusCode.h"
+#include "joynr/types/QtDiscoveryEntry.h"
 
 #define EXPECT_EQ_QSTRING(a, b) EXPECT_EQ(a, b) << "  Actual: " << b.toStdString() << std::endl << "Expected: " << a.toStdString() << std::endl
 #define EXPECT_EQ_QBYTEARRAY(a, b) EXPECT_EQ(a, b) << "  Actual: " << b.constData() << std::endl << "Expected: " << a.constData() << std::endl
@@ -48,18 +49,18 @@ namespace joynr {
 //    class MessagingQos;
 //    void PrintTo(const joynr::MessagingQos& value, ::std::ostream* os);
 namespace types {
-    class TStruct;
-    void PrintTo(const joynr::types::TStruct& value, ::std::ostream* os);
-    class GpsLocation;
-    void PrintTo(const joynr::types::GpsLocation& value, ::std::ostream* os);
-    class Trip;
-    void PrintTo(const joynr::types::Trip& value, ::std::ostream* os);
+    class QtTStruct;
+    void PrintTo(const joynr::types::QtTStruct& value, ::std::ostream* os);
+    class QtGpsLocation;
+    void PrintTo(const joynr::types::QtGpsLocation& value, ::std::ostream* os);
+    class QtTrip;
+    void PrintTo(const joynr::types::QtTrip& value, ::std::ostream* os);
 }
 namespace system {
-    class DiscoveryEntry;
-    void PrintTo(const joynr::system::DiscoveryEntry& value, ::std::ostream* os);
-    class WebSocketAddress;
-    void PrintTo(const joynr::system::WebSocketAddress& value, ::std::ostream* os);
+    class QtDiscoveryEntry;
+    void PrintTo(const joynr::types::QtDiscoveryEntry& value, ::std::ostream* os);
+    class QtWebSocketAddress;
+    void PrintTo(const joynr::system::QtWebSocketAddress& value, ::std::ostream* os);
 }
 }
 void PrintTo(const QString& value, ::std::ostream* os);

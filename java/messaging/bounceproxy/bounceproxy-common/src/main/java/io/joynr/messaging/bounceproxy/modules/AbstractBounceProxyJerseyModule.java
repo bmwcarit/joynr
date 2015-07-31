@@ -59,7 +59,7 @@ public abstract class AbstractBounceProxyJerseyModule extends AbstractJoynrServl
     /**
      * Returns the atmosphere module.
      * 
-     * @return
+     * @return the atmosphere module
      */
     protected abstract AtmosphereModule getAtmosphereModule();
 

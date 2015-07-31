@@ -30,23 +30,31 @@ public interface ClientCache {
 
     /**
      * Sets the quality of service.
+     * @param qos quality of service
      */
     void setQoS(QualityOfService qos);
 
     /**
      * Checks if current cached value conforms to the QoS constraints.  
      * If the attribute does not appear in the cache, then it will return false.
+     * @param attributeId attribute id
+     * @return boolean value, true if current cached value conforms to the QoS constraints
      */
     boolean isCacheValueValid(String attributeId);
 
     /**
      * Returns the value stored for the attribute id, if none exists, throws NoSuchElemntException.
+     * @param attributeId attribute id for which value should be returned
+     * @throws NoSuchElementException if no value exists for given attribute id
+     * @return value stored for attribute id, if existing
      */
     Object lookUp(String attributeId) throws NoSuchElementException;
 
     /**
      * Inserts the key (attributeId) and value into the cache.  If the attributeId already has a value, then this overwrites the previous value.
      * Note, this insert does not perform any validation on the value.
+     * @param attributeId attribute id for which value should be inserted
+     * @param value value to be inserted
      */
     void insert(String attributeId, Object value);
 

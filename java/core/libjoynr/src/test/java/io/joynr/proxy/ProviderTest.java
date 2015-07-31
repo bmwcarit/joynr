@@ -46,6 +46,21 @@ public class ProviderTest {
         public ProviderQos getProviderQos() {
             return new ProviderQos();
         }
+
+        // change visibility from protected to public for testing purposes
+        public void fireBroadcast(String broadcastName, List<BroadcastFilter> broadcastFilters, Object... values) {
+            super.fireBroadcast(broadcastName, broadcastFilters, values);
+        }
+
+        @Override
+        public Class<?> getProvidedInterface() {
+            return getClass();
+        }
+
+        @Override
+        public String getInterfaceName() {
+            return "myproviderclass";
+        }
     }
 
     @Before
@@ -58,7 +73,7 @@ public class ProviderTest {
         String value1 = "value1";
         String value2 = "value2";
 
-        AbstractJoynrProvider provider = new ProviderTest.MyProviderClass();
+        ProviderTest.MyProviderClass provider = new ProviderTest.MyProviderClass();
         BroadcastListener broadcastListener = mock(BroadcastListener.class);
         provider.registerBroadcastListener(broadcastName, broadcastListener);
 
@@ -78,7 +93,7 @@ public class ProviderTest {
         String value1 = "value1";
         String value2 = "value2";
 
-        AbstractJoynrProvider provider = new ProviderTest.MyProviderClass();
+        ProviderTest.MyProviderClass provider = new ProviderTest.MyProviderClass();
         BroadcastListener broadcastListener = mock(BroadcastListener.class);
         provider.registerBroadcastListener(broadcastName, broadcastListener);
         provider.unregisterBroadcastListener(broadcastName, broadcastListener);

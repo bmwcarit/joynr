@@ -3,7 +3,7 @@ package io.joynr.exceptions;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,22 +19,15 @@ package io.joynr.exceptions;
  * #L%
  */
 
-public class JoynrException extends RuntimeException {
-    private static final long serialVersionUID = 1L;
+import io.joynr.subtypes.JoynrType;
 
-    public JoynrException() {
-        super();
-    }
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 
-    public JoynrException(String message) {
-        super(message);
-    }
+@JsonAutoDetect(getterVisibility = Visibility.NONE)
+public interface JoynrException extends JoynrType {
 
-    public JoynrException(String message, Throwable cause) {
-        super(message, cause);
-    }
+    public boolean equals(Object obj);
 
-    public JoynrException(Throwable cause) {
-        super(cause);
-    }
+    public int hashCode();
 }

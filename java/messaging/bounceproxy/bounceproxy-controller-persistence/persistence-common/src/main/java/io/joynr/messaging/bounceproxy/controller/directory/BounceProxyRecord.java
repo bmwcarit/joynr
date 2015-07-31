@@ -33,9 +33,9 @@ import java.util.Set;
  * Database record for a bounce proxy instance.<br>
  * This class does not contain any logic but only sets and gets attributes, as
  * this only reflects an entry of a database.
- * 
+ *
  * @author christina.strobel
- * 
+ *
  */
 public class BounceProxyRecord implements BounceProxyStatusInformation, Serializable {
     private static final long serialVersionUID = 3882680863826856386L;
@@ -85,8 +85,8 @@ public class BounceProxyRecord implements BounceProxyStatusInformation, Serializ
 
     /**
      * Sets the status of the bounce proxy.
-     * 
-     * @param status
+     *
+     * @param status the status of the bounce proxy
      * @throws IllegalStateException
      *             if setting this status is not possible for the current bounce
      *             proxy status.
@@ -103,7 +103,7 @@ public class BounceProxyRecord implements BounceProxyStatusInformation, Serializ
     /**
      * Returns the timestamp of the latest assignment of a channel to that
      * bounce proxy instance.
-     * 
+     *
      * @return a timestamp of the latest channel assignment or
      *         {@link #ASSIGNMENT_TIMESTAMP_NEVER} if no channel has ever been
      *         assigned.
@@ -119,7 +119,7 @@ public class BounceProxyRecord implements BounceProxyStatusInformation, Serializ
     /**
      * Adds an assigned channel if it doesn't exist yet. The timestamp of the latest
      * channel assignment has to be updated manually.
-     * 
+     *
      * @param channelId the ID of the channel to be added
      */
     public void addAssignedChannel(String channelId) {
@@ -128,8 +128,8 @@ public class BounceProxyRecord implements BounceProxyStatusInformation, Serializ
 
     /**
      * Returns the number of channels assigned to this bounce proxy.
-     * 
-     * @return
+     *
+     * @return number of channels assigned to this bounce proxy
      */
     public int getNumberOfAssignedChannels() {
         return assignedChannels.size();
@@ -153,8 +153,9 @@ public class BounceProxyRecord implements BounceProxyStatusInformation, Serializ
     /**
      * Sets the performance measures for this records as they were sent by the
      * bounce proxy.
-     * 
+     *
      * @param performanceMeasures
+     *            includes map of performance measures for bounce proxies
      */
     public void setPerformanceMeasures(PerformanceMeasures performanceMeasures) {
         this.performanceMeasures = performanceMeasures;
@@ -162,8 +163,8 @@ public class BounceProxyRecord implements BounceProxyStatusInformation, Serializ
 
     /**
      * Updates the freshness of the record.
-     * 
-     * @param a
+     *
+     * @param timestamp
      *            timestamp
      */
     public void setFreshness(long timestamp) {

@@ -20,18 +20,84 @@ package io.joynr.provider;
  */
 
 import io.joynr.pubsub.publication.AttributeListener;
+import io.joynr.pubsub.publication.BroadcastFilterImpl;
 import io.joynr.pubsub.publication.BroadcastListener;
 import joynr.types.ProviderQos;
 
 public interface JoynrProvider {
+    /**
+     * @return provider QoS that applies to this provider instance.
+     */
     ProviderQos getProviderQos();
 
+    /**
+     * Registers an attribute listener that gets notified in case the attribute
+     * changes. This is used for on change subscriptions.
+     *
+     * @param attributeName the attribute name as defined in the Franca model
+     *      to subscribe to.
+     * @param attributeListener the listener to add.
+     */
     void registerAttributeListener(String attributeName, AttributeListener attributeListener);
 
+    /**
+     * Unregisters an attribute listener.
+     *
+     * @param attributeName the attribute name as defined in the Franca model
+     *      to unsubscribe from.
+     * @param attributeListener the listener to remove.
+     */
     void unregisterAttributeListener(String attributeName, AttributeListener attributeListener);
 
+    /**
+     * Registers a broadcast listener that gets notified in case the broadcast
+     * is fired.
+     *
+     * @param broadcastName the broadcast name as defined in the Franca model
+     *      to subscribe to.
+     * @param broadcastListener the listener to add.
+     */
     void registerBroadcastListener(String broadcastName, BroadcastListener broadcastListener);
 
+    /**
+     * Unregisters a broadcast listener.
+     *
+     * @param broadcastName the broadcast name as defined in the Franca model
+     *      to unsubscribe from.
+     * @param broadcastListener the listener to remove.
+     */
     void unregisterBroadcastListener(String broadcastName, BroadcastListener broadcastListener);
 
+    /**
+     * Adds a broadcast filter to the provider. The filter is specific for a
+     * single broadcast as defined in the Franca model. It will be executed
+     * once for each subscribed client whenever the broadcast is fired. Clients
+     * set individual filter parameters to control filter behavior.
+     *
+     * @param filter the filter to add.
+     */
+    void addBroadcastFilter(BroadcastFilterImpl filter);
+
+    /**
+     * Adds multiple broadcast filters to the provider.
+     *
+     * @see JoynrProvider#addBroadcastFilter(BroadcastFilterImpl filter)
+     *
+     * @param filters the filters to add.
+     */
+    void addBroadcastFilter(BroadcastFilterImpl... filters);
+
+    /**
+     * Interface class which is implemented by the provider and accessible
+     * by proxy objects. Interface classes are generated from Franca models.
+     *
+     * @return the interface class implemted by the provider.
+     */
+    Class<?> getProvidedInterface();
+
+    /**
+     * @return The name of the provided interface as defined in the Franca
+     *      model.
+     */
+    String getInterfaceName();
 }

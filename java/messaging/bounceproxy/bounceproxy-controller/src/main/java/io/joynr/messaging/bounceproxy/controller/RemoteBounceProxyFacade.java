@@ -20,7 +20,7 @@ package io.joynr.messaging.bounceproxy.controller;
  * #L%
  */
 
-import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.bounceproxy.controller.exception.JoynrProtocolException;
 import io.joynr.messaging.info.ControlledBounceProxyInformation;
 import io.joynr.messaging.service.ChannelServiceConstants;
@@ -42,9 +42,9 @@ import com.google.inject.name.Named;
 /**
  * Facade for a remote bounce proxy. This component encapsulates communication
  * with services of a bounce proxy.
- * 
+ *
  * @author christina.strobel
- * 
+ *
  */
 public class RemoteBounceProxyFacade {
 
@@ -67,12 +67,12 @@ public class RemoteBounceProxyFacade {
 
     /**
      * Creates a channel on the remote bounce proxy.
-     * 
-     * @param bpInfo
-     * 
-     * @param ccid
-     * @param trackingId
-     * @return
+     *
+     * @param bpInfo information for a bounce proxy, including the cluster the
+     * bounce proxy is running on
+     * @param ccid the channel id
+     * @param trackingId the tracking id
+     * @return URI representing the channel
      * @throws JoynrProtocolException
      *             if the bounce proxy rejects channel creation
      */
@@ -86,12 +86,12 @@ public class RemoteBounceProxyFacade {
         } catch (JoynrProtocolException e) {
             logger.error("Unexpected bounce proxy behaviour: message: {}", e.getMessage());
             throw e;
-        } catch (JoynrException e) {
+        } catch (JoynrRuntimeException e) {
             logger.error("Channel creation on bounce proxy failed: message: {}", e.getMessage());
             throw e;
         } catch (Exception e) {
             logger.error("Uncaught exception in channel creation: message: {}", e.getMessage());
-            throw new JoynrException("Unknown exception when creating channel '" + ccid + "' on bounce proxy '"
+            throw new JoynrRuntimeException("Unknown exception when creating channel '" + ccid + "' on bounce proxy '"
                     + bpInfo.getId() + "'", e);
         }
 
@@ -100,7 +100,7 @@ public class RemoteBounceProxyFacade {
     /**
      * Starts a loop to send createChannel requests to a bounce proxy with a
      * maximum number of retries.
-     * 
+     *
      * @param bpInfo
      *            information about the bounce proxy to create the channel at
      * @param ccid
@@ -131,12 +131,13 @@ public class RemoteBounceProxyFacade {
             try {
                 Thread.sleep(sendCreateChannelRetryIntervalMs);
             } catch (InterruptedException e) {
-                throw new JoynrException("creating a channel on bounce proxy " + bpInfo.getId() + " was interrupted.");
+                throw new JoynrRuntimeException("creating a channel on bounce proxy " + bpInfo.getId()
+                        + " was interrupted.");
             }
         }
 
         // the maximum number of retries passed, so channel creation failed
-        throw new JoynrException("creating a channel on bounce proxy " + bpInfo.getId() + " failed.");
+        throw new JoynrRuntimeException("creating a channel on bounce proxy " + bpInfo.getId() + " failed.");
     }
 
     private URI sendCreateChannelHttpRequest(ControlledBounceProxyInformation bpInfo, String ccid, String trackingId)

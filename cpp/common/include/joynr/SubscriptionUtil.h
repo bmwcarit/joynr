@@ -19,7 +19,7 @@
 #ifndef SUBSCRIPTIONUTIL_H
 #define SUBSCRIPTIONUTIL_H
 
-#include "joynr/SubscriptionQos.h"
+#include "joynr/QtSubscriptionQos.h"
 #include "joynr/JoynrCommonExport.h"
 
 namespace joynr
@@ -28,10 +28,10 @@ namespace joynr
 class JOYNRCOMMON_EXPORT SubscriptionUtil
 {
 public:
-    static bool isOnChangeSubscription(SubscriptionQos* qos);
-    static qint64 getAlertInterval(SubscriptionQos* qos);
-    static qint64 getMinInterval(SubscriptionQos* qos);
-    static qint64 getPeriodicPublicationInterval(SubscriptionQos* qos);
+    static bool isOnChangeSubscription(QtSubscriptionQos* qos);
+    static qint64 getAlertInterval(QtSubscriptionQos* qos);
+    static qint64 getMinInterval(QtSubscriptionQos* qos);
+    static qint64 getPeriodicPublicationInterval(QtSubscriptionQos* qos);
 };
 }
 #endif // SUBSCRIPTIONUTIL_H

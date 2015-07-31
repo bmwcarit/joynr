@@ -23,6 +23,7 @@ import io.joynr.endpoints.EndpointAddressBase;
 import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentMap;
 
 import org.slf4j.Logger;
@@ -57,8 +58,8 @@ public class MessagingEndpointDirectory {
 
     public EndpointAddressBase get(String participantId) {
         logger.debug("lookup participant: " + participantId);
-        for (String eachkey : hashMap.keySet()) {
-            logger.trace(eachkey + ": " + hashMap.get(eachkey));
+        for (Entry<String, EndpointAddressBase> eachEntry : hashMap.entrySet()) {
+            logger.trace(eachEntry.getKey() + ": " + eachEntry.getValue());
         }
         return hashMap.get(participantId);
     }

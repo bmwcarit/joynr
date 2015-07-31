@@ -18,12 +18,13 @@ package io.joynr.generator.cpp.communicationmodel
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.cpp.util.CppStdTypeUtil
+import io.joynr.generator.cpp.util.InterfaceUtil
+import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.cpp.util.TemplateBase
+import io.joynr.generator.util.InterfaceTemplate
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FType
-import io.joynr.generator.cpp.util.InterfaceUtil
-import io.joynr.generator.cpp.util.TemplateBase
-import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
-import io.joynr.generator.util.InterfaceTemplate
 
 class InterfaceHTemplate implements InterfaceTemplate{
 
@@ -33,101 +34,104 @@ class InterfaceHTemplate implements InterfaceTemplate{
 	@Inject
 	private extension InterfaceUtil
 
+	@Inject extension CppStdTypeUtil
+
 	@Inject
 	private extension JoynrCppGeneratorExtensions
 
-	override generate(FInterface serviceInterface){
-		val interfaceName = serviceInterface.joynrName
-		val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+"_I"+interfaceName+"_h").toUpperCase
-	'''
-	«warning()»
+	override generate(FInterface serviceInterface)
+'''
+«val interfaceName = serviceInterface.joynrName»
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(serviceInterface, "_")+"_I"+interfaceName+"_h").toUpperCase»
+«warning()»
 
-	#ifndef «headerGuard»
-	#define «headerGuard»
-	
-	«FOR datatype: getAllComplexAndEnumTypes(serviceInterface)»
-		«IF datatype instanceof FType»
-			«IF isComplex(datatype)»
-				«getNamespaceStarter(datatype)» class «(datatype).joynrName»; «getNamespaceEnder(datatype)»
-			«ELSE»
-				#include "«getIncludeOf(datatype)»"
-			«ENDIF»
+#ifndef «headerGuard»
+#define «headerGuard»
+
+«FOR datatype: getAllComplexAndEnumTypes(serviceInterface)»
+	«IF datatype instanceof FType»
+		«IF isComplex(datatype)»
+			«getNamespaceStarter(datatype, true)»
+				class «(datatype).joynrNameStd»;
+			«getNamespaceEnder(datatype, true)»
+		«ELSE »
+			#include "«getIncludeOf(datatype)»"
+		«ENDIF»
+	«ENDIF»
+«ENDFOR»
+
+«FOR include: serviceInterface.allPrimitiveTypes.includesFor.addElements(includeForArray, includeForString)»
+	#include «include»
+«ENDFOR»
+
+«getDllExportIncludeStatement()»
+
+#include <memory>
+#include <functional>
+
+namespace joynr {
+	class RequestStatus;
+	template <class ... Ts> class Future;
+}
+
+«getNamespaceStarter(serviceInterface)»
+
+/**
+ * @brief Base interface.
+ */
+class «getDllExportMacro()» I«interfaceName»Base {
+public:
+	I«interfaceName»Base();
+	virtual ~I«interfaceName»Base() { }
+
+	static const std::string& INTERFACE_NAME();
+};
+
+/**
+ * @brief This is the «interfaceName» synchronous interface.
+ *
+ */
+class «getDllExportMacro()» I«interfaceName»Sync : virtual public I«interfaceName»Base {
+public:
+	virtual ~I«interfaceName»Sync(){ }
+	«produceSyncGetters(serviceInterface,true)»
+	«produceSyncSetters(serviceInterface,true)»
+	«produceSyncMethods(serviceInterface,true)»
+};
+
+/**
+ * @brief This is the «interfaceName» asynchronous interface.
+ *
+ */
+class «getDllExportMacro()» I«interfaceName»Async : virtual public I«interfaceName»Base {
+public:
+	virtual ~I«interfaceName»Async(){ }
+	«produceAsyncGetters(serviceInterface,true)»
+	«produceAsyncSetters(serviceInterface,true)»
+	«produceAsyncMethods(serviceInterface,true)»
+};
+
+class «getDllExportMacro()» I«interfaceName» : virtual public I«interfaceName»Sync, virtual public I«interfaceName»Async {
+public:
+	virtual ~I«interfaceName»(){ }
+	«FOR attribute: getAttributes(serviceInterface)»
+		«val attributeName = attribute.name.toFirstUpper»
+		«IF attribute.readable»
+			using I«interfaceName»Sync::get«attributeName»;
+			using I«interfaceName»Async::get«attributeName»Async;
+		«ENDIF»
+		«IF attribute.writable»
+			using I«interfaceName»Sync::set«attributeName»;
+			using I«interfaceName»Async::set«attributeName»Async;
 		«ENDIF»
 	«ENDFOR»
-	
-	«getDllExportIncludeStatement()»
+	«FOR methodName: getUniqueMethodNames(serviceInterface)»
+		using I«interfaceName»Sync::«methodName»;
+		using I«interfaceName»Async::«methodName»Async;
+	«ENDFOR»
+};
 
-	#include <QString>
-	#include <QSharedPointer>
-
-	namespace joynr {	
-		class RequestStatus;
-		template <class T> class Future;		
-		template <class T> class ICallback;		
-	}
-
-	«getNamespaceStarter(serviceInterface)»
-
-	/**
-	 * @brief Base interface.
-	 */
-	class «getDllExportMacro()» I«interfaceName»Base {
-	public: 
-		I«interfaceName»Base();
-		virtual ~I«interfaceName»Base() { }
-		
-		// Visual C++ does not export static const variables from DLLs
-		// This getter is used instead
-		static const QString getInterfaceName();
-	};
-	
-	/**
-	 * @brief This is the «interfaceName» synchronous interface.
-	 *
-	 */		
-	class «getDllExportMacro()» I«interfaceName»Sync : virtual public I«interfaceName»Base {
-	public:
-	    virtual ~I«interfaceName»Sync(){ }
-	    «produceSyncGetters(serviceInterface,true)»
-		«produceSyncSetters(serviceInterface,true)»
-		«produceSyncMethods(serviceInterface,true)»
-	};
-	
-	
-	/**
-	 * @brief This is the «interfaceName» asynchronous interface.
-	 *
-	 */		
-	class «getDllExportMacro()» I«interfaceName»Async : virtual public I«interfaceName»Base {
-	public:
-	    virtual ~I«interfaceName»Async(){ }
-		«produceAsyncGetters(serviceInterface,true)»
-		«produceAsyncSetters(serviceInterface,true)»
-		«produceAsyncMethods(serviceInterface,true)»
-	};
-	
-	class «getDllExportMacro()» I«interfaceName» : virtual public I«interfaceName»Sync, virtual public I«interfaceName»Async {
-	public:
-	    virtual ~I«interfaceName»(){ }
-		«FOR attribute: getAttributes(serviceInterface)»
-			«val attributeName = attribute.name.toFirstUpper»
-			«IF attribute.readable»
-			using I«interfaceName»Sync::get«attributeName»;
-			using I«interfaceName»Async::get«attributeName»;
-			«ENDIF»
-			«IF attribute.writable»
-			using I«interfaceName»Sync::set«attributeName»;
-			using I«interfaceName»Async::set«attributeName»;
-			«ENDIF»
-	    «ENDFOR»
-		«FOR methodName: getUniqueMethodNames(serviceInterface)»
-			using I«interfaceName»Sync::«methodName»;
-			using I«interfaceName»Async::«methodName»;
-		«ENDFOR»
-	};
-	
-	«getNamespaceEnder(serviceInterface)»
-	#endif // «headerGuard»
-	'''
-	}
+«getNamespaceEnder(serviceInterface)»
+#endif // «headerGuard»
+'''
 }

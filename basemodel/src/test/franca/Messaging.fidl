@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,21 +18,22 @@
  */
 package chat
 
-import types.ExtendedTypes.* from "classpath:/common/Types.fidl"
-
 typeCollection MessageTypeCollection {
 
 	struct Message {
-		String message 
-		Int64 deviceTime // UNIX timestamp in milliseconds, requires long datatype
-	 	String senderId // 64 Chars unique to device
+		String message
+		<** @description: UNIX timestamp in milliseconds, requires long datatype **>
+		Int64 deviceTime
+		<** @description: 64 Chars unique to device **>
+		String senderId
 	}
 
 }
 
 interface Messenger {
-	
+
 	version {major 0 minor 1}
-	
-	attribute MessageTypeCollection.Message message // NOTIFYWRITEONLY
+
+	<** @description: NOTIFYWRITEONLY **>
+	attribute MessageTypeCollection.Message message
 }

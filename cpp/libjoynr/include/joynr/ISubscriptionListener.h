@@ -23,15 +23,18 @@ namespace joynr
 {
 
 /**
- * This class must be extended by attribute or broadcast subscription listeners.
+ * @brief Class interface to be extended by attribute or broadcast subscription listeners
  */
-template <typename T, typename... Ts>
+template <typename... Ts>
 class ISubscriptionListener
 {
 public:
+    /** @brief Constructor */
     ISubscriptionListener()
     {
     }
+
+    /** @brief Destructor */
     virtual ~ISubscriptionListener()
     {
     }
@@ -41,9 +44,9 @@ public:
      *
      * Since the onReceive callback is called by a communication middleware thread, it should not
      * be blocked, wait for user interaction, or do larger computation.
-     * @param value values associated with the subscription this listener is listen to
+     * @param values associated with the subscription this listener is listen to
      */
-    virtual void onReceive(T value, Ts... values) = 0;
+    virtual void onReceive(const Ts&... values) = 0;
 
     /**
      * @brief onError Gets called on every error that is detected on the subscription

@@ -21,6 +21,7 @@
 
 #include "joynr/JoynrExport.h"
 #include "joynr/CapabilityEntry.h"
+#include <vector>
 
 namespace joynr
 {
@@ -34,7 +35,7 @@ public:
     // http://doc.qt.digia.com/qt/qscopedpointer.html#forward-declared-pointers
     virtual ~ILocalCapabilitiesCallback();
 
-    virtual void capabilitiesReceived(QList<CapabilityEntry> capabilities) = 0;
+    virtual void capabilitiesReceived(std::vector<CapabilityEntry> capabilities) = 0;
 };
 
 } // namespace joynr

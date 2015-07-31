@@ -18,13 +18,18 @@
  */
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <memory>
+#include <string>
+#include <vector>
 #include "PrettyPrint.h"
+
 #include "joynr/PrivateCopyAssign.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/CapabilitiesRegistrar.h"
 #include "joynr/Future.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/TypeUtil.h"
 
 #include "joynr/tests/Itest.h"
 #include "joynr/tests/testProvider.h"
@@ -43,12 +48,26 @@ class JoynrClusterControllerRuntimeTest : public ::testing::Test {
 public:
     QString settingsFilename;
     JoynrClusterControllerRuntime* runtime;
+    joynr::types::Localisation::GpsLocation gpsLocation;
     MockMessageReceiver* mockMessageReceiver; // will be deleted when runtime is deleted.
     MockMessageSender* mockMessageSender;
 
     JoynrClusterControllerRuntimeTest() :
             settingsFilename("test-resources/integrationtest.settings"),
             runtime(NULL),
+            gpsLocation(
+                1.1,                        // longitude
+                2.2,                        // latitude
+                3.3,                        // altitude
+                types::Localisation::GpsFixEnum::MODE2D,  // gps fix
+                0.0,                        // heading
+                0.0,                        // quality
+                0.0,                        // elevation
+                0.0,                        // bearing
+                444,                        // gps time
+                444,                        // device time
+                444                         // time
+            ),
             mockMessageReceiver(new MockMessageReceiver()),
             mockMessageSender(new MockMessageSender())
     {
@@ -72,6 +91,13 @@ public:
         runtime->stopMessaging();
         delete runtime;
     }
+
+    void invokeOnSuccessWithGpsLocation(
+            std::function<void(const joynr::types::Localisation::GpsLocation location)> onSuccess
+    ) {
+        onSuccess(gpsLocation);
+    }
+
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrClusterControllerRuntimeTest);
 };
@@ -104,37 +130,26 @@ TEST_F(JoynrClusterControllerRuntimeTest, startMessagingDoesNotThrow)
 
 TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
 {
-    QString domain("JoynrClusterControllerRuntimeTest.Domain.A");
-    QString authenticationToken("JoynrClusterControllerRuntimeTest.AuthenticationToken.A");
-    QSharedPointer<MockTestProvider> mockTestProvider(new MockTestProvider());
+    std::string domain("JoynrClusterControllerRuntimeTest.Domain.A");
+    std::shared_ptr<MockTestProvider> mockTestProvider(new MockTestProvider());
 
-    types::GpsLocation gpsLocation(
-                1.1,                        // longitude
-                2.2,                        // latitude
-                3.3,                        // altitude
-                types::GpsFixEnum::MODE2D,  // gps fix
-                0.0,                        // heading
-                0.0,                        // quality
-                0.0,                        // elevation
-                0.0,                        // bearing
-                444,                        // gps time
-                444,                        // device time
-                444                         // time
-    );
-    RequestStatus requestStatus;
-    requestStatus.setCode(RequestStatusCode::OK);
-    EXPECT_CALL(*mockTestProvider, getLocation(A<RequestStatus&>(), A<types::GpsLocation&>()))
-            .WillOnce(DoAll(SetArgReferee<0>(requestStatus), SetArgReferee<1>(gpsLocation)));
+    EXPECT_CALL(
+            *mockTestProvider,
+            getLocation(A<std::function<void(const types::Localisation::GpsLocation&)>>())
+    )
+            .WillOnce(Invoke(
+                      this,
+                      &JoynrClusterControllerRuntimeTest::invokeOnSuccessWithGpsLocation
+            ));
 
     runtime->startMessaging();
-    QString participantId = runtime->registerCapability<tests::testProvider>(
+    std::string participantId = runtime->registerProvider<tests::testProvider>(
                 domain,
-                mockTestProvider,
-                authenticationToken
+                mockTestProvider
     );
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder =
-            runtime->getProxyBuilder<tests::testProxy>(domain);
+            runtime->createProxyBuilder<tests::testProxy>(domain);
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
@@ -143,43 +158,44 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
 
 
     tests::testProxy* testProxy = testProxyBuilder
-            ->setRuntimeQos(MessagingQos(5000))
+            ->setMessagingQos(MessagingQos(5000))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
-    QSharedPointer<Future<types::GpsLocation> > future(new Future<types::GpsLocation>());
-    testProxy->getLocation(future);
+    std::shared_ptr<Future<types::Localisation::GpsLocation> > future(testProxy->getLocationAsync());
     future->waitForFinished(500);
 
-    EXPECT_EQ(tests::testProxy::getInterfaceName(), testProxy->getInterfaceName());
+    EXPECT_EQ(tests::testProxy::INTERFACE_NAME(), testProxy->INTERFACE_NAME());
     ASSERT_EQ(RequestStatusCode::OK, future->getStatus().getCode());
-    EXPECT_EQ(gpsLocation, future->getValue());
+    joynr::types::Localisation::GpsLocation actualValue;
+    future->getValues(actualValue);
+    EXPECT_EQ(gpsLocation, actualValue);
     delete testProxy;
     delete testProxyBuilder;
 }
 
 TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArguments)
 {
-    QString domain("JoynrClusterControllerRuntimeTest.Domain.A");
-    QString authenticationToken("JoynrClusterControllerRuntimeTest.AuthenticationToken.A");
-    QSharedPointer<MockTestProvider> mockTestProvider(new MockTestProvider());
+    std::shared_ptr<MockTestProvider> mockTestProvider(new MockTestProvider());
+    std::string domain("JoynrClusterControllerRuntimeTest.Domain.A");
 
-    QList<int> ints;
-    ints << 4 << 6 << 12;
+    std::vector<int> ints;
+    ints.push_back(4);
+    ints.push_back(6);
+    ints.push_back(12);
     int sum = 22;
     RequestStatus requestStatus;
     requestStatus.setCode(RequestStatusCode::OK);
 
     runtime->startMessaging();
-    QString participantId = runtime->registerCapability<tests::testProvider>(
+    std::string participantId = runtime->registerProvider<tests::testProvider>(
                 domain,
-                mockTestProvider,
-                authenticationToken
+                mockTestProvider
     );
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder =
-            runtime->getProxyBuilder<tests::testProxy>(domain);
+            runtime->createProxyBuilder<tests::testProxy>(domain);
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
@@ -188,56 +204,46 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
 
 
     tests::testProxy* testProxy = testProxyBuilder
-            ->setRuntimeQos(MessagingQos(5000))
+            ->setMessagingQos(MessagingQos(5000))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
-    QSharedPointer<Future<int> > future(new Future<int>());
-    testProxy->sumInts(future, ints);
+    std::shared_ptr<Future<int> > future(testProxy->sumIntsAsync(ints));
     future->waitForFinished(500);
 
-    EXPECT_EQ(tests::testProxy::getInterfaceName(), testProxy->getInterfaceName());
+    EXPECT_EQ(tests::testProxy::INTERFACE_NAME(), testProxy->INTERFACE_NAME());
     ASSERT_EQ(RequestStatusCode::OK, future->getStatus().getCode());
-    EXPECT_EQ(sum, future->getValue());
+    int actualValue;
+    future->getValues(actualValue);
+    EXPECT_EQ(sum, actualValue);
     delete testProxy;
     delete testProxyBuilder;
 }
 
 TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
     QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME());
-    QString domain("JoynrClusterControllerRuntimeTest.Domain.A");
-    QString authenticationToken("JoynrClusterControllerRuntimeTest.AuthenticationToken.A");
-    QSharedPointer<MockTestProvider> mockTestProvider(new MockTestProvider());
+    std::string domain("JoynrClusterControllerRuntimeTest.Domain.A");
+    std::shared_ptr<MockTestProvider> mockTestProvider(new MockTestProvider());
 
-    types::GpsLocation gpsLocation(
-                1.1,                        // longitude
-                2.2,                        // latitude
-                3.3,                        // altitude
-                types::GpsFixEnum::MODE2D,  // gps fix
-                0.0,                        // heading
-                0.0,                        // quality
-                0.0,                        // elevation
-                0.0,                        // bearing
-                444,                        // gps time
-                444,                        // device time
-                444                         // time
-    );
-    RequestStatus requestStatus;
-    requestStatus.setCode(RequestStatusCode::OK);
-    EXPECT_CALL(*mockTestProvider, getLocation(A<RequestStatus&>(), A<types::GpsLocation&>()))
+    EXPECT_CALL(
+            *mockTestProvider,
+            getLocation(A<std::function<void(const types::Localisation::GpsLocation&)>>())
+    )
             .Times(Between(1, 2))
-            .WillRepeatedly(DoAll(SetArgReferee<0>(requestStatus), SetArgReferee<1>(gpsLocation)));
+            .WillRepeatedly(Invoke(
+                    this,
+                    &JoynrClusterControllerRuntimeTest::invokeOnSuccessWithGpsLocation
+            ));
 
     runtime->startMessaging();
-    QString participantId = runtime->registerCapability<tests::testProvider>(
+    std::string participantId = runtime->registerProvider<tests::testProvider>(
                 domain,
-                mockTestProvider,
-                authenticationToken
+                mockTestProvider
     );
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder =
-            runtime->getProxyBuilder<tests::testProxy>(domain);
+            runtime->createProxyBuilder<tests::testProxy>(domain);
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
@@ -245,27 +251,25 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
 
     tests::testProxy* testProxy = testProxyBuilder
-            ->setRuntimeQos(MessagingQos(5000))
+            ->setMessagingQos(MessagingQos(5000))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
-    QSharedPointer<MockGpsSubscriptionListener> mockSubscriptionListener(
+    std::shared_ptr<MockGpsSubscriptionListener> mockSubscriptionListener(
                 new MockGpsSubscriptionListener()
     );
     EXPECT_CALL(*mockSubscriptionListener, onReceive(gpsLocation))
             .Times(Between(1, 2));
 
 
-    QSharedPointer<SubscriptionQos> subscriptionQos = QSharedPointer<SubscriptionQos>(
-                new OnChangeWithKeepAliveSubscriptionQos(
+    OnChangeWithKeepAliveSubscriptionQos subscriptionQos(
                     480, // validity
                     200, // min interval
                     200, // max interval
                     100  // alert after interval
-                )
-    );
-    QString subscriptionId = testProxy->subscribeToLocation(mockSubscriptionListener, subscriptionQos);
+                );
+    std::string subscriptionId = testProxy->subscribeToLocation(mockSubscriptionListener, subscriptionQos);
     QThreadSleep::msleep(250);
     testProxy->unsubscribeFromLocation(subscriptionId);
     delete testProxy;
@@ -275,38 +279,27 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
 
 TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
     QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME());
-    QString domain("JoynrClusterControllerRuntimeTest.Domain.A");
-    QString authenticationToken("JoynrClusterControllerRuntimeTest.AuthenticationToken.A");
-    QSharedPointer<MockTestProvider> mockTestProvider(new MockTestProvider());
+    std::string domain("JoynrClusterControllerRuntimeTest.Domain.A");
+    std::shared_ptr<MockTestProvider> mockTestProvider(new MockTestProvider());
 
-    types::GpsLocation gpsLocation(
-                1.1,                        // longitude
-                2.2,                        // latitude
-                3.3,                        // altitude
-                types::GpsFixEnum::MODE2D,  // gps fix
-                0.0,                        // heading
-                0.0,                        // quality
-                0.0,                        // elevation
-                0.0,                        // bearing
-                444,                        // gps time
-                444,                        // device time
-                444                         // time
-    );
-    RequestStatus requestStatus;
-    requestStatus.setCode(RequestStatusCode::OK);
-    EXPECT_CALL(*mockTestProvider, getLocation(A<RequestStatus&>(), A<types::GpsLocation&>()))
+    EXPECT_CALL(
+            *mockTestProvider,
+            getLocation(A<std::function<void(const types::Localisation::GpsLocation&)>>())
+    )
             .Times(Between(3, 4))
-            .WillRepeatedly(DoAll(SetArgReferee<0>(requestStatus), SetArgReferee<1>(gpsLocation)));
+            .WillRepeatedly(Invoke(
+                    this,
+                    &JoynrClusterControllerRuntimeTest::invokeOnSuccessWithGpsLocation
+            ));
 
     runtime->startMessaging();
-    QString participantId = runtime->registerCapability<tests::testProvider>(
+    std::string participantId = runtime->registerProvider<tests::testProvider>(
                 domain,
-                mockTestProvider,
-                authenticationToken
+                mockTestProvider
     );
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder =
-            runtime->getProxyBuilder<tests::testProxy>(domain);
+            runtime->createProxyBuilder<tests::testProxy>(domain);
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
@@ -314,26 +307,24 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
 
     tests::testProxy* testProxy = testProxyBuilder
-            ->setRuntimeQos(MessagingQos(5000))
+            ->setMessagingQos(MessagingQos(5000))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
-    QSharedPointer<MockGpsSubscriptionListener> mockSubscriptionListener(
+    std::shared_ptr<MockGpsSubscriptionListener> mockSubscriptionListener(
                 new MockGpsSubscriptionListener()
     );
     EXPECT_CALL(*mockSubscriptionListener, onReceive(gpsLocation))
             .Times(AtMost(3));
 
-    QSharedPointer<SubscriptionQos> subscriptionQos = QSharedPointer<SubscriptionQos>(
-                new OnChangeWithKeepAliveSubscriptionQos(
+    OnChangeWithKeepAliveSubscriptionQos subscriptionQos(
                     800,   // validity
                     200,   // min interval
                     200,   // max interval
                     10000  // alert after interval
-                )
-    );
-    QString subscriptionId = testProxy->subscribeToLocation(mockSubscriptionListener, subscriptionQos);
+                );
+    std::string subscriptionId = testProxy->subscribeToLocation(mockSubscriptionListener, subscriptionQos);
     QThreadSleep::msleep(500);
     testProxy->unsubscribeFromLocation(subscriptionId);
     QThreadSleep::msleep(600);

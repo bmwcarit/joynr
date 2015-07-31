@@ -39,7 +39,7 @@ class DirectoryTest : public ::testing::Test
 
 
     void SetUp(){
-        directory = new Directory<QString, QString>(QString("Directory"));
+        directory = new Directory<QString, QString>("Directory");
         testValue = QSharedPointer<QString>(new QString("testValue"));
         secondTestValue = QSharedPointer<QString>(new QString("secondTestValue"));
         firstKey = QString("firstKey");
@@ -104,7 +104,7 @@ TEST_F(DirectoryTest, scheduledRemove)
 
 TEST(UnfixturedDirectoryTest, ObjectsAreDeletedByDirectoryAfterTtl)
 {
-    Directory<QString, TrackableObject> *directory = new Directory<QString, TrackableObject>(QString("Directory"));
+    Directory<QString, TrackableObject> *directory = new Directory<QString, TrackableObject>("Directory");
     TrackableObject *t1 = new TrackableObject();
     ASSERT_EQ(TrackableObject::getInstances(), 1);
     directory->add("key", t1, 100);
@@ -116,7 +116,7 @@ TEST(UnfixturedDirectoryTest, ObjectsAreDeletedByDirectoryAfterTtl)
 
 TEST(UnfixturedDirectoryTest, ObjectsAreDeletedWhenDirectoryIsDeleted)
 {
-    Directory<QString, TrackableObject> *directory = new Directory<QString, TrackableObject>(QString("Directory"));
+    Directory<QString, TrackableObject> *directory = new Directory<QString, TrackableObject>("Directory");
     TrackableObject *t1 = new TrackableObject();
     ASSERT_EQ(TrackableObject::getInstances(), 1);
     directory->add("key", t1, 100);
@@ -127,7 +127,7 @@ TEST(UnfixturedDirectoryTest, ObjectsAreDeletedWhenDirectoryIsDeleted)
 
 TEST(UnfixturedDirectoryTest, QSPObjectsAreDeletedByDirectoryAfterTtl)
 {
-    Directory<QString, TrackableObject> *directory = new Directory<QString, TrackableObject>(QString("Directory"));
+    Directory<QString, TrackableObject> *directory = new Directory<QString, TrackableObject>("Directory");
     {
         QSharedPointer<TrackableObject> tp = QSharedPointer<TrackableObject>(new TrackableObject());
         ASSERT_EQ(TrackableObject::getInstances(), 1);
@@ -141,7 +141,7 @@ TEST(UnfixturedDirectoryTest, QSPObjectsAreDeletedByDirectoryAfterTtl)
 
 TEST(UnfixturedDirectoryTest, QSPObjectsAreDeletedIfDirectoryIsDeleted)
 {
-    Directory<QString, TrackableObject> *directory = new Directory<QString, TrackableObject>(QString("Directory"));
+    Directory<QString, TrackableObject> *directory = new Directory<QString, TrackableObject>("Directory");
     {
         QSharedPointer<TrackableObject> tp = QSharedPointer<TrackableObject>(new TrackableObject());
         ASSERT_EQ(TrackableObject::getInstances(), 1);

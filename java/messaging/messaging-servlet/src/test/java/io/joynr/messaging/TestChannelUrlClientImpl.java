@@ -19,9 +19,9 @@ package io.joynr.messaging;
  * #L%
  */
 
-import io.joynr.dispatcher.rpc.Callback;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
+import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 
 import java.util.Map;
@@ -43,18 +43,21 @@ public class TestChannelUrlClientImpl implements ChannelUrlDirectoryProxy {
     }
 
     @Override
-    public void registerChannelUrls(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                    @JoynrRpcParam("channelId") String channelId,
-                                    @JoynrRpcParam("channelUrlInformation") ChannelUrlInformation channelUrlInformation) {
+    public Future<Void> registerChannelUrls(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
+                                            @JoynrRpcParam("channelId") String channelId,
+                                            @JoynrRpcParam("channelUrlInformation") ChannelUrlInformation channelUrlInformation) {
         entries.put(channelId, channelUrlInformation);
-
+        Future<Void> future = new Future<Void>();
+        future.onSuccess(null);
+        return future;
     }
 
     @Override
-    public void unregisterChannelUrls(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
-                                      @JoynrRpcParam("channelId") String channelId) {
-        // TODO Auto-generated method stub
-
+    public Future<Void> unregisterChannelUrls(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback,
+                                              @JoynrRpcParam("channelId") String channelId) {
+        Future<Void> future = new Future<Void>();
+        future.onSuccess(null);
+        return future;
     }
 
     @Override

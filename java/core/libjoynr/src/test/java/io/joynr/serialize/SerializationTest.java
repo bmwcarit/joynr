@@ -36,6 +36,7 @@ import java.util.Properties;
 import java.util.UUID;
 
 import joynr.BroadcastSubscriptionRequest;
+import joynr.JoynrApplicationException;
 import joynr.JoynrMessage;
 import joynr.OnChangeSubscriptionQos;
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
@@ -45,13 +46,13 @@ import joynr.Request;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
-import joynr.tests.TestEnum;
 import joynr.tests.testBroadcastInterface;
+import joynr.tests.testtypes.TestEnum;
 import joynr.types.CapabilityInformation;
-import joynr.types.GpsFixEnum;
-import joynr.types.GpsLocation;
-import joynr.types.GpsPosition;
 import joynr.types.ProviderQos;
+import joynr.types.localisation.GpsFixEnum;
+import joynr.types.localisation.GpsLocation;
+import joynr.types.localisation.GpsPosition;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -380,7 +381,7 @@ public class SerializationTest {
 
         Object response = new GpsPosition(49.0065, 11.65);
         String subscriptionId = "1234";
-        SubscriptionPublication publication = new SubscriptionPublication(response, subscriptionId);
+        SubscriptionPublication publication = new SubscriptionPublication(Arrays.asList(response), subscriptionId);
 
         String writeValueAsString = objectMapper.writeValueAsString(publication);
 
@@ -474,6 +475,54 @@ public class SerializationTest {
         Reply receivedReply = objectMapper.readValue(receivedMessage.getPayload(), Reply.class);
         Assert.assertEquals(reply, receivedReply);
 
+    }
+
+    @Test
+    public void serializeReplyWithJoynrApplicationException() throws IOException {
+
+        JoynrApplicationException error = new JoynrApplicationException(TestEnum.ONE, "detail message");
+        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+
+        String writeValueAsString = objectMapper.writeValueAsString(reply);
+        System.out.println(writeValueAsString);
+
+        JoynrMessage message = new JoynrMessage();
+        String type = JoynrMessage.MESSAGE_TYPE_REPLY;
+        message.setFrom(UUID.randomUUID().toString());
+        message.setTo(UUID.randomUUID().toString());
+        message.setType(type);
+        message.setExpirationDate(ExpiryDate.fromRelativeTtl(60000));
+        message.setPayload(writeValueAsString);
+        String messageAsString = objectMapper.writeValueAsString(message);
+        System.out.println(messageAsString);
+
+        JoynrMessage receivedMessage = objectMapper.readValue(messageAsString, JoynrMessage.class);
+        Reply receivedReply = objectMapper.readValue(receivedMessage.getPayload(), Reply.class);
+        Assert.assertEquals(reply, receivedReply);
+    }
+
+    @Test
+    public void serializeReplyWithJoynrApplicationExceptionWithoutMessage() throws IOException {
+
+        JoynrApplicationException error = new JoynrApplicationException(TestEnum.TWO);
+        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+
+        String writeValueAsString = objectMapper.writeValueAsString(reply);
+        System.out.println(writeValueAsString);
+
+        JoynrMessage message = new JoynrMessage();
+        String type = JoynrMessage.MESSAGE_TYPE_REPLY;
+        message.setFrom(UUID.randomUUID().toString());
+        message.setTo(UUID.randomUUID().toString());
+        message.setType(type);
+        message.setExpirationDate(ExpiryDate.fromRelativeTtl(60000));
+        message.setPayload(writeValueAsString);
+        String messageAsString = objectMapper.writeValueAsString(message);
+        System.out.println(messageAsString);
+
+        JoynrMessage receivedMessage = objectMapper.readValue(messageAsString, JoynrMessage.class);
+        Reply receivedReply = objectMapper.readValue(receivedMessage.getPayload(), Reply.class);
+        Assert.assertEquals(reply, receivedReply);
     }
 
 }

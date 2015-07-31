@@ -231,7 +231,19 @@ int QObjectHelper::getClassIdForTransmittedType(const QString& typeName){
     QByteArray typeNameBytes = typeName.toLatin1();
     typeNameBytes.replace(".", QByteArray("::"));
 
-    return QMetaType::type(typeNameBytes.constData());
+    int classId = QMetaType::type(typeNameBytes.constData());;
+
+    // since generated Qt types are now prefixed with "Qt", it must be added in the
+    // _typename field during deserialization to stay compatible with Java and JS
+    if (classId == QMetaType::UnknownType) {
+        QRegExp matchLastDot(QString::fromLatin1("\\.(?=[^.]*$)"));
+        QString qtTypeName = typeName;
+        qtTypeName.replace(matchLastDot, QString::fromLatin1(".Qt"));
+        qtTypeName.replace(QString::fromLatin1("."), QString::fromLatin1("::"));
+        classId = QMetaType::type(qtTypeName.toLatin1());
+    }
+
+    return classId;
 }
 
 void QObjectHelper::assertClassId(int classId, const QString& typeName)

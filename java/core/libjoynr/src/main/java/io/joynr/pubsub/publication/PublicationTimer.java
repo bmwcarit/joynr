@@ -22,8 +22,11 @@ package io.joynr.pubsub.publication;
 import io.joynr.dispatcher.RequestCaller;
 import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.provider.Promise;
+import io.joynr.provider.PromiseListener;
 import io.joynr.pubsub.HeartbeatSubscriptionInformation;
 import io.joynr.pubsub.PubSubTimerBase;
 import io.joynr.pubsub.SubscriptionQos;
@@ -31,6 +34,7 @@ import io.joynr.pubsub.publication.PublicationManagerImpl.PublicationInformation
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.TimerTask;
 
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
@@ -43,8 +47,8 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
 /**
+ * Timer object to handle periodic subscriptions
  * @author david.katz
- * 
  */
 public class PublicationTimer extends PubSubTimerBase {
 
@@ -60,11 +64,12 @@ public class PublicationTimer extends PubSubTimerBase {
     private final long period;
 
     /**
-     * @param publicationInformation
-     * @param method
-     * @param requestCaller
-     * @param requestReplySender
-     * @param attributePollInterpreter
+     * Constructor for PublicationTimer object, see (@link PublicationTimer)
+     * @param publicationInformation information about the requested subscription, see {@link io.joynr.pubsub.publication.PublicationManagerImpl.PublicationInformation}
+     * @param method method to be invoked to retrieve the requested information
+     * @param requestCaller request caller
+     * @param requestReplySender request reply sender to send publication messages
+     * @param attributePollInterpreter attribute poll interpreter to execute method
      */
     public PublicationTimer(PublicationInformation publicationInformation,
                             Method method,
@@ -108,10 +113,25 @@ public class PublicationTimer extends PubSubTimerBase {
                 } else {
                     logger.debug("run: executing attributePollInterpreter for attribute "
                             + publicationInformation.getSubscribedToName());
+                    Promise<?> attributeGetterPromise = attributePollInterpreter.execute(requestCaller, method);
+                    attributeGetterPromise.then(new PromiseListener() {
 
-                    sendPublication();
+                        @Override
+                        public void onRejection(JoynrRuntimeException error) {
+                            // TODO Auto-generated method stub
+
+                        }
+
+                        @Override
+                        public void onFulfillment(Object... values) {
+                            // attribute getters only return a single value
+                            SubscriptionPublication publication = new SubscriptionPublication(Arrays.asList(values[0]),
+                                                                                              publicationInformation.getSubscriptionId());
+                            sendPublication(publication);
+                        }
+                    });
+
                     delayUntilNextPublication = period;
-
                 }
 
                 if (delayUntilNextPublication >= 0) {
@@ -122,13 +142,6 @@ public class PublicationTimer extends PubSubTimerBase {
                 }
             }
         }
-    }
-
-    protected void sendPublication() {
-        SubscriptionPublication publication = new SubscriptionPublication(attributePollInterpreter.execute(requestCaller,
-                                                                                                           method),
-                                                                          publicationInformation.getSubscriptionId());
-        sendPublication(publication);
     }
 
     protected void sendPublication(SubscriptionPublication publication) {
@@ -180,7 +193,7 @@ public class PublicationTimer extends PubSubTimerBase {
         }
     }
 
-    public void sendPublicationNow(Object value) {
+    public void sendPublicationNow(SubscriptionPublication publication) {
 
         // Only send the publication if the subscription has not expired
         // and the TTL is in the future.
@@ -189,8 +202,6 @@ public class PublicationTimer extends PubSubTimerBase {
             return;
         }
 
-        SubscriptionPublication publication = new SubscriptionPublication(value,
-                                                                          publicationInformation.getSubscriptionId());
         sendPublication(publication);
 
     }

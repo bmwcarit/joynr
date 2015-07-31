@@ -17,48 +17,54 @@
  * #L%
  */
 #include "joynr/LocalDiscoveryAggregator.h"
+
+#include <vector>
+
 #include "joynr/IRequestCallerDirectory.h"
 #include "joynr/SystemServicesSettings.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/RequestStatusCode.h"
 
-#include "joynr/system/DiscoveryEntry.h"
-#include "joynr/system/DiscoveryQos.h"
+#include "joynr/types/QtDiscoveryEntry.h"
+#include "joynr/types/DiscoveryEntry.h"
+#include "joynr/types/DiscoveryQos.h"
 #include "joynr/system/IRouting.h"
 #include "joynr/system/IDiscovery.h"
 #include "joynr/system/DiscoveryProxy.h"
+#include "joynr/TypeUtil.h"
 
 namespace joynr
 {
 
 LocalDiscoveryAggregator::LocalDiscoveryAggregator(
         IRequestCallerDirectory& requestCallerDirectory,
-        const SystemServicesSettings& systemServicesSettings,
-        joynr::system::IDiscoverySync* localCapabilitiesDirectory)
-        : discoveryProxy(localCapabilitiesDirectory),
+        const SystemServicesSettings& systemServicesSettings)
+        : discoveryProxy(NULL),
           hasOwnershipOfDiscoveryProxy(false),
           requestCallerDirectory(requestCallerDirectory),
           provisionedDiscoveryEntries(),
           systemServicesSettings(systemServicesSettings)
 {
-    QList<joynr::system::CommunicationMiddleware::Enum> connections;
-    connections << joynr::system::CommunicationMiddleware::JOYNR;
-    joynr::system::DiscoveryEntry routingProviderDiscoveryEntry(
+    QList<joynr::types::QtCommunicationMiddleware::Enum> connections;
+    connections << joynr::types::QtCommunicationMiddleware::JOYNR;
+    joynr::types::QtDiscoveryEntry routingProviderDiscoveryEntry(
             systemServicesSettings.getDomain(),
-            joynr::system::IRouting::getInterfaceName(),
+            TypeUtil::toQt(joynr::system::IRouting::INTERFACE_NAME()),
             systemServicesSettings.getCcRoutingProviderParticipantId(),
-            joynr::types::ProviderQos(),
+            joynr::types::QtProviderQos(),
             connections);
     provisionedDiscoveryEntries.insert(
-            routingProviderDiscoveryEntry.getParticipantId(), routingProviderDiscoveryEntry);
-    joynr::system::DiscoveryEntry discoveryProviderDiscoveryEntry(
+            routingProviderDiscoveryEntry.getParticipantId().toStdString(),
+            routingProviderDiscoveryEntry);
+    joynr::types::QtDiscoveryEntry discoveryProviderDiscoveryEntry(
             systemServicesSettings.getDomain(),
-            joynr::system::IDiscovery::getInterfaceName(),
+            TypeUtil::toQt(joynr::system::IDiscovery::INTERFACE_NAME()),
             systemServicesSettings.getCcDiscoveryProviderParticipantId(),
-            joynr::types::ProviderQos(),
+            joynr::types::QtProviderQos(),
             connections);
     provisionedDiscoveryEntries.insert(
-            discoveryProviderDiscoveryEntry.getParticipantId(), discoveryProviderDiscoveryEntry);
+            discoveryProviderDiscoveryEntry.getParticipantId().toStdString(),
+            discoveryProviderDiscoveryEntry);
 }
 
 LocalDiscoveryAggregator::~LocalDiscoveryAggregator()
@@ -75,87 +81,81 @@ void LocalDiscoveryAggregator::setDiscoveryProxy(joynr::system::IDiscoverySync* 
 }
 
 // inherited from joynr::system::IDiscoverySync
-void LocalDiscoveryAggregator::add(joynr::RequestStatus& joynrInternalStatus,
-                                   joynr::system::DiscoveryEntry discoveryEntry)
+joynr::RequestStatus LocalDiscoveryAggregator::add(
+        const joynr::types::DiscoveryEntry& discoveryEntry)
 {
     if (discoveryProxy == NULL) {
-        joynrInternalStatus.setCode(RequestStatusCode::ERROR);
-        joynrInternalStatus.addDescription(
-                QString("LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
-                        "local capabilitites directory."));
-        return;
+        return RequestStatus(RequestStatusCode::ERROR,
+                             "LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
+                             "local capabilitites directory.");
     }
 
-    discoveryProxy->add(joynrInternalStatus, discoveryEntry);
+    return discoveryProxy->add(discoveryEntry);
 }
 
 void LocalDiscoveryAggregator::checkForLocalAvailabilityAndAddInProcessConnection(
-        joynr::system::DiscoveryEntry& discoveryEntry)
+        joynr::types::DiscoveryEntry& discoveryEntry)
 {
-    QString participantId(discoveryEntry.getParticipantId());
+    std::string participantId(discoveryEntry.getParticipantId());
     if (requestCallerDirectory.containsRequestCaller(participantId)) {
-        QList<joynr::system::CommunicationMiddleware::Enum> connections(
+        std::vector<joynr::types::CommunicationMiddleware::Enum> connections(
                 discoveryEntry.getConnections());
-        connections.prepend(joynr::system::CommunicationMiddleware::IN_PROCESS);
+        connections.insert(connections.begin(), joynr::types::CommunicationMiddleware::IN_PROCESS);
         discoveryEntry.setConnections(connections);
     }
 }
 
 // inherited from joynr::system::IDiscoverySync
-void LocalDiscoveryAggregator::lookup(joynr::RequestStatus& joynrInternalStatus,
-                                      QList<joynr::system::DiscoveryEntry>& result,
-                                      QString domain,
-                                      QString interfaceName,
-                                      joynr::system::DiscoveryQos discoveryQos)
+joynr::RequestStatus LocalDiscoveryAggregator::lookup(
+        std::vector<joynr::types::DiscoveryEntry>& result,
+        const std::string& domain,
+        const std::string& interfaceName,
+        const joynr::types::DiscoveryQos& discoveryQos)
 {
     if (discoveryProxy == NULL) {
-        joynrInternalStatus.setCode(RequestStatusCode::ERROR);
-        joynrInternalStatus.addDescription(
-                QString("LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
-                        "local capabilitites directory."));
-        return;
+        return RequestStatus(RequestStatusCode::ERROR,
+                             "LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
+                             "local capabilitites directory.");
     }
-    discoveryProxy->lookup(joynrInternalStatus, result, domain, interfaceName, discoveryQos);
+    joynr::RequestStatus status(
+            discoveryProxy->lookup(result, domain, interfaceName, discoveryQos));
 
-    QMutableListIterator<joynr::system::DiscoveryEntry> i(result);
-    while (i.hasNext()) {
-        checkForLocalAvailabilityAndAddInProcessConnection(i.next());
+    for (joynr::types::DiscoveryEntry& discoveryEntry : result) {
+        checkForLocalAvailabilityAndAddInProcessConnection(discoveryEntry);
     }
+
+    return status;
 }
 
 // inherited from joynr::system::IDiscoverySync
-void LocalDiscoveryAggregator::lookup(joynr::RequestStatus& joynrInternalStatus,
-                                      joynr::system::DiscoveryEntry& result,
-                                      QString participantId)
+joynr::RequestStatus LocalDiscoveryAggregator::lookup(joynr::types::DiscoveryEntry& result,
+                                                      const std::string& participantId)
 {
+    joynr::RequestStatus status(RequestStatusCode::OK);
     if (provisionedDiscoveryEntries.contains(participantId)) {
-        joynrInternalStatus.setCode(RequestStatusCode::OK);
-        result = provisionedDiscoveryEntries.value(participantId);
+        result = joynr::types::QtDiscoveryEntry::createStd(
+                provisionedDiscoveryEntries.value(participantId));
     } else {
         if (discoveryProxy == NULL) {
-            joynrInternalStatus.setCode(RequestStatusCode::ERROR);
-            joynrInternalStatus.addDescription(
-                    QString("LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
-                            "local capabilitites directory."));
-            return;
+            return RequestStatus(RequestStatusCode::ERROR,
+                                 "LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
+                                 "local capabilitites directory.");
         }
-        discoveryProxy->lookup(joynrInternalStatus, result, participantId);
+        status = discoveryProxy->lookup(result, participantId);
     }
     checkForLocalAvailabilityAndAddInProcessConnection(result);
+    return status;
 }
 
 // inherited from joynr::system::IDiscoverySync
-void LocalDiscoveryAggregator::remove(joynr::RequestStatus& joynrInternalStatus,
-                                      QString participantId)
+joynr::RequestStatus LocalDiscoveryAggregator::remove(const std::string& participantId)
 {
     if (discoveryProxy == NULL) {
-        joynrInternalStatus.setCode(RequestStatusCode::ERROR);
-        joynrInternalStatus.addDescription(
-                QString("LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
-                        "local capabilitites directory."));
-        return;
+        return RequestStatus(RequestStatusCode::ERROR,
+                             "LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
+                             "local capabilitites directory.");
     }
-    discoveryProxy->remove(joynrInternalStatus, participantId);
+    return discoveryProxy->remove(participantId);
 }
 
 } // namespace joynr

@@ -27,15 +27,21 @@ import io.joynr.runtime.JoynrInjectorFactory;
 import java.util.Properties;
 
 import joynr.infrastructure.GlobalCapabilitiesDirectoryAbstractProvider;
-import joynr.infrastructure.GlobalCapabilitiesDirectoryProvider;
 
 import com.google.inject.Inject;
+import com.google.inject.persist.PersistService;
+import com.google.inject.persist.jpa.JpaPersistModule;
 
 public class CapabilitiesDirectoryLauncher extends AbstractJoynrApplication {
 
-    private static final String AUTH_TOKEN = "CapabilitiesDirectoryLauncher";
+    private static CapabilitiesDirectoryImpl capabilitiesDirectory;
+
+    private static JoynrApplication capabilitiesDirectoryLauncher;
+
     @Inject
     private GlobalCapabilitiesDirectoryAbstractProvider capabilitiesDirectoryProvider;
+
+    private PersistService persistService;
 
     public static void main(String[] args) {
 
@@ -45,26 +51,39 @@ public class CapabilitiesDirectoryLauncher extends AbstractJoynrApplication {
     public static void start(Properties joynrConfig) {
 
         // LongPollingMessagingModule is only added in main(), since the servletMessagingModule will be used otherwise
-        JoynrInjectorFactory injectorFactory = new JoynrInjectorFactory(joynrConfig, new CapabilitiesDirectoryModule());
-        JoynrApplication capabilitiesDirectoryLauncher = injectorFactory.createApplication(new JoynrApplicationModule("capabilitiesDirectoryLauncher",
-                                                                                                                      CapabilitiesDirectoryLauncher.class));
+        JoynrInjectorFactory injectorFactory = new JoynrInjectorFactory(joynrConfig,
+                                                                        new JpaPersistModule("CapabilitiesDirectory"),
+                                                                        new CapabilitiesDirectoryModule());
+        capabilitiesDirectoryLauncher = injectorFactory.createApplication(new JoynrApplicationModule("capabilitiesDirectoryLauncher",
+                                                                                                     CapabilitiesDirectoryLauncher.class));
         capabilitiesDirectoryLauncher.run();
+        capabilitiesDirectory = injectorFactory.getInjector().getInstance(CapabilitiesDirectoryImpl.class);
     }
 
-    public CapabilitiesDirectoryLauncher() {
+    public static void stop() {
+        capabilitiesDirectoryLauncher.shutdown();
+    }
+
+    @Inject
+    public CapabilitiesDirectoryLauncher(PersistService persistService) {
+        this.persistService = persistService;
+        persistService.start();
     }
 
     @Override
     public void run() {
-        runtime.registerCapability(localDomain,
-                                   capabilitiesDirectoryProvider,
-                                   GlobalCapabilitiesDirectoryProvider.class,
-                                   AUTH_TOKEN);
+        // LongPollingMessagingModule is only added in main(), since the servletMessagingModule will be used otherwise
+        runtime.registerProvider(localDomain, capabilitiesDirectoryProvider);
     }
 
     @Override
     public void shutdown() {
-        // no need to send unregister capabilites request to itself
-
+        persistService.stop();
+        runtime.shutdown(true);
     }
+
+    static CapabilitiesDirectoryImpl getCapabilitiesDirctory() {
+        return capabilitiesDirectory;
+    }
+
 }

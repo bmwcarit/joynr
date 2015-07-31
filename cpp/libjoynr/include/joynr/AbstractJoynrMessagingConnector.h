@@ -27,36 +27,33 @@
 #include "joynr/DeclareMetatypeUtil.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/ArbitrationStatus.h"
-#include "joynr/ProxyQos.h"
 #include "joynr/IArbitrationListener.h"
 #include "joynr/IClientCache.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/DispatcherUtils.h"
-#include "joynr/ICallback.h"
 #include "joynr/IConnector.h"
 #include "joynr/IReplyCaller.h"
 #include "joynr/ReplyCaller.h"
 #include "joynr/JoynrExport.h"
-
+#include <string>
 namespace joynr
 {
 
 class IJoynrMessageSender;
-class SubscriptionManager;
+class ISubscriptionManager;
 
 class JOYNR_EXPORT AbstractJoynrMessagingConnector : public IConnector
 {
 public:
     AbstractJoynrMessagingConnector(IJoynrMessageSender* joynrMessageSender,
-                                    SubscriptionManager* subscriptionManager,
-                                    const QString& domain,
-                                    const QString& interfaceName,
-                                    const QString proxyParticipantId,
-                                    const QString& providerParticipantId,
+                                    ISubscriptionManager* subscriptionManager,
+                                    const std::string& domain,
+                                    const std::string& interfaceName,
+                                    const std::string proxyParticipantId,
+                                    const std::string& providerParticipantId,
                                     const MessagingQos& qosSettings,
                                     IClientCache* cache,
-                                    bool cached,
-                                    const qint64 reqCacheDataFreshness_ms);
+                                    bool cached);
     virtual bool usesClusterController() const;
     virtual ~AbstractJoynrMessagingConnector()
     {
@@ -66,20 +63,17 @@ public:
      * @brief Makes a request and returns the received response via the callback.
      *
      * @param methodName
-     * @param status
      * @param replyCaller
-     * @return Reply
+
      */
     template <typename T>
-    void attributeRequest(QString methodName,
-                          RequestStatus& status,
-                          QSharedPointer<IReplyCaller> replyCaller)
+    void attributeRequest(QString methodName, QSharedPointer<IReplyCaller> replyCaller)
     {
-        status.setCode(RequestStatusCode::IN_PROGRESS);
-        QString attributeID = domain + ":" + interfaceName + ":" + methodName;
+        QString attributeID = QString::fromStdString(domain) + ":" +
+                              QString::fromStdString(interfaceName) + ":" + methodName;
 
         if (cached) {
-            QVariant entry = cache->lookUp(attributeID, reqCacheDataFreshness_ms);
+            QVariant entry = cache->lookUp(attributeID);
             if (!entry.isValid()) {
                 LOG_DEBUG(logger, "Cached value for " + methodName + " is not valid");
             } else if (!entry.canConvert<T>()) {
@@ -103,28 +97,21 @@ public:
     /**
      * @brief Makes a request and returns the received response via the callback.
      *
-     * @param methodName
-     * @param status
      * @param replyCaller
-     * @param params
-     * @param paramOrder
-     * @return Reply
+     * @param request
      */
-    void operationRequest(RequestStatus& status,
-                          QSharedPointer<IReplyCaller> replyCaller,
-                          const Request& request);
+    void operationRequest(QSharedPointer<IReplyCaller> replyCaller, const Request& request);
 
 protected:
     IJoynrMessageSender* joynrMessageSender;
-    SubscriptionManager* subscriptionManager;
-    QString domain;
-    QString interfaceName;
-    QString proxyParticipantId;
-    QString providerParticipantId;
+    ISubscriptionManager* subscriptionManager;
+    std::string domain;
+    std::string interfaceName;
+    std::string proxyParticipantId;
+    std::string providerParticipantId;
     MessagingQos qosSettings;
     IClientCache* cache;
     bool cached;
-    qint64 reqCacheDataFreshness_ms;
     static joynr_logging::Logger* logger;
 
 private:
@@ -133,10 +120,6 @@ private:
     // Request jsonRequest;
     void sendRequest(const Request& request, QSharedPointer<IReplyCaller> replyCaller);
 
-    Reply makeRequest(QString methodName,
-                      RequestStatus* status,
-                      ICallback<Reply>* callBack,
-                      QVariantMap params);
     Reply makeRequest(QString methodName, RequestStatus* status, QVariantMap params);
 };
 

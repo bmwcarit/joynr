@@ -29,6 +29,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import joynr.types.ProviderQos;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +40,7 @@ public abstract class AbstractJoynrProvider implements JoynrProvider {
     ConcurrentHashMap<String, List<AttributeListener>> attributeListeners;
     ConcurrentHashMap<String, List<BroadcastListener>> broadcastListeners;
     protected ConcurrentHashMap<String, List<BroadcastFilter>> broadcastFilters;
+    protected ProviderQos providerQos = new ProviderQos();
 
     public AbstractJoynrProvider() {
         attributeListeners = new ConcurrentHashMap<String, List<AttributeListener>>();
@@ -45,7 +48,23 @@ public abstract class AbstractJoynrProvider implements JoynrProvider {
         broadcastFilters = new ConcurrentHashMap<String, List<BroadcastFilter>>();
     }
 
-    public void onAttributeValueChanged(String attributeName, Object value) {
+    @Override
+    public ProviderQos getProviderQos() {
+        return providerQos;
+    }
+
+    /**
+     * Called by generated {@code <Interface>AbstractProvider} classes to notify
+     * all registered listeners about the attribute change.
+     *
+     * NOTE: Provider implementations should _not_ call this method but use
+     * attribute specific {@code <Interface>AbstractProvider.<attribute>Changed}
+     * methods.
+     *
+     * @param attributeName the attribute name as defined in the Franca model.
+     * @param value the new value of the changed attribute.
+     */
+    protected void onAttributeValueChanged(String attributeName, Object value) {
         if (!attributeListeners.containsKey(attributeName)) {
             return;
         }
@@ -57,7 +76,19 @@ public abstract class AbstractJoynrProvider implements JoynrProvider {
         }
     }
 
-    public void fireBroadcast(String broadcastName, List<BroadcastFilter> broadcastFilters, Object... values) {
+    /**
+     * Called by generated {@code <Interface>AbstractProvider} classes to notify
+     * all registered listeners about the fired broadcast.
+     *
+     * NOTE: Provider implementations should _not_ call this method but use
+     * broadcast specific {@code <Interface>AbstractProvider.fire<Broadcast>}
+     * methods.
+     *
+     * @param broadcastName the broadcast name as defined in the Franca model.
+     * @param broadcastFilters the list of filters to apply.
+     * @param values the broadcast arguments.
+     */
+    protected void fireBroadcast(String broadcastName, List<BroadcastFilter> broadcastFilters, Object... values) {
         if (!broadcastListeners.containsKey(broadcastName)) {
             return;
         }
@@ -123,6 +154,7 @@ public abstract class AbstractJoynrProvider implements JoynrProvider {
         }
     }
 
+    @Override
     public void addBroadcastFilter(BroadcastFilterImpl filter) {
         if (broadcastFilters.containsKey(filter.getName())) {
             broadcastFilters.get(filter.getName()).add(filter);
@@ -133,6 +165,7 @@ public abstract class AbstractJoynrProvider implements JoynrProvider {
         }
     }
 
+    @Override
     public void addBroadcastFilter(BroadcastFilterImpl... filters) {
         List<BroadcastFilterImpl> filtersList = Arrays.asList(filters);
 

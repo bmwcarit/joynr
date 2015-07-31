@@ -21,7 +21,7 @@ package io.joynr.messaging.bounceproxy.controller;
  */
 
 import io.joynr.exceptions.JoynrCommunicationException;
-import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyDirectory;
 import io.joynr.messaging.bounceproxy.controller.directory.ChannelDirectory;
 import io.joynr.messaging.bounceproxy.controller.strategy.ChannelAssignmentStrategy;
@@ -138,7 +138,7 @@ public class ChannelServiceImpl implements ChannelService {
 
             // TODO think of maybe trying to open a channel on a different
             // bounce proxy if it didn't work for this one
-            throw new JoynrException("Error creating channel on bounce proxy", e);
+            throw new JoynrRuntimeException("Error creating channel on bounce proxy", e);
         }
     }
 

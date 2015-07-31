@@ -33,7 +33,7 @@ class ILocalChannelUrlDirectory;
 
 namespace system
 {
-class Address;
+class QtAddress;
 }
 
 /**

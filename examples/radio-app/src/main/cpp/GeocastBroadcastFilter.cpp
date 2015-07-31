@@ -18,8 +18,12 @@
  */
 #include "GeocastBroadcastFilter.h"
 #include <QtCore>
-
+#include "joynr/TypeUtil.h"
 #include "joynr/JsonSerializer.h"
+#include <string>
+
+joynr_logging::Logger* GeocastBroadcastFilter::logger =
+        joynr_logging::Logging::getInstance()->getLogger("DEMO", "GeocastBroadcastFilter");
 
 GeocastBroadcastFilter::GeocastBroadcastFilter()
 {
@@ -30,16 +34,23 @@ bool GeocastBroadcastFilter::filter(
         const joynr::vehicle::GeoPosition& geoPosition,
         const vehicle::RadioNewStationDiscoveredBroadcastFilterParameters& filterParameters)
 {
-    if (filterParameters.getPositionOfInterest().isNull() ||
-        filterParameters.getRadiusOfInterestArea().isNull()) {
+    if (filterParameters.getPositionOfInterest().empty() ||
+        filterParameters.getRadiusOfInterestArea().empty()) {
         // filter parameter not set, so we do no filtering
         return true;
     }
 
-    joynr::vehicle::GeoPosition* positionOfInterest =
-            JsonSerializer::deserialize<joynr::vehicle::GeoPosition>(
-                    filterParameters.getPositionOfInterest().toLatin1());
-    int radiusOfInterestArea = filterParameters.getRadiusOfInterestArea().toInt();
+    QString positionOfInterestQt(TypeUtil::toQt(filterParameters.getPositionOfInterest()));
+    joynr::vehicle::QtGeoPosition* positionOfInterest =
+            JsonSerializer::deserialize<joynr::vehicle::QtGeoPosition>(
+                    positionOfInterestQt.toLatin1());
+    if (positionOfInterest == Q_NULLPTR) {
+        LOG_ERROR(logger,
+                  QString("Unable to deserialize geo position object from: %1")
+                          .arg(positionOfInterestQt));
+        return true;
+    }
+    int radiusOfInterestArea = std::stoi(filterParameters.getRadiusOfInterestArea());
 
     // calculate distance between two geo positions using the haversine formula
     // (cf. http://en.wikipedia.org/wiki/Haversine_formula)
