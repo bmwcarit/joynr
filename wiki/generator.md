@@ -94,7 +94,7 @@ with the following command line arguments:
 
 **Example:**
 ```bash
-java -jar target/joynr-generator-standalone-0.9.0-SNAPSHOT.jar
+java -jar target/joynr-generator-standalone-0.9.0.jar
 -outputPath gen -modelpath model.fidl -generationLanguage java
 ```
 This will generate *Java* code for the model file *model.fidl* and output the generated code
