@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,11 +29,16 @@ namespace joynr
  * @brief Class representing the quality of service settings for subscriptions
  * based on changes and time periods
  *
- * Class that stores quality of service settings for subscriptions that will only
- * send a notification if the subscribed value has changed or an interval without
- * notifications has expired. The subscription will automatically expire after validity ms.
- * If no publications were received for alertAfter Interval, a publicationMissed will be
- * called. minInterval can be used to prevent too many messages being sent.
+ * Class that stores quality of service settings for subscriptions to
+ * <b>attributes</b>. Using it for subscriptions to broadcasts is theoretically
+ * possible because of inheritance but makes no sense (in this case the
+ * additional members will be ignored).
+ *
+ * Notifications will be sent if the subscribed value has changed or a time
+ * interval without notifications has expired. The subscription will
+ * automatically expire after validity ms. If no publications were received for
+ * alertAfter Interval, publicationMissed will be called.
+ * minInterval can be used to prevent too many messages being sent.
  */
 class JOYNRCOMMON_EXPORT OnChangeWithKeepAliveSubscriptionQos : public OnChangeSubscriptionQos
 {
@@ -43,7 +48,7 @@ public:
 
     /**
      * @brief Copy constructor
-     * @param other Object to copy from
+     * @param other The OnChangeWithKeepAliveSubscriptionQos object to copy from
      */
     OnChangeWithKeepAliveSubscriptionQos(const OnChangeWithKeepAliveSubscriptionQos& other);
 
@@ -62,6 +67,12 @@ public:
      * even if the value didn't change.
      * @param alertAfterInterval Time span in milliseconds after which a publicationMissed
      * will be called if no publications were received.
+     *
+     * @see SubscriptionQos#setValidity
+     * @see OnChangeSubscriptionQos#setMinInterval
+     * @see OnChangeWithKeepAliveSubscriptionQos#setMaxInterval
+     * @see OnChangeWithKeepAliveSubscriptionQos#setAlertAfterInterval
+     * @see SubscriptionQos#setPublicationTtl
      */
     OnChangeWithKeepAliveSubscriptionQos(const int64_t& validity,
                                          const int64_t& minInterval,
@@ -71,12 +82,13 @@ public:
     /**
      * @brief Sets minimum interval in milliseconds
      *
-     * The provider will maintain at least a minimum interval idle time in milliseconds between
-     * successive notifications, even if on-change notifications are enabled and the value changes
-     * more often. This prevents the consumer from being flooded by updated values. The filtering
-     * happens on the provider's side, thus also preventing excessive network traffic.
+     * Calls the setter in OnChangeSubscriptionQos and updates maxInterval if
+     * necessary (maxInterval must not be less than minInterval).
      *
      * @param minInterval Minimum interval in milliseconds
+     *
+     * @see OnChangeSubscriptionQos#setMinInterval
+     * @see OnChangeWithKeepAliveSubscriptionQos#setMaxInterval
      */
     virtual void setMinInterval(const int64_t& minInterval);
 
@@ -101,7 +113,15 @@ public:
      * even if the value didn't change. It will send notifications more often if
      * on-change notifications are enabled, the value changes more often, and the
      * minimum interval QoS does not prevent it. The maximum interval can thus be
-     * seen as a sort of heart beat.
+     * seen as a sort of heart beat.<br>
+     * <br>
+     * <b>Minimum and Maximum Values:</b>
+     * <ul>
+     * <li><b>Minimum</b> maxInterval: the minInterval value. Smaller values will
+     * be rounded up.
+     * <li><b>Maximum</b> minInterval: 2.592.000.000 (30 days). Larger values
+     * will be rounded down.
+     * </ul>
      *
      * @param period
      *            The publisher will send a notification at least every maxInterval_ms.
@@ -111,22 +131,32 @@ public:
     /**
      * @brief Gets the alertAfter interval in milliseconds
      *
-     * If no notification was received within the last alertAfter interval, a missed publication
-     * notification will be raised by the Subscription Manager.
+     * If no notification was received within the last alertAfter interval, a
+     * missed publication notification will be raised by the Subscription Manager.
      *
-     * @return alertAfterInterval (time span in milliseconds after which a publicationMissed
-     * will be called if no publications were received)
+     * @return alertAfterInterval (time span in milliseconds after which a
+     * publicationMissed will be called if no publications were received)
      */
     virtual int64_t getAlertAfterInterval() const;
 
     /**
      * @brief Sets the alertAfter interval in milliseconds
      *
-     * If no notification was received within the last alertAfter interval, a missed publication
-     * notification will be raised by the Subscription Manager.
+     * If no notification was received within the last alertAfter interval, a
+     * missed publication notification will be raised by the Subscription
+     * Manager.<br>
+     * <br>
+     * <b>Minimum and Maximum Values:</b>
+     * <ul>
+     * <li><b>Minimum</b> alertAfterInterval: the maxInterval value or 0
+     * (NO_ALERT_AFTER_INTERVAL). Smaller values, except NO_ALERT_AFTER_INTERVAL,
+     * will be rounded up.
+     * <li><b>Maximum</b> alertAfterInterval: 2.592.000.000 (30 days). Larger
+     * values will be rounded down.
+     * </ul>
      *
-     * @param alertAfterInterval Time span in milliseconds after which a publicationMissed
-     * will be called if no publications were received.
+     * @param alertAfterInterval Time span in milliseconds after which a
+     * publicationMissed will be called if no publications were received.
      */
     virtual void setAlertAfterInterval(const int64_t& alertAfterInterval);
 
@@ -137,16 +167,25 @@ public:
     /** @brief Equality operator */
     virtual bool operator==(const OnChangeWithKeepAliveSubscriptionQos& other) const;
 
-    /** @brief Gets the maximum value for the maximum interval */
+    /** @brief
+     * Returns the maximum value for the maximum interval in milliseconds:
+     * 2 592 000 000 (30 days)
+     */
     static const int64_t& MAX_MAX_INTERVAL();
 
-    /** @brief Gets the maximum value for the alertAfter interval */
+    /**
+     * @brief Returns the maximum value for the alertAfter interval in
+     * milliseconds: 2 592 000 000 (30 days)
+     */
     static const int64_t& MAX_ALERT_AFTER_INTERVAL();
 
-    /** @brief Gets the default value for the alertAfter interval */
+    /**
+     * @brief Returns the default value for the alertAfter interval in
+     * milliseconds: 0 (NO_ALERT_AFTER_INTERVAL)
+     */
     static const int64_t& DEFAULT_ALERT_AFTER_INTERVAL();
 
-    /** @brief Gets the value for no alertAfter interval */
+    /** @brief Returns the value for no alertAfter interval in milliseconds: 0 */
     static const int64_t& NO_ALERT_AFTER_INTERVAL();
 
 protected:

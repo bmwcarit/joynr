@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,13 +27,16 @@ namespace joynr
 {
 
 /**
- * @brief Class representing the quality of service settings for subscriptions based
- * on changes
+ * @brief Class representing the quality of service settings for subscriptions
+ * based on changes
  *
- * Class that stores quality of service settings for subscriptions that will only
- * send a notification if the subscribed value has changed. The subscription will
- * automatically expire after validity ms. If no publications were received for
- * alertInterval, a publicationMissed will be called.
+ * Class that stores quality of service settings for subscriptions to
+ * <b>broadcasts and attributes</b>.
+ *
+ * Notifications will only be sent if the subscribed value has changed.
+ * The subscription will automatically expire after validity ms. If no
+ * publications were received for alertAfterInterval, publicationMissed will be
+ * called.
  * minInterval can be used to prevent too many messages being sent.
  */
 class JOYNRCOMMON_EXPORT OnChangeSubscriptionQos : public SubscriptionQos
@@ -45,12 +48,13 @@ public:
 
     /**
      * @brief Copy constructor for OnChangeSubscriptionQos object
-     * @param other The object instance to be copied from
+     * @param other The OnChangeSubscriptionQos object instance to be copied from
      */
     OnChangeSubscriptionQos(const OnChangeSubscriptionQos& other);
 
     /**
      * @brief Constructor with full parameter set.
+     *
      * @param validity Time span in milliseconds during which publications will be sent
      * @param minInterval Minimum interval in milliseconds.
      *
@@ -59,6 +63,10 @@ public:
      * This prevents the consumer from being flooded by updated values.
      * The filtering happens on the provider's side, thus also preventing
      * excessive network traffic.
+     *
+     * @see SubscriptionQos#setValidity
+     * @see OnChangeSubscriptionQos#setMinInterval
+     * @see SubscriptionQos#setPublicationTtl
      */
     OnChangeSubscriptionQos(const int64_t& validity, const int64_t& minInterval);
 
@@ -82,7 +90,14 @@ public:
      * between successive notifications, even if on-change notifications are enabled
      * and the value changes more often. This prevents the consumer from being flooded
      * by updated values. The filtering happens on the provider's side, thus also
-     * preventing excessive network traffic.
+     * preventing excessive network traffic.<br>
+     * <br>
+     * <b>Minimum and Maximum Values:</b>
+     * <ul>
+     * <li><b>Minimum</b> minInterval: 50. Smaller values will be rounded up.
+     * <li><b>Maximum</b> minInterval: 2.592.000.000 (30 days). Larger values
+     * will be rounded down.
+     * </ul>
      *
      * @param minInterval Minimum interval in milliseconds
      */
@@ -94,13 +109,22 @@ public:
     /** @brief Equality operator */
     virtual bool operator==(const OnChangeSubscriptionQos& other) const;
 
-    /** @brief Returns the default value for the minimum interval setting */
+    /**
+     * @brief Returns the default value for the minimum interval setting in
+     * milliseconds: 1000
+     */
     static const int64_t& DEFAULT_MIN_INTERVAL();
 
-    /** @brief Returns the minimum value for the minimum interval setting */
+    /**
+     * @brief Returns the minimum value for the minimum interval setting in
+     * milliseconds: 50
+     */
     static const int64_t& MIN_MIN_INTERVAL();
 
-    /** @brief Returns the maximum value for the minimum interval setting */
+    /**
+     * @brief Returns the maximum value for the minimum interval setting in
+     * milliseconds: 2 592 000 000 (30 days)
+     */
     static const int64_t& MAX_MIN_INTERVAL();
 
 protected:
