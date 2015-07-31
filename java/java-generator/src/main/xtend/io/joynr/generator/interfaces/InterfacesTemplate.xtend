@@ -61,6 +61,7 @@ class InterfacesTemplate implements InterfaceTemplate{
 	}
 
 	/**
+	 * @param method the method for which the signature shall be created
 	 * @return a method signature that is unique in terms of method name, in
 	 *      parameter names and in parameter types.
 	 */

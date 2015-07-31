@@ -39,6 +39,7 @@ class JavaTypeUtil extends TypeUtil {
 	}
 
 	/**
+	 * @param method the method for which the signature shall be created
 	 * @return a method signature that is unique in terms of method name, out
 	 *      parameter names and out parameter types.
 	 */
