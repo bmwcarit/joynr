@@ -53,8 +53,18 @@ class InterfaceSyncProxyHTemplate implements InterfaceTemplate{
 «ENDFOR»
 
 «getNamespaceStarter(serviceInterface)»
+/** @brief Synchronous proxy for interface «interfaceName» */
 class «getDllExportMacro()» «syncClassName»: virtual public «className»Base, virtual public I«interfaceName»Sync {
 public:
+	/**
+	 * @brief Parameterized constructor
+	 * @param messagingAddress The address
+	 * @param connectorFactory The connector factory
+	 * @param cache The client cache
+	 * @param domain The provider domain
+	 * @param qosSettings The quality of service settings
+	 * @param cached True, if cached, false otherwise
+	 */
 	«syncClassName»(
 			QSharedPointer<joynr::system::QtAddress> messagingAddress,
 			joynr::ConnectorFactory* connectorFactory,

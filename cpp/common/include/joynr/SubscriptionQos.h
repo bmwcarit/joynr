@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef STDSUBSCRIPTIONQOS_H
-#define STDSUBSCRIPTIONQOS_H
+#ifndef SUBSCRIPTIONQOS_H
+#define SUBSCRIPTIONQOS_H
 
 #include <stdint.h>
 #include <QDate>
@@ -169,4 +169,4 @@ protected:
 
 } // namespace joynr
 
-#endif // STDSUBSCRIPTIONQOS_H
+#endif // SUBSCRIPTIONQOS_H

@@ -54,27 +54,56 @@ class StdEnumHTemplate implements EnumTemplate {
 «ENDIF»
 «getNamespaceStarter(type, true)»
 
+/** @brief Enumeration wrapper class «typeName» */
 struct «getDllExportMacro()»«typeName» {
 	«IF type.hasExtendsDeclaration»
 		// This enum inherits enumeration values from «type.extendedType.typeNameStd».
 	«ENDIF»
+	/**
+	«appendDoxygenSummaryAndWriteSeeAndDescription(type, " *")»
+	 */
 	enum «getNestedEnumName()» : uint32_t {
 		«var ordinal = 0»
 		«FOR enumtype : getEnumElementsAndBaseEnumElements(type) SEPARATOR ','»
+			/**
+			 * @brief «appendDoxygenComment(enumtype, "* ")»
+			 */
 			«enumtype.joynrName» = «ordinal++»
 			««« TODO after switch to Franca 0.9.2 we must check for ordinals defined in the fidl
 			««««enumtype.joynrName» = «enumtype.value.enumeratorValue»
 		«ENDFOR»
 	};
 
+	/** @brief Constructor */
 	«typeName»() = delete;
-	«typeName»(const «typeName»&) = delete;
 
+	/**
+	 * @brief Copy constructor
+	 * @param o the object to copy from
+	 */
+	«typeName»(const «typeName»& o) = delete;
+
+	/**
+	 * @brief Get the matching enum name for an ordinal number
+	 * @param «typeName.toFirstLower»Value The ordinal number
+	 * @return The string representing the enum for the given ordinal number
+	 */
 	static std::string getLiteral(«typeName»::«getNestedEnumName()» «typeName.toFirstLower»Value);
+
+	/**
+	 * @brief Get the matching ordinal number for an enum
+	 * @param «typeName.toFirstLower»Value The enum
+	 * @return The ordinal number representing the enum
+	 */
 	static uint32_t getOrdinal(«typeName»::«getNestedEnumName()» «typeName.toFirstLower»Value);
 };
 
 // Printing «typeName» with google-test and google-mock.
+/**
+ * @brief Print values of MessagingQos object
+ * @param messagingQos The current object instance
+ * @param os The output stream to send the output to
+ */
 void PrintTo(const «typeName»::«getNestedEnumName()»& «typeName.toFirstLower»Value, ::std::ostream* os);
 
 «getNamespaceEnder(type, true)»
@@ -83,8 +112,21 @@ namespace std {
 // Function object that implements a hash function for «type.buildPackagePath("::", true)»«typeName».
 // Used by the unordered associative containers std::unordered_set, std::unordered_multiset,
 // std::unordered_map, std::unordered_multimap as default hash function.
+
+/**
+ * @brief Function object that implements a hash function for «type.buildPackagePath("::", true)»«typeName».
+ *
+ * Used by the unordered associative containers std::unordered_set, std::unordered_multiset,
+ * std::unordered_map, std::unordered_multimap as default hash function.
+ */
 template<>
 struct hash<«type.buildPackagePath("::", true)»«typeName»::«getNestedEnumName()»> {
+
+	/**
+	 * @brief method overriding default implementation of operator ()
+	 * @param «typeName.toFirstLower»Value the operators argument
+	 * @return the ordinal number representing the enum value
+	 */
 	std::size_t operator()(const «type.buildPackagePath("::", true)»«typeName»::«getNestedEnumName()»& «typeName.toFirstLower»Value) const {
 		return «type.buildPackagePath("::", true)»«typeName»::getOrdinal(«typeName.toFirstLower»Value);
 	}

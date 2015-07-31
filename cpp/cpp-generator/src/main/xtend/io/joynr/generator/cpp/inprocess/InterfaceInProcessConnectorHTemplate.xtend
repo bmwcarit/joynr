@@ -79,6 +79,7 @@ namespace joynr {
 
 «getNamespaceStarter(serviceInterface)»
 
+/** @brief InProcessConnector class for interface «interfaceName» */
 class «interfaceName»InProcessConnector : public I«interfaceName»Connector {
 private:
 «FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.notifiable]»
@@ -98,6 +99,16 @@ private:
 «ENDFOR»
 public:
 
+	/**
+	 * @brief Parameterized constructor
+	 * @param subscriptionManager Subscription manager instance
+	 * @param publicationManager Publication manager instance
+	 * @param inProcessPublicationSender InProcessPublicationSender instance,
+	 * used to transfer publications from the PublicationManager to the (local) SubscriptionManager.
+	 * @param proxyParticipantId The participant id of the proxy
+	 * @param providerParticipantId The participant id of the provider
+	 * @param address The address
+	 */
 	«interfaceName»InProcessConnector(
 				joynr::ISubscriptionManager* subscriptionManager,
 				joynr::PublicationManager* publicationManager,
@@ -107,6 +118,10 @@ public:
 				QSharedPointer<joynr::InProcessAddress> address
 	);
 
+	/**
+	 * @brief Checks whether cluster controller is used
+	 * @return true, if cluster controller is used
+	 */
 	virtual bool usesClusterController() const;
 
 	«produceSyncGetters(serviceInterface, false)»

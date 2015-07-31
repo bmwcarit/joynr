@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef STDBROADCASTFILTERPARAMETERS_H
-#define STDBROADCASTFILTERPARAMETERS_H
+#ifndef BROADCASTFILTERPARAMETERS_H
+#define BROADCASTFILTERPARAMETERS_H
 
 #include <map>
 #include <string>
@@ -54,4 +54,4 @@ private:
 
 } // namespace joynr
 
-#endif // STDBROADCASTFILTERPARAMETERS_H
+#endif // BROADCASTFILTERPARAMETERS_H

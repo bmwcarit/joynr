@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef STDStdPeriodicSubscriptionQos_H
-#define STDStdPeriodicSubscriptionQos_H
+#ifndef PERIODICSUBSCRIPTIONQOS_H
+#define PERIODICSUBSCRIPTIONQOS_H
 
 #include "joynr/SubscriptionQos.h"
 
@@ -147,4 +147,4 @@ protected:
 };
 
 } // namespace joynr
-#endif // STDStdPeriodicSubscriptionQos_H
+#endif // PERIODICSUBSCRIPTIONQOS_H

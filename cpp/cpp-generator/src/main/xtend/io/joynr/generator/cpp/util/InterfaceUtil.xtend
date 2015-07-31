@@ -90,8 +90,8 @@ class InterfaceUtil {
 		/**
 		* @brief Synchronous setter for the «attributeName» attribute.
 		*
-		* @param «returnType.toFirstLower» The value to set.
-		* @returns the RequestStatus of the set«attributeName.toFirstUpper» call
+		* @param «attributeName.toFirstLower» The value to set.
+		* @return the RequestStatus of the set«attributeName.toFirstUpper» call
 		*/
 		virtual joynr::RequestStatus set«attributeName.toFirstUpper»(
 				const «returnType»& «attributeName.toFirstLower»
@@ -108,7 +108,7 @@ class InterfaceUtil {
 		/**
 		* @brief Asynchronous setter for the «attributeName» attribute.
 		*
-		* @param «returnType.toFirstLower» The value to set.
+		* @param «attributeName.toFirstLower» The value to set.
 		«printOnSuccessFctParamDefinition»
 		«printOnErrorFctParamDefinition»
 		«printFutureReturnDefinition»
@@ -137,7 +137,7 @@ class InterfaceUtil {
 		«FOR inputParam: method.inputParameters»
 		* @param «inputParam.typeName» «inputParam.joynrName»
 		«ENDFOR»
-		* @returns the internal status of the request which will be returned to the caller.
+		* @return the internal status of the request which will be returned to the caller.
 		*/
 		virtual joynr::RequestStatus «method.joynrName»(
 				«outputTypedParamList»«IF method.outputParameters.size > 0 && method.inputParameters.size > 0», «ENDIF»«inputTypedParamList»
@@ -158,7 +158,6 @@ class InterfaceUtil {
 		«printOnErrorFctParamDefinition»
 		«printFutureReturnDefinition»
 		*/
-
 		virtual std::shared_ptr<joynr::Future<«outputParameters»> > «method.joynrName»Async(
 				«method.commaSeperatedTypedConstInputParameterList»«IF !method.inputParameters.empty»,«ENDIF»
 				std::function<void(«outputTypedParamList»)> onSuccess = nullptr,

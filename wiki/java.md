@@ -66,8 +66,11 @@ import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.JoynrArbitrationException;
 import io.joynr.exceptions.JoynrCommunicationException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.proxy.Callback;
+import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrApplication;
@@ -241,6 +244,8 @@ public void run() {
 ## Synchronous Remote procedure calls
 While the provider executes the call asynchronously in any case, the consumer will wait until the call is finished, i.e. the thread will be blocked.
 Note that the message order on Joynr RPCs will not be preserved.
+
+Example for calls with single return parameter:
 ```java
 // for any Franca type named "<Type>" used
 import joynr.<Package>.<Type>;
@@ -257,10 +262,36 @@ public void run() {
 }
 ```
 
+In case of multiple return parameters the parameters will be wrapped into a class named
+<Method>Returned. Each parameter value is available through a public member variable inside this class.
+
+Example:
+```java
+// for any Franca type named "<Type>" used
+import joynr.<Package>.<Type>;
+...
+public void run() {
+    // setup proxy named <interface>Proxy
+    ...
+    try {
+        <Method>Returned retval;
+        retval = <interface>Proxy.<method>(... optional arguments ...);
+        // handle return parameters
+        //   retval.<returnParameter1>
+        //   ...
+        //   retval.<returnParameterN>
+    } catch (JoynrArbitrationException) {
+        // error handling
+    }
+}
+```
+
 ## Asynchronous Remote Procedure calls
 Using asynchronous method calls allows the current thread to continue its work. For this purpose a callback has to be provided for the API call in order to receive the result and error respectively. Note the current thread will still be blocked until the Joynr message is internally set up and serialized. It will then be enqueued and handled by a Joynr Middleware thread.
 The message order on Joynr RPCs will not be preserved.
 If no return type exists, the term ```Void``` is used instead.
+
+Example for calls with single return parameter:
 ```java
 // for any Franca type named "<Type>" used
 import joynr.<Package>.<Type>;
@@ -278,13 +309,61 @@ public class MyCallback implements Callback<<ReturnType>> {
 public void run() {
     // setup proxy named "<interface>Proxy"
     ...
-    public Future<<ReturnType>> retval;
+    public Future<<ReturnType>> future;
     MyCallback myCallback = new MyCallback();
 
-    retval = <interface>Proxy.<method>(
+    future = <interface>Proxy.<method>(
         myCallback,
         ... arguments ...
     );
+    try {
+        long timeoutInMilliseconds;
+        // set timeout value here
+        <ReturnType> result = future.getReply(timeOutInMilliseconds);
+    } catch (InterruptedException|JoynrRuntimeException e) {
+        // handle error
+    }
+    ...
+}
+```
+
+In case of multiple return parameters the parameters will be wrapped into a class named
+<Method>Returned. Each parameter value is available through a public member variable inside this class.
+```java
+// for any Franca type named "<Type>" used
+import joynr.<Package>.<Type>;
+...
+public class MyCallback implements Callback<<Method>Returned> {
+    void onSuccess(<Method>Returned result) {
+        // handle result
+    }
+
+    void onFailure(JoynrRuntimeException error) {
+        // handle error
+    }
+}
+...
+public void run() {
+    // setup proxy named "<interface>Proxy"
+    ...
+    public Future<<Method>Returned> future;
+    MyCallback myCallback = new MyCallback();
+
+    future = <interface>Proxy.<method>(
+        myCallback,
+        ... arguments ...
+    );
+    try {
+        long timeoutInMilliseconds;
+        // set timeout value here
+        <Method>Returned result = future.getReply(timeOutInMilliseconds);
+        // handle return parameters
+        //   result.<returnParameter1>
+        //   ...
+        //   result.<returnParameterN>
+    } catch (InterruptedException|JoynrRuntimeException e) {
+        // handle error
+    }
     ...
 }
 ```
@@ -475,7 +554,6 @@ public void run() {
 
 The subscribeTo method can also be used to update an existing subscription, when the **subscriptionId** is given as additional parameter as follows:
 
-
 ```java
 subscriptionId = <interface>Proxy.subscribeTo<Broadcast>Broadcast(
     new <Broadcast>BroadcastAdapter() {
@@ -638,6 +716,8 @@ The provider application class is used to register a provider class for each Fra
 ### Required Imports
 
 ```java
+import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
+import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.runtime.AbstractJoynrApplication;
@@ -649,6 +729,8 @@ import java.util.Properties;
 import com.google.inject.Inject;
 import com.google.inject.Module;
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
 ```
 
 ### The base class
@@ -696,9 +778,10 @@ public static void main(String[] args) {
     joynrConfig.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, STATIC_PERSISTENCE_FILE);
     joynrConfig.setProperty(PROPERTY_JOYNR_DOMAIN_LOCAL, localDomain);
     Properties appConfig = new Properties();
-    Module[] modules = new Module[]{}; // new DefaultUrlDirectoryModule();
+    provisionAccessControl(joynrConfig, localDomain);
     JoynrApplication joynrApplication =
-        new JoynrInjectorFactory(joynrConfig, modules).createApplication(
+        new JoynrInjectorFactory(joynrConfig,
+            new StaticDomainAccessControlProvisioningModule()).createApplication(
             new JoynrApplicationModule(MyProviderApplication.class, appConfig)
         );
     joynrApplication.run();
@@ -717,7 +800,7 @@ public void run() {
     // for any filter of a broadcast with filter
     <interface>provider.addBroadcastFilter(new <Filter>BroadcastFilter());
 
-    runtime.registerCapability(localDomain, <interface>provider, AUTH_TOKEN);
+    runtime.registerProvider(localDomain, <interface>provider);
 
     // loop here
 }
@@ -731,7 +814,7 @@ The ```shutdown``` method should be called on exit of the application. It should
 public void shutdown() {
     if (<interface>provider != null) {
         try {
-            runtime.unregisterCapability(localDomain, <interface>provider, AUTH_TOKEN);
+            runtime.unregisterProvider(localDomain, <interface>provider);
         } catch (JoynrRuntimeException e) {
             // handle error
         }
@@ -743,6 +826,33 @@ public void shutdown() {
         // do nothing; exiting application
     }
     System.exit(0);
+}
+```
+
+### Access control
+
+The following allows anyone to access interface:
+
+```java
+private static void provisionAccessControl(Properties properties, String domain) throws Exception {
+   ObjectMapper objectMapper = new ObjectMapper();
+   objectMapper.enableDefaultTypingAsProperty(DefaultTyping.JAVA_LANG_OBJECT, "_typeName");
+   MasterAccessControlEntry newMasterAccessControlEntry = new MasterAccessControlEntry(
+       "*",
+       domain,
+       MyProvider.INTERFACE_NAME,
+       TrustLevel.LOW,
+       Arrays.asList(TrustLevel.LOW),
+       TrustLevel.LOW,
+       Arrays.asList(TrustLevel.LOW),
+       "*",
+       Permission.YES,
+       Arrays.asList(Permission.YES)
+   );
+   MasterAccessControlEntry[] provisionedAccessControlEntries = { newMasterAccessControlEntry };
+   String provisionedAccessControlEntriesAsJson = objectMapper.writeValueAsString(provisionedAccessControlEntries);
+   properties.setProperty(StaticDomainAccessControlProvisioning.PROPERTY_PROVISIONED_MASTER_ACCESSCONTROLENTRIES,
+       provisionedAccessControlEntriesAsJson);
 }
 ```
 
@@ -834,6 +944,27 @@ public Promise<Deferred<<AttributeType>>> get<Attribute>() {
     ...
     // from current thread
     return new Promise<Deferred<<AttributeType>>>(deferred);
+}
+```
+
+### Providing attribute setters
+Since the current thread is blocked while the setter runs, activity should be kept as short as possible. In most cases, when a simple element is returned, the method can resolve the Promise immediately. However, if longer activity is required, it should be done in the background and the deferred should also be resolved by a background thread.
+```java
+// for any Franca type named "<Type>" used
+import joynr.<Package>.<Type>;
+...
+@Override
+public Promise<DeferredVoid> set<Attribute>(<AttributeType> <attribute>) {
+    DeferredVoid deferred = new DeferredVoid();
+    ...
+    // start some activity to set the value
+    // if complex, execute this asynchronously;
+    // once the value is set, resolve the Promise
+    // may be run from background thread, if required
+    deferred.resolve();
+    ...
+    // from current thread
+    return new Promise<DeferredVoid>(deferred);
 }
 ```
 

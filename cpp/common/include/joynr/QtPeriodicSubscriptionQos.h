@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef PERIODICSUBSCRIPTIONQOS_H
-#define PERIODICSUBSCRIPTIONQOS_H
+#ifndef QTPERIODICSUBSCRIPTIONQOS_H
+#define QTPERIODICSUBSCRIPTIONQOS_H
 
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/QtSubscriptionQos.h"
@@ -160,4 +160,4 @@ protected:
 
 Q_DECLARE_METATYPE(joynr::QtPeriodicSubscriptionQos)
 
-#endif // PERIODICSUBSCRIPTIONQOS_H
+#endif // QTPERIODICSUBSCRIPTIONQOS_H

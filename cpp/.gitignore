@@ -19,3 +19,4 @@ common-api/src-gen
 /.project
 /.settings
 tests/gen/
+/docs

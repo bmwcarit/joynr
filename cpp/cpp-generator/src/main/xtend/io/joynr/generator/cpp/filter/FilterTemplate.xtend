@@ -81,18 +81,30 @@ class FilterTemplate implements BroadcastTemplate {
 «getDllExportIncludeStatement()»
 
 «getNamespaceStarter(serviceInterface)»
+/**
+ * @brief Broadcast filter class for interface «serviceInterface.joynrName.toFirstUpper»,
+ * broadcast «broadcastName»
+ */
 class «getDllExportMacro()» «className» : public IBroadcastFilter {
 public:
+	/** @brief Default constructor */
 	«className»() :
 			IBroadcastFilter("«broadcastName»")
 	{
 	}
 
+	/** @brief Destructor */
 	~«className»() {}
 
-	/*
-	* Override this method to provide a filter logic implementation.
-	*/
+	/**
+	 * @brief Filter method to decide whether a broadcast should be delivered.
+	 * This method must be overriden to provider a filter logic implementation.
+	 «FOR oparam: broadcast.outputParameters»
+	 * @param «oparam.joynrName» Broadcast output parameter «oparam.joynrName» to be used for filtering
+	 «ENDFOR»
+	 * @param filterParameters The filter parameters
+	 * @return true, if this broadcast should be published, false otherwise
+	 */
 	virtual bool filter(
 			«broadcast.commaSeperatedTypedConstOutputParameterList.substring(1)»,
 			const «serviceInterface.joynrName.toFirstUpper + broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters

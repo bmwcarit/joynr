@@ -30,6 +30,8 @@ import org.franca.core.franca.FModelElement
 import org.franca.core.franca.FType
 import org.franca.core.franca.FTypeRef
 import org.franca.core.franca.FTypedElement
+import org.franca.core.franca.FBasicTypeId
+import org.franca.core.franca.FAnnotationType
 
 class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 
@@ -107,8 +109,8 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 			packagepath = getPackagePathWithJoynrPrefix(datatype, separator);
 		} catch (IllegalStateException e){
 			//	if an illegal StateException has been thrown, we tried to get the package for a primitive type, so the packagepath stays empty.
-		} 
-		if (packagepath!="") { 
+		}
+		if (packagepath!="") {
 			packagepath = packagepath + separator;
 		};
 		if (includeTypeCollection && datatype.partOfTypeCollection) {
@@ -116,6 +118,48 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 		}
 		return packagepath;
 	}
+
+	// for classes and methods
+	def appendDoxygenSummaryAndWriteSeeAndDescription(FModelElement element, String prefix)'''
+		«IF element.comment != null»
+			«FOR comment : element.comment.elements»
+				«IF comment.type == FAnnotationType::DESCRIPTION»
+					«prefix» @brief «comment.comment.replaceAll("\\s+", " ").replaceAll("\n", "\n" + prefix)»
+				«ENDIF»
+			«ENDFOR»
+			«FOR comment : element.comment.elements»
+				«IF comment.type == FAnnotationType::SEE»
+					«prefix» @see «comment.comment.replaceAll("\\s+", " ").replaceAll("\n", "\n" + prefix)»
+				«ENDIF»
+				«IF comment.type == FAnnotationType::DETAILS»
+					«prefix»
+					«prefix» «comment.comment.replaceAll("\\s+", " ").replaceAll("\n", "\n" + prefix)»
+				«ENDIF»
+			«ENDFOR»
+		«ENDIF»
+	'''
+
+	// for parts
+	def appendDoxygenComment(FModelElement element, String prefix)'''
+		«IF element.comment != null»
+			«FOR comment : element.comment.elements»
+				«IF comment.type == FAnnotationType::DESCRIPTION»
+					«comment.comment.replaceAll("\\s+", " ").replaceAll("\n", "\n" + prefix)»
+				«ENDIF»
+			«ENDFOR»
+		«ENDIF»
+	'''
+
+	// for parameters
+	def appendDoxygenParameter(FModelElement element, String prefix)'''
+		«IF element.comment != null»
+			«FOR comment : element.comment.elements»
+				«IF comment.type == FAnnotationType::DESCRIPTION»
+					«prefix» @param «element.joynrName» «comment.comment.replaceAll("\\s+", " ").replaceAll("\n", "\n" + prefix)»
+				«ENDIF»
+			«ENDFOR»
+		«ENDIF»
+	'''
 
 	override String getOneLineWarning() {
 		//return ""
@@ -193,7 +237,7 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 
 	def String getIncludeOfFilterParametersContainer(FInterface serviceInterface, FBroadcast broadcast) {
 		return getPackagePathWithJoynrPrefix(serviceInterface, "/")
-			+ "/" + serviceInterface.name.toFirstUpper 
+			+ "/" + serviceInterface.name.toFirstUpper
 			+ broadcast.joynrName.toFirstUpper
 			+ "BroadcastFilterParameters.h"
 	}

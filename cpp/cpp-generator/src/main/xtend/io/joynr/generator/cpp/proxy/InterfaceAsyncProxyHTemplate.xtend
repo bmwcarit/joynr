@@ -54,8 +54,19 @@ class InterfaceAsyncProxyHTemplate  implements InterfaceTemplate{
 #include <memory>
 
 «getNamespaceStarter(serviceInterface)»
+/** @brief proxy class for asynchronous calls of interface «interfaceName» */
 class «getDllExportMacro()» «asyncClassName»: virtual public «className»Base, virtual public I«interfaceName»Async {
 public:
+
+	/**
+	 * @brief Parameterized constructor
+	 * @param messagingAddress The messaging address
+	 * @param connectorFactory The connector factory
+	 * @param cache The client cache
+	 * @param domain The provider domain
+	 * @param qosSettings The quality of service settings
+	 * @param cached True, if cached, false otherwise
+	 */
 	«asyncClassName»(
 			QSharedPointer<joynr::system::QtAddress> messagingAddress,
 			joynr::ConnectorFactory* connectorFactory,

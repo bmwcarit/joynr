@@ -7,6 +7,7 @@ The software listed below included in some products is licensed under the "Apach
 - com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:2.2.1
 - com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:2.2.1
 - com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.2.1
+- com.google.code.gson:gson:2.1
 - com.google.guava:guava:11.0.2
 - com.google.inject:guice:3.0
   Notice file: WEB-INF/lib/guice-3.0.jar:META-INF/NOTICE
@@ -27,7 +28,9 @@ The software listed below included in some products is licensed under the "Apach
   Notice file: WEB-INF/lib/commons-logging-1.0.4.jar:META-INF/NOTICE.txt
   License file: WEB-INF/lib/commons-logging-1.0.4.jar:META-INF/LICENSE.txt
 - javax.inject:javax.inject:1
-- net.sf.ehcache:ehcache:jar:2.8.1
+- log4j:log4j:1.2.17
+  Notice file: WEB-INF/lib/log4j-1.2.17.jar:META-INF/NOTICE
+- net.sf.ehcache:ehcache:2.8.1
   License file: WEB-INF/lib/ehcache-2.8.1.jar:LICENSE
 - org.apache.httpcomponents:httpclient:4.3
   Notice file: WEB-INF/lib/httpclient-4.3.jar:META-INF/NOTICE
@@ -55,14 +58,18 @@ The software listed below included in some products is licensed under the "BSD 3
 - asm:asm:3.1
   License: META-INF/licenses/BSD-3-Clause.asm.txt
 
+The software listed below included in some products is licensed under the "Common Development and Distritbuion-License 1.0". A copy of that license in the English original version with a copyright notice, a disclaimer of warranty, and an exclusion of liability is included in this document "META-INF/licences/CDDL-1.0.txt".
+- javax.servlet:javax.servlet-api:3.1.0
+
 The software listed below included in some products is licensed under the "Common Development and Distritbuion-License 1.1". A copy of that license in the English original version with a copyright notice, a disclaimer of warranty, and an exclusion of liability is included in this document "META-INF/licences/CDDL-1.1.txt".
+- com.sun.jersey:jersey-client:1.17
+- com.sun.jersey:jersey-core:1.17
 - com.sun.jersey:jersey-server:1.17
 - com.sun.jersey:jersey-servlet:1.17
 - com.sun.jersey.contribs:jersey-guice:1.17
 
 The software listed below included in some products is licensed under the "DOM4J License". A copy of that license in the English original version with a copyright notice, a disclaimer of warranty, and an exclusion of liability is included in this document "META-INF/licences/DOM4J-License.txt".
 - dom4j:dom4j:1.6.1
-  License file: WEB-INF/lib/dom4j-1.6.1.jar:/META-INF/LICENSE.txt
 
 Software libraries listed below included in some products are free software that is licensed under "GNU Lesser General Public License (LGPL) v2.1". A copy of that license in the English original version with a disclaimer of warranty and an exclusion of liability is included in this document "META-INF/licenses/LGPL-2.1.txt". This free software has been developed by third parties and is copyrighted. It is provided for free, and you are permitted to use it according to the mentioned license. LGPL v 2.1 supersedes other licenses. The complete corresponding source code is included in the files listed below.
 - javassist:javassist:3.12.1.GA
@@ -74,6 +81,8 @@ Software libraries listed below included in some products are free software that
 
 The software listed below included in some products is licensed under the "MIT/X11 license". A copy of that license in the English original version with a copyright notice, a disclaimer of warranty, and an exclusion of liability is included in the documents listed below.
 - org.slf4j:slf4j-api:1.6.6
+  License: META-INF/licenses/MIT.slf4j.txt
+- org.slf4j:slf4j-log4j12:1.6.6
   License: META-INF/licenses/MIT.slf4j.txt
 
 The software listed below included in some products is licensed under the "W3C® Software Notice and License". A copy of that license in the English original version with a copyright notice, a disclaimer of warranty, and an exclusion of liability is included in this document "META-INF/licenses/W3C-Software-Notice.txt".
