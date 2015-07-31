@@ -52,7 +52,7 @@ class TypeCppTemplate implements CompoundTypeTemplate{
 #include <QMetaEnum>
 #include <QDateTime>
 
-#include "«getPackagePathWithJoynrPrefix(type, "/")»«IF type.isPartOfTypeCollection»/«type.typeCollectionName»«ENDIF»/«type.joynrNameStd».h"
+#include "«getPackagePathWithJoynrPrefix(type, "/")»«IF type.isPartOfTypeCollection»/«type.typeCollectionName»«ENDIF»/«type.joynrName».h"
 
 
 «getNamespaceStarter(type)»

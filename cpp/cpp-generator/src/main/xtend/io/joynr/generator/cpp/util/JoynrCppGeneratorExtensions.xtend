@@ -227,10 +227,6 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 		return "Qt" + type.joynrName
 	}
 
-	def joynrNameStd(FType type){
-		return type.joynrName
-	}
-
 	def getAllPrimitiveTypes(FInterface serviceInterface) {
 		serviceInterface.allRequiredTypes.filter[type | type instanceof FBasicTypeId].map[type | type as FBasicTypeId]
 	}

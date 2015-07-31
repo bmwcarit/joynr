@@ -52,7 +52,7 @@ class InterfaceHTemplate implements InterfaceTemplate{
 	«IF datatype instanceof FType»
 		«IF isComplex(datatype)»
 			«getNamespaceStarter(datatype, true)»
-				class «(datatype).joynrNameStd»;
+				class «(datatype).joynrName»;
 			«getNamespaceEnder(datatype, true)»
 		«ELSE »
 			#include "«getIncludeOf(datatype)»"

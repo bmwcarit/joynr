@@ -56,7 +56,7 @@ class CppStdTypeUtil extends CppTypeUtil {
 	}
 
 	override getTypeName(FType datatype) {
-		var typeName = buildPackagePath(datatype, "::", true) + datatype.joynrNameStd;
+		var typeName = buildPackagePath(datatype, "::", true) + datatype.joynrName;
 		if (isEnum(datatype)){
 			typeName += "::" + getNestedEnumName();
 		}
@@ -116,6 +116,6 @@ class CppStdTypeUtil extends CppTypeUtil {
 		if (dataType.isPartOfTypeCollection) {
 			path += "/" + dataType.typeCollectionName
 		}
-		return path + "/" + dataType.joynrNameStd + ".h";
+		return path + "/" + dataType.joynrName + ".h";
 	}
 }

@@ -37,7 +37,7 @@ class StdEnumCppTemplate implements EnumTemplate {
 
 	override generate(FEnumerationType type)
 '''
-«val typeName = type.joynrNameStd»
+«val typeName = type.joynrName»
 «warning»
 «getDllExportIncludeStatement()»
 
