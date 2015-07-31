@@ -56,18 +56,11 @@ class CppStdTypeUtil extends CppTypeUtil {
 	}
 
 	override getTypeName(FType datatype) {
+		var typeName = buildPackagePath(datatype, "::", true) + datatype.joynrNameStd;
 		if (isEnum(datatype)){
-			return  datatype.typeNameStd + "::" + getNestedEnumName();
+			typeName += "::" + getNestedEnumName();
 		}
-		return datatype.typeNameStd
-	}
-
-	def getTypeNameStd(FType datatype) {
-		var packagepath = buildPackagePath(datatype, "::");
-		if (datatype.isPartOfTypeCollection) {
-			packagepath += datatype.typeCollectionName + "::"
-		}
-		return  packagepath + datatype.joynrNameStd  //if we don't know the type, we have to assume its a complex datatype defined somewhere else.
+		return typeName
 	}
 
 	override getIncludeForArray() {
@@ -117,6 +110,7 @@ class CppStdTypeUtil extends CppTypeUtil {
 			super.getDefaultValue(element)
 		}
 	}
+
 	def getIncludeOfStd(FType dataType) {
 		var path = getPackagePathWithJoynrPrefix(dataType, "/")
 		if (dataType.isPartOfTypeCollection) {

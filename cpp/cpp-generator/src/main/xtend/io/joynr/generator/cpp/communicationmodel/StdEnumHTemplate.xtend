@@ -57,7 +57,7 @@ class StdEnumHTemplate implements EnumTemplate {
 /** @brief Enumeration wrapper class «typeName» */
 struct «getDllExportMacro()»«typeName» {
 	«IF type.hasExtendsDeclaration»
-		// This enum inherits enumeration values from «type.extendedType.typeNameStd».
+		// This enum inherits enumeration values from «type.extendedType.typeName».
 	«ENDIF»
 	/**
 	«appendDoxygenSummaryAndWriteSeeAndDescription(type, " *")»
