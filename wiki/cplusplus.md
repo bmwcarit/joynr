@@ -212,9 +212,12 @@ Note that the message order on Joynr RPCs will not be preserved.
 #include "joynr/<Package>/<Type>.h"
 
     try {
-        <ReturnType> retval;
+        <ReturnType1> retval1;
+        ...
+        <ReturnTypeN> retvalN;
         joynr::RequestStatus requestStatus;
-        <interface>Proxy-><method>(requestStatus, retval, ... optional arguments ...);
+
+        requestStatus = <interface>Proxy-><method>(retval1 [, ..., retvalN], ... optional arguments ...);
     } catch (std::exception e) {
         // error handling
     }
@@ -227,22 +230,27 @@ If no return type exists, the term ```Void``` is used instead.
 ```cpp
 #include "joynr/<Package>/<Type>.h"
 
-QSharedPointer<joynr::Future<<ReturnType>> > future(new joynr::Future<<ReturnType>>());
-joynr::RequestStatus& status;
+std::shared_ptr<joynr::Future<<ReturnType1> [, ..., <ReturnTypeN>]> >
+    future(new joynr::Future<<ReturnType1> [, ..., <ReturnTypeN>]>());
+joynr::RequestStatus status;
+<ReturnType1> retval1;
+...
+<ReturnTypeN> retvalN;
 
-std::function<void(const joynr::RequestStatus& status, const <ReturnType>& result)> myCallback =
-    [future] (const joynr::RequestStatus& internalStatus, const <ReturnType>& result) {
-        if (internalStatus.getCode() == joynr::RequestStatusCode::OK) {
-            future->onSuccess(internalStatus, result);
-        } else {
-            future->onFailure(internalStatus);
-        }
-};
+// optional callback functions
+std::function<void(const <ReturnType1> retval1 [, ..., const <ReturnTypeN> retvalN])> onSuccess =
+    [] (const <ReturnType1> retval1 [, ..., const <ReturnTypeN> retvalN]) {
+        // special handling
+    };
+std::function<void(const joynr::RequestStatus& status)> onError =
+    [] (const joynr::RequestStatus& status) {
+        // special handling
+    };
 
-<interface>Proxy-><method>(... arguments ..., myCallback);
+future = <interface>Proxy-><method>(... arguments ..., [onSuccess [, onError]]);
 status = future->waitForFinished();
 if (status.successful()) {
-    result = future->getValue();
+    future->getValue(retval1 [, ..., retvalN ]);
 }
 ```
 
@@ -318,11 +326,11 @@ class <AttributeType>Listener : public SubscriptionListener<<Package>::<Attribut
         }
 };
 
-QSharedPointer<ISubscriptionListener<AttributeType>> listener(
+std::shared_ptr<ISubscriptionListener<AttributeType>> listener(
     new <AttributeType>Listener();
 );
 
-QSharedPointer<<QosClass>> qos(new <QosClass>());
+<QosClass> qos;
 // define details of qos by calling its setters here
 
 std::string subscriptionId;
@@ -388,11 +396,11 @@ class <Broadcast>Listener : public SubscriptionListener<<OutputType1>[, ... <Out
         }
 };
 
-QSharedPointer<ISubscriptionListener<OutputType1>[, ... <OutputTypeN>]> listener(
+std::shared_ptr<ISubscriptionListener<OutputType1>[, ... <OutputTypeN>]> listener(
     new <Broadcast>Listener();
 );
 
-QSharedPointer<OnChangeSubscriptionQos> qos(new OnChangeSubscriptionQos());
+OnChangeSubscriptionQos qos;
 // define details of qos by calling its setters here
 
 std::string subscriptionId;
@@ -435,11 +443,11 @@ In addition to the normal broadcast subscription, the filter parameters for this
 // for class <Broadcast>Listener please refer to
 // section "subscribing to a broadcast unconditionally"
 ...
-QSharedPointer<ISubscriptionListener<OutputType1>[, ... <OutputTypeN>]> listener(
+std::shared_ptr<ISubscriptionListener<OutputType1>[, ... <OutputTypeN>]> listener(
     new <Broadcast>Listener();
 );
 
-QSharedPointer<OnChangeSubscriptionQos> qos(new OnChangeSubscriptionQos());
+OnChangeSubscriptionQos qos;
 // define details of qos by calling its setters here
 
 std::string subscriptionId;
@@ -516,7 +524,7 @@ The provider application class is used to register a provider class for each Fra
 
 ```cpp
 #include "joynr/JoynrRuntime.h"
-#include "<Interface>Provider.h"
+#include "My<Interface>Provider.h"
 #include "<Broadcast>BroadcastFilter.h"
 ```
 
@@ -551,14 +559,11 @@ main(int argc, char** argv)
 For each interface a specific provider class instance must be registered as capability. From that time on, the provider will be reachable from outside and react on incoming requests (e.g. method RPC etc.). It can be found by consumers through Discovery.
 Any specific broadcast filters must be added prior to registry.
 ```cpp
-    types::ProviderQos providerQos;
-    providerQos.setPriority(<PriorityValue>);
-
     // create instance of provider class
-    std::shared_ptr<My<Interface>Provider> provider(new My<Interface>Provider(providerQos));
+    std::shared_ptr<My<Interface>Provider> provider(new My<Interface>Provider());
 
     // create filter instance for each broadcast filter
-    QSharedPointer<<Broadcast>BroadcastFilter> <broadcast>BroadcastFilter(
+    std::shared_ptr<<Broadcast>BroadcastFilter> <broadcast>BroadcastFilter(
             new <Broadcast>BroadcastFilter());
     provider->addBroadcastFilter(<broadcast>BroadcastFilter);
 
@@ -583,8 +588,7 @@ The provider class implements the **attributes**, **methods** and **broadcasts**
 ### Required imports
 The following Joynr C++ include files are required:
 ```cpp
-#include "joynr/<Package>/<Interface>Provider"
-#include "joynr/types/ProviderQos.h"
+#include "My<Interface>Provider.h"
 ```
 
 ### The Provider quality of service
@@ -612,16 +616,19 @@ providerQos.setSupportsOnChangeSubscriptions(true);
 ```
 
 ### The base class
-The provider class must extend the generated class ```joynr::<Package>::<Interface>Provider```  and implement getter and setter methods for each Franca attribute and a method for each method of the Franca interface. In order to send broadcasts the generated code of the super class ```joynr::<Interface>Provider``` can be used.
+The provider class must extend the generated class ```joynr::<Package>::Default<Interface>Provider```  and implement getter and setter methods for each Franca attribute and a method for each method of the Franca interface. In order to send broadcasts the generated code of the super class ```joynr::<Interface>Provider``` can be used.
 ```cpp
 #include "My<Interface>Provider.h"
 #include "joynr/RequestStatus.h"
 
 using namespace joynr;
 
-My<Interface>Provider::My<Interface>Provider(const types::ProviderQos& providerQos)
-    : <Interface>Provider(providerQos)
+My<Interface>Provider::My<Interface>Provider()
+    : Default<Interface>Provider()
 {
+    // call setters to configure inherited providerQos
+    providerQos.setPriority(<priorityValue>);
+    ...
 }
 
 My<Interface>Provider::~My<Interface>Provider()
@@ -642,25 +649,23 @@ The getter methods return the current value of an attribute. Since the current t
 #include "joynr/<Package>/<Type>.h"
 ...
 void My<Interface>Provider::get<Attribute>(
-    RequestStatus& status,
-    <AttributeType>& result
+    std::function<void(const <Package>::<AttributeType>&)> onSuccess
 )
 {
-    result = <AttributeValue>;
-    status.setCode(RequestStatusCode::OK);
+    onSuccess(<AttributeValue>);
 }
 
 void My<Interface>Provider::set<Attribute>(
-    RequestStatus& status,
-    <AttributeType> newValue
+    const joynr::<Package>::<AttributeType>& <attribute>,
+    std::function<void()> onSuccess
 )
 {
     // handle and store the new Value
     ...
     // inform subscribers about the value change
-    <attribute>Changed(newValue);
+    <attribute>Changed(<attribute>);
     ...
-    status.setCode(RequestStatusCode::OK);
+    onSuccess();
 }
 ```
 
@@ -671,14 +676,17 @@ The provider should always implement RPC calls asynchronously in order to not bl
 #include "joynr/<Package>/<Type>.h"
 ...
 void My<Interface>Provider::<method>(
-    RequestStatus& status,
-    <ReturnType>& returnValue, // optional
     ... input parameters ...   // optional
+    std::function<void(
+        const <ReturnType1>& returnValue1
+        ...
+        const <ReturnTypeN>& returnValueN
+    )> onSuccess
 )
 {
     // handle request
     ...
-    status.setCode(RequestStatusCode::OK);
+    onSuccess(returnValue1, ..., returnValueN);
 }
 ```
 
@@ -723,4 +731,53 @@ class <Filter>Filter: public <Package>::<Interface><Broadcast>BroadcastFilter
             const joynr::<Package>::<Interface><Broadcast>BroadcastFilterParameters& filterParameters
         );
 }
+```
+
+## The include file for the My&lt;Interface&gt;Provider class
+
+The include file for the provider class contains
+* prototypes for **getters** (and optionally **setters**) for each Franca attribute
+* prototypes for each Franca **method**
+* prototypes for each Franca **broadcast**
+* **constructor** and **destructor**
+
+```cpp
+#ifndef MY_<INTERFACE>_PROVIDER_H
+#define MY_<INTERFACE>_PROVIDER_H
+
+#include "joynr/<Package>/Default<Interface>Provider.h"
+
+class My<Interface>Provider : public joynr::<Package>::Default<Interface>Provider
+{
+public:
+    My<Interface>Provider();
+    ~My<Interface>Provider();
+
+    // for each attribute
+    void get<Attribute>(
+        std::function<void(const joynr::<Package>::<AttributeType>& result)> onSuccess);
+
+    // for each attribute which are NOT readonly
+    void set<Attribute>(
+        const joynr::<Package>::<AttributeType>& <attribute>,
+        std::function<void()> onSuccess);
+
+    // for each method
+    void <method>(
+        ... input parameters ...   // optional
+        std::function<void(
+            const <ReturnType1>& returnValue1
+            ...
+            const <ReturnTypeN>& returnValueN
+        )> onSuccess
+    );
+
+    // for each broadcast
+    void fire<Broadcast>Event();
+
+private:
+    My<Interface>Provider(const My<Interface>Provider&);
+    void operator=(const My<Interface>Provider&);
+}
+#endif
 ```
