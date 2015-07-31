@@ -47,12 +47,13 @@ namespace joynr
 class JOYNR_EXPORT CapabilitiesRegistrar
 {
 public:
-    CapabilitiesRegistrar(QList<IDispatcher*> dispatcherList,
-                          joynr::system::IDiscoverySync& discoveryProxy,
-                          QSharedPointer<joynr::system::QtAddress> messagingStubAddress,
-                          QSharedPointer<ParticipantIdStorage> participantIdStorage,
-                          QSharedPointer<joynr::system::QtAddress> dispatcherAddress,
-                          QSharedPointer<MessageRouter> messageRouter);
+    CapabilitiesRegistrar(
+            QList<IDispatcher*> dispatcherList,
+            joynr::system::IDiscoverySync& discoveryProxy,
+            QSharedPointer<joynr::system::RoutingTypes::QtAddress> messagingStubAddress,
+            QSharedPointer<ParticipantIdStorage> participantIdStorage,
+            QSharedPointer<joynr::system::RoutingTypes::QtAddress> dispatcherAddress,
+            QSharedPointer<MessageRouter> messageRouter);
 
     template <class T>
     std::string add(const std::string& domain, std::shared_ptr<T> provider)
@@ -152,9 +153,9 @@ private:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesRegistrar);
     QList<IDispatcher*> dispatcherList;
     joynr::system::IDiscoverySync& discoveryProxy;
-    QSharedPointer<joynr::system::QtAddress> messagingStubAddress;
+    QSharedPointer<joynr::system::RoutingTypes::QtAddress> messagingStubAddress;
     QSharedPointer<ParticipantIdStorage> participantIdStorage;
-    QSharedPointer<joynr::system::QtAddress> dispatcherAddress;
+    QSharedPointer<joynr::system::RoutingTypes::QtAddress> dispatcherAddress;
     QSharedPointer<MessageRouter> messageRouter;
     static joynr_logging::Logger* logger;
 };

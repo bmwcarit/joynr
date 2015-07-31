@@ -21,26 +21,26 @@
 #include <QtDebug>
 
 #include "joynr/JsonSerializer.h"
-#include "joynr/types/QtGpsLocation.h"
-#include "joynr/types/QtTrip.h"
+#include "joynr/types/Localisation/QtGpsLocation.h"
+#include "joynr/types/Localisation/QtTrip.h"
 #include "joynr/JoynrMessage.h"
-#include "joynr/types/QtTStruct.h"
+#include "joynr/types/TestTypes/QtTStruct.h"
 #include "joynr/types/QtDiscoveryEntry.h"
-#include "joynr/system/QtWebSocketAddress.h"
+#include "joynr/system/RoutingTypes/QtWebSocketAddress.h"
 
 using namespace joynr;
 
 namespace joynr {
 namespace types {
-    void PrintTo(const joynr::types::QtTStruct& value, ::std::ostream* os) {
+    void PrintTo(const joynr::types::TestTypes::QtTStruct& value, ::std::ostream* os) {
         *os << joynr::JsonSerializer::serialize(value).constData();
     }
 
-    void PrintTo(const joynr::types::QtGpsLocation& value, ::std::ostream* os) {
+    void PrintTo(const joynr::types::Localisation::QtGpsLocation& value, ::std::ostream* os) {
         *os << joynr::JsonSerializer::serialize(value).constData();
     }
 
-    void PrintTo(const joynr::types::QtTrip& value, ::std::ostream* os) {
+    void PrintTo(const joynr::types::Localisation::QtTrip& value, ::std::ostream* os) {
         *os << JsonSerializer::serialize(value).constData() << std::endl;
     }
 }
@@ -50,7 +50,7 @@ namespace types {
     }
 }
 namespace system {
-    void PrintTo(const joynr::system::QtWebSocketAddress& value, ::std::ostream* os) {
+    void PrintTo(const joynr::system::RoutingTypes::QtWebSocketAddress& value, ::std::ostream* os) {
         *os << JsonSerializer::serialize(value).constData() << std::endl;
     }
 }

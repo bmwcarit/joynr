@@ -40,7 +40,7 @@
 #include <string>
 #include "joynr/LibjoynrSettings.h"
 
-#include "joynr/types/QtGpsLocation.h"
+#include "joynr/types/Localisation/QtGpsLocation.h"
 
 using namespace ::testing;
 
@@ -58,15 +58,15 @@ class SubscriptionTest : public ::testing::Test {
 public:
     SubscriptionTest() :
         mockMessageRouter(new MockMessageRouter()),
-        mockCallback(new MockCallback<types::QtGpsLocation>()),
+        mockCallback(new MockCallback<types::Localisation::QtGpsLocation>()),
         mockRequestCaller(new MockTestRequestCaller()),
-        mockReplyCaller(new MockReplyCaller<types::QtGpsLocation>(
-                [this](const RequestStatus& status, const types::QtGpsLocation& location) {
+        mockReplyCaller(new MockReplyCaller<types::Localisation::QtGpsLocation>(
+                [this](const RequestStatus& status, const types::Localisation::QtGpsLocation& location) {
                     mockCallback->onSuccess(location);
                 },
                 [] (const RequestStatus status){
                 })),
-        mockSubscriptionListener(new MockSubscriptionListenerOneType<types::QtGpsLocation>()),
+        mockSubscriptionListener(new MockSubscriptionListenerOneType<types::Localisation::QtGpsLocation>()),
         gpsLocation1(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444),
         qos(2000),
         providerParticipantId("providerParticipantId"),
@@ -87,7 +87,7 @@ public:
         dispatcher.registerPublicationManager(publicationManager);
         dispatcher.registerSubscriptionManager(subscriptionManager);
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
-        MetaTypeRegistrar::instance().registerMetaType<types::QtGpsLocation>();
+        MetaTypeRegistrar::instance().registerMetaType<types::Localisation::QtGpsLocation>();
     }
 
     void TearDown(){
@@ -96,11 +96,11 @@ public:
 
 protected:
     QSharedPointer<MockMessageRouter> mockMessageRouter;
-    QSharedPointer<MockCallback<types::QtGpsLocation> > mockCallback;
+    QSharedPointer<MockCallback<types::Localisation::QtGpsLocation> > mockCallback;
 
     QSharedPointer<MockTestRequestCaller> mockRequestCaller;
-    QSharedPointer<MockReplyCaller<types::QtGpsLocation> > mockReplyCaller;
-    std::shared_ptr<MockSubscriptionListenerOneType<types::QtGpsLocation> > mockSubscriptionListener;
+    QSharedPointer<MockReplyCaller<types::Localisation::QtGpsLocation> > mockReplyCaller;
+    std::shared_ptr<MockSubscriptionListenerOneType<types::Localisation::QtGpsLocation> > mockSubscriptionListener;
 
     types::Localisation::GpsLocation gpsLocation1;
 
@@ -179,7 +179,7 @@ TEST_F(SubscriptionTest, receive_publication ) {
 
     // Use a semaphore to count and wait on calls to the mockSubscriptionListener
     QSemaphore semaphore(0);
-    EXPECT_CALL(*mockSubscriptionListener, onReceive(A<const types::QtGpsLocation&>()))
+    EXPECT_CALL(*mockSubscriptionListener, onReceive(A<const types::Localisation::QtGpsLocation&>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     //register the subscription on the consumer side
@@ -196,11 +196,11 @@ TEST_F(SubscriptionTest, receive_publication ) {
     SubscriptionPublication subscriptionPublication;
     subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     QList<QVariant> response;
-    response.append(QVariant::fromValue(types::QtGpsLocation::createQt(gpsLocation1)));
+    response.append(QVariant::fromValue(types::Localisation::QtGpsLocation::createQt(gpsLocation1)));
     subscriptionPublication.setResponse(response);
 
-    QSharedPointer<SubscriptionCallback<types::QtGpsLocation>> subscriptionCallback(
-            new SubscriptionCallback<types::QtGpsLocation>(mockSubscriptionListener));
+    QSharedPointer<SubscriptionCallback<types::Localisation::QtGpsLocation>> subscriptionCallback(
+            new SubscriptionCallback<types::Localisation::QtGpsLocation>(mockSubscriptionListener));
 
 
     // subscriptionRequest is an out param

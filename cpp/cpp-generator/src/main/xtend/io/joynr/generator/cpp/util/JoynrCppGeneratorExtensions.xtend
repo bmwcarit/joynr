@@ -28,7 +28,6 @@ import org.franca.core.franca.FBroadcast
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FModelElement
 import org.franca.core.franca.FType
-import org.franca.core.franca.FTypeRef
 import org.franca.core.franca.FTypedElement
 import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FAnnotationType
@@ -43,7 +42,7 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 	}
 
 	def String getNamespaceStarter(FType datatype) {
-		return getNamespaceStarter(datatype, false);
+		return getNamespaceStarter(datatype, true);
 	}
 
 	def String[] getNamespaces(FType datatype, boolean includeTypeCollection) {
@@ -59,15 +58,15 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 	}
 
 	def String getNamespaceEnder(FInterface interfaceType) {
-		getNamespaceEnder(getPackageNames(interfaceType));
+		getNameSpaceEnderFromPackageList(getPackageNames(interfaceType));
 	}
 
 	def String getNamespaceEnder(FType datatype, boolean includeTypeCollection) {
-		return getNamespaceEnder(Iterators::forArray(getNamespaces(datatype, includeTypeCollection)));
+		return getNameSpaceEnderFromPackageList(Iterators::forArray(getNamespaces(datatype, includeTypeCollection)));
 	}
 
 	def String getNamespaceEnder(FType datatype) {
-		getNamespaceEnder(getPackageNames(datatype));
+		getNamespaceEnder(datatype, true);
 	}
 
 	def private String getNamespaceStarter(Iterator<String> packageList){
@@ -81,10 +80,6 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 			sb.append("namespace " + packageList.next + " { " );
 		}
 		return sb.toString();
-	}
-
-	def private String getNamespaceEnder(Iterator<String> packageList){
-		return getNameSpaceEnderFromPackageList(packageList);
 	}
 
 	def String getNameSpaceEnderFromPackageList(Iterator<String> packageList){
@@ -164,17 +159,6 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 	override String getOneLineWarning() {
 		//return ""
 		return "/* Generated Code */  "
-	}
-
-	// Get the class that encloses a known enum
-	def String getEnumContainer(FType enumeration) {
-		var packagepath = buildPackagePath(enumeration, "::");
-		return packagepath + enumeration.joynrNameQt;
-	}
-
-	// Get the class that encloses a known enum
-	def String getEnumContainer(FTypeRef enumeration) {
-		return getEnumContainer(enumeration.derived);
 	}
 
 	// Get the name of enum types that are nested in an Enum wrapper class

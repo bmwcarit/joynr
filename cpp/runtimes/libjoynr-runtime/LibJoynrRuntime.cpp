@@ -22,7 +22,7 @@
 
 #include "joynr/Dispatcher.h"
 #include "joynr/InProcessDispatcher.h"
-#include "joynr/system/QtCommonApiDbusAddress.h"
+#include "joynr/system/RoutingTypes/QtCommonApiDbusAddress.h"
 #include "joynr/PublicationManager.h"
 #include "joynr/SubscriptionManager.h"
 #include "joynr/InProcessPublicationSender.h"
@@ -77,9 +77,10 @@ LibJoynrRuntime::~LibJoynrRuntime()
     }
 }
 
-void LibJoynrRuntime::init(IMiddlewareMessagingStubFactory* middlewareMessagingStubFactory,
-                           QSharedPointer<joynr::system::QtAddress> libjoynrMessagingAddress,
-                           QSharedPointer<joynr::system::QtAddress> ccMessagingAddress)
+void LibJoynrRuntime::init(
+        IMiddlewareMessagingStubFactory* middlewareMessagingStubFactory,
+        QSharedPointer<joynr::system::RoutingTypes::QtAddress> libjoynrMessagingAddress,
+        QSharedPointer<joynr::system::RoutingTypes::QtAddress> ccMessagingAddress)
 {
     // create messaging stub factory
     MessagingStubFactory* messagingStubFactory = new MessagingStubFactory();
@@ -99,7 +100,7 @@ void LibJoynrRuntime::init(IMiddlewareMessagingStubFactory* middlewareMessagingS
     // create the inprocess skeleton for the dispatcher
     dispatcherMessagingSkeleton = QSharedPointer<InProcessMessagingSkeleton>(
             new InProcessLibJoynrMessagingSkeleton(joynrDispatcher));
-    dispatcherAddress = QSharedPointer<joynr::system::QtAddress>(
+    dispatcherAddress = QSharedPointer<joynr::system::RoutingTypes::QtAddress>(
             new InProcessMessagingAddress(dispatcherMessagingSkeleton));
 
     publicationManager = new PublicationManager();

@@ -21,13 +21,13 @@
 #define LOCALDOMAINACCESSCONTROLLER_H
 
 #include "joynr/JoynrClusterControllerExport.h"
-#include "joynr/infrastructure/QtMasterAccessControlEntry.h"
-#include "joynr/infrastructure/QtOwnerAccessControlEntry.h"
-#include "joynr/infrastructure/QtMasterRegistrationControlEntry.h"
+#include "joynr/infrastructure/DacTypes/QtMasterAccessControlEntry.h"
+#include "joynr/infrastructure/DacTypes/QtOwnerAccessControlEntry.h"
+#include "joynr/infrastructure/DacTypes/QtMasterRegistrationControlEntry.h"
 #include "joynr/infrastructure/DacTypes/OwnerRegistrationControlEntry.h"
-#include "joynr/infrastructure/QtPermission.h"
-#include "joynr/infrastructure/QtTrustLevel.h"
-#include "joynr/infrastructure/QtRole.h"
+#include "joynr/infrastructure/DacTypes/QtPermission.h"
+#include "joynr/infrastructure/DacTypes/QtTrustLevel.h"
+#include "joynr/infrastructure/DacTypes/QtRole.h"
 #include "joynr/ISubscriptionListener.h"
 #include "AccessControlAlgorithm.h"
 #include "joynr/PrivateCopyAssign.h"
@@ -98,7 +98,7 @@ public:
      */
     virtual bool hasRole(const QString& userId,
                          const QString& domain,
-                         infrastructure::QtRole::Enum role);
+                         infrastructure::DacTypes::QtRole::Enum role);
 
     /**
       * Get consumer permission to access an interface
@@ -132,7 +132,7 @@ public:
       * This synchronous function assumes that the data to do ACL checks is available
       * and has been obtained through a call to getConsumerPermission()
       */
-    virtual infrastructure::QtPermission::Enum getConsumerPermission(
+    virtual infrastructure::DacTypes::QtPermission::Enum getConsumerPermission(
             const std::string& userId,
             const std::string& domain,
             const std::string& interfaceName,

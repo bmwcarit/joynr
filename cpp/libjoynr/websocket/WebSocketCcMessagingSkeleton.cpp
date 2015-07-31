@@ -22,7 +22,7 @@
 #include <QtWebSockets/QWebSocket>
 
 #include "joynr/JsonSerializer.h"
-#include "joynr/system/QtWebSocketClientAddress.h"
+#include "joynr/system/RoutingTypes/QtWebSocketClientAddress.h"
 
 namespace joynr
 {
@@ -33,18 +33,18 @@ joynr_logging::Logger* WebSocketCcMessagingSkeleton::logger =
 WebSocketCcMessagingSkeleton::WebSocketCcMessagingSkeleton(
         MessageRouter& messageRouter,
         WebSocketMessagingStubFactory& messagingStubFactory,
-        const system::QtWebSocketAddress& serverAddress)
+        const system::RoutingTypes::QtWebSocketAddress& serverAddress)
         : webSocketServer(Q_NULLPTR),
           clients(),
           messageRouter(messageRouter),
           messagingStubFactory(messagingStubFactory)
 {
     // must register metatype in order to deserialize initialization message from client
-    qRegisterMetaType<joynr::system::QtWebSocketClientAddress>(
-            "joynr::system::QtWebSocketClientAddress");
+    qRegisterMetaType<joynr::system::RoutingTypes::QtWebSocketClientAddress>(
+            "joynr::system::RoutingTypes::QtWebSocketClientAddress");
 
     QWebSocketServer::SslMode sslMode(QWebSocketServer::NonSecureMode);
-    if (serverAddress.getProtocol() == joynr::system::QtWebSocketProtocol::WSS) {
+    if (serverAddress.getProtocol() == joynr::system::RoutingTypes::QtWebSocketProtocol::WSS) {
         sslMode = QWebSocketServer::SecureMode;
     }
 
@@ -102,8 +102,8 @@ void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString& message)
                 logger,
                 QString("received initialization message from websocket client: %0").arg(message));
         // register client with messaging stub factory
-        joynr::system::QtWebSocketClientAddress* clientAddress =
-                JsonSerializer::deserialize<joynr::system::QtWebSocketClientAddress>(
+        joynr::system::RoutingTypes::QtWebSocketClientAddress* clientAddress =
+                JsonSerializer::deserialize<joynr::system::RoutingTypes::QtWebSocketClientAddress>(
                         message.toUtf8());
         // client address must be valid, or libjoynr and CC are deployed in different versions
         assert(clientAddress);

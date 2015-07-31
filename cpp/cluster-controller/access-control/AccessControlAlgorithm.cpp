@@ -21,15 +21,15 @@
 #include "AceValidator.h"
 #include "TrustLevelComparator.h"
 
-#include "joynr/infrastructure/QtMasterAccessControlEntry.h"
-#include "joynr/infrastructure/QtOwnerAccessControlEntry.h"
+#include "joynr/infrastructure/DacTypes/QtMasterAccessControlEntry.h"
+#include "joynr/infrastructure/DacTypes/QtOwnerAccessControlEntry.h"
 
 #include <cassert>
 
 namespace joynr
 {
 
-using namespace infrastructure;
+using namespace infrastructure::DacTypes;
 
 AccessControlAlgorithm::AccessControlAlgorithm()
 {

@@ -253,7 +253,7 @@ TEST_F(PublicationManagerTest, add_onChangeSubscription) {
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // The attribute will change to this value
-    joynr::types::QtGpsLocation gpsLocation;
+    joynr::types::Localisation::QtGpsLocation gpsLocation;
     QVariant attributeValue = QVariant::fromValue(gpsLocation);
 
     SubscriptionRequest subscriptionRequest;
@@ -327,7 +327,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // The attribute will change to this value
-    joynr::types::QtGpsLocation gpsLocation;
+    joynr::types::Localisation::QtGpsLocation gpsLocation;
     QVariant attributeValue = QVariant::fromValue(gpsLocation);
 
     SubscriptionRequest subscriptionRequest;
@@ -402,7 +402,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval) {
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // The attribute will change to this value
-    joynr::types::QtGpsLocation gpsLocation;
+    joynr::types::Localisation::QtGpsLocation gpsLocation;
     QVariant attributeValue = QVariant::fromValue(gpsLocation);
 
     SubscriptionRequest subscriptionRequest;
@@ -479,7 +479,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
     MockPublicationSender mockPublicationSender2;
 
     // The attribute will change to this value
-    joynr::types::QtGpsLocation gpsLocation;
+    joynr::types::Localisation::QtGpsLocation gpsLocation;
     QVariant attributeValue = QVariant::fromValue(gpsLocation);
 
     // Expect calls to register an unregister an attribute listener
@@ -604,7 +604,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // The attribute will change to this value
-    joynr::types::QtGpsLocation gpsLocation;
+    joynr::types::Localisation::QtGpsLocation gpsLocation;
     QVariant attributeValue = QVariant::fromValue(gpsLocation);
 
     // Expect calls to register an unregister an attribute listener
@@ -697,7 +697,7 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // The attribute will change to this value
-    joynr::types::QtGpsLocation gpsLocation;
+    joynr::types::Localisation::QtGpsLocation gpsLocation;
     QVariant attributeValue = QVariant::fromValue(gpsLocation);
 
     // Expect calls to register an unregister an attribute listener
@@ -794,7 +794,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     MockPublicationSender mockPublicationSender2;
 
     // The broacast will fire this value
-    joynr::types::QtGpsLocation gpsLocation;
+    joynr::types::Localisation::QtGpsLocation gpsLocation;
     QList<QVariant> broadcastValues;
     broadcastValues.append(QVariant::fromValue(gpsLocation));
 
@@ -914,7 +914,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // The value will be fired by the broadcast
-    joynr::types::QtGpsLocation gpsLocation;
+    joynr::types::Localisation::QtGpsLocation gpsLocation;
     QList<QVariant> broadcastValues;
     broadcastValues.append(QVariant::fromValue(gpsLocation));
 
@@ -1002,7 +1002,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // The broadcast will fire this value
-    joynr::types::QtGpsLocation gpsLocation;
+    joynr::types::Localisation::QtGpsLocation gpsLocation;
     QList<QVariant> broadcastValues;
     broadcastValues.append(QVariant::fromValue(gpsLocation));
 

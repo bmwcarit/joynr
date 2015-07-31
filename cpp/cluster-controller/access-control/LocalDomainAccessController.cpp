@@ -21,7 +21,7 @@
 #include "LocalDomainAccessStore.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerProxy.h"
 
-#include "joynr/infrastructure/QtDomainRoleEntry.h"
+#include "joynr/infrastructure/DacTypes/QtDomainRoleEntry.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerDomainRoleEntryChangedBroadcastFilterParameters.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerMasterAccessControlEntryChangedBroadcastFilterParameters.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerOwnerAccessControlEntryChangedBroadcastFilterParameters.h"

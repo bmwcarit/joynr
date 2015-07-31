@@ -18,10 +18,10 @@
  */
 #include "gtest/gtest.h"
 using namespace ::testing;
-#include "joynr/types/QtTrip.h"
-#include "joynr/types/QtGpsLocation.h"
-#include "joynr/types/QtWord.h"
-#include "joynr/types/QtVowel.h"
+#include "joynr/types/Localisation/QtTrip.h"
+#include "joynr/types/Localisation/QtGpsLocation.h"
+#include "joynr/types/TestTypes/QtWord.h"
+#include "joynr/types/TestTypes/QtVowel.h"
 
 using namespace joynr;
 
@@ -41,13 +41,13 @@ using namespace joynr;
 
 TEST(DatatypeTemplateTest, enterAndRetrieveListOfGpsLocationsFromTrip) {
 
-    types::QtGpsLocation loc1 = types::QtGpsLocation(1.1, 1.2, 1.3, types::QtGpsFixEnum::MODE2D, 1.4, 1.5, 1.6, 1.7, 18, 19, 110);
-    types::QtGpsLocation loc2 = types::QtGpsLocation(2.1, 2.2, 2.3, types::QtGpsFixEnum::MODE2D, 2.4, 2.5, 2.6, 2.7, 28, 29, 210);
-    QList<types::QtGpsLocation> inputList = QList<types::QtGpsLocation>();
-    QList<types::QtGpsLocation> returnList;
+    types::Localisation::QtGpsLocation loc1 = types::Localisation::QtGpsLocation(1.1, 1.2, 1.3, types::Localisation::QtGpsFixEnum::MODE2D, 1.4, 1.5, 1.6, 1.7, 18, 19, 110);
+    types::Localisation::QtGpsLocation loc2 = types::Localisation::QtGpsLocation(2.1, 2.2, 2.3, types::Localisation::QtGpsFixEnum::MODE2D, 2.4, 2.5, 2.6, 2.7, 28, 29, 210);
+    QList<types::Localisation::QtGpsLocation> inputList = QList<types::Localisation::QtGpsLocation>();
+    QList<types::Localisation::QtGpsLocation> returnList;
     inputList.append(loc1);
     inputList.append(loc2);
-    types::QtTrip trip = types::QtTrip(inputList, "myfirstTryp");
+    types::Localisation::QtTrip trip = types::Localisation::QtTrip(inputList, "myfirstTryp");
     returnList = trip.getLocations();
     EXPECT_EQ( returnList, inputList);
     EXPECT_EQ( returnList.value(1), loc2);
@@ -56,13 +56,13 @@ TEST(DatatypeTemplateTest, enterAndRetrieveListOfGpsLocationsFromTrip) {
 
 TEST(DatatypeTemplateTest, enterListOfGpsLocationsUsingSetter) {
 
-    types::QtGpsLocation loc1 = types::QtGpsLocation(1.1, 1.2, 1.3, types::QtGpsFixEnum::MODE2D, 1.4, 1.5, 1.6, 1.7, 18, 19, 110);
-    types::QtGpsLocation loc2 = types::QtGpsLocation(2.1, 2.2, 2.3, types::QtGpsFixEnum::MODE2D, 2.4, 2.5, 2.6, 2.7, 28, 29, 210);
-    QList<types::QtGpsLocation> inputList = QList<types::QtGpsLocation>();
-    QList<types::QtGpsLocation> returnList;
+    types::Localisation::QtGpsLocation loc1 = types::Localisation::QtGpsLocation(1.1, 1.2, 1.3, types::Localisation::QtGpsFixEnum::MODE2D, 1.4, 1.5, 1.6, 1.7, 18, 19, 110);
+    types::Localisation::QtGpsLocation loc2 = types::Localisation::QtGpsLocation(2.1, 2.2, 2.3, types::Localisation::QtGpsFixEnum::MODE2D, 2.4, 2.5, 2.6, 2.7, 28, 29, 210);
+    QList<types::Localisation::QtGpsLocation> inputList = QList<types::Localisation::QtGpsLocation>();
+    QList<types::Localisation::QtGpsLocation> returnList;
     inputList.append(loc1);
     inputList.append(loc2);
-    types::QtTrip trip = types::QtTrip();
+    types::Localisation::QtTrip trip = types::Localisation::QtTrip();
     trip.setLocations(inputList);
     returnList = trip.getLocations();
     EXPECT_EQ( returnList, inputList);
@@ -71,13 +71,13 @@ TEST(DatatypeTemplateTest, enterListOfGpsLocationsUsingSetter) {
 
 TEST(DatatypeTemplateTest, enterAndRetrieveEnumList) {
 
-    QList<types::QtVowel::Enum> inputList = QList<types::QtVowel::Enum>();
-    inputList.append(types::QtVowel::A);
-    inputList.append(types::QtVowel::E);
-    inputList.append(types::QtVowel::E);
-    inputList.append(types::QtVowel::U);
-    types::QtWord myword = types::QtWord(inputList);
-    EXPECT_EQ( myword.getVowels().value(1), types::QtVowel::E);
+    QList<types::TestTypes::QtVowel::Enum> inputList = QList<types::TestTypes::QtVowel::Enum>();
+    inputList.append(types::TestTypes::QtVowel::A);
+    inputList.append(types::TestTypes::QtVowel::E);
+    inputList.append(types::TestTypes::QtVowel::E);
+    inputList.append(types::TestTypes::QtVowel::U);
+    types::TestTypes::QtWord myword = types::TestTypes::QtWord(inputList);
+    EXPECT_EQ( myword.getVowels().value(1), types::TestTypes::QtVowel::E);
 }
 
 TEST(DatatypeTemplateTest, enterAndRetrieveEnumListviaInternalSetter) {
@@ -87,16 +87,16 @@ TEST(DatatypeTemplateTest, enterAndRetrieveEnumListviaInternalSetter) {
     inputSerializedList.append(QVariant::fromValue(QStringLiteral("E")));
     inputSerializedList.append(QVariant::fromValue(QStringLiteral("E")));
     inputSerializedList.append(QVariant::fromValue(QStringLiteral("U")));
-    types::QtWord myWord = types::QtWord();
+    types::TestTypes::QtWord myWord = types::TestTypes::QtWord();
     myWord.setVowelsInternal(inputSerializedList);
-    EXPECT_EQ( myWord.getVowels().value(1), types::QtVowel::E);
+    EXPECT_EQ( myWord.getVowels().value(1), types::TestTypes::QtVowel::E);
 
-    QList<types::QtVowel::Enum> inputList = QList<types::QtVowel::Enum>();
-    inputList.append(types::QtVowel::A);
-    inputList.append(types::QtVowel::E);
-    inputList.append(types::QtVowel::E);
-    inputList.append(types::QtVowel::U);
-    types::QtWord myVowelWord =types::QtWord(inputList);
+    QList<types::TestTypes::QtVowel::Enum> inputList = QList<types::TestTypes::QtVowel::Enum>();
+    inputList.append(types::TestTypes::QtVowel::A);
+    inputList.append(types::TestTypes::QtVowel::E);
+    inputList.append(types::TestTypes::QtVowel::E);
+    inputList.append(types::TestTypes::QtVowel::U);
+    types::TestTypes::QtWord myVowelWord =types::TestTypes::QtWord(inputList);
 
     EXPECT_EQ( myVowelWord, myWord);
 }

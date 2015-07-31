@@ -22,10 +22,9 @@
 #include "gmock/gmock.h"
 #include "joynr/MessageRouter.h"
 #include "tests/utils/MockObjects.h"
-#include "joynr/system/QtChannelAddress.h"
+#include "joynr/system/RoutingTypes/QtChannelAddress.h"
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/MessageQueue.h"
-#include "joynr/system/QtChannelAddress.h"
 
 using namespace joynr;
 
@@ -41,13 +40,13 @@ public:
         joynrMessage()
     {
         // provision global capabilities directory
-        QSharedPointer<joynr::system::QtAddress> addressCapabilitiesDirectory(
-            new system::QtChannelAddress(messagingSettings.getCapabilitiesDirectoryChannelId())
+        QSharedPointer<joynr::system::RoutingTypes::QtAddress> addressCapabilitiesDirectory(
+            new system::RoutingTypes::QtChannelAddress(messagingSettings.getCapabilitiesDirectoryChannelId())
         );
         messageRouter->addProvisionedNextHop(messagingSettings.getCapabilitiesDirectoryParticipantId().toStdString(), addressCapabilitiesDirectory);
         // provision channel url directory
-        QSharedPointer<joynr::system::QtAddress> addressChannelUrlDirectory(
-            new system::QtChannelAddress(messagingSettings.getChannelUrlDirectoryChannelId())
+        QSharedPointer<joynr::system::RoutingTypes::QtAddress> addressChannelUrlDirectory(
+            new system::RoutingTypes::QtChannelAddress(messagingSettings.getChannelUrlDirectoryChannelId())
         );
         messageRouter->addProvisionedNextHop(messagingSettings.getChannelUrlDirectoryParticipantId().toStdString(), addressChannelUrlDirectory);
         joynrMessage.setHeaderExpiryDate(QDateTime::currentDateTimeUtc().addMSecs(100));
@@ -110,7 +109,7 @@ TEST_F(MessageRouterTest, resendMessageWhenDestinationAddressIsAdded){
     EXPECT_EQ(messageQueue->getQueueLength(), 1);
 
     // add destination address -> message should be routed
-    QSharedPointer<system::QtChannelAddress> address(new system::QtChannelAddress("TEST"));
+    QSharedPointer<system::RoutingTypes::QtChannelAddress> address(new system::RoutingTypes::QtChannelAddress("TEST"));
     messageRouter->addNextHop("TEST", address);
     EXPECT_EQ(messageQueue->getQueueLength(), 0);
 }

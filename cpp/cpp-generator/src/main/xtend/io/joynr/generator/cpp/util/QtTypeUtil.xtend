@@ -242,7 +242,10 @@ class QtTypeUtil extends CppTypeUtil {
 	}
 
 	override getIncludeOf(FType dataType) {
-		val path = getPackagePathWithJoynrPrefix(dataType, "/")
+		var path = getPackagePathWithJoynrPrefix(dataType, "/")
+		if (dataType.isPartOfTypeCollection) {
+			path += "/" + dataType.typeCollectionName
+		}
 		return path + "/" + dataType.joynrNameQt + ".h";
 	}
 
@@ -256,7 +259,7 @@ class QtTypeUtil extends CppTypeUtil {
 	}
 
 	def getTypeNameOfContainingClass (FType datatype) {
-		val packagepath = buildPackagePath(datatype, "::");
+		val packagepath = buildPackagePath(datatype, "::", true);
 		return  packagepath + datatype.joynrNameQt
 	}
 

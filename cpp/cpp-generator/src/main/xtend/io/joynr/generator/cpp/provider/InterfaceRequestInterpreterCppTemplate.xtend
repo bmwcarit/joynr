@@ -113,9 +113,10 @@ void «interfaceName»RequestInterpreter::execute(
 			if (methodName == "set«attributeName.toFirstUpper»" && paramTypes.size() == 1){
 				QVariant «attributeName»QVar(paramValues.at(0));
 				«IF isEnum(attribute.type)»
-					«qtTypeUtil.getTypeName(attribute)» typedInput«attributeName.toFirstUpper» = «joynrGenerationPrefix»::Util::convertVariantToEnum<«getEnumContainer(attribute.type)»>(«attributeName»QVar);
+					«qtTypeUtil.getTypeName(attribute)» typedInput«attributeName.toFirstUpper» =
+						«joynrGenerationPrefix»::Util::convertVariantToEnum<«qtTypeUtil.getTypeNameOfContainingClass(attribute.type.derived)»>(«attributeName»QVar);
 				«ELSEIF isEnum(attribute.type) && isArray(attribute)»
-					«val attributeRef = joynrGenerationPrefix + "::Util::convertVariantListToEnumList<" + getEnumContainer(attribute.type) + ">(" + attributeName + "QVar.toList())"»
+					«val attributeRef = joynrGenerationPrefix + "::Util::convertVariantListToEnumList<" + qtTypeUtil.getTypeNameOfContainingClass(attribute.type.derived) + ">(" + attributeName + "QVar.toList())"»
 					«qtTypeUtil.getTypeName(attribute)» typedInput«attributeName.toFirstUpper» =
 						«attributeRef»;
 				«ELSEIF isArray(attribute)»
@@ -178,10 +179,10 @@ void «interfaceName»RequestInterpreter::execute(
 					«IF isEnum(input.type) && isArray(input)»
 						//isEnumArray
 						«qtTypeUtil.getTypeName(input)» «inputName» =
-							«joynrGenerationPrefix»::Util::convertVariantListToEnumList<«getEnumContainer(input.type)»> («inputName»QVar.toList());
+							«joynrGenerationPrefix»::Util::convertVariantListToEnumList<«qtTypeUtil.getTypeNameOfContainingClass(input.type.derived)»> («inputName»QVar.toList());
 					«ELSEIF isEnum(input.type)»
 						//isEnum
-						«qtTypeUtil.getTypeName(input)» «inputName» = «joynrGenerationPrefix»::Util::convertVariantToEnum<«getEnumContainer(input.type)»>(«inputName»QVar);
+						«qtTypeUtil.getTypeName(input)» «inputName» = «joynrGenerationPrefix»::Util::convertVariantToEnum<«qtTypeUtil.getTypeNameOfContainingClass(input.type.derived)»>(«inputName»QVar);
 					«ELSEIF isArray(input)»
 						//isArray
 						assert(«inputName»QVar.canConvert<QList<QVariant> >());

@@ -23,6 +23,7 @@ import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.util.EnumTemplate
 import org.franca.core.franca.FEnumerationType
+import io.joynr.generator.cpp.util.QtTypeUtil
 
 class EnumHTemplate implements EnumTemplate{
 
@@ -33,7 +34,10 @@ class EnumHTemplate implements EnumTemplate{
 	private extension JoynrCppGeneratorExtensions
 
 	@Inject
-	private extension CppStdTypeUtil
+	private CppStdTypeUtil cppStdTypeUtil
+
+	@Inject
+	private extension QtTypeUtil
 
 	override generate(FEnumerationType type)
 '''
@@ -47,7 +51,7 @@ class EnumHTemplate implements EnumTemplate{
 #include <QObject>
 #include <QMetaType>
 #include "joynr/Util.h"
-#include "«type.includeOfStd»"
+#include "«cppStdTypeUtil.getIncludeOf(type)»"
 
 «getNamespaceStarter(type)»
 
@@ -119,26 +123,26 @@ public:
 
 namespace joynr {
 template <>
-inline «getPackagePathWithJoynrPrefix(type, "::")»::«typeName»::«getNestedEnumName()» joynr::Util::valueOf<«getPackagePathWithJoynrPrefix(type, "::")»::«typeName»::«getNestedEnumName()»>(const QVariant& variant)
+inline «type.typeName» joynr::Util::valueOf<«type.typeName»>(const QVariant& variant)
 {
-  return «joynrGenerationPrefix»::Util::convertVariantToEnum<«getPackagePathWithJoynrPrefix(type, "::")»::«typeName»>(variant);
+  return «joynrGenerationPrefix»::Util::convertVariantToEnum<«type.typeNameOfContainingClass»>(variant);
 }
 
 template <>
-inline QList<«getPackagePathWithJoynrPrefix(type, "::")»::«typeName»::Enum> joynr::Util::valueOf<QList<«getPackagePathWithJoynrPrefix(type, "::")»::«typeName»::Enum>>(const QVariant& variant){
-   return «joynrGenerationPrefix»::Util::convertVariantListToEnumList<«getPackagePathWithJoynrPrefix(type, "::")»::«typeName»>(variant.value<QVariantList>());
+inline QList<«type.typeName»> joynr::Util::valueOf<QList<«type.typeName»>>(const QVariant& variant){
+   return «joynrGenerationPrefix»::Util::convertVariantListToEnumList<«type.typeNameOfContainingClass»>(variant.value<QVariantList>());
 }
 }
 // Metatype for the wrapper class
-typedef «getPackagePathWithJoynrPrefix(type, "::")»::«typeName» «getPackagePathWithJoynrPrefix(type, "__")»__«typeName»;
-Q_DECLARE_METATYPE(«getPackagePathWithJoynrPrefix(type, "__")»__«typeName»)
+typedef «type.typeNameOfContainingClass» «type.typeNameOfContainingClass.replace("::","__")»;
+Q_DECLARE_METATYPE(«type.typeNameOfContainingClass.replace("::","__")»)
 
 // Metatypes for the «getNestedEnumName()»
-typedef «getPackagePathWithJoynrPrefix(type, "::")»::«typeName»::«getNestedEnumName()» «getPackagePathWithJoynrPrefix(type, "__")»__«typeName»__«getNestedEnumName()»;
-Q_DECLARE_METATYPE(«getPackagePathWithJoynrPrefix(type, "__")»__«typeName»__«getNestedEnumName()»)
-Q_DECLARE_METATYPE(QList<«getPackagePathWithJoynrPrefix(type, "__")»__«typeName»__«getNestedEnumName()»>)
+typedef «type.typeName» «type.typeName.replace("::","__")»;
+Q_DECLARE_METATYPE(«type.typeName.replace("::","__")»)
+Q_DECLARE_METATYPE(QList<«type.typeName.replace("::","__")»>)
 
-inline uint qHash(«getPackagePathWithJoynrPrefix(type, "::")»::«typeName»::«getNestedEnumName()» key, uint seed = 0) {
+inline uint qHash(«type.typeName» key, uint seed = 0) {
 	return uint(key) ^ seed;
 }
 

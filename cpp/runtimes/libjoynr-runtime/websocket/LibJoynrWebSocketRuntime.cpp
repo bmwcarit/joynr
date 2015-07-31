@@ -21,7 +21,7 @@
 #include <QtCore/QObject>
 
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
-#include "joynr/system/QtWebSocketClientAddress.h"
+#include "joynr/system/RoutingTypes/QtWebSocketClientAddress.h"
 #include "libjoynr/websocket/WebSocketLibJoynrMessagingSkeleton.h"
 #include "joynr/Util.h"
 #include "joynr/JsonSerializer.h"
@@ -40,12 +40,12 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(QSettings* settings)
 {
     QString messagingUuid = Util::createUuid().replace("-", "");
     QString libjoynrMessagingId("libjoynr.messaging.participantid_" + messagingUuid);
-    QSharedPointer<joynr::system::QtAddress> libjoynrMessagingAddress(
-            new system::QtWebSocketClientAddress(libjoynrMessagingId));
+    QSharedPointer<joynr::system::RoutingTypes::QtAddress> libjoynrMessagingAddress(
+            new system::RoutingTypes::QtWebSocketClientAddress(libjoynrMessagingId));
 
     // create connection to parent routing service
-    QSharedPointer<joynr::system::QtWebSocketAddress> ccMessagingAddress(
-            new joynr::system::QtWebSocketAddress(
+    QSharedPointer<joynr::system::RoutingTypes::QtWebSocketAddress> ccMessagingAddress(
+            new joynr::system::RoutingTypes::QtWebSocketAddress(
                     wsSettings.createClusterControllerMessagingAddress()));
 
     websocket = new QWebSocket();

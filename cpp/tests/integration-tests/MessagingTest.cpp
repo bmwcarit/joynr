@@ -30,7 +30,7 @@
 #include <string>
 #include <QSharedPointer>
 #include "joynr/JoynrMessageFactory.h"
-#include "joynr/system/QtChannelAddress.h"
+#include "joynr/system/RoutingTypes/QtChannelAddress.h"
 #include "joynr/Request.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/InProcessMessagingAddress.h"
@@ -86,13 +86,13 @@ public:
         messageRouter(new MessageRouter(messagingStubFactory, NULL))
     {
         // provision global capabilities directory
-        QSharedPointer<joynr::system::QtAddress> addressCapabilitiesDirectory(
-            new system::QtChannelAddress(messagingSettings.getCapabilitiesDirectoryChannelId())
+        QSharedPointer<joynr::system::RoutingTypes::QtAddress> addressCapabilitiesDirectory(
+            new system::RoutingTypes::QtChannelAddress(messagingSettings.getCapabilitiesDirectoryChannelId())
         );
         messageRouter->addProvisionedNextHop(messagingSettings.getCapabilitiesDirectoryParticipantId().toStdString(), addressCapabilitiesDirectory);
         // provision channel url directory
-        QSharedPointer<joynr::system::QtAddress> addressChannelUrlDirectory(
-            new system::QtChannelAddress(messagingSettings.getChannelUrlDirectoryChannelId())
+        QSharedPointer<joynr::system::RoutingTypes::QtAddress> addressChannelUrlDirectory(
+            new system::RoutingTypes::QtChannelAddress(messagingSettings.getChannelUrlDirectoryChannelId())
         );
         messageRouter->addProvisionedNextHop(messagingSettings.getChannelUrlDirectoryParticipantId().toStdString(), addressChannelUrlDirectory);
         messagingStubFactory->registerStubFactory(new JoynrMessagingStubFactory(mockMessageSender, senderChannelId));
@@ -136,8 +136,8 @@ TEST_F(MessagingTest, sendMsgFromMessageSenderViaInProcessMessagingAndMessageRou
     QSharedPointer<IReplyCaller> replyCaller;
     messageSender.registerDispatcher(&mockDispatcher);
 
-    QSharedPointer<system::QtChannelAddress> joynrMessagingEndpointAddr =
-            QSharedPointer<system::QtChannelAddress>(new system::QtChannelAddress());
+    QSharedPointer<system::RoutingTypes::QtChannelAddress> joynrMessagingEndpointAddr =
+            QSharedPointer<system::RoutingTypes::QtChannelAddress>(new system::RoutingTypes::QtChannelAddress());
     joynrMessagingEndpointAddr->setChannelId(receiverChannelId);
 
     messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr);
@@ -240,8 +240,8 @@ TEST_F(MessagingTest, routeMsgToHttpCommunicationMgr)
     EXPECT_CALL(*mockMessageSender, sendMessage(Eq(receiverChannelId),Eq(message)))
             .Times(1);
 
-    QSharedPointer<system::QtChannelAddress> joynrMessagingEndpointAddr =
-            QSharedPointer<system::QtChannelAddress>(new system::QtChannelAddress());
+    QSharedPointer<system::RoutingTypes::QtChannelAddress> joynrMessagingEndpointAddr =
+            QSharedPointer<system::RoutingTypes::QtChannelAddress>(new system::RoutingTypes::QtChannelAddress());
     joynrMessagingEndpointAddr->setChannelId(receiverChannelId);
 
     messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr);
@@ -285,8 +285,8 @@ TEST_F(MessagingTest, routeMultipleMessages)
 
     messageRouter->addNextHop(receiverId2, messagingSkeletonEndpointAddr);
 
-    QSharedPointer<system::QtChannelAddress> joynrMessagingEndpointAddr =
-            QSharedPointer<system::QtChannelAddress>(new system::QtChannelAddress());
+    QSharedPointer<system::RoutingTypes::QtChannelAddress> joynrMessagingEndpointAddr =
+            QSharedPointer<system::RoutingTypes::QtChannelAddress>(new system::RoutingTypes::QtChannelAddress());
     joynrMessagingEndpointAddr->setChannelId(receiverChannelId);
 
     messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr);

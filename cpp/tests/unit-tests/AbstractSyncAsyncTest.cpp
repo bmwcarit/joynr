@@ -21,7 +21,7 @@
 #include <gmock/gmock.h>
 #include "PrettyPrint.h"
 #include "joynr/tests/testProxy.h"
-#include "joynr/types/QtGpsLocation.h"
+#include "joynr/types/Localisation/QtGpsLocation.h"
 #include "joynr/ConnectorFactory.h"
 #include "joynr/IClientCache.h"
 #include "joynr/IMessaging.h"
@@ -57,7 +57,7 @@ using namespace joynr;
 
 class CallBackActions {
 public:
-    CallBackActions(joynr::types::QtGpsLocation expectedGpsLocation, int expectedInt) :
+    CallBackActions(joynr::types::Localisation::QtGpsLocation expectedGpsLocation, int expectedInt) :
         expectedGpsLocation(expectedGpsLocation),
         expectedInt(expectedInt)
     {
@@ -81,7 +81,7 @@ public:
             Unused, // request object to send
             QSharedPointer<IReplyCaller> callback // reply caller to notify when reply is received
     ) {
-       (callback.dynamicCast<ReplyCaller<types::QtGpsLocation> >())->returnValue(expectedGpsLocation);
+       (callback.dynamicCast<ReplyCaller<types::Localisation::QtGpsLocation> >())->returnValue(expectedGpsLocation);
     }
 
     // related to test: sync_OperationWithNoArguments
@@ -96,7 +96,7 @@ public:
         callback.dynamicCast<ReplyCaller<int> >()->returnValue(expectedInt);
     }
 private:
-    joynr::types::QtGpsLocation expectedGpsLocation;
+    joynr::types::Localisation::QtGpsLocation expectedGpsLocation;
     int expectedInt;
 };
 
@@ -109,7 +109,7 @@ public:
     AbstractSyncAsyncTest():
         expectedGpsLocation(1.1, 1.2, 1.3, types::Localisation::GpsFixEnum::MODE3D, 1.4, 1.5, 1.6, 1.7, 18, 19, 95302963),
         expectedInt(60284917),
-        callBackActions(types::QtGpsLocation::createQt(expectedGpsLocation), expectedInt),
+        callBackActions(types::Localisation::QtGpsLocation::createQt(expectedGpsLocation), expectedInt),
         qosSettings(),
         mockDispatcher(),
         mockMessagingStub(),
@@ -124,7 +124,7 @@ public:
     virtual ~AbstractSyncAsyncTest(){}
     void SetUp(){
         qosSettings = MessagingQos(456000);
-        endPointAddress = QSharedPointer<system::QtAddress>(new system::QtChannelAddress("endPointAddress"));
+        endPointAddress = QSharedPointer<system::RoutingTypes::QtAddress>(new system::RoutingTypes::QtChannelAddress("endPointAddress"));
         proxyParticipantId = "participantId";
         providerParticipantId = "providerParticipantId";
         mockJoynrMessageSender = new MockJoynrMessageSender();
@@ -154,7 +154,7 @@ public:
 
         MockCallback<joynr::types::Localisation::GpsLocation>* callback = new MockCallback<joynr::types::Localisation::GpsLocation>();
 
-        setExpectationsForSendRequestCall(Util::getTypeId<joynr::types::QtGpsLocation>(), "getLocation");
+        setExpectationsForSendRequestCall(Util::getTypeId<joynr::types::Localisation::QtGpsLocation>(), "getLocation");
         asyncTestFixture->getLocationAsync(
                 [callback] (const joynr::types::Localisation::GpsLocation& location) {
                     callback->onSuccess(location);
@@ -188,7 +188,7 @@ public:
 
     void testSync_getAttributeNotCached() {
         tests::Itest* testFixture = createFixture(false);
-        setExpectationsForSendRequestCall(Util::getTypeId<joynr::types::QtGpsLocation>(), "getLocation")
+        setExpectationsForSendRequestCall(Util::getTypeId<joynr::types::Localisation::QtGpsLocation>(), "getLocation")
                 .WillOnce(Invoke(&callBackActions, &CallBackActions::executeCallBackGpsLocationResult));
 
         types::Localisation::GpsLocation gpsLocation;
@@ -203,10 +203,10 @@ public:
 
         MockCallback<joynr::types::Localisation::GpsLocation>* callback = new MockCallback<joynr::types::Localisation::GpsLocation>();
 
-        setExpectationsForSendRequestCall(Util::getTypeId<joynr::types::QtGpsLocation>(), "getLocation").Times(0);
+        setExpectationsForSendRequestCall(Util::getTypeId<joynr::types::Localisation::QtGpsLocation>(), "getLocation").Times(0);
 
         QVariant qvariant;
-        qvariant.setValue(types::QtGpsLocation::createQt(expectedGpsLocation));
+        qvariant.setValue(types::Localisation::QtGpsLocation::createQt(expectedGpsLocation));
 
         ON_CALL(mockClientCache, lookUp(_)).WillByDefault(Return(qvariant));
 
@@ -219,10 +219,10 @@ public:
     void testSync_getAttributeCached() {
         tests::Itest* testFixture = createFixture(true);
 
-        setExpectationsForSendRequestCall(Util::getTypeId<joynr::types::QtGpsLocation>(), "getLocation").Times(0);
+        setExpectationsForSendRequestCall(Util::getTypeId<joynr::types::Localisation::QtGpsLocation>(), "getLocation").Times(0);
 
         QVariant qvariant;
-        qvariant.setValue(types::QtGpsLocation::createQt(expectedGpsLocation));
+        qvariant.setValue(types::Localisation::QtGpsLocation::createQt(expectedGpsLocation));
         ON_CALL(mockClientCache, lookUp(_)).WillByDefault(Return(qvariant));
 
         types::Localisation::GpsLocation gpsLocation;
@@ -282,7 +282,7 @@ protected:
     std::string proxyParticipantId;
     std::string providerParticipantId;
     MockClientCache mockClientCache;
-    QSharedPointer<system::QtAddress> endPointAddress;
+    QSharedPointer<system::RoutingTypes::QtAddress> endPointAddress;
     tests::Itest* asyncTestFixture;
 private:
     DISALLOW_COPY_AND_ASSIGN(AbstractSyncAsyncTest);
