@@ -24,7 +24,7 @@
 #include "joynr/QosArbitrator.h"
 #include "joynr/KeywordArbitrator.h"
 #include "joynr/DefaultArbitrator.h"
-#include "joynr/system/QtChannelAddress.h"
+#include "joynr/system/RoutingTypes/QtChannelAddress.h"
 
 #include "tests/utils/MockObjects.h"
 

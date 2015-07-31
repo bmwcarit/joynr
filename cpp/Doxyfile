@@ -967,29 +967,29 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          libjoynr/communication-model/generated/datatypes/infrastructure/DacTypes/OwnerControlEntry.cpp \
                          libjoynr/communication-model/generated/datatypes/infrastructure/DacTypes/OwnerRegistrationControlEntry.cpp \
                          libjoynr/communication-model/generated/datatypes/infrastructure/DacTypes/Permission.cpp \
+                         libjoynr/communication-model/generated/datatypes/infrastructure/DacTypes/QtControlEntry.cpp \
+                         libjoynr/communication-model/generated/datatypes/infrastructure/DacTypes/QtDomainRoleEntry.cpp \
+                         libjoynr/communication-model/generated/datatypes/infrastructure/DacTypes/QtMasterAccessControlEntry.cpp \
+                         libjoynr/communication-model/generated/datatypes/infrastructure/DacTypes/QtMasterControlEntry.cpp \
+                         libjoynr/communication-model/generated/datatypes/infrastructure/DacTypes/QtMasterRegistrationControlEntry.cpp \
+                         libjoynr/communication-model/generated/datatypes/infrastructure/DacTypes/QtOwnerAccessControlEntry.cpp \
+                         libjoynr/communication-model/generated/datatypes/infrastructure/DacTypes/QtOwnerControlEntry.cpp \
+                         libjoynr/communication-model/generated/datatypes/infrastructure/DacTypes/QtOwnerRegistrationControlEntry.cpp \
                          libjoynr/communication-model/generated/datatypes/infrastructure/DacTypes/Role.cpp \
                          libjoynr/communication-model/generated/datatypes/infrastructure/DacTypes/TrustLevel.cpp \
-                         libjoynr/communication-model/generated/datatypes/infrastructure/QtControlEntry.cpp \
-                         libjoynr/communication-model/generated/datatypes/infrastructure/QtDomainRoleEntry.cpp \
-                         libjoynr/communication-model/generated/datatypes/infrastructure/QtMasterAccessControlEntry.cpp \
-                         libjoynr/communication-model/generated/datatypes/infrastructure/QtMasterControlEntry.cpp \
-                         libjoynr/communication-model/generated/datatypes/infrastructure/QtMasterRegistrationControlEntry.cpp \
-                         libjoynr/communication-model/generated/datatypes/infrastructure/QtOwnerAccessControlEntry.cpp \
-                         libjoynr/communication-model/generated/datatypes/infrastructure/QtOwnerControlEntry.cpp \
-                         libjoynr/communication-model/generated/datatypes/infrastructure/QtOwnerRegistrationControlEntry.cpp \
                          libjoynr/communication-model/generated/datatypes/system/JoynrLogEvent.cpp \
                          libjoynr/communication-model/generated/datatypes/system/JoynrLoggedError.cpp \
                          libjoynr/communication-model/generated/datatypes/system/JoynrLoggingContextTag.cpp \
                          libjoynr/communication-model/generated/datatypes/system/JoynrLogLevel.cpp \
-                         libjoynr/communication-model/generated/datatypes/system/QtAddress.cpp \
-                         libjoynr/communication-model/generated/datatypes/system/QtBrowserAddress.cpp \
-                         libjoynr/communication-model/generated/datatypes/system/QtChannelAddress.cpp \
-                         libjoynr/communication-model/generated/datatypes/system/QtCommonApiDbusAddress.cpp \
                          libjoynr/communication-model/generated/datatypes/system/QtJoynrLogEvent.cpp \
                          libjoynr/communication-model/generated/datatypes/system/QtJoynrLoggedError.cpp \
                          libjoynr/communication-model/generated/datatypes/system/QtJoynrLoggingContextTag.cpp \
-                         libjoynr/communication-model/generated/datatypes/system/QtWebSocketAddress.cpp \
-                         libjoynr/communication-model/generated/datatypes/system/QtWebSocketClientAddress.cpp \
+                         libjoynr/communication-model/generated/datatypes/system/RoutingTypes/QtAddress.cpp \
+                         libjoynr/communication-model/generated/datatypes/system/RoutingTypes/QtBrowserAddress.cpp \
+                         libjoynr/communication-model/generated/datatypes/system/RoutingTypes/QtChannelAddress.cpp \
+                         libjoynr/communication-model/generated/datatypes/system/RoutingTypes/QtCommonApiDbusAddress.cpp \
+                         libjoynr/communication-model/generated/datatypes/system/RoutingTypes/QtWebSocketAddress.cpp \
+                         libjoynr/communication-model/generated/datatypes/system/RoutingTypes/QtWebSocketClientAddress.cpp \
                          libjoynr/communication-model/generated/datatypes/system/RoutingTypes/Address.cpp \
                          libjoynr/communication-model/generated/datatypes/system/RoutingTypes/BrowserAddress.cpp \
                          libjoynr/communication-model/generated/datatypes/system/RoutingTypes/ChannelAddress.cpp \
@@ -1053,6 +1053,18 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          libjoynr/include/joynr/infrastructure/DacTypes/OwnerControlEntry.h \
                          libjoynr/include/joynr/infrastructure/DacTypes/OwnerRegistrationControlEntry.h \
                          libjoynr/include/joynr/infrastructure/DacTypes/Permission.h \
+                         libjoynr/include/joynr/infrastructure/DacTypes/QtChangeType.h \
+                         libjoynr/include/joynr/infrastructure/DacTypes/QtControlEntry.h \
+                         libjoynr/include/joynr/infrastructure/DacTypes/QtDomainRoleEntry.h \
+                         libjoynr/include/joynr/infrastructure/DacTypes/QtMasterAccessControlEntry.h \
+                         libjoynr/include/joynr/infrastructure/DacTypes/QtMasterControlEntry.h \
+                         libjoynr/include/joynr/infrastructure/DacTypes/QtMasterRegistrationControlEntry.h \
+                         libjoynr/include/joynr/infrastructure/DacTypes/QtOwnerAccessControlEntry.h \
+                         libjoynr/include/joynr/infrastructure/DacTypes/QtOwnerControlEntry.h \
+                         libjoynr/include/joynr/infrastructure/DacTypes/QtOwnerRegistrationControlEntry.h \
+                         libjoynr/include/joynr/infrastructure/DacTypes/QtPermission.h \
+                         libjoynr/include/joynr/infrastructure/DacTypes/QtRole.h \
+                         libjoynr/include/joynr/infrastructure/DacTypes/QtTrustLevel.h \
                          libjoynr/include/joynr/infrastructure/DacTypes/Role.h \
                          libjoynr/include/joynr/infrastructure/DacTypes/TrustLevel.h \
                          libjoynr/include/joynr/infrastructure/DefaultChannelUrlDirectoryProvider.h \
@@ -1096,18 +1108,6 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          libjoynr/include/joynr/infrastructure/IGlobalCapabilitiesDirectory.h \
                          libjoynr/include/joynr/infrastructure/IGlobalDomainAccessControllerConnector.h \
                          libjoynr/include/joynr/infrastructure/IGlobalDomainAccessController.h \
-                         libjoynr/include/joynr/infrastructure/QtChangeType.h \
-                         libjoynr/include/joynr/infrastructure/QtControlEntry.h \
-                         libjoynr/include/joynr/infrastructure/QtDomainRoleEntry.h \
-                         libjoynr/include/joynr/infrastructure/QtMasterAccessControlEntry.h \
-                         libjoynr/include/joynr/infrastructure/QtMasterControlEntry.h \
-                         libjoynr/include/joynr/infrastructure/QtMasterRegistrationControlEntry.h \
-                         libjoynr/include/joynr/infrastructure/QtOwnerAccessControlEntry.h \
-                         libjoynr/include/joynr/infrastructure/QtOwnerControlEntry.h \
-                         libjoynr/include/joynr/infrastructure/QtOwnerRegistrationControlEntry.h \
-                         libjoynr/include/joynr/infrastructure/QtPermission.h \
-                         libjoynr/include/joynr/infrastructure/QtRole.h \
-                         libjoynr/include/joynr/infrastructure/QtTrustLevel.h \
                          libjoynr/include/joynr/InProcessAddress.h \
                          libjoynr/include/joynr/InProcessConnectorFactory.h \
                          libjoynr/include/joynr/InProcessDispatcher.h \

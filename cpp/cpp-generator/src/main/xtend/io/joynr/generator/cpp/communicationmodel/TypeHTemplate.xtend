@@ -272,16 +272,16 @@ private:
 
 namespace joynr {
 template <>
-inline QList<«getPackagePathWithJoynrPrefix(type, "::")»::«typeName»> Util::valueOf<QList<«getPackagePathWithJoynrPrefix(type, "::")»::«typeName»>>(const QVariant& variant){
-   return «joynrGenerationPrefix»::Util::convertVariantListToList<«getPackagePathWithJoynrPrefix(type, "::")»::«typeName»>(variant.value<QVariantList>());
+inline QList<«type.typeName»> Util::valueOf<QList<«type.typeName»>>(const QVariant& variant){
+   return «joynrGenerationPrefix»::Util::convertVariantListToList<«type.typeName»>(variant.value<QVariantList>());
 }
 }
 «««		https://bugreports.qt-project.org/browse/QTBUG-2151 for why this typedef is necessary
-typedef «getPackagePathWithJoynrPrefix(type, "::")»::«typeName» «getPackagePathWithJoynrPrefix(type, "__")»__«typeName»;
-Q_DECLARE_METATYPE(«getPackagePathWithJoynrPrefix(type, "__")»__«typeName»)
-Q_DECLARE_METATYPE(QList<«getPackagePathWithJoynrPrefix(type, "__")»__«typeName»>)
+typedef «type.typeName» «type.typeName.replace("::", "__")»;
+Q_DECLARE_METATYPE(«type.typeName.replace("::", "__")»)
+Q_DECLARE_METATYPE(QList<«type.typeName.replace("::", "__")»>)
 
-inline uint qHash(const «getPackagePathWithJoynrPrefix(type, "::")»::«typeName»& key) {
+inline uint qHash(const «type.typeName»& key) {
 	return key.hashCode();
 }
 

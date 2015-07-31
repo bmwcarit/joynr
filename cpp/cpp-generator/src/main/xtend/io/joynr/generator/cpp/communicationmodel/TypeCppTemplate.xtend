@@ -43,7 +43,7 @@ class TypeCppTemplate implements CompoundTypeTemplate{
 «val typeName = type.joynrNameQt»
 «warning»
 
-#include "«getPackagePathWithJoynrPrefix(type, "/")»/«typeName».h"
+#include "«type.includeOf»"
 #include "joynr/Reply.h"
 #include "joynr/DeclareMetatypeUtil.h"
 #include "joynr/Util.h"
@@ -52,7 +52,7 @@ class TypeCppTemplate implements CompoundTypeTemplate{
 #include <QMetaEnum>
 #include <QDateTime>
 
-#include "«getPackagePathWithJoynrPrefix(type, "/")»«IF type.isPartOfTypeCollection»/«type.typeCollectionName»«ENDIF»/«type.joynrName».h"
+#include "«stdTypeUtil.getIncludeOf(type)»"
 
 
 «getNamespaceStarter(type)»
@@ -65,9 +65,9 @@ void «typeName»::registerMetatypes() {
 	«ENDFOR»
 	«FOR enumMember: getEnumMembers(type)»
 		{
-			«registerMetatypeStatement(getEnumContainer(enumMember.type.derived))»
+			«registerMetatypeStatement(enumMember.type.derived.typeNameOfContainingClass)»
 			int id = «registerMetatypeStatement(enumMember.typeName)»
-			QJson::Serializer::registerEnum(id, «getEnumContainer(enumMember.type.derived)»::staticMetaObject.enumerator(0));
+			QJson::Serializer::registerEnum(id, «enumMember.type.derived.typeNameOfContainingClass»::staticMetaObject.enumerator(0));
 		}
 	«ENDFOR»
 }
@@ -134,7 +134,7 @@ void «typeName»::registerMetatypes() {
 	«IF isArray(member)»
 		QList<QVariant> «typeName»::get«joynrName.toFirstUpper»Internal() const {
 			«IF isEnum(member.type)»
-				return Util::convertEnumListToVariantList<«getEnumContainer(member.type)»>(m_«joynrName»);
+				return Util::convertEnumListToVariantList<«member.type.derived.typeNameOfContainingClass»>(m_«joynrName»);
 			«ELSE»
 				QList<QVariant> returnList;
 				returnList.reserve( this->m_«joynrName».size() );
@@ -152,7 +152,7 @@ void «typeName»::registerMetatypes() {
 		void «typeName»::set«joynrName.toFirstUpper»Internal(const QList<QVariant>& obj«joynrName.toFirstUpper») {
 			«IF isEnum(member.type)»
 				m_«joynrName» =
-					Util::convertVariantListToEnumList<«getEnumContainer(member.type)»>(obj«joynrName.toFirstUpper»);
+					Util::convertVariantListToEnumList<«member.type.derived.typeNameOfContainingClass»>(obj«joynrName.toFirstUpper»);
 			«ELSE»
 				this->m_«joynrName».clear();
 				this->m_«joynrName».reserve( obj«joynrName.toFirstUpper».size() );

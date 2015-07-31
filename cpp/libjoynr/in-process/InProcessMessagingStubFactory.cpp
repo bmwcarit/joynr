@@ -27,13 +27,14 @@ InProcessMessagingStubFactory::InProcessMessagingStubFactory()
 {
 }
 
-bool InProcessMessagingStubFactory::canCreate(const joynr::system::QtAddress& destAddress)
+bool InProcessMessagingStubFactory::canCreate(
+        const joynr::system::RoutingTypes::QtAddress& destAddress)
 {
     return destAddress.inherits(InProcessMessagingAddress::staticMetaObject.className());
 }
 
 QSharedPointer<IMessaging> InProcessMessagingStubFactory::create(
-        const joynr::system::QtAddress& destAddress)
+        const joynr::system::RoutingTypes::QtAddress& destAddress)
 {
     const InProcessMessagingAddress* inprocessAddress =
             dynamic_cast<const InProcessMessagingAddress*>(&destAddress);

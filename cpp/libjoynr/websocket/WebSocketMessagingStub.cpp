@@ -23,7 +23,7 @@
 
 #include "joynr/JsonSerializer.h"
 #include "joynr/JoynrMessage.h"
-#include "joynr/system/QtAddress.h"
+#include "joynr/system/RoutingTypes/QtAddress.h"
 
 namespace joynr
 {
@@ -31,7 +31,7 @@ namespace joynr
 joynr_logging::Logger* WebSocketMessagingStub::logger =
         joynr_logging::Logging::getInstance()->getLogger("MSG", "WebSocketMessagingStub");
 
-WebSocketMessagingStub::WebSocketMessagingStub(system::QtAddress* address,
+WebSocketMessagingStub::WebSocketMessagingStub(system::RoutingTypes::QtAddress* address,
                                                QWebSocket* webSocket,
                                                QObject* parent)
         : QObject(parent), address(address), webSocket(webSocket)

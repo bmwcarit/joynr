@@ -22,8 +22,8 @@
 #include "joynr/IDbusSkeletonWrapper.h"
 #include "common/dbus/DbusMessagingStubAdapter.h"
 #include "joynr/DbusMessagingSkeleton.h"
-#include "joynr/system/QtChannelAddress.h"
-#include "joynr/system/QtCommonApiDbusAddress.h"
+#include "joynr/system/RoutingTypes/QtChannelAddress.h"
+#include "joynr/system/RoutingTypes/QtCommonApiDbusAddress.h"
 #include "QString"
 
 #include "tests/utils/MockObjects.h"

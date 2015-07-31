@@ -27,7 +27,11 @@ namespace joynr
 
 namespace system
 {
+
+namespace RoutingTypes
+{
 class QtAddress;
+}
 }
 class IMessaging;
 
@@ -37,8 +41,9 @@ public:
     virtual ~IMiddlewareMessagingStubFactory()
     {
     }
-    virtual QSharedPointer<IMessaging> create(const joynr::system::QtAddress& destAddress) = 0;
-    virtual bool canCreate(const joynr::system::QtAddress& destAddress) = 0;
+    virtual QSharedPointer<IMessaging> create(
+            const joynr::system::RoutingTypes::QtAddress& destAddress) = 0;
+    virtual bool canCreate(const joynr::system::RoutingTypes::QtAddress& destAddress) = 0;
 };
 
 } // namespace joynr

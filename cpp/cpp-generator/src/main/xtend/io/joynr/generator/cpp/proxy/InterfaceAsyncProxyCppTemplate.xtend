@@ -51,7 +51,7 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 
 «getNamespaceStarter(fInterface)»
 «asyncClassName»::«asyncClassName»(
-		QSharedPointer<joynr::system::QtAddress> messagingAddress,
+		QSharedPointer<joynr::system::RoutingTypes::QtAddress> messagingAddress,
 		joynr::ConnectorFactory* connectorFactory,
 		joynr::IClientCache *cache,
 		const std::string &domain,

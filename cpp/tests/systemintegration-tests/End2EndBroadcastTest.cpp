@@ -24,7 +24,7 @@
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "joynr/tests/testProxy.h"
-#include "joynr/types/QtGpsLocation.h"
+#include "joynr/types/Localisation/QtGpsLocation.h"
 #include "joynr/types/QtProviderQos.h"
 #include "joynr/types/QtCapabilityInformation.h"
 #include "joynr/CapabilitiesRegistrar.h"

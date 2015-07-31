@@ -30,7 +30,7 @@
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionStop.h"
 #include "joynr/SubscriptionReply.h"
-#include "joynr/system/QtChannelAddress.h"
+#include "joynr/system/RoutingTypes/QtChannelAddress.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 
@@ -59,10 +59,10 @@ public:
         mockJoynrMessageSender(new MockJoynrMessageSender()),
         domain("cppProxyIntegrationTestDomain"),
         messagingQos(),
-        endPointAddress(new system::QtChannelAddress("endPointAddress"))
+        endPointAddress(new system::RoutingTypes::QtChannelAddress("endPointAddress"))
     {
         //moved to initializationlist
-        //endPointAddress = QSharedPointer<system::QtChannelAddress>(new system::QtChannelAddress("endPointAddress"));
+        //endPointAddress = QSharedPointer<system::RoutingTypes::QtChannelAddress>(new system::RoutingTypes::QtChannelAddress("endPointAddress"));
     }
 
     // Sets up the test fixture.
@@ -87,7 +87,7 @@ protected:
     MockJoynrMessageSender* mockJoynrMessageSender;
     std::string domain;
     MessagingQos messagingQos;
-    QSharedPointer<system::QtChannelAddress> endPointAddress;
+    QSharedPointer<system::RoutingTypes::QtChannelAddress> endPointAddress;
 
 
 private:

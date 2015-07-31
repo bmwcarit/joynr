@@ -21,8 +21,8 @@
 #define ACCESSCONTROLALGORITHM_H
 
 #include "joynr/JoynrClusterControllerExport.h"
-#include "joynr/infrastructure/QtPermission.h"
-#include "joynr/infrastructure/QtTrustLevel.h"
+#include "joynr/infrastructure/DacTypes/QtPermission.h"
+#include "joynr/infrastructure/DacTypes/QtTrustLevel.h"
 #include "joynr/Optional.h"
 
 #include <QList>
@@ -37,8 +37,12 @@ class Logger;
 
 namespace infrastructure
 {
+
+namespace DacTypes
+{
 class QtMasterAccessControlEntry;
 class QtOwnerAccessControlEntry;
+}
 }
 
 /**
@@ -62,11 +66,11 @@ public:
      * \param trustLevel The trust level of the user sending the message
      * \return The permission
      */
-    virtual infrastructure::QtPermission::Enum getConsumerPermission(
-            const Optional<infrastructure::QtMasterAccessControlEntry>& masterOptional,
-            const Optional<infrastructure::QtMasterAccessControlEntry>& mediatorOptional,
-            const Optional<infrastructure::QtOwnerAccessControlEntry>& ownerOptional,
-            infrastructure::QtTrustLevel::Enum trustLevel);
+    virtual infrastructure::DacTypes::QtPermission::Enum getConsumerPermission(
+            const Optional<infrastructure::DacTypes::QtMasterAccessControlEntry>& masterOptional,
+            const Optional<infrastructure::DacTypes::QtMasterAccessControlEntry>& mediatorOptional,
+            const Optional<infrastructure::DacTypes::QtOwnerAccessControlEntry>& ownerOptional,
+            infrastructure::DacTypes::QtTrustLevel::Enum trustLevel);
 
     /**
      * Get the permission for a Provider.
@@ -77,21 +81,21 @@ public:
      * \param trustLevel The trust level of the user sending the message
      * \return Always QtPermission::YES
      */
-    virtual infrastructure::QtPermission::Enum getProviderPermission(
-            const Optional<infrastructure::QtMasterAccessControlEntry>& masterOptional,
-            const Optional<infrastructure::QtMasterAccessControlEntry>& mediatorOptional,
-            const Optional<infrastructure::QtOwnerAccessControlEntry>& ownerOptional,
-            infrastructure::QtTrustLevel::Enum trustLevel);
+    virtual infrastructure::DacTypes::QtPermission::Enum getProviderPermission(
+            const Optional<infrastructure::DacTypes::QtMasterAccessControlEntry>& masterOptional,
+            const Optional<infrastructure::DacTypes::QtMasterAccessControlEntry>& mediatorOptional,
+            const Optional<infrastructure::DacTypes::QtOwnerAccessControlEntry>& ownerOptional,
+            infrastructure::DacTypes::QtTrustLevel::Enum trustLevel);
 
 private:
     enum PermissionType { PERMISSION_FOR_CONSUMER, PERMISSION_FOR_PROVIDER };
 
-    infrastructure::QtPermission::Enum getPermission(
+    infrastructure::DacTypes::QtPermission::Enum getPermission(
             PermissionType permissionType,
-            const Optional<infrastructure::QtMasterAccessControlEntry>& masterOptional,
-            const Optional<infrastructure::QtMasterAccessControlEntry>& mediatorOptional,
-            const Optional<infrastructure::QtOwnerAccessControlEntry>& ownerOptional,
-            infrastructure::QtTrustLevel::Enum trustLevel);
+            const Optional<infrastructure::DacTypes::QtMasterAccessControlEntry>& masterOptional,
+            const Optional<infrastructure::DacTypes::QtMasterAccessControlEntry>& mediatorOptional,
+            const Optional<infrastructure::DacTypes::QtOwnerAccessControlEntry>& ownerOptional,
+            infrastructure::DacTypes::QtTrustLevel::Enum trustLevel);
 };
 
 } // namespace joynr
