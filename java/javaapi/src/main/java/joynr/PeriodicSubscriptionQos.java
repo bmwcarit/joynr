@@ -38,8 +38,8 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
     private static final long DEFAULT_ALERT_AFTER_INTERVAL = 0L; // no alert
     private static final long NO_ALERT_AFTER_INTERVAL = 0L;
 
-    private long period;
-    private long alertAfterInterval;
+    private long period = MIN_PERIOD;
+    private long alertAfterInterval = DEFAULT_ALERT_AFTER_INTERVAL;
 
     protected PeriodicSubscriptionQos() {
     }
@@ -102,14 +102,14 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
      * @see #clearAlertAfterInterval()
      */
     public void setAlertAfterInterval(final long alertAfterInterval_ms) {
-        if (alertAfterInterval_ms < MIN_ALERT_AFTER_INTERVAL) {
-            this.alertAfterInterval = alertAfterInterval_ms;
+        if (alertAfterInterval_ms < period && alertAfterInterval_ms != NO_ALERT_AFTER_INTERVAL) {
+            this.alertAfterInterval = MIN_ALERT_AFTER_INTERVAL;
             logger.warn("alertAfterInterval_ms < MIN_ALERT_AFTER_INTERVAL. Using MIN_ALERT_AFTER_INTERVAL: {}",
                         MIN_ALERT_AFTER_INTERVAL);
             return;
         }
         if (alertAfterInterval_ms > MAX_ALERT_AFTER_INTERVAL) {
-            this.alertAfterInterval = alertAfterInterval_ms;
+            this.alertAfterInterval = MAX_ALERT_AFTER_INTERVAL;
             logger.warn("alertAfterInterval_ms > MAX_ALERT_AFTER_INTERVAL. Using MAX_ALERT_AFTER_INTERVAL: {}",
                         MAX_ALERT_AFTER_INTERVAL);
             return;
@@ -161,6 +161,9 @@ public class PeriodicSubscriptionQos extends SubscriptionQos implements Heartbea
             return;
         }
         this.period = period_ms;
+        if (this.alertAfterInterval != NO_ALERT_AFTER_INTERVAL && this.alertAfterInterval < this.period) {
+            this.alertAfterInterval = this.period;
+        }
     }
 
     @Override
