@@ -28,10 +28,12 @@ import org.franca.core.franca.FArgument
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import io.joynr.generator.util.InterfaceTemplate
 import io.joynr.generator.util.JavaTypeUtil
+import io.joynr.generator.communicationmodel.EnumTypeTemplate
 
 class InterfacesTemplate implements InterfaceTemplate{
 	@Inject extension JoynrJavaGeneratorExtensions
 	@Inject extension JavaTypeUtil
+	@Inject extension EnumTypeTemplate
 	@Inject extension TemplateBase
 
 	def init(FInterface serviceInterface, HashMap<FMethod, String> methodToErrorEnumName) {
