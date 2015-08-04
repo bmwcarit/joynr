@@ -22,10 +22,12 @@ import io.joynr.generator.util.EnumTemplate
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import io.joynr.generator.util.TemplateBase
 import org.franca.core.franca.FEnumerationType
+import io.joynr.generator.util.JavaTypeUtil
 
 class EnumTypeTemplate implements EnumTemplate{
 
 	@Inject extension JoynrJavaGeneratorExtensions
+	@Inject extension JavaTypeUtil
 	@Inject extension TemplateBase
 
 	override generate(FEnumerationType enumType)
@@ -59,9 +61,16 @@ public enum «typeName» {
 	static final Map<Integer, «typeName»> ordinalToEnumValues = new HashMap<Integer, «typeName»>();
 
 	static{
-		«var i = -1»
+		«var ordinal = -1»
 		«FOR enumValue : getEnumElementsAndBaseEnumElements(enumType)»
-		ordinalToEnumValues.put(Integer.valueOf(«IF enumValue.value==null|| enumValue.value.equals("")»«i=i+1»«ELSE»«enumValue.value»«ENDIF»), «enumValue.joynrName»);
+			«{
+				ordinal = if (enumValue.value.enumeratorValue == null)
+							ordinal+1
+						else
+							Integer::valueOf(enumValue.value.enumeratorValue);
+				""
+			}»
+			ordinalToEnumValues.put(«ordinal», «enumValue.joynrName»);
 		«ENDFOR»
 	}
 

@@ -679,7 +679,7 @@ abstract class JoynrGeneratorExtensions {
 	 * Returns true if the member is a 1 Dimensional list, returns false if not. (2D Lists are not supported)
 	 */
 	def boolean isArray(FTypedElement typedElement) {
-		return typedElement.array== '[]'
+		return typedElement.array
 	}
 
 	def boolean hasExtendsDeclaration(FCompoundType datatype) {
@@ -862,7 +862,7 @@ abstract class JoynrGeneratorExtensions {
 	}
 
 	def isSelective(FBroadcast broadcast) {
-		return broadcast.selective != null
+		return broadcast.selective
 	}
 
 	/**

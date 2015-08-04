@@ -16,6 +16,8 @@ specific language governing permissions and limitations
 under the License.
 
 This project has dependencies to:
+  3rd Party Dependencies - Library under Eclipse Public License - v 1.0
+  Antlr 3 Runtime under BSD License
   AntLR Parser Generator under BSD License
   AOP alliance under Public Domain
   Apache Commons Lang under The Apache Software License, Version 2.0
@@ -29,7 +31,9 @@ This project has dependencies to:
   Apache Log4j Core under The Apache Software License, Version 2.0
   Apache Log4j SLF4J Binding under The Apache Software License, Version 2.0
   Apache XBean :: ASM 4 shaded (repackaged) under Apache License, Version 2.0
-  ASM Core under BSD License
+  ASM Commons under BSD
+  ASM Core under BSD
+  ASM Tree under BSD
   atmosphere-annotations under CDDL or Apache License 2.0
   atmosphere-guice under Apache License 2.0
   atmosphere-jersey under CDDL or Apache License 2.0
@@ -38,6 +42,8 @@ This project has dependencies to:
   CDI APIs under Apache License, Version 2.0
   codegen under Eclipse Public License - v 1.0
   Common Annotations 1.1 API under lgpl
+  Common Eclipse Runtime under Eclipse Public License - v 1.0
+  Common Types Runtime Library under Eclipse Public License - v 1.0
   Commons Codec under The Apache Software License, Version 2.0
   Commons Collections under The Apache Software License, Version 2.0
   Commons IO under The Apache Software License, Version 2.0
@@ -189,7 +195,10 @@ This project has dependencies to:
   OpenJPA Persistence under Apache Software License 2.0
   OpenJPA Persistence JDBC under Apache Software License 2.0
   OpenJPA Utilities Library under Apache Software License 2.0
-  org.eclipse.xtend.standalone under Eclipse Public License - v 1.0
+  org.eclipse.emf.codegen under The Eclipse Public License Version 1.0
+  org.eclipse.emf.common under The Eclipse Public License Version 1.0
+  org.eclipse.emf.ecore under The Eclipse Public License Version 1.0
+  org.eclipse.emf.ecore.xmi under The Eclipse Public License Version 1.0
   org.franca.core under Eclipse Public License - v 1.0
   org.franca.core.dsl under Eclipse Public License - v 1.0
   org.franca.deploymodel.dsl under Eclipse Public License - v 1.0
@@ -204,9 +213,14 @@ This project has dependencies to:
   StAX API under The Apache Software License, Version 2.0
   TagSoup under Apache License 2.0
   Transaction 1.1 API under lgpl
+  Tycho org.eclipse.jdt.core dependency (Incubation) under Eclipse Public License
   Xalan Java under The Apache Software License, Version 2.0
   Xalan Java Serializer under The Apache Software License, Version 2.0
+  Xbase Runtime Library under Eclipse Public License - v 1.0
   Xerces2-j under The Apache Software License, Version 2.0
   XML Commons External Components XML APIs under The Apache Software License, Version 2.0 or The SAX License or The W3C License
   xml-path under Apache 2.0
+  Xtend Core Library under Eclipse Public License - v 1.0
+  Xtext Runtime Library under Eclipse Public License - v 1.0
+  Xtext Util under Eclipse Public License - v 1.0
 
