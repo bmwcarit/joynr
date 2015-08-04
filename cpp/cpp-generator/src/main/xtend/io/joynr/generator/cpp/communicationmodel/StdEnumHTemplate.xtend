@@ -63,14 +63,19 @@ struct «getDllExportMacro()»«typeName» {
 	«appendDoxygenSummaryAndWriteSeeAndDescription(type, " *")»
 	 */
 	enum «getNestedEnumName()» : uint32_t {
-		«var ordinal = 0»
+		«var ordinal = -1»
 		«FOR enumtype : getEnumElementsAndBaseEnumElements(type) SEPARATOR ','»
 			/**
 			 * @brief «appendDoxygenComment(enumtype, "* ")»
 			 */
-			«enumtype.joynrName» = «ordinal++»
-			««« TODO after switch to Franca 0.9.2 we must check for ordinals defined in the fidl
-			««««enumtype.joynrName» = «enumtype.value.enumeratorValue»
+			«{
+				ordinal = if (enumtype.value.enumeratorValue == null)
+							ordinal+1
+						else
+							Integer::valueOf(enumtype.value.enumeratorValue);
+				""
+			}»
+			«enumtype.joynrName» = «ordinal»
 		«ENDFOR»
 	};
 
