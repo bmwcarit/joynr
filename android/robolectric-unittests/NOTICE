@@ -36,6 +36,7 @@ This project has dependencies to:
   dom4j under BSD License
   ehcache under The Apache Software License, Version 2.0
   FindBugs-Annotations under GNU Lesser Public License
+  Google Android android-all Library under Apache 2.0
   Google Guice - Core Library under The Apache Software License, Version 2.0
   Google Guice - Extensions - AssistedInject under The Apache Software License, Version 2.0
   Guava: Google Core Libraries for Java under The Apache Software License, Version 2.0
@@ -55,6 +56,7 @@ This project has dependencies to:
   jackson-databind under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
   Javassist under MPL 1.1 or LGPL 2.1
   javax.inject under The Apache Software License, Version 2.0
+  JSON (JavaScript Object Notation) under provided without support or warranty
   JUnit under Common Public License Version 1.0
   Logging under The Apache Software License, Version 2.0
   Maven Ant Tasks under The Apache Software License, Version 2.0
@@ -86,6 +88,7 @@ This project has dependencies to:
   SLF4J API and Google Android Binding under The MIT License
   SLF4J API Module under MIT License
   sqlite4java under The Apache Software License, Version 2.0
+  TagSoup under Apache License 2.0
   vtd-xml under GNU GENERAL PUBLIC LICENSE Version 2, June 1991
   xercesMinimal under Apache License, Version 2.0
 

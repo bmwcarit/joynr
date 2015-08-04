@@ -70,6 +70,7 @@ This project has dependencies to:
   Expression Language 2.2 API under lgpl
   FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
+  Google Android android-all Library under Apache 2.0
   Google Guice - Core Library under The Apache Software License, Version 2.0
   Google Guice - Extensions - AssistedInject under The Apache Software License, Version 2.0
   Google Guice - Extensions - Persist under The Apache Software License, Version 2.0
@@ -213,6 +214,7 @@ This project has dependencies to:
   JMS 1.1 under The Apache Software License, Version 2.0
   JMS 1.1 API under lgpl
   JPA 2.0 API under Sun Binary Code License
+  JSON (JavaScript Object Notation) under provided without support or warranty
   JSON Small and Fast Parser under The Apache Software License, Version 2.0
   json-path under Apache 2.0
   JSON.simple under The Apache Software License, Version 2.0
