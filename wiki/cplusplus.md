@@ -280,7 +280,8 @@ The class ```OnChangeSubscriptionQos``` inherits from ```SubscriptionQos``` and 
 
 * **minimum Interval** Minimum time to wait between successive notifications (milliseconds)
 
-This class should be used for subscriptions to broadcasts.
+This class should be used for subscriptions to broadcasts. It can also be used for subscriptions
+to attributes if no periodic update is required.
 
 ### OnchangeWithKeepAliveSubscriptionQos
 
