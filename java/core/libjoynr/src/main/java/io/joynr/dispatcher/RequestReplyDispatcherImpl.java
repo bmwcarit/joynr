@@ -396,35 +396,39 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
 
     private void handleSubscriptionRequestReceived(final JoynrMessage message) {
 
-        final String toParticipantId = message.getTo();
-        final String fromParticipantId = message.getFrom();
-        if (requestCallerDirectory.containsKey(toParticipantId)) {
-            RequestCaller requestCaller = null;
-            requestCaller = requestCallerDirectory.get(toParticipantId);
-            SubscriptionRequest subscriptionRequest;
-            try {
-                subscriptionRequest = objectMapper.readValue(message.getPayload(), SubscriptionRequest.class);
-                String replyChannelId = message.getHeaderValue(JoynrMessage.HEADER_NAME_REPLY_CHANNELID);
-                messagingEndpointDirectory.put(fromParticipantId, new JoynrMessagingEndpointAddress(replyChannelId));
+        // handle only if this message creator (userId) has permissions
+        if (accessController.hasConsumerPermission(message)) {
 
-                publicationManager.addSubscriptionRequest(fromParticipantId,
-                                                          toParticipantId,
-                                                          subscriptionRequest,
-                                                          requestCaller);
-            } catch (JsonParseException e) {
-                logger.error("Error parsing request payload. msgId: {}. from: {} to: {}. Reason: {}. Discarding request.",
-                             new String[]{ fromParticipantId, toParticipantId, message.getId(), e.getMessage() });
-            } catch (JsonMappingException e) {
-                logger.error("Error parsing request payload. msgId: {}. from: {} to: {}. Reason: {}. Discarding request.",
-                             new String[]{ fromParticipantId, toParticipantId, message.getId(), e.getMessage() });
-            } catch (IOException e) {
-                logger.error("Error parsing request payload. msgId: {}. from: {} to: {}. Reason: {}. Discarding request.",
-                             new String[]{ fromParticipantId, toParticipantId, message.getId(), e.getMessage() });
+            final String toParticipantId = message.getTo();
+            final String fromParticipantId = message.getFrom();
+            if (requestCallerDirectory.containsKey(toParticipantId)) {
+                RequestCaller requestCaller = null;
+                requestCaller = requestCallerDirectory.get(toParticipantId);
+                SubscriptionRequest subscriptionRequest;
+                try {
+                    subscriptionRequest = objectMapper.readValue(message.getPayload(), SubscriptionRequest.class);
+                    String replyChannelId = message.getHeaderValue(JoynrMessage.HEADER_NAME_REPLY_CHANNELID);
+                    messagingEndpointDirectory.put(fromParticipantId, new JoynrMessagingEndpointAddress(replyChannelId));
+
+                    publicationManager.addSubscriptionRequest(fromParticipantId,
+                                                              toParticipantId,
+                                                              subscriptionRequest,
+                                                              requestCaller);
+                } catch (JsonParseException e) {
+                    logger.error("Error parsing request payload. msgId: {}. from: {} to: {}. Reason: {}. Discarding request.",
+                                 new String[]{ fromParticipantId, toParticipantId, message.getId(), e.getMessage() });
+                } catch (JsonMappingException e) {
+                    logger.error("Error parsing request payload. msgId: {}. from: {} to: {}. Reason: {}. Discarding request.",
+                                 new String[]{ fromParticipantId, toParticipantId, message.getId(), e.getMessage() });
+                } catch (IOException e) {
+                    logger.error("Error parsing request payload. msgId: {}. from: {} to: {}. Reason: {}. Discarding request.",
+                                 new String[]{ fromParticipantId, toParticipantId, message.getId(), e.getMessage() });
+                }
+
+            } else {
+                // TODO handle unknown participantID
+                logger.debug("Received subscriptionRequest for unknown participant. Discarding request.");
             }
-
-        } else {
-            // TODO handle unknown participantID
-            logger.debug("Received subscriptionRequest for unknown participant. Discarding request.");
         }
 
     }
