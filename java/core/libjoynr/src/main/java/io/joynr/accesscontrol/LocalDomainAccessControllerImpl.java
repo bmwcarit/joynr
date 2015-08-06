@@ -158,7 +158,8 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
                                                                                                       domain,
                                                                                                       interfaceName);
 
-        if (masterAces.size() > 1 || mediatorAces.size() > 1 || ownerAces.size() > 1) {
+        if ((masterAces != null && masterAces.size() > 1) || (mediatorAces != null && mediatorAces.size() > 1)
+                || (ownerAces != null && ownerAces.size() > 1)) {
             return null;
         } else {
             return getConsumerPermission(userId, domain, interfaceName, WILDCARD, trustLevel);
@@ -468,9 +469,16 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
                                                                                               interfaceName,
                                                                                               null);
         AceSubscription subscriptions = subscriptionsMap.get(subscriptionKey);
-        globalDomainAccessControllerClient.unsubscribeFromMasterAccessControlEntryChangedBroadcast(subscriptions.getMasterSubscriptionId());
-        globalDomainAccessControllerClient.unsubscribeFromMediatorAccessControlEntryChangedBroadcast(subscriptions.getMediatorSubscriptionId());
-        globalDomainAccessControllerClient.unsubscribeFromOwnerAccessControlEntryChangedBroadcast(subscriptions.getOwnerSubscriptionId());
+        if (subscriptions != null) {
+            globalDomainAccessControllerClient.unsubscribeFromMasterAccessControlEntryChangedBroadcast(subscriptions.getMasterSubscriptionId());
+            globalDomainAccessControllerClient.unsubscribeFromMediatorAccessControlEntryChangedBroadcast(subscriptions.getMediatorSubscriptionId());
+            globalDomainAccessControllerClient.unsubscribeFromOwnerAccessControlEntryChangedBroadcast(subscriptions.getOwnerSubscriptionId());
+        } else {
+            /*
+             * This can be the case, when no consumer request has been performed during the lifetime of the provider
+             */
+            LOG.debug("Subscription for ace subscription for interface '{}' domain '{}'", interfaceName, domain);
+        }
     }
 
     private void subscribeForDreChange(String userId) {
@@ -518,26 +526,36 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
         LOG.debug("initializeLocalDomainAccessStore on domain {}, interface {}", domain, interfaceName);
 
         List<DomainRoleEntry> domainRoleEntries = globalDomainAccessControllerClient.getDomainRoles(userId);
-        for (DomainRoleEntry entry : domainRoleEntries) {
-            localDomainAccessStore.updateDomainRole(entry);
+        if (domainRoleEntries != null) {
+            for (DomainRoleEntry entry : domainRoleEntries) {
+                localDomainAccessStore.updateDomainRole(entry);
+            }
         }
 
         List<MasterAccessControlEntry> masterAccessControlEntries = globalDomainAccessControllerClient.getMasterAccessControlEntries(domain,
                                                                                                                                      interfaceName);
-        for (MasterAccessControlEntry entry : masterAccessControlEntries) {
-            localDomainAccessStore.updateMasterAccessControlEntry(entry);
+
+        if (masterAccessControlEntries != null) {
+            for (MasterAccessControlEntry entry : masterAccessControlEntries) {
+                localDomainAccessStore.updateMasterAccessControlEntry(entry);
+            }
         }
 
         List<MasterAccessControlEntry> mediatorAccessControlEntries = globalDomainAccessControllerClient.getMediatorAccessControlEntries(domain,
                                                                                                                                          interfaceName);
-        for (MasterAccessControlEntry entry : mediatorAccessControlEntries) {
-            localDomainAccessStore.updateMediatorAccessControlEntry(entry);
+
+        if (mediatorAccessControlEntries != null) {
+            for (MasterAccessControlEntry entry : mediatorAccessControlEntries) {
+                localDomainAccessStore.updateMediatorAccessControlEntry(entry);
+            }
         }
 
         List<OwnerAccessControlEntry> ownerAccessControlEntries = globalDomainAccessControllerClient.getOwnerAccessControlEntries(domain,
                                                                                                                                   interfaceName);
-        for (OwnerAccessControlEntry entry : ownerAccessControlEntries) {
-            localDomainAccessStore.updateOwnerAccessControlEntry(entry);
+        if (ownerAccessControlEntries != null) {
+            for (OwnerAccessControlEntry entry : ownerAccessControlEntries) {
+                localDomainAccessStore.updateOwnerAccessControlEntry(entry);
+            }
         }
 
         LOG.debug("Finished initializeLocalDomainAccessStore on domain {}, interface {}", domain, interfaceName);
