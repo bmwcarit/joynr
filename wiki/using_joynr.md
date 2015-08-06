@@ -102,6 +102,13 @@ Java, C++, etc. program code depending on the target language. A Franca file mus
 extension ".fidl" and be placed at the correct location in the source tree. The generated code is
 then used to implement the Application modelled by the corresponding Franca files.
 
+>*Note: Since the necessary Franca dependencies are currently not available from
+>[Maven Central Repository](http://search.maven.org/), we ship Franca dependencies together with the
+>joynr source code in the `<JOYNR>/tools/generator/dependency-libs/` directory.*
+>
+>*If you build joynr yourself using the provided docker and / or Maven infrastructure, the Franca
+>dependencies are installed to your local Maven repository during the build.*
+
 
 ## Runtime Environment
 joynr requires the following components to run:
@@ -119,8 +126,8 @@ project and run
 The bounceproxy is also tested with glassfish 3.1.2.2. See [Glassfish settings]
 (Glassfish-settings.md) for configuration details.
 
-*Note: This is only for test purposes. You need to have Maven installed. Joynr is built and tested
-with Maven 3.2.5, but more recent versions of Maven might also work.*
+>*Note: This is only for test purposes. You need to have Maven installed. Joynr is built and tested
+>with Maven 3.2.5, but more recent versions of Maven might also work.*
 
 ### Discovery Directories
 Centralized directory to discover providers for a given domain and interface.
@@ -135,8 +142,8 @@ common components](java_building_joynr.md))
 <JOYNR>/java/backend-services/discovery-directory-servlet$ mvn jetty:run
 ```
 
-*Note: This is only for test purposes. You need to have Maven installed. Joynr is built and tested
-with Maven 3.2.5, but more recent versions of Maven might also work.*
+>*Note: This is only for test purposes. You need to have Maven installed. Joynr is built and tested
+>with Maven 3.2.5, but more recent versions of Maven might also work.*
 
 Use the following links to check whether all components are running:
 
