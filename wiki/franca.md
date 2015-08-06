@@ -3,7 +3,7 @@
 Franca IDL files can be written in any text editor.
 
 We recommend using the Franca Eclipse tooling to simplify the process (syntax highlighting, code
-completion, model validation etc.): Franca IDL (https://code.google.com/a/eclipselabs.org/p/franca/)
+completion, model validation etc.): Franca IDL (https://github.com/franca/franca)
 
 The following sections provide a brief overview of Franca.
 
@@ -170,7 +170,7 @@ interface myInterface {
 ```
 
 ## Further Reading
-[Franca IDL documentation on Google Code (external link: https://code.google.com/a/eclipselabs.org/p/franca/)](https://code.google.com/a/eclipselabs.org/p/franca/)
+[Franca IDL documentation on GitHub (external link: https://github.com/franca/franca)](https://github.com/franca/franca)
 
 For details about using joynr with Java see [joynr Java Developer Guide](java.md).
 For details about using joynr with C++ see [joynr C\+\+ Developer Guide](cplusplus.md).

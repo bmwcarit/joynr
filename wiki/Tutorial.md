@@ -10,20 +10,28 @@ If you haven't built joynr yet, please do so first:
 * [Building joynr Java](java_building_joynr.md) for the Java example only.
 * [Building joynr C++](cpp_building_joynr.md) for the C++ example.
 
-This will install the necessary dependencies to your local Maven repository and generate the radio application source files. In particular, the [Franca IDL](https://code.google.com/a/eclipselabs.org/p/franca/) dependencies that are currently not available from [Maven Central Repository](http://search.maven.org/) are installed. Since Franca is needed for joynr code generation, we ship Franca dependencies together with the joynr source code in the `<JOYNR>/tools/generator/dependency-libs/` directory.
+This will install the necessary dependencies to your local Maven repository and generate the radio
+application source files. In particular, the [Franca IDL](https://github.com/franca/franca)
+dependencies that are currently not available from [Maven Central Repository](http://search.maven.org/)
+are installed. Since Franca is needed for joynr code generation, we ship Franca dependencies together
+with the joynr source code in the `<JOYNR>/tools/generator/dependency-libs/` directory.
 
 # Exploring the demo
-The example project contains a java and c++ variation, letting you explore whichever one you find more comfortable.
+The example project contains a java and c++ variation, letting you explore whichever one you find
+more comfortable.
 
 The RadioApp demo is located in `<JOYNR>/examples/radio-app`. We refer to this location as
 `RADIO_HOME`.
 
-For exploring the Java code and for viewing the radio communication interface, you can use Eclipse and import the RadioApp (`<RADIO_HOME>/pom.xml`) as a Maven project, using the M2E plugin. For C++, open `<RADIO_HOME>/CMakeLists.txt` in QtCreator.
+For exploring the Java code and for viewing the radio communication interface, you can use Eclipse
+and import the RadioApp (`<RADIO_HOME>/pom.xml`) as a Maven project, using the M2E plugin. For C++,
+open `<RADIO_HOME>/CMakeLists.txt` in QtCreator.
 
 >**Note: Dependency Resolution**
 >
 >In Java all dependencies are resolved automatically using Maven.
->In C++ joynr must be [built from the sources](Home.md). Afterwards, joynr will be resolved using
+>In C++ joynr must be [built from the sources](cpp_building_joynr.md). Afterwards, joynr will be
+>resolved using
 >CMake's `find_package` command:
 >
 >```cmake

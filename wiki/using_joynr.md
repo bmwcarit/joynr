@@ -96,7 +96,11 @@ The Qos objects are described in more detail in the Developer Guides separately 
 
 ## Definition of communication interfaces
 
-The interfaces between the Provider and Consumer applications are defined using the **Franca Interface Definition Language**. The files will be used as input to automatically generate Java, C++, etc. program code depending on the target language. A Franca file must be named with extension ".fidl" and be placed at the correct location in the source tree. The generated code is then used to implement the Application modelled by the corresponding Franca files.
+The interfaces between the Provider and Consumer applications are defined using the
+**Franca Interface Definition Language**. The files will be used as input to automatically generate
+Java, C++, etc. program code depending on the target language. A Franca file must be named with
+extension ".fidl" and be placed at the correct location in the source tree. The generated code is
+then used to implement the Application modelled by the corresponding Franca files.
 
 
 ## Runtime Environment
@@ -105,7 +109,9 @@ joynr requires the following components to run:
 ### Bounceproxy
 Responsible for message store and forward using Comet (currently long poll), based on the Atmosphere Framework.
 
-After joynr has been built (see [Building joynr Java and common components](java_building_joynr)), you can run the bounceproxy directly within Maven (for test purposes). Just go into the bounceproxy project and run
+After joynr has been built (see [Building joynr Java and common components](java_building_joynr.md)),
+you can run the bounceproxy directly within Maven (for test purposes). Just go into the bounceproxy
+project and run
 ```bash
 <JOYNR>$ cd java/messaging/bounceproxy/single-bounceproxy
 <JOYNR>/java/messaging/bounceproxy/single-bounceproxy$ mvn jetty:run
@@ -113,21 +119,24 @@ After joynr has been built (see [Building joynr Java and common components](java
 The bounceproxy is also tested with glassfish 3.1.2.2. See [Glassfish settings]
 (Glassfish-settings.md) for configuration details.
 
-*Note: This is only for test purposes. You need to have Maven installed. Joynr is built and tested with Maven 3.2.5, but more recent versions of Maven might also work.*
+*Note: This is only for test purposes. You need to have Maven installed. Joynr is built and tested
+with Maven 3.2.5, but more recent versions of Maven might also work.*
 
 ### Discovery Directories
 Centralized directory to discover providers for a given domain and interface.
 
 Run the discovery directories locally along with the bounceproxy:
 
-1. Build and install the whole joynr project from the root directory (see [Building joynr Java and common components](java_building_joynr))
+1. Build and install the whole joynr project from the root directory (see [Building joynr Java and
+common components](java_building_joynr.md))
 1. start directories **and** bounceproxy on default jetty port 8080:
 ```bash
 <JOYNR>$ cd java/backend-services/discovery-directory-servlet
 <JOYNR>/java/backend-services/discovery-directory-servlet$ mvn jetty:run
 ```
 
-*Note: This is only for test purposes. You need to have Maven installed. Joynr is built and tested with Maven 3.2.5, but more recent versions of Maven might also work.*
+*Note: This is only for test purposes. You need to have Maven installed. Joynr is built and tested
+with Maven 3.2.5, but more recent versions of Maven might also work.*
 
 Use the following links to check whether all components are running:
 

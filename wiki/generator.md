@@ -84,7 +84,7 @@ The joynr Code Generator also exists as standalone version which can be used to 
 generate the code from Franca models.
 
 The standalone version as well as the Maven plugin are produced during the joynr Java build
-(see [Building joynr Java and common components](building_joynr_java.md)) and installed into
+(see [Building joynr Java and common components](java_building_joynr.md)) and installed into
 the local Maven repository. The standalone jar resides in the target directory in
 *&lt;JOYNR_REPOSITORY&gt;/tools/generator/joynr-generator-standalone*. It has to be called
 with the following command line arguments:
