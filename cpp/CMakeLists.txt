@@ -131,7 +131,7 @@ if(ENABLE_DOXYGEN)
     find_package(Doxygen REQUIRED)
     message(STATUS "doxygen DOXYGEN_FOUND=${DOXYGEN_FOUND}")
     add_custom_target(doxygen
-        COMMAND ${CMAKE_SOURCE_DIR}/run_doxygen.sh ${DOXYGEN_EXECUTABLE} ${CMAKE_SOURCE_DIR}
+        COMMAND /bin/bash ${CMAKE_SOURCE_DIR}/run_doxygen.sh ${DOXYGEN_EXECUTABLE} ${CMAKE_SOURCE_DIR}
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         COMMENT "Creating doxygen documentation"
         VERBATIM
