@@ -8,7 +8,6 @@ import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderDefaultImpl;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import joynr.infrastructure.GlobalCapabilitiesDirectoryProxy;
@@ -69,7 +68,7 @@ public class GlobalCapabilitiesDirectoryClient {
 
     }
 
-    public void remove(ArrayList<String> newArrayList) {
+    public void remove(List<String> newArrayList) {
         getProxy(TTL_30_DAYS_IN_MS).remove(newArrayList);
     }
 

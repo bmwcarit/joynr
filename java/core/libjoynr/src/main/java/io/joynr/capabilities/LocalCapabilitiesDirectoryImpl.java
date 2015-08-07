@@ -33,6 +33,7 @@ import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -200,7 +201,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                         //do nothing
                     }
                 };
-                globalCapabilitiesClient.remove(callback, capabilityInformation.getParticipantId());
+                globalCapabilitiesClient.remove(Arrays.asList(capabilityInformation.getParticipantId()));
             }
         }
 
