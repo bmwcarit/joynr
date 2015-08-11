@@ -1,3 +1,13 @@
+#joynr 0.9.1
+This is a minor bug fix release:
+* [Android] callback onProxyCreationError is now called correctly when an error occurs creating a
+proxy. onProxyCreation is no longer called with null.
+* [Java] problems with multiple calls to register and deregister the same provider have been
+resolved
+* logging settings in the examples have been reduced to focus on the sent and received messages.
+##API relevant changes
+None
+
 #joynr 0.9.0
 
 ##API relevant changes

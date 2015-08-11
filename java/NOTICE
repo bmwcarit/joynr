@@ -135,7 +135,7 @@ This project has dependencies to:
   JavaBeans Activation Framework (JAF) under Common Development and Distribution License (CDDL) v1.0
   JavaEE Application Deployment 1.2 API under lgpl
   JavaMail API under CDDL or GPLv2+CE
-  Javassist under MPL 1.1 or LGPL 2.1
+  Javassist under MPL 1.1 or LGPL 2.1 or Apache License 2.0
   javax.inject under The Apache Software License, Version 2.0
   javax.interceptor API under CDDL + GPLv2 with classpath exception
   javax.servlet API v.3.0 under CDDL + GPLv2 with classpath exception

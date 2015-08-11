@@ -40,7 +40,7 @@ public class AccessControlAlgorithm {
      * @param trustLevel The trust level of the user sending the message
      * @return consumer permission
      */
-    public Permission getConsumerPermission(MasterAccessControlEntry master,
+    public Permission getConsumerPermission(@Nullable MasterAccessControlEntry master,
                                             @Nullable MasterAccessControlEntry mediator,
                                             @Nullable OwnerAccessControlEntry owner,
                                             TrustLevel trustLevel) {
@@ -57,7 +57,7 @@ public class AccessControlAlgorithm {
      * @param trustLevel The trust level of the user sending the message
      * @return provider permission
      */
-    public Permission getProviderPermission(MasterAccessControlEntry master,
+    public Permission getProviderPermission(@Nullable MasterAccessControlEntry master,
                                             @Nullable MasterAccessControlEntry mediator,
                                             @Nullable OwnerAccessControlEntry owner,
                                             TrustLevel trustLevel) {

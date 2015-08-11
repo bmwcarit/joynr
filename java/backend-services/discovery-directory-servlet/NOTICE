@@ -67,7 +67,7 @@ This project has dependencies to:
   Java Persistence API, Version 2.1 under Eclipse Public License (EPL), Version 1.0 or Eclipse Distribution License (EDL), Version 1.0
   Java Servlet API under CDDL + GPLv2 with classpath exception
   Java Transaction API under Common Development and Distribution License or GNU General Public License, Version 2 with the Classpath Exception
-  Javassist under MPL 1.1 or LGPL 2.1
+  Javassist under MPL 1.1 or LGPL 2.1 or Apache License 2.0
   javax.inject under The Apache Software License, Version 2.0
   javax.interceptor API under CDDL + GPLv2 with classpath exception
   javax.servlet API v.3.0 under CDDL + GPLv2 with classpath exception

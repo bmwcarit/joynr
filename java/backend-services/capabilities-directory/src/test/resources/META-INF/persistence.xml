@@ -29,6 +29,7 @@
 			<property name="javax.persistence.jdbc.url" value="jdbc:derby:target/testdb;create=true" />
 			<property name="javax.persistence.jdbc.user" value="root" />
 			<property name="javax.persistence.jdbc.password" value="root" />
+			<!-- property name = "hibernate.show_sql" value = "true" /-->
 			<!--  create-drop: drop the schema at the end of the session -->
 			<property name="hibernate.hbm2ddl.auto" value="create-drop" />
 		</properties>
