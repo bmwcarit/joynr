@@ -62,6 +62,7 @@ public class PublicationTimer extends PubSubTimerBase {
     private final long publicationTtl;
     private final long minInterval;
     private final long period;
+    private boolean pendingPublication;
 
     /**
      * Constructor for PublicationTimer object, see (@link PublicationTimer)
@@ -93,6 +94,7 @@ public class PublicationTimer extends PubSubTimerBase {
         this.requestReplySender = requestReplySender;
         this.attributePollInterpreter = attributePollInterpreter;
         this.method = method;
+        this.pendingPublication = false;
     }
 
     class PublicationTask extends TimerTask {
@@ -144,11 +146,10 @@ public class PublicationTimer extends PubSubTimerBase {
         }
     }
 
-    protected void sendPublication(SubscriptionPublication publication) {
-
+    protected void sendPublication(final SubscriptionPublication publication) {
         long timeSinceLast = System.currentTimeMillis() - state.getTimeOfLastPublication();
 
-        if (timeSinceLast > minInterval) {
+        if (timeSinceLast >= minInterval) {
             // publish
             logger.trace("sending subscriptionreply");
             MessagingQos messagingQos = new MessagingQos();
@@ -172,13 +173,42 @@ public class PublicationTimer extends PubSubTimerBase {
                 logger.error("sendPublication error: {}", e.getMessage());
             }
             state.updateTimeOfLastPublication();
+            synchronized (PublicationTimer.this) {
+                if (pendingPublication) {
+                    pendingPublication = false;
+                    PublicationTimer.this.notify();
+                }
+            }
             logger.trace("sent subscriptionreply @ " + state.getTimeOfLastPublication());
         } else {
-            logger.trace("igored attribute change. Mininterval {} not yet reached since timeSinceLast: {}",
-                         minInterval,
-                         timeSinceLast);
-        }
+            synchronized (PublicationTimer.this) {
+                if (!pendingPublication) {
+                    pendingPublication = true;
+                    final long timeToWait = minInterval - timeSinceLast;
+                    logger.trace("TimeToWait for subscription {}: {}", publication.getSubscriptionId(), timeToWait);
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            synchronized (PublicationTimer.this) {
+                                try {
+                                    PublicationTimer.this.wait(timeToWait);
+                                    if (pendingPublication) {
+                                        sendPublication(publication);
+                                    }
+                                } catch (InterruptedException e) {
+                                    logger.trace("DelayedPublicationThread interrupted. No publication is sent.");
+                                }
+                            }
 
+                        }
+                    }).start();
+                } else {
+                    logger.trace("ignored attribute change. Mininterval {} not yet reached since timeSinceLast: {}",
+                                 minInterval,
+                                 timeSinceLast);
+                }
+            }
+        }
     }
 
     @Override
