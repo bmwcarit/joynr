@@ -22,12 +22,13 @@ package io.joynr.joynrandroidruntime;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.exceptions.JoynrArbitrationException;
-import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.JoynrRuntime;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import android.os.AsyncTask;
 import android.util.Log;
@@ -62,37 +63,23 @@ public class AndroidProxyBuilder<T extends JoynrInterface> extends AsyncTask<Obj
     protected T doInBackground(Object... arg0) {
 
         Log.d("JAS", "starting CreateProxy");
-        return buildProxy();
+        try {
+            return buildProxy();
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            if (callback != null) {
+                callback.onProxyCreationError(e.getMessage());
+            }
+            return null;
+        }
     }
 
-    protected T buildProxy() {
-        T proxy = null;
-        try {
-            this.runtime = runtimeInitTask.get(discoveryQos.getDiscoveryTimeout(), TimeUnit.MILLISECONDS);
-            builder = runtime.getProxyBuilder(providerDomain, proxyInterface);
-            if (participantId != null) {
-                builder.setParticipantId(participantId);
-            }
-            proxy = builder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
-        } catch (JoynrIllegalStateException e) {
-            Log.e("JAS", e.toString());
-            publishProgress(e.getMessage());
-            e.printStackTrace();
-        } catch (JoynrArbitrationException e) {
-            Log.e("JAS", e.toString());
-            publishProgress(e.getMessage());
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            Log.e("JAS", e.toString());
-            publishProgress(e.getMessage());
-            e.printStackTrace();
-        } catch (Exception e) {
-            if (e.getMessage() != null) {
-                Log.e("JAS", e.toString());
-                publishProgress(e.getMessage());
-            }
-            e.printStackTrace();
+    protected T buildProxy() throws InterruptedException, ExecutionException, TimeoutException {
+        this.runtime = runtimeInitTask.get(discoveryQos.getDiscoveryTimeout(), TimeUnit.MILLISECONDS);
+        builder = runtime.getProxyBuilder(providerDomain, proxyInterface);
+        if (participantId != null) {
+            builder.setParticipantId(participantId);
         }
+        T proxy = builder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
         Log.d("JAS", "Returning Proxy");
         return proxy;
     }
@@ -104,8 +91,10 @@ public class AndroidProxyBuilder<T extends JoynrInterface> extends AsyncTask<Obj
 
     @Override
     protected void onPostExecute(T result) {
-        Log.d("JAS", "calling onProxyCreated Callback");
-        callback.onProxyCreated(result);
+        if (result != null && callback != null) {
+            Log.d("JAS", "calling onProxyCreated Callback");
+            callback.onProxyCreated(result);
+        }
     }
 
     @Override
@@ -139,8 +128,7 @@ public class AndroidProxyBuilder<T extends JoynrInterface> extends AsyncTask<Obj
 
     @Override
     public T build() {
-        // TODO test if this works
-        return buildProxy();
+        throw new UnsupportedOperationException("On Android, only method signature public void build(ProxyCreatedCallback<T> newCallback) is supported");
     }
 
     @Override

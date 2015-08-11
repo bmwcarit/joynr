@@ -83,13 +83,22 @@ public class CapabilitiesStorePersisted implements CapabilitiesStore {
         }
 
         EntityManager entityManager = entityManagerProvider.get();
+        CapabilityEntryPersisted capabilityEntryFound = entityManager.find(CapabilityEntryPersisted.class,
+                                                                           capabilityEntry.getParticipantId());
+
         EntityTransaction transaction = entityManager.getTransaction();
         try {
             transaction.begin();
-            entityManager.merge(capabilityEntry);
+            if (capabilityEntryFound != null) {
+                entityManager.merge(capabilityEntry);
+            } else {
+                entityManager.persist(capabilityEntry);
+            }
             transaction.commit();
         } catch (Exception e) {
-            transaction.rollback();
+            if (transaction.isActive()) {
+                transaction.rollback();
+            }
             logger.error("unable to add capabilityEntry: {}, reason: {}", capabilityEntry, e.getMessage());
         } finally {
         }
@@ -137,7 +146,9 @@ public class CapabilitiesStorePersisted implements CapabilitiesStore {
             entityManager.remove(capabilityEntry);
             transaction.commit();
         } catch (Exception e) {
-            transaction.rollback();
+            if (transaction.isActive()) {
+                transaction.rollback();
+            }
             logger.error("unable to remove capability: {} reason: {}", participantId, e.getMessage());
             return false;
         } finally {

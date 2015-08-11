@@ -24,7 +24,7 @@
 	<packaging>war</packaging>
 
 	<name>${project.groupId}:${project.artifactId}</name>
-	
+
 	<description>Bounceproxy controller that works in a clustered environment.
 	</description>
 
@@ -46,7 +46,7 @@
 			<artifactId>bounceproxy-controller</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
@@ -60,20 +60,20 @@
 			<artifactId>ehcache</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
+
 		<!-- Dependency explicitely needed for war overlay -->
 		<dependency>
 			<groupId>io.joynr.java.messaging</groupId>
 			<artifactId>channel-service</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
+
 	</dependencies>
 
 
 	<build>
 		<finalName>${project.artifactId}</finalName>
-		
+
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

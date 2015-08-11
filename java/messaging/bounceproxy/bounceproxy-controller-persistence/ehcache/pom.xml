@@ -24,7 +24,7 @@
 	<packaging>jar</packaging>
 
 	<name>${project.groupId}:${project.artifactId}</name>
-	
+
 	<description>ehcache implementation for directories needed by bounceproxy controller</description>
 
 	<parent>

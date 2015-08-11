@@ -24,7 +24,7 @@
 	<packaging>jar</packaging>
 
 	<name>${project.groupId}:${project.artifactId}</name>
-	
+
 	<description>common interfaces and implementations for directories needed by bounceproxy controller</description>
 
 	<parent>
@@ -66,7 +66,7 @@
 			<groupId>org.hamcrest</groupId>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
 			<artifactId>hamcrest-library</artifactId>
 			<groupId>org.hamcrest</groupId>

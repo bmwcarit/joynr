@@ -24,7 +24,7 @@
 	<packaging>jar</packaging>
 
 	<name>${project.groupId}:${project.artifactId}</name>
-	
+
 	<description>jdbc implementation for directories needed by bounceproxy controller</description>
 
 	<parent>
@@ -46,38 +46,38 @@
 	    	<artifactId>persistence-common</artifactId>
 	    	<version>${project.version}</version>
 	    </dependency>
-	    
+
 	    <!-- dependency>
 			<groupId>javax.persistence</groupId>
 			<artifactId>persistence-api</artifactId>
 			<version>1.0.2</version>
 		</dependency-->
-		
+
 		<dependency>
 			<groupId>org.apache.openjpa</groupId>
 			<artifactId>openjpa-jdbc</artifactId>
 			<version>2.3.0</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.apache.openjpa</groupId>
 			<artifactId>openjpa-persistence</artifactId>
 			<version>2.3.0</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.apache.openjpa</groupId>
 			<artifactId>openjpa-persistence-jdbc</artifactId>
 			<version>2.3.0</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.apache.derby</groupId>
 			<artifactId>derby</artifactId>
 			<version>10.10.1.1</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>com.google.inject.extensions</groupId>
 			<artifactId>guice-persist</artifactId>

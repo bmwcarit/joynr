@@ -39,40 +39,40 @@
 			<artifactId>channel-service</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>io.joynr.java.messaging</groupId>
 			<artifactId>messaging-service</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>io.joynr.java.messaging</groupId>
 			<artifactId>service-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
 			<scope>compile</scope>
 		</dependency>
-		
+
 		<dependency>
 		    <groupId>org.apache.httpcomponents</groupId>
 		    <artifactId>httpclient</artifactId>
 		    <type>test-jar</type>
 		    <scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
 
-		<!-- Don't use mockito-all here. 
-		     It contains hamcrest classes in its jar, which conflict with JUnit -->		
+		<!-- Don't use mockito-all here.
+		     It contains hamcrest classes in its jar, which conflict with JUnit -->
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
@@ -95,7 +95,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-	
+
 		<!-- Need separate Groovy dependency because of classpath issues with REST Assured. -->
 		<dependency>
 			<groupId>org.codehaus.groovy</groupId>
@@ -108,7 +108,7 @@
 			<artifactId>bounceproxy-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-server</artifactId>
@@ -139,7 +139,7 @@
 
 	<build>
 		<finalName>${project.artifactId}</finalName>
-		
+
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -166,7 +166,7 @@
 					</overlays>
 				</configuration>
 			</plugin>
-			
+
 			<plugin>
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-maven-plugin</artifactId>
@@ -185,7 +185,7 @@
 					<webApp combine.self="override"></webApp>
 				</configuration>
 			</plugin>
-			
+
 		</plugins>
 
 	</build>

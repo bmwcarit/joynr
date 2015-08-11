@@ -21,7 +21,7 @@
 	<artifactId>generator</artifactId>
 	<modelVersion>4.0.0</modelVersion>
 	<packaging>pom</packaging>
-	
+
 	<name>${project.groupId}:${project.artifactId}</name>
 
 	<parent>
@@ -30,14 +30,14 @@
 		<version>0.10.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
-	
+
 	<modules>
 		<module>dependency-libs</module>
 		<module>framework</module>
 		<module>joynr-generator-maven-plugin</module>
 		<module>joynr-generator-standalone</module>
 	</modules>
-	
+
 	<build>
 		<plugins>
 			<plugin>
@@ -49,6 +49,6 @@
 				<artifactId>maven-checkstyle-plugin</artifactId>
 			</plugin>
 		</plugins>
-	</build>	
-			
+	</build>
+
 </project>

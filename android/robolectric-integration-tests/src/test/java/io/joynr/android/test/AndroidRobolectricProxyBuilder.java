@@ -24,6 +24,11 @@ import io.joynr.joynrandroidruntime.AndroidProxyBuilder;
 import io.joynr.joynrandroidruntime.InitRuntimeTask;
 import io.joynr.joynrandroidruntime.UILogger;
 
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
+
+import android.util.Log;
+
 public class AndroidRobolectricProxyBuilder<T extends JoynrInterface> extends AndroidProxyBuilder<T> {
 
     public AndroidRobolectricProxyBuilder(InitRuntimeTask runtimeInitTask,
@@ -35,6 +40,14 @@ public class AndroidRobolectricProxyBuilder<T extends JoynrInterface> extends An
 
     @Override
     public T build() {
-        return buildProxy();
+        T proxy = null;
+        try {
+            proxy = buildProxy();
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            Log.e("JAS", e.toString());
+            publishProgress(e.getMessage());
+            e.printStackTrace();
+        }
+        return proxy;
     }
 }

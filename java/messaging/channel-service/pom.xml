@@ -33,10 +33,10 @@
 		<version>0.10.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
-	
+
 	<profiles>
 		<profile>
-			<!-- Since profile inheritance does not work (cf. [1]), the activation must 
+			<!-- Since profile inheritance does not work (cf. [1]), the activation must
 				be copied from the root POM and inserted here. [1] http://stackoverflow.com/questions/11407259/is-it-possible-to-extend-a-profile-in-a-child-module -->
 			<id>carit-copyright</id>
 			<build>
@@ -99,7 +99,7 @@
 			<artifactId>service-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>io.joynr.java.messaging</groupId>
 			<artifactId>service-common</artifactId>
@@ -107,8 +107,8 @@
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
-		
-		<!-- Workaround for Maven bug MNG-1378: Make dependencies of test-jars transitive 
+
+		<!-- Workaround for Maven bug MNG-1378: Make dependencies of test-jars transitive
 		     Dependencies should come from service-common test-jar, but they aren't resolved
 		     transitively. Thus they are duplicated here. -->
 		<dependency>
@@ -127,7 +127,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-	
+
 		<!-- Need extra Groovy dependency because of classpath issues with REST Assured. -->
 		<dependency>
 			<groupId>org.codehaus.groovy</groupId>

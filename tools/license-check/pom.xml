@@ -30,7 +30,7 @@
 	<build>
 		<pluginManagement>
 			<plugins>
-				<!-- NOTE the license to be added to the source header files must be 
+				<!-- NOTE the license to be added to the source header files must be
 					specifically (redundantly) defined below -->
 				<!-- This is a shortcoming of the license-maven-plugin -->
 				<plugin>

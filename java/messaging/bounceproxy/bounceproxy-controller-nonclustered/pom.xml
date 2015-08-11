@@ -24,7 +24,7 @@
 	<packaging>war</packaging>
 
 	<name>${project.groupId}:${project.artifactId}</name>
-	
+
 	<description>Bounceproxy controller that only works in non-clustered environments.
 	</description>
 
@@ -46,13 +46,13 @@
 			<artifactId>bounceproxy-controller</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
-	
+
 		<!-- Dependency explicitely needed for war overlay -->
 		<dependency>
 			<groupId>io.joynr.java.messaging</groupId>
@@ -64,7 +64,7 @@
 
 	<build>
 		<finalName>${project.artifactId}</finalName>
-		
+
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
