@@ -19,12 +19,14 @@ package io.joynr.android.test;
  * #L%
  */
 
-import android.app.Activity;
-import android.os.Bundle;
-import com.google.inject.Module;
 import io.joynr.joynrandroidruntime.JoynrAndroidRuntime;
 
 import java.util.Properties;
+
+import android.app.Activity;
+import android.os.Bundle;
+
+import com.google.inject.Module;
 
 // An activity that creates Joynr runtimes
 public class TestActivity extends Activity {
@@ -35,7 +37,7 @@ public class TestActivity extends Activity {
     }
 
     public JoynrAndroidRuntime createRuntime(Properties joynrConfig, Module... modules) {
-        return new JoynrAndroidRuntime(getApplicationContext(), joynrConfig, modules);
+        return new JoynrAndroidRobolectricRuntime(getApplicationContext(), joynrConfig, modules);
     }
 
 }

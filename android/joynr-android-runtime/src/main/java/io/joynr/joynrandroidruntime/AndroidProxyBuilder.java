@@ -65,7 +65,7 @@ public class AndroidProxyBuilder<T extends JoynrInterface> extends AsyncTask<Obj
         return buildProxy();
     }
 
-    private T buildProxy() {
+    protected T buildProxy() {
         T proxy = null;
         try {
             this.runtime = runtimeInitTask.get(discoveryQos.getDiscoveryTimeout(), TimeUnit.MILLISECONDS);

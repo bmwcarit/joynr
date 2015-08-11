@@ -36,8 +36,8 @@ import java.util.concurrent.ExecutionException;
 
 public class JoynrAndroidRuntime implements JoynrRuntime {
 
-    private InitRuntimeTask runtimeInitTask;
-    private static UILogger uiLogger = new UILogger();
+    protected InitRuntimeTask runtimeInitTask;
+    protected static UILogger uiLogger = new UILogger();
 
     public JoynrAndroidRuntime(Context applicationContext) {
         runtimeInitTask = new InitRuntimeTask(applicationContext, uiLogger);
