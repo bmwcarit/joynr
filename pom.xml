@@ -183,7 +183,7 @@
 			-->
 			<id>carit-copyright</id>
 			<properties>
-				<licenseConfigurationVersion>1.0.6</licenseConfigurationVersion>
+				<licenseConfigurationVersion>1.0.8</licenseConfigurationVersion>
 			</properties>
 			<build>
 				<plugins>
@@ -248,7 +248,7 @@
 		<profile>
 			<id>carit-license</id>
 			<properties>
-				<licenseConfigurationVersion>1.0.5</licenseConfigurationVersion>
+				<licenseConfigurationVersion>1.0.8</licenseConfigurationVersion>
 				<!--
 					For unknown reasons useLicensesConfigFile and licensesConfigFile
 					configuration properties must be set as global properties. It is

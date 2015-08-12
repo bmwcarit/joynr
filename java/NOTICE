@@ -29,7 +29,7 @@ This project has dependencies to:
   Apache Log4j Core under The Apache Software License, Version 2.0
   Apache Log4j SLF4J Binding under The Apache Software License, Version 2.0
   Apache XBean :: ASM 4 shaded (repackaged) under Apache License, Version 2.0
-  ASM Core under Apache License, Version 2.0
+  ASM Core under BSD License
   atmosphere-annotations under CDDL or Apache License 2.0
   atmosphere-guice under Apache License 2.0
   atmosphere-jersey under CDDL or Apache License 2.0
