@@ -201,7 +201,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                         //do nothing
                     }
                 };
-                globalCapabilitiesClient.remove(Arrays.asList(capabilityInformation.getParticipantId()));
+                globalCapabilitiesClient.remove(callback, Arrays.asList(capabilityInformation.getParticipantId()));
             }
         }
 
@@ -448,8 +448,19 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                             return input != null ? input.getParticipantId() : null;
                         }
                     };
-                    globalCapabilitiesClient.remove(Lists.newArrayList(Collections2.transform(capInfoList,
-                                                                                              transfomerFct)));
+                    Callback<Void> callback = new Callback<Void>() {
+
+                        @Override
+                        public void onFailure(JoynrRuntimeException error) {
+                        }
+
+                        @Override
+                        public void onSuccess(Void result) {
+                        }
+
+                    };
+                    globalCapabilitiesClient.remove(callback, Lists.newArrayList(Collections2.transform(capInfoList,
+                                                                                                        transfomerFct)));
                 } catch (JoynrArbitrationException e) {
                     return;
                 }

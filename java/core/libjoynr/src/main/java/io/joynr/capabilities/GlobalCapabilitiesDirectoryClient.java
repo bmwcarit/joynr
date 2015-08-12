@@ -68,8 +68,8 @@ public class GlobalCapabilitiesDirectoryClient {
 
     }
 
-    public void remove(List<String> newArrayList) {
-        getProxy(TTL_30_DAYS_IN_MS).remove(newArrayList);
+    public void remove(Callback<Void> callback, List<String> newArrayList) {
+        getProxy(TTL_30_DAYS_IN_MS).remove(callback, newArrayList);
     }
 
     public void lookup(Callback<CapabilityInformation> callback, String participantId, long timeout) {
