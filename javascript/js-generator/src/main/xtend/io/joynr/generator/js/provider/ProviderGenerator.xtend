@@ -196,6 +196,7 @@ class ProviderGenerator {
 				);
 				if (implementation.«eventName») {
 					implementation.«eventName».createBroadcastOutputParameters = this.«eventName».createBroadcastOutputParameters;
+					implementation.«eventName».fire = this.«eventName».fire;
 				}
 			«ENDFOR»
 

@@ -17,8 +17,10 @@
  * #L%
  */
 
-define("joynr/provider/ProviderEvent", [ "joynr/provider/BroadcastOutputParameters"
-], function(BroadcastOutputParameters) {
+define("joynr/provider/ProviderEvent", [
+    "joynr/provider/BroadcastOutputParameters",
+    "joynr/util/UtilInternal"
+], function(BroadcastOutputParameters, Util) {
 
     /**
      * Constructor of ProviderEvent object that is used in the generation of provider objects
@@ -45,6 +47,8 @@ define("joynr/provider/ProviderEvent", [ "joynr/provider/BroadcastOutputParamete
             return new ProviderEvent(implementation, eventName);
         }
 
+        var callbacks = [];
+
         this.createBroadcastOutputParameters = function createBroadcastOutputParameters() {
             return new BroadcastOutputParameters(outputParameterProperties);
         };
@@ -60,6 +64,50 @@ define("joynr/provider/ProviderEvent", [ "joynr/provider/BroadcastOutputParamete
          */
         this.valueChanged = function valueChanged(value) {
         //TODO: implement call all publish subscribers
+        };
+
+        /**
+         * if this event is fired the applications hould call this function with the new
+         * output parameters which causes the a publication containing the values to be
+         * sent to all subscribers.
+         *
+         * @name ProviderEvent#fire
+         * @function
+         *
+         * @param {?} value the new value of the attribute
+         */
+        this.fire = function fire(value) {
+            Util.fire(callbacks, value.outputParameters);
+        };
+
+        /**
+         * Registers an Observer for value changes
+         *
+         * @name ProviderAttributeNotify#registerObserver
+         * @function
+         *
+         * @param {Function}
+         *            observer the callback function with the signature "function(value){..}"
+         * @see ProviderAttributeNotify#valueChanged
+         * @see ProviderAttributeNotify#unregisterObserver
+         */
+        this.registerObserver = function registerObserver(observer) {
+            callbacks.push(observer);
+        };
+
+        /**
+         * Unregisters an Observer for value changes
+         *
+         * @name ProviderAttributeNotify#unregisterObserver
+         * @function
+         *
+         * @param {Function}
+         *            observer the callback function with the signature "function(value){..}"
+         * @see ProviderAttributeNotify#valueChanged
+         * @see ProviderAttributeNotify#registerObserver
+         */
+        this.unregisterObserver = function unregisterObserver(observer) {
+            Util.removeElementFromArray(callbacks, observer);
         };
 
         return Object.freeze(this);
