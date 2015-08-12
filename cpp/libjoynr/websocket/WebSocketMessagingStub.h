@@ -48,6 +48,8 @@ public:
 
 Q_SIGNALS:
     void closed(const joynr::system::QtAddress& address);
+    void queueTextMessage(QString message);
+
 private Q_SLOTS:
     void onSocketDisconnected();
     void sendTextMessage(const QString& message);
