@@ -28,6 +28,7 @@ define(
             "joynr/dispatching/types/SubscriptionStop",
             "joynr/dispatching/types/SubscriptionInformation",
             "joynr/dispatching/types/Reply",
+            "joynr/provider/ProviderEvent",
             "joynr/util/Typing",
             "joynr/dispatching/subscription/util/SubscriptionUtil",
             "joynr/util/LongTimer",
@@ -41,6 +42,7 @@ define(
                 SubscriptionStop,
                 SubscriptionInformation,
                 Reply,
+                ProviderEvent,
                 Typing,
                 SubscriptionUtil,
                 LongTimer,
@@ -73,6 +75,9 @@ define(
                 var that = this;
 
                 var attributeObserverFunctions = {};
+
+                var eventObserverFunctions = {};
+
                 // map: subscriptionId to SubscriptionRequest
                 var subscriptionInfos = {};
 
@@ -84,6 +89,9 @@ define(
 
                 // map: provider.id+attributeName -> subscriptionIds -> subscription
                 var onChangeProviderAttributeToSubscriptions = {};
+
+                // map: provider.id+eventName -> subscriptionIds -> subscription
+                var onChangeProviderEventToSubscriptions = {};
 
                 var subscriptionPersistenceKey =
                         PublicationManager.SUBSCRIPTIONS_STORAGE_PREFIX + "_" + joynrInstanceId;
@@ -155,7 +163,7 @@ define(
                 function sendPublication(subscriptionInfo, value) {
                     log.debug("send Publication for subscriptionId "
                         + subscriptionInfo.subscriptionId
-                        + " and attribute/broadcast "
+                        + " and attribute/event "
                         + subscriptionInfo.subscribedToName
                         + ": "
                         + value);
@@ -300,6 +308,20 @@ define(
                 }
 
                 /**
+                 * Checks whether the provider property is an event (=is even interesting to the
+                 * PublicationManager)
+                 * @name PublicationManager#propertyIsProviderEvent
+                 * @private
+                 *
+                 * @param {providerProperty}
+                 *            the provider attribute to check for Notifiability
+                 * @returns {Boolean} if the provider attribute is notifiable
+                 */
+                function propertyIsProviderEvent(providerProperty) {
+                    return providerProperty instanceof ProviderEvent;
+                }
+
+                /**
                  * @name PublicationManager#publishAttributeValue
                  * @private
                  * @param {String}
@@ -357,6 +379,106 @@ define(
                     attribute.registerObserver(attributeObserverFunctions[key]);
                 }
 
+                // Broadcast specific implementation
+
+                /**
+                 * @name PublicationManager#getProviderIdEventKey
+                 * @private
+                 */
+                function getProviderIdEventKey(providerId, eventName) {
+                    return providerId + "." + eventName;
+                }
+
+                /**
+                 * Gives the list of subscriptions for the given providerId and event name
+                 * @name PublicationManager#getSubscriptionsForProviderEvent
+                 * @private
+                 *
+                 * @param {String}
+                 *            providerId
+                 * @param {String}
+                 *            eventName
+                 * @returns {Array} a list of subscriptions
+                              e.g. [{ participantId : "...", eventName : "..." }]
+                 */
+                function getSubscriptionsForProviderEvent(providerId, eventName) {
+                    var key = getProviderIdEventKey(providerId, eventName);
+                    // make sure the mapping exists, so that subscriptions can register here
+                    if (onChangeProviderEventToSubscriptions[key] === undefined) {
+                        onChangeProviderEventToSubscriptions[key] = {};
+                    }
+                    return onChangeProviderEventToSubscriptions[key];
+                }
+
+                /**
+                 * @name PublicationManager#publishEventValue
+                 * @private
+                 * @param {String}
+                 *            providerId
+                 * @param {String}
+                 *            eventName
+                 * @param {ProviderEvent}
+                 *            event
+                 * @param {?}
+                 *            value
+                 */
+                function publishEventValue(providerId, eventName, event, value) {
+                    var subscriptionId, subscriptions =
+                            getSubscriptionsForProviderEvent(providerId, eventName);
+                    if (!subscriptions) {
+                        log.error("ProviderEvent "
+                            + eventName
+                            + " for providerId "
+                            + providerId
+                            + " is not registered");
+                        // TODO: proper error handling for empty subscription map =>
+                        // ProviderEvent is not registered
+                        return;
+                    }
+
+                    for (subscriptionId in subscriptions) {
+                        if (subscriptions.hasOwnProperty(subscriptionId)) {
+                            var subscriptionInfo = subscriptions[subscriptionId];
+                            if (subscriptionInfo.qos.minInterval !== undefined
+                                && subscriptionInfo.qos.minInterval > 0) {
+                                preparePublication(subscriptionInfo, value, triggerPublicationTimer);
+                            }
+                        }
+                    }
+                }
+
+                /**
+                 * Adds a provider event to the internal map if it does not exist =>
+                 * onChange subscriptions can be registered here
+                 *
+                 * @name PublicationManager#addPublicationEvent
+                 * @private
+                 *
+                 * @param {String}
+                 *            providerId
+                 * @param {String}
+                 *            eventName
+                 */
+                function addPublicationEvent(providerId, eventName, event) {
+                    var key = getProviderIdEventKey(providerId, eventName);
+
+                    eventObserverFunctions[key] = function(value) {
+                        publishEventValue(providerId, eventName, event, value);
+                    };
+                    event.registerObserver(eventObserverFunctions[key]);
+                }
+
+                /**
+                 * @name PublicationManager#resetSubscriptionsForProviderEvent
+                 * @private
+                 */
+                function resetSubscriptionsForProviderEvent(providerId, eventName) {
+                    var key = getProviderIdEventKey(providerId, eventName);
+                    delete onChangeProviderEventToSubscriptions[key];
+                }
+
+                // End of broadcast specific implementation
+
                 /**
                  * Removes a subscription, stops scheduled timers
                  * @name PublicationManager#removeSubscription
@@ -399,7 +521,6 @@ define(
                         return;
                     }
                     var providerParticipantId = subscriptionInfo.providerParticipantId;
-                    var attributeName = subscriptionInfo.subscribedToName;
 
                     // make sure the provider exists for the given participantId
                     var provider = participantIdToProvider[providerParticipantId];
@@ -409,18 +530,42 @@ define(
                         return;
                     }
 
-                    // find all subscriptions for the attribute/provider.id
-                    var subscriptions =
-                            getSubscriptionsForProviderAttribute(provider.id, attributeName);
-                    if (subscriptions === undefined) {
-                        log.error("ProviderAttribute "
-                            + attributeName
-                            + " for providerId "
-                            + provider.id
-                            + " is not registered or notifiable");
-                        // TODO: proper error handling for empty subscription map =>
-                        // ProviderAttribute is not notifiable or not registered
-                        return;
+                    var subscriptions;
+
+                    if (subscriptionInfo.filterParameter === undefined) {
+                        // This is an attribute subscription
+
+                        var attributeName = subscriptionInfo.subscribedToName;
+
+                        // find all subscriptions for the attribute/provider.id
+                        subscriptions =
+                                getSubscriptionsForProviderAttribute(provider.id, attributeName);
+                        if (subscriptions === undefined) {
+                            log.error("ProviderAttribute "
+                                + attributeName
+                                + " for providerId "
+                                + provider.id
+                                + " is not registered or notifiable");
+                            // TODO: proper error handling for empty subscription map =>
+                            // ProviderAttribute is not notifiable or not registered
+                            return;
+                        }
+                    } else {
+                        // This is a event subscription
+                        var eventName = subscriptionInfo.subscribedToName;
+
+                        // find all subscriptions for the event/provider.id
+                        subscriptions =
+                                getSubscriptionsForProviderEvent(provider.id, eventName);
+                        if (subscriptions === undefined) {
+                            log.error("ProviderEvent "
+                                + eventName
+                                + " for providerId "
+                                + provider.id
+                                + " is not registered or notifiable");
+                            // TODO: proper error handling for empty subscription map =>
+                            return;
+                        }
                     }
 
                     // make sure subscription exists
@@ -488,6 +633,36 @@ define(
 
                     attribute.unregisterObserver(attributeObserverFunctions[key]);
                     attributeObserverFunctions[key] = undefined;
+                }
+
+                /**
+                 * Removes a provider event from the internal map if it exists
+                 * @name PublicationManager#removePublicationEvent
+                 * @function
+                 *
+                 * @param {String}
+                 *            providerId
+                 * @param {String}
+                 *            eventName
+                 */
+                function removePublicationEvent(providerId, eventName, event) {
+                    var subscriptions, subscription, subscriptionObject, key =
+                            getProviderIdEventKey(providerId, eventName);
+
+                    subscriptions = getSubscriptionsForProviderEvent(providerId, eventName);
+                    if (subscriptions !== undefined) {
+                        for (subscription in subscriptions) {
+                            if (subscriptions.hasOwnProperty(subscription)) {
+                                that.handleSubscriptionStop(new SubscriptionStop({
+                                    subscriptionId : subscription
+                                }));
+                            }
+                        }
+                        resetSubscriptionsForProviderEvent();
+                    }
+
+                    event.unregisterObserver(eventObserverFunctions[key]);
+                    eventObserverFunctions[key] = undefined;
                 }
 
                 /**
@@ -635,6 +810,132 @@ define(
                         };
 
                 /**
+                 * Handles EventSubscriptionRequests
+                 *
+                 * @name PublicationManager#handleEventSubscriptionRequest
+                 * @function
+                 *
+                 * @param {EventSubscriptionRequest}
+                 *            subscriptionRequest incoming subscriptionRequest subscriptionStop or
+                 *            subscriptionReplyjoynrMessage containing a publication
+                 * @throws {Error}
+                 *             when no provider exists or the provider does not have the event
+                 */
+                this.handleEventSubscriptionRequest =
+                        function handleEventSubscriptionRequest(
+                                proxyParticipantId,
+                                providerParticipantId,
+                                subscriptionRequest) {
+                            var subscriptionInterval;
+                            var provider = participantIdToProvider[providerParticipantId];
+                            // construct subscriptionInfo from subscriptionRequest and participantIds
+                            var subscriptionInfo =
+                                    new SubscriptionInformation(
+                                            proxyParticipantId,
+                                            providerParticipantId,
+                                            subscriptionRequest);
+
+                            var subscriptionId = subscriptionInfo.subscriptionId;
+
+                            // in case the subscriptionId is already used in a previous
+                            // subscription, remove this one
+                            removeSubscription(subscriptionId);
+
+                            // make sure the provider is registered
+                            if (provider === undefined) {
+                                log.error("Provider with participantId "
+                                    + providerParticipantId
+                                    + "not found. Queueing subscription request...");
+                                queuedSubscriptionInfos[subscriptionId] = subscriptionInfo;
+                                var pendingSubscriptions =
+                                        queuedProviderParticipantIdToSubscriptionRequestsMapping[providerParticipantId];
+                                if (pendingSubscriptions === undefined) {
+                                    pendingSubscriptions = [];
+                                    queuedProviderParticipantIdToSubscriptionRequestsMapping[providerParticipantId] =
+                                            pendingSubscriptions;
+                                }
+                                pendingSubscriptions[pendingSubscriptions.length] =
+                                        subscriptionInfo;
+                                return;
+                            }
+
+                            // make sure the provider contains the event being subscribed to
+                            var eventName = subscriptionRequest.subscribedToName;
+                            var event = provider[eventName];
+                            if (event === undefined) {
+                                log.error("Provider: "
+                                    + providerParticipantId
+                                    + " misses event "
+                                    + eventName);
+                                // TODO: proper error handling when the provider does not contain
+                                // the event with the given name
+                                return;
+                            }
+
+                            // make sure a ProviderEvent is registered
+                            var subscriptions =
+                                    getSubscriptionsForProviderEvent(provider.id, eventName);
+                            if (subscriptions === undefined) {
+                                log.error("ProviderEvent "
+                                    + eventName
+                                    + " for providerId "
+                                    + provider.id
+                                    + " is not registered");
+                                // TODO: proper error handling for empty subscription map =>
+                                // ProviderEvent is not registered
+                                return;
+                            }
+
+                            // if endDate is defined (also exclude default value 0 for
+                            // the expiryDate qos-property)
+                            if (subscriptionInfo.qos.expiryDate !== undefined
+                                && subscriptionInfo.qos.expiryDate !== SubscriptionQos.NO_EXPIRY_DATE) {
+                                var timeToEndDate = subscriptionRequest.qos.expiryDate - Date.now();
+
+                                // if endDate lies in the past => don't add the subscription
+                                if (timeToEndDate <= 0) {
+                                    // log.warn("endDate lies in the past, discarding subscription
+                                    // with id " + subscriptionId);
+                                    // TODO: how should this warning be handled properly?
+                                    return;
+                                }
+
+                                // schedule to remove subscription from internal maps
+                                subscriptionInfo.endDateTimeout =
+                                        LongTimer.setTimeout(function subscriptionReachedEndDate() {
+                                            removeSubscription(subscriptionId);
+                                        }, timeToEndDate);
+                            }
+
+                            // Set up publication interval if maxInterval is a number
+                            //(not (is not a number)) ...
+                            var period = getPeriod(subscriptionInfo);
+
+                            if (!isNaN(period)) {
+                                if (period < MIN_PUBLICATION_INTERVAL) {
+                                    log.error("SubscriptionRequest error: period: "
+                                        + period
+                                        + "is smaller than MIN_PUBLICATION_INTERVAL: "
+                                        + MIN_PUBLICATION_INTERVAL);
+                                    // TODO: proper error handling when maxInterval is smaller than
+                                    // MIN_PUBLICATION_INTERVAL
+                                } else {
+                                    // call the get method on the provider at the set interval
+                                    subscriptionInfo.subscriptionInterval =
+                                            triggerPublicationTimer(subscriptionInfo, period);
+                                }
+                            }
+
+                            // save subscriptionInfo to subscriptionId => subscription and
+                            // ProviderEvent => subscription map
+                            subscriptionInfos[subscriptionId] = subscriptionInfo;
+                            subscriptions[subscriptionId] = subscriptionInfo;
+
+                            persistency.setItem(subscriptionId, JSON.stringify(subscriptionInfo));
+                            storeSubscriptions();
+                        };
+
+                /**
                  * Unregisters all attributes of a provider to handle subscription requests
                  *
                  * @name PublicationManager#removePublicationProvider
@@ -658,6 +959,15 @@ define(
                                                 propertyName,
                                                 provider[propertyName]);
                                     }
+
+                                    // checks whether the member is an event
+                                    // and adds it if this is the case
+                                    if (propertyIsProviderEvent(provider[propertyName])) {
+                                        removePublicationEvent(
+                                                provider.id,
+                                                propertyName,
+                                                provider[propertyName]);
+                                    }
                                 }
                             }
 
@@ -667,7 +977,7 @@ define(
                         };
 
                 /**
-                 * Registers a all attributes of a provider to handle subscription requests
+                 * Registers all attributes of a provider to handle subscription requests
                  *
                  * @name PublicationManager#addPublicationProvider
                  * @function
@@ -695,6 +1005,15 @@ define(
                                                 propertyName,
                                                 provider[propertyName]);
                                     }
+
+                                    // checks whether the member is a event
+                                    // and adds it if this is the case
+                                    if (propertyIsProviderEvent(provider[propertyName])) {
+                                        addPublicationEvent(
+                                                provider.id,
+                                                propertyName,
+                                                provider[propertyName]);
+                                    }
                                 }
                             }
 
@@ -706,10 +1025,20 @@ define(
                                         subscriptionObject =
                                                 pendingSubscriptions[pendingSubscription];
                                         delete pendingSubscriptions[pendingSubscription];
-                                        this.handleSubscriptionRequest(
+
+                                        if (subscriptionObject.filterParameters === undefined) {
+                                            // call attribute subscription handler
+                                            this.handleSubscriptionRequest(
                                                 subscriptionObject.proxyParticipantId,
                                                 subscriptionObject.providerParticipantId,
                                                 subscriptionObject);
+                                        } else {
+                                            // call event subscription handler
+                                            this.handleEventSubscriptionRequest(
+                                                subscriptionObject.proxyParticipantId,
+                                                subscriptionObject.providerParticipantId,
+                                                subscriptionObject);
+                                        }
                                     }
                                 }
                             }
