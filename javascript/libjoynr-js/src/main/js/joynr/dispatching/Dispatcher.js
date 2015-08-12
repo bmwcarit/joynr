@@ -447,6 +447,23 @@ define("joynr/dispatching/Dispatcher", [
                                 }
                                 break;
 
+                            case JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST:
+                                try {
+                                    publicationManager.handleEventSubscriptionRequest(
+                                            joynrMessage.from,
+                                            joynrMessage.to,
+                                            new SubscriptionRequest(
+                                                    parsePayload(joynrMessage.payload)));
+                                    resolve();
+                                } catch (errorInEventSubscriptionRequest) {
+                                    // TODO handle error in handling the subscriptionRequest
+                                    log.error("error handling eventSubscriptionRequest: "
+                                        + errorInEventSubscriptionRequest);
+                                    reject(new Error("error handling eventSubscriptionRequest: "
+                                        + errorInEventSubscriptionRequest));
+                                }
+                                break;
+
                             case JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REPLY:
                                 try {
                                     subscriptionManager
