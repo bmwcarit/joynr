@@ -37,6 +37,7 @@ import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.pubsub.publication.BroadcastFilter;
+import io.joynr.pubsub.publication.BroadcastListener;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.PropertyLoader;
@@ -312,6 +313,30 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
             OverloadedOperation3Deferred deferred = new OverloadedOperation3Deferred();
             deferred.resolve(new ComplexTestType2(Integer.parseInt(input1), Integer.parseInt(input2)));
             return new Promise<OverloadedOperation3Deferred>(deferred);
+        }
+
+        boolean broadcastSubscriptionArrived = false;
+
+        public void waitForBroadcastSubscription() {
+            synchronized (this) {
+                while (!broadcastSubscriptionArrived) {
+                    try {
+                        this.wait();
+                    } catch (InterruptedException e) {
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void registerBroadcastListener(String broadcastName, BroadcastListener broadcastListener) {
+            super.registerBroadcastListener(broadcastName, broadcastListener);
+            if (broadcastName.equals("locationUpdateWithSpeed") && !broadcastSubscriptionArrived) {
+                synchronized (this) {
+                    broadcastSubscriptionArrived = true;
+                    this.notify();
+                }
+            }
         }
     }
 
@@ -613,8 +638,8 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
             }
         }, subscriptionQos);
 
-        // wait a little to allow arbitration to finish, and to allow the subscription request to arrive at the provider
-        Thread.sleep(300);
+        // wait to allow the subscription request to arrive at the provider
+        provider.waitForBroadcastSubscription();
         provider.fireBroadcast("locationUpdateWithSpeed", null, gpsLocation, currentSpeed);
         broadcastReceived.acquire();
 
