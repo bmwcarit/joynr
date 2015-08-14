@@ -1,3 +1,14 @@
+#joynr 0.9.2
+
+This is a minor bug fix release.
+
+##API relevant changes
+None.
+
+##Other changes
+* **[C++]** Problems with receiving messages in libjoynr via WebSockets have been resolved.
+* **[Java, C++]** Default domain for backend services is now "io.joynr".
+
 #joynr 0.9.1
 
 This is a minor bug fix release.
