@@ -64,7 +64,7 @@ public class JoynrEnd2EndTest {
     }
 
     protected static void provisionDiscoveryDirectoryAccessControlEntries() throws Exception {
-        provisionPermissiveAccessControlEntry("com.bmw", GlobalCapabilitiesDirectoryProvider.INTERFACE_NAME);
-        provisionPermissiveAccessControlEntry("com.bmw", ChannelUrlDirectoryProvider.INTERFACE_NAME);
+        provisionPermissiveAccessControlEntry("io.joynr", GlobalCapabilitiesDirectoryProvider.INTERFACE_NAME);
+        provisionPermissiveAccessControlEntry("io.joynr", ChannelUrlDirectoryProvider.INTERFACE_NAME);
     }
 }

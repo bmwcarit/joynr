@@ -39,7 +39,13 @@ WebSocketMessagingStub::WebSocketMessagingStub(system::RoutingTypes::QtAddress* 
     connect(webSocket,
             &QWebSocket::disconnected,
             this,
-            &WebSocketMessagingStub::onSocketDisconnected);
+            &WebSocketMessagingStub::onSocketDisconnected,
+            Qt::QueuedConnection);
+    connect(this,
+            &WebSocketMessagingStub::queueTextMessage,
+            this,
+            &WebSocketMessagingStub::sendTextMessage,
+            Qt::QueuedConnection);
 }
 
 WebSocketMessagingStub::~WebSocketMessagingStub()
@@ -77,7 +83,7 @@ void WebSocketMessagingStub::transmit(JoynrMessage& message)
     }
 
     QByteArray serializedMessage(JsonSerializer::serialize(message));
-    this->sendTextMessage(serializedMessage);
+    emit queueTextMessage(serializedMessage);
 }
 
 } // namespace joynr

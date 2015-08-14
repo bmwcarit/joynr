@@ -140,7 +140,7 @@ public class TestContextListener extends GuiceServletContextListener {
 
                 bindConstant().annotatedWith(Names.named("joynr.messaging.domainaccesscontrollerchannelid"))
                               .to("gdac_channelid");
-                bindConstant().annotatedWith(Names.named("joynr.messaging.discoverydirectoriesdomain")).to("com.bmw");
+                bindConstant().annotatedWith(Names.named("joynr.messaging.discoverydirectoriesdomain")).to("io.joynr");
 
                 bind(DomainAccessControlStore.class).toInstance(mockedStore);
                 bind(GlobalDomainAccessStoreAdmin.class).toInstance(mockedStore);

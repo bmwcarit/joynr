@@ -26,7 +26,7 @@ message(STATUS "option ENABLE_CLANG_FORMATTER=" ${ENABLE_CLANG_FORMATTER})
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
-find_package(Joynr 0.9.0 REQUIRED)
+find_package(Joynr 0.9.2 REQUIRED)
 message(STATUS "joynr variable JOYNR_INCLUDE_DIRS=${JOYNR_INCLUDE_DIRS}")
 message(STATUS "joynr variable JOYNR_LIB_DBUS_INCLUDE_DIRS=${JOYNR_LIB_DBUS_INCLUDE_DIRS}")
 message(STATUS "joynr variable JOYNR_LIB_WS_INCLUDE_DIRS=${JOYNR_LIB_WS_INCLUDE_DIRS}")
