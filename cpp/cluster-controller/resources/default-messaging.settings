@@ -1,7 +1,7 @@
 [messaging]
 bounce-proxy-url=http://${JOYNR_SERVER}/bounceproxy/
 
-discovery-directories-domain=com.bmw
+discovery-directories-domain=io.joynr
 # TTL in msecs of messages used in communication between local discovery service
 # and backend discovery service
 discovery-messages-ttl=40000

@@ -102,7 +102,7 @@ public class LocalCapabilitiesDirectoryTest {
         Mockito.doAnswer(answer).when(globalCapabilitiesClient).add(Mockito.any(Callback.class),
                                                                     Mockito.any(CapabilityInformation.class));
 
-        String discoveryDirectoriesDomain = "com.bmw";
+        String discoveryDirectoriesDomain = "io.joynr";
         String channelUrlDirectoryParticipantId = "channelUrlDir_participantId";
         String channelUrlDirectoryChannelId = "dirchannelId";
         String capabilitiesDirectoryParticipantId = "capDir_participantId";

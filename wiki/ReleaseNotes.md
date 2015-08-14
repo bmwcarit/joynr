@@ -1,51 +1,68 @@
-#joynr 0.9.1
-This is a minor bug fix release:
-* [Android] callback onProxyCreationError is now called correctly when an error occurs creating a
-proxy. onProxyCreation is no longer called with null.
-* [Java] problems with multiple calls to register and deregister the same provider have been
-resolved
-* logging settings in the examples have been reduced to focus on the sent and received messages.
+#joynr 0.9.2
+
+This is a minor bug fix release.
+
 ##API relevant changes
-None
+None.
+
+##Other changes
+* **[C++]** Problems with receiving messages in libjoynr via WebSockets have been resolved.
+* **[Java, C++]** Default domain for backend services is now "io.joynr".
+
+#joynr 0.9.1
+
+This is a minor bug fix release.
+
+##API relevant changes
+None.
+
+##Other changes
+* **[Android]** callback onProxyCreationError is now called correctly when an error occurs creating
+  a proxy. onProxyCreation is no longer called with null.
+* **[Java]** problems with multiple calls to register and deregister the same provider have been
+  resolved
+* logging settings in the examples have been reduced to focus on the sent and received messages.
 
 #joynr 0.9.0
 
 ##API relevant changes
 * **[Java, C++]** The provider class hierarchy has been simplified. A class diagram is at
-docs/diagram/ClassDiagram-JavaProvider.png. To implement a provider from scratch, extend
-<Interface>AbstractProvider. To implement a provider based on the default implementation extend
-Default<Interface>Provider
+  docs/diagram/ClassDiagram-JavaProvider.png. To implement a provider from scratch, extend
+  <Interface>AbstractProvider. To implement a provider based on the default implementation extend
+  Default<Interface>Provider
 * **[C++]** Qt-related datatypes have been removed from the API, both in generated classes and in
-runtime classes used for proxy creation, provider registration etc. Std types are now used instead.
+  runtime classes used for proxy creation, provider registration etc. Std types are now used
+  instead.
 * **[C++]** Future no longer accepts a callback as well; in order to synchronously retrieve values
-from the future, call Future::getValues.
+  from the future, call Future::getValues.
 * **[C++]** getProxyBuilder() has been renamed to createProxyBuilder()
 * **[C++]** ProxyBuilder::RuntimeQos has been renamed to MessagingQos (as in Java)
 * **[C++]** setProxyQos() has been removed from the ProxyBuilder. Messaging timeouts are set using
-the MessagingQos, while qos attributes related to discovery are set in setDiscoveryQos()
+  the MessagingQos, while qos attributes related to discovery are set in setDiscoveryQos()
 * **[C++]** The async API of proxies for method calls and attribute setters/getters allows
-to provide onSuccess and onError callback functions. OnSuccess is invoked by the joynr runtime
-in case of a successful call, onError in all other cases (e.g. joynr internal errors like timeouts).
+  to provide onSuccess and onError callback functions. OnSuccess is invoked by the joynr runtime
+  in case of a successful call, onError in all other cases (e.g. joynr internal errors like
+  timeouts).
 * **[C++]** The sync API of proxies for method calls and attribute setters/getters now always
-provides a RequestStatus object as return value. This object informs the caller upon successful or
-erroneous execution of the respective call.
+  provides a RequestStatus object as return value. This object informs the caller upon successful or
+  erroneous execution of the respective call.
 * **[Java]** Access control has been activated, meaning that all Java-based providers will not be
-accessible unless the request message passes an access control check. As development of access
-control is ongoing (there is not yet official support for entering access control information in the
-global access control directory), currently providers can be made accessible by using a
-statically-injected access control property. The MyRadioProviderApplication class in
-examples/radio-app provides an example of how this can be done.
-* **[Java, C++]** registerCapability has been renamed to registerProvider and no longer takes an "auth
-token", which was a placeholder that is no longer needed.
+  accessible unless the request message passes an access control check. As development of access
+  control is ongoing (there is not yet official support for entering access control information in
+  the global access control directory), currently providers can be made accessible by using a
+  statically-injected access control property. The MyRadioProviderApplication class in
+  examples/radio-app provides an example of how this can be done.
+* **[Java, C++]** registerCapability has been renamed to registerProvider and no longer takes an
+  "auth token", which was a placeholder that is no longer needed.
 * **[Java, C++]** Providers may now only be implemented using the asynchronous interface. The
-sychronous provider API has been removed. Providers return by calling onSuccess callback function
+  sychronous provider API has been removed. Providers return by calling onSuccess callback function.
 * **[Java, C++]** Franca's multiple output parameters are now supported.
 * **[Build]** Added Dockerfiles for building Java and C++ builds, with included scripts. These
-scripts are also used by the joynr project itself in its own CI (Jenkins-based) environment.
+  scripts are also used by the joynr project itself in its own CI (Jenkins-based) environment.
 * **[Java]** Capability Directory entries on the global directory are now persisted using JPA.
 
 #joynr 0.8.0
-#
+
 ##API relevant changes
 * **[Java, C++]** Support of broadcast: it is now possible to subscribe to broadcasts on proxy side.
   Providers are able to fire broadcast events, which are then forwarded to subscribed proxies. See
@@ -106,7 +123,7 @@ scripts are also used by the joynr project itself in its own CI (Jenkins-based) 
   * use RESTful service adapters for messaging related components
 
 #joynr 0.6.0
-#
+
 ##API relevant changes
 * **[Java]** exceptions: removed checked exceptions from ProxyBuilder
 * **[Java]** Check for correct usage of SubscriptionQos
