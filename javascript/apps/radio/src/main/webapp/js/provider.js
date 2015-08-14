@@ -1,5 +1,5 @@
 /*jslint devel: true es5: true */
-/*global $: true, joynr: true, provisioning: true, RadioProvider: true, RadioStation: true, domain: true, getBuildSignatureString: true */
+/*global $: true, joynr: true, provisioning: true, RadioProvider: true, RadioStation: true, GeoPosition: true, domain: true, getBuildSignatureString: true, TrafficServiceBroadcastFilter : true, GeocastBroadcastFilter: true */
 
 /*
  * #%L
@@ -129,6 +129,7 @@ var RadioProviderImpl =
             this.shuffleStations =
                     function() {
                         log("radioProvider.shuffleStations", "called");
+
                         var oldStationIndex = currentStationIndex;
 
                         currentStationIndex++;
@@ -142,13 +143,47 @@ var RadioProviderImpl =
                         showCurrentStationInHtml(stationsList[currentStationIndex]);
                     };
 
+            // Provide broadcast specific implementation stubs. Properties will
+            // be added when joynr.providerBuilder.build() gets called.
+
+            this.weakSignal = {};
+
+            this.newStationDiscovered = {};
+
+            // the button onclick handler
+            this.fireWeakSignal = function() {
+                log("radioProvider.fireWeakSignal", "called");
+
+                var outputParameters;
+                outputParameters = self.weakSignal.createBroadcastOutputParameters();
+                outputParameters.setWeakSignalStation(stationsList[currentStationIndex]);
+                self.weakSignal.fire(outputParameters);
+            };
+
+            // the button onclick handler
+            this.fireNewStationDiscovered = function() {
+                log("radioProvider.fireNewStationDiscovered", "called");
+                var outputParameters;
+                var geoPosition;
+
+                // can later replace the station with current station
+                // and take its position
+                geoPosition = new GeoPosition();
+                geoPosition.latitude = 48.55;
+                geoPosition.longitude = 12.0;
+                outputParameters = self.newStationDiscovered.createBroadcastOutputParameters();
+                outputParameters.setGeoPosition(geoPosition);
+                outputParameters.setDiscoveredStation(stationsList[currentStationIndex]);
+                self.newStationDiscovered.fire(outputParameters);
+            };
+
             this.getLocationOfCurrentStation =
                 function() {
                     log("radioProvider.getLocationOfCurrentStation", "called");
                     return stationsList[currentStationIndex].country;
                 };
 
-                    // fill current station into fields
+            // fill current station into fields
             showCurrentStationInHtml(stationsList[currentStationIndex]);
 
             // fill favorite stations into textarea
@@ -178,6 +213,11 @@ $(function() { // DOM ready
         $("input#btnRegisterProvider").click(
                 function() {
                     domain = $("input#txtDomain").val();
+
+                    // test, whether some filter functions can be added here
+                    radioProvider.newStationDiscovered.addBroadcastFilter(new GeocastBroadcastFilter());
+                    radioProvider.newStationDiscovered.addBroadcastFilter(new TrafficServiceBroadcastFilter());
+
                     joynr.capabilities.registerCapability(
                             "RadioProvider.authToken",
                             domain,
@@ -204,6 +244,10 @@ $(function() { // DOM ready
                             });
                     $("input#btnRegisterProvider").attr("disabled", true);
                     $("input#btnUnregisterProvider").attr("disabled", false);
+                    $("input#btnShuffleStations").attr("disabled", false);
+                    $("input#btnAddFavouriteStation").attr("disabled", false);
+                    $("input#btnFireWeakSignal").attr("disabled", false);
+                    $("input#btnFireNewStationDiscovered").attr("disabled", false);
                 });
 
         // unregister joynr provider
@@ -227,10 +271,20 @@ $(function() { // DOM ready
                             });
                     $("input#btnRegisterProvider").attr("disabled", false);
                     $("input#btnUnregisterProvider").attr("disabled", true);
+                    $("input#btnShuffleStations").attr("disabled", true);
+                    $("input#btnAddFavouriteStation").attr("disabled", true);
+                    $("input#btnFireWeakSignal").attr("disabled", true);
+                    $("input#btnFireNewStationDiscovered").attr("disabled", true);
                 });
 
         $("input#btnShuffleStations").click(function() {
             radioProviderImpl.shuffleStations();
+        });
+        $("input#btnFireWeakSignal").click(function() {
+            radioProviderImpl.fireWeakSignal();
+        });
+        $("input#btnFireNewStationDiscovered").click(function() {
+            radioProviderImpl.fireNewStationDiscovered();
         });
         $("input#btnAddFavoriteStation").click(function() {
             radioProviderImpl.addFavoriteStation({

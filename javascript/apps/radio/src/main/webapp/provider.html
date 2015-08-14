@@ -37,9 +37,12 @@
 
 		<!-- include generated proxies and providers after libjoynr -->
 		<script src="js/joynr/vehicle/RadioStation.js"></script>
+		<script src="js/joynr/vehicle/GeoPosition.js"></script>
 		<script src="js/joynr/vehicle/RadioProvider.js"></script>
 
 		<!-- include application code last -->
+		<script src="js/TrafficServiceBroadcastFilter.js"></script>
+		<script src="js/GeoCastBroadcastFilter.js"></script>
 		<script src="js/provider.js"></script>
 	</head>
 	<body>
@@ -50,7 +53,7 @@
 		<input type="button" id="btnUnregisterProvider" value="Unregister Provider" disabled/></p>
 		<hr>
 
-		<p>Current Station: <input type="button" id="btnShuffleStations" value="Shuffle Stations"/><br>
+		<p>Current Station: <input type="button" id="btnShuffleStations" value="Shuffle Stations" disabled/><br>
 		Name: <input type="text" id="txtCurrentStationName" value="" title="Name" readonly/>
 		TrafficService: <input type="text" id="txtCurrentStationTrafficService" value="" title="TrafficService" readonly/>
 		Country: <input type="text" id="txtCurrentStationCountry" value="" title="Country" readonly/></p>
@@ -69,7 +72,12 @@
 			<option>GERMANY</option>
 			<option>ITALY</option>
 		</select>
-		<input type="button" id="btnAddFavoriteStation" value="Add Favorite Station"/>
+		<input type="button" id="btnAddFavoriteStation" value="Add Favorite Station" disabled/>
+		<hr>
+
+		<p>Broadcasts:<br>
+		<input type="button" id="btnFireWeakSignal" value="Fire weakSignal broadcast" disabled/><br>
+		<input type="button" id="btnFireNewStationDiscovered" value="Fire newStationDiscovered broadcast" disabled/></p>
 		<hr>
 
 		<p><input type="button" value="Clear LOG" onclick="$('div#divLog').empty();"/></p>
