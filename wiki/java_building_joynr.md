@@ -25,7 +25,7 @@ Joynr can be built using a [docker](http://www.docker.com) container. The necess
 ## Prerequisites
 
 ### Cloning the joynr source repository
-The joynr source repository (https://github.com/bmwcarit/joynr) which contains the Java and C++ sources has to be cloned, and the correct branch checked out.
+The joynr source repository (https://github.com/bmwcarit/joynr) which contains the Java, JavaScript and C++ sources has to be cloned, and the correct branch checked out.
 
 
 ### Building docker images for joynr Java

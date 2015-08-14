@@ -1,0 +1,386 @@
+/*jslint devel: true es5: true */
+/*global $: true, joynr: true, provisioning: true, RadioProxy: true, GeoPosition: true, BroadcastFilterParameters: true, RadioStation: true, domain: true, getBuildSignatureString: true */
+
+/*
+ * #%L
+ * %%
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
+var currentStationSubscriptionId;
+var nbt = !!navigator.userAgent.match(/NBT/);
+var prettyLongTtl = 100 * 365 * 24 * 3600 * 1000; // 100 years TTL :-)
+
+var messagingQos, subscriptionQosOnChange, subscriptionQosPeriodic, subscriptionQosOnChangeWithKeepAlive;
+
+function logHtml(line, msg) {
+    $("div#divLog").prepend(msg+" <span style=\"font-size:0.8em;color:grey\">"+line+"</span><br>").show();
+}
+
+function log(line, msg) {
+     logHtml(line, msg);
+     msg = new Date().toISOString() + ": [provider.js: " + line + "] " + msg;
+     console.log(msg);
+}
+
+function showCurrentStationInHtml(radioStation) {
+    $("input#txtCurrentStationName").val(radioStation.name);
+    $("input#txtCurrentStationTrafficService").val(radioStation.trafficService);
+    $("input#txtCurrentStationCountry").val(radioStation.country);
+}
+
+function enableSubscriptionButtons(enable) {
+    $("input#btnCurrentStationSubscribeOnChange").attr("disabled", !enable);
+    $("input#btnCurrentStationSubscribePeriodic").attr("disabled", !enable);
+    $("input#btnCurrentStationSubscribeOnChangeWithKeepAlive").attr("disabled", !enable);
+    $("input#btnCurrentStationUnsubscribe").attr("disabled", enable);
+}
+
+/**
+ * @param {RadioProxy}
+ *            radioProxy
+ */
+function registerAttributeHandlers(radioProxy) {
+    $("input#btnCurrentStationGet").click(function() {
+        radioProxy.currentStation.get().then(function(value) {
+            log("radioProxy.currentStation.get.done", JSON.stringify(value));
+            showCurrentStationInHtml(value);
+        }).catch(function(error) {
+            log("radioProxy.currentStation.get.fail", error);
+        });
+    });
+
+    function onCurrentStationReceive(value) {
+        log("radioProxy.currentStation.subscribe.onReceive", JSON.stringify(value));
+        showCurrentStationInHtml(value);
+    }
+
+    function onCurrentStationPublicationMissed() {
+        log("radioProxy.currentStation.subscribe.onPublicationMissed", "publication missed");
+    }
+
+    $("input#btnCurrentStationSubscribeOnChange").click(function() {
+        radioProxy.currentStation.subscribe(
+                {
+                    subscriptionQos : subscriptionQosOnChange,
+                    onReceive : onCurrentStationReceive,
+                    onError : onCurrentStationPublicationMissed
+                }
+        ).then(function(subscriptionId) {
+            currentStationSubscriptionId = subscriptionId;
+            enableSubscriptionButtons(false);
+            log("radioProxy.currentStation.subscribe.done", "Subscription ID: "+ subscriptionId);
+        }).catch(function(error) {
+            log("radioProxy.currentStation.subscribe.fail", error);
+        });
+    });
+
+    $("input#btnCurrentStationSubscribePeriodic").click(function() {
+        radioProxy.currentStation.subscribe(
+                {
+                    subscriptionQos : subscriptionQosPeriodic,
+                    onReceive : onCurrentStationReceive,
+                    onError : onCurrentStationPublicationMissed
+                }
+        ).then(function(subscriptionId) {
+            currentStationSubscriptionId = subscriptionId;
+            enableSubscriptionButtons(false);
+            log("radioProxy.currentStation.subscribe.done", "Subscription ID: "+ subscriptionId);
+        }).catch(function(error) {
+            log("radioProxy.currentStation.subscribe.fail", error);
+        });
+    });
+
+    $("input#btnCurrentStationSubscribeOnChangeWithKeepAlive").click(function() {
+        radioProxy.currentStation.subscribe(
+                {
+                    subscriptionQos : subscriptionQosOnChangeWithKeepAlive,
+                    onReceive : onCurrentStationReceive,
+                    onError : onCurrentStationPublicationMissed
+                }
+        ).then(function(subscriptionId) {
+            currentStationSubscriptionId = subscriptionId;
+            enableSubscriptionButtons(false);
+            log("radioProxy.currentStation.subscribe.done", "Subscription ID: "+ subscriptionId);
+        }).catch(function(error) {
+            log("radioProxy.currentStation.subscribe.fail", error);
+        });
+    });
+
+    $("input#btnCurrentStationUnsubscribe").click(function() {
+        log("radioProxy.currentStation.unsubscribe", "Subscription ID: " + currentStationSubscriptionId);
+        radioProxy.currentStation.unsubscribe({
+            "subscriptionId" : currentStationSubscriptionId
+        }).then(function() {
+            log("radioProxy.currentStation.unsubscribe.done", "Subscription ID: " + currentStationSubscriptionId);
+            currentStationSubscriptionId = null;
+            enableSubscriptionButtons(true);
+        }).catch(function(error) {
+            log(
+                    "radioProxy.currentStation.unsubscribe.fail",
+                    "Subscription ID: " + currentStationSubscriptionId + " ERROR" + error
+            );
+        });
+    });
+}
+
+/**
+ * @param {RadioProxy}
+ *            radioProxy
+ */
+function registerMethodHandlers(radioProxy) {
+    $("input#btnShuffleStations").click(function() {
+        log("radioProxy.shuffleStations", "calling shuffleStations");
+        radioProxy.shuffleStations().then(function() {
+            log("radioProxy.shuffleStations.done", "successfully shuffled stations");
+        }).catch(function(error) {
+            log("radioProxy.shuffleStations.fail", error);
+        });
+    });
+
+    $("input#btnAddFavouriteStation").click(function() {
+        var operationArguments = {
+            newFavouriteStation : new RadioStation({
+                name : $("input#txtNewFavouriteStationName").val(),
+                trafficService : $("select#slctTrafficService").val() === "true",
+                country : $("select#slctCountry").val()
+            })
+        };
+
+        radioProxy.addFavouriteStation(operationArguments).then(function(success) {
+            log(
+                    "radioProxy.addFavouriteStation.done",
+                    JSON.stringify(operationArguments) + " -> " + JSON.stringify(success)
+            );
+            $("input#txtAddFavouriteStationSuccess").val(JSON.stringify(success));
+        }).catch(function(error) {
+            log(
+                    "radioProxy.addFavouriteStation.fail",
+                    JSON.stringify(operationArguments) + " ERROR: " + error
+            );
+        });
+    });
+}
+
+/**
+ * @param {RadioProxy}
+ *            radioProxy
+ */
+function registerEventHandlers(radioProxy) {
+    var subscriptionToWeakSignalId = null;
+    var subscriptionToNewStationDiscoveredId = null;
+
+    // weak signal broadcast
+
+    $("#btnSubscribeToWeakSignal").click(function() {
+        if (!subscriptionToWeakSignalId) {
+            $("input#btnSubscribeToWeakSignal").attr("disabled", true);
+            radioProxy.weakSignal.subscribe({
+                onReceive : function(weakSignalStation) {
+                    var weakSignalStationReadable = JSON.stringify(weakSignalStation);
+                    log(
+                            "radioProxy.weakSignal.onReceive",
+                            "radioProxy.weakSignal.publication: " + weakSignalStationReadable
+                    );
+                    $("div#divBroadcasts").prepend("broadcast received: " + weakSignalStationReadable + "<br>").show();
+                }
+            }).then(function(newSubscriptionId) {
+                log(
+                        "radioProxy.weakSignal.subscribe",
+                        "subscribe done: " + newSubscriptionId
+                );
+                subscriptionToWeakSignalId = newSubscriptionId;
+                $("input#btnUnsubscribeFromWeakSignal").attr("disabled", false);
+            }, function(error) {
+                log(
+                        "radioProxy.weakSignal.subscribe",
+                        "subscribe failed: " + error
+                );
+                $("input#btnSubscribeToWeakSignal").attr("disabled", false);
+                });
+        } else {
+            log(
+                    "btnSubscribeToNewStationDiscovered click",
+                    "there is already a pending attribute subscription"
+            );
+        }
+    });
+
+    $("#btnUnsubscribeFromWeakSignal").click(function() {
+        if (subscriptionToWeakSignalId) {
+            $("input#btnUnsubscribeFromWeakSignal").attr("disabled", true);
+            radioProxy.weakSignal.unsubscribe({
+                "subscriptionId" : subscriptionToWeakSignalId
+            }).then(function() {
+                log(
+                    "radioProxy.weakSignal.unsubscribe",
+                    "unsubscribe done"
+                );
+                $("input#btnSubscribeToWeakSignal").attr("disabled", false);
+            }).catch(function(error) {
+                log(
+                    "radioProxy.weakSignal.unsubscribe",
+                    "unsubscribe failed" + error
+                );
+                $("input#btnUnsubscribeFromWeakSignal").attr("disabled", false);
+            });
+
+            subscriptionToWeakSignalId = null;
+        } else {
+            log("there is no pending weak signal subscription to be cancelled");
+        }
+    });
+
+    // new station discovered broadcast
+
+    $("#btnSubscribeToNewStationDiscoveredSignal").click(function() {
+        if (!subscriptionToNewStationDiscoveredId) {
+            $("input#btnSubscribeToNewStationDiscoveredSignal").attr("disabled", true);
+
+            // setup filter parameters
+            var geoPosition = new GeoPosition();
+            geoPosition.latitude = 48.135125;
+            geoPosition.longitude = 11.581981;
+            var positionOfInterest = JSON.stringify(geoPosition);
+            var myFilterParameters = radioProxy.newStationDiscovered.createFilterParameters();
+            myFilterParameters.setHasTrafficService("true");
+            myFilterParameters.setPositionOfInterest(positionOfInterest);
+            myFilterParameters.setRadiusOfInterestArea("200000");
+
+            radioProxy.newStationDiscovered.subscribe({
+                onReceive : function(newStationDiscovered) {
+                    var newStationDiscoveredReadable = JSON.stringify(newStationDiscovered);
+                    log(
+                            "radioProxy.newStationDiscovered.onReceive",
+                            "radioProxy.newStationDiscovered.publication: " + newStationDiscoveredReadable
+                    );
+                    $("div#divBroadcasts").prepend("broadcast received: " + newStationDiscoveredReadable + "<br>").show();
+                },
+                filterParameters: myFilterParameters
+            }).then(function(newSubscriptionId) {
+                log(
+                        "radioProxy.newStationDiscoveredSignal.subscribe",
+                        "subscribe done: " + newSubscriptionId
+                );
+                subscriptionToNewStationDiscoveredId = newSubscriptionId;
+                $("input#btnUnsubscribeFromNewStationDiscoveredSignal").attr("disabled", false);
+            }, function(error) {
+                log(
+                        "radioProxy.newStationDiscoveredSignal.subscribe",
+                        "subscribe failed: " + error
+                );
+                $("input#btnSubscribeToNewStationDiscoveredSignal").attr("disabled", false);
+            });
+        } else {
+            log(
+                    "btnSubscribeToNewStationDiscovered click",
+                    "there is already a pending attribute subscription"
+            );
+        }
+    });
+
+    $("#btnUnsubscribeFromNewStationDiscoveredSignal").click(function() {
+        if (subscriptionToNewStationDiscoveredId) {
+            $("input#btnUnsubscribeFromNewStationDiscoveredSignal").attr("disabled", true);
+            radioProxy.newStationDiscovered.unsubscribe({
+                "subscriptionId" : subscriptionToNewStationDiscoveredId
+            }).then(function() {
+                log(
+                    "radioProxy.newStationDiscovered.unsubscribe",
+                    "unsubscribe done"
+                );
+                $("input#btnSubscribeToNewStationDiscoveredSignal").attr("disabled", false);
+            }).catch(function(error) {
+                log(
+                    "radioProxy.newStationDiscovered.unsubscribe",
+                    "unsubscribe failed: " + error
+                );
+                $("input#btnUnsubscribeFromNewStationDiscoveredSignal").attr("disabled", false);
+            });
+
+            subscriptionToNewStationDiscoveredId = null;
+        } else {
+            log("there is no pending newStationDiscovered subscription to be cancelled");
+        }
+    });
+}
+
+$(function() { // DOM ready
+    // output build signatures to log
+    joynr.load(provisioning, function(error, loadedJoynr) {
+        if (error) {
+            log("main", "error initializing joynr: " + error);
+            throw error;
+        }
+
+        log("main", joynr.buildSignature());
+        log("main", getBuildSignatureString());
+
+        joynr = loadedJoynr;
+
+        // fill domain into field
+        $("input#txtDomain").val(domain);
+
+        messagingQos = new joynr.messaging.MessagingQos({
+            ttl : nbt ? prettyLongTtl : 60000
+        });
+
+        subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
+            minInterval : 50
+        });
+
+        subscriptionQosPeriodic = new joynr.proxy.PeriodicSubscriptionQos({
+            period : 1000
+        });
+
+        subscriptionQosOnChangeWithKeepAlive = new joynr.proxy.OnChangeWithKeepAliveSubscriptionQos({
+            minInterval : 500,
+            maxInterval : 2000
+        });
+
+        // create proxy
+        $("input#btnCreateProxy").click(function() {
+            domain = $("input#txtDomain").val();
+            joynr.proxyBuilder.build(RadioProxy, {
+                domain : domain,
+                messagingQos : messagingQos
+            }).then(function(radioProxy) {
+                log(
+                        "joynr.proxyBuilder.build.done",
+                        "successfully discovered radio provider on domain \""+domain+"\"."
+                );
+                registerAttributeHandlers(radioProxy);
+                registerMethodHandlers(radioProxy);
+                registerEventHandlers(radioProxy);
+            }).catch(function(error) {
+                log(
+                        "joynr.proxyBuilder.build.fail",
+                        "error discovering radio provider: " + error
+                );
+            });
+            $("input#btnCreateProxy").attr("disabled", true);
+            // enable buttons to use proxy
+            $("input#btnCurrentStationSubscribeOnChange").attr("disabled", false);
+            $("input#btnCurrentStationSubscribePeriodic").attr("disabled", false);
+            $("input#btnCurrentStationSubscribeOnChangeWithKeepAlive").attr("disabled", false);
+            $("input#btnCurrentStationGet").attr("disabled", false);
+            $("input#btnShuffleStations").attr("disabled", false);
+            $("input#btnAddFavouriteStation").attr("disabled", false);
+            $("input#btnSubscribeToWeakSignal").attr("disabled", false);
+            $("input#btnSubscribeToNewStationDiscoveredSignal").attr("disabled", false);
+         });
+    });
+});

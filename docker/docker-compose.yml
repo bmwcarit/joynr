@@ -6,6 +6,13 @@ java:
                 - ../install:/data/install
         hostname: joynr-build
 
+javascript:
+        image: joynr-javascript:latest
+        volumes:
+                - ..:/data/src
+                - ~/.m2:/home/joynr/.m2
+                - .:/data/build
+
 cpp:
         image: joynr-cpp:latest
         volumes:

@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Joynr Javascript generator
+Bundle-SymbolicName: io.joynr.generator.js
+Bundle-Version: 2.0.0.qualifier
+Bundle-Vendor: joynr.io
+Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Export-Package: io.joynr.generator.js,
+ io.joynr.generator.js.util
+Require-Bundle: io.joynr.generator.framework;bundle-version="2.0.0",
+ org.eclipse.core.runtime;bundle-version="3.8.0"
