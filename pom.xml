@@ -1074,6 +1074,7 @@
 						</webApp>
 						<stopPort>9966</stopPort>
 						<stopKey>joynr</stopKey>
+						<stopWait>60</stopWait>
 						<contextHandlers>
 							<contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
 								<war>${project.build.directory}/bounceproxy.war</war>
