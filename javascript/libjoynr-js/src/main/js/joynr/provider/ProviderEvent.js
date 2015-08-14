@@ -17,7 +17,8 @@
  * #L%
  */
 
-define("joynr/provider/ProviderEvent", [], function() {
+define("joynr/provider/ProviderEvent", [ "joynr/provider/BroadcastOutputParameters"
+], function(BroadcastOutputParameters) {
 
     /**
      * Constructor of ProviderEvent object that is used in the generation of provider objects
@@ -33,11 +34,20 @@ define("joynr/provider/ProviderEvent", [], function() {
      *            if the string contains 'NOTIFY' this event contains subscribe and unsubscribe
      *            if the string contains 'READ' or 'WRITE' this event has get and set
      */
-    function ProviderEvent(parent, implementation, eventName) {
+    function ProviderEvent(
+            parent,
+            implementation,
+            eventName,
+            outputParameterProperties,
+            filterSettings) {
         if (!(this instanceof ProviderEvent)) {
             // in case someone calls constructor without new keyword (e.g. var c = Constructor({..}))
             return new ProviderEvent(implementation, eventName);
         }
+
+        this.createBroadcastOutputParameters = function createBroadcastOutputParameters() {
+            return new BroadcastOutputParameters(outputParameterProperties);
+        };
 
         /**
          * if this attribute is changed the applicationshould call this function with the new value

@@ -165,13 +165,38 @@ class ProviderGenerator {
 				]);
 			«ENDFOR»
 			«FOR event: getEvents(fInterface)»
+				«val filterParameters = getFilterParameters(event)»
 				«val eventName = event.joynrName»
 				/**
 				 * @name «fInterface.providerName»#«eventName»
 				 * @summary The «eventName» event is GENERATED FROM THE INTERFACE DESCRIPTION
 				 «appendJSDocSummaryAndWriteSeeAndDescription(event, "* ")»
 				 */
-				this.«eventName» = new dependencies.ProviderEvent(this, implementation.«eventName», "«eventName»");
+				this.«eventName» = new dependencies.ProviderEvent(
+					this,
+					implementation.«eventName»,
+					"«eventName»",
+					[
+						«FOR param : getOutputParameters(event) SEPARATOR ","»
+						{
+							name : "«param.joynrName»",
+							type : «param.typeNameForParameter»
+						}
+						«ENDFOR»
+					],
+					«IF isSelective(event)»
+					{
+						«FOR filterParameter : filterParameters SEPARATOR ","»
+							"«filterParameter»": "reservedForTypeInfo"
+						«ENDFOR»
+					}
+					«ELSE»
+					{}
+					«ENDIF»
+				);
+				if (implementation.«eventName») {
+					implementation.«eventName».createBroadcastOutputParameters = this.«eventName».createBroadcastOutputParameters;
+				}
 			«ENDFOR»
 
 			Object.defineProperty(this, 'checkImplementation', {

@@ -71,6 +71,7 @@ TESTS="$TESTS ${project.build.testOutputDirectory}/joynr/provider/TestProvider.j
 TESTS="$TESTS ${project.build.testOutputDirectory}/joynr/provider/TestProviderAttribute.js"
 TESTS="$TESTS ${project.build.testOutputDirectory}/joynr/provider/TestProviderOperation.js"
 TESTS="$TESTS ${project.build.testOutputDirectory}/joynr/provider/TestProviderEvent.js"
+TESTS="$TESTS ${project.build.testOutputDirectory}/joynr/provider/TestBroadcastOutputParameters.js"
 TESTS="$TESTS ${project.build.testOutputDirectory}/joynr/proxy/TestProxy.js"
 TESTS="$TESTS ${project.build.testOutputDirectory}/joynr/proxy/TestProxyBuilder.js"
 TESTS="$TESTS ${project.build.testOutputDirectory}/joynr/proxy/TestProxyAttribute.js"
