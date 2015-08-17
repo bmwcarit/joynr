@@ -1187,17 +1187,10 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          libjoynr/include/joynr/system/LoggingRequestCaller.h \
                          libjoynr/include/joynr/system/LoggingRequestInterpreter.h \
                          libjoynr/include/joynr/system/LoggingSyncProxy.h \
-                         libjoynr/include/joynr/system/QtAddress.h \
-                         libjoynr/include/joynr/system/QtBrowserAddress.h \
-                         libjoynr/include/joynr/system/QtChannelAddress.h \
-                         libjoynr/include/joynr/system/QtCommonApiDbusAddress.h \
                          libjoynr/include/joynr/system/QtJoynrLogEvent.h \
                          libjoynr/include/joynr/system/QtJoynrLoggedError.h \
                          libjoynr/include/joynr/system/QtJoynrLoggingContextTag.h \
                          libjoynr/include/joynr/system/QtJoynrLogLevel.h \
-                         libjoynr/include/joynr/system/QtWebSocketAddress.h \
-                         libjoynr/include/joynr/system/QtWebSocketClientAddress.h \
-                         libjoynr/include/joynr/system/QtWebSocketProtocol.h \
                          libjoynr/include/joynr/system/RoutingAsyncProxy.h \
                          libjoynr/include/joynr/system/RoutingInProcessConnector.h \
                          libjoynr/include/joynr/system/RoutingJoynrMessagingConnector.h \
@@ -1211,9 +1204,13 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          libjoynr/include/joynr/system/RoutingTypes/BrowserAddress.h \
                          libjoynr/include/joynr/system/RoutingTypes/ChannelAddress.h \
                          libjoynr/include/joynr/system/RoutingTypes/CommonApiDbusAddress.h \
-                         libjoynr/include/joynr/system/RoutingTypes/WebSocketAddress.h \
-                         libjoynr/include/joynr/system/RoutingTypes/WebSocketClientAddress.h \
-                         libjoynr/include/joynr/system/RoutingTypes/WebSocketProtocol.h \
+                         libjoynr/include/joynr/system/RoutingTypes/QtAddress.h \
+                         libjoynr/include/joynr/system/RoutingTypes/QtBrowserAddress.h \
+                         libjoynr/include/joynr/system/RoutingTypes/QtChannelAddress.h \
+                         libjoynr/include/joynr/system/RoutingTypes/QtCommonApiDbusAddress.h \
+                         libjoynr/include/joynr/system/RoutingTypes/QtWebSocketAddress.h \
+                         libjoynr/include/joynr/system/RoutingTypes/QtWebSocketClientAddress.h \
+                         libjoynr/include/joynr/system/RoutingTypes/QtWebSocketProtocol.h \
                          libjoynr/include/joynr/ThreadSafeMap.h \
                          libjoynr/include/joynr/types/CapabilityInformation.h \
                          libjoynr/include/joynr/types/ChannelUrlInformation.h \
@@ -1234,6 +1231,9 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          libjoynr/in-process/InProcessConnectorFactory.cpp \
                          libjoynr/in-process/InProcessDispatcher.cpp \
                          libjoynr/in-process/InProcessLibJoynrMessagingSkeleton.cpp \
+                         libjoynr/include/joynr/system/RoutingTypes/WebSocketAddress.h \
+                         libjoynr/include/joynr/system/RoutingTypes/WebSocketClientAddress.h \
+                         libjoynr/include/joynr/system/RoutingTypes/WebSocketProtocol.h \
                          libjoynr/in-process/InProcessLibJoynrMessagingSkeleton.h \
                          libjoynr/in-process/InProcessMessagingAddress.cpp \
                          libjoynr/in-process/InProcessMessagingStubFactory.cpp \
@@ -1375,27 +1375,27 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          tests/gen/communication-model/generated/datatypes/types/Localisation/GpsPositionExtended.cpp \
                          tests/gen/communication-model/generated/datatypes/types/Localisation/Position.cpp \
                          tests/gen/communication-model/generated/datatypes/types/Localisation/PositionDetailedInfo.cpp \
+                         tests/gen/communication-model/generated/datatypes/types/Localisation/QtGpsLocation.cpp \
+                         tests/gen/communication-model/generated/datatypes/types/Localisation/QtGpsPosition.cpp \
+                         tests/gen/communication-model/generated/datatypes/types/Localisation/QtGpsPositionExtended.cpp \
+                         tests/gen/communication-model/generated/datatypes/types/Localisation/QtPosition.cpp \
+                         tests/gen/communication-model/generated/datatypes/types/Localisation/QtPositionDetailedInfo.cpp \
+                         tests/gen/communication-model/generated/datatypes/types/Localisation/QtTrip.cpp \
                          tests/gen/communication-model/generated/datatypes/types/Localisation/Trip.cpp \
-                         tests/gen/communication-model/generated/datatypes/types/QtGpsLocation.cpp \
-                         tests/gen/communication-model/generated/datatypes/types/QtGpsPosition.cpp \
-                         tests/gen/communication-model/generated/datatypes/types/QtGpsPositionExtended.cpp \
-                         tests/gen/communication-model/generated/datatypes/types/QtPosition.cpp \
-                         tests/gen/communication-model/generated/datatypes/types/QtPositionDetailedInfo.cpp \
-                         tests/gen/communication-model/generated/datatypes/types/QtTrip.cpp \
                          tests/gen/include/joynr/types/Localisation/GpsFixEnum.h \
                          tests/gen/include/joynr/types/Localisation/GpsLocation.h \
                          tests/gen/include/joynr/types/Localisation/GpsPositionExtended.h \
                          tests/gen/include/joynr/types/Localisation/GpsPosition.h \
                          tests/gen/include/joynr/types/Localisation/PositionDetailedInfo.h \
                          tests/gen/include/joynr/types/Localisation/Position.h \
-                         tests/gen/include/joynr/types/Localisation/Trip.h \
-                         tests/gen/include/joynr/types/QtGpsFixEnum.h \
-                         tests/gen/include/joynr/types/QtGpsLocation.h \
-                         tests/gen/include/joynr/types/QtGpsPositionExtended.h \
-                         tests/gen/include/joynr/types/QtGpsPosition.h \
-                         tests/gen/include/joynr/types/QtPositionDetailedInfo.h \
-                         tests/gen/include/joynr/types/QtPosition.h \
-                         tests/gen/include/joynr/types/QtTrip.h
+                         tests/gen/include/joynr/types/Localisation/QtGpsFixEnum.h \
+                         tests/gen/include/joynr/types/Localisation/QtGpsLocation.h \
+                         tests/gen/include/joynr/types/Localisation/QtGpsPositionExtended.h \
+                         tests/gen/include/joynr/types/Localisation/QtGpsPosition.h \
+                         tests/gen/include/joynr/types/Localisation/QtPositionDetailedInfo.h \
+                         tests/gen/include/joynr/types/Localisation/QtPosition.h \
+                         tests/gen/include/joynr/types/Localisation/QtTrip.h \
+                         tests/gen/include/joynr/types/Localisation/Trip.h
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or
 # directories that are symbolic links (a Unix file system feature) are excluded
