@@ -422,9 +422,14 @@ define(
                  * @param {?}
                  *            value
                  */
-                function publishEventValue(providerId, eventName, event, value) {
+                function publishEventValue(providerId, eventName, event, data) {
+                    var publish;
+                    var i;
+                    var filterParameters;
                     var subscriptionId, subscriptions =
-                            getSubscriptionsForProviderEvent(providerId, eventName);
+                        getSubscriptionsForProviderEvent(providerId, eventName);
+                    var value = data.broadcastOutputParameters;
+                    var filters = data.filters;
                     if (!subscriptions) {
                         log.error("ProviderEvent "
                             + eventName
@@ -441,7 +446,30 @@ define(
                             var subscriptionInfo = subscriptions[subscriptionId];
                             if (subscriptionInfo.qos.minInterval !== undefined
                                 && subscriptionInfo.qos.minInterval > 0) {
-                                preparePublication(subscriptionInfo, value, triggerPublicationTimer);
+                                // if any filters present, check them
+                                publish = true;
+                                if (filters && filters.length > 0) {
+                                    for (i = 0; i < filters.length; i++) {
+                                        if (subscriptionInfo.filterParameters &&
+                                            subscriptionInfo.filterParameters.filterParameters) {
+                                            publish = filters[i].filter(
+                                                value,
+                                                subscriptionInfo.filterParameters.filterParameters
+                                            );
+                                            // stop on first filter failure
+                                            if (publish === false) {
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                                if (publish) {
+                                    preparePublication(
+                                        subscriptionInfo,
+                                        value.outputParameters,
+                                        triggerPublicationTimer
+                                    );
+                                }
                             }
                         }
                     }
@@ -462,8 +490,8 @@ define(
                 function addPublicationEvent(providerId, eventName, event) {
                     var key = getProviderIdEventKey(providerId, eventName);
 
-                    eventObserverFunctions[key] = function(value) {
-                        publishEventValue(providerId, eventName, event, value);
+                    eventObserverFunctions[key] = function(data) {
+                        publishEventValue(providerId, eventName, event, data);
                     };
                     event.registerObserver(eventObserverFunctions[key]);
                 }
