@@ -469,7 +469,6 @@ public class PublicationManagerImpl implements PublicationManager {
                                        Object[] values) {
 
         if (filters != null && filters.size() > 0) {
-            boolean filterResult = true;
             BroadcastSubscriptionRequest subscriptionRequest = (BroadcastSubscriptionRequest) publicationInformation.subscriptionRequest;
             BroadcastFilterParameters filterParameters = subscriptionRequest.getFilterParameters();
 
@@ -498,16 +497,16 @@ public class PublicationManagerImpl implements PublicationManager {
                     Object[] args = Arrays.copyOf(values, values.length + 1);
                     args[args.length - 1] = filterParametersDerived;
 
-                    filterResult &= (Boolean) filterMethod.invoke(filter, args);
+                    if ((Boolean) filterMethod.invoke(filter, args) == false) {
+                        return false;
+                    }
                 } catch (Exception e) {
                     logger.error("processFilterChain error: {}", e.getMessage());
                     throw new IllegalStateException("processFilterChain: Error in reflection calling filters.", e);
                 }
             }
-            return filterResult;
-        } else {
-            return true;
         }
+        return true;
     }
 
     private SubscriptionPublication prepareAttributePublication(Object value, String subscriptionId) {
