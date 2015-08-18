@@ -204,17 +204,56 @@ function registerEventHandlers(radioProxy) {
                 );
                 subscriptionToWeakSignalId = newSubscriptionId;
                 $("input#btnUnsubscribeFromWeakSignal").attr("disabled", false);
+                $("input#btnSubscribeToWeakSignalUpdate").attr("disabled", false);
             }, function(error) {
                 log(
                         "radioProxy.weakSignal.subscribe",
                         "subscribe failed: " + error
                 );
                 $("input#btnSubscribeToWeakSignal").attr("disabled", false);
+                $("input#btnSubscribeToWeakSignalUpdate").attr("disabled", true);
                 });
         } else {
             log(
                     "btnSubscribeToNewStationDiscovered click",
                     "there is already a pending attribute subscription"
+            );
+        }
+    });
+
+    $("#btnSubscribeToWeakSignalUpdate").click(function() {
+        if (subscriptionToWeakSignalId) {
+            $("input#btnSubscribeToWeakSignal").attr("disabled", true);
+            $("input#btnSubscribeToWeakSignalUpdate").attr("disabled", true);
+            radioProxy.weakSignal.subscribe({
+                onReceive : function(weakSignalStation) {
+                    var weakSignalStationReadable = JSON.stringify(weakSignalStation);
+                    log(
+                            "radioProxy.weakSignal.onReceive after update",
+                            "radioProxy.weakSignal.publication: " + weakSignalStationReadable
+                    );
+                    $("div#divBroadcasts").prepend("broadcast received after update: " + weakSignalStationReadable + "<br>").show();
+                },
+                subscriptionId: subscriptionToWeakSignalId
+            }).then(function(newSubscriptionId) {
+                log(
+                        "radioProxy.weakSignal.subscribe update",
+                        "subscribe update done: " + newSubscriptionId
+                );
+                subscriptionToWeakSignalId = newSubscriptionId;
+                $("input#btnUnsubscribeFromWeakSignal").attr("disabled", false);
+            }, function(error) {
+                log(
+                        "radioProxy.weakSignal.subscribe update",
+                        "subscribe update failed: " + error
+                );
+                $("input#btnSubscribeToWeakSignal").attr("disabled", false);
+                $("input#btnSubscribeToWeakSignalUpdate").attr("disabled", false);
+                });
+        } else {
+            log(
+                    "btnSubscribeToNewStationDiscoveredUpdate click",
+                    "there is no attribute subscription that could be updated"
             );
         }
     });
@@ -230,12 +269,14 @@ function registerEventHandlers(radioProxy) {
                     "unsubscribe done"
                 );
                 $("input#btnSubscribeToWeakSignal").attr("disabled", false);
+                $("input#btnSubscribeToWeakSignalUpdate").attr("disabled", true);
             }).catch(function(error) {
                 log(
                     "radioProxy.weakSignal.unsubscribe",
                     "unsubscribe failed" + error
                 );
                 $("input#btnUnsubscribeFromWeakSignal").attr("disabled", false);
+                $("input#btnSubscribeToWeakSignalUpdate").attr("disabled", false);
             });
 
             subscriptionToWeakSignalId = null;
