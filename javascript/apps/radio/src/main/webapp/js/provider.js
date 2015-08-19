@@ -81,6 +81,17 @@ var RadioProviderImpl =
                 })
             ];
 
+            var countryGeoPositionMap = {
+                // Melbourne
+                "AUSTRALIA": new GeoPosition({ latitude: -37.8141070, longitude: 144.9632800 }),
+                // Bolzano
+                "ITALY": new GeoPosition({ latitude: 46.4982950, longitude: 11.3547580 }),
+                // Edmonton
+                "CANADA": new GeoPosition({ latitude: 53.5443890, longitude: -113.4909270 }),
+                // Munich
+                "GERMANY": new GeoPosition({ latitude: 48.1351250, longitude: 11.5819810 })
+            };
+
             var currentStationIndex = 0;
 
             Object.defineProperty(this, "currentStationIndex", {
@@ -166,11 +177,7 @@ var RadioProviderImpl =
                 var outputParameters;
                 var geoPosition;
 
-                // can later replace the station with current station
-                // and take its position
-                geoPosition = new GeoPosition();
-                geoPosition.latitude = 48.55;
-                geoPosition.longitude = 12.0;
+                geoPosition = countryGeoPositionMap[stationsList[currentStationIndex].country];
                 outputParameters = self.newStationDiscovered.createBroadcastOutputParameters();
                 outputParameters.setGeoPosition(geoPosition);
                 outputParameters.setDiscoveredStation(stationsList[currentStationIndex]);
