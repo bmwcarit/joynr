@@ -61,12 +61,12 @@ var RadioProviderImpl =
             var stationsList = [
                 new RadioStation({
                     name : "ABC Trible J",
-                    trafficService : false,
+                    trafficService : true,
                     country : "AUSTRALIA"
                 }),
                 new RadioStation({
                     name : "Radio Popolare",
-                    trafficService : true,
+                    trafficService : false,
                     country : "ITALY"
                 }),
                 new RadioStation({
