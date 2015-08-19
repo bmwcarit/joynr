@@ -27,7 +27,7 @@ define("joynr/start/TypeRegistry", [
      * through joynr) to the corresponding
      * JavaScript type constructor.
      *
-     * This class is used during deserialisation, ie mapping a received request/response to the
+     * This class is used during deserialization, ie mapping a received request/response to the
      * corresponding JavaScript call with the
      * correct parameters.
      *
