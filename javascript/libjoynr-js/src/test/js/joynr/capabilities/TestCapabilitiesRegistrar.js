@@ -172,7 +172,7 @@ joynrTestRequire(
                                 "is checks the provider's implementation, and throws if incomplete",
                                 function() {
                                     provider.checkImplementation = function() {
-                                        return [ "Operation:addFavouriteStation"
+                                        return [ "Operation:addFavoriteStation"
                                         ];
                                     };
 
@@ -188,7 +188,7 @@ joynrTestRequire(
                                                 + domain
                                                 + "/"
                                                 + provider.interfaceName
-                                                + " is missing: Operation:addFavouriteStation"));
+                                                + " is missing: Operation:addFavoriteStation"));
 
                                 });
 

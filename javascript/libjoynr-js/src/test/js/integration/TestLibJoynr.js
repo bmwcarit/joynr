@@ -175,7 +175,7 @@ joynrTestRequire("integration/TestLibJoynr", [
                 testMutability(radioProxy.isOn, "subscribe");
                 testMutability(radioProxy.isOn, "unsubscribe");
 
-                testMutability(radioProxy, "addFavouriteStation");
+                testMutability(radioProxy, "addFavoriteStation");
 
                 testMutability(radioProxy, "weakSignal");
                 testMutability(radioProxy.weakSignal, "subscribe");
@@ -198,9 +198,9 @@ joynrTestRequire("integration/TestLibJoynr", [
                 testMutability(radioProvider.isOn, "registerObserver");
                 testMutability(radioProvider.isOn, "unregisterObserver");
 
-                testMutability(radioProvider, "addFavouriteStation");
-                testMutability(radioProvider.addFavouriteStation, "registerOperation");
-                testMutability(radioProvider.addFavouriteStation, "callOperation");
+                testMutability(radioProvider, "addFavoriteStation");
+                testMutability(radioProvider.addFavoriteStation, "registerOperation");
+                testMutability(radioProvider.addFavoriteStation, "callOperation");
 
                 testMutability(radioProvider, "weakSignal");
                 testMutability(radioProvider.weakSignal, "valueChanged");

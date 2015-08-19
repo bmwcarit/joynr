@@ -141,8 +141,8 @@ joynrTestRequire(
                             expect(radioProxy.isOn).toBeDefined();
                             expect(radioProxy.isOn instanceof ProxyAttributeNotifyReadWrite)
                                     .toBeTruthy();
-                            expect(radioProxy.addFavouriteStation).toBeDefined();
-                            expect(typeof radioProxy.addFavouriteStation === "function")
+                            expect(radioProxy.addFavoriteStation).toBeDefined();
+                            expect(typeof radioProxy.addFavoriteStation === "function")
                                     .toBeTruthy();
                             expect(radioProxy.weakSignal).toBeDefined();
                             expect(radioProxy.weakSignal instanceof ProxyEvent).toBeTruthy();

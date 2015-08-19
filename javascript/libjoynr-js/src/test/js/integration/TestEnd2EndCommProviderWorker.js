@@ -132,7 +132,7 @@ function initializeTest(provisioningSuffix, providedDomain) {
             });
 
             // register operation functions
-            radioProvider.addFavouriteStation.registerOperation(function(opArgs) {
+            radioProvider.addFavoriteStation.registerOperation(function(opArgs) {
                 // retrieve radioStation name for both overloaded version
                 var name = opArgs.radioStation.name || opArgs.radioStation;
                 // returns true if radiostation name contains the string "true"

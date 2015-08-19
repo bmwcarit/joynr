@@ -390,7 +390,7 @@ joynrTestRequire(
                             var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
 
                             runs(function() {
-                                radioProxy.addFavouriteStation({
+                                radioProxy.addFavoriteStation({
                                     radioStation : 'stringStation'
                                 }).then(onFulfilledSpy).catch(IntegrationUtils.outputPromiseError);
                             });
@@ -408,7 +408,7 @@ joynrTestRequire(
                             var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
 
                             runs(function() {
-                                radioProxy.addFavouriteStation({
+                                radioProxy.addFavoriteStation({
                                     radioStation : new RadioStation({
                                         name : 'typedStation'
                                     })
@@ -428,19 +428,19 @@ joynrTestRequire(
                                 "can call an operation with working parameters and return type",
                                 function() {
                                     testOperationArgumentsAndReturnValue(
-                                            radioProxy.addFavouriteStation,
+                                            radioProxy.addFavoriteStation,
                                             {
                                                 radioStation : "truelyContainingTheString\"True\""
                                             },
                                             true);
                                     testOperationArgumentsAndReturnValue(
-                                            radioProxy.addFavouriteStation,
+                                            radioProxy.addFavoriteStation,
                                             {
                                                 radioStation : "This is false!"
                                             },
                                             false);
                                     testOperationArgumentsAndReturnValue(
-                                            radioProxy.addFavouriteStation,
+                                            radioProxy.addFavoriteStation,
                                             {
                                                 radioStation : new RadioStation(
                                                         {
@@ -449,7 +449,7 @@ joynrTestRequire(
                                             },
                                             true);
                                     testOperationArgumentsAndReturnValue(
-                                            radioProxy.addFavouriteStation,
+                                            radioProxy.addFavoriteStation,
                                             {
                                                 radioStation : new RadioStation({
                                                     name : "This is a false RadioStation!"

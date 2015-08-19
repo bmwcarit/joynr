@@ -44,16 +44,16 @@ var runDemo = function(radioProxy, onDone) {
         prettyLog("radioProxy.numberOfStations.get.fail: " + error);
     }).then(function(value) {
         prettyLog("radioProxy.numberOfStations.get.done: " + value);
-        return radioProxy.addFavouriteStation({
-            radioStation : "runDemoFavouriteStation"
+        return radioProxy.addFavoriteStation({
+            radioStation : "runDemoFavoriteStation"
         });
     }).fail(function(error) {
-        prettyLog("radioProxy.addFavouriteStation(" + JSON.stringify({
-            radioStation : "runDemoFavouriteStation"
+        prettyLog("radioProxy.addFavoriteStation(" + JSON.stringify({
+            radioStation : "runDemoFavoriteStation"
         }) + ").fail: " + error);
     }).then(function(value) {
-        prettyLog("radioProxy.addFavouriteStation(" + JSON.stringify({
-            radioStation : "runDemoFavouriteStation"
+        prettyLog("radioProxy.addFavoriteStation(" + JSON.stringify({
+            radioStation : "runDemoFavoriteStation"
         }) + ").done. Return value of operation from provider: " + JSON.stringify(value));
         return radioProxy.numberOfStations.get();
     }).fail(function(error) {
@@ -128,16 +128,16 @@ var runInteractiveConsole =
                     description : "get value for isOn",
                     options : {}
                 },
-                ADD_FAVOURITE_STATION : {
+                ADD_FAVORITE_STATION : {
                     value : "addFavStation",
-                    description : "add a Favourite Station",
+                    description : "add a Favorite Station",
                     options : {
                         NAME : "name"
                     }
                 },
                 GET_NUM_STATIONS : {
                     value : "getNumStations",
-                    description : "get the number of favourite stations",
+                    description : "get the number of favorite stations",
                     options : {}
                 },
                 SUBSCRIBE : {
@@ -190,22 +190,22 @@ var runInteractiveConsole =
                             prettyLog("radioProxy.isOn.get.fail: " + error);
                         });
                         break;
-                    case MODES.ADD_FAVOURITE_STATION.value:
+                    case MODES.ADD_FAVORITE_STATION.value:
                         if (!input[1]) {
                             log("please define a name");
                         } else {
                             var operationArguments = {
                                 radioStation : input[1]
                             };
-                            radioProxy.addFavouriteStation(operationArguments).done(
+                            radioProxy.addFavoriteStation(operationArguments).done(
                                     function(returnValue) {
-                                        log("radioProxy.addFavouriteStation("
+                                        log("radioProxy.addFavoriteStation("
                                             + JSON.stringify(operationArguments)
                                             + ").done. Return value of operation from provider: "
                                             + JSON.stringify(returnValue));
                                     }).fail(
                                     function(error) {
-                                        log("radioProxy.addFavouriteStation("
+                                        log("radioProxy.addFavoriteStation("
                                             + JSON.stringify(operationArguments)
                                             + ").fail: "
                                             + error);

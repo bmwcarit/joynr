@@ -24,13 +24,13 @@ var error = require("./logging.js").error;
 
 var isOn = false;
 var currentStationIndex = 0;
-var favouriteStations = ["station1", "station2", "station3"];
+var favoriteStations = ["station1", "station2", "station3"];
 var numberOfStations = 0;
 var myRadioProvider;
 
 var numberOfStationChanged = function() {
     if(typeof myRadioProvider === "object") {
-        myRadioProvider.numberOfStations.valueChanged(parseInt(numberOfStations, 10) + favouriteStations.length);
+        myRadioProvider.numberOfStations.valueChanged(parseInt(numberOfStations, 10) + favoriteStations.length);
     } else {
         error("radioProvider.numberOfStationChanged() called but instance of radioProvider not set. Call setProvider(...) first.");
     }
@@ -54,21 +54,21 @@ exports.implementation = {
     currentStation : {
         get : function() {
             prettyLog("radioProvider.currentStation.get() called");
-            return favouriteStations[currentStationIndex];
+            return favoriteStations[currentStationIndex];
         }
     },
     numberOfStations : {
         get : function() {
             prettyLog("radioProvider.numberOfStations.get() called");
-            return parseInt(numberOfStations, 10) + favouriteStations.length;
+            return parseInt(numberOfStations, 10) + favoriteStations.length;
         },
         set : function(value) {
             prettyLog("radioProvider.numberOfStations.set(" + value + ") called");
             numberOfStations = value;
         }
     },
-    addFavouriteStation : function(opArgs) {
-        prettyLog("radioProvider.addFavouriteStation(" + JSON.stringify(opArgs)
+    addFavoriteStation : function(opArgs) {
+        prettyLog("radioProvider.addFavoriteStation(" + JSON.stringify(opArgs)
                 + ") called");
 
         if (opArgs === undefined) {
@@ -77,12 +77,12 @@ exports.implementation = {
         if (opArgs.radioStation === undefined) {
             prettyLog("operation argument \"radioStation\" is undefined!");
         }
-        favouriteStations.push(opArgs.radioStation);
+        favoriteStations.push(opArgs.radioStation);
         numberOfStationChanged();
         return false;
     },
-    addFavouriteStationList : function(opArgs) {
-        prettyLog("radioProvider.addFavouriteStationList(" + JSON.stringify(opArgs)
+    addFavoriteStationList : function(opArgs) {
+        prettyLog("radioProvider.addFavoriteStationList(" + JSON.stringify(opArgs)
                 + ") called");
         return false;
     },
@@ -90,7 +90,7 @@ exports.implementation = {
         prettyLog("radioProvider.shuffleStations(" + JSON.stringify(opArgs)
                 + ") called");
         currentStationIndex++;
-        currentStationIndex %= favouriteStations.length;
+        currentStationIndex %= favoriteStations.length;
         return false;
     }
 };

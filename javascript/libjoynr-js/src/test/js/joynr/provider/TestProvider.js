@@ -99,7 +99,7 @@ joynrTestRequire("joynr/provider/TestProvider", [
                         this.value = newValue;
                     }
                 },
-                addFavouriteStation : jasmine.createSpy("addFavouriteStation"),
+                addFavoriteStation : jasmine.createSpy("addFavoriteStation"),
                 weakSignal : jasmine.createSpy("weakSignal"),
                 methodProvidedImpl : jasmine.createSpy("methodProvidedImpl")
             };
@@ -160,7 +160,7 @@ joynrTestRequire("joynr/provider/TestProvider", [
 
                     expect(function() {
                         var radioProvider = new RadioProvider({
-                            addFavouriteStation : function(opArgs) {
+                            addFavoriteStation : function(opArgs) {
                                 return true;
                             }
                         }, dependencies);
@@ -179,8 +179,8 @@ joynrTestRequire("joynr/provider/TestProvider", [
             var radioProvider = new RadioProvider({}, dependencies);
             expect(radioProvider.isOn).toBeDefined();
             expect(radioProvider.isOn instanceof ProviderAttributeNotifyReadWrite).toBeTruthy();
-            expect(radioProvider.addFavouriteStation).toBeDefined();
-            expect(radioProvider.addFavouriteStation instanceof ProviderOperation).toBeTruthy();
+            expect(radioProvider.addFavoriteStation).toBeDefined();
+            expect(radioProvider.addFavoriteStation instanceof ProviderOperation).toBeTruthy();
             expect(radioProvider.weakSignal).toBeDefined();
             expect(radioProvider.weakSignal instanceof ProviderEvent).toBeTruthy();
             expect(radioProvider.interfaceName).toBeDefined();
@@ -195,7 +195,7 @@ joynrTestRequire("joynr/provider/TestProvider", [
         });
 
         it("RadioProvider recognizes an incorrect implementation", function() {
-            delete implementation.addFavouriteStation;
+            delete implementation.addFavoriteStation;
             var radioProvider = new RadioProvider(implementation, dependencies);
             expect(radioProvider.checkImplementation).toBeDefined();
             expect(radioProvider.checkImplementation()).toBeTruthy();
@@ -220,7 +220,7 @@ joynrTestRequire("joynr/provider/TestProvider", [
 
         it("RadioProvider recognizes multiple missing implementation functions", function() {
             delete implementation.isOn.get;
-            delete implementation.addFavouriteStation;
+            delete implementation.addFavoriteStation;
             var radioProvider = new RadioProvider(implementation, dependencies);
             expect(radioProvider.checkImplementation).toBeDefined();
             expect(radioProvider.checkImplementation()).toBeTruthy();

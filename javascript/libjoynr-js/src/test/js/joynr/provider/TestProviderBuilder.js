@@ -68,7 +68,7 @@ joynrTestRequire("joynr/provider/TestProviderBuilder", [
                         this.value = newValue;
                     }
                 },
-                addFavouriteStation : jasmine.createSpy("addFavouriteStation"),
+                addFavoriteStation : jasmine.createSpy("addFavoriteStation"),
                 weakSignal : jasmine.createSpy("weakSignal"),
                 methodProvidedImpl : jasmine.createSpy("methodProvidedImpl")
             };
@@ -86,8 +86,8 @@ joynrTestRequire("joynr/provider/TestProviderBuilder", [
             expect(radioProvider instanceof RadioProvider).toBeTruthy();
             expect(radioProvider.interfaceName).toBeDefined();
             expect(radioProvider.isOn).toBeDefined();
-            expect(radioProvider.addFavouriteStation).toBeDefined();
-            expect(radioProvider.addFavouriteStation instanceof ProviderOperation).toBeTruthy();
+            expect(radioProvider.addFavoriteStation).toBeDefined();
+            expect(radioProvider.addFavoriteStation instanceof ProviderOperation).toBeTruthy();
 
         });
 

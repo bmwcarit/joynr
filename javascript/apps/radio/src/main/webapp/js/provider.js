@@ -36,7 +36,7 @@ function showCurrentStationInHtml(radioStation) {
     $("input#txtCurrentStationCountry").val(radioStation.country);
 }
 
-function showFavouriteStationsInHtml(radioStations) {
+function showFavoriteStationsInHtml(radioStations) {
     var i;
     var stationsString = "";
     for (i = 0; i < radioStations.length; i++) {
@@ -47,7 +47,7 @@ function showFavouriteStationsInHtml(radioStations) {
         stationsString += " | TrafficService: " + radioStations[i].trafficService;
         stationsString += " | Country: " + radioStations[i].country;
     }
-    $("textarea#txtFavouriteStations").val(stationsString);
+    $("textarea#txtFavoriteStations").val(stationsString);
 }
 
 var joynr;
@@ -102,27 +102,27 @@ var RadioProviderImpl =
                 }
             };
 
-            this.addFavouriteStation =
+            this.addFavoriteStation =
                     function(opArgs) {
-                        log("radioProvider.addFavouriteStation", "called with args: "
+                        log("radioProvider.addFavoriteStation", "called with args: "
                             + JSON.stringify(opArgs));
 
                         if (opArgs === undefined) {
                             log(
-                                    "radioProvider.addFavouriteStation",
+                                    "radioProvider.addFavoriteStation",
                                     "operation arguments is undefined!");
                             return;
                         }
-                        if (opArgs.newFavouriteStation === undefined) {
+                        if (opArgs.newFavoriteStation === undefined) {
                             log(
-                                    "radioProvider.addFavouriteStation",
-                                    "operation argument \"newFavouriteStation\" is undefined!");
+                                    "radioProvider.addFavoriteStation",
+                                    "operation argument \"newFavoriteStation\" is undefined!");
                             return;
                         }
 
-                        stationsList.push(opArgs.newFavouriteStation);
+                        stationsList.push(opArgs.newFavoriteStation);
 
-                        showFavouriteStationsInHtml(stationsList);
+                        showFavoriteStationsInHtml(stationsList);
                         return true;
                     };
 
@@ -151,8 +151,8 @@ var RadioProviderImpl =
                     // fill current station into fields
             showCurrentStationInHtml(stationsList[currentStationIndex]);
 
-            // fill favourite stations into textarea
-            showFavouriteStationsInHtml(stationsList);
+            // fill favorite stations into textarea
+            showFavoriteStationsInHtml(stationsList);
         };
 
 $(function() { // DOM ready
@@ -232,10 +232,10 @@ $(function() { // DOM ready
         $("input#btnShuffleStations").click(function() {
             radioProviderImpl.shuffleStations();
         });
-        $("input#btnAddFavouriteStation").click(function() {
-            radioProviderImpl.addFavouriteStation({
-                newFavouriteStation : new RadioStation({
-                    name : $("input#txtNewFavouriteStationName").val(),
+        $("input#btnAddFavoriteStation").click(function() {
+            radioProviderImpl.addFavoriteStation({
+                newFavoriteStation : new RadioStation({
+                    name : $("input#txtNewFavoriteStationName").val(),
                     trafficService : $("select#slctTrafficService").val() === "true",
                     country : $("select#slctCountry").val()
                 })

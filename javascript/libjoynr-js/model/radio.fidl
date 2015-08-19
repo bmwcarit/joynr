@@ -43,7 +43,7 @@ interface Radio  {
 	/**
 	 * An operation with return value and parameters.
 	 */
-	method addFavouriteStation {
+	method addFavoriteStation {
 		in {
 			String radioStation
 		}
@@ -51,7 +51,7 @@ interface Radio  {
 			Boolean returnValue
 		}
 	}
-	method addFavouriteStation {
+	method addFavoriteStation {
 		in {
 			radiotypes.RadioStation radioStation
 		}

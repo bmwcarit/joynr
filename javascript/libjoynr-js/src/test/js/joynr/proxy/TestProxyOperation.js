@@ -52,7 +52,7 @@ joynrTestRequire(
                     "libjoynr-js.joynr.proxy.ProxyOperation",
                     function() {
 
-                        var addFavouriteStation;
+                        var addFavoriteStation;
                         var operationName;
                         var proxyParticipantId;
                         var providerParticipantId;
@@ -91,12 +91,12 @@ joynrTestRequire(
                                 providerParticipantId : providerParticipantId
                             };
 
-                            addFavouriteStation = new ProxyOperation(proxy, {
+                            addFavoriteStation = new ProxyOperation(proxy, {
                                 dependencies : {
                                     requestReplyManager : requestReplyManagerSpy
                                 }
 
-                            }, "addFavouriteStation", [
+                            }, "addFavoriteStation", [
                                 [ {
                                     name : "radioStation",
                                     type : 'joynr.vehicle.radiotypes.RadioStation'
@@ -112,8 +112,8 @@ joynrTestRequire(
                         });
 
                         it("is of correct type", function() {
-                            expect(addFavouriteStation).toBeDefined();
-                            expect(typeof addFavouriteStation === "function").toBeTruthy();
+                            expect(addFavoriteStation).toBeDefined();
+                            expect(typeof addFavoriteStation === "function").toBeTruthy();
                         });
 
                         it(
@@ -125,7 +125,7 @@ joynrTestRequire(
                                     ]);
 
                                     runs(function() {
-                                        addFavouriteStation({
+                                        addFavoriteStation({
                                             "nonexistingArgument" : "value"
                                         }).then(spy.onFulfilled).catch(spy.onRejected);
                                     });
@@ -150,7 +150,7 @@ joynrTestRequire(
                                     ]);
 
                                     runs(function() {
-                                        addFavouriteStation({
+                                        addFavoriteStation({
                                             "radioStation" : 1
                                         }).then(spy.onFulfilled).catch(spy.onRejected);
                                     });
@@ -179,7 +179,7 @@ joynrTestRequire(
                                     ]);
 
                                     runs(function() {
-                                        addFavouriteStation({
+                                        addFavoriteStation({
                                             "radioStation" : radioStation
                                         }).then(spy.onFulfilled).catch(spy.onRejected);
                                     });
@@ -205,7 +205,7 @@ joynrTestRequire(
                                     ]);
 
                                     runs(function() {
-                                        addFavouriteStation({
+                                        addFavoriteStation({
                                             "radioStation" : "correctValue"
                                         }).then(spy.onFulfilled).catch(spy.onRejected);
                                     });
@@ -231,7 +231,7 @@ joynrTestRequire(
                                     ]);
 
                                     runs(function() {
-                                        addFavouriteStation({
+                                        addFavoriteStation({
                                             "radioStation" : radioStation
                                         }).then(spy.onFulfilled).catch(spy.onRejected);
                                     });
@@ -252,7 +252,7 @@ joynrTestRequire(
                             ]);
 
                             runs(function() {
-                                addFavouriteStation({
+                                addFavoriteStation({
                                     "radioStation" : "stringStation"
                                 }).then(spy.onFulfilled).catch(spy.onRejected).catch(outputPromiseError);
                             });
@@ -273,7 +273,7 @@ joynrTestRequire(
                             ]);
 
                             runs(function() {
-                                addFavouriteStation(operationArguments).then(
+                                addFavoriteStation(operationArguments).then(
                                         spy.onFulfilled).catch(spy.onRejected).catch(outputPromiseError);
                             });
 
@@ -341,27 +341,27 @@ joynrTestRequire(
                                 "does not throw when giving wrong or nullable operation arguments",
                                 function() {
                                     expect(function() {
-                                        addFavouriteStation({
+                                        addFavoriteStation({
                                             radioStation : "myRadioStation"
                                         });
                                     }).not.toThrow();
 
                                     expect(function() {
-                                        addFavouriteStation({
+                                        addFavoriteStation({
                                             radioStation : undefined
                                         });
                                     }).not.toThrow();
 
                                     expect(function() {
-                                        addFavouriteStation({});
+                                        addFavoriteStation({});
                                     }).not.toThrow();
 
                                     expect(function() {
-                                        addFavouriteStation(undefined);
+                                        addFavoriteStation(undefined);
                                     }).not.toThrow();
 
                                     expect(function() {
-                                        addFavouriteStation(null);
+                                        addFavoriteStation(null);
                                     }).not.toThrow();
                                 });
 

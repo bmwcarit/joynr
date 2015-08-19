@@ -355,7 +355,7 @@ joynrTestRequire(
                                     });
 
                                     // register operation functions
-                                    radioProvider.addFavouriteStation.registerOperation(function(
+                                    radioProvider.addFavoriteStation.registerOperation(function(
                                             opArgs) {
                                         return true;
                                     });
@@ -452,7 +452,7 @@ joynrTestRequire(
                                     runs(function() {
                                         expect(proxyResolved).toBeTruthy();
                                         proxyResolved = undefined;
-                                        radioProxy.addFavouriteStation({
+                                        radioProxy.addFavoriteStation({
                                             radioStation : "radioStation"
                                         }).then(
                                                 function(result) {
@@ -557,7 +557,7 @@ joynrTestRequire(
                                     runs(function() {
                                         expect(proxyResolved).toBeTruthy();
                                         proxyResolved = undefined;
-                                        radioProxy.addFavouriteStation({
+                                        radioProxy.addFavoriteStation({
                                             radioStation : "radioStation"
                                         }).then(
                                                 function(result) {

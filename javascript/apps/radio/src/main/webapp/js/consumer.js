@@ -151,24 +151,24 @@ function registerMethodHandlers(radioProxy) {
         });
     });
 
-    $("input#btnAddFavouriteStation").click(function() {
+    $("input#btnAddFavoriteStation").click(function() {
         var operationArguments = {
-            newFavouriteStation : new RadioStation({
-                name : $("input#txtNewFavouriteStationName").val(),
+            newFavoriteStation : new RadioStation({
+                name : $("input#txtNewFavoriteStationName").val(),
                 trafficService : $("select#slctTrafficService").val() === "true",
                 country : $("select#slctCountry").val()
             })
         };
 
-        radioProxy.addFavouriteStation(operationArguments).then(function(success) {
+        radioProxy.addFavoriteStation(operationArguments).then(function(success) {
             log(
-                    "radioProxy.addFavouriteStation.done",
+                    "radioProxy.addFavoriteStation.done",
                     JSON.stringify(operationArguments) + " -> " + JSON.stringify(success)
             );
-            $("input#txtAddFavouriteStationSuccess").val(JSON.stringify(success));
+            $("input#txtAddFavoriteStationSuccess").val(JSON.stringify(success));
         }).catch(function(error) {
             log(
-                    "radioProxy.addFavouriteStation.fail",
+                    "radioProxy.addFavoriteStation.fail",
                     JSON.stringify(operationArguments) + " ERROR: " + error
             );
         });
@@ -378,7 +378,7 @@ $(function() { // DOM ready
             $("input#btnCurrentStationSubscribeOnChangeWithKeepAlive").attr("disabled", false);
             $("input#btnCurrentStationGet").attr("disabled", false);
             $("input#btnShuffleStations").attr("disabled", false);
-            $("input#btnAddFavouriteStation").attr("disabled", false);
+            $("input#btnAddFavoriteStation").attr("disabled", false);
             $("input#btnSubscribeToWeakSignal").attr("disabled", false);
             $("input#btnSubscribeToNewStationDiscoveredSignal").attr("disabled", false);
          });
