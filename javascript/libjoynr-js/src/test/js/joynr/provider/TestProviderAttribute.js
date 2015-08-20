@@ -458,7 +458,7 @@ joynrTestRequire(
                             }
                         });
 
-                        it("notifies observer whenn calling set with new value", function() {
+                        it("notifies observer when calling set with new value", function() {
                             var i, spy1, spy2, attribute, func1, func2, value;
 
                             for (i = 0; i < allNotifyAttributes.length; ++i) {
@@ -515,49 +515,47 @@ joynrTestRequire(
                             }
                         });
 
-                        it(
-                                "doesn't notify observer whenn calling set with same values",
-                                function() {
-                                    var i, spy1, spy2, attribute, func1, func2, value;
+                        it("doesn't notify observer when calling set with same values", function() {
+                            var i, spy1, spy2, attribute, func1, func2, value;
 
-                                    for (i = 0; i < allNotifyAttributes.length; ++i) {
-                                        attribute = allNotifyAttributes[i];
-                                        if (attribute.set) {
-                                            spy1 = jasmine.createSpy("spy1");
-                                            spy2 = jasmine.createSpy("spy2");
+                            for (i = 0; i < allNotifyAttributes.length; ++i) {
+                                attribute = allNotifyAttributes[i];
+                                if (attribute.set) {
+                                    spy1 = jasmine.createSpy("spy1");
+                                    spy2 = jasmine.createSpy("spy2");
 
-                                            func1 = buildObserver(spy1);
-                                            func2 = buildObserver(spy2);
+                                    func1 = buildObserver(spy1);
+                                    func2 = buildObserver(spy2);
 
-                                            attribute.registerObserver(func1);
-                                            attribute.registerObserver(func2);
+                                    attribute.registerObserver(func1);
+                                    attribute.registerObserver(func2);
 
-                                            expect(spy1).not.toHaveBeenCalled();
-                                            expect(spy2).not.toHaveBeenCalled();
+                                    expect(spy1).not.toHaveBeenCalled();
+                                    expect(spy2).not.toHaveBeenCalled();
 
-                                            value = {
-                                                key : "value",
-                                                1 : 1,
-                                                object : {}
-                                            };
-                                            attribute.set(value);
+                                    value = {
+                                        key : "value",
+                                        1 : 1,
+                                        object : {}
+                                    };
+                                    attribute.set(value);
 
-                                            expect(spy1).toHaveBeenCalled();
-                                            expect(spy1).toHaveBeenCalledWith(value);
-                                            expect(spy2).toHaveBeenCalled();
-                                            expect(spy2).toHaveBeenCalledWith(value);
+                                    expect(spy1).toHaveBeenCalled();
+                                    expect(spy1).toHaveBeenCalledWith(value);
+                                    expect(spy2).toHaveBeenCalled();
+                                    expect(spy2).toHaveBeenCalledWith(value);
 
-                                            attribute.unregisterObserver(func2);
+                                    attribute.unregisterObserver(func2);
 
-                                            attribute.set(value);
+                                    attribute.set(value);
 
-                                            expect(spy1.callCount).toEqual(1);
-                                            expect(spy2.callCount).toEqual(1);
+                                    expect(spy1.callCount).toEqual(1);
+                                    expect(spy2.callCount).toEqual(1);
 
-                                            attribute.unregisterObserver(func1);
-                                        }
-                                    }
-                                });
+                                    attribute.unregisterObserver(func1);
+                                }
+                            }
+                        });
                     });
 
         }); // require
