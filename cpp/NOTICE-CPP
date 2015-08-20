@@ -21,6 +21,7 @@ This project has dependencies to:
 libQt5Core under GNU Lesser General Public License v2.1 (LGPL-2.1)
 libQt5WebSockets under GNU Lesser General Public License v2.1 (LGPL-2.1)
 libQt5Network under GNU Lesser General Public License v2.1 (LGPL-2.1)
+libQt5Sql under GNU Lesser General Public License v2.1 (LGPL-2.1)
 libqjson under GNU Lesser General Public License v2.1 (LGPL-2.1)
 liblog4qt under The Apache Software License, Version 2.0
 libcurl under The curl license
