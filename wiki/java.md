@@ -64,6 +64,7 @@ The following base imports are required for a Java Consumer application:
 ```java
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
+import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.exceptions.JoynrArbitrationException;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -191,9 +192,7 @@ discoveryQos.setArbitrationStrategy(ArbitrationStrategy.HighestPriority); // def
 discoveryQos.addCustomParameter(key, value); // optional, default none
 discoveryQos.setProviderMustSupportOnChange(true); // optional, default false
 discoveryQos.setRetryInterval(1000); // optional, default 1000
-// there is no setter for discoveryScope huh ???
-// Can only be set through some constructors though a default constructor exists as well
-// ... TODO
+discoveryQos.setDiscoveryScope(DiscoveryScope.LOCAL_AND_GLOBAL); // optional, default as stated
 ```
 
 ## The message quality of service
