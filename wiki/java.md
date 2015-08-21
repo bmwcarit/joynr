@@ -263,7 +263,7 @@ public void run() {
 ```
 
 In case of multiple return parameters the parameters will be wrapped into a class named
-<Method>Returned. Each parameter value is available through a public member variable inside this class.
+```<Method>Returned```. Each parameter value is available through a public member variable inside this class.
 
 Example:
 ```java
@@ -328,7 +328,7 @@ public void run() {
 ```
 
 In case of multiple return parameters the parameters will be wrapped into a class named
-<Method>Returned. Each parameter value is available through a public member variable inside this class.
+```<Method>Returned```. Each parameter value is available through a public member variable inside this class.
 ```java
 // for any Franca type named "<Type>" used
 import joynr.<Package>.<Type>;
