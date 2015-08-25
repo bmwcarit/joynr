@@ -80,10 +80,19 @@ option(
     "Use clang-formatter to format source code?"
     ON
 )
+
+option(
+    BUILD_CLUSTER_CONTROLLER
+    "Build ClusterController?"
+    ON
+)
+
+message(STATUS "option BUILD_CLUSTER_CONTROLLER=" ${BUILD_CLUSTER_CONTROLLER})
 message(STATUS "option ENABLE_CLANG_FORMATTER=" ${ENABLE_CLANG_FORMATTER})
 
 
 message(STATUS "############ VARIABLES ############")
+
 if(NOT DEFINED JOYNR_SERVER)
     set(JOYNR_SERVER "localhost:8080")
 endif(NOT DEFINED JOYNR_SERVER)
@@ -251,7 +260,7 @@ message(STATUS "variable CURL_INCLUDE_DIRS=" ${CURL_INCLUDE_DIRS})
 message(STATUS "variable CURL_LIBRARIES=" ${CURL_LIBRARIES})
 
 if(NOT CURL_FOUND)
-	message(FATAL_ERROR "Could not find library: curl.")
+    message(FATAL_ERROR "Could not find library: curl.")
 endif()
 
 include_directories(
@@ -376,7 +385,17 @@ endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 add_subdirectory(libs)
 add_subdirectory(common)
 add_subdirectory(libjoynr)
-add_subdirectory(cluster-controller)
+if(${BUILD_CLUSTER_CONTROLLER})
+    add_subdirectory(cluster-controller)
+else()
+    # We still use the websocket default configuration file
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cluster-controller/resources/default-websocket.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-websocket.settings)
+    install(
+        FILES
+            ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-websocket.settings
+        DESTINATION ${INSTALL_BIN_DIR}/resources/
+    )
+endif(${BUILD_CLUSTER_CONTROLLER})
 add_subdirectory(runtimes)
 if(${BUILD_TESTS})
     add_subdirectory(tests)
@@ -388,12 +407,19 @@ set(
     TARGET_LIBS
     JoynrCommon
     Joynr
-    JoynrClusterController
-    JoynrClusterControllerRuntime
     JoynrWsRuntime
     log4qt
     qjson
 )
+
+if(${BUILD_CLUSTER_CONTROLLER})
+    LIST(
+        APPEND
+        TARGET_LIBS
+        JoynrClusterController
+        JoynrClusterControllerRuntime
+    )
+endif(${BUILD_CLUSTER_CONTROLLER})
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     list(
@@ -426,11 +452,18 @@ set(
     JoynrConfig_LIBRARIES
     JoynrCommon
     Joynr
-    JoynrClusterController
-    JoynrClusterControllerRuntime
     qjson
     log4qt
 )
+
+if(${BUILD_CLUSTER_CONTROLLER})
+    LIST(
+        APPEND
+        JoynrConfig_LIBRARIES
+        JoynrClusterController
+        JoynrClusterControllerRuntime
+    )
+endif(${BUILD_CLUSTER_CONTROLLER})
 
 set(
     JoynrConfig_LIB_WS_LIBRARIES
@@ -455,19 +488,25 @@ endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 # ... for the build tree
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
-get_target_property(JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY JoynrClusterController PUBLIC_INCLUDE_DIRECTORY)
-get_target_property(JoynrClusterControllerRuntime_PUBLIC_INCLUDE_DIRECTORY JoynrClusterControllerRuntime PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(qjson_PUBLIC_INCLUDE_DIRECTORY qjson PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(log4qt_PUBLIC_INCLUDE_DIRECTORY log4qt PUBLIC_INCLUDE_DIRECTORY)
 set(
     JoynrConfig_INCLUDE_DIRS
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
-    ${JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY}
-    ${JoynrClusterControllerRuntime_PUBLIC_INCLUDE_DIRECTORY}
     ${qjson_PUBLIC_INCLUDE_DIRECTORY}
     ${log4qt_PUBLIC_INCLUDE_DIRECTORY}
 )
+if(${BUILD_CLUSTER_CONTROLLER})
+    get_target_property(JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY JoynrClusterController PUBLIC_INCLUDE_DIRECTORY)
+    get_target_property(JoynrClusterControllerRuntime_PUBLIC_INCLUDE_DIRECTORY JoynrClusterControllerRuntime PUBLIC_INCLUDE_DIRECTORY)
+    LIST(
+        APPEND
+        JoynrConfig_INCLUDE_DIRS
+        ${JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY}
+        ${JoynrClusterControllerRuntime_PUBLIC_INCLUDE_DIRECTORY}
+    )
+endif(${BUILD_CLUSTER_CONTROLLER})
 set(
     JoynrConfig_LIB_WS_INCLUDE_DIRS
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
