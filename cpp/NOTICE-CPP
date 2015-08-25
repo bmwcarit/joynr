@@ -33,7 +33,7 @@ libCommonAPI-DBus under Mozilla Public License Version 2.0
 
 Files in cpp/CMake/code-coverage under Boost Software License (BSL-1.0)
 libgtest under BSD 3-clause License (BSD-3-clause)
-ligbmock under BSD 3-clause License (BSD-3-clause)
+liggmock under BSD 3-clause License (BSD-3-clause)
 libQt5Test under GNU Lesser General Public License v2.1 (LGPL-2.1)
 org.genivi.commonapi:core under Mozilla Public License Version 2.0
 org.genivi.commonapi:dbus under Mozilla Public License Version 2.0
