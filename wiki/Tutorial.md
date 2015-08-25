@@ -7,6 +7,7 @@ joynr concepts:
 
 # Prerequisites
 If you haven't built joynr yet, please do so first:
+
 * [Building joynr Java](java_building_joynr.md) for the Java example only.
 * [Building joynr C++](cpp_building_joynr.md) for the C++ example.
 
