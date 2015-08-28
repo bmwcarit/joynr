@@ -54,7 +54,7 @@ class InterfaceProviderTemplate implements InterfaceTemplate{
 				if (!methodNameToIndex.containsKey(method.name)) {
 					methodNameToIndex.put(method.name, 0);
 				}
-				val methodSignature = createMethodSignature(method);
+				val methodSignature = createMethodSignatureFromOutParameters(method);
 				if (!uniqueMethodSignatureToPromiseName.containsKey(methodSignature)) {
 					var Integer index = methodNameToIndex.get(method.name);
 					index++;
@@ -62,7 +62,6 @@ class InterfaceProviderTemplate implements InterfaceTemplate{
 					uniqueMethodSignatureToPromiseName.put(methodSignature, method.name.toFirstUpper + index);
 					uniqueMethodsToCreateDeferreds.add(method);
 				}
-
 				methodToDeferredName.put(method, uniqueMethodSignatureToPromiseName.get(methodSignature) + "Deferred");
 			}
 		}

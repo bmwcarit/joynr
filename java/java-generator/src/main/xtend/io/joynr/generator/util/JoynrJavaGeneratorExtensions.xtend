@@ -27,8 +27,12 @@ import org.franca.core.franca.FInterface
 import org.franca.core.franca.FModelElement
 import org.franca.core.franca.FType
 import org.franca.core.franca.FMethod
+import io.joynr.generator.util.JavaTypeUtil
+import com.google.inject.Inject
+import java.util.HashMap
 
 class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
+	@Inject extension JavaTypeUtil
 
 	def buildPackagePath(FType datatype, String separator, boolean includeTypeCollection) {
 		if (datatype == null) {
@@ -120,6 +124,34 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 
 	def boolean hasErrorEnum(FMethod method) {
 		return (method.errors != null) || (method.errorEnum != null);
+	}
+
+	def methodToErrorEnumName(FInterface serviceInterface) {
+		var HashMap<FMethod, String> methodToErrorEnumName = new HashMap<FMethod, String>()
+		var uniqueMethodSignatureToErrorEnumName = new HashMap<String, String>();
+		var methodNameToCount = overloadedMethodCounts(getMethods(serviceInterface));
+		var methodNameToIndex = new HashMap<String, Integer>();
+
+		for (FMethod method : getMethods(serviceInterface)) {
+			if (methodNameToCount.get(method.name) == 1) {
+				// method not overloaded, so no index needed
+				methodToErrorEnumName.put(method, method.name.toFirstUpper + "ErrorEnum");
+			} else {
+				// initialize index if not existent
+				if (!methodNameToIndex.containsKey(method.name)) {
+					methodNameToIndex.put(method.name, 0);
+				}
+				val methodSignature = createMethodSignatureFromInParameters(method);
+				if (!uniqueMethodSignatureToErrorEnumName.containsKey(methodSignature)) {
+					var Integer index = methodNameToIndex.get(method.name);
+					index++;
+					methodNameToIndex.put(method.name, index);
+					uniqueMethodSignatureToErrorEnumName.put(methodSignature, method.name.toFirstUpper + index);
+				}
+				methodToErrorEnumName.put(method, uniqueMethodSignatureToErrorEnumName.get(methodSignature) + "ErrorEnum");
+			}
+		}
+		return methodToErrorEnumName
 	}
 
 	def boolean hasMethodWithArguments(FInterface interfaceType){

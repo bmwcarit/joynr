@@ -56,7 +56,7 @@ class InterfaceSyncTemplate implements InterfaceTemplate{
 					if (!indexForMethod.containsKey(method.name)) {
 						indexForMethod.put(method.name, 0);
 					}
-					val methodSignature = method.createMethodSignature;
+					val methodSignature = method.createMethodSignatureFromOutParameters;
 					if (!uniqueMultioutMethodSignatureToContainerNames.containsKey(methodSignature)) {
 						var Integer index = indexForMethod.get(method.name);
 						index++;

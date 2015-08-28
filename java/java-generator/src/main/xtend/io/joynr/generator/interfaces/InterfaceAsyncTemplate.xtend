@@ -64,7 +64,7 @@ class InterfaceAsyncTemplate implements InterfaceTemplate{
 					if (!indexForMethod.containsKey(method.name)) {
 						indexForMethod.put(method.name, 0);
 					}
-					val methodSignature = method.createMethodSignature;
+					val methodSignature = method.createMethodSignatureFromOutParameters;
 					if (!uniqueMultioutMethodSignatureToOutputContainerName.containsKey(methodSignature)) {
 						var Integer index = indexForMethod.get(method.name);
 						index++;
