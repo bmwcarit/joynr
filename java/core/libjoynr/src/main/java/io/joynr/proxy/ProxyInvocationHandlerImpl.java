@@ -49,6 +49,8 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
+import joynr.exceptions.ApplicationException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -102,8 +104,8 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
      * @see java.lang.reflect.InvocationHandler#invoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
      */
     @CheckForNull
-    private Object executeSyncMethod(Method method, Object[] args) throws IllegalArgumentException,
-                                                                  InterruptedException, Throwable {
+    private Object executeSyncMethod(Method method, Object[] args) throws ApplicationException,
+                                                                   JoynrRuntimeException {
 
         try {
             if (waitForConnectorFinished()) {
@@ -112,7 +114,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
                 }
                 return connector.executeSyncMethod(method, args);
             }
-        } catch (JoynrRuntimeException e) {
+        } catch (ApplicationException | JoynrRuntimeException e) {
             throw e;
 
         } catch (Throwable e) {

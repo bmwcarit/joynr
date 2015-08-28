@@ -62,6 +62,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.UUID;
 
+import joynr.exceptions.ApplicationException;
 import joynr.OnChangeSubscriptionQos;
 import joynr.Reply;
 import joynr.Request;
@@ -121,8 +122,14 @@ public class ProxyTest {
 
     private ProxyBuilderFactory proxyBuilderFactory;
 
+    private enum ApplicationErrors {
+        ERROR_VALUE_1, ERROR_VALUE_2, ERROR_VALUE_3
+    }
+
     public interface SyncTestInterface extends JoynrSyncInterface {
         String method1();
+
+        String methodWithApplicationError() throws ApplicationException;
     }
 
     public static class StringTypeRef extends TypeReference<String> {
@@ -221,7 +228,7 @@ public class ProxyTest {
     }
 
     @Test
-    public void createProxyAndCallSyncMethod() throws Exception {
+    public void createProxyAndCallSyncMethodSuccess() throws Exception {
         String requestReplyId = "createProxyAndCallSyncMethod_requestReplyId";
         Mockito.when(requestReplySender.sendSyncRequest(Mockito.<String> any(),
                                                         Mockito.<String> any(),
@@ -235,6 +242,30 @@ public class ProxyTest {
         String result = proxy.method1();
         Assert.assertEquals("Answer", result);
 
+    }
+
+    @Test
+    public void createProxyAndCallSyncMethodFailWithApplicationError() throws Exception {
+        String requestReplyId = "createProxyAndCallSyncMethod_requestReplyId";
+        Mockito.when(requestReplySender.sendSyncRequest(Mockito.<String> any(),
+                                                        Mockito.<String> any(),
+                                                        Mockito.<Request> any(),
+                                                        Mockito.<SynchronizedReplyCaller> any(),
+                                                        Mockito.anyLong()))
+               .thenReturn(new Reply(requestReplyId, new ApplicationException(ApplicationErrors.ERROR_VALUE_2,
+                                                                              "syncMethodCallApplicationException")));
+
+        ProxyBuilder<TestInterface> proxyBuilder = getProxyBuilder(TestInterface.class);
+        TestInterface proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        ApplicationException exception = null;
+        try {
+            proxy.methodWithApplicationError();
+            Assert.fail("Should throw ApplicationException");
+        } catch (ApplicationException e) {
+            exception = e;
+        }
+        Assert.assertEquals(new ApplicationException(ApplicationErrors.ERROR_VALUE_2,
+                                                     "syncMethodCallApplicationException"), exception);
     }
 
     @Test

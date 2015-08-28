@@ -26,6 +26,7 @@ import org.franca.core.franca.FCompoundType
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FModelElement
 import org.franca.core.franca.FType
+import org.franca.core.franca.FMethod
 
 class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 
@@ -106,6 +107,19 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 			}
 		}
 		return false
+	}
+
+	def boolean hasMethodWithErrorEnum(FInterface interfaceType) {
+		for (method : interfaceType.methods) {
+			if (method.errorEnum != null) {
+				return true;
+			}
+		}
+		return hasMethodWithImplicitErrorEnum(interfaceType);
+	}
+
+	def boolean hasErrorEnum(FMethod method) {
+		return (method.errors != null) || (method.errorEnum != null);
 	}
 
 	def boolean hasMethodWithArguments(FInterface interfaceType){

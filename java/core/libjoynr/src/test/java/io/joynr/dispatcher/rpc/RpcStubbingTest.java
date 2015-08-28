@@ -56,6 +56,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
+import joynr.exceptions.ApplicationException;
 import joynr.Reply;
 import joynr.Request;
 import joynr.types.localisation.GpsFixEnum;
@@ -220,9 +221,9 @@ public class RpcStubbingTest {
     }
 
     @Test
-    public void testWithoutArguments() throws IOException, JoynrSendBufferFullException, JoynrCommunicationException,
-                                      JoynrMessageNotSentException, SecurityException, InstantiationException,
-                                      IllegalAccessException, NoSuchMethodException {
+    public void testWithoutArguments() throws IOException, JoynrRuntimeException, SecurityException,
+                                      InstantiationException, IllegalAccessException, NoSuchMethodException,
+                                      ApplicationException {
         // Send
         String methodName = "noParamsNoReturnValue";
         Object result = connector.executeSyncMethod(TestSync.class.getDeclaredMethod(methodName, new Class<?>[]{}),
@@ -243,9 +244,8 @@ public class RpcStubbingTest {
     }
 
     @Test
-    public void testWithArguments() throws IOException, JoynrSendBufferFullException, JoynrCommunicationException,
-                                   JoynrMessageNotSentException, SecurityException, InstantiationException,
-                                   IllegalAccessException, NoSuchMethodException {
+    public void testWithArguments() throws IOException, JoynrRuntimeException, ApplicationException, SecurityException,
+                                   InstantiationException, IllegalAccessException, NoSuchMethodException {
         // Send
 
         String methodName = "takesTwoSimpleParams";
@@ -271,9 +271,8 @@ public class RpcStubbingTest {
     }
 
     @Test
-    public void testWithReturn() throws IOException, JoynrCommunicationException, JoynrSendBufferFullException,
-                                JoynrMessageNotSentException, SecurityException, InstantiationException,
-                                IllegalAccessException, NoSuchMethodException {
+    public void testWithReturn() throws IOException, JoynrRuntimeException, ApplicationException, SecurityException,
+                                InstantiationException, IllegalAccessException, NoSuchMethodException {
         // Send
         String methodName = "returnsGpsLocation";
         Object response = connector.executeSyncMethod(TestSync.class.getDeclaredMethod(methodName), new Object[]{});
@@ -292,9 +291,9 @@ public class RpcStubbingTest {
     }
 
     @Test
-    public void testWithListReturn() throws IOException, JoynrCommunicationException, JoynrSendBufferFullException,
-                                    JoynrMessageNotSentException, SecurityException, InstantiationException,
-                                    IllegalAccessException, NoSuchMethodException {
+    public void testWithListReturn() throws IOException, JoynrRuntimeException, ApplicationException,
+                                    SecurityException, InstantiationException, IllegalAccessException,
+                                    NoSuchMethodException {
         // Send
         String methodName = "returnsGpsLocationList";
         Object response = connector.executeSyncMethod(TestSync.class.getDeclaredMethod(methodName), new Object[]{});

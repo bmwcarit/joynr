@@ -22,9 +22,9 @@ package io.joynr.dispatcher.rpc;
 import io.joynr.dispatcher.RequestReplyDispatcher;
 import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.dispatcher.SynchronizedReplyCaller;
-import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ConnectorInvocationHandler;
@@ -43,6 +43,7 @@ import javax.annotation.CheckForNull;
 import joynr.MethodMetaInformation;
 import joynr.Reply;
 import joynr.Request;
+import joynr.exceptions.ApplicationException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -130,11 +131,10 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
 
     @CheckForNull
     @Override
-    public Object executeSyncMethod(Method method, Object[] args) throws JoynrCommunicationException,
-                                                                 JoynrSendBufferFullException,
-                                                                 JoynrMessageNotSentException, JsonGenerationException,
-                                                                 JsonMappingException, IOException,
-                                                                 InstantiationException, IllegalAccessException {
+    public Object executeSyncMethod(Method method, Object[] args) throws ApplicationException, JoynrRuntimeException,
+                                                                 JsonGenerationException, JsonMappingException,
+                                                                 IOException, InstantiationException,
+                                                                 IllegalAccessException {
 
         // TODO does a method with 0 args pass in an empty args array, or null for args?
         if (method == null) {
@@ -144,22 +144,28 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         MethodMetaInformation methodMetaInformation = JoynrMessagingConnectorFactory.ensureMethodMetaInformationPresent(method);
 
         Request request = new Request(method.getName(), args, method.getParameterTypes());
-        Reply response;
+        Reply reply;
         String requestReplyId = request.getRequestReplyId();
         SynchronizedReplyCaller synchronizedReplyCaller = new SynchronizedReplyCaller(fromParticipantId,
                                                                                       toParticipantId,
                                                                                       requestReplyId,
                                                                                       request);
         dispatcher.addReplyCaller(requestReplyId, synchronizedReplyCaller, qosSettings.getRoundTripTtl_ms());
-        response = (Reply) messageSender.sendSyncRequest(fromParticipantId,
-                                                         toParticipantId,
-                                                         request,
-                                                         synchronizedReplyCaller,
-                                                         qosSettings.getRoundTripTtl_ms());
-        if (method.getReturnType().equals(void.class)) {
-            return null;
+        reply = (Reply) messageSender.sendSyncRequest(fromParticipantId,
+                                                      toParticipantId,
+                                                      request,
+                                                      synchronizedReplyCaller,
+                                                      qosSettings.getRoundTripTtl_ms());
+        if (reply.getError() == null) {
+            if (method.getReturnType().equals(void.class)) {
+                return null;
+            }
+            return RpcUtils.reconstructReturnedObject(method, methodMetaInformation, reply.getResponse().toArray());
+        } else if (reply.getError() instanceof ApplicationException) {
+            throw (ApplicationException) reply.getError();
+        } else {
+            throw (JoynrRuntimeException) reply.getError();
         }
-        return RpcUtils.reconstructReturnedObject(method, methodMetaInformation, response.getResponse().toArray());
 
     }
 
