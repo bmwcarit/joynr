@@ -23,8 +23,12 @@
 #include <string>
 #include <stdint.h>
 #include <QtConcurrent/QtConcurrent>
-#include "tests/utils/MockObjects.h"
-#include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
+
+#include "systemintegration-tests/CombinedEnd2EndTest.h"
+#include "systemintegration-tests/TestConfiguration.h"
+#include "tests/utils/LibJoynrMockObjects.h"
+#include "joynr/JoynrRuntime.h"
+#include "joynr/LibjoynrSettings.h"
 #include "joynr/tests/testProxy.h"
 #include "joynr/tests/testTypes/QtDerivedStruct.h"
 #include "joynr/tests/testTypes/QtAnotherDerivedStruct.h"
@@ -35,13 +39,11 @@
 #include "joynr/CapabilitiesRegistrar.h"
 #include "utils/QThreadSleep.h"
 #include "PrettyPrint.h"
-#include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/Future.h"
-#include "joynr/SettingsMerger.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"
-#include "joynr/LocalChannelUrlDirectory.h"
+
 
 using namespace ::testing;
 using namespace joynr;
@@ -52,34 +54,13 @@ ACTION_P(ReleaseSemaphore,semaphore)
     semaphore->release(1);
 }
 
-
 static const QString messagingPropertiesPersistenceFileName1("CombinedEnd2EndTest-runtime1-joynr.settings");
 static const QString messagingPropertiesPersistenceFileName2("CombinedEnd2EndTest-runtime2-joynr.settings");
 
+joynr_logging::Logger* CombinedEnd2EndTest::logger =
+        joynr_logging::Logging::getInstance()->getLogger("MSG", "CombinedEnd2EndTest");
 
-/*
-  * This test tries to create two combined Runtimes and will test communication
-  * between the two Runtimes via HttpReceiver
-  *
-  */
-
-class CombinedEnd2EndTest : public Test {
-public:
-    types::QtProviderQos qRegisterMetaTypeQos; //this is necessary to force a qRegisterMetaType<types::QtProviderQos>(); during setup
-    types::QtCapabilityInformation qRegisterMetaTypeCi; //this is necessary to force a qRegisterMetaType<types::QtProviderQos>(); during setup
-    JoynrClusterControllerRuntime* runtime1;
-    JoynrClusterControllerRuntime* runtime2;
-    std::string registeredSubscriptionId;
-    QSettings settings1;
-    QSettings settings2;
-    MessagingSettings messagingSettings1;
-    MessagingSettings messagingSettings2;
-    std::string baseUuid;
-    std::string uuid;
-    std::string domainName;
-    QSemaphore semaphore;
-
-    CombinedEnd2EndTest() :
+CombinedEnd2EndTest::CombinedEnd2EndTest() :
         qRegisterMetaTypeQos(),
         qRegisterMetaTypeCi(),
         runtime1(NULL),
@@ -92,51 +73,57 @@ public:
         uuid( "_" + baseUuid.substr(1, baseUuid.length()-2)),
         domainName("cppCombinedEnd2EndTest_Domain" + uuid),
         semaphore(0)
-    {
-        messagingSettings1.setMessagingPropertiesPersistenceFilename(messagingPropertiesPersistenceFileName1);
-        messagingSettings2.setMessagingPropertiesPersistenceFilename(messagingPropertiesPersistenceFileName2);
+{
+    messagingSettings1.setMessagingPropertiesPersistenceFilename(messagingPropertiesPersistenceFileName1);
+    messagingSettings2.setMessagingPropertiesPersistenceFilename(messagingPropertiesPersistenceFileName2);
 
-        //This is a workaround to register the Metatypes for providerQos.
-        //Normally a new datatype is registered in all datatypes that use the new datatype.
-        //However, when receiving a datatype as a returnValue of a RPC, the constructor has never been called before
-        //so the datatype is not registered, and cannot be deserialized.
-        joynr::types::QtProviderQos a;
-        joynr__types__QtProviderQos b;
+    //This is a workaround to register the Metatypes for providerQos.
+    //Normally a new datatype is registered in all datatypes that use the new datatype.
+    //However, when receiving a datatype as a returnValue of a RPC, the constructor has never been called before
+    //so the datatype is not registered, and cannot be deserialized.
+    joynr::types::QtProviderQos a;
+    joynr__types__QtProviderQos b;
 //        qRegisterMetaType<types::QtProviderQos>("types::QtProviderQos");
 //        //TODO: also remove the variables qRegisterMetaTypeQos
 //        qRegisterMetaType<types__ProviderQos>("types__ProviderQos");
+}
 
-        QSettings* settings_1 = SettingsMerger::mergeSettings(QString("test-resources/SystemIntegrationTest1.settings"));
-        SettingsMerger::mergeSettings(QString("test-resources/libjoynrSystemIntegration1.settings"), settings_1);
-        runtime1 = new JoynrClusterControllerRuntime(NULL, settings_1);
-        QSettings* settings_2 = SettingsMerger::mergeSettings(QString("test-resources/SystemIntegrationTest2.settings"));
-        SettingsMerger::mergeSettings(QString("test-resources/libjoynrSystemIntegration2.settings"), settings_2);
-        runtime2 = new JoynrClusterControllerRuntime(NULL, settings_2);
+void CombinedEnd2EndTest::SetUp()
+{
+    LOG_DEBUG(logger, "SetUp() CombinedEnd2End");
+
+    // See if the test environment has overridden the configuration files
+    tests::Configuration& configuration = tests::Configuration::getInstance();
+    std::string systemSettingsFile = configuration.getDefaultSystemSettingsFile();
+    std::string websocketSettingsFile = configuration.getDefaultWebsocketSettingsFile();
+
+    LOG_DEBUG(logger, QString("Default system settings file: %1").arg(systemSettingsFile.c_str()));
+    LOG_DEBUG(logger, QString("Default websocket settings file: %1").arg(websocketSettingsFile.c_str()));
+
+    if (systemSettingsFile.empty() && websocketSettingsFile.empty()) {
+        runtime1 = JoynrRuntime::createRuntime("test-resources/libjoynrSystemIntegration1.settings",
+                                               "test-resources/SystemIntegrationTest1.settings");
+        runtime2= JoynrRuntime::createRuntime("test-resources/libjoynrSystemIntegration2.settings",
+                                              "test-resources/SystemIntegrationTest2.settings");
+    } else {
+        runtime1 = JoynrRuntime::createRuntime(systemSettingsFile, websocketSettingsFile);
+        runtime2 = JoynrRuntime::createRuntime(systemSettingsFile, websocketSettingsFile);
     }
+}
 
-    void SetUp() {
-        runtime1->start();
-        runtime2->start();
-    }
+void CombinedEnd2EndTest::TearDown()
+{
+    // Cause a shutdown by deleting the runtimes
+    delete runtime1;
+    delete runtime2;
 
-    void TearDown() {
-        bool deleteChannel = true;
-        runtime1->stop(deleteChannel);
-        runtime2->stop(deleteChannel);
+    // Delete the persisted participant ids so that each test uses different participant ids
+    QFile::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME());
+}
 
-        // Delete the persisted participant ids so that each test uses different participant ids
-        QFile::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME());
-    }
-
-    ~CombinedEnd2EndTest(){
-        delete runtime1;
-        delete runtime2;
-    }
-
-private:
-    DISALLOW_COPY_AND_ASSIGN(CombinedEnd2EndTest);
-
-};
+CombinedEnd2EndTest::~CombinedEnd2EndTest()
+{
+}
 
 TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
 
@@ -710,8 +697,8 @@ TEST_F(CombinedEnd2EndTest, deleteChannelViaReceiver) {
     std::shared_ptr<Future<int> > testFuture(testProxy->addNumbersAsync(1, 2, 3));
     testFuture->waitForFinished();
 
-    runtime1->deleteChannel();
-    runtime2->deleteChannel();
+    // runtime1->deleteChannel();
+    // runtime2->deleteChannel();
 
     std::shared_ptr<Future<int> > gpsFuture2(testProxy->addNumbersAsync(1, 2, 3));
     gpsFuture2->waitForFinished(1000);
@@ -719,104 +706,7 @@ TEST_F(CombinedEnd2EndTest, deleteChannelViaReceiver) {
     delete testProxyBuilder;
 }
 
-
-TEST_F(CombinedEnd2EndTest, channelUrlProxyGetsNoUrlOnNonRegisteredChannel) {
-    ProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>* channelUrlDirectoryProxyBuilder =
-            runtime1->createProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>(
-                TypeUtil::toStd(messagingSettings1.getDiscoveryDirectoriesDomain())
-            );
-
-    DiscoveryQos discoveryQos;
-    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    infrastructure::ChannelUrlDirectoryProxy* channelUrlDirectoryProxy
-            = channelUrlDirectoryProxyBuilder
-                ->setMessagingQos(MessagingQos(1000))
-                ->setCached(true)
-                ->setDiscoveryQos(discoveryQos)
-                ->build();
-
-    types::ChannelUrlInformation result;
-    std::string channelId("test");
-    RequestStatus status(channelUrlDirectoryProxy->getUrlsForChannel(result, channelId));
-    EXPECT_EQ(status.getCode(), RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE);
-}
-
-TEST_F(CombinedEnd2EndTest, channelUrlProxyRegistersUrlsCorrectly) {
-    ProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>* channelUrlDirectoryProxyBuilder =
-            runtime1->createProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>(
-                TypeUtil::toStd(messagingSettings1.getDiscoveryDirectoriesDomain())
-            );
-
-    DiscoveryQos discoveryQos;
-    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    infrastructure::ChannelUrlDirectoryProxy* channelUrlDirectoryProxy
-            = channelUrlDirectoryProxyBuilder
-                ->setMessagingQos(MessagingQos(20000))
-                ->setCached(true)
-                ->setDiscoveryQos(discoveryQos)
-                ->build();
-
-    // There is a race condition where the actual channel url can be set AFTER the dummy data
-    // used for testing. Pause for a short time so that the dummy data is always written
-    // last
-    QThreadSleep::msleep(2000);
-
-    // Register new channel URLs
-    std::string channelId = "bogus_1";
-    types::ChannelUrlInformation channelUrlInformation;
-    std::vector<std::string> urls = { "bogusTestUrl_1", "bogusTestUrl_2" };
-    channelUrlInformation.setUrls(urls);
-    RequestStatus status1(channelUrlDirectoryProxy->registerChannelUrls(
-                channelId,
-                channelUrlInformation));
-
-    EXPECT_TRUE(status1.successful()) << "Registering Url was not successful";
-    types::ChannelUrlInformation result;
-    RequestStatus status2(channelUrlDirectoryProxy->getUrlsForChannel(result, channelId));
-    EXPECT_TRUE(status2.successful())<< "Requesting Url was not successful";
-    EXPECT_EQ(channelUrlInformation,result) << "Returned Url did not match Expected Url";
-}
-
-
-
-// This test is disabled, because the feature is not yet implemented on the server.
-TEST_F(CombinedEnd2EndTest, DISABLED_channelUrlProxyUnRegistersUrlsCorrectly) {
-    ProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>* channelUrlDirectoryProxyBuilder =
-            runtime1->createProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>(
-                TypeUtil::toStd(messagingSettings1.getDiscoveryDirectoriesDomain())
-            );
-
-    DiscoveryQos discoveryQos;
-    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    infrastructure::ChannelUrlDirectoryProxy* channelUrlDirectoryProxy
-            = channelUrlDirectoryProxyBuilder
-                ->setMessagingQos(MessagingQos(10000))
-                ->setCached(true)
-                ->setDiscoveryQos(discoveryQos)
-                ->build();
-
-    std::string channelId = "bogus_3";
-    types::ChannelUrlInformation channelUrlInformation;
-    std::vector<std::string> urls = { "bogusTestUrl_1", "bogusTestUrl_2" };
-    channelUrlInformation.setUrls(urls);
-    RequestStatus status1(channelUrlDirectoryProxy->registerChannelUrls(channelId, channelUrlInformation));
-
-    EXPECT_TRUE(status1.successful());
-    types::ChannelUrlInformation result;
-    RequestStatus status2(channelUrlDirectoryProxy->getUrlsForChannel(result, channelId));
-    EXPECT_TRUE(status2.successful());
-    EXPECT_EQ(channelUrlInformation,result);
-
-    RequestStatus status3(channelUrlDirectoryProxy->unregisterChannelUrls(channelId));
-    EXPECT_TRUE(status3.successful());
-
-    types::ChannelUrlInformation result2;
-    RequestStatus status4(channelUrlDirectoryProxy->getUrlsForChannel(result2, channelId));
-    EXPECT_EQ(0,result2.getUrls().size());
-    EXPECT_FALSE(status4.successful());
-}
-
-tests::testProxy* createTestProxy(JoynrClusterControllerRuntime *runtime, const std::string& domainName){
+tests::testProxy* createTestProxy(JoynrRuntime *runtime, const std::string& domainName){
     ProxyBuilder<tests::testProxy>* testProxyBuilder
            = runtime->createProxyBuilder<tests::testProxy>(domainName);
    DiscoveryQos discoveryQos;
@@ -849,7 +739,7 @@ void subscribeToLocation(std::shared_ptr<ISubscriptionListener<types::Localisati
 }
 
 // A function that subscribes to a QtGpsPosition - to be run in a background thread
-void unsubscribeFromLocation(tests::testProxy* testProxy,
+static void unsubscribeFromLocation(tests::testProxy* testProxy,
                             std::string subscriptionId) {
     testProxy->unsubscribeFromLocation(subscriptionId);
 }
@@ -962,7 +852,8 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation_failure) {
                                                    ->build());
 
     // Shut down the provider
-    runtime1->stopMessaging();
+    //runtime1->stopMessaging();
+    runtime1->unregisterProvider(domainName, testProvider);
     QThreadSleep::msleep(5000);
 
     // Setup an onError callback function

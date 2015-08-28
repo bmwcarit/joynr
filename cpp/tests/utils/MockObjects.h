@@ -23,11 +23,11 @@
 #include <gmock/gmock.h>
 #include <memory>
 #include "PrettyPrint.h"
+#include "LibJoynrMockObjects.h"
 
 #include "cluster-controller/access-control/IAccessController.h"
 #include "cluster-controller/access-control/LocalDomainAccessController.h"
 #include "joynr/tests/DefaulttestProvider.h"
-#include "joynr/tests/testProvider.h"
 #include "joynr/tests/testRequestCaller.h"
 #include "joynr/vehicle/DefaultGpsProvider.h"
 #include "joynr/tests/TestLocationUpdateSelectiveBroadcastFilter.h"
@@ -283,28 +283,6 @@ public:
     MOCK_CONST_METHOD0_T(getType, QString());
 };
 
-// GMock doesn't support mocking variadic template functions directly.
-// Workaround: Mock exactly the functions with the number of arguments used in the tests.
-template <typename T>
-class MockSubscriptionListenerOneType : public joynr::ISubscriptionListener<T> {
-public:
-     MOCK_METHOD1_T(onReceive, void( const T& value));
-     MOCK_METHOD0(onError, void());
-};
-
-template <typename T1, typename T2, typename... Ts>
-class MockSubscriptionListenerTwoTypes : public joynr::ISubscriptionListener<T1, T2, Ts...> {
-public:
-     MOCK_METHOD2_T(onReceive, void( const T1& value1, const T2& value2, const Ts&... values));
-     MOCK_METHOD0(onError, void());
-};
-
-class MockGpsSubscriptionListener : public joynr::ISubscriptionListener<joynr::types::Localisation::GpsLocation> {
-public:
-    MOCK_METHOD1(onReceive, void(const joynr::types::Localisation::GpsLocation& value));
-    MOCK_METHOD0(onError, void());
-};
-
 class MockGpsFloatSubscriptionListener
         : public joynr::ISubscriptionListener<joynr::types::Localisation::GpsLocation, float> {
 public:
@@ -510,108 +488,6 @@ class MockGpsProvider : public joynr::vehicle::DefaultGpsProvider
 
     std::string getParticipantId() const{
         return "Fake_ParticipantId_vehicle/DefaultGpsProvider";
-    }
-};
-
-class MockTestProvider : public joynr::tests::DefaulttestProvider
-{
-public:
-    MockTestProvider() :
-        joynr::tests::DefaulttestProvider()
-    {
-        EXPECT_CALL(*this, getLocation(_))
-                .WillRepeatedly(testing::Invoke(this, &MockTestProvider::invokeOnSuccess));
-    }
-    MockTestProvider(joynr::types::ProviderQos qos) :
-        DefaulttestProvider()
-    {
-        providerQos = qos;
-        EXPECT_CALL(*this, getLocation(_))
-                .WillRepeatedly(testing::Invoke(this, &MockTestProvider::invokeOnSuccess));
-    }
-    ~MockTestProvider()
-    {
-    };
-
-    void invokeOnSuccess(std::function<void(const joynr::types::Localisation::GpsLocation&)> onSuccess) {
-        joynr::types::Localisation::GpsLocation location;
-        onSuccess(location);
-    }
-
-    void fireLocationUpdateSelective(const joynr::types::Localisation::GpsLocation& location) {
-        joynr::tests::testAbstractProvider::fireLocationUpdateSelective(location);
-    }
-
-    MOCK_METHOD1(
-            getLocation,
-            void(
-                    std::function<void(const joynr::types::Localisation::GpsLocation& result)> onSuccess
-            )
-    );
-    MOCK_METHOD2(
-            setLocation,
-            void(
-                    const joynr::types::Localisation::GpsLocation& gpsLocation,
-                    std::function<void()> onSuccess
-            )
-    );
-
-    void sumInts(
-            const std::vector<int32_t>& ints,
-            std::function<void(const int32_t& result)> onSuccess)
-    {
-        int32_t result = 0;
-        int32_t j;
-        foreach ( j, ints) {
-            result += j;
-        }
-        onSuccess(result);
-    }
-    void returnPrimeNumbers(
-            const int32_t &upperBound,
-            std::function<void(
-                const std::vector<int32_t>& result)> onSuccess)
-    {
-        std::vector<int32_t> result;
-        assert(upperBound<7);
-        result.clear();
-        result.push_back(2);
-        result.push_back(3);
-        result.push_back(5);
-        onSuccess(result);
-    }
-    void optimizeTrip(
-            const joynr::types::Localisation::Trip& input,
-            std::function<void(
-                const joynr::types::Localisation::Trip& result)> onSuccess)
-    {
-         onSuccess(input);
-    }
-    void optimizeLocationList(
-            const std::vector<joynr::types::Localisation::GpsLocation>& inputList,
-            std::function<void(
-                const std::vector<joynr::types::Localisation::GpsLocation>& result)> onSuccess)
-
-    {
-         onSuccess(inputList);
-    }
-
-    void overloadedOperation(
-            const joynr::tests::testTypes::DerivedStruct& input,
-            std::function<void(
-                const std::string& result)> onSuccess)
-    {
-        std::string result("QtDerivedStruct");
-        onSuccess(result);
-    }
-
-    void overloadedOperation(
-            const joynr::tests::testTypes::AnotherDerivedStruct& input,
-            std::function<void(
-                const std::string& result)> onSuccess)
-    {
-        std::string result("QtAnotherDerivedStruct");
-        onSuccess(result);
     }
 };
 
