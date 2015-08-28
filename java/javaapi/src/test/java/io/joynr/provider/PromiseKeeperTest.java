@@ -19,6 +19,7 @@ package io.joynr.provider;
  * #L%
  */
 
+import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrRuntimeException;
 
 import java.util.concurrent.ExecutorService;
@@ -107,7 +108,7 @@ public class PromiseKeeperTest {
                 deferred.reject(expectedError);
             }
         });
-        JoynrRuntimeException error = keeper.getError();
+        JoynrException error = keeper.getError();
 
         Assert.assertEquals(expectedError, error);
     }

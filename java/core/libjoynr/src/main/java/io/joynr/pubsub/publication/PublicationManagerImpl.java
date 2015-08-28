@@ -22,6 +22,7 @@ import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import io.joynr.dispatcher.Dispatcher;
 import io.joynr.dispatcher.RequestCaller;
 import io.joynr.dispatcher.rpc.ReflectionUtils;
+import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
@@ -541,7 +542,7 @@ public class PublicationManagerImpl implements PublicationManager {
         attributeGetterPromise.then(new PromiseListener() {
 
             @Override
-            public void onRejection(JoynrRuntimeException error) {
+            public void onRejection(JoynrException error) {
                 // TODO transmit application layer exception to proxy
 
             }

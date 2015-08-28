@@ -20,7 +20,7 @@ package io.joynr.dispatcher.rpc;
  */
 
 import io.joynr.dispatcher.RequestCaller;
-import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.exceptions.JoynrException;
 import io.joynr.provider.AbstractDeferred;
 import io.joynr.provider.Promise;
 import io.joynr.provider.PromiseListener;
@@ -66,7 +66,7 @@ public class RequestInterpreter {
         promise.then(new PromiseListener() {
 
             @Override
-            public void onRejection(JoynrRuntimeException error) {
+            public void onRejection(JoynrException error) {
                 callback.onFailure(error);
             }
 

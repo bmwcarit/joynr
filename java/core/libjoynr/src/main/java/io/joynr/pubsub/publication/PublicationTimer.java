@@ -20,8 +20,8 @@ package io.joynr.pubsub.publication;
  */
 
 import io.joynr.dispatcher.RequestCaller;
+import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
-import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.provider.Promise;
 import io.joynr.provider.PromiseListener;
@@ -117,7 +117,7 @@ public class PublicationTimer extends PubSubTimerBase {
                     attributeGetterPromise.then(new PromiseListener() {
 
                         @Override
-                        public void onRejection(JoynrRuntimeException error) {
+                        public void onRejection(JoynrException error) {
                             // TODO Auto-generated method stub
 
                         }
