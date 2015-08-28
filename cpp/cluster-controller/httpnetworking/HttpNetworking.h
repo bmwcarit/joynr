@@ -150,6 +150,18 @@ class JOYNRCLUSTERCONTROLLER_EXPORT ICurlHandlePool
 public:
     virtual void* getHandle(const QString& url) = 0;
     virtual void returnHandle(void* handle) = 0;
+
+    /**
+     * Delete handle e.g if an error occurs
+     * @param handle The handle to delete
+     */
+    virtual void deleteHandle(void* handle) = 0;
+
+    /**
+     * Remove all handles
+     */
+    virtual void reset() = 0;
+
     virtual ~ICurlHandlePool();
 };
 
@@ -164,6 +176,8 @@ public:
 class JOYNRCLUSTERCONTROLLER_EXPORT HttpNetworking
 {
 public:
+    ~HttpNetworking();
+
     static HttpNetworking* getInstance();
 
     IHttpGetBuilder* createHttpGetBuilder(const QString& url);

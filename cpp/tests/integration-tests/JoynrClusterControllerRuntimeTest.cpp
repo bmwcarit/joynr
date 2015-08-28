@@ -121,7 +121,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, startMessagingDoesNotThrow)
     EXPECT_CALL(*mockMessageReceiver, startReceiveQueue())
             .Times(1);
     EXPECT_CALL(*mockMessageReceiver, stopReceiveQueue())
-            .Times(2);
+            .Times(1);
 
     ASSERT_TRUE(runtime != NULL);
     runtime->startMessaging();

@@ -70,7 +70,9 @@ DefaultHttpRequest::~DefaultHttpRequest()
     if (headers != 0) {
         curl_slist_free_all(headers);
     }
-    HttpNetworking::getInstance()->getCurlHandlePool()->returnHandle(handle);
+    if (handle != NULL) {
+        HttpNetworking::getInstance()->getCurlHandlePool()->returnHandle(handle);
+    }
 }
 
 HttpResult DefaultHttpRequest::execute()
@@ -87,6 +89,13 @@ HttpResult DefaultHttpRequest::execute()
 
     long statusCode;
     curl_easy_getinfo(handle, CURLINFO_RESPONSE_CODE, &statusCode);
+
+    // Check for internal curl errors
+    if (curlError == CURLE_FAILED_INIT) {
+        // Delete the handle that we were using
+        HttpNetworking::getInstance()->getCurlHandlePool()->deleteHandle(handle);
+        handle = NULL;
+    }
 
     return HttpResult(curlError, statusCode, body, headers);
 }
