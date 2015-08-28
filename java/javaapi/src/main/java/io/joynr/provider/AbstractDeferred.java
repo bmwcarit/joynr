@@ -27,6 +27,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import joynr.exceptions.ProviderRuntimeException;
 
 public abstract class AbstractDeferred {
     private enum State {
@@ -66,7 +67,7 @@ public abstract class AbstractDeferred {
      * @return true if the promise is rejected; false in case the promise is
      *      already settled.
      */
-    public synchronized boolean reject(JoynrException error) {
+    protected synchronized boolean reject(JoynrException error) {
         if (isSettled()) {
             return false;
         }
@@ -74,6 +75,17 @@ public abstract class AbstractDeferred {
         this.error = error;
         notifyListeners();
         return true;
+    }
+
+    /**
+     * Rejects the promise. NOTE: The thread rejecting the promise will be used
+     * to execute waiting listeners.
+     * @param error the reason that caused the rejection.
+     * @return true if the promise is rejected; false in case the promise is
+     *      already settled.
+     */
+    public synchronized boolean reject(ProviderRuntimeException error) {
+        return this.reject((JoynrException) error);
     }
 
     /**

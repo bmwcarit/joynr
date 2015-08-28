@@ -42,7 +42,7 @@ class InterfaceProviderTemplate implements InterfaceTemplate{
 		var methodNameToIndex = new HashMap<String, Integer>();
 
 		for (FMethod method : getMethods(serviceInterface)) {
-			if (method.outputParameters.isEmpty) {
+			if (method.outputParameters.isEmpty && !method.hasErrorEnum()) {
 				// void method
 				methodToDeferredName.put(method, "DeferredVoid");
 			} else if (methodNameToCount.get(method.name) == 1) {
@@ -69,6 +69,7 @@ class InterfaceProviderTemplate implements InterfaceTemplate{
 
 	override generate(FInterface serviceInterface) {
 		var methodToDeferredName = new HashMap<FMethod, String>();
+		var methodToErrorEnumName = serviceInterface.methodToErrorEnumName()
 		var uniqueMethodsToCreateDeferreds = new ArrayList<FMethod>();
 		init(serviceInterface, methodToDeferredName, uniqueMethodsToCreateDeferreds);
 
@@ -97,6 +98,9 @@ package «packagePath»;
 «ENDIF»
 «IF hasWriteAttribute(serviceInterface) || hasMethodWithoutReturnValue(serviceInterface)»
 	import io.joynr.provider.DeferredVoid;
+«ENDIF»
+«IF serviceInterface.hasMethodWithErrorEnum»
+	import joynr.exceptions.ApplicationException;
 «ENDIF»
 
 import io.joynr.provider.JoynrProvider;
@@ -138,16 +142,25 @@ public interface «className» extends JoynrProvider {
 	«FOR method : uniqueMethodsToCreateDeferreds»
 
 		public class «methodToDeferredName.get(method)» extends AbstractDeferred {
-		«IF method.outputParameters.empty»
-			public synchronized boolean resolve() {
-				values = new Object[] {};
-				return super.resolve();
-			}
-		«ELSE»
-			public synchronized boolean resolve(«method.commaSeperatedTypedOutputParameterList») {
-				return super.resolve(«method.commaSeperatedUntypedOutputParameterList»);
-			}
-		«ENDIF»
+			«IF method.outputParameters.empty»
+				public synchronized boolean resolve() {
+					Object[] values = new Object[] {};
+					return super.resolve(values);
+				}
+			«ELSE»
+				public synchronized boolean resolve(«method.commaSeperatedTypedOutputParameterList») {
+					return super.resolve(«method.commaSeperatedUntypedOutputParameterList»);
+				}
+			«ENDIF»
+			«IF method.hasErrorEnum()»
+				«IF method.errors != null»
+					public synchronized boolean reject(«packagePath».«interfaceName».«methodToErrorEnumName.get(method)» error) {
+				«ELSE»
+					public synchronized boolean reject(«method.errorEnum.buildPackagePath(".", true)».«method.errorEnum.joynrName»«» error) {
+				«ENDIF»
+					return super.reject(new ApplicationException(error));
+				}
+			«ENDIF»
 		}
 	«ENDFOR»
 	«FOR broadcast : serviceInterface.broadcasts»
