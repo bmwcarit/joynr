@@ -493,7 +493,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
     private void executeRequestAndReply(final RequestCaller requestCaller, final JoynrMessage message) {
         try {
             // TODO shall be moved to request manager and not handled by dispatcher
-            Request request = objectMapper.readValue(message.getPayload(), Request.class);
+            final Request request = objectMapper.readValue(message.getPayload(), Request.class);
             logger.debug("executing request from message: {} request: {}", message.getId(), request.getRequestReplyId());
 
             requestInterpreter.execute(new Callback<Reply>() {
@@ -516,6 +516,11 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
                 @Override
                 public void onFailure(JoynrException error) {
                     logger.error("Error processing message: \r\n {} ; error: {}", message, error);
+                    try {
+                        sendReply(message, new Reply(request.getRequestReplyId(), error));
+                    } catch (Exception e) {
+                        logger.error("Error sending error message: \r\n {}", e);
+                    }
                 }
             },
                                        requestCaller,

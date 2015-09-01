@@ -46,6 +46,8 @@ import io.joynr.runtime.PropertyLoader;
 import joynr.exceptions.ApplicationException;
 import joynr.OnChangeSubscriptionQos;
 import joynr.tests.DefaulttestProvider;
+import joynr.tests.test.MethodWithErrorEnumExtendedErrorEnum;
+import joynr.tests.test.MethodWithImplicitErrorEnumErrorEnum;
 import joynr.tests.testAsync.MethodWithMultipleOutputParametersCallback;
 import joynr.tests.testBroadcastInterface.LocationUpdateWithSpeedBroadcastAdapter;
 import joynr.tests.testProxy;
@@ -54,6 +56,7 @@ import joynr.tests.testtypes.AnotherDerivedStruct;
 import joynr.tests.testtypes.ComplexTestType;
 import joynr.tests.testtypes.ComplexTestType2;
 import joynr.tests.testtypes.DerivedStruct;
+import joynr.tests.testtypes.ErrorEnumBase;
 import joynr.tests.testtypes.TestEnum;
 import joynr.types.localisation.GpsFixEnum;
 import joynr.types.localisation.GpsLocation;
@@ -124,6 +127,9 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
     @Mock
     Callback<Integer> callbackInteger;
+
+    @Mock
+    Callback<Void> callbackVoid;
 
     private TestAsyncProviderImpl providerAsync;
 
@@ -317,6 +323,30 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
             OverloadedOperation3Deferred deferred = new OverloadedOperation3Deferred();
             deferred.resolve(new ComplexTestType2(Integer.parseInt(input1), Integer.parseInt(input2)));
             return new Promise<OverloadedOperation3Deferred>(deferred);
+        }
+
+        @Override
+        public Promise<MethodWithErrorEnumDeferred> methodWithErrorEnum() {
+            MethodWithErrorEnumDeferred deferred = new MethodWithErrorEnumDeferred();
+            ErrorEnumBase error = ErrorEnumBase.BASE_ERROR_TYPECOLLECTION;
+            deferred.reject(error);
+            return new Promise<MethodWithErrorEnumDeferred>(deferred);
+        }
+
+        @Override
+        public Promise<MethodWithErrorEnumExtendedDeferred> methodWithErrorEnumExtended() {
+            MethodWithErrorEnumExtendedDeferred deferred = new MethodWithErrorEnumExtendedDeferred();
+            MethodWithErrorEnumExtendedErrorEnum error = MethodWithErrorEnumExtendedErrorEnum.IMPLICIT_ERROR_TYPECOLLECTION;
+            deferred.reject(error);
+            return new Promise<MethodWithErrorEnumExtendedDeferred>(deferred);
+        }
+
+        @Override
+        public Promise<MethodWithImplicitErrorEnumDeferred> methodWithImplicitErrorEnum() {
+            MethodWithImplicitErrorEnumDeferred deferred = new MethodWithImplicitErrorEnumDeferred();
+            MethodWithImplicitErrorEnumErrorEnum error = MethodWithImplicitErrorEnumErrorEnum.IMPLICIT_ERROR;
+            deferred.reject(error);
+            return new Promise<MethodWithImplicitErrorEnumDeferred>(deferred);
         }
 
         boolean broadcastSubscriptionArrived = false;
@@ -723,6 +753,108 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         List<TestEnum> enumList = proxy.methodWithEnumListReturn(2);
         assertArrayEquals(new TestEnum[]{ TestEnum.TWO }, enumList.toArray());
 
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void syncMethodCallReturnsErrorEnum() {
+        ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
+        testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+
+        try {
+            proxy.methodWithErrorEnum();
+            Assert.fail("Should throw ApplicationException");
+        } catch (JoynrRuntimeException e) {
+            Assert.fail(e.toString());
+        } catch (ApplicationException e) {
+            ApplicationException expected = new ApplicationException(ErrorEnumBase.BASE_ERROR_TYPECOLLECTION);
+            Assert.assertEquals(expected, e);
+        }
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void asyncMethodCallReturnsErrorEnum() {
+        ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
+        testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+
+        ApplicationException expected = new ApplicationException(ErrorEnumBase.BASE_ERROR_TYPECOLLECTION);
+        Future<Void> future = proxy.methodWithErrorEnum(callbackVoid);
+        try {
+            future.getReply();
+            Assert.fail("Should throw ApplicationException");
+        } catch (JoynrRuntimeException|InterruptedException e) {
+            Assert.fail(e.toString());
+        } catch (ApplicationException e) {
+            Assert.assertEquals(expected, e);
+        }
+        verify(callbackVoid).onFailure(expected);
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void syncMethodCallReturnsExtendedErrorEnum() {
+        ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
+        testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+
+        try {
+            proxy.methodWithErrorEnumExtended();
+            Assert.fail("Should throw ApplicationException");
+        } catch (JoynrRuntimeException e) {
+            Assert.fail(e.toString());
+        } catch (ApplicationException e) {
+            ApplicationException expected = new ApplicationException(MethodWithErrorEnumExtendedErrorEnum.IMPLICIT_ERROR_TYPECOLLECTION);
+            Assert.assertEquals(expected, e);
+        }
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void asyncMethodCallReturnsExtendedErrorEnum() {
+        ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
+        testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+
+        ApplicationException expected = new ApplicationException(MethodWithErrorEnumExtendedErrorEnum.IMPLICIT_ERROR_TYPECOLLECTION);
+        Future<Void> future = proxy.methodWithErrorEnumExtended(callbackVoid);
+        try {
+            future.getReply();
+            Assert.fail("Should throw ApplicationException");
+        } catch (JoynrRuntimeException|InterruptedException e) {
+            Assert.fail(e.toString());
+        } catch (ApplicationException e) {
+            Assert.assertEquals(expected, e);
+        }
+        verify(callbackVoid).onFailure(expected);
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void syncMethodCallReturnsImplicitErrorEnum() {
+        ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
+        testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+
+        try {
+            proxy.methodWithImplicitErrorEnum();
+            Assert.fail("Should throw ApplicationException");
+        } catch (JoynrRuntimeException e) {
+            Assert.fail(e.toString());
+        } catch (ApplicationException e) {
+            ApplicationException expected = new ApplicationException(MethodWithImplicitErrorEnumErrorEnum.IMPLICIT_ERROR);
+            Assert.assertEquals(expected, e);
+        }
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void asyncMethodCallReturnsImplicitErrorEnum() {
+        ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
+        testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+
+        ApplicationException expected = new ApplicationException(MethodWithImplicitErrorEnumErrorEnum.IMPLICIT_ERROR);
+        Future<Void> future = proxy.methodWithImplicitErrorEnum(callbackVoid);
+        try {
+            future.getReply();
+            Assert.fail("Should throw ApplicationException");
+        } catch (JoynrRuntimeException|InterruptedException e) {
+            Assert.fail(e.toString());
+        } catch (ApplicationException e) {
+            Assert.assertEquals(expected, e);
+        }
+        verify(callbackVoid).onFailure(expected);
     }
 
     @Ignore
