@@ -48,18 +48,19 @@
 	<body>
 		<p><span style="font-size:1.5em">joynr Radio Demo: Provider App</span></p>
 
-		<p>Domain: <input type="text" id="txtDomain" value="" title="Enter domain used to register joynr providers."/>
+		<p><strong>Provider registration:</strong><br>
+		Domain: <input type="text" id="txtDomain" value="" title="Enter domain used to register joynr providers."/>
 		<input type="button" id="btnRegisterProvider" value="Register Provider"/>
 		<input type="button" id="btnUnregisterProvider" value="Unregister Provider" disabled/></p>
 		<hr>
-
-		<p>Current Station: <input type="button" id="btnShuffleStations" value="Shuffle Stations" disabled/><br>
+		<p><strong>Attributes:</strong><br>
+		Current Station: <input type="button" id="btnShuffleStations" value="Shuffle Stations" disabled/><br>
 		Name: <input type="text" id="txtCurrentStationName" value="" title="Name" readonly/>
 		TrafficService: <input type="text" id="txtCurrentStationTrafficService" value="" title="TrafficService" readonly/>
 		Country: <input type="text" id="txtCurrentStationCountry" value="" title="Country" readonly/></p>
 		<hr>
 
-		<p>Favorite Stations:<br>
+		<p><strong>Favorite Stations:</strong><br>
 		<textarea rows="5" cols="130" id="txtFavoriteStations" value="" readonly></textarea><br>
 		Name: <input type="text" id="txtNewFavoriteStationName" value="" title="Enter Name for new Favorite Station"/>
 		TrafficService: <select id="slctTrafficService" size="1" title="Traffic Service">
@@ -75,7 +76,7 @@
 		<input type="button" id="btnAddFavoriteStation" value="Add Favorite Station" disabled/>
 		<hr>
 
-		<p>Broadcasts:<br>
+		<p><strong>Broadcasts:</strong><br>
 		<input type="button" id="btnFireWeakSignal" value="Fire weakSignal broadcast" disabled/><br>
 		<input type="button" id="btnFireNewStationDiscovered" value="Fire newStationDiscovered broadcast" disabled/></p>
 		<hr>
