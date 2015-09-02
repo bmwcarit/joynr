@@ -20,7 +20,7 @@ package io.joynr.capabilities;
  */
 
 import static org.junit.Assert.assertEquals;
-import io.joynr.dispatcher.rpc.RpcStubbingTest.TestProvider;
+import io.joynr.proxy.RpcStubbingTest.TestProvider;
 import io.joynr.runtime.JoynrInjectorFactory;
 
 import org.junit.Before;

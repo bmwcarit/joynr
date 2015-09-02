@@ -1,0 +1,196 @@
+package io.joynr.dispatching.subscription;
+
+/*
+ * #%L
+ * %%
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.atMost;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import io.joynr.dispatching.Dispatcher;
+import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.exceptions.JoynrSendBufferFullException;
+import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
+import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
+
+import java.io.IOException;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+
+import joynr.PeriodicSubscriptionQos;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
+
+@RunWith(MockitoJUnitRunner.class)
+public class SubscriptionTimersTest {
+    private static final Logger LOG = LoggerFactory.getLogger(SubscriptionTimersTest.class);
+
+    private SubscriptionManager subscriptionManager;
+
+    private ScheduledExecutorService subscriptionEndScheduler;
+    ConcurrentMap<String, MissedPublicationTimer> missedPublicationTimers;
+    ConcurrentMap<String, ScheduledFuture<?>> subscriptionEndFutures;
+
+    private String attributeName;
+    @Mock
+    private AttributeSubscriptionListener<?> attributeSubscriptionCallback;
+
+    @Mock
+    private Dispatcher dispatcher;
+
+    private String subscriptionId;
+
+    private int period = 100;
+    private long alertAfterInterval = 120;
+    private int numberOfPublications = 5;
+    private long subscriptionLength = period * numberOfPublications + alertAfterInterval;
+
+    private String fromParticipantId;
+
+    private String toParticipantId;
+
+    class IntegerReference extends TypeReference<Integer> {
+    }
+
+    @Before
+    public void setUp() {
+        subscriptionEndScheduler = Executors.newScheduledThreadPool(10);
+        subscriptionManager = new SubscriptionManagerImpl(subscriptionEndScheduler, dispatcher);
+        attributeName = "testAttribute";
+        fromParticipantId = "fromParticipantId";
+        toParticipantId = "toParticipantId";
+    }
+
+    @Test(timeout = 3000)
+    public void missedPublicationRunnableIsStopped() throws InterruptedException, JoynrSendBufferFullException,
+                                                    JoynrMessageNotSentException, JsonGenerationException,
+                                                    JsonMappingException, IOException {
+        LOG.debug("Starting missedPublicationRunnableIsStopped test");
+
+        long expiryDate = System.currentTimeMillis() // the publication should start now
+                + subscriptionLength;
+
+        PeriodicSubscriptionQos qos = new PeriodicSubscriptionQos(period, expiryDate, alertAfterInterval, 1000);
+
+        // register a subscription
+        AttributeSubscribeInvocation subscriptionRequest = new AttributeSubscribeInvocation(attributeName,
+                                                                                            IntegerReference.class,
+                                                                                            attributeSubscriptionCallback,
+                                                                                            qos,
+                                                                                            null);
+        subscriptionManager.registerAttributeSubscription(fromParticipantId, toParticipantId, subscriptionRequest);
+        subscriptionId = subscriptionRequest.getSubscriptionId();
+        Thread.sleep(subscriptionLength);
+        verify(attributeSubscriptionCallback, times(numberOfPublications)).onError();
+
+        // wait some additional time to see whether there are unwanted publications
+        Thread.sleep(2 * period);
+
+        // verify callback is not called
+        verifyNoMoreInteractions(attributeSubscriptionCallback);
+    }
+
+    @Test(timeout = 3000)
+    public void noMissedPublicationWarningWhenPublicationIsReceived() throws InterruptedException,
+                                                                     JoynrSendBufferFullException,
+                                                                     JoynrMessageNotSentException,
+                                                                     JsonGenerationException, JsonMappingException,
+                                                                     IOException {
+        LOG.debug("Starting noMissedPublicationWarningWhenPublicationIsReceived test");
+
+        // there should be at least one successful publication, so (numberOfPublications-1)
+        int numberOfMissedPublications = (int) (Math.random() * (numberOfPublications - 1));
+        // int numberOfMissedPublications = 5;
+        int numberOfSuccessfulPublications = numberOfPublications - numberOfMissedPublications;
+
+        long expiryDate = System.currentTimeMillis() // the publication should start now
+                + period * numberOfPublications // usual length of the subsciption
+                + (alertAfterInterval - period); // plus time for the last possible alertAfterInterval to arrive
+
+        PeriodicSubscriptionQos qos = new PeriodicSubscriptionQos(period, expiryDate, alertAfterInterval, 1000);
+        qos.setPublicationTtl(period);
+        qos.setExpiryDate(expiryDate);
+        // alert 10 ms after a publication should have been received
+        qos.setAlertAfterInterval(alertAfterInterval);
+        qos.setPublicationTtl(1000);
+
+        // register a subscription
+        AttributeSubscribeInvocation subscriptionRequest = new AttributeSubscribeInvocation(attributeName,
+                                                                                            IntegerReference.class,
+                                                                                            attributeSubscriptionCallback,
+                                                                                            qos,
+                                                                                            null);
+        subscriptionManager.registerAttributeSubscription(fromParticipantId, toParticipantId, subscriptionRequest);
+        subscriptionId = subscriptionRequest.getSubscriptionId();
+
+        boolean lastPublicationIsMissedPublication = false;
+        int missedPublicationsCounter = 0;
+        int successfulPublicationsCounter = 0;
+        for (int i = 0; i < numberOfPublications; i++) {
+            // choose randomly whether the current publication is successful or missed
+            if ((Math.random() < 0.5 && successfulPublicationsCounter < numberOfSuccessfulPublications)
+                    || missedPublicationsCounter == numberOfMissedPublications) {
+                Thread.sleep(period);
+                // publication successfully received
+                subscriptionManager.touchSubscriptionState(subscriptionId);
+                successfulPublicationsCounter++;
+                LOG.trace("\nSUCCESSFUL publication");
+            } else {
+                Thread.sleep(period);
+                // publication missed
+                missedPublicationsCounter++;
+                // Note: if the last publication is a missed publication, in _MOST_ cases we will not receive the last
+                // missed publication alert,
+                // since it needs also some time to execute an alert and thus the last alert will be expired (due to
+                // endDate)
+                // before execution
+                if (i == numberOfPublications - 1) {
+                    lastPublicationIsMissedPublication = true;
+                }
+                LOG.trace("\nMISSED publication");
+            }
+        }
+
+        LOG.trace("No more calls are expected now.");
+
+        // wait some additional time to see whether there are unwanted publications
+        Thread.sleep(2 * period);
+
+        int missedPublicationAlerts = (lastPublicationIsMissedPublication) ? missedPublicationsCounter - 1
+                : missedPublicationsCounter;
+        verify(attributeSubscriptionCallback, atLeast(missedPublicationAlerts)).onError();
+        verify(attributeSubscriptionCallback, atMost(missedPublicationsCounter)).onError();
+        // verify callback is not called
+        verifyNoMoreInteractions(attributeSubscriptionCallback);
+        LOG.trace("finishing test.");
+    }
+}

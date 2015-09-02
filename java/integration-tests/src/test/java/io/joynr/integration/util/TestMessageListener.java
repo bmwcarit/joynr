@@ -19,7 +19,7 @@ package io.joynr.integration.util;
  * #L%
  */
 
-import io.joynr.dispatcher.WaitTillCondition;
+import io.joynr.dispatching.WaitTillCondition;
 import io.joynr.messaging.MessageArrivedListener;
 
 import java.util.List;

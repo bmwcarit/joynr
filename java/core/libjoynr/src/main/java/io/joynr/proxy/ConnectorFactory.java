@@ -20,7 +20,6 @@ package io.joynr.proxy;
  */
 
 import io.joynr.arbitration.ArbitrationResult;
-import io.joynr.dispatcher.rpc.JoynrMessagingConnectorFactory;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 

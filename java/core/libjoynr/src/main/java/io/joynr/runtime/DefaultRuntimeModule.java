@@ -19,13 +19,13 @@ package io.joynr.runtime;
  * #L%
  */
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
-import io.joynr.dispatcher.Dispatcher;
-import io.joynr.dispatcher.DispatcherImpl;
-import io.joynr.dispatcher.RequestReplyDispatcher;
-import io.joynr.dispatcher.RequestReplyDispatcherImpl;
-import io.joynr.dispatcher.RequestReplySender;
-import io.joynr.dispatcher.RequestReplySenderImpl;
-import io.joynr.dispatcher.rpc.RpcUtils;
+import io.joynr.dispatching.Dispatcher;
+import io.joynr.dispatching.DispatcherImpl;
+import io.joynr.dispatching.RequestReplyDispatcher;
+import io.joynr.dispatching.RequestReplyDispatcherImpl;
+import io.joynr.dispatching.RequestReplySender;
+import io.joynr.dispatching.RequestReplySenderImpl;
+import io.joynr.dispatching.rpc.RpcUtils;
 import io.joynr.logging.JoynrAppenderManagerFactory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.IMessageReceivers;

@@ -29,7 +29,7 @@ import io.joynr.capabilities.CapabilityEntry;
 import io.joynr.capabilities.CapabilityEntryImpl;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.common.ExpiryDate;
-import io.joynr.dispatcher.JoynrMessageFactory;
+import io.joynr.dispatching.JoynrMessageFactory;
 import io.joynr.messaging.MessagingModule;
 import joynr.JoynrMessage;
 import joynr.Request;

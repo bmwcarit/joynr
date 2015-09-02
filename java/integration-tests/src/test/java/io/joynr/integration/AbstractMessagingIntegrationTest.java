@@ -24,7 +24,7 @@ import io.joynr.capabilities.DummyDiscoveryModule;
 import io.joynr.capabilities.DummyLocalChannelUrlDirectoryClient;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.common.ExpiryDate;
-import io.joynr.dispatcher.JoynrMessageFactory;
+import io.joynr.dispatching.JoynrMessageFactory;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.integration.util.TestMessageListener;

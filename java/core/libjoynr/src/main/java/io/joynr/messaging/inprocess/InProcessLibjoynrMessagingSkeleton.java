@@ -19,7 +19,7 @@ package io.joynr.messaging.inprocess;
  * #L%
  */
 
-import io.joynr.dispatcher.Dispatcher;
+import io.joynr.dispatching.Dispatcher;
 import joynr.JoynrMessage;
 
 public class InProcessLibjoynrMessagingSkeleton implements InProcessMessagingSkeleton {

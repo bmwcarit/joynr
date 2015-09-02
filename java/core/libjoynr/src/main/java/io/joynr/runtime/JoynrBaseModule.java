@@ -22,8 +22,8 @@ package io.joynr.runtime;
 import io.joynr.accesscontrol.AccessControlClientModule;
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.discovery.DiscoveryClientModule;
+import io.joynr.dispatching.subscription.PubSubModule;
 import io.joynr.messaging.LongPollingMessagingModule;
-import io.joynr.pubsub.PubSubModule;
 
 import java.util.Properties;
 

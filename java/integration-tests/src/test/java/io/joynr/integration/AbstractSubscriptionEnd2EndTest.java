@@ -20,15 +20,16 @@ package io.joynr.integration;
  */
 
 import com.google.inject.Module;
+
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
+import io.joynr.dispatching.subscription.PubSubTestProviderImpl;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilder;
-import io.joynr.pubsub.PubSubTestProviderImpl;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.runtime.AbstractJoynrApplication;
@@ -40,6 +41,7 @@ import joynr.PeriodicSubscriptionQos;
 import joynr.tests.testProxy;
 import joynr.tests.testtypes.TestEnum;
 import joynr.types.localisation.GpsLocation;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;

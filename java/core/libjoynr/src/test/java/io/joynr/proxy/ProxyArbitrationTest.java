@@ -22,20 +22,19 @@ package io.joynr.proxy;
 import io.joynr.arbitration.ArbitrationResult;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.common.ExpiryDate;
-import io.joynr.dispatcher.JoynrMessageFactory;
-import io.joynr.dispatcher.ReplyCaller;
-import io.joynr.dispatcher.RequestReplyDispatcher;
-import io.joynr.dispatcher.RequestReplySender;
-import io.joynr.dispatcher.RequestReplySenderImpl;
-import io.joynr.dispatcher.rpc.JoynrMessagingConnectorFactory;
 import io.joynr.dispatcher.rpc.JoynrSyncInterface;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
+import io.joynr.dispatching.JoynrMessageFactory;
+import io.joynr.dispatching.RequestReplyDispatcher;
+import io.joynr.dispatching.RequestReplySender;
+import io.joynr.dispatching.RequestReplySenderImpl;
+import io.joynr.dispatching.rpc.ReplyCaller;
+import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.MessageRouterImpl;
 import io.joynr.messaging.routing.RoutingTable;
-import io.joynr.pubsub.subscription.SubscriptionManager;
 
 import java.util.List;
 

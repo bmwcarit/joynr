@@ -19,15 +19,16 @@ package io.joynr.capabilities;
  * #L%
  */
 
-import javax.inject.Named;
-
-import io.joynr.dispatcher.RequestCaller;
-import io.joynr.dispatcher.RequestReplyDispatcher;
+import io.joynr.dispatching.RequestCaller;
+import io.joynr.dispatching.RequestReplyDispatcher;
+import io.joynr.dispatching.subscription.PublicationManager;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.RequestCallerFactory;
-import io.joynr.pubsub.publication.PublicationManager;
+
+import javax.inject.Named;
+
 import joynr.system.routingtypes.Address;
 
 import com.google.inject.Inject;
