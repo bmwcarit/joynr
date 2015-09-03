@@ -117,17 +117,17 @@ interface Radio {
 	method shuffleStations {}
 
 	<**
-		@description: Adds a radio station to the favourites and
+		@description: Adds a radio station to the favorites and
 			returns whether it could be added successfully.
 			This method has a boolean return value and a parameter
 			with user-defined type.
 	**>
-	method addFavouriteStation {
+	method addFavoriteStation {
 		in {
 			<**
 				@description: The radio station to be added
 			**>
-			RadioStation newFavouriteStation
+			RadioStation newFavoriteStation
 		}
 		out {
 			<**

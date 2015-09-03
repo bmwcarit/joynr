@@ -1,0 +1,125 @@
+/*global joynrTestRequire: true */
+
+/*
+ * #%L
+ * %%
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
+joynrTestRequire("joynr/messaging/websocket/TestSharedWebSocket", [
+    "joynr/messaging/websocket/SharedWebSocket",
+    "joynr/messaging/JoynrMessage",
+    "joynr/system/routingtypes/WebSocketAddress",
+    "joynr/system/routingtypes/WebSocketClientAddress",
+    "global/WebSocket"
+], function(SharedWebSocket, JoynrMessage, WebSocketAddress, WebSocketClientAddress, WebSocket) {
+
+    describe("libjoynr-js.joynr.messaging.webmessaging.SharedWebSocket", function() {
+
+        var window = null;
+        var localAddress;
+        var ccAddress;
+        var websocket = null;
+        var sharedWebSocket = null;
+        var listener1 = null;
+        var listener2 = null;
+        var data = null;
+        var event = null;
+        var joynrMessage = null;
+
+        beforeEach(function() {
+            function JoynrMessage() {}
+            joynrMessage = new JoynrMessage();
+
+            function Window() {}
+            window = new Window();
+            window.addEventListener = jasmine.createSpy("addEventListener");
+
+            websocket = new WebSocket("ws://test");
+            websocket.send = jasmine.createSpy("send");
+            localAddress = new WebSocketClientAddress({
+                id : "1234"
+            });
+            ccAddress = new WebSocketAddress({
+                protocol : "ws",
+                host : "host",
+                port : 1234,
+                path : "/test"
+            });
+
+            sharedWebSocket = new SharedWebSocket({
+                localAddress : localAddress,
+                remoteAddress : ccAddress
+            });
+
+            listener1 = jasmine.createSpy("listener1");
+            listener2 = jasmine.createSpy("listener2");
+            function MessageEvent() {}
+            event = new MessageEvent();
+            data = new JoynrMessage(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST);
+            event.data = JSON.stringify(data);
+        });
+
+        it("is of correct type and has all members", function() {
+            expect(SharedWebSocket).toBeDefined();
+            expect(typeof SharedWebSocket === "function").toBeTruthy();
+            expect(sharedWebSocket).toBeDefined();
+            expect(sharedWebSocket instanceof SharedWebSocket).toBeTruthy();
+            expect(sharedWebSocket.send).toBeDefined();
+            expect(typeof sharedWebSocket.send === "function").toBeTruthy();
+        });
+
+        it("throws if arguments are missing or of wrong type", function() {
+            expect(function() {
+                sharedWebSocket = new SharedWebSocket({
+                    localAddress : localAddress,
+                    remoteAddress : ccAddress
+                });
+            }).not.toThrow(); // correct
+            // call
+
+            expect(function() {
+                sharedWebSocket.send(new JoynrMessage());
+            }).not.toThrow(); // correct call
+            expect(function() {
+                sharedWebSocket.send({});
+            }).toThrow(); // object sent is of wrong type
+            expect(function() {
+                sharedWebSocket.onmessage = undefined;
+            }).toThrow(); // callback must be a function
+
+            expect(function() {
+                sharedWebSocket.onmessage = function() {};
+            }).not.toThrow(); // correct call
+
+            expect(function() {
+                sharedWebSocket.onmessage = {};
+            }).toThrow(); // callback must be a function
+        });
+
+        it("calls websocket.send correctly", function() {
+            websocket.readyState = WebSocket.OPEN;
+            sharedWebSocket.send(joynrMessage);
+            expect(websocket.send).toHaveBeenCalledWith(JSON.stringify(joynrMessage));
+
+            websocket.send.reset();
+            websocket.readyState = WebSocket.CLOSING;
+            sharedWebSocket.send(joynrMessage);
+            expect(websocket.send).not.toHaveBeenCalled();
+        });
+    });
+
+});

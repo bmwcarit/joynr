@@ -25,7 +25,7 @@ Joynr can be built using a [docker](http://www.docker.com) container. The necess
 ## Prerequisites
 
 ### Cloning the joynr source repository
-The joynr source repository (https://github.com/bmwcarit/joynr) which contains the Java and C++ sources has to be cloned, and the correct branch checked out.
+The joynr source repository (https://github.com/bmwcarit/joynr) which contains the Java, JavaScript and C++ sources has to be cloned, and the correct branch checked out.
 
 
 ### Building docker images for joynr Java
@@ -34,7 +34,8 @@ For the installation of docker, please refer to the docker documentation at the 
 In order to use docker for building joynr, the joynr docker images have to be built first by executing
 
 ```bash
-docker/joynr-docker build
+$ cd <JOYNR>/docker
+<JOYNR>/docker$ ./joynr-docker build
 ```
 in the joynr repository. These images can then be executed as docker containers to build joynr.
 
@@ -43,7 +44,7 @@ in the joynr repository. These images can then be executed as docker containers 
 After the joynr docker images have been created, joynr Java can be built by executing the following command:
 
 ```bash
-docker run --rm --sig-proxy -e DEV_UID="$(id -u)"  \
+$ docker run --rm --sig-proxy -e DEV_UID="$(id -u)"  \
     -v <FULL_PATH_TO_JOYNR_SOURCES>:/data/src \
     -v <FULL_PATH_TO_MAVEN_DIRECTORY>:/home/joynr/.m2 \
     joynr-java \

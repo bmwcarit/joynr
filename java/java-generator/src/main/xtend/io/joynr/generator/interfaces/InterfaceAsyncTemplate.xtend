@@ -143,11 +143,11 @@ public interface «asyncClassName» extends «interfaceName», JoynrAsyncInterfa
 		«var setAttribute = "set" + attributeName.toFirstUpper»
 		«IF isReadable(attribute)»
 
-			public Future<«attributeType»> «getAttribute»(@JoynrRpcCallback(deserialisationType = «getTokenTypeForArrayType(attributeType)»Token.class) Callback<«attributeType»> callback);
+			public Future<«attributeType»> «getAttribute»(@JoynrRpcCallback(deserializationType = «getTokenTypeForArrayType(attributeType)»Token.class) Callback<«attributeType»> callback);
 		«ENDIF»
 		«IF isWritable(attribute)»
 
-			Future<Void> «setAttribute»(@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback, @JoynrRpcParam(value="«attributeName»", deserialisationType = «getTokenTypeForArrayType(attributeType)»Token.class) «attributeType» «attributeName») throws JoynrArbitrationException;
+			Future<Void> «setAttribute»(@JoynrRpcCallback(deserializationType = VoidToken.class) Callback<Void> callback, @JoynrRpcParam(value="«attributeName»", deserializationType = «getTokenTypeForArrayType(attributeType)»Token.class) «attributeType» «attributeName») throws JoynrArbitrationException;
 		«ENDIF»
 	«ENDFOR»
 
@@ -213,13 +213,13 @@ public interface «asyncClassName» extends «interfaceName», JoynrAsyncInterfa
 		if (method.outputParameters.size < 2) {
 			if (outPutParameterType!="void"){
 				if (outPutObjectType == ""){
-					return "@JoynrRpcCallback(deserialisationType = "+getTokenTypeForArrayType(outPutParameterType)+"Token.class) "+ callbackType + " callback"
+					return "@JoynrRpcCallback(deserializationType = "+getTokenTypeForArrayType(outPutParameterType)+"Token.class) "+ callbackType + " callback"
 				}
 				else{
-					return "@JoynrRpcCallback(deserialisationType = "+getTokenTypeForArrayType(outPutObjectType)+"Token.class) " + callbackType + " callback"
+					return "@JoynrRpcCallback(deserializationType = "+getTokenTypeForArrayType(outPutObjectType)+"Token.class) " + callbackType + " callback"
 				}
 			} else {
-				return "@JoynrRpcCallback(deserialisationType = VoidToken.class) Callback<Void> callback"
+				return "@JoynrRpcCallback(deserializationType = VoidToken.class) Callback<Void> callback"
 			}
 		} else {
 			return "@JoynrRpcCallback " + callbackType + " callback"

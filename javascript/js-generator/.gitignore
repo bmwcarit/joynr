@@ -1,0 +1,10 @@
+/target
+/.classpath
+/.project
+/.settings
+/gen
+/src/main/generated*
+/src/main/xtend-gen*
+/target
+/log.txt
+/target/

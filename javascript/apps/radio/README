@@ -1,0 +1,10 @@
+to try out the Radio example run:
+
+
+	mvn clean package jetty:run-war
+
+Then open the following URLs in two separate browser windows:
+
+http://localhost:8080/provider.html
+http://localhost:8080/consumer.html
+

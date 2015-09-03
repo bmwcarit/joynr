@@ -84,8 +84,8 @@ I«interfaceName»Base::I«interfaceName»Base()
 		/*
 		 * Broadcast output parameters are packed into a single publication message when the
 		 * broadcast occurs. They are encapsulated in a map. Hence, a new composite data type is
-		 * needed for all broadcasts. The map is serialised into the publication message. When
-		 * deserialising on consumer side, the right publication interpreter is chosen by calculating
+		 * needed for all broadcasts. The map is serialized into the publication message. When
+		 * deserializing on consumer side, the right publication interpreter is chosen by calculating
 		 * the type id for the composite type.
 		*/
 	«ENDIF»

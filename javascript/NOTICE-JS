@@ -1,0 +1,82 @@
+This project includes software developed by
+BMW Car IT GmbH (http://www.bmw-carit.de)
+and BMW Forschung & Technik GmbH
+
+Licensed under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License. You may obtain a copy of the License at:
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on
+an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied. See the License for the
+specific language governing permissions and limitations
+under the License.
+
+This project has dependencies to:
+
+* json_parse_state.js (https://github.com/douglascrockford/JSON-js), Version 2012-06-01
+  License: Public Domain
+  Location: js-dependencies/src/main/js/JsonParser/JsonParser.js
+            js-dependencies/src/main/resources/JsonParser/json_parse_state.js
+  Modifications:
+    - modified to allow parsing invalid JSON structure of multiple JSOn objects concatenated
+      together
+      js-dependencies/src/main/resources/JsonParser/JsonParser.patch
+
+* Atmosphere Client (https://github.com/Atmosphere/atmosphere-javascript)
+  License: Apache License, Version 2.0 (https://github.com/Atmosphere/atmosphere-javascript/blob/master/LICENSE)
+  Webjar: <groupId>org.atmosphere.client</groupId>
+          <artifactId>javascript</artifactId>
+          <version>2.0.9</version>
+
+* log4javascript (http://log4javascript.org/), Version 1.4.10
+  License: Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0.html)
+  Location: libjoynr-js/src/main/resources/lib/log4javascript_uncompressed.js
+  Modifications: none
+
+* RequireJS (https://github.com/jrburke/requirejs)
+  License: MIT License (https://github.com/jrburke/requirejs/blob/master/LICENSE)
+  Webjar: <groupId>org.webjars</groupId>
+          <artifactId>requirejs</artifactId>
+          <version>2.1.14</version>
+
+* UUID (https://gist.github.com/jed/982883)
+  License: WTF Public License (https://gist.github.com/jed/982883#file-license-txt)
+  Location: js-dependencies/src/main/js/uuid/
+  Modifications: file modified to use require.js, also renamed function to uuid.
+
+* JsHamcrest (http://danielfm.github.com/jshamcrest/), Version 0.7.0
+  License: BSD License (https://github.com/danielfm/jshamcrest/blob/master/LICENSE)
+  Location: js-dependencies/src/main/js/jshamcrest/jshamcrest.js
+  Modifications: none
+
+* Jasmine (https://github.com/pivotal/jasmine)
+  License: MIT License (https://github.com/pivotal/jasmine/blob/master/MIT.LICENSE)
+  Webjar: <groupId>org.webjars</groupId>
+          <artifactId>jasmine</artifactId>
+          <version>1.3.1</version>
+
+* almond (https://github.com/jrburke/almond), Version 0.2.5
+  License: MIT License (https://github.com/jrburke/almond/blob/master/LICENSE)
+  Location: inter-tab/inter-tab-comm/src/main/optimizer/resources/almond-0.2.5.js
+            libjoynr-js/src/main/optimizer/resources/almond-0.2.5.js
+  Modifications: none
+
+* bluebird (https://github.com/petkaantonov/bluebird)
+  License: MIT License (https://github.com/petkaantonov/bluebird/blob/master/LICENSE)
+  Webjar: <groupId>org.webjars</groupId>
+          <artifactId>bluebird</artifactId>
+          <version>2.9.9</version>
+
+* js-test-driver-phantomjs (https://github.com/larrymyers/js-test-driver-phantomjs)
+  License: MIT License (https://github.com/larrymyers/js-test-driver-phantomjs/blob/master/LICENSE)
+  Location: build-resources/src/main/resources/js-test-driver/
+  Modifications: Modified script to accept url as command line argument.
+
+* jasmine-jstd-adapter (https://github.com/ibolmo/jasmine-jstd-adapter)
+  License: MIT License (https://github.com/ibolmo/jasmine-jstd-adapter/blob/master/MIT.LICENSE)
+  Location: js-dependencies/src/main/js/jasmine_jstd_adapter/
+

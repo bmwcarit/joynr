@@ -81,12 +81,12 @@ public class MyRadioProvider extends RadioAbstractProvider {
     }
 
     @Override
-    public Promise<AddFavouriteStationDeferred> addFavouriteStation(RadioStation radioStation) {
-        AddFavouriteStationDeferred deferred = new AddFavouriteStationDeferred();
-        LOG.info(PRINT_BORDER + "addFavouriteStation(" + radioStation + ")" + PRINT_BORDER);
+    public Promise<AddFavoriteStationDeferred> addFavoriteStation(RadioStation radioStation) {
+        AddFavoriteStationDeferred deferred = new AddFavoriteStationDeferred();
+        LOG.info(PRINT_BORDER + "addFavoriteStation(" + radioStation + ")" + PRINT_BORDER);
         stationsList.add(radioStation);
         deferred.resolve(true);
-        return new Promise<AddFavouriteStationDeferred>(deferred);
+        return new Promise<AddFavoriteStationDeferred>(deferred);
     }
 
     public void fireWeakSignalEvent() {
