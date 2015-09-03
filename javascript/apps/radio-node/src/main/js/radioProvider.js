@@ -1,4 +1,4 @@
-/*jslint node: true */
+/*jslint node: true es5: true */
 
 /*
  * #%L
@@ -138,10 +138,10 @@ joynr.load(provisioning, function(error, loadedJoynr) {
     var radioProvider = new RadioProvider(MyRadioProvider.implementation, joynr);
     MyRadioProvider.setProvider(radioProvider);
 
-    joynr.capabilities.registerCapability("", domain, radioProvider, providerQos).done(function() {
+    joynr.capabilities.registerCapability("", domain, radioProvider, providerQos).then(function() {
         log("provider registered successfully");
         runInteractiveConsole(radioProvider);
-    }).fail(function(error) {
+    }).catch(function(error) {
         log("error registering provider: " + error.toString());
     });
 });

@@ -1,4 +1,4 @@
-/*jslint node: true */
+/*jslint node: true es5: true */
 
 /*
  * #%L
@@ -51,10 +51,10 @@ exports.subscribeAttribute = function subscribeAttribute(radioProxy, attributeNa
                     log("radioProxy." + attributeName + ".subscribe(" + subscriptionDescriptor
                             + ").onError");
                 }
-            }).done(function(token) {
+            }).then(function(token) {
         subscriptionIds[token] = true;
         log("radioProxy." + attributeName + ".subscribe.done: " + token);
-    }).fail(function(error) {
+    }).catch(function(error) {
         log("radioProxy." + attributeName + ".subscribe.fail: " + error);
     }).always(function(){
         if (onDone) {
@@ -84,10 +84,10 @@ exports.unsubscribeAttributeSubscription =
     log("radioProxy." + attributeName + ".unsubscribe(" + subscriptionId + ")");
     radioProxy[attributeName].unsubscribe({
         "subscriptionId" : subscriptionId
-    }).done(function() {
+    }).then(function() {
         delete subscriptionIds[subscriptionId];
         log("radioProxy." + attributeName + ".unsubscribe(" + subscriptionId + ").done");
-    }).fail(function(error) {
+    }).catch(function(error) {
         log("radioProxy." + attributeName + ".unsubscribe(" + subscriptionId + ").fail: " + error);
     }).always(function(){
         if (onDone) {
