@@ -174,8 +174,8 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 
 		switch datatype {
 		case isArray(element)     : "List"
-		case isEnum(datatypeRef)  : getPackagePathWithJoynrPrefix(datatype, ".") +
-									"." + datatype.joynrName
+		case isEnum(datatypeRef)  : buildPackagePath(datatype, ".", true) +
+									datatype.joynrName
 		case isString(predefined) : "String"
 		case isInt(predefined)    : "Integer"
 		case isLong(predefined)   : "Long"
@@ -183,8 +183,8 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 		case isFloat(predefined)  : "Double"
 		case isBool(predefined)   : "Boolean"
 		case isByte(predefined)   : "Byte"
-		case datatype != null     : getPackagePathWithJoynrPrefix(datatype, ".") +
-									"." + datatype.joynrName
+		case datatype != null     : buildPackagePath(datatype, ".", true) +
+									datatype.joynrName
 		default                   : throw new RuntimeException("Unhandled primitive type: " + predefined.getName)
 		}
 	}
