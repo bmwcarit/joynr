@@ -1,0 +1,103 @@
+<!--
+   #%L
+   %%
+   Copyright (C) 2011 - 2015 BMW Car IT GmbH
+   %%
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+   
+        http://www.apache.org/licenses/LICENSE-2.0
+   
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+   #L%
+ -->
+
+<html>
+	<head>
+
+		<title>Radio Consumer</title>
+
+		<!-- include build signatures -->
+		<script src="js/radioBuildSignature.js"></script>
+
+		<!-- include joynr provisioning -->
+		<script src="js/joynrprovisioning.common.js"></script>
+		<script src="js/joynrprovisioning.consumer.js"></script>
+
+		<!-- include libjoynr library -->
+		<script src="js/joynr.js"></script>
+
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+
+
+		<!-- include generated proxy after libjoynr -->
+		<script src="js/joynr/vehicle/Country.js"></script>
+		<script src="js/joynr/vehicle/RadioStation.js"></script>
+		<script src="js/joynr/vehicle/GeoPosition.js"></script>
+		<script src="js/joynr/vehicle/RadioProxy.js"></script>
+
+		<!-- include application code last -->
+		<script src="js/consumer.js"></script>
+	</head>
+	<body>
+		<p><span style="font-size:1.5em">joynr Radio Demo: Consumer App</span></p>
+
+		<p>Domain: <input type="text" id="txtDomain" value="" title="Enter domain to lookup joynr providers."/>
+		<input type="button" id="btnCreateProxy" value="Create Proxy"/>
+		<hr>
+
+		<p>Attribute Current Station:
+		<input type="button" id="btnCurrentStationGet" value="Get" disabled/>
+		<input type="button" id="btnCurrentStationSubscribeOnChange" value="Subscribe OnChange" disabled/>
+		<input type="button" id="btnCurrentStationSubscribePeriodic" value="Subscribe Periodic" disabled/>
+		<input type="button" id="btnCurrentStationSubscribeOnChangeWithKeepAlive" value="Subscribe OnChangeWithKeepAlive" disabled/>
+		<input type="button" id="btnCurrentStationUnsubscribe" value="Unsubscribe" disabled/>
+		<br>
+		Name: <input type="text" id="txtCurrentStationName" value="" title="Name" readonly/>
+		TrafficService: <input type="text" id="txtCurrentStationTrafficService" value="" title="TrafficService" readonly/>
+		Country: <input type="text" id="txtCurrentStationCountry" value="" title="Country" readonly/></p>
+		<hr>
+
+		<p>Method Shuffle Stations: <input type="button" id="btnShuffleStations" value="Shuffle Stations" disabled/></p>
+		<hr>
+
+		<p>Method Add Favorite Station:<br>
+		Name: <input type="text" id="txtNewFavoriteStationName" value="" title="Enter Name for new Favorite Station"/>
+		TrafficService: <select id="slctTrafficService" size="1" title="Traffic Service">
+			<option>true</option>
+			<option>false</option>
+		</select>
+		Country: <select id="slctCountry" size="1" title="Country">
+			<option>AUSTRALIA</option>
+			<option>CANADA</option>
+			<option>GERMANY</option>
+			<option>ITALY</option>
+		</select>
+		<input type="button" id="btnAddFavoriteStation" value="Add Favorite Station" disabled/><br>
+		return value: success=<input type="text" id="txtAddFavoriteStationSuccess" value="" title="Name" readonly/></p>
+		<hr>
+		<p>Broadcast subscribe to weak signal broadcasts:
+			<input type="button" id="btnSubscribeToWeakSignal"
+				value="Subscribe to Weak Signal" disabled/>
+			<input type="button" id="btnUnsubscribeFromWeakSignal"
+				value="Unsubscribe from Weak Signal" disabled/></p>
+		<hr>
+		<p>Broadcast subscribe to new station discovered broadcasts:
+			<input type="button" id="btnSubscribeToNewStationDiscoveredSignal"
+				value="Subscribe to NewStationDiscovered Signal" disabled/>
+			<input type="button" id="btnUnsubscribeFromNewStationDiscoveredSignal"
+				value="Unsubscribe from NewStationDiscovered Signal" disabled/></p>
+
+		Broadcasts received:
+
+		<div id="divBroadcasts"></div>
+		<hr>
+		<p><input type="button" value="Clear LOG" onclick="$('div#divLog').empty();"/></p>
+		<div id="divLog"></div>
+	</body>
+</html>

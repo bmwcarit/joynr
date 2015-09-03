@@ -1,0 +1,751 @@
+/*jslint es5: true */
+
+/*
+ * #%L
+ * %%
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
+define(
+        "joynr/start/InterTabClusterControllerRuntime",
+        [
+            "global/Promise",
+            "joynr/capabilities/arbitration/Arbitrator",
+            "joynr/provider/ProviderBuilder",
+            "joynr/proxy/ProxyBuilder",
+            "joynr/types/CapabilityInformation",
+            "joynr/capabilities/CapabilitiesRegistrar",
+            "joynr/capabilities/ParticipantIdStorage",
+            "joynr/capabilities/discovery/CapabilityDiscovery",
+            "joynr/capabilities/CapabilitiesStore",
+            "joynr/messaging/routing/LocalChannelUrlDirectory",
+            "joynr/dispatching/RequestReplyManager",
+            "joynr/dispatching/subscription/PublicationManager",
+            "joynr/dispatching/subscription/SubscriptionManager",
+            "joynr/dispatching/Dispatcher",
+            "joynr/security/PlatformSecurityManager",
+            "joynr/messaging/channel/ChannelMessagingSender",
+            "joynr/messaging/channel/ChannelMessagingStubFactory",
+            "joynr/messaging/channel/ChannelMessagingSkeleton",
+            "joynr/messaging/MessagingStubFactory",
+            "joynr/messaging/routing/MessageRouter",
+            "joynr/messaging/routing/MessageQueue",
+            "joynr/messaging/CommunicationModule",
+            "joynr/util/InProcessSkeleton",
+            "joynr/util/InProcessStub",
+            "joynr/system/routingtypes/ChannelAddress",
+            "joynr/messaging/inprocess/InProcessMessagingStubFactory",
+            "joynr/messaging/inprocess/InProcessMessagingSkeleton",
+            "joynr/messaging/inprocess/InProcessMessagingStub",
+            "joynr/messaging/inprocess/InProcessAddress",
+            "joynr/messaging/browser/BrowserMessagingStubFactory",
+            "joynr/messaging/browser/BrowserMessagingSkeleton",
+            "joynr/messaging/webmessaging/WebMessagingStub",
+            "joynr/messaging/webmessaging/WebMessagingSkeleton",
+            "joynr/messaging/channel/LongPollingChannelMessageReceiver",
+            "joynr/messaging/MessagingQos",
+            "joynr/types/DiscoveryQos",
+            "joynr/infrastructure/ChannelUrlDirectoryProxy",
+            "joynr/types/ChannelUrlInformation",
+            "joynr/types/ProviderQos",
+            "joynr/types/ProviderScope",
+            "joynr/types/DiscoveryScope",
+            "joynr/system/DiscoveryProvider",
+            "joynr/system/RoutingProvider",
+            "joynr/types/TypeRegistrySingleton",
+            "joynr/util/UtilInternal",
+            "joynr/system/DistributedLoggingAppenderConstructorFactory",
+            "joynr/system/DistributedLoggingAppender",
+            "joynr/system/WebWorkerMessagingAppender",
+            "uuid",
+            "joynr/system/LoggingManager",
+            "joynr/system/LoggerFactory",
+            "global/LocalStorage"
+        ],
+        function(
+                Promise,
+                Arbitrator,
+                ProviderBuilder,
+                ProxyBuilder,
+                CapabilityInformation,
+                CapabilitiesRegistrar,
+                ParticipantIdStorage,
+                CapabilityDiscovery,
+                CapabilitiesStore,
+                LocalChannelUrlDirectory,
+                RequestReplyManager,
+                PublicationManager,
+                SubscriptionManager,
+                Dispatcher,
+                PlatformSecurityManager,
+                ChannelMessagingSender,
+                ChannelMessagingStubFactory,
+                ChannelMessagingSkeleton,
+                MessagingStubFactory,
+                MessageRouter,
+                MessageQueue,
+                CommunicationModule,
+                InProcessSkeleton,
+                InProcessStub,
+                ChannelAddress,
+                InProcessMessagingStubFactory,
+                InProcessMessagingSkeleton,
+                InProcessMessagingStub,
+                InProcessAddress,
+                BrowserMessagingStubFactory,
+                BrowserMessagingSkeleton,
+                WebMessagingStub,
+                WebMessagingSkeleton,
+                LongPollingChannelMessageReceiver,
+                MessagingQos,
+                DiscoveryQos,
+                ChannelUrlDirectoryProxy,
+                ChannelUrlInformation,
+                ProviderQos,
+                ProviderScope,
+                DiscoveryScope,
+                DiscoveryProvider,
+                RoutingProvider,
+                TypeRegistrySingleton,
+                Util,
+                DistributedLoggingAppenderConstructorFactory,
+                DistributedLoggingAppender,
+                WebWorkerMessagingAppender,
+                uuid,
+                LoggingManager,
+                LoggerFactory,
+                LocalStorage) {
+            var JoynrStates = {
+                SHUTDOWN : "shut down",
+                STARTING : "starting",
+                STARTED : "started",
+                SHUTTINGDOWN : "shutting down"
+            };
+
+            var TWO_DAYS_IN_MS = 172800000;
+
+            /**
+             * The InterTabClusterControllerRuntime is the version of the libjoynr-js runtime that
+             * hosts its own cluster controller
+             *
+             * @name InterTabClusterControllerRuntime
+             * @constructor
+             *
+             * @param provisioning
+             */
+            function InterTabClusterControllerRuntime(provisioning) {
+                var loggingManager;
+                var initialRoutingTable;
+                var untypedCapabilities;
+                var typedCapabilities;
+                var channelUrlDirectoryStub;
+                var localChannelUrlDirectory;
+                var channelMessagingSender;
+                var messagingStubFactory;
+                var webMessagingStub;
+                var webMessagingSkeleton;
+                var browserMessagingSkeleton;
+                var messageRouter;
+                var communicationModule;
+                var longPollingMessageReceiver;
+                var libjoynrMessagingSkeleton;
+                var clusterControllerMessagingSkeleton;
+                var clusterControllerChannelMessagingSkeleton;
+                var clusterControllerMessagingStub;
+                var dispatcher;
+                var typeRegistry;
+                var requestReplyManager;
+                var subscriptionManager;
+                var publicationManager;
+                var participantIdStorage;
+                var capabilityDiscovery;
+                var arbitrator;
+                var channelId;
+                var bounceProxyBaseUrl;
+                var providerBuilder;
+                var proxyBuilder;
+                var capabilitiesRegistrar;
+                var localCapabilitiesStore;
+                var globalCapabilitiesCache;
+                var discoveryStub;
+                var messageQueueSettings;
+                var providerQos;
+                var discoveryProvider;
+                var routingProvider;
+                var registerDiscoveryProviderPromise;
+                var registerRoutingProviderPromise;
+                var persistency;
+
+                // this is required at load time of libjoynr
+                typeRegistry = Object.freeze(TypeRegistrySingleton.getInstance());
+
+                /**
+                 * @name InterTabClusterControllerRuntime#typeRegistry
+                 * @type TypeRegistry
+                 * @field
+                 */
+                Object.defineProperty(this, "typeRegistry", {
+                    get : function() {
+                        return typeRegistry;
+                    },
+                    enumerable : true
+                });
+
+                /**
+                 * @name InterTabClusterControllerRuntime#capabilities
+                 * @type CapabilitiesRegistrar
+                 * @field
+                 */
+                Object.defineProperty(this, "capabilities", {
+                    get : function() {
+                        return capabilitiesRegistrar;
+                    },
+                    enumerable : true
+                });
+
+                /**
+                 * @name InterTabClusterControllerRuntime#participantIdStorage
+                 * @type ParticipantIdStorage
+                 * @field
+                 */
+                Object.defineProperty(this, "participantIdStorage", {
+                    get : function() {
+                        return participantIdStorage;
+                    },
+                    enumerable : true
+                });
+
+                /**
+                 * @name InterTabClusterControllerRuntime#providerBuilder
+                 * @type ProviderBuilder
+                 * @field
+                 */
+                Object.defineProperty(this, "providerBuilder", {
+                    get : function() {
+                        return providerBuilder;
+                    },
+                    enumerable : true
+                });
+
+                /**
+                 * @name InterTabClusterControllerRuntime#proxyBuilder
+                 * @type ProxyBuilder
+                 * @field
+                 */
+                Object.defineProperty(this, "proxyBuilder", {
+                    get : function() {
+                        return proxyBuilder;
+                    },
+                    enumerable : true
+                });
+
+                /**
+                 * @name InterTabClusterControllerRuntime#logging
+                 * @type LoggingManager
+                 * @field
+                 */
+                Object.defineProperty(this, "logging", {
+                    get : function() {
+                        return loggingManager;
+                    },
+                    enumerable : true
+                });
+
+                var log, relativeTtl;
+
+                if (provisioning.logging && provisioning.logging.ttl) {
+                    relativeTtl = provisioning.logging.ttl;
+                } else {
+                    relativeTtl = TWO_DAYS_IN_MS;
+                }
+
+                var loggingMessagingQos = new MessagingQos({
+                    ttl : Date.now() + relativeTtl
+                });
+                loggingManager = Object.freeze(new LoggingManager());
+                LoggerFactory.init(loggingManager);
+
+                var joynrState = JoynrStates.SHUTDOWN;
+
+                /**
+                 * Starts up the libjoynr instance
+                 *
+                 * @name InterTabClusterControllerRuntime#start
+                 * @function
+                 * @returns {Object} an A+ promise object, reporting when libjoynr startup is completed or failed
+                 * @throws {Error}
+                 *             if libjoynr is not in SHUTDOWN state
+                 */
+                this.start =
+                        function start() {
+                            var i;
+
+                            if (joynrState !== JoynrStates.SHUTDOWN) {
+                                throw new Error("Cannot start libjoynr because it's currently \""
+                                    + joynrState
+                                    + "\"");
+                            }
+                            joynrState = JoynrStates.STARTING;
+
+                            if (!provisioning) {
+                                throw new Error("Constructor has been invoked without provisioning");
+                            }
+
+                            // initialize Logger with external logging configuration or default
+                            // values
+                            loggingManager.registerAppenderClass(
+                                    "WebWorker",
+                                    WebWorkerMessagingAppender);
+                            loggingManager.registerAppenderClass(
+                                    "Distributed",
+                                    DistributedLoggingAppenderConstructorFactory.build(
+                                            proxyBuilder,
+                                            loggingMessagingQos));
+
+                            if (provisioning.logging) {
+                                loggingManager.configure(provisioning.logging);
+                            }
+
+                            log =
+                                    LoggerFactory
+                                            .getLogger("joynr.start.InterTabClusterControllerRuntime");
+
+                            persistency = new LocalStorage();
+
+                            if (Util.checkNullUndefined(provisioning.bounceProxyUrl)) {
+                                throw new Error(
+                                        "bounce proxy URL not set in provisioning.bounceProxyUrl");
+                            }
+                            if (Util.checkNullUndefined(provisioning.bounceProxyBaseUrl)) {
+                                throw new Error(
+                                        "bounce proxy base URL not set in provisioning.bounceProxyBaseUrl");
+                            }
+                            if (Util.checkNullUndefined(provisioning.parentWindow)) {
+                                throw new Error(
+                                        "parent window not set in provisioning.parentWindow, use \"window.opener || window.top\" for example");
+                            }
+
+                            initialRoutingTable = {};
+                            bounceProxyBaseUrl = provisioning.bounceProxyBaseUrl;
+
+                            channelId =
+                                    provisioning.channelId
+                                        || persistency.getItem("joynr.channels.channelId.1")
+                                        || "chjs_"
+                                        + uuid();
+                            persistency.setItem("joynr.channels.channelId.1", channelId);
+
+                            untypedCapabilities = provisioning.capabilities || [];
+                            typedCapabilities = [];
+                            if (untypedCapabilities) {
+                                for (i = 0; i < untypedCapabilities.length; i++) {
+                                    var capability =
+                                            new CapabilityInformation(untypedCapabilities[i]);
+                                    initialRoutingTable[capability.participantId] =
+                                            new ChannelAddress({
+                                                channelId : capability.channelId
+                                            });
+                                    typedCapabilities.push(capability);
+                                }
+                            }
+
+                            var channelUrlDirectoryStub = new InProcessStub();
+
+                            /**
+                             * Types all provisioned channelUrls using ChannelUrlInformation
+                             *
+                             * @param {Object}
+                             *            channelUrls the Array of ChannelUrls
+                             * @param {Array}
+                             *            channelUrls.CHANNELID the ChannelUrls
+                             * @param {String}
+                             *            channelUrls.CHANNELID.array the ChannelUrl
+                             * @returns the same structure, but with joynr typed
+                             *          ChannelUrlInformation objects
+                             */
+                            function typeChannelUrls(channelUrls) {
+                                channelUrls = channelUrls || {};
+                                var channelId, typedChannelUrls = {};
+                                for (channelId in channelUrls) {
+                                    if (channelUrls.hasOwnProperty(channelId)) {
+                                        typedChannelUrls[channelId] = new ChannelUrlInformation({
+                                            urls : channelUrls[channelId]
+                                        });
+                                    }
+                                }
+                                return typedChannelUrls;
+                            }
+
+                            localChannelUrlDirectory = new LocalChannelUrlDirectory({
+                                channelUrlDirectoryProxy : channelUrlDirectoryStub,
+                                provisionedChannelUrls : typeChannelUrls(provisioning.channelUrls)
+                            });
+
+                            communicationModule = new CommunicationModule();
+
+                            channelMessagingSender = new ChannelMessagingSender({
+                                channelUrlDirectory : localChannelUrlDirectory,
+                                communicationModule : communicationModule,
+                                channelQos : provisioning.channelQos
+                            });
+
+                            messageQueueSettings = {};
+                            if (provisioning.messaging !== undefined
+                                && provisioning.messaging.maxQueueSizeInKBytes !== undefined) {
+                                messageQueueSettings.maxQueueSizeInKBytes =
+                                        provisioning.messaging.maxQueueSizeInKBytes;
+                            }
+
+                            webMessagingStub = new WebMessagingStub({
+                                window : provisioning.parentWindow, // parent window variable for
+                                // communication, this should be
+                                // window.opener || window.top
+                                origin : provisioning.parentOrigin
+                            // target origin of the parent window, this will be location.origin in
+                            // most cases
+                            });
+
+                            webMessagingSkeleton = new WebMessagingSkeleton({
+                                window : provisioning.window
+                            // window variable for communication, this should be window
+                            });
+
+                            browserMessagingSkeleton = new BrowserMessagingSkeleton({
+                                webMessagingSkeleton : webMessagingSkeleton
+                            });
+
+                            messagingStubFactory = new MessagingStubFactory({
+                                messagingStubFactories : {
+                                    InProcessAddress : new InProcessMessagingStubFactory(),
+                                    BrowserAddress : new BrowserMessagingStubFactory({
+                                        webMessagingStub : webMessagingStub
+                                    }),
+                                    ChannelAddress : new ChannelMessagingStubFactory({
+                                        myChannelId : channelId,
+                                        channelMessagingSender : channelMessagingSender
+                                    })
+                                }
+                            });
+                            messageRouter = new MessageRouter({
+                                initialRoutingTable : initialRoutingTable,
+                                persistency : persistency,
+                                typeRegistry : typeRegistry,
+                                joynrInstanceId : channelId,
+                                messagingStubFactory : messagingStubFactory,
+                                messageQueue : new MessageQueue(messageQueueSettings)
+                            });
+                            browserMessagingSkeleton.registerListener(messageRouter.route);
+
+                            longPollingMessageReceiver = new LongPollingChannelMessageReceiver({
+                                persistency : persistency,
+                                bounceProxyUrl : bounceProxyBaseUrl + "/bounceproxy/",
+                                communicationModule : communicationModule,
+                                channelQos: provisioning.channelQos
+                            });
+
+                            // link up clustercontroller messaging to channel
+                            clusterControllerChannelMessagingSkeleton =
+                                    new ChannelMessagingSkeleton({
+                                        messageRouter : messageRouter
+                                    });
+                            // clusterControllerChannelMessagingSkeleton.registerListener(messageRouter.route);
+
+                            var longPollingPromise = longPollingMessageReceiver.create(channelId).then(
+                                    function(channelUrl) {
+                                        longPollingMessageReceiver
+                                                .start(clusterControllerChannelMessagingSkeleton.receiveMessage);
+                                        return channelUrl;
+                                    });
+
+                            // link up clustercontroller messaging to dispatcher
+                            clusterControllerMessagingSkeleton = new InProcessMessagingSkeleton();
+                            clusterControllerMessagingStub =
+                                    new InProcessMessagingStub(clusterControllerMessagingSkeleton);
+
+                            // clustercontroller messaging handled by the messageRouter
+                            clusterControllerMessagingSkeleton
+                                    .registerListener(messageRouter.route);
+
+                            dispatcher =
+                                    new Dispatcher(
+                                            clusterControllerMessagingStub,
+                                            new PlatformSecurityManager());
+
+                            libjoynrMessagingSkeleton = new InProcessMessagingSkeleton();
+                            libjoynrMessagingSkeleton.registerListener(dispatcher.receive);
+
+                            requestReplyManager = new RequestReplyManager(dispatcher, typeRegistry);
+                            subscriptionManager = new SubscriptionManager(dispatcher);
+                            publicationManager =
+                                    new PublicationManager(dispatcher, persistency, channelId);
+
+                            dispatcher.registerRequestReplyManager(requestReplyManager);
+                            dispatcher.registerSubscriptionManager(subscriptionManager);
+                            dispatcher.registerPublicationManager(publicationManager);
+
+                            localCapabilitiesStore = new CapabilitiesStore(typedCapabilities);
+                            globalCapabilitiesCache = new CapabilitiesStore();
+
+                            participantIdStorage = new ParticipantIdStorage(persistency, uuid);
+
+                            discoveryStub =
+                                new InProcessStub();
+
+                            capabilitiesRegistrar =
+                                    Object.freeze(new CapabilitiesRegistrar({
+                                        discoveryStub : discoveryStub,
+                                        messageRouter : messageRouter,
+                                        requestReplyManager : requestReplyManager,
+                                        publicationManager : publicationManager,
+                                        libjoynrMessagingAddress : new InProcessAddress(
+                                                libjoynrMessagingSkeleton),
+                                        participantIdStorage : participantIdStorage,
+                                        localChannelId : channelId,
+                                        loggingManager : loggingManager
+                                    }));
+
+                            arbitrator = new Arbitrator(discoveryStub);
+
+                            proxyBuilder =
+                                Object.freeze(new ProxyBuilder({
+                                    arbitrator : arbitrator,
+                                    requestReplyManager : requestReplyManager,
+                                    subscriptionManager : subscriptionManager,
+                                    publicationManager : publicationManager
+                                }, {
+                                    messageRouter : messageRouter,
+                                    libjoynrMessagingAddress : new InProcessAddress(
+                                            libjoynrMessagingSkeleton),
+                                            loggingManager : loggingManager
+                                }));
+
+                            var internalMessagingQos =
+                                new MessagingQos(provisioning.internalMessagingQos);
+
+                            var defaultProxyBuildSettings = {
+                                domain : "io.joynr",
+                                messagingQos : internalMessagingQos,
+                                discoveryQos : new DiscoveryQos(
+                                        {
+                                            discoveryScope : DiscoveryScope.LOCAL_ONLY
+                                        })
+                            };
+
+                            capabilityDiscovery =
+                                    new CapabilityDiscovery(
+                                            localCapabilitiesStore,
+                                            globalCapabilitiesCache,
+                                            messageRouter,
+                                            proxyBuilder,
+                                            channelId,
+                                            defaultProxyBuildSettings.domain);
+
+                            discoveryStub.setSkeleton(new InProcessSkeleton(capabilityDiscovery));
+
+                            providerBuilder = Object.freeze(new ProviderBuilder());
+
+                            var channelUrlPromise = (function() {
+                                    return proxyBuilder.build(ChannelUrlDirectoryProxy, defaultProxyBuildSettings)
+                                            .then(function(newChannelUrlDirectoryProxy) {
+                                                channelUrlDirectoryStub
+                                                        .setSkeleton(new InProcessSkeleton(
+                                                                newChannelUrlDirectoryProxy));
+                                                return;
+                                            }).catch(function(error) {
+                                                var errorString =
+                                                        "Failed to create channel url directory proxy: "
+                                                            + error;
+                                                log.error(errorString);
+                                                throw new Error(errorString);
+                                            });
+                            }());
+
+                            // if commmunication is there (longPollingPromise) and ChannelUrlProxy
+                            // exists => register ChannelUrl
+                            var channelUrlRegisteredPromise = Promise.all([longPollingPromise, channelUrlPromise])
+                                        .then(function(longPollParams) {
+                                            var channelUrl = longPollParams[0];
+                                            channelMessagingSender.start();
+                                            return localChannelUrlDirectory.registerChannelUrls(
+                                                        {
+                                                            channelId : channelId,
+                                                            channelUrlInformation : new ChannelUrlInformation(
+                                                                    {
+                                                                        urls : [ channelUrl
+                                                                        ]
+                                                                    })
+                                                        })
+                                                .catch(function(error) {
+                                                    throw new Error(
+                                                            "could not register ChannelUrl "
+                                                                + channelUrl
+                                                                + " for ChannelId "
+                                                                + channelId
+                                                                + ": "
+                                                                + error);
+                                                });
+                                        });
+
+                            providerQos = new ProviderQos({
+                                customParameters : [],
+                                providerVersion : 1,
+                                priority : Date.now(),
+                                scope : ProviderScope.LOCAL
+                            });
+
+                            discoveryProvider =
+                                    providerBuilder.build(
+                                            DiscoveryProvider,
+                                            {
+                                                add : function(opArgs) {
+                                                    return capabilityDiscovery
+                                                            .add(opArgs.discoveryEntry);
+                                                },
+                                                lookup : function(opArgs) {
+                                                    return capabilityDiscovery.lookup(
+                                                            opArgs.domain,
+                                                            opArgs.interfaceName,
+                                                            opArgs.discoveryQos);
+                                                },
+                                                remove : function(opArgs) {
+                                                    return capabilityDiscovery
+                                                            .remove(opArgs.participantId);
+                                                }
+                                            });
+                            registerDiscoveryProviderPromise =
+                                    capabilitiesRegistrar.registerCapability(
+                                            "",
+                                            "io.joynr",
+                                            discoveryProvider,
+                                            providerQos);
+
+                            routingProvider =
+                                    providerBuilder.build(RoutingProvider, {
+                                        addNextHop : function(opArgs) {
+                                            if (opArgs.channelAddress !== undefined) {
+                                                messageRouter.addNextHop(
+                                                        opArgs.participantId,
+                                                        opArgs.channelAddress);
+                                            } else if (opArgs.commonApiDbusAddress !== undefined) {
+                                                messageRouter.addNextHop(
+                                                        opArgs.participantId,
+                                                        opArgs.commonApiDbusAddress);
+                                            } else if (opArgs.browserAddress !== undefined) {
+                                                messageRouter.addNextHop(
+                                                        opArgs.participantId,
+                                                        opArgs.browserAddress);
+                                            } else if (opArgs.webSocketAddress !== undefined) {
+                                                messageRouter.addNextHop(
+                                                        opArgs.participantId,
+                                                        opArgs.webSocketAddress);
+                                            }
+                                        },
+                                        resolveNextHop : function(opArgs) {
+                                            return messageRouter.resolveNextHop(opArgs.participantId)
+                                                    .then(function(address) {
+                                                        var isResolved = address !== undefined;
+                                                        return isResolved;
+                                                    }).catch(function(error) {
+                                                        return false;
+                                                    });
+                                        },
+                                        removeNextHop : function(opArgs) {
+                                            messageRouter.removeNextHop(opArgs.participantId);
+                                        }
+                                    });
+                            registerRoutingProviderPromise =
+                                    capabilitiesRegistrar.registerCapability(
+                                            "",
+                                            "io.joynr",
+                                            routingProvider,
+                                            providerQos);
+
+                            // when everything's ready we can resolve the promise
+                            return Promise.all(
+                                    [
+                                        registerDiscoveryProviderPromise,
+                                        registerRoutingProviderPromise
+                                    ]).then(function() {
+                                joynrState = JoynrStates.STARTED;
+                                publicationManager.restore();
+                                log.debug("joynr cluster controller initialized");
+                                return;
+                            }).catch(function(error) {
+                                log.error("error starting up joynr: " + error);
+                                throw error;
+                            });
+                        };
+
+                /**
+                 * Shuts down libjoynr
+                 *
+                 * @name InterTabClusterControllerRuntime#shutdown
+                 * @function
+                 * @throws {Error}
+                 *             if libjoynr is not in the STARTED state
+                 */
+                this.shutdown =
+                        function shutdown() {
+                            if (joynrState !== JoynrStates.STARTED) {
+                                throw new Error(
+                                        "Cannot shutdown libjoynr because it's currently \""
+                                            + joynrState
+                                            + "\"");
+                            }
+                            joynrState = JoynrStates.SHUTTINGDOWN;
+
+                            // unregister channel @ ChannelUrlDir
+                            var channelUrlUnregisterPromise = localChannelUrlDirectory.unregisterChannelUrls(
+                                    {
+                                        channelId : channelId
+                                    }).catch(function(error) {
+                                        var errorString = "error unregistering ChannelId "
+                                                    + channelId + ": " + error;
+                                        log.error(errorString);
+                                        throw new Error(errorString);
+                                    });
+
+                            var longPollingReceiverStopFunction = function() {
+                                return longPollingMessageReceiver.clear(channelId)
+                                .then(function() {
+                                    // stop LongPolling
+                                    longPollingMessageReceiver.stop();
+                                    return;
+                                }).catch(function(error) {
+                                    var errorString = "error clearing long poll channel: "
+                                        + error;
+                                    log.error(errorString);
+                                    // stop LongPolling
+                                    longPollingMessageReceiver.stop();
+                                    throw new Error(errorString);
+                                });
+                            };
+
+                            // unregister channel @ BounceProxy
+                            var longPollingPromise = channelUrlUnregisterPromise.then(longPollingReceiverStopFunction).catch(longPollingReceiverStopFunction);
+
+                            joynrState = JoynrStates.SHUTDOWN;
+                            log.debug("joynr cluster controller shut down");
+                            return Promise.resolve();
+                        };
+
+                // make every instance immutable
+                return Object.freeze(this);
+            }
+
+            return InterTabClusterControllerRuntime;
+
+        });

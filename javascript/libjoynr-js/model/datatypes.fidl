@@ -1,0 +1,222 @@
+/*
+ * #%L
+ * %%
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
+ package datatypes
+
+typeCollection exampleTypes {
+	enumeration Country {
+		AUSTRALIA
+		AUSTRIA
+		CANADA
+		GERMANY
+		ITALY
+		UNITED_KINGDOM
+	}
+
+	struct ComplexRadioStation {
+		String name
+		String station
+		Country source
+	}
+}
+
+<** @description : "This interface is purely for testing puposes, to test all the different combinations of arguments passed through joynr" **>
+interface Datatypes  {
+
+	attribute Boolean booleanAttribute
+	attribute Int8 int8Attribute
+	attribute UInt8 uint8Attribute
+	attribute Int16 int16Attribute
+	attribute UInt16 uint16Attribute
+	attribute Int32 int32Attribute
+	attribute UInt32 uint32Attribute
+	attribute Int64 int64Attribute
+	attribute UInt64 uint64Attribute
+	attribute Float floatAttribute
+	attribute Double doubleAttribute
+	attribute String stringAttribute
+	attribute String [] stringArrayAttribute
+	attribute exampleTypes.ComplexRadioStation structAttribute
+
+
+	/* For TestEnd2EndDatatypes.js, test "supports all datatypes as operation arguments" */
+
+	method getJavascriptType {
+		in {
+			Boolean arg
+		}
+		out {
+			String javascriptType
+		}
+	}
+
+	method getJavascriptType {
+		in {
+			Int32 arg
+		}
+		out {
+			String javascriptType
+		}
+	}
+
+	method getJavascriptType {
+		in {
+			Double arg
+		}
+		out {
+			String javascriptType
+		}
+	}
+
+	method getJavascriptType {
+		in {
+			String arg
+		}
+		out {
+			String javascriptType
+		}
+	}
+
+	method getJavascriptType {
+		in {
+			String [] arg
+		}
+		out {
+			String javascriptType
+		}
+	}
+
+	method getJavascriptType {
+		in {
+			exampleTypes.Country arg
+		}
+		out {
+			String javascriptType
+		}
+	}
+
+	method getJavascriptType {
+		in {
+			exampleTypes.ComplexRadioStation arg
+		}
+		out {
+			String javascriptType
+		}
+	}
+
+
+	/* For TestEnd2EndDatatypes.js, test "supports all datatypes as operation argument and return value*/
+
+	method getArgumentBack {
+		in {
+			Boolean arg
+		}
+		out {
+			Boolean returnValue
+		}
+	}
+
+	method getArgumentBack {
+		in {
+			Int32 arg
+		}
+		out {
+			Int32 returnValue
+		}
+	}
+
+	method getArgumentBack {
+		in {
+			Double arg
+		}
+		out {
+			Double returnValue
+		}
+	}
+
+	method getArgumentBack {
+		in {
+			String arg
+		}
+		out {
+			String returnValue
+		}
+	}
+
+	method getArgumentBack {
+		in {
+			String [] arg
+		}
+		out {
+			String [] returnValue
+		}
+	}
+
+	method getArgumentBack {
+		in {
+			exampleTypes.Country arg
+		}
+		out {
+			exampleTypes.Country returnValue
+		}
+	}
+
+	method getArgumentBack {
+		in {
+			exampleTypes.ComplexRadioStation arg
+		}
+		out {
+			exampleTypes.ComplexRadioStation returnValue
+		}
+	}
+
+
+	/* For TestEnd2EndDatatypes.js, test "supports multiple operation arguments" */
+
+	method multipleArguments {
+		in {
+			Boolean booleanArg
+			UInt8 byteArg
+			UInt16 shortArg
+			UInt32 integerArg
+			UInt64 longArg
+			Float floatArg
+			Double doubleArg
+			String stringArg
+			String [] listArg
+			exampleTypes.ComplexRadioStation joynr_datatypes_exampletypes_ComplexRadioStationArg
+		}
+		out {
+			String serialized
+		}
+	}
+
+
+
+	/**
+	 * When this event is triggered, details about the radio
+	 * station will be included.
+	 */
+//	broadcast weakSignal {
+//		out {
+//		  exampleTypes.ComplexRadioStation radioStation
+//		}
+//	}
+}
+

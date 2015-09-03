@@ -1,0 +1,11 @@
+userdirectorydb
+.classpath
+.project
+.settings/
+src/main/generated*
+src/test/generated*
+capabilitiesdump/capabilities.json
+joynr.properties
+joynr_participantIds.properties
+/target
+derby.log

@@ -27,11 +27,11 @@ Note that the following elements in the code examples below must be replaced by 
 The Franca ```<Package>``` will be transformed to the C++ namespace ```joynr::<Package>```.
 
 ### Type collection name
-The Franca ```<TypeCollection>``` is not used in the generated code. It is therefore important that all typeNames within a particular package be unique.
+The Franca ```<TypeCollection>``` will be transformed to the C++ namespace ```joynr::<Package>::<TypeCollection>```.
 
 ### Complex type name
 
-Any Franca complex type ```<TypeCollection>.<Type>``` will result in the creation of a ```class joynr::<Package>::<Type>``` (see above).
+Any Franca complex type ```<TypeCollection>.<Type>``` will result in the creation of a ```class joynr::<Package>::<TypeCollection>::<Type>``` (see above).
 
 The same ```<Type>``` will be used for all elements in the event that this type is used as an element of other complex types, as a method input or output argument, or as a broadcast output argument.
 
@@ -82,6 +82,7 @@ The following base includes are required for a C++ Consumer application:
 
 ## The main program
 The ```main()``` function in C++ should be structured as follows:
+
 ```cpp
 int
 main(int argc, char** argv)
@@ -144,11 +145,13 @@ Class ```DiscoveryQos``` also provides keys for the key-value pair for the custo
 * **KEYWORD_PARAMETER**
 
 Example for **Keyword** arbitration strategy:
+
 ```cpp
 discoveryQos.addCustomParameter(DiscoveryQos::KEYWORD_PARAMETER(), "keyword");
 ```
 
 Example for the creation of a DiscoveryQos class object:
+
 ```cpp
 DiscoveryQos discoveryQos;
 
@@ -207,9 +210,10 @@ In case of communication errors, a ```JoynrCommunicationException ????``` is thr
 ## Synchronous Remote procedure calls
 While the provider executes the call asynchronously in any case, the consumer will wait until the call is finished, i.e. the thread will be blocked.
 Note that the message order on Joynr RPCs will not be preserved.
+
 ```cpp
 // for any Franca type named "<Type>" used
-#include "joynr/<Package>/<Type>.h"
+#include "joynr/<Package>/<TypeCollection>/<Type>.h"
 
     try {
         <ReturnType1> retval1;
@@ -217,7 +221,7 @@ Note that the message order on Joynr RPCs will not be preserved.
         <ReturnTypeN> retvalN;
         joynr::RequestStatus requestStatus;
 
-        requestStatus = <interface>Proxy-><method>(retval1 [, ..., retvalN], ... optional arguments ...);
+        requestStatus = <interface>Proxy-><method>([retval1, ..., retvalN,][inputVal1, ..., inputValN);
     } catch (std::exception e) {
         // error handling
     }
@@ -227,8 +231,9 @@ Note that the message order on Joynr RPCs will not be preserved.
 Using asynchronous method calls allows the current thread to continue its work. For this purpose a callback has to be provided for the API call in order to receive the result and error respectively. Note the current thread will still be blocked until the Joynr message is internally set up and serialized. It will then be enqueued and handled by a Joynr Middleware thread.
 The message order on Joynr RPCs will not be preserved.
 If no return type exists, the term ```Void``` is used instead.
+
 ```cpp
-#include "joynr/<Package>/<Type>.h"
+#include "joynr/<Package>/<TypeCollection>/<Type>.h"
 
 std::shared_ptr<joynr::Future<<ReturnType1> [, ..., <ReturnTypeN>]> >
     future(new joynr::Future<<ReturnType1> [, ..., <ReturnTypeN>]>());
@@ -301,9 +306,9 @@ To receive the subscription, a callback has to be provided which is done providi
 
 ```cpp
 // for any Franca type named "<Type>" used
-#include "joynr/<Package>/<Type>.h"
+#include "joynr/<Package>/<TypeCollection>/<Type>.h"
 
-class <AttributeType>Listener : public SubscriptionListener<<Package>::<AttributeType>>
+class <AttributeType>Listener : public SubscriptionListener<<AttributeType>>
 {
     public:
         // Constructor
@@ -316,7 +321,7 @@ class <AttributeType>Listener : public SubscriptionListener<<Package>::<Attribut
         {
         }
 
-        void onReceive(const <Package>::<AttributeType>& value)
+        void onReceive(const <AttributeType>& value)
         {
             // handle publication
         }
@@ -376,7 +381,7 @@ Broadcast subscription informs the application in case a broadcast is fired from
 
 ```cpp
 // for any Franca type named "<Type>" used
-#include "joynr/<Package>/<Type>.h"
+#include "joynr/<Package>/<TypeCollection>/<Type>.h"
 
 class <Broadcast>Listener : public SubscriptionListener<<OutputType1>[, ... <OutputTypeN>]>
 {
@@ -418,7 +423,6 @@ try {
 
 The subscribeTo method can also be used to update an existing subscription, when the **subscriptionId** is given as additional parameter as follows:
 
-
 ```cpp
 subscriptionId = <interface>Proxy.subscribeTo<Broadcast>Broadcast(
     listener,
@@ -435,7 +439,7 @@ In addition to the normal broadcast subscription, the filter parameters for this
 
 ```cpp
 // for any Franca type named "<Type>" used
-#include "joynr/<Package>/<Type>.h"
+#include "joynr/<Package>/<TypeCollection>/<Type>.h"
 
 #include "joynr/ISubscriptionListener.h"
 #include "joynr/SubscriptionListener.h"
@@ -455,7 +459,7 @@ std::string subscriptionId;
 
 try {
     // create filterparams instance on stack
-    <package>::<Interface><Broadcast>BroadcastFilterParams <broadcast>BroadcastFilterParams;
+    <Package>::<Interface><Broadcast>BroadcastFilterParams <broadcast>BroadcastFilterParams;
     // set filter attributes by calling setters on the
     // filter parameter instance
 
@@ -535,6 +539,7 @@ The class can theoretically serve multiple Franca interfaces.
 For each Franca interface implemented, the providing application creates an instance of ```My<Interface>Provider```, which implements the service for that particular interface, and registers it as a capability at the Joynr Middleware.
 
 The example below shows the code for one interface:
+
 ```cpp
 using namespace joynr;
 
@@ -559,6 +564,7 @@ main(int argc, char** argv)
 ### Registering capabilities
 For each interface a specific provider class instance must be registered as capability. From that time on, the provider will be reachable from outside and react on incoming requests (e.g. method RPC etc.). It can be found by consumers through Discovery.
 Any specific broadcast filters must be added prior to registry.
+
 ```cpp
     // create instance of provider class
     std::shared_ptr<My<Interface>Provider> provider(new My<Interface>Provider());
@@ -574,6 +580,7 @@ Any specific broadcast filters must be added prior to registry.
 
 ### Shutting down
 On exit of the application it should cleanly unregister any capabilities the application had registered earlier and free resources.
+
 ```cpp
     // for each provider class
     runtime->unregisterProvider<Package>::<Interface>Provider>(
@@ -588,6 +595,7 @@ The provider class implements the **attributes**, **methods** and **broadcasts**
 
 ### Required imports
 The following Joynr C++ include files are required:
+
 ```cpp
 #include "My<Interface>Provider.h"
 ```
@@ -607,6 +615,7 @@ The **ProviderScope** can be
 * **GLOBAL** The provider will be registered in the local and global capability directory
 
 Example:
+
 ```cpp
 types::ProviderQos providerQos;
 providerQos.setCustomParameters(customParameters);
@@ -618,6 +627,7 @@ providerQos.setSupportsOnChangeSubscriptions(true);
 
 ### The base class
 The provider class must extend the generated class ```joynr::<Package>::Default<Interface>Provider```  and implement getter and setter methods for each Franca attribute and a method for each method of the Franca interface. In order to send broadcasts the generated code of the super class ```joynr::<Interface>Provider``` can be used.
+
 ```cpp
 #include "My<Interface>Provider.h"
 #include "joynr/RequestStatus.h"
@@ -645,26 +655,27 @@ My<Interface>Provider::~My<Interface>Provider()
 
 ### Providing attribute getters and setters
 The getter methods return the current value of an attribute. Since the current thread is blocked while the getter runs, activity should be kept as short as possible.
+
 ```cpp
 // for any Franca type named "<Type>" used
-#include "joynr/<Package>/<Type>.h"
+#include "joynr/<Package>/<TypeCollection>/<Type>.h"
 ...
 void My<Interface>Provider::get<Attribute>(
-    std::function<void(const <Package>::<AttributeType>&)> onSuccess
+    std::function<void(const <AttributeType>&)> onSuccess
 )
 {
     onSuccess(<AttributeValue>);
 }
 
 void My<Interface>Provider::set<Attribute>(
-    const joynr::<Package>::<AttributeType>& <attribute>,
+    const <AttributeType>& <Attribute>,
     std::function<void()> onSuccess
 )
 {
     // handle and store the new Value
     ...
     // inform subscribers about the value change
-    <attribute>Changed(<attribute>);
+    <Attribute>Changed(<Attribute>);
     ...
     onSuccess();
 }
@@ -672,9 +683,10 @@ void My<Interface>Provider::set<Attribute>(
 
 ### Implementing a Franca RPC method
 The provider should always implement RPC calls asynchronously in order to not block the main thread longer than required. Also it needs to take care not to overload the server, e.g. it must not accept unlimited amount of RPC requests causing background activity. After exceeding a limit, further calls should be rejected until the number of outstanding activities falls below the limit again.
+
 ```cpp
 // for any Franca type named "<Type>" used
-#include "joynr/<Package>/<Type>.h"
+#include "joynr/<Package>/<TypeCollection>/<Type>.h"
 ...
 void My<Interface>Provider::<method>(
     ... input parameters ...   // optional
@@ -693,9 +705,10 @@ void My<Interface>Provider::<method>(
 
 ### Firing a broadcast
 Firing a broadcast blocks the current thread until the message is serialized.
+
 ```cpp
 // for any Franca type named "<Type>" used
-#include "joynr/<Package>/<Type>.h"
+#include "joynr/<Package>/<TypeCollection>/<Type>.h"
 ...
 void My<Interface>Provider::fire<Broadcast>Event()
 {
@@ -715,10 +728,11 @@ In contrast to unfiltered broadcasts, to realize selective (filtered) broadcasts
 ### The broadcast filter classes
 
 A broadcast filter class implements a filtering function called ```filter()``` which returns a boolean value indicating whether the broadcast should be delivered. The input parameters of the ```filter()``` method reflect the output values of the broadcast.
+
 ```cpp
 #include "joynr/<Package>/<Interface><Broadcast>BroadcastFilter.h"
 // for any Franca type named "<Type>" used
-#include "joynr/<Package>/<Type>.h"
+#include "joynr/<Package>/<TypeCollection>/<Type>.h"
 ...
 class <Filter>Filter: public <Package>::<Interface><Broadcast>BroadcastFilter
 {
@@ -726,9 +740,9 @@ class <Filter>Filter: public <Package>::<Interface><Broadcast>BroadcastFilter
         <Broadcast>Filter();
 
         virtual bool filter(
-            const joynr::<Package>::<OutputValueType1> outputValue1,
+            const joynr::<Package>::<OutputValueType1>& outputValue1,
             ...
-            const joynr::<Package>::<OutputValueTypeN> outputValueN,
+            const joynr::<Package>::<OutputValueTypeN>& outputValueN,
             const joynr::<Package>::<Interface><Broadcast>BroadcastFilterParameters& filterParameters
         );
 }
@@ -756,11 +770,11 @@ public:
 
     // for each attribute
     void get<Attribute>(
-        std::function<void(const joynr::<Package>::<AttributeType>& result)> onSuccess);
+        std::function<void(const <AttributeType>& result)> onSuccess);
 
     // for each attribute which are NOT readonly
     void set<Attribute>(
-        const joynr::<Package>::<AttributeType>& <attribute>,
+        const <AttributeType>& <attribute>,
         std::function<void()> onSuccess);
 
     // for each method

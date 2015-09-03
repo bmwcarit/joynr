@@ -1,3 +1,15 @@
+#joynr 0.9.3
+
+This is a minor bug fix release. It includes a preview version of the **joynr JavaScript** language
+binding. Have a look in the [JavaScript Tutorial](JavaScriptTutorial.js) to get started with joynr
+JavaScript.
+
+##API relevant changes
+* **[Java, C++, JS]** Using American English in radio.fidl (renaming favourite into favorite).
+
+##Other changes
+None.
+
 #joynr 0.9.2
 
 This is a minor bug fix release.

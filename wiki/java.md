@@ -27,11 +27,11 @@ Note that the following elements in the code examples below must be replaced by 
 The Franca ```<Package>``` will be transformed to the Java package ```joynr.<Package>```.
 
 ### Type collection name
-The Franca ```<TypeCollection>``` is not used in the generated code. It is therefore important that all typeNames within a particular package be unique.
+The Franca ```<TypeCollection>``` will be transformed to the Java package ```joynr.<Package>.<TypeCollection>```.
 
 ### Complex type name
 
-Any Franca complex type ```<TypeCollection>.<Type>``` will result in the creation of a ```class joynr.<Package>.<Type>``` (see above).
+Any Franca complex type ```<TypeCollection>.<Type>``` will result in the creation of a ```class joynr.<Package>.<TypeCollection>.<Type>``` (see above).
 
 The same ```<Type>``` will be used for all elements in the event that this type is used as an element of other complex types, as a method input or output argument, or as a broadcast output argument.
 
@@ -174,15 +174,18 @@ Class ```ArbitrationConstants``` provides keys for the key-value pair for the cu
 * **FIXEDPARTICIPANT_KEYWORD**
 
 Example for **Keyword** arbitration strategy:
+
 ```java
 discoveryQos.addCustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, "keyword");
 ```
 Example for **FixedChannel** arbitration strategy:
+
 ```java
 discoveryQos.addCustomParameter(ArbitrationConstants.FIXED_PARTICIPANT_KEYWORD, participantId);
 ```
 
 Example for the creation of a DiscoveryQos class object:
+
 ```java
 DiscoveryQos discoveryQos = new DiscoveryQos();
 
@@ -245,16 +248,17 @@ While the provider executes the call asynchronously in any case, the consumer wi
 Note that the message order on Joynr RPCs will not be preserved.
 
 Example for calls with single return parameter:
+
 ```java
 // for any Franca type named "<Type>" used
-import joynr.<Package>.<Type>;
+import joynr.<Package>.<TypeCollection>.<Type>;
 ...
 public void run() {
     // setup proxy named <interface>Proxy
     ...
     try {
         <ReturnType> retval;
-        retval = <interface>Proxy.<method>(... optional arguments ...);
+        retval = <interface>Proxy.<method>([inputVal1, ..., inputValN]);
     } catch (JoynrArbitrationException) {
         // error handling
     }
@@ -267,14 +271,14 @@ In case of multiple return parameters the parameters will be wrapped into a clas
 Example:
 ```java
 // for any Franca type named "<Type>" used
-import joynr.<Package>.<Type>;
+import joynr.<Package>.<TypeCollection>.<Type>;
 ...
 public void run() {
     // setup proxy named <interface>Proxy
     ...
     try {
         <Method>Returned retval;
-        retval = <interface>Proxy.<method>(... optional arguments ...);
+        retval = <interface>Proxy.<method>([inputVal1, ..., inputValN]);
         // handle return parameters
         //   retval.<returnParameter1>
         //   ...
@@ -291,9 +295,10 @@ The message order on Joynr RPCs will not be preserved.
 If no return type exists, the term ```Void``` is used instead.
 
 Example for calls with single return parameter:
+
 ```java
 // for any Franca type named "<Type>" used
-import joynr.<Package>.<Type>;
+import joynr.<Package>.<TypeCollection>.<Type>;
 ...
 public class MyCallback implements Callback<<ReturnType>> {
     void onSuccess(<ReturnType> result) {
@@ -313,7 +318,7 @@ public void run() {
 
     future = <interface>Proxy.<method>(
         myCallback,
-        ... arguments ...
+        [inputVal1, ..., inputValN]
     );
     try {
         long timeoutInMilliseconds;
@@ -330,7 +335,7 @@ In case of multiple return parameters the parameters will be wrapped into a clas
 ```<Method>Returned```. Each parameter value is available through a public member variable inside this class.
 ```java
 // for any Franca type named "<Type>" used
-import joynr.<Package>.<Type>;
+import joynr.<Package>.<TypeCollection.<Type>;
 ...
 public class MyCallback implements Callback<<Method>Returned> {
     void onSuccess(<Method>Returned result) {
@@ -350,7 +355,7 @@ public void run() {
 
     future = <interface>Proxy.<method>(
         myCallback,
-        ... arguments ...
+        [inputVal1, ..., inputValN]
     );
     try {
         long timeoutInMilliseconds;
@@ -414,7 +419,7 @@ To receive the subscription, a callback has to be provided.
 
 ```java
 // for any Franca type named "<Type>" used
-import joynr.<Package>.<Type>;
+import joynr.<Package>.<TypeCollection>.<Type>;
 ...
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
 import io.joynr.pubsub.subscription.AttributeSubscriptionAdapter;
@@ -509,7 +514,7 @@ import joynr.OnChangeSubscriptionQos;
 import joynr.<Package>.<Interface>BroadcastInterface.<Broadcast>BroadcastAdapter;
 ...
 // for any Franca type named "<Type>" used
-import joynr.<Package>.<Type>;
+import joynr.<Package>.<TypeCollection>.<Type>;
 ...
 public void run() {
     // setup proxy named "<interface>Proxy"
@@ -586,7 +591,7 @@ import joynr.<Package>.<Interface>BroadcastInterface.<Broadcast>BroadcastAdapter
 import joynr.<Package>.<Interface>BroadcastInterface.<Broadcast>FilterParameters;
 ...
 // for any Franca type named "<Type>" used
-import joynr.<Package>.<Type>;
+import joynr.<Package>.<TypeCollection>.<Type>;
 ...
 public void run() {
     // setup proxy named "<interface>Proxy"
@@ -635,7 +640,6 @@ public void run() {
 ## Updating a broadcast subscription with filter parameters
 
 The subscribeTo method can also be used to update an existing subscription, when the **subscriptionId** is given as additional parameter as follows:
-
 
 ```java
         subscriptionId = <interface>Proxy.subscribeTo<Broadcast>Broadcast(
@@ -739,13 +743,14 @@ The class must extend ```AbstractJoynrApplication``` and can theoretically serve
 For each Franca interface implemented, the providing application creates an instance of ```My<Interface>Provider```, which implements the service for that particular interface, and registers it as a capability at the Joynr Middleware.
 
 The example below shows the code for one interface:
+
 ```java
 package myPackage;
 ...
 // required imports
 ...
 // for any Franca type named "<Type>" used
-import joynr.<Package>.<Type>;
+import joynr.<Package>.<TypeCollection>.<Type>;
 ...
 public class MyProviderApplication extends AbstractJoynrApplication {
     private static final String AUTH_TOKEN = "MyProvider_authToken";
@@ -792,6 +797,7 @@ public static void main(String[] args) {
 ### The run method
 The run method registers the interface specific provider class instance as capability. From that time on, the provider will be reachable from outside and react on incoming requests (e.g. method RPC etc.). It can be found by consumers through Discovery.
 Any specific broadcast filters must be added prior to registry.
+
 ```java
 @Override
 public void run() {
@@ -808,6 +814,7 @@ public void run() {
 
 ### The shutdown method
 The ```shutdown``` method should be called on exit of the application. It should cleanly unregister any capabilities the application had registered earlier.
+
 ```java
 @Override
 @SuppressWarnings(value = "DM_EXIT", justification = "WORKAROUND to be removed")
@@ -862,6 +869,7 @@ The provider class implements the **attributes**, **methods** and **broadcasts**
 
 ### Required imports
 The following Joynr Java imports are required:
+
 ```java
 import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
@@ -884,6 +892,7 @@ The **ProviderScope** can be
 * **GLOBAL** The provider will be registered in the local and global capability directory
 
 Example:
+
 ```java
 ProviderQos providerQos = new ProviderQos();
 providerQos.setCustomParameters(customParameters);
@@ -895,6 +904,7 @@ providerQos.setSupportsOnChangeSubscriptions(true);
 
 ### The base class
 The provider class must extend the generated class ```<Interface>AbstractProvider``` and implement getter methods for each Franca attribute and a method for each method of the Franca interface. In order to send broadcasts the generated code of the super class ```<Interface>AbstractProvider``` can be used.
+
 ```java
 package myPackage;
 ...
@@ -927,9 +937,10 @@ public class My<Interface>Provider extends <Interface>AbstractProvider {
 
 ### Providing attribute getters
 The asynchronous getter methods return the current value of an attribute. Since the current thread is blocked while the getter runs, activity should be kept as short as possible. In most cases, when a simple element is returned, the method can resolve the Promise immediately. However, if longer activity is required, it should be done in the background and the deferred should also be resolved by a background thread.
+
 ```java
 // for any Franca type named "<Type>" used
-import joynr.<Package>.<Type>;
+import joynr.<Package>.<TypeCollection>.<Type>;
 ...
 @Override
 public Promise<Deferred<<AttributeType>>> get<Attribute>() {
@@ -949,9 +960,10 @@ public Promise<Deferred<<AttributeType>>> get<Attribute>() {
 
 ### Providing attribute setters
 Since the current thread is blocked while the setter runs, activity should be kept as short as possible. In most cases, when a simple element is returned, the method can resolve the Promise immediately. However, if longer activity is required, it should be done in the background and the deferred should also be resolved by a background thread.
+
 ```java
 // for any Franca type named "<Type>" used
-import joynr.<Package>.<Type>;
+import joynr.<Package>.<TypeCollection>.<Type>;
 ...
 @Override
 public Promise<DeferredVoid> set<Attribute>(<AttributeType> <attribute>) {
@@ -970,9 +982,10 @@ public Promise<DeferredVoid> set<Attribute>(<AttributeType> <attribute>) {
 
 ### Implementing a Franca RPC method
 The provider should always implement RPC calls asynchronously in order to not block the main thread longer than required. Also it needs to take care not to overload the server, e.g. it must not accept unlimited amount of RPC requests causing background activity. After exceeding a limit, further calls should be rejected until the number of outstanding activities falls below the limit again.
+
 ```java
 // for any Franca type named "<Type>" used
-import joynr.<Package>.<Type>;
+import joynr.<Package>.<TypeCollection>.<Type>;
 ...
 @Override
 public Promise<Deferred<<ReturnType>>> <method>(... parameters ...) {
@@ -992,9 +1005,10 @@ public Promise<Deferred<<ReturnType>>> <method>(... parameters ...) {
 
 ### Firing a broadcast
 Firing a broadcast blocks the current thread until the message is serialized.
+
 ```java
 // for any Franca type named "<Type>" used
-import joynr.<Package>.<Type>;
+import joynr.<Package>.<TypeCollection>.<Type>;
 ...
 public void fire<Broadcast>Event {
     <OutputValueType1> outputValue1;
@@ -1012,11 +1026,12 @@ In contrast to unfiltered broadcasts, to realize selective (filtered) broadcasts
 
 ### The broadcast filter classes
 A broadcast filter class implements a filtering function called ```filter()``` which returns a boolean value indicating whether the broadcast should be delivered. The input parameters of the ```filter()``` method reflect the output values of the broadcast.
+
 ```java
 import joynr.<Package>.<Interface>BroadcastInterface.<Broadcast>BroadcastFilterParameters;
 import joynr.<Package>.<Interface><Broadcast>BroadcastFilter;
 // for any Franca type named "<Type>" used
-import joynr.<Package>.<Type>;
+import joynr.<Package>.<TypeCollection>.<Type>;
 ...
 public class <Filter>BroadcastFilter extends <Interface><Broadcast>BroadcastFilter {
     ...

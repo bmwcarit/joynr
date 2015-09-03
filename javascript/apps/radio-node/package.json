@@ -1,0 +1,14 @@
+{
+  "name": "radio-node",
+  "version": "0.0.1",
+  "description": "simple app to demonstrate usage of joynr",
+  "main": "src/main/js/radioConsumer.js",
+  "private": true,
+  "dependencies": {
+  },
+  "scripts": {
+    "preinstall": "npm install ../../libjoynr-js/target/classes",
+    "startconsumer" : "node src/main/js/radioConsumer.js",
+    "startprovider" : "node src/main/js/radioProvider.js"
+  }
+}
