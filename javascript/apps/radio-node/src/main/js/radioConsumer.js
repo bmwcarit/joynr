@@ -23,46 +23,40 @@ var log = require("./logging.js").log;
 var prettyLog = require("./logging.js").prettyLog;
 
 var runDemo = function(radioProxy, onDone) {
-    radioProxy.isOn.get().catch(function(error) {
-        prettyLog("radioProxy.isOn.get.catch: " + error);
+    var RadioStation = require("../generated/js/joynr/vehicle/RadioStation");
+    var Country = require("../generated/js/joynr/vehicle/Country");
+
+    prettyLog("ATTRIBUTE GET: currentStation...");
+    radioProxy.currentStation.get().catch(function(error) {
+        prettyLog("ATTRIBUTE GET: currentStation failed: " + error);
     }).then(function(value) {
-        prettyLog("Is the radio on?: radioProxy.isOn.get.then: " + value);
-        return radioProxy.isOn.set({
-            value : true
-        });
+        prettyLog("ATTRIBUTE GET: currentStation returned: " + JSON.stringify(value));
+        prettyLog("RPC: radioProxy.addFavoriteStation(radioStation)...");
+        return radioProxy.addFavoriteStation(
+            {
+                newFavoriteStation : new RadioStation({
+                    name : "runDemoFavoriteStation",
+                    trafficService : true,
+                    country : Country.GERMANY
+                })
+            }        
+        );
     }).catch(function(error) {
-        prettyLog("radioProxy.isOn.set(" + true + ").catch: " + error);
+        prettyLog("RPC: radioProxy.addFavoriteStation(radioStation) failed: " + error);
     }).then(function() {
-        prettyLog("Switch the radio on: radioProxy.isOn.set(" + true + ").then");
-        return radioProxy.isOn.get();
+        prettyLog("RPC: radioProxy.addFavoriteStation(radioStation) returned");
+        prettyLog("radioProxy.shuffleStations()...");
+        return radioProxy.shuffleStations();
     }).catch(function(error) {
-        prettyLog("radioProxy.isOn.get.catch: " + error);
+        prettyLog("RPC: radioProxy.shuffleStations() failed: " + error);
     }).then(function(value) {
-        prettyLog("The radio should be on now: radioProxy.isOn.get.then: " + value);
-        return radioProxy.numberOfStations.get();
+        prettyLog("RPC: radioProxy.shuffleStations() returned");
+        prettyLog("ATTRIBUTE GET: currentStation after shuffle...");
+        return radioProxy.currentStation.get();
     }).catch(function(error) {
-        prettyLog("radioProxy.numberOfStations.get.catch: " + error);
+        prettyLog("ATTRIBUTE GET: currentStation failed: " + error);
     }).then(function(value) {
-        prettyLog("radioProxy.numberOfStations.get.then: " + value);
-        return radioProxy.addFavoriteStation({
-            radioStation : "runDemoFavoriteStation"
-        });
-    }).catch(function(error) {
-        prettyLog("radioProxy.addFavoriteStation(" + JSON.stringify({
-            radioStation : "runDemoFavoriteStation"
-        }) + ").catch: " + error);
-    }).then(function(value) {
-        prettyLog("radioProxy.addFavoriteStation(" + JSON.stringify({
-            radioStation : "runDemoFavoriteStation"
-        }) + ").then. Return value of operation from provider: " + JSON.stringify(value));
-        return radioProxy.numberOfStations.get();
-    }).catch(function(error) {
-        prettyLog("radioProxy.numberOfStations.get.catch: " + error);
-    }).then(function(value) {
-        prettyLog("radioProxy.numberOfStations.get.then: " + value);
-        if (onDone) {
-            onDone();
-        }
+        prettyLog("ATTRIBUTE GET: currentStation returned: " + JSON.stringify(value));
     });
 };
 

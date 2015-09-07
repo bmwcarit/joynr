@@ -36,15 +36,6 @@ var runInteractiveConsole = function(radioProvider, onDone) {
             description : "quit",
             options : {}
         },
-        SET_IS_ON : {
-            value : "setIsOn",
-            description : "set value for isOn",
-            options : {
-                TRUE : "true",
-                FALSE : "false",
-                AUTO_TOGGLE : "autoToggle"
-            }
-        },
         SHUFFLE : {
             value : "shuffle",
             description : "shuffle current station",
@@ -53,7 +44,6 @@ var runInteractiveConsole = function(radioProvider, onDone) {
     };
 
     var showHelp = require("./console_common.js");
-    var isOnToggleInterval;
     rl.on('line', function(line) {
         var input = line.trim().split(' ');
         switch (input[0]) {
@@ -62,29 +52,6 @@ var runInteractiveConsole = function(radioProvider, onDone) {
                 break;
             case MODES.QUIT.value:
                 rl.close();
-                break;
-            case MODES.SET_IS_ON.value:
-                if (!input[1]) {
-                    log("please define an option");
-                } else if (input[1] === MODES.SET_IS_ON.options.TRUE) {
-                    if (isOnToggleInterval) {
-                        clearInterval(isOnToggleInterval);
-                    }
-                    radioProvider.isOn.set(true);
-                } else if (input[1] === MODES.SET_IS_ON.options.FALSE) {
-                    if (isOnToggleInterval) {
-                        clearInterval(isOnToggleInterval);
-                    }
-                    radioProvider.isOn.set(false);
-                } else if (input[1] === MODES.SET_IS_ON.options.AUTO_TOGGLE) {
-                    var toggle = function() {
-                        radioProvider.isOn.set(!radioProvider.isOn.get());
-                    };
-                    toggle();
-                    isOnToggleInterval = setInterval(toggle, 3000);
-                } else {
-                    log('invalid option: ' + input[1]);
-                }
                 break;
             case MODES.SHUFFLE.value:
                 radioProvider.shuffleStations.callOperation([], []);

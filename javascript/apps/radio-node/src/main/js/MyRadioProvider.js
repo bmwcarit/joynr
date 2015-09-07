@@ -22,7 +22,6 @@
 var prettyLog = require("./logging.js").prettyLog;
 var error = require("./logging.js").error;
 
-var isOn = false;
 var currentStationIndex = 0;
 var favoriteStations = ["station1", "station2", "station3"];
 var numberOfStations = 0;
@@ -41,16 +40,6 @@ exports.setProvider = function(radioProvider) {
 };
 
 exports.implementation = {
-    isOn : {
-        get : function() {
-            prettyLog("radioProvider.isOn.get() called");
-            return isOn;
-        },
-        set : function(value) {
-            prettyLog("radioProvider.isOn.set(" + value + ") called");
-            isOn = value;
-        }
-    },
     currentStation : {
         get : function() {
             prettyLog("radioProvider.currentStation.get() called");
