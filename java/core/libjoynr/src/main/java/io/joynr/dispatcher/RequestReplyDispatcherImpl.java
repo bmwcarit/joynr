@@ -23,6 +23,7 @@ import io.joynr.accesscontrol.AccessController;
 import io.joynr.common.ExpiryDate;
 import io.joynr.dispatcher.rpc.RequestInterpreter;
 import io.joynr.exceptions.JoynrCommunicationException;
+import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
@@ -511,7 +512,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
                 }
 
                 @Override
-                public void onFailure(JoynrRuntimeException error) {
+                public void onFailure(JoynrException error) {
                     logger.error("Error processing message: \r\n {} ; error: {}", message, error);
                 }
             },

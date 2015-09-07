@@ -3,7 +3,7 @@ package io.joynr.dispatcher.rpc;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.dispatcher.SynchronizedReplyCaller;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 import io.joynr.exceptions.JoynrCommunicationException;
+import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
@@ -203,7 +204,7 @@ public class RpcStubbingTest {
                     }
 
                     @Override
-                    public void onFailure(JoynrRuntimeException error) {
+                    public void onFailure(JoynrException error) {
                         future.onFailure(error);
                     }
                 };

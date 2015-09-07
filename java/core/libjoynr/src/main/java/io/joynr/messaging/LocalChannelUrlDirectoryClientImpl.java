@@ -3,7 +3,7 @@ package io.joynr.messaging;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package io.joynr.messaging;
  */
 
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
+import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.proxy.Callback;
@@ -84,9 +85,11 @@ public class LocalChannelUrlDirectoryClientImpl implements LocalChannelUrlDirect
                 }
 
                 @Override
-                public void onFailure(JoynrRuntimeException e) {
+                public void onFailure(JoynrException e) {
                     //Currently not retrying. Using long TTL instead.
-                    logger.error("exception while registering channelId: {} reason: {}", channelId, e.getMessage());
+                    logger.error("exception while registering channelId: {} reason: {}",
+                                 channelId,
+                                 ((Exception) e).getMessage());
 
                 }
             }, channelId, channelUrlInformation);

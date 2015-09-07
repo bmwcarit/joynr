@@ -3,7 +3,7 @@ package io.joynr.dispatcher.rpc;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package io.joynr.dispatcher.rpc;
  */
 
 import io.joynr.dispatcher.ReplyCaller;
+import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ICallback;
@@ -56,42 +57,52 @@ public class RpcAsyncRequestReplyCaller<T> implements ReplyCaller {
         this.methodMetaInformation = methodMetaInformation;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public void messageCallBack(Reply payload) {
 
         Object[] response = null;
-        response = RpcUtils.reconstructCallbackReplyObject(method, methodMetaInformation, payload);
-
         try {
-            // Callback must be called first before releasing the future
-            if (callback != null) {
-                callback.resolve(response);
-            }
+            if (payload.getError() != null) {
+                // Callback must be called first before releasing the future
+                if (callback != null) {
+                    callback.onFailure(payload.getError());
+                }
 
-            if (future != null) {
-                future.resolve(response);
+                if (future != null) {
+                    future.onFailure(payload.getError());
+                }
+            } else {
+                response = RpcUtils.reconstructCallbackReplyObject(method, methodMetaInformation, payload);
+                // Callback must be called first before releasing the future
+                if (callback != null) {
+                    callback.resolve(response);
+                }
+
+                if (future != null) {
+                    future.resolve(response);
+                }
             }
         } catch (Exception e) {
             logger.error("Error calling async method: {} error: {}", method.getName(), e.getMessage());
         }
+
     }
 
     @Override
     public void error(Throwable error) {
-        JoynrRuntimeException joynrRuntimeException;
+        JoynrException joynrException;
         // wrap non-joynr exceptions in a JoynrRuntimeException
-        if (error instanceof JoynrRuntimeException) {
-            joynrRuntimeException = (JoynrRuntimeException) error;
+        if (error instanceof JoynrException) {
+            joynrException = (JoynrException) error;
         } else {
-            joynrRuntimeException = new JoynrRuntimeException(error);
+            joynrException = new JoynrRuntimeException(error);
         }
 
         if (callback != null) {
-            callback.onFailure(joynrRuntimeException);
+            callback.onFailure(joynrException);
         }
         if (future != null) {
-            future.onFailure(joynrRuntimeException);
+            future.onFailure(joynrException);
         }
     }
 

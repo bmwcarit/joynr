@@ -22,6 +22,7 @@ package io.joynr.capabilities;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.exceptions.DiscoveryException;
+import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
@@ -40,6 +41,7 @@ import java.util.Set;
 
 import javax.annotation.CheckForNull;
 
+import joynr.exceptions.ApplicationException;
 import joynr.infrastructure.ChannelUrlDirectory;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
 import joynr.infrastructure.GlobalDomainAccessController;
@@ -167,7 +169,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                     }
 
                     @Override
-                    public void onFailure(JoynrRuntimeException exception) {
+                    public void onFailure(JoynrException exception) {
                         ret.setStatus(RegistrationStatus.ERROR);
 
                     }
@@ -195,7 +197,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 }
 
                 @Override
-                public void onFailure(JoynrRuntimeException error) {
+                public void onFailure(JoynrException error) {
                     //do nothing
                 }
             };
@@ -331,6 +333,9 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             retrievedCapabilitiyEntry = lookupFuture.getReply();
         } catch (InterruptedException e1) {
             logger.error("interrupted while retrieving capability entry by participant ID", e1);
+        } catch (ApplicationException e1) {
+            // should not be reachable since ApplicationExceptions are not used internally
+            logger.error("ApplicationException while retrieving capability entry by participant ID", e1);
         }
         return retrievedCapabilitiyEntry;
     }
@@ -368,8 +373,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 }
 
                 @Override
-                public void onFailure(JoynrRuntimeException exception) {
-                    capabilitiesCallback.onError(exception);
+                public void onFailure(JoynrException exception) {
+                    capabilitiesCallback.onError((Exception) exception);
 
                 }
             }, participantId, discoveryQos.getDiscoveryTimeout());
@@ -403,8 +408,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             }
 
             @Override
-            public void onFailure(JoynrRuntimeException exception) {
-                capabilitiesCallback.onError(exception);
+            public void onFailure(JoynrException exception) {
+                capabilitiesCallback.onError((Exception) exception);
             }
         }, domain, interfaceName, discoveryTimeout);
     }
@@ -448,7 +453,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                     Callback<Void> callback = new Callback<Void>() {
 
                         @Override
-                        public void onFailure(JoynrRuntimeException error) {
+                        public void onFailure(JoynrException error) {
                         }
 
                         @Override

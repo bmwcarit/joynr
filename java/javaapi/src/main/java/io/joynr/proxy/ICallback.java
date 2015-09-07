@@ -1,6 +1,6 @@
 package io.joynr.proxy;
 
-import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.exceptions.JoynrException;
 
 import javax.annotation.CheckForNull;
 
@@ -26,6 +26,6 @@ import javax.annotation.CheckForNull;
 public interface ICallback {
     void resolve(@CheckForNull Object... result);
 
-    void onFailure(JoynrRuntimeException error);
+    void onFailure(JoynrException error);
 
 }

@@ -20,11 +20,13 @@ package io.joynr.integration;
  */
 
 import com.google.inject.Module;
+
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.dispatcher.rpc.RequestStatusCode;
 import io.joynr.exceptions.DiscoveryException;
+import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrTimeoutException;
@@ -41,6 +43,7 @@ import io.joynr.pubsub.publication.BroadcastListener;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.PropertyLoader;
+import joynr.exceptions.ApplicationException;
 import joynr.OnChangeSubscriptionQos;
 import joynr.tests.DefaulttestProvider;
 import joynr.tests.testAsync.MethodWithMultipleOutputParametersCallback;
@@ -55,6 +58,7 @@ import joynr.tests.testtypes.TestEnum;
 import joynr.types.localisation.GpsFixEnum;
 import joynr.types.localisation.GpsLocation;
 import joynr.types.localisation.Trip;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -390,7 +394,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void asyncMethodCallWithCallback() throws DiscoveryException, JoynrIllegalStateException,
-                                             InterruptedException {
+                                             InterruptedException, JoynrWaitExpiredException, ApplicationException {
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
@@ -439,7 +443,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         proxy.methodWithMultipleOutputParameters(new MethodWithMultipleOutputParametersCallback() {
 
             @Override
-            public void onFailure(JoynrRuntimeException error) {
+            public void onFailure(JoynrException error) {
                 logger.error("error in calledMethodReturnsMultipleOutputParametersAsyncCallback", error);
             }
 
@@ -472,7 +476,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
         Future<MethodWithMultipleOutputParametersReturned> future = proxy.methodWithMultipleOutputParameters(new MethodWithMultipleOutputParametersCallback() {
             @Override
-            public void onFailure(JoynrRuntimeException error) {
+            public void onFailure(JoynrException error) {
                 logger.error("error in calledMethodReturnsMultipleOutputParametersAsyncCallback", error);
             }
 
@@ -496,7 +500,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
     @Ignore
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void asyncMethodCallWithTtlExpiring() throws DiscoveryException, JoynrIllegalStateException,
-                                                InterruptedException {
+                                                InterruptedException, ApplicationException {
 
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         long ttl = 2000L;
@@ -541,7 +545,8 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
-    public void testVoidOperation() throws DiscoveryException, JoynrIllegalStateException, InterruptedException {
+    public void testVoidOperation() throws DiscoveryException, JoynrIllegalStateException, InterruptedException,
+                                   JoynrWaitExpiredException, ApplicationException {
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
@@ -554,7 +559,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
             }
 
             @Override
-            public void onFailure(JoynrRuntimeException error) {
+            public void onFailure(JoynrException error) {
                 future.onFailure(error);
             }
 
@@ -654,7 +659,8 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
     @Ignore
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void asyncMethodCallWithCallbackAndParameter() throws DiscoveryException, JoynrIllegalStateException,
-                                                         InterruptedException {
+                                                         InterruptedException, JoynrWaitExpiredException,
+                                                         ApplicationException {
 
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
 
@@ -673,7 +679,8 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void asyncMethodCallWithIntegerParametersAndFuture() throws DiscoveryException, JoynrIllegalStateException,
-                                                               InterruptedException {
+                                                               InterruptedException, JoynrWaitExpiredException,
+                                                               ApplicationException {
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
@@ -690,7 +697,8 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void asyncMethodCallWithEnumParametersAndFuture() throws DiscoveryException, JoynrIllegalStateException,
-                                                            InterruptedException {
+                                                            InterruptedException, JoynrWaitExpiredException,
+                                                            ApplicationException {
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 

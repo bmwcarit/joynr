@@ -137,6 +137,8 @@ public class ProxyTest {
 
     public interface AsyncTestInterface extends JoynrAsyncInterface {
         Future<String> asyncMethod(@JoynrRpcCallback(deserializationType = StringTypeRef.class) Callback<String> callback);
+
+        Future<String> asyncMethodWithApplicationError(@JoynrRpcCallback(deserializationType = StringTypeRef.class) Callback<String> callback);
     }
 
     public interface TestInterface extends SyncTestInterface, AsyncTestInterface {
@@ -300,6 +302,46 @@ public class ProxyTest {
         verify(callback).resolve(asyncReplyText);
         Assert.assertEquals(RequestStatusCode.OK, future.getStatus().getCode());
         Assert.assertEquals(asyncReplyText, reply);
+    }
+
+    @Test
+    public void createProxyAndCallAsyncMethodFailWithApplicationError() throws Exception {
+        final ApplicationException expected = new ApplicationException(ApplicationErrors.ERROR_VALUE_3,
+                                                                       "TEST: createProxyAndCallAsyncMethodFailWithApplicationError");
+        ProxyBuilder<TestInterface> proxyBuilder = getProxyBuilder(TestInterface.class);
+        TestInterface proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+
+        // when joynrMessageSender1.sendRequest is called, get the replyCaller from the mock dispatcher and call
+        // messageCallback on it.
+        Mockito.doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws JsonParseException, JsonMappingException,
+                                                             IOException {
+                // capture the replyCaller passed into the dispatcher for calling later
+                ArgumentCaptor<ReplyCaller> replyCallerCaptor = ArgumentCaptor.forClass(ReplyCaller.class);
+                verify(requestReplyDispatcher).addReplyCaller(anyString(), replyCallerCaptor.capture(), anyLong());
+
+                String requestReplyId = "createProxyAndCallAsyncMethodSuccess_requestReplyId";
+                // pass the response to the replyCaller
+                replyCallerCaptor.getValue().messageCallBack(new Reply(requestReplyId, expected));
+                return null;
+            }
+        }).when(requestReplySender).sendRequest(Mockito.<String> any(),
+                                                Mockito.<String> any(),
+                                                Mockito.<Request> any(),
+                                                Mockito.anyLong());
+        final Future<String> future = proxy.asyncMethodWithApplicationError(callback);
+
+        // the test usually takes only 200 ms, so if we wait 1 sec, something has gone wrong
+        try {
+            future.getReply(1000);
+            Assert.fail("Should throw ApplicationException");
+        } catch (ApplicationException e) {
+            Assert.assertEquals(expected, e);
+        }
+
+        verify(callback).onFailure(expected);
+        Assert.assertEquals(RequestStatusCode.ERROR, future.getStatus().getCode());
     }
 
     @Test

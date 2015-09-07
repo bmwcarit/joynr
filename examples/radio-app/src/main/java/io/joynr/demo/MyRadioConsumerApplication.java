@@ -23,6 +23,7 @@ import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrCommunicationException;
+import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
@@ -39,6 +40,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 import jline.console.ConsoleReader;
+import joynr.exceptions.ApplicationException;
 import joynr.OnChangeSubscriptionQos;
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
 import joynr.vehicle.Country;
@@ -328,7 +330,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
                 }
 
                 @Override
-                public void onFailure(JoynrRuntimeException error) {
+                public void onFailure(JoynrException error) {
                     LOG.info(PRINT_BORDER + "ASYNC METHOD: added favorite station: callback onFailure" + PRINT_BORDER);
                 }
             };
@@ -338,7 +340,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
                 Boolean reply = future.getReply(timeoutInMilliseconds);
                 LOG.info(PRINT_BORDER + "ASYNC METHOD: added favorite station: " + radioStation + ": " + reply
                         + PRINT_BORDER);
-            } catch (InterruptedException|JoynrRuntimeException e) {
+            } catch (InterruptedException|JoynrRuntimeException|ApplicationException e) {
                 LOG.info(PRINT_BORDER + "ASYNC METHOD: added favorite station: " + radioStation
                         + ": " + e.getClass().getSimpleName() + "!");
             }

@@ -116,7 +116,6 @@ import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 «ENDIF»
 «IF uniqueMultioutMethods.size > 0»
 import io.joynr.proxy.ICallback;
-import io.joynr.exceptions.JoynrRuntimeException;
 «ENDIF»
 «IF hasWriteAttribute»
 import io.joynr.exceptions.DiscoveryException;
@@ -156,8 +155,8 @@ public interface «asyncClassName» extends «interfaceName», JoynrAsyncInterfa
 	«val syncReturnedName = methodToSyncReturnedName.get(method)»
 	public static class «futureName» extends Future<«syncReturnedName»> {
 		public void resolve(Object... outParameters) {
-			if (outParameters[0] instanceof JoynrRuntimeException) {
-				onFailure((JoynrRuntimeException) outParameters[0]);
+			if (outParameters.length == 0) {
+				onSuccess(null);
 			} else {
 				onSuccess(new «syncReturnedName»(outParameters));
 			}
@@ -166,27 +165,28 @@ public interface «asyncClassName» extends «interfaceName», JoynrAsyncInterfa
 	«ENDFOR»
 
 	«FOR method: uniqueMultioutMethods»
-	«val callbackName = methodToCallbackName.get(method)»
-	public abstract class «callbackName» implements ICallback {
-		public abstract void onSuccess(«method.commaSeperatedTypedOutputParameterList»);
+		«val callbackName = methodToCallbackName.get(method)»
+		«val outputParametersLength = method.outputParameters.length»
+		public abstract class «callbackName» implements ICallback {
+			public abstract void onSuccess(«method.commaSeperatedTypedOutputParameterList»);
 
-		public void resolve(Object... outParameters) {
-			if (outParameters[0] instanceof JoynrRuntimeException) {
-				onFailure((JoynrRuntimeException) outParameters[0]);
-			} else {
-					«var index = 0»
-					onSuccess(
-						«FOR outParameter : method.outputParameters»
-							«IF isEnum(outParameter.type)»
-								«outParameter.typeName».valueOf((String) outParameters[«index++»])«IF index < method.outputParameters.length»,«ENDIF»
-							«ELSE»
-								(«outParameter.typeName») outParameters[«index++»]«IF index < method.outputParameters.length»,«ENDIF»
-							«ENDIF»
-						«ENDFOR»
-				);
+			public void resolve(Object... outParameters) {
+				if (outParameters.length < «outputParametersLength») {
+					onSuccess(«FOR i : 0 ..< outputParametersLength SEPARATOR ", "»null«ENDFOR»);
+				} else {
+						«var index = 0»
+						onSuccess(
+							«FOR outParameter : method.outputParameters»
+								«IF isEnum(outParameter.type)»
+									«outParameter.typeName».valueOf((String) outParameters[«index++»])«IF index < method.outputParameters.length»,«ENDIF»
+								«ELSE»
+									(«outParameter.typeName») outParameters[«index++»]«IF index < method.outputParameters.length»,«ENDIF»
+								«ENDIF»
+							«ENDFOR»
+					);
+				}
 			}
 		}
-	}
 	«ENDFOR»
 
 	«FOR method: getMethods(serviceInterface)»
