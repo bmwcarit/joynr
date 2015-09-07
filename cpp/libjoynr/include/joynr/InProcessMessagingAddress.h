@@ -20,7 +20,7 @@
 #define INPROCESSMESSAGINGENDPOINTADDRESS_H
 
 #include "joynr/JoynrCommonExport.h"
-#include "joynr/system/RoutingTypes/QtAddress.h"
+#include "joynr/system/routingtypes/QtAddress.h"
 
 #include <QSharedPointer>
 
@@ -29,7 +29,7 @@ namespace joynr
 
 class InProcessMessagingSkeleton;
 
-class JOYNRCOMMON_EXPORT InProcessMessagingAddress : public joynr::system::RoutingTypes::QtAddress
+class JOYNRCOMMON_EXPORT InProcessMessagingAddress : public joynr::system::routingtypes::QtAddress
 {
     Q_OBJECT
 public:

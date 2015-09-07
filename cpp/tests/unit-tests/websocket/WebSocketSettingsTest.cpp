@@ -21,7 +21,7 @@
 #include <QFile>
 #include "PrettyPrint.h"
 #include "libjoynr/websocket/WebSocketSettings.h"
-#include "joynr/system/RoutingTypes/QtWebSocketAddress.h"
+#include "joynr/system/routingtypes/QtWebSocketAddress.h"
 
 using namespace joynr;
 
@@ -61,8 +61,8 @@ TEST_F(WebSocketSettingsTest, overrideDefaultSettings) {
 
 TEST_F(WebSocketSettingsTest, createsWebSocketAddress) {
     QString expectedMessagingUrl("ws://test-host:42/test-path");
-    joynr::system::RoutingTypes::QtWebSocketAddress expectedMessagingAddress(
-                joynr::system::RoutingTypes::QtWebSocketProtocol::WS,
+    joynr::system::routingtypes::QtWebSocketAddress expectedMessagingAddress(
+                joynr::system::routingtypes::QtWebSocketProtocol::WS,
                 "test-host",
                 42,
                 "/test-path"

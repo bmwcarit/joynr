@@ -48,7 +48,7 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 	def String[] getNamespaces(FType datatype, boolean includeTypeCollection) {
 				var String packagePath = datatype.getPackagePathWithoutJoynrPrefix(".");
 		if (includeTypeCollection && datatype.isPartOfTypeCollection) {
-			packagePath += "." + datatype.typeCollectionName;
+			packagePath += "." + datatype.typeCollectionName.toLowerCase;
 		}
 		return packagePath.split("\\.");
 	}
@@ -109,7 +109,7 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 			packagepath = packagepath + separator;
 		};
 		if (includeTypeCollection && datatype.partOfTypeCollection) {
-			packagepath += datatype.typeCollectionName + separator;
+			packagepath += datatype.typeCollectionName.toLowerCase + separator;
 		}
 		return packagepath;
 	}
@@ -174,7 +174,7 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 
 		switch datatype {
 		case isArray(element)     : "List"
-		case isEnum(datatypeRef)  : buildPackagePath(datatype, ".", true) +
+		case isEnum(datatypeRef)  : buildPackagePath(datatype, ".", true).toLowerCase +
 									datatype.joynrName
 		case isString(predefined) : "String"
 		case isInt(predefined)    : "Integer"
@@ -183,7 +183,7 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 		case isFloat(predefined)  : "Double"
 		case isBool(predefined)   : "Boolean"
 		case isByte(predefined)   : "Byte"
-		case datatype != null     : buildPackagePath(datatype, ".", true) +
+		case datatype != null     : buildPackagePath(datatype, ".", true).toLowerCase +
 									datatype.joynrName
 		default                   : throw new RuntimeException("Unhandled primitive type: " + predefined.getName)
 		}

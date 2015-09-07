@@ -32,10 +32,10 @@ Logger* WebSocketSettings::logger = Logging::getInstance()->getLogger("MSG", "We
 WebSocketSettings::WebSocketSettings(QSettings& settings, QObject* parent)
         : QObject(parent), settings(settings)
 {
-    qRegisterMetaType<joynr::system::RoutingTypes::QtWebSocketAddress>(
-            "joynr::system::RoutingTypes::QtWebSocketAddress");
-    qRegisterMetaType<joynr::system::RoutingTypes::QtWebSocketProtocol>();
-    qRegisterMetaType<joynr::system::RoutingTypes::QtWebSocketProtocol::Enum>();
+    qRegisterMetaType<joynr::system::routingtypes::QtWebSocketAddress>(
+            "joynr::system::routingtypes::QtWebSocketAddress");
+    qRegisterMetaType<joynr::system::routingtypes::QtWebSocketProtocol>();
+    qRegisterMetaType<joynr::system::routingtypes::QtWebSocketProtocol::Enum>();
     QSettings defaultWebSocketSettings(DEFAULT_WEBSOCKET_SETTINGS_FILENAME(), QSettings::IniFormat);
     SettingsMerger::mergeSettings(defaultWebSocketSettings, this->settings, false);
     checkSettings();
@@ -77,17 +77,17 @@ void WebSocketSettings::setClusterControllerMessagingUrl(const QString& url)
     settings.setValue(WebSocketSettings::SETTING_CC_MESSAGING_URL(), url);
 }
 
-joynr::system::RoutingTypes::QtWebSocketAddress WebSocketSettings::
+joynr::system::routingtypes::QtWebSocketAddress WebSocketSettings::
         createClusterControllerMessagingAddress() const
 {
     QUrl url(getClusterControllerMessagingUrl());
     QMetaEnum metaEnum =
-            joynr::system::RoutingTypes::QtWebSocketProtocol::staticMetaObject.enumerator(0);
-    joynr::system::RoutingTypes::QtWebSocketProtocol::Enum protocol =
-            (joynr::system::RoutingTypes::QtWebSocketProtocol::Enum)metaEnum.keyToValue(
+            joynr::system::routingtypes::QtWebSocketProtocol::staticMetaObject.enumerator(0);
+    joynr::system::routingtypes::QtWebSocketProtocol::Enum protocol =
+            (joynr::system::routingtypes::QtWebSocketProtocol::Enum)metaEnum.keyToValue(
                     url.scheme().toUpper().toStdString().c_str());
 
-    return system::RoutingTypes::QtWebSocketAddress(protocol, url.host(), url.port(), url.path());
+    return system::routingtypes::QtWebSocketAddress(protocol, url.host(), url.port(), url.path());
 }
 
 bool WebSocketSettings::contains(const QString& key) const

@@ -29,7 +29,7 @@
 #include "joynr/Request.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
-#include "joynr/system/RoutingTypes/QtAddress.h"
+#include "joynr/system/routingtypes/QtAddress.h"
 #include "joynr/joynrlogging.h"
 
 #include <QByteArray>
@@ -42,7 +42,7 @@ namespace joynr
 {
 
 using namespace infrastructure;
-using namespace infrastructure::DacTypes;
+using namespace infrastructure::dactypes;
 using namespace types;
 using namespace joynr_logging;
 

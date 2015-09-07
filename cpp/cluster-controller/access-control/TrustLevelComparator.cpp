@@ -23,7 +23,7 @@
 namespace joynr
 {
 
-using namespace infrastructure::DacTypes;
+using namespace infrastructure::dactypes;
 
 int TrustLevelComparator::compare(QtTrustLevel::Enum a, QtTrustLevel::Enum b)
 {

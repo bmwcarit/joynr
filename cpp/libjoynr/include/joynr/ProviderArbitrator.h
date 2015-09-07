@@ -23,7 +23,7 @@
 
 #include "joynr/JoynrExport.h"
 #include "joynr/IArbitrationListener.h"
-#include "joynr/system/RoutingTypes/QtAddress.h"
+#include "joynr/system/routingtypes/QtAddress.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/types/DiscoveryQos.h"

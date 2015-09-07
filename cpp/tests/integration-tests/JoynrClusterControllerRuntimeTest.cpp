@@ -48,7 +48,7 @@ class JoynrClusterControllerRuntimeTest : public ::testing::Test {
 public:
     QString settingsFilename;
     JoynrClusterControllerRuntime* runtime;
-    joynr::types::Localisation::GpsLocation gpsLocation;
+    joynr::types::localisation::GpsLocation gpsLocation;
     MockMessageReceiver* mockMessageReceiver; // will be deleted when runtime is deleted.
     MockMessageSender* mockMessageSender;
 
@@ -59,7 +59,7 @@ public:
                 1.1,                        // longitude
                 2.2,                        // latitude
                 3.3,                        // altitude
-                types::Localisation::GpsFixEnum::MODE2D,  // gps fix
+                types::localisation::GpsFixEnum::MODE2D,  // gps fix
                 0.0,                        // heading
                 0.0,                        // quality
                 0.0,                        // elevation
@@ -93,7 +93,7 @@ public:
     }
 
     void invokeOnSuccessWithGpsLocation(
-            std::function<void(const joynr::types::Localisation::GpsLocation location)> onSuccess
+            std::function<void(const joynr::types::localisation::GpsLocation location)> onSuccess
     ) {
         onSuccess(gpsLocation);
     }
@@ -135,7 +135,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
 
     EXPECT_CALL(
             *mockTestProvider,
-            getLocation(A<std::function<void(const types::Localisation::GpsLocation&)>>())
+            getLocation(A<std::function<void(const types::localisation::GpsLocation&)>>())
     )
             .WillOnce(Invoke(
                       this,
@@ -163,12 +163,12 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
-    std::shared_ptr<Future<types::Localisation::GpsLocation> > future(testProxy->getLocationAsync());
+    std::shared_ptr<Future<types::localisation::GpsLocation> > future(testProxy->getLocationAsync());
     future->waitForFinished(500);
 
     EXPECT_EQ(tests::testProxy::INTERFACE_NAME(), testProxy->INTERFACE_NAME());
     ASSERT_EQ(RequestStatusCode::OK, future->getStatus().getCode());
-    joynr::types::Localisation::GpsLocation actualValue;
+    joynr::types::localisation::GpsLocation actualValue;
     future->getValues(actualValue);
     EXPECT_EQ(gpsLocation, actualValue);
     delete testProxy;
@@ -228,7 +228,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
 
     EXPECT_CALL(
             *mockTestProvider,
-            getLocation(A<std::function<void(const types::Localisation::GpsLocation&)>>())
+            getLocation(A<std::function<void(const types::localisation::GpsLocation&)>>())
     )
             .Times(Between(1, 2))
             .WillRepeatedly(Invoke(
@@ -284,7 +284,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
 
     EXPECT_CALL(
             *mockTestProvider,
-            getLocation(A<std::function<void(const types::Localisation::GpsLocation&)>>())
+            getLocation(A<std::function<void(const types::localisation::GpsLocation&)>>())
     )
             .Times(Between(3, 4))
             .WillRepeatedly(Invoke(

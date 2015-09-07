@@ -24,7 +24,7 @@
 #include <QObject>
 #include <QSettings>
 
-#include "joynr/system/RoutingTypes/QtWebSocketAddress.h"
+#include "joynr/system/routingtypes/QtWebSocketAddress.h"
 
 namespace joynr
 {
@@ -45,7 +45,7 @@ public:
 
     QString getClusterControllerMessagingUrl() const;
     void setClusterControllerMessagingUrl(const QString& url);
-    system::RoutingTypes::QtWebSocketAddress createClusterControllerMessagingAddress() const;
+    system::routingtypes::QtWebSocketAddress createClusterControllerMessagingAddress() const;
 
     void printSettings() const;
 

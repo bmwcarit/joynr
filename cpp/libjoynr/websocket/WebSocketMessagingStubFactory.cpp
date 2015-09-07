@@ -25,9 +25,9 @@
 #include <assert.h>
 
 #include "websocket/WebSocketMessagingStub.h"
-#include "joynr/system/RoutingTypes/QtAddress.h"
-#include "joynr/system/RoutingTypes/QtWebSocketAddress.h"
-#include "joynr/system/RoutingTypes/QtWebSocketClientAddress.h"
+#include "joynr/system/routingtypes/QtAddress.h"
+#include "joynr/system/routingtypes/QtWebSocketAddress.h"
+#include "joynr/system/routingtypes/QtWebSocketClientAddress.h"
 
 namespace joynr
 {
@@ -41,22 +41,22 @@ WebSocketMessagingStubFactory::WebSocketMessagingStubFactory(QObject* parent)
 }
 
 bool WebSocketMessagingStubFactory::canCreate(
-        const joynr::system::RoutingTypes::QtAddress& destAddress)
+        const joynr::system::routingtypes::QtAddress& destAddress)
 {
     return destAddress.inherits(
-                   system::RoutingTypes::QtWebSocketAddress::staticMetaObject.className()) ||
+                   system::routingtypes::QtWebSocketAddress::staticMetaObject.className()) ||
            destAddress.inherits(
-                   system::RoutingTypes::QtWebSocketClientAddress::staticMetaObject.className());
+                   system::routingtypes::QtWebSocketClientAddress::staticMetaObject.className());
 }
 
 QSharedPointer<IMessaging> WebSocketMessagingStubFactory::create(
-        const joynr::system::RoutingTypes::QtAddress& destAddress)
+        const joynr::system::routingtypes::QtAddress& destAddress)
 {
     // if destination is a WS client address
     if (destAddress.inherits(
-                system::RoutingTypes::QtWebSocketClientAddress::staticMetaObject.className())) {
-        const system::RoutingTypes::QtWebSocketClientAddress* webSocketClientAddress =
-                qobject_cast<const system::RoutingTypes::QtWebSocketClientAddress*>(&destAddress);
+                system::routingtypes::QtWebSocketClientAddress::staticMetaObject.className())) {
+        const system::routingtypes::QtWebSocketClientAddress* webSocketClientAddress =
+                qobject_cast<const system::routingtypes::QtWebSocketClientAddress*>(&destAddress);
         // lookup address
         {
             QMutexLocker locker(&mutex);
@@ -70,9 +70,9 @@ QSharedPointer<IMessaging> WebSocketMessagingStubFactory::create(
     }
     // if destination is a WS server address
     if (destAddress.inherits(
-                system::RoutingTypes::QtWebSocketAddress::staticMetaObject.className())) {
-        const system::RoutingTypes::QtWebSocketAddress* webSocketServerAddress =
-                qobject_cast<const system::RoutingTypes::QtWebSocketAddress*>(&destAddress);
+                system::routingtypes::QtWebSocketAddress::staticMetaObject.className())) {
+        const system::routingtypes::QtWebSocketAddress* webSocketServerAddress =
+                qobject_cast<const system::routingtypes::QtWebSocketAddress*>(&destAddress);
         // lookup address
         {
             QMutexLocker locker(&mutex);
@@ -89,11 +89,11 @@ QSharedPointer<IMessaging> WebSocketMessagingStubFactory::create(
 }
 
 void WebSocketMessagingStubFactory::addClient(
-        const joynr::system::RoutingTypes::QtWebSocketClientAddress& clientAddress,
+        const joynr::system::routingtypes::QtWebSocketClientAddress& clientAddress,
         QWebSocket* webSocket)
 {
     WebSocketMessagingStub* wsClientStub = new WebSocketMessagingStub(
-            new joynr::system::RoutingTypes::QtWebSocketClientAddress(clientAddress), webSocket);
+            new joynr::system::routingtypes::QtWebSocketClientAddress(clientAddress), webSocket);
     connect(wsClientStub,
             &WebSocketMessagingStub::closed,
             this,
@@ -103,17 +103,17 @@ void WebSocketMessagingStubFactory::addClient(
 }
 
 void WebSocketMessagingStubFactory::removeClient(
-        const joynr::system::RoutingTypes::QtWebSocketClientAddress& clientAddress)
+        const joynr::system::routingtypes::QtWebSocketClientAddress& clientAddress)
 {
     clientStubMap.remove(clientAddress);
 }
 
 void WebSocketMessagingStubFactory::addServer(
-        const system::RoutingTypes::QtWebSocketAddress& serverAddress,
+        const system::routingtypes::QtWebSocketAddress& serverAddress,
         QWebSocket* webSocket)
 {
     WebSocketMessagingStub* wsServerStub = new WebSocketMessagingStub(
-            new joynr::system::RoutingTypes::QtWebSocketAddress(serverAddress), webSocket);
+            new joynr::system::routingtypes::QtWebSocketAddress(serverAddress), webSocket);
     connect(wsServerStub,
             &WebSocketMessagingStub::closed,
             this,
@@ -123,24 +123,24 @@ void WebSocketMessagingStubFactory::addServer(
 }
 
 void WebSocketMessagingStubFactory::onMessagingStubClosed(
-        const system::RoutingTypes::QtAddress& address)
+        const system::routingtypes::QtAddress& address)
 {
     LOG_DEBUG(logger, QString("removing messaging stub for addres: %0").arg(address.toString()));
     if (address.inherits(
-                system::RoutingTypes::QtWebSocketClientAddress::staticMetaObject.className())) {
-        const system::RoutingTypes::QtWebSocketClientAddress* wsClientAddress =
-                qobject_cast<const system::RoutingTypes::QtWebSocketClientAddress*>(&address);
+                system::routingtypes::QtWebSocketClientAddress::staticMetaObject.className())) {
+        const system::routingtypes::QtWebSocketClientAddress* wsClientAddress =
+                qobject_cast<const system::routingtypes::QtWebSocketClientAddress*>(&address);
         clientStubMap.remove(*wsClientAddress);
     }
-    if (address.inherits(system::RoutingTypes::QtWebSocketAddress::staticMetaObject.className())) {
-        const system::RoutingTypes::QtWebSocketAddress* wsServerAddress =
-                qobject_cast<const system::RoutingTypes::QtWebSocketAddress*>(&address);
+    if (address.inherits(system::routingtypes::QtWebSocketAddress::staticMetaObject.className())) {
+        const system::routingtypes::QtWebSocketAddress* wsServerAddress =
+                qobject_cast<const system::routingtypes::QtWebSocketAddress*>(&address);
         serverStubMap.remove(*wsServerAddress);
     }
 }
 
 QUrl WebSocketMessagingStubFactory::convertWebSocketAddressToUrl(
-        const system::RoutingTypes::QtWebSocketAddress& address)
+        const system::routingtypes::QtWebSocketAddress& address)
 {
     return QUrl(QString("%0://%1:%2%3")
                         .arg(address.getProtocolInternal().toLower())

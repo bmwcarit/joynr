@@ -22,7 +22,7 @@
 #include "joynr/MetaTypeRegistrar.h"
 
 #include <QSharedPointer>
-#include "joynr/types/Localisation/QtGpsLocation.h"
+#include "joynr/types/localisation/QtGpsLocation.h"
 #include "joynr/IReplyCaller.h"
 //#needed:?
 #include "joynr/JoynrMessageSender.h"
@@ -54,26 +54,26 @@ protected:
 TEST_F(ReplyInterpreterTest, execute_calls_caller) {
     // Register metatypes
     qRegisterMetaType<Reply>();
-    qRegisterMetaType<types::Localisation::QtGpsLocation>();
+    qRegisterMetaType<types::localisation::QtGpsLocation>();
     MetaTypeRegistrar& registrar = MetaTypeRegistrar::instance();
-    registrar.registerReplyMetaType<types::Localisation::QtGpsLocation>();
+    registrar.registerReplyMetaType<types::localisation::QtGpsLocation>();
 
     // Create a mock callback
-    QSharedPointer<MockCallback<joynr::types::Localisation::QtGpsLocation>> callback(new MockCallback<joynr::types::Localisation::QtGpsLocation>());
+    QSharedPointer<MockCallback<joynr::types::localisation::QtGpsLocation>> callback(new MockCallback<joynr::types::localisation::QtGpsLocation>());
     int myAltitude = 13;
-    EXPECT_CALL(*callback, onSuccess(Property(&types::Localisation::QtGpsLocation::getAltitude, myAltitude)))
+    EXPECT_CALL(*callback, onSuccess(Property(&types::localisation::QtGpsLocation::getAltitude, myAltitude)))
                 .Times(1);
 
     // Create a reply caller
-    QSharedPointer<IReplyCaller> icaller(new ReplyCaller<types::Localisation::QtGpsLocation>(
-            [callback](const RequestStatus& status, const types::Localisation::QtGpsLocation& location) {
+    QSharedPointer<IReplyCaller> icaller(new ReplyCaller<types::localisation::QtGpsLocation>(
+            [callback](const RequestStatus& status, const types::localisation::QtGpsLocation& location) {
                 callback->onSuccess(location);
             },
             [](const RequestStatus& status){
             }));
 
     // Create a reply
-    types::Localisation::QtGpsLocation location;
+    types::localisation::QtGpsLocation location;
     location.setAltitude(myAltitude);
     QList<QVariant> response;
     response.append(QVariant::fromValue(location));
@@ -81,23 +81,23 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller) {
     reply.setResponse(response);
 
     // Interpret the reply
-    IReplyInterpreter& interpreter = registrar.getReplyInterpreter(Util::getTypeId<types::Localisation::QtGpsLocation>());
+    IReplyInterpreter& interpreter = registrar.getReplyInterpreter(Util::getTypeId<types::localisation::QtGpsLocation>());
     interpreter.execute(icaller, reply);
 }
 
 TEST_F(ReplyInterpreterTest, create_createsGpsInterpreterOnlyOnce) {
 
     // Register metatypes
-    qRegisterMetaType<types::Localisation::QtGpsLocation>();
-    qRegisterMetaType<types::Localisation::QtTrip>();
+    qRegisterMetaType<types::localisation::QtGpsLocation>();
+    qRegisterMetaType<types::localisation::QtTrip>();
     MetaTypeRegistrar& registrar = MetaTypeRegistrar::instance();
 
-    registrar.registerReplyMetaType<types::Localisation::QtGpsLocation>();
-    registrar.registerReplyMetaType<types::Localisation::QtTrip>();
+    registrar.registerReplyMetaType<types::localisation::QtGpsLocation>();
+    registrar.registerReplyMetaType<types::localisation::QtTrip>();
 
-    IReplyInterpreter& interpreter1 = registrar.getReplyInterpreter(Util::getTypeId<types::Localisation::QtGpsLocation>());
-    IReplyInterpreter& interpreter2 = registrar.getReplyInterpreter(Util::getTypeId<types::Localisation::QtGpsLocation>());
-    IReplyInterpreter& interpreter3 = registrar.getReplyInterpreter(Util::getTypeId<types::Localisation::QtTrip>());
+    IReplyInterpreter& interpreter1 = registrar.getReplyInterpreter(Util::getTypeId<types::localisation::QtGpsLocation>());
+    IReplyInterpreter& interpreter2 = registrar.getReplyInterpreter(Util::getTypeId<types::localisation::QtGpsLocation>());
+    IReplyInterpreter& interpreter3 = registrar.getReplyInterpreter(Util::getTypeId<types::localisation::QtTrip>());
 
     EXPECT_TRUE(&interpreter1 == &interpreter2);
     EXPECT_TRUE(&interpreter2 != &interpreter3);

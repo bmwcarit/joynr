@@ -24,7 +24,7 @@
 namespace joynr
 {
 
-using namespace infrastructure::DacTypes;
+using namespace infrastructure::dactypes;
 
 AceValidator::AceValidator(const Optional<QtMasterAccessControlEntry>& masterAceOptional,
                            const Optional<QtMasterAccessControlEntry>& mediatorAceOptional,

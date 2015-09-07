@@ -21,7 +21,7 @@
 #include "LocalDomainAccessStore.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerProxy.h"
 
-#include "joynr/infrastructure/DacTypes/QtDomainRoleEntry.h"
+#include "joynr/infrastructure/dactypes/QtDomainRoleEntry.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerDomainRoleEntryChangedBroadcastFilterParameters.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerMasterAccessControlEntryChangedBroadcastFilterParameters.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerOwnerAccessControlEntryChangedBroadcastFilterParameters.h"
@@ -40,7 +40,7 @@ namespace joynr
 {
 
 using namespace infrastructure;
-using namespace infrastructure::DacTypes;
+using namespace infrastructure::dactypes;
 using namespace joynr_logging;
 
 Logger* LocalDomainAccessController::logger =
@@ -75,13 +75,13 @@ private:
 };
 
 class LocalDomainAccessController::DomainRoleEntryChangedBroadcastListener
-        : public ISubscriptionListener<infrastructure::DacTypes::ChangeType::Enum,
-                                       infrastructure::DacTypes::DomainRoleEntry>
+        : public ISubscriptionListener<infrastructure::dactypes::ChangeType::Enum,
+                                       infrastructure::dactypes::DomainRoleEntry>
 {
 public:
     DomainRoleEntryChangedBroadcastListener(LocalDomainAccessController& parent);
-    void onReceive(const infrastructure::DacTypes::ChangeType::Enum& changeType,
-                   const infrastructure::DacTypes::DomainRoleEntry& changedDre);
+    void onReceive(const infrastructure::dactypes::ChangeType::Enum& changeType,
+                   const infrastructure::dactypes::DomainRoleEntry& changedDre);
     void onError();
 
 private:
@@ -89,13 +89,13 @@ private:
 };
 
 class LocalDomainAccessController::MasterAccessControlEntryChangedBroadcastListener
-        : public ISubscriptionListener<infrastructure::DacTypes::ChangeType::Enum,
-                                       infrastructure::DacTypes::MasterAccessControlEntry>
+        : public ISubscriptionListener<infrastructure::dactypes::ChangeType::Enum,
+                                       infrastructure::dactypes::MasterAccessControlEntry>
 {
 public:
     MasterAccessControlEntryChangedBroadcastListener(LocalDomainAccessController& parent);
-    void onReceive(const infrastructure::DacTypes::ChangeType::Enum& changeType,
-                   const infrastructure::DacTypes::MasterAccessControlEntry& changedMasterAce);
+    void onReceive(const infrastructure::dactypes::ChangeType::Enum& changeType,
+                   const infrastructure::dactypes::MasterAccessControlEntry& changedMasterAce);
     void onError();
 
 private:
@@ -103,13 +103,13 @@ private:
 };
 
 class LocalDomainAccessController::MediatorAccessControlEntryChangedBroadcastListener
-        : public ISubscriptionListener<infrastructure::DacTypes::ChangeType::Enum,
-                                       infrastructure::DacTypes::MasterAccessControlEntry>
+        : public ISubscriptionListener<infrastructure::dactypes::ChangeType::Enum,
+                                       infrastructure::dactypes::MasterAccessControlEntry>
 {
 public:
     MediatorAccessControlEntryChangedBroadcastListener(LocalDomainAccessController& parent);
-    void onReceive(const infrastructure::DacTypes::ChangeType::Enum& changeType,
-                   const infrastructure::DacTypes::MasterAccessControlEntry& changedMediatorAce);
+    void onReceive(const infrastructure::dactypes::ChangeType::Enum& changeType,
+                   const infrastructure::dactypes::MasterAccessControlEntry& changedMediatorAce);
     void onError();
 
 private:
@@ -117,13 +117,13 @@ private:
 };
 
 class LocalDomainAccessController::OwnerAccessControlEntryChangedBroadcastListener
-        : public ISubscriptionListener<infrastructure::DacTypes::ChangeType::Enum,
-                                       infrastructure::DacTypes::OwnerAccessControlEntry>
+        : public ISubscriptionListener<infrastructure::dactypes::ChangeType::Enum,
+                                       infrastructure::dactypes::OwnerAccessControlEntry>
 {
 public:
     OwnerAccessControlEntryChangedBroadcastListener(LocalDomainAccessController& parent);
-    void onReceive(const infrastructure::DacTypes::ChangeType::Enum& changeType,
-                   const infrastructure::DacTypes::OwnerAccessControlEntry& changedOwnerAce);
+    void onReceive(const infrastructure::dactypes::ChangeType::Enum& changeType,
+                   const infrastructure::dactypes::OwnerAccessControlEntry& changedOwnerAce);
     void onError();
 
 private:

@@ -22,8 +22,8 @@
 #include "joynr/joynrlogging.h"
 #include <string>
 
-#include "joynr/types/TestTypes/QtTStructExtended.h"
-#include "joynr/types/TestTypes/TStructExtended.h"
+#include "joynr/types/testtypes/QtTStructExtended.h"
+#include "joynr/types/testtypes/TStructExtended.h"
 
 using namespace joynr::types;
 
@@ -47,7 +47,7 @@ joynr::joynr_logging::Logger* ComplexDataTypeTest::logger(
 
 TEST_F(ComplexDataTypeTest, createCStdomplexDataType)
 {
-    joynr::types::TestTypes::QtTStructExtended fixture;
-    joynr::types::TestTypes::TStructExtended result = joynr::types::TestTypes::QtTStructExtended::createStd(fixture);
+    joynr::types::testtypes::QtTStructExtended fixture;
+    joynr::types::testtypes::TStructExtended result = joynr::types::testtypes::QtTStructExtended::createStd(fixture);
     EXPECT_EQ(fixture.getTDouble(), result.getTDouble());
 }

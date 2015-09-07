@@ -23,7 +23,7 @@
 
 using namespace ::testing;
 using namespace joynr;
-using namespace joynr::infrastructure::DacTypes;
+using namespace joynr::infrastructure::dactypes;
 
 class AceValidatorTest : public ::testing::Test {
 public:

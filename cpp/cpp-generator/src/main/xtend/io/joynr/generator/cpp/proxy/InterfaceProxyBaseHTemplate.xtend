@@ -65,7 +65,7 @@ public:
 	 * @param cached True, if cached, false otherwise
 	 */
 	«className»(
-			QSharedPointer<joynr::system::RoutingTypes::QtAddress> messagingAddress,
+			QSharedPointer<joynr::system::routingtypes::QtAddress> messagingAddress,
 			joynr::ConnectorFactory* connectorFactory,
 			joynr::IClientCache* cache,
 			const std::string& domain,
@@ -182,7 +182,7 @@ public:
 
 protected:
 	/** @brief The joynr messaging address */
-	QSharedPointer<joynr::system::RoutingTypes::QtAddress> messagingAddress;
+	QSharedPointer<joynr::system::routingtypes::QtAddress> messagingAddress;
 	/** @brief The kind of connector */
 	I«interfaceName»Connector* connector;
 
