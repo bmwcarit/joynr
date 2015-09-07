@@ -48,6 +48,9 @@ public class ApplicationException extends Exception implements JoynrException {
 
     private static final long serialVersionUID = 6620625652713563976L;
 
+    private static final String JSON_FIELD_NAME_ERROR_ENUM = "name";
+    private static final String JSON_FIELD_NAME_TYPE = "_typeName";
+
     @JsonTypeInfo(use = Id.CLASS, include = As.PROPERTY, property = "_typeName")
     @JsonSerialize(using = JoynrErrorEnumSerializer.class)
     @JsonDeserialize(using = JoynrErrorEnumDeSerializer.class)
@@ -149,7 +152,7 @@ public class ApplicationException extends Exception implements JoynrException {
                                       SerializerProvider provider,
                                       TypeSerializer typeSer) throws IOException, JsonProcessingException {
             typeSer.writeTypePrefixForObject(value, jgen);
-            jgen.writeFieldName(value.name());
+            jgen.writeFieldName(JSON_FIELD_NAME_ERROR_ENUM);
             jgen.writeString(value.name());
             typeSer.writeTypeSuffixForObject(value, jgen);
         }
@@ -168,15 +171,49 @@ public class ApplicationException extends Exception implements JoynrException {
             return null;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public Enum deserializeWithType(JsonParser jp, DeserializationContext ctxt, TypeDeserializer typeDeserializer)
                                                                                                                       throws IOException,
                                                                                                                       JsonProcessingException {
-            Enum result = (Enum) typeDeserializer.deserializeTypedFromObject(jp, ctxt);
+            String typeName = null;
+            String enumName = null;
+
+            if (!jp.getCurrentToken().equals(JsonToken.START_OBJECT)) {
+                throw new IOException("Invalid Json format: parser does not point to START_OBJECT!");
+            }
+            if (!jp.getCurrentName().equals("error")) {
+                throw new IOException("Invalid Json format: parser does not point to error enum");
+            }
+
             while (!(jp.getCurrentToken().equals(JsonToken.END_OBJECT))) {
                 jp.nextToken();
+                if (!(jp.getCurrentToken().equals(JsonToken.FIELD_NAME))) {
+                    continue;
+                }
+                if (jp.getText().equals(JSON_FIELD_NAME_TYPE)) {
+                    jp.nextToken();
+                    typeName = jp.getText();
+                }
+                jp.nextToken();
+                if (jp.getText().equals(JSON_FIELD_NAME_ERROR_ENUM)) {
+                    jp.nextToken();
+                    enumName = jp.getText();
+                }
             }
-            return result;
+
+            if (typeName == null) {
+                throw new IOException("Invalid Json format: \"" + JSON_FIELD_NAME_TYPE + "\" not found!");
+            }
+            if (enumName == null) {
+                throw new IOException("Invalid Json format: enum \"" + JSON_FIELD_NAME_ERROR_ENUM + "\" not found!");
+            }
+
+            try {
+                return Enum.valueOf(Class.forName(typeName).asSubclass(Enum.class), enumName);
+            } catch (ClassNotFoundException e) {
+                throw new IOException(e);
+            }
         }
 
     }
