@@ -18,3 +18,5 @@ examples/radio-app/gps-provider-joynr.properties
 joynrpersistence/
 derby.log
 /build/
+javascript/joynr.properties
+javascript/apps/radio/joynr.properties
