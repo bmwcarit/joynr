@@ -49,6 +49,8 @@ log "RUN CMAKE"
 
 cmake -DUSE_DBUS_COMMONAPI_COMMUNICATION=$DBUS \
       -DENABLE_GCOV=$GCOV \
+      -DENABLE_DOXYGEN=OFF \
+      -DENABLE_CLANG_FORMATTER=OFF \
       -DPYTHON_EXECUTABLE=/usr/bin/python \
       -DJOYNR_SERVER=localhost:8080 \
       -DCMAKE_BUILD_TYPE=Debug ../cpp
