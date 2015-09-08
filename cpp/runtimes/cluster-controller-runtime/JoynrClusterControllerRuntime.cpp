@@ -457,7 +457,6 @@ void JoynrClusterControllerRuntime::unregisterProvider(const std::string& partic
 void JoynrClusterControllerRuntime::start()
 {
     startMessaging();
-    waitForChannelCreation();
     registerRoutingProvider();
     registerDiscoveryProvider();
 }
