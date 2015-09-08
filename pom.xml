@@ -182,9 +182,6 @@
 				* io.joynr.java.messaging.bounceproxy:bounceproxy-ui
 			-->
 			<id>carit-copyright</id>
-			<properties>
-				<licenseConfigurationVersion>1.0.6</licenseConfigurationVersion>
-			</properties>
 			<build>
 				<plugins>
 					<plugin>
@@ -248,7 +245,6 @@
 		<profile>
 			<id>carit-license</id>
 			<properties>
-				<licenseConfigurationVersion>1.0.5</licenseConfigurationVersion>
 				<!--
 					For unknown reasons useLicensesConfigFile and licensesConfigFile
 					configuration properties must be set as global properties. It is
@@ -370,7 +366,7 @@
 		<timestamp>${maven.build.timestamp}</timestamp>
 		<maven.build.timestamp.format>yyyyMMdd-HHmmss</maven.build.timestamp.format>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
+		<licenseConfigurationVersion>1.0.10-SNAPSHOT</licenseConfigurationVersion>
 		<!--
 			Those versions should not be used outside of the superpom. All dependencies
 			that need those version numbers should be defined in the dependencyManagement
