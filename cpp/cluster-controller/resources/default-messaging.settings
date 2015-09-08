@@ -2,9 +2,13 @@
 bounce-proxy-url=http://${JOYNR_SERVER}/bounceproxy/
 
 discovery-directories-domain=io.joynr
-# TTL in msecs of messages used in communication between local discovery service
-# and backend discovery service
-discovery-messages-ttl=40000
+# TTL in msecs of messages used in communication between local discovery service and backend
+# discovery service.
+# If backend discovery service is not available at the time the provider is registered, the provider
+# will be added anyway to the backend discovery if the backend discovery service becomes available
+# within the TTL.
+# 1814400 = 21 days
+discovery-messages-ttl=1814400
 
 channel-url-directory-url=http://${JOYNR_SERVER}/discovery/channels/discoverydirectory_channelid/
 channel-url-directory-channelid=discoverydirectory_channelid
