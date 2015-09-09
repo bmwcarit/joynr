@@ -70,6 +70,11 @@ public class JoynrApplicationException extends Exception implements JoynrExcepti
     }
 
     @Override
+    public String toString() {
+        return super.toString() + ": error: " + error;
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;

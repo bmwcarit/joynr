@@ -21,15 +21,17 @@ package io.joynr.exceptions;
 
 public class JoynrHttpException extends JoynrCommunicationException {
 
-    /**
-     * 
-     */
     private static final long serialVersionUID = -855603266419595137L;
     public final int statusCode;
 
     public JoynrHttpException(int statusCode, String message) {
         super(message);
         this.statusCode = statusCode;
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + ": statusCode: " + statusCode;
     }
 
     @Override
