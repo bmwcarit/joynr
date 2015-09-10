@@ -25,7 +25,7 @@ import io.joynr.dispatcher.rpc.JoynrAsyncInterface;
 import io.joynr.dispatcher.rpc.JoynrBroadcastSubscriptionInterface;
 import io.joynr.dispatcher.rpc.JoynrSubscriptionInterface;
 import io.joynr.dispatcher.rpc.JoynrSyncInterface;
-import io.joynr.exceptions.JoynrArbitrationException;
+import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -119,7 +119,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
             throw new JoynrRuntimeException(e);
         }
 
-        throw new JoynrArbitrationException("Arbitration and Connector failed: domain: " + domain + " interface: "
+        throw new DiscoveryException("Arbitration and Connector failed: domain: " + domain + " interface: "
                 + interfaceName + " qos: " + discoveryQos + ": Arbitration could not be finished in time.");
 
     }

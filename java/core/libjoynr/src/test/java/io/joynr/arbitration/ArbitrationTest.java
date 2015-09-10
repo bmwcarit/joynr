@@ -3,7 +3,7 @@ package io.joynr.arbitration;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import io.joynr.capabilities.CapabilityEntry;
 import io.joynr.capabilities.CapabilityEntryImpl;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.dispatcher.rpc.JoynrInterface;
-import io.joynr.exceptions.JoynrArbitrationException;
+import io.joynr.exceptions.DiscoveryException;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -134,7 +134,7 @@ public class ArbitrationTest {
                    .setArbitrationResult(Mockito.eq(ArbitrationStatus.ArbitrationSuccesful),
                                          Mockito.eq(new ArbitrationResult(expectedParticipantId,
                                                                           Lists.newArrayList(expectedEndpointAddress))));
-        } catch (JoynrArbitrationException e) {
+        } catch (DiscoveryException e) {
             e.printStackTrace();
             Assert.fail("A Joyn Arbitration Exception has been thrown");
         }
@@ -184,7 +184,7 @@ public class ArbitrationTest {
                    .setArbitrationResult(Mockito.eq(ArbitrationStatus.ArbitrationSuccesful),
                                          Mockito.eq(new ArbitrationResult(expectedParticipantId,
                                                                           Lists.newArrayList(expectedEndpointAddress))));
-        } catch (JoynrArbitrationException e) {
+        } catch (DiscoveryException e) {
             e.printStackTrace();
             Assert.fail("A Joyn Arbitration Exception has been thrown");
         }
@@ -237,7 +237,7 @@ public class ArbitrationTest {
                    .setArbitrationResult(Mockito.eq(ArbitrationStatus.ArbitrationSuccesful),
                                          Mockito.eq(new ArbitrationResult(expectedParticipantId,
                                                                           Lists.newArrayList(expectedEndpointAddress))));
-        } catch (JoynrArbitrationException e) {
+        } catch (DiscoveryException e) {
             e.printStackTrace();
             Assert.fail("A Joyn Arbitration Exception has been thrown");
         }
@@ -292,7 +292,7 @@ public class ArbitrationTest {
                    .setArbitrationResult(Mockito.eq(ArbitrationStatus.ArbitrationSuccesful),
                                          Mockito.eq(new ArbitrationResult(expectedParticipantId,
                                                                           Lists.newArrayList(expectedEndpointAddress))));
-        } catch (JoynrArbitrationException e) {
+        } catch (DiscoveryException e) {
             e.printStackTrace();
             Assert.fail("A Joyn Arbitration Exception has been thrown");
         }
@@ -348,7 +348,7 @@ public class ArbitrationTest {
                    .setArbitrationResult(Mockito.eq(ArbitrationStatus.ArbitrationSuccesful),
                                          Mockito.eq(new ArbitrationResult(expectedParticipantId,
                                                                           expectedEndpointAddresses)));
-        } catch (JoynrArbitrationException e) {
+        } catch (DiscoveryException e) {
             e.printStackTrace();
             Assert.fail("A Joyn Arbitration Exception has been thrown");
         }
@@ -412,7 +412,7 @@ public class ArbitrationTest {
                    .setArbitrationResult(Mockito.eq(ArbitrationStatus.ArbitrationSuccesful),
                                          Mockito.eq(new ArbitrationResult(expectedParticipantId,
                                                                           Lists.newArrayList(expectedEndpointAddress))));
-        } catch (JoynrArbitrationException e) {
+        } catch (DiscoveryException e) {
             e.printStackTrace();
             Assert.fail("A Joyn Arbitration Exception has been thrown");
         }

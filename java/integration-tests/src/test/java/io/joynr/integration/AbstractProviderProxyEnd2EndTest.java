@@ -3,7 +3,7 @@ package io.joynr.integration;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.dispatcher.rpc.RequestStatusCode;
-import io.joynr.exceptions.JoynrArbitrationException;
+import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrTimeoutException;
@@ -359,8 +359,8 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
-    public void registerProviderCreateProxyAndCallMethod() throws JoynrArbitrationException,
-                                                          JoynrIllegalStateException, InterruptedException {
+    public void registerProviderCreateProxyAndCallMethod() throws DiscoveryException, JoynrIllegalStateException,
+                                                          InterruptedException {
         int result;
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
@@ -371,7 +371,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
-    public void sendObjectsAsArgumentAndReturnValue() throws JoynrArbitrationException, JoynrIllegalStateException,
+    public void sendObjectsAsArgumentAndReturnValue() throws DiscoveryException, JoynrIllegalStateException,
                                                      InterruptedException {
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
@@ -389,7 +389,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
-    public void asyncMethodCallWithCallback() throws JoynrArbitrationException, JoynrIllegalStateException,
+    public void asyncMethodCallWithCallback() throws DiscoveryException, JoynrIllegalStateException,
                                              InterruptedException {
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
@@ -495,7 +495,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
     @Ignore
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
-    public void asyncMethodCallWithTtlExpiring() throws JoynrArbitrationException, JoynrIllegalStateException,
+    public void asyncMethodCallWithTtlExpiring() throws DiscoveryException, JoynrIllegalStateException,
                                                 InterruptedException {
 
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
@@ -528,7 +528,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
-    public void testMethodWithEnumInputReturnsResult() throws JoynrArbitrationException, JoynrIllegalStateException,
+    public void testMethodWithEnumInputReturnsResult() throws DiscoveryException, JoynrIllegalStateException,
                                                       InterruptedException {
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
@@ -541,7 +541,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
-    public void testVoidOperation() throws JoynrArbitrationException, JoynrIllegalStateException, InterruptedException {
+    public void testVoidOperation() throws DiscoveryException, JoynrIllegalStateException, InterruptedException {
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
@@ -573,7 +573,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
-    public void testMethodWithNullEnumInputReturnsSomethingSensible() throws JoynrArbitrationException,
+    public void testMethodWithNullEnumInputReturnsSomethingSensible() throws DiscoveryException,
                                                                      JoynrIllegalStateException, InterruptedException {
         TestEnum input = null;
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
@@ -583,8 +583,8 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
-    public void sendingANullValueOnceDoesntCrashProvider() throws JoynrArbitrationException,
-                                                          JoynrIllegalStateException, InterruptedException {
+    public void sendingANullValueOnceDoesntCrashProvider() throws DiscoveryException, JoynrIllegalStateException,
+                                                          InterruptedException {
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
         proxy.methodWithEnumParameter(null);
@@ -594,7 +594,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
-    public void testEnumAttribute() throws JoynrArbitrationException, JoynrIllegalStateException, InterruptedException {
+    public void testEnumAttribute() throws DiscoveryException, JoynrIllegalStateException, InterruptedException {
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
         proxy.setEnumAttribute(TestEnum.TWO);
@@ -603,8 +603,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
-    public void testSimpleBroadcast() throws JoynrArbitrationException, JoynrIllegalStateException,
-                                     InterruptedException {
+    public void testSimpleBroadcast() throws DiscoveryException, JoynrIllegalStateException, InterruptedException {
         final Semaphore broadcastReceived = new Semaphore(0);
         final GpsLocation gpsLocation = new GpsLocation(1.0,
                                                         2.0,
@@ -654,7 +653,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
     @Ignore
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
-    public void asyncMethodCallWithCallbackAndParameter() throws JoynrArbitrationException, JoynrIllegalStateException,
+    public void asyncMethodCallWithCallbackAndParameter() throws DiscoveryException, JoynrIllegalStateException,
                                                          InterruptedException {
 
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
@@ -673,8 +672,8 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
-    public void asyncMethodCallWithIntegerParametersAndFuture() throws JoynrArbitrationException,
-                                                               JoynrIllegalStateException, InterruptedException {
+    public void asyncMethodCallWithIntegerParametersAndFuture() throws DiscoveryException, JoynrIllegalStateException,
+                                                               InterruptedException {
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
@@ -690,8 +689,8 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
-    public void asyncMethodCallWithEnumParametersAndFuture() throws JoynrArbitrationException,
-                                                            JoynrIllegalStateException, InterruptedException {
+    public void asyncMethodCallWithEnumParametersAndFuture() throws DiscoveryException, JoynrIllegalStateException,
+                                                            InterruptedException {
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
@@ -708,7 +707,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
     @Ignore
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
-    public void asyncMethodCallWithEnumListReturned() throws JoynrArbitrationException, JoynrIllegalStateException,
+    public void asyncMethodCallWithEnumListReturned() throws DiscoveryException, JoynrIllegalStateException,
                                                      InterruptedException {
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
@@ -720,7 +719,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
     @Ignore
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
-    public void overloadedMethodWithInheritance() throws JoynrArbitrationException, JoynrIllegalStateException,
+    public void overloadedMethodWithInheritance() throws DiscoveryException, JoynrIllegalStateException,
                                                  InterruptedException {
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
@@ -736,8 +735,8 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
-    public void overloadedMethodWithDifferentReturnTypes() throws JoynrArbitrationException,
-                                                          JoynrIllegalStateException, InterruptedException {
+    public void overloadedMethodWithDifferentReturnTypes() throws DiscoveryException, JoynrIllegalStateException,
+                                                          InterruptedException {
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 

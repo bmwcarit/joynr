@@ -3,7 +3,7 @@ package io.joynr.arbitration;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ package io.joynr.arbitration;
  */
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_ARBITRATION_MINIMUMRETRYDELAY;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
-import io.joynr.exceptions.JoynrArbitrationException;
+import io.joynr.exceptions.DiscoveryException;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -47,12 +47,12 @@ public final class ArbitratorFactory {
      * @param capabilitiesSource
      *            Source for capabilities lookup.
      * @return the created Arbitrator object
-     * @throws JoynrArbitrationException if arbitration strategy is unknown
+     * @throws DiscoveryException if arbitration strategy is unknown
      */
     public static Arbitrator create(final String domain,
                                     final String interfaceName,
                                     final DiscoveryQos discoveryQos,
-                                    LocalCapabilitiesDirectory capabilitiesSource) throws JoynrArbitrationException {
+                                    LocalCapabilitiesDirectory capabilitiesSource) throws DiscoveryException {
 
         switch (discoveryQos.getArbitrationStrategy()) {
         case FixedChannel:
@@ -85,8 +85,8 @@ public final class ArbitratorFactory {
                                   discoveryQos.getArbitrationStrategyFunction());
 
         default:
-            throw new JoynrArbitrationException("Arbitration failed: domain: " + domain + " interface: "
-                    + interfaceName + " qos: " + discoveryQos + ": unknown arbitration strategy or strategy not set!");
+            throw new DiscoveryException("Arbitration failed: domain: " + domain + " interface: " + interfaceName
+                    + " qos: " + discoveryQos + ": unknown arbitration strategy or strategy not set!");
         }
 
     }

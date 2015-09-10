@@ -3,7 +3,7 @@ package io.joynr.messaging;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcReturn;
-import io.joynr.exceptions.JoynrArbitrationException;
+import io.joynr.exceptions.DiscoveryException;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 
@@ -54,22 +54,21 @@ public class DefaultUrlDirectoryModule extends AbstractModule {
         return new ChannelUrlDirectoryProxy() {
 
             @Override
-            public void unregisterChannelUrls(@JoynrRpcParam("channelId") String channelId)
-                                                                                           throws JoynrArbitrationException {
+            public void unregisterChannelUrls(@JoynrRpcParam("channelId") String channelId) throws DiscoveryException {
 
             }
 
             @Override
             public void registerChannelUrls(@JoynrRpcParam("channelId") String channelId,
                                             @JoynrRpcParam("channelUrlInformation") ChannelUrlInformation channelUrlInformation)
-                                                                                                                                throws JoynrArbitrationException {
+                                                                                                                                throws DiscoveryException {
 
             }
 
             @Override
             @JoynrRpcReturn(deserializationType = ChannelUrlInformationToken.class)
             public ChannelUrlInformation getUrlsForChannel(@JoynrRpcParam("channelId") String channelId)
-                                                                                                        throws JoynrArbitrationException {
+                                                                                                        throws DiscoveryException {
                 List<String> urls = new ArrayList<String>();
                 urls.add(bounceProxyUrl + "channels/" + channelId + "/");
                 return new ChannelUrlInformation(urls);

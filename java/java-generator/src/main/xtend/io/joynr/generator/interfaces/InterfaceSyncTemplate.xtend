@@ -98,7 +98,7 @@ class InterfaceSyncTemplate implements InterfaceTemplate{
 		import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 		«ENDIF»
 
-		import io.joynr.exceptions.JoynrArbitrationException;
+		import io.joynr.exceptions.DiscoveryException;
 
 		«FOR datatype: getRequiredIncludesFor(serviceInterface, true, true, true, false, false)»
 			import «datatype»;
@@ -114,11 +114,11 @@ class InterfaceSyncTemplate implements InterfaceTemplate{
 				«IF isReadable(attribute)»
 
 				@JoynrRpcReturn(deserializationType = «getTokenTypeForArrayType(attributeType)»Token.class)
-				public «attributeType» «getAttribute»() throws JoynrArbitrationException;
+				public «attributeType» «getAttribute»() throws DiscoveryException;
 				«ENDIF»
 				«IF isWritable(attribute)»
 
-					void «setAttribute»(@JoynrRpcParam(value="«attributeName»", deserializationType = «getTokenTypeForArrayType(attributeType)»Token.class) «attributeType» «attributeName») throws JoynrArbitrationException;
+					void «setAttribute»(@JoynrRpcParam(value="«attributeName»", deserializationType = «getTokenTypeForArrayType(attributeType)»Token.class) «attributeType» «attributeName») throws DiscoveryException;
 				«ENDIF»
 		«ENDFOR»
 
@@ -151,7 +151,7 @@ class InterfaceSyncTemplate implements InterfaceTemplate{
 				*/
 				public «methodToReturnTypeName.get(method)» «methodName»(
 						«method.typedParameterListJavaRpc»
-				) throws JoynrArbitrationException;
+				) throws DiscoveryException;
 			«ELSE»
 				/*
 				* «methodName»
@@ -159,12 +159,12 @@ class InterfaceSyncTemplate implements InterfaceTemplate{
 				«IF method.typeNamesForOutputParameter.iterator.next=="void"»
 				public «methodToReturnTypeName.get(method)» «methodName»(
 						«getTypedParameterListJavaRpc(method)»
-				) throws JoynrArbitrationException;
+				) throws DiscoveryException;
 				«ELSE»
 				@JoynrRpcReturn(deserializationType = «getTokenTypeForArrayType(method.typeNamesForOutputParameter.iterator.next)»Token.class)
 				public «methodToReturnTypeName.get(method)» «methodName»(
 						«getTypedParameterListJavaRpc(method)»
-				) throws JoynrArbitrationException;
+				) throws DiscoveryException;
 				«ENDIF»
 			«ENDIF»
 		«ENDFOR»

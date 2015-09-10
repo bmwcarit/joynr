@@ -19,14 +19,18 @@ package io.joynr.exceptions;
  * #L%
  */
 
-public class JoynrArbitrationException extends JoynrRuntimeException {
-
-    /**
-     * 
-     */
+/**
+ * Joynr exeption to report errors during discovery.
+ */
+public class DiscoveryException extends JoynrRuntimeException {
     private static final long serialVersionUID = -5333394188396893835L;
 
-    public JoynrArbitrationException(String message) {
+    /**
+     * Constructor for a DiscoveryException with detail message.
+     *
+     * @param message further description of the reported discovery error
+     */
+    public DiscoveryException(String message) {
         super(message);
     }
 }

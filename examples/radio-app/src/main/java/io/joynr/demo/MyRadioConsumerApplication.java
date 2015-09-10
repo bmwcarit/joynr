@@ -21,7 +21,7 @@ package io.joynr.demo;
 
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.exceptions.JoynrArbitrationException;
+import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
@@ -365,7 +365,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
                 LOG.error("error reading input from console", e);
             }
 
-        } catch (JoynrArbitrationException e) {
+        } catch (DiscoveryException e) {
             LOG.error("No provider found", e);
         } catch (JoynrCommunicationException e) {
             LOG.error("The message was not sent: ", e);

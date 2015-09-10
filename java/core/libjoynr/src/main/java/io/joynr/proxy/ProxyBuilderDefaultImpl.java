@@ -3,7 +3,7 @@ package io.joynr.proxy;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import io.joynr.arbitration.ArbitratorFactory;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.dispatcher.rpc.JoynrInterface;
-import io.joynr.exceptions.JoynrArbitrationException;
+import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
@@ -93,7 +93,7 @@ public class ProxyBuilderDefaultImpl<T extends JoynrInterface> implements ProxyB
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see io.joynr.proxy.ProxyBuilder#getParticipantId()
      */
     @Override
@@ -103,7 +103,7 @@ public class ProxyBuilderDefaultImpl<T extends JoynrInterface> implements ProxyB
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see io.joynr.proxy.ProxyBuilder#setParticipantId(java.lang.String)
      */
     @Override
@@ -113,13 +113,13 @@ public class ProxyBuilderDefaultImpl<T extends JoynrInterface> implements ProxyB
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * io.joynr.proxy.ProxyBuilder#setDiscoveryQos(io.joynr.arbitration.DiscoveryQos
      * )
      */
     @Override
-    public ProxyBuilder<T> setDiscoveryQos(final DiscoveryQos discoveryQos) throws JoynrArbitrationException {
+    public ProxyBuilder<T> setDiscoveryQos(final DiscoveryQos discoveryQos) throws DiscoveryException {
         this.discoveryQos = discoveryQos;
         // TODO which interfaceName should be used here?
         arbitrator = ArbitratorFactory.create(domain, interfaceName, discoveryQos, localCapabilitiesDirectory);
@@ -129,7 +129,7 @@ public class ProxyBuilderDefaultImpl<T extends JoynrInterface> implements ProxyB
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * io.joynr.proxy.ProxyBuilder#setMessagingQos(io.joynr.messaging.MessagingQos)
      */
@@ -141,7 +141,7 @@ public class ProxyBuilderDefaultImpl<T extends JoynrInterface> implements ProxyB
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see io.joynr.proxy.ProxyBuilder#build()
      */
     @Override

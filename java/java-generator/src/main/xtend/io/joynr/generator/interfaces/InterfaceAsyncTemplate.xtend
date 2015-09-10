@@ -119,7 +119,7 @@ import io.joynr.proxy.ICallback;
 import io.joynr.exceptions.JoynrRuntimeException;
 «ENDIF»
 «IF hasWriteAttribute»
-import io.joynr.exceptions.JoynrArbitrationException;
+import io.joynr.exceptions.DiscoveryException;
 «ENDIF»
 
 «FOR datatype: getRequiredIncludesFor(serviceInterface, true, true, true, false, false)»
@@ -147,7 +147,7 @@ public interface «asyncClassName» extends «interfaceName», JoynrAsyncInterfa
 		«ENDIF»
 		«IF isWritable(attribute)»
 
-			Future<Void> «setAttribute»(@JoynrRpcCallback(deserializationType = VoidToken.class) Callback<Void> callback, @JoynrRpcParam(value="«attributeName»", deserializationType = «getTokenTypeForArrayType(attributeType)»Token.class) «attributeType» «attributeName») throws JoynrArbitrationException;
+			Future<Void> «setAttribute»(@JoynrRpcCallback(deserializationType = VoidToken.class) Callback<Void> callback, @JoynrRpcParam(value="«attributeName»", deserializationType = «getTokenTypeForArrayType(attributeType)»Token.class) «attributeType» «attributeName») throws DiscoveryException;
 		«ENDIF»
 	«ENDFOR»
 

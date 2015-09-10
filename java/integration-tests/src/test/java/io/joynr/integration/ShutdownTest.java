@@ -3,7 +3,7 @@ package io.joynr.integration;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ package io.joynr.integration;
 
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.exceptions.JoynrArbitrationException;
+import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.integration.util.DummyJoynrApplication;
@@ -88,7 +88,7 @@ public class ShutdownTest {
     @Test(expected = JoynrShutdownException.class)
     @Ignore
     // test is taking too long because it is attempting to send deregister requests that are not implemented in the mocks
-    public void testProxyCallAfterShutdown() throws JoynrArbitrationException, JoynrIllegalStateException,
+    public void testProxyCallAfterShutdown() throws DiscoveryException, JoynrIllegalStateException,
                                             InterruptedException {
         Mockito.when(messageReceiverMock.getChannelId()).thenReturn("ShutdownTestChannelId");
         dummyApplication.getRuntime().registerProvider("ShutdownTestdomain", provider);
@@ -103,7 +103,7 @@ public class ShutdownTest {
 
     @Ignore
     @Test(expected = JoynrShutdownException.class)
-    public void testProxyCreationAfterShutdown() throws JoynrArbitrationException, JoynrIllegalStateException,
+    public void testProxyCreationAfterShutdown() throws DiscoveryException, JoynrIllegalStateException,
                                                 InterruptedException {
         // TODO
         // Arbitration does not check if the runtime is already shutting down. A test like this would fail.

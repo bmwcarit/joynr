@@ -3,7 +3,7 @@ package io.joynr.proxy;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ package io.joynr.proxy;
 
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.dispatcher.rpc.JoynrInterface;
-import io.joynr.exceptions.JoynrArbitrationException;
+import io.joynr.exceptions.DiscoveryException;
 import io.joynr.messaging.MessagingQos;
 
 /**
@@ -29,7 +29,7 @@ import io.joynr.messaging.MessagingQos;
  * methods. After calling build the proxy can be used like a local instance of the provider. All invocations will be
  * queued until either the message TTL expires or the arbitration finishes successfully. Synchronous calls will block
  * until the arbitration is done.
- * 
+ *
  * @param <T>
  *            Provided interface
  */
@@ -37,21 +37,21 @@ public interface ProxyBuilder<T extends JoynrInterface> {
 
     /**
      * Callback for async proxy creation
-     * 
+     *
      * @param <T> Provided interface
      */
     public interface ProxyCreatedCallback<T extends JoynrInterface> {
 
         /**
          * Called when the proxy is created and ready to use. Does not ensure successful arbitration.
-         * 
+         *
          * @param result result of proxy creation
          */
         public void onProxyCreated(T result);
 
         /**
          * Called when an error occurred during proxy creation.
-         * 
+         *
          * @param errorMessage error message
          */
         public void onProxyCreationError(String errorMessage);
@@ -67,16 +67,16 @@ public interface ProxyBuilder<T extends JoynrInterface> {
 
     /**
      * Sets arbitration strategy, timeout and strategy specific parameters.
-     * 
+     *
      * @param discoveryQos discovery quality of service
      * @return Returns the ProxyBuilder
-     * @throws JoynrArbitrationException in case arbitration fails
+     * @throws DiscoveryException in case arbitration fails
      */
-    public abstract ProxyBuilder<T> setDiscoveryQos(DiscoveryQos discoveryQos) throws JoynrArbitrationException;
+    public abstract ProxyBuilder<T> setDiscoveryQos(DiscoveryQos discoveryQos) throws DiscoveryException;
 
     /**
      * Sets the MessagingQos (e.g. request timeouts) which will be used by the created proxy.
-     * 
+     *
      * @param messagingQos messaging quality of service
      * @return Returns the ProxyBuilder
      */
@@ -85,7 +85,7 @@ public interface ProxyBuilder<T extends JoynrInterface> {
     /**
      * Final step to create a proxy object. Make sure all QoS parameters have been set before this method is called. Non
      * blocking.
-     * 
+     *
      * @return Returns a dynamic proxy object, implementing all methods of the interfaces passed in when the
      *         proxyBuilder was created.
      */
@@ -93,7 +93,7 @@ public interface ProxyBuilder<T extends JoynrInterface> {
 
     /**
      * Async version of {@link build}
-     * 
+     *
      * @param callback callback for asynchronous handling
      */
     public abstract void build(ProxyCreatedCallback<T> callback);

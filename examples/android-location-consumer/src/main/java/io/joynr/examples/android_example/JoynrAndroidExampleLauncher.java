@@ -3,7 +3,7 @@ package io.joynr.examples.android_example;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ package io.joynr.examples.android_example;
 
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.exceptions.JoynrArbitrationException;
+import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.joynrandroidruntime.JoynrAndroidRuntime;
@@ -82,7 +82,7 @@ public class JoynrAndroidExampleLauncher {
                                subscribeToLocation(proxy);
 
                                logToOutput("location: " + location + "\n");
-                           } catch (JoynrArbitrationException e) {
+                           } catch (DiscoveryException e) {
                                logToOutput("Arbitration failed!\n");
                            } catch (JoynrCommunicationException e) {
                                logToOutput(e.getMessage() + "\n");
