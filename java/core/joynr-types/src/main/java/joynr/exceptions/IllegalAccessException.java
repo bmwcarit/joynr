@@ -1,4 +1,4 @@
-package io.joynr.exceptions;
+package joynr.exceptions;
 
 /*
  * #%L
@@ -19,18 +19,20 @@ package io.joynr.exceptions;
  * #L%
  */
 
-public class JoynrIllegalAccessException extends JoynrRuntimeException {
+import io.joynr.exceptions.JoynrRuntimeException;
+
+/**
+ * Joynr exception to report access control errors.
+ */
+public class IllegalAccessException extends JoynrRuntimeException {
     private static final long serialVersionUID = 1L;
 
-    public JoynrIllegalAccessException(String message) {
+    /**
+     * Constructor for a IllegalAccessException with detail message.
+     *
+     * @param message further description of the illegal access
+     */
+    public IllegalAccessException(String message) {
         super(message);
-    }
-
-    public JoynrIllegalAccessException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public JoynrIllegalAccessException(Throwable cause) {
-        super(cause);
     }
 }

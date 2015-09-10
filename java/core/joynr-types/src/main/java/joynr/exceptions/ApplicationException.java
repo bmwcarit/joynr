@@ -1,4 +1,4 @@
-package joynr;
+package joynr.exceptions;
 
 /*
  * #%L
@@ -40,7 +40,11 @@ import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
-public class JoynrApplicationException extends Exception implements JoynrException {
+/**
+ * Joynr exception used to return error enums defined in the corresponding
+ * Franca model file from provider to consumer.
+ */
+public class ApplicationException extends Exception implements JoynrException {
 
     private static final long serialVersionUID = 6620625652713563976L;
 
@@ -52,19 +56,33 @@ public class JoynrApplicationException extends Exception implements JoynrExcepti
     /**
      * Constructor for deserializer
      */
-    protected JoynrApplicationException() {
+    protected ApplicationException() {
         super();
     }
 
-    public JoynrApplicationException(Enum<?> error) {
+    /**
+     * Constructor for an ApplicationException with an error enum.
+     *
+     * @param error error enum to be reported
+     */
+    public ApplicationException(Enum<?> error) {
         this.error = error;
     }
 
-    public JoynrApplicationException(Enum<?> error, String message) {
+    /**
+     * Constructor for an ApplicationException with an error enum and detail message.
+     *
+     * @param error error enum to be reported
+     * @param message description of the reported error
+     */
+    public ApplicationException(Enum<?> error, String message) {
         super(message);
         this.error = error;
     }
 
+    /**
+     * @return the reported error enum
+     */
     public Enum<?> getError() {
         return this.error;
     }
@@ -85,7 +103,7 @@ public class JoynrApplicationException extends Exception implements JoynrExcepti
         if (getClass() != obj.getClass()) {
             return false;
         }
-        JoynrApplicationException other = (JoynrApplicationException) obj;
+        ApplicationException other = (ApplicationException) obj;
         if (getMessage() == null) {
             if (other.getMessage() != null) {
                 return false;

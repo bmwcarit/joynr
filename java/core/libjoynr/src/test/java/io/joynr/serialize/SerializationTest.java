@@ -36,7 +36,6 @@ import java.util.Properties;
 import java.util.UUID;
 
 import joynr.BroadcastSubscriptionRequest;
-import joynr.JoynrApplicationException;
 import joynr.JoynrMessage;
 import joynr.OnChangeSubscriptionQos;
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
@@ -46,6 +45,7 @@ import joynr.Request;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
+import joynr.exceptions.ApplicationException;
 import joynr.tests.testBroadcastInterface;
 import joynr.tests.testtypes.TestEnum;
 import joynr.types.CapabilityInformation;
@@ -480,7 +480,7 @@ public class SerializationTest {
     @Test
     public void serializeReplyWithJoynrApplicationException() throws IOException {
 
-        JoynrApplicationException error = new JoynrApplicationException(TestEnum.ONE, "detail message");
+        ApplicationException error = new ApplicationException(TestEnum.ONE, "detail message");
         Reply reply = new Reply(UUID.randomUUID().toString(), error);
 
         String writeValueAsString = objectMapper.writeValueAsString(reply);
@@ -504,7 +504,7 @@ public class SerializationTest {
     @Test
     public void serializeReplyWithJoynrApplicationExceptionWithoutMessage() throws IOException {
 
-        JoynrApplicationException error = new JoynrApplicationException(TestEnum.TWO);
+        ApplicationException error = new ApplicationException(TestEnum.TWO);
         Reply reply = new Reply(UUID.randomUUID().toString(), error);
 
         String writeValueAsString = objectMapper.writeValueAsString(reply);

@@ -1,4 +1,4 @@
-package io.joynr.exceptions;
+package joynr.exceptions;
 
 /*
  * #%L
@@ -19,15 +19,22 @@ package io.joynr.exceptions;
  * #L%
  */
 
-public class JoynrInvalidInvocationException extends JoynrRuntimeException {
+import io.joynr.exceptions.JoynrRuntimeException;
 
-    public JoynrInvalidInvocationException(Throwable e) {
-        super(e);
-    }
+/**
+ * Joynr exception to report errors at the provider if no error enums are defined
+ * in the corresponding Franca model file. It will also be used to wrap an transmit
+ * unexpected exceptions which are thrown by the provider.
+ */
+public class ProviderRuntimeException extends JoynrRuntimeException {
+    private static final long serialVersionUID = 1L;
 
     /**
-     * 
+     * Constructor for a ProviderRuntimeException with detail message.
+     *
+     * @param message further description of the reported error
      */
-    private static final long serialVersionUID = 2077255751860166967L;
-
+    public ProviderRuntimeException(String message) {
+        super(message);
+    }
 }
