@@ -20,6 +20,7 @@ package io.joynr.generator.js
 
 import io.joynr.generator.IJoynrGenerator
 import io.joynr.generator.js.communicationmodel.TypesGenerator
+import io.joynr.generator.js.communicationmodel.ErrorEnumTypesGenerator
 import io.joynr.generator.js.provider.ProviderGenerator
 import io.joynr.generator.js.proxy.ProxyGenerator
 import io.joynr.generator.js.util.GeneratorParameter
@@ -52,6 +53,9 @@ class JoynrJSGenerator implements IJoynrGenerator {
 	@Inject
 	private extension TypesGenerator
 
+	@Inject
+	private extension ErrorEnumTypesGenerator
+
 	override getLanguageId() {
 		"javascript"
 	}
@@ -65,6 +69,7 @@ class JoynrJSGenerator implements IJoynrGenerator {
 		fModel.interfaces.forEach[
 			generateProxy(types, fsa)
 			generateProvider(types, fsa)
+			generateErrorEnumTypes(types, fsa)
 		]
 
 		if (!fModel.typeCollections.empty) {

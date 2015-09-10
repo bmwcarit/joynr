@@ -29,6 +29,7 @@ import java.util.logging.Logger
 import org.franca.core.franca.FAnnotationType
 import org.franca.core.franca.FArgument
 import org.franca.core.franca.FBasicTypeId
+import org.franca.core.franca.FEnumerationType
 import org.franca.core.franca.FMethod
 import org.franca.core.franca.FModelElement
 import org.franca.core.franca.FType
@@ -350,4 +351,8 @@ class JSTypeUtil extends AbstractTypeUtil {
 
 	def getExemplaryInstantiationForArgument(FArgument argument)
 	'''"«escapeQuotes(argument.joynrName)»": «getDefaultValue(argument)»«IF isArray(argument)»]«ENDIF»'''
+
+	def getTypeNameForErrorEnumType(FMethod method, FEnumerationType errorEnumType) {
+		joynrGenerationPrefix + "." + method.packageName + "." + errorEnumType.joynrName
+	}
 }
