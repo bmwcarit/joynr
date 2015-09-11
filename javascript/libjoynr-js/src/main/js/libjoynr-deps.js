@@ -49,6 +49,7 @@ define("libjoynr-deps", [
     "joynr/util/Util",
     "joynr/types/JoynrException",
     "joynr/types/JoynrRuntimeException",
+    "joynr/types/ApplicationException",
     "joynr/types/DiscoveryException",
     "joynr/types/IllegalAccessException",
     "joynr/types/MethodInvocationException",

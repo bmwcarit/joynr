@@ -50,6 +50,7 @@ define("joynr/dispatching/types/Reply", [
         // if present "error" must be one of the exception types
         Util.checkPropertyIfDefined(settings.error, [
             "Object",
+            "ApplicationException",
             "DiscoveryException",
             "IllegalAccessException",
             "JoynrException",
