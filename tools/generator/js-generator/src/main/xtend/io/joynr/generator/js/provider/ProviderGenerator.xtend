@@ -30,6 +30,7 @@ import java.io.File
 import java.util.Date
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FInterface
+import org.franca.core.franca.FMethod
 import org.franca.core.franca.FType
 
 class ProviderGenerator {
@@ -140,6 +141,7 @@ class ProviderGenerator {
 					implementation.«attributeName».valueChanged = this.«attributeName».valueChanged;
 				}
 			«ENDFOR»
+			«val methodToErrorEnumName = fInterface.methodToErrorEnumName»
 			«FOR methodName : getMethodNames(fInterface)»
 				«val operations = getMethods(fInterface, methodName)»
 				«FOR operation : operations»
@@ -165,6 +167,9 @@ class ProviderGenerator {
 							}
 							«ENDFOR»
 						],
+						error: {
+							type: "«determErrorTypeName(operation, methodToErrorEnumName.get(operation))»"
+						},
 						outputParameter: [
 							«FOR param: getOutputParameters(operation) SEPARATOR ","»
 							{
@@ -251,4 +256,19 @@ class ProviderGenerator {
 		«ENDIF»
 	})();
 	'''
+
+	def determErrorTypeName(FMethod method, String errorEnumName) {
+		var enumType = method.errors;
+		if (enumType != null) {
+			enumType.name = errorEnumName;
+			return getTypeNameForErrorEnumType(method, enumType);
+		}
+		else if (method.errorEnum != null){
+			return method.errorEnum.toTypesEnum;
+		}
+		else {
+			return "no error enumeration given"
+		}
+	}
+
 }

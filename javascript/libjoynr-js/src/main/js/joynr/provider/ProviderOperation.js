@@ -214,6 +214,45 @@ define(
                     return typeof privateOperationFunc === "function";
                 };
 
+                this.getErrorEnumType =
+                        function getErrorEnumType(operationArguments, operationArgumentTypes) {
+                            var i;
+                            var namedArguments;
+                            var errorEnumType;
+
+                            // cycle through multiple available operation signatures
+                            for (i = 0; i < operationSignatures.length
+                                && namedArguments === undefined; ++i) {
+                                // check if the parameters from the operation signature is valid for
+                                // the provided arguments
+                                namedArguments =
+                                        getNamedArguments(
+                                                operationArguments,
+                                                operationArgumentTypes,
+                                                operationSignatures[i]);
+                                if (namedArguments) {
+                                    if (operationSignatures[i].error
+                                        && operationSignatures[i].error.type) {
+                                        errorEnumType = operationSignatures[i].error.type;
+                                    }
+                                }
+                            }
+
+                            // check if a matching operation signature was found
+                            if (namedArguments === undefined) {
+                                // TODO: proper error handling
+                                throw new Error("Could not find a valid operation signature in '"
+                                    + JSON.stringify(operationSignatures)
+                                    + "' for a call to operation '"
+                                    + operationName
+                                    + "' with the arguments: '"
+                                    + JSON.stringify(operationArguments)
+                                    + "'");
+                            }
+
+                            return errorEnumType;
+                        };
+
                 return Object.freeze(this);
             }
 

@@ -30,7 +30,11 @@ define("test/data/Operation", [
                     name : "parameter",
                     type : "String"
                 }
-                ]
+                ],
+                error : {
+                    type : "no error enumeration given"
+                },
+                outputParameter : []
             },
             namedArguments : {
                 parameter : "asdf"
@@ -38,7 +42,8 @@ define("test/data/Operation", [
             paramDatatypes : [ "String"
             ],
             params : [ "asdf"
-            ]
+            ],
+            errorEnumType : "no error enumeration given"
         },
         {
             signature : {
@@ -62,7 +67,11 @@ define("test/data/Operation", [
                     name : "complex",
                     type : "joynr.vehicle.radiotypes.RadioStation"
                 }
-                ]
+                ],
+                error : {
+                    type : "joynr.vehicle.Radio.methodErrorEnum"
+                },
+                outputParameter : []
             },
             namedArguments : {
                 complex : new RadioStation({
@@ -74,7 +83,8 @@ define("test/data/Operation", [
             params : [ new RadioStation({
                 name : "asdf"
             })
-            ]
+            ],
+            errorEnumType : "joynr.vehicle.Radio.methodErrorEnum"
         },
         {
             signature : {
@@ -95,7 +105,11 @@ define("test/data/Operation", [
                         name : "array",
                         type : "List"
                     }
-                ]
+                ],
+                error : {
+                    type : "no error enumeration given"
+                },
+                outputParameter : []
             },
             namedArguments : {
                 bool : true,
@@ -124,7 +138,8 @@ define("test/data/Operation", [
                     3,
                     4
                 ]
-            ]
+            ],
+            errorEnumType : "no error enumeration given"
         }
     ];
 

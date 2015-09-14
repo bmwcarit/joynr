@@ -36,20 +36,30 @@ joynrTestRequire("joynr/provider/TestProviderOperation", [
             provider = {};
             operationName = "myOperation";
             implementation = jasmine.createSpy("implementation");
-            myOperation = new ProviderOperation(provider, implementation, operationName, {
-                inputParameter : [
-                    {
-                        "station" : {
-                            type : "String"
-                        }
-                    },
-                    {
-                        "station" : {
-                            type : "joynr.vehicle.radiotypes.RadioStation"
-                        }
+            myOperation = new ProviderOperation(provider, implementation, operationName, [
+                {
+                    inputParameter : [ {
+                        name : "station",
+                        type : "String"
                     }
-                ]
-            });
+                    ],
+                    error : {
+                        type : "joynr.vehicle.Radio.MyOperationErrorEnum"
+                    },
+                    outputParameter : []
+                },
+                {
+                    inputParameter : [ {
+                        name : "station",
+                        type : "joynr.vehicle.radiotypes.RadioStation"
+                    }
+                    ],
+                    error : {
+                        type : "no error enumeration given"
+                    },
+                    outputParameter : []
+                }
+            ]);
             operationSpy = jasmine.createSpy("operation spy");
             myOperation.registerOperation(operationSpy);
         });
@@ -78,6 +88,9 @@ joynrTestRequire("joynr/provider/TestProviderOperation", [
             operationSpy.reset();
             myOperation.callOperation(testData.params, testData.paramDatatypes);
             expect(operationSpy).toHaveBeenCalledWith(testData.namedArguments);
+            var errorEnumType =
+                    myOperation.getErrorEnumType(testData.params, testData.paramDatatypes);
+            expect(errorEnumType).toEqual(testData.errorEnumType);
             expect(implementation).not.toHaveBeenCalled();
         }
 
