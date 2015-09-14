@@ -44,6 +44,7 @@ This project has dependencies to:
   io.joynr.tools.generator:joynr-generator-maven-plugin under The Apache Software License, Version 2.0
   io.joynr.tools.generator:joynr-generator-standalone under The Apache Software License, Version 2.0
   io.joynr.tools:generator under The Apache Software License, Version 2.0
+  io.joynr:basemodel under The Apache Software License, Version 2.0
   Javassist under MPL 1.1 or LGPL 2.1
   javax.inject under The Apache Software License, Version 2.0
   JUnit under Common Public License Version 1.0

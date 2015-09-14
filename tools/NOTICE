@@ -46,6 +46,7 @@ This project has dependencies to:
   io.joynr.tools:build-resources under The Apache Software License, Version 2.0
   io.joynr.tools:generator under The Apache Software License, Version 2.0
   io.joynr.tools:license-check under The Apache Software License, Version 2.0
+  io.joynr:basemodel under The Apache Software License, Version 2.0
   io.joynr:tools under The Apache Software License, Version 2.0
   Javassist under MPL 1.1 or LGPL 2.1
   javax.inject under The Apache Software License, Version 2.0
