@@ -202,13 +202,12 @@ void LocalCapabilitiesDirectory::remove(const std::string& participantId)
         participantId2GlobalCapabilities.remove(QString::fromStdString(participantId), entry);
         interfaceAddress2GlobalCapabilities.remove(
                 InterfaceAddress(entry.getDomain(), entry.getInterfaceName()), entry);
+        capabilitiesClient->remove(participantId);
     }
 
     types::DiscoveryEntry discoveryEntry;
     convertCapabilityEntryIntoDiscoveryEntry(entry, discoveryEntry);
     informObserversOnRemove(discoveryEntry);
-
-    capabilitiesClient->remove(participantId);
 }
 
 bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(
