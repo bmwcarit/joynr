@@ -34,6 +34,7 @@ import io.joynr.exceptions.JoynrWaitExpiredException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.provider.Deferred;
+import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
@@ -44,6 +45,7 @@ import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.PropertyLoader;
 import joynr.exceptions.ApplicationException;
+import joynr.exceptions.ProviderRuntimeException;
 import joynr.OnChangeSubscriptionQos;
 import joynr.tests.DefaulttestProvider;
 import joynr.tests.test.MethodWithErrorEnumExtendedErrorEnum;
@@ -215,6 +217,19 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         public TestProvider() {
         }
 
+        @Override
+        public Promise<Deferred<Integer>> getAttributeWithProviderRuntimeException() {
+            Deferred<Integer> deferred = new Deferred<Integer>();
+            ProviderRuntimeException error = new ProviderRuntimeException("ProviderRuntimeException");
+            deferred.reject(error);
+            return new Promise<Deferred<Integer>>(deferred);
+        }
+
+        @Override
+        public Promise<DeferredVoid> setAttributeWithProviderRuntimeException(Integer attributeWithProviderRuntimeException) {
+            throw new IllegalArgumentException("thrownException");
+        }
+
         // change visibility from protected to public for testing purposes
         @Override
         public void fireBroadcast(String broadcastName, List<BroadcastFilter> broadcastFilters, Object... values) {
@@ -347,6 +362,19 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
             MethodWithImplicitErrorEnumErrorEnum error = MethodWithImplicitErrorEnumErrorEnum.IMPLICIT_ERROR;
             deferred.reject(error);
             return new Promise<MethodWithImplicitErrorEnumDeferred>(deferred);
+        }
+
+        @Override
+        public Promise<DeferredVoid> methodWithProviderRuntimeException() {
+            DeferredVoid deferred = new DeferredVoid();
+            ProviderRuntimeException error = new ProviderRuntimeException("ProviderRuntimeException");
+            deferred.reject(error);
+            return new Promise<DeferredVoid>(deferred);
+        }
+
+        @Override
+        public Promise<DeferredVoid> methodWithThrownException() {
+            throw new IllegalArgumentException("thrownException");
         }
 
         boolean broadcastSubscriptionArrived = false;
@@ -853,6 +881,142 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
             Assert.fail(e.toString());
         } catch (ApplicationException e) {
             Assert.assertEquals(expected, e);
+        }
+        verify(callbackVoid).onFailure(expected);
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void syncMethodCallReturnsProviderRuntimeException() {
+        ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
+        testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+
+        try {
+            proxy.methodWithProviderRuntimeException();
+            Assert.fail("Should throw ProviderRuntimeException");
+        } catch (ProviderRuntimeException e) {
+            ProviderRuntimeException expected = new ProviderRuntimeException("ProviderRuntimeException");
+            Assert.assertEquals(expected, e);
+        } catch (Exception e) {
+            Assert.fail(e.toString());
+        }
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void asyncMethodCallReturnsProviderRuntimeException() {
+        ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
+        testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+
+        ProviderRuntimeException expected = new ProviderRuntimeException("ProviderRuntimeException");
+        Future<Void> future = proxy.methodWithProviderRuntimeException(callbackVoid);
+        try {
+            future.getReply();
+            Assert.fail("Should throw ProviderRuntimeException");
+        } catch (ProviderRuntimeException e) {
+            Assert.assertEquals(expected, e);
+        } catch (Exception e) {
+            Assert.fail(e.toString());
+        }
+        verify(callbackVoid).onFailure(expected);
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void syncMethodCallReturnsThrownException() {
+        ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
+        testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+
+        try {
+            proxy.methodWithThrownException();
+            Assert.fail("Should throw ProviderRuntimeException");
+        } catch (ProviderRuntimeException e) {
+            ProviderRuntimeException expected = new ProviderRuntimeException(new IllegalArgumentException("thrownException").toString());
+            Assert.assertEquals(expected, e);
+        } catch (Exception e) {
+            Assert.fail(e.toString());
+        }
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void asyncMethodCallReturnsThrownException() {
+        ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
+        testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+
+        ProviderRuntimeException expected = new ProviderRuntimeException(new IllegalArgumentException("thrownException").toString());
+        Future<Void> future = proxy.methodWithThrownException(callbackVoid);
+        try {
+            future.getReply();
+            Assert.fail("Should throw ProviderRuntimeException");
+        } catch (ProviderRuntimeException e) {
+            Assert.assertEquals(expected, e);
+        } catch (Exception e) {
+            Assert.fail(e.toString());
+        }
+        verify(callbackVoid).onFailure(expected);
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void syncGetAttributeWithProviderRuntimeException() {
+        ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
+        testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+
+        try {
+            proxy.getAttributeWithProviderRuntimeException();
+            Assert.fail("Should throw ProviderRuntimeException");
+        } catch (ProviderRuntimeException e) {
+            ProviderRuntimeException expected = new ProviderRuntimeException("ProviderRuntimeException");
+            Assert.assertEquals(expected, e);
+        } catch (Exception e) {
+            Assert.fail(e.toString());
+        }
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void asyncGetAttributeWithProviderRuntimeException() {
+        ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
+        testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+
+        ProviderRuntimeException expected = new ProviderRuntimeException("ProviderRuntimeException");
+        Future<Integer> future = proxy.getAttributeWithProviderRuntimeException(callbackInteger);
+        try {
+            future.getReply();
+            Assert.fail("Should throw ProviderRuntimeException");
+        } catch (ProviderRuntimeException e) {
+            Assert.assertEquals(expected, e);
+        } catch (Exception e) {
+            Assert.fail(e.toString());
+        }
+        verify(callbackInteger).onFailure(expected);
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void syncSetAttributeWithThrownException() {
+        ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
+        testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+
+        try {
+            proxy.setAttributeWithProviderRuntimeException(42);
+            Assert.fail("Should throw ProviderRuntimeException");
+        } catch (ProviderRuntimeException e) {
+            ProviderRuntimeException expected = new ProviderRuntimeException(new IllegalArgumentException("thrownException").toString());
+            Assert.assertEquals(expected, e);
+        } catch (Exception e) {
+            Assert.fail(e.toString());
+        }
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void asyncSetAttributeWithThrownException() {
+        ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
+        testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+
+        ProviderRuntimeException expected = new ProviderRuntimeException(new IllegalArgumentException("thrownException").toString());
+        Future<Void> future = proxy.setAttributeWithProviderRuntimeException(callbackVoid, 42);
+        try {
+            future.getReply();
+            Assert.fail("Should throw ProviderRuntimeException");
+        } catch (ProviderRuntimeException e) {
+            Assert.assertEquals(expected, e);
+        } catch (Exception e) {
+            Assert.fail(e.toString());
         }
         verify(callbackVoid).onFailure(expected);
     }

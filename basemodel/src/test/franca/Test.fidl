@@ -106,6 +106,8 @@ interface test {
 	**>
 	attribute Int32 ATTRIBUTEWITHCAPITALLETTERS
 
+	attribute Int32 attributeWithProviderRuntimeException
+
 	method addNumbers {
 		in {
 			Int32 first
@@ -388,6 +390,12 @@ interface test {
 		error {
 			IMPLICIT_ERROR
 		}
+	}
+
+	method methodWithProviderRuntimeException {
+	}
+
+	method methodWithThrownException {
 	}
 
 	method methodWithMultipleOutputParameters {

@@ -3,7 +3,7 @@ package io.joynr.dispatching.rpc;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,8 @@ import java.util.concurrent.ConcurrentMap;
 
 import joynr.Reply;
 import joynr.Request;
+import joynr.exceptions.MethodInvocationException;
+import joynr.exceptions.ProviderRuntimeException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,7 +66,16 @@ public class RequestInterpreter {
     }
 
     public void execute(final Callback<Reply> callback, RequestCaller requestCaller, final Request request) {
-        Promise<? extends AbstractDeferred> promise = (Promise<?>) invokeMethod(requestCaller, request);
+        Promise<? extends AbstractDeferred> promise;
+        try {
+            promise = (Promise<?>) invokeMethod(requestCaller, request);
+        } catch (MethodInvocationException|ProviderRuntimeException e) {
+            callback.onFailure(e);
+            return;
+        } catch (Exception e) {
+            callback.onFailure(new MethodInvocationException(e.toString()));
+            return;
+        }
         promise.then(new PromiseListener() {
 
             @Override
@@ -105,11 +116,12 @@ public class RequestInterpreter {
             return method.invoke(requestCaller, params);
         } catch (IllegalAccessException e) {
             logger.error("RequestInterpreter: Received an RPC invocation for a non public method {}", request);
-            throw new RuntimeException(e);
+            throw new MethodInvocationException(e.toString());
         } catch (InvocationTargetException e) {
             Throwable cause = e.getCause();
-            logger.error("RequestInterpreter: Could not perform an RPC invocation: {}", cause.getMessage());
-            throw new RuntimeException(e);
+            logger.error("RequestInterpreter: Could not perform an RPC invocation: {}", cause == null ? e.toString()
+                    : cause.getMessage());
+            throw new ProviderRuntimeException(cause == null ? e.toString() : cause.toString());
         }
     }
 
@@ -124,7 +136,7 @@ public class RequestInterpreter {
             }
         } catch (NoSuchMethodException e) {
             logger.error("RequestInterpreter: Received an RPC invocation for a non existing method {}", request);
-            throw new RuntimeException(e);
+            throw new MethodInvocationException(e.toString());
         }
     }
 
