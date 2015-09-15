@@ -32,8 +32,6 @@ import io.joynr.dispatcher.RequestReplySenderImpl;
 import io.joynr.dispatcher.rpc.JoynrMessagingConnectorFactory;
 import io.joynr.dispatcher.rpc.JoynrSyncInterface;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
-import io.joynr.endpoints.EndpointAddressBase;
-import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.pubsub.subscription.SubscriptionManager;
@@ -43,6 +41,8 @@ import java.util.List;
 import joynr.JoynrMessage;
 import joynr.Reply;
 import joynr.Request;
+import joynr.system.routingtypes.Address;
+import joynr.system.routingtypes.ChannelAddress;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -74,8 +74,8 @@ public class ProxyArbitrationTest {
 
     private MessagingEndpointDirectory messagingEndpointDirectory;
     private String participantId;
-    private EndpointAddressBase correctEndpointAddress;
-    private EndpointAddressBase wrongEndpointAddress;
+    private Address correctEndpointAddress;
+    private Address wrongEndpointAddress;
 
     public static interface TestSyncInterface extends JoynrSyncInterface {
         public String demoMethod3();
@@ -95,8 +95,8 @@ public class ProxyArbitrationTest {
                                                                     "capabilitiesdirectory_participantid",
                                                                     "discoverydirectory_channelid");
         participantId = "testParticipant";
-        correctEndpointAddress = new JoynrMessagingEndpointAddress(CORRECT_CHANNELID);
-        wrongEndpointAddress = new JoynrMessagingEndpointAddress("wrongEndpointAddress");
+        correctEndpointAddress = new ChannelAddress(CORRECT_CHANNELID);
+        wrongEndpointAddress = new ChannelAddress("wrongEndpointAddress");
 
         messagingEndpointDirectory.put(participantId, wrongEndpointAddress);
         messagingEndpointDirectory.put(participantId, correctEndpointAddress);
@@ -114,7 +114,7 @@ public class ProxyArbitrationTest {
                                                       discoveryQos,
                                                       messagingQos,
                                                       connectorFactory);
-        List<EndpointAddressBase> endpoints = Lists.newArrayList(correctEndpointAddress);
+        List<Address> endpoints = Lists.newArrayList(correctEndpointAddress);
 
         DiscoveryAgent discoveryAgent = new DiscoveryAgent();
         discoveryAgent.setProxyInvocationHandler(proxyHandler);

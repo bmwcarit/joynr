@@ -23,8 +23,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.endpoints.EndpointAddressBase;
-import io.joynr.endpoints.EndpointAddressBasePersisted;
+import io.joynr.endpoints.AddressPersisted;
 import io.joynr.endpoints.JoynrMessagingEndpointAddressPersisted;
 
 import java.util.ArrayList;
@@ -32,6 +31,7 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.UUID;
 
+import joynr.system.routingtypes.Address;
 import joynr.types.CapabilityInformation;
 import joynr.types.CustomParameter;
 import joynr.types.ProviderQos;
@@ -76,7 +76,7 @@ public class CapabilitiesStorePersistedTest {
                 bind(CapabilityEntry.class).to(CapabilityEntryPersisted.class);
                 bind(CustomParameter.class).to(CustomParameterPersisted.class);
                 bind(ProviderQos.class).to(ProviderQosPersisted.class);
-                bind(EndpointAddressBase.class).to(EndpointAddressBasePersisted.class);
+                bind(Address.class).to(AddressPersisted.class);
 
                 bind(CapabilitiesProvisioning.class).to(DefaultCapabilitiesProvisioning.class);
 
@@ -162,7 +162,7 @@ public class CapabilitiesStorePersistedTest {
         String domain = "testDomain";
 
         ProviderQos providerQos = new ProviderQos(new ArrayList<CustomParameter>(), 1, 0L, ProviderScope.GLOBAL, true);
-        EndpointAddressBasePersisted endpointAddress = new JoynrMessagingEndpointAddressPersisted("testChannel");
+        AddressPersisted endpointAddress = new JoynrMessagingEndpointAddressPersisted("testChannel");
         String participantId1 = UUID.randomUUID().toString();
         CapabilityEntry capabilityEntry1 = new CapabilityEntryPersisted(domain,
                                                                         GpsAsync.INTERFACE_NAME,
@@ -202,7 +202,7 @@ public class CapabilitiesStorePersistedTest {
         String domain = "testDomain";
         String participantId = "testparticipantId";
         ProviderQos providerQos = new ProviderQos(new ArrayList<CustomParameter>(), 1, 0L, ProviderScope.LOCAL, true);
-        EndpointAddressBasePersisted endpointAddress = new JoynrMessagingEndpointAddressPersisted("testChannel");
+        AddressPersisted endpointAddress = new JoynrMessagingEndpointAddressPersisted("testChannel");
         CapabilityEntry capabilityEntry1 = new CapabilityEntryPersisted(domain,
                                                                         GpsAsync.INTERFACE_NAME,
                                                                         providerQos,
@@ -236,7 +236,7 @@ public class CapabilitiesStorePersistedTest {
         String domain = "testDomain";
         String participantId = "testparticipantId";
         ProviderQos providerQos = new ProviderQos(new ArrayList<CustomParameter>(), 1, 0L, scope, true);
-        EndpointAddressBasePersisted endpointAddress = new JoynrMessagingEndpointAddressPersisted("testChannel");
+        AddressPersisted endpointAddress = new JoynrMessagingEndpointAddressPersisted("testChannel");
         CapabilityEntry capabilityEntry1 = new CapabilityEntryPersisted(domain,
                                                                         GpsAsync.class,
                                                                         providerQos,
@@ -318,7 +318,7 @@ public class CapabilitiesStorePersistedTest {
         String domain = "testDomain";
         String participantId = UUID.randomUUID().toString();
         ProviderQos providerQos = new ProviderQos(new ArrayList<CustomParameter>(), 5, 0L, scope, true);
-        EndpointAddressBasePersisted endpointAddress = new JoynrMessagingEndpointAddressPersisted("testChannel");
+        AddressPersisted endpointAddress = new JoynrMessagingEndpointAddressPersisted("testChannel");
         CapabilityEntry capabilityEntry1 = new CapabilityEntryPersisted(domain,
                                                                         GpsAsync.INTERFACE_NAME,
                                                                         providerQos,
@@ -353,7 +353,7 @@ public class CapabilitiesStorePersistedTest {
         capabilities = store.getAllCapabilities();
         Assert.assertEquals(1, capabilities.size());
 
-        EndpointAddressBasePersisted endpointAddress2 = new JoynrMessagingEndpointAddressPersisted("testChannelOverride");
+        AddressPersisted endpointAddress2 = new JoynrMessagingEndpointAddressPersisted("testChannelOverride");
         CapabilityEntry capabilityEntry2 = new CapabilityEntryPersisted(domain,
                                                                         GpsAsync.class,
                                                                         providerQos,

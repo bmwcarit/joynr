@@ -27,12 +27,12 @@ import io.joynr.capabilities.CapabilityEntryPersisted;
 import io.joynr.capabilities.CustomParameterPersisted;
 import io.joynr.capabilities.DefaultCapabilitiesProvisioning;
 import io.joynr.capabilities.ProviderQosPersisted;
-import io.joynr.endpoints.EndpointAddressBase;
-import io.joynr.endpoints.EndpointAddressBasePersisted;
+import io.joynr.endpoints.AddressPersisted;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.runtime.AbstractJoynrApplication;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryAbstractProvider;
+import joynr.system.routingtypes.Address;
 import joynr.types.CustomParameter;
 import joynr.types.ProviderQos;
 
@@ -49,7 +49,7 @@ public class CapabilitiesDirectoryModule extends AbstractModule {
         bind(CapabilityEntry.class).to(CapabilityEntryPersisted.class);
         bind(CustomParameter.class).to(CustomParameterPersisted.class);
         bind(ProviderQos.class).to(ProviderQosPersisted.class);
-        bind(EndpointAddressBase.class).to(EndpointAddressBasePersisted.class);
+        bind(Address.class).to(AddressPersisted.class);
 
         bind(CapabilitiesProvisioning.class).to(DefaultCapabilitiesProvisioning.class);
     }

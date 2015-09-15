@@ -22,8 +22,6 @@ package io.joynr.capabilities;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.dispatcher.MessagingEndpointDirectory;
-import io.joynr.endpoints.EndpointAddressBase;
-import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 import io.joynr.exceptions.JoynrArbitrationException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
@@ -44,6 +42,8 @@ import javax.annotation.CheckForNull;
 import joynr.infrastructure.ChannelUrlDirectory;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
 import joynr.infrastructure.GlobalDomainAccessController;
+import joynr.system.routingtypes.Address;
+import joynr.system.routingtypes.ChannelAddress;
 import joynr.types.CapabilityInformation;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
@@ -93,21 +93,21 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                                                  new ProviderQos(),
                                                                  capabilitiesDirectoryParticipantId,
                                                                  System.currentTimeMillis(),
-                                                                 new JoynrMessagingEndpointAddress(capabiltitiesDirectoryChannelId)));
+                                                                 new ChannelAddress(capabiltitiesDirectoryChannelId)));
 
         this.globalCapabilitiesCache.add(new CapabilityEntryImpl(discoveryDirectoriesDomain,
                                                                  ChannelUrlDirectory.INTERFACE_NAME,
                                                                  new ProviderQos(),
                                                                  channelUrlDirectoryParticipantId,
                                                                  System.currentTimeMillis(),
-                                                                 new JoynrMessagingEndpointAddress(channelUrlDirectoryChannelId)));
+                                                                 new ChannelAddress(channelUrlDirectoryChannelId)));
 
         this.globalCapabilitiesCache.add(new CapabilityEntryImpl(discoveryDirectoriesDomain,
                                                                  GlobalDomainAccessController.INTERFACE_NAME,
                                                                  new ProviderQos(),
                                                                  domainAccessControllerParticipantId,
                                                                  System.currentTimeMillis(),
-                                                                 new JoynrMessagingEndpointAddress(domainAccessControllerChannelId)));
+                                                                 new ChannelAddress(domainAccessControllerChannelId)));
 
         globalCapabilitiesClient = new GlobalCapabilitiesDirectoryClient(discoveryDirectoriesDomain,
                                                                          this,
@@ -119,7 +119,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
      */
     @Override
     public RegistrationFuture add(final CapabilityEntry capabilityEntry) {
-        JoynrMessagingEndpointAddress joynrMessagingEndpointAddress = new JoynrMessagingEndpointAddress(localChannelId);
+        ChannelAddress joynrMessagingEndpointAddress = new ChannelAddress(localChannelId);
         capabilityEntry.addEndpoint(joynrMessagingEndpointAddress);
 
         messagingEndpointDirectory.put(capabilityEntry.getParticipantId(), joynrMessagingEndpointAddress);
@@ -184,7 +184,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
             // Currently Endpoint address needs to be added for remove on server side to work correctly.
             // TODO Modify removeCapability in CapDirImpl to accept any endpoint address list
-            JoynrMessagingEndpointAddress joynrMessagingEndpointAddress = new JoynrMessagingEndpointAddress(localChannelId);
+            ChannelAddress joynrMessagingEndpointAddress = new ChannelAddress(localChannelId);
             capEntry.addEndpoint(joynrMessagingEndpointAddress);
 
             CapabilityInformation capabilityInformation = capabilityEntry2Information(capEntry);
@@ -206,8 +206,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         }
 
         // Remove endpoint addresses
-        for (EndpointAddressBase ep : capEntry.getEndpointAddresses()) {
-            if (ep instanceof JoynrMessagingEndpointAddress) {
+        for (Address ep : capEntry.getAddresses()) {
+            if (ep instanceof ChannelAddress) {
                 messagingEndpointDirectory.remove(capEntry.getParticipantId());
                 break;
             }
@@ -343,8 +343,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             // TODO can a CapabilityEntry coming from the GlobalCapabilityDirectoy have more than one
             // EndpointAddress?
             // TODO when are entries purged from the messagingEndpointDirectory?
-            if (ce.getParticipantId() != null && ce.getEndpointAddresses().size() > 0) {
-                messagingEndpointDirectory.put(ce.getParticipantId(), ce.getEndpointAddresses().get(0));
+            if (ce.getParticipantId() != null && ce.getAddresses().size() > 0) {
+                messagingEndpointDirectory.put(ce.getParticipantId(), ce.getAddresses().get(0));
             }
         }
     }

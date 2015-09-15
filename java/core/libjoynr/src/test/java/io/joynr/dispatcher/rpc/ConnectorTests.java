@@ -23,8 +23,6 @@ import static org.mockito.Mockito.times;
 import io.joynr.arbitration.ArbitrationResult;
 import io.joynr.dispatcher.RequestReplyDispatcher;
 import io.joynr.dispatcher.RequestReplySender;
-import io.joynr.endpoints.EndpointAddressBase;
-import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ConnectorFactory;
@@ -42,6 +40,8 @@ import java.util.ArrayList;
 import joynr.PeriodicSubscriptionQos;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
+import joynr.system.routingtypes.Address;
+import joynr.system.routingtypes.ChannelAddress;
 import joynr.types.localisation.GpsPosition;
 import joynr.vehicle.LocalisationSubscriptionInterface;
 
@@ -66,7 +66,7 @@ public class ConnectorTests {
     private String fromParticipantId;
     private String toParticipantId;
     private String channelId;
-    private EndpointAddressBase endpointAddress;
+    private Address endpointAddress;
     private MessagingQos qosSettings;
 
     @Before
@@ -75,7 +75,7 @@ public class ConnectorTests {
         fromParticipantId = "fromParticipantId";
         toParticipantId = "toParticipantId";
         channelId = "testChannelId";
-        endpointAddress = new JoynrMessagingEndpointAddress(channelId);
+        endpointAddress = new ChannelAddress(channelId);
         qosSettings = new MessagingQos();
 
     }
@@ -174,9 +174,9 @@ public class ConnectorTests {
 
     private ConnectorInvocationHandler createConnector() {
         ArbitrationResult arbitrationResult = new ArbitrationResult();
-        ArrayList<EndpointAddressBase> endpointAddresses = new ArrayList<EndpointAddressBase>();
-        endpointAddresses.add(endpointAddress);
-        arbitrationResult.setEndpointAddress(endpointAddresses);
+        ArrayList<Address> addresses = new ArrayList<Address>();
+        addresses.add(endpointAddress);
+        arbitrationResult.setAddress(addresses);
         arbitrationResult.setParticipantId(toParticipantId);
         JoynrMessagingConnectorFactory joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(messageSender,
                                                                                                            dispatcher,

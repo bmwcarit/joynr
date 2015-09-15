@@ -22,7 +22,6 @@ package io.joynr.dispatcher.rpc;
 import io.joynr.dispatcher.RequestReplyDispatcher;
 import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.dispatcher.SynchronizedReplyCaller;
-import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
@@ -48,6 +47,7 @@ import joynr.Reply;
 import joynr.Request;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
+import joynr.system.routingtypes.ChannelAddress;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,19 +68,19 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
     private final RequestReplySender messageSender;
     private final RequestReplyDispatcher dispatcher;
 
-    private final JoynrMessagingEndpointAddress endpointAddress;
+    private final ChannelAddress address;
 
     private final SubscriptionManager subscriptionManager;
 
     JoynrMessagingConnectorInvocationHandler(String toParticipantId,
-                                             JoynrMessagingEndpointAddress endpointAddress,
+                                             ChannelAddress address,
                                              String fromParticipantId,
                                              MessagingQos qosSettings,
                                              RequestReplySender messageSender,
                                              RequestReplyDispatcher dispatcher,
                                              SubscriptionManager subscriptionManager) {
         this.toParticipantId = toParticipantId;
-        this.endpointAddress = endpointAddress;
+        this.address = address;
         this.fromParticipantId = fromParticipantId;
 
         this.qosSettings = qosSettings;
@@ -130,7 +130,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         dispatcher.addReplyCaller(requestReplyId, callbackWrappingReplyCaller, qosSettings.getRoundTripTtl_ms());
         messageSender.sendRequest(fromParticipantId,
                                   toParticipantId,
-                                  endpointAddress,
+                                  address,
                                   request,
                                   qosSettings.getRoundTripTtl_ms());
         return future;
@@ -166,7 +166,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         dispatcher.addReplyCaller(requestReplyId, synchronizedReplyCaller, qosSettings.getRoundTripTtl_ms());
         response = (Reply) messageSender.sendSyncRequest(fromParticipantId,
                                                          toParticipantId,
-                                                         endpointAddress,
+                                                         address,
                                                          request,
                                                          synchronizedReplyCaller,
                                                          qosSettings.getRoundTripTtl_ms());
@@ -187,7 +187,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
 
         messageSender.sendSubscriptionStop(fromParticipantId,
                                            toParticipantId,
-                                           endpointAddress,
+                                           address,
                                            subscriptionStop,
                                            new MessagingQos(qosSettings));
     }
@@ -216,7 +216,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         // TODO pass the future to the messageSender and set the error state when exceptions are thrown
         messageSender.sendSubscriptionRequest(fromParticipantId,
                                               toParticipantId,
-                                              endpointAddress,
+                                              address,
                                               requestObject,
                                               messagingQos,
                                               false);
@@ -245,7 +245,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
 
         messageSender.sendSubscriptionRequest(fromParticipantId,
                                               toParticipantId,
-                                              endpointAddress,
+                                              address,
                                               requestObject,
                                               messagingQos,
                                               true);

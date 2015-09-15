@@ -19,12 +19,13 @@ package io.joynr.dispatcher;
  * #L%
  */
 
-import io.joynr.endpoints.EndpointAddressBase;
-import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentMap;
+
+import joynr.system.routingtypes.Address;
+import joynr.system.routingtypes.ChannelAddress;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +38,7 @@ import com.google.inject.name.Named;
 @Singleton
 public class MessagingEndpointDirectory {
     private static final Logger logger = LoggerFactory.getLogger(MessagingEndpointDirectory.class);
-    ConcurrentMap<String, EndpointAddressBase> hashMap = Maps.newConcurrentMap();
+    ConcurrentMap<String, Address> hashMap = Maps.newConcurrentMap();
 
     String channelUrlDirectoryParticipantId;
     String channelUrlDirectoryChannelId;
@@ -56,18 +57,18 @@ public class MessagingEndpointDirectory {
         putPreconfiguredEntries();
     }
 
-    public EndpointAddressBase get(String participantId) {
+    public Address get(String participantId) {
         logger.debug("lookup participant: " + participantId);
-        for (Entry<String, EndpointAddressBase> eachEntry : hashMap.entrySet()) {
+        for (Entry<String, Address> eachEntry : hashMap.entrySet()) {
             logger.trace(eachEntry.getKey() + ": " + eachEntry.getValue());
         }
         return hashMap.get(participantId);
     }
 
-    public EndpointAddressBase put(String participantId, EndpointAddressBase endpointAddress) {
+    public Address put(String participantId, Address address) {
         // logger.error("ADDING ENDPOINT", new Exception());
-        logger.debug("adding endpoint address: " + participantId + ": " + endpointAddress);
-        return hashMap.putIfAbsent(participantId, endpointAddress);
+        logger.debug("adding endpoint address: " + participantId + ": " + address);
+        return hashMap.putIfAbsent(participantId, address);
     }
 
     public boolean containsKey(String participantId) {
@@ -82,9 +83,9 @@ public class MessagingEndpointDirectory {
     }
 
     private void putPreconfiguredEntries() {
-        this.put(capabilitiesDirectoryParticipantId, new JoynrMessagingEndpointAddress(capabiltitiesDirectoryChannelId));
+        this.put(capabilitiesDirectoryParticipantId, new ChannelAddress(capabiltitiesDirectoryChannelId));
 
-        this.put(channelUrlDirectoryParticipantId, new JoynrMessagingEndpointAddress(channelUrlDirectoryChannelId));
+        this.put(channelUrlDirectoryParticipantId, new ChannelAddress(channelUrlDirectoryChannelId));
 
     }
 

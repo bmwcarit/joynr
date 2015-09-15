@@ -2,6 +2,15 @@ package io.joynr.endpoints;
 
 import java.io.Serializable;
 
+import javax.persistence.DiscriminatorColumn;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+import joynr.system.routingtypes.Address;
+
 /*
  * #%L
  * %%
@@ -21,16 +30,26 @@ import java.io.Serializable;
  * #L%
  */
 
-public class EndpointAddressBase implements Serializable {
+@Entity
+@Table(name = "endpointaddresses")
+@DiscriminatorColumn(length = 100)
+public class AddressPersisted extends Address implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private int id;
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     public int getId() {
         return id;
     }
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
     }
 }

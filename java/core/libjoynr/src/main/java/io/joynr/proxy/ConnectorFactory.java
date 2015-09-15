@@ -21,11 +21,12 @@ package io.joynr.proxy;
 
 import io.joynr.arbitration.ArbitrationResult;
 import io.joynr.dispatcher.rpc.JoynrMessagingConnectorFactory;
-import io.joynr.endpoints.EndpointAddressBase;
-import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 import io.joynr.messaging.MessagingQos;
 
 import javax.annotation.CheckForNull;
+
+import joynr.system.routingtypes.Address;
+import joynr.system.routingtypes.ChannelAddress;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,11 +60,11 @@ public class ConnectorFactory {
                                              final ArbitrationResult arbitrationResult,
                                              final MessagingQos qosSettings) {
 
-        for (EndpointAddressBase endpointAddress : arbitrationResult.getEndpointAddress()) {
-            if (endpointAddress instanceof JoynrMessagingEndpointAddress) {
+        for (Address endpointAddress : arbitrationResult.getEndpointAddress()) {
+            if (endpointAddress instanceof ChannelAddress) {
                 return joynrMessagingConnectorFactory.create(fromParticipantId,
                                                              arbitrationResult.getParticipantId(),
-                                                             (JoynrMessagingEndpointAddress) endpointAddress,
+                                                             (ChannelAddress) endpointAddress,
                                                              qosSettings);
             }
 

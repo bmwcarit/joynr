@@ -30,12 +30,12 @@ import io.joynr.capabilities.CapabilityEntryImpl;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.common.ExpiryDate;
 import io.joynr.dispatcher.JoynrMessageFactory;
-import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 import io.joynr.messaging.MessagingModule;
 import joynr.JoynrMessage;
 import joynr.Request;
 import joynr.infrastructure.dactypes.Permission;
 import joynr.infrastructure.dactypes.TrustLevel;
+import joynr.system.routingtypes.ChannelAddress;
 import joynr.types.ProviderQos;
 
 import org.junit.Before;
@@ -112,7 +112,7 @@ public class AccessControllerTest {
                                                                   new ProviderQos(),
                                                                   toParticipantId,
                                                                   System.currentTimeMillis(),
-                                                                  new JoynrMessagingEndpointAddress("11111"));
+                                                                  new ChannelAddress("11111"));
         when(localCapabilitiesDirectory.lookup(eq(toParticipantId), any(DiscoveryQos.class))).thenReturn(capabilityEntry);
     }
 

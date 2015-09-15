@@ -20,8 +20,7 @@ package io.joynr.capabilities;
  */
 
 import io.joynr.dispatcher.rpc.JoynrInterface;
-import io.joynr.endpoints.EndpointAddressBase;
-import io.joynr.endpoints.EndpointAddressBasePersisted;
+import io.joynr.endpoints.AddressPersisted;
 import io.joynr.endpoints.JoynrMessagingEndpointAddressPersisted;
 
 import java.io.Serializable;
@@ -43,6 +42,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import joynr.system.routingtypes.Address;
 import joynr.types.CapabilityInformation;
 import joynr.types.ProviderQos;
 
@@ -69,9 +69,9 @@ public class CapabilityEntryPersisted implements CapabilityEntry, Serializable {
     @JoinColumn(name = "participantId", referencedColumnName = "participantId")
     protected ProviderQosPersisted providerQos;
 
-    @OneToMany(cascade = CascadeType.ALL, targetEntity = EndpointAddressBasePersisted.class)
+    @OneToMany(cascade = CascadeType.ALL, targetEntity = AddressPersisted.class)
     @JoinColumn(name = "participantId", referencedColumnName = "participantId")
-    protected List<EndpointAddressBasePersisted> endpointAddresses;
+    protected List<AddressPersisted> endpointAddresses;
 
     protected long dateWhenRegistered;
     protected Origin origin;
@@ -85,7 +85,7 @@ public class CapabilityEntryPersisted implements CapabilityEntry, Serializable {
                                     ProviderQos providerQos,
                                     String participantId,
                                     long dateWhenRegistered,
-                                    EndpointAddressBasePersisted... endpointAddresses) {
+                                    AddressPersisted... endpointAddresses) {
 
         this.domain = domain;
         this.interfaceName = interfaceName;
@@ -93,7 +93,7 @@ public class CapabilityEntryPersisted implements CapabilityEntry, Serializable {
         this.participantId = participantId;
         this.dateWhenRegistered = dateWhenRegistered;
         origin = Origin.LOCAL;
-        this.endpointAddresses = new ArrayList<EndpointAddressBasePersisted>(Arrays.asList(endpointAddresses));
+        this.endpointAddresses = new ArrayList<AddressPersisted>(Arrays.asList(endpointAddresses));
     }
 
     public <T extends JoynrInterface> CapabilityEntryPersisted(String domain,
@@ -101,7 +101,7 @@ public class CapabilityEntryPersisted implements CapabilityEntry, Serializable {
                                                                ProviderQos providerQos,
                                                                String participantId,
                                                                long dateWhenRegistered,
-                                                               EndpointAddressBasePersisted... endpointAddresses) {
+                                                               AddressPersisted... endpointAddresses) {
         this(domain, "", providerQos, participantId, dateWhenRegistered, endpointAddresses);
         String name = null;
         String reason = "shadow field INTERFACE_NAME in your interface";
@@ -141,7 +141,7 @@ public class CapabilityEntryPersisted implements CapabilityEntry, Serializable {
     @CheckForNull
     public CapabilityInformation toCapabilityInformation() {
         String channelId = null;
-        for (EndpointAddressBase endpointAddress : getEndpointAddresses()) {
+        for (Address endpointAddress : getAddresses()) {
             if (endpointAddress instanceof JoynrMessagingEndpointAddressPersisted) {
                 channelId = ((JoynrMessagingEndpointAddressPersisted) endpointAddress).getChannelId();
                 break;
@@ -163,8 +163,8 @@ public class CapabilityEntryPersisted implements CapabilityEntry, Serializable {
     }
 
     @Override
-    public List<EndpointAddressBase> getEndpointAddresses() {
-        return Collections.<EndpointAddressBase> unmodifiableList(endpointAddresses);
+    public List<Address> getAddresses() {
+        return Collections.<Address> unmodifiableList(endpointAddresses);
     }
 
     @Override
@@ -269,9 +269,9 @@ public class CapabilityEntryPersisted implements CapabilityEntry, Serializable {
     }
 
     @Override
-    public void addEndpoint(EndpointAddressBase endpointAddress) {
-        if (endpointAddress instanceof EndpointAddressBasePersisted) {
-            endpointAddresses.add((EndpointAddressBasePersisted) endpointAddress);
+    public void addEndpoint(Address endpointAddress) {
+        if (endpointAddress instanceof AddressPersisted) {
+            endpointAddresses.add((AddressPersisted) endpointAddress);
         }
     }
 }

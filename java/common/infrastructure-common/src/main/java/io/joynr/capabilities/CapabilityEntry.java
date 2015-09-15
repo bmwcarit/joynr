@@ -19,10 +19,9 @@ package io.joynr.capabilities;
  * #L%
  */
 
-import io.joynr.endpoints.EndpointAddressBase;
-
 import java.util.List;
 
+import joynr.system.routingtypes.Address;
 import joynr.types.CapabilityInformation;
 import joynr.types.ProviderQos;
 
@@ -36,7 +35,7 @@ public interface CapabilityEntry {
 
     public ProviderQos getProviderQos();
 
-    public List<EndpointAddressBase> getEndpointAddresses();
+    public List<Address> getAddresses();
 
     public String getParticipantId();
 
@@ -50,5 +49,5 @@ public interface CapabilityEntry {
 
     public void setOrigin(Origin remote);
 
-    public void addEndpoint(EndpointAddressBase endpointAddress);
+    public void addEndpoint(Address address);
 }

@@ -20,7 +20,6 @@ package io.joynr.dispatcher;
  */
 
 import io.joynr.common.ExpiryDate;
-import io.joynr.endpoints.EndpointAddressBase;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
@@ -33,6 +32,7 @@ import joynr.Request;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
+import joynr.system.routingtypes.Address;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -46,7 +46,7 @@ public interface RequestReplySender {
      *            ParticipantId of the sending endpoint.
      * @param toParticipantId
      *            ParticipantId of the endpoint to send to
-     * @param endpointAddress
+     * @param address
      *            Address of end point
      * @param request
      *            Request to be send
@@ -66,7 +66,7 @@ public interface RequestReplySender {
 
     public abstract void sendRequest(final String fromParticipantId,
                                      final String toParticipantId,
-                                     final EndpointAddressBase endpointAddress,
+                                     final Address address,
                                      Request request,
                                      long ttl_ms) throws JoynrSendBufferFullException, JoynrMessageNotSentException,
                                                  JsonGenerationException, JsonMappingException, IOException;
@@ -79,7 +79,7 @@ public interface RequestReplySender {
      *            ParticipantId of the sending endpoint.
      * @param toParticipantId
      *            ParticipantId of the endpoint to send to
-     * @param endpointAddress
+     * @param address
      *            Address of end point
      * @param request
      *            Request to be send
@@ -102,7 +102,7 @@ public interface RequestReplySender {
 
     public abstract Object sendSyncRequest(final String fromParticipantId,
                                            final String toParticipantId,
-                                           EndpointAddressBase endpointAddress,
+                                           Address address,
                                            Request request,
                                            SynchronizedReplyCaller synchronizedReplyCaller,
                                            long ttl_ms) throws JoynrCommunicationException,
@@ -145,11 +145,11 @@ public interface RequestReplySender {
                                                                                                                          JsonMappingException,
                                                                                                                          IOException;
 
-    public abstract void registerEndpointAddress(String participantId, EndpointAddressBase endpointAddress);
+    public abstract void registerAddress(String participantId, Address address);
 
     public abstract void sendSubscriptionRequest(String fromParticipantId,
                                                  String toParticipantId,
-                                                 EndpointAddressBase endpointAddress,
+                                                 Address address,
                                                  SubscriptionRequest subscriptionRequest,
                                                  MessagingQos qosSettings,
                                                  boolean broadcast) throws JoynrSendBufferFullException,
@@ -167,7 +167,7 @@ public interface RequestReplySender {
 
     public abstract void sendSubscriptionStop(String fromParticipantId,
                                               String toParticipantId,
-                                              EndpointAddressBase endpointAddress,
+                                              Address address,
                                               SubscriptionStop subscriptionStop,
                                               MessagingQos qosSettings) throws JoynrSendBufferFullException,
                                                                        JoynrMessageNotSentException,

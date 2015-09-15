@@ -21,7 +21,6 @@ package io.joynr.dispatcher.rpc;
 
 import io.joynr.dispatcher.RequestReplyDispatcher;
 import io.joynr.dispatcher.RequestReplySender;
-import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.pubsub.subscription.SubscriptionManager;
 
@@ -30,6 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import joynr.MethodMetaInformation;
+import joynr.system.routingtypes.ChannelAddress;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,7 +68,7 @@ public class JoynrMessagingConnectorFactory {
      *            Participant Id of the created stub.
      * @param toParticipantId
      *            Participant of the Provider/Receiver.
-     * @param endpointAddress
+     * @param address
      *            End point
      * @param qosSettings
      *            MessagingQos settings
@@ -76,11 +76,11 @@ public class JoynrMessagingConnectorFactory {
      */
     public JoynrMessagingConnectorInvocationHandler create(final String fromParticipantId,
                                                            final String toParticipantId,
-                                                           final JoynrMessagingEndpointAddress endpointAddress,
+                                                           final ChannelAddress address,
                                                            final MessagingQos qosSettings) {
 
         return new JoynrMessagingConnectorInvocationHandler(toParticipantId,
-                                                            endpointAddress,
+                                                            address,
                                                             fromParticipantId,
                                                             qosSettings,
                                                             messageSender,

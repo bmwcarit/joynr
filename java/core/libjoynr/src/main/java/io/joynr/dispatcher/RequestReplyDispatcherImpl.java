@@ -22,7 +22,6 @@ import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import io.joynr.accesscontrol.AccessController;
 import io.joynr.common.ExpiryDate;
 import io.joynr.dispatcher.rpc.RequestInterpreter;
-import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -57,6 +56,7 @@ import joynr.Request;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
+import joynr.system.routingtypes.ChannelAddress;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -408,7 +408,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
                 try {
                     subscriptionRequest = objectMapper.readValue(message.getPayload(), SubscriptionRequest.class);
                     String replyChannelId = message.getHeaderValue(JoynrMessage.HEADER_NAME_REPLY_CHANNELID);
-                    messagingEndpointDirectory.put(fromParticipantId, new JoynrMessagingEndpointAddress(replyChannelId));
+                    messagingEndpointDirectory.put(fromParticipantId, new ChannelAddress(replyChannelId));
 
                     publicationManager.addSubscriptionRequest(fromParticipantId,
                                                               toParticipantId,
@@ -470,7 +470,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
             String toParticipantId = message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID);
             String replyToChannelId = message.getHeaderValue(JoynrMessage.HEADER_NAME_REPLY_CHANNELID);
             if (replyToChannelId != null && !replyToChannelId.isEmpty()) {
-                messagingEndpointDirectory.put(fromParticipantId, new JoynrMessagingEndpointAddress(replyToChannelId));
+                messagingEndpointDirectory.put(fromParticipantId, new ChannelAddress(replyToChannelId));
             }
 
             // TODO make sure that all requests (ie not one-way) also have replyTo

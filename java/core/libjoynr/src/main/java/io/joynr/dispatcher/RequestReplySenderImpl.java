@@ -20,8 +20,6 @@ package io.joynr.dispatcher;
  */
 
 import io.joynr.common.ExpiryDate;
-import io.joynr.endpoints.EndpointAddressBase;
-import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRequestInterruptedException;
@@ -41,6 +39,8 @@ import joynr.Request;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
+import joynr.system.routingtypes.Address;
+import joynr.system.routingtypes.ChannelAddress;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,7 +78,7 @@ public class RequestReplySenderImpl implements RequestReplySender {
     @Override
     public void sendRequest(final String fromParticipantId,
                             final String toParticipantId,
-                            final EndpointAddressBase endpointAddress,
+                            final Address address,
                             Request request,
                             long ttl_ms) throws JoynrSendBufferFullException, JoynrMessageNotSentException,
                                         JsonGenerationException, JsonMappingException, IOException {
@@ -93,7 +93,7 @@ public class RequestReplySenderImpl implements RequestReplySender {
                                                                  expiryDate,
                                                                  messageSender.getReplyToChannelId());
 
-        routeMessageByEndpointAddress(toParticipantId, message, endpointAddress);
+        routeMessageByAddress(toParticipantId, message, address);
 
     }
 
@@ -107,7 +107,7 @@ public class RequestReplySenderImpl implements RequestReplySender {
     @Override
     public Object sendSyncRequest(final String fromParticipantId,
                                   final String toParticipantId,
-                                  final EndpointAddressBase endpointAddress,
+                                  final Address address,
                                   Request request,
                                   SynchronizedReplyCaller synchronizedReplyCaller,
                                   long ttl_ms) throws JoynrCommunicationException, JoynrSendBufferFullException,
@@ -123,7 +123,7 @@ public class RequestReplySenderImpl implements RequestReplySender {
         // the synchronizedReplyCaller will call notify on the responsePayloadContainer when a message arrives
         synchronizedReplyCaller.setResponseContainer(responsePayloadContainer);
 
-        sendRequest(fromParticipantId, toParticipantId, endpointAddress, request, ttl_ms);
+        sendRequest(fromParticipantId, toParticipantId, address, request, ttl_ms);
 
         long entryTime = System.currentTimeMillis();
 
@@ -197,7 +197,7 @@ public class RequestReplySenderImpl implements RequestReplySender {
     @Override
     public void sendSubscriptionRequest(String fromParticipantId,
                                         String toParticipantId,
-                                        EndpointAddressBase endpointAddress,
+                                        Address address,
                                         SubscriptionRequest subscriptionRequest,
                                         MessagingQos qosSettings,
                                         boolean broadcast) throws JoynrSendBufferFullException,
@@ -210,7 +210,7 @@ public class RequestReplySenderImpl implements RequestReplySender {
                                                                              DispatcherUtils.convertTtlToExpirationDate(qosSettings.getRoundTripTtl_ms()),
                                                                              broadcast);
 
-        routeMessageByEndpointAddress(toParticipantId, message, endpointAddress);
+        routeMessageByAddress(toParticipantId, message, address);
     }
 
     @Override
@@ -232,7 +232,7 @@ public class RequestReplySenderImpl implements RequestReplySender {
     @Override
     public void sendSubscriptionStop(String fromParticipantId,
                                      String toParticipantId,
-                                     EndpointAddressBase endpointAddress,
+                                     Address address,
                                      SubscriptionStop subscriptionStop,
                                      MessagingQos messagingQos) throws JoynrSendBufferFullException,
                                                                JoynrMessageNotSentException, JsonGenerationException,
@@ -241,7 +241,7 @@ public class RequestReplySenderImpl implements RequestReplySender {
                                                                           toParticipantId,
                                                                           subscriptionStop,
                                                                           DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms()));
-        routeMessageByEndpointAddress(toParticipantId, message, endpointAddress);
+        routeMessageByAddress(toParticipantId, message, address);
 
     }
 
@@ -250,23 +250,22 @@ public class RequestReplySenderImpl implements RequestReplySender {
                                                                                  JoynrCommunicationException,
                                                                                  IOException {
         if (messagingEndpointDirectory.containsKey(toParticipantId)) {
-            EndpointAddressBase endpointAddress = messagingEndpointDirectory.get(toParticipantId);
-            routeMessageByEndpointAddress(toParticipantId, message, endpointAddress);
+            Address address = messagingEndpointDirectory.get(toParticipantId);
+            routeMessageByAddress(toParticipantId, message, address);
         } else {
             throw new JoynrCommunicationException("Failed to send Request: No route for given participantId: "
                     + toParticipantId);
         }
     }
 
-    private void routeMessageByEndpointAddress(final String toParticipantId,
-                                               JoynrMessage message,
-                                               EndpointAddressBase endpointAddress)
-                                                                                   throws JoynrSendBufferFullException,
-                                                                                   JoynrMessageNotSentException,
-                                                                                   JsonGenerationException,
-                                                                                   JsonMappingException, IOException {
+    private void routeMessageByAddress(final String toParticipantId, JoynrMessage message, Address address)
+                                                                                                           throws JoynrSendBufferFullException,
+                                                                                                           JoynrMessageNotSentException,
+                                                                                                           JsonGenerationException,
+                                                                                                           JsonMappingException,
+                                                                                                           IOException {
 
-        if (endpointAddress instanceof JoynrMessagingEndpointAddress) {
+        if (address instanceof ChannelAddress) {
             logger.info("SEND messageId: {} type: {} from: {} to: {} header: {}",
                         new String[]{ message.getId(), message.getType(),
                                 message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
@@ -274,16 +273,16 @@ public class RequestReplySenderImpl implements RequestReplySender {
                                 message.getHeader().toString() });
             logger.debug("\r\n>>>>>>>>>>>>>>>>\r\n:{}", message.toLogMessage());
 
-            String destinationChannelId = ((JoynrMessagingEndpointAddress) endpointAddress).getChannelId();
+            String destinationChannelId = ((ChannelAddress) address).getChannelId();
             messageSender.sendMessage(destinationChannelId, message);
         } else {
-            throw new JoynrCommunicationException("Failed to send Request: EndpointAddress type not supported");
+            throw new JoynrCommunicationException("Failed to send Request: Address type not supported");
         }
     }
 
     @Override
-    public void registerEndpointAddress(String participantId, EndpointAddressBase endpointAddress) {
-        messagingEndpointDirectory.put(participantId, endpointAddress);
+    public void registerAddress(String participantId, Address address) {
+        messagingEndpointDirectory.put(participantId, address);
     }
 
     @Override

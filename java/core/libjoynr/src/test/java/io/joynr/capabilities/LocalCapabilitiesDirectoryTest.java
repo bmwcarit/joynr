@@ -25,8 +25,6 @@ import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.dispatcher.MessagingEndpointDirectory;
 import io.joynr.dispatcher.rpc.JoynrInterface;
-import io.joynr.endpoints.EndpointAddressBase;
-import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
@@ -37,6 +35,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import joynr.system.routingtypes.Address;
+import joynr.system.routingtypes.ChannelAddress;
 import joynr.types.CapabilityInformation;
 import joynr.types.CustomParameter;
 import joynr.types.ProviderQos;
@@ -129,7 +129,7 @@ public class LocalCapabilitiesDirectoryTest {
         parameterList.add(new CustomParameter("key2", "value2"));
         providerQos.setCustomParameters(parameterList);
 
-        EndpointAddressBase endpointAddress = new JoynrMessagingEndpointAddress(channelId);
+        Address endpointAddress = new ChannelAddress(channelId);
         String participantId = "testParticipantId";
         String domain = "domain";
         capabilityEntry = new CapabilityEntryImpl(domain,

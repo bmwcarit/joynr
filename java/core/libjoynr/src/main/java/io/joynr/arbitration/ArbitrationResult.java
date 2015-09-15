@@ -19,18 +19,18 @@ package io.joynr.arbitration;
  * #L%
  */
 
-import io.joynr.endpoints.EndpointAddressBase;
-
 import java.util.List;
+
+import joynr.system.routingtypes.Address;
 
 public class ArbitrationResult {
     private String participantId;
-    private List<EndpointAddressBase> endpointAddress;
+    private List<Address> address;
 
-    public ArbitrationResult(final String participantId, final List<EndpointAddressBase> expectedEndpointAddress) {
+    public ArbitrationResult(final String participantId, final List<Address> expectedAddress) {
         super();
         this.participantId = participantId;
-        this.endpointAddress = expectedEndpointAddress;
+        this.address = expectedAddress;
     }
 
     public ArbitrationResult() {
@@ -44,19 +44,19 @@ public class ArbitrationResult {
         this.participantId = participantId;
     }
 
-    public List<EndpointAddressBase> getEndpointAddress() {
-        return endpointAddress;
+    public List<Address> getEndpointAddress() {
+        return address;
     }
 
-    public void setEndpointAddress(final List<EndpointAddressBase> endpointAddress) {
-        this.endpointAddress = endpointAddress;
+    public void setAddress(final List<Address> address) {
+        this.address = address;
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((endpointAddress == null) ? 0 : endpointAddress.hashCode());
+        result = prime * result + ((address == null) ? 0 : address.hashCode());
         result = prime * result + ((participantId == null) ? 0 : participantId.hashCode());
         return result;
     }
@@ -73,11 +73,11 @@ public class ArbitrationResult {
             return false;
         }
         ArbitrationResult other = (ArbitrationResult) obj;
-        if (endpointAddress == null) {
-            if (other.endpointAddress != null) {
+        if (address == null) {
+            if (other.address != null) {
                 return false;
             }
-        } else if (!endpointAddress.equals(other.endpointAddress)) {
+        } else if (!address.equals(other.address)) {
             return false;
         }
         if (participantId == null) {

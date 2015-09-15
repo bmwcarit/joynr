@@ -29,7 +29,6 @@ import static org.mockito.Mockito.when;
 import io.joynr.accesscontrol.AccessController;
 import io.joynr.common.ExpiryDate;
 import io.joynr.common.JoynrPropertiesModule;
-import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingModule;
@@ -53,6 +52,7 @@ import joynr.JoynrMessage;
 import joynr.OneWay;
 import joynr.Reply;
 import joynr.Request;
+import joynr.system.routingtypes.ChannelAddress;
 
 import org.junit.After;
 import org.junit.Before;
@@ -110,7 +110,7 @@ public class DispatcherTest {
                                                                                                    "capabilitiesdirectory_participantid",
                                                                                                    "discoverydirectory_channelid");
     private RequestReplySender requestReplySender;
-    private JoynrMessagingEndpointAddress dummyEndpointAddress;
+    private ChannelAddress dummyEndpointAddress;
     private ObjectMapper objectMapper;
     @Mock
     private AccessController accessControllerMock;
@@ -123,7 +123,7 @@ public class DispatcherTest {
         testSenderParticipantId = "testSenderParticipantId";
         testListenerUnregisteredParticipantId = "testListenerUnregisteredParticipantId";
         testResponderUnregisteredParticipantId = "testResponderUnregisteredParticipantId";
-        dummyEndpointAddress = new JoynrMessagingEndpointAddress("dummyChannelId");
+        dummyEndpointAddress = new ChannelAddress("dummyChannelId");
         messagingEndpointDirectory.put(testMessageListenerParticipantId, dummyEndpointAddress);
         messagingEndpointDirectory.put(testMessageResponderParticipantId, dummyEndpointAddress);
         messagingEndpointDirectory.put(testListenerUnregisteredParticipantId, dummyEndpointAddress);

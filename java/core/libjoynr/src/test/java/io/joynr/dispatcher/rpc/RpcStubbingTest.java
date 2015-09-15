@@ -35,8 +35,6 @@ import io.joynr.dispatcher.RequestReplyDispatcher;
 import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.dispatcher.SynchronizedReplyCaller;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
-import io.joynr.endpoints.EndpointAddressBase;
-import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -60,6 +58,8 @@ import java.util.UUID;
 
 import joynr.Reply;
 import joynr.Request;
+import joynr.system.routingtypes.Address;
+import joynr.system.routingtypes.ChannelAddress;
 import joynr.types.localisation.GpsFixEnum;
 import joynr.types.localisation.GpsLocation;
 
@@ -144,7 +144,7 @@ public class RpcStubbingTest {
 
     private JoynrMessagingConnectorInvocationHandler connector;
 
-    private static final JoynrMessagingEndpointAddress endpointAddress = new JoynrMessagingEndpointAddress("channelId");
+    private static final ChannelAddress endpointAddress = new ChannelAddress("channelId");
 
     @Before
     @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NP_NULL_PARAM_DEREF", justification = "NPE in test would fail test")
@@ -182,7 +182,7 @@ public class RpcStubbingTest {
 
         when(messageSender.sendSyncRequest(eq(fromParticipantId),
                                            eq(toParticipantId),
-                                           any(EndpointAddressBase.class),
+                                           any(Address.class),
                                            any(Request.class),
                                            any(SynchronizedReplyCaller.class),
                                            eq(DEFAULT_TTL))).thenAnswer(new Answer<Reply>() {
@@ -241,7 +241,7 @@ public class RpcStubbingTest {
         ArgumentCaptor<Request> requestCaptor = ArgumentCaptor.forClass(Request.class);
         verify(messageSender).sendSyncRequest(eq(fromParticipantId),
                                               eq(toParticipantId),
-                                              any(EndpointAddressBase.class),
+                                              any(Address.class),
                                               requestCaptor.capture(),
                                               any(SynchronizedReplyCaller.class),
                                               eq(DEFAULT_TTL));
@@ -268,7 +268,7 @@ public class RpcStubbingTest {
         ArgumentCaptor<Request> requestCaptor = ArgumentCaptor.forClass(Request.class);
         verify(messageSender).sendSyncRequest(eq(fromParticipantId),
                                               eq(toParticipantId),
-                                              any(EndpointAddressBase.class),
+                                              any(Address.class),
                                               requestCaptor.capture(),
                                               any(SynchronizedReplyCaller.class),
                                               eq(DEFAULT_TTL));
@@ -291,7 +291,7 @@ public class RpcStubbingTest {
         ArgumentCaptor<Request> requestCaptor = ArgumentCaptor.forClass(Request.class);
         verify(messageSender).sendSyncRequest(eq(fromParticipantId),
                                               eq(toParticipantId),
-                                              any(EndpointAddressBase.class),
+                                              any(Address.class),
                                               requestCaptor.capture(),
                                               any(SynchronizedReplyCaller.class),
                                               eq(DEFAULT_TTL));
@@ -313,7 +313,7 @@ public class RpcStubbingTest {
         ArgumentCaptor<Request> requestCaptor = ArgumentCaptor.forClass(Request.class);
         verify(messageSender).sendSyncRequest(eq(fromParticipantId),
                                               eq(toParticipantId),
-                                              any(EndpointAddressBase.class),
+                                              any(Address.class),
                                               requestCaptor.capture(),
                                               any(SynchronizedReplyCaller.class),
                                               eq(DEFAULT_TTL));

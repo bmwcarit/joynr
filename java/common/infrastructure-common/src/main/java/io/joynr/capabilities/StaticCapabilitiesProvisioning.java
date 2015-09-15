@@ -19,13 +19,12 @@ package io.joynr.capabilities;
  * #L%
  */
 
-import io.joynr.endpoints.JoynrMessagingEndpointAddress;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
+import joynr.system.routingtypes.ChannelAddress;
 import joynr.types.CapabilityInformation;
 
 import org.slf4j.Logger;
@@ -63,7 +62,7 @@ public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning 
                                                               capabilityInformation.getProviderQos(),
                                                               capabilityInformation.getParticipantId(),
                                                               System.currentTimeMillis(),
-                                                              new JoynrMessagingEndpointAddress(capabilityInformation.getChannelId())));
+                                                              new ChannelAddress(capabilityInformation.getChannelId())));
             }
         } catch (Exception e) {
             logger.error("unable to load provisioned capabilities. "

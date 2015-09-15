@@ -44,8 +44,6 @@ import io.joynr.dispatcher.rpc.JoynrSyncInterface;
 import io.joynr.dispatcher.rpc.RequestStatusCode;
 import io.joynr.dispatcher.rpc.RpcUtils;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
-import io.joynr.endpoints.EndpointAddressBase;
-import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
@@ -63,6 +61,8 @@ import joynr.Reply;
 import joynr.Request;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
+import joynr.system.routingtypes.Address;
+import joynr.system.routingtypes.ChannelAddress;
 import joynr.types.ProviderQos;
 import joynr.vehicle.NavigationBroadcastInterface.LocationUpdateBroadcastListener;
 import joynr.vehicle.NavigationBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters;
@@ -153,16 +153,14 @@ public class ProxyTest {
                                                                    new ProviderQos(),
                                                                    "TestParticipantId",
                                                                    System.currentTimeMillis(),
-                                                                   new JoynrMessagingEndpointAddress("testChannelId")));
+                                                                   new ChannelAddress("testChannelId")));
                 ((CapabilitiesCallback) args[3]).processCapabilitiesReceived(fakeCapabilitiesResult);
                 return null;
             }
-        })
-               .when(capabilitiesClient)
-               .lookup(Mockito.<String> any(),
-                       Mockito.<String> any(),
-                       Mockito.<DiscoveryQos> any(),
-                       Mockito.<CapabilitiesCallback> any());
+        }).when(capabilitiesClient).lookup(Mockito.<String> any(),
+                                           Mockito.<String> any(),
+                                           Mockito.<DiscoveryQos> any(),
+                                           Mockito.<CapabilitiesCallback> any());
 
         Mockito.doAnswer(new Answer<Object>() {
             @Override
@@ -203,7 +201,7 @@ public class ProxyTest {
         String requestReplyId = "createProxyAndCallSyncMethod_requestReplyId";
         Mockito.when(requestReplySender.sendSyncRequest(Mockito.<String> any(),
                                                         Mockito.<String> any(),
-                                                        Mockito.<EndpointAddressBase> any(),
+                                                        Mockito.<Address> any(),
                                                         Mockito.<Request> any(),
                                                         Mockito.<SynchronizedReplyCaller> any(),
                                                         Mockito.anyLong())).thenReturn(new Reply(requestReplyId,
@@ -238,7 +236,7 @@ public class ProxyTest {
             }
         }).when(requestReplySender).sendRequest(Mockito.<String> any(),
                                                 Mockito.<String> any(),
-                                                Mockito.<EndpointAddressBase> any(),
+                                                Mockito.<Address> any(),
                                                 Mockito.<Request> any(),
                                                 Mockito.anyLong());
         final Future<String> future = proxy.asyncMethod(callback);
@@ -277,7 +275,7 @@ public class ProxyTest {
             }
         }).when(requestReplySender).sendRequest(Mockito.<String> any(),
                                                 Mockito.<String> any(),
-                                                Mockito.<EndpointAddressBase> any(),
+                                                Mockito.<Address> any(),
                                                 Mockito.<Request> any(),
                                                 Mockito.anyLong());
 
@@ -314,7 +312,7 @@ public class ProxyTest {
 
         verify(requestReplySender, times(1)).sendSubscriptionRequest(any(String.class),
                                                                      any(String.class),
-                                                                     any(EndpointAddressBase.class),
+                                                                     any(Address.class),
                                                                      subscriptionRequest.capture(),
                                                                      any(MessagingQos.class),
                                                                      anyBoolean());
@@ -341,7 +339,7 @@ public class ProxyTest {
 
         verify(requestReplySender, times(1)).sendSubscriptionRequest(any(String.class),
                                                                      any(String.class),
-                                                                     any(EndpointAddressBase.class),
+                                                                     any(Address.class),
                                                                      subscriptionRequest.capture(),
                                                                      any(MessagingQos.class),
                                                                      anyBoolean());
@@ -351,7 +349,7 @@ public class ProxyTest {
         proxy.unsubscribeFromGuidanceActive(subscriptionId);
         verify(requestReplySender, times(1)).sendSubscriptionStop(any(String.class),
                                                                   any(String.class),
-                                                                  any(EndpointAddressBase.class),
+                                                                  any(Address.class),
                                                                   Mockito.eq(new SubscriptionStop(subscriptionId)),
                                                                   any(MessagingQos.class));
     }
@@ -374,7 +372,7 @@ public class ProxyTest {
 
         verify(requestReplySender, times(1)).sendSubscriptionRequest(any(String.class),
                                                                      any(String.class),
-                                                                     any(EndpointAddressBase.class),
+                                                                     any(Address.class),
                                                                      subscriptionRequest.capture(),
                                                                      any(MessagingQos.class),
                                                                      anyBoolean());
@@ -384,7 +382,7 @@ public class ProxyTest {
         proxy.unsubscribeFromGuidanceActive(subscriptionId);
         verify(requestReplySender, times(1)).sendSubscriptionStop(any(String.class),
                                                                   any(String.class),
-                                                                  any(EndpointAddressBase.class),
+                                                                  any(Address.class),
                                                                   Mockito.eq(new SubscriptionStop(subscriptionId)),
                                                                   any(MessagingQos.class));
     }
@@ -411,7 +409,7 @@ public class ProxyTest {
 
         verify(requestReplySender, times(1)).sendSubscriptionRequest(any(String.class),
                                                                      any(String.class),
-                                                                     any(EndpointAddressBase.class),
+                                                                     any(Address.class),
                                                                      subscriptionRequest.capture(),
                                                                      any(MessagingQos.class),
                                                                      anyBoolean());
@@ -437,7 +435,7 @@ public class ProxyTest {
 
         verify(requestReplySender, times(1)).sendSubscriptionRequest(any(String.class),
                                                                      any(String.class),
-                                                                     any(EndpointAddressBase.class),
+                                                                     any(Address.class),
                                                                      subscriptionRequest.capture(),
                                                                      any(MessagingQos.class),
                                                                      anyBoolean());
@@ -447,7 +445,7 @@ public class ProxyTest {
         proxy.unsubscribeFromGuidanceActive(subscriptionId);
         verify(requestReplySender, times(1)).sendSubscriptionStop(any(String.class),
                                                                   any(String.class),
-                                                                  any(EndpointAddressBase.class),
+                                                                  any(Address.class),
                                                                   Mockito.eq(new SubscriptionStop(subscriptionId)),
                                                                   any(MessagingQos.class));
     }
@@ -475,7 +473,7 @@ public class ProxyTest {
 
         verify(requestReplySender, times(1)).sendSubscriptionRequest(any(String.class),
                                                                      any(String.class),
-                                                                     any(EndpointAddressBase.class),
+                                                                     any(Address.class),
                                                                      subscriptionRequest.capture(),
                                                                      any(MessagingQos.class),
                                                                      anyBoolean());
@@ -494,7 +492,7 @@ public class ProxyTest {
 
         verify(requestReplySender, times(1)).sendSubscriptionStop(any(String.class),
                                                                   any(String.class),
-                                                                  any(EndpointAddressBase.class),
+                                                                  any(Address.class),
                                                                   subscriptionStop.capture(),
                                                                   any(MessagingQos.class));
         assertEquals(subscriptionId, subscriptionStop.getValue().getSubscriptionId());
