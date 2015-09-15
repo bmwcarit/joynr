@@ -1,0 +1,27 @@
+#/bin/bash
+
+cd /data/src
+
+# fail on first error
+# exit immediately if a command exits with a non-zero status
+# print commands before they are executed
+set -e -x
+
+(
+  echo "install root project and tools"
+  mvn install -N
+  cd tools
+  mvn install -N
+)
+
+(
+  echo "install build-resources"
+  cd tools/build-resources
+  mvn install -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests
+)
+
+(
+  echo "format javascript"
+  cd javascript
+  mvn java-formatter:format
+)
