@@ -102,7 +102,9 @@ joynr.load(provisioning, function(error, loadedJoynr) {
 
     var RadioProvider = require("../generated/js/joynr/vehicle/RadioProvider.js");
     var MyRadioProvider = require("./MyRadioProvider.js");
-    var radioProvider = new RadioProvider(MyRadioProvider.implementation, joynr);
+    var radioProvider = joynr.providerBuilder.build(
+        RadioProvider,
+        MyRadioProvider.implementation);
     MyRadioProvider.setProvider(radioProvider);
 
     joynr.capabilities.registerCapability("", domain, radioProvider, providerQos).then(function() {

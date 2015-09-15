@@ -23,13 +23,38 @@ var prettyLog = require("./logging.js").prettyLog;
 var error = require("./logging.js").error;
 
 var currentStationIndex = 0;
-var favoriteStations = ["station1", "station2", "station3"];
+
+var RadioStation = require("../generated/js/joynr/vehicle/RadioStation");
+
+var stationsList = [
+                new RadioStation({
+                    name : "ABC Trible J",
+                    trafficService : false,
+                    country : "AUSTRALIA"
+                }),
+                new RadioStation({
+                    name : "Radio Popolare",
+                    trafficService : true,
+                    country : "ITALY"
+                }),
+                new RadioStation({
+                    name : "JAZZ.FM91",
+                    trafficService : false,
+                    country : "CANADA"
+                }),
+                new RadioStation({
+                    name : "Bayern 3",
+                    trafficService : true,
+                    country : "GERMANY"
+                })
+            ];
+
 var numberOfStations = 0;
 var myRadioProvider;
 
 var numberOfStationChanged = function() {
     if(typeof myRadioProvider === "object") {
-        myRadioProvider.numberOfStations.valueChanged(parseInt(numberOfStations, 10) + favoriteStations.length);
+        myRadioProvider.numberOfStations.valueChanged(parseInt(numberOfStations, 10) + stationsList.length);
     } else {
         error("radioProvider.numberOfStationChanged() called but instance of radioProvider not set. Call setProvider(...) first.");
     }
@@ -39,17 +64,19 @@ exports.setProvider = function(radioProvider) {
     myRadioProvider = radioProvider;
 };
 
+var self;
+
 exports.implementation = {
     currentStation : {
         get : function() {
             prettyLog("radioProvider.currentStation.get() called");
-            return favoriteStations[currentStationIndex];
+            return stationsList[currentStationIndex];
         }
     },
     numberOfStations : {
         get : function() {
             prettyLog("radioProvider.numberOfStations.get() called");
-            return parseInt(numberOfStations, 10) + favoriteStations.length;
+            return parseInt(numberOfStations, 10) + stationsList.length;
         },
         set : function(value) {
             prettyLog("radioProvider.numberOfStations.set(" + value + ") called");
@@ -63,10 +90,10 @@ exports.implementation = {
         if (opArgs === undefined) {
             prettyLog("operation arguments is undefined!");
         }
-        if (opArgs.radioStation === undefined) {
-            prettyLog("operation argument \"radioStation\" is undefined!");
+        if (opArgs.newFavoriteStation === undefined) {
+            prettyLog("operation argument \"newFavoriteStation\" is undefined!");
         }
-        favoriteStations.push(opArgs.radioStation);
+        stationsList.push(opArgs.newFavoriteStation);
         numberOfStationChanged();
         return false;
     },
@@ -79,7 +106,16 @@ exports.implementation = {
         prettyLog("radioProvider.shuffleStations(" + JSON.stringify(opArgs)
                 + ") called");
         currentStationIndex++;
-        currentStationIndex %= favoriteStations.length;
+        currentStationIndex %= stationsList.length;
+        self.currentStation.valueChanged(stationsList[currentStationIndex]);
         return false;
+    },
+    getLocationOfCurrentStation : function() {
+        prettyLog("radioProvider.getLocationOfCurrentStation",
+                  "called");
+        return stationsList[currentStationIndex].country;
     }
+
 };
+
+self = exports.implementation;
