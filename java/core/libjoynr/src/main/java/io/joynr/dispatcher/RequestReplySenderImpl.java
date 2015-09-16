@@ -25,9 +25,8 @@ import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRequestInterruptedException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.exceptions.JoynrShutdownException;
-import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.MessagingQos;
-import io.joynr.messaging.routing.RoutingTable;
+import io.joynr.messaging.routing.MessageRouter;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -41,7 +40,11 @@ import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
 import joynr.system.routingtypes.Address;
+import joynr.system.routingtypes.BrowserAddress;
 import joynr.system.routingtypes.ChannelAddress;
+import joynr.system.routingtypes.CommonApiDbusAddress;
+import joynr.system.routingtypes.WebSocketAddress;
+import joynr.system.routingtypes.WebSocketClientAddress;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,18 +58,14 @@ import com.google.inject.Singleton;
 public class RequestReplySenderImpl implements RequestReplySender {
     private static final Logger logger = LoggerFactory.getLogger(RequestReplySenderImpl.class);
     JoynrMessageFactory joynrMessageFactory;
-    MessageSender messageSender;
-    RoutingTable routingTable;
     private boolean running = true;
     private List<Thread> outstandingRequestThreads = Collections.synchronizedList(new ArrayList<Thread>());
+    private MessageRouter messageRouter;
 
     @Inject
-    public RequestReplySenderImpl(JoynrMessageFactory joynrMessageFactory,
-                                  MessageSender messageSender,
-                                  RoutingTable routingTable) {
+    public RequestReplySenderImpl(JoynrMessageFactory joynrMessageFactory, MessageRouter messageRouter) {
         this.joynrMessageFactory = joynrMessageFactory;
-        this.messageSender = messageSender;
-        this.routingTable = routingTable;
+        this.messageRouter = messageRouter;
     }
 
     /*
@@ -77,12 +76,12 @@ public class RequestReplySenderImpl implements RequestReplySender {
      */
 
     @Override
-    public void sendRequest(final String fromParticipantId,
-                            final String toParticipantId,
-                            final Address address,
-                            Request request,
-                            long ttl_ms) throws JoynrSendBufferFullException, JoynrMessageNotSentException,
-                                        JsonGenerationException, JsonMappingException, IOException {
+    public void sendRequest(final String fromParticipantId, final String toParticipantId, Request request, long ttl_ms)
+                                                                                                                       throws JoynrSendBufferFullException,
+                                                                                                                       JoynrMessageNotSentException,
+                                                                                                                       JsonGenerationException,
+                                                                                                                       JsonMappingException,
+                                                                                                                       IOException {
 
         logger.trace("SEND USING RequestReplySenderImpl with Id: " + System.identityHashCode(this));
 
@@ -91,10 +90,9 @@ public class RequestReplySenderImpl implements RequestReplySender {
         JoynrMessage message = joynrMessageFactory.createRequest(fromParticipantId,
                                                                  toParticipantId,
                                                                  request,
-                                                                 expiryDate,
-                                                                 messageSender.getReplyToChannelId());
+                                                                 expiryDate);
 
-        routeMessageByAddress(toParticipantId, message, address);
+        messageRouter.route(message);
 
     }
 
@@ -108,7 +106,6 @@ public class RequestReplySenderImpl implements RequestReplySender {
     @Override
     public Object sendSyncRequest(final String fromParticipantId,
                                   final String toParticipantId,
-                                  final Address address,
                                   Request request,
                                   SynchronizedReplyCaller synchronizedReplyCaller,
                                   long ttl_ms) throws JoynrCommunicationException, JoynrSendBufferFullException,
@@ -124,7 +121,7 @@ public class RequestReplySenderImpl implements RequestReplySender {
         // the synchronizedReplyCaller will call notify on the responsePayloadContainer when a message arrives
         synchronizedReplyCaller.setResponseContainer(responsePayloadContainer);
 
-        sendRequest(fromParticipantId, toParticipantId, address, request, ttl_ms);
+        sendRequest(fromParticipantId, toParticipantId, request, ttl_ms);
 
         long entryTime = System.currentTimeMillis();
 
@@ -181,7 +178,7 @@ public class RequestReplySenderImpl implements RequestReplySender {
                                                                 payload,
                                                                 DispatcherUtils.convertTtlToExpirationDate(ttl_ms));
 
-        routeMessage(toParticipantId, message);
+        messageRouter.route(message);
 
     }
 
@@ -192,13 +189,12 @@ public class RequestReplySenderImpl implements RequestReplySender {
                                                 JsonGenerationException, JsonMappingException, IOException {
         JoynrMessage message = joynrMessageFactory.createReply(fromParticipantId, toParticipantId, payload, expiryDate);
 
-        routeMessage(toParticipantId, message);
+        messageRouter.route(message);
     }
 
     @Override
     public void sendSubscriptionRequest(String fromParticipantId,
                                         String toParticipantId,
-                                        Address address,
                                         SubscriptionRequest subscriptionRequest,
                                         MessagingQos qosSettings,
                                         boolean broadcast) throws JoynrSendBufferFullException,
@@ -207,11 +203,10 @@ public class RequestReplySenderImpl implements RequestReplySender {
         JoynrMessage message = joynrMessageFactory.createSubscriptionRequest(fromParticipantId,
                                                                              toParticipantId,
                                                                              subscriptionRequest,
-                                                                             messageSender.getReplyToChannelId(),
                                                                              DispatcherUtils.convertTtlToExpirationDate(qosSettings.getRoundTripTtl_ms()),
                                                                              broadcast);
 
-        routeMessageByAddress(toParticipantId, message, address);
+        messageRouter.route(message);
     }
 
     @Override
@@ -226,14 +221,13 @@ public class RequestReplySenderImpl implements RequestReplySender {
                                                                      toParticipantId,
                                                                      publication,
                                                                      DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms()));
-        routeMessage(toParticipantId, message);
+        messageRouter.route(message);
 
     }
 
     @Override
     public void sendSubscriptionStop(String fromParticipantId,
                                      String toParticipantId,
-                                     Address address,
                                      SubscriptionStop subscriptionStop,
                                      MessagingQos messagingQos) throws JoynrSendBufferFullException,
                                                                JoynrMessageNotSentException, JsonGenerationException,
@@ -242,48 +236,24 @@ public class RequestReplySenderImpl implements RequestReplySender {
                                                                           toParticipantId,
                                                                           subscriptionStop,
                                                                           DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms()));
-        routeMessageByAddress(toParticipantId, message, address);
+        messageRouter.route(message);
 
-    }
-
-    private void routeMessage(final String toParticipantId, JoynrMessage message) throws JsonGenerationException,
-                                                                                 JsonMappingException,
-                                                                                 JoynrCommunicationException,
-                                                                                 IOException {
-        if (routingTable.containsKey(toParticipantId)) {
-            Address address = routingTable.get(toParticipantId);
-            routeMessageByAddress(toParticipantId, message, address);
-        } else {
-            throw new JoynrCommunicationException("Failed to send Request: No route for given participantId: "
-                    + toParticipantId);
-        }
-    }
-
-    private void routeMessageByAddress(final String toParticipantId, JoynrMessage message, Address address)
-                                                                                                           throws JoynrSendBufferFullException,
-                                                                                                           JoynrMessageNotSentException,
-                                                                                                           JsonGenerationException,
-                                                                                                           JsonMappingException,
-                                                                                                           IOException {
-
-        if (address instanceof ChannelAddress) {
-            logger.info("SEND messageId: {} type: {} from: {} to: {} header: {}",
-                        new String[]{ message.getId(), message.getType(),
-                                message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
-                                message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID),
-                                message.getHeader().toString() });
-            logger.debug("\r\n>>>>>>>>>>>>>>>>\r\n:{}", message.toLogMessage());
-
-            String destinationChannelId = ((ChannelAddress) address).getChannelId();
-            messageSender.sendMessage(destinationChannelId, message);
-        } else {
-            throw new JoynrCommunicationException("Failed to send Request: Address type not supported");
-        }
     }
 
     @Override
     public void registerAddress(String participantId, Address address) {
-        routingTable.put(participantId, address);
+        if (address instanceof ChannelAddress) {
+            messageRouter.addNextHop(participantId, (ChannelAddress) address);
+        } else if (address instanceof BrowserAddress) {
+            messageRouter.addNextHop(participantId, (BrowserAddress) address);
+        } else if (address instanceof CommonApiDbusAddress) {
+            messageRouter.addNextHop(participantId, (CommonApiDbusAddress) address);
+        } else if (address instanceof WebSocketAddress) {
+            messageRouter.addNextHop(participantId, (WebSocketAddress) address);
+        } else if (address instanceof WebSocketClientAddress) {
+            messageRouter.addNextHop(participantId, (WebSocketClientAddress) address);
+        }
+
     }
 
     @Override
@@ -295,6 +265,6 @@ public class RequestReplySenderImpl implements RequestReplySender {
                 thread.interrupt();
             }
         }
-        messageSender.shutdown();
+        messageRouter.shutdown();
     }
 }

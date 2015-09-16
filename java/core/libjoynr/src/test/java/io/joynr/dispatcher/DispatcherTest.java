@@ -250,7 +250,6 @@ public class DispatcherTest {
 
         requestReplySender.sendRequest(testSenderParticipantId,
                                        testMessageResponderParticipantId,
-                                       dummyEndpointAddress,
                                        jsonRequest1,
                                        TIME_TO_LIVE);
         // sendRequest is async -> we have to wait a bit
@@ -332,7 +331,6 @@ public class DispatcherTest {
         dispatcher.addReplyCaller(jsonRequest1.getRequestReplyId(), replyCaller, ttlReplyCaller);
         requestReplySender.sendRequest(testSenderParticipantId,
                                        testMessageResponderParticipantId,
-                                       dummyEndpointAddress,
                                        jsonRequest1,
                                        ttlReplyCaller);
 
@@ -380,7 +378,6 @@ public class DispatcherTest {
 
         requestReplySender.sendRequest(testSenderParticipantId,
                                        testMessageResponderParticipantId,
-                                       dummyEndpointAddress,
                                        jsonRequest1,
                                        TIME_TO_LIVE);
 

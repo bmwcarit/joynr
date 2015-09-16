@@ -56,7 +56,6 @@ public class JoynrMessageFactoryTest {
     private Reply reply;
     private String payload;
     private ExpiryDate expiryDate;
-    private String replyToChannelId;
     private SubscriptionRequest subscriptionRequest;
 
     private SubscriptionPublication publication;
@@ -84,7 +83,6 @@ public class JoynrMessageFactoryTest {
         String requestReplyId = request.getRequestReplyId();
         reply = new Reply(requestReplyId, objectMapper.<JsonNode> valueToTree(payload));
         expiryDate = ExpiryDate.fromRelativeTtl(1000);
-        replyToChannelId = "replyToId";
 
         String subscriptionId = "subscription";
         String attributeName = "attribute";
@@ -102,8 +100,7 @@ public class JoynrMessageFactoryTest {
         JoynrMessage message = joynrMessageFactory.createRequest(fromParticipantId,
                                                                  toParticipantId,
                                                                  request,
-                                                                 expiryDate,
-                                                                 replyToChannelId);
+                                                                 expiryDate);
         Assert.assertEquals(JoynrMessage.MESSAGE_TYPE_REQUEST, message.getType());
 
         Assert.assertEquals(fromParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID));
@@ -137,14 +134,11 @@ public class JoynrMessageFactoryTest {
         JoynrMessage message = joynrMessageFactory.createSubscriptionRequest(fromParticipantId,
                                                                              toParticipantId,
                                                                              subscriptionRequest,
-                                                                             replyToChannelId,
                                                                              ExpiryDate.fromRelativeTtl(TTL),
                                                                              false);
         Assert.assertEquals(JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST, message.getType());
         Assert.assertEquals(fromParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID));
         Assert.assertEquals(toParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID));
-
-        Assert.assertEquals(replyToChannelId, message.getHeaderValue(JoynrMessage.HEADER_NAME_REPLY_CHANNELID));
 
         Assert.assertTrue(message.getPayload() != null);
         assertNotNull(message.getCreatorUserId());

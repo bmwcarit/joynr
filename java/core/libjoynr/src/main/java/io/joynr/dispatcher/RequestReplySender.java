@@ -46,8 +46,6 @@ public interface RequestReplySender {
      *            ParticipantId of the sending endpoint.
      * @param toParticipantId
      *            ParticipantId of the endpoint to send to
-     * @param address
-     *            Address of end point
      * @param request
      *            Request to be send
      * @param ttl_ms
@@ -66,7 +64,6 @@ public interface RequestReplySender {
 
     public abstract void sendRequest(final String fromParticipantId,
                                      final String toParticipantId,
-                                     final Address address,
                                      Request request,
                                      long ttl_ms) throws JoynrSendBufferFullException, JoynrMessageNotSentException,
                                                  JsonGenerationException, JsonMappingException, IOException;
@@ -79,8 +76,6 @@ public interface RequestReplySender {
      *            ParticipantId of the sending endpoint.
      * @param toParticipantId
      *            ParticipantId of the endpoint to send to
-     * @param address
-     *            Address of end point
      * @param request
      *            Request to be send
      * @param synchronizedReplyCaller
@@ -102,7 +97,6 @@ public interface RequestReplySender {
 
     public abstract Object sendSyncRequest(final String fromParticipantId,
                                            final String toParticipantId,
-                                           Address address,
                                            Request request,
                                            SynchronizedReplyCaller synchronizedReplyCaller,
                                            long ttl_ms) throws JoynrCommunicationException,
@@ -149,7 +143,6 @@ public interface RequestReplySender {
 
     public abstract void sendSubscriptionRequest(String fromParticipantId,
                                                  String toParticipantId,
-                                                 Address address,
                                                  SubscriptionRequest subscriptionRequest,
                                                  MessagingQos qosSettings,
                                                  boolean broadcast) throws JoynrSendBufferFullException,
@@ -167,7 +160,6 @@ public interface RequestReplySender {
 
     public abstract void sendSubscriptionStop(String fromParticipantId,
                                               String toParticipantId,
-                                              Address address,
                                               SubscriptionStop subscriptionStop,
                                               MessagingQos qosSettings) throws JoynrSendBufferFullException,
                                                                        JoynrMessageNotSentException,

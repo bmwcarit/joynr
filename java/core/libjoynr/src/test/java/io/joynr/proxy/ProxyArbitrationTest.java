@@ -33,6 +33,7 @@ import io.joynr.dispatcher.rpc.JoynrSyncInterface;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.pubsub.subscription.SubscriptionManager;
 
@@ -75,7 +76,7 @@ public class ProxyArbitrationTest {
     private RoutingTable routingTable;
     private String participantId;
     private Address correctEndpointAddress;
-    private Address wrongEndpointAddress;
+    private MessageRouter messageRouter;
 
     public static interface TestSyncInterface extends JoynrSyncInterface {
         public String demoMethod3();
@@ -94,20 +95,19 @@ public class ProxyArbitrationTest {
                                         "discoverydirectory_channelid",
                                         "capabilitiesdirectory_participantid",
                                         "discoverydirectory_channelid");
+
+        messageRouter = new MessageRouter(routingTable, messageSender);
+
         participantId = "testParticipant";
         correctEndpointAddress = new ChannelAddress(CORRECT_CHANNELID);
-        wrongEndpointAddress = new ChannelAddress("wrongEndpointAddress");
 
-        routingTable.put(participantId, wrongEndpointAddress);
         routingTable.put(participantId, correctEndpointAddress);
 
-        RequestReplySender requestReplySender = new RequestReplySenderImpl(joynrMessageFactory,
-                                                                           messageSender,
-                                                                           routingTable);
+        RequestReplySender requestReplySender = new RequestReplySenderImpl(joynrMessageFactory, messageRouter);
         JoynrMessagingConnectorFactory joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(requestReplySender,
                                                                                                            dispatcher,
                                                                                                            subscriptionManager);
-        ConnectorFactory connectorFactory = new ConnectorFactory(joynrMessagingConnectorFactory);
+        ConnectorFactory connectorFactory = new ConnectorFactory(joynrMessagingConnectorFactory, messageRouter);
         proxyHandler = new ProxyInvocationHandlerImpl("domain",
                                                       "interfaceName",
                                                       participantId,
@@ -125,8 +125,18 @@ public class ProxyArbitrationTest {
         Mockito.when(joynrMessageFactory.createRequest(Mockito.anyString(),
                                                        Mockito.anyString(),
                                                        request,
-                                                       Mockito.any(ExpiryDate.class),
-                                                       Mockito.anyString())).thenReturn(new JoynrMessage());
+                                                       Mockito.any(ExpiryDate.class)))
+               .thenAnswer(new Answer<JoynrMessage>() {
+
+                   @Override
+                   public JoynrMessage answer(InvocationOnMock invocation) throws Throwable {
+                       JoynrMessage result = new JoynrMessage();
+                       result.setFrom((String) invocation.getArguments()[0]);
+                       result.setTo((String) invocation.getArguments()[1]);
+                       return result;
+                   }
+
+               });
 
         Mockito.doAnswer(new Answer<Object>() {
 

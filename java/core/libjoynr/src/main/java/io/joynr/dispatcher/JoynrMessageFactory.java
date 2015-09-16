@@ -71,8 +71,7 @@ public class JoynrMessageFactory {
     public JoynrMessage createRequest(final String fromParticipantId,
                                       final String toParticipantId,
                                       Request request,
-                                      ExpiryDate expiryDate,
-                                      String replyToChannelId) {
+                                      ExpiryDate expiryDate) {
         JoynrMessage message = new JoynrMessage();
         message.setType(JoynrMessage.MESSAGE_TYPE_REQUEST);
 
@@ -102,7 +101,6 @@ public class JoynrMessageFactory {
     public JoynrMessage createSubscriptionRequest(String fromParticipantId,
                                                   String toParticipantId,
                                                   SubscriptionRequest subscriptionRequest,
-                                                  String replyToChannelId,
                                                   ExpiryDate expiryDate,
                                                   boolean broadcast) {
         JoynrMessage message = new JoynrMessage();
@@ -115,7 +113,6 @@ public class JoynrMessageFactory {
 
         Map<String, String> header = createHeader(fromParticipantId, toParticipantId);
         header.put(JoynrMessage.HEADER_NAME_EXPIRY_DATE, String.valueOf(expiryDate.getValue()));
-        header.put(JoynrMessage.HEADER_NAME_REPLY_CHANNELID, replyToChannelId);
         message.setHeader(header);
         message.setPayload(serializePayload(subscriptionRequest));
         return message;

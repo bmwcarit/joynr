@@ -47,7 +47,6 @@ import joynr.Reply;
 import joynr.Request;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
-import joynr.system.routingtypes.ChannelAddress;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,19 +67,15 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
     private final RequestReplySender messageSender;
     private final RequestReplyDispatcher dispatcher;
 
-    private final ChannelAddress address;
-
     private final SubscriptionManager subscriptionManager;
 
     JoynrMessagingConnectorInvocationHandler(String toParticipantId,
-                                             ChannelAddress address,
                                              String fromParticipantId,
                                              MessagingQos qosSettings,
                                              RequestReplySender messageSender,
                                              RequestReplyDispatcher dispatcher,
                                              SubscriptionManager subscriptionManager) {
         this.toParticipantId = toParticipantId;
-        this.address = address;
         this.fromParticipantId = fromParticipantId;
 
         this.qosSettings = qosSettings;
@@ -128,11 +123,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
                                                                                                    methodMetaInformation);
 
         dispatcher.addReplyCaller(requestReplyId, callbackWrappingReplyCaller, qosSettings.getRoundTripTtl_ms());
-        messageSender.sendRequest(fromParticipantId,
-                                  toParticipantId,
-                                  address,
-                                  request,
-                                  qosSettings.getRoundTripTtl_ms());
+        messageSender.sendRequest(fromParticipantId, toParticipantId, request, qosSettings.getRoundTripTtl_ms());
         return future;
     }
 
@@ -166,7 +157,6 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         dispatcher.addReplyCaller(requestReplyId, synchronizedReplyCaller, qosSettings.getRoundTripTtl_ms());
         response = (Reply) messageSender.sendSyncRequest(fromParticipantId,
                                                          toParticipantId,
-                                                         address,
                                                          request,
                                                          synchronizedReplyCaller,
                                                          qosSettings.getRoundTripTtl_ms());
@@ -187,7 +177,6 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
 
         messageSender.sendSubscriptionStop(fromParticipantId,
                                            toParticipantId,
-                                           address,
                                            subscriptionStop,
                                            new MessagingQos(qosSettings));
     }
@@ -214,12 +203,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         }
 
         // TODO pass the future to the messageSender and set the error state when exceptions are thrown
-        messageSender.sendSubscriptionRequest(fromParticipantId,
-                                              toParticipantId,
-                                              address,
-                                              requestObject,
-                                              messagingQos,
-                                              false);
+        messageSender.sendSubscriptionRequest(fromParticipantId, toParticipantId, requestObject, messagingQos, false);
     }
 
     @Override
@@ -243,12 +227,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
             messagingQos.setTtl_ms(qos.getExpiryDate() - System.currentTimeMillis());
         }
 
-        messageSender.sendSubscriptionRequest(fromParticipantId,
-                                              toParticipantId,
-                                              address,
-                                              requestObject,
-                                              messagingQos,
-                                              true);
+        messageSender.sendSubscriptionRequest(fromParticipantId, toParticipantId, requestObject, messagingQos, true);
     }
 
     @Override

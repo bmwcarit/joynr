@@ -75,7 +75,6 @@ public class AccessControllerTest {
     private String testInterface = "testInterface";
     private String testOperation = "testOperation";
     private ExpiryDate expiryDate = ExpiryDate.fromRelativeTtl(1000);
-    private String replyToChannelId = "replyToId";
 
     @BeforeClass
     public static void initialize() {
@@ -100,11 +99,7 @@ public class AccessControllerTest {
 
         // Create a dummy message
         request = new Request(testOperation, new String[]{}, new Class<?>[]{});
-        message = messageFactory.createRequest(fromParticipantId,
-                                               toParticipantId,
-                                               request,
-                                               expiryDate,
-                                               replyToChannelId);
+        message = messageFactory.createRequest(fromParticipantId, toParticipantId, request, expiryDate);
         message.setHeaderValue(JoynrMessage.HEADER_NAME_CREATOR_USER_ID, DUMMY_USERID);
 
         CapabilityEntry capabilityEntry = new CapabilityEntryImpl(testDomain,

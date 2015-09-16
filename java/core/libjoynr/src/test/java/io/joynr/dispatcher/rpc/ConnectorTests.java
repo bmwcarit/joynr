@@ -25,6 +25,7 @@ import io.joynr.dispatcher.RequestReplyDispatcher;
 import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.proxy.ConnectorFactory;
 import io.joynr.proxy.ConnectorInvocationHandler;
 import io.joynr.proxy.Future;
@@ -63,11 +64,14 @@ public class ConnectorTests {
     @Mock
     private RequestReplySender messageSender;
 
+    @Mock
+    private MessageRouter messageRouter;
+
     private String fromParticipantId;
     private String toParticipantId;
     private String channelId;
-    private Address endpointAddress;
     private MessagingQos qosSettings;
+    private ChannelAddress address;
 
     @Before
     public void setUp() {
@@ -75,7 +79,7 @@ public class ConnectorTests {
         fromParticipantId = "fromParticipantId";
         toParticipantId = "toParticipantId";
         channelId = "testChannelId";
-        endpointAddress = new ChannelAddress(channelId);
+        address = new ChannelAddress(channelId);
         qosSettings = new MessagingQos();
 
     }
@@ -137,7 +141,6 @@ public class ConnectorTests {
             connector.executeSubscriptionMethod(new AttributeSubscribeInvocation(method, args, future));
             Mockito.verify(messageSender, times(1)).sendSubscriptionRequest(Mockito.eq(fromParticipantId),
                                                                             Mockito.eq(toParticipantId),
-                                                                            Mockito.eq(endpointAddress),
                                                                             Mockito.any(SubscriptionRequest.class),
                                                                             Mockito.any(MessagingQos.class),
                                                                             Mockito.anyBoolean());
@@ -163,7 +166,6 @@ public class ConnectorTests {
             Mockito.verify(messageSender, times(1))
                    .sendSubscriptionStop(Mockito.eq(fromParticipantId),
                                          Mockito.eq(toParticipantId),
-                                         Mockito.eq(endpointAddress),
                                          Mockito.eq(new SubscriptionStop(subscriptionId)),
                                          Mockito.any(MessagingQos.class));
         } catch (Exception e) {
@@ -175,13 +177,13 @@ public class ConnectorTests {
     private ConnectorInvocationHandler createConnector() {
         ArbitrationResult arbitrationResult = new ArbitrationResult();
         ArrayList<Address> addresses = new ArrayList<Address>();
-        addresses.add(endpointAddress);
+        addresses.add(address);
         arbitrationResult.setAddress(addresses);
         arbitrationResult.setParticipantId(toParticipantId);
         JoynrMessagingConnectorFactory joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(messageSender,
                                                                                                            dispatcher,
                                                                                                            subscriptionManager);
-        ConnectorFactory connectorFactory = new ConnectorFactory(joynrMessagingConnectorFactory);
+        ConnectorFactory connectorFactory = new ConnectorFactory(joynrMessagingConnectorFactory, messageRouter);
         ConnectorInvocationHandler connector = connectorFactory.create(fromParticipantId,
                                                                        arbitrationResult,
                                                                        qosSettings);

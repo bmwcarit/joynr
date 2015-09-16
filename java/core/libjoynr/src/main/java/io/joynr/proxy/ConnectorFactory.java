@@ -22,6 +22,7 @@ package io.joynr.proxy;
 import io.joynr.arbitration.ArbitrationResult;
 import io.joynr.dispatcher.rpc.JoynrMessagingConnectorFactory;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.routing.MessageRouter;
 
 import javax.annotation.CheckForNull;
 
@@ -41,9 +42,12 @@ public class ConnectorFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(ConnectorFactory.class);
 
+    private MessageRouter messageRouter;
+
     @Inject
-    public ConnectorFactory(JoynrMessagingConnectorFactory joynrMessagingConnectorFactory) {
+    public ConnectorFactory(JoynrMessagingConnectorFactory joynrMessagingConnectorFactory, MessageRouter messageRouter) {
         this.joynrMessagingConnectorFactory = joynrMessagingConnectorFactory;
+        this.messageRouter = messageRouter;
     }
 
     /**
@@ -62,9 +66,9 @@ public class ConnectorFactory {
 
         for (Address endpointAddress : arbitrationResult.getEndpointAddress()) {
             if (endpointAddress instanceof ChannelAddress) {
+                messageRouter.addNextHop(arbitrationResult.getParticipantId(), (ChannelAddress) endpointAddress);
                 return joynrMessagingConnectorFactory.create(fromParticipantId,
                                                              arbitrationResult.getParticipantId(),
-                                                             (ChannelAddress) endpointAddress,
                                                              qosSettings);
             }
 

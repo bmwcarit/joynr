@@ -29,7 +29,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import joynr.MethodMetaInformation;
-import joynr.system.routingtypes.ChannelAddress;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,19 +67,15 @@ public class JoynrMessagingConnectorFactory {
      *            Participant Id of the created stub.
      * @param toParticipantId
      *            Participant of the Provider/Receiver.
-     * @param address
-     *            End point
      * @param qosSettings
      *            MessagingQos settings
      * @return connector to execute remote procedure calls
      */
     public JoynrMessagingConnectorInvocationHandler create(final String fromParticipantId,
                                                            final String toParticipantId,
-                                                           final ChannelAddress address,
                                                            final MessagingQos qosSettings) {
 
         return new JoynrMessagingConnectorInvocationHandler(toParticipantId,
-                                                            address,
                                                             fromParticipantId,
                                                             qosSettings,
                                                             messageSender,

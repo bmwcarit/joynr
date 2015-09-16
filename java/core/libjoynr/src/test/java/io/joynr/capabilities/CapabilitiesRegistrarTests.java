@@ -90,6 +90,7 @@ public class CapabilitiesRegistrarTests {
 
         when(provider.getProviderQos()).thenReturn(providerQos);
         doReturn(ProvidedInterface.class).when(provider).getProvidedInterface();
+        when(provider.getInterfaceName()).thenReturn(TestInterface.INTERFACE_NAME);
         when(participantIdStorage.getProviderParticipantId(eq(domain), eq(ProvidedInterface.class))).thenReturn(participantId);
         when(requestCallerFactory.create(provider)).thenReturn(requestCaller);
 
@@ -107,6 +108,8 @@ public class CapabilitiesRegistrarTests {
     @Test
     public void unregisterProvider() {
         when(provider.getProviderQos()).thenReturn(providerQos);
+        doReturn(ProvidedInterface.class).when(provider).getProvidedInterface();
+        when(provider.getInterfaceName()).thenReturn(TestInterface.INTERFACE_NAME);
         when(participantIdStorage.getProviderParticipantId(eq(domain), eq(ProvidedInterface.class))).thenReturn(participantId);
         registrar.unregisterProvider(domain, provider);
 
