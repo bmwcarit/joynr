@@ -24,7 +24,6 @@ import io.joynr.arbitration.ArbitrationStatus;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.common.ExpiryDate;
 import io.joynr.dispatcher.JoynrMessageFactory;
-import io.joynr.dispatcher.MessagingEndpointDirectory;
 import io.joynr.dispatcher.ReplyCaller;
 import io.joynr.dispatcher.RequestReplyDispatcher;
 import io.joynr.dispatcher.RequestReplySender;
@@ -34,6 +33,7 @@ import io.joynr.dispatcher.rpc.JoynrSyncInterface;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.pubsub.subscription.SubscriptionManager;
 
 import java.util.List;
@@ -72,7 +72,7 @@ public class ProxyArbitrationTest {
 
     ProxyInvocationHandlerImpl proxyHandler;
 
-    private MessagingEndpointDirectory messagingEndpointDirectory;
+    private RoutingTable routingTable;
     private String participantId;
     private Address correctEndpointAddress;
     private Address wrongEndpointAddress;
@@ -90,20 +90,20 @@ public class ProxyArbitrationTest {
         DiscoveryQos discoveryQos = new DiscoveryQos();
         MessagingQos messagingQos = new MessagingQos();
 
-        messagingEndpointDirectory = new MessagingEndpointDirectory("channelurldirectory_participantid",
-                                                                    "discoverydirectory_channelid",
-                                                                    "capabilitiesdirectory_participantid",
-                                                                    "discoverydirectory_channelid");
+        routingTable = new RoutingTable("channelurldirectory_participantid",
+                                        "discoverydirectory_channelid",
+                                        "capabilitiesdirectory_participantid",
+                                        "discoverydirectory_channelid");
         participantId = "testParticipant";
         correctEndpointAddress = new ChannelAddress(CORRECT_CHANNELID);
         wrongEndpointAddress = new ChannelAddress("wrongEndpointAddress");
 
-        messagingEndpointDirectory.put(participantId, wrongEndpointAddress);
-        messagingEndpointDirectory.put(participantId, correctEndpointAddress);
+        routingTable.put(participantId, wrongEndpointAddress);
+        routingTable.put(participantId, correctEndpointAddress);
 
         RequestReplySender requestReplySender = new RequestReplySenderImpl(joynrMessageFactory,
                                                                            messageSender,
-                                                                           messagingEndpointDirectory);
+                                                                           routingTable);
         JoynrMessagingConnectorFactory joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(requestReplySender,
                                                                                                            dispatcher,
                                                                                                            subscriptionManager);

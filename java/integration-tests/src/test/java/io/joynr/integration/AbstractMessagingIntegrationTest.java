@@ -19,19 +19,12 @@ package io.joynr.integration;
  * #L%
  */
 
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.Key;
-import com.google.inject.Module;
-import com.google.inject.name.Names;
 import io.joynr.capabilities.DummyCapabilitiesDirectory;
 import io.joynr.capabilities.DummyDiscoveryModule;
 import io.joynr.capabilities.DummyLocalChannelUrlDirectoryClient;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.common.ExpiryDate;
 import io.joynr.dispatcher.JoynrMessageFactory;
-import io.joynr.dispatcher.MessagingEndpointDirectory;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.integration.util.TestMessageListener;
@@ -40,18 +33,11 @@ import io.joynr.messaging.LocalChannelUrlDirectoryClient;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrBaseModule;
 import io.joynr.runtime.PropertyLoader;
 import io.joynr.util.PreconfiguredEndpointDirectoryModule;
-import joynr.JoynrMessage;
-import joynr.types.ChannelUrlInformation;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -59,6 +45,23 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
+
+import joynr.JoynrMessage;
+import joynr.types.ChannelUrlInformation;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.Key;
+import com.google.inject.Module;
+import com.google.inject.name.Names;
 
 public abstract class AbstractMessagingIntegrationTest {
 
@@ -78,8 +81,8 @@ public abstract class AbstractMessagingIntegrationTest {
 
     private MessageReceiver messageReceiver1;
     private MessageReceiver messageReceiver2;
-    MessagingEndpointDirectory messagingEndpointDirectory1;
-    MessagingEndpointDirectory messagingEndpointDirectory2;
+    RoutingTable routingTable1;
+    RoutingTable routingTable2;
     private JoynrMessageFactory joynrMessagingFactory;
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractMessagingIntegrationTest.class);
@@ -132,10 +135,10 @@ public abstract class AbstractMessagingIntegrationTest {
     public Injector setupMessageEndpoint(String channelId,
                                          LocalChannelUrlDirectoryClient localChannelUrlDirectoryClient,
                                          LocalCapabilitiesDirectory localCapDir) {
-        MessagingEndpointDirectory messagingEndpointDirectory = new MessagingEndpointDirectory("channelurldirectory_participantid",
-                                                                                               "discoverydirectory_channelid",
-                                                                                               "capabilitiesdirectory_participantid",
-                                                                                               "discoverydirectory_channelid");
+        RoutingTable routingTable = new RoutingTable("channelurldirectory_participantid",
+                                                     "discoverydirectory_channelid",
+                                                     "capabilitiesdirectory_participantid",
+                                                     "discoverydirectory_channelid");
 
         ChannelUrlInformation channelUrlInformation = new ChannelUrlInformation();
         channelUrlInformation.setUrls(Arrays.asList(getChannelUrl(channelId)));
@@ -147,7 +150,7 @@ public abstract class AbstractMessagingIntegrationTest {
         joynrConfig.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
         Injector injector = createInjector(joynrConfig,
                                            new DummyDiscoveryModule(localChannelUrlDirectoryClient, localCapDir),
-                                           new PreconfiguredEndpointDirectoryModule(messagingEndpointDirectory));
+                                           new PreconfiguredEndpointDirectoryModule(routingTable));
 
         return injector;
 

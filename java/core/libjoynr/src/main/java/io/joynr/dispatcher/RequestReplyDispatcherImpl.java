@@ -31,6 +31,7 @@ import io.joynr.messaging.IMessageReceivers;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.ReceiverStatusListener;
+import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.proxy.Callback;
 import io.joynr.pubsub.publication.PublicationManager;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
@@ -84,7 +85,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
 
     private ReplyCallerDirectory replyCallerDirectory;
 
-    private MessagingEndpointDirectory messagingEndpointDirectory;
+    private RoutingTable messagingEndpointDirectory;
     protected RequestReplySender messageSender;
 
     private RequestInterpreter requestInterpreter;
@@ -111,7 +112,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
     public RequestReplyDispatcherImpl(RequestReplySender messageSender,
                                       IMessageReceivers messageReceivers,
                                       MessageReceiver messageReceiver,
-                                      MessagingEndpointDirectory messagingEndpointDirectory,
+                                      RoutingTable messagingEndpointDirectory,
                                       ReplyCallerDirectory replyCallerDirectory,
                                       @Named(MessagingPropertyKeys.CHANNELID) String channelId,
                                       ObjectMapper objectMapper,

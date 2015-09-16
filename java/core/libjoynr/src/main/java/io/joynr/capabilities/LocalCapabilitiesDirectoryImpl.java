@@ -21,11 +21,11 @@ package io.joynr.capabilities;
 
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
-import io.joynr.dispatcher.MessagingEndpointDirectory;
 import io.joynr.exceptions.JoynrArbitrationException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
@@ -63,7 +63,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
     private static final Logger logger = LoggerFactory.getLogger(LocalCapabilitiesDirectoryImpl.class);
 
-    private MessagingEndpointDirectory messagingEndpointDirectory;
+    private RoutingTable messagingEndpointDirectory;
     private String localChannelId;
     private CapabilitiesStore localCapabilitiesStore;
     private GlobalCapabilitiesDirectoryClient globalCapabilitiesClient;
@@ -79,7 +79,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                           @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID) String domainAccessControllerParticipantId,
                                           @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID) String domainAccessControllerChannelId,
                                           @Named(MessagingPropertyKeys.CHANNELID) String localChannelId,
-                                          MessagingEndpointDirectory messagingEndpointDirectory,
+                                          RoutingTable messagingEndpointDirectory,
                                           CapabilitiesStore localCapabilitiesStore,
                                           CapabilitiesCache globalCapabilitiesCache,
                                           ProxyInvocationHandlerFactory proxyInvocationHandlerFactory) {

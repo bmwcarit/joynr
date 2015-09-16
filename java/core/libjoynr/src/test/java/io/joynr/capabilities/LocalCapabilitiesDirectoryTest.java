@@ -23,9 +23,9 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
-import io.joynr.dispatcher.MessagingEndpointDirectory;
 import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
@@ -66,7 +66,7 @@ public class LocalCapabilitiesDirectoryTest {
     @Mock
     private GlobalCapabilitiesDirectoryClient globalCapabilitiesClient;
     @Mock
-    private MessagingEndpointDirectory messagingEndpointDirectoryMock;
+    private RoutingTable routingTableMock;
     @Mock
     private ProxyInvocationHandlerFactory proxyInvocationHandlerFactoryMock;
     @Mock
@@ -118,7 +118,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                                         domainAccessControllerParticipantId,
                                                                         domainAccessControllerChannelId,
                                                                         channelId,
-                                                                        messagingEndpointDirectoryMock,
+                                                                        routingTableMock,
                                                                         localCapabilitiesStoreMock,
                                                                         globalCapabilitiesCacheMock,
                                                                         proxyInvocationHandlerFactoryMock);

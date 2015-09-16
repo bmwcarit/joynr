@@ -27,6 +27,7 @@ import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.routing.RoutingTable;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -55,17 +56,17 @@ public class RequestReplySenderImpl implements RequestReplySender {
     private static final Logger logger = LoggerFactory.getLogger(RequestReplySenderImpl.class);
     JoynrMessageFactory joynrMessageFactory;
     MessageSender messageSender;
-    MessagingEndpointDirectory messagingEndpointDirectory;
+    RoutingTable routingTable;
     private boolean running = true;
     private List<Thread> outstandingRequestThreads = Collections.synchronizedList(new ArrayList<Thread>());
 
     @Inject
     public RequestReplySenderImpl(JoynrMessageFactory joynrMessageFactory,
                                   MessageSender messageSender,
-                                  MessagingEndpointDirectory messagingEndpointDirectory) {
+                                  RoutingTable routingTable) {
         this.joynrMessageFactory = joynrMessageFactory;
         this.messageSender = messageSender;
-        this.messagingEndpointDirectory = messagingEndpointDirectory;
+        this.routingTable = routingTable;
     }
 
     /*
@@ -249,8 +250,8 @@ public class RequestReplySenderImpl implements RequestReplySender {
                                                                                  JsonMappingException,
                                                                                  JoynrCommunicationException,
                                                                                  IOException {
-        if (messagingEndpointDirectory.containsKey(toParticipantId)) {
-            Address address = messagingEndpointDirectory.get(toParticipantId);
+        if (routingTable.containsKey(toParticipantId)) {
+            Address address = routingTable.get(toParticipantId);
             routeMessageByAddress(toParticipantId, message, address);
         } else {
             throw new JoynrCommunicationException("Failed to send Request: No route for given participantId: "
@@ -282,7 +283,7 @@ public class RequestReplySenderImpl implements RequestReplySender {
 
     @Override
     public void registerAddress(String participantId, Address address) {
-        messagingEndpointDirectory.put(participantId, address);
+        routingTable.put(participantId, address);
     }
 
     @Override

@@ -1,9 +1,9 @@
-package io.joynr.dispatcher;
+package io.joynr.messaging.routing;
 
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,25 +36,17 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
 @Singleton
-public class MessagingEndpointDirectory {
-    private static final Logger logger = LoggerFactory.getLogger(MessagingEndpointDirectory.class);
+public class RoutingTable {
+    private static final Logger logger = LoggerFactory.getLogger(RoutingTable.class);
     ConcurrentMap<String, Address> hashMap = Maps.newConcurrentMap();
 
-    String channelUrlDirectoryParticipantId;
-    String channelUrlDirectoryChannelId;
-    private final String capabilitiesDirectoryParticipantId;
-    private final String capabiltitiesDirectoryChannelId;
-
     @Inject
-    public MessagingEndpointDirectory(@Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_PARTICIPANT_ID) String channelUrlDirectoryParticipantId,
-                                      @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_CHANNEL_ID) String channelUrlDirectoryChannelId,
-                                      @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID) String capabilitiesDirectoryParticipantId,
-                                      @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID) String capabiltitiesDirectoryChannelId) {
-        this.channelUrlDirectoryParticipantId = channelUrlDirectoryParticipantId;
-        this.channelUrlDirectoryChannelId = channelUrlDirectoryChannelId;
-        this.capabilitiesDirectoryParticipantId = capabilitiesDirectoryParticipantId;
-        this.capabiltitiesDirectoryChannelId = capabiltitiesDirectoryChannelId;
-        putPreconfiguredEntries();
+    public RoutingTable(@Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_PARTICIPANT_ID) String channelUrlDirectoryParticipantId,
+                        @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_CHANNEL_ID) String channelUrlDirectoryChannelId,
+                        @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID) String capabilitiesDirectoryParticipantId,
+                        @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID) String capabiltitiesDirectoryChannelId) {
+        this.put(capabilitiesDirectoryParticipantId, new ChannelAddress(capabiltitiesDirectoryChannelId));
+        this.put(channelUrlDirectoryParticipantId, new ChannelAddress(channelUrlDirectoryChannelId));
     }
 
     public Address get(String participantId) {
@@ -66,7 +58,6 @@ public class MessagingEndpointDirectory {
     }
 
     public Address put(String participantId, Address address) {
-        // logger.error("ADDING ENDPOINT", new Exception());
         logger.debug("adding endpoint address: " + participantId + ": " + address);
         return hashMap.putIfAbsent(participantId, address);
     }
@@ -80,13 +71,6 @@ public class MessagingEndpointDirectory {
             }
         }
         return containsKey;
-    }
-
-    private void putPreconfiguredEntries() {
-        this.put(capabilitiesDirectoryParticipantId, new ChannelAddress(capabiltitiesDirectoryChannelId));
-
-        this.put(channelUrlDirectoryParticipantId, new ChannelAddress(channelUrlDirectoryChannelId));
-
     }
 
     public void remove(String participantId) {

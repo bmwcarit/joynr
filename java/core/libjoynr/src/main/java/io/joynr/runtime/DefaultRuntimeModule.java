@@ -19,7 +19,6 @@ package io.joynr.runtime;
  * #L%
  */
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
-import io.joynr.dispatcher.MessagingEndpointDirectory;
 import io.joynr.dispatcher.RequestReplyDispatcher;
 import io.joynr.dispatcher.RequestReplyDispatcherImpl;
 import io.joynr.dispatcher.RequestReplySender;
@@ -34,6 +33,7 @@ import io.joynr.messaging.MessageSenderImpl;
 import io.joynr.messaging.MessagingSettings;
 import io.joynr.messaging.http.operation.HttpClientProvider;
 import io.joynr.messaging.http.operation.HttpDefaultRequestConfigProvider;
+import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.proxy.ProxyInvocationHandler;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
 import io.joynr.proxy.ProxyInvocationHandlerImpl;
@@ -65,7 +65,7 @@ public class DefaultRuntimeModule extends AbstractModule {
 
         bind(MessagingSettings.class).to(ConfigurableMessagingSettings.class);
         bind(MessageSender.class).to(MessageSenderImpl.class);
-        bind(MessagingEndpointDirectory.class).in(Singleton.class);
+        bind(RoutingTable.class).in(Singleton.class);
         bind(IMessageReceivers.class).to(MessageReceivers.class).asEagerSingleton();
 
         bind(CloseableHttpClient.class).toProvider(HttpClientProvider.class).in(Singleton.class);

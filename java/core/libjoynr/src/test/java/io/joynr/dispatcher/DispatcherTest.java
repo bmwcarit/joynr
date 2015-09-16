@@ -33,6 +33,7 @@ import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.util.PreconfiguredEndpointDirectoryModule;
 
 import java.io.IOException;
@@ -105,10 +106,10 @@ public class DispatcherTest {
     private Request jsonRequest1;
     private Request jsonRequest2;
 
-    private MessagingEndpointDirectory messagingEndpointDirectory = new MessagingEndpointDirectory("channelurldirectory_participantid",
-                                                                                                   "discoverydirectory_channelid",
-                                                                                                   "capabilitiesdirectory_participantid",
-                                                                                                   "discoverydirectory_channelid");
+    private RoutingTable routingTable = new RoutingTable("channelurldirectory_participantid",
+                                                         "discoverydirectory_channelid",
+                                                         "capabilitiesdirectory_participantid",
+                                                         "discoverydirectory_channelid");
     private RequestReplySender requestReplySender;
     private ChannelAddress dummyEndpointAddress;
     private ObjectMapper objectMapper;
@@ -124,11 +125,11 @@ public class DispatcherTest {
         testListenerUnregisteredParticipantId = "testListenerUnregisteredParticipantId";
         testResponderUnregisteredParticipantId = "testResponderUnregisteredParticipantId";
         dummyEndpointAddress = new ChannelAddress("dummyChannelId");
-        messagingEndpointDirectory.put(testMessageListenerParticipantId, dummyEndpointAddress);
-        messagingEndpointDirectory.put(testMessageResponderParticipantId, dummyEndpointAddress);
-        messagingEndpointDirectory.put(testListenerUnregisteredParticipantId, dummyEndpointAddress);
-        messagingEndpointDirectory.put(testResponderUnregisteredParticipantId, dummyEndpointAddress);
-        messagingEndpointDirectory.put(testSenderParticipantId, dummyEndpointAddress);
+        routingTable.put(testMessageListenerParticipantId, dummyEndpointAddress);
+        routingTable.put(testMessageResponderParticipantId, dummyEndpointAddress);
+        routingTable.put(testListenerUnregisteredParticipantId, dummyEndpointAddress);
+        routingTable.put(testResponderUnregisteredParticipantId, dummyEndpointAddress);
+        routingTable.put(testSenderParticipantId, dummyEndpointAddress);
 
         channelId = "disTest-" + UUID.randomUUID().toString();
         Properties properties = new Properties();
@@ -142,7 +143,7 @@ public class DispatcherTest {
                                                                           bind(AccessController.class).toInstance(accessControllerMock);
                                                                       }
                                                                   })
-                                                        .with(new PreconfiguredEndpointDirectoryModule(messagingEndpointDirectory)));
+                                                        .with(new PreconfiguredEndpointDirectoryModule(routingTable)));
 
         objectMapper = injector.getInstance(ObjectMapper.class);
         objectMapper.registerSubtypes(Request.class, OneWay.class);
