@@ -25,7 +25,7 @@ import io.joynr.exceptions.JoynrArbitrationException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.messaging.routing.RoutingTable;
+import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilderFactory;
@@ -64,11 +64,12 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
     private static final Logger logger = LoggerFactory.getLogger(LocalCapabilitiesDirectoryImpl.class);
 
-    private RoutingTable messagingEndpointDirectory;
     private String localChannelId;
     private CapabilitiesStore localCapabilitiesStore;
     private GlobalCapabilitiesDirectoryClient globalCapabilitiesClient;
     private CapabilitiesStore globalCapabilitiesCache;
+
+    private MessageRouter messageRouter;
 
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
@@ -80,13 +81,13 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                           @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID) String domainAccessControllerParticipantId,
                                           @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID) String domainAccessControllerChannelId,
                                           @Named(MessagingPropertyKeys.CHANNELID) String localChannelId,
-                                          RoutingTable messagingEndpointDirectory,
+                                          MessageRouter messageRouter,
                                           CapabilitiesStore localCapabilitiesStore,
                                           CapabilitiesCache globalCapabilitiesCache,
                                           ProxyInvocationHandlerFactory proxyInvocationHandlerFactory) {
         // CHECKSTYLE:ON
         this.localChannelId = localChannelId;
-        this.messagingEndpointDirectory = messagingEndpointDirectory;
+        this.messageRouter = messageRouter;
         this.localCapabilitiesStore = localCapabilitiesStore;
         this.globalCapabilitiesCache = globalCapabilitiesCache;
         this.globalCapabilitiesCache.add(new CapabilityEntryImpl(discoveryDirectoriesDomain,
@@ -123,7 +124,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         ChannelAddress joynrMessagingEndpointAddress = new ChannelAddress(localChannelId);
         capabilityEntry.addEndpoint(joynrMessagingEndpointAddress);
 
-        messagingEndpointDirectory.put(capabilityEntry.getParticipantId(), joynrMessagingEndpointAddress);
+        messageRouter.addNextHop(capabilityEntry.getParticipantId(), joynrMessagingEndpointAddress);
 
         final RegistrationFuture ret = new RegistrationFuture(capabilityEntry.getParticipantId());
 
@@ -209,7 +210,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         // Remove endpoint addresses
         for (Address ep : capEntry.getAddresses()) {
             if (ep instanceof ChannelAddress) {
-                messagingEndpointDirectory.remove(capEntry.getParticipantId());
+                messageRouter.removeNextHop(capEntry.getParticipantId());
                 break;
             }
         }
@@ -345,7 +346,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             // EndpointAddress?
             // TODO when are entries purged from the messagingEndpointDirectory?
             if (ce.getParticipantId() != null && ce.getAddresses().size() > 0) {
-                messagingEndpointDirectory.put(ce.getParticipantId(), ce.getAddresses().get(0));
+                messageRouter.addNextHop(ce.getParticipantId(), ce.getAddresses().get(0));
             }
         }
     }
