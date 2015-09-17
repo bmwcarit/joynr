@@ -37,6 +37,8 @@ import io.joynr.messaging.http.operation.HttpClientProvider;
 import io.joynr.messaging.http.operation.HttpDefaultRequestConfigProvider;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
+import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.routing.MessageRouterImpl;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.proxy.ProxyInvocationHandler;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
@@ -72,6 +74,7 @@ public class DefaultRuntimeModule extends AbstractModule {
         bind(RequestReplySender.class).to(RequestReplySenderImpl.class);
         bind(RequestReplyDispatcher.class).to(RequestReplyDispatcherImpl.class);
         bind(Dispatcher.class).to(DispatcherImpl.class);
+        bind(MessageRouter.class).to(MessageRouterImpl.class);
         bind(MessagingSettings.class).to(ConfigurableMessagingSettings.class);
         bind(MessageSender.class).to(MessageSenderImpl.class);
         bind(RoutingTable.class).in(Singleton.class);

@@ -33,6 +33,7 @@ import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.routing.MessageRouterImpl;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.pubsub.subscription.SubscriptionManager;
 
@@ -95,7 +96,7 @@ public class ProxyArbitrationTest {
                                         "capabilitiesdirectory_participantid",
                                         "discoverydirectory_channelid");
 
-        messageRouter = new MessageRouter(routingTable, messageSender);
+        messageRouter = new MessageRouterImpl(routingTable, messageSender);
 
         participantId = "testParticipant";
         correctEndpointAddress = new ChannelAddress(CORRECT_CHANNELID);

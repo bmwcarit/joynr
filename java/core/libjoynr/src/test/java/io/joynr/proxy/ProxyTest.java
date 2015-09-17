@@ -47,6 +47,7 @@ import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
@@ -99,6 +100,9 @@ public class ProxyTest {
     @Mock
     MessageSender messageSender;
     @Mock
+    MessageRouter messageRouter;
+
+    @Mock
     RoutingTable routingTable;
 
     @Mock
@@ -141,6 +145,7 @@ public class ProxyTest {
                 bind(RequestReplySender.class).toInstance(requestReplySender);
                 bind(SubscriptionManager.class).toInstance(subscriptionManager);
                 bind(MessageSender.class).toInstance(messageSender);
+                bind(MessageRouter.class).toInstance(messageRouter);
                 bind(RoutingTable.class).toInstance(routingTable);
                 install(new FactoryModuleBuilder().implement(ProxyInvocationHandler.class,
                                                              ProxyInvocationHandlerImpl.class)
