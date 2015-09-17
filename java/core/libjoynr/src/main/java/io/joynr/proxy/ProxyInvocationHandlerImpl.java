@@ -380,8 +380,12 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
         return connector.executeAsyncMethod(method, args, future);
     }
 
-    private UnsubscribeInvocation unsubscribe(UnsubscribeInvocation unsubscribeInvocation) {
-        connector.unregisterSubscription(unsubscribeInvocation.getSubscriptionId());
+    private UnsubscribeInvocation unsubscribe(UnsubscribeInvocation unsubscribeInvocation)
+                                                                                          throws JoynrSendBufferFullException,
+                                                                                          JoynrMessageNotSentException,
+                                                                                          JsonGenerationException,
+                                                                                          JsonMappingException,
+                                                                                          IOException {
         connectorStatusLock.lock();
         try {
             if (!isConnectorReady()) {

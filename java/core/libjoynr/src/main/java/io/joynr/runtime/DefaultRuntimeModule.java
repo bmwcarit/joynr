@@ -19,6 +19,8 @@ package io.joynr.runtime;
  * #L%
  */
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
+import io.joynr.dispatcher.Dispatcher;
+import io.joynr.dispatcher.DispatcherImpl;
 import io.joynr.dispatcher.RequestReplyDispatcher;
 import io.joynr.dispatcher.RequestReplyDispatcherImpl;
 import io.joynr.dispatcher.RequestReplySender;
@@ -62,7 +64,7 @@ public class DefaultRuntimeModule extends AbstractModule {
         bind(RequestConfig.class).toProvider(HttpDefaultRequestConfigProvider.class).in(Singleton.class);
         bind(RequestReplySender.class).to(RequestReplySenderImpl.class);
         bind(RequestReplyDispatcher.class).to(RequestReplyDispatcherImpl.class);
-
+        bind(Dispatcher.class).to(DispatcherImpl.class);
         bind(MessagingSettings.class).to(ConfigurableMessagingSettings.class);
         bind(MessageSender.class).to(MessageSenderImpl.class);
         bind(RoutingTable.class).in(Singleton.class);

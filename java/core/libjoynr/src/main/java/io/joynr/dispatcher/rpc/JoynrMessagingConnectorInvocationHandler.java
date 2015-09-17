@@ -33,7 +33,6 @@ import io.joynr.proxy.ICallback;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
 import io.joynr.proxy.invocation.UnsubscribeInvocation;
-import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.SubscriptionManager;
 
 import java.io.IOException;
@@ -41,12 +40,9 @@ import java.lang.reflect.Method;
 
 import javax.annotation.CheckForNull;
 
-import joynr.BroadcastSubscriptionRequest;
 import joynr.MethodMetaInformation;
 import joynr.Reply;
 import joynr.Request;
-import joynr.SubscriptionRequest;
-import joynr.SubscriptionStop;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -173,12 +169,11 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
                                                                                       JoynrMessageNotSentException,
                                                                                       JsonGenerationException,
                                                                                       JsonMappingException, IOException {
-        SubscriptionStop subscriptionStop = new SubscriptionStop(unsubscribeInvocation.getSubscriptionId());
 
-        messageSender.sendSubscriptionStop(fromParticipantId,
-                                           toParticipantId,
-                                           subscriptionStop,
-                                           new MessagingQos(qosSettings));
+        subscriptionManager.unregisterSubscription(fromParticipantId,
+                                                   toParticipantId,
+                                                   unsubscribeInvocation.getSubscriptionId(),
+                                                   qosSettings);
     }
 
     @Override
@@ -189,21 +184,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
                                                                                              JsonMappingException,
                                                                                              IOException {
 
-        subscriptionManager.registerAttributeSubscription(attributeSubscription);
-        SubscriptionRequest requestObject = new SubscriptionRequest(attributeSubscription.getSubscriptionId(),
-                                                                    attributeSubscription.getAttributeName(),
-                                                                    attributeSubscription.getQos());
-
-        MessagingQos messagingQos = new MessagingQos();
-        SubscriptionQos qos = requestObject.getQos();
-        if (qos.getExpiryDate() == SubscriptionQos.NO_EXPIRY_DATE) {
-            messagingQos.setTtl_ms(SubscriptionQos.INFINITE_SUBSCRIPTION);
-        } else {
-            messagingQos.setTtl_ms(qos.getExpiryDate() - System.currentTimeMillis());
-        }
-
-        // TODO pass the future to the messageSender and set the error state when exceptions are thrown
-        messageSender.sendSubscriptionRequest(fromParticipantId, toParticipantId, requestObject, messagingQos, false);
+        subscriptionManager.registerAttributeSubscription(fromParticipantId, toParticipantId, attributeSubscription);
     }
 
     @Override
@@ -214,26 +195,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
                                                                                              JsonMappingException,
                                                                                              IOException {
 
-        subscriptionManager.registerBroadcastSubscription(broadcastSubscription);
-        SubscriptionRequest requestObject = new BroadcastSubscriptionRequest(broadcastSubscription.getSubscriptionId(),
-                                                                             broadcastSubscription.getBroadcastName(),
-                                                                             broadcastSubscription.getFilterParameters(),
-                                                                             broadcastSubscription.getQos());
-        MessagingQos messagingQos = new MessagingQos();
-        SubscriptionQos qos = requestObject.getQos();
-        if (qos.getExpiryDate() == SubscriptionQos.NO_EXPIRY_DATE) {
-            messagingQos.setTtl_ms(SubscriptionQos.INFINITE_SUBSCRIPTION);
-        } else {
-            messagingQos.setTtl_ms(qos.getExpiryDate() - System.currentTimeMillis());
-        }
-
-        messageSender.sendSubscriptionRequest(fromParticipantId, toParticipantId, requestObject, messagingQos, true);
-    }
-
-    @Override
-    public void unregisterSubscription(String subscriptionId) {
-        subscriptionManager.unregisterSubscription(subscriptionId);
-
+        subscriptionManager.registerBroadcastSubscription(fromParticipantId, toParticipantId, broadcastSubscription);
     }
 
 }

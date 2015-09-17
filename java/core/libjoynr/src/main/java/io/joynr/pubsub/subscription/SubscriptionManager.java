@@ -19,18 +19,45 @@ package io.joynr.pubsub.subscription;
  * #L%
  */
 
+import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.exceptions.JoynrSendBufferFullException;
+import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
 
+import java.io.IOException;
+
 import javax.annotation.CheckForNull;
+
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 
 public interface SubscriptionManager {
 
-    void registerAttributeSubscription(AttributeSubscribeInvocation subscriptionRequest);
+    void registerAttributeSubscription(String fromParticipantId,
+                                       String toParticipantId,
+                                       AttributeSubscribeInvocation subscriptionRequest)
+                                                                                        throws JoynrSendBufferFullException,
+                                                                                        JoynrMessageNotSentException,
+                                                                                        JsonGenerationException,
+                                                                                        JsonMappingException,
+                                                                                        IOException;
 
-    void registerBroadcastSubscription(BroadcastSubscribeInvocation subscriptionRequest);
+    void registerBroadcastSubscription(String fromParticipantId,
+                                       String toParticipantId,
+                                       BroadcastSubscribeInvocation subscriptionRequest)
+                                                                                        throws JoynrSendBufferFullException,
+                                                                                        JoynrMessageNotSentException,
+                                                                                        JsonGenerationException,
+                                                                                        JsonMappingException,
+                                                                                        IOException;
 
-    void unregisterSubscription(final String subscriptionId);
+    void unregisterSubscription(String fromParticipantId,
+                                String toParticipantId,
+                                String subscriptionId,
+                                MessagingQos qosSettings) throws JoynrSendBufferFullException,
+                                                         JoynrMessageNotSentException, JsonGenerationException,
+                                                         JsonMappingException, IOException;
 
     void touchSubscriptionState(final String subscriptionId);
 
@@ -44,4 +71,5 @@ public interface SubscriptionManager {
 
     @CheckForNull
     <T> AttributeSubscriptionListener<T> getSubscriptionListener(String subscriptionId);
+
 }

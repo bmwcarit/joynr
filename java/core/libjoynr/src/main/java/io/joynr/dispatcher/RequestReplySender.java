@@ -3,7 +3,7 @@ package io.joynr.dispatcher;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,8 +30,6 @@ import java.io.IOException;
 import joynr.Reply;
 import joynr.Request;
 import joynr.SubscriptionPublication;
-import joynr.SubscriptionRequest;
-import joynr.SubscriptionStop;
 import joynr.system.routingtypes.Address;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
@@ -141,15 +139,6 @@ public interface RequestReplySender {
 
     public abstract void registerAddress(String participantId, Address address);
 
-    public abstract void sendSubscriptionRequest(String fromParticipantId,
-                                                 String toParticipantId,
-                                                 SubscriptionRequest subscriptionRequest,
-                                                 MessagingQos qosSettings,
-                                                 boolean broadcast) throws JoynrSendBufferFullException,
-                                                                   JoynrMessageNotSentException,
-                                                                   JsonGenerationException, JsonMappingException,
-                                                                   IOException;
-
     public abstract void sendSubscriptionPublication(String fromParticipantId,
                                                      String toParticipantId,
                                                      SubscriptionPublication publication,
@@ -157,14 +146,6 @@ public interface RequestReplySender {
                                                                                JoynrMessageNotSentException,
                                                                                JsonGenerationException,
                                                                                JsonMappingException, IOException;
-
-    public abstract void sendSubscriptionStop(String fromParticipantId,
-                                              String toParticipantId,
-                                              SubscriptionStop subscriptionStop,
-                                              MessagingQos qosSettings) throws JoynrSendBufferFullException,
-                                                                       JoynrMessageNotSentException,
-                                                                       JsonGenerationException, JsonMappingException,
-                                                                       IOException;
 
     public void shutdown();
 }

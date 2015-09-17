@@ -3,7 +3,7 @@ package io.joynr.dispatcher;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,8 +37,6 @@ import joynr.JoynrMessage;
 import joynr.Reply;
 import joynr.Request;
 import joynr.SubscriptionPublication;
-import joynr.SubscriptionRequest;
-import joynr.SubscriptionStop;
 import joynr.system.routingtypes.Address;
 import joynr.system.routingtypes.BrowserAddress;
 import joynr.system.routingtypes.ChannelAddress;
@@ -193,23 +191,6 @@ public class RequestReplySenderImpl implements RequestReplySender {
     }
 
     @Override
-    public void sendSubscriptionRequest(String fromParticipantId,
-                                        String toParticipantId,
-                                        SubscriptionRequest subscriptionRequest,
-                                        MessagingQos qosSettings,
-                                        boolean broadcast) throws JoynrSendBufferFullException,
-                                                          JoynrMessageNotSentException, JsonGenerationException,
-                                                          JsonMappingException, IOException {
-        JoynrMessage message = joynrMessageFactory.createSubscriptionRequest(fromParticipantId,
-                                                                             toParticipantId,
-                                                                             subscriptionRequest,
-                                                                             DispatcherUtils.convertTtlToExpirationDate(qosSettings.getRoundTripTtl_ms()),
-                                                                             broadcast);
-
-        messageRouter.route(message);
-    }
-
-    @Override
     public void sendSubscriptionPublication(String fromParticipantId,
                                             String toParticipantId,
                                             SubscriptionPublication publication,
@@ -221,21 +202,6 @@ public class RequestReplySenderImpl implements RequestReplySender {
                                                                      toParticipantId,
                                                                      publication,
                                                                      DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms()));
-        messageRouter.route(message);
-
-    }
-
-    @Override
-    public void sendSubscriptionStop(String fromParticipantId,
-                                     String toParticipantId,
-                                     SubscriptionStop subscriptionStop,
-                                     MessagingQos messagingQos) throws JoynrSendBufferFullException,
-                                                               JoynrMessageNotSentException, JsonGenerationException,
-                                                               JsonMappingException, IOException {
-        JoynrMessage message = joynrMessageFactory.createSubscriptionStop(fromParticipantId,
-                                                                          toParticipantId,
-                                                                          subscriptionStop,
-                                                                          DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms()));
         messageRouter.route(message);
 
     }

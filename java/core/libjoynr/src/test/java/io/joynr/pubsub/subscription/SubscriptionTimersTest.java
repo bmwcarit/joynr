@@ -24,8 +24,12 @@ import static org.mockito.Mockito.atMost;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import io.joynr.dispatcher.Dispatcher;
+import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 
+import java.io.IOException;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -41,7 +45,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SubscriptionTimersTest {
@@ -57,6 +63,9 @@ public class SubscriptionTimersTest {
     @Mock
     private AttributeSubscriptionListener<?> attributeSubscriptionCallback;
 
+    @Mock
+    private Dispatcher dispatcher;
+
     private String subscriptionId;
 
     private int period = 100;
@@ -64,18 +73,26 @@ public class SubscriptionTimersTest {
     private int numberOfPublications = 5;
     private long subscriptionLength = period * numberOfPublications + alertAfterInterval;
 
+    private String fromParticipantId;
+
+    private String toParticipantId;
+
     class IntegerReference extends TypeReference<Integer> {
     }
 
     @Before
     public void setUp() {
         subscriptionEndScheduler = Executors.newScheduledThreadPool(10);
-        subscriptionManager = new SubscriptionManagerImpl(subscriptionEndScheduler);
+        subscriptionManager = new SubscriptionManagerImpl(subscriptionEndScheduler, dispatcher);
         attributeName = "testAttribute";
+        fromParticipantId = "fromParticipantId";
+        toParticipantId = "toParticipantId";
     }
 
     @Test(timeout = 3000)
-    public void missedPublicationRunnableIsStopped() throws InterruptedException {
+    public void missedPublicationRunnableIsStopped() throws InterruptedException, JoynrSendBufferFullException,
+                                                    JoynrMessageNotSentException, JsonGenerationException,
+                                                    JsonMappingException, IOException {
         LOG.debug("Starting missedPublicationRunnableIsStopped test");
 
         long expiryDate = System.currentTimeMillis() // the publication should start now
@@ -89,7 +106,7 @@ public class SubscriptionTimersTest {
                                                                                             attributeSubscriptionCallback,
                                                                                             qos,
                                                                                             null);
-        subscriptionManager.registerAttributeSubscription(subscriptionRequest);
+        subscriptionManager.registerAttributeSubscription(fromParticipantId, toParticipantId, subscriptionRequest);
         subscriptionId = subscriptionRequest.getSubscriptionId();
         Thread.sleep(subscriptionLength);
         verify(attributeSubscriptionCallback, times(numberOfPublications)).onError();
@@ -102,7 +119,11 @@ public class SubscriptionTimersTest {
     }
 
     @Test(timeout = 3000)
-    public void noMissedPublicationWarningWhenPublicationIsReceived() throws InterruptedException {
+    public void noMissedPublicationWarningWhenPublicationIsReceived() throws InterruptedException,
+                                                                     JoynrSendBufferFullException,
+                                                                     JoynrMessageNotSentException,
+                                                                     JsonGenerationException, JsonMappingException,
+                                                                     IOException {
         LOG.debug("Starting noMissedPublicationWarningWhenPublicationIsReceived test");
 
         // there should be at least one successful publication, so (numberOfPublications-1)
@@ -127,7 +148,7 @@ public class SubscriptionTimersTest {
                                                                                             attributeSubscriptionCallback,
                                                                                             qos,
                                                                                             null);
-        subscriptionManager.registerAttributeSubscription(subscriptionRequest);
+        subscriptionManager.registerAttributeSubscription(fromParticipantId, toParticipantId, subscriptionRequest);
         subscriptionId = subscriptionRequest.getSubscriptionId();
 
         boolean lastPublicationIsMissedPublication = false;

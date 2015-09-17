@@ -39,8 +39,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 import joynr.PeriodicSubscriptionQos;
-import joynr.SubscriptionRequest;
-import joynr.SubscriptionStop;
 import joynr.system.routingtypes.Address;
 import joynr.system.routingtypes.ChannelAddress;
 import joynr.types.localisation.GpsPosition;
@@ -138,12 +136,12 @@ public class ConnectorTests {
                                                                                       AttributeSubscriptionListener.class,
                                                                                       SubscriptionQos.class,
                                                                                       String.class);
-            connector.executeSubscriptionMethod(new AttributeSubscribeInvocation(method, args, future));
-            Mockito.verify(messageSender, times(1)).sendSubscriptionRequest(Mockito.eq(fromParticipantId),
-                                                                            Mockito.eq(toParticipantId),
-                                                                            Mockito.any(SubscriptionRequest.class),
-                                                                            Mockito.any(MessagingQos.class),
-                                                                            Mockito.anyBoolean());
+            AttributeSubscribeInvocation attributeSubscription = new AttributeSubscribeInvocation(method, args, future);
+            connector.executeSubscriptionMethod(attributeSubscription);
+            Mockito.verify(subscriptionManager, times(1))
+                   .registerAttributeSubscription(Mockito.eq(fromParticipantId),
+                                                  Mockito.eq(toParticipantId),
+                                                  Mockito.eq(attributeSubscription));
         } catch (Exception e) {
             // This is what is supposed to happen -> no error handling
             Assert.fail("Calling a subscription method with no expiry date throws an exception.");
@@ -162,12 +160,12 @@ public class ConnectorTests {
             Object[] args = new Object[]{ subscriptionId };
             Method method = LocalisationSubscriptionInterface.class.getDeclaredMethod("unsubscribeFromGPSPosition",
                                                                                       String.class);
-            connector.executeSubscriptionMethod(new UnsubscribeInvocation(method, args, future));
-            Mockito.verify(messageSender, times(1))
-                   .sendSubscriptionStop(Mockito.eq(fromParticipantId),
-                                         Mockito.eq(toParticipantId),
-                                         Mockito.eq(new SubscriptionStop(subscriptionId)),
-                                         Mockito.any(MessagingQos.class));
+            UnsubscribeInvocation unsubscribeInvocation = new UnsubscribeInvocation(method, args, future);
+            connector.executeSubscriptionMethod(unsubscribeInvocation);
+            Mockito.verify(subscriptionManager, times(1)).unregisterSubscription(Mockito.eq(fromParticipantId),
+                                                                                 Mockito.eq(toParticipantId),
+                                                                                 Mockito.eq(subscriptionId),
+                                                                                 Mockito.any(MessagingQos.class));
         } catch (Exception e) {
             // This is what is supposed to happen -> no error handling
             Assert.fail("Calling a subscription method with no expiry date throws an exception.");

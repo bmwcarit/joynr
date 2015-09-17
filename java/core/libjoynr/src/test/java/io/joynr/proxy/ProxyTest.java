@@ -21,9 +21,9 @@ package io.joynr.proxy;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -61,8 +61,6 @@ import java.util.UUID;
 import joynr.OnChangeSubscriptionQos;
 import joynr.Reply;
 import joynr.Request;
-import joynr.SubscriptionRequest;
-import joynr.SubscriptionStop;
 import joynr.system.routingtypes.ChannelAddress;
 import joynr.types.ProviderQos;
 import joynr.vehicle.NavigationBroadcastInterface.LocationUpdateBroadcastListener;
@@ -107,6 +105,7 @@ public class ProxyTest {
     private LocalCapabilitiesDirectory capabilitiesClient;
 
     private String domain;
+    private String toParticipantId;
     private String asyncReplyText = "replyText";
 
     @Mock
@@ -130,6 +129,7 @@ public class ProxyTest {
 
     @Before
     public void setUp() throws Exception {
+        toParticipantId = "TestParticipantId";
         MockitoAnnotations.initMocks(this);
         Injector injector = Guice.createInjector(new AbstractModule() {
 
@@ -158,7 +158,7 @@ public class ProxyTest {
                 fakeCapabilitiesResult.add(new CapabilityEntryImpl(domain,
                                                                    TestInterface.INTERFACE_NAME,
                                                                    new ProviderQos(),
-                                                                   "TestParticipantId",
+                                                                   toParticipantId,
                                                                    System.currentTimeMillis(),
                                                                    new ChannelAddress("testChannelId")));
                 ((CapabilitiesCallback) args[3]).processCapabilitiesReceived(fakeCapabilitiesResult);
@@ -173,25 +173,29 @@ public class ProxyTest {
             @Override
             public Object answer(InvocationOnMock invocation) {
                 Object[] args = invocation.getArguments();
-                AttributeSubscribeInvocation request = (AttributeSubscribeInvocation) args[0];
+                AttributeSubscribeInvocation request = (AttributeSubscribeInvocation) args[2];
                 if (request.getSubscriptionId() == null) {
                     request.setSubscriptionId(UUID.randomUUID().toString());
                 }
                 return null;
             }
-        }).when(subscriptionManager).registerAttributeSubscription(Mockito.any(AttributeSubscribeInvocation.class));
+        }).when(subscriptionManager).registerAttributeSubscription(any(String.class),
+                                                                   any(String.class),
+                                                                   Mockito.any(AttributeSubscribeInvocation.class));
 
         Mockito.doAnswer(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocation) {
                 Object[] args = invocation.getArguments();
-                BroadcastSubscribeInvocation request = (BroadcastSubscribeInvocation) args[0];
+                BroadcastSubscribeInvocation request = (BroadcastSubscribeInvocation) args[2];
                 if (request.getSubscriptionId() == null) {
                     request.setSubscriptionId(UUID.randomUUID().toString());
                 }
                 return null;
             }
-        }).when(subscriptionManager).registerBroadcastSubscription(Mockito.any(BroadcastSubscribeInvocation.class));
+        }).when(subscriptionManager).registerBroadcastSubscription(any(String.class),
+                                                                   any(String.class),
+                                                                   Mockito.any(BroadcastSubscribeInvocation.class));
 
         domain = "TestDomain";
 
@@ -302,6 +306,7 @@ public class ProxyTest {
     @Test
     public void createProxySubscribeToBroadcast() throws Exception {
         ProxyBuilder<NavigationProxy> proxyBuilder = getProxyBuilder(NavigationProxy.class);
+        String fromParticipantId = proxyBuilder.getParticipantId();
         NavigationProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
         long minInterval_ms = 0;
         long expiryDate = System.currentTimeMillis() + 30000;
@@ -312,19 +317,18 @@ public class ProxyTest {
 
         proxy.subscribeToLocationUpdateBroadcast(mock(LocationUpdateBroadcastListener.class), subscriptionQos);
 
-        ArgumentCaptor<SubscriptionRequest> subscriptionRequest = ArgumentCaptor.forClass(SubscriptionRequest.class);
+        ArgumentCaptor<BroadcastSubscribeInvocation> subscriptionRequest = ArgumentCaptor.forClass(BroadcastSubscribeInvocation.class);
 
-        verify(requestReplySender, times(1)).sendSubscriptionRequest(any(String.class),
-                                                                     any(String.class),
-                                                                     subscriptionRequest.capture(),
-                                                                     any(MessagingQos.class),
-                                                                     anyBoolean());
-        assertEquals("locationUpdate", subscriptionRequest.getValue().getSubscribedToName());
+        verify(subscriptionManager, times(1)).registerBroadcastSubscription(eq(fromParticipantId),
+                                                                            eq(toParticipantId),
+                                                                            subscriptionRequest.capture());
+        assertEquals("locationUpdate", subscriptionRequest.getValue().getBroadcastName());
     }
 
     @Test
     public void createProxySubscribeAndUnsubscribeFromSelectiveBroadcast() throws Exception {
         ProxyBuilder<NavigationProxy> proxyBuilder = getProxyBuilder(NavigationProxy.class);
+        String fromParticipantId = proxyBuilder.getParticipantId();
         NavigationProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
         long minInterval_ms = 0;
         long expiryDate = System.currentTimeMillis() + 30000;
@@ -338,26 +342,26 @@ public class ProxyTest {
                                                                                   subscriptionQos,
                                                                                   filterParameter);
 
-        ArgumentCaptor<SubscriptionRequest> subscriptionRequest = ArgumentCaptor.forClass(SubscriptionRequest.class);
+        ArgumentCaptor<BroadcastSubscribeInvocation> subscriptionRequest = ArgumentCaptor.forClass(BroadcastSubscribeInvocation.class);
 
-        verify(requestReplySender, times(1)).sendSubscriptionRequest(any(String.class),
-                                                                     any(String.class),
-                                                                     subscriptionRequest.capture(),
-                                                                     any(MessagingQos.class),
-                                                                     anyBoolean());
-        assertEquals("locationUpdateSelective", subscriptionRequest.getValue().getSubscribedToName());
+        verify(subscriptionManager, times(1)).registerBroadcastSubscription(eq(fromParticipantId),
+                                                                            eq(toParticipantId),
+                                                                            subscriptionRequest.capture());
+
+        assertEquals("locationUpdateSelective", subscriptionRequest.getValue().getBroadcastName());
 
         // now, let's remove the previous subscriptionRequest
         proxy.unsubscribeFromGuidanceActive(subscriptionId);
-        verify(requestReplySender, times(1)).sendSubscriptionStop(any(String.class),
-                                                                  any(String.class),
-                                                                  Mockito.eq(new SubscriptionStop(subscriptionId)),
-                                                                  any(MessagingQos.class));
+        verify(subscriptionManager, times(1)).unregisterSubscription(eq(fromParticipantId),
+                                                                     eq(toParticipantId),
+                                                                     eq(subscriptionId),
+                                                                     any(MessagingQos.class));
     }
 
     @Test
     public void createProxySubscribeAndUnsubscribeFromBroadcast() throws Exception {
         ProxyBuilder<NavigationProxy> proxyBuilder = getProxyBuilder(NavigationProxy.class);
+        String fromParticipantId = proxyBuilder.getParticipantId();
         NavigationProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
         long minInterval_ms = 0;
         long expiryDate = System.currentTimeMillis() + 30000;
@@ -369,26 +373,26 @@ public class ProxyTest {
         String subscriptionId = proxy.subscribeToLocationUpdateBroadcast(mock(LocationUpdateBroadcastListener.class),
                                                                          subscriptionQos);
 
-        ArgumentCaptor<SubscriptionRequest> subscriptionRequest = ArgumentCaptor.forClass(SubscriptionRequest.class);
+        ArgumentCaptor<BroadcastSubscribeInvocation> subscriptionRequest = ArgumentCaptor.forClass(BroadcastSubscribeInvocation.class);
 
-        verify(requestReplySender, times(1)).sendSubscriptionRequest(any(String.class),
-                                                                     any(String.class),
-                                                                     subscriptionRequest.capture(),
-                                                                     any(MessagingQos.class),
-                                                                     anyBoolean());
-        assertEquals("locationUpdate", subscriptionRequest.getValue().getSubscribedToName());
+        verify(subscriptionManager, times(1)).registerBroadcastSubscription(eq(fromParticipantId),
+                                                                            eq(toParticipantId),
+                                                                            subscriptionRequest.capture());
+
+        assertEquals("locationUpdate", subscriptionRequest.getValue().getBroadcastName());
 
         // now, let's remove the previous subscriptionRequest
         proxy.unsubscribeFromGuidanceActive(subscriptionId);
-        verify(requestReplySender, times(1)).sendSubscriptionStop(any(String.class),
-                                                                  any(String.class),
-                                                                  Mockito.eq(new SubscriptionStop(subscriptionId)),
-                                                                  any(MessagingQos.class));
+        verify(subscriptionManager, times(1)).unregisterSubscription(eq(fromParticipantId),
+                                                                     eq(toParticipantId),
+                                                                     eq(subscriptionId),
+                                                                     any(MessagingQos.class));
     }
 
     @Test
     public void createProxySubscribeToBroadcastWithSubscriptionId() throws Exception {
         ProxyBuilder<NavigationProxy> proxyBuilder = getProxyBuilder(NavigationProxy.class);
+        String fromParticipantId = proxyBuilder.getParticipantId();
         NavigationProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
         long minInterval_ms = 0;
         long expiryDate = System.currentTimeMillis() + 30000;
@@ -404,19 +408,20 @@ public class ProxyTest {
 
         assertEquals(subscriptionId, subscriptionId2);
 
-        ArgumentCaptor<SubscriptionRequest> subscriptionRequest = ArgumentCaptor.forClass(SubscriptionRequest.class);
+        ArgumentCaptor<BroadcastSubscribeInvocation> subscriptionRequest = ArgumentCaptor.forClass(BroadcastSubscribeInvocation.class);
 
-        verify(requestReplySender, times(1)).sendSubscriptionRequest(any(String.class),
-                                                                     any(String.class),
-                                                                     subscriptionRequest.capture(),
-                                                                     any(MessagingQos.class),
-                                                                     anyBoolean());
-        assertEquals("locationUpdate", subscriptionRequest.getValue().getSubscribedToName());
+        verify(subscriptionManager, times(1)).registerBroadcastSubscription(eq(fromParticipantId),
+                                                                            eq(toParticipantId),
+                                                                            subscriptionRequest.capture());
+
+        assertEquals("locationUpdate", subscriptionRequest.getValue().getBroadcastName());
+        assertEquals(subscriptionId, subscriptionRequest.getValue().getSubscriptionId());
     }
 
     @Test
     public void createProxySubscribeAndUnsubscribeFromAttribute() throws Exception {
         ProxyBuilder<NavigationProxy> proxyBuilder = getProxyBuilder(NavigationProxy.class);
+        String fromParticipantId = proxyBuilder.getParticipantId();
         NavigationProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
         long minInterval_ms = 0;
         long expiryDate = System.currentTimeMillis() + 30000;
@@ -429,26 +434,27 @@ public class ProxyTest {
         String subscriptionId = proxy.subscribeToGuidanceActive(mock(BooleanSubscriptionListener.class),
                                                                 subscriptionQos);
 
-        ArgumentCaptor<SubscriptionRequest> subscriptionRequest = ArgumentCaptor.forClass(SubscriptionRequest.class);
+        ArgumentCaptor<AttributeSubscribeInvocation> subscriptionRequest = ArgumentCaptor.forClass(AttributeSubscribeInvocation.class);
 
-        verify(requestReplySender, times(1)).sendSubscriptionRequest(any(String.class),
-                                                                     any(String.class),
-                                                                     subscriptionRequest.capture(),
-                                                                     any(MessagingQos.class),
-                                                                     anyBoolean());
-        assertEquals("guidanceActive", subscriptionRequest.getValue().getSubscribedToName());
+        verify(subscriptionManager, times(1)).registerAttributeSubscription(eq(fromParticipantId),
+                                                                            eq(toParticipantId),
+                                                                            subscriptionRequest.capture());
+
+        assertEquals("guidanceActive", subscriptionRequest.getValue().getAttributeName());
+        assertEquals(subscriptionId, subscriptionRequest.getValue().getSubscriptionId());
 
         // now, let's remove the previous subscriptionRequest
         proxy.unsubscribeFromGuidanceActive(subscriptionId);
-        verify(requestReplySender, times(1)).sendSubscriptionStop(any(String.class),
-                                                                  any(String.class),
-                                                                  Mockito.eq(new SubscriptionStop(subscriptionId)),
-                                                                  any(MessagingQos.class));
+        verify(subscriptionManager, times(1)).unregisterSubscription(eq(fromParticipantId),
+                                                                     eq(toParticipantId),
+                                                                     eq(subscriptionId),
+                                                                     any(MessagingQos.class));
     }
 
     @Test
     public void createProxySubscribeToAttributeWithSubscriptionId() throws Exception {
         ProxyBuilder<NavigationProxy> proxyBuilder = getProxyBuilder(NavigationProxy.class);
+        String fromParticipantId = proxyBuilder.getParticipantId();
         NavigationProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
         long minInterval_ms = 0;
         long expiryDate = System.currentTimeMillis() + 30000;
@@ -465,30 +471,28 @@ public class ProxyTest {
 
         assertEquals(subscriptionId, subscriptionId2);
 
-        ArgumentCaptor<SubscriptionRequest> subscriptionRequest = ArgumentCaptor.forClass(SubscriptionRequest.class);
+        ArgumentCaptor<AttributeSubscribeInvocation> subscriptionRequest = ArgumentCaptor.forClass(AttributeSubscribeInvocation.class);
 
-        verify(requestReplySender, times(1)).sendSubscriptionRequest(any(String.class),
-                                                                     any(String.class),
-                                                                     subscriptionRequest.capture(),
-                                                                     any(MessagingQos.class),
-                                                                     anyBoolean());
-        assertEquals("guidanceActive", subscriptionRequest.getValue().getSubscribedToName());
+        verify(subscriptionManager, times(1)).registerAttributeSubscription(eq(fromParticipantId),
+                                                                            eq(toParticipantId),
+                                                                            subscriptionRequest.capture());
+
+        assertEquals("guidanceActive", subscriptionRequest.getValue().getAttributeName());
+        assertEquals(subscriptionId, subscriptionRequest.getValue().getSubscriptionId());
     }
 
     @Test
     public void createProxyUnSubscribeFromBroadcast() throws Exception {
         ProxyBuilder<NavigationProxy> proxyBuilder = getProxyBuilder(NavigationProxy.class);
+        String fromParticipantId = proxyBuilder.getParticipantId();
         NavigationProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
         String subscriptionId = UUID.randomUUID().toString();
         proxy.unsubscribeFromLocationUpdateBroadcast(subscriptionId);
 
-        ArgumentCaptor<SubscriptionStop> subscriptionStop = ArgumentCaptor.forClass(SubscriptionStop.class);
-
-        verify(requestReplySender, times(1)).sendSubscriptionStop(any(String.class),
-                                                                  any(String.class),
-                                                                  subscriptionStop.capture(),
-                                                                  any(MessagingQos.class));
-        assertEquals(subscriptionId, subscriptionStop.getValue().getSubscriptionId());
+        verify(subscriptionManager, times(1)).unregisterSubscription(eq(fromParticipantId),
+                                                                     eq(toParticipantId),
+                                                                     eq(subscriptionId),
+                                                                     any(MessagingQos.class));
     }
 }

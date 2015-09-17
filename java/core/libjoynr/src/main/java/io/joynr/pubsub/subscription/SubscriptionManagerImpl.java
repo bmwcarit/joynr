@@ -19,21 +19,32 @@ package io.joynr.pubsub.subscription;
  * #L%
  */
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
+import io.joynr.dispatcher.Dispatcher;
+import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.exceptions.JoynrSendBufferFullException;
+import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
 import io.joynr.pubsub.HeartbeatSubscriptionInformation;
 import io.joynr.pubsub.PubSubState;
 import io.joynr.pubsub.SubscriptionQos;
 
+import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import joynr.BroadcastSubscriptionRequest;
+import joynr.SubscriptionRequest;
+import joynr.SubscriptionStop;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -54,11 +65,14 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
 
     private static final Logger logger = LoggerFactory.getLogger(SubscriptionManagerImpl.class);
     private ScheduledExecutorService cleanupScheduler;
+    private Dispatcher dispatcher;
 
     @Inject
-    public SubscriptionManagerImpl(@Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler) {
+    public SubscriptionManagerImpl(@Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler,
+                                   Dispatcher dispatcher) {
         super();
         this.cleanupScheduler = cleanupScheduler;
+        this.dispatcher = dispatcher;
         this.subscriptionListenerDirectory = Maps.newConcurrentMap();
         this.broadcastSubscriptionListenerDirectory = Maps.newConcurrentMap();
         this.subscriptionStates = Maps.newConcurrentMap();
@@ -77,7 +91,8 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                                    ConcurrentMap<String, ScheduledFuture<?>> subscriptionEndFutures,
                                    ConcurrentMap<String, Class<?>> subscriptionAttributeTypes,
                                    ConcurrentMap<String, Class<?>[]> subscriptionBroadcastTypes,
-                                   ScheduledExecutorService cleanupScheduler) {
+                                   ScheduledExecutorService cleanupScheduler,
+                                   Dispatcher dispatcher) {
         super();
         this.subscriptionListenerDirectory = attributeSubscriptionDirectory;
         this.broadcastSubscriptionListenerDirectory = broadcastSubscriptionDirectory;
@@ -87,6 +102,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         this.subscriptionTypes = subscriptionAttributeTypes;
         this.subscriptionBroadcastTypes = subscriptionBroadcastTypes;
         this.cleanupScheduler = cleanupScheduler;
+        this.dispatcher = dispatcher;
     }
 
     private void cancelExistingSubscriptionEndRunnable(String subscriptionId) {
@@ -120,7 +136,13 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
     }
 
     @Override
-    public void registerAttributeSubscription(AttributeSubscribeInvocation request) {
+    public void registerAttributeSubscription(String fromParticipantId,
+                                              String toParticipantId,
+                                              AttributeSubscribeInvocation request)
+                                                                                   throws JoynrSendBufferFullException,
+                                                                                   JoynrMessageNotSentException,
+                                                                                   JsonGenerationException,
+                                                                                   JsonMappingException, IOException {
         if (!request.hasSubscriptionId()) {
             request.setSubscriptionId(UUID.randomUUID().toString());
         }
@@ -146,10 +168,32 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                                                                        subscriptionStates.get(request.getSubscriptionId())));
             }
         }
+
+        SubscriptionRequest requestObject = new SubscriptionRequest(request.getSubscriptionId(),
+                                                                    request.getAttributeName(),
+                                                                    request.getQos());
+
+        MessagingQos messagingQos = new MessagingQos();
+        if (qos.getExpiryDate() == SubscriptionQos.NO_EXPIRY_DATE) {
+            messagingQos.setTtl_ms(SubscriptionQos.INFINITE_SUBSCRIPTION);
+        } else {
+            messagingQos.setTtl_ms(qos.getExpiryDate() - System.currentTimeMillis());
+        }
+
+        // TODO pass the future to the messageSender and set the error state when exceptions are thrown
+        dispatcher.sendSubscriptionRequest(fromParticipantId, toParticipantId, requestObject, messagingQos, false);
+
     }
 
     @Override
-    public void registerBroadcastSubscription(BroadcastSubscribeInvocation subscriptionRequest) {
+    public void registerBroadcastSubscription(String fromParticipantId,
+                                              String toParticipantId,
+                                              BroadcastSubscribeInvocation subscriptionRequest)
+                                                                                               throws JoynrSendBufferFullException,
+                                                                                               JoynrMessageNotSentException,
+                                                                                               JsonGenerationException,
+                                                                                               JsonMappingException,
+                                                                                               IOException {
         if (!subscriptionRequest.hasSubscriptionId()) {
             subscriptionRequest.setSubscriptionId(UUID.randomUUID().toString());
         }
@@ -159,10 +203,29 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         subscriptionBroadcastTypes.put(subscriptionId, subscriptionRequest.getOutParameterTypes());
         broadcastSubscriptionListenerDirectory.put(subscriptionId,
                                                    subscriptionRequest.getBroadcastSubscriptionListener());
+
+        SubscriptionRequest requestObject = new BroadcastSubscriptionRequest(subscriptionRequest.getSubscriptionId(),
+                                                                             subscriptionRequest.getBroadcastName(),
+                                                                             subscriptionRequest.getFilterParameters(),
+                                                                             subscriptionRequest.getQos());
+        MessagingQos messagingQos = new MessagingQos();
+        SubscriptionQos qos = requestObject.getQos();
+        if (qos.getExpiryDate() == SubscriptionQos.NO_EXPIRY_DATE) {
+            messagingQos.setTtl_ms(SubscriptionQos.INFINITE_SUBSCRIPTION);
+        } else {
+            messagingQos.setTtl_ms(qos.getExpiryDate() - System.currentTimeMillis());
+        }
+
+        dispatcher.sendSubscriptionRequest(fromParticipantId, toParticipantId, requestObject, messagingQos, true);
     }
 
     @Override
-    public void unregisterSubscription(final String subscriptionId) {
+    public void unregisterSubscription(String fromParticipantId,
+                                       String toParticipantId,
+                                       String subscriptionId,
+                                       MessagingQos qosSettings) throws JoynrSendBufferFullException,
+                                                                JoynrMessageNotSentException, JsonGenerationException,
+                                                                JsonMappingException, IOException {
         PubSubState subscriptionState = subscriptionStates.get(subscriptionId);
         if (subscriptionState != null) {
             logger.info("Called unregister / unsubscribe on subscription id= " + subscriptionId);
@@ -170,6 +233,13 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         } else {
             logger.info("Called unregister on a non/no longer existent subscription, used id= " + subscriptionId);
         }
+
+        SubscriptionStop subscriptionStop = new SubscriptionStop(subscriptionId);
+
+        dispatcher.sendSubscriptionStop(fromParticipantId,
+                                        toParticipantId,
+                                        subscriptionStop,
+                                        new MessagingQos(qosSettings));
     }
 
     @Override

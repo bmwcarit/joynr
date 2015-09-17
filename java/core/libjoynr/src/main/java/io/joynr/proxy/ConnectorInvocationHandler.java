@@ -61,6 +61,4 @@ public interface ConnectorInvocationHandler {
                                                                                       JsonGenerationException,
                                                                                       JsonMappingException, IOException;
 
-    void unregisterSubscription(String subscriptionId);
-
 }
