@@ -140,6 +140,20 @@ public class MessageRouter extends RoutingAbstractProvider {
         }
     }
 
+    public void addNextHop(String participantId, Address address) {
+        if (address instanceof ChannelAddress) {
+            addNextHop(participantId, (ChannelAddress) address);
+        } else if (address instanceof BrowserAddress) {
+            addNextHop(participantId, (BrowserAddress) address);
+        } else if (address instanceof CommonApiDbusAddress) {
+            addNextHop(participantId, (CommonApiDbusAddress) address);
+        } else if (address instanceof WebSocketAddress) {
+            addNextHop(participantId, (WebSocketAddress) address);
+        } else if (address instanceof WebSocketClientAddress) {
+            addNextHop(participantId, (WebSocketClientAddress) address);
+        }
+    }
+
     public void shutdown() {
         messageSender.shutdown();
     }

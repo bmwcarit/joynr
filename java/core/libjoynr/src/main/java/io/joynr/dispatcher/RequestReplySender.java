@@ -28,7 +28,6 @@ import java.io.IOException;
 
 import joynr.Reply;
 import joynr.Request;
-import joynr.system.routingtypes.Address;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -134,8 +133,6 @@ public interface RequestReplySender {
                                                                                                                          JsonGenerationException,
                                                                                                                          JsonMappingException,
                                                                                                                          IOException;
-
-    public abstract void registerAddress(String participantId, Address address);
 
     public void shutdown();
 }

@@ -35,12 +35,6 @@ import java.util.List;
 import joynr.JoynrMessage;
 import joynr.Reply;
 import joynr.Request;
-import joynr.system.routingtypes.Address;
-import joynr.system.routingtypes.BrowserAddress;
-import joynr.system.routingtypes.ChannelAddress;
-import joynr.system.routingtypes.CommonApiDbusAddress;
-import joynr.system.routingtypes.WebSocketAddress;
-import joynr.system.routingtypes.WebSocketClientAddress;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -186,22 +180,6 @@ public class RequestReplySenderImpl implements RequestReplySender {
         JoynrMessage message = joynrMessageFactory.createReply(fromParticipantId, toParticipantId, payload, expiryDate);
 
         messageRouter.route(message);
-    }
-
-    @Override
-    public void registerAddress(String participantId, Address address) {
-        if (address instanceof ChannelAddress) {
-            messageRouter.addNextHop(participantId, (ChannelAddress) address);
-        } else if (address instanceof BrowserAddress) {
-            messageRouter.addNextHop(participantId, (BrowserAddress) address);
-        } else if (address instanceof CommonApiDbusAddress) {
-            messageRouter.addNextHop(participantId, (CommonApiDbusAddress) address);
-        } else if (address instanceof WebSocketAddress) {
-            messageRouter.addNextHop(participantId, (WebSocketAddress) address);
-        } else if (address instanceof WebSocketClientAddress) {
-            messageRouter.addNextHop(participantId, (WebSocketClientAddress) address);
-        }
-
     }
 
     @Override
