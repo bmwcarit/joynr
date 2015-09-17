@@ -29,6 +29,7 @@ import java.io.IOException;
 import javax.inject.Singleton;
 
 import joynr.JoynrMessage;
+import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
 
@@ -80,4 +81,19 @@ public class DispatcherImpl extends Dispatcher {
 
     }
 
+    @Override
+    public void sendSubscriptionPublication(String fromParticipantId,
+                                            String toParticipantId,
+                                            SubscriptionPublication publication,
+                                            MessagingQos qosSettings) throws JoynrSendBufferFullException,
+                                                                     JoynrMessageNotSentException,
+                                                                     JsonGenerationException, JsonMappingException,
+                                                                     IOException {
+
+        JoynrMessage message = joynrMessageFactory.createPublication(fromParticipantId,
+                                                                     toParticipantId,
+                                                                     publication,
+                                                                     DispatcherUtils.convertTtlToExpirationDate(qosSettings.getRoundTripTtl_ms()));
+        messageRouter.route(message);
+    }
 }

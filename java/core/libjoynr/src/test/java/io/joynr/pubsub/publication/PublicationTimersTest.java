@@ -24,8 +24,8 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import io.joynr.dispatcher.Dispatcher;
 import io.joynr.dispatcher.RequestCaller;
-import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingQos;
@@ -68,7 +68,7 @@ public class PublicationTimersTest {
     private TestRequestCaller requestCaller;
 
     @Mock
-    private RequestReplySender messageSender;
+    private Dispatcher dispatcher;
     @Mock
     private AttributePollInterpreter attributePollInterpreter;
 
@@ -102,20 +102,20 @@ public class PublicationTimersTest {
 
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(subscriptionId, attributeName, qos);
         PublicationManager publicationManager = new PublicationManagerImpl(attributePollInterpreter,
-                                                                           messageSender,
+                                                                           dispatcher,
                                                                            cleanupScheduler);
         publicationManager.addSubscriptionRequest(proxyId, providerId, subscriptionRequest, requestCaller);
 
         Thread.sleep(subscriptionLength + period / 2);
 
         int publicationTimes = 1 + (subscriptionLength / period);
-        verify(messageSender, times(publicationTimes)).sendSubscriptionPublication(eq(providerId),
-                                                                                   eq(proxyId),
-                                                                                   any(SubscriptionPublication.class),
-                                                                                   any(MessagingQos.class));
+        verify(dispatcher, times(publicationTimes)).sendSubscriptionPublication(eq(providerId),
+                                                                                eq(proxyId),
+                                                                                any(SubscriptionPublication.class),
+                                                                                any(MessagingQos.class));
 
         Thread.sleep(subscriptionLength);
-        verifyNoMoreInteractions(messageSender);
+        verifyNoMoreInteractions(dispatcher);
     }
 
 }

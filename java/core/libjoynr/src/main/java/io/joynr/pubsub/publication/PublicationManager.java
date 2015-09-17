@@ -20,10 +20,18 @@ package io.joynr.pubsub.publication;
  */
 
 import io.joynr.dispatcher.RequestCaller;
+import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.exceptions.JoynrSendBufferFullException;
+import io.joynr.pubsub.publication.PublicationManagerImpl.PublicationInformation;
 
+import java.io.IOException;
 import java.util.List;
 
+import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
+
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 
 public interface PublicationManager {
 
@@ -81,4 +89,12 @@ public interface PublicationManager {
     void attributeValueChanged(String subscriptionId, Object value);
 
     void broadcastOccurred(String subscriptionId, List<BroadcastFilter> filters, Object... values);
+
+    void sendSubscriptionPublication(SubscriptionPublication publication, PublicationInformation information)
+                                                                                                             throws JoynrSendBufferFullException,
+                                                                                                             JoynrMessageNotSentException,
+                                                                                                             JsonGenerationException,
+                                                                                                             JsonMappingException,
+                                                                                                             IOException;
+
 }

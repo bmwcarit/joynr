@@ -25,6 +25,7 @@ import io.joynr.messaging.MessagingQos;
 
 import java.io.IOException;
 
+import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
 
@@ -48,4 +49,12 @@ public abstract class Dispatcher {
                                                                        JoynrMessageNotSentException,
                                                                        JsonGenerationException, JsonMappingException,
                                                                        IOException;
+
+    public abstract void sendSubscriptionPublication(String fromParticipantId,
+                                                     String toParticipantId,
+                                                     SubscriptionPublication publication,
+                                                     MessagingQos qosSettings) throws JoynrSendBufferFullException,
+                                                                              JoynrMessageNotSentException,
+                                                                              JsonGenerationException,
+                                                                              JsonMappingException, IOException;
 }

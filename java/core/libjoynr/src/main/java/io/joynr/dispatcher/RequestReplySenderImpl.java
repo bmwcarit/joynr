@@ -25,7 +25,6 @@ import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRequestInterruptedException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.exceptions.JoynrShutdownException;
-import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 
 import java.io.IOException;
@@ -36,7 +35,6 @@ import java.util.List;
 import joynr.JoynrMessage;
 import joynr.Reply;
 import joynr.Request;
-import joynr.SubscriptionPublication;
 import joynr.system.routingtypes.Address;
 import joynr.system.routingtypes.BrowserAddress;
 import joynr.system.routingtypes.ChannelAddress;
@@ -188,22 +186,6 @@ public class RequestReplySenderImpl implements RequestReplySender {
         JoynrMessage message = joynrMessageFactory.createReply(fromParticipantId, toParticipantId, payload, expiryDate);
 
         messageRouter.route(message);
-    }
-
-    @Override
-    public void sendSubscriptionPublication(String fromParticipantId,
-                                            String toParticipantId,
-                                            SubscriptionPublication publication,
-                                            MessagingQos messagingQos) throws JoynrSendBufferFullException,
-                                                                      JoynrMessageNotSentException,
-                                                                      JsonGenerationException, JsonMappingException,
-                                                                      IOException {
-        JoynrMessage message = joynrMessageFactory.createPublication(fromParticipantId,
-                                                                     toParticipantId,
-                                                                     publication,
-                                                                     DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms()));
-        messageRouter.route(message);
-
     }
 
     @Override

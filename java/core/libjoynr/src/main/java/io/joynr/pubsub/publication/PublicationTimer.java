@@ -20,11 +20,9 @@ package io.joynr.pubsub.publication;
  */
 
 import io.joynr.dispatcher.RequestCaller;
-import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
-import io.joynr.messaging.MessagingQos;
 import io.joynr.provider.Promise;
 import io.joynr.provider.PromiseListener;
 import io.joynr.pubsub.HeartbeatSubscriptionInformation;
@@ -55,7 +53,6 @@ public class PublicationTimer extends PubSubTimerBase {
     private static final Logger logger = LoggerFactory.getLogger(PublicationTimer.class);
     private final PublicationInformation publicationInformation;
     private final RequestCaller requestCaller;
-    private final RequestReplySender requestReplySender;
     private final AttributePollInterpreter attributePollInterpreter;
     public Method method;
 
@@ -63,21 +60,23 @@ public class PublicationTimer extends PubSubTimerBase {
     private final long minInterval;
     private final long period;
     private boolean pendingPublication;
+    private final PublicationManager publicationManager;
 
     /**
      * Constructor for PublicationTimer object, see (@link PublicationTimer)
      * @param publicationInformation information about the requested subscription, see {@link io.joynr.pubsub.publication.PublicationManagerImpl.PublicationInformation}
      * @param method method to be invoked to retrieve the requested information
      * @param requestCaller request caller
-     * @param requestReplySender request reply sender to send publication messages
+     * @param publicationManager publication manager to send publication messages
      * @param attributePollInterpreter attribute poll interpreter to execute method
      */
     public PublicationTimer(PublicationInformation publicationInformation,
                             Method method,
                             RequestCaller requestCaller,
-                            RequestReplySender requestReplySender,
+                            PublicationManager publicationManager,
                             AttributePollInterpreter attributePollInterpreter) {
         super(publicationInformation.getQos().getExpiryDate(), publicationInformation.getState());
+        this.publicationManager = publicationManager;
 
         SubscriptionQos qos = publicationInformation.getQos();
 
@@ -91,7 +90,6 @@ public class PublicationTimer extends PubSubTimerBase {
         this.minInterval = isKeepAliveSubscription ? ((OnChangeWithKeepAliveSubscriptionQos) qos).getMinInterval() : 0;
 
         this.requestCaller = requestCaller;
-        this.requestReplySender = requestReplySender;
         this.attributePollInterpreter = attributePollInterpreter;
         this.method = method;
         this.pendingPublication = false;
@@ -152,14 +150,8 @@ public class PublicationTimer extends PubSubTimerBase {
         if (timeSinceLast >= minInterval) {
             // publish
             logger.trace("sending subscriptionreply");
-            MessagingQos messagingQos = new MessagingQos();
-            messagingQos.setTtl_ms(publicationTtl);
-
             try {
-                requestReplySender.sendSubscriptionPublication(publicationInformation.getProviderParticipantId(),
-                                                               publicationInformation.getProxyParticipantId(),
-                                                               publication,
-                                                               messagingQos);
+                publicationManager.sendSubscriptionPublication(publication, publicationInformation);
                 // TODO handle exceptions during publication
             } catch (JoynrSendBufferFullException e) {
                 logger.error("sendPublication error: {}", e.getMessage());

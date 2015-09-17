@@ -25,8 +25,8 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import io.joynr.dispatcher.Dispatcher;
 import io.joynr.dispatcher.RequestCaller;
-import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingQos;
@@ -71,7 +71,7 @@ public class PushingPublicationTest {
     private PublicationManager publicationManager;
 
     @Mock
-    RequestReplySender requestReplySender;
+    Dispatcher dispatcher;
 
     @Mock
     private AttributePollInterpreter attributePollInterpreter;
@@ -94,7 +94,7 @@ public class PushingPublicationTest {
                        JsonMappingException, IOException {
         provider = new PubSubTestProviderImpl();
 
-        publicationManager = new PublicationManagerImpl(attributePollInterpreter, requestReplySender, cleanupScheduler);
+        publicationManager = new PublicationManagerImpl(attributePollInterpreter, dispatcher, cleanupScheduler);
         subscriptionId = "subscriptionId";
         proxyId = "proxyId";
         providerId = "providerId";
@@ -154,10 +154,10 @@ public class PushingPublicationTest {
                 logger.trace(sb.toString());
                 return null;
             }
-        }).when(requestReplySender).sendSubscriptionPublication(any(String.class),
-                                                                any(String.class),
-                                                                any(SubscriptionPublication.class),
-                                                                any(MessagingQos.class));
+        }).when(dispatcher).sendSubscriptionPublication(any(String.class),
+                                                        any(String.class),
+                                                        any(SubscriptionPublication.class),
+                                                        any(MessagingQos.class));
 
     }
 
@@ -172,10 +172,10 @@ public class PushingPublicationTest {
         provider.setTestAttribute(testAttribute);
         Thread.sleep(1500);
 
-        verify(requestReplySender, times(2)).sendSubscriptionPublication(eq(providerId),
-                                                                         eq(proxyId),
-                                                                         any(SubscriptionPublication.class),
-                                                                         any(MessagingQos.class));
+        verify(dispatcher, times(2)).sendSubscriptionPublication(eq(providerId),
+                                                                 eq(proxyId),
+                                                                 any(SubscriptionPublication.class),
+                                                                 any(MessagingQos.class));
         verify(attributePollInterpreter, times(1)).execute(any(RequestCaller.class), any(Method.class));
 
     }
@@ -192,10 +192,10 @@ public class PushingPublicationTest {
         provider.setTestAttribute(testAttribute);
 
         ArgumentCaptor<SubscriptionPublication> sentPublication = ArgumentCaptor.forClass(SubscriptionPublication.class);
-        verify(requestReplySender, times(2)).sendSubscriptionPublication(eq(providerId),
-                                                                         eq(proxyId),
-                                                                         sentPublication.capture(),
-                                                                         any(MessagingQos.class));
+        verify(dispatcher, times(2)).sendSubscriptionPublication(eq(providerId),
+                                                                 eq(proxyId),
+                                                                 sentPublication.capture(),
+                                                                 any(MessagingQos.class));
         assertEquals(publication.getResponse(), sentPublication.getValue().getResponse());
         assertEquals(publication.getSubscriptionId(), sentPublication.getValue().getSubscriptionId());
         verify(attributePollInterpreter, times(1)).execute(any(RequestCaller.class), any(Method.class));

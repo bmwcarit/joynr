@@ -23,13 +23,11 @@ import io.joynr.common.ExpiryDate;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
-import io.joynr.messaging.MessagingQos;
 
 import java.io.IOException;
 
 import joynr.Reply;
 import joynr.Request;
-import joynr.SubscriptionPublication;
 import joynr.system.routingtypes.Address;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
@@ -138,14 +136,6 @@ public interface RequestReplySender {
                                                                                                                          IOException;
 
     public abstract void registerAddress(String participantId, Address address);
-
-    public abstract void sendSubscriptionPublication(String fromParticipantId,
-                                                     String toParticipantId,
-                                                     SubscriptionPublication publication,
-                                                     MessagingQos messagingQos) throws JoynrSendBufferFullException,
-                                                                               JoynrMessageNotSentException,
-                                                                               JsonGenerationException,
-                                                                               JsonMappingException, IOException;
 
     public void shutdown();
 }

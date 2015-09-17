@@ -19,10 +19,12 @@ package io.joynr.pubsub.publication;
  * #L%
  */
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
+import io.joynr.dispatcher.Dispatcher;
 import io.joynr.dispatcher.RequestCaller;
-import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.dispatcher.rpc.ReflectionUtils;
+import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.provider.Promise;
 import io.joynr.provider.PromiseListener;
@@ -78,7 +80,7 @@ public class PublicationManagerImpl implements PublicationManager {
 
     private AttributePollInterpreter attributePollInterpreter;
     private ScheduledExecutorService cleanupScheduler;
-    private RequestReplySender requestReplySender;
+    private Dispatcher dispatcher;
 
     static class PublicationInformation {
         private String providerParticipantId;
@@ -151,10 +153,10 @@ public class PublicationManagerImpl implements PublicationManager {
 
     @Inject
     public PublicationManagerImpl(AttributePollInterpreter attributePollInterpreter,
-                                  RequestReplySender requestReplySender,
+                                  Dispatcher dispatcher,
                                   @Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler) {
         super();
-        this.requestReplySender = requestReplySender;
+        this.dispatcher = dispatcher;
         this.cleanupScheduler = cleanupScheduler;
         this.queuedSubscriptionRequests = HashMultimap.create();
         this.subscriptionId2PublicationInformation = Maps.newConcurrentMap();
@@ -188,7 +190,7 @@ public class PublicationManagerImpl implements PublicationManager {
                 final PublicationTimer timer = new PublicationTimer(publicationInformation,
                                                                     method,
                                                                     requestCaller,
-                                                                    requestReplySender,
+                                                                    this,
                                                                     attributePollInterpreter);
 
                 timer.startTimer();
@@ -519,12 +521,7 @@ public class PublicationManagerImpl implements PublicationManager {
 
     private void sendPublication(SubscriptionPublication publication, PublicationInformation publicationInformation) {
         try {
-            MessagingQos messagingQos = new MessagingQos();
-            messagingQos.setTtl_ms(publicationInformation.subscriptionRequest.getQos().getPublicationTtl());
-            requestReplySender.sendSubscriptionPublication(publicationInformation.providerParticipantId,
-                                                           publicationInformation.proxyParticipantId,
-                                                           publication,
-                                                           messagingQos);
+            sendSubscriptionPublication(publication, publicationInformation);
             // TODO handle exceptions during publication. See JOYNR-2113
         } catch (JoynrRuntimeException e) {
             logger.error("sendPublication error: {}", e.getMessage());
@@ -563,5 +560,21 @@ public class PublicationManagerImpl implements PublicationManager {
                 + attributeName.subSequence(1, attributeName.length());
         return ReflectionUtils.findMethodByParamTypes(clazz, attributeGetterName, new Class[]{});
 
+    }
+
+    @Override
+    public void sendSubscriptionPublication(SubscriptionPublication publication,
+                                            PublicationInformation publicationInformation)
+                                                                                          throws JoynrSendBufferFullException,
+                                                                                          JoynrMessageNotSentException,
+                                                                                          JsonGenerationException,
+                                                                                          JsonMappingException,
+                                                                                          IOException {
+        MessagingQos messagingQos = new MessagingQos();
+        messagingQos.setTtl_ms(publicationInformation.subscriptionRequest.getQos().getPublicationTtl());
+        dispatcher.sendSubscriptionPublication(publicationInformation.providerParticipantId,
+                                               publicationInformation.proxyParticipantId,
+                                               publication,
+                                               messagingQos);
     }
 }

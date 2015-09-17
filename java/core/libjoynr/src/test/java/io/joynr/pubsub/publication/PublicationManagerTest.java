@@ -30,8 +30,8 @@ import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import io.joynr.dispatcher.Dispatcher;
 import io.joynr.dispatcher.RequestCaller;
-import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.JoynrProvider;
@@ -91,7 +91,7 @@ public class PublicationManagerTest {
     private RequestCaller requestCaller;
 
     @Mock
-    private RequestReplySender messageSender;
+    private Dispatcher dispatcher;
 
     @Mock
     private JoynrProvider provider;
@@ -106,7 +106,7 @@ public class PublicationManagerTest {
         doReturn(testProvider.class).when(provider).getProvidedInterface();
 
         cleanupScheduler = new ScheduledThreadPoolExecutor(1);
-        publicationManager = new PublicationManagerImpl(attributePollInterpreter, messageSender, cleanupScheduler);
+        publicationManager = new PublicationManagerImpl(attributePollInterpreter, dispatcher, cleanupScheduler);
 
         RequestCallerFactory requestCallerFactory = new RequestCallerFactory();
         requestCaller = requestCallerFactory.create(provider);
@@ -131,20 +131,20 @@ public class PublicationManagerTest {
         publicationManager.attributeValueChanged(SUBSCRIPTION_ID, valueToPublish);
 
         // sending initial value plus the attributeValueChanged
-        verify(messageSender, times(2)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                    eq(PROXY_PARTICIPANT_ID),
-                                                                    any(SubscriptionPublication.class),
-                                                                    any(MessagingQos.class));
+        verify(dispatcher, times(2)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                 eq(PROXY_PARTICIPANT_ID),
+                                                                 any(SubscriptionPublication.class),
+                                                                 any(MessagingQos.class));
 
         Thread.sleep(pubicationActiveForMs);
-        reset(messageSender);
+        reset(dispatcher);
 
         publicationManager.attributeValueChanged(SUBSCRIPTION_ID, valueToPublish);
 
-        verify(messageSender, timeout(300).times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                                 eq(PROXY_PARTICIPANT_ID),
-                                                                                 any(SubscriptionPublication.class),
-                                                                                 any(MessagingQos.class));
+        verify(dispatcher, timeout(300).times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                              eq(PROXY_PARTICIPANT_ID),
+                                                                              any(SubscriptionPublication.class),
+                                                                              any(MessagingQos.class));
     }
 
     @Test(timeout = 3000)
@@ -158,18 +158,18 @@ public class PublicationManagerTest {
                                                   subscriptionRequest,
                                                   requestCaller);
 
-        verify(messageSender, timeout(period * 5).times(6)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                                        eq(PROXY_PARTICIPANT_ID),
-                                                                                        any(SubscriptionPublication.class),
-                                                                                        any(MessagingQos.class));
+        verify(dispatcher, timeout(period * 5).times(6)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                                     eq(PROXY_PARTICIPANT_ID),
+                                                                                     any(SubscriptionPublication.class),
+                                                                                     any(MessagingQos.class));
 
-        reset(messageSender);
+        reset(dispatcher);
         publicationManager.stopPublication(SUBSCRIPTION_ID);
 
-        verify(messageSender, timeout(300).times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                                 eq(PROXY_PARTICIPANT_ID),
-                                                                                 any(SubscriptionPublication.class),
-                                                                                 any(MessagingQos.class));
+        verify(dispatcher, timeout(300).times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                              eq(PROXY_PARTICIPANT_ID),
+                                                                              any(SubscriptionPublication.class),
+                                                                              any(MessagingQos.class));
     }
 
     @Test(timeout = 3000)
@@ -186,18 +186,18 @@ public class PublicationManagerTest {
                                                   subscriptionRequest,
                                                   requestCaller);
 
-        verify(messageSender, timeout(period * 5).times(6)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+        verify(dispatcher, timeout(period * 5).times(6)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                                     eq(PROXY_PARTICIPANT_ID),
+                                                                                     any(SubscriptionPublication.class),
+                                                                                     any(MessagingQos.class));
+
+        reset(dispatcher);
+        publicationManager.stopPublication(SUBSCRIPTION_ID);
+
+        verify(dispatcher, timeout(testLengthMax).times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
                                                                                         eq(PROXY_PARTICIPANT_ID),
                                                                                         any(SubscriptionPublication.class),
                                                                                         any(MessagingQos.class));
-
-        reset(messageSender);
-        publicationManager.stopPublication(SUBSCRIPTION_ID);
-
-        verify(messageSender, timeout(testLengthMax).times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                                           eq(PROXY_PARTICIPANT_ID),
-                                                                                           any(SubscriptionPublication.class),
-                                                                                           any(MessagingQos.class));
     }
 
     @Test(timeout = 3000)
@@ -224,21 +224,21 @@ public class PublicationManagerTest {
         publicationManager.attributeValueChanged(subscriptionId2, valueToPublish);
 
         // sending initial values for 2 subscriptions, plus the 2 attributeValueChanged
-        verify(messageSender, times(4)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                    eq(PROXY_PARTICIPANT_ID),
-                                                                    any(SubscriptionPublication.class),
-                                                                    any(MessagingQos.class));
+        verify(dispatcher, times(4)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                 eq(PROXY_PARTICIPANT_ID),
+                                                                 any(SubscriptionPublication.class),
+                                                                 any(MessagingQos.class));
 
-        reset(messageSender);
+        reset(dispatcher);
         publicationManager.stopPublicationByProviderId(PROVIDER_PARTICIPANT_ID);
 
         publicationManager.attributeValueChanged(subscriptionId1, valueToPublish);
         publicationManager.attributeValueChanged(subscriptionId2, valueToPublish);
 
-        verify(messageSender, timeout(300).times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                                 eq(PROXY_PARTICIPANT_ID),
-                                                                                 any(SubscriptionPublication.class),
-                                                                                 any(MessagingQos.class));
+        verify(dispatcher, timeout(300).times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                              eq(PROXY_PARTICIPANT_ID),
+                                                                              any(SubscriptionPublication.class),
+                                                                              any(MessagingQos.class));
     }
 
     @Test(timeout = 3000)
@@ -257,17 +257,17 @@ public class PublicationManagerTest {
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest2);
 
         Thread.sleep(period);
-        verify(messageSender, times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                    eq(PROXY_PARTICIPANT_ID),
-                                                                    any(SubscriptionPublication.class),
-                                                                    any(MessagingQos.class));
+        verify(dispatcher, times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                 eq(PROXY_PARTICIPANT_ID),
+                                                                 any(SubscriptionPublication.class),
+                                                                 any(MessagingQos.class));
 
         publicationManager.restoreQueuedSubscription(PROVIDER_PARTICIPANT_ID, requestCaller);
 
-        verify(messageSender, timeout(period * 5).times(12)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                                         eq(PROXY_PARTICIPANT_ID),
-                                                                                         any(SubscriptionPublication.class),
-                                                                                         any(MessagingQos.class));
+        verify(dispatcher, timeout(period * 5).times(12)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                                      eq(PROXY_PARTICIPANT_ID),
+                                                                                      any(SubscriptionPublication.class),
+                                                                                      any(MessagingQos.class));
     }
 
     @Test(timeout = 3000)
@@ -283,16 +283,16 @@ public class PublicationManagerTest {
 
         publicationManager.restoreQueuedSubscription(PROVIDER_PARTICIPANT_ID, requestCaller);
         Thread.sleep(period);
-        verify(messageSender, times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                    eq(PROXY_PARTICIPANT_ID),
-                                                                    any(SubscriptionPublication.class),
-                                                                    any(MessagingQos.class));
+        verify(dispatcher, times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                 eq(PROXY_PARTICIPANT_ID),
+                                                                 any(SubscriptionPublication.class),
+                                                                 any(MessagingQos.class));
     }
 
     @Test
     public void broadcastPublicationIsSent() throws Exception {
 
-        publicationManager = new PublicationManagerImpl(attributePollInterpreter, messageSender, cleanupScheduler);
+        publicationManager = new PublicationManagerImpl(attributePollInterpreter, dispatcher, cleanupScheduler);
 
         long minInterval_ms = 0;
         long ttl = 1000;
@@ -319,10 +319,10 @@ public class PublicationManagerTest {
         ArgumentCaptor<SubscriptionPublication> publicationCaptured = ArgumentCaptor.forClass(SubscriptionPublication.class);
         ArgumentCaptor<MessagingQos> qosCaptured = ArgumentCaptor.forClass(MessagingQos.class);
 
-        verify(messageSender).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                          eq(PROXY_PARTICIPANT_ID),
-                                                          publicationCaptured.capture(),
-                                                          qosCaptured.capture());
+        verify(dispatcher).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                       eq(PROXY_PARTICIPANT_ID),
+                                                       publicationCaptured.capture(),
+                                                       qosCaptured.capture());
 
         List<?> response = (List<?>) publicationCaptured.getValue().getResponse();
         assertEquals(location, response.get(0));
@@ -334,7 +334,7 @@ public class PublicationManagerTest {
     @Test
     public void broadcastPublicationCallsAllFiltersWithFilterParametersAndValues() throws Exception {
 
-        publicationManager = new PublicationManagerImpl(attributePollInterpreter, messageSender, cleanupScheduler);
+        publicationManager = new PublicationManagerImpl(attributePollInterpreter, dispatcher, cleanupScheduler);
 
         long minInterval_ms = 0;
         long ttl = 1000;
@@ -372,10 +372,10 @@ public class PublicationManagerTest {
         ArgumentCaptor<SubscriptionPublication> publicationCaptured = ArgumentCaptor.forClass(SubscriptionPublication.class);
         ArgumentCaptor<MessagingQos> qosCaptured = ArgumentCaptor.forClass(MessagingQos.class);
 
-        verify(messageSender).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                          eq(PROXY_PARTICIPANT_ID),
-                                                          publicationCaptured.capture(),
-                                                          qosCaptured.capture());
+        verify(dispatcher).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                       eq(PROXY_PARTICIPANT_ID),
+                                                       publicationCaptured.capture(),
+                                                       qosCaptured.capture());
 
         verify(filter1).filter(eventValue, filterParameters);
         verify(filter2).filter(eventValue, filterParameters);
@@ -385,7 +385,7 @@ public class PublicationManagerTest {
     @Test
     public void broadcastPublicationIsSentWhenFiltersPass() throws Exception {
 
-        publicationManager = new PublicationManagerImpl(attributePollInterpreter, messageSender, cleanupScheduler);
+        publicationManager = new PublicationManagerImpl(attributePollInterpreter, dispatcher, cleanupScheduler);
 
         long minInterval_ms = 0;
         long ttl = 1000;
@@ -416,10 +416,10 @@ public class PublicationManagerTest {
         ArgumentCaptor<SubscriptionPublication> publicationCaptured = ArgumentCaptor.forClass(SubscriptionPublication.class);
         ArgumentCaptor<MessagingQos> qosCaptured = ArgumentCaptor.forClass(MessagingQos.class);
 
-        verify(messageSender).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                          eq(PROXY_PARTICIPANT_ID),
-                                                          publicationCaptured.capture(),
-                                                          qosCaptured.capture());
+        verify(dispatcher).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                       eq(PROXY_PARTICIPANT_ID),
+                                                       publicationCaptured.capture(),
+                                                       qosCaptured.capture());
 
         List<?> response = (List<?>) publicationCaptured.getValue().getResponse();
         assertEquals(location, response.get(0));
@@ -430,7 +430,7 @@ public class PublicationManagerTest {
     @Test
     public void broadcastPublicationNotSentWhenFiltersFail() throws Exception {
 
-        publicationManager = new PublicationManagerImpl(attributePollInterpreter, messageSender, cleanupScheduler);
+        publicationManager = new PublicationManagerImpl(attributePollInterpreter, dispatcher, cleanupScheduler);
 
         long minInterval_ms = 0;
         long ttl = 1000;
@@ -461,16 +461,16 @@ public class PublicationManagerTest {
 
         publicationManager.broadcastOccurred(subscriptionRequest.getSubscriptionId(), filters, eventValue);
 
-        verify(messageSender, never()).sendSubscriptionPublication(any(String.class),
-                                                                   any(String.class),
-                                                                   any(SubscriptionPublication.class),
-                                                                   any(MessagingQos.class));
+        verify(dispatcher, never()).sendSubscriptionPublication(any(String.class),
+                                                                any(String.class),
+                                                                any(SubscriptionPublication.class),
+                                                                any(MessagingQos.class));
 
     }
 
     @Test(timeout = 3000)
     public void modifySubscriptionTypeForExistingSubscription() throws Exception {
-        publicationManager = new PublicationManagerImpl(attributePollInterpreter, messageSender, cleanupScheduler);
+        publicationManager = new PublicationManagerImpl(attributePollInterpreter, dispatcher, cleanupScheduler);
         int period = 200;
         int testLengthMax = 3000;
         long expiryDate = System.currentTimeMillis() + testLengthMax;
@@ -483,10 +483,10 @@ public class PublicationManagerTest {
                                                   subscriptionRequest,
                                                   requestCaller);
 
-        verify(messageSender, timeout(period * 5).times(6)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                                        eq(PROXY_PARTICIPANT_ID),
-                                                                                        any(SubscriptionPublication.class),
-                                                                                        any(MessagingQos.class));
+        verify(dispatcher, timeout(period * 5).times(6)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                                     eq(PROXY_PARTICIPANT_ID),
+                                                                                     any(SubscriptionPublication.class),
+                                                                                     any(MessagingQos.class));
 
         qos = new OnChangeSubscriptionQos(0, expiryDate, publicationTtl);
         subscriptionRequest = new SubscriptionRequest(SUBSCRIPTION_ID, "location", qos);
@@ -495,12 +495,12 @@ public class PublicationManagerTest {
                                                   subscriptionRequest,
                                                   requestCaller);
 
-        reset(messageSender);
+        reset(dispatcher);
         publicationManager.attributeValueChanged(SUBSCRIPTION_ID, valueToPublish);
 
-        verify(messageSender, timeout(testLengthMax).times(1)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                                           eq(PROXY_PARTICIPANT_ID),
-                                                                                           any(SubscriptionPublication.class),
-                                                                                           any(MessagingQos.class));
+        verify(dispatcher, timeout(testLengthMax).times(1)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                                        eq(PROXY_PARTICIPANT_ID),
+                                                                                        any(SubscriptionPublication.class),
+                                                                                        any(MessagingQos.class));
     }
 }
