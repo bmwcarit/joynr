@@ -111,19 +111,17 @@ public class MessageRouter extends RoutingAbstractProvider {
         String toParticipantId = message.getTo();
         if (toParticipantId != null && routingTable.containsKey(toParticipantId)) {
             Address address = routingTable.get(toParticipantId);
-            routeMessageByAddress(toParticipantId, message, address);
+            routeMessageByAddress(message, address);
         } else {
             throw new JoynrCommunicationException("Failed to send Request: No route for given participantId: "
                     + toParticipantId);
         }
     }
 
-    private void routeMessageByAddress(final String toParticipantId, JoynrMessage message, Address address)
-                                                                                                           throws JoynrSendBufferFullException,
-                                                                                                           JoynrMessageNotSentException,
-                                                                                                           JsonGenerationException,
-                                                                                                           JsonMappingException,
-                                                                                                           IOException {
+    private void routeMessageByAddress(JoynrMessage message, Address address) throws JoynrSendBufferFullException,
+                                                                             JoynrMessageNotSentException,
+                                                                             JsonGenerationException,
+                                                                             JsonMappingException, IOException {
 
         if (address instanceof ChannelAddress) {
             logger.info("SEND messageId: {} type: {} from: {} to: {} header: {}",
