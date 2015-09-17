@@ -20,7 +20,6 @@ package io.joynr.proxy;
  */
 
 import io.joynr.arbitration.ArbitrationResult;
-import io.joynr.arbitration.ArbitrationStatus;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.common.ExpiryDate;
 import io.joynr.dispatcher.JoynrMessageFactory;
@@ -116,10 +115,7 @@ public class ProxyArbitrationTest {
                                                       connectorFactory);
         List<Address> endpoints = Lists.newArrayList(correctEndpointAddress);
 
-        DiscoveryAgent discoveryAgent = new DiscoveryAgent();
-        discoveryAgent.setProxyInvocationHandler(proxyHandler);
-        discoveryAgent.setArbitrationResult(ArbitrationStatus.ArbitrationSuccesful,
-                                            new ArbitrationResult(participantId, endpoints));
+        proxyHandler.createConnector(new ArbitrationResult(participantId, endpoints));
 
         Request request = Mockito.<Request> any();
         Mockito.when(joynrMessageFactory.createRequest(Mockito.anyString(),

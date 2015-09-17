@@ -19,6 +19,9 @@ package io.joynr.proxy;
  * #L%
  */
 
+import io.joynr.arbitration.ArbitrationCallback;
+import io.joynr.arbitration.ArbitrationResult;
+import io.joynr.arbitration.ArbitrationStatus;
 import io.joynr.arbitration.Arbitrator;
 import io.joynr.arbitration.ArbitratorFactory;
 import io.joynr.arbitration.DiscoveryQos;
@@ -45,7 +48,6 @@ public class ProxyBuilderDefaultImpl<T extends JoynrInterface> implements ProxyB
     private boolean buildCalled;
     Class<T> myClass;
     private final String interfaceName;
-    private DiscoveryAgent discoveryAgent;
     private ProxyInvocationHandlerFactory proxyInvocationHandlerFactory;
 
     ProxyBuilderDefaultImpl(LocalCapabilitiesDirectory capabilitiesDirectory,
@@ -65,7 +67,6 @@ public class ProxyBuilderDefaultImpl<T extends JoynrInterface> implements ProxyB
 
         this.localCapabilitiesDirectory = capabilitiesDirectory;
         this.domain = domain;
-        this.discoveryAgent = new DiscoveryAgent();
         discoveryQos = new DiscoveryQos();
         arbitrator = ArbitratorFactory.create(domain, interfaceName, discoveryQos, localCapabilitiesDirectory);
         messagingQos = new MessagingQos();
@@ -159,17 +160,32 @@ public class ProxyBuilderDefaultImpl<T extends JoynrInterface> implements ProxyB
         }
         buildCalled = true;
 
-        ProxyInvocationHandler proxyInvocationHandler = proxyInvocationHandlerFactory.create(domain,
-                                                                                             interfaceName,
-                                                                                             proxyParticipantId,
-                                                                                             discoveryQos,
-                                                                                             messagingQos);
+        final ProxyInvocationHandler proxyInvocationHandler = proxyInvocationHandlerFactory.create(domain,
+                                                                                                   interfaceName,
+                                                                                                   proxyParticipantId,
+                                                                                                   discoveryQos,
+                                                                                                   messagingQos);
 
         // This order is necessary because the Arbitrator might return early
         // But if the listener is set after the ProxyInvocationHandler the 
         // Arbitrator cannot return early
-        discoveryAgent.setProxyInvocationHandler(proxyInvocationHandler);
-        arbitrator.setArbitrationListener(this.discoveryAgent);
+        arbitrator.setArbitrationListener(new ArbitrationCallback() {
+
+            @Override
+            public void setArbitrationResult(ArbitrationStatus arbitrationStatus, ArbitrationResult arbitrationResult) {
+                if (arbitrationStatus == ArbitrationStatus.ArbitrationSuccesful) {
+                    proxyInvocationHandler.createConnector(arbitrationResult);
+                    /* TODO here, the proxyParticipantId shall be made available to the MessageRouter
+                     * e.g. messageRouter.addNextHop(getParticipantId(), libjoynrMessagingAddress);
+                     */
+                }
+            }
+
+            @Override
+            public void notifyArbitrationStatusChanged(ArbitrationStatus arbitrationStatus) {
+                //do nothing
+            }
+        });
 
         return proxyInvocationHandler;
     }
