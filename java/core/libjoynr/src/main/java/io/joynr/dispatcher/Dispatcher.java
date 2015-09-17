@@ -25,6 +25,7 @@ import io.joynr.messaging.MessagingQos;
 
 import java.io.IOException;
 
+import joynr.JoynrMessage;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
@@ -57,4 +58,8 @@ public abstract class Dispatcher {
                                                                               JoynrMessageNotSentException,
                                                                               JsonGenerationException,
                                                                               JsonMappingException, IOException;
+
+    public void receive(JoynrMessage message) {
+        //TODO
+    }
 }
