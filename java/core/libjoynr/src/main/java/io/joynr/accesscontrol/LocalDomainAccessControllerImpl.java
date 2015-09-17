@@ -26,6 +26,7 @@ import io.joynr.accesscontrol.broadcastlistener.LdacOwnerAccessControlEntryChang
 import io.joynr.accesscontrol.primarykey.UserDomainInterfaceOperationKey;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilderFactory;
@@ -53,6 +54,7 @@ import joynr.infrastructure.dactypes.OwnerRegistrationControlEntry;
 import joynr.infrastructure.dactypes.Permission;
 import joynr.infrastructure.dactypes.Role;
 import joynr.infrastructure.dactypes.TrustLevel;
+import joynr.system.routingtypes.Address;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -108,12 +110,16 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
     public LocalDomainAccessControllerImpl(@Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN) String discoveryDirectoriesDomain,
                                            DomainAccessControlStore localDomainAccessStore,
                                            LocalCapabilitiesDirectory localCapabilitiesDirectory,
-                                           ProxyInvocationHandlerFactory proxyInvocationHandlerFactory) {
+                                           ProxyInvocationHandlerFactory proxyInvocationHandlerFactory,
+                                           MessageRouter messageRouter,
+                                           @Named(ConfigurableMessagingSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) Address libjoynrMessagingAddress) {
         this.discoveryDirectoriesDomain = discoveryDirectoriesDomain;
         this.localDomainAccessStore = localDomainAccessStore;
         globalDomainAccessControllerClient = new GlobalDomainAccessControllerClient(discoveryDirectoriesDomain,
                                                                                     new ProxyBuilderFactory(localCapabilitiesDirectory,
-                                                                                                            proxyInvocationHandlerFactory));
+                                                                                                            proxyInvocationHandlerFactory,
+                                                                                                            messageRouter,
+                                                                                                            libjoynrMessagingAddress));
     }
 
     @Override

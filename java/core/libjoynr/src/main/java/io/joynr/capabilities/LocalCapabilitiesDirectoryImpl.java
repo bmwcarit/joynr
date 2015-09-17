@@ -81,10 +81,11 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                           @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID) String domainAccessControllerParticipantId,
                                           @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID) String domainAccessControllerChannelId,
                                           @Named(MessagingPropertyKeys.CHANNELID) String localChannelId,
-                                          MessageRouter messageRouter,
                                           CapabilitiesStore localCapabilitiesStore,
                                           CapabilitiesCache globalCapabilitiesCache,
-                                          ProxyInvocationHandlerFactory proxyInvocationHandlerFactory) {
+                                          ProxyInvocationHandlerFactory proxyInvocationHandlerFactory,
+                                          MessageRouter messageRouter,
+                                          @Named(ConfigurableMessagingSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) Address libjoynrMessagingAddress) {
         // CHECKSTYLE:ON
         this.localChannelId = localChannelId;
         this.messageRouter = messageRouter;
@@ -112,7 +113,9 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                                                  new ChannelAddress(domainAccessControllerChannelId)));
 
         globalCapabilitiesClient = new GlobalCapabilitiesDirectoryClient(new ProxyBuilderFactory(this,
-                                                                                                 proxyInvocationHandlerFactory),
+                                                                                                 proxyInvocationHandlerFactory,
+                                                                                                 messageRouter,
+                                                                                                 libjoynrMessagingAddress),
                                                                          discoveryDirectoriesDomain);
     }
 

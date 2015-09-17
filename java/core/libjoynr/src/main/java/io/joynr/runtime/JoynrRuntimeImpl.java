@@ -25,6 +25,8 @@ import io.joynr.capabilities.RegistrationFuture;
 import io.joynr.dispatcher.RequestReplyDispatcher;
 import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.dispatcher.rpc.JoynrInterface;
+import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderFactory;
@@ -40,6 +42,7 @@ import joynr.Request;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
+import joynr.system.routingtypes.Address;
 
 import org.reflections.Reflections;
 import org.slf4j.Logger;
@@ -71,7 +74,9 @@ public class JoynrRuntimeImpl implements JoynrRuntime {
     @Inject
     public JoynrRuntimeImpl(ObjectMapper objectMapper,
                             LocalCapabilitiesDirectory localCapabilitiesDirectory,
-                            ProxyInvocationHandlerFactory proxyInvocationHandlerFactory) {
+                            ProxyInvocationHandlerFactory proxyInvocationHandlerFactory,
+                            MessageRouter messageRouter,
+                            @Named(ConfigurableMessagingSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) Address libjoynrMessagingAddress) {
         Reflections reflections = new Reflections("joynr");
         Set<Class<? extends JoynrType>> subClasses = reflections.getSubTypesOf(JoynrType.class);
         objectMapper.registerSubtypes(subClasses.toArray(new Class<?>[subClasses.size()]));
@@ -79,7 +84,10 @@ public class JoynrRuntimeImpl implements JoynrRuntime {
         Class<?>[] messageTypes = new Class[]{ Request.class, Reply.class, SubscriptionRequest.class,
                 SubscriptionStop.class, SubscriptionPublication.class, BroadcastSubscriptionRequest.class };
         objectMapper.registerSubtypes(messageTypes);
-        proxyBuilderFactory = new ProxyBuilderFactory(localCapabilitiesDirectory, proxyInvocationHandlerFactory);
+        proxyBuilderFactory = new ProxyBuilderFactory(localCapabilitiesDirectory,
+                                                      proxyInvocationHandlerFactory,
+                                                      messageRouter,
+                                                      libjoynrMessagingAddress);
 
     }
 

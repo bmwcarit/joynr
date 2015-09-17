@@ -21,22 +21,32 @@ package io.joynr.proxy;
 
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.dispatcher.rpc.JoynrInterface;
+import io.joynr.messaging.routing.MessageRouter;
+import joynr.system.routingtypes.Address;
 
 public class ProxyBuilderFactory {
 
-    private LocalCapabilitiesDirectory capabilitiesDirectory;
-    private ProxyInvocationHandlerFactory proxyInvocationHandlerFactory;
+    private final LocalCapabilitiesDirectory capabilitiesDirectory;
+    private final ProxyInvocationHandlerFactory proxyInvocationHandlerFactory;
+    private final MessageRouter messageRouter;
+    private final Address libjoynrMessageAddress;
 
     public ProxyBuilderFactory(LocalCapabilitiesDirectory capabilitiesDirectory,
-                               ProxyInvocationHandlerFactory proxyInvocationHandlerFactory) {
+                               ProxyInvocationHandlerFactory proxyInvocationHandlerFactory,
+                               MessageRouter messageRouter,
+                               Address libjoynrMessageAddress) {
         this.capabilitiesDirectory = capabilitiesDirectory;
         this.proxyInvocationHandlerFactory = proxyInvocationHandlerFactory;
+        this.messageRouter = messageRouter;
+        this.libjoynrMessageAddress = libjoynrMessageAddress;
     }
 
     public <T extends JoynrInterface> ProxyBuilder<T> get(String domain, Class<T> interfaceClass) {
         return new ProxyBuilderDefaultImpl<T>(capabilitiesDirectory,
                                               domain,
                                               interfaceClass,
-                                              proxyInvocationHandlerFactory);
+                                              proxyInvocationHandlerFactory,
+                                              messageRouter,
+                                              libjoynrMessageAddress);
     }
 }

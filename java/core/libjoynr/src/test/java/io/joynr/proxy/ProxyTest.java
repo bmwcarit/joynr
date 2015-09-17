@@ -34,6 +34,7 @@ import io.joynr.capabilities.CapabilitiesCallback;
 import io.joynr.capabilities.CapabilityEntry;
 import io.joynr.capabilities.CapabilityEntryImpl;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
+import io.joynr.dispatcher.Dispatcher;
 import io.joynr.dispatcher.ReplyCaller;
 import io.joynr.dispatcher.RequestReplyDispatcher;
 import io.joynr.dispatcher.RequestReplySender;
@@ -47,6 +48,8 @@ import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.inprocess.InProcessAddress;
+import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
@@ -92,7 +95,7 @@ public class ProxyTest {
     private DiscoveryQos discoveryQos;
     private MessagingQos messagingQos;
     @Mock
-    private RequestReplyDispatcher dispatcher;
+    private RequestReplyDispatcher requestReplyDispatcher;
     @Mock
     private RequestReplySender requestReplySender;
     @Mock
@@ -101,7 +104,8 @@ public class ProxyTest {
     MessageSender messageSender;
     @Mock
     MessageRouter messageRouter;
-
+    @Mock
+    Dispatcher dispatcher;
     @Mock
     RoutingTable routingTable;
 
@@ -141,7 +145,7 @@ public class ProxyTest {
             @Override
             protected void configure() {
                 requestStaticInjection(RpcUtils.class);
-                bind(RequestReplyDispatcher.class).toInstance(dispatcher);
+                bind(RequestReplyDispatcher.class).toInstance(requestReplyDispatcher);
                 bind(RequestReplySender.class).toInstance(requestReplySender);
                 bind(SubscriptionManager.class).toInstance(subscriptionManager);
                 bind(MessageSender.class).toInstance(messageSender);
@@ -155,7 +159,9 @@ public class ProxyTest {
         });
 
         proxyBuilderFactory = new ProxyBuilderFactory(capabilitiesClient,
-                                                      injector.getInstance(ProxyInvocationHandlerFactory.class));
+                                                      injector.getInstance(ProxyInvocationHandlerFactory.class),
+                                                      messageRouter,
+                                                      new InProcessAddress(new InProcessLibjoynrMessagingSkeleton(dispatcher)));
 
         Mockito.doAnswer(new Answer<Object>() {
             @Override
@@ -244,7 +250,7 @@ public class ProxyTest {
                                                              IOException {
                 // capture the replyCaller passed into the dispatcher for calling later
                 ArgumentCaptor<ReplyCaller> replyCallerCaptor = ArgumentCaptor.forClass(ReplyCaller.class);
-                verify(dispatcher).addReplyCaller(anyString(), replyCallerCaptor.capture(), anyLong());
+                verify(requestReplyDispatcher).addReplyCaller(anyString(), replyCallerCaptor.capture(), anyLong());
 
                 String requestReplyId = "createProxyAndCallAsyncMethodSuccess_requestReplyId";
                 // pass the response to the replyCaller
@@ -283,7 +289,7 @@ public class ProxyTest {
                                                              IOException {
                 // capture the replyCaller passed into the dispatcher for calling later
                 ArgumentCaptor<ReplyCaller> replyCallerCaptor = ArgumentCaptor.forClass(ReplyCaller.class);
-                verify(dispatcher).addReplyCaller(anyString(), replyCallerCaptor.capture(), anyLong());
+                verify(requestReplyDispatcher).addReplyCaller(anyString(), replyCallerCaptor.capture(), anyLong());
 
                 // pass the exception to the replyCaller
                 replyCallerCaptor.getValue().error(expectedException);

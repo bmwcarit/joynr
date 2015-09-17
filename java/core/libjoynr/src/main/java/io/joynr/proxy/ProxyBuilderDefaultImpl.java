@@ -30,8 +30,11 @@ import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.exceptions.JoynrArbitrationException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.routing.MessageRouter;
 
 import java.util.UUID;
+
+import joynr.system.routingtypes.Address;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,11 +53,18 @@ public class ProxyBuilderDefaultImpl<T extends JoynrInterface> implements ProxyB
     private final String interfaceName;
     private ProxyInvocationHandlerFactory proxyInvocationHandlerFactory;
 
+    private MessageRouter messageRouter;
+    private Address libjoynrMessagingAddress;
+
     ProxyBuilderDefaultImpl(LocalCapabilitiesDirectory capabilitiesDirectory,
                             String domain,
                             Class<T> interfaceClass,
-                            ProxyInvocationHandlerFactory proxyInvocationHandlerFactory) {
+                            ProxyInvocationHandlerFactory proxyInvocationHandlerFactory,
+                            MessageRouter messageRouter,
+                            Address libjoynrMessagingAddress) {
         this.proxyInvocationHandlerFactory = proxyInvocationHandlerFactory;
+        this.messageRouter = messageRouter;
+        this.libjoynrMessagingAddress = libjoynrMessagingAddress;
         try {
             interfaceName = (String) interfaceClass.getField("INTERFACE_NAME").get(String.class);
         } catch (Exception e) {
@@ -175,9 +185,7 @@ public class ProxyBuilderDefaultImpl<T extends JoynrInterface> implements ProxyB
             public void setArbitrationResult(ArbitrationStatus arbitrationStatus, ArbitrationResult arbitrationResult) {
                 if (arbitrationStatus == ArbitrationStatus.ArbitrationSuccesful) {
                     proxyInvocationHandler.createConnector(arbitrationResult);
-                    /* TODO here, the proxyParticipantId shall be made available to the MessageRouter
-                     * e.g. messageRouter.addNextHop(getParticipantId(), libjoynrMessagingAddress);
-                     */
+                    messageRouter.addNextHop(getParticipantId(), libjoynrMessagingAddress);
                 }
             }
 

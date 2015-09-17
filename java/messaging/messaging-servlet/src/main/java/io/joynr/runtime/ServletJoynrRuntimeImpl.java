@@ -21,8 +21,14 @@ package io.joynr.runtime;
 
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.exceptions.JoynrCommunicationException;
+import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
+
+import javax.inject.Named;
+
+import joynr.system.routingtypes.Address;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
@@ -32,8 +38,14 @@ public class ServletJoynrRuntimeImpl extends JoynrRuntimeImpl {
     @Inject
     public ServletJoynrRuntimeImpl(ObjectMapper objectMapper,
                                    LocalCapabilitiesDirectory localCapabilitiesDirectory,
-                                   ProxyInvocationHandlerFactory proxyInvocationHandlerFactory) {
-        super(objectMapper, localCapabilitiesDirectory, proxyInvocationHandlerFactory);
+                                   ProxyInvocationHandlerFactory proxyInvocationHandlerFactory,
+                                   MessageRouter messageRouter,
+                                   @Named(ConfigurableMessagingSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) Address libjoynrMessagingAddress) {
+        super(objectMapper,
+              localCapabilitiesDirectory,
+              proxyInvocationHandlerFactory,
+              messageRouter,
+              libjoynrMessagingAddress);
     }
 
     @Override

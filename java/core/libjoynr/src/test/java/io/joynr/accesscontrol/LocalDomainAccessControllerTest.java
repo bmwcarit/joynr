@@ -29,7 +29,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
+import io.joynr.dispatcher.Dispatcher;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.inprocess.InProcessAddress;
+import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
+import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.proxy.ProxyInvocationHandler;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
 
@@ -76,6 +80,10 @@ public class LocalDomainAccessControllerTest {
     private ProxyInvocationHandler proxyInvocationHandlerMock;
     @Mock
     private LocalCapabilitiesDirectory localCapabilitiesDirectoryMock;
+    @Mock
+    private MessageRouter messageRouter;
+    @Mock
+    private Dispatcher dispatcher;
 
     @Before
     public void setup() {
@@ -89,10 +97,13 @@ public class LocalDomainAccessControllerTest {
                                                       any(String.class),
                                                       any(DiscoveryQos.class),
                                                       any(MessagingQos.class))).thenReturn(proxyInvocationHandlerMock);
+        InProcessAddress libjoynrMessagingAddress = new InProcessAddress(new InProcessLibjoynrMessagingSkeleton(dispatcher));
         localDomainAccessController = new LocalDomainAccessControllerImpl(accessControlDomain,
                                                                           domainAccessControlStore,
                                                                           localCapabilitiesDirectoryMock,
-                                                                          proxyInvocationHandlerFactoryMock);
+                                                                          proxyInvocationHandlerFactoryMock,
+                                                                          messageRouter,
+                                                                          libjoynrMessagingAddress);
 
         // instantiate some template objects
         userDre = new DomainRoleEntry(UID1, Arrays.asList(DOMAIN1), Role.OWNER);

@@ -21,9 +21,11 @@ package io.joynr.messaging;
 
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
+import joynr.system.routingtypes.Address;
 import joynr.types.ChannelUrlInformation;
 
 import org.slf4j.Logger;
@@ -51,10 +53,14 @@ public class LocalChannelUrlDirectoryClientImpl implements LocalChannelUrlDirect
                                               LocalCapabilitiesDirectory localCapabilitiesDirectory,
                                               ChannelUrlStore channelUrlStore,
                                               MessagingSettings settings,
-                                              ProxyInvocationHandlerFactory proxyInvocationHandlerFactory) {
+                                              ProxyInvocationHandlerFactory proxyInvocationHandlerFactory,
+                                              MessageRouter messageRouter,
+                                              @Named(ConfigurableMessagingSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) Address libjoynrMessagingAddress) {
         // CHECKSTYLE:ON
         this.channelUrlDirectoryClient = new GlobalChannelUrlDirectoryClient(new ProxyBuilderFactory(localCapabilitiesDirectory,
-                                                                                                     proxyInvocationHandlerFactory),
+                                                                                                     proxyInvocationHandlerFactory,
+                                                                                                     messageRouter,
+                                                                                                     libjoynrMessagingAddress),
                                                                              discoveryDirectoriesDomain);
         this.channelUrlStore = channelUrlStore;
         channelUrlStore.registerChannelUrl(channelUrlDirectoryChannelId, channelUrlDirectoryUrl);
