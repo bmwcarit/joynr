@@ -35,6 +35,8 @@ import io.joynr.messaging.MessageSenderImpl;
 import io.joynr.messaging.MessagingSettings;
 import io.joynr.messaging.http.operation.HttpClientProvider;
 import io.joynr.messaging.http.operation.HttpDefaultRequestConfigProvider;
+import io.joynr.messaging.inprocess.InProcessAddress;
+import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.proxy.ProxyInvocationHandler;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
@@ -44,11 +46,16 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 
+import javax.inject.Named;
+
+import joynr.system.routingtypes.Address;
+
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
+import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.name.Names;
@@ -78,6 +85,12 @@ public class DefaultRuntimeModule extends AbstractModule {
         ScheduledExecutorService cleanupExecutor = Executors.newSingleThreadScheduledExecutor(namedThreadFactory);
         bind(ScheduledExecutorService.class).annotatedWith(Names.named(JOYNR_SCHEDULER_CLEANUP))
                                             .toInstance(cleanupExecutor);
+    }
+
+    @Provides
+    @Named(ConfigurableMessagingSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS)
+    Address getLibJoynrMessagingAddress(Dispatcher dispatcher) {
+        return new InProcessAddress(new InProcessLibjoynrMessagingSkeleton(dispatcher));
     }
 
 }

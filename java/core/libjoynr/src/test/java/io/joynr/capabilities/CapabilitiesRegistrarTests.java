@@ -23,9 +23,13 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import io.joynr.dispatcher.Dispatcher;
 import io.joynr.dispatcher.RequestCaller;
 import io.joynr.dispatcher.RequestReplyDispatcher;
 import io.joynr.dispatcher.rpc.JoynrInterface;
+import io.joynr.messaging.inprocess.InProcessAddress;
+import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
+import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.RequestCallerFactory;
 import io.joynr.pubsub.publication.PublicationManager;
@@ -46,7 +50,14 @@ public class CapabilitiesRegistrarTests {
     @Mock
     private RequestCallerFactory requestCallerFactory;
     @Mock
-    private RequestReplyDispatcher dispatcher;
+    private RequestReplyDispatcher requestReplyDispatcher;
+
+    @Mock
+    private MessageRouter messageRouter;
+
+    @Mock
+    private Dispatcher dispatcher;
+
     @Mock
     private JoynrProvider provider;
 
@@ -80,9 +91,11 @@ public class CapabilitiesRegistrarTests {
 
         registrar = new CapabilitiesRegistrarImpl(localCapabilitiesDirectory,
                                                   requestCallerFactory,
-                                                  dispatcher,
+                                                  requestReplyDispatcher,
+                                                  messageRouter,
                                                   publicationManager,
-                                                  participantIdStorage);
+                                                  participantIdStorage,
+                                                  new InProcessAddress(new InProcessLibjoynrMessagingSkeleton(dispatcher)));
     }
 
     @Test
@@ -102,7 +115,7 @@ public class CapabilitiesRegistrarTests {
                                                                           System.currentTimeMillis())));
         verify(requestCallerFactory).create(provider);
 
-        verify(dispatcher).addRequestCaller(participantId, requestCaller);
+        verify(requestReplyDispatcher).addRequestCaller(participantId, requestCaller);
     }
 
     @Test
@@ -118,7 +131,7 @@ public class CapabilitiesRegistrarTests {
                                                                              providerQos,
                                                                              participantId,
                                                                              System.currentTimeMillis())));
-        verify(dispatcher).removeRequestCaller(eq(participantId));
+        verify(requestReplyDispatcher).removeRequestCaller(eq(participantId));
     }
 
 }
