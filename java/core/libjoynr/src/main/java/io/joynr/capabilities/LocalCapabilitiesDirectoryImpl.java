@@ -184,27 +184,19 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         // Remove from the global capabilities directory if needed
         if (capEntry.getProviderQos().getScope() != ProviderScope.LOCAL) {
 
-            // Currently Endpoint address needs to be added for remove on server side to work correctly.
-            // TODO Modify removeCapability in CapDirImpl to accept any endpoint address list
-            ChannelAddress joynrMessagingEndpointAddress = new ChannelAddress(localChannelId);
-            capEntry.addEndpoint(joynrMessagingEndpointAddress);
+            Callback<Void> callback = new Callback<Void>() {
 
-            CapabilityInformation capabilityInformation = capabilityEntry2Information(capEntry);
-            if (capabilityInformation != null) {
-                Callback<Void> callback = new Callback<Void>() {
+                @Override
+                public void onSuccess(Void result) {
+                    globalCapabilitiesCache.remove(capEntry.getParticipantId());
+                }
 
-                    @Override
-                    public void onSuccess(Void result) {
-                        globalCapabilitiesCache.remove(capEntry.getParticipantId());
-                    }
-
-                    @Override
-                    public void onFailure(JoynrRuntimeException error) {
-                        //do nothing
-                    }
-                };
-                globalCapabilitiesClient.remove(callback, Arrays.asList(capabilityInformation.getParticipantId()));
-            }
+                @Override
+                public void onFailure(JoynrRuntimeException error) {
+                    //do nothing
+                }
+            };
+            globalCapabilitiesClient.remove(callback, Arrays.asList(capEntry.getParticipantId()));
         }
 
         // Remove endpoint addresses
