@@ -27,7 +27,7 @@ import io.joynr.dispatcher.RequestReplySender;
 import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.ProxyBuilder;
-import io.joynr.proxy.ProxyBuilderDefaultImpl;
+import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
 import io.joynr.subtypes.JoynrType;
 
@@ -56,22 +56,22 @@ public class JoynrRuntimeImpl implements JoynrRuntime {
     @Inject
     private CapabilitiesRegistrar capabilitiesRegistrar;
     @Inject
-    private LocalCapabilitiesDirectory localCapabilitiesDirectory;
-    @Inject
     private RequestReplySender messageSender;
     @Inject
     private RequestReplyDispatcher dispatcher;
     @Inject
     public ObjectMapper objectMapper;
-    @Inject
-    private ProxyInvocationHandlerFactory proxyInvocationHandlerFactory;
 
     @Inject
     @Named(JOYNR_SCHEDULER_CLEANUP)
     ScheduledExecutorService cleanupScheduler;
 
+    private final ProxyBuilderFactory proxyBuilderFactory;
+
     @Inject
-    public JoynrRuntimeImpl(ObjectMapper objectMapper) {
+    public JoynrRuntimeImpl(ObjectMapper objectMapper,
+                            LocalCapabilitiesDirectory localCapabilitiesDirectory,
+                            ProxyInvocationHandlerFactory proxyInvocationHandlerFactory) {
         Reflections reflections = new Reflections("joynr");
         Set<Class<? extends JoynrType>> subClasses = reflections.getSubTypesOf(JoynrType.class);
         objectMapper.registerSubtypes(subClasses.toArray(new Class<?>[subClasses.size()]));
@@ -79,6 +79,7 @@ public class JoynrRuntimeImpl implements JoynrRuntime {
         Class<?>[] messageTypes = new Class[]{ Request.class, Reply.class, SubscriptionRequest.class,
                 SubscriptionStop.class, SubscriptionPublication.class, BroadcastSubscriptionRequest.class };
         objectMapper.registerSubtypes(messageTypes);
+        proxyBuilderFactory = new ProxyBuilderFactory(localCapabilitiesDirectory, proxyInvocationHandlerFactory);
 
     }
 
@@ -94,10 +95,7 @@ public class JoynrRuntimeImpl implements JoynrRuntime {
             throw new IllegalArgumentException("Cannot create ProxyBuilder: interfaceClass may not be NULL");
         }
 
-        return new ProxyBuilderDefaultImpl<T>(localCapabilitiesDirectory,
-                                              domain,
-                                              interfaceClass,
-                                              proxyInvocationHandlerFactory);
+        return proxyBuilderFactory.get(domain, interfaceClass);
     }
 
     @Override

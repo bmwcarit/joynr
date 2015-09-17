@@ -19,8 +19,10 @@ package io.joynr.runtime;
  * #L%
  */
 
+import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.provider.JoynrProvider;
+import io.joynr.proxy.ProxyInvocationHandlerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
@@ -28,8 +30,10 @@ import com.google.inject.Inject;
 public class ServletJoynrRuntimeImpl extends JoynrRuntimeImpl {
 
     @Inject
-    public ServletJoynrRuntimeImpl(ObjectMapper objectMapper) {
-        super(objectMapper);
+    public ServletJoynrRuntimeImpl(ObjectMapper objectMapper,
+                                   LocalCapabilitiesDirectory localCapabilitiesDirectory,
+                                   ProxyInvocationHandlerFactory proxyInvocationHandlerFactory) {
+        super(objectMapper, localCapabilitiesDirectory, proxyInvocationHandlerFactory);
     }
 
     @Override

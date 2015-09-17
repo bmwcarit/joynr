@@ -22,6 +22,7 @@ package io.joynr.messaging;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.proxy.Callback;
+import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
 import joynr.types.ChannelUrlInformation;
 
@@ -52,9 +53,9 @@ public class LocalChannelUrlDirectoryClientImpl implements LocalChannelUrlDirect
                                               MessagingSettings settings,
                                               ProxyInvocationHandlerFactory proxyInvocationHandlerFactory) {
         // CHECKSTYLE:ON
-        this.channelUrlDirectoryClient = new GlobalChannelUrlDirectoryClient(discoveryDirectoriesDomain,
-                                                                             localCapabilitiesDirectory,
-                                                                             proxyInvocationHandlerFactory);
+        this.channelUrlDirectoryClient = new GlobalChannelUrlDirectoryClient(new ProxyBuilderFactory(localCapabilitiesDirectory,
+                                                                                                     proxyInvocationHandlerFactory),
+                                                                             discoveryDirectoriesDomain);
         this.channelUrlStore = channelUrlStore;
         channelUrlStore.registerChannelUrl(channelUrlDirectoryChannelId, channelUrlDirectoryUrl);
         channelUrlStore.registerChannelUrl(capabilitiesDirectoryChannelId, capabilitiesDirectoryUrl);

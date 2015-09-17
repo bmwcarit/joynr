@@ -110,7 +110,8 @@ public class ProxyTest {
 
     @Mock
     private Callback<String> callback;
-    private ProxyInvocationHandlerFactory proxyInvocationHandlerFactory;
+
+    private ProxyBuilderFactory proxyBuilderFactory;
 
     public interface SyncTestInterface extends JoynrSyncInterface {
         String method1();
@@ -148,7 +149,8 @@ public class ProxyTest {
 
         });
 
-        proxyInvocationHandlerFactory = injector.getInstance(ProxyInvocationHandlerFactory.class);
+        proxyBuilderFactory = new ProxyBuilderFactory(capabilitiesClient,
+                                                      injector.getInstance(ProxyInvocationHandlerFactory.class));
 
         Mockito.doAnswer(new Answer<Object>() {
             @Override
@@ -204,7 +206,7 @@ public class ProxyTest {
     }
 
     private <T extends JoynrInterface> ProxyBuilder<T> getProxyBuilder(final Class<T> interfaceClass) {
-        return new ProxyBuilderDefaultImpl<T>(capabilitiesClient, domain, interfaceClass, proxyInvocationHandlerFactory);
+        return proxyBuilderFactory.get(domain, interfaceClass);
     }
 
     @Test

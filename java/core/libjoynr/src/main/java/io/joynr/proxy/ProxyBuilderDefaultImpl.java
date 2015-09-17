@@ -48,10 +48,10 @@ public class ProxyBuilderDefaultImpl<T extends JoynrInterface> implements ProxyB
     private DiscoveryAgent discoveryAgent;
     private ProxyInvocationHandlerFactory proxyInvocationHandlerFactory;
 
-    public ProxyBuilderDefaultImpl(LocalCapabilitiesDirectory capabilitiesDirectory,
-                                   String domain,
-                                   Class<T> interfaceClass,
-                                   ProxyInvocationHandlerFactory proxyInvocationHandlerFactory) {
+    ProxyBuilderDefaultImpl(LocalCapabilitiesDirectory capabilitiesDirectory,
+                            String domain,
+                            Class<T> interfaceClass,
+                            ProxyInvocationHandlerFactory proxyInvocationHandlerFactory) {
         this.proxyInvocationHandlerFactory = proxyInvocationHandlerFactory;
         try {
             interfaceName = (String) interfaceClass.getField("INTERFACE_NAME").get(String.class);

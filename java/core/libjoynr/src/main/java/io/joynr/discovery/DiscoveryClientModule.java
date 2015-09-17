@@ -41,7 +41,7 @@ import io.joynr.messaging.LocalChannelUrlDirectoryClient;
 import io.joynr.messaging.LocalChannelUrlDirectoryClientImpl;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilder;
-import io.joynr.proxy.ProxyBuilderDefaultImpl;
+import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
 
 import javax.annotation.CheckForNull;
@@ -83,15 +83,11 @@ public class DiscoveryClientModule extends AbstractModule {
                                                      Long.MAX_VALUE,
                                                      DiscoveryScope.LOCAL_THEN_GLOBAL);
 
-        ProxyBuilder<ChannelUrlDirectoryProxy> proxyBuilder = new ProxyBuilderDefaultImpl<ChannelUrlDirectoryProxy>(localCapabilitiesDirectory,
-                                                                                                                    discoveryDirectoriesDomain,
-                                                                                                                    ChannelUrlDirectoryProxy.class,
-                                                                                                                    proxyInvocationHandlerFactoryProvider.get());
+        ProxyBuilderFactory proxyBuilderFactory = new ProxyBuilderFactory(localCapabilitiesDirectory,
+                                                                          proxyInvocationHandlerFactoryProvider.get());
+        ProxyBuilder<ChannelUrlDirectoryProxy> proxyBuilder = proxyBuilderFactory.get(discoveryDirectoriesDomain,
+                                                                                      ChannelUrlDirectoryProxy.class);
 
-        ChannelUrlDirectoryProxy proxy = null;
-
-        proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
-
-        return proxy;
+        return proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
     }
 }
