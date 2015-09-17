@@ -23,6 +23,8 @@ import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessageSender;
+import io.joynr.messaging.inprocess.InProcessAddress;
+import io.joynr.messaging.inprocess.InProcessMessagingStub;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 
@@ -133,6 +135,12 @@ public class MessageRouter extends RoutingAbstractProvider {
 
             String destinationChannelId = ((ChannelAddress) address).getChannelId();
             messageSender.sendMessage(destinationChannelId, message);
+        } else if (address instanceof InProcessAddress) {
+            /*
+             * This creation should be done by a factory, avoiding that the MessageRouter is aware of the
+             * different address types
+             */
+            new InProcessMessagingStub(((InProcessAddress) address).getSkeleton()).transmit(message);
         } else {
             throw new JoynrCommunicationException("Failed to send Request: Address type not supported");
         }
