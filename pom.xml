@@ -1363,62 +1363,6 @@
 				</executions>
 			</plugin>
 			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>build-helper-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>copy-notice-and-license-files</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>add-resource</goal>
-						</goals>
-						<configuration>
-							<skip>${skip.copy-notice-and-license-files}</skip>
-							<resources>
-								<resource>
-									<directory>${basedir}</directory>
-									<includes>
-										<include>NOTICE*</include>
-										<include>*LICENSE*</include>
-									</includes>
-								</resource>
-								<resource>
-									<directory>${project.build.directory}</directory>
-									<includes>
-										<include>LICENSE</include>
-									</includes>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-					<execution>
-						<id>copy-notice-and-license-files-test</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>add-test-resource</goal>
-						</goals>
-						<configuration>
-							<skip>${skip.copy-notice-and-license-files}</skip>
-							<resources>
-								<resource>
-									<directory>${basedir}</directory>
-									<includes>
-										<include>NOTICE*</include>
-										<include>*LICENSE*</include>
-									</includes>
-								</resource>
-								<resource>
-									<directory>${project.build.directory}</directory>
-									<includes>
-										<include>LICENSE</include>
-									</includes>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-resources-plugin</artifactId>
 				<executions>
@@ -1430,13 +1374,12 @@
 						</goals>
 						<configuration>
 							<skip>${skip.copy-notice-and-license-files}</skip>
-							<outputDirectory>${project.build.directory}/apidocs</outputDirectory>
+							<outputDirectory>${project.build.directory}/apidocs/META-INF</outputDirectory>
 							<resources>
 								<resource>
 									<directory>${basedir}</directory>
 									<includes>
 										<include>NOTICE*</include>
-										<include>*LICENSE*</include>
 									</includes>
 								</resource>
 								<resource>
@@ -1456,13 +1399,12 @@
 						</goals>
 						<configuration>
 							<skip>${skip.copy-notice-and-license-files}</skip>
-							<outputDirectory>${project.build.directory}/classes</outputDirectory>
+							<outputDirectory>${project.build.directory}/classes/META-INF</outputDirectory>
 							<resources>
 								<resource>
 									<directory>${basedir}</directory>
 									<includes>
 										<include>NOTICE*</include>
-										<include>*LICENSE*</include>
 									</includes>
 								</resource>
 								<resource>
@@ -1482,13 +1424,12 @@
 						</goals>
 						<configuration>
 							<skip>${skip.copy-notice-and-license-files}</skip>
-							<outputDirectory>${project.build.directory}/test-classes</outputDirectory>
+							<outputDirectory>${project.build.directory}/test-classes/META-INF</outputDirectory>
 							<resources>
 								<resource>
 									<directory>${basedir}</directory>
 									<includes>
 										<include>NOTICE*</include>
-										<include>*LICENSE*</include>
 									</includes>
 								</resource>
 								<resource>
