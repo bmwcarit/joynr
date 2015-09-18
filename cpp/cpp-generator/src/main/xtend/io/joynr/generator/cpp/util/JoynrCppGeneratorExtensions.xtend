@@ -23,14 +23,13 @@ import com.google.inject.name.Named
 import io.joynr.generator.util.JoynrGeneratorExtensions
 import java.io.File
 import java.util.Iterator
+import org.franca.core.franca.FAnnotationType
 import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FBroadcast
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FModelElement
 import org.franca.core.franca.FType
 import org.franca.core.franca.FTypedElement
-import org.franca.core.franca.FBasicTypeId
-import org.franca.core.franca.FAnnotationType
 
 class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 
