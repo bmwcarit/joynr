@@ -3,6 +3,8 @@
 cd /data/src
 
 # fail on first error
+# exit immediately if a command exits with a non-zero status
+# print commands before they are executed
 set -e
 
 mvn install -N
@@ -21,7 +23,7 @@ mvn install -N
   mvn install -P no-java-formatter,no-checkstyle -DskipTests
 )
 
-mvn install checkstyle:checkstyle \
+mvn package checkstyle:checkstyle \
 -P findbugs,no-license-and-notice,no-java-formatter \
 -DskipTests
 
