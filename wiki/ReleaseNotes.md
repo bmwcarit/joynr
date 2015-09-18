@@ -1,3 +1,16 @@
+#joynr 0.9.4
+
+This is a minor bug fix release.
+
+##API relevant changes
+* **[C++]** Use lowercase namespace for type collections
+
+##Other changes
+* **[C++]** Param datatypes in a joynr request message includes type collection names
+* **[JS]** Fix radio example made for node, to be compatible with the radio example in C++, Java and
+  the browser-based JavaScript application
+* **[Tooling]** Small fixes in build scripts
+
 #joynr 0.9.3
 
 This is a minor bug fix release. It includes a preview version of the **joynr JavaScript** language
