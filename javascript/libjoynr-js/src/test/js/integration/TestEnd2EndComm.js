@@ -1,5 +1,5 @@
 /*global joynrTestRequire: true, it: true, console: true */
-/*jslint es5: true */
+/*jslint es5: true, nomen: true */
 
 /*
  * #%L
@@ -27,6 +27,7 @@ joynrTestRequire(
             "joynr",
             "joynr/vehicle/RadioProxy",
             "joynr/vehicle/radiotypes/RadioStation",
+            "joynr/vehicle/radiotypes/ErrorList",
             "joynr/datatypes/exampleTypes/Country",
             "integration/IntegrationUtils",
             "joynr/provisioning/provisioning_cc",
@@ -37,6 +38,7 @@ joynrTestRequire(
                 joynr,
                 RadioProxy,
                 RadioStation,
+                ErrorList,
                 Country,
                 IntegrationUtils,
                 provisioning,
@@ -480,12 +482,126 @@ joynrTestRequire(
                             setAndTestAttributeTester(radioProxy.isOn);
                         });
 
-                        it("can call an operation (String parameter)", function() {
+                        it("can call an operation successfully (Provider sync, String parameter)", function() {
                             callOperation("addFavoriteStation",
-                                          {
-                                              radioStation : 'stringStation'
-                                          }
+                                    {
+                                radioStation : 'stringStation'
+                                    }
                             );
+                        });
+
+                        it("can call an operation and get a ProviderRuntimeException (Provider sync, String parameter)", function() {
+                            var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
+                            var catchSpy = jasmine.createSpy("catchSpy");
+
+                            runs(function() {
+                                radioProxy.addFavoriteStation({
+                                    radioStation : 'stringStationerror'
+                                }).then(onFulfilledSpy).catch(catchSpy);
+                            });
+
+                            waitsFor(function() {
+                                return catchSpy.callCount > 0;
+                            }, "operation call to fail", provisioning.ttl);
+
+                            runs(function() {
+                                expect(onFulfilledSpy).not.toHaveBeenCalled();
+                                expect(catchSpy).toHaveBeenCalled();
+                                expect(catchSpy.calls[0].args[0]._typeName).toBeDefined();
+                                expect(catchSpy.calls[0].args[0]._typeName).toEqual("joynr.exceptions.ProviderRuntimeException");
+                                expect(catchSpy.calls[0].args[0].detailMessage).toBeDefined();
+                                expect(catchSpy.calls[0].args[0].detailMessage).toEqual("example message sync");
+                            });
+                        });
+
+                        it("can call an operation and get an ApplicationException (Provider sync, String parameter)", function() {
+                            var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
+                            var catchSpy = jasmine.createSpy("catchSpy");
+
+                            runs(function() {
+                                radioProxy.addFavoriteStation({
+                                    radioStation : 'stringStationerrorApplicationException'
+                                }).then(onFulfilledSpy).catch(catchSpy);
+                            });
+
+                            waitsFor(function() {
+                                return catchSpy.callCount > 0;
+                            }, "operation call to fail", provisioning.ttl);
+
+                            runs(function() {
+                                expect(onFulfilledSpy).not.toHaveBeenCalled();
+                                expect(catchSpy).toHaveBeenCalled();
+                                expect(catchSpy.calls[0].args[0]._typeName).toBeDefined();
+                                expect(catchSpy.calls[0].args[0]._typeName).toEqual("joynr.exceptions.ApplicationException");
+                                expect(catchSpy.calls[0].args[0].error).toBeDefined();
+                                expect(catchSpy.calls[0].args[0].error).toEqual(ErrorList.EXAMPLE_ERROR_2);
+                            });
+                        });
+
+                        it("can call an operation successfully (Provider async, String parameter)", function() {
+                            var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
+
+                            runs(function() {
+                                radioProxy.addFavoriteStation({
+                                    radioStation : 'stringStationasync'
+                                }).then(onFulfilledSpy).catch(IntegrationUtils.outputPromiseError);
+                            });
+
+                            waitsFor(function() {
+                                return onFulfilledSpy.callCount > 0;
+                            }, "operation call to finish", provisioning.ttl);
+
+                            runs(function() {
+                                expect(onFulfilledSpy).toHaveBeenCalled();
+                            });
+                        });
+
+                        it("can call an operation and get a ProviderRuntimeException (Provider async, String parameter)", function() {
+                            var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
+                            var catchSpy = jasmine.createSpy("catchSpy");
+
+                            runs(function() {
+                                radioProxy.addFavoriteStation({
+                                    radioStation : 'stringStationasyncerror'
+                                }).then(onFulfilledSpy).catch(catchSpy);
+                            });
+
+                            waitsFor(function() {
+                                return catchSpy.callCount > 0;
+                            }, "operation call to fail", provisioning.ttl);
+
+                            runs(function() {
+                                expect(onFulfilledSpy).not.toHaveBeenCalled();
+                                expect(catchSpy).toHaveBeenCalled();
+                                expect(catchSpy.calls[0].args[0]._typeName).toBeDefined();
+                                expect(catchSpy.calls[0].args[0]._typeName).toEqual("joynr.exceptions.ProviderRuntimeException");
+                                expect(catchSpy.calls[0].args[0].detailMessage).toBeDefined();
+                                expect(catchSpy.calls[0].args[0].detailMessage).toEqual("example message async");
+                            });
+                        });
+
+                        it("can call an operation and get an ApplicationException (Provider async, String parameter)", function() {
+                            var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
+                            var catchSpy = jasmine.createSpy("catchSpy");
+
+                            runs(function() {
+                                radioProxy.addFavoriteStation({
+                                    radioStation : 'stringStationasyncerrorApplicationException'
+                                }).then(onFulfilledSpy).catch(catchSpy);
+                            });
+
+                            waitsFor(function() {
+                                return catchSpy.callCount > 0;
+                            }, "operation call to fail", provisioning.ttl);
+
+                            runs(function() {
+                                expect(onFulfilledSpy).not.toHaveBeenCalled();
+                                expect(catchSpy).toHaveBeenCalled();
+                                expect(catchSpy.calls[0].args[0]._typeName).toBeDefined();
+                                expect(catchSpy.calls[0].args[0]._typeName).toEqual("joynr.exceptions.ApplicationException");
+                                expect(catchSpy.calls[0].args[0].error).toBeDefined();
+                                expect(catchSpy.calls[0].args[0].error).toEqual(ErrorList.EXAMPLE_ERROR_1);
+                            });
                         });
 
                         it("can call an operation (parameter of complex type)", function() {

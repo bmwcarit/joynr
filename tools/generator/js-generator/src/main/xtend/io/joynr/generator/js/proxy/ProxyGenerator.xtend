@@ -236,7 +236,7 @@ class ProxyGenerator {
 				});
 		} else if (typeof exports !== 'undefined' ) {
 			if ((module !== undefined) && module.exports) {				
-				«FOR datatype : fInterface.getAllComplexAndEnumTypes.filter[a | a instanceof FType]»
+				«FOR datatype : getAllComplexAndEnumTypes(fInterface, false, true, true, true, true, true, false).filter[a | a instanceof FType]»
 					require("«relativePathToBase() + (datatype as FType).getDependencyPath()»");
 				«ENDFOR»
 				exports = module.exports = «fInterface.proxyName»;

@@ -17,64 +17,58 @@
  * #L%
  */
 
-define("joynr/types/JoynrException", [
+define("joynr/exceptions/JoynrRuntimeException", [
+    "joynr/types/TypeRegistrySingleton",
     "joynr/util/UtilInternal",
+    "joynr/exceptions/JoynrException",
     "joynr/system/LoggerFactory"
-], function(Util, LoggerFactory) {
+], function(TypeRegistrySingleton, Util, JoynrException, LoggerFactory) {
     var defaultSettings;
 
     /**
      * @classdesc
      *
      * @summary
-     * Constructor of JoynrException object used for reporting
-     * error conditions. This serves as superobject for the underlying
-     * ApplicationException and JoynrRuntimeException.
+     * Constructor of JoynrRuntimeException object used for reporting
+     * error conditions. This serves as superobject for other more specific
+     * runtime exception objects and inherits from JoynrException.
      *
      * @constructor
-     * @name JoynrException
+     * @name JoynrRuntimeException
      *
      * @param {Object}
      *            [settings] the settings object for the constructor call
      * @param {String}
      *            [settings.detailMessage] message containing details
      *            about the error
-     * @returns {JoynrException}
-     *            The newly created JoynrException object
+     * @returns {JoynrRuntimeException}
+     *            The newly created IllegalAccessException object
      */
-    function JoynrException(settings) {
-        if (!(this instanceof JoynrException)) {
+    function JoynrRuntimeException(settings) {
+        if (!(this instanceof JoynrRuntimeException)) {
             // in case someone calls constructor without new keyword (e.g. var c
             // = Constructor({..}))
-            return new JoynrException(settings);
+            return new JoynrRuntimeException(settings);
         }
 
-        var log = LoggerFactory.getLogger("joynr.JoynrException");
+        var log = LoggerFactory.getLogger("joynr.exceptions.JoynrRuntimeException");
+        var exception = new JoynrException(settings);
 
         /**
          * Used for serialization.
-         * @name JoynrException#_typeName
+         * @name JoynrRuntimeException#_typeName
          * @type String
          * @field
          */
-        Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.JoynrException");
+        Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.JoynrRuntimeException");
         Util.checkPropertyIfDefined(settings, "Object", "settings");
-        Util.checkPropertyIfDefined(settings.detailMessage, "String", "settings.detailMessage");
-        if (settings && settings.detailMessage) {
-            this.detailMessage = settings.detailMessage;
-        } else {
-            /**
-             * See [constructor description]{@link JoynrException}.
-             * @name JoynrException#detailMessage
-             * @type String
-             * @field
-             */
-            this.detailMessage = undefined;
-        }
-        Util.extend(this, defaultSettings, settings);
+        Util.extend(this, defaultSettings, settings, exception);
     }
 
     defaultSettings = {};
-    return JoynrException;
+    TypeRegistrySingleton.getInstance().addType(
+            "joynr.exceptions.JoynrRuntimeException",
+            JoynrRuntimeException);
+    return JoynrRuntimeException;
 
 });

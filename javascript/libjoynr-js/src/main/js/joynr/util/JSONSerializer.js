@@ -37,16 +37,21 @@ define("joynr/util/JSONSerializer", [ "joynr/util/Typing"
      * @function JSONSerializer#stringify
      * @param {Object}
      *          value to be stringified
+     * @param {Boolean} omitJoynrStringReplacement an optional member. If set to false,
+     *                  special string replacement for joynr objects is omitted
      * @returns {String}
      *          the value in JSON notation
      */
-    JSONSerializer.stringify = function stringify(value) {
-        var replacerFunction = function replacerFunction(key, src) {
-            if (Typing.isEnumType(src, false)) {
-                return src.name;
-            }
-            return src;
-        };
+    JSONSerializer.stringify = function stringify(value, omitJoynrStringReplacement) {
+        var replacerFunction; /* undefined by default */
+        if (omitJoynrStringReplacement === undefined || !omitJoynrStringReplacement) {
+            replacerFunction = function replacerFunction(key, src) {
+                if (Typing.isEnumType(src)) {
+                    return src.name;
+                }
+                return src;
+            };
+        }
         return JSON.stringify(value, replacerFunction);
     };
 

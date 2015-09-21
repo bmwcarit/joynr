@@ -17,11 +17,12 @@
  * #L%
  */
 
-define("joynr/types/MethodInvocationException", [
+define("joynr/exceptions/MethodInvocationException", [
+    "joynr/types/TypeRegistrySingleton",
     "joynr/util/UtilInternal",
-    "joynr/types/JoynrRuntimeException",
+    "joynr/exceptions/JoynrRuntimeException",
     "joynr/system/LoggerFactory"
-], function(Util, JoynrRuntimeException, LoggerFactory) {
+], function(TypeRegistrySingleton, Util, JoynrRuntimeException, LoggerFactory) {
     var defaultSettings;
 
     /**
@@ -51,7 +52,7 @@ define("joynr/types/MethodInvocationException", [
             return new MethodInvocationException(settings);
         }
 
-        var log = LoggerFactory.getLogger("joynr.MethodInvocationException");
+        var log = LoggerFactory.getLogger("joynr.exceptions.MethodInvocationException");
         var runtimeException = new JoynrRuntimeException(settings);
 
         /**
@@ -66,6 +67,9 @@ define("joynr/types/MethodInvocationException", [
     }
 
     defaultSettings = {};
+    TypeRegistrySingleton.getInstance().addType(
+            "joynr.exceptions.MethodInvocationException",
+            MethodInvocationException);
     return MethodInvocationException;
 
 });

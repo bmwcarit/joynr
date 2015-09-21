@@ -25,6 +25,10 @@ typeCollection radiotypes {
 	struct RadioStation {
 		String name
 	}
+	enumeration ErrorList {
+		EXAMPLE_ERROR_1
+		EXAMPLE_ERROR_2
+	}
 }
 
 <** @description : "This is a description about the radio interface" **>
@@ -55,6 +59,7 @@ interface Radio {
 		out {
 			Boolean returnValue
 		}
+		error radiotypes.ErrorList
 	}
 
 	method addFavoriteStation {

@@ -133,7 +133,10 @@ class JoynrJavaGeneratorExtensions extends io.joynr.generator.templates.util.Joy
 		val includeSet = new TreeSet<String>();
 		for(datatype : getAllComplexAndEnumTypes(serviceInterface, methods, readAttributes, writeAttributes, notifyAttributes, broadcasts)) {
 			if (datatype instanceof FType){
-				includeSet.add(getIncludeOf(datatype));
+				val include = getIncludeOf(datatype);
+				if (include != null) {
+					includeSet.add(include);
+				}
 			}
 //			else{
 //				includeSet.add(getIncludeOf(datatype as FBasicTypeId));

@@ -17,55 +17,61 @@
  * #L%
  */
 
-define("joynr/types/DiscoveryException", [
+define("joynr/exceptions/IllegalAccessException", [
+    "joynr/types/TypeRegistrySingleton",
     "joynr/util/UtilInternal",
     "joynr/system/LoggerFactory"
-], function(Util, LoggerFactory) {
+], function(TypeRegistrySingleton, Util, LoggerFactory) {
 
     /**
      * @classdesc
      *
      * @summary
-     * Constructor of DiscoveryException object used for reporting
-     * error conditions during discovery and arbitration.
+     * Constructor of IllegalAccessException object used for reporting
+     * error conditions due to access restrictions that should be reported
+     * back to consumer side.
      *
      * @constructor
-     * @name DiscoveryException
+     * @name IllegalAccessException
      *
      * @param {Object}
      *            [settings] the settings object for the constructor call
      * @param {String}
      *            [settings.detailMessage] message containing details
      *            about the error
-     * @returns {DiscoveryException}
-     *            The newly created DiscoveryException object
+     * @returns {IllegalAccessException}
+     *            The newly created IllegalAccessException object
      */
-    function DiscoveryException(settings) {
-        if (!(this instanceof DiscoveryException)) {
+    function IllegalAccessException(settings) {
+        if (!(this instanceof IllegalAccessException)) {
             // in case someone calls constructor without new keyword (e.g. var c
             // = Constructor({..}))
-            return new DiscoveryException(settings);
+            return new IllegalAccessException(settings);
         }
 
-        var log = LoggerFactory.getLogger("joynr.DiscoveryException");
+        var log = LoggerFactory.getLogger("joynr.exceptions.IllegalAccessException");
 
         /**
          * Used for serialization.
-         * @name DiscoveryException#_typeName
+         * @name IllegalAccessException#_typeName
          * @type String
          * @field
          */
-        Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.DiscoveryException");
+        Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.IllegalAccessException");
 
         /**
-         * See [constructor description]{@link DiscoveryException}.
-         * @name DiscoveryException#detailMessage
+         * See [constructor description]{@link IllegalAccessException}.
+         * @name IllegalAccessException#detailMessage
          * @type String
          * @field
          */
         this.detailMessage = undefined;
     }
 
-    return DiscoveryException;
+    TypeRegistrySingleton.getInstance().addType(
+            "joynr.exceptions.IllegalAccessException",
+            IllegalAccessException);
+
+    return IllegalAccessException;
 
 });

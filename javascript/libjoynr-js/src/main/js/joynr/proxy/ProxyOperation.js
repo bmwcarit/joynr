@@ -340,28 +340,53 @@ define(
 
                         // send it through request reply manager
                         return settings.dependencies.requestReplyManager
-                                .sendRequest({
-                                    to : proxyOperation.parent.providerParticipantId,
-                                    from : proxyOperation.parent.proxyParticipantId,
-                                    messagingQos : messagingQos,
-                                    request : request
-                                })
-                                .then(
-                                        function(response) {
-                                            var responseKey;
-                                            for (responseKey in response) {
-                                                if (response.hasOwnProperty(responseKey)) {
-                                                    response[responseKey] =
-                                                            Typing
-                                                                    .augmentTypes(
-                                                                            response[responseKey],
-                                                                            typeRegistry,
-                                                                            foundValidOperationSignature.outputParameter.paramDatatypes[responseKey]);
-                                                }
+                            .sendRequest({
+                                to : proxyOperation.parent.providerParticipantId,
+                                from : proxyOperation.parent.proxyParticipantId,
+                                messagingQos : messagingQos,
+                                request : request
+                            })
+                            .then(
+                                    function(response) {
+                                        var responseKey;
+                                        for (responseKey in response) {
+                                            if (response.hasOwnProperty(responseKey)) {
+                                                response[responseKey] =
+                                                    Typing
+                                                    .augmentTypes(
+                                                            response[responseKey],
+                                                            typeRegistry,
+                                                            foundValidOperationSignature.outputParameter.paramDatatypes[responseKey]);
                                             }
-
-                                            return response[0];
-                                        });
+                                        }
+                                        
+                                        return response[0];
+                                    })
+                                    .catch(
+                                            function(error) {
+                                                if (error instanceof Error) {
+                                                    return error;
+                                                }
+                                                /*
+                                                 * TODO this object sanitizer needs to be removed, by fixing the issue related with
+                                                 * PhantomJs
+                                                 */
+                                                var cleanObjectFromPhantomJsAddons = function(object) {
+                                                    object.sourceId = undefined;
+                                                    object.sourceURL= undefined;
+                                                    object.stack = undefined;
+                                                    object.stackArray = undefined;
+                                                    object.line = undefined;
+                                                    object.isOperational = undefined;
+                                                };
+                                                cleanObjectFromPhantomJsAddons(error);
+                                                if (error.error) {
+                                                    cleanObjectFromPhantomJsAddons(error.error);
+                                                }
+                                                throw Typing.augmentTypes(
+                                                        error,
+                                                        typeRegistry);
+                                            });
 
                     } catch (e) {
                         return Promise

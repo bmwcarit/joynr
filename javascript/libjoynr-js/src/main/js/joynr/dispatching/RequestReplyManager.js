@@ -31,7 +31,9 @@ define(
             "joynr/util/UtilInternal",
             "joynr/util/JSONSerializer",
             "joynr/util/LongTimer",
-            "joynr/types/MethodInvocationException",
+            "joynr/exceptions/MethodInvocationException",
+            "joynr/exceptions/ProviderRuntimeException",
+            "joynr/exceptions/ApplicationException",
             "joynr/system/LoggerFactory"
         ],
         function(
@@ -45,6 +47,8 @@ define(
                 JSONSerializer,
                 LongTimer,
                 MethodInvocationException,
+                ProviderRuntimeException,
+                ApplicationException,
                 LoggerFactory) {
 
             /**
@@ -211,9 +215,8 @@ define(
                                         provider[request.methodName].callOperation(
                                             request.params,
                                             request.paramDatatypes);
-                                } catch(e) {
-                                    result = undefined;
-                                    exception = e;
+                                } catch(internalException) {
+                                    exception = internalException;
                                 }
                             // otherwise, check whether request is an attribute get, set or an operation
                             } else {
@@ -269,9 +272,9 @@ define(
                                         response : [value],
                                         requestReplyId : request.requestReplyId
                                     }));
-                                }).catch(function(caughtException) {
+                                }).catch(function(internalException) {
                                     callbackDispatcher(new Reply({
-                                        error : caughtException,
+                                        error : internalException,
                                         requestReplyId : request.requestReplyId
                                     }));
                                 });

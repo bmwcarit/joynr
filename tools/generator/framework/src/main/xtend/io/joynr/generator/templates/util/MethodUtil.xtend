@@ -22,7 +22,6 @@ import com.google.inject.Singleton
 import java.util.HashMap
 import java.util.HashSet
 import org.franca.core.franca.FArgument
-import org.franca.core.franca.FInterface
 import org.franca.core.franca.FMethod
 
 @Singleton
@@ -54,7 +53,8 @@ public class MethodUtil {
 	}
 
 
-	def getAllRequiredTypes(FMethod method) {
+	def getAllRequiredTypes(FMethod method, boolean errorTypes) {
+		var Object datatype = null
 		var typeList = new HashSet<Object>();
 		for(returnParameter : getOutputParameters(method).filterNull){
 			typeList.add(getDatatype(returnParameter.type));
@@ -62,6 +62,21 @@ public class MethodUtil {
 		for (inputParameter : getInputParameters(method).filterNull) {
 			typeList.add(getDatatype(inputParameter.type));
 		}
+		if (errorTypes) {
+			if (method.errors !== null) {
+				datatype = getDatatype(method.errors);
+				if (datatype != null) {
+					typeList.add(datatype)
+				}
+			}
+			if (method.errorEnum !== null) {
+				datatype = getDatatype(method.errorEnum);
+				if (datatype != null) {
+					typeList.add(datatype)
+				}
+			}
+		}
+
 		return typeList
 	}
 

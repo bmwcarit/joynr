@@ -189,12 +189,13 @@ public class InterfaceUtil {
 			boolean readAttributes,
 			boolean writeAttributes,
 			boolean notifyAttributes,
-			boolean broadcasts
+			boolean broadcasts,
+			boolean errorTypes
 	) {
 		val typeList = new HashSet<Object>();
 		if (methods){
 			for (method : fInterface.methods) {
-				typeList.addAll(getAllRequiredTypes(method))
+				typeList.addAll(getAllRequiredTypes(method, errorTypes))
 			}
 		}
 
@@ -228,7 +229,7 @@ public class InterfaceUtil {
 	}
 
 	def getAllRequiredTypes(FInterface fInterface, Boolean includingTransitiveTypes) {
-		getAllRequiredTypes(fInterface, includingTransitiveTypes, true, true, true, true, true);
+		getAllRequiredTypes(fInterface, includingTransitiveTypes, true, true, true, true, true, false);
 	}
 
 	def getAllComplexAndEnumTypes(FInterface fInterface, Boolean includingTransitiveTypes) {
@@ -243,8 +244,21 @@ public class InterfaceUtil {
 			boolean writeAttributes,
 			boolean notifyAttributes,
 			boolean broadcasts
+			) {
+			getAllComplexAndEnumTypes(fInterface, includingTransitiveTypes, methods, readAttributes, writeAttributes, notifyAttributes, broadcasts, false)
+			}
+
+	def getAllComplexAndEnumTypes(
+			FInterface fInterface,
+			Boolean includingTransitiveTypes,
+			boolean methods,
+			boolean readAttributes,
+			boolean writeAttributes,
+			boolean notifyAttributes,
+			boolean broadcasts,
+			boolean errorTypes
 	) {
-		getAllRequiredTypes(fInterface, includingTransitiveTypes, methods, readAttributes, writeAttributes, notifyAttributes, broadcasts).
+		getAllRequiredTypes(fInterface, includingTransitiveTypes, methods, readAttributes, writeAttributes, notifyAttributes, broadcasts, errorTypes).
 			filterComplexAndEnum
 	}
 

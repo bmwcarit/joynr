@@ -334,7 +334,11 @@ define(
                     replyMessage.to = settings.to;
                     replyMessage.expiryDate = settings.expiryDate;
 
-                    replyMessage.payload = JSONSerializer.stringify(reply);
+                    /*
+                     * in case the reply contains an error, do not perform any special string replacement
+                     */
+                    replyMessage.payload =
+                            JSONSerializer.stringify(reply, reply.error !== undefined);
                     clusterControllerMessagingStub.transmit(replyMessage);
                 }
 

@@ -1,5 +1,5 @@
 /*jslint es5: true, nomen: true */
-/*global Promise: true, WorkerUtils: true, importScripts: true, joynr: true, Country: true, RadioProvider: true, domain: true, interfaceNameComm: true, providerParticipantIdComm: true, providerChannelIdComm: true, globalCapDirCapability: true, channelUrlDirCapability: true */
+/*global Promise: true, WorkerUtils: true, importScripts: true, joynr: true, Country: true, RadioProvider: true, domain: true, interfaceNameComm: true, providerParticipantIdComm: true, providerChannelIdComm: true, globalCapDirCapability: true, channelUrlDirCapability: true, ErrorList: true */
 
 /*
  * #%L
@@ -33,6 +33,7 @@ importScripts("provisioning_end2end_common.js");
 importScripts("../joynr/vehicle/RadioProvider.js");
 importScripts("../joynr/vehicle/radiotypes/RadioStation.js");
 importScripts("../joynr/datatypes/exampleTypes/Country.js");
+importScripts("../joynr/vehicle/radiotypes/ErrorList.js");
 importScripts("../../classes/lib/bluebird.js");
 
 var Promise = Promise.Promise;
@@ -154,7 +155,37 @@ function initializeTest(provisioningSuffix, providedDomain) {
             radioProvider.addFavoriteStation.registerOperation(function(opArgs) {
                 // retrieve radioStation name for both overloaded version
                 var name = opArgs.radioStation.name || opArgs.radioStation;
-                // returns true if radiostation name contains the string "true"
+
+                // If name contains the string "async" it will work asynchronously
+                // returning a Promise, otherwise synchronously (return/throw directly).
+                // If name contains the string "error" it will throw error or reject
+                // Promise. If name contains "ApplicationException" it will use
+                // the Franca defined error exception for this case, otherwise
+                // ProviderRuntimeException.
+                // If no error handling is active, it will return or resolve true/false
+                // depending on whether radiostation name contains the string "true"
+                if (name.match(/async/)) {
+                    // async
+                    return new Promise(function(resolve, reject) {
+                        if (name.match(/error/)) {
+                            if (name.match(/ApplicationException/)) {
+                                reject(ErrorList.EXAMPLE_ERROR_1);
+                            } else {
+                                reject(new joynr.exceptions.ProviderRuntimeException({ detailMessage: "example message async" }));
+                            }
+                        } else {
+                            resolve(name.match(/true/));
+                        }
+                    });
+                }
+                // sync
+                if (name.match(/error/)) {
+                    if (name.match(/ApplicationException/)) {
+                        throw ErrorList.EXAMPLE_ERROR_2;
+                    } else {
+                        throw new joynr.exceptions.ProviderRuntimeException({ detailMessage: "example message sync" });
+                    }
+                }
                 return !!name.match(/true/);
             });
 

@@ -224,7 +224,9 @@ define("joynr/util/Typing", [
                             || (!checkForJoynrObject || Typing.isComplexJoynrObject(value));
                 /*jslint nomen: true */
                 var result =
-                        typeof value === "object"
+                        value !== undefined
+                            && value !== null
+                            && typeof value === "object"
                             && isJoynrObject
                             && TypeRegistrySingleton.getInstance().isEnumType(value._typeName);
                 /*jslint nomen: false */

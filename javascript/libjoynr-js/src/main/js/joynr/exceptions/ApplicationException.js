@@ -17,11 +17,12 @@
  * #L%
  */
 
-define("joynr/types/ApplicationException", [
+define("joynr/exceptions/ApplicationException", [
+    "joynr/types/TypeRegistrySingleton",
     "joynr/util/UtilInternal",
-    "joynr/types/JoynrException",
+    "joynr/exceptions/JoynrException",
     "joynr/system/LoggerFactory"
-], function(Util, JoynrException, LoggerFactory) {
+], function(TypeRegistrySingleton, Util, JoynrException, LoggerFactory) {
     var defaultSettings;
 
     /**
@@ -52,7 +53,7 @@ define("joynr/types/ApplicationException", [
             return new ApplicationException(settings);
         }
 
-        var log = LoggerFactory.getLogger("joynr.ApplicationException");
+        var log = LoggerFactory.getLogger("joynr.exceptions.ApplicationException");
         var exception = new JoynrException(settings);
 
         /**
@@ -62,10 +63,10 @@ define("joynr/types/ApplicationException", [
          * @field
          */
         Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.ApplicationException");
-        Util.checkProperty(settings, "Object", "settings");
-        Util.checkProperty(settings.error, "Object", "settings.error");
+        Util.checkPropertyIfDefined(settings, "Object", "settings");
         if (settings && settings.error) {
             Util.checkProperty(settings.error.name, "String", "settings.error.name");
+            Util.checkProperty(settings.error.value, "String", "settings.error.value");
         }
 
         Util.extend(this, defaultSettings, settings, exception);
@@ -74,6 +75,9 @@ define("joynr/types/ApplicationException", [
     defaultSettings = {
         detailMessage : "This is an application exception."
     };
+    TypeRegistrySingleton.getInstance().addType(
+            "joynr.exceptions.ApplicationException",
+            ApplicationException);
     return ApplicationException;
 
 });

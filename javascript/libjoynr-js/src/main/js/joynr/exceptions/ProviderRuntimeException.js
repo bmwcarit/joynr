@@ -17,11 +17,12 @@
  * #L%
  */
 
-define("joynr/types/ProviderRuntimeException", [
+define("joynr/exceptions/ProviderRuntimeException", [
+    "joynr/types/TypeRegistrySingleton",
     "joynr/util/UtilInternal",
-    "joynr/types/JoynrRuntimeException",
+    "joynr/exceptions/JoynrRuntimeException",
     "joynr/system/LoggerFactory"
-], function(Util, JoynrRuntimeException, LoggerFactory) {
+], function(TypeRegistrySingleton, Util, JoynrRuntimeException, LoggerFactory) {
     var defaultSettings;
 
     /**
@@ -50,7 +51,7 @@ define("joynr/types/ProviderRuntimeException", [
             return new ProviderRuntimeException(settings);
         }
 
-        var log = LoggerFactory.getLogger("joynr.ProviderRuntimeException");
+        var log = LoggerFactory.getLogger("joynr.exceptions.ProviderRuntimeException");
         var runtimeException = new JoynrRuntimeException(settings);
 
         /**
@@ -65,5 +66,8 @@ define("joynr/types/ProviderRuntimeException", [
     }
 
     defaultSettings = {};
+    TypeRegistrySingleton.getInstance().addType(
+            "joynr.exceptions.ProviderRuntimeException",
+            ProviderRuntimeException);
     return ProviderRuntimeException;
 });

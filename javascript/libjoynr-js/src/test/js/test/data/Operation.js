@@ -1,3 +1,4 @@
+/*jslint nomen: true */
 /*
  * #%L
  * %%
@@ -20,8 +21,9 @@
 // This data file is used in Test[ProxyProvider]Operation
 define("test/data/Operation", [
     "joynr/vehicle/radiotypes/RadioStation",
+    "joynr/vehicle/radiotypes/ErrorList",
     "joynr/tests/testTypes/TestEnum"
-], function(RadioStation, TestEnum) {
+], function(RadioStation, ErrorList, TestEnum) {
 
     var testData = [
         {
@@ -59,7 +61,8 @@ define("test/data/Operation", [
             paramDatatypes : [ "joynr.tests.testTypes.TestEnum"
             ],
             params : [ TestEnum.ZERO
-            ]
+            ],
+            errorEnumType : "no error enumeration given"
         },
         {
             signature : {
@@ -69,7 +72,7 @@ define("test/data/Operation", [
                 }
                 ],
                 error : {
-                    type : "joynr.vehicle.Radio.methodErrorEnum"
+                    type : ErrorList.EXAMPLE_ERROR_1._typeName
                 },
                 outputParameter : []
             },
@@ -84,7 +87,7 @@ define("test/data/Operation", [
                 name : "asdf"
             })
             ],
-            errorEnumType : "joynr.vehicle.Radio.methodErrorEnum"
+            error : ErrorList.EXAMPLE_ERROR_1
         },
         {
             signature : {
