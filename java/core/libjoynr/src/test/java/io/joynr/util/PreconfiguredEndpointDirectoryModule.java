@@ -34,7 +34,7 @@ public class PreconfiguredEndpointDirectoryModule extends AbstractModule {
     }
 
     @Provides
-    RoutingTable provideEndpointDirectory() {
+    RoutingTable provideRoutingTable() {
         return routingTable;
     }
 

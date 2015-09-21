@@ -61,7 +61,8 @@ public class JoynrRuntimeImpl implements JoynrRuntime {
     @Inject
     private RequestReplySender messageSender;
     @Inject
-    private RequestReplyDispatcher dispatcher;
+    private RequestReplyDispatcher requestReplyDispatcher;
+
     @Inject
     public ObjectMapper objectMapper;
 
@@ -128,7 +129,7 @@ public class JoynrRuntimeImpl implements JoynrRuntime {
 
         try {
             // TODO The channel is deleted but not deregistered from the Channel Url Directory
-            dispatcher.shutdown(clear);
+            requestReplyDispatcher.shutdown(clear);
         } catch (Exception e) {
             logger.error("error shutting down dispatcher: {}", e.getMessage());
         }

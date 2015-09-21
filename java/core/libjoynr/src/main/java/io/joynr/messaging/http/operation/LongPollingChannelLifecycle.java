@@ -134,7 +134,7 @@ public class LongPollingChannelLifecycle {
                     while (true) {
                         channelCreated = false;
                         // Create the channel with maximal "maxRetries" retries
-                        createChannelLoop(messageArrivedListener, maxRetries);
+                        createChannelLoop(maxRetries);
 
                         // signal that the channel has been created
                         for (ReceiverStatusListener statusListener : receiverStatusListeners) {
@@ -281,7 +281,7 @@ public class LongPollingChannelLifecycle {
         return retries;
     }
 
-    private int createChannelLoop(final MessageArrivedListener messageArrivedListener, int retries) {
+    private int createChannelLoop(int retries) {
         while (started && !channelCreated) {
 
             channelCreated = createChannel();

@@ -85,7 +85,7 @@ public class DispatcherTest {
     private static final int TIME_OUT_MS = 10 * 1000;
     private static final long TIME_TO_LIVE = 10000L;
     MessageSenderReceiverMock messageSenderReceiverMock;
-    RequestReplyDispatcher dispatcher;
+    RequestReplyDispatcher requestReplyDispatcher;
     private String channelId;
     private String testSenderParticipantId;
     private String testMessageListenerParticipantId;
@@ -149,10 +149,10 @@ public class DispatcherTest {
         objectMapper = injector.getInstance(ObjectMapper.class);
         objectMapper.registerSubtypes(Request.class, OneWay.class);
 
-        dispatcher = injector.getInstance(RequestReplyDispatcher.class);
+        requestReplyDispatcher = injector.getInstance(RequestReplyDispatcher.class);
         requestReplySender = injector.getInstance(RequestReplySender.class);
         messageSenderReceiverMock = injector.getInstance(MessageSenderReceiverMock.class);
-        messageSenderReceiverMock.start(dispatcher);
+        messageSenderReceiverMock.start(requestReplyDispatcher);
 
         testResponderUnregistered = new TestRequestCaller(1);
 
@@ -220,8 +220,8 @@ public class DispatcherTest {
 
     @After
     public void tearDown() {
-        dispatcher.removeListener(testMessageListenerParticipantId);
-        dispatcher.removeRequestCaller(testMessageResponderParticipantId);
+        requestReplyDispatcher.removeListener(testMessageListenerParticipantId);
+        requestReplyDispatcher.removeRequestCaller(testMessageResponderParticipantId);
     }
 
     @Test
@@ -243,10 +243,10 @@ public class DispatcherTest {
         when(accessControllerMock.hasConsumerPermission(any(JoynrMessage.class))).thenReturn(true);
 
         TestRequestCaller testRequestCaller = new TestRequestCaller(1);
-        dispatcher.addRequestCaller(testMessageResponderParticipantId, testRequestCaller);
+        requestReplyDispatcher.addRequestCaller(testMessageResponderParticipantId, testRequestCaller);
 
         ReplyCaller replyCaller = mock(ReplyCaller.class);
-        dispatcher.addReplyCaller(jsonRequest1.getRequestReplyId(), replyCaller, TIME_TO_LIVE * 2);
+        requestReplyDispatcher.addReplyCaller(jsonRequest1.getRequestReplyId(), replyCaller, TIME_TO_LIVE * 2);
 
         requestReplySender.sendRequest(testSenderParticipantId,
                                        testMessageResponderParticipantId,
@@ -275,7 +275,7 @@ public class DispatcherTest {
 
                 try {
                     messageSenderReceiverMock.setBlockOnInitialisation(true);
-                    dispatcher.addReplyCaller(requestReplyId, replyCaller, TIME_TO_LIVE * 2);
+                    requestReplyDispatcher.addReplyCaller(requestReplyId, replyCaller, TIME_TO_LIVE * 2);
                 } finally {
                     messageSenderReceiverMock.setBlockOnInitialisation(false);
                 }
@@ -315,7 +315,7 @@ public class DispatcherTest {
         Thread.sleep((long) (TIME_TO_LIVE * 0.03 + 20));
 
         testResponderUnregistered.waitForMessage((int) (TIME_TO_LIVE * 0.05));
-        dispatcher.addRequestCaller(testResponderUnregisteredParticipantId, testResponderUnregistered);
+        requestReplyDispatcher.addRequestCaller(testResponderUnregisteredParticipantId, testResponderUnregistered);
 
         testResponderUnregistered.assertAllPayloadsReceived((int) (TIME_TO_LIVE));
         testResponderUnregistered.assertReceivedPayloadsContainsNot(payload1);
@@ -328,14 +328,14 @@ public class DispatcherTest {
         long ttlReplyCaller = 1000L;
 
         final ReplyCaller replyCaller = mock(ReplyCaller.class);
-        dispatcher.addReplyCaller(jsonRequest1.getRequestReplyId(), replyCaller, ttlReplyCaller);
+        requestReplyDispatcher.addReplyCaller(jsonRequest1.getRequestReplyId(), replyCaller, ttlReplyCaller);
         requestReplySender.sendRequest(testSenderParticipantId,
                                        testMessageResponderParticipantId,
                                        jsonRequest1,
                                        ttlReplyCaller);
 
         Thread.sleep(ttlReplyCaller);
-        dispatcher.addRequestCaller(testMessageResponderParticipantId, testResponder);
+        requestReplyDispatcher.addRequestCaller(testMessageResponderParticipantId, testResponder);
 
         assertEquals(1, messageSenderReceiverMock.getSentMessages().size());
         JoynrMessage sentMessage = messageSenderReceiverMock.getSentMessages().get(0);
@@ -348,7 +348,7 @@ public class DispatcherTest {
         // .get(JoynrMessage.HEADER_NAME_REQUEST_REPLY_ID));
         reply.setHeader(header);
         reply.setPayload("The reply to " + sentMessage.getPayload());
-        dispatcher.messageArrived(reply);
+        requestReplyDispatcher.messageArrived(reply);
 
         verify(replyCaller, never()).messageCallBack(any(Reply.class));
     }
@@ -358,7 +358,7 @@ public class DispatcherTest {
                                JsonGenerationException, JsonMappingException, IOException {
 
         TestOneWayRecipient oneWayRecipient = new TestOneWayRecipient(1);
-        dispatcher.addOneWayRecipient(testMessageListenerParticipantId, oneWayRecipient);
+        requestReplyDispatcher.addOneWayRecipient(testMessageListenerParticipantId, oneWayRecipient);
 
         OneWay payload = new OneWay(payload1);
         requestReplySender.sendOneWay(testSenderParticipantId, testMessageListenerParticipantId, payload, TIME_TO_LIVE);
@@ -372,9 +372,9 @@ public class DispatcherTest {
         when(accessControllerMock.hasConsumerPermission(any(JoynrMessage.class))).thenReturn(true);
 
         TestRequestCaller testResponder = new TestRequestCaller(1);
-        dispatcher.addRequestCaller(testMessageResponderParticipantId, testResponder);
+        requestReplyDispatcher.addRequestCaller(testMessageResponderParticipantId, testResponder);
         ReplyCaller replyCaller = mock(ReplyCaller.class);
-        dispatcher.addReplyCaller(jsonRequest1.getRequestReplyId(), replyCaller, TIME_TO_LIVE * 2);
+        requestReplyDispatcher.addReplyCaller(jsonRequest1.getRequestReplyId(), replyCaller, TIME_TO_LIVE * 2);
 
         requestReplySender.sendRequest(testSenderParticipantId,
                                        testMessageResponderParticipantId,

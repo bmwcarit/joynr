@@ -62,7 +62,7 @@ public class ProxyArbitrationTest {
     @Mock
     MessageSender messageSender;
     @Mock
-    private RequestReplyDispatcher dispatcher;
+    private RequestReplyDispatcher requestReplyDispatcher;
     @Mock
     private SubscriptionManager subscriptionManager;
     @Mock
@@ -104,7 +104,7 @@ public class ProxyArbitrationTest {
 
         RequestReplySender requestReplySender = new RequestReplySenderImpl(joynrMessageFactory, messageRouter);
         JoynrMessagingConnectorFactory joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(requestReplySender,
-                                                                                                           dispatcher,
+                                                                                                           requestReplyDispatcher,
                                                                                                            subscriptionManager);
         ConnectorFactory connectorFactory = new ConnectorFactory(joynrMessagingConnectorFactory, messageRouter);
         proxyHandler = new ProxyInvocationHandlerImpl("domain",
@@ -156,7 +156,9 @@ public class ProxyArbitrationTest {
                 return null;
             }
 
-        }).when(dispatcher).addReplyCaller(Mockito.anyString(), Mockito.<ReplyCaller> any(), Mockito.anyLong());
+        }).when(requestReplyDispatcher).addReplyCaller(Mockito.anyString(),
+                                                       Mockito.<ReplyCaller> any(),
+                                                       Mockito.anyLong());
     }
 
     @Test
