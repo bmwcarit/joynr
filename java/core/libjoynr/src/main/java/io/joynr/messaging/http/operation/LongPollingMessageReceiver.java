@@ -120,7 +120,7 @@ public class LongPollingMessageReceiver implements MessageReceiver {
             }
         }, receiverStatusListeners);
 
-        channelMonitor.startLongPolling(this, statusListeners);
+        channelMonitor.startLongPolling(messageListener, statusListeners);
         return channelCreatedFuture;
     }
 

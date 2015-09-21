@@ -22,7 +22,7 @@ package io.joynr.messaging.http.operation;
 import io.joynr.exceptions.JoynrChannelMissingException;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrShutdownException;
-import io.joynr.messaging.MessageReceiver;
+import io.joynr.messaging.MessageArrivedListener;
 import io.joynr.messaging.MessagingSettings;
 import io.joynr.messaging.datatypes.JoynrMessagingError;
 import io.joynr.messaging.datatypes.JoynrMessagingErrorCode;
@@ -33,6 +33,9 @@ import java.net.SocketException;
 import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -54,6 +57,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 /**
  * Callable to keep a long polling channel alive and to process incoming messages.
@@ -67,7 +71,7 @@ public class LongPollChannel {
 
     private CloseableHttpClient httpclient;
     private boolean shutdown = false;
-    private MessageReceiver messageReceiver;
+    private MessageArrivedListener messageArrivedListener;
     private final ObjectMapper objectMapper;
 
     private String id = "";
@@ -84,12 +88,13 @@ public class LongPollChannel {
     private String statusText;
     private RequestConfig defaultRequestConfig;
     private HttpRequestFactory httpRequestFactory;
+    private ExecutorService messageReceiverExecutor;
 
     // CHECKSTYLE:OFF
     public LongPollChannel(CloseableHttpClient httpclient,
                            RequestConfig defaultRequestConfig,
                            Boolean longPollingDisabled,
-                           MessageReceiver messageReceiver,
+                           MessageArrivedListener messageArrivedListener,
                            ObjectMapper objectMapper,
                            MessagingSettings settings,
                            HttpConstants httpConstants,
@@ -100,12 +105,14 @@ public class LongPollChannel {
         this.httpclient = httpclient;
         this.defaultRequestConfig = defaultRequestConfig;
         this.longPollingDisabled = longPollingDisabled;
-        this.messageReceiver = messageReceiver;
+        this.messageArrivedListener = messageArrivedListener;
         this.objectMapper = objectMapper;
         this.settings = settings;
         this.httpConstants = httpConstants;
         this.receiverId = receiverId;
         this.httpRequestFactory = httpRequestFactory;
+        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.LongPollChannel-%d").build();
+        messageReceiverExecutor = Executors.newCachedThreadPool(namedThreadFactory);
     }
 
     /**
@@ -246,10 +253,22 @@ public class LongPollChannel {
         // Tries to parse each message as a JoynrMessage or MessageWrapper
         for (String json : listOfJsonStrings) {
             try {
-                JoynrMessage message = objectMapper.readValue(json, JoynrMessage.class); // jsonConverter.fromJson(json,
+                final JoynrMessage message = objectMapper.readValue(json, JoynrMessage.class); // jsonConverter.fromJson(json,
                 // MessageWrapper.class);
                 if (message != null) {
-                    messageReceiver.receive(message);
+                    messageReceiverExecutor.execute(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            logger.info("ARRIVED {} messageId: {} type: {} from: {} to: {} header: {}", new String[]{
+                                    httpget.getURI().toString(), message.getId(), message.getType(),
+                                    message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
+                                    message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID),
+                                    message.getHeader().toString() });
+                            logger.debug("\r\n<<<<<<<<<<<<<<<<<\r\n:{}", message.toLogMessage());
+                            messageArrivedListener.messageArrived(message);
+                        }
+                    });
 
                 } else {
                     logger.warn("LongPollingChannel CHANNEL: {} message was null", id);
