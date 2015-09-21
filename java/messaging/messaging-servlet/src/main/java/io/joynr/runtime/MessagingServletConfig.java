@@ -22,10 +22,10 @@ package io.joynr.runtime;
 import io.joynr.JoynrApplicationLauncher;
 import io.joynr.guice.LowerCaseProperties;
 import io.joynr.guice.servlet.AbstractJoynrServletModule;
-import io.joynr.messaging.IMessageReceivers;
-import io.joynr.messaging.MessageReceivers;
+import io.joynr.messaging.IServletMessageReceivers;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingService;
+import io.joynr.messaging.ServletMessageReceivers;
 import io.joynr.messaging.ServletMessagingModule;
 import io.joynr.messaging.ServletPropertyLoader;
 import io.joynr.servlet.JoynrWebServlet;
@@ -83,7 +83,7 @@ public class MessagingServletConfig extends GuiceServletContextListener {
     private static final Logger logger = LoggerFactory.getLogger(MessagingServletConfig.class);
 
     private JerseyServletModule jerseyServletModule;
-    private IMessageReceivers messageReceivers = new MessageReceivers();
+    private IServletMessageReceivers messageReceivers = new ServletMessageReceivers();
     private JoynrApplicationLauncher appLauncher = null;
 
     @Override
@@ -167,7 +167,7 @@ public class MessagingServletConfig extends GuiceServletContextListener {
             // this @SuppressWarnings is needed for the build on jenkins
             @SuppressWarnings("unused")
             @Provides
-            public IMessageReceivers providesMessageReceivers() {
+            public IServletMessageReceivers providesMessageReceivers() {
                 return messageReceivers;
             }
 

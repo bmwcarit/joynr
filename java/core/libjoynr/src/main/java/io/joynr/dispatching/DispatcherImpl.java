@@ -41,12 +41,16 @@ public class DispatcherImpl implements Dispatcher {
 
     private final JoynrMessageFactory joynrMessageFactory;
     private final MessageRouter messageRouter;
+    private RequestReplyDispatcher requestReplyDispatcher;
 
     @Inject
     @Singleton
-    public DispatcherImpl(JoynrMessageFactory joynrMessageFactory, MessageRouter messageRouter) {
+    public DispatcherImpl(JoynrMessageFactory joynrMessageFactory,
+                          MessageRouter messageRouter,
+                          RequestReplyDispatcher requestReplyDispatcher) {
         this.joynrMessageFactory = joynrMessageFactory;
         this.messageRouter = messageRouter;
+        this.requestReplyDispatcher = requestReplyDispatcher;
     }
 
     @Override
@@ -99,5 +103,6 @@ public class DispatcherImpl implements Dispatcher {
 
     @Override
     public void receive(JoynrMessage message) {
+        requestReplyDispatcher.messageArrived(message);
     }
 }

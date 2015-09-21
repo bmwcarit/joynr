@@ -272,6 +272,8 @@ public class LongPollChannel {
 
                 } else {
                     logger.warn("LongPollingChannel CHANNEL: {} message was null", id);
+                    messageArrivedListener.error(null,
+                                                 new JoynrCommunicationException("LongPollingChannel CHANNEL: {} message was null"));
                 }
                 continue;
             } catch (JsonParseException e) {

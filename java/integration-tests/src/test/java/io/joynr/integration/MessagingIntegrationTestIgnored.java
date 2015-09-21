@@ -36,7 +36,7 @@ import java.util.Properties;
 /**
  * Tests the interaction of the dispatcher and communication manager.
  */
-public class MessagingIntegrationTest extends AbstractMessagingIntegrationTest {
+public class MessagingIntegrationTestIgnored extends AbstractMessagingIntegrationTest {
 
     private static Server jettyServer;
 

@@ -19,6 +19,7 @@ package io.joynr.dispatcher;
  * #L%
  */
 
+import io.joynr.messaging.IServletMessageReceivers;
 import io.joynr.messaging.LocalChannelUrlDirectoryClient;
 import io.joynr.messaging.MessageArrivedListener;
 import io.joynr.messaging.MessagingPropertyKeys;
@@ -76,6 +77,7 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
     public ServletMessageReceiverImpl(@Named(MessagingPropertyKeys.CHANNELID) String channelId,
                                       LocalChannelUrlDirectoryClient channelUrlDirectory,
                                       LongPollingMessageReceiver longPollingReceiver,
+                                      IServletMessageReceivers receivers,
                                       @Named(MessagingPropertyKeys.PROPERTY_SERVLET_CONTEXT_ROOT) String contextRoot,
                                       @Named(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH) String hostPath,
                                       @Named(MessagingPropertyKeys.PROPERTY_SERVLET_SHUTDOWN_TIMEOUT) int servletShutdownTimeout_ms) {
@@ -86,6 +88,7 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
         this.hostPath = hostPath;
         this.servletShutdownTimeout_ms = servletShutdownTimeout_ms;
         this.started = false;
+        receivers.registerServletMessageReceiver(this, channelId);
     }
 
     @Inject(optional = true)

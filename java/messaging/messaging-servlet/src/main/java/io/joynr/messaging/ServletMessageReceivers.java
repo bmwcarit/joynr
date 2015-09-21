@@ -3,7 +3,7 @@ package io.joynr.messaging;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ package io.joynr.messaging;
  * #L%
  */
 
+import io.joynr.dispatcher.ServletMessageReceiver;
+
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -27,10 +29,10 @@ import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MessageReceivers implements IMessageReceivers {
-    private static final Logger log = LoggerFactory.getLogger(MessageReceivers.class);
+public class ServletMessageReceivers implements IServletMessageReceivers {
+    private static final Logger log = LoggerFactory.getLogger(ServletMessageReceivers.class);
 
-    ConcurrentHashMap<String, MessageReceiver> messageReceivers = new ConcurrentHashMap<String, MessageReceiver>();
+    ConcurrentHashMap<String, ServletMessageReceiver> messageReceivers = new ConcurrentHashMap<String, ServletMessageReceiver>();
 
     /*
      * (non-Javadoc)
@@ -39,7 +41,7 @@ public class MessageReceivers implements IMessageReceivers {
      */
     @Nullable
     @Override
-    public MessageReceiver getReceiverForChannelId(String channelId) {
+    public ServletMessageReceiver getServletMessageReceiver(String channelId) {
         return messageReceivers.get(channelId);
     }
 
@@ -51,14 +53,14 @@ public class MessageReceivers implements IMessageReceivers {
      * .MessageReceiver)
      */
     @Override
-    public void registerMessageReceiver(MessageReceiver messageReceiver, String channelId) {
+    public void registerServletMessageReceiver(ServletMessageReceiver messageReceiver, String channelId) {
         log.debug("Message Receiver registered for: " + channelId); //messageReceiver.getChannelId());
         //messageReceivers.put(messageReceiver.getChannelId(), messageReceiver);
         messageReceivers.put(channelId, messageReceiver);
     }
 
     @Override
-    public Collection<MessageReceiver> getAllMessageReceivers() {
+    public Collection<ServletMessageReceiver> getAllServletMessageReceivers() {
         return messageReceivers.values();
     }
 

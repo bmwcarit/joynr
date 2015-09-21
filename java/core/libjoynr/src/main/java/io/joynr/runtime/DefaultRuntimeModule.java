@@ -28,8 +28,6 @@ import io.joynr.dispatching.RequestReplySenderImpl;
 import io.joynr.dispatching.rpc.RpcUtils;
 import io.joynr.logging.JoynrAppenderManagerFactory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.IMessageReceivers;
-import io.joynr.messaging.MessageReceivers;
 import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.MessageSenderImpl;
 import io.joynr.messaging.MessagingPropertyKeys;
@@ -40,6 +38,7 @@ import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.MessageRouterImpl;
 import io.joynr.messaging.routing.RoutingTable;
+import io.joynr.messaging.routing.RoutingTableImpl;
 import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.proxy.ProxyBuilderFactoryImpl;
 import io.joynr.proxy.ProxyInvocationHandler;
@@ -81,8 +80,7 @@ public class DefaultRuntimeModule extends AbstractModule {
         bind(MessageRouter.class).to(MessageRouterImpl.class);
         bind(MessagingSettings.class).to(ConfigurableMessagingSettings.class);
         bind(MessageSender.class).to(MessageSenderImpl.class);
-        bind(RoutingTable.class).asEagerSingleton();
-        bind(IMessageReceivers.class).to(MessageReceivers.class).asEagerSingleton();
+        bind(RoutingTable.class).to(RoutingTableImpl.class).asEagerSingleton();
 
         bind(CloseableHttpClient.class).toProvider(HttpClientProvider.class).in(Singleton.class);
 

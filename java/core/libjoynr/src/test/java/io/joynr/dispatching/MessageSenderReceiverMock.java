@@ -107,12 +107,6 @@ public class MessageSenderReceiverMock implements MessageReceiver, MessageSender
     }
 
     @Override
-    public void receive(JoynrMessage message) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
     public void suspend() {
         // TODO Auto-generated method stub
 
@@ -120,12 +114,6 @@ public class MessageSenderReceiverMock implements MessageReceiver, MessageSender
 
     @Override
     public void resume() {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void onError(JoynrMessage message, Throwable error) {
         // TODO Auto-generated method stub
 
     }

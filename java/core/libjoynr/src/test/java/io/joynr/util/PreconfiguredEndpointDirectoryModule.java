@@ -19,8 +19,6 @@ package io.joynr.util;
  * #L%
  */
 
-import io.joynr.messaging.IMessageReceivers;
-import io.joynr.messaging.MessageReceivers;
 import io.joynr.messaging.routing.RoutingTable;
 
 import com.google.inject.AbstractModule;
@@ -40,6 +38,6 @@ public class PreconfiguredEndpointDirectoryModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(IMessageReceivers.class).to(MessageReceivers.class).asEagerSingleton();
+        //do nothing
     }
 }

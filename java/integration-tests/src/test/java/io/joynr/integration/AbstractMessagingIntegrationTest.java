@@ -28,7 +28,6 @@ import io.joynr.dispatching.JoynrMessageFactory;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.integration.util.TestMessageListener;
-import io.joynr.messaging.IMessageReceivers;
 import io.joynr.messaging.LocalChannelUrlDirectoryClient;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.MessageSender;
@@ -115,15 +114,15 @@ public abstract class AbstractMessagingIntegrationTest {
         Injector injector1 = setupMessageEndpoint(channelId1, localChannelUrlDirectoryClient, localCapDir);
         joynrMessageSender1 = injector1.getInstance(MessageSender.class);
         messageReceiver1 = injector1.getInstance(MessageReceiver.class);
-        IMessageReceivers messageReceivers = injector1.getInstance(IMessageReceivers.class);
-        messageReceivers.registerMessageReceiver(messageReceiver1, channelId1);
+        //   IMessageReceivers messageReceivers = injector1.getInstance(IMessageReceivers.class);
+        // messageReceivers.registerMessageReceiver(messageReceiver1, channelId1);
 
         String channelId2 = "2_" + UUID.randomUUID().toString();
         Injector injector2 = setupMessageEndpoint(channelId2, localChannelUrlDirectoryClient, localCapDir);
         joynrMessageSender2 = injector2.getInstance(MessageSender.class);
         messageReceiver2 = injector2.getInstance(MessageReceiver.class);
-        IMessageReceivers messageReceivers2 = injector2.getInstance(IMessageReceivers.class);
-        messageReceivers2.registerMessageReceiver(messageReceiver2, channelId2);
+        //   IMessageReceivers messageReceivers2 = injector2.getInstance(IMessageReceivers.class);
+        //  messageReceivers2.registerMessageReceiver(messageReceiver2, channelId2);
 
         joynrMessagingFactory = injector1.getInstance(JoynrMessageFactory.class);
 

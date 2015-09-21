@@ -25,12 +25,8 @@ import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.MessagingSettings;
 import io.joynr.messaging.ReceiverStatusListener;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
-
-import joynr.JoynrMessage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,10 +49,8 @@ public class LongPollingMessageReceiver implements MessageReceiver {
 
     private static final Logger logger = LoggerFactory.getLogger(LongPollingMessageReceiver.class);
     ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.MessageReceiver-%d").build();
-    private ExecutorService messageReceiverExecutor = Executors.newCachedThreadPool(namedThreadFactory);
 
     protected final MessagingSettings settings;
-    protected MessageArrivedListener messageListener = null;
     // private final MessageSender messageSender;
     protected final LongPollingChannelLifecycle channelMonitor;
 
@@ -65,8 +59,6 @@ public class LongPollingMessageReceiver implements MessageReceiver {
     private boolean shutdown = false;
 
     private Object shutdownSynchronizer = new Object();
-
-    private Object registerSynchronizer = new Object();
 
     @Inject
     public LongPollingMessageReceiver(LongPollingChannelLifecycle channelMonitor,
@@ -78,20 +70,12 @@ public class LongPollingMessageReceiver implements MessageReceiver {
     }
 
     @Override
-    public synchronized Future<Void> start(MessageArrivedListener newMessageListener,
+    public synchronized Future<Void> start(MessageArrivedListener messageListener,
                                            ReceiverStatusListener... receiverStatusListeners) {
         synchronized (shutdownSynchronizer) {
             if (shutdown) {
                 throw new JoynrShutdownException("Cannot register Message Listener: " + messageListener
                         + ": LongPollingMessageReceiver is already shutting down");
-            }
-        }
-
-        synchronized (registerSynchronizer) {
-            if (this.messageListener == null) {
-                this.messageListener = newMessageListener;
-            } else {
-                throw new IllegalStateException("MessageListener was already registered!");
             }
         }
 
@@ -137,10 +121,6 @@ public class LongPollingMessageReceiver implements MessageReceiver {
             channelMonitor.shutdown();
         }
 
-        messageReceiverExecutor.shutdown();
-
-        this.messageListener = null;
-
     }
 
     @Override
@@ -168,48 +148,13 @@ public class LongPollingMessageReceiver implements MessageReceiver {
     }
 
     @Override
-    public void receive(final JoynrMessage message) {
-        if (message == null) {
-            logger.info("ARRIVED on channelId: {} NULL message", channelId);
-            return;
-        }
-
-        messageReceiverExecutor.execute(new Runnable() {
-
-            @Override
-            public void run() {
-                logger.info("ARRIVED on channelId: {} messageId: {} type: {} from: {} to: {} header: {}", new String[]{
-                        channelId, message.getId(), message.getType(),
-                        message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
-                        message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID),
-                        message.getHeader().toString() });
-                logger.debug("\r\n<<<<<<<<<<<<<<<<<\r\n:{}", message.toLogMessage());
-                messageListener.messageArrived(message);
-            }
-        });
-
-    }
-
-    @Override
     public void suspend() {
         logger.info("Suspending channelMonitor");
         channelMonitor.suspend();
-
     }
 
     @Override
     public void resume() {
         channelMonitor.resume();
-
     }
-
-    @Override
-    public void onError(JoynrMessage message, Throwable error) {
-        if (messageListener == null) {
-            logger.error("\r\n!!!! Dropped Message {}", message, error);
-        } else {
-            messageListener.error(message, error);
-        }
-    }
-
 }

@@ -32,7 +32,6 @@ import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.exceptions.JoynrShutdownException;
-import io.joynr.messaging.IMessageReceivers;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.ReceiverStatusListener;
@@ -113,7 +112,6 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
     @Inject
     // CHECKSTYLE:OFF
     public RequestReplyDispatcherImpl(RequestReplySender messageSender,
-                                      IMessageReceivers messageReceivers,
                                       MessageReceiver messageReceiver,
                                       RoutingTable messagingEndpointDirectory,
                                       ReplyCallerDirectory replyCallerDirectory,
@@ -138,15 +136,6 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
         this.cleanupScheduler = cleanupScheduler;
         this.accessController = accessController;
         this.securityManager = securityManager;
-
-        // TODO would be better not to have this in the constructor to prevent
-        // any race condition issues with messages being
-        // received before the constructor is finished. Also would be good to
-        // only start the long poll once someone really is
-        // interested in incoming messages
-        // messageReceiver.registerMessageListener(this);
-        // messageReceivers.registerMessageReceiver(messageReceiver);
-        messageReceivers.registerMessageReceiver(messageReceiver, channelId);
     }
 
     @Override

@@ -19,10 +19,18 @@ package io.joynr.messaging;
  * #L%
  */
 
-import joynr.JoynrMessage;
+import io.joynr.dispatcher.ServletMessageReceiver;
 
-public interface MessageListener {
+import java.util.Collection;
 
-    public void messageArrived(JoynrMessage message);
+public interface IServletMessageReceivers {
+
+    public abstract ServletMessageReceiver getServletMessageReceiver(String channelId);
+
+    public abstract void registerServletMessageReceiver(ServletMessageReceiver messageReceiver, String channelId);
+
+    public abstract Collection<ServletMessageReceiver> getAllServletMessageReceivers();
+
+    public abstract boolean contains(final String channelId);
 
 }

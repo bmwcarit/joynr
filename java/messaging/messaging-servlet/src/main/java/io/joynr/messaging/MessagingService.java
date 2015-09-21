@@ -22,6 +22,7 @@ package io.joynr.messaging;
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_CHANNELNOTSET;
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_EXPIRYDATENOTSET;
 import io.joynr.communications.exceptions.JoynrHttpException;
+import io.joynr.dispatcher.ServletMessageReceiver;
 
 import java.io.IOException;
 import java.net.URI;
@@ -74,10 +75,10 @@ public class MessagingService {
     @Context
     UriInfo ui;
 
-    private final IMessageReceivers messageReceivers;
+    private final IServletMessageReceivers messageReceivers;
 
     @Inject
-    public MessagingService(final IMessageReceivers messageReceivers) {
+    public MessagingService(final IServletMessageReceivers messageReceivers) {
         this.messageReceivers = messageReceivers;
     }
 
@@ -88,9 +89,9 @@ public class MessagingService {
      */
     @GET
     @Produces("application/json")
-    public GenericEntity<Collection<MessageReceiver>> listChannels() {
+    public GenericEntity<Collection<ServletMessageReceiver>> listChannels() {
         try {
-            return new GenericEntity<Collection<MessageReceiver>>(messageReceivers.getAllMessageReceivers()) {
+            return new GenericEntity<Collection<ServletMessageReceiver>>(messageReceivers.getAllServletMessageReceivers()) {
             };
         } catch (Throwable e) {
             log.error("GET channels listChannels: error: {}", e.getMessage(), e);
@@ -147,7 +148,7 @@ public class MessagingService {
             }
 
             // pass off the message to the registered listener
-            MessageReceiver messageReceiver = messageReceivers.getReceiverForChannelId(channelId);
+            ServletMessageReceiver messageReceiver = messageReceivers.getServletMessageReceiver(channelId);
 
             // messageReceiver is guaranteed to be nonnull for getReceiverForChannelId, so the check is not needed
             // anymore.

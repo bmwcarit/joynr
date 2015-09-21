@@ -26,9 +26,7 @@ import io.joynr.dispatching.subscription.PublicationManagerImpl;
 import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.dispatching.subscription.SubscriptionManagerImpl;
 import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.IMessageReceivers;
 import io.joynr.messaging.MessageReceiver;
-import io.joynr.messaging.MessageReceivers;
 import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.MessageRouterImpl;
@@ -57,7 +55,6 @@ public class DispatcherTestModule extends AbstractModule {
     protected void configure() {
 
         bind(MessageSender.class).to(MessageSenderReceiverMock.class);
-        bind(IMessageReceivers.class).to(MessageReceivers.class).asEagerSingleton();
         bind(MessageReceiver.class).to(MessageSenderReceiverMock.class);
         bind(RequestReplySender.class).to(RequestReplySenderImpl.class);
         bind(MessageRouter.class).to(MessageRouterImpl.class);

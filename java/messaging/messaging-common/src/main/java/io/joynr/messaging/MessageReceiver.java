@@ -21,10 +21,6 @@ package io.joynr.messaging;
 
 import java.util.concurrent.Future;
 
-import javax.annotation.CheckForNull;
-
-import joynr.JoynrMessage;
-
 /**
  * Messaging facade.
  */
@@ -44,10 +40,6 @@ public interface MessageReceiver {
     boolean deleteChannel();
 
     boolean isStarted();
-
-    void receive(JoynrMessage message);
-
-    void onError(@CheckForNull JoynrMessage message, Throwable error);
 
     void suspend();
 
