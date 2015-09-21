@@ -117,20 +117,6 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
     }
 
     @Override
-    public void registerMessageListener(MessageArrivedListener registerMessageListener) {
-        if (this.messageListener == registerMessageListener) {
-            logger.warn("this messageListener {} is already registered", registerMessageListener);
-            return;
-        }
-        if (this.messageListener == null && registerMessageListener != null) {
-            this.messageListener = registerMessageListener;
-        } else {
-            throw new IllegalStateException();
-        }
-
-    }
-
-    @Override
     public void shutdown(boolean clear) {
         ExecutorService executor = Executors.newSingleThreadExecutor();
 
@@ -211,8 +197,7 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
 
         try {
             // switching to longPolling before the servlet is destroyed, to be able to unregister
-            longPollingReceiver.registerMessageListener(messageListener);
-            Future<Void> startReceiver = longPollingReceiver.startReceiver();
+            Future<Void> startReceiver = longPollingReceiver.start(messageListener);
             startReceiver.get(servletShutdownTimeout_ms, TimeUnit.MILLISECONDS);
             try {
                 unregisterChannel();
@@ -240,10 +225,12 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
     }
 
     @Override
-    public Future<Void> startReceiver(ReceiverStatusListener... statusListeners) {
-        if (messageListener == null) {
+    public Future<Void> start(MessageArrivedListener registerMessageListener, ReceiverStatusListener... statusListeners) {
+        if (registerMessageListener == null) {
             throw new IllegalStateException();
         }
+
+        this.messageListener = registerMessageListener;
         // this.messageListener must be set before calling registerChannelUrl,
         // otherwise the reply will not be able to be processed
         if (!registered) {

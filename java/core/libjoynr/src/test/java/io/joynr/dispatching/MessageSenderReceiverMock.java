@@ -102,13 +102,6 @@ public class MessageSenderReceiverMock implements MessageReceiver, MessageSender
     }
 
     @Override
-    public void registerMessageListener(MessageArrivedListener messageArrivedListener) {
-
-        this.messageArrivedListener = messageArrivedListener;
-
-    }
-
-    @Override
     public boolean isStarted() {
         return started;
     }
@@ -158,7 +151,8 @@ public class MessageSenderReceiverMock implements MessageReceiver, MessageSender
     }
 
     @Override
-    public Future<Void> startReceiver(ReceiverStatusListener... statusListeners) {
+    public Future<Void> start(MessageArrivedListener messageArrivedListener, ReceiverStatusListener... statusListeners) {
+        this.messageArrivedListener = messageArrivedListener;
         started = true;
 
         if (isBlockInitialisation()) {

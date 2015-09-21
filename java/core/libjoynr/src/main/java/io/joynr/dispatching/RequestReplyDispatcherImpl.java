@@ -194,7 +194,6 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
         synchronized (messageReceiver) {
             if (registering == false) {
                 registering = true;
-                messageReceiver.registerMessageListener(RequestReplyDispatcherImpl.this);
 
                 if (!messageReceiver.isStarted()) {
                     // The messageReceiver gets the message off the wire and passes it on to the message Listener.
@@ -205,7 +204,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
                     // NOTE LongPollMessageReceiver creates a channel synchronously before returning
 
                     // TODO this will lead to a unique messageReceiver => all servlets share one channelId
-                    messageReceiver.startReceiver(new ReceiverStatusListener() {
+                    messageReceiver.start(RequestReplyDispatcherImpl.this, new ReceiverStatusListener() {
 
                         @Override
                         public void receiverStarted() {

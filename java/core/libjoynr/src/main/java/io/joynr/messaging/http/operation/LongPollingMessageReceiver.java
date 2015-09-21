@@ -78,7 +78,8 @@ public class LongPollingMessageReceiver implements MessageReceiver {
     }
 
     @Override
-    public void registerMessageListener(MessageArrivedListener newMessageListener) {
+    public synchronized Future<Void> start(MessageArrivedListener newMessageListener,
+                                           ReceiverStatusListener... receiverStatusListeners) {
         synchronized (shutdownSynchronizer) {
             if (shutdown) {
                 throw new JoynrShutdownException("Cannot register Message Listener: " + messageListener
@@ -93,10 +94,7 @@ public class LongPollingMessageReceiver implements MessageReceiver {
                 throw new IllegalStateException("MessageListener was already registered!");
             }
         }
-    }
 
-    @Override
-    public synchronized Future<Void> startReceiver(ReceiverStatusListener... receiverStatusListeners) {
         if (isStarted()) {
             return Futures.immediateFailedFuture(new IllegalStateException("receiver is already started"));
         }
@@ -131,9 +129,6 @@ public class LongPollingMessageReceiver implements MessageReceiver {
     public void shutdown(boolean clear) {
         logger.info("SHUTTING DOWN long polling message receiver");
 
-        synchronized (shutdownSynchronizer) {
-            shutdown = true;
-        }
         if (clear) {
             deleteChannel();
         }
@@ -160,12 +155,10 @@ public class LongPollingMessageReceiver implements MessageReceiver {
             return channelMonitor.deleteChannel(settings.getMaxRetriesCount());
         }
         return false;
-
     }
 
     @Override
     public boolean isStarted() {
-
         return channelMonitor.isStarted();
     }
 

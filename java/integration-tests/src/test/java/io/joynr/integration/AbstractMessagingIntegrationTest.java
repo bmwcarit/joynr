@@ -172,12 +172,10 @@ public abstract class AbstractMessagingIntegrationTest {
         String channelId2 = messageReceiver2.getChannelId();
 
         TestMessageListener listener2 = new TestMessageListener(2);
-        messageReceiver2.registerMessageListener(listener2);
-        messageReceiver2.startReceiver();
+        messageReceiver2.start(listener2);
 
         TestMessageListener listener1 = new TestMessageListener(1);
-        messageReceiver1.registerMessageListener(listener1);
-        messageReceiver1.startReceiver();
+        messageReceiver1.start(listener1);
         Thread.sleep(50);
 
         // send 2 messages one way
@@ -218,11 +216,9 @@ public abstract class AbstractMessagingIntegrationTest {
         String channelId2 = messageReceiver2.getChannelId();
         // send message one way
         TestMessageListener listener2 = new TestMessageListener(1);
-        messageReceiver2.registerMessageListener(listener2);
-        messageReceiver2.startReceiver();
+        messageReceiver2.start(listener2);
         TestMessageListener listener1 = new TestMessageListener(0, 0);
-        messageReceiver1.registerMessageListener(listener1);
-        messageReceiver1.startReceiver();
+        messageReceiver1.start(listener1);
 
         Thread.sleep(50);
 
@@ -244,12 +240,10 @@ public abstract class AbstractMessagingIntegrationTest {
 
         // send 2 messages one way, one should be dropped
         TestMessageListener listener1 = new TestMessageListener(0, 1);
-        messageReceiver1.registerMessageListener(listener1);
-        messageReceiver1.startReceiver();
+        messageReceiver1.start(listener1);
 
         TestMessageListener listener2 = new TestMessageListener(1);
-        messageReceiver2.registerMessageListener(listener2);
-        messageReceiver2.startReceiver();
+        messageReceiver2.start(listener2);
 
         // stops long poll
         messageReceiver2.suspend();
@@ -278,12 +272,10 @@ public abstract class AbstractMessagingIntegrationTest {
     public void receiveMultipleMessagesInOneResponseAndDistributeToListener() throws Exception {
 
         TestMessageListener listener1 = new TestMessageListener(0, 0);
-        messageReceiver1.registerMessageListener(listener1);
-        messageReceiver1.startReceiver();
+        messageReceiver1.start(listener1);
 
         TestMessageListener listener2 = new TestMessageListener(2);
-        messageReceiver2.registerMessageListener(listener2);
-        messageReceiver2.startReceiver();
+        messageReceiver2.start(listener2);
 
         messageReceiver2.suspend();
 
@@ -315,12 +307,10 @@ public abstract class AbstractMessagingIntegrationTest {
         String channelId2 = messageReceiver2.getChannelId();
 
         TestMessageListener listener2 = new TestMessageListener(2);
-        messageReceiver2.registerMessageListener(listener2);
-        messageReceiver2.startReceiver();
+        messageReceiver2.start(listener2);
 
         TestMessageListener listener1 = new TestMessageListener(1);
-        messageReceiver1.registerMessageListener(listener1);
-        messageReceiver1.startReceiver();
+        messageReceiver1.start(listener1);
         Thread.sleep(50);
 
         // send 2 messages one way
@@ -368,9 +358,9 @@ public abstract class AbstractMessagingIntegrationTest {
         String channelId2 = messageReceiver2.getChannelId();
 
         TestMessageListener listener2 = new TestMessageListener(nMessages);
-        messageReceiver2.registerMessageListener(listener2);
-        messageReceiver2.startReceiver();
-        messageReceiver1.startReceiver();
+        messageReceiver2.start(listener2);
+        TestMessageListener listener1 = new TestMessageListener(nMessages);
+        messageReceiver1.start(listener1);
         int message_delay_ms = 50;
         // wait 5 secs plus message_delay_ms per message extra
         int ttlForManyMessages = DEFAULT_TIMEOUT + nMessages * message_delay_ms;

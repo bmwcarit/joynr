@@ -32,14 +32,14 @@ public interface MessageReceiver {
 
     String getChannelId();
 
-    void registerMessageListener(MessageArrivedListener messageReceiver);
-
     /**
      *
      * @param clear
      *            indicates whether the messageListener should be dropped and the channel closed
      */
     void shutdown(boolean clear);
+
+    boolean isChannelCreated();
 
     boolean deleteChannel();
 
@@ -53,12 +53,10 @@ public interface MessageReceiver {
 
     void resume();
 
-    boolean isChannelCreated();
-
     /**
      * @param receiverStatusListeners list of status listeners providing callbacks
      * for successful or failed start
      * @return a future that signals when the receiver is ready to be used.
      */
-    Future<Void> startReceiver(ReceiverStatusListener... receiverStatusListeners);
+    Future<Void> start(MessageArrivedListener messageReceiver, ReceiverStatusListener... receiverStatusListeners);
 }

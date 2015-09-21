@@ -152,8 +152,7 @@ public class DispatcherTest {
         dispatcher = injector.getInstance(RequestReplyDispatcher.class);
         requestReplySender = injector.getInstance(RequestReplySender.class);
         messageSenderReceiverMock = injector.getInstance(MessageSenderReceiverMock.class);
-        messageSenderReceiverMock.registerMessageListener(dispatcher);
-        messageSenderReceiverMock.startReceiver();
+        messageSenderReceiverMock.start(dispatcher);
 
         testResponderUnregistered = new TestRequestCaller(1);
 

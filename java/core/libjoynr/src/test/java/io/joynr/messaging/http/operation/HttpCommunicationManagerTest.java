@@ -125,9 +125,8 @@ public class HttpCommunicationManagerTest {
         message.setExpirationDate(ExpiryDate.fromRelativeTtl(30000));
         message.setPayload("testMessage");
 
-        longpollingMessageReceiver.registerMessageListener(dispatcher);
         final Object waitForChannelCreated = new Object();
-        longpollingMessageReceiver.startReceiver(new ReceiverStatusListener() {
+        longpollingMessageReceiver.start(dispatcher, new ReceiverStatusListener() {
 
             @Override
             public void receiverStarted() {
