@@ -44,7 +44,7 @@ public class MessageSenderReceiverMock implements MessageReceiver, MessageSender
     private List<JoynrMessage> sentMessages = Lists.newArrayList();
     private List<JoynrMessage> receivedMessages = Lists.newArrayList();
 
-    private MessageArrivedListener messageReceiver;
+    private MessageArrivedListener messageArrivedListener;
     private boolean blockInitialisation = false;
     private boolean started = false;
 
@@ -76,8 +76,8 @@ public class MessageSenderReceiverMock implements MessageReceiver, MessageSender
 
     public void receiveMessage(JoynrMessage message) {
         receivedMessages.add(message);
-        if (messageReceiver != null) {
-            messageReceiver.messageArrived(message);
+        if (messageArrivedListener != null) {
+            messageArrivedListener.messageArrived(message);
         }
     }
 
@@ -102,9 +102,9 @@ public class MessageSenderReceiverMock implements MessageReceiver, MessageSender
     }
 
     @Override
-    public void registerMessageListener(MessageArrivedListener newMessageReceiver) {
+    public void registerMessageListener(MessageArrivedListener messageArrivedListener) {
 
-        this.messageReceiver = newMessageReceiver;
+        this.messageArrivedListener = messageArrivedListener;
 
     }
 

@@ -53,8 +53,6 @@ public class MessageSenderImpl implements MessageSender {
     private static final DateFormat DateFormatter = new SimpleDateFormat("dd/MM HH:mm:ss:sss");
     public static final int THREADPOOLSIZE = 4;
 
-    private static final long SECONDS = 1000;
-
     private final MessagingSettings settings;
     private MessageScheduler sendRequestScheduler;
 
