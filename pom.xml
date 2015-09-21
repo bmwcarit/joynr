@@ -183,7 +183,7 @@
 			-->
 			<id>carit-copyright</id>
 			<properties>
-				<licenseConfigurationVersion>1.0.8</licenseConfigurationVersion>
+				<licenseConfigurationVersion>1.0.9-SNAPSHOT</licenseConfigurationVersion>
 			</properties>
 			<build>
 				<plugins>
@@ -1039,7 +1039,7 @@
 				<plugin>
 					<groupId>com.simpligility.maven.plugins</groupId>
 					<artifactId>android-maven-plugin</artifactId>
-					<version>4.2.0</version>
+					<version>4.3.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.eclipse.tycho</groupId>

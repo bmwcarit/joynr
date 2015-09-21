@@ -31,8 +31,10 @@
 	</parent>
 
 	<dependencies>
-		<!-- The Android SDK must be deployed to the local repository using
-		     https://github.com/simpligility/maven-android-sdk-deployer
+		<!--
+			The Android SDK must be deployed to the local maven repository.
+			Use the <JOYNR>/joynr-setup-android-sdk.sh script to install all necessary
+			dependencies.
 		-->
 		<dependency>
 			<groupId>android</groupId>
@@ -75,6 +77,16 @@
 
 	<build>
 		<plugins>
+			<!--
+				Skip deploy because the DISCLAIMER is currently missing.
+			-->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
+			</plugin>
 			<plugin>
 				<artifactId>maven-clean-plugin</artifactId>
 				<executions>
@@ -155,8 +167,37 @@
 					</sdk>
 					<undeployBeforeDeploy>true</undeployBeforeDeploy>
 					<extractDuplicates>true</extractDuplicates>
+					<transformers>
+						<transformer implementation="org.apache.maven.plugins.shade.resource.ApacheLicenseResourceTransformer">
+						</transformer>
+					</transformers>
 				</configuration>
 				<extensions>true</extensions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-notice-to-target</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<skip>${skip.copy-notice-and-license-files}</skip>
+							<outputDirectory>${project.build.directory}/classes</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${basedir}</directory>
+									<includes>
+										<include>NOTICE*</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>io.joynr.tools.generator</groupId>
@@ -198,28 +239,8 @@
 						<artifactId>basemodel</artifactId>
 						<classifier>tests</classifier>
 						<version>${project.version}</version>
-					</dependency>		
+					</dependency>
 				</dependencies>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-resources-plugin</artifactId>
-				<executions>
-					<!--
-					copying NOTICE file must be disabled here to avoid duplicate file error
-					during android apk packaging
-					NOTE: this means the NOTICE file from io.joynr.java.android:joynr-android-runtime
-					      is copied to the apk file instead of the NOTICE file generated for this project
-					-->
-					<execution>
-						<id>copy-notice-license-to-classes</id>
-						<phase>none</phase>
-					</execution>
-					<execution>
-						<id>copy-notice-license-to-test-classes</id>
-						<phase>none</phase>
-					</execution>
-				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
@@ -237,23 +258,6 @@
 								<source>src/main/generated</source>
 							</sources>
 						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<executions>
-					<!--
-					unpacking LICENSE file must be disabled here to avoid duplicate file error
-					during android apk packaging 
-					NOTE: this means the LICENSE file from io.joynr.java.android:joynr-android-runtime
-					      is copied to the apk file. However, this is the same as it is copied originally
-					      from io.joynr.tools:build-resources.
-					-->
-					<execution>
-						<id>unpack-license-info</id>
-						<phase>none</phase>
 					</execution>
 				</executions>
 			</plugin>
