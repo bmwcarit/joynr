@@ -43,6 +43,7 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderFactory;
+import io.joynr.proxy.ProxyBuilderFactoryImpl;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
 
 import javax.annotation.CheckForNull;
@@ -87,10 +88,10 @@ public class DiscoveryClientModule extends AbstractModule {
                                                      Long.MAX_VALUE,
                                                      DiscoveryScope.LOCAL_THEN_GLOBAL);
 
-        ProxyBuilderFactory proxyBuilderFactory = new ProxyBuilderFactory(localCapabilitiesDirectory,
-                                                                          proxyInvocationHandlerFactoryProvider.get(),
-                                                                          messageRouter,
-                                                                          libjoynrMessagingAddress);
+        ProxyBuilderFactory proxyBuilderFactory = new ProxyBuilderFactoryImpl(localCapabilitiesDirectory,
+                                                                              proxyInvocationHandlerFactoryProvider.get(),
+                                                                              messageRouter,
+                                                                              libjoynrMessagingAddress);
         ProxyBuilder<ChannelUrlDirectoryProxy> proxyBuilder = proxyBuilderFactory.get(discoveryDirectoriesDomain,
                                                                                       ChannelUrlDirectoryProxy.class);
 

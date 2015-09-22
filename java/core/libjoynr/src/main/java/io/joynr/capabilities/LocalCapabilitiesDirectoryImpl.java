@@ -29,7 +29,7 @@ import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
-import io.joynr.proxy.ProxyBuilderFactory;
+import io.joynr.proxy.ProxyBuilderFactoryImpl;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
 
 import java.util.ArrayList;
@@ -114,10 +114,10 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                                                  System.currentTimeMillis(),
                                                                  new ChannelAddress(domainAccessControllerChannelId)));
 
-        globalCapabilitiesClient = new GlobalCapabilitiesDirectoryClient(new ProxyBuilderFactory(this,
-                                                                                                 proxyInvocationHandlerFactory,
-                                                                                                 messageRouter,
-                                                                                                 libjoynrMessagingAddress),
+        globalCapabilitiesClient = new GlobalCapabilitiesDirectoryClient(new ProxyBuilderFactoryImpl(this,
+                                                                                                     proxyInvocationHandlerFactory,
+                                                                                                     messageRouter,
+                                                                                                     libjoynrMessagingAddress),
                                                                          discoveryDirectoriesDomain);
     }
 

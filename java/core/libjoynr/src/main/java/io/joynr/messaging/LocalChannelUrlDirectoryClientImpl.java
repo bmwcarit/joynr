@@ -24,7 +24,7 @@ import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.proxy.Callback;
-import io.joynr.proxy.ProxyBuilderFactory;
+import io.joynr.proxy.ProxyBuilderFactoryImpl;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
 import joynr.system.routingtypes.Address;
 import joynr.types.ChannelUrlInformation;
@@ -58,10 +58,10 @@ public class LocalChannelUrlDirectoryClientImpl implements LocalChannelUrlDirect
                                               MessageRouter messageRouter,
                                               @Named(ConfigurableMessagingSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) Address libjoynrMessagingAddress) {
         // CHECKSTYLE:ON
-        this.channelUrlDirectoryClient = new GlobalChannelUrlDirectoryClient(new ProxyBuilderFactory(localCapabilitiesDirectory,
-                                                                                                     proxyInvocationHandlerFactory,
-                                                                                                     messageRouter,
-                                                                                                     libjoynrMessagingAddress),
+        this.channelUrlDirectoryClient = new GlobalChannelUrlDirectoryClient(new ProxyBuilderFactoryImpl(localCapabilitiesDirectory,
+                                                                                                         proxyInvocationHandlerFactory,
+                                                                                                         messageRouter,
+                                                                                                         libjoynrMessagingAddress),
                                                                              discoveryDirectoriesDomain);
         this.channelUrlStore = channelUrlStore;
         channelUrlStore.registerChannelUrl(channelUrlDirectoryChannelId, channelUrlDirectoryUrl);

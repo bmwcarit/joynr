@@ -167,10 +167,10 @@ public class ProxyTest {
 
         });
 
-        proxyBuilderFactory = new ProxyBuilderFactory(capabilitiesClient,
-                                                      injector.getInstance(ProxyInvocationHandlerFactory.class),
-                                                      messageRouter,
-                                                      new InProcessAddress(new InProcessLibjoynrMessagingSkeleton(dispatcher)));
+        proxyBuilderFactory = new ProxyBuilderFactoryImpl(capabilitiesClient,
+                                                          injector.getInstance(ProxyInvocationHandlerFactory.class),
+                                                          messageRouter,
+                                                          new InProcessAddress(new InProcessLibjoynrMessagingSkeleton(dispatcher)));
 
         Mockito.doAnswer(new Answer<Object>() {
             @Override

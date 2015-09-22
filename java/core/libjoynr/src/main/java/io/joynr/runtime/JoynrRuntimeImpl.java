@@ -30,6 +30,7 @@ import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderFactory;
+import io.joynr.proxy.ProxyBuilderFactoryImpl;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
 import io.joynr.subtypes.JoynrType;
 
@@ -85,10 +86,10 @@ public class JoynrRuntimeImpl implements JoynrRuntime {
         Class<?>[] messageTypes = new Class[]{ Request.class, Reply.class, SubscriptionRequest.class,
                 SubscriptionStop.class, SubscriptionPublication.class, BroadcastSubscriptionRequest.class };
         objectMapper.registerSubtypes(messageTypes);
-        proxyBuilderFactory = new ProxyBuilderFactory(localCapabilitiesDirectory,
-                                                      proxyInvocationHandlerFactory,
-                                                      messageRouter,
-                                                      libjoynrMessagingAddress);
+        proxyBuilderFactory = new ProxyBuilderFactoryImpl(localCapabilitiesDirectory,
+                                                          proxyInvocationHandlerFactory,
+                                                          messageRouter,
+                                                          libjoynrMessagingAddress);
 
     }
 

@@ -29,7 +29,7 @@ import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
-import io.joynr.proxy.ProxyBuilderFactory;
+import io.joynr.proxy.ProxyBuilderFactoryImpl;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
 
 import java.util.HashMap;
@@ -116,10 +116,10 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
         this.discoveryDirectoriesDomain = discoveryDirectoriesDomain;
         this.localDomainAccessStore = localDomainAccessStore;
         globalDomainAccessControllerClient = new GlobalDomainAccessControllerClient(discoveryDirectoriesDomain,
-                                                                                    new ProxyBuilderFactory(localCapabilitiesDirectory,
-                                                                                                            proxyInvocationHandlerFactory,
-                                                                                                            messageRouter,
-                                                                                                            libjoynrMessagingAddress));
+                                                                                    new ProxyBuilderFactoryImpl(localCapabilitiesDirectory,
+                                                                                                                proxyInvocationHandlerFactory,
+                                                                                                                messageRouter,
+                                                                                                                libjoynrMessagingAddress));
     }
 
     @Override
