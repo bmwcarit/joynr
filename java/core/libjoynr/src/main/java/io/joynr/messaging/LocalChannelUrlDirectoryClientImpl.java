@@ -19,14 +19,10 @@ package io.joynr.messaging;
  * #L%
  */
 
-import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.proxy.Callback;
-import io.joynr.proxy.ProxyBuilderFactoryImpl;
-import io.joynr.proxy.ProxyInvocationHandlerFactory;
-import joynr.system.routingtypes.Address;
+import io.joynr.proxy.ProxyBuilderFactory;
 import joynr.types.ChannelUrlInformation;
 
 import org.slf4j.Logger;
@@ -51,17 +47,11 @@ public class LocalChannelUrlDirectoryClientImpl implements LocalChannelUrlDirect
                                               @Named(MessagingPropertyKeys.CHANNELURLDIRECTORYURL) String channelUrlDirectoryUrl,
                                               @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID) String capabilitiesDirectoryChannelId,
                                               @Named(MessagingPropertyKeys.CAPABILITIESDIRECTORYURL) String capabilitiesDirectoryUrl,
-                                              LocalCapabilitiesDirectory localCapabilitiesDirectory,
                                               ChannelUrlStore channelUrlStore,
                                               MessagingSettings settings,
-                                              ProxyInvocationHandlerFactory proxyInvocationHandlerFactory,
-                                              MessageRouter messageRouter,
-                                              @Named(ConfigurableMessagingSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) Address libjoynrMessagingAddress) {
+                                              ProxyBuilderFactory proxyBuilderFactory) {
         // CHECKSTYLE:ON
-        this.channelUrlDirectoryClient = new GlobalChannelUrlDirectoryClient(new ProxyBuilderFactoryImpl(localCapabilitiesDirectory,
-                                                                                                         proxyInvocationHandlerFactory,
-                                                                                                         messageRouter,
-                                                                                                         libjoynrMessagingAddress),
+        this.channelUrlDirectoryClient = new GlobalChannelUrlDirectoryClient(proxyBuilderFactory,
                                                                              discoveryDirectoriesDomain);
         this.channelUrlStore = channelUrlStore;
         channelUrlStore.registerChannelUrl(channelUrlDirectoryChannelId, channelUrlDirectoryUrl);

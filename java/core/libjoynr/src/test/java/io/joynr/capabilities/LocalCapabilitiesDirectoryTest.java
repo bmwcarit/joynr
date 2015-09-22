@@ -26,12 +26,10 @@ import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.messaging.inprocess.InProcessAddress;
-import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
-import io.joynr.proxy.ProxyInvocationHandlerFactory;
+import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.runtime.JoynrRuntime;
 
 import java.util.ArrayList;
@@ -73,7 +71,7 @@ public class LocalCapabilitiesDirectoryTest {
     @Mock
     private Dispatcher dispatcher;
     @Mock
-    private ProxyInvocationHandlerFactory proxyInvocationHandlerFactoryMock;
+    private ProxyBuilderFactory proxyBuilderFactoryMock;
     @Mock
     protected CapabilitiesStore localCapabilitiesStoreMock;
     @Mock
@@ -115,7 +113,6 @@ public class LocalCapabilitiesDirectoryTest {
         String domainAccessControllerParticipantId = "domainAccessControllerParticipantId";
         String domainAccessControllerChannelId = "domainAccessControllerChannelId";
 
-        InProcessAddress libjoynrMessagingAddress = new InProcessAddress(new InProcessLibjoynrMessagingSkeleton(dispatcher));
         localCapabilitiesDirectory = new LocalCapabilitiesDirectoryImpl(discoveryDirectoriesDomain,
                                                                         channelUrlDirectoryParticipantId,
                                                                         channelUrlDirectoryChannelId,
@@ -126,9 +123,8 @@ public class LocalCapabilitiesDirectoryTest {
                                                                         channelId,
                                                                         localCapabilitiesStoreMock,
                                                                         globalCapabilitiesCacheMock,
-                                                                        proxyInvocationHandlerFactoryMock,
                                                                         messageRouter,
-                                                                        libjoynrMessagingAddress);
+                                                                        proxyBuilderFactoryMock);
 
         ProviderQos providerQos = new ProviderQos();
         List<CustomParameter> parameterList = Lists.newArrayList();

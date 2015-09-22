@@ -19,16 +19,9 @@ package io.joynr.runtime;
  * #L%
  */
 
-import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.exceptions.JoynrCommunicationException;
-import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.JoynrProvider;
-import io.joynr.proxy.ProxyInvocationHandlerFactory;
-
-import javax.inject.Named;
-
-import joynr.system.routingtypes.Address;
+import io.joynr.proxy.ProxyBuilderFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
@@ -36,16 +29,8 @@ import com.google.inject.Inject;
 public class ServletJoynrRuntimeImpl extends JoynrRuntimeImpl {
 
     @Inject
-    public ServletJoynrRuntimeImpl(ObjectMapper objectMapper,
-                                   LocalCapabilitiesDirectory localCapabilitiesDirectory,
-                                   ProxyInvocationHandlerFactory proxyInvocationHandlerFactory,
-                                   MessageRouter messageRouter,
-                                   @Named(ConfigurableMessagingSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) Address libjoynrMessagingAddress) {
-        super(objectMapper,
-              localCapabilitiesDirectory,
-              proxyInvocationHandlerFactory,
-              messageRouter,
-              libjoynrMessagingAddress);
+    public ServletJoynrRuntimeImpl(ObjectMapper objectMapper, ProxyBuilderFactory builderFactory) {
+        super(objectMapper, builderFactory);
     }
 
     @Override

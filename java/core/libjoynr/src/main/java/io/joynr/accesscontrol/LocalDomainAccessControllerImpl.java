@@ -24,13 +24,10 @@ import io.joynr.accesscontrol.broadcastlistener.LdacMasterAccessControlEntryChan
 import io.joynr.accesscontrol.broadcastlistener.LdacMediatorAccessControlEntryChangedBroadcastListener;
 import io.joynr.accesscontrol.broadcastlistener.LdacOwnerAccessControlEntryChangedBroadcastListener;
 import io.joynr.accesscontrol.primarykey.UserDomainInterfaceOperationKey;
-import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
-import io.joynr.proxy.ProxyBuilderFactoryImpl;
-import io.joynr.proxy.ProxyInvocationHandlerFactory;
+import io.joynr.proxy.ProxyBuilderFactory;
 
 import java.util.HashMap;
 import java.util.List;
@@ -54,7 +51,6 @@ import joynr.infrastructure.dactypes.OwnerRegistrationControlEntry;
 import joynr.infrastructure.dactypes.Permission;
 import joynr.infrastructure.dactypes.Role;
 import joynr.infrastructure.dactypes.TrustLevel;
-import joynr.system.routingtypes.Address;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -109,17 +105,11 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
     @Inject
     public LocalDomainAccessControllerImpl(@Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN) String discoveryDirectoriesDomain,
                                            DomainAccessControlStore localDomainAccessStore,
-                                           LocalCapabilitiesDirectory localCapabilitiesDirectory,
-                                           ProxyInvocationHandlerFactory proxyInvocationHandlerFactory,
-                                           MessageRouter messageRouter,
-                                           @Named(ConfigurableMessagingSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) Address libjoynrMessagingAddress) {
+                                           ProxyBuilderFactory proxyBuilderFactory) {
         this.discoveryDirectoriesDomain = discoveryDirectoriesDomain;
         this.localDomainAccessStore = localDomainAccessStore;
         globalDomainAccessControllerClient = new GlobalDomainAccessControllerClient(discoveryDirectoriesDomain,
-                                                                                    new ProxyBuilderFactoryImpl(localCapabilitiesDirectory,
-                                                                                                                proxyInvocationHandlerFactory,
-                                                                                                                messageRouter,
-                                                                                                                libjoynrMessagingAddress));
+                                                                                    proxyBuilderFactory);
     }
 
     @Override

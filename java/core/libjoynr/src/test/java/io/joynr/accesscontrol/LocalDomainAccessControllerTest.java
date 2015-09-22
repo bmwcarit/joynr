@@ -34,6 +34,7 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.proxy.ProxyBuilderFactoryImpl;
 import io.joynr.proxy.ProxyInvocationHandler;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
 
@@ -100,10 +101,10 @@ public class LocalDomainAccessControllerTest {
         InProcessAddress libjoynrMessagingAddress = new InProcessAddress(new InProcessLibjoynrMessagingSkeleton(dispatcher));
         localDomainAccessController = new LocalDomainAccessControllerImpl(accessControlDomain,
                                                                           domainAccessControlStore,
-                                                                          localCapabilitiesDirectoryMock,
-                                                                          proxyInvocationHandlerFactoryMock,
-                                                                          messageRouter,
-                                                                          libjoynrMessagingAddress);
+                                                                          new ProxyBuilderFactoryImpl(localCapabilitiesDirectoryMock,
+                                                                                                      proxyInvocationHandlerFactoryMock,
+                                                                                                      messageRouter,
+                                                                                                      libjoynrMessagingAddress));
 
         // instantiate some template objects
         userDre = new DomainRoleEntry(UID1, Arrays.asList(DOMAIN1), Role.OWNER);

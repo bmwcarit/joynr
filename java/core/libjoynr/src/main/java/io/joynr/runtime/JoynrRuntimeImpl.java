@@ -20,18 +20,13 @@ package io.joynr.runtime;
  */
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import io.joynr.capabilities.CapabilitiesRegistrar;
-import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.capabilities.RegistrationFuture;
 import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.dispatching.RequestReplyDispatcher;
 import io.joynr.dispatching.RequestReplySender;
-import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderFactory;
-import io.joynr.proxy.ProxyBuilderFactoryImpl;
-import io.joynr.proxy.ProxyInvocationHandlerFactory;
 import io.joynr.subtypes.JoynrType;
 
 import java.util.Set;
@@ -43,7 +38,6 @@ import joynr.Request;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
-import joynr.system.routingtypes.Address;
 
 import org.reflections.Reflections;
 import org.slf4j.Logger;
@@ -74,11 +68,7 @@ public class JoynrRuntimeImpl implements JoynrRuntime {
     private final ProxyBuilderFactory proxyBuilderFactory;
 
     @Inject
-    public JoynrRuntimeImpl(ObjectMapper objectMapper,
-                            LocalCapabilitiesDirectory localCapabilitiesDirectory,
-                            ProxyInvocationHandlerFactory proxyInvocationHandlerFactory,
-                            MessageRouter messageRouter,
-                            @Named(ConfigurableMessagingSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) Address libjoynrMessagingAddress) {
+    public JoynrRuntimeImpl(ObjectMapper objectMapper, ProxyBuilderFactory proxyBuilderFactory) {
         Reflections reflections = new Reflections("joynr");
         Set<Class<? extends JoynrType>> subClasses = reflections.getSubTypesOf(JoynrType.class);
         objectMapper.registerSubtypes(subClasses.toArray(new Class<?>[subClasses.size()]));
@@ -86,11 +76,7 @@ public class JoynrRuntimeImpl implements JoynrRuntime {
         Class<?>[] messageTypes = new Class[]{ Request.class, Reply.class, SubscriptionRequest.class,
                 SubscriptionStop.class, SubscriptionPublication.class, BroadcastSubscriptionRequest.class };
         objectMapper.registerSubtypes(messageTypes);
-        proxyBuilderFactory = new ProxyBuilderFactoryImpl(localCapabilitiesDirectory,
-                                                          proxyInvocationHandlerFactory,
-                                                          messageRouter,
-                                                          libjoynrMessagingAddress);
-
+        this.proxyBuilderFactory = proxyBuilderFactory;
     }
 
     @Override

@@ -40,19 +40,14 @@ import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.LocalChannelUrlDirectoryClient;
 import io.joynr.messaging.LocalChannelUrlDirectoryClientImpl;
 import io.joynr.messaging.MessagingQos;
-import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderFactory;
-import io.joynr.proxy.ProxyBuilderFactoryImpl;
-import io.joynr.proxy.ProxyInvocationHandlerFactory;
 
 import javax.annotation.CheckForNull;
 
 import joynr.infrastructure.ChannelUrlDirectoryProxy;
-import joynr.system.routingtypes.Address;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.Provider;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -75,12 +70,9 @@ public class DiscoveryClientModule extends AbstractModule {
     @CheckForNull
     @Provides
     @Singleton
-    ChannelUrlDirectoryProxy provideChannelUrlDirectoryClient(LocalCapabilitiesDirectory localCapabilitiesDirectory,
-                                                              @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN) String discoveryDirectoriesDomain,
+    ChannelUrlDirectoryProxy provideChannelUrlDirectoryClient(@Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN) String discoveryDirectoriesDomain,
                                                               @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT) long discoveryRequestTimeoutMs,
-                                                              Provider<ProxyInvocationHandlerFactory> proxyInvocationHandlerFactoryProvider,
-                                                              MessageRouter messageRouter,
-                                                              @Named(ConfigurableMessagingSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) Address libjoynrMessagingAddress) {
+                                                              ProxyBuilderFactory proxyBuilderFactory) {
         MessagingQos messagingQos = new MessagingQos(discoveryRequestTimeoutMs);
 
         DiscoveryQos discoveryQos = new DiscoveryQos(1000,
@@ -88,10 +80,6 @@ public class DiscoveryClientModule extends AbstractModule {
                                                      Long.MAX_VALUE,
                                                      DiscoveryScope.LOCAL_THEN_GLOBAL);
 
-        ProxyBuilderFactory proxyBuilderFactory = new ProxyBuilderFactoryImpl(localCapabilitiesDirectory,
-                                                                              proxyInvocationHandlerFactoryProvider.get(),
-                                                                              messageRouter,
-                                                                              libjoynrMessagingAddress);
         ProxyBuilder<ChannelUrlDirectoryProxy> proxyBuilder = proxyBuilderFactory.get(discoveryDirectoriesDomain,
                                                                                       ChannelUrlDirectoryProxy.class);
 

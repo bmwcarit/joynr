@@ -29,8 +29,7 @@ import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
-import io.joynr.proxy.ProxyBuilderFactoryImpl;
-import io.joynr.proxy.ProxyInvocationHandlerFactory;
+import io.joynr.proxy.ProxyBuilderFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -85,9 +84,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                           @Named(MessagingPropertyKeys.CHANNELID) String localChannelId,
                                           CapabilitiesStore localCapabilitiesStore,
                                           CapabilitiesCache globalCapabilitiesCache,
-                                          ProxyInvocationHandlerFactory proxyInvocationHandlerFactory,
                                           MessageRouter messageRouter,
-                                          @Named(ConfigurableMessagingSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) Address libjoynrMessagingAddress) {
+                                          ProxyBuilderFactory proxyBuilderFactory) {
         // CHECKSTYLE:ON
         this.localChannelId = localChannelId;
         this.messageRouter = messageRouter;
@@ -114,10 +112,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                                                  System.currentTimeMillis(),
                                                                  new ChannelAddress(domainAccessControllerChannelId)));
 
-        globalCapabilitiesClient = new GlobalCapabilitiesDirectoryClient(new ProxyBuilderFactoryImpl(this,
-                                                                                                     proxyInvocationHandlerFactory,
-                                                                                                     messageRouter,
-                                                                                                     libjoynrMessagingAddress),
+        globalCapabilitiesClient = new GlobalCapabilitiesDirectoryClient(proxyBuilderFactory,
                                                                          discoveryDirectoriesDomain);
     }
 
