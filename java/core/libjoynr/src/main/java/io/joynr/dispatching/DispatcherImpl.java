@@ -37,7 +37,7 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.inject.Inject;
 
-public class DispatcherImpl extends Dispatcher {
+public class DispatcherImpl implements Dispatcher {
 
     private final JoynrMessageFactory joynrMessageFactory;
     private final MessageRouter messageRouter;
@@ -95,5 +95,9 @@ public class DispatcherImpl extends Dispatcher {
                                                                      publication,
                                                                      DispatcherUtils.convertTtlToExpirationDate(qosSettings.getRoundTripTtl_ms()));
         messageRouter.route(message);
+    }
+
+    @Override
+    public void receive(JoynrMessage message) {
     }
 }

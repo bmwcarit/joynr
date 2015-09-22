@@ -33,33 +33,29 @@ import joynr.SubscriptionStop;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
-public abstract class Dispatcher {
-    public abstract void sendSubscriptionRequest(String fromParticipantId,
-                                                 String toParticipantId,
-                                                 SubscriptionRequest subscriptionRequest,
-                                                 MessagingQos qosSettings,
-                                                 boolean broadcast) throws JoynrSendBufferFullException,
-                                                                   JoynrMessageNotSentException,
-                                                                   JsonGenerationException, JsonMappingException,
-                                                                   IOException;
+public interface Dispatcher {
+    public void sendSubscriptionRequest(String fromParticipantId,
+                                        String toParticipantId,
+                                        SubscriptionRequest subscriptionRequest,
+                                        MessagingQos qosSettings,
+                                        boolean broadcast) throws JoynrSendBufferFullException,
+                                                          JoynrMessageNotSentException, JsonGenerationException,
+                                                          JsonMappingException, IOException;
 
-    public abstract void sendSubscriptionStop(String fromParticipantId,
-                                              String toParticipantId,
-                                              SubscriptionStop subscriptionStop,
-                                              MessagingQos qosSettings) throws JoynrSendBufferFullException,
-                                                                       JoynrMessageNotSentException,
-                                                                       JsonGenerationException, JsonMappingException,
-                                                                       IOException;
+    public void sendSubscriptionStop(String fromParticipantId,
+                                     String toParticipantId,
+                                     SubscriptionStop subscriptionStop,
+                                     MessagingQos qosSettings) throws JoynrSendBufferFullException,
+                                                              JoynrMessageNotSentException, JsonGenerationException,
+                                                              JsonMappingException, IOException;
 
-    public abstract void sendSubscriptionPublication(String fromParticipantId,
-                                                     String toParticipantId,
-                                                     SubscriptionPublication publication,
-                                                     MessagingQos qosSettings) throws JoynrSendBufferFullException,
-                                                                              JoynrMessageNotSentException,
-                                                                              JsonGenerationException,
-                                                                              JsonMappingException, IOException;
+    public void sendSubscriptionPublication(String fromParticipantId,
+                                            String toParticipantId,
+                                            SubscriptionPublication publication,
+                                            MessagingQos qosSettings) throws JoynrSendBufferFullException,
+                                                                     JoynrMessageNotSentException,
+                                                                     JsonGenerationException, JsonMappingException,
+                                                                     IOException;
 
-    public void receive(JoynrMessage message) {
-        //TODO
-    }
+    public void receive(JoynrMessage message);
 }
