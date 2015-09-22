@@ -34,6 +34,7 @@ import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.routing.RoutingTable;
+import io.joynr.messaging.routing.RoutingTableImpl;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrBaseModule;
 import io.joynr.runtime.PropertyLoader;
@@ -47,6 +48,7 @@ import java.util.Properties;
 import java.util.UUID;
 
 import joynr.JoynrMessage;
+import joynr.system.routingtypes.ChannelAddress;
 import joynr.types.ChannelUrlInformation;
 
 import org.junit.After;
@@ -135,10 +137,10 @@ public abstract class AbstractMessagingIntegrationTest {
     public Injector setupMessageEndpoint(String channelId,
                                          LocalChannelUrlDirectoryClient localChannelUrlDirectoryClient,
                                          LocalCapabilitiesDirectory localCapDir) {
-        RoutingTable routingTable = new RoutingTable("channelurldirectory_participantid",
-                                                     "discoverydirectory_channelid",
-                                                     "capabilitiesdirectory_participantid",
-                                                     "discoverydirectory_channelid");
+        RoutingTable routingTable = new RoutingTableImpl("channelurldirectory_participantid",
+                                                         new ChannelAddress("discoverydirectory_channelid"),
+                                                         "capabilitiesdirectory_participantid",
+                                                         new ChannelAddress("discoverydirectory_channelid"));
 
         ChannelUrlInformation channelUrlInformation = new ChannelUrlInformation();
         channelUrlInformation.setUrls(Arrays.asList(getChannelUrl(channelId)));

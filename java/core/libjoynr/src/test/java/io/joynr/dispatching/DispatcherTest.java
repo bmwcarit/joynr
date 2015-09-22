@@ -35,6 +35,7 @@ import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.routing.RoutingTable;
+import io.joynr.messaging.routing.RoutingTableImpl;
 import io.joynr.util.PreconfiguredEndpointDirectoryModule;
 
 import java.io.IOException;
@@ -107,10 +108,10 @@ public class DispatcherTest {
     private Request jsonRequest1;
     private Request jsonRequest2;
 
-    private RoutingTable routingTable = new RoutingTable("channelurldirectory_participantid",
-                                                         "discoverydirectory_channelid",
-                                                         "capabilitiesdirectory_participantid",
-                                                         "discoverydirectory_channelid");
+    private RoutingTable routingTable = new RoutingTableImpl("channelurldirectory_participantid",
+                                                             new ChannelAddress("discoverydirectory_channelid"),
+                                                             "capabilitiesdirectory_participantid",
+                                                             new ChannelAddress("discoverydirectory_channelid"));
     private RequestReplySender requestReplySender;
     private ChannelAddress dummyEndpointAddress;
     private ObjectMapper objectMapper;

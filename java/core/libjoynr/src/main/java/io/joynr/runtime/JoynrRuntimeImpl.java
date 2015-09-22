@@ -22,8 +22,12 @@ import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import io.joynr.capabilities.CapabilitiesRegistrar;
 import io.joynr.capabilities.RegistrationFuture;
 import io.joynr.dispatcher.rpc.JoynrInterface;
+import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.RequestReplyDispatcher;
 import io.joynr.dispatching.RequestReplySender;
+import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.inprocess.InProcessAddress;
+import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderFactory;
@@ -38,6 +42,7 @@ import joynr.Request;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
+import joynr.system.routingtypes.Address;
 
 import org.reflections.Reflections;
 import org.slf4j.Logger;
@@ -68,7 +73,12 @@ public class JoynrRuntimeImpl implements JoynrRuntime {
     private final ProxyBuilderFactory proxyBuilderFactory;
 
     @Inject
-    public JoynrRuntimeImpl(ObjectMapper objectMapper, ProxyBuilderFactory proxyBuilderFactory) {
+    public JoynrRuntimeImpl(ObjectMapper objectMapper,
+                            ProxyBuilderFactory proxyBuilderFactory,
+                            Dispatcher dispatcher,
+                            @Named(ConfigurableMessagingSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) Address libjoynrMessagingAddress,
+                            @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_ADDRESS) Address capabilitiesDirectoryAddress,
+                            @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_ADDRESS) Address channelUrlDirectoryAddress) {
         Reflections reflections = new Reflections("joynr");
         Set<Class<? extends JoynrType>> subClasses = reflections.getSubTypesOf(JoynrType.class);
         objectMapper.registerSubtypes(subClasses.toArray(new Class<?>[subClasses.size()]));
@@ -77,6 +87,15 @@ public class JoynrRuntimeImpl implements JoynrRuntime {
                 SubscriptionStop.class, SubscriptionPublication.class, BroadcastSubscriptionRequest.class };
         objectMapper.registerSubtypes(messageTypes);
         this.proxyBuilderFactory = proxyBuilderFactory;
+        if (libjoynrMessagingAddress instanceof InProcessAddress) {
+            ((InProcessAddress) libjoynrMessagingAddress).setSkeleton(new InProcessLibjoynrMessagingSkeleton(dispatcher));
+        }
+        if (channelUrlDirectoryAddress instanceof InProcessAddress) {
+            ((InProcessAddress) channelUrlDirectoryAddress).setSkeleton(new InProcessLibjoynrMessagingSkeleton(dispatcher));
+        }
+        if (capabilitiesDirectoryAddress instanceof InProcessAddress) {
+            ((InProcessAddress) capabilitiesDirectoryAddress).setSkeleton(new InProcessLibjoynrMessagingSkeleton(dispatcher));
+        }
     }
 
     @Override

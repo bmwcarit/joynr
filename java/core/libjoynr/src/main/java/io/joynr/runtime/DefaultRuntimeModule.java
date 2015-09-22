@@ -32,11 +32,11 @@ import io.joynr.messaging.IMessageReceivers;
 import io.joynr.messaging.MessageReceivers;
 import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.MessageSenderImpl;
+import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingSettings;
 import io.joynr.messaging.http.operation.HttpClientProvider;
 import io.joynr.messaging.http.operation.HttpDefaultRequestConfigProvider;
 import io.joynr.messaging.inprocess.InProcessAddress;
-import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.MessageRouterImpl;
 import io.joynr.messaging.routing.RoutingTable;
@@ -53,6 +53,7 @@ import java.util.concurrent.ThreadFactory;
 import javax.inject.Named;
 
 import joynr.system.routingtypes.Address;
+import joynr.system.routingtypes.ChannelAddress;
 
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -80,7 +81,7 @@ public class DefaultRuntimeModule extends AbstractModule {
         bind(MessageRouter.class).to(MessageRouterImpl.class);
         bind(MessagingSettings.class).to(ConfigurableMessagingSettings.class);
         bind(MessageSender.class).to(MessageSenderImpl.class);
-        bind(RoutingTable.class).in(Singleton.class);
+        bind(RoutingTable.class).asEagerSingleton();
         bind(IMessageReceivers.class).to(MessageReceivers.class).asEagerSingleton();
 
         bind(CloseableHttpClient.class).toProvider(HttpClientProvider.class).in(Singleton.class);
@@ -94,9 +95,33 @@ public class DefaultRuntimeModule extends AbstractModule {
     }
 
     @Provides
+    @Singleton
     @Named(ConfigurableMessagingSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS)
-    Address getLibJoynrMessagingAddress(Dispatcher dispatcher) {
-        return new InProcessAddress(new InProcessLibjoynrMessagingSkeleton(dispatcher));
+    Address getLibJoynrMessagingAddress() {
+        return new InProcessAddress();
     }
 
+    @Provides
+    @Singleton
+    @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_ADDRESS)
+    Address getCapabilitiesDirectoryAddress(@Named(MessagingPropertyKeys.CHANNELID) String channelId,
+                                            @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID) String capabilitiesDirectoryChannelId) {
+        return getAddress(channelId, capabilitiesDirectoryChannelId);
+    }
+
+    @Provides
+    @Singleton
+    @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_ADDRESS)
+    Address getChannelUrlDirectoryAddress(@Named(MessagingPropertyKeys.CHANNELID) String channelId,
+                                          @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_CHANNEL_ID) String channelUrlDirectoryChannelId) {
+        return getAddress(channelId, channelUrlDirectoryChannelId);
+    }
+
+    private Address getAddress(String localChannelId, String targetChannelId) {
+        if (localChannelId.equals(targetChannelId)) {
+            return new InProcessAddress();
+        } else {
+            return new ChannelAddress(targetChannelId);
+        }
+    }
 }

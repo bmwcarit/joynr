@@ -19,62 +19,14 @@ package io.joynr.messaging.routing;
  * #L%
  */
 
-import io.joynr.messaging.ConfigurableMessagingSettings;
-
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentMap;
-
 import joynr.system.routingtypes.Address;
-import joynr.system.routingtypes.ChannelAddress;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+public interface RoutingTable {
+    public Address get(String participantId);
 
-import com.google.common.collect.Maps;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import com.google.inject.name.Named;
+    public Address put(String participantId, Address address);
 
-@Singleton
-public class RoutingTable {
-    private static final Logger logger = LoggerFactory.getLogger(RoutingTable.class);
-    ConcurrentMap<String, Address> hashMap = Maps.newConcurrentMap();
+    public boolean containsKey(String participantId);
 
-    @Inject
-    public RoutingTable(@Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_PARTICIPANT_ID) String channelUrlDirectoryParticipantId,
-                        @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_CHANNEL_ID) String channelUrlDirectoryChannelId,
-                        @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID) String capabilitiesDirectoryParticipantId,
-                        @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID) String capabiltitiesDirectoryChannelId) {
-        this.put(capabilitiesDirectoryParticipantId, new ChannelAddress(capabiltitiesDirectoryChannelId));
-        this.put(channelUrlDirectoryParticipantId, new ChannelAddress(channelUrlDirectoryChannelId));
-    }
-
-    public Address get(String participantId) {
-        logger.debug("lookup participant: " + participantId);
-        for (Entry<String, Address> eachEntry : hashMap.entrySet()) {
-            logger.trace(eachEntry.getKey() + ": " + eachEntry.getValue());
-        }
-        return hashMap.get(participantId);
-    }
-
-    public Address put(String participantId, Address address) {
-        logger.debug("adding endpoint address: " + participantId + ": " + address);
-        return hashMap.putIfAbsent(participantId, address);
-    }
-
-    public boolean containsKey(String participantId) {
-        boolean containsKey = hashMap.containsKey(participantId);
-        logger.debug("checking for participant: " + participantId + " success: " + containsKey);
-        if (!containsKey) {
-            for (String eachkey : hashMap.keySet()) {
-                logger.trace("MessagingEndpointDirectory: " + eachkey + ": " + this.get(eachkey));
-            }
-        }
-        return containsKey;
-    }
-
-    public void remove(String participantId) {
-        hashMap.remove(participantId);
-
-    }
+    public void remove(String participantId);
 }

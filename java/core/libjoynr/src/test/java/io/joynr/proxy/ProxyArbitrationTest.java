@@ -35,6 +35,7 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.MessageRouterImpl;
 import io.joynr.messaging.routing.RoutingTable;
+import io.joynr.messaging.routing.RoutingTableImpl;
 
 import java.util.List;
 
@@ -90,10 +91,10 @@ public class ProxyArbitrationTest {
         DiscoveryQos discoveryQos = new DiscoveryQos();
         MessagingQos messagingQos = new MessagingQos();
 
-        routingTable = new RoutingTable("channelurldirectory_participantid",
-                                        "discoverydirectory_channelid",
-                                        "capabilitiesdirectory_participantid",
-                                        "discoverydirectory_channelid");
+        routingTable = new RoutingTableImpl("channelurldirectory_participantid",
+                                            new ChannelAddress("discoverydirectory_channelid"),
+                                            "capabilitiesdirectory_participantid",
+                                            new ChannelAddress("discoverydirectory_channelid"));
 
         messageRouter = new MessageRouterImpl(routingTable, messageSender);
 

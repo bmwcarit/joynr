@@ -40,6 +40,7 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
     public static final String PROPERTY_ARBITRATION_MINIMUMRETRYDELAY = "joynr.arbitration.minimumretrydelay";
     public static final String PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID = "joynr.messaging.capabilitiesdirectoryparticipantid";
     public static final String PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID = "joynr.messaging.capabilitiesdirectorychannelid";
+    public static final String PROPERTY_CAPABILITIES_DIRECTORY_ADDRESS = "joynr.messaging.capabilitiesdirectoryaddress";
     public static final String PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN = "joynr.messaging.discoverydirectoriesdomain";
     public static final String PROPERTY_DISCOVERY_REQUEST_TIMEOUT = "joynr.discovery.requesttimeout";
 
@@ -48,6 +49,7 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
 
     public static final String PROPERTY_CHANNEL_URL_DIRECTORY_PARTICIPANT_ID = "joynr.messaging.channelurldirectoryparticipantid";
     public static final String PROPERTY_CHANNEL_URL_DIRECTORY_CHANNEL_ID = "joynr.messaging.channelurldirectorychannelid";
+    public static final String PROPERTY_CHANNEL_URL_DIRECTORY_ADDRESS = "joynr.messaging.channelurldirectoryaddress";
 
     public static final String PROPERTY_CREATE_CHANNEL_RETRY_INTERVAL_MS = "joynr.messaging.createchannelretryintervalms";
     public static final String PROPERTY_DELETE_CHANNEL_RETRY_INTERVAL_MS = "joynr.messaging.deletechannelretryintervalms";

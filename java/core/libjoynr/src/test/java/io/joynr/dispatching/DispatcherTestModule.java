@@ -25,22 +25,30 @@ import io.joynr.dispatching.subscription.PublicationManager;
 import io.joynr.dispatching.subscription.PublicationManagerImpl;
 import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.dispatching.subscription.SubscriptionManagerImpl;
+import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.IMessageReceivers;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.MessageReceivers;
 import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.MessageRouterImpl;
+import io.joynr.messaging.routing.RoutingTable;
+import io.joynr.messaging.routing.RoutingTableImpl;
 import io.joynr.proxy.JoynrMessagingConnectorFactory;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 
+import javax.inject.Named;
+
 import joynr.Request;
+import joynr.system.routingtypes.Address;
+import joynr.system.routingtypes.ChannelAddress;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
+import com.google.inject.Provides;
 import com.google.inject.name.Names;
 
 public class DispatcherTestModule extends AbstractModule {
@@ -53,6 +61,7 @@ public class DispatcherTestModule extends AbstractModule {
         bind(MessageReceiver.class).to(MessageSenderReceiverMock.class);
         bind(RequestReplySender.class).to(RequestReplySenderImpl.class);
         bind(MessageRouter.class).to(MessageRouterImpl.class);
+        bind(RoutingTable.class).to(RoutingTableImpl.class).asEagerSingleton();
         bind(RequestReplyDispatcher.class).to(RequestReplyDispatcherImpl.class);
         bind(Dispatcher.class).to(DispatcherImpl.class);
         bind(SubscriptionManager.class).to(SubscriptionManagerImpl.class);
@@ -66,4 +75,15 @@ public class DispatcherTestModule extends AbstractModule {
                                             .toInstance(cleanupExecutor);
     }
 
+    @Provides
+    @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_ADDRESS)
+    Address getCapabilitiesDirectoryAddress(@Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID) String capabilitiesDirectoryChannelId) {
+        return new ChannelAddress(capabilitiesDirectoryChannelId);
+    }
+
+    @Provides
+    @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_ADDRESS)
+    Address getChannelUrlDirectoryAddress(@Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_CHANNEL_ID) String channelUrlDirectoryChannelId) {
+        return new ChannelAddress(channelUrlDirectoryChannelId);
+    }
 }
