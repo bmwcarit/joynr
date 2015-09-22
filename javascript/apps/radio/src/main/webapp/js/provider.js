@@ -1,5 +1,5 @@
 /*jslint devel: true es5: true */
-/*global $: true, joynr: true, provisioning: true, RadioProvider: true, RadioStation: true, GeoPosition: true, domain: true, getBuildSignatureString: true, TrafficServiceBroadcastFilter : true, GeocastBroadcastFilter: true */
+/*global $: true, joynr: true, provisioning: true, RadioProvider: true, RadioStation: true, GeoPosition: true, domain: true, getBuildSignatureString: true, TrafficServiceBroadcastFilter : true, GeocastBroadcastFilter: true, Promise: true */
 
 /*
  * #%L
@@ -115,6 +115,15 @@ var RadioProviderImpl =
 
             this.addFavoriteStation =
                     function(opArgs) {
+                        /*
+                         * synchronous method implementation can be used if no
+                         * further asynchronous activity is required to obtain
+                         * the result.
+                         * In case of error a ProviderRuntimeException or an
+                         * error enum value suitable for the method can be
+                         * thrown. The latter will be automatically wrapped
+                         * inside an ApplicationException.
+                         */
                         log("radioProvider.addFavoriteStation", "called with args: "
                             + JSON.stringify(opArgs));
 
@@ -139,19 +148,32 @@ var RadioProviderImpl =
 
             this.shuffleStations =
                     function() {
+                        /*
+                         * asynchronous method implementation is required if
+                         * the result depends on other asynchronous activity.
+                         *
+                         * When activity is finished, then based on the positive
+                         * or negative outcome, resolve() or reject() has to be
+                         * called. For resolve() any output parameters have to be
+                         * provided. For reject a ProviderRuntimeException or an
+                         * error enum value suitable for the method must be
+                         * provided. The latter will be automatically wrapped
+                         * inside an ApplicationException.
+                         */
                         log("radioProvider.shuffleStations", "called");
+                        return new Promise(function(resolve, reject) {
+                            var oldStationIndex = currentStationIndex;
+                            currentStationIndex++;
+                            currentStationIndex = currentStationIndex % stationsList.length;
+                            self.currentStation.valueChanged(stationsList[currentStationIndex]);
+                            log("radioProvider.shuffleStations", JSON
+                                    .stringify(stationsList[oldStationIndex])
+                                + " -> "
+                                + JSON.stringify(stationsList[currentStationIndex]));
 
-                        var oldStationIndex = currentStationIndex;
-
-                        currentStationIndex++;
-                        currentStationIndex = currentStationIndex % stationsList.length;
-                        self.currentStation.valueChanged(stationsList[currentStationIndex]);
-                        log("radioProvider.shuffleStations", JSON
-                                .stringify(stationsList[oldStationIndex])
-                            + " -> "
-                            + JSON.stringify(stationsList[currentStationIndex]));
-
-                        showCurrentStationInHtml(stationsList[currentStationIndex]);
+                            showCurrentStationInHtml(stationsList[currentStationIndex]);
+                            resolve();
+                        });
                     };
 
             // Provide broadcast specific implementation stubs. Properties will
