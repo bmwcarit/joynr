@@ -747,7 +747,7 @@ abstract class JoynrGeneratorExtensions {
 	}
 
 	def boolean isLong(FBasicTypeId type) {
-		return type == FBasicTypeId::INT64;
+		return type == FBasicTypeId::INT64 || type == FBasicTypeId::UINT64;
 	}
 
 	def boolean isDouble(FBasicTypeId type) {
@@ -763,7 +763,8 @@ abstract class JoynrGeneratorExtensions {
 	}
 
 	def boolean isInt(FBasicTypeId type) {
-		return type == FBasicTypeId::INT16 || type == FBasicTypeId::INT32;
+		return type == FBasicTypeId::INT16 || type == FBasicTypeId::INT32
+			|| type == FBasicTypeId::UINT16 || type == FBasicTypeId::UINT32;
 	}
 
 	def boolean isString(FBasicTypeId type) {
@@ -771,7 +772,7 @@ abstract class JoynrGeneratorExtensions {
 	}
 
 	def boolean isByte(FBasicTypeId type) {
-		return type == FBasicTypeId::UINT8;
+		return type == FBasicTypeId::UINT8 || type == FBasicTypeId::INT8;
 	}
 
 	def boolean isByteBuffer(FBasicTypeId type) {
