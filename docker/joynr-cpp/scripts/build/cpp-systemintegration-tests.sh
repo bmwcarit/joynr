@@ -1,4 +1,6 @@
-#!/bin/sh
+#!/bin/bash
+
+source /data/scripts/global.sh
 
 log "ENVIRONMENT"
 env
@@ -10,7 +12,7 @@ echo '# start services'
 echo '####################################################'
 (
     cd /data/src/cpp/tests
-    mvn jetty:start --quiet &
+    mvn jetty:run-war --quiet &
     # wait until server is up and running
     started=
     while [ "$started" != "200" ]
