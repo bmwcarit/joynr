@@ -29,9 +29,17 @@ public class InProcessAddress extends Address implements Serializable, JoynrType
 
     private static final long serialVersionUID = -647813790331888374L;
 
-    private final transient InProcessMessagingSkeleton skeleton;
+    private transient InProcessMessagingSkeleton skeleton;
+
+    public InProcessAddress() {
+        this(null);
+    }
 
     public InProcessAddress(InProcessMessagingSkeleton skeleton) {
+        this.skeleton = skeleton;
+    }
+
+    public void setSkeleton(InProcessMessagingSkeleton skeleton) {
         this.skeleton = skeleton;
     }
 
