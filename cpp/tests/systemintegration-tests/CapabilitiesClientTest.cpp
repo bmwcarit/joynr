@@ -98,7 +98,7 @@ TEST_F(CapabilitiesClientTest, registerAndRetrieveCapability) {
             );
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY); //actually only one provider should be available
-    QSharedPointer<infrastructure::GlobalCapabilitiesDirectoryProxy> cabilitiesProxy (
+    std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> cabilitiesProxy (
         capabilitiesProxyBuilder
             ->setMessagingQos(MessagingQos(10000)) //TODO magic values.
             ->setCached(true)
@@ -121,7 +121,7 @@ TEST_F(CapabilitiesClientTest, registerAndRetrieveCapability) {
     //sync methods are not yet implemented
 //    std::vector<types::QtCapabilityInformation> capResultList = capabilitiesClient->lookup(capDomain, capInterface);
 //    EXPECT_EQ(capResultList, capabilitiesInformationList);
-    QSharedPointer<GlobalCapabilitiesMock> callback(new GlobalCapabilitiesMock());
+    std::shared_ptr<GlobalCapabilitiesMock> callback(new GlobalCapabilitiesMock());
 
     // use a semaphore to wait for capabilities to be received
     QSemaphore semaphore(0);

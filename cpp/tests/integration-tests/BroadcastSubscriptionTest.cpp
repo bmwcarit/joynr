@@ -83,8 +83,8 @@ public:
     }
 
 protected:
-    QSharedPointer<MockMessageRouter> mockMessageRouter;
-    QSharedPointer<MockTestRequestCaller> mockRequestCaller;
+    std::shared_ptr<MockMessageRouter> mockMessageRouter;
+    std::shared_ptr<MockTestRequestCaller> mockRequestCaller;
     std::shared_ptr<MockSubscriptionListenerOneType<types::Localisation::QtGpsLocation> > mockSubscriptionListenerOne;
     std::shared_ptr<MockSubscriptionListenerTwoTypes<types::Localisation::QtGpsLocation, double> > mockSubscriptionListenerTwo;
 
@@ -120,7 +120,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
 
     //register the subscription on the consumer side
     QString subscribeToName = "locationUpdate";
-    auto subscriptionQos = QSharedPointer<QtOnChangeSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
+    auto subscriptionQos = std::shared_ptr<QtOnChangeSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
                 80, // validity_ms
                 100, // minInterval_ms
                 200, // maxInterval_ms
@@ -135,7 +135,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
     response.append(QVariant::fromValue(gpsLocation1));
     subscriptionPublication.setResponse(response);
 
-    QSharedPointer<SubscriptionCallback<types::Localisation::QtGpsLocation>> subscriptionCallback(
+    std::shared_ptr<SubscriptionCallback<types::Localisation::QtGpsLocation>> subscriptionCallback(
             new SubscriptionCallback<types::Localisation::QtGpsLocation>(mockSubscriptionListenerOne));
 
 
@@ -175,7 +175,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters )
 
     //register the subscription on the consumer side
     QString subscribeToName = "locationUpdateWithSpeed";
-    auto subscriptionQos = QSharedPointer<QtOnChangeSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
+    auto subscriptionQos = std::shared_ptr<QtOnChangeSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
                 80, // validity_ms
                 100, // minInterval_ms
                 200, // maxInterval_ms
@@ -191,7 +191,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters )
     response.append(QVariant::fromValue(speed1));
     subscriptionPublication.setResponse(response);
 
-    QSharedPointer<SubscriptionCallback<types::Localisation::QtGpsLocation, double>> subscriptionCallback(
+    std::shared_ptr<SubscriptionCallback<types::Localisation::QtGpsLocation, double>> subscriptionCallback(
             new SubscriptionCallback<types::Localisation::QtGpsLocation, double>(mockSubscriptionListenerTwo));
 
     // subscriptionRequest is an out param

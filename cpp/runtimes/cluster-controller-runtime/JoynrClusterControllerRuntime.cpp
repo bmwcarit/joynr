@@ -150,17 +150,17 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
     messagingStubFactory->registerStubFactory(new InProcessMessagingStubFactory());
     // init message router
-    messageRouter =
-            QSharedPointer<MessageRouter>(new MessageRouter(messagingStubFactory, securityManager));
+    messageRouter = std::shared_ptr<MessageRouter>(
+            new MessageRouter(messagingStubFactory, securityManager));
     // provision global capabilities directory
-    QSharedPointer<joynr::system::RoutingTypes::QtAddress> globalCapabilitiesDirectoryAddress(
+    std::shared_ptr<joynr::system::RoutingTypes::QtAddress> globalCapabilitiesDirectoryAddress(
             new system::RoutingTypes::QtChannelAddress(
                     messagingSettings->getCapabilitiesDirectoryChannelId()));
     messageRouter->addProvisionedNextHop(
             messagingSettings->getCapabilitiesDirectoryParticipantId().toStdString(),
             globalCapabilitiesDirectoryAddress);
     // provision channel url directory
-    QSharedPointer<joynr::system::RoutingTypes::QtAddress> globalChannelUrlDirectoryAddress(
+    std::shared_ptr<joynr::system::RoutingTypes::QtAddress> globalChannelUrlDirectoryAddress(
             new system::RoutingTypes::QtChannelAddress(
                     messagingSettings->getChannelUrlDirectoryChannelId()));
     messageRouter->addProvisionedNextHop(
@@ -184,7 +184,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     /* CC */
     // TODO: libjoynrmessagingskeleton now uses the Dispatcher, should it use the
     // InprocessDispatcher?
-    libJoynrMessagingSkeleton = QSharedPointer<InProcessMessagingSkeleton>(
+    libJoynrMessagingSkeleton = std::shared_ptr<InProcessMessagingSkeleton>(
             new InProcessLibJoynrMessagingSkeleton(joynrDispatcher));
     // EndpointAddress to messagingStub is transmitted when a provider is registered
     // messagingStubFactory->registerInProcessMessagingSkeleton(libJoynrMessagingSkeleton);
@@ -193,19 +193,19 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
       * ClusterController side
       *
       */
-    if (messageReceiver.isNull()) {
+    if (!messageReceiver) {
         LOG_INFO(logger,
                  "The message receiver supplied is NULL, creating the default MessageReceiver");
-        messageReceiver = QSharedPointer<IMessageReceiver>(
+        messageReceiver = std::shared_ptr<IMessageReceiver>(
                 new HttpReceiver(*messagingSettings, messageRouter));
     }
 
     QString channelId = messageReceiver->getReceiveChannelId();
 
     // create message sender
-    if (messageSender.isNull()) {
+    if (!messageSender) {
         LOG_INFO(logger, "The message sender supplied is NULL, creating the default MessageSender");
-        messageSender = QSharedPointer<IMessageSender>(
+        messageSender = std::shared_ptr<IMessageSender>(
                 new HttpSender(messagingSettings->getBounceProxyUrl(),
                                messagingSettings->getSendMsgMaxTtl(),
                                messagingSettings->getSendMsgRetryInterval()));
@@ -243,7 +243,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     publicationManager = new PublicationManager();
     subscriptionManager = new SubscriptionManager();
     inProcessPublicationSender = new InProcessPublicationSender(subscriptionManager);
-    QSharedPointer<joynr::system::RoutingTypes::QtAddress> libjoynrMessagingAddress(
+    std::shared_ptr<joynr::system::RoutingTypes::QtAddress> libjoynrMessagingAddress(
             new InProcessMessagingAddress(libJoynrMessagingSkeleton));
     // subscriptionManager = new SubscriptionManager(...)
     inProcessConnectorFactory = new InProcessConnectorFactory(
@@ -264,7 +264,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     // Set up the persistence file for storing provider participant ids
     QString persistenceFilename = libjoynrSettings->getParticipantIdsPersistenceFilename();
-    participantIdStorage = QSharedPointer<ParticipantIdStorage>(
+    participantIdStorage = std::shared_ptr<ParticipantIdStorage>(
             new ParticipantIdStorage(persistenceFilename.toStdString()));
 
     dispatcherAddress = libjoynrMessagingAddress;
@@ -273,9 +273,9 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     std::string discoveryProviderParticipantId(
             systemServicesSettings.getCcDiscoveryProviderParticipantId().toStdString());
-    QSharedPointer<RequestCaller> discoveryRequestCaller(
+    std::shared_ptr<RequestCaller> discoveryRequestCaller(
             new joynr::system::DiscoveryRequestCaller(localCapabilitiesDirectory));
-    QSharedPointer<InProcessAddress> discoveryProviderAddress(
+    std::shared_ptr<InProcessAddress> discoveryProviderAddress(
             new InProcessAddress(discoveryRequestCaller));
     joynr::system::DiscoveryInProcessConnector* discoveryInProcessConnector =
             InProcessConnectorFactoryHelper<joynr::system::IDiscoveryConnector>().create(
@@ -311,7 +311,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
         discoveryQos.setArbitrationStrategy(
                 DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY); // actually only one provider
                                                                       // should be available
-        QSharedPointer<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy(
+        std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy(
                 capabilitiesProxyBuilder->setMessagingQos(MessagingQos(discoveryMessagesTtl))
                         ->setCached(true)
                         ->setDiscoveryQos(discoveryQos)
@@ -327,13 +327,13 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     discoveryQos.setArbitrationStrategy(
             DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY); // actually only one provider
                                                                   // should be available
-    channelUrlDirectoryProxy = QSharedPointer<infrastructure::ChannelUrlDirectoryProxy>(
+    channelUrlDirectoryProxy = std::shared_ptr<infrastructure::ChannelUrlDirectoryProxy>(
             channelUrlDirectoryProxyBuilder->setMessagingQos(MessagingQos(discoveryMessagesTtl))
                     ->setCached(true)
                     ->setDiscoveryQos(discoveryQos)
                     ->build());
 
-    channelUrlDirectory = QSharedPointer<ILocalChannelUrlDirectory>(
+    channelUrlDirectory = std::shared_ptr<ILocalChannelUrlDirectory>(
             new LocalChannelUrlDirectory(*messagingSettings, channelUrlDirectoryProxy));
     messageReceiver->init(channelUrlDirectory);
     messageSender->init(channelUrlDirectory, *messagingSettings);
@@ -349,7 +349,7 @@ ConnectorFactory* JoynrClusterControllerRuntime::createConnectorFactory(
 void JoynrClusterControllerRuntime::registerRoutingProvider()
 {
     std::string domain(systemServicesSettings.getDomain().toStdString());
-    std::shared_ptr<joynr::system::RoutingProvider> routingProvider(messageRouter.data());
+    std::shared_ptr<joynr::system::RoutingProvider> routingProvider(messageRouter);
     std::string interfaceName(routingProvider->getInterfaceName());
     std::string participantId(
             systemServicesSettings.getCcRoutingProviderParticipantId().toStdString());

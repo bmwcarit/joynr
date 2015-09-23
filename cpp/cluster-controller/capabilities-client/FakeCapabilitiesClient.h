@@ -32,9 +32,9 @@
 
 #include <QString>
 #include <string>
-#include <QSharedPointer>
 #include <QSettings>
 #include <vector>
+#include <memory>
 
 namespace joynr
 {
@@ -80,22 +80,22 @@ public:
       */
     virtual void lookup(const std::string& domain,
                         const std::string& interfaceName,
-                        QSharedPointer<IGlobalCapabilitiesCallback> callback);
+                        std::shared_ptr<IGlobalCapabilitiesCallback> callback);
 
     virtual void lookup(const std::string& participantId,
-                        QSharedPointer<IGlobalCapabilitiesCallback> callback);
+                        std::shared_ptr<IGlobalCapabilitiesCallback> callback);
 
     virtual std::string getLocalChannelId();
 
 private:
     DISALLOW_COPY_AND_ASSIGN(FakeCapabilitiesClient);
-    void sendOneWayFunctionCall(QSharedPointer<QObject> jsonFunctionCallSharedPtr,
+    void sendOneWayFunctionCall(std::shared_ptr<QObject> jsonFunctionCallSharedPtr,
                                 MessagingQos qosSettings);
-    Reply sendSynchronizedRequestFunctionCall(QSharedPointer<QObject> jsonFunctionCallSharedPtr,
+    Reply sendSynchronizedRequestFunctionCall(std::shared_ptr<QObject> jsonFunctionCallSharedPtr,
                                               MessagingQos qosSettings);
-    void sendRequest(QSharedPointer<QObject> jsonFunctionCallSharedPtr,
+    void sendRequest(std::shared_ptr<QObject> jsonFunctionCallSharedPtr,
                      MessagingQos qosSettings,
-                     QSharedPointer<IReplyCaller> callBack);
+                     std::shared_ptr<IReplyCaller> callBack);
 
     std::vector<types::CapabilityInformation> createFakedCapInfoList(
             const std::string& domain,

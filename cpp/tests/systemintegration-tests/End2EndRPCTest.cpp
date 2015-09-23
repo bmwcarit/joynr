@@ -44,7 +44,7 @@ class End2EndRPCTest : public Test{
 public:
     std::string domain;
     JoynrClusterControllerRuntime* runtime;
-    QSharedPointer<vehicle::GpsProvider> gpsProvider;
+    std::shared_ptr<vehicle::GpsProvider> gpsProvider;
 
     End2EndRPCTest() :
         domain(),
@@ -104,7 +104,7 @@ TEST_F(End2EndRPCTest, call_rpc_method_and_get_expected_result)
     discoveryQos.setDiscoveryTimeout(1000);
 
     qlonglong qosRoundTripTTL = 40000;
-    QSharedPointer<vehicle::GpsProxy> gpsProxy(gpsProxyBuilder
+    std::shared_ptr<vehicle::GpsProxy> gpsProxy(gpsProxyBuilder
             ->setMessagingQos(MessagingQos(qosRoundTripTTL))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
@@ -171,7 +171,7 @@ TEST_F(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
     discoveryQos.setDiscoveryTimeout(1000);
 
     qlonglong qosRoundTripTTL = 40000;
-    QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
+    std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
             ->setMessagingQos(MessagingQos(qosRoundTripTTL))
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)

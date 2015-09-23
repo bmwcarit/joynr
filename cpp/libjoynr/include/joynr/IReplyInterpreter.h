@@ -22,6 +22,8 @@
 #include "joynr/IReplyCaller.h"
 #include <QVariant>
 
+#include <memory>
+
 namespace joynr
 {
 
@@ -34,7 +36,7 @@ public:
     {
     }
     // The ReplyCaller is the instance that calls the actual receiver of the reply.
-    virtual void execute(QSharedPointer<IReplyCaller> replyCaller, const Reply& reply) = 0;
+    virtual void execute(std::shared_ptr<IReplyCaller> replyCaller, const Reply& reply) = 0;
 };
 
 } // namespace joynr

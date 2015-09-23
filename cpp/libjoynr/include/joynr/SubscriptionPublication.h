@@ -24,8 +24,9 @@
 #include <QObject>
 #include <QString>
 #include <QVariant>
-#include <QSharedPointer>
 #include <QList>
+
+#include <memory>
 
 namespace joynr
 {
@@ -60,6 +61,6 @@ private:
 } // namespace joynr
 
 Q_DECLARE_METATYPE(joynr::SubscriptionPublication)
-Q_DECLARE_METATYPE(QSharedPointer<joynr::SubscriptionPublication>)
+Q_DECLARE_METATYPE(std::shared_ptr<joynr::SubscriptionPublication>)
 
 #endif // SUBSCRIPTIONPUBLICATION_H

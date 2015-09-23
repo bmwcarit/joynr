@@ -22,12 +22,12 @@ namespace joynr
 {
 
 InProcessMessagingAddress::InProcessMessagingAddress(
-        QSharedPointer<InProcessMessagingSkeleton> skeleton)
+        std::shared_ptr<InProcessMessagingSkeleton> skeleton)
         : QtAddress(), skeleton(skeleton)
 {
 }
 
-QSharedPointer<InProcessMessagingSkeleton> InProcessMessagingAddress::getSkeleton() const
+std::shared_ptr<InProcessMessagingSkeleton> InProcessMessagingAddress::getSkeleton() const
 {
     return skeleton;
 }

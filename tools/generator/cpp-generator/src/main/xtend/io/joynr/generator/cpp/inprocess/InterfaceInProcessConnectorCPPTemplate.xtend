@@ -78,7 +78,7 @@ Logger* «interfaceName»InProcessConnector::logger = Logging::getInstance()->ge
 			joynr::InProcessPublicationSender* inProcessPublicationSender,
 			const std::string& proxyParticipantId,
 			const std::string& providerParticipantId,
-			QSharedPointer<joynr::InProcessAddress> address
+			std::shared_ptr<joynr::InProcessAddress> address
 ) :
 	proxyParticipantId(proxyParticipantId),
 	providerParticipantId(providerParticipantId),
@@ -103,13 +103,13 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 		joynr::RequestStatus «interfaceName»InProcessConnector::«getAttributeName»(
 					«returnType»& attributeValue
 		) {
-			assert(!address.isNull());
-			QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
-			assert(!caller.isNull());
-			QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
-			assert(!«serviceInterface.interfaceCaller».isNull());
+			assert(address);
+			std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
+			assert(caller);
+			std::shared_ptr<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
+			assert(«serviceInterface.interfaceCaller»);
 
-			QSharedPointer<joynr::Future<«returnType»> > future(new joynr::Future<«returnType»>());
+			std::shared_ptr<joynr::Future<«returnType»> > future(new joynr::Future<«returnType»>());
 
 			std::function<void(const «returnType»& «attributeName»)> onSuccess =
 					[future] (const «returnType»& «attributeName») {
@@ -130,11 +130,11 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 				std::function<void(const joynr::RequestStatus& status)> onError
 		) {
 			std::ignore = onError; // not used yet
-			assert(!address.isNull());
-			QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
-			assert(!caller.isNull());
-			QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
-			assert(!«serviceInterface.interfaceCaller».isNull());
+			assert(address);
+			std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
+			assert(caller);
+			std::shared_ptr<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
+			assert(«serviceInterface.interfaceCaller»);
 
 			std::shared_ptr<joynr::Future<«returnType»> > future(new joynr::Future<«returnType»>());
 
@@ -159,11 +159,11 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 				std::function<void(const joynr::RequestStatus& status)> onError
 		) {
 			std::ignore = onError; // not used yet
-			assert(!address.isNull());
-			QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
-			assert(!caller.isNull());
-			QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
-			assert(!«serviceInterface.interfaceCaller».isNull());
+			assert(address);
+			std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
+			assert(caller);
+			std::shared_ptr<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
+			assert(«serviceInterface.interfaceCaller»);
 
 			std::shared_ptr<joynr::Future<void>> future(new joynr::Future<void>());
 			std::function<void()> onSuccessWrapper =
@@ -183,13 +183,13 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 		joynr::RequestStatus «interfaceName»InProcessConnector::«setAttributeName»(
 				const «returnType»& input
 		) {
-			assert(!address.isNull());
-			QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
-			assert(!caller.isNull());
-			QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
-			assert(!«serviceInterface.interfaceCaller».isNull());
+			assert(address);
+			std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
+			assert(caller);
+			std::shared_ptr<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
+			assert(«serviceInterface.interfaceCaller»);
 
-			QSharedPointer<joynr::Future<void>> future(new joynr::Future<void>());
+			std::shared_ptr<joynr::Future<void>> future(new joynr::Future<void>());
 			std::function<void()> onSuccess =
 					[future] () {
 						future->onSuccess();
@@ -237,7 +237,7 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 				LOG_DEBUG(logger, "Subscribing to «attributeName».");
 				assert(subscriptionManager != NULL);
 				QString attributeName("«attributeName»");
-				QSharedPointer<joynr::SubscriptionCallback<«returnTypeQt»>> subscriptionCallback(
+				std::shared_ptr<joynr::SubscriptionCallback<«returnTypeQt»>> subscriptionCallback(
 						«IF qtTypeUtil.needsDatatypeConversion(attribute)»
 							new «attribute.joynrName.toFirstUpper»AttributeSubscriptionCallbackWrapper(
 						«ELSE»
@@ -249,16 +249,16 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 				subscriptionManager->registerSubscription(
 						attributeName,
 						subscriptionCallback,
-						QSharedPointer<QtSubscriptionQos>(QtSubscriptionQos::createQt(subscriptionQos)),
+						std::shared_ptr<QtSubscriptionQos>(QtSubscriptionQos::createQt(subscriptionQos)),
 						subscriptionRequest);
 				LOG_DEBUG(logger, "Registered subscription: " + subscriptionRequest.toQString());
-				assert(!address.isNull());
-				QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
-				assert(!caller.isNull());
-				QSharedPointer<«interfaceName»RequestCaller> requestCaller = caller.dynamicCast<«interfaceName»RequestCaller>();
+				assert(address);
+				std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
+				assert(caller);
+				std::shared_ptr<«interfaceName»RequestCaller> requestCaller = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
 				std::string subscriptionId(subscriptionRequest.getSubscriptionId().toStdString());
 
-				if(caller.isNull()) {
+				if(!caller) {
 					assert(publicationManager != NULL);
 					/**
 					* Provider not registered yet
@@ -308,12 +308,12 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 joynr::RequestStatus «interfaceName»InProcessConnector::«methodname»(
 		«outputTypedParamList»«IF method.outputParameters.size > 0 && method.inputParameters.size > 0», «ENDIF»«inputTypedParamList»
 ) {
-	assert(!address.isNull());
-	QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
-	assert(!caller.isNull());
-	QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
-	assert(!«serviceInterface.interfaceCaller».isNull());
-	QSharedPointer<joynr::Future<«outputParameters»> > future(
+	assert(address);
+	std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
+	assert(caller);
+	std::shared_ptr<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
+	assert(«serviceInterface.interfaceCaller»);
+	std::shared_ptr<joynr::Future<«outputParameters»> > future(
 			new joynr::Future<«outputParameters»>());
 
 	std::function<void(«outputTypedConstParamList»)> onSuccess =
@@ -340,11 +340,11 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 			std::function<void(const joynr::RequestStatus& status)> onError)
 {
 	std::ignore = onError; // not used yet
-	assert(!address.isNull());
-	QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
-	assert(!caller.isNull());
-	QSharedPointer<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = caller.dynamicCast<«interfaceName»RequestCaller>();
-	assert(!«serviceInterface.interfaceCaller».isNull());
+	assert(address);
+	std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
+	assert(caller);
+	std::shared_ptr<«interfaceName»RequestCaller> «serviceInterface.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
+	assert(«serviceInterface.interfaceCaller»);
 	std::shared_ptr<joynr::Future<«outputParameters»> > future(
 			new joynr::Future<«outputParameters»>());
 
@@ -424,21 +424,21 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 		assert(subscriptionManager != NULL);
 		QString broadcastName("«broadcastName»");
 
-		QSharedPointer<joynr::SubscriptionCallback<«returnTypesQt»>> subscriptionCallback(
+		std::shared_ptr<joynr::SubscriptionCallback<«returnTypesQt»>> subscriptionCallback(
 					new «broadcastName.toFirstUpper»BroadcastSubscriptionCallbackWrapper(subscriptionListener));
 		subscriptionManager->registerSubscription(
 					broadcastName,
 					subscriptionCallback,
-					QSharedPointer<QtOnChangeSubscriptionQos>(QtSubscriptionQos::createQt(subscriptionQos)),
+					std::shared_ptr<QtOnChangeSubscriptionQos>(QtSubscriptionQos::createQt(subscriptionQos)),
 					subscriptionRequest);
 		LOG_DEBUG(logger, "Registered broadcast subscription: " + subscriptionRequest.toQString());
-		assert(!address.isNull());
-		QSharedPointer<joynr::RequestCaller> caller = address->getRequestCaller();
-		assert(!caller.isNull());
-		QSharedPointer<«interfaceName»RequestCaller> requestCaller = caller.dynamicCast<«interfaceName»RequestCaller>();
+		assert(address);
+		std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
+		assert(caller);
+		std::shared_ptr<«interfaceName»RequestCaller> requestCaller = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
 		std::string subscriptionId(subscriptionRequest.getSubscriptionId().toStdString());
 
-		if(caller.isNull()) {
+		if(!caller) {
 			assert(publicationManager != NULL);
 			/**
 			* Provider not registered yet

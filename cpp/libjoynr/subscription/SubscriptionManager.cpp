@@ -29,11 +29,11 @@ namespace joynr
 class SubscriptionManager::Subscription
 {
 public:
-    Subscription(QSharedPointer<ISubscriptionCallback> subscriptionCaller);
+    Subscription(std::shared_ptr<ISubscriptionCallback> subscriptionCaller);
     ~Subscription();
 
     qint64 timeOfLastPublication;
-    QSharedPointer<ISubscriptionCallback> subscriptionCaller;
+    std::shared_ptr<ISubscriptionCallback> subscriptionCaller;
     QMutex mutex;
     bool isStopped;
     quint32 subscriptionEndRunnableHandle;
@@ -74,8 +74,8 @@ SubscriptionManager::SubscriptionManager(DelayedScheduler* scheduler)
 
 void SubscriptionManager::registerSubscription(
         const QString& subscribeToName,
-        QSharedPointer<ISubscriptionCallback> subscriptionCaller,
-        QSharedPointer<QtSubscriptionQos> qos,
+        std::shared_ptr<ISubscriptionCallback> subscriptionCaller,
+        std::shared_ptr<QtSubscriptionQos> qos,
         SubscriptionRequest& subscriptionRequest)
 {
     // Register the subscription
@@ -98,7 +98,7 @@ void SubscriptionManager::registerSubscription(
         return;
     }
 
-    QSharedPointer<Subscription> subscription(new Subscription(subscriptionCaller));
+    std::shared_ptr<Subscription> subscription(new Subscription(subscriptionCaller));
 
     subscriptions.insert(subscriptionId, subscription);
 
@@ -106,13 +106,13 @@ void SubscriptionManager::registerSubscription(
 
     {
         QMutexLocker subscriptionLocker(&(subscription->mutex));
-        if (SubscriptionUtil::getAlertInterval(qos.data()) > 0 &&
-            SubscriptionUtil::getPeriodicPublicationInterval(qos.data()) > 0) {
+        if (SubscriptionUtil::getAlertInterval(qos.get()) > 0 &&
+            SubscriptionUtil::getPeriodicPublicationInterval(qos.get()) > 0) {
             LOG_DEBUG(logger, "Will notify if updates are missed.");
-            qint64 alertAfterInterval = SubscriptionUtil::getAlertInterval(qos.data());
+            qint64 alertAfterInterval = SubscriptionUtil::getAlertInterval(qos.get());
             qint64 expiryDate = qos->getExpiryDate();
             qint64 periodicPublicationInterval =
-                    SubscriptionUtil::getPeriodicPublicationInterval(qos.data());
+                    SubscriptionUtil::getPeriodicPublicationInterval(qos.get());
 
             if (expiryDate == joynr::QtSubscriptionQos::NO_EXPIRY_DATE()) {
                 expiryDate = joynr::QtSubscriptionQos::NO_EXPIRY_DATE_TTL();
@@ -141,7 +141,7 @@ void SubscriptionManager::unregisterSubscription(const QString& subscriptionId)
 {
     QWriteLocker subscriptionsLocker(&subscriptionsLock);
     if (subscriptions.contains(subscriptionId)) {
-        QSharedPointer<Subscription> subscription = subscriptions.take(subscriptionId);
+        std::shared_ptr<Subscription> subscription = subscriptions.take(subscriptionId);
         LOG_DEBUG(logger, "Called unregister / unsubscribe on subscription id= " + subscriptionId);
         QMutexLocker subscriptionLocker(&(subscription->mutex));
         subscription->isStopped = true;
@@ -171,14 +171,14 @@ void SubscriptionManager::touchSubscriptionState(const QString& subscriptionId)
     if (!subscriptions.contains(subscriptionId)) {
         return;
     }
-    QSharedPointer<Subscription> subscription = subscriptions.value(subscriptionId);
+    std::shared_ptr<Subscription> subscription = subscriptions.value(subscriptionId);
     {
         QMutexLocker subscriptionLocker(&(subscription->mutex));
         subscription->timeOfLastPublication = QDateTime::currentMSecsSinceEpoch();
     }
 }
 
-QSharedPointer<ISubscriptionCallback> SubscriptionManager::getSubscriptionCallback(
+std::shared_ptr<ISubscriptionCallback> SubscriptionManager::getSubscriptionCallback(
         const QString& subscriptionId)
 {
     QReadLocker subscriptionsLocker(&subscriptionsLock);
@@ -186,10 +186,10 @@ QSharedPointer<ISubscriptionCallback> SubscriptionManager::getSubscriptionCallba
     if (!subscriptions.contains(subscriptionId)) {
         LOG_DEBUG(logger,
                   "Trying to acces a non existing subscription callback for id=" + subscriptionId);
-        return QSharedPointer<ISubscriptionCallback>();
+        return std::shared_ptr<ISubscriptionCallback>();
     }
 
-    QSharedPointer<Subscription> subscription(subscriptions.value(subscriptionId));
+    std::shared_ptr<Subscription> subscription(subscriptions.value(subscriptionId));
 
     {
         QMutexLocker subscriptionLockers(&(subscription->mutex));
@@ -204,7 +204,7 @@ SubscriptionManager::Subscription::~Subscription()
 }
 
 SubscriptionManager::Subscription::Subscription(
-        QSharedPointer<ISubscriptionCallback> subscriptionCaller)
+        std::shared_ptr<ISubscriptionCallback> subscriptionCaller)
         : timeOfLastPublication(0),
           subscriptionCaller(subscriptionCaller),
           mutex(QMutex::RecursionMode::Recursive),
@@ -224,7 +224,7 @@ SubscriptionManager::MissedPublicationRunnable::MissedPublicationRunnable(
         const QDateTime& expiryDate,
         const qint64& expectedIntervalMSecs,
         const QString& subscriptionId,
-        QSharedPointer<Subscription> subscription,
+        std::shared_ptr<Subscription> subscription,
         SubscriptionManager& subscriptionManager,
         const qint64& alertAfterInterval)
         : ObjectWithDecayTime(expiryDate),
@@ -253,7 +253,7 @@ void SubscriptionManager::MissedPublicationRunnable::run()
             delay = alertAfterInterval - timeSinceLastPublication;
         } else {
             LOG_DEBUG(logger, "Publication missed!");
-            QSharedPointer<ISubscriptionCallback> callback = subscription->subscriptionCaller;
+            std::shared_ptr<ISubscriptionCallback> callback = subscription->subscriptionCaller;
 
             callback->onError();
             delay = alertAfterInterval - timeSinceLastExpectedPublication(timeSinceLastPublication);

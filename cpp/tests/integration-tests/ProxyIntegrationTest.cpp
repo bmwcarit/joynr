@@ -61,8 +61,6 @@ public:
         messagingQos(),
         endPointAddress(new system::RoutingTypes::QtChannelAddress("endPointAddress"))
     {
-        //moved to initializationlist
-        //endPointAddress = QSharedPointer<system::RoutingTypes::QtChannelAddress>(new system::RoutingTypes::QtChannelAddress("endPointAddress"));
     }
 
     // Sets up the test fixture.
@@ -87,7 +85,7 @@ protected:
     MockJoynrMessageSender* mockJoynrMessageSender;
     std::string domain;
     MessagingQos messagingQos;
-    QSharedPointer<system::RoutingTypes::QtChannelAddress> endPointAddress;
+    std::shared_ptr<system::RoutingTypes::QtChannelAddress> endPointAddress;
 
 
 private:

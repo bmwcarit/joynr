@@ -38,6 +38,7 @@
 #include <stdint.h>
 #include <joynr/TypeUtil.h>
 #include <cassert>
+#include <memory>
 
 namespace joynr
 {
@@ -68,8 +69,8 @@ public:
     ProxyBuilder(ProxyFactory* proxyFactory,
                  joynr::system::IDiscoverySync& discoveryProxy,
                  const std::string& domain,
-                 QSharedPointer<joynr::system::RoutingTypes::QtAddress> dispatcherAddress,
-                 QSharedPointer<MessageRouter> messageRouter);
+                 std::shared_ptr<joynr::system::RoutingTypes::QtAddress> dispatcherAddress,
+                 std::shared_ptr<MessageRouter> messageRouter);
 
     /** Destructor */
     ~ProxyBuilder();
@@ -191,8 +192,8 @@ private:
     ArbitrationStatus::ArbitrationStatusType arbitrationStatus;
     qint64 discoveryTimeout;
 
-    QSharedPointer<joynr::system::RoutingTypes::QtAddress> dispatcherAddress;
-    QSharedPointer<MessageRouter> messageRouter;
+    std::shared_ptr<joynr::system::RoutingTypes::QtAddress> dispatcherAddress;
+    std::shared_ptr<MessageRouter> messageRouter;
 };
 
 template <class T>
@@ -200,8 +201,8 @@ ProxyBuilder<T>::ProxyBuilder(
         ProxyFactory* proxyFactory,
         joynr::system::IDiscoverySync& discoveryProxy,
         const std::string& domain,
-        QSharedPointer<joynr::system::RoutingTypes::QtAddress> dispatcherAddress,
-        QSharedPointer<MessageRouter> messageRouter)
+        std::shared_ptr<joynr::system::RoutingTypes::QtAddress> dispatcherAddress,
+        std::shared_ptr<MessageRouter> messageRouter)
         : domain(domain),
           cached(false),
           hasArbitrationStarted(false),
@@ -231,7 +232,7 @@ ProxyBuilder<T>::~ProxyBuilder()
         arbitrator = NULL;
         // TODO delete arbitrator
         // 1. delete arbitrator or
-        // 2. (if qsharedpointer) delete arbitrator
+        // 2. (if std::shared_ptr) delete arbitrator
     }
 }
 
@@ -247,7 +248,7 @@ T* ProxyBuilder<T>::build()
      * synchronously wait until the proxy participantId is registered in the
      * routing table(s)
     */
-    QSharedPointer<Future<void>> future(new Future<void>());
+    std::shared_ptr<Future<void>> future(new Future<void>());
     auto onSuccess = [future]() { future->onSuccess(); };
     messageRouter->addNextHop(proxy->getProxyParticipantId(), dispatcherAddress, onSuccess);
 

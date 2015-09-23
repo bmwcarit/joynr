@@ -35,7 +35,6 @@
 #include "joynr/IBroadcastFilter.h"
 #include "joynr/TypeUtil.h"
 
-#include <QSharedPointer>
 #include <string>
 #include <cassert>
 #include <memory>
@@ -165,15 +164,15 @@ protected:
     /** @brief Factory for creating proxy instances */
     ProxyFactory* proxyFactory;
     /** @brief Creates and persists participant id */
-    QSharedPointer<ParticipantIdStorage> participantIdStorage;
+    std::shared_ptr<ParticipantIdStorage> participantIdStorage;
     /** @brief Class that handles provider registration/deregistration */
     CapabilitiesRegistrar* capabilitiesRegistrar;
     /** @brief System services settings */
     SystemServicesSettings systemServicesSettings;
     /** @brief Address of the dispatcher */
-    QSharedPointer<joynr::system::RoutingTypes::QtAddress> dispatcherAddress;
+    std::shared_ptr<joynr::system::RoutingTypes::QtAddress> dispatcherAddress;
     /** @brief MessageRouter instance */
-    QSharedPointer<MessageRouter> messageRouter;
+    std::shared_ptr<MessageRouter> messageRouter;
     /** @brief Wrapper for discovery proxies */
     LocalDiscoveryAggregator* discoveryProxy;
     /**

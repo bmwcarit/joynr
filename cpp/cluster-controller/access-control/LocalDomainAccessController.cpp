@@ -158,7 +158,7 @@ LocalDomainAccessController::~LocalDomainAccessController()
 }
 
 void LocalDomainAccessController::init(
-        QSharedPointer<GlobalDomainAccessControllerProxy> globalDomainAccessControllerProxy)
+        std::shared_ptr<GlobalDomainAccessControllerProxy> globalDomainAccessControllerProxy)
 {
     this->globalDomainAccessControllerProxy = globalDomainAccessControllerProxy;
 }
@@ -192,7 +192,7 @@ void LocalDomainAccessController::getConsumerPermission(
         const std::string& domain,
         const std::string& interfaceName,
         TrustLevel::Enum trustLevel,
-        QSharedPointer<IGetConsumerPermissionCallback> callback)
+        std::shared_ptr<IGetConsumerPermissionCallback> callback)
 {
     LOG_DEBUG(logger, QString("Entering getConsumerPermission with unknown operation"));
 
@@ -582,7 +582,7 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
                                                                    const std::string& interfaceName)
 {
     // Create an object to keep track of the initialisation
-    QSharedPointer<Initialiser> initialiser(new Initialiser(*this, domain, interfaceName));
+    std::shared_ptr<Initialiser> initialiser(new Initialiser(*this, domain, interfaceName));
 
     // Initialise domain roles from global data
     // TODO: confirm that this is needed

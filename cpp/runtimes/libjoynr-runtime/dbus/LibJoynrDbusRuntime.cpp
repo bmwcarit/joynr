@@ -43,12 +43,12 @@ LibJoynrDbusRuntime::LibJoynrDbusRuntime(QSettings* settings)
     libjoynrMessagingServiceUrl = QString(
             QString("%0:%1:%2").arg(libjoynrMessagingDomain).arg(libjoynrMessagingServiceName).arg(
                     libjoynrMessagingId));
-    QSharedPointer<joynr::system::RoutingTypes::QtAddress> libjoynrMessagingAddress(
+    std::shared_ptr<joynr::system::RoutingTypes::QtAddress> libjoynrMessagingAddress(
             new system::RoutingTypes::QtCommonApiDbusAddress(
                     libjoynrMessagingDomain, libjoynrMessagingServiceName, libjoynrMessagingId));
 
     // create connection to parent routing service
-    QSharedPointer<joynr::system::RoutingTypes::QtAddress> ccMessagingAddress(
+    std::shared_ptr<joynr::system::RoutingTypes::QtAddress> ccMessagingAddress(
             new system::RoutingTypes::QtCommonApiDbusAddress(
                     dbusSettings->getClusterControllerMessagingDomain(),
                     dbusSettings->getClusterControllerMessagingServiceName(),

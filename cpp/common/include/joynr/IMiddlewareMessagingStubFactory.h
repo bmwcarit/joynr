@@ -20,7 +20,7 @@
 #define IMIDDLEWAREMESSAGINGSTUBFACTORY_H
 
 #include <QString>
-#include <QSharedPointer>
+#include <memory>
 
 namespace joynr
 {
@@ -41,7 +41,7 @@ public:
     virtual ~IMiddlewareMessagingStubFactory()
     {
     }
-    virtual QSharedPointer<IMessaging> create(
+    virtual std::shared_ptr<IMessaging> create(
             const joynr::system::RoutingTypes::QtAddress& destAddress) = 0;
     virtual bool canCreate(const joynr::system::RoutingTypes::QtAddress& destAddress) = 0;
 };

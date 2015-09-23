@@ -49,7 +49,7 @@ bool WebSocketMessagingStubFactory::canCreate(
                    system::RoutingTypes::QtWebSocketClientAddress::staticMetaObject.className());
 }
 
-QSharedPointer<IMessaging> WebSocketMessagingStubFactory::create(
+std::shared_ptr<IMessaging> WebSocketMessagingStubFactory::create(
         const joynr::system::RoutingTypes::QtAddress& destAddress)
 {
     // if destination is a WS client address
@@ -66,7 +66,7 @@ QSharedPointer<IMessaging> WebSocketMessagingStubFactory::create(
                                   .arg(webSocketClientAddress->toString()));
             }
         }
-        return clientStubMap.value(*webSocketClientAddress, QSharedPointer<IMessaging>());
+        return clientStubMap.value(*webSocketClientAddress, std::shared_ptr<IMessaging>());
     }
     // if destination is a WS server address
     if (destAddress.inherits(
@@ -82,10 +82,10 @@ QSharedPointer<IMessaging> WebSocketMessagingStubFactory::create(
                                   .arg(webSocketServerAddress->toString()));
             }
         }
-        return serverStubMap.value(*webSocketServerAddress, QSharedPointer<IMessaging>());
+        return serverStubMap.value(*webSocketServerAddress, std::shared_ptr<IMessaging>());
     }
 
-    return QSharedPointer<IMessaging>();
+    return std::shared_ptr<IMessaging>();
 }
 
 void WebSocketMessagingStubFactory::addClient(
@@ -98,7 +98,7 @@ void WebSocketMessagingStubFactory::addClient(
             &WebSocketMessagingStub::closed,
             this,
             &WebSocketMessagingStubFactory::onMessagingStubClosed);
-    QSharedPointer<IMessaging> clientStub(wsClientStub);
+    std::shared_ptr<IMessaging> clientStub(wsClientStub);
     clientStubMap.insert(clientAddress, clientStub);
 }
 
@@ -118,7 +118,7 @@ void WebSocketMessagingStubFactory::addServer(
             &WebSocketMessagingStub::closed,
             this,
             &WebSocketMessagingStubFactory::onMessagingStubClosed);
-    QSharedPointer<IMessaging> serverStub(wsServerStub);
+    std::shared_ptr<IMessaging> serverStub(wsServerStub);
     serverStubMap.insert(serverAddress, serverStub);
 }
 

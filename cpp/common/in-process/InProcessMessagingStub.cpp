@@ -23,7 +23,7 @@
 namespace joynr
 {
 
-InProcessMessagingStub::InProcessMessagingStub(QSharedPointer<InProcessMessagingSkeleton> skeleton)
+InProcessMessagingStub::InProcessMessagingStub(std::shared_ptr<InProcessMessagingSkeleton> skeleton)
         : skeleton(skeleton)
 {
 }

@@ -68,9 +68,9 @@ public:
             Unused, // receiver participant ID
             Unused, // messaging QoS
             Unused, // request object to send
-            QSharedPointer<IReplyCaller> callback // reply caller to notify when reply is received
+            std::shared_ptr<IReplyCaller> callback // reply caller to notify when reply is received
     ) {
-        (callback.dynamicCast<ReplyCaller<void> >())->returnValue();
+        (std::dynamic_pointer_cast<ReplyCaller<void> >(callback))->returnValue();
     }
 
     // related to test: sync_getAttributeNotCached
@@ -79,9 +79,9 @@ public:
             Unused, // receiver participant ID
             Unused, // messaging QoS
             Unused, // request object to send
-            QSharedPointer<IReplyCaller> callback // reply caller to notify when reply is received
+            std::shared_ptr<IReplyCaller> callback // reply caller to notify when reply is received
     ) {
-       (callback.dynamicCast<ReplyCaller<types::Localisation::QtGpsLocation> >())->returnValue(expectedGpsLocation);
+       (std::dynamic_pointer_cast<ReplyCaller<types::Localisation::QtGpsLocation> >(callback))->returnValue(expectedGpsLocation);
     }
 
     // related to test: sync_OperationWithNoArguments
@@ -90,10 +90,10 @@ public:
             Unused, // receiver participant ID
             Unused, // messaging QoS
             Unused, // request object to send
-            QSharedPointer<IReplyCaller> callback // reply caller to notify when reply is received
+            std::shared_ptr<IReplyCaller> callback // reply caller to notify when reply is received
     ) {
 
-        callback.dynamicCast<ReplyCaller<int> >()->returnValue(expectedInt);
+        std::dynamic_pointer_cast<ReplyCaller<int> >(callback)->returnValue(expectedInt);
     }
 private:
     joynr::types::Localisation::QtGpsLocation expectedGpsLocation;
@@ -124,7 +124,7 @@ public:
     virtual ~AbstractSyncAsyncTest(){}
     void SetUp(){
         qosSettings = MessagingQos(456000);
-        endPointAddress = QSharedPointer<system::RoutingTypes::QtAddress>(new system::RoutingTypes::QtChannelAddress("endPointAddress"));
+        endPointAddress = std::shared_ptr<system::RoutingTypes::QtAddress>(new system::RoutingTypes::QtChannelAddress("endPointAddress"));
         proxyParticipantId = "participantId";
         providerParticipantId = "providerParticipantId";
         mockJoynrMessageSender = new MockJoynrMessageSender();
@@ -144,7 +144,7 @@ public:
             const std::string&,
             const MessagingQos&,
             const Request&,
-            QSharedPointer<IReplyCaller>
+            std::shared_ptr<IReplyCaller>
     )>& setExpectationsForSendRequestCall(int expectedTypeId, std::string methodName) = 0;
 
     virtual tests::Itest* createFixture(bool cacheEnabled)=0;
@@ -175,7 +175,7 @@ public:
                             Property(&Request::getParams, (Property(&QList<QVariant>::size, Eq(1))))
                         ), // request object to send
                         Property(
-                            &QSharedPointer<IReplyCaller>::data,
+                            &std::shared_ptr<IReplyCaller>::get,
                             AllOf(NotNull(), Property(&IReplyCaller::getTypeId, Eq(Util::getTypeId<void>())))
                         ) // reply caller to notify when reply is received
                     )
@@ -277,12 +277,12 @@ protected:
     MessagingQos qosSettings;
     MockDispatcher mockDispatcher;
     MockMessaging mockMessagingStub;
-    QSharedPointer<IReplyCaller> callBack;
+    std::shared_ptr<IReplyCaller> callBack;
     MockJoynrMessageSender* mockJoynrMessageSender;
     std::string proxyParticipantId;
     std::string providerParticipantId;
     MockClientCache mockClientCache;
-    QSharedPointer<system::RoutingTypes::QtAddress> endPointAddress;
+    std::shared_ptr<system::RoutingTypes::QtAddress> endPointAddress;
     tests::Itest* asyncTestFixture;
 private:
     DISALLOW_COPY_AND_ASSIGN(AbstractSyncAsyncTest);

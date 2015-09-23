@@ -20,7 +20,9 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 #include "joynr/ThreadSafeMap.h"
-#include <QSharedPointer>
+
+#include <QString>
+#include <memory>
 
 using ::testing::Property;
 using ::testing::Eq;
@@ -42,9 +44,9 @@ class ThreadsafeMapTest : public ::testing::Test
     }
 
     void SetUp(){
-        map = new ThreadSafeMap<QString, QSharedPointer<QString> >();
-        testValue = QSharedPointer<QString>(new QString("testValue"));
-        secondTestValue = QSharedPointer<QString>(new QString("secondTestValue"));
+        map = new ThreadSafeMap<QString, std::shared_ptr<QString> >();
+        testValue = std::shared_ptr<QString>(new QString("testValue"));
+        secondTestValue = std::shared_ptr<QString>(new QString("secondTestValue"));
         firstKey = QString("firstKey");
         secondKey = QString("secondKey");
     }
@@ -53,9 +55,9 @@ class ThreadsafeMapTest : public ::testing::Test
     }
 
 protected:
-    ThreadSafeMap<QString, QSharedPointer<QString> >* map;
-    QSharedPointer<QString> testValue;
-    QSharedPointer<QString> secondTestValue;
+    ThreadSafeMap<QString, std::shared_ptr<QString> >* map;
+    std::shared_ptr<QString> testValue;
+    std::shared_ptr<QString> secondTestValue;
     QString firstKey;
     QString secondKey;
 private:
@@ -82,8 +84,8 @@ TEST_F(ThreadsafeMapTest, value)
 {
     map->insert(firstKey, testValue);
     map->insert(secondKey,secondTestValue);
-    QSharedPointer<QString> result1 = map->value(firstKey);
-    QSharedPointer<QString> result2 = map->value(secondKey);
+    std::shared_ptr<QString> result1 = map->value(firstKey);
+    std::shared_ptr<QString> result2 = map->value(secondKey);
     ASSERT_EQ(result1, testValue);
     ASSERT_EQ(result2, secondTestValue);
 }

@@ -213,7 +213,7 @@ void LocalCapabilitiesDirectory::remove(const std::string& participantId)
 bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(
         const InterfaceAddress& interfaceAddress,
         const joynr::types::QtDiscoveryQos& discoveryQos,
-        QSharedPointer<ILocalCapabilitiesCallback> callback)
+        std::shared_ptr<ILocalCapabilitiesCallback> callback)
 {
     joynr::types::QtDiscoveryScope::Enum scope = discoveryQos.getDiscoveryScope();
 
@@ -227,7 +227,7 @@ bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(
 bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(
         const std::string& participantId,
         const joynr::types::QtDiscoveryQos& discoveryQos,
-        QSharedPointer<ILocalCapabilitiesCallback> callback)
+        std::shared_ptr<ILocalCapabilitiesCallback> callback)
 {
     joynr::types::QtDiscoveryScope::Enum scope = discoveryQos.getDiscoveryScope();
 
@@ -242,7 +242,7 @@ bool LocalCapabilitiesDirectory::callRecieverIfPossible(
         joynr::types::QtDiscoveryScope::Enum& scope,
         std::vector<CapabilityEntry>& localCapabilities,
         std::vector<CapabilityEntry>& globalCapabilities,
-        QSharedPointer<ILocalCapabilitiesCallback> callback)
+        std::shared_ptr<ILocalCapabilitiesCallback> callback)
 {
     // return only local capabilities
     if (scope == joynr::types::QtDiscoveryScope::LOCAL_ONLY) {
@@ -296,7 +296,7 @@ bool LocalCapabilitiesDirectory::callRecieverIfPossible(
 void LocalCapabilitiesDirectory::capabilitiesReceived(
         const std::vector<types::CapabilityInformation>& results,
         std::vector<CapabilityEntry> cachedLocalCapabilies,
-        QSharedPointer<ILocalCapabilitiesCallback> callback,
+        std::shared_ptr<ILocalCapabilitiesCallback> callback,
         joynr::types::DiscoveryScope::Enum discoveryScope)
 {
     QMap<std::string, CapabilityEntry> capabilitiesMap;
@@ -329,7 +329,7 @@ void LocalCapabilitiesDirectory::capabilitiesReceived(
 }
 
 void LocalCapabilitiesDirectory::lookup(const std::string& participantId,
-                                        QSharedPointer<ILocalCapabilitiesCallback> callback)
+                                        std::shared_ptr<ILocalCapabilitiesCallback> callback)
 {
     joynr::types::QtDiscoveryQos discoveryQos;
     discoveryQos.setDiscoveryScope(joynr::types::QtDiscoveryScope::LOCAL_THEN_GLOBAL);
@@ -352,7 +352,7 @@ void LocalCapabilitiesDirectory::lookup(const std::string& participantId,
 
 void LocalCapabilitiesDirectory::lookup(const std::string& domain,
                                         const std::string& interfaceName,
-                                        QSharedPointer<ILocalCapabilitiesCallback> callback,
+                                        std::shared_ptr<ILocalCapabilitiesCallback> callback,
                                         const joynr::types::DiscoveryQos& discoveryQos)
 {
     InterfaceAddress interfaceAddress(
@@ -406,7 +406,7 @@ void LocalCapabilitiesDirectory::registerReceivedCapabilities(
     while (entryIterator.hasNext()) {
         entryIterator.next();
         CapabilityEntry currentEntry = entryIterator.value();
-        QSharedPointer<joynr::system::RoutingTypes::QtAddress> joynrAddress(
+        std::shared_ptr<joynr::system::RoutingTypes::QtAddress> joynrAddress(
                 new system::RoutingTypes::QtChannelAddress(
                         QString::fromStdString(entryIterator.key())));
         messageRouter.addNextHop(currentEntry.getParticipantId().toStdString(), joynrAddress);
@@ -429,7 +429,7 @@ void LocalCapabilitiesDirectory::lookup(
         const types::DiscoveryQos& discoveryQos,
         std::function<void(const std::vector<joynr::types::DiscoveryEntry>& result)> onSuccess)
 {
-    QSharedPointer<LocalCapabilitiesFuture> future(new LocalCapabilitiesFuture());
+    std::shared_ptr<LocalCapabilitiesFuture> future(new LocalCapabilitiesFuture());
     lookup(domain, interfaceName, future, discoveryQos);
     std::vector<CapabilityEntry> capabilities = future->get();
     std::vector<types::DiscoveryEntry> result;
@@ -442,7 +442,7 @@ void LocalCapabilitiesDirectory::lookup(
         const std::string& participantId,
         std::function<void(const joynr::types::DiscoveryEntry&)> onSuccess)
 {
-    QSharedPointer<LocalCapabilitiesFuture> future(new LocalCapabilitiesFuture());
+    std::shared_ptr<LocalCapabilitiesFuture> future(new LocalCapabilitiesFuture());
     lookup(participantId, future);
     std::vector<CapabilityEntry> capabilities = future->get();
     if (capabilities.size() > 1) {
@@ -469,13 +469,13 @@ void LocalCapabilitiesDirectory::remove(const std::string& participantId,
 }
 
 void LocalCapabilitiesDirectory::addProviderRegistrationObserver(
-        QSharedPointer<LocalCapabilitiesDirectory::IProviderRegistrationObserver> observer)
+        std::shared_ptr<LocalCapabilitiesDirectory::IProviderRegistrationObserver> observer)
 {
     observers.append(observer);
 }
 
 void LocalCapabilitiesDirectory::removeProviderRegistrationObserver(
-        QSharedPointer<LocalCapabilitiesDirectory::IProviderRegistrationObserver> observer)
+        std::shared_ptr<LocalCapabilitiesDirectory::IProviderRegistrationObserver> observer)
 {
     observers.removeAll(observer);
 }
@@ -609,7 +609,7 @@ void LocalCapabilitiesDirectory::convertCapabilityEntriesIntoDiscoveryEntries(
 
 void LocalCapabilitiesDirectory::informObserversOnAdd(const types::DiscoveryEntry& discoveryEntry)
 {
-    foreach (const QSharedPointer<IProviderRegistrationObserver>& observer, observers) {
+    foreach (const std::shared_ptr<IProviderRegistrationObserver>& observer, observers) {
         observer->onProviderAdd(discoveryEntry);
     }
 }
@@ -617,7 +617,7 @@ void LocalCapabilitiesDirectory::informObserversOnAdd(const types::DiscoveryEntr
 void LocalCapabilitiesDirectory::informObserversOnRemove(
         const types::DiscoveryEntry& discoveryEntry)
 {
-    foreach (const QSharedPointer<IProviderRegistrationObserver>& observer, observers) {
+    foreach (const std::shared_ptr<IProviderRegistrationObserver>& observer, observers) {
         observer->onProviderRemove(discoveryEntry);
     }
 }

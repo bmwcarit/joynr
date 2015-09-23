@@ -40,8 +40,8 @@ class DirectoryTest : public ::testing::Test
 
     void SetUp(){
         directory = new Directory<QString, QString>("Directory");
-        testValue = QSharedPointer<QString>(new QString("testValue"));
-        secondTestValue = QSharedPointer<QString>(new QString("secondTestValue"));
+        testValue = std::shared_ptr<QString>(new QString("testValue"));
+        secondTestValue = std::shared_ptr<QString>(new QString("secondTestValue"));
         firstKey = QString("firstKey");
         secondKey = QString("secondKey");
     }
@@ -51,8 +51,8 @@ class DirectoryTest : public ::testing::Test
 
 protected:
     Directory<QString, QString>* directory;
-    QSharedPointer<QString> testValue;
-    QSharedPointer<QString> secondTestValue;
+    std::shared_ptr<QString> testValue;
+    std::shared_ptr<QString> secondTestValue;
     QString firstKey;
     QString secondKey;
 private:
@@ -76,8 +76,8 @@ TEST_F(DirectoryTest, lookup)
 {
     directory->add(firstKey, testValue);
     directory->add(secondKey,secondTestValue);
-    QSharedPointer<QString> result1 = directory->lookup(firstKey);
-    QSharedPointer<QString> result2 = directory->lookup(secondKey);
+    std::shared_ptr<QString> result1 = directory->lookup(firstKey);
+    std::shared_ptr<QString> result2 = directory->lookup(secondKey);
     ASSERT_EQ(result1, testValue);
     ASSERT_EQ(result2, secondTestValue);
 }
@@ -95,7 +95,7 @@ TEST_F(DirectoryTest, remove)
 
 TEST_F(DirectoryTest, scheduledRemove)
 {
-    directory->add(firstKey, QSharedPointer<QString>(new QString("scheduledRemove_testValue")),100);
+    directory->add(firstKey, std::shared_ptr<QString>(new QString("scheduledRemove_testValue")),100);
     ASSERT_TRUE(directory->contains(firstKey));
     QThreadSleep::msleep(200);
     ASSERT_FALSE(directory->contains(firstKey));
@@ -129,7 +129,7 @@ TEST(UnfixturedDirectoryTest, QSPObjectsAreDeletedByDirectoryAfterTtl)
 {
     Directory<QString, TrackableObject> *directory = new Directory<QString, TrackableObject>("Directory");
     {
-        QSharedPointer<TrackableObject> tp = QSharedPointer<TrackableObject>(new TrackableObject());
+        std::shared_ptr<TrackableObject> tp = std::shared_ptr<TrackableObject>(new TrackableObject());
         ASSERT_EQ(TrackableObject::getInstances(), 1);
         directory->add("key", tp, 100);
     }
@@ -143,7 +143,7 @@ TEST(UnfixturedDirectoryTest, QSPObjectsAreDeletedIfDirectoryIsDeleted)
 {
     Directory<QString, TrackableObject> *directory = new Directory<QString, TrackableObject>("Directory");
     {
-        QSharedPointer<TrackableObject> tp = QSharedPointer<TrackableObject>(new TrackableObject());
+        std::shared_ptr<TrackableObject> tp = std::shared_ptr<TrackableObject>(new TrackableObject());
         ASSERT_EQ(TrackableObject::getInstances(), 1);
         directory->add("key", tp, 100);
     }
@@ -154,7 +154,7 @@ TEST(UnfixturedDirectoryTest, QSPObjectsAreDeletedIfDirectoryIsDeleted)
 TEST(UnfixturedDirectoryTest, useStdStringKeys)
 {
     std::string key = "key";
-    QSharedPointer<QString> value(new QString("value"));
+    std::shared_ptr<QString> value(new QString("value"));
     Directory<std::string, QString> directory("Directory");
     ASSERT_FALSE(directory.contains(key)) << "Empty directory contains entry.";
     directory.add(key, value);

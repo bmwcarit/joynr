@@ -78,7 +78,7 @@ joynr::joynr_logging::Logger* «interfaceName»RequestInterpreter::logger = joyn
 «val attributes = getAttributes(serviceInterface)»
 «val methods = getMethods(serviceInterface)»
 void «interfaceName»RequestInterpreter::execute(
-		QSharedPointer<joynr::RequestCaller> requestCaller,
+		std::shared_ptr<joynr::RequestCaller> requestCaller,
 		const QString& methodName,
 		const QList<QVariant>& paramValues,
 		const QList<QVariant>& paramTypes,
@@ -87,8 +87,8 @@ void «interfaceName»RequestInterpreter::execute(
 	Q_UNUSED(paramValues);//if all methods of the interface are empty, the paramValues would not be used and give a warning.
 	Q_UNUSED(paramTypes);//if all methods of the interface are empty, the paramTypes would not be used and give a warning.
 	// cast generic RequestCaller to «interfaceName»Requestcaller
-	QSharedPointer<«interfaceName»RequestCaller> «requestCallerName» =
-			requestCaller.dynamicCast<«interfaceName»RequestCaller>();
+	std::shared_ptr<«interfaceName»RequestCaller> «requestCallerName» =
+			std::dynamic_pointer_cast<«interfaceName»RequestCaller>(requestCaller);
 
 	// execute operation
 	«IF !attributes.empty»

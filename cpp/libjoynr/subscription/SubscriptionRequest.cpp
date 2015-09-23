@@ -36,21 +36,17 @@ SubscriptionRequest::SubscriptionRequest()
         : QObject(),
           subscriptionId(),
           subscribedToName(),
-          qos(QSharedPointer<QtSubscriptionQos>(new QtOnChangeSubscriptionQos()))
+          qos(std::shared_ptr<QtSubscriptionQos>(new QtOnChangeSubscriptionQos()))
 {
     subscriptionId = Util::createUuid();
     qRegisterMetaType<QtSubscriptionQos>("QtSubscriptionQos");
-    qRegisterMetaType<QSharedPointer<QtSubscriptionQos>>();
 
     qRegisterMetaType<QtOnChangeSubscriptionQos>("QtOnChangeSubscriptionQos");
-    qRegisterMetaType<QSharedPointer<QtOnChangeSubscriptionQos>>();
 
     qRegisterMetaType<QtOnChangeWithKeepAliveSubscriptionQos>(
             "QtOnChangeWithKeepAliveSubscriptionQos");
-    qRegisterMetaType<QSharedPointer<QtOnChangeWithKeepAliveSubscriptionQos>>();
 
     qRegisterMetaType<QtPeriodicSubscriptionQos>("QtPeriodicSubscriptionQos");
-    qRegisterMetaType<QSharedPointer<QtPeriodicSubscriptionQos>>();
 }
 
 SubscriptionRequest::SubscriptionRequest(const SubscriptionRequest& subscriptionRequest)
@@ -71,7 +67,7 @@ QString SubscriptionRequest::getSubscribeToName() const
     return subscribedToName;
 }
 
-QSharedPointer<QtSubscriptionQos> SubscriptionRequest::getQos() const
+std::shared_ptr<QtSubscriptionQos> SubscriptionRequest::getQos() const
 {
     return qos;
 }
@@ -79,7 +75,7 @@ QSharedPointer<QtSubscriptionQos> SubscriptionRequest::getQos() const
 QVariant SubscriptionRequest::getQosData() const
 {
     int typeId = QMetaType::type(qos->metaObject()->className());
-    return QVariant(typeId, qos.data());
+    return QVariant(typeId, qos.get());
 }
 
 SubscriptionRequest& SubscriptionRequest::operator=(const SubscriptionRequest& subscriptionRequest)
@@ -107,7 +103,7 @@ void SubscriptionRequest::setSubscribeToName(const QString& attributeName)
     this->subscribedToName = attributeName;
 }
 
-void SubscriptionRequest::setQos(QSharedPointer<QtSubscriptionQos> qos)
+void SubscriptionRequest::setQos(std::shared_ptr<QtSubscriptionQos> qos)
 {
     this->qos = qos;
 }
@@ -117,7 +113,7 @@ void SubscriptionRequest::setQosData(QVariant qos)
     // copy the object
     QMetaType type(qos.userType());
     auto newQos = static_cast<QtSubscriptionQos*>(type.create(qos.constData()));
-    this->qos = QSharedPointer<QtSubscriptionQos>(newQos);
+    this->qos = std::shared_ptr<QtSubscriptionQos>(newQos);
 }
 
 QString SubscriptionRequest::toQString() const

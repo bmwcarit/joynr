@@ -38,7 +38,7 @@ using namespace joynr_logging;
 Logger* HttpReceiver::logger = Logging::getInstance()->getLogger("MSG", "HttpReceiver");
 
 HttpReceiver::HttpReceiver(const MessagingSettings& settings,
-                           QSharedPointer<MessageRouter> messageRouter)
+                           std::shared_ptr<MessageRouter> messageRouter)
         : channelCreatedSemaphore(new QSemaphore(0)),
           channelId(),
           receiverId(),
@@ -64,7 +64,7 @@ void HttpReceiver::init()
     LOG_DEBUG(logger, "Init finished.");
 }
 
-void HttpReceiver::init(QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory)
+void HttpReceiver::init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory)
 {
     this->channelUrlDirectory = channelUrlDirectory;
 }
@@ -102,7 +102,7 @@ HttpReceiver::~HttpReceiver()
 void HttpReceiver::startReceiveQueue()
 {
 
-    if (messageRouter.isNull() || channelUrlDirectory.isNull()) {
+    if (!messageRouter || !channelUrlDirectory) {
         LOG_FATAL(logger, "FAIL::receiveQueue started with no messageRouter/channelUrlDirectory.");
     }
 
@@ -165,9 +165,9 @@ bool HttpReceiver::tryToDeleteChannel()
     // TODO channelUrl is known only to the LongPlooMessageReceiver!
     QString deleteChannelUrl =
             settings.getBounceProxyUrl().getDeleteChannelUrl(getReceiveChannelId()).toString();
-    QSharedPointer<IHttpDeleteBuilder> deleteChannelRequestBuilder(
+    std::shared_ptr<IHttpDeleteBuilder> deleteChannelRequestBuilder(
             HttpNetworking::getInstance()->createHttpDeleteBuilder(deleteChannelUrl));
-    QSharedPointer<HttpRequest> deleteChannelRequest(
+    std::shared_ptr<HttpRequest> deleteChannelRequest(
             deleteChannelRequestBuilder->withTimeout_ms(20 * 1000)->build());
     LOG_DEBUG(logger, "sending delete channel request to " + deleteChannelUrl);
     HttpResult deleteChannelResult = deleteChannelRequest->execute();

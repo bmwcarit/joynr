@@ -27,6 +27,7 @@
 #include "joynr/types/QtChannelUrlInformation.h"
 #include "joynr/BounceProxyUrl.h"
 #include <QtGlobal>
+#include <memory>
 
 // Forward declare test classes
 class ChannelUrlSelectorTest_punishTest_Test;
@@ -75,7 +76,7 @@ public:
     *
     * @param channelUrlDirectoryProxy
     */
-    virtual void init(QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory,
+    virtual void init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
                       const MessagingSettings& settings);
 
     /**
@@ -104,7 +105,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(ChannelUrlSelector);
     QString constructDefaultUrl(const QString& channelId);
     QString constructUrl(const QString& baseUrl);
-    QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory;
+    std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory;
     const BounceProxyUrl& bounceProxyUrl;
     QMap<QString, ChannelUrlSelectorEntry*> entries;
     qint64 timeForOneRecouperation;

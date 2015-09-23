@@ -52,6 +52,8 @@ class InterfaceSyncProxyHTemplate implements InterfaceTemplate{
 	#include «parameterType»
 «ENDFOR»
 
+#include <memory>
+
 «getNamespaceStarter(serviceInterface)»
 /** @brief Synchronous proxy for interface «interfaceName» */
 class «getDllExportMacro()» «syncClassName»: virtual public «className»Base, virtual public I«interfaceName»Sync {
@@ -66,7 +68,7 @@ public:
 	 * @param cached True, if cached, false otherwise
 	 */
 	«syncClassName»(
-			QSharedPointer<joynr::system::RoutingTypes::QtAddress> messagingAddress,
+			std::shared_ptr<joynr::system::RoutingTypes::QtAddress> messagingAddress,
 			joynr::ConnectorFactory* connectorFactory,
 			joynr::IClientCache* cache,
 			const std::string& domain,

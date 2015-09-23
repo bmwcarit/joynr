@@ -69,7 +69,7 @@ ChannelUrlSelector::~ChannelUrlSelector()
     LOG_TRACE(logger, "Destroyed ...");
 }
 
-void ChannelUrlSelector::init(QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory,
+void ChannelUrlSelector::init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
                               const MessagingSettings& settings)
 {
 
@@ -87,7 +87,7 @@ QString ChannelUrlSelector::obtainUrl(const QString& channelId,
 
     QString url("");
 
-    if (channelUrlDirectory.isNull()) {
+    if (!channelUrlDirectory) {
         LOG_DEBUG(logger, "obtainUrl: channelUrlDirectoryProxy not available ...");
         LOG_DEBUG(logger,
                   "using default url constructed from channelId and BounceproxyUrl instead...");

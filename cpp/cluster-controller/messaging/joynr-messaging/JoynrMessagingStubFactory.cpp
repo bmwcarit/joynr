@@ -25,7 +25,7 @@
 namespace joynr
 {
 
-JoynrMessagingStubFactory::JoynrMessagingStubFactory(QSharedPointer<IMessageSender> messageSender,
+JoynrMessagingStubFactory::JoynrMessagingStubFactory(std::shared_ptr<IMessageSender> messageSender,
                                                      QString receiveChannelId)
         : messageSender(messageSender), receiveChannelId(receiveChannelId)
 {
@@ -37,12 +37,12 @@ bool JoynrMessagingStubFactory::canCreate(const joynr::system::RoutingTypes::QtA
             system::RoutingTypes::QtChannelAddress::staticMetaObject.className());
 }
 
-QSharedPointer<IMessaging> JoynrMessagingStubFactory::create(
+std::shared_ptr<IMessaging> JoynrMessagingStubFactory::create(
         const joynr::system::RoutingTypes::QtAddress& destAddress)
 {
     const system::RoutingTypes::QtChannelAddress* channelAddress =
             dynamic_cast<const system::RoutingTypes::QtChannelAddress*>(&destAddress);
-    return QSharedPointer<IMessaging>(new JoynrMessagingStub(
+    return std::shared_ptr<IMessaging>(new JoynrMessagingStub(
             messageSender, channelAddress->getChannelId(), receiveChannelId));
 }
 

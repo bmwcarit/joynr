@@ -43,7 +43,7 @@ class JOYNRCLUSTERCONTROLLER_EXPORT LocalChannelUrlDirectory : public ILocalChan
 public:
     LocalChannelUrlDirectory(
             MessagingSettings& messagingSettings,
-            QSharedPointer<infrastructure::ChannelUrlDirectoryProxy> channelUrlDirectoryProxy);
+            std::shared_ptr<infrastructure::ChannelUrlDirectoryProxy> channelUrlDirectoryProxy);
 
     virtual ~LocalChannelUrlDirectory();
 
@@ -94,7 +94,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(LocalChannelUrlDirectory);
     void init();
     MessagingSettings& messagingSettings;
-    QSharedPointer<infrastructure::ChannelUrlDirectoryProxy> channelUrlDirectoryProxy;
+    std::shared_ptr<infrastructure::ChannelUrlDirectoryProxy> channelUrlDirectoryProxy;
     QMap<QString, types::QtChannelUrlInformation> localCache;
     static joynr_logging::Logger* logger;
 };

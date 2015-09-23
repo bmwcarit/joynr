@@ -133,7 +133,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 						future->onError(status);
 					};
 
-			QSharedPointer<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«returnTypeQT»>(
+			std::shared_ptr<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«returnTypeQT»>(
 					onSuccess,
 					onError));
 			attributeRequest<«returnTypeQT»>(QString("get«attributeName.toFirstUpper»"), replyCaller);
@@ -173,7 +173,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 						}
 					};
 
-			QSharedPointer<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«returnTypeQT»>(
+			std::shared_ptr<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«returnTypeQT»>(
 					onSuccessWrapper,
 					onErrorWrapper));
 			attributeRequest<«returnTypeQT»>(QString("get«attributeName.toFirstUpper»"), replyCaller);
@@ -222,7 +222,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 					}
 				};
 
-			QSharedPointer<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<void>(
+			std::shared_ptr<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<void>(
 					onSuccessWrapper,
 					onErrorWrapper));
 			operationRequest(replyCaller, internalRequestObject);
@@ -241,7 +241,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 				internalRequestObject.addParam(QVariant::fromValue(«qtTypeUtil.fromStdTypeToQTType(attribute, attributeName)»), "«getJoynrTypeName(attribute)»");
 			«ENDIF»
 
-			QSharedPointer<joynr::Future<void> > future( new joynr::Future<void>());
+			std::shared_ptr<joynr::Future<void> > future( new joynr::Future<void>());
 
 			std::function<void(const joynr::RequestStatus& status)> onSuccess =
 					[future] (const joynr::RequestStatus& status) {
@@ -252,7 +252,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 						}
 					};
 
-			QSharedPointer<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<void>(
+			std::shared_ptr<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<void>(
 					onSuccess,
 					std::bind(&joynr::Future<void>::onError, future, std::placeholders::_1)));
 			operationRequest(replyCaller, internalRequestObject);
@@ -300,11 +300,11 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 				std::shared_ptr<«attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper> subscriptionListenerWrapper(
 					new «attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper(subscriptionListener));
 			«ENDIF»
-			QSharedPointer<joynr::SubscriptionCallback<«returnTypeQT»>> subscriptionCallback(new joynr::SubscriptionCallback<«returnTypeQT»>(«subscriptionListenerName»));
+			std::shared_ptr<joynr::SubscriptionCallback<«returnTypeQT»>> subscriptionCallback(new joynr::SubscriptionCallback<«returnTypeQT»>(«subscriptionListenerName»));
 			subscriptionManager->registerSubscription(
 						attributeName,
 						subscriptionCallback,
-						QSharedPointer<QtSubscriptionQos>(QtSubscriptionQos::createQt(subscriptionQos)),
+						std::shared_ptr<QtSubscriptionQos>(QtSubscriptionQos::createQt(subscriptionQos)),
 						subscriptionRequest);
 			LOG_DEBUG(logger, subscriptionRequest.toQString());
 			joynrMessageSender->sendSubscriptionRequest(
@@ -347,7 +347,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 		«outputTypedParamListStd»«IF method.outputParameters.size > 0 && method.inputParameters.size > 0», «ENDIF»«inputTypedParamListStd»
 	) {
 		«produceParameterSetters(method)»
-		QSharedPointer<joynr::Future<«outputParametersStd»> > future(
+		std::shared_ptr<joynr::Future<«outputParametersStd»> > future(
 				new joynr::Future<«outputParametersStd»>());
 
 		std::function<void(const joynr::RequestStatus& status«outputTypedConstParamListQT»)> onSuccess =
@@ -364,7 +364,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 				future->onError(status);
 			};
 
-		QSharedPointer<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«outputParametersQT»>(
+		std::shared_ptr<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«outputParametersQT»>(
 				onSuccess,
 				onError));
 		operationRequest(replyCaller, internalRequestObject);
@@ -413,7 +413,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 					}
 				};
 
-		QSharedPointer<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«outputParametersQT»>(
+		std::shared_ptr<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«outputParametersQT»>(
 				onSuccessWrapper,
 				onErrorWrapper));
 		operationRequest(replyCaller, internalRequestObject);
@@ -485,12 +485,12 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 			std::shared_ptr<«broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper> subscriptionListenerWrapper(
 				new «broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper(subscriptionListener));
 		«ENDIF»
-		QSharedPointer<joynr::SubscriptionCallback<«returnTypesQt»>> subscriptionCallback(
+		std::shared_ptr<joynr::SubscriptionCallback<«returnTypesQt»>> subscriptionCallback(
 					new joynr::SubscriptionCallback<«returnTypesQt»>(«subscriptionListenerName»));
 		subscriptionManager->registerSubscription(
 					broadcastName,
 					subscriptionCallback,
-					QSharedPointer<QtOnChangeSubscriptionQos>(QtSubscriptionQos::createQt(subscriptionQos)),
+					std::shared_ptr<QtOnChangeSubscriptionQos>(QtSubscriptionQos::createQt(subscriptionQos)),
 					subscriptionRequest);
 		LOG_DEBUG(logger, subscriptionRequest.toQString());
 		joynrMessageSender->sendBroadcastSubscriptionRequest(

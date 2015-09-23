@@ -63,7 +63,7 @@ private:
 };
 
 class Message;
-typedef ContentWithTtl<QSharedPointer<const QByteArray>> SerializedMessageWithTtl;
+typedef ContentWithTtl<std::shared_ptr<const QByteArray>> SerializedMessageWithTtl;
 
 } // namespace joynr
 #endif // CONTENTWITHTTL_H

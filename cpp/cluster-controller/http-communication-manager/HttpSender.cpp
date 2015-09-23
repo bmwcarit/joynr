@@ -79,7 +79,7 @@ HttpSender::HttpSender(const BounceProxyUrl& bounceProxyUrl,
                                            messageSendRetryInterval);
 }
 
-void HttpSender::init(QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory,
+void HttpSender::init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
                       const MessagingSettings& settings)
 {
     channelUrlCache->init(channelUrlDirectory, settings);
@@ -236,10 +236,10 @@ QString HttpSender::SendMessageRunnable::resolveUrlForChannelId(qint64 curlTimeo
 HttpResult HttpSender::SendMessageRunnable::buildRequestAndSend(const QString& url,
                                                                 qint64 curlTimeout)
 {
-    QSharedPointer<IHttpPostBuilder> sendMessageRequestBuilder(
+    std::shared_ptr<IHttpPostBuilder> sendMessageRequestBuilder(
             HttpNetworking::getInstance()->createHttpPostBuilder(url));
 
-    QSharedPointer<HttpRequest> sendMessageRequest(
+    std::shared_ptr<HttpRequest> sendMessageRequest(
             sendMessageRequestBuilder->withContentType("application/json")
                     ->withTimeout_ms(std::min(maxAttemptTtl_ms, curlTimeout))
                     ->postContent(data)

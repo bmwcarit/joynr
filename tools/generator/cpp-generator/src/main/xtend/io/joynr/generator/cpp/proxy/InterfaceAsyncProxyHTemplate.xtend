@@ -68,7 +68,7 @@ public:
 	 * @param cached True, if cached, false otherwise
 	 */
 	«asyncClassName»(
-			QSharedPointer<joynr::system::RoutingTypes::QtAddress> messagingAddress,
+			std::shared_ptr<joynr::system::RoutingTypes::QtAddress> messagingAddress,
 			joynr::ConnectorFactory* connectorFactory,
 			joynr::IClientCache* cache,
 			const std::string& domain,

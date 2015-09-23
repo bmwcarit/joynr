@@ -23,8 +23,7 @@
 #include "IAccessController.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/infrastructure/DacTypes/QtTrustLevel.h"
-
-#include <QSharedPointer>
+#include <memory>
 #include <QList>
 
 namespace joynr
@@ -56,7 +55,7 @@ public:
     //---IAccessController interface -------------------------------------------
 
     virtual void hasConsumerPermission(const JoynrMessage& message,
-                                       QSharedPointer<IHasConsumerPermissionCallback> callback);
+                                       std::shared_ptr<IHasConsumerPermissionCallback> callback);
 
     virtual bool hasProviderPermission(const QString& userId,
                                        infrastructure::DacTypes::QtTrustLevel::Enum trustLevel,
@@ -74,7 +73,7 @@ private:
 
     LocalCapabilitiesDirectory& localCapabilitiesDirectory;
     LocalDomainAccessController& localDomainAccessController;
-    QSharedPointer<ProviderRegistrationObserver> providerRegistrationObserver;
+    std::shared_ptr<ProviderRegistrationObserver> providerRegistrationObserver;
     QList<QString> whitelistParticipantIds;
 
     static joynr_logging::Logger* logger;

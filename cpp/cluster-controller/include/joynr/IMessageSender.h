@@ -24,8 +24,8 @@
 #include "joynr/JoynrMessage.h"
 
 #include <QString>
-#include <QSharedPointer>
 #include <QDateTime>
+#include <memory>
 
 namespace joynr
 {
@@ -44,7 +44,7 @@ public:
     * @brief The MessageSender needs the localChannelUrlDirectory to obtain Url's for
     * the channelIds.
     */
-    virtual void init(QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory,
+    virtual void init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
                       const MessagingSettings& settings) = 0;
 };
 }

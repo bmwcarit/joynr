@@ -62,7 +62,6 @@ class InterfaceInProcessConnectorHTemplate implements InterfaceTemplate{
 #include "joynr/SubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 
-#include <QSharedPointer>
 #include "joynr/TypeUtil.h"
 
 «FOR parameterType: getRequiredIncludesFor(serviceInterface).addElements(includeForString)»
@@ -115,7 +114,7 @@ public:
 				joynr::InProcessPublicationSender* inProcessPublicationSender,
 				const std::string& proxyParticipantId,
 				const std::string& providerParticipantId,
-				QSharedPointer<joynr::InProcessAddress> address
+				std::shared_ptr<joynr::InProcessAddress> address
 	);
 
 	/**
@@ -139,7 +138,7 @@ private:
 	DISALLOW_COPY_AND_ASSIGN(«interfaceName»InProcessConnector);
 	std::string proxyParticipantId;
 	std::string providerParticipantId;
-	QSharedPointer<joynr::InProcessAddress> address;
+	std::shared_ptr<joynr::InProcessAddress> address;
 	joynr::ISubscriptionManager* subscriptionManager;
 	joynr::PublicationManager* publicationManager;
 	joynr::InProcessPublicationSender* inProcessPublicationSender;
@@ -161,7 +160,7 @@ public:
 			InProcessPublicationSender* inProcessPublicationSender,
 			const std::string& proxyParticipantId,
 			const std::string& providerParticipantId,
-			QSharedPointer<InProcessAddress> address
+			std::shared_ptr<InProcessAddress> address
 		) {
 		return new «packagePrefix»::«interfaceName»InProcessConnector(
 				subscriptionManager,

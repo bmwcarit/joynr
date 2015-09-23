@@ -89,14 +89,14 @@ std::vector<types::CapabilityInformation> FakeCapabilitiesClient::lookup(
 
 void FakeCapabilitiesClient::lookup(const std::string& domain,
                                     const std::string& interfaceName,
-                                    QSharedPointer<IGlobalCapabilitiesCallback> callback)
+                                    std::shared_ptr<IGlobalCapabilitiesCallback> callback)
 {
     // return faked list to simulate incoming results
     callback->capabilitiesReceived(createFakedCapInfoList(domain, interfaceName));
 }
 
 void FakeCapabilitiesClient::lookup(const std::string& participantId,
-                                    QSharedPointer<IGlobalCapabilitiesCallback> callback)
+                                    std::shared_ptr<IGlobalCapabilitiesCallback> callback)
 {
     callback->capabilitiesReceived(createFakedCapInfoListForParticipantId(participantId));
 }

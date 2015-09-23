@@ -26,7 +26,7 @@ namespace joynr
 
 LocalCapabilitiesCallbackWrapper::LocalCapabilitiesCallbackWrapper(
         LocalCapabilitiesDirectory* localCapabilitiesDirectory,
-        QSharedPointer<ILocalCapabilitiesCallback> wrappedCallback,
+        std::shared_ptr<ILocalCapabilitiesCallback> wrappedCallback,
         const std::string& participantId,
         const joynr::types::DiscoveryQos& discoveryQos)
         : localCapabilitiesDirectory(localCapabilitiesDirectory),
@@ -39,7 +39,7 @@ LocalCapabilitiesCallbackWrapper::LocalCapabilitiesCallbackWrapper(
 
 LocalCapabilitiesCallbackWrapper::LocalCapabilitiesCallbackWrapper(
         LocalCapabilitiesDirectory* localCapabilitiesDirectory,
-        QSharedPointer<ILocalCapabilitiesCallback> wrappedCallback,
+        std::shared_ptr<ILocalCapabilitiesCallback> wrappedCallback,
         const InterfaceAddress& interfaceAddress,
         const joynr::types::DiscoveryQos& discoveryQos)
         : localCapabilitiesDirectory(localCapabilitiesDirectory),

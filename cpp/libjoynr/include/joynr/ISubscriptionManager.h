@@ -27,7 +27,7 @@
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/ISubscriptionCallback.h"
 #include <QString>
-#include <QSharedPointer>
+#include <memory>
 
 namespace joynr
 {
@@ -61,8 +61,8 @@ public:
      * @param subscriptionRequest
      */
     virtual void registerSubscription(const QString& subscribeToName,
-                                      QSharedPointer<ISubscriptionCallback> subscriptionCaller,
-                                      QSharedPointer<QtSubscriptionQos> qos,
+                                      std::shared_ptr<ISubscriptionCallback> subscriptionCaller,
+                                      std::shared_ptr<QtSubscriptionQos> qos,
                                       SubscriptionRequest& subscriptionRequest) = 0;
 
     /**
@@ -86,9 +86,9 @@ public:
      * if the subscription ID does not exist.
      *
      * @param subscriptionId
-     * @return QSharedPointer<ISubscriptionCallback>
+     * @return std::shared_ptr<ISubscriptionCallback>
      */
-    virtual QSharedPointer<ISubscriptionCallback> getSubscriptionCallback(
+    virtual std::shared_ptr<ISubscriptionCallback> getSubscriptionCallback(
             const QString& subscriptionId) = 0;
 };
 } // namespace joynr

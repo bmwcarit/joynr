@@ -24,6 +24,8 @@
 
 #include "joynr/IMiddlewareMessagingStubFactory.h"
 
+#include <memory>
+
 namespace joynr
 {
 
@@ -32,11 +34,11 @@ class DbusMessagingStubFactory : public IMiddlewareMessagingStubFactory
 
 public:
     DbusMessagingStubFactory();
-    QSharedPointer<IMessaging> create(const joynr::system::RoutingTypes::QtAddress& destAddress);
+    std::shared_ptr<IMessaging> create(const joynr::system::RoutingTypes::QtAddress& destAddress);
     bool canCreate(const joynr::system::RoutingTypes::QtAddress& destAddress);
 
 private:
-    QMap<QString, QSharedPointer<IMessaging>> stubMap;
+    QMap<QString, std::shared_ptr<IMessaging>> stubMap;
     QMutex mutex;
 };
 

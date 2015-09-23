@@ -21,8 +21,9 @@
 
 #include "joynr/JoynrClusterControllerExport.h"
 #include <QMultiMap>
-#include <QSharedPointer>
 #include <QString>
+
+#include <memory>
 
 namespace joynr
 {
@@ -51,8 +52,8 @@ public:
 private:
     int curlError;
     int statusCode;
-    QSharedPointer<QByteArray> body;
-    QSharedPointer<QMultiMap<QString, QString>> headers;
+    std::shared_ptr<QByteArray> body;
+    std::shared_ptr<QMultiMap<QString, QString>> headers;
 };
 
 } // namespace joynr

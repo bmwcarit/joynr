@@ -64,8 +64,8 @@ std::string CapabilitiesClient::getLocalChannelId()
 
 void CapabilitiesClient::add(std::vector<types::CapabilityInformation> capabilitiesInformationList)
 {
-    assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once
-                                         // the capabilitiesProxy has been set via the init method
+    assert(capabilitiesProxy); // calls to the capabilitiesClient are only allowed, once
+                               // the capabilitiesProxy has been set via the init method
     if (localChannelId.empty()) {
         assert(false); // "Assertion in CapabilitiesClient: Local channelId is empty. Tried to
                        // register capabilities before messaging was started(no queueing implemented
@@ -89,15 +89,15 @@ void CapabilitiesClient::add(std::vector<types::CapabilityInformation> capabilit
 
 void CapabilitiesClient::remove(const std::string& participantId)
 {
-    assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once
-                                         // the capabilitiesProxy has been set via the init method
+    assert(capabilitiesProxy); // calls to the capabilitiesClient are only allowed, once
+                               // the capabilitiesProxy has been set via the init method
     capabilitiesProxy->remove(participantId);
 }
 
 void CapabilitiesClient::remove(std::vector<std::string> participantIdList)
 {
-    assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once
-                                         // the capabilitiesProxy has been set via the init method
+    assert(capabilitiesProxy); // calls to the capabilitiesClient are only allowed, once
+                               // the capabilitiesProxy has been set via the init method
     capabilitiesProxy->remove(participantIdList);
 }
 
@@ -105,8 +105,8 @@ std::vector<types::CapabilityInformation> CapabilitiesClient::lookup(
         const std::string& domain,
         const std::string& interfaceName)
 {
-    assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once
-                                         // the capabilitiesProxy has been set via the init method
+    assert(capabilitiesProxy); // calls to the capabilitiesClient are only allowed, once
+                               // the capabilitiesProxy has been set via the init method
 
     std::vector<types::CapabilityInformation> result;
     capabilitiesProxy->lookup(result, domain, interfaceName);
@@ -119,8 +119,8 @@ void CapabilitiesClient::lookup(
         std::function<void(const std::vector<types::CapabilityInformation>& result)> onSuccess,
         std::function<void(const joynr::RequestStatus& status)> onError)
 {
-    assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once
-                                         // the capabilitiesProxy has been set via the init method
+    assert(capabilitiesProxy); // calls to the capabilitiesClient are only allowed, once
+                               // the capabilitiesProxy has been set via the init method
 
     capabilitiesProxy->lookupAsync(domain, interfaceName, onSuccess, onError);
 }
@@ -131,8 +131,8 @@ void CapabilitiesClient::lookup(
                 onSuccess,
         std::function<void(const joynr::RequestStatus& status)> onError)
 {
-    assert(!capabilitiesProxy.isNull()); // calls to the capabilitiesClient are only allowed, once
-                                         // the capabilitiesProxy has been set via the init method
+    assert(capabilitiesProxy); // calls to the capabilitiesClient are only allowed, once
+                               // the capabilitiesProxy has been set via the init method
     capabilitiesProxy->lookupAsync(
             participantId,
             [onSuccess](const joynr::types::CapabilityInformation& capability) {
@@ -144,7 +144,7 @@ void CapabilitiesClient::lookup(
 }
 
 void CapabilitiesClient::init(
-        QSharedPointer<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy)
+        std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy)
 {
     this->capabilitiesProxy = capabilitiesProxy;
 }

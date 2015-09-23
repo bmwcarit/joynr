@@ -63,7 +63,7 @@ void InterfaceRegistrar::unregisterRequestInterpreter(const std::string& interfa
     }
 }
 
-QSharedPointer<IRequestInterpreter> InterfaceRegistrar::getRequestInterpreter(
+std::shared_ptr<IRequestInterpreter> InterfaceRegistrar::getRequestInterpreter(
         const std::string& interfaceName)
 {
     QMutexLocker locker(&requestInterpretersMutex);

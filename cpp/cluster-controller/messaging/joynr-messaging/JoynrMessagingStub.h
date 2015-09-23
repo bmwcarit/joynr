@@ -22,7 +22,8 @@
 #include "joynr/IMessaging.h"
 
 #include <QString>
-#include <QSharedPointer>
+
+#include <memory>
 
 namespace joynr
 {
@@ -35,7 +36,7 @@ class JoynrMessage;
 class JoynrMessagingStub : public IMessaging
 {
 public:
-    explicit JoynrMessagingStub(QSharedPointer<IMessageSender> messageSender,
+    explicit JoynrMessagingStub(std::shared_ptr<IMessageSender> messageSender,
                                 QString destinationChannelId,
                                 QString receiveChannelId);
     virtual ~JoynrMessagingStub();
@@ -43,7 +44,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrMessagingStub);
-    QSharedPointer<IMessageSender> messageSender;
+    std::shared_ptr<IMessageSender> messageSender;
     QString destinationChannelId;
     QString receiveChannelId;
 };

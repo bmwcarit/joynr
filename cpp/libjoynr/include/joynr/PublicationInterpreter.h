@@ -27,6 +27,7 @@
 #include <functional>
 
 #include <cassert>
+#include <memory>
 
 namespace joynr
 {
@@ -40,15 +41,15 @@ public:
     PublicationInterpreter()
     {
     }
-    void execute(QSharedPointer<ISubscriptionCallback> callback,
+    void execute(std::shared_ptr<ISubscriptionCallback> callback,
                  const SubscriptionPublication& subscriptionPublication)
     {
-        assert(!callback.isNull());
+        assert(callback);
 
         QList<QVariant> response = subscriptionPublication.getResponse();
 
-        QSharedPointer<SubscriptionCallback<Ts...>> typedCallbackQsp =
-                callback.dynamicCast<SubscriptionCallback<Ts...>>();
+        std::shared_ptr<SubscriptionCallback<Ts...>> typedCallbackQsp =
+                std::dynamic_pointer_cast<SubscriptionCallback<Ts...>>(callback);
 
         std::tuple<Ts...> values = Util::toValueTuple<Ts...>(response);
         auto func = std::mem_fn(&SubscriptionCallback<Ts...>::onSuccess);
@@ -71,16 +72,16 @@ public:
     EnumPublicationInterpreter()
     {
     }
-    void execute(QSharedPointer<ISubscriptionCallback> callback,
+    void execute(std::shared_ptr<ISubscriptionCallback> callback,
                  const SubscriptionPublication& subscriptionPublication)
     {
-        assert(!callback.isNull());
+        assert(callback);
 
         typename T::Enum value =
                 Util::convertVariantToEnum<T>(subscriptionPublication.getResponse().first());
 
-        QSharedPointer<SubscriptionCallback<typename T::Enum>> typedCallbackQsp =
-                callback.dynamicCast<SubscriptionCallback<typename T::Enum>>();
+        std::shared_ptr<SubscriptionCallback<typename T::Enum>> typedCallbackQsp =
+                std::dynamic_pointer_cast<SubscriptionCallback<typename T::Enum>>(callback);
 
         // value is copied in onSuccess
         // LOG_TRACE(logger, "Publication received: notifying attribute changed");
@@ -99,14 +100,14 @@ public:
     {
     }
 
-    void execute(QSharedPointer<ISubscriptionCallback> callback,
+    void execute(std::shared_ptr<ISubscriptionCallback> callback,
                  const SubscriptionPublication& subscriptionPublication)
     {
-        assert(!callback.isNull());
+        assert(callback);
 
         QList<QVariant> qvList = subscriptionPublication.getResponse();
-        QSharedPointer<SubscriptionCallback<QList<typename T::Enum>>> typedCallbackQsp =
-                callback.dynamicCast<SubscriptionCallback<QList<typename T::Enum>>>();
+        std::shared_ptr<SubscriptionCallback<QList<typename T::Enum>>> typedCallbackQsp =
+                std::dynamic_pointer_cast<SubscriptionCallback<QList<typename T::Enum>>>(callback);
         QList<typename T::Enum> valueList = Util::convertVariantListToEnumList<T>(qvList);
 
         // value is copied in onSuccess

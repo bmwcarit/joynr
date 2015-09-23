@@ -25,7 +25,7 @@
 #include "joynr/QtSubscriptionQos.h"
 
 #include <QString>
-#include <QSharedPointer>
+#include <memory>
 
 namespace joynr
 {
@@ -59,8 +59,8 @@ public:
     QString getSubscribeToName() const;
     void setSubscribeToName(const QString& subscribedToName);
 
-    void setQos(QSharedPointer<QtSubscriptionQos> qos);
-    QSharedPointer<QtSubscriptionQos> getQos() const;
+    void setQos(std::shared_ptr<QtSubscriptionQos> qos);
+    std::shared_ptr<QtSubscriptionQos> getQos() const;
 
     QString toQString() const;
 
@@ -78,7 +78,7 @@ private:
       */
     QString subscriptionId;
     QString subscribedToName;
-    QSharedPointer<QtSubscriptionQos> qos;
+    std::shared_ptr<QtSubscriptionQos> qos;
 
     static joynr_logging::Logger* logger;
 };
@@ -86,5 +86,5 @@ private:
 } // namespace joynr
 
 Q_DECLARE_METATYPE(joynr::SubscriptionRequest)
-Q_DECLARE_METATYPE(QSharedPointer<joynr::SubscriptionRequest>)
+Q_DECLARE_SMART_POINTER_METATYPE(std::shared_ptr)
 #endif // SUBSCRIPTIONREQUEST_H

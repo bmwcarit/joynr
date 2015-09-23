@@ -20,7 +20,7 @@
 #define IMESSAGERECEIVER_H
 
 #include <QString>
-#include <QSharedPointer>
+#include <memory>
 
 #include "joynr/Directory.h"
 
@@ -84,7 +84,7 @@ public:
       */
     virtual bool tryToDeleteChannel() = 0;
 
-    virtual void init(QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory) = 0;
+    virtual void init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory) = 0;
 };
 
 } // namespace joynr

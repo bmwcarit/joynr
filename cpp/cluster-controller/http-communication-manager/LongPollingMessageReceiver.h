@@ -28,6 +28,7 @@
 #include <QThread>
 #include <QSemaphore>
 #include <QMutex>
+#include <memory>
 
 namespace joynr
 {
@@ -66,8 +67,8 @@ public:
                                const QString& receiverId,
                                const LongPollingMessageReceiverSettings& settings,
                                QSemaphore* channelCreatedSemaphore,
-                               QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory,
-                               QSharedPointer<MessageRouter> messageRouter);
+                               std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
+                               std::shared_ptr<MessageRouter> messageRouter);
     void run();
     void interrupt();
     bool isInterrupted();
@@ -85,11 +86,11 @@ private:
 
     QMutex interruptedMutex;
     bool interrupted;
-    QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory;
+    std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory;
 
     static joynr_logging::Logger* logger;
     QSemaphore* channelCreatedSemaphore;
-    QSharedPointer<MessageRouter> messageRouter;
+    std::shared_ptr<MessageRouter> messageRouter;
 };
 
 } // namespace joynr

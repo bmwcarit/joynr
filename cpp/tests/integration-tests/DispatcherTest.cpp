@@ -84,12 +84,12 @@ public:
 
 protected:
     joynr_logging::Logger* logger;
-    QSharedPointer<MockMessageRouter> mockMessageRouter;
-    QSharedPointer<MockCallback<types::Localisation::GpsLocation> > mockCallback;
+    std::shared_ptr<MockMessageRouter> mockMessageRouter;
+    std::shared_ptr<MockCallback<types::Localisation::GpsLocation> > mockCallback;
 
-    QSharedPointer<MockTestRequestCaller> mockRequestCaller;
-    QSharedPointer<MockReplyCaller<types::Localisation::QtGpsLocation> > mockReplyCaller;
-    QSharedPointer<MockSubscriptionListenerOneType<types::Localisation::GpsLocation> > mockSubscriptionListener;
+    std::shared_ptr<MockTestRequestCaller> mockRequestCaller;
+    std::shared_ptr<MockReplyCaller<types::Localisation::QtGpsLocation> > mockReplyCaller;
+    std::shared_ptr<MockSubscriptionListenerOneType<types::Localisation::GpsLocation> > mockSubscriptionListener;
 
     types::Localisation::GpsLocation gpsLocation1;
 

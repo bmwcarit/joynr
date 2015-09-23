@@ -20,9 +20,9 @@
 #define IREQUESTINTERPRETER_H
 
 #include <functional>
+#include <memory>
 #include <QVariant>
 #include <QMap>
-#include <QSharedPointer>
 
 namespace joynr
 {
@@ -43,7 +43,7 @@ public:
       * Executes method \param methodName with parameters \param methodParams
       * on the \param requestCaller object.
       */
-    virtual void execute(QSharedPointer<RequestCaller> requestCaller,
+    virtual void execute(std::shared_ptr<RequestCaller> requestCaller,
                          const QString& methodName,
                          const QList<QVariant>& paramValues,
                          const QList<QVariant>& paramTypes,

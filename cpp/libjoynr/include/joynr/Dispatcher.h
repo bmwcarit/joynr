@@ -29,10 +29,10 @@
 
 #include "joynr/JoynrExport.h"
 #include <string>
-#include <QSharedPointer>
 #include "joynr/IDispatcher.h"
 #include "joynr/LibJoynrDirectories.h"
 #include "joynr/joynrlogging.h"
+#include <memory>
 
 namespace joynr
 {
@@ -55,13 +55,13 @@ public:
     virtual ~Dispatcher();
 
     virtual void addReplyCaller(const std::string& requestReplyId,
-                                QSharedPointer<IReplyCaller> replyCaller,
+                                std::shared_ptr<IReplyCaller> replyCaller,
                                 const MessagingQos& qosSettings);
 
     virtual void removeReplyCaller(const std::string& requestReplyId);
 
     virtual void addRequestCaller(const std::string& participantId,
-                                  QSharedPointer<RequestCaller> requestCaller);
+                                  std::shared_ptr<RequestCaller> requestCaller);
 
     virtual void removeRequestCaller(const std::string& participantId);
 

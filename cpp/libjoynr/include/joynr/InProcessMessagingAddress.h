@@ -22,7 +22,7 @@
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/system/RoutingTypes/QtAddress.h"
 
-#include <QSharedPointer>
+#include <memory>
 
 namespace joynr
 {
@@ -33,11 +33,11 @@ class JOYNRCOMMON_EXPORT InProcessMessagingAddress : public joynr::system::Routi
 {
     Q_OBJECT
 public:
-    InProcessMessagingAddress(QSharedPointer<InProcessMessagingSkeleton> skeleton);
-    QSharedPointer<InProcessMessagingSkeleton> getSkeleton() const;
+    InProcessMessagingAddress(std::shared_ptr<InProcessMessagingSkeleton> skeleton);
+    std::shared_ptr<InProcessMessagingSkeleton> getSkeleton() const;
 
 private:
-    QSharedPointer<InProcessMessagingSkeleton> skeleton;
+    std::shared_ptr<InProcessMessagingSkeleton> skeleton;
 };
 
 } // namespace joynr

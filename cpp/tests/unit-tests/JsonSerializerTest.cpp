@@ -111,7 +111,7 @@ protected:
 TEST_F(JsonSerializerTest, serialize_deserialize_SubscriptionRequest) {
     qRegisterMetaType<joynr::SubscriptionRequest>();
     SubscriptionRequest request;
-    QSharedPointer<QtSubscriptionQos> subscriptionQos(new QtSubscriptionQos(5000));
+    std::shared_ptr<QtSubscriptionQos> subscriptionQos(new QtSubscriptionQos(5000));
     request.setQos(subscriptionQos);
     QByteArray result = JsonSerializer::serialize(request);
     LOG_DEBUG(logger, QString(result));
@@ -122,7 +122,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_SubscriptionRequest) {
 TEST_F(JsonSerializerTest, serialize_deserialize_BroadcastSubscriptionRequest) {
     qRegisterMetaType<joynr::BroadcastSubscriptionRequest>();
     BroadcastSubscriptionRequest request;
-    QSharedPointer<QtOnChangeSubscriptionQos> subscriptionQos(new QtOnChangeSubscriptionQos(5000, 2000));
+    std::shared_ptr<QtOnChangeSubscriptionQos> subscriptionQos(new QtOnChangeSubscriptionQos(5000, 2000));
     request.setQos(subscriptionQos);
     QtBroadcastFilterParameters filterParams;
     filterParams.setFilterParameter("MyFilter", "MyFilterValue");
@@ -1163,13 +1163,13 @@ TEST_F(JsonSerializerTest, deserialize_GPSLocation) {
 
 TEST_F(JsonSerializerTest, serialize_OnchangeWithKeepAliveSubscription) {
     qRegisterMetaType<joynr::QtSubscriptionQos>("joynr::QtSubscriptionQos");
-    qRegisterMetaType<QSharedPointer<QtSubscriptionQos>>();
+    qRegisterMetaType<std::shared_ptr<QtSubscriptionQos>>();
 
     qRegisterMetaType<joynr::QtOnChangeSubscriptionQos>("joynr::QtOnChangeSubscriptionQos");
-    qRegisterMetaType<QSharedPointer<QtOnChangeSubscriptionQos>>();
+    qRegisterMetaType<std::shared_ptr<QtOnChangeSubscriptionQos>>();
 
     qRegisterMetaType<joynr::QtOnChangeWithKeepAliveSubscriptionQos>("joynr::QtOnChangeWithKeepAliveSubscriptionQos");
-    qRegisterMetaType<QSharedPointer<joynr::QtOnChangeWithKeepAliveSubscriptionQos>>();
+    qRegisterMetaType<std::shared_ptr<joynr::QtOnChangeWithKeepAliveSubscriptionQos>>();
 
 
     joynr::QtOnChangeWithKeepAliveSubscriptionQos qos(750, 100, 900, 1050);

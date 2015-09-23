@@ -40,11 +40,11 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(QSettings* settings)
 {
     QString messagingUuid = Util::createUuid().replace("-", "");
     QString libjoynrMessagingId("libjoynr.messaging.participantid_" + messagingUuid);
-    QSharedPointer<joynr::system::RoutingTypes::QtAddress> libjoynrMessagingAddress(
+    std::shared_ptr<joynr::system::RoutingTypes::QtAddress> libjoynrMessagingAddress(
             new system::RoutingTypes::QtWebSocketClientAddress(libjoynrMessagingId));
 
     // create connection to parent routing service
-    QSharedPointer<joynr::system::RoutingTypes::QtWebSocketAddress> ccMessagingAddress(
+    std::shared_ptr<joynr::system::RoutingTypes::QtWebSocketAddress> ccMessagingAddress(
             new joynr::system::RoutingTypes::QtWebSocketAddress(
                     wsSettings.createClusterControllerMessagingAddress()));
 

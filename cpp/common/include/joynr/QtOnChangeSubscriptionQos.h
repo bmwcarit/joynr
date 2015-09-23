@@ -132,6 +132,5 @@ protected:
 } // namespace joynr
 
 Q_DECLARE_METATYPE(joynr::QtOnChangeSubscriptionQos)
-Q_DECLARE_METATYPE(QSharedPointer<joynr::QtOnChangeSubscriptionQos>)
 
 #endif // QTONCHANGESUBSCRIPTIONQOS_H

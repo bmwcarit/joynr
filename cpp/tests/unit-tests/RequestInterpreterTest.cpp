@@ -32,7 +32,6 @@
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include <QSharedPointer>
 #include <string>
 
 using ::testing::A;
@@ -54,7 +53,7 @@ protected:
 
 
 TEST_F(RequestInterpreterTest, execute_callsMethodOnRequestCaller) {
-    QSharedPointer<MockTestRequestCaller> mockCaller(new MockTestRequestCaller());
+    std::shared_ptr<MockTestRequestCaller> mockCaller(new MockTestRequestCaller());
     EXPECT_CALL(
             *mockCaller,
             getLocation(A<std::function<void(const types::Localisation::GpsLocation&)>>())
@@ -83,9 +82,9 @@ TEST_F(RequestInterpreterTest, create_createsGpsInterpreter) {
     registrar.reset();
     registrar.registerRequestInterpreter<vehicle::GpsRequestInterpreter>(gpsInterfaceName);
 
-    QSharedPointer<IRequestInterpreter> gpsInterpreter = registrar.getRequestInterpreter(gpsInterfaceName);
+    std::shared_ptr<IRequestInterpreter> gpsInterpreter = registrar.getRequestInterpreter(gpsInterfaceName);
 
-    EXPECT_FALSE(gpsInterpreter.isNull());
+    EXPECT_FALSE(gpsInterpreter.get() == 0);
 }
 
 TEST_F(RequestInterpreterTest, create_multipleCallsReturnSameInterpreter) {
@@ -93,8 +92,8 @@ TEST_F(RequestInterpreterTest, create_multipleCallsReturnSameInterpreter) {
     registrar.reset();
     registrar.registerRequestInterpreter<vehicle::GpsRequestInterpreter>(gpsInterfaceName);
 
-    QSharedPointer<IRequestInterpreter> gpsInterpreter1 = registrar.getRequestInterpreter(gpsInterfaceName);
-    QSharedPointer<IRequestInterpreter> gpsInterpreter2 = registrar.getRequestInterpreter(gpsInterfaceName);
+    std::shared_ptr<IRequestInterpreter> gpsInterpreter1 = registrar.getRequestInterpreter(gpsInterfaceName);
+    std::shared_ptr<IRequestInterpreter> gpsInterpreter2 = registrar.getRequestInterpreter(gpsInterfaceName);
 
     EXPECT_EQ(gpsInterpreter1, gpsInterpreter2);
 }
@@ -105,14 +104,14 @@ TEST_F(RequestInterpreterTest, registerUnregister) {
 
     // Register the interface twice and check that the interpreter does not change
     registrar.registerRequestInterpreter<vehicle::GpsRequestInterpreter>(gpsInterfaceName);
-    QSharedPointer<IRequestInterpreter> gpsInterpreter1 = registrar.getRequestInterpreter(gpsInterfaceName);
+    std::shared_ptr<IRequestInterpreter> gpsInterpreter1 = registrar.getRequestInterpreter(gpsInterfaceName);
     registrar.registerRequestInterpreter<vehicle::GpsRequestInterpreter>(gpsInterfaceName);
-    QSharedPointer<IRequestInterpreter> gpsInterpreter2 = registrar.getRequestInterpreter(gpsInterfaceName);
+    std::shared_ptr<IRequestInterpreter> gpsInterpreter2 = registrar.getRequestInterpreter(gpsInterfaceName);
     EXPECT_EQ(gpsInterpreter1, gpsInterpreter2);
 
     // Unregister once
     registrar.unregisterRequestInterpreter(gpsInterfaceName);
-    QSharedPointer<IRequestInterpreter> gpsInterpreter3 = registrar.getRequestInterpreter(gpsInterfaceName);
+    std::shared_ptr<IRequestInterpreter> gpsInterpreter3 = registrar.getRequestInterpreter(gpsInterfaceName);
     EXPECT_EQ(gpsInterpreter1, gpsInterpreter3);
 
     // Unregister again
@@ -120,7 +119,7 @@ TEST_F(RequestInterpreterTest, registerUnregister) {
 
     // Register the interface - this should create a new request interpreter
     registrar.registerRequestInterpreter<vehicle::GpsRequestInterpreter>(gpsInterfaceName);
-    QSharedPointer<IRequestInterpreter> gpsInterpreter4 = registrar.getRequestInterpreter(gpsInterfaceName);
+    std::shared_ptr<IRequestInterpreter> gpsInterpreter4 = registrar.getRequestInterpreter(gpsInterfaceName);
     EXPECT_NE(gpsInterpreter1, gpsInterpreter4);
 }
 

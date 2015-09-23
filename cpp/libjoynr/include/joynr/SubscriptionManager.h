@@ -31,8 +31,8 @@
 #include <QReadWriteLock>
 #include <QThreadPool>
 #include <QString>
-#include <QSharedPointer>
 #include <QMap>
+#include <memory>
 
 namespace joynr
 {
@@ -68,8 +68,8 @@ public:
      * @param subscriptionRequest
      */
     void registerSubscription(const QString& subscribeToName,
-                              QSharedPointer<ISubscriptionCallback> subscriptionCaller,
-                              QSharedPointer<QtSubscriptionQos> qos,
+                              std::shared_ptr<ISubscriptionCallback> subscriptionCaller,
+                              std::shared_ptr<QtSubscriptionQos> qos,
                               SubscriptionRequest& subscriptionRequest);
 
     /**
@@ -93,15 +93,15 @@ public:
      * if the subscription ID does not exist.
      *
      * @param subscriptionId
-     * @return QSharedPointer<ISubscriptionCallback>
+     * @return std::shared_ptr<ISubscriptionCallback>
      */
-    QSharedPointer<ISubscriptionCallback> getSubscriptionCallback(const QString& subscriptionId);
+    std::shared_ptr<ISubscriptionCallback> getSubscriptionCallback(const QString& subscriptionId);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(SubscriptionManager);
     class Subscription;
 
-    QMap<QString, QSharedPointer<Subscription>> subscriptions;
+    QMap<QString, std::shared_ptr<Subscription>> subscriptions;
 
     QReadWriteLock subscriptionsLock;
 
@@ -117,7 +117,7 @@ private:
         MissedPublicationRunnable(const QDateTime& expiryDate,
                                   const qint64& expectedIntervalMSecs,
                                   const QString& subscriptionId,
-                                  QSharedPointer<Subscription> subscription,
+                                  std::shared_ptr<Subscription> subscription,
                                   SubscriptionManager& subscriptionManager,
                                   const qint64& alertAfterInterval);
 
@@ -132,7 +132,7 @@ private:
         DISALLOW_COPY_AND_ASSIGN(MissedPublicationRunnable);
         qint64 timeSinceLastExpectedPublication(const qint64& timeSinceLastPublication);
         qint64 expectedIntervalMSecs;
-        QSharedPointer<Subscription> subscription;
+        std::shared_ptr<Subscription> subscription;
         const QString subscriptionId;
         qint64 alertAfterInterval;
         SubscriptionManager& subscriptionManager;

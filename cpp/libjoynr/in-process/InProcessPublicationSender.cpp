@@ -60,9 +60,9 @@ void InProcessPublicationSender::sendSubscriptionPublication(
     LOG_TRACE(logger, "Sending publication. id=" + subscriptionId);
     assert(subscriptionManager != NULL);
     subscriptionManager->touchSubscriptionState(subscriptionId);
-    QSharedPointer<ISubscriptionCallback> callback =
+    std::shared_ptr<ISubscriptionCallback> callback =
             subscriptionManager->getSubscriptionCallback(subscriptionId);
-    if (callback.isNull()) {
+    if (!callback) {
         LOG_ERROR(logger,
                   "Dropping reply for non/no more existing subscription with id=" + subscriptionId);
         return;

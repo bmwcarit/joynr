@@ -48,7 +48,7 @@ class InterfaceRequestInterpreterHTemplate implements InterfaceTemplate{
 #include "joynr/joynrlogging.h"
 
 #include <QVariant>
-#include <QSharedPointer>
+#include <memory>
 
 «getNamespaceStarter(serviceInterface)»
 
@@ -71,7 +71,7 @@ public:
 	 * @param callbackFct A callback function to be called once the asynchronous computation has
 	 * finished. It must expect the method out parameters.
 	 */
-	void execute(QSharedPointer<joynr::RequestCaller> requestCaller,
+	void execute(std::shared_ptr<joynr::RequestCaller> requestCaller,
 					 const QString& methodName,
 					 const QList<QVariant>& paramValues,
 					 const QList<QVariant>& paramTypes,

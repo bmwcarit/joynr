@@ -61,7 +61,7 @@ public:
             const QString& domain,
             const QString& interfaceName,
             QtTrustLevel::Enum trustlevel,
-            QSharedPointer<IAccessController::IHasConsumerPermissionCallback> callback);
+            std::shared_ptr<IAccessController::IHasConsumerPermissionCallback> callback);
 
     // Callbacks made from the LocalDomainAccessController
     void consumerPermission(Permission::Enum permission);
@@ -73,7 +73,7 @@ private:
     QString domain;
     QString interfaceName;
     QtTrustLevel::Enum trustlevel;
-    QSharedPointer<IAccessController::IHasConsumerPermissionCallback> callback;
+    std::shared_ptr<IAccessController::IHasConsumerPermissionCallback> callback;
 
     bool convertToBool(QtPermission::Enum permission);
 };
@@ -84,7 +84,7 @@ AccessController::LdacConsumerPermissionCallback::LdacConsumerPermissionCallback
         const QString& domain,
         const QString& interfaceName,
         QtTrustLevel::Enum trustlevel,
-        QSharedPointer<IAccessController::IHasConsumerPermissionCallback> callback)
+        std::shared_ptr<IAccessController::IHasConsumerPermissionCallback> callback)
         : owningAccessController(parent),
           message(message),
           domain(domain),
@@ -253,7 +253,7 @@ bool AccessController::needsPermissionCheck(const JoynrMessage& message)
 
 void AccessController::hasConsumerPermission(
         const JoynrMessage& message,
-        QSharedPointer<IAccessController::IHasConsumerPermissionCallback> callback)
+        std::shared_ptr<IAccessController::IHasConsumerPermissionCallback> callback)
 {
     if (!needsPermissionCheck(message)) {
         callback->hasConsumerPermission(true);
@@ -282,7 +282,7 @@ void AccessController::hasConsumerPermission(
         }
 
         // Create a callback object
-        QSharedPointer<LocalDomainAccessController::IGetConsumerPermissionCallback> ldacCallback(
+        std::shared_ptr<LocalDomainAccessController::IGetConsumerPermissionCallback> ldacCallback(
                 new LdacConsumerPermissionCallback(*this,
                                                    message,
                                                    QString::fromStdString(domain),

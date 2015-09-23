@@ -78,7 +78,7 @@ public:
             const std::string&, // receiver participant ID
             const MessagingQos&, // messaging QoS
             const Request&, // request object to send
-            QSharedPointer<IReplyCaller> // reply caller to notify when reply is received
+            std::shared_ptr<IReplyCaller> // reply caller to notify when reply is received
     )>& setExpectationsForSendRequestCall(int expectedTypeId, std::string methodName) {
         return EXPECT_CALL(
                     *mockJoynrMessageSender,
@@ -88,7 +88,7 @@ public:
                         _, // messaging QoS
                         Property(&Request::getMethodName, Eq(QString::fromStdString(methodName))), // request object to send
                         Property(
-                            &QSharedPointer<IReplyCaller>::data,
+                            &std::shared_ptr<IReplyCaller>::get,
                             AllOf(NotNull(), Property(&IReplyCaller::getTypeId, Eq(expectedTypeId)))
                         ) // reply caller to notify when reply is received
                     )
@@ -117,15 +117,15 @@ public:
     }
 
     void invokeSubscriptionCallback(const QString& subscribeToName,
-                                      QSharedPointer<ISubscriptionCallback> callback,
-                                      QSharedPointer<QtSubscriptionQos> qos,
+                                      std::shared_ptr<ISubscriptionCallback> callback,
+                                      std::shared_ptr<QtSubscriptionQos> qos,
                                       SubscriptionRequest& subscriptionRequest) {
         std::ignore = subscribeToName;
         std::ignore = qos;
         std::ignore = subscriptionRequest;
 
-        QSharedPointer<SubscriptionCallback<joynr::types::Localisation::QtGpsLocation, double>> typedCallbackQsp =
-                callback.dynamicCast<SubscriptionCallback<joynr::types::Localisation::QtGpsLocation, double>>();
+        std::shared_ptr<SubscriptionCallback<joynr::types::Localisation::QtGpsLocation, double>> typedCallbackQsp =
+                std::dynamic_pointer_cast<SubscriptionCallback<joynr::types::Localisation::QtGpsLocation, double>>(callback);
 
         typedCallbackQsp->onSuccess(gpsLocation, floatValue);
     }

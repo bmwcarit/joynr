@@ -53,7 +53,7 @@ class InterfaceSyncProxyCppTemplate  implements InterfaceTemplate{
 // the connectors will contain the JSON related code
 
 «syncClassName»::«syncClassName»(
-		QSharedPointer<joynr::system::RoutingTypes::QtAddress> messagingAddress,
+		std::shared_ptr<joynr::system::RoutingTypes::QtAddress> messagingAddress,
 		joynr::ConnectorFactory* connectorFactory,
 		joynr::IClientCache *cache,
 		const std::string &domain,

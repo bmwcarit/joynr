@@ -46,8 +46,8 @@ LongPollingMessageReceiver::LongPollingMessageReceiver(
         const QString& receiverId,
         const LongPollingMessageReceiverSettings& settings,
         QSemaphore* channelCreatedSemaphore,
-        QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory,
-        QSharedPointer<MessageRouter> messageRouter)
+        std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
+        std::shared_ptr<MessageRouter> messageRouter)
         : bounceProxyUrl(bounceProxyUrl),
           channelId(channelId),
           receiverId(receiverId),
@@ -77,9 +77,9 @@ void LongPollingMessageReceiver::run()
     checkServerTime();
     QString createChannelUrl = bounceProxyUrl.getCreateChannelUrl(channelId).toString();
     LOG_INFO(logger, "Running lpmr with channelId " + channelId);
-    QSharedPointer<IHttpPostBuilder> createChannelRequestBuilder(
+    std::shared_ptr<IHttpPostBuilder> createChannelRequestBuilder(
             HttpNetworking::getInstance()->createHttpPostBuilder(createChannelUrl));
-    QSharedPointer<HttpRequest> createChannelRequest(
+    std::shared_ptr<HttpRequest> createChannelRequest(
             createChannelRequestBuilder->addHeader("X-Atmosphere-tracking-id", receiverId)
                     ->withContentType("application/json")
                     ->withTimeout_ms(settings.bounceProxyTimeout_ms)
@@ -114,10 +114,10 @@ void LongPollingMessageReceiver::run()
 
     while (!isInterrupted()) {
 
-        QSharedPointer<IHttpGetBuilder> longPollRequestBuilder(
+        std::shared_ptr<IHttpGetBuilder> longPollRequestBuilder(
                 HttpNetworking::getInstance()->createHttpGetBuilder(channelUrl));
 
-        QSharedPointer<HttpRequest> longPollRequest(
+        std::shared_ptr<HttpRequest> longPollRequest(
                 longPollRequestBuilder->acceptGzip()
                         ->addHeader("Accept", "application/json")
                         ->addHeader("X-Atmosphere-tracking-id", receiverId)
@@ -190,7 +190,7 @@ void LongPollingMessageReceiver::processReceivedQjsonObjects(const QByteArray& j
         msg->getType() == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
         // TODO ca: check if replyTo header info is available?
         QString replyChannelId = msg->getHeaderReplyChannelId();
-        QSharedPointer<system::RoutingTypes::QtChannelAddress> address(
+        std::shared_ptr<system::RoutingTypes::QtChannelAddress> address(
                 new system::RoutingTypes::QtChannelAddress(replyChannelId));
         messageRouter->addNextHop(msg->getHeaderFrom().toStdString(), address);
     }
@@ -206,9 +206,9 @@ void LongPollingMessageReceiver::checkServerTime()
 {
     QString timeCheckUrl = bounceProxyUrl.getTimeCheckUrl().toString();
 
-    QSharedPointer<IHttpGetBuilder> timeCheckRequestBuilder(
+    std::shared_ptr<IHttpGetBuilder> timeCheckRequestBuilder(
             HttpNetworking::getInstance()->createHttpGetBuilder(timeCheckUrl));
-    QSharedPointer<HttpRequest> timeCheckRequest(
+    std::shared_ptr<HttpRequest> timeCheckRequest(
             timeCheckRequestBuilder->addHeader("Accept", "text/plain")
                     ->withTimeout_ms(settings.bounceProxyTimeout_ms)
                     ->build());

@@ -44,7 +44,6 @@ class InterfaceProxyBaseHTemplate implements InterfaceTemplate{
 «FOR parameterType: getRequiredIncludesFor(serviceInterface).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
-#include <QSharedPointer>
 #include <memory>
 
 «getDllExportIncludeStatement()»
@@ -65,7 +64,7 @@ public:
 	 * @param cached True, if cached, false otherwise
 	 */
 	«className»(
-			QSharedPointer<joynr::system::RoutingTypes::QtAddress> messagingAddress,
+			std::shared_ptr<joynr::system::RoutingTypes::QtAddress> messagingAddress,
 			joynr::ConnectorFactory* connectorFactory,
 			joynr::IClientCache* cache,
 			const std::string& domain,
@@ -182,7 +181,7 @@ public:
 
 protected:
 	/** @brief The joynr messaging address */
-	QSharedPointer<joynr::system::RoutingTypes::QtAddress> messagingAddress;
+	std::shared_ptr<joynr::system::RoutingTypes::QtAddress> messagingAddress;
 	/** @brief The kind of connector */
 	I«interfaceName»Connector* connector;
 

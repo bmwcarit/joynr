@@ -67,7 +67,7 @@ public:
         request.setSubscriptionId(subscriptionId);
 
         auto subscriptionQos =
-                QSharedPointer<QtOnChangeSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
+                std::shared_ptr<QtOnChangeSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
                     80, // validity_ms
                     100, // minInterval_ms
                     200, // maxInterval_ms
@@ -112,7 +112,7 @@ protected:
     SubscriptionBroadcastListener* subscriptionBroadcastListener;
 
     std::shared_ptr<MockTestProvider> provider;
-    QSharedPointer<RequestCaller> requestCaller;
+    std::shared_ptr<RequestCaller> requestCaller;
     TestLocationUpdateSelectiveBroadcastFilterParameters filterParameters;
     std::shared_ptr<MockLocationUpdatedSelectiveFilter> filter1;
     std::shared_ptr<MockLocationUpdatedSelectiveFilter> filter2;

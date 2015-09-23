@@ -23,7 +23,8 @@
 
 #include <QObject>
 #include <QVariant>
-#include <QSharedPointer>
+
+#include <memory>
 
 namespace joynr
 {
@@ -70,5 +71,5 @@ private:
 } // namespace joynr
 
 Q_DECLARE_METATYPE(joynr::Request)
-Q_DECLARE_METATYPE(QSharedPointer<joynr::Request>)
+Q_DECLARE_METATYPE(std::shared_ptr<joynr::Request>)
 #endif // REQUEST_H

@@ -23,6 +23,7 @@
 #include <QtCore/QHash>
 #include <QtCore/QMutex>
 #include <QtCore/QUrl>
+#include <memory>
 
 #include "joynr/joynrlogging.h"
 #include "joynr/IMiddlewareMessagingStubFactory.h"
@@ -49,7 +50,7 @@ class WebSocketMessagingStubFactory : public QObject, public IMiddlewareMessagin
 
 public:
     WebSocketMessagingStubFactory(QObject* parent = Q_NULLPTR);
-    QSharedPointer<IMessaging> create(const joynr::system::RoutingTypes::QtAddress& destAddress);
+    std::shared_ptr<IMessaging> create(const joynr::system::RoutingTypes::QtAddress& destAddress);
     bool canCreate(const joynr::system::RoutingTypes::QtAddress& destAddress);
     void addClient(const joynr::system::RoutingTypes::QtWebSocketClientAddress& clientAddress,
                    QWebSocket* webSocket);
@@ -64,9 +65,9 @@ private Q_SLOTS:
     void onMessagingStubClosed(const joynr::system::RoutingTypes::QtAddress& address);
 
 private:
-    QHash<joynr::system::RoutingTypes::QtWebSocketAddress, QSharedPointer<IMessaging>>
+    QHash<joynr::system::RoutingTypes::QtWebSocketAddress, std::shared_ptr<IMessaging>>
             serverStubMap;
-    QHash<joynr::system::RoutingTypes::QtWebSocketClientAddress, QSharedPointer<IMessaging>>
+    QHash<joynr::system::RoutingTypes::QtWebSocketClientAddress, std::shared_ptr<IMessaging>>
             clientStubMap;
     QMutex mutex;
 

@@ -84,7 +84,7 @@ public:
      * The init method has to be called first, only afterwards LocalDomainAccessController may be
      * used.
      */
-    virtual void init(QSharedPointer<infrastructure::GlobalDomainAccessControllerProxy>
+    virtual void init(std::shared_ptr<infrastructure::GlobalDomainAccessControllerProxy>
                               globalDomainAccessControllerProxy);
 
     /**
@@ -117,7 +117,7 @@ public:
                                        const std::string& domain,
                                        const std::string& interfaceName,
                                        infrastructure::DacTypes::TrustLevel::Enum trustLevel,
-                                       QSharedPointer<IGetConsumerPermissionCallback> callback);
+                                       std::shared_ptr<IGetConsumerPermissionCallback> callback);
 
     /**
       * Get consumer permission to access an interface operation
@@ -455,7 +455,7 @@ private:
 
     QHash<QString, AceSubscription> aceSubscriptions;
 
-    QSharedPointer<infrastructure::GlobalDomainAccessControllerProxy>
+    std::shared_ptr<infrastructure::GlobalDomainAccessControllerProxy>
             globalDomainAccessControllerProxy;
     LocalDomainAccessStore* localDomainAccessStore;
 
@@ -486,7 +486,7 @@ private:
         std::string domain;
         std::string interfaceName;
         infrastructure::DacTypes::TrustLevel::Enum trustLevel;
-        QSharedPointer<IGetConsumerPermissionCallback> callbacks;
+        std::shared_ptr<IGetConsumerPermissionCallback> callbacks;
     };
 
     QHash<QString, QList<ConsumerPermissionRequest>> consumerPermissionRequests;

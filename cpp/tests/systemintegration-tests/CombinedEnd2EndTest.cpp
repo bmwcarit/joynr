@@ -159,7 +159,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         qlonglong qosRoundTripTTL = 40000;
 
         // Send a message and expect to get a result
-        QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
+        std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
                                                    ->setMessagingQos(MessagingQos(qosRoundTripTTL))
                                                    ->setCached(false)
                                                    ->setDiscoveryQos(discoveryQos)
@@ -329,7 +329,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         discoveryQos.setDiscoveryTimeout(1000);
 
         qlonglong qosRoundTripTTL = 1;
-        QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
+        std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
                                                    ->setMessagingQos(MessagingQos(qosRoundTripTTL))
                                                    ->setCached(false)
                                                    ->setDiscoveryQos(discoveryQos)
@@ -354,7 +354,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         qlonglong qosRoundTripTTL = 40000;
 
         // Send a message and expect to get a result
-        QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
+        std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
                                                    ->setMessagingQos(MessagingQos(qosOneWayTTL, qosRoundTripTTL))
                                                    ->setCached(false)
                                                    ->setDiscoveryQos(discoveryQos)
@@ -410,7 +410,7 @@ TEST_F(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply) {
     qlonglong qosRoundTripTTL = 40000;
 
     // Send a message and expect to get a result
-    QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
+    std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
                                                ->setMessagingQos(MessagingQos(qosRoundTripTTL))
                                                ->setCached(false)
                                                ->setDiscoveryQos(discoveryQos)
@@ -466,7 +466,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToOnChange) {
     qlonglong qosRoundTripTTL = 40000;
 
     // Send a message and expect to get a result
-    QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
+    std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
                                                ->setMessagingQos(MessagingQos(qosRoundTripTTL))
                                                ->setCached(false)
                                                ->setDiscoveryQos(discoveryQos)
@@ -543,7 +543,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToListAttribute) {
     qlonglong qosRoundTripTTL = 40000;
 
     // Send a message and expect to get a result
-    QSharedPointer<tests::testProxy> testProxy(proxyBuilder
+    std::shared_ptr<tests::testProxy> testProxy(proxyBuilder
                                                ->setMessagingQos(MessagingQos(qosRoundTripTTL))
                                                ->setCached(false)
                                                ->setDiscoveryQos(discoveryQos)
@@ -594,7 +594,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToNonExistentDomain) {
 	// Expect an ArbitrationException
 	try {
 		// Send a message and expect to get a result
-        QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
+        std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
                                                    ->setMessagingQos(MessagingQos(qosRoundTripTTL))
 												   ->setCached(false)
                                                    ->setDiscoveryQos(discoveryQos)
@@ -647,7 +647,7 @@ TEST_F(CombinedEnd2EndTest, unsubscribeViaHttpReceiver) {
     qlonglong qosRoundTripTTL = 40000;
 
     // Send a message and expect to get a result
-    QSharedPointer<tests::testProxy> gpsProxy(testProxyBuilder
+    std::shared_ptr<tests::testProxy> gpsProxy(testProxyBuilder
                                                ->setMessagingQos(MessagingQos(qosRoundTripTTL))
                                                ->setCached(false)
                                                ->setDiscoveryQos(discoveryQos)
@@ -688,7 +688,7 @@ TEST_F(CombinedEnd2EndTest, deleteChannelViaReceiver) {
     qlonglong qosRoundTripTTL = 40000;
 
     // Send a message and expect to get a result
-    QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
+    std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
                                                ->setMessagingQos(MessagingQos(qosRoundTripTTL))
                                                ->setCached(false)
                                                ->setDiscoveryQos(discoveryQos)
@@ -802,7 +802,7 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation) {
     qlonglong qosRoundTripTTL = 20000;
 
     // Send a message and expect to get a result
-    QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
+    std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
                                                    ->setMessagingQos(MessagingQos(qosRoundTripTTL))
                                                    ->setCached(false)
                                                    ->setDiscoveryQos(discoveryQos)
@@ -845,7 +845,7 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation_failure) {
     qlonglong qosRoundTripTTL = 20000;
 
     // Send a message and expect to get a result
-    QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
+    std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
                                                    ->setMessagingQos(MessagingQos(qosRoundTripTTL))
                                                    ->setCached(false)
                                                    ->setDiscoveryQos(discoveryQos)

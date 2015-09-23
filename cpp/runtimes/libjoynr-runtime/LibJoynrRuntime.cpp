@@ -79,8 +79,8 @@ LibJoynrRuntime::~LibJoynrRuntime()
 
 void LibJoynrRuntime::init(
         IMiddlewareMessagingStubFactory* middlewareMessagingStubFactory,
-        QSharedPointer<joynr::system::RoutingTypes::QtAddress> libjoynrMessagingAddress,
-        QSharedPointer<joynr::system::RoutingTypes::QtAddress> ccMessagingAddress)
+        std::shared_ptr<joynr::system::RoutingTypes::QtAddress> libjoynrMessagingAddress,
+        std::shared_ptr<joynr::system::RoutingTypes::QtAddress> ccMessagingAddress)
 {
     // create messaging stub factory
     MessagingStubFactory* messagingStubFactory = new MessagingStubFactory();
@@ -88,7 +88,7 @@ void LibJoynrRuntime::init(
     messagingStubFactory->registerStubFactory(new InProcessMessagingStubFactory());
 
     // create message router
-    messageRouter = QSharedPointer<MessageRouter>(
+    messageRouter = std::shared_ptr<MessageRouter>(
             new MessageRouter(messagingStubFactory, libjoynrMessagingAddress));
 
     startLibJoynrMessagingSkeleton(*messageRouter);
@@ -98,9 +98,9 @@ void LibJoynrRuntime::init(
     joynrMessageSender->registerDispatcher(joynrDispatcher);
 
     // create the inprocess skeleton for the dispatcher
-    dispatcherMessagingSkeleton = QSharedPointer<InProcessMessagingSkeleton>(
+    dispatcherMessagingSkeleton = std::shared_ptr<InProcessMessagingSkeleton>(
             new InProcessLibJoynrMessagingSkeleton(joynrDispatcher));
-    dispatcherAddress = QSharedPointer<joynr::system::RoutingTypes::QtAddress>(
+    dispatcherAddress = std::shared_ptr<joynr::system::RoutingTypes::QtAddress>(
             new InProcessMessagingAddress(dispatcherMessagingSkeleton));
 
     publicationManager = new PublicationManager();
@@ -123,7 +123,7 @@ void LibJoynrRuntime::init(
 
     // Set up the persistence file for storing provider participant ids
     QString persistenceFilename = libjoynrSettings->getParticipantIdsPersistenceFilename();
-    participantIdStorage = QSharedPointer<ParticipantIdStorage>(
+    participantIdStorage = std::shared_ptr<ParticipantIdStorage>(
             new ParticipantIdStorage(persistenceFilename.toStdString()));
 
     // initialize the dispatchers

@@ -25,6 +25,7 @@
 #include "joynr/joynrlogging.h"
 #include "joynr/JsonSerializer.h"
 #include "joynr/Util.h"
+#include <memory>
 
 namespace joynr
 {
@@ -37,12 +38,12 @@ public:
     {
     }
 
-    void execute(QSharedPointer<IReplyCaller> caller, const Reply& reply)
+    void execute(std::shared_ptr<IReplyCaller> caller, const Reply& reply)
     {
-        assert(!caller.isNull());
+        assert(caller);
 
-        QSharedPointer<ReplyCaller<Ts...>> typedCallerQsp =
-                caller.dynamicCast<ReplyCaller<Ts...>>();
+        std::shared_ptr<ReplyCaller<Ts...>> typedCallerQsp =
+                std::dynamic_pointer_cast<ReplyCaller<Ts...>>(caller);
 
         if ((reply.getResponse()).isEmpty()) {
             LOG_ERROR(logger, QString("reply object has no response, discarding message"));
@@ -73,12 +74,13 @@ public:
         qRegisterMetaType<Reply>();
     }
 
-    void execute(QSharedPointer<IReplyCaller> caller, const Reply& reply)
+    void execute(std::shared_ptr<IReplyCaller> caller, const Reply& reply)
     {
-        assert(!caller.isNull());
+        assert(caller);
         Q_UNUSED(reply); // the reply should be empty, and is just passed in to match the common
                          // interface
-        QSharedPointer<ReplyCaller<void>> typedCallerQsp = caller.dynamicCast<ReplyCaller<void>>();
+        std::shared_ptr<ReplyCaller<void>> typedCallerQsp =
+                std::dynamic_pointer_cast<ReplyCaller<void>>(caller);
         typedCallerQsp->returnValue();
     }
 };

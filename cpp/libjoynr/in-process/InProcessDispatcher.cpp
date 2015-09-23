@@ -44,7 +44,7 @@ InProcessDispatcher::~InProcessDispatcher()
 }
 
 void InProcessDispatcher::addReplyCaller(const std::string& requestReplyId,
-                                         QSharedPointer<IReplyCaller> replyCaller,
+                                         std::shared_ptr<IReplyCaller> replyCaller,
                                          const MessagingQos& qosSettings)
 {
     replyCallerDirectory.add(requestReplyId, replyCaller, qosSettings.getTtl());
@@ -56,7 +56,7 @@ void InProcessDispatcher::removeReplyCaller(const std::string& requestReplyId)
 }
 
 void InProcessDispatcher::addRequestCaller(const std::string& participantId,
-                                           QSharedPointer<RequestCaller> requestCaller)
+                                           std::shared_ptr<RequestCaller> requestCaller)
 {
     requestCallerDirectory.add(participantId, requestCaller);
     // check if there are subscriptions waiting for this provider
@@ -75,7 +75,7 @@ void InProcessDispatcher::receive(const JoynrMessage& message)
     assert(false);
 }
 
-QSharedPointer<RequestCaller> InProcessDispatcher::lookupRequestCaller(
+std::shared_ptr<RequestCaller> InProcessDispatcher::lookupRequestCaller(
         const std::string& participantId)
 {
     return requestCallerDirectory.lookup(participantId);

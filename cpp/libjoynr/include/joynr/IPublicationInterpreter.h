@@ -19,7 +19,7 @@
 #ifndef IPUBLICATIONINTERPRETER_H
 #define IPUBLICATIONINTERPRETER_H
 
-#include <QSharedPointer>
+#include <memory>
 
 namespace joynr
 {
@@ -38,7 +38,7 @@ public:
     {
     }
     // The ReplyCaller is the instance that calls the actual receiver of the reply.
-    virtual void execute(QSharedPointer<ISubscriptionCallback> callback,
+    virtual void execute(std::shared_ptr<ISubscriptionCallback> callback,
                          const SubscriptionPublication& subscriptionPublication) = 0;
 };
 

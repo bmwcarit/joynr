@@ -30,8 +30,8 @@
 
 #include <QString>
 #include <QByteArray>
-#include <QSharedPointer>
 #include <QThreadPool>
+#include <memory>
 
 namespace joynr
 {
@@ -60,7 +60,7 @@ public:
     * @brief The MessageSender needs the localChannelUrlDirectory to obtain Url's for
     * the channelIds.
     */
-    void init(QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory,
+    void init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
               const MessagingSettings& settings);
 
 private:

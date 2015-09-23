@@ -32,7 +32,7 @@ namespace joynr
 joynr_logging::Logger* JoynrMessageSender::logger =
         joynr_logging::Logging::getInstance()->getLogger("JOYNR", "JoynrMessageSender");
 
-JoynrMessageSender::JoynrMessageSender(QSharedPointer<MessageRouter> messageRouter)
+JoynrMessageSender::JoynrMessageSender(std::shared_ptr<MessageRouter> messageRouter)
         : dispatcher(NULL), messageRouter(messageRouter), messageFactory()
 {
 }
@@ -50,7 +50,7 @@ void JoynrMessageSender::sendRequest(const std::string& senderParticipantId,
                                      const std::string& receiverParticipantId,
                                      const MessagingQos& qos,
                                      const Request& request,
-                                     QSharedPointer<IReplyCaller> callback)
+                                     std::shared_ptr<IReplyCaller> callback)
 {
     assert(dispatcher != NULL);
 
@@ -60,7 +60,7 @@ void JoynrMessageSender::sendRequest(const std::string& senderParticipantId,
                                          QString::fromStdString(receiverParticipantId),
                                          qos,
                                          request);
-    assert(!messageRouter.isNull());
+    assert(messageRouter);
     messageRouter->route(message);
 }
 
@@ -73,7 +73,7 @@ void JoynrMessageSender::sendReply(const std::string& senderParticipantId,
                                                       QString::fromStdString(receiverParticipantId),
                                                       qos,
                                                       reply);
-    assert(!messageRouter.isNull());
+    assert(messageRouter);
     messageRouter->route(message);
 }
 
@@ -87,7 +87,7 @@ void JoynrMessageSender::sendSubscriptionRequest(const std::string& senderPartic
                                                      QString::fromStdString(receiverParticipantId),
                                                      qos,
                                                      subscriptionRequest);
-    assert(!messageRouter.isNull());
+    assert(messageRouter);
     messageRouter->route(message);
 }
 
@@ -102,7 +102,7 @@ void JoynrMessageSender::sendBroadcastSubscriptionRequest(
             QString::fromStdString(receiverParticipantId),
             qos,
             subscriptionRequest);
-    assert(!messageRouter.isNull());
+    assert(messageRouter);
     messageRouter->route(message);
 }
 
@@ -116,7 +116,7 @@ void JoynrMessageSender::sendSubscriptionReply(const std::string& senderParticip
                                                    QString::fromStdString(receiverParticipantId),
                                                    qos,
                                                    subscriptionReply);
-    assert(!messageRouter.isNull());
+    assert(messageRouter);
     messageRouter->route(message);
 }
 
@@ -130,7 +130,7 @@ void JoynrMessageSender::sendSubscriptionStop(const std::string& senderParticipa
                                                   QString::fromStdString(receiverParticipantId),
                                                   qos,
                                                   subscriptionStop);
-    assert(!messageRouter.isNull());
+    assert(messageRouter);
     messageRouter->route(message);
 }
 
@@ -145,7 +145,7 @@ void JoynrMessageSender::sendSubscriptionPublication(
             QString::fromStdString(receiverParticipantId),
             qos,
             subscriptionPublication);
-    assert(!messageRouter.isNull());
+    assert(messageRouter);
     messageRouter->route(message);
 }
 

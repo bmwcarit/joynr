@@ -20,6 +20,7 @@
 #define JOYNRMESSAGINGSTUBFACTORY_H
 
 #include "joynr/IMiddlewareMessagingStubFactory.h"
+#include <memory>
 
 namespace joynr
 {
@@ -30,13 +31,13 @@ class JoynrMessagingStubFactory : public IMiddlewareMessagingStubFactory
 {
 
 public:
-    JoynrMessagingStubFactory(QSharedPointer<IMessageSender> messageSender,
+    JoynrMessagingStubFactory(std::shared_ptr<IMessageSender> messageSender,
                               QString receiveChannelId);
-    QSharedPointer<IMessaging> create(const joynr::system::RoutingTypes::QtAddress& destAddress);
+    std::shared_ptr<IMessaging> create(const joynr::system::RoutingTypes::QtAddress& destAddress);
     bool canCreate(const joynr::system::RoutingTypes::QtAddress& destAddress);
 
 private:
-    QSharedPointer<IMessageSender> messageSender;
+    std::shared_ptr<IMessageSender> messageSender;
     QString receiveChannelId;
 };
 

@@ -25,8 +25,9 @@
 
 #include <QLinkedList>
 #include <QMutex>
-#include <QSharedPointer>
 #include <QMap>
+
+#include <memory>
 
 namespace joynr
 {
@@ -123,18 +124,18 @@ private:
       */
     static QString extractHost(const QString& url);
 
-    QSharedPointer<PooledCurlHandle> takeOrCreateHandle(const QString& host);
+    std::shared_ptr<PooledCurlHandle> takeOrCreateHandle(const QString& host);
 
     /**
       * Handles in this linked list are ordered by last use. The most recently used handle is at the
      * front.
       */
-    QLinkedList<QSharedPointer<PooledCurlHandle>> handleList;
+    QLinkedList<std::shared_ptr<PooledCurlHandle>> handleList;
 
     /**
       * Handles that are currently in use(rented using getHandle(url)).
       */
-    QMap<void*, QSharedPointer<PooledCurlHandle>> outHandleMap;
+    QMap<void*, std::shared_ptr<PooledCurlHandle>> outHandleMap;
 
     /**
       * The number of handles that are internally pooled (out and on hold).
@@ -186,7 +187,7 @@ private:
      * is removed from the list and returned.
       * If no handle is available for the current thread, a new one is created.
       */
-    QSharedPointer<PooledCurlHandle> takeOrCreateHandle(const Qt::HANDLE& threadId, QString host);
+    std::shared_ptr<PooledCurlHandle> takeOrCreateHandle(const Qt::HANDLE& threadId, QString host);
 
     /**
       * Handles in this Map are available for reuse. The keys are ThreadIds and values are
@@ -197,15 +198,15 @@ private:
       */
     // TODO shouldn't the POOL_SIZE define the amount of idle handles?
     // key of this QMultiMap: Qt::HANDLE == the thread id the handle has been created for.
-    QMultiMap<Qt::HANDLE, QSharedPointer<PooledCurlHandle>> idleHandleMap;
+    QMultiMap<Qt::HANDLE, std::shared_ptr<PooledCurlHandle>> idleHandleMap;
     // handleOrderList is used to sort the curl handles according to their last use.
     // By deleting the last item of this list, the longest idle curl handle will be deleted.
-    QList<QSharedPointer<PooledCurlHandle>> handleOrderList;
+    QList<std::shared_ptr<PooledCurlHandle>> handleOrderList;
 
     /**
       * Handles that are currently in use(rented using getHandle(url)).
       */
-    QMap<void*, QSharedPointer<PooledCurlHandle>> outHandleMap;
+    QMap<void*, std::shared_ptr<PooledCurlHandle>> outHandleMap;
 
     static const int POOL_SIZE;
     QMutex mutex;
