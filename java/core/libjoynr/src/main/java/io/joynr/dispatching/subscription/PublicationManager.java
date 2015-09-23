@@ -67,22 +67,6 @@ public interface PublicationManager {
     void stopPublication(final String subscriptionId);
 
     /**
-     * Stops all publications for a provider
-     * 
-     * @param providerId provider for which all publication should be stopped
-     */
-    void stopPublicationByProviderId(String providerId);
-
-    /**
-     * Called by the Dispatcher every time a provider is registered to check whether there are already
-     * subscriptionRequests waiting.
-     * 
-     * @param providerId provider id
-     * @param requestCaller request caller
-     */
-    void restoreQueuedSubscription(final String providerId, RequestCaller requestCaller);
-
-    /**
      * Call passed through from ProviderListener when an attribute on the provider is changed.
      * @param subscriptionId subscription id
      * @param value value

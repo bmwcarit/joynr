@@ -19,10 +19,6 @@ package io.joynr.dispatching;
  * #L%
  */
 
-import io.joynr.dispatching.PayloadListener;
-import io.joynr.dispatching.RequestCaller;
-import io.joynr.dispatching.RequestReplyDispatcher;
-import io.joynr.dispatching.RequestReplyManager;
 import io.joynr.dispatching.rpc.ReplyCaller;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
@@ -61,7 +57,6 @@ public class ChatMessengerApp implements PayloadListener<String>, ReplyCaller {
     private static final long TIME_TO_LIVE = 5000L;
     private static final long CHECK_USER_INPUT_DELAY = 2000;
 
-    private RequestReplyDispatcher dispatcher;
     private RequestReplyManager requestReplyManager;
 
     String ownParticipant = UUID.randomUUID().toString();
@@ -190,13 +185,11 @@ public class ChatMessengerApp implements PayloadListener<String>, ReplyCaller {
         factoryProperties.put(MessagingPropertyKeys.CHANNELID, sourceChannel);
         Injector injector = new JoynrInjectorFactory(new JoynrBaseModule(factoryProperties)).getInjector();
 
-        dispatcher = injector.getInstance(RequestReplyDispatcher.class);
         requestReplyManager = injector.getInstance(RequestReplyManager.class);
-
+        RequestCallerDirectory requestCallerDirectory = injector.getInstance(RequestCallerDirectory.class);
         // TODO register EndpointAddresses for participantIds
 
-        // dispatcher.addListener(ownParticipant, this);
-        dispatcher.addRequestCaller(ownParticipant, new ChatMessengerAppRequestCaller());
+        requestCallerDirectory.addRequestCaller(ownParticipant, new ChatMessengerAppRequestCaller());
 
         try {
             requestReplyManager.sendOneWay(ownParticipant,

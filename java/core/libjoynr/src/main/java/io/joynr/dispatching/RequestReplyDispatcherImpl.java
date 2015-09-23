@@ -78,10 +78,9 @@ import com.google.inject.name.Named;
  * Default implementation of the Dispatcher interface.
  */
 @Singleton
-public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
+public class RequestReplyDispatcherImpl implements RequestReplyDispatcher, RequestCallerDirectoryListener {
 
     private Map<String, PayloadListener<?>> oneWayRecipients = Maps.newHashMap();
-    private Map<String, RequestCaller> requestCallerDirectory = Maps.newHashMap();
 
     private ConcurrentHashMap<String, ConcurrentLinkedQueue<ContentWithExpiryDate<JoynrMessage>>> messageQueue = new ConcurrentHashMap<String, ConcurrentLinkedQueue<ContentWithExpiryDate<JoynrMessage>>>();
 
@@ -109,6 +108,8 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
     private AccessController accessController;
     private PlatformSecurityManager securityManager;
 
+    private RequestCallerDirectory requestCallerDirectory;
+
     @Inject
     // CHECKSTYLE:OFF
     public RequestReplyDispatcherImpl(RequestReplyManager messageSender,
@@ -120,6 +121,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
                                       PublicationManager publicationManager,
                                       SubscriptionManager subscriptionManager,
                                       RequestInterpreter requestInterpreter,
+                                      RequestCallerDirectory requestCallerDirectory,
                                       @Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler,
                                       AccessController accessController,
                                       PlatformSecurityManager securityManager) {
@@ -133,6 +135,8 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
         this.publicationManager = publicationManager;
         this.subscriptionManager = subscriptionManager;
         this.requestInterpreter = requestInterpreter;
+        this.requestCallerDirectory = requestCallerDirectory;
+        requestCallerDirectory.addListener(this);
         this.cleanupScheduler = cleanupScheduler;
         this.accessController = accessController;
         this.securityManager = securityManager;
@@ -155,15 +159,8 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
     }
 
     @Override
-    /**
-     * Will start the message receiver if anyone is listening
-     */
-    public void addRequestCaller(String participantId, RequestCaller requestCaller) {
-
-        synchronized (requestCallerDirectory) {
-            requestCallerDirectory.put(participantId, requestCaller);
-            startReceiver();
-        }
+    public void requestCallerAdded(String participantId, RequestCaller requestCaller) {
+        startReceiver();
 
         ConcurrentLinkedQueue<ContentWithExpiryDate<JoynrMessage>> messageList = messageQueue.remove(participantId);
         if (messageList != null) {
@@ -256,10 +253,8 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
     }
 
     @Override
-    public void removeRequestCaller(String participantId) {
-        synchronized (requestCallerDirectory) {
-            requestCallerDirectory.remove(participantId);
-        }
+    public void requestCallerRemoved(String participantId) {
+        //TODO cleanup requestQueue?
     }
 
     @Override
@@ -589,6 +584,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
         shutdown = true;
 
         try {
+            requestCallerDirectory.removeListener(this);
             messageReceiver.shutdown(clear);
         } catch (Exception e) {
             logger.error("error shutting down messageReceiver");

@@ -3,7 +3,7 @@ package io.joynr.capabilities;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,7 @@ package io.joynr.capabilities;
  */
 
 import io.joynr.dispatching.RequestCaller;
-import io.joynr.dispatching.RequestReplyDispatcher;
-import io.joynr.dispatching.subscription.PublicationManager;
+import io.joynr.dispatching.RequestCallerDirectory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.JoynrProvider;
@@ -38,26 +37,23 @@ import com.google.inject.Singleton;
 public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
     private LocalCapabilitiesDirectory localCapabilitiesDirectory;
     private RequestCallerFactory requestCallerFactory;
-    private RequestReplyDispatcher dispatcher;
     private final MessageRouter messageRouter;
-    private final PublicationManager publicationManager;
     private ParticipantIdStorage participantIdStorage;
     private Address libjoynrMessagingAddress;
+    private RequestCallerDirectory requestCallerDirectory;
 
     @Inject
     public CapabilitiesRegistrarImpl(LocalCapabilitiesDirectory localCapabilitiesDirectory,
                                      RequestCallerFactory requestCallerFactory,
-                                     RequestReplyDispatcher dispatcher,
                                      MessageRouter messageRouter,
-                                     PublicationManager publicationManager,
+                                     RequestCallerDirectory requestCallerDirectory,
                                      ParticipantIdStorage participantIdStorage,
                                      @Named(ConfigurableMessagingSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) Address libjoynrMessagingAddress) {
         super();
         this.localCapabilitiesDirectory = localCapabilitiesDirectory;
         this.requestCallerFactory = requestCallerFactory;
-        this.dispatcher = dispatcher;
         this.messageRouter = messageRouter;
-        this.publicationManager = publicationManager;
+        this.requestCallerDirectory = requestCallerDirectory;
         this.participantIdStorage = participantIdStorage;
         this.libjoynrMessagingAddress = libjoynrMessagingAddress;
     }
@@ -79,9 +75,8 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
         RequestCaller requestCaller = requestCallerFactory.create(provider);
 
         messageRouter.addNextHop(participantId, libjoynrMessagingAddress);
-        dispatcher.addRequestCaller(participantId, requestCaller);
+        requestCallerDirectory.addRequestCaller(participantId, requestCaller);
         RegistrationFuture ret = localCapabilitiesDirectory.add(capabilityEntry);
-        publicationManager.restoreQueuedSubscription(participantId, requestCaller);
         return ret;
     }
 
@@ -95,8 +90,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                                                                   participantId,
                                                                   System.currentTimeMillis());
         localCapabilitiesDirectory.remove(capabilityEntry);
-        dispatcher.removeRequestCaller(participantId);
-        publicationManager.stopPublicationByProviderId(participantId);
+        requestCallerDirectory.removeRequestCaller(participantId);
     }
 
     @Override

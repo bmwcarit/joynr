@@ -26,6 +26,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.RequestCaller;
+import io.joynr.dispatching.RequestCallerDirectory;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingQos;
@@ -102,6 +103,7 @@ public class PublicationTimersTest {
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(subscriptionId, attributeName, qos);
         PublicationManager publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                                            dispatcher,
+                                                                           new RequestCallerDirectory(),
                                                                            cleanupScheduler);
         publicationManager.addSubscriptionRequest(proxyId, providerId, subscriptionRequest, requestCaller);
 

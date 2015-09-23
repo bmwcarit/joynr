@@ -32,6 +32,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.RequestCaller;
+import io.joynr.dispatching.RequestCallerDirectory;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.JoynrProvider;
@@ -75,7 +76,7 @@ public class PublicationManagerTest {
     private static final String SUBSCRIPTION_ID = "PublicationTest_id";
 
     ScheduledExecutorService cleanupScheduler;
-    PublicationManager publicationManager;
+    PublicationManagerImpl publicationManager;
 
     @Captor
     ArgumentCaptor<String> sentProviderParticipantId;
@@ -88,14 +89,14 @@ public class PublicationManagerTest {
 
     @Mock
     AttributePollInterpreter attributePollInterpreter;
-
-    private RequestCaller requestCaller;
-
+    @Mock
+    private RequestCallerDirectory requestCallerDirectory;
     @Mock
     private Dispatcher dispatcher;
-
     @Mock
     private JoynrProvider provider;
+
+    private RequestCaller requestCaller;
 
     String valueToPublish = "valuePublished";
 
@@ -107,7 +108,10 @@ public class PublicationManagerTest {
         doReturn(testProvider.class).when(provider).getProvidedInterface();
 
         cleanupScheduler = new ScheduledThreadPoolExecutor(1);
-        publicationManager = new PublicationManagerImpl(attributePollInterpreter, dispatcher, cleanupScheduler);
+        publicationManager = new PublicationManagerImpl(attributePollInterpreter,
+                                                        dispatcher,
+                                                        requestCallerDirectory,
+                                                        cleanupScheduler);
 
         RequestCallerFactory requestCallerFactory = new RequestCallerFactory();
         requestCaller = requestCallerFactory.create(provider);
@@ -231,7 +235,7 @@ public class PublicationManagerTest {
                                                                  any(MessagingQos.class));
 
         reset(dispatcher);
-        publicationManager.stopPublicationByProviderId(PROVIDER_PARTICIPANT_ID);
+        publicationManager.requestCallerRemoved(PROVIDER_PARTICIPANT_ID);
 
         publicationManager.attributeValueChanged(subscriptionId1, valueToPublish);
         publicationManager.attributeValueChanged(subscriptionId2, valueToPublish);
@@ -263,7 +267,7 @@ public class PublicationManagerTest {
                                                                  any(SubscriptionPublication.class),
                                                                  any(MessagingQos.class));
 
-        publicationManager.restoreQueuedSubscription(PROVIDER_PARTICIPANT_ID, requestCaller);
+        publicationManager.requestCallerAdded(PROVIDER_PARTICIPANT_ID, requestCaller);
 
         verify(dispatcher, timeout(period * 5).times(12)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
                                                                                       eq(PROXY_PARTICIPANT_ID),
@@ -282,7 +286,7 @@ public class PublicationManagerTest {
 
         publicationManager.stopPublication(subscriptionId1);
 
-        publicationManager.restoreQueuedSubscription(PROVIDER_PARTICIPANT_ID, requestCaller);
+        publicationManager.requestCallerAdded(PROVIDER_PARTICIPANT_ID, requestCaller);
         Thread.sleep(period);
         verify(dispatcher, times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
                                                                  eq(PROXY_PARTICIPANT_ID),
@@ -293,7 +297,10 @@ public class PublicationManagerTest {
     @Test
     public void broadcastPublicationIsSent() throws Exception {
 
-        publicationManager = new PublicationManagerImpl(attributePollInterpreter, dispatcher, cleanupScheduler);
+        publicationManager = new PublicationManagerImpl(attributePollInterpreter,
+                                                        dispatcher,
+                                                        requestCallerDirectory,
+                                                        cleanupScheduler);
 
         long minInterval_ms = 0;
         long ttl = 1000;
@@ -335,7 +342,10 @@ public class PublicationManagerTest {
     @Test
     public void broadcastPublicationCallsAllFiltersWithFilterParametersAndValues() throws Exception {
 
-        publicationManager = new PublicationManagerImpl(attributePollInterpreter, dispatcher, cleanupScheduler);
+        publicationManager = new PublicationManagerImpl(attributePollInterpreter,
+                                                        dispatcher,
+                                                        requestCallerDirectory,
+                                                        cleanupScheduler);
 
         long minInterval_ms = 0;
         long ttl = 1000;
@@ -386,7 +396,10 @@ public class PublicationManagerTest {
     @Test
     public void broadcastPublicationIsSentWhenFiltersPass() throws Exception {
 
-        publicationManager = new PublicationManagerImpl(attributePollInterpreter, dispatcher, cleanupScheduler);
+        publicationManager = new PublicationManagerImpl(attributePollInterpreter,
+                                                        dispatcher,
+                                                        requestCallerDirectory,
+                                                        cleanupScheduler);
 
         long minInterval_ms = 0;
         long ttl = 1000;
@@ -431,7 +444,10 @@ public class PublicationManagerTest {
     @Test
     public void broadcastPublicationNotSentWhenFiltersFail() throws Exception {
 
-        publicationManager = new PublicationManagerImpl(attributePollInterpreter, dispatcher, cleanupScheduler);
+        publicationManager = new PublicationManagerImpl(attributePollInterpreter,
+                                                        dispatcher,
+                                                        requestCallerDirectory,
+                                                        cleanupScheduler);
 
         long minInterval_ms = 0;
         long ttl = 1000;
@@ -471,7 +487,10 @@ public class PublicationManagerTest {
 
     @Test(timeout = 3000)
     public void modifySubscriptionTypeForExistingSubscription() throws Exception {
-        publicationManager = new PublicationManagerImpl(attributePollInterpreter, dispatcher, cleanupScheduler);
+        publicationManager = new PublicationManagerImpl(attributePollInterpreter,
+                                                        dispatcher,
+                                                        requestCallerDirectory,
+                                                        cleanupScheduler);
         int period = 200;
         int testLengthMax = 3000;
         long expiryDate = System.currentTimeMillis() + testLengthMax;

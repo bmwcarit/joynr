@@ -87,6 +87,7 @@ public class DispatcherTest {
     private static final long TIME_TO_LIVE = 10000L;
     MessageSenderReceiverMock messageSenderReceiverMock;
     RequestReplyDispatcher requestReplyDispatcher;
+    RequestCallerDirectory requestCallerDirectory;
     private String channelId;
     private String testSenderParticipantId;
     private String testMessageListenerParticipantId;
@@ -151,6 +152,7 @@ public class DispatcherTest {
         objectMapper.registerSubtypes(Request.class, OneWay.class);
 
         requestReplyDispatcher = injector.getInstance(RequestReplyDispatcher.class);
+        requestCallerDirectory = injector.getInstance(RequestCallerDirectory.class);
         requestReplyManager = injector.getInstance(RequestReplyManager.class);
         messageSenderReceiverMock = injector.getInstance(MessageSenderReceiverMock.class);
         messageSenderReceiverMock.start(requestReplyDispatcher);
@@ -222,7 +224,7 @@ public class DispatcherTest {
     @After
     public void tearDown() {
         requestReplyDispatcher.removeListener(testMessageListenerParticipantId);
-        requestReplyDispatcher.removeRequestCaller(testMessageResponderParticipantId);
+        requestCallerDirectory.removeRequestCaller(testMessageResponderParticipantId);
     }
 
     @Test
@@ -247,7 +249,7 @@ public class DispatcherTest {
         when(accessControllerMock.hasConsumerPermission(any(JoynrMessage.class))).thenReturn(true);
 
         TestRequestCaller testRequestCaller = new TestRequestCaller(1);
-        requestReplyDispatcher.addRequestCaller(testMessageResponderParticipantId, testRequestCaller);
+        requestCallerDirectory.addRequestCaller(testMessageResponderParticipantId, testRequestCaller);
 
         ReplyCaller replyCaller = mock(ReplyCaller.class);
         requestReplyDispatcher.addReplyCaller(jsonRequest1.getRequestReplyId(), replyCaller, TIME_TO_LIVE * 2);
@@ -319,7 +321,7 @@ public class DispatcherTest {
         Thread.sleep((long) (TIME_TO_LIVE * 0.03 + 20));
 
         testResponderUnregistered.waitForMessage((int) (TIME_TO_LIVE * 0.05));
-        requestReplyDispatcher.addRequestCaller(testResponderUnregisteredParticipantId, testResponderUnregistered);
+        requestCallerDirectory.addRequestCaller(testResponderUnregisteredParticipantId, testResponderUnregistered);
 
         testResponderUnregistered.assertAllPayloadsReceived((int) (TIME_TO_LIVE));
         testResponderUnregistered.assertReceivedPayloadsContainsNot(payload1);
@@ -339,7 +341,7 @@ public class DispatcherTest {
                                         ttlReplyCaller);
 
         Thread.sleep(ttlReplyCaller);
-        requestReplyDispatcher.addRequestCaller(testMessageResponderParticipantId, testResponder);
+        requestCallerDirectory.addRequestCaller(testMessageResponderParticipantId, testResponder);
 
         assertEquals(1, messageSenderReceiverMock.getSentMessages().size());
         JoynrMessage sentMessage = messageSenderReceiverMock.getSentMessages().get(0);
@@ -376,7 +378,7 @@ public class DispatcherTest {
         when(accessControllerMock.hasConsumerPermission(any(JoynrMessage.class))).thenReturn(true);
 
         TestRequestCaller testResponder = new TestRequestCaller(1);
-        requestReplyDispatcher.addRequestCaller(testMessageResponderParticipantId, testResponder);
+        requestCallerDirectory.addRequestCaller(testMessageResponderParticipantId, testResponder);
         ReplyCaller replyCaller = mock(ReplyCaller.class);
         requestReplyDispatcher.addReplyCaller(jsonRequest1.getRequestReplyId(), replyCaller, TIME_TO_LIVE * 2);
 

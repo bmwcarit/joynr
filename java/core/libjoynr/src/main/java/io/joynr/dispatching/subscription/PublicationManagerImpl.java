@@ -22,6 +22,8 @@ import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import io.joynr.dispatcher.rpc.ReflectionUtils;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.RequestCaller;
+import io.joynr.dispatching.RequestCallerDirectory;
+import io.joynr.dispatching.RequestCallerDirectoryListener;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -66,7 +68,7 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
 @Singleton
-public class PublicationManagerImpl implements PublicationManager {
+public class PublicationManagerImpl implements PublicationManager, RequestCallerDirectoryListener {
     private static final Logger logger = LoggerFactory.getLogger(PublicationManagerImpl.class);
     // Map ProviderId -> SubscriptionRequest
     private final Multimap<String, PublicationInformation> queuedSubscriptionRequests;
@@ -157,6 +159,7 @@ public class PublicationManagerImpl implements PublicationManager {
     @Inject
     public PublicationManagerImpl(AttributePollInterpreter attributePollInterpreter,
                                   Dispatcher dispatcher,
+                                  RequestCallerDirectory requestCallerDirectory,
                                   @Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler) {
         super();
         this.dispatcher = dispatcher;
@@ -168,6 +171,7 @@ public class PublicationManagerImpl implements PublicationManager {
         this.unregisterAttributeListeners = Maps.newConcurrentMap();
         this.unregisterBroadcastListeners = Maps.newConcurrentMap();
         this.attributePollInterpreter = attributePollInterpreter;
+        requestCallerDirectory.addListener(this);
 
     }
 
@@ -387,8 +391,12 @@ public class PublicationManagerImpl implements PublicationManager {
         removePublication(subscriptionId);
     }
 
-    @Override
-    public void stopPublicationByProviderId(String providerParticipantId) {
+    /**
+     * Stops all publications for a provider
+     * 
+     * @param providerId provider for which all publication should be stopped
+     */
+    private void stopPublicationByProviderId(String providerParticipantId) {
         for (PublicationInformation publicationInformation : subscriptionId2PublicationInformation.values()) {
             if (publicationInformation.getProviderParticipantId().equals(providerParticipantId)) {
                 removePublication(publicationInformation.getSubscriptionId());
@@ -406,8 +414,14 @@ public class PublicationManagerImpl implements PublicationManager {
         return (expiryDate != SubscriptionQos.NO_EXPIRY_DATE && expiryDate <= System.currentTimeMillis());
     }
 
-    @Override
-    public void restoreQueuedSubscription(String providerId, RequestCaller requestCaller) {
+    /**
+     * Called every time a provider is registered to check whether there are already
+     * subscriptionRequests waiting.
+     * 
+     * @param providerId provider id
+     * @param requestCaller request caller
+     */
+    private void restoreQueuedSubscription(String providerId, RequestCaller requestCaller) {
         Collection<PublicationInformation> queuedRequests = queuedSubscriptionRequests.get(providerId);
         Iterator<PublicationInformation> queuedRequestsIterator = queuedRequests.iterator();
         while (queuedRequestsIterator.hasNext()) {
@@ -579,5 +593,15 @@ public class PublicationManagerImpl implements PublicationManager {
                                                publicationInformation.proxyParticipantId,
                                                publication,
                                                messagingQos);
+    }
+
+    @Override
+    public void requestCallerAdded(String providerParticipantId, RequestCaller requestCaller) {
+        restoreQueuedSubscription(providerParticipantId, requestCaller);
+    }
+
+    @Override
+    public void requestCallerRemoved(String providerParticipantId) {
+        stopPublicationByProviderId(providerParticipantId);
     }
 }

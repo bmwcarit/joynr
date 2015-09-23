@@ -27,6 +27,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.RequestCaller;
+import io.joynr.dispatching.RequestCallerDirectory;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingQos;
@@ -71,7 +72,8 @@ public class PushingPublicationTest {
 
     @Mock
     Dispatcher dispatcher;
-
+    @Mock
+    private RequestCallerDirectory requestCallerDirectory;
     @Mock
     private AttributePollInterpreter attributePollInterpreter;
 
@@ -93,7 +95,10 @@ public class PushingPublicationTest {
                        JsonMappingException, IOException {
         provider = new PubSubTestProviderImpl();
 
-        publicationManager = new PublicationManagerImpl(attributePollInterpreter, dispatcher, cleanupScheduler);
+        publicationManager = new PublicationManagerImpl(attributePollInterpreter,
+                                                        dispatcher,
+                                                        requestCallerDirectory,
+                                                        cleanupScheduler);
         subscriptionId = "subscriptionId";
         proxyId = "proxyId";
         providerId = "providerId";

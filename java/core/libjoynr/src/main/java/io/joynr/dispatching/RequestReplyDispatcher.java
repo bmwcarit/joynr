@@ -3,7 +3,7 @@ package io.joynr.dispatching;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,10 +33,6 @@ public interface RequestReplyDispatcher extends MessageArrivedListener {
     public void addReplyCaller(final String requestReplyId, ReplyCaller replyCaller, long roundTripTtl_ms);
 
     public void removeReplyCaller(final String requestReplyId);
-
-    public void addRequestCaller(final String participantId, RequestCaller requestCaller);
-
-    public void removeRequestCaller(String participantId);
 
     /**
      * Removes the listener registered for the interface address.
