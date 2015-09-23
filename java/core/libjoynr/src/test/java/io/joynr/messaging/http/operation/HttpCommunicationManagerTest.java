@@ -22,7 +22,7 @@ package io.joynr.messaging.http.operation;
 import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.containsString;
 import io.joynr.common.ExpiryDate;
-import io.joynr.dispatching.RequestReplyDispatcher;
+import io.joynr.dispatching.Dispatcher;
 import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingTestModule;
@@ -89,7 +89,7 @@ public class HttpCommunicationManagerTest {
     }
 
     @Mock
-    private RequestReplyDispatcher dispatcher;
+    private Dispatcher dispatcher;
     private String bounceProxyUrlString;
 
     @Before

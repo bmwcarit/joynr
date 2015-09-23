@@ -235,7 +235,7 @@ public class PublicationManagerTest {
                                                                  any(MessagingQos.class));
 
         reset(dispatcher);
-        publicationManager.requestCallerRemoved(PROVIDER_PARTICIPANT_ID);
+        publicationManager.callerRemoved(PROVIDER_PARTICIPANT_ID);
 
         publicationManager.attributeValueChanged(subscriptionId1, valueToPublish);
         publicationManager.attributeValueChanged(subscriptionId2, valueToPublish);
@@ -267,7 +267,7 @@ public class PublicationManagerTest {
                                                                  any(SubscriptionPublication.class),
                                                                  any(MessagingQos.class));
 
-        publicationManager.requestCallerAdded(PROVIDER_PARTICIPANT_ID, requestCaller);
+        publicationManager.callerAdded(PROVIDER_PARTICIPANT_ID, requestCaller);
 
         verify(dispatcher, timeout(period * 5).times(12)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
                                                                                       eq(PROXY_PARTICIPANT_ID),
@@ -286,7 +286,7 @@ public class PublicationManagerTest {
 
         publicationManager.stopPublication(subscriptionId1);
 
-        publicationManager.requestCallerAdded(PROVIDER_PARTICIPANT_ID, requestCaller);
+        publicationManager.callerAdded(PROVIDER_PARTICIPANT_ID, requestCaller);
         Thread.sleep(period);
         verify(dispatcher, times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
                                                                  eq(PROXY_PARTICIPANT_ID),

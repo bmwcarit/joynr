@@ -25,10 +25,10 @@ import io.joynr.common.ExpiryDate;
 import io.joynr.dispatcher.rpc.JoynrSyncInterface;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 import io.joynr.dispatching.JoynrMessageFactory;
-import io.joynr.dispatching.RequestReplyDispatcher;
 import io.joynr.dispatching.RequestReplyManager;
 import io.joynr.dispatching.RequestReplyManagerImpl;
 import io.joynr.dispatching.rpc.ReplyCaller;
+import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.MessagingQos;
@@ -63,7 +63,7 @@ public class ProxyArbitrationTest {
     @Mock
     MessageSender messageSender;
     @Mock
-    private RequestReplyDispatcher requestReplyDispatcher;
+    private ReplyCallerDirectory replyCallerDirectory;
     @Mock
     private SubscriptionManager subscriptionManager;
     @Mock
@@ -105,7 +105,7 @@ public class ProxyArbitrationTest {
 
         RequestReplyManager requestReplyManager = new RequestReplyManagerImpl(joynrMessageFactory, messageRouter);
         JoynrMessagingConnectorFactory joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(requestReplyManager,
-                                                                                                           requestReplyDispatcher,
+                                                                                                           replyCallerDirectory,
                                                                                                            subscriptionManager);
         ConnectorFactory connectorFactory = new ConnectorFactory(joynrMessagingConnectorFactory, messageRouter);
         proxyHandler = new ProxyInvocationHandlerImpl("domain",
@@ -157,9 +157,9 @@ public class ProxyArbitrationTest {
                 return null;
             }
 
-        }).when(requestReplyDispatcher).addReplyCaller(Mockito.anyString(),
-                                                       Mockito.<ReplyCaller> any(),
-                                                       Mockito.anyLong());
+        }).when(replyCallerDirectory).addReplyCaller(Mockito.anyString(),
+                                                     Mockito.<ReplyCaller> any(),
+                                                     Mockito.any(ExpiryDate.class));
     }
 
     @Test

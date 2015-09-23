@@ -19,10 +19,10 @@ package io.joynr.dispatching;
  * #L%
  */
 
-public interface RequestCallerDirectoryListener {
+public interface CallerDirectoryListener<T> {
 
-    public void requestCallerAdded(String participantId, RequestCaller caller);
+    public void callerAdded(String participantId, T caller);
 
-    public void requestCallerRemoved(String participantId);
+    public void callerRemoved(String participantId);
 
 }

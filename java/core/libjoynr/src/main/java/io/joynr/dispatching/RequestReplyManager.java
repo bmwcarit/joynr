@@ -58,11 +58,12 @@ public interface RequestReplyManager {
      *            in case send buffer is full
      */
 
-    public abstract void sendRequest(final String fromParticipantId,
-                                     final String toParticipantId,
-                                     Request request,
-                                     long ttl_ms) throws JoynrSendBufferFullException, JoynrMessageNotSentException,
-                                                 JsonGenerationException, JsonMappingException, IOException;
+    public void sendRequest(final String fromParticipantId, final String toParticipantId, Request request, long ttl_ms)
+                                                                                                                       throws JoynrSendBufferFullException,
+                                                                                                                       JoynrMessageNotSentException,
+                                                                                                                       JsonGenerationException,
+                                                                                                                       JsonMappingException,
+                                                                                                                       IOException;
 
     /**
      * Sends a request and blocks the current thread until the response is received or the roundTripTtl is reached. If
@@ -91,13 +92,13 @@ public interface RequestReplyManager {
      *            in case send buffer is full
      */
 
-    public abstract Object sendSyncRequest(final String fromParticipantId,
-                                           final String toParticipantId,
-                                           Request request,
-                                           SynchronizedReplyCaller synchronizedReplyCaller,
-                                           long ttl_ms) throws JoynrCommunicationException,
-                                                       JoynrSendBufferFullException, JoynrMessageNotSentException,
-                                                       JsonGenerationException, JsonMappingException, IOException;
+    public Object sendSyncRequest(final String fromParticipantId,
+                                  final String toParticipantId,
+                                  Request request,
+                                  SynchronizedReplyCaller synchronizedReplyCaller,
+                                  long ttl_ms) throws JoynrCommunicationException, JoynrSendBufferFullException,
+                                              JoynrMessageNotSentException, JsonGenerationException,
+                                              JsonMappingException, IOException;
 
     /**
      * Send a one way message.
@@ -122,11 +123,12 @@ public interface RequestReplyManager {
      *            in case send buffer is full
      */
 
-    public abstract void sendOneWay(final String fromParticipantId,
-                                    final String toParticipantId,
-                                    Object payload,
-                                    long ttl_ms) throws JoynrSendBufferFullException, JoynrMessageNotSentException,
-                                                JsonGenerationException, JsonMappingException, IOException;
+    public void sendOneWay(final String fromParticipantId, final String toParticipantId, Object payload, long ttl_ms)
+                                                                                                                     throws JoynrSendBufferFullException,
+                                                                                                                     JoynrMessageNotSentException,
+                                                                                                                     JsonGenerationException,
+                                                                                                                     JsonMappingException,
+                                                                                                                     IOException;
 
     public void sendReply(final String fromParticipantId, final String toParticipantId, Reply payload, ExpiryDate ttl_ms)
                                                                                                                          throws JoynrSendBufferFullException,

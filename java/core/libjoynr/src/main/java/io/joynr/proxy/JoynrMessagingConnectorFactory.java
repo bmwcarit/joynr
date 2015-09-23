@@ -19,8 +19,8 @@ package io.joynr.proxy;
  * #L%
  */
 
-import io.joynr.dispatching.RequestReplyDispatcher;
 import io.joynr.dispatching.RequestReplyManager;
+import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.messaging.MessagingQos;
 
@@ -47,15 +47,16 @@ public class JoynrMessagingConnectorFactory {
     private static final ConcurrentMap<Method, MethodMetaInformation> metaInformationMap = new ConcurrentHashMap<Method, MethodMetaInformation>();
 
     private RequestReplyManager requestReplyManager;
-    private RequestReplyDispatcher dispatcher;
     private SubscriptionManager subscriptionManager;
+
+    private ReplyCallerDirectory replyCallerDirectory;
 
     @Inject
     public JoynrMessagingConnectorFactory(RequestReplyManager requestReplyManager,
-                                          RequestReplyDispatcher dispatcher,
+                                          ReplyCallerDirectory replyCallerDirectory,
                                           SubscriptionManager subscriptionManager) {
         this.requestReplyManager = requestReplyManager;
-        this.dispatcher = dispatcher;
+        this.replyCallerDirectory = replyCallerDirectory;
         this.subscriptionManager = subscriptionManager;
     }
 
@@ -79,7 +80,7 @@ public class JoynrMessagingConnectorFactory {
                                                             fromParticipantId,
                                                             qosSettings,
                                                             requestReplyManager,
-                                                            dispatcher,
+                                                            replyCallerDirectory,
                                                             subscriptionManager);
     }
 

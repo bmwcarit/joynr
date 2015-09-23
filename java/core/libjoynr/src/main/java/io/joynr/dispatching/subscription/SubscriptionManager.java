@@ -74,4 +74,8 @@ public interface SubscriptionManager {
     @CheckForNull
     <T> AttributeSubscriptionListener<T> getSubscriptionListener(String subscriptionId);
 
+    void handleBroadcastPublication(String subscriptionId, Object[] broadcastValues);
+
+    <T> void handleAttributePublication(String subscriptionId, T attributeValue);
+
 }

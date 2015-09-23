@@ -18,12 +18,13 @@ package io.joynr.dispatching.subscription;
  * limitations under the License.
  * #L%
  */
+
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import io.joynr.dispatcher.rpc.ReflectionUtils;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.RequestCaller;
 import io.joynr.dispatching.RequestCallerDirectory;
-import io.joynr.dispatching.RequestCallerDirectoryListener;
+import io.joynr.dispatching.CallerDirectoryListener;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -68,7 +69,7 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
 @Singleton
-public class PublicationManagerImpl implements PublicationManager, RequestCallerDirectoryListener {
+public class PublicationManagerImpl implements PublicationManager, CallerDirectoryListener<RequestCaller> {
     private static final Logger logger = LoggerFactory.getLogger(PublicationManagerImpl.class);
     // Map ProviderId -> SubscriptionRequest
     private final Multimap<String, PublicationInformation> queuedSubscriptionRequests;
@@ -86,6 +87,7 @@ public class PublicationManagerImpl implements PublicationManager, RequestCaller
     private AttributePollInterpreter attributePollInterpreter;
     private ScheduledExecutorService cleanupScheduler;
     private Dispatcher dispatcher;
+    private RequestCallerDirectory requestCallerDirectory;
 
     static class PublicationInformation {
         private String providerParticipantId;
@@ -163,6 +165,7 @@ public class PublicationManagerImpl implements PublicationManager, RequestCaller
                                   @Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler) {
         super();
         this.dispatcher = dispatcher;
+        this.requestCallerDirectory = requestCallerDirectory;
         this.cleanupScheduler = cleanupScheduler;
         this.queuedSubscriptionRequests = HashMultimap.create();
         this.subscriptionId2PublicationInformation = Maps.newConcurrentMap();
@@ -307,12 +310,19 @@ public class PublicationManagerImpl implements PublicationManager, RequestCaller
     public void addSubscriptionRequest(String proxyParticipantId,
                                        String providerParticipantId,
                                        SubscriptionRequest subscriptionRequest) {
-        logger.info("Adding subscription request for non existing provider to queue.");
-        PublicationInformation publicationInformation = new PublicationInformation(providerParticipantId,
-                                                                                   proxyParticipantId,
-                                                                                   subscriptionRequest);
-        queuedSubscriptionRequests.put(providerParticipantId, publicationInformation);
-        subscriptionId2PublicationInformation.put(subscriptionRequest.getSubscriptionId(), publicationInformation);
+        if (requestCallerDirectory.containsCaller(providerParticipantId)) {
+            addSubscriptionRequest(proxyParticipantId,
+                                   providerParticipantId,
+                                   subscriptionRequest,
+                                   requestCallerDirectory.getCaller(providerParticipantId));
+        } else {
+            logger.info("Adding subscription request for non existing provider to queue.");
+            PublicationInformation publicationInformation = new PublicationInformation(providerParticipantId,
+                                                                                       proxyParticipantId,
+                                                                                       subscriptionRequest);
+            queuedSubscriptionRequests.put(providerParticipantId, publicationInformation);
+            subscriptionId2PublicationInformation.put(subscriptionRequest.getSubscriptionId(), publicationInformation);
+        }
     }
 
     protected void removePublication(String subscriptionId) {
@@ -596,12 +606,17 @@ public class PublicationManagerImpl implements PublicationManager, RequestCaller
     }
 
     @Override
-    public void requestCallerAdded(String providerParticipantId, RequestCaller requestCaller) {
+    public void callerAdded(String providerParticipantId, RequestCaller requestCaller) {
         restoreQueuedSubscription(providerParticipantId, requestCaller);
     }
 
     @Override
-    public void requestCallerRemoved(String providerParticipantId) {
+    public void callerRemoved(String providerParticipantId) {
         stopPublicationByProviderId(providerParticipantId);
+    }
+
+    @Override
+    public void shutdown() {
+        requestCallerDirectory.removeListener(this);
     }
 }

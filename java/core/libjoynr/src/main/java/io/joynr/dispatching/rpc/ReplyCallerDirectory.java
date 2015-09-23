@@ -21,17 +21,14 @@ package io.joynr.dispatching.rpc;
 
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import io.joynr.common.ExpiryDate;
-import io.joynr.dispatching.ContentWithExpiryDate;
+import io.joynr.dispatching.CallerDirectory;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.exceptions.JoynrTimeoutException;
 
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import javax.annotation.CheckForNull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,8 +42,7 @@ import com.google.inject.name.Named;
  * 
  */
 @Singleton
-public class ReplyCallerDirectory {
-    private ConcurrentHashMap<String, ContentWithExpiryDate<ReplyCaller>> outstandingReplyCallers = new ConcurrentHashMap<String, ContentWithExpiryDate<ReplyCaller>>();
+public class ReplyCallerDirectory extends CallerDirectory<ReplyCaller> {
 
     private boolean shutdown = false;
     private static final Logger logger = LoggerFactory.getLogger(ReplyCallerDirectory.class);
@@ -58,13 +54,12 @@ public class ReplyCallerDirectory {
         this.cleanupScheduler = cleanupScheduler;
     }
 
-    public void putReplyCaller(final String requestReplyId,
+    public void addReplyCaller(final String requestReplyId,
                                final ReplyCaller replyCaller,
                                final ExpiryDate roundTripTtlExpirationDate) {
         logger.trace("putReplyCaller: " + requestReplyId + " expiryDate: " + roundTripTtlExpirationDate);
-        outstandingReplyCallers.putIfAbsent(requestReplyId,
-                                            new ContentWithExpiryDate<ReplyCaller>(replyCaller,
-                                                                                   roundTripTtlExpirationDate));
+        super.addCaller(requestReplyId, replyCaller);
+
         try {
             cleanupScheduler.schedule(new Runnable() {
                 public void run() {
@@ -80,32 +75,13 @@ public class ReplyCallerDirectory {
 
     }
 
-    @CheckForNull
-    public ReplyCaller getAndRemoveReplyCaller(String requestReplyId) {
-        logger.trace("getAndRemoveReplyCaller: {}", requestReplyId);
-        ContentWithExpiryDate<ReplyCaller> remove = outstandingReplyCallers.remove(requestReplyId);
-        if (remove == null) {
-            logger.trace("getAndRemoveReplyCaller: {} not found", requestReplyId);
-            return null;
-        }
-        return remove.getContent();
-    }
-
-    public boolean containsReplyCallerFor(String replyId) {
-        return outstandingReplyCallers.containsKey(replyId);
-    }
-
     private void removeExpiredReplyCaller(String requestReplyId) {
-        ContentWithExpiryDate<ReplyCaller> remove = outstandingReplyCallers.remove(requestReplyId);
-        if (remove == null) {
+        ReplyCaller outstandingReplyCaller = removeCaller(requestReplyId);
+        if (outstandingReplyCaller == null) {
             // this happens, when a reply was already received and the replyCaller has been removed.
             return;
         }
-        ReplyCaller outstandingReplyCaller = remove.getContent();
         logger.debug("Replycaller with requestReplyId " + requestReplyId + " was removed because TTL expired");
-
-        logger.trace("Removing replyCaller requestReplyId: {} from queue because it is expired",
-                     outstandingReplyCaller.getRequestReplyId());
 
         // notify the caller that the request has expired now
         outstandingReplyCaller.error(new JoynrTimeoutException(System.currentTimeMillis()));
@@ -122,11 +98,8 @@ public class ReplyCallerDirectory {
         shutdown = true;
     }
 
-    public boolean isEmpty() {
-        if (outstandingReplyCallers == null) {
-            return true;
-        }
-
-        return outstandingReplyCallers.isEmpty();
+    @Override
+    protected Logger getLogger() {
+        return logger;
     }
 }

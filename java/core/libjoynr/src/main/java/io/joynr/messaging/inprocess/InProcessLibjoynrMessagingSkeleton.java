@@ -32,6 +32,6 @@ public class InProcessLibjoynrMessagingSkeleton implements InProcessMessagingSke
 
     @Override
     public void transmit(JoynrMessage message) {
-        dispatcher.receive(message);
+        dispatcher.messageArrived(message);
     }
 }

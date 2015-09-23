@@ -19,8 +19,10 @@ package io.joynr.dispatching;
  * #L%
  */
 
-import io.joynr.dispatching.rpc.ReplyCaller;
-import io.joynr.messaging.MessageArrivedListener;
+import io.joynr.proxy.Callback;
+import joynr.OneWay;
+import joynr.Reply;
+import joynr.Request;
 
 /**
  * The dispatcher sits on top of the HTTP Communication Manager and offers its users to send one-way messages or
@@ -28,11 +30,7 @@ import io.joynr.messaging.MessageArrivedListener;
  * before calling the HTTP Communications Manager. It is responsible for managing the logic behind call-backs,
  * retrieving responses, sending replies, and delivering one-way messages to the appropriate listener.
  */
-public interface RequestReplyDispatcher extends MessageArrivedListener {
-
-    public void addReplyCaller(final String requestReplyId, ReplyCaller replyCaller, long roundTripTtl_ms);
-
-    public void removeReplyCaller(final String requestReplyId);
+public interface RequestReplyDispatcher {
 
     /**
      * Removes the listener registered for the interface address.
@@ -40,13 +38,18 @@ public interface RequestReplyDispatcher extends MessageArrivedListener {
      */
     public void removeListener(final String participantId);
 
-    /**
-     * 
-     * @param clear
-     *            indicates whether the channel should be closed
-     */
-    public void shutdown(boolean clear);
+    public void shutdown();
 
     void addOneWayRecipient(String participantId, PayloadListener<?> listener);
 
+    public void handleReply(Reply reply);
+
+    public void handleRequest(Callback<Reply> replyCallback,
+                              String providerParticipant,
+                              Request request,
+                              long expiryDate);
+
+    public void handleOneWayRequest(String providerParticipantId, OneWay request, long expiryDate);
+
+    public void handleError(Request request, Throwable error);
 }

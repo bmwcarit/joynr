@@ -21,7 +21,6 @@ package io.joynr.proxy;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -34,15 +33,16 @@ import io.joynr.capabilities.CapabilitiesCallback;
 import io.joynr.capabilities.CapabilityEntry;
 import io.joynr.capabilities.CapabilityEntryImpl;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
+import io.joynr.common.ExpiryDate;
 import io.joynr.dispatcher.rpc.JoynrAsyncInterface;
 import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.dispatcher.rpc.JoynrSyncInterface;
 import io.joynr.dispatcher.rpc.RequestStatusCode;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
 import io.joynr.dispatching.Dispatcher;
-import io.joynr.dispatching.RequestReplyDispatcher;
 import io.joynr.dispatching.RequestReplyManager;
 import io.joynr.dispatching.rpc.ReplyCaller;
+import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.dispatching.rpc.RpcUtils;
 import io.joynr.dispatching.rpc.SynchronizedReplyCaller;
 import io.joynr.dispatching.subscription.SubscriptionManager;
@@ -96,7 +96,7 @@ public class ProxyTest {
     private DiscoveryQos discoveryQos;
     private MessagingQos messagingQos;
     @Mock
-    private RequestReplyDispatcher requestReplyDispatcher;
+    private ReplyCallerDirectory replyCallerDirectory;
     @Mock
     private RequestReplyManager requestReplyManager;
     @Mock
@@ -154,7 +154,7 @@ public class ProxyTest {
             @Override
             protected void configure() {
                 requestStaticInjection(RpcUtils.class);
-                bind(RequestReplyDispatcher.class).toInstance(requestReplyDispatcher);
+                bind(ReplyCallerDirectory.class).toInstance(replyCallerDirectory);
                 bind(RequestReplyManager.class).toInstance(requestReplyManager);
                 bind(SubscriptionManager.class).toInstance(subscriptionManager);
                 bind(MessageSender.class).toInstance(messageSender);
@@ -283,7 +283,9 @@ public class ProxyTest {
                                                              IOException {
                 // capture the replyCaller passed into the dispatcher for calling later
                 ArgumentCaptor<ReplyCaller> replyCallerCaptor = ArgumentCaptor.forClass(ReplyCaller.class);
-                verify(requestReplyDispatcher).addReplyCaller(anyString(), replyCallerCaptor.capture(), anyLong());
+                verify(replyCallerDirectory).addReplyCaller(anyString(),
+                                                            replyCallerCaptor.capture(),
+                                                            Mockito.any(ExpiryDate.class));
 
                 String requestReplyId = "createProxyAndCallAsyncMethodSuccess_requestReplyId";
                 // pass the response to the replyCaller
@@ -319,7 +321,9 @@ public class ProxyTest {
                                                              IOException {
                 // capture the replyCaller passed into the dispatcher for calling later
                 ArgumentCaptor<ReplyCaller> replyCallerCaptor = ArgumentCaptor.forClass(ReplyCaller.class);
-                verify(requestReplyDispatcher).addReplyCaller(anyString(), replyCallerCaptor.capture(), anyLong());
+                verify(replyCallerDirectory).addReplyCaller(anyString(),
+                                                            replyCallerCaptor.capture(),
+                                                            any(ExpiryDate.class));
 
                 String requestReplyId = "createProxyAndCallAsyncMethodSuccess_requestReplyId";
                 // pass the response to the replyCaller
@@ -362,7 +366,9 @@ public class ProxyTest {
                                                              IOException {
                 // capture the replyCaller passed into the dispatcher for calling later
                 ArgumentCaptor<ReplyCaller> replyCallerCaptor = ArgumentCaptor.forClass(ReplyCaller.class);
-                verify(requestReplyDispatcher).addReplyCaller(anyString(), replyCallerCaptor.capture(), anyLong());
+                verify(replyCallerDirectory).addReplyCaller(anyString(),
+                                                            replyCallerCaptor.capture(),
+                                                            any(ExpiryDate.class));
 
                 // pass the exception to the replyCaller
                 replyCallerCaptor.getValue().error(expectedException);

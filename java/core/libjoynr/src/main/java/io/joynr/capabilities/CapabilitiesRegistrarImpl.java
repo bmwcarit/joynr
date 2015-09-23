@@ -75,7 +75,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
         RequestCaller requestCaller = requestCallerFactory.create(provider);
 
         messageRouter.addNextHop(participantId, libjoynrMessagingAddress);
-        requestCallerDirectory.addRequestCaller(participantId, requestCaller);
+        requestCallerDirectory.addCaller(participantId, requestCaller);
         RegistrationFuture ret = localCapabilitiesDirectory.add(capabilityEntry);
         return ret;
     }
@@ -90,7 +90,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                                                                   participantId,
                                                                   System.currentTimeMillis());
         localCapabilitiesDirectory.remove(capabilityEntry);
-        requestCallerDirectory.removeRequestCaller(participantId);
+        requestCallerDirectory.removeCaller(participantId);
     }
 
     @Override

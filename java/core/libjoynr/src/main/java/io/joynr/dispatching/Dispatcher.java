@@ -21,11 +21,11 @@ package io.joynr.dispatching;
 
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
+import io.joynr.messaging.MessageArrivedListener;
 import io.joynr.messaging.MessagingQos;
 
 import java.io.IOException;
 
-import joynr.JoynrMessage;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
@@ -33,7 +33,7 @@ import joynr.SubscriptionStop;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
-public interface Dispatcher {
+public interface Dispatcher extends MessageArrivedListener {
     public void sendSubscriptionRequest(String fromParticipantId,
                                         String toParticipantId,
                                         SubscriptionRequest subscriptionRequest,
@@ -57,5 +57,10 @@ public interface Dispatcher {
                                                                      JsonGenerationException, JsonMappingException,
                                                                      IOException;
 
-    public void receive(JoynrMessage message);
+    /**
+     * 
+     * @param clear
+     *            indicates whether the channel should be closed
+     */
+    public void shutdown(boolean clear);
 }

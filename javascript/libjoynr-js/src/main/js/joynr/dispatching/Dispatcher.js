@@ -389,8 +389,7 @@ define("joynr/dispatching/Dispatcher", [
                                                 sendReply({
                                                     from : joynrMessage.to,
                                                     to : joynrMessage.from,
-                                                    expiryDate : joynrMessage.expiryDate,
-                                                    replyChannelId : joynrMessage.replyChannelId
+                                                    expiryDate : joynrMessage.expiryDate
                                                 }, reply);
                                             });
                                     resolve();

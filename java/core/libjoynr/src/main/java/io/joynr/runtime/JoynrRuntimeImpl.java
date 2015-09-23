@@ -3,7 +3,7 @@ package io.joynr.runtime;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package io.joynr.runtime;
  * limitations under the License.
  * #L%
  */
+
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import io.joynr.capabilities.CapabilitiesRegistrar;
 import io.joynr.capabilities.RegistrationFuture;
@@ -25,6 +26,7 @@ import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.RequestReplyDispatcher;
 import io.joynr.dispatching.RequestReplyManager;
+import io.joynr.dispatching.subscription.PublicationManager;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
@@ -61,7 +63,10 @@ public class JoynrRuntimeImpl implements JoynrRuntime {
     @Inject
     private RequestReplyManager requestReplyManager;
     @Inject
+    private PublicationManager publicationManager;
+    @Inject
     private RequestReplyDispatcher requestReplyDispatcher;
+    private Dispatcher dispatcher;
 
     @Inject
     public ObjectMapper objectMapper;
@@ -79,6 +84,7 @@ public class JoynrRuntimeImpl implements JoynrRuntime {
                             @Named(ConfigurableMessagingSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) Address libjoynrMessagingAddress,
                             @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_ADDRESS) Address capabilitiesDirectoryAddress,
                             @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_ADDRESS) Address channelUrlDirectoryAddress) {
+        this.dispatcher = dispatcher;
         Reflections reflections = new Reflections("joynr");
         Set<Class<? extends JoynrType>> subClasses = reflections.getSubTypesOf(JoynrType.class);
         objectMapper.registerSubtypes(subClasses.toArray(new Class<?>[subClasses.size()]));
@@ -135,7 +141,9 @@ public class JoynrRuntimeImpl implements JoynrRuntime {
 
         try {
             // TODO The channel is deleted but not deregistered from the Channel Url Directory
-            requestReplyDispatcher.shutdown(clear);
+            requestReplyDispatcher.shutdown();
+            publicationManager.shutdown();
+            dispatcher.shutdown(clear);
         } catch (Exception e) {
             logger.error("error shutting down dispatcher: {}", e.getMessage());
         }

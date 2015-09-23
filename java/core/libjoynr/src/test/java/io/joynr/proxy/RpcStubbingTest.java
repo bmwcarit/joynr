@@ -34,8 +34,8 @@ import io.joynr.dispatcher.rpc.JoynrSyncInterface;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 import io.joynr.dispatching.DispatcherTestModule;
 import io.joynr.dispatching.RequestCaller;
-import io.joynr.dispatching.RequestReplyDispatcher;
 import io.joynr.dispatching.RequestReplyManager;
+import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.dispatching.rpc.RequestInterpreter;
 import io.joynr.dispatching.rpc.SynchronizedReplyCaller;
 import io.joynr.dispatching.subscription.SubscriptionManager;
@@ -127,7 +127,7 @@ public class RpcStubbingTest {
     }
 
     @Mock
-    private RequestReplyDispatcher dispatcher;
+    private ReplyCallerDirectory replyCallerDirectory;
     @Mock
     private SubscriptionManager subscriptionManager;
     @Mock
@@ -216,7 +216,7 @@ public class RpcStubbingTest {
 
         MessagingQos qosSettings = new MessagingQos(DEFAULT_TTL);
         JoynrMessagingConnectorFactory joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(requestReplyManager,
-                                                                                                           dispatcher,
+                                                                                                           replyCallerDirectory,
                                                                                                            subscriptionManager);
         connector = joynrMessagingConnectorFactory.create(fromParticipantId, toParticipantId, qosSettings);
 

@@ -19,8 +19,10 @@ package io.joynr.proxy;
  * #L%
  */
 
-import io.joynr.dispatching.RequestReplyDispatcher;
+import io.joynr.common.ExpiryDate;
+import io.joynr.dispatching.DispatcherUtils;
 import io.joynr.dispatching.RequestReplyManager;
+import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.dispatching.rpc.RpcAsyncRequestReplyCaller;
 import io.joynr.dispatching.rpc.RpcUtils;
 import io.joynr.dispatching.rpc.SynchronizedReplyCaller;
@@ -61,7 +63,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
     private final MessagingQos qosSettings;
 
     private final RequestReplyManager requestReplyManager;
-    private final RequestReplyDispatcher dispatcher;
+    private final ReplyCallerDirectory replyCallerDirectory;
 
     private final SubscriptionManager subscriptionManager;
 
@@ -69,7 +71,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
                                              String fromParticipantId,
                                              MessagingQos qosSettings,
                                              RequestReplyManager requestReplyManager,
-                                             RequestReplyDispatcher dispatcher,
+                                             ReplyCallerDirectory replyCallerDirectory,
                                              SubscriptionManager subscriptionManager) {
         this.toParticipantId = toParticipantId;
         this.fromParticipantId = fromParticipantId;
@@ -77,7 +79,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         this.qosSettings = qosSettings;
 
         this.requestReplyManager = requestReplyManager;
-        this.dispatcher = dispatcher;
+        this.replyCallerDirectory = replyCallerDirectory;
         this.subscriptionManager = subscriptionManager;
 
     }
@@ -118,7 +120,9 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
                                                                                                    method,
                                                                                                    methodMetaInformation);
 
-        dispatcher.addReplyCaller(requestReplyId, callbackWrappingReplyCaller, qosSettings.getRoundTripTtl_ms());
+        ExpiryDate expiryDate = DispatcherUtils.convertTtlToExpirationDate(qosSettings.getRoundTripTtl_ms());
+
+        replyCallerDirectory.addReplyCaller(requestReplyId, callbackWrappingReplyCaller, expiryDate);
         requestReplyManager.sendRequest(fromParticipantId, toParticipantId, request, qosSettings.getRoundTripTtl_ms());
         return future;
     }
@@ -149,7 +153,8 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
                                                                                       toParticipantId,
                                                                                       requestReplyId,
                                                                                       request);
-        dispatcher.addReplyCaller(requestReplyId, synchronizedReplyCaller, qosSettings.getRoundTripTtl_ms());
+        ExpiryDate expiryDate = DispatcherUtils.convertTtlToExpirationDate(qosSettings.getRoundTripTtl_ms());
+        replyCallerDirectory.addReplyCaller(requestReplyId, synchronizedReplyCaller, expiryDate);
         reply = (Reply) requestReplyManager.sendSyncRequest(fromParticipantId,
                                                             toParticipantId,
                                                             request,

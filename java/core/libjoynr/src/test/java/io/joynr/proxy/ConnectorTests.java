@@ -23,8 +23,8 @@ import static org.mockito.Mockito.times;
 import io.joynr.arbitration.ArbitrationResult;
 import io.joynr.dispatcher.rpc.JoynrAsyncInterface;
 import io.joynr.dispatcher.rpc.JoynrSyncInterface;
-import io.joynr.dispatching.RequestReplyDispatcher;
 import io.joynr.dispatching.RequestReplyManager;
+import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.MessagingQos;
@@ -55,7 +55,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 public class ConnectorTests {
 
     @Mock
-    private RequestReplyDispatcher dispatcher;
+    private ReplyCallerDirectory replyCallerDirectory;
     @Mock
     private SubscriptionManager subscriptionManager;
     @Mock
@@ -178,7 +178,7 @@ public class ConnectorTests {
         arbitrationResult.setAddress(addresses);
         arbitrationResult.setParticipantId(toParticipantId);
         JoynrMessagingConnectorFactory joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(requestReplyManager,
-                                                                                                           dispatcher,
+                                                                                                           replyCallerDirectory,
                                                                                                            subscriptionManager);
         ConnectorFactory connectorFactory = new ConnectorFactory(joynrMessagingConnectorFactory, messageRouter);
         ConnectorInvocationHandler connector = connectorFactory.create(fromParticipantId,

@@ -18,6 +18,7 @@ package io.joynr.dispatching.subscription;
  * limitations under the License.
  * #L%
  */
+
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.exceptions.JoynrMessageNotSentException;
@@ -31,6 +32,10 @@ import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
@@ -244,6 +249,34 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
     }
 
     @Override
+    public void handleBroadcastPublication(String subscriptionId, Object[] broadcastValues) {
+        BroadcastSubscriptionListener broadcastSubscriptionListener = getBroadcastSubscriptionListener(subscriptionId);
+
+        try {
+            Class<?>[] broadcastTypes = getParameterTypesForBroadcastPublication(broadcastValues);
+            Method receive = broadcastSubscriptionListener.getClass().getDeclaredMethod("onReceive", broadcastTypes);
+            if (!receive.isAccessible()) {
+                receive.setAccessible(true);
+            }
+            receive.invoke(broadcastSubscriptionListener, broadcastValues);
+            
+        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+            logger.error("Broadcast publication could not be processed", e);
+        }
+    }
+
+    @Override
+    public <T> void handleAttributePublication(String subscriptionId, T attributeValue) {
+        touchSubscriptionState(subscriptionId);
+        AttributeSubscriptionListener<T> listener = getSubscriptionListener(subscriptionId);
+        if (listener == null) {
+            logger.error("No subscription listener found for incoming publication!");
+        } else {
+            listener.onReceive(attributeValue);
+        }
+    }
+
+    @Override
     public void touchSubscriptionState(final String subscriptionId) {
         logger.info("Touching subscription state for id=" + subscriptionId);
         if (!subscriptionStates.containsKey(subscriptionId)) {
@@ -303,6 +336,14 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         subscriptionListenerDirectory.remove(subscriptionId);
         subscriptionTypes.remove(subscriptionId);
 
+    }
+
+    private Class<?>[] getParameterTypesForBroadcastPublication(Object[] broadcastValues) {
+        List<Class<?>> parameterTypes = new ArrayList<Class<?>>(broadcastValues.length);
+        for (int i = 0; i < broadcastValues.length; i++) {
+            parameterTypes.add(broadcastValues[i].getClass());
+        }
+        return parameterTypes.toArray(new Class<?>[parameterTypes.size()]);
     }
 
     class SubscriptionEndRunnable implements Runnable {

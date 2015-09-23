@@ -3,7 +3,7 @@ package io.joynr.capabilities;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.RequestCaller;
 import io.joynr.dispatching.RequestCallerDirectory;
-import io.joynr.dispatching.subscription.PublicationManager;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
 import io.joynr.messaging.routing.MessageRouter;
@@ -111,7 +110,7 @@ public class CapabilitiesRegistrarTests {
                                                                           System.currentTimeMillis())));
         verify(requestCallerFactory).create(provider);
 
-        verify(requestCallerDirectory).addRequestCaller(participantId, requestCaller);
+        verify(requestCallerDirectory).addCaller(participantId, requestCaller);
     }
 
     @Test
@@ -127,7 +126,7 @@ public class CapabilitiesRegistrarTests {
                                                                              providerQos,
                                                                              participantId,
                                                                              System.currentTimeMillis())));
-        verify(requestCallerDirectory).removeRequestCaller(eq(participantId));
+        verify(requestCallerDirectory).removeCaller(eq(participantId));
     }
 
 }
