@@ -88,7 +88,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
     private ReplyCallerDirectory replyCallerDirectory;
 
     private RoutingTable messagingEndpointDirectory;
-    protected RequestReplySender messageSender;
+    protected RequestReplyManager requestReplyManager;
 
     private RequestInterpreter requestInterpreter;
 
@@ -111,7 +111,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
 
     @Inject
     // CHECKSTYLE:OFF
-    public RequestReplyDispatcherImpl(RequestReplySender messageSender,
+    public RequestReplyDispatcherImpl(RequestReplyManager messageSender,
                                       MessageReceiver messageReceiver,
                                       RoutingTable messagingEndpointDirectory,
                                       ReplyCallerDirectory replyCallerDirectory,
@@ -124,7 +124,7 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
                                       AccessController accessController,
                                       PlatformSecurityManager securityManager) {
         // CHECKSTYLE:ON
-        this.messageSender = messageSender;
+        this.requestReplyManager = messageSender;
         this.messageReceiver = messageReceiver;
 
         this.messagingEndpointDirectory = messagingEndpointDirectory;
@@ -528,10 +528,10 @@ public class RequestReplyDispatcherImpl implements RequestReplyDispatcher {
         long expiryDate = Long.parseLong(message.getHeader().get(JoynrMessage.HEADER_NAME_EXPIRY_DATE));
         if (expiryDate > System.currentTimeMillis()) {
             try {
-                messageSender.sendReply(originalReceiverParticipantId,
-                                        originalSenderParticipantId,
-                                        reply,
-                                        ExpiryDate.fromAbsolute(expiryDate));
+                requestReplyManager.sendReply(originalReceiverParticipantId,
+                                              originalSenderParticipantId,
+                                              reply,
+                                              ExpiryDate.fromAbsolute(expiryDate));
             } catch (JoynrSendBufferFullException e) {
                 // TODO React on exception thrown by sendReply
                 logger.error("Responder could not reply due to a JoynSendBufferFullException: ", e);

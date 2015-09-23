@@ -22,7 +22,7 @@ package io.joynr.dispatching;
 import io.joynr.dispatching.PayloadListener;
 import io.joynr.dispatching.RequestCaller;
 import io.joynr.dispatching.RequestReplyDispatcher;
-import io.joynr.dispatching.RequestReplySender;
+import io.joynr.dispatching.RequestReplyManager;
 import io.joynr.dispatching.rpc.ReplyCaller;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
@@ -62,7 +62,7 @@ public class ChatMessengerApp implements PayloadListener<String>, ReplyCaller {
     private static final long CHECK_USER_INPUT_DELAY = 2000;
 
     private RequestReplyDispatcher dispatcher;
-    private RequestReplySender messageSender;
+    private RequestReplyManager requestReplyManager;
 
     String ownParticipant = UUID.randomUUID().toString();
 
@@ -191,7 +191,7 @@ public class ChatMessengerApp implements PayloadListener<String>, ReplyCaller {
         Injector injector = new JoynrInjectorFactory(new JoynrBaseModule(factoryProperties)).getInjector();
 
         dispatcher = injector.getInstance(RequestReplyDispatcher.class);
-        messageSender = injector.getInstance(RequestReplySender.class);
+        requestReplyManager = injector.getInstance(RequestReplyManager.class);
 
         // TODO register EndpointAddresses for participantIds
 
@@ -199,10 +199,10 @@ public class ChatMessengerApp implements PayloadListener<String>, ReplyCaller {
         dispatcher.addRequestCaller(ownParticipant, new ChatMessengerAppRequestCaller());
 
         try {
-            messageSender.sendOneWay(ownParticipant,
-                                     remoteParticipant,
-                                     "Hello participant " + remoteParticipant,
-                                     TIME_TO_LIVE);
+            requestReplyManager.sendOneWay(ownParticipant,
+                                           remoteParticipant,
+                                           "Hello participant " + remoteParticipant,
+                                           TIME_TO_LIVE);
         } catch (JoynrSendBufferFullException e) {
             e.printStackTrace();
         } catch (JsonGenerationException e) {
@@ -248,7 +248,7 @@ public class ChatMessengerApp implements PayloadListener<String>, ReplyCaller {
                 ttl_ms = TIME_TO_LIVE;
             }
 
-            messageSender.sendOneWay(ownParticipant, remoteParticipantId, input, ttl_ms);
+            requestReplyManager.sendOneWay(ownParticipant, remoteParticipantId, input, ttl_ms);
             System.out.println("____________________________________________________________________________________________________________________");
 
         } catch (Exception e) {
@@ -262,7 +262,7 @@ public class ChatMessengerApp implements PayloadListener<String>, ReplyCaller {
             if (autoRespond) {
                 String response = "Auto-response on: " + payload.toString();
                 try {
-                    messageSender.sendOneWay(ownParticipant, remoteParticipantId, response, TIME_TO_LIVE);
+                    requestReplyManager.sendOneWay(ownParticipant, remoteParticipantId, response, TIME_TO_LIVE);
                 } catch (JoynrSendBufferFullException e) {
                     e.printStackTrace();
                 } catch (JsonGenerationException e) {
@@ -282,7 +282,7 @@ public class ChatMessengerApp implements PayloadListener<String>, ReplyCaller {
             if (autoRespond) {
                 String response = "Empty Payload received!";
                 try {
-                    messageSender.sendOneWay(ownParticipant, remoteParticipantId, response, TIME_TO_LIVE);
+                    requestReplyManager.sendOneWay(ownParticipant, remoteParticipantId, response, TIME_TO_LIVE);
                 } catch (JoynrSendBufferFullException e) {
                     e.printStackTrace();
                 } catch (JsonGenerationException e) {

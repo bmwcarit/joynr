@@ -33,7 +33,7 @@ import joynr.Request;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
-public interface RequestReplySender {
+public interface RequestReplyManager {
 
     /**
      * Sends a request, the reply message is passed to the specified callBack in a different thread.

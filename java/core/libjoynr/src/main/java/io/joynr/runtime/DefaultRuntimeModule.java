@@ -23,8 +23,8 @@ import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.DispatcherImpl;
 import io.joynr.dispatching.RequestReplyDispatcher;
 import io.joynr.dispatching.RequestReplyDispatcherImpl;
-import io.joynr.dispatching.RequestReplySender;
-import io.joynr.dispatching.RequestReplySenderImpl;
+import io.joynr.dispatching.RequestReplyManager;
+import io.joynr.dispatching.RequestReplyManagerImpl;
 import io.joynr.dispatching.rpc.RpcUtils;
 import io.joynr.logging.JoynrAppenderManagerFactory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
@@ -74,7 +74,7 @@ public class DefaultRuntimeModule extends AbstractModule {
 
         bind(ProxyBuilderFactory.class).to(ProxyBuilderFactoryImpl.class);
         bind(RequestConfig.class).toProvider(HttpDefaultRequestConfigProvider.class).in(Singleton.class);
-        bind(RequestReplySender.class).to(RequestReplySenderImpl.class);
+        bind(RequestReplyManager.class).to(RequestReplyManagerImpl.class);
         bind(RequestReplyDispatcher.class).to(RequestReplyDispatcherImpl.class);
         bind(Dispatcher.class).to(DispatcherImpl.class);
         bind(MessageRouter.class).to(MessageRouterImpl.class);

@@ -35,7 +35,7 @@ import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 import io.joynr.dispatching.DispatcherTestModule;
 import io.joynr.dispatching.RequestCaller;
 import io.joynr.dispatching.RequestReplyDispatcher;
-import io.joynr.dispatching.RequestReplySender;
+import io.joynr.dispatching.RequestReplyManager;
 import io.joynr.dispatching.rpc.RequestInterpreter;
 import io.joynr.dispatching.rpc.SynchronizedReplyCaller;
 import io.joynr.dispatching.subscription.SubscriptionManager;
@@ -131,7 +131,7 @@ public class RpcStubbingTest {
     @Mock
     private SubscriptionManager subscriptionManager;
     @Mock
-    private RequestReplySender messageSender;
+    private RequestReplyManager requestReplyManager;
 
     @Mock
     private TestProvider testMock;
@@ -179,11 +179,11 @@ public class RpcStubbingTest {
         final RequestInterpreter requestInterpreter = injector.getInstance(RequestInterpreter.class);
         final RequestCallerFactory requestCallerFactory = injector.getInstance(RequestCallerFactory.class);
 
-        when(messageSender.sendSyncRequest(eq(fromParticipantId),
-                                           eq(toParticipantId),
-                                           any(Request.class),
-                                           any(SynchronizedReplyCaller.class),
-                                           eq(DEFAULT_TTL))).thenAnswer(new Answer<Reply>() {
+        when(requestReplyManager.sendSyncRequest(eq(fromParticipantId),
+                                                 eq(toParticipantId),
+                                                 any(Request.class),
+                                                 any(SynchronizedReplyCaller.class),
+                                                 eq(DEFAULT_TTL))).thenAnswer(new Answer<Reply>() {
 
             @Override
             public Reply answer(InvocationOnMock invocation) throws Throwable {
@@ -215,7 +215,7 @@ public class RpcStubbingTest {
         });
 
         MessagingQos qosSettings = new MessagingQos(DEFAULT_TTL);
-        JoynrMessagingConnectorFactory joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(messageSender,
+        JoynrMessagingConnectorFactory joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(requestReplyManager,
                                                                                                            dispatcher,
                                                                                                            subscriptionManager);
         connector = joynrMessagingConnectorFactory.create(fromParticipantId, toParticipantId, qosSettings);
@@ -234,11 +234,11 @@ public class RpcStubbingTest {
         assertNull(result);
 
         ArgumentCaptor<Request> requestCaptor = ArgumentCaptor.forClass(Request.class);
-        verify(messageSender).sendSyncRequest(eq(fromParticipantId),
-                                              eq(toParticipantId),
-                                              requestCaptor.capture(),
-                                              any(SynchronizedReplyCaller.class),
-                                              eq(DEFAULT_TTL));
+        verify(requestReplyManager).sendSyncRequest(eq(fromParticipantId),
+                                                    eq(toParticipantId),
+                                                    requestCaptor.capture(),
+                                                    any(SynchronizedReplyCaller.class),
+                                                    eq(DEFAULT_TTL));
 
         verify(testMock).noParamsNoReturnValue();
         assertEquals(methodName, requestCaptor.getValue().getMethodName());
@@ -259,11 +259,11 @@ public class RpcStubbingTest {
         // no return value expected
         assertNull(response);
         ArgumentCaptor<Request> requestCaptor = ArgumentCaptor.forClass(Request.class);
-        verify(messageSender).sendSyncRequest(eq(fromParticipantId),
-                                              eq(toParticipantId),
-                                              requestCaptor.capture(),
-                                              any(SynchronizedReplyCaller.class),
-                                              eq(DEFAULT_TTL));
+        verify(requestReplyManager).sendSyncRequest(eq(fromParticipantId),
+                                                    eq(toParticipantId),
+                                                    requestCaptor.capture(),
+                                                    any(SynchronizedReplyCaller.class),
+                                                    eq(DEFAULT_TTL));
 
         assertEquals(methodName, requestCaptor.getValue().getMethodName());
         assertEquals(2, requestCaptor.getValue().getParamDatatypes().length);
@@ -280,11 +280,11 @@ public class RpcStubbingTest {
         Object response = connector.executeSyncMethod(TestSync.class.getDeclaredMethod(methodName), new Object[]{});
 
         ArgumentCaptor<Request> requestCaptor = ArgumentCaptor.forClass(Request.class);
-        verify(messageSender).sendSyncRequest(eq(fromParticipantId),
-                                              eq(toParticipantId),
-                                              requestCaptor.capture(),
-                                              any(SynchronizedReplyCaller.class),
-                                              eq(DEFAULT_TTL));
+        verify(requestReplyManager).sendSyncRequest(eq(fromParticipantId),
+                                                    eq(toParticipantId),
+                                                    requestCaptor.capture(),
+                                                    any(SynchronizedReplyCaller.class),
+                                                    eq(DEFAULT_TTL));
 
         assertEquals(methodName, requestCaptor.getValue().getMethodName());
         assertEquals(0, requestCaptor.getValue().getParamDatatypes().length);
@@ -301,11 +301,11 @@ public class RpcStubbingTest {
         Object response = connector.executeSyncMethod(TestSync.class.getDeclaredMethod(methodName), new Object[]{});
 
         ArgumentCaptor<Request> requestCaptor = ArgumentCaptor.forClass(Request.class);
-        verify(messageSender).sendSyncRequest(eq(fromParticipantId),
-                                              eq(toParticipantId),
-                                              requestCaptor.capture(),
-                                              any(SynchronizedReplyCaller.class),
-                                              eq(DEFAULT_TTL));
+        verify(requestReplyManager).sendSyncRequest(eq(fromParticipantId),
+                                                    eq(toParticipantId),
+                                                    requestCaptor.capture(),
+                                                    any(SynchronizedReplyCaller.class),
+                                                    eq(DEFAULT_TTL));
 
         assertEquals(methodName, requestCaptor.getValue().getMethodName());
         assertEquals(0, requestCaptor.getValue().getParamDatatypes().length);

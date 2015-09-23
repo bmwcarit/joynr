@@ -20,7 +20,7 @@ package io.joynr.proxy;
  */
 
 import io.joynr.dispatching.RequestReplyDispatcher;
-import io.joynr.dispatching.RequestReplySender;
+import io.joynr.dispatching.RequestReplyManager;
 import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.messaging.MessagingQos;
 
@@ -46,15 +46,15 @@ public class JoynrMessagingConnectorFactory {
     // use for caching because creation of MethodMetaInformation is expensive
     private static final ConcurrentMap<Method, MethodMetaInformation> metaInformationMap = new ConcurrentHashMap<Method, MethodMetaInformation>();
 
-    private RequestReplySender messageSender;
+    private RequestReplyManager requestReplyManager;
     private RequestReplyDispatcher dispatcher;
     private SubscriptionManager subscriptionManager;
 
     @Inject
-    public JoynrMessagingConnectorFactory(RequestReplySender messageSender,
+    public JoynrMessagingConnectorFactory(RequestReplyManager requestReplyManager,
                                           RequestReplyDispatcher dispatcher,
                                           SubscriptionManager subscriptionManager) {
-        this.messageSender = messageSender;
+        this.requestReplyManager = requestReplyManager;
         this.dispatcher = dispatcher;
         this.subscriptionManager = subscriptionManager;
     }
@@ -78,7 +78,7 @@ public class JoynrMessagingConnectorFactory {
         return new JoynrMessagingConnectorInvocationHandler(toParticipantId,
                                                             fromParticipantId,
                                                             qosSettings,
-                                                            messageSender,
+                                                            requestReplyManager,
                                                             dispatcher,
                                                             subscriptionManager);
     }

@@ -26,8 +26,8 @@ import io.joynr.dispatcher.rpc.JoynrSyncInterface;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 import io.joynr.dispatching.JoynrMessageFactory;
 import io.joynr.dispatching.RequestReplyDispatcher;
-import io.joynr.dispatching.RequestReplySender;
-import io.joynr.dispatching.RequestReplySenderImpl;
+import io.joynr.dispatching.RequestReplyManager;
+import io.joynr.dispatching.RequestReplyManagerImpl;
 import io.joynr.dispatching.rpc.ReplyCaller;
 import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.messaging.MessageSender;
@@ -103,8 +103,8 @@ public class ProxyArbitrationTest {
 
         routingTable.put(participantId, correctEndpointAddress);
 
-        RequestReplySender requestReplySender = new RequestReplySenderImpl(joynrMessageFactory, messageRouter);
-        JoynrMessagingConnectorFactory joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(requestReplySender,
+        RequestReplyManager requestReplyManager = new RequestReplyManagerImpl(joynrMessageFactory, messageRouter);
+        JoynrMessagingConnectorFactory joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(requestReplyManager,
                                                                                                            requestReplyDispatcher,
                                                                                                            subscriptionManager);
         ConnectorFactory connectorFactory = new ConnectorFactory(joynrMessagingConnectorFactory, messageRouter);

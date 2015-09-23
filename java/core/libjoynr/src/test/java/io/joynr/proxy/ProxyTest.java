@@ -41,7 +41,7 @@ import io.joynr.dispatcher.rpc.RequestStatusCode;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.RequestReplyDispatcher;
-import io.joynr.dispatching.RequestReplySender;
+import io.joynr.dispatching.RequestReplyManager;
 import io.joynr.dispatching.rpc.ReplyCaller;
 import io.joynr.dispatching.rpc.RpcUtils;
 import io.joynr.dispatching.rpc.SynchronizedReplyCaller;
@@ -98,7 +98,7 @@ public class ProxyTest {
     @Mock
     private RequestReplyDispatcher requestReplyDispatcher;
     @Mock
-    private RequestReplySender requestReplySender;
+    private RequestReplyManager requestReplyManager;
     @Mock
     SubscriptionManager subscriptionManager;
     @Mock
@@ -155,7 +155,7 @@ public class ProxyTest {
             protected void configure() {
                 requestStaticInjection(RpcUtils.class);
                 bind(RequestReplyDispatcher.class).toInstance(requestReplyDispatcher);
-                bind(RequestReplySender.class).toInstance(requestReplySender);
+                bind(RequestReplyManager.class).toInstance(requestReplyManager);
                 bind(SubscriptionManager.class).toInstance(subscriptionManager);
                 bind(MessageSender.class).toInstance(messageSender);
                 bind(MessageRouter.class).toInstance(messageRouter);
@@ -232,12 +232,12 @@ public class ProxyTest {
     @Test
     public void createProxyAndCallSyncMethodSuccess() throws Exception {
         String requestReplyId = "createProxyAndCallSyncMethod_requestReplyId";
-        Mockito.when(requestReplySender.sendSyncRequest(Mockito.<String> any(),
-                                                        Mockito.<String> any(),
-                                                        Mockito.<Request> any(),
-                                                        Mockito.<SynchronizedReplyCaller> any(),
-                                                        Mockito.anyLong())).thenReturn(new Reply(requestReplyId,
-                                                                                                 "Answer"));
+        Mockito.when(requestReplyManager.sendSyncRequest(Mockito.<String> any(),
+                                                         Mockito.<String> any(),
+                                                         Mockito.<Request> any(),
+                                                         Mockito.<SynchronizedReplyCaller> any(),
+                                                         Mockito.anyLong())).thenReturn(new Reply(requestReplyId,
+                                                                                                  "Answer"));
 
         ProxyBuilder<TestInterface> proxyBuilder = getProxyBuilder(TestInterface.class);
         TestInterface proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
@@ -249,11 +249,11 @@ public class ProxyTest {
     @Test
     public void createProxyAndCallSyncMethodFailWithApplicationError() throws Exception {
         String requestReplyId = "createProxyAndCallSyncMethod_requestReplyId";
-        Mockito.when(requestReplySender.sendSyncRequest(Mockito.<String> any(),
-                                                        Mockito.<String> any(),
-                                                        Mockito.<Request> any(),
-                                                        Mockito.<SynchronizedReplyCaller> any(),
-                                                        Mockito.anyLong()))
+        Mockito.when(requestReplyManager.sendSyncRequest(Mockito.<String> any(),
+                                                         Mockito.<String> any(),
+                                                         Mockito.<Request> any(),
+                                                         Mockito.<SynchronizedReplyCaller> any(),
+                                                         Mockito.anyLong()))
                .thenReturn(new Reply(requestReplyId, new ApplicationException(ApplicationErrors.ERROR_VALUE_2,
                                                                               "syncMethodCallApplicationException")));
 
@@ -290,10 +290,10 @@ public class ProxyTest {
                 replyCallerCaptor.getValue().messageCallBack(new Reply(requestReplyId, new TextNode(asyncReplyText)));
                 return null;
             }
-        }).when(requestReplySender).sendRequest(Mockito.<String> any(),
-                                                Mockito.<String> any(),
-                                                Mockito.<Request> any(),
-                                                Mockito.anyLong());
+        }).when(requestReplyManager).sendRequest(Mockito.<String> any(),
+                                                 Mockito.<String> any(),
+                                                 Mockito.<Request> any(),
+                                                 Mockito.anyLong());
         final Future<String> future = proxy.asyncMethod(callback);
 
         // the test usually takes only 200 ms, so if we wait 1 sec, something has gone wrong
@@ -326,10 +326,10 @@ public class ProxyTest {
                 replyCallerCaptor.getValue().messageCallBack(new Reply(requestReplyId, expected));
                 return null;
             }
-        }).when(requestReplySender).sendRequest(Mockito.<String> any(),
-                                                Mockito.<String> any(),
-                                                Mockito.<Request> any(),
-                                                Mockito.anyLong());
+        }).when(requestReplyManager).sendRequest(Mockito.<String> any(),
+                                                 Mockito.<String> any(),
+                                                 Mockito.<Request> any(),
+                                                 Mockito.anyLong());
         final Future<String> future = proxy.asyncMethodWithApplicationError(callback);
 
         // the test usually takes only 200 ms, so if we wait 1 sec, something has gone wrong
@@ -368,10 +368,10 @@ public class ProxyTest {
                 replyCallerCaptor.getValue().error(expectedException);
                 return null;
             }
-        }).when(requestReplySender).sendRequest(Mockito.<String> any(),
-                                                Mockito.<String> any(),
-                                                Mockito.<Request> any(),
-                                                Mockito.anyLong());
+        }).when(requestReplyManager).sendRequest(Mockito.<String> any(),
+                                                 Mockito.<String> any(),
+                                                 Mockito.<Request> any(),
+                                                 Mockito.anyLong());
 
         boolean exceptionThrown = false;
         String reply = "";

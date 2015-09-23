@@ -46,15 +46,15 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 @Singleton
-public class RequestReplySenderImpl implements RequestReplySender {
-    private static final Logger logger = LoggerFactory.getLogger(RequestReplySenderImpl.class);
+public class RequestReplyManagerImpl implements RequestReplyManager {
+    private static final Logger logger = LoggerFactory.getLogger(RequestReplyManagerImpl.class);
     JoynrMessageFactory joynrMessageFactory;
     private boolean running = true;
     private List<Thread> outstandingRequestThreads = Collections.synchronizedList(new ArrayList<Thread>());
     private MessageRouter messageRouter;
 
     @Inject
-    public RequestReplySenderImpl(JoynrMessageFactory joynrMessageFactory, MessageRouter messageRouter) {
+    public RequestReplyManagerImpl(JoynrMessageFactory joynrMessageFactory, MessageRouter messageRouter) {
         this.joynrMessageFactory = joynrMessageFactory;
         this.messageRouter = messageRouter;
     }

@@ -24,7 +24,7 @@ import io.joynr.arbitration.ArbitrationResult;
 import io.joynr.dispatcher.rpc.JoynrAsyncInterface;
 import io.joynr.dispatcher.rpc.JoynrSyncInterface;
 import io.joynr.dispatching.RequestReplyDispatcher;
-import io.joynr.dispatching.RequestReplySender;
+import io.joynr.dispatching.RequestReplyManager;
 import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.MessagingQos;
@@ -59,7 +59,7 @@ public class ConnectorTests {
     @Mock
     private SubscriptionManager subscriptionManager;
     @Mock
-    private RequestReplySender messageSender;
+    private RequestReplyManager requestReplyManager;
 
     @Mock
     private MessageRouter messageRouter;
@@ -177,7 +177,7 @@ public class ConnectorTests {
         addresses.add(address);
         arbitrationResult.setAddress(addresses);
         arbitrationResult.setParticipantId(toParticipantId);
-        JoynrMessagingConnectorFactory joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(messageSender,
+        JoynrMessagingConnectorFactory joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(requestReplyManager,
                                                                                                            dispatcher,
                                                                                                            subscriptionManager);
         ConnectorFactory connectorFactory = new ConnectorFactory(joynrMessagingConnectorFactory, messageRouter);

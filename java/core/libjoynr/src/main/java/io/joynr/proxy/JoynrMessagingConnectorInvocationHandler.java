@@ -20,7 +20,7 @@ package io.joynr.proxy;
  */
 
 import io.joynr.dispatching.RequestReplyDispatcher;
-import io.joynr.dispatching.RequestReplySender;
+import io.joynr.dispatching.RequestReplyManager;
 import io.joynr.dispatching.rpc.RpcAsyncRequestReplyCaller;
 import io.joynr.dispatching.rpc.RpcUtils;
 import io.joynr.dispatching.rpc.SynchronizedReplyCaller;
@@ -60,7 +60,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
 
     private final MessagingQos qosSettings;
 
-    private final RequestReplySender messageSender;
+    private final RequestReplyManager requestReplyManager;
     private final RequestReplyDispatcher dispatcher;
 
     private final SubscriptionManager subscriptionManager;
@@ -68,7 +68,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
     JoynrMessagingConnectorInvocationHandler(String toParticipantId,
                                              String fromParticipantId,
                                              MessagingQos qosSettings,
-                                             RequestReplySender messageSender,
+                                             RequestReplyManager requestReplyManager,
                                              RequestReplyDispatcher dispatcher,
                                              SubscriptionManager subscriptionManager) {
         this.toParticipantId = toParticipantId;
@@ -76,7 +76,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
 
         this.qosSettings = qosSettings;
 
-        this.messageSender = messageSender;
+        this.requestReplyManager = requestReplyManager;
         this.dispatcher = dispatcher;
         this.subscriptionManager = subscriptionManager;
 
@@ -119,7 +119,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
                                                                                                    methodMetaInformation);
 
         dispatcher.addReplyCaller(requestReplyId, callbackWrappingReplyCaller, qosSettings.getRoundTripTtl_ms());
-        messageSender.sendRequest(fromParticipantId, toParticipantId, request, qosSettings.getRoundTripTtl_ms());
+        requestReplyManager.sendRequest(fromParticipantId, toParticipantId, request, qosSettings.getRoundTripTtl_ms());
         return future;
     }
 
@@ -150,11 +150,11 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
                                                                                       requestReplyId,
                                                                                       request);
         dispatcher.addReplyCaller(requestReplyId, synchronizedReplyCaller, qosSettings.getRoundTripTtl_ms());
-        reply = (Reply) messageSender.sendSyncRequest(fromParticipantId,
-                                                      toParticipantId,
-                                                      request,
-                                                      synchronizedReplyCaller,
-                                                      qosSettings.getRoundTripTtl_ms());
+        reply = (Reply) requestReplyManager.sendSyncRequest(fromParticipantId,
+                                                            toParticipantId,
+                                                            request,
+                                                            synchronizedReplyCaller,
+                                                            qosSettings.getRoundTripTtl_ms());
         if (reply.getError() == null) {
             if (method.getReturnType().equals(void.class)) {
                 return null;

@@ -24,7 +24,7 @@ import io.joynr.capabilities.RegistrationFuture;
 import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.RequestReplyDispatcher;
-import io.joynr.dispatching.RequestReplySender;
+import io.joynr.dispatching.RequestReplyManager;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
@@ -59,7 +59,7 @@ public class JoynrRuntimeImpl implements JoynrRuntime {
     @Inject
     private CapabilitiesRegistrar capabilitiesRegistrar;
     @Inject
-    private RequestReplySender messageSender;
+    private RequestReplyManager requestReplyManager;
     @Inject
     private RequestReplyDispatcher requestReplyDispatcher;
 
@@ -141,7 +141,7 @@ public class JoynrRuntimeImpl implements JoynrRuntime {
         }
 
         try {
-            messageSender.shutdown();
+            requestReplyManager.shutdown();
         } catch (Exception e) {
             logger.error("error shutting down message sender: {}", e.getMessage());
         }

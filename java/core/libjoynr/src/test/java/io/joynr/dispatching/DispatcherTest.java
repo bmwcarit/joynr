@@ -112,7 +112,7 @@ public class DispatcherTest {
                                                              new ChannelAddress("discoverydirectory_channelid"),
                                                              "capabilitiesdirectory_participantid",
                                                              new ChannelAddress("discoverydirectory_channelid"));
-    private RequestReplySender requestReplySender;
+    private RequestReplyManager requestReplyManager;
     private ChannelAddress dummyEndpointAddress;
     private ObjectMapper objectMapper;
     @Mock
@@ -151,7 +151,7 @@ public class DispatcherTest {
         objectMapper.registerSubtypes(Request.class, OneWay.class);
 
         requestReplyDispatcher = injector.getInstance(RequestReplyDispatcher.class);
-        requestReplySender = injector.getInstance(RequestReplySender.class);
+        requestReplyManager = injector.getInstance(RequestReplyManager.class);
         messageSenderReceiverMock = injector.getInstance(MessageSenderReceiverMock.class);
         messageSenderReceiverMock.start(requestReplyDispatcher);
 
@@ -227,7 +227,10 @@ public class DispatcherTest {
 
     @Test
     public void oneWayMessagesAreSentToTheCommunicationManager() throws Exception {
-        requestReplySender.sendOneWay(testSenderParticipantId, testMessageListenerParticipantId, payload1, TIME_TO_LIVE);
+        requestReplyManager.sendOneWay(testSenderParticipantId,
+                                       testMessageListenerParticipantId,
+                                       payload1,
+                                       TIME_TO_LIVE);
 
         assertEquals(1, messageSenderReceiverMock.getSentMessages().size());
 
@@ -249,10 +252,10 @@ public class DispatcherTest {
         ReplyCaller replyCaller = mock(ReplyCaller.class);
         requestReplyDispatcher.addReplyCaller(jsonRequest1.getRequestReplyId(), replyCaller, TIME_TO_LIVE * 2);
 
-        requestReplySender.sendRequest(testSenderParticipantId,
-                                       testMessageResponderParticipantId,
-                                       jsonRequest1,
-                                       TIME_TO_LIVE);
+        requestReplyManager.sendRequest(testSenderParticipantId,
+                                        testMessageResponderParticipantId,
+                                        jsonRequest1,
+                                        TIME_TO_LIVE);
         // sendRequest is async -> we have to wait a bit
 
         testRequestCaller.assertAllPayloadsReceived(TIME_OUT_MS);
@@ -330,10 +333,10 @@ public class DispatcherTest {
 
         final ReplyCaller replyCaller = mock(ReplyCaller.class);
         requestReplyDispatcher.addReplyCaller(jsonRequest1.getRequestReplyId(), replyCaller, ttlReplyCaller);
-        requestReplySender.sendRequest(testSenderParticipantId,
-                                       testMessageResponderParticipantId,
-                                       jsonRequest1,
-                                       ttlReplyCaller);
+        requestReplyManager.sendRequest(testSenderParticipantId,
+                                        testMessageResponderParticipantId,
+                                        jsonRequest1,
+                                        ttlReplyCaller);
 
         Thread.sleep(ttlReplyCaller);
         requestReplyDispatcher.addRequestCaller(testMessageResponderParticipantId, testResponder);
@@ -362,7 +365,7 @@ public class DispatcherTest {
         requestReplyDispatcher.addOneWayRecipient(testMessageListenerParticipantId, oneWayRecipient);
 
         OneWay payload = new OneWay(payload1);
-        requestReplySender.sendOneWay(testSenderParticipantId, testMessageListenerParticipantId, payload, TIME_TO_LIVE);
+        requestReplyManager.sendOneWay(testSenderParticipantId, testMessageListenerParticipantId, payload, TIME_TO_LIVE);
 
         oneWayRecipient.assertAllPayloadsReceived(TIME_OUT_MS);
     }
@@ -377,10 +380,10 @@ public class DispatcherTest {
         ReplyCaller replyCaller = mock(ReplyCaller.class);
         requestReplyDispatcher.addReplyCaller(jsonRequest1.getRequestReplyId(), replyCaller, TIME_TO_LIVE * 2);
 
-        requestReplySender.sendRequest(testSenderParticipantId,
-                                       testMessageResponderParticipantId,
-                                       jsonRequest1,
-                                       TIME_TO_LIVE);
+        requestReplyManager.sendRequest(testSenderParticipantId,
+                                        testMessageResponderParticipantId,
+                                        jsonRequest1,
+                                        TIME_TO_LIVE);
 
         testResponder.assertAllPayloadsReceived(20);
         assertEquals(2, messageSenderReceiverMock.getSentMessages().size());
