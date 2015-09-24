@@ -194,9 +194,7 @@ public class ApplicationException extends Exception implements JoynrException {
                 if (jp.getText().equals(JSON_FIELD_NAME_TYPE)) {
                     jp.nextToken();
                     typeName = jp.getText();
-                }
-                jp.nextToken();
-                if (jp.getText().equals(JSON_FIELD_NAME_ERROR_ENUM)) {
+                } else if (jp.getText().equals(JSON_FIELD_NAME_ERROR_ENUM)) {
                     jp.nextToken();
                     enumName = jp.getText();
                 }
@@ -215,7 +213,5 @@ public class ApplicationException extends Exception implements JoynrException {
                 throw new IOException(e);
             }
         }
-
     }
-
 }
