@@ -107,7 +107,7 @@ import io.joynr.provider.JoynrProvider;
 «ENDFOR»
 
 public interface «className» extends JoynrProvider {
-	public static final String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(serviceInterface, "/")»/«interfaceName.toLowerCase»";
+	public static final String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(serviceInterface, "/")»/«interfaceName»";
 	«FOR attribute : getAttributes(serviceInterface)»
 		«var attributeName = attribute.joynrName»
 		«var attributeType = attribute.typeName.objectDataTypeForPlainType»

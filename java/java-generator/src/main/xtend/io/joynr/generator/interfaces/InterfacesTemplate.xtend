@@ -105,7 +105,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import java.util.TreeSet;
 @SuppressWarnings("unused")
 public interface «className»  {
-	public static String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(serviceInterface, "/")»/«interfaceName.toLowerCase»";
+	public static String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(serviceInterface, "/")»/«interfaceName»";
 
 	«FOR type : filterTypesByToken(getAllTypes(serviceInterface))»
 		public static class «if (type.joynrNameQt==null) "Typename not found" else getTokenTypeForArrayType(type.joynrNameQt)»Token extends TypeReference<«getTokenTypeForArrayType(type.joynrNameQt)»> {}

@@ -33,7 +33,7 @@ class JoynrJSGeneratorExtensions extends JoynrGeneratorExtensions {
 	'''«IF isNotifiable(attribute)»Notify«ENDIF»«IF isReadable(attribute)»Read«ENDIF»«IF isWritable(attribute)»Write«ENDIF»'''
 
 	def getFQN(FInterface fInterface) {
-		getPackagePathWithoutJoynrPrefix(fInterface, "/") + "/" + fInterface.joynrName.toLowerCase
+		getPackagePathWithoutJoynrPrefix(fInterface, "/") + "/" + fInterface.joynrName
 	}
 
 	//TODO: refactor this for general use by all languages. Requires normalising how separators are added

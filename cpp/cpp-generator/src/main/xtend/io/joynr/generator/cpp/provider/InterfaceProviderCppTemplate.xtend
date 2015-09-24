@@ -89,7 +89,7 @@ class InterfaceProviderCppTemplate implements InterfaceTemplate{
 
 const std::string& «interfaceName»Provider::INTERFACE_NAME()
 {
-	static const std::string INTERFACE_NAME("«getPackagePathWithoutJoynrPrefix(serviceInterface, "/")»/«interfaceName.toLowerCase»");
+	static const std::string INTERFACE_NAME("«getPackagePathWithoutJoynrPrefix(serviceInterface, "/")»/«interfaceName»");
 	return INTERFACE_NAME;
 }
 

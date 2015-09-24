@@ -634,7 +634,7 @@ joynrTestRequire(
                                                 .lookup(
                                                         {
                                                             domain : domain,
-                                                            interfaceName : "vehicle/radio",
+                                                            interfaceName : "vehicle/Radio",
                                                             discoveryQos : new DiscoveryQos(
                                                                     {
                                                                         discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL
@@ -653,7 +653,7 @@ joynrTestRequire(
                                                                                         .lookup(
                                                                                                 {
                                                                                                     domain : domain,
-                                                                                                    interfaceName : "vehicle/radio",
+                                                                                                    interfaceName : "vehicle/Radio",
                                                                                                     discoveryQos : new DiscoveryQos(
                                                                                                             {
                                                                                                                 discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL

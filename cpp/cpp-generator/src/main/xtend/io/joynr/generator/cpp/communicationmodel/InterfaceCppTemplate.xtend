@@ -100,7 +100,7 @@ I«interfaceName»Base::I«interfaceName»Base()
 
 const std::string& I«interfaceName»Base::INTERFACE_NAME()
 {
-	static const std::string INTERFACE_NAME("«getPackagePathWithoutJoynrPrefix(serviceInterface, "/")»/«interfaceName.toLowerCase»");
+	static const std::string INTERFACE_NAME("«getPackagePathWithoutJoynrPrefix(serviceInterface, "/")»/«interfaceName»");
 	return INTERFACE_NAME;
 }
 

@@ -37,7 +37,7 @@ provisioning.channelUrls[discoveryChannel] = [ provisioning.bounceProxyBaseUrl +
 
 var globalCapDirCapability = {
     domain : "io.joynr",
-    interfaceName : "infrastructure/globalcapabilitiesdirectory",
+    interfaceName : "infrastructure/GlobalCapabilitiesDirectory",
     providerQos : {
         qos : [],
         version : 0,
@@ -51,7 +51,7 @@ var globalCapDirCapability = {
 
 var channelUrlDirCapability = {
         domain : "io.joynr",
-        interfaceName : "infrastructure/channelurldirectory",
+        interfaceName : "infrastructure/ChannelUrlDirectory",
         providerQos : {
             qos : [],
             version : 0,
