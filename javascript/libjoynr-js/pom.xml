@@ -220,6 +220,16 @@
 						<configuration>
 							<model>${basedir}/model/radio.fidl</model>
 							<outputPath>${basedir}/src/test/generated</outputPath>
+						</configuration>
+					</execution>
+					<execution>
+						<id>generate-franca-name-test-model</id>
+						<phase>generate-test-sources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<model>FrancaNameTest.fidl</model>
 							<outputPath>${basedir}/src/test/generated</outputPath>
 						</configuration>
 					</execution>
@@ -234,6 +244,12 @@
 						<groupId>io.joynr</groupId>
 						<artifactId>basemodel</artifactId>
 						<version>${project.version}</version>
+					</dependency>
+					<dependency>
+						<groupId>io.joynr</groupId>
+						<artifactId>basemodel</artifactId>
+						<version>${project.version}</version>
+						<type>test-jar</type>
 					</dependency>
 				</dependencies>
 			</plugin>
