@@ -32,8 +32,8 @@ class JoynrMessagingStubFactory : public IMiddlewareMessagingStubFactory
 public:
     JoynrMessagingStubFactory(QSharedPointer<IMessageSender> messageSender,
                               QString receiveChannelId);
-    QSharedPointer<IMessaging> create(const joynr::system::routingtypes::QtAddress& destAddress);
-    bool canCreate(const joynr::system::routingtypes::QtAddress& destAddress);
+    QSharedPointer<IMessaging> create(const joynr::system::RoutingTypes::QtAddress& destAddress);
+    bool canCreate(const joynr::system::RoutingTypes::QtAddress& destAddress);
 
 private:
     QSharedPointer<IMessageSender> messageSender;

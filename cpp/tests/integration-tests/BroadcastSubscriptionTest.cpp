@@ -36,7 +36,7 @@
 #include <QString>
 #include "joynr/LibjoynrSettings.h"
 
-#include "joynr/types/localisation/QtGpsLocation.h"
+#include "joynr/types/Localisation/QtGpsLocation.h"
 
 using namespace ::testing;
 
@@ -55,9 +55,9 @@ public:
     BroadcastSubscriptionTest() :
         mockMessageRouter(new MockMessageRouter()),
         mockRequestCaller(new MockTestRequestCaller()),
-        mockSubscriptionListenerOne(new MockSubscriptionListenerOneType<types::localisation::QtGpsLocation>()),
-        mockSubscriptionListenerTwo(new MockSubscriptionListenerTwoTypes<types::localisation::QtGpsLocation, double>()),
-        gpsLocation1(1.1, 2.2, 3.3, types::localisation::QtGpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444),
+        mockSubscriptionListenerOne(new MockSubscriptionListenerOneType<types::Localisation::QtGpsLocation>()),
+        mockSubscriptionListenerTwo(new MockSubscriptionListenerTwoTypes<types::Localisation::QtGpsLocation, double>()),
+        gpsLocation1(1.1, 2.2, 3.3, types::Localisation::QtGpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444),
         speed1(100),
         qos(2000),
         providerParticipantId("providerParticipantId"),
@@ -74,8 +74,8 @@ public:
         subscriptionManager = new SubscriptionManager();
         dispatcher.registerSubscriptionManager(subscriptionManager);
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
-        MetaTypeRegistrar::instance().registerMetaType<types::localisation::QtGpsLocation>();
-        MetaTypeRegistrar::instance().registerMetaType<types::localisation::QtGpsLocation, double>();
+        MetaTypeRegistrar::instance().registerMetaType<types::Localisation::QtGpsLocation>();
+        MetaTypeRegistrar::instance().registerMetaType<types::Localisation::QtGpsLocation, double>();
     }
 
     void TearDown(){
@@ -85,10 +85,10 @@ public:
 protected:
     QSharedPointer<MockMessageRouter> mockMessageRouter;
     QSharedPointer<MockTestRequestCaller> mockRequestCaller;
-    std::shared_ptr<MockSubscriptionListenerOneType<types::localisation::QtGpsLocation> > mockSubscriptionListenerOne;
-    std::shared_ptr<MockSubscriptionListenerTwoTypes<types::localisation::QtGpsLocation, double> > mockSubscriptionListenerTwo;
+    std::shared_ptr<MockSubscriptionListenerOneType<types::Localisation::QtGpsLocation> > mockSubscriptionListenerOne;
+    std::shared_ptr<MockSubscriptionListenerTwoTypes<types::Localisation::QtGpsLocation, double> > mockSubscriptionListenerTwo;
 
-    types::localisation::QtGpsLocation gpsLocation1;
+    types::Localisation::QtGpsLocation gpsLocation1;
     double speed1;
 
     // create test data
@@ -115,7 +115,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
 
     // Use a semaphore to count and wait on calls to the mockSubscriptionListener
     QSemaphore semaphore(0);
-    EXPECT_CALL(*mockSubscriptionListenerOne, onReceive(A<const types::localisation::QtGpsLocation&>()))
+    EXPECT_CALL(*mockSubscriptionListenerOne, onReceive(A<const types::Localisation::QtGpsLocation&>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     //register the subscription on the consumer side
@@ -135,8 +135,8 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
     response.append(QVariant::fromValue(gpsLocation1));
     subscriptionPublication.setResponse(response);
 
-    QSharedPointer<SubscriptionCallback<types::localisation::QtGpsLocation>> subscriptionCallback(
-            new SubscriptionCallback<types::localisation::QtGpsLocation>(mockSubscriptionListenerOne));
+    QSharedPointer<SubscriptionCallback<types::Localisation::QtGpsLocation>> subscriptionCallback(
+            new SubscriptionCallback<types::Localisation::QtGpsLocation>(mockSubscriptionListenerOne));
 
 
     // subscriptionRequest is an out param
@@ -170,7 +170,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters )
 
     // Use a semaphore to count and wait on calls to the mockSubscriptionListener
     QSemaphore semaphore(0);
-    EXPECT_CALL(*mockSubscriptionListenerTwo, onReceive(A<const types::localisation::QtGpsLocation&>(), A<const double&>()))
+    EXPECT_CALL(*mockSubscriptionListenerTwo, onReceive(A<const types::Localisation::QtGpsLocation&>(), A<const double&>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     //register the subscription on the consumer side
@@ -191,8 +191,8 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters )
     response.append(QVariant::fromValue(speed1));
     subscriptionPublication.setResponse(response);
 
-    QSharedPointer<SubscriptionCallback<types::localisation::QtGpsLocation, double>> subscriptionCallback(
-            new SubscriptionCallback<types::localisation::QtGpsLocation, double>(mockSubscriptionListenerTwo));
+    QSharedPointer<SubscriptionCallback<types::Localisation::QtGpsLocation, double>> subscriptionCallback(
+            new SubscriptionCallback<types::Localisation::QtGpsLocation, double>(mockSubscriptionListenerTwo));
 
     // subscriptionRequest is an out param
     subscriptionManager->registerSubscription(

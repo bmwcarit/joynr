@@ -25,11 +25,11 @@
 #include <QtWebSockets/QWebSocket>
 
 #include "joynr/IMessaging.h"
-#include "joynr/system/routingtypes/QtWebSocketAddress.h"
-#include "joynr/system/routingtypes/QtWebSocketClientAddress.h"
-#include "joynr/system/routingtypes/QtChannelAddress.h"
-#include "joynr/system/routingtypes/QtCommonApiDbusAddress.h"
-#include "joynr/system/routingtypes/QtBrowserAddress.h"
+#include "joynr/system/RoutingTypes/QtWebSocketAddress.h"
+#include "joynr/system/RoutingTypes/QtWebSocketClientAddress.h"
+#include "joynr/system/RoutingTypes/QtChannelAddress.h"
+#include "joynr/system/RoutingTypes/QtCommonApiDbusAddress.h"
+#include "joynr/system/RoutingTypes/QtBrowserAddress.h"
 
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
 #include "libjoynr/websocket/WebSocketMessagingStub.h"
@@ -40,7 +40,7 @@ class WebSocketMessagingStubFactoryTest : public testing::Test {
 public:
     WebSocketMessagingStubFactoryTest() :
         logger(joynr_logging::Logging::getInstance()->getLogger("TST", "WebSocketMessagingStubFactoryTest")),
-        webSocketServerAddress(joynr::system::routingtypes::QtWebSocketProtocol::WS, "localhost", 42, "path"),
+        webSocketServerAddress(joynr::system::RoutingTypes::QtWebSocketProtocol::WS, "localhost", 42, "path"),
         webSocketClientAddress("clientId"),
         channelAddress("channelId"),
         commonApiDbusAddress("domain", "serviceName", "participantId"),
@@ -53,11 +53,11 @@ public:
 
 protected:
     joynr_logging::Logger* logger;
-    joynr::system::routingtypes::QtWebSocketAddress webSocketServerAddress;
-    joynr::system::routingtypes::QtWebSocketClientAddress webSocketClientAddress;
-    joynr::system::routingtypes::QtChannelAddress channelAddress;
-    joynr::system::routingtypes::QtCommonApiDbusAddress commonApiDbusAddress;
-    joynr::system::routingtypes::QtBrowserAddress browserAddress;
+    joynr::system::RoutingTypes::QtWebSocketAddress webSocketServerAddress;
+    joynr::system::RoutingTypes::QtWebSocketClientAddress webSocketClientAddress;
+    joynr::system::RoutingTypes::QtChannelAddress channelAddress;
+    joynr::system::RoutingTypes::QtCommonApiDbusAddress commonApiDbusAddress;
+    joynr::system::RoutingTypes::QtBrowserAddress browserAddress;
 };
 
 TEST_F(WebSocketMessagingStubFactoryTest, canCreateWebSocketAddressses) {
@@ -99,7 +99,7 @@ TEST_F(WebSocketMessagingStubFactoryTest, closedMessagingStubsAreRemoved) {
     factory.addClient(webSocketClientAddress, websocket);
     QSharedPointer<joynr::IMessaging> messagingStub(factory.create(webSocketClientAddress));
     QSharedPointer<joynr::WebSocketMessagingStub> wsMessagingStub(messagingStub.dynamicCast<joynr::WebSocketMessagingStub>());
-    QSignalSpy wsMessagingStubClosedSpy(wsMessagingStub.data(), SIGNAL(closed(joynr::system::routingtypes::QtAddress)));
+    QSignalSpy wsMessagingStubClosedSpy(wsMessagingStub.data(), SIGNAL(closed(joynr::system::RoutingTypes::QtAddress)));
     EXPECT_FALSE(messagingStub.isNull());
 
     QTimer::singleShot(0, wsMessagingStub.data(), SLOT(onSocketDisconnected()));
@@ -119,8 +119,8 @@ TEST_F(WebSocketMessagingStubFactoryTest, removeClientRemovesMessagingStub) {
 }
 
 TEST_F(WebSocketMessagingStubFactoryTest, convertWebSocketAddressToUrl) {
-    joynr::system::routingtypes::QtWebSocketAddress wsAddress(
-                joynr::system::routingtypes::QtWebSocketProtocol::WS,
+    joynr::system::RoutingTypes::QtWebSocketAddress wsAddress(
+                joynr::system::RoutingTypes::QtWebSocketProtocol::WS,
                 "localhost",
                 42,
                 "/some/path/"
@@ -130,8 +130,8 @@ TEST_F(WebSocketMessagingStubFactoryTest, convertWebSocketAddressToUrl) {
     QUrl wsUrl(WebSocketMessagingStubFactory::convertWebSocketAddressToUrl(wsAddress));
     EXPECT_EQ(expectedWsUrl, wsUrl);
 
-    joynr::system::routingtypes::QtWebSocketAddress wssAddress(
-                joynr::system::routingtypes::QtWebSocketProtocol::WSS,
+    joynr::system::RoutingTypes::QtWebSocketAddress wssAddress(
+                joynr::system::RoutingTypes::QtWebSocketProtocol::WSS,
                 "localhost",
                 42,
                 "/some/path"

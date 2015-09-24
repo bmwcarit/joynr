@@ -21,10 +21,10 @@
 #include "PrettyPrint.h"
 #include "joynr/joynrlogging.h"
 
-#include "joynr/tests/testtypes/TestEnum.h"
-#include "joynr/tests/testtypes/TestEnumExtended.h"
+#include "joynr/tests/testTypes/TestEnum.h"
+#include "joynr/tests/testTypes/TestEnumExtended.h"
 
-using namespace joynr::tests::testtypes;
+using namespace joynr::tests::testTypes;
 
 class StdEnumTypeTest : public testing::Test {
 public:

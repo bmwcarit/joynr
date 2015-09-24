@@ -29,7 +29,7 @@ using namespace ::testing;
 using namespace joynr;
 using namespace joynr::types;
 using namespace joynr::infrastructure;
-using namespace joynr::infrastructure::dactypes;
+using namespace joynr::infrastructure::DacTypes;
 
 // Mock objects cannot make callbacks themselves but can make calls to methods
 // with the same arguments as the mocked method call.

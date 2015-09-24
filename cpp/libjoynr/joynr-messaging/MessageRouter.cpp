@@ -21,7 +21,7 @@
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/Directory.h"
 #include "joynr/joynrlogging.h"
-#include "joynr/system/routingtypes/QtAddress.h"
+#include "joynr/system/RoutingTypes/QtAddress.h"
 #include "joynr/types/QtProviderQos.h"
 #include "joynr/RequestStatusCode.h"
 #include "joynr/JsonSerializer.h"
@@ -45,14 +45,14 @@ class ConsumerPermissionCallback : public IAccessController::IHasConsumerPermiss
 public:
     ConsumerPermissionCallback(MessageRouter& owningMessageRouter,
                                const JoynrMessage& message,
-                               QSharedPointer<system::routingtypes::QtAddress> destination);
+                               QSharedPointer<system::RoutingTypes::QtAddress> destination);
 
     void hasConsumerPermission(bool hasPermission);
 
 private:
     MessageRouter& owningMessageRouter;
     JoynrMessage message;
-    QSharedPointer<system::routingtypes::QtAddress> destination;
+    QSharedPointer<system::RoutingTypes::QtAddress> destination;
 };
 
 //------ MessageRouter ---------------------------------------------------------
@@ -98,7 +98,7 @@ MessageRouter::MessageRouter(IMessagingStubFactory* messagingStubFactory,
 }
 
 MessageRouter::MessageRouter(IMessagingStubFactory* messagingStubFactory,
-                             QSharedPointer<joynr::system::routingtypes::QtAddress> incomingAddress,
+                             QSharedPointer<joynr::system::RoutingTypes::QtAddress> incomingAddress,
                              int maxThreads,
                              MessageQueue* messageQueue)
         : joynr::system::RoutingAbstractProvider(),
@@ -132,7 +132,7 @@ void MessageRouter::init(int maxThreads)
 
 void MessageRouter::addProvisionedNextHop(
         std::string participantId,
-        QSharedPointer<joynr::system::routingtypes::QtAddress> address)
+        QSharedPointer<joynr::system::RoutingTypes::QtAddress> address)
 {
     addToRoutingTable(participantId, address);
 }
@@ -144,7 +144,7 @@ void MessageRouter::setAccessController(QSharedPointer<IAccessController> access
 
 void MessageRouter::setParentRouter(
         joynr::system::RoutingProxy* parentRouter,
-        QSharedPointer<joynr::system::routingtypes::QtAddress> parentAddress,
+        QSharedPointer<joynr::system::RoutingTypes::QtAddress> parentAddress,
         std::string parentParticipantId)
 {
     this->parentRouter = parentRouter;
@@ -192,7 +192,7 @@ void MessageRouter::route(const JoynrMessage& message)
 
     // search for the destination address
     const QString destinationPartId = message.getHeaderTo();
-    QSharedPointer<joynr::system::routingtypes::QtAddress> destAddress(NULL);
+    QSharedPointer<joynr::system::RoutingTypes::QtAddress> destAddress(NULL);
 
     routingTableLock.lockForRead();
     destAddress = routingTable.lookup(destinationPartId.toStdString());
@@ -261,7 +261,7 @@ void MessageRouter::removeRunningParentResolvers(const QString& destinationPartI
 }
 
 void MessageRouter::sendMessages(const std::string& destinationPartId,
-                                 QSharedPointer<joynr::system::routingtypes::QtAddress> address)
+                                 QSharedPointer<joynr::system::RoutingTypes::QtAddress> address)
 {
     while (true) {
         MessageQueueItem* item = messageQueue->getNextMessageForParticipant(destinationPartId);
@@ -274,7 +274,7 @@ void MessageRouter::sendMessages(const std::string& destinationPartId,
 }
 
 void MessageRouter::sendMessage(const JoynrMessage& message,
-                                QSharedPointer<joynr::system::routingtypes::QtAddress> destAddress)
+                                QSharedPointer<joynr::system::RoutingTypes::QtAddress> destAddress)
 {
     auto stub = messagingStubFactory->create(message.getHeaderTo().toStdString(), *destAddress);
     if (!stub.isNull()) {
@@ -284,7 +284,7 @@ void MessageRouter::sendMessage(const JoynrMessage& message,
 
 void MessageRouter::addNextHop(
         const std::string& participantId,
-        const QSharedPointer<joynr::system::routingtypes::QtAddress>& inprocessAddress,
+        const QSharedPointer<joynr::system::RoutingTypes::QtAddress>& inprocessAddress,
         std::function<void()> onSuccess)
 {
     addToRoutingTable(participantId, inprocessAddress);
@@ -296,12 +296,12 @@ void MessageRouter::addNextHop(
 
 // inherited from joynr::system::RoutingProvider
 void MessageRouter::addNextHop(const std::string& participantId,
-                               const system::routingtypes::ChannelAddress& channelAddress,
+                               const system::RoutingTypes::ChannelAddress& channelAddress,
                                std::function<void()> onSuccess)
 {
-    QSharedPointer<joynr::system::routingtypes::QtChannelAddress> address(
-            new joynr::system::routingtypes::QtChannelAddress(
-                    joynr::system::routingtypes::QtChannelAddress::createQt(channelAddress)));
+    QSharedPointer<joynr::system::RoutingTypes::QtChannelAddress> address(
+            new joynr::system::RoutingTypes::QtChannelAddress(
+                    joynr::system::RoutingTypes::QtChannelAddress::createQt(channelAddress)));
     addToRoutingTable(participantId, address);
 
     addNextHopToParent(participantId, onSuccess);
@@ -312,12 +312,12 @@ void MessageRouter::addNextHop(const std::string& participantId,
 // inherited from joynr::system::RoutingProvider
 void MessageRouter::addNextHop(
         const std::string& participantId,
-        const system::routingtypes::CommonApiDbusAddress& commonApiDbusAddress,
+        const system::RoutingTypes::CommonApiDbusAddress& commonApiDbusAddress,
         std::function<void()> onSuccess)
 {
-    QSharedPointer<joynr::system::routingtypes::QtCommonApiDbusAddress> address(
-            new joynr::system::routingtypes::QtCommonApiDbusAddress(
-                    joynr::system::routingtypes::QtCommonApiDbusAddress::createQt(
+    QSharedPointer<joynr::system::RoutingTypes::QtCommonApiDbusAddress> address(
+            new joynr::system::RoutingTypes::QtCommonApiDbusAddress(
+                    joynr::system::RoutingTypes::QtCommonApiDbusAddress::createQt(
                             commonApiDbusAddress)));
     addToRoutingTable(participantId, address);
 
@@ -328,12 +328,12 @@ void MessageRouter::addNextHop(
 
 // inherited from joynr::system::RoutingProvider
 void MessageRouter::addNextHop(const std::string& participantId,
-                               const system::routingtypes::BrowserAddress& browserAddress,
+                               const system::RoutingTypes::BrowserAddress& browserAddress,
                                std::function<void()> onSuccess)
 {
-    QSharedPointer<joynr::system::routingtypes::QtBrowserAddress> address(
-            new joynr::system::routingtypes::QtBrowserAddress(
-                    joynr::system::routingtypes::QtBrowserAddress::createQt(browserAddress)));
+    QSharedPointer<joynr::system::RoutingTypes::QtBrowserAddress> address(
+            new joynr::system::RoutingTypes::QtBrowserAddress(
+                    joynr::system::RoutingTypes::QtBrowserAddress::createQt(browserAddress)));
     addToRoutingTable(participantId, address);
 
     addNextHopToParent(participantId, onSuccess);
@@ -343,12 +343,12 @@ void MessageRouter::addNextHop(const std::string& participantId,
 
 // inherited from joynr::system::RoutingProvider
 void MessageRouter::addNextHop(const std::string& participantId,
-                               const system::routingtypes::WebSocketAddress& webSocketAddress,
+                               const system::RoutingTypes::WebSocketAddress& webSocketAddress,
                                std::function<void()> onSuccess)
 {
-    QSharedPointer<joynr::system::routingtypes::QtWebSocketAddress> address(
-            new joynr::system::routingtypes::QtWebSocketAddress(
-                    joynr::system::routingtypes::QtWebSocketAddress::createQt(webSocketAddress)));
+    QSharedPointer<joynr::system::RoutingTypes::QtWebSocketAddress> address(
+            new joynr::system::RoutingTypes::QtWebSocketAddress(
+                    joynr::system::RoutingTypes::QtWebSocketAddress::createQt(webSocketAddress)));
     addToRoutingTable(participantId, address);
 
     addNextHopToParent(participantId, onSuccess);
@@ -359,12 +359,12 @@ void MessageRouter::addNextHop(const std::string& participantId,
 // inherited from joynr::system::RoutingProvider
 void MessageRouter::addNextHop(
         const std::string& participantId,
-        const system::routingtypes::WebSocketClientAddress& webSocketClientAddress,
+        const system::RoutingTypes::WebSocketClientAddress& webSocketClientAddress,
         std::function<void()> onSuccess)
 {
-    QSharedPointer<joynr::system::routingtypes::QtWebSocketClientAddress> address(
-            new joynr::system::routingtypes::QtWebSocketClientAddress(
-                    joynr::system::routingtypes::QtWebSocketClientAddress::createQt(
+    QSharedPointer<joynr::system::RoutingTypes::QtWebSocketClientAddress> address(
+            new joynr::system::RoutingTypes::QtWebSocketClientAddress(
+                    joynr::system::RoutingTypes::QtWebSocketClientAddress::createQt(
                             webSocketClientAddress)));
     addToRoutingTable(participantId, address);
 
@@ -378,43 +378,43 @@ void MessageRouter::addNextHopToParent(std::string participantId,
 {
     // add to parent router
     if (isChildMessageRouter()) {
-        if (incomingAddress->inherits("joynr::system::routingtypes::QtChannelAddress")) {
+        if (incomingAddress->inherits("joynr::system::RoutingTypes::QtChannelAddress")) {
             parentRouter->addNextHopAsync(
                     participantId,
-                    joynr::system::routingtypes::QtChannelAddress::createStd(
-                            *dynamic_cast<joynr::system::routingtypes::QtChannelAddress*>(
+                    joynr::system::RoutingTypes::QtChannelAddress::createStd(
+                            *dynamic_cast<joynr::system::RoutingTypes::QtChannelAddress*>(
                                     incomingAddress.data())),
                     onSuccess);
         }
-        if (incomingAddress->inherits("joynr::system::routingtypes::QtCommonApiDbusAddress")) {
+        if (incomingAddress->inherits("joynr::system::RoutingTypes::QtCommonApiDbusAddress")) {
             parentRouter->addNextHopAsync(
                     participantId,
-                    joynr::system::routingtypes::QtCommonApiDbusAddress::createStd(
-                            *dynamic_cast<joynr::system::routingtypes::QtCommonApiDbusAddress*>(
+                    joynr::system::RoutingTypes::QtCommonApiDbusAddress::createStd(
+                            *dynamic_cast<joynr::system::RoutingTypes::QtCommonApiDbusAddress*>(
                                     incomingAddress.data())),
                     onSuccess);
         }
-        if (incomingAddress->inherits("joynr::system::routingtypes::QtBrowserAddress")) {
+        if (incomingAddress->inherits("joynr::system::RoutingTypes::QtBrowserAddress")) {
             parentRouter->addNextHopAsync(
                     participantId,
-                    joynr::system::routingtypes::QtBrowserAddress::createStd(
-                            *dynamic_cast<joynr::system::routingtypes::QtBrowserAddress*>(
+                    joynr::system::RoutingTypes::QtBrowserAddress::createStd(
+                            *dynamic_cast<joynr::system::RoutingTypes::QtBrowserAddress*>(
                                     incomingAddress.data())),
                     onSuccess);
         }
-        if (incomingAddress->inherits("joynr::system::routingtypes::QtWebSocketAddress")) {
+        if (incomingAddress->inherits("joynr::system::RoutingTypes::QtWebSocketAddress")) {
             parentRouter->addNextHopAsync(
                     participantId,
-                    joynr::system::routingtypes::QtWebSocketAddress::createStd(
-                            *dynamic_cast<joynr::system::routingtypes::QtWebSocketAddress*>(
+                    joynr::system::RoutingTypes::QtWebSocketAddress::createStd(
+                            *dynamic_cast<joynr::system::RoutingTypes::QtWebSocketAddress*>(
                                     incomingAddress.data())),
                     onSuccess);
         }
-        if (incomingAddress->inherits("joynr::system::routingtypes::QtWebSocketClientAddress")) {
+        if (incomingAddress->inherits("joynr::system::RoutingTypes::QtWebSocketClientAddress")) {
             parentRouter->addNextHopAsync(
                     participantId,
-                    joynr::system::routingtypes::QtWebSocketClientAddress::createStd(
-                            *dynamic_cast<joynr::system::routingtypes::QtWebSocketClientAddress*>(
+                    joynr::system::RoutingTypes::QtWebSocketClientAddress::createStd(
+                            *dynamic_cast<joynr::system::RoutingTypes::QtWebSocketClientAddress*>(
                                     incomingAddress.data())),
                     onSuccess);
         }
@@ -425,7 +425,7 @@ void MessageRouter::addNextHopToParent(std::string participantId,
 
 void MessageRouter::addToRoutingTable(
         std::string participantId,
-        QSharedPointer<joynr::system::routingtypes::QtAddress> address)
+        QSharedPointer<joynr::system::RoutingTypes::QtAddress> address)
 {
     routingTableLock.lockForWrite();
     routingTable.add(participantId, address);
@@ -489,7 +489,7 @@ void MessageRunnable::run()
 ConsumerPermissionCallback::ConsumerPermissionCallback(
         MessageRouter& owningMessageRouter,
         const JoynrMessage& message,
-        QSharedPointer<system::routingtypes::QtAddress> destination)
+        QSharedPointer<system::RoutingTypes::QtAddress> destination)
         : owningMessageRouter(owningMessageRouter), message(message), destination(destination)
 {
 }

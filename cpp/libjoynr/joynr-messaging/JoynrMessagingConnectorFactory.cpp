@@ -18,8 +18,8 @@
  */
 
 #include "joynr/JoynrMessagingConnectorFactory.h"
-#include "joynr/system/routingtypes/QtAddress.h"
-#include "joynr/system/routingtypes/QtChannelAddress.h"
+#include "joynr/system/RoutingTypes/QtAddress.h"
+#include "joynr/system/RoutingTypes/QtChannelAddress.h"
 
 #include <QSharedPointer>
 

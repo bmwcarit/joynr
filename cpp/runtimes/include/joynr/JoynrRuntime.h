@@ -171,7 +171,7 @@ protected:
     /** @brief System services settings */
     SystemServicesSettings systemServicesSettings;
     /** @brief Address of the dispatcher */
-    QSharedPointer<joynr::system::routingtypes::QtAddress> dispatcherAddress;
+    QSharedPointer<joynr::system::RoutingTypes::QtAddress> dispatcherAddress;
     /** @brief MessageRouter instance */
     QSharedPointer<MessageRouter> messageRouter;
     /** @brief Wrapper for discovery proxies */

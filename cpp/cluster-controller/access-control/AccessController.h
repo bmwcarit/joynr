@@ -22,7 +22,7 @@
 
 #include "IAccessController.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/infrastructure/dactypes/QtTrustLevel.h"
+#include "joynr/infrastructure/DacTypes/QtTrustLevel.h"
 
 #include <QSharedPointer>
 #include <QList>
@@ -59,7 +59,7 @@ public:
                                        QSharedPointer<IHasConsumerPermissionCallback> callback);
 
     virtual bool hasProviderPermission(const QString& userId,
-                                       infrastructure::dactypes::QtTrustLevel::Enum trustLevel,
+                                       infrastructure::DacTypes::QtTrustLevel::Enum trustLevel,
                                        const QString& domain,
                                        const QString& interfaceName);
 

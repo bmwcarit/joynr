@@ -21,7 +21,7 @@
 #include "joynr/system/IDiscovery.h"
 #include "joynr/types/QtDiscoveryEntry.h"
 #include "joynr/types/DiscoveryEntry.h"
-#include "joynr/system/routingtypes/QtChannelAddress.h"
+#include "joynr/system/RoutingTypes/QtChannelAddress.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/DiscoveryQos.h"
 

@@ -50,11 +50,11 @@ public:
 
     TestJoynrMessagingConnectorTest():
         mockSubscriptionManager(new MockSubscriptionManager()),
-        gpsLocation(types::localisation::QtGpsLocation(
+        gpsLocation(types::Localisation::QtGpsLocation(
                         9.0,
                         51.0,
                         508.0,
-                        types::localisation::QtGpsFixEnum::MODE2D,
+                        types::Localisation::QtGpsFixEnum::MODE2D,
                         0.0,
                         0.0,
                         0.0,
@@ -96,7 +96,7 @@ public:
     }
 
     MockSubscriptionManager* mockSubscriptionManager;
-    joynr::types::localisation::QtGpsLocation gpsLocation;
+    joynr::types::Localisation::QtGpsLocation gpsLocation;
     float floatValue;
     QSemaphore semaphore;
 
@@ -124,8 +124,8 @@ public:
         std::ignore = qos;
         std::ignore = subscriptionRequest;
 
-        QSharedPointer<SubscriptionCallback<joynr::types::localisation::QtGpsLocation, double>> typedCallbackQsp =
-                callback.dynamicCast<SubscriptionCallback<joynr::types::localisation::QtGpsLocation, double>>();
+        QSharedPointer<SubscriptionCallback<joynr::types::Localisation::QtGpsLocation, double>> typedCallbackQsp =
+                callback.dynamicCast<SubscriptionCallback<joynr::types::Localisation::QtGpsLocation, double>>();
 
         typedCallbackQsp->onSuccess(gpsLocation, floatValue);
     }
@@ -186,7 +186,7 @@ TEST_F(TestJoynrMessagingConnectorTest, testBroadcastListenerWrapper) {
     //   joynr::tests::LocationUpdateWithSpeedSelectiveBroadcastSubscriptionListenerWrapper
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, onReceive(Eq(joynr::types::localisation::QtGpsLocation::createStd(gpsLocation)), Eq(floatValue)))
+    EXPECT_CALL(*mockListener, onReceive(Eq(joynr::types::Localisation::QtGpsLocation::createStd(gpsLocation)), Eq(floatValue)))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
     joynr::OnChangeSubscriptionQos qos;

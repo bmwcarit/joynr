@@ -61,7 +61,7 @@ public:
 
     QSharedPointer<IMessaging> create(
             std::string destParticipantId,
-            const joynr::system::routingtypes::QtAddress& destinationAddress);
+            const joynr::system::RoutingTypes::QtAddress& destinationAddress);
     void remove(std::string destParticipantId);
     bool contains(std::string destParticipantId);
 

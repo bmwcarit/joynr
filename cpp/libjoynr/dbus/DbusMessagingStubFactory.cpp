@@ -17,7 +17,7 @@
  * #L%
  */
 #include "DbusMessagingStubFactory.h"
-#include "joynr/system/routingtypes/QtCommonApiDbusAddress.h"
+#include "joynr/system/RoutingTypes/QtCommonApiDbusAddress.h"
 #include "common/dbus/DbusMessagingStubAdapter.h"
 
 #include <QMutexLocker>
@@ -29,17 +29,17 @@ DbusMessagingStubFactory::DbusMessagingStubFactory() : stubMap(), mutex()
 {
 }
 
-bool DbusMessagingStubFactory::canCreate(const joynr::system::routingtypes::QtAddress& destAddress)
+bool DbusMessagingStubFactory::canCreate(const joynr::system::RoutingTypes::QtAddress& destAddress)
 {
     return destAddress.inherits(
-            system::routingtypes::QtCommonApiDbusAddress::staticMetaObject.className());
+            system::RoutingTypes::QtCommonApiDbusAddress::staticMetaObject.className());
 }
 
 QSharedPointer<IMessaging> DbusMessagingStubFactory::create(
-        const joynr::system::routingtypes::QtAddress& destAddress)
+        const joynr::system::RoutingTypes::QtAddress& destAddress)
 {
-    const system::routingtypes::QtCommonApiDbusAddress* dbusAddress =
-            dynamic_cast<const system::routingtypes::QtCommonApiDbusAddress*>(&destAddress);
+    const system::RoutingTypes::QtCommonApiDbusAddress* dbusAddress =
+            dynamic_cast<const system::RoutingTypes::QtCommonApiDbusAddress*>(&destAddress);
     QString address = dbusAddress->getDomain() + ":" + dbusAddress->getServiceName() + ":" +
                       dbusAddress->getParticipantId();
     // lookup address

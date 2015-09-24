@@ -50,9 +50,9 @@ public:
     CapabilitiesRegistrar(
             QList<IDispatcher*> dispatcherList,
             joynr::system::IDiscoverySync& discoveryProxy,
-            QSharedPointer<joynr::system::routingtypes::QtAddress> messagingStubAddress,
+            QSharedPointer<joynr::system::RoutingTypes::QtAddress> messagingStubAddress,
             QSharedPointer<ParticipantIdStorage> participantIdStorage,
-            QSharedPointer<joynr::system::routingtypes::QtAddress> dispatcherAddress,
+            QSharedPointer<joynr::system::RoutingTypes::QtAddress> dispatcherAddress,
             QSharedPointer<MessageRouter> messageRouter);
 
     template <class T>
@@ -153,9 +153,9 @@ private:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesRegistrar);
     QList<IDispatcher*> dispatcherList;
     joynr::system::IDiscoverySync& discoveryProxy;
-    QSharedPointer<joynr::system::routingtypes::QtAddress> messagingStubAddress;
+    QSharedPointer<joynr::system::RoutingTypes::QtAddress> messagingStubAddress;
     QSharedPointer<ParticipantIdStorage> participantIdStorage;
-    QSharedPointer<joynr::system::routingtypes::QtAddress> dispatcherAddress;
+    QSharedPointer<joynr::system::RoutingTypes::QtAddress> dispatcherAddress;
     QSharedPointer<MessageRouter> messageRouter;
     static joynr_logging::Logger* logger;
 };

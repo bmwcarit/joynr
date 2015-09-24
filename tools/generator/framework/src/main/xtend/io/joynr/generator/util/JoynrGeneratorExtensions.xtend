@@ -151,7 +151,7 @@ abstract class JoynrGeneratorExtensions {
 					+ " Please call isPartOfTypeCollection before calling this method."
 			);
 		}
-		return (datatype.eContainer as FTypeCollection).joynrName.toLowerCase;
+		return (datatype.eContainer as FTypeCollection).joynrName;
 	}
 
 	def getMethods(FInterface fInterface) {

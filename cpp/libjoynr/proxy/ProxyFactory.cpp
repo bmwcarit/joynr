@@ -23,7 +23,7 @@ namespace joynr
 {
 
 ProxyFactory::ProxyFactory(
-        QSharedPointer<joynr::system::routingtypes::QtAddress> messagingEndpointAddress,
+        QSharedPointer<joynr::system::RoutingTypes::QtAddress> messagingEndpointAddress,
         ConnectorFactory* connectorFactory,
         IClientCache* cache)
         : messagingEndpointAddress(messagingEndpointAddress),

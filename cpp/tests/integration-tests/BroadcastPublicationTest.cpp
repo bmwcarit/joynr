@@ -25,7 +25,7 @@
 #include "joynr/QtOnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/tests/TestLocationUpdateSelectiveBroadcastFilterParameters.h"
 
-#include "joynr/types/localisation/QtGpsLocation.h"
+#include "joynr/types/Localisation/QtGpsLocation.h"
 #include "libjoynr/subscription/SubscriptionBroadcastListener.h"
 
 using namespace ::testing;
@@ -40,7 +40,7 @@ using namespace joynr::tests;
 class BroadcastPublicationTest : public ::testing::Test {
 public:
     BroadcastPublicationTest() :
-        gpsLocation1(1.1, 2.2, 3.3, types::localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444),
+        gpsLocation1(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444),
         speed1(100),
         providerParticipantId("providerParticipantId"),
         proxyParticipantId("proxyParticipantId"),
@@ -100,7 +100,7 @@ public:
     }
 
 protected:
-    types::localisation::GpsLocation gpsLocation1;
+    types::Localisation::GpsLocation gpsLocation1;
     double speed1;
 
     std::string providerParticipantId;

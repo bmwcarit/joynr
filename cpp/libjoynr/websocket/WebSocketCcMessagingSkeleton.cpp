@@ -22,7 +22,7 @@
 #include <QtWebSockets/QWebSocket>
 
 #include "joynr/JsonSerializer.h"
-#include "joynr/system/routingtypes/QtWebSocketClientAddress.h"
+#include "joynr/system/RoutingTypes/QtWebSocketClientAddress.h"
 
 namespace joynr
 {
@@ -33,18 +33,18 @@ joynr_logging::Logger* WebSocketCcMessagingSkeleton::logger =
 WebSocketCcMessagingSkeleton::WebSocketCcMessagingSkeleton(
         MessageRouter& messageRouter,
         WebSocketMessagingStubFactory& messagingStubFactory,
-        const system::routingtypes::QtWebSocketAddress& serverAddress)
+        const system::RoutingTypes::QtWebSocketAddress& serverAddress)
         : webSocketServer(Q_NULLPTR),
           clients(),
           messageRouter(messageRouter),
           messagingStubFactory(messagingStubFactory)
 {
     // must register metatype in order to deserialize initialization message from client
-    qRegisterMetaType<joynr::system::routingtypes::QtWebSocketClientAddress>(
-            "joynr::system::routingtypes::QtWebSocketClientAddress");
+    qRegisterMetaType<joynr::system::RoutingTypes::QtWebSocketClientAddress>(
+            "joynr::system::RoutingTypes::QtWebSocketClientAddress");
 
     QWebSocketServer::SslMode sslMode(QWebSocketServer::NonSecureMode);
-    if (serverAddress.getProtocol() == joynr::system::routingtypes::QtWebSocketProtocol::WSS) {
+    if (serverAddress.getProtocol() == joynr::system::RoutingTypes::QtWebSocketProtocol::WSS) {
         sslMode = QWebSocketServer::SecureMode;
     }
 
@@ -102,8 +102,8 @@ void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString& message)
                 logger,
                 QString("received initialization message from websocket client: %0").arg(message));
         // register client with messaging stub factory
-        joynr::system::routingtypes::QtWebSocketClientAddress* clientAddress =
-                JsonSerializer::deserialize<joynr::system::routingtypes::QtWebSocketClientAddress>(
+        joynr::system::RoutingTypes::QtWebSocketClientAddress* clientAddress =
+                JsonSerializer::deserialize<joynr::system::RoutingTypes::QtWebSocketClientAddress>(
                         message.toUtf8());
         // client address must be valid, or libjoynr and CC are deployed in different versions
         assert(clientAddress);
@@ -162,7 +162,7 @@ void WebSocketCcMessagingSkeleton::onServerError(QWebSocketProtocol::CloseCode c
 bool WebSocketCcMessagingSkeleton::isInitializationMessage(const QString& message)
 {
     return message.startsWith(
-            "{\"_typeName\":\"joynr.system.routingtypes.WebSocketClientAddress\"");
+            "{\"_typeName\":\"joynr.system.RoutingTypes.WebSocketClientAddress\"");
 }
 
 } // namespace joynr

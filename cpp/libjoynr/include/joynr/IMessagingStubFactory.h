@@ -27,7 +27,7 @@ namespace joynr
 namespace system
 {
 
-namespace routingtypes
+namespace RoutingTypes
 {
 class QtAddress;
 }
@@ -42,7 +42,7 @@ public:
     }
     virtual QSharedPointer<IMessaging> create(
             std::string destParticipantId,
-            const joynr::system::routingtypes::QtAddress& destEndpointAddress) = 0;
+            const joynr::system::RoutingTypes::QtAddress& destEndpointAddress) = 0;
     virtual void remove(std::string destParticipantId) = 0;
     virtual bool contains(std::string destParticipantId) = 0;
 };

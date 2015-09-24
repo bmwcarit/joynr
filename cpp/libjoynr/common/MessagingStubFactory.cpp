@@ -42,7 +42,7 @@ MessagingStubFactory::MessagingStubFactory()
 
 QSharedPointer<IMessaging> MessagingStubFactory::create(
         std::string destParticipantId,
-        const joynr::system::routingtypes::QtAddress& destinationAddress)
+        const joynr::system::RoutingTypes::QtAddress& destinationAddress)
 {
     {
         QMutexLocker locker(&this->mutex);

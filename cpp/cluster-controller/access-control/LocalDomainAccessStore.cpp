@@ -30,7 +30,7 @@
 
 namespace joynr
 {
-using namespace infrastructure::dactypes;
+using namespace infrastructure::DacTypes;
 using namespace joynr_logging;
 
 QSqlDatabase LocalDomainAccessStore::db = QSqlDatabase::addDatabase("QSQLITE");

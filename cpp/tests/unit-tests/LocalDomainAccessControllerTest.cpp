@@ -29,7 +29,7 @@
 using namespace ::testing;
 using namespace joynr;
 using namespace joynr::infrastructure;
-using namespace joynr::infrastructure::dactypes;
+using namespace joynr::infrastructure::DacTypes;
 
 // Consumer permissions are obtained asynchronously
 class ConsumerPermissionCallback : public LocalDomainAccessController::IGetConsumerPermissionCallback

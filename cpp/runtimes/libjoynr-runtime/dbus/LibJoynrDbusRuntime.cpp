@@ -19,7 +19,7 @@
 #include "runtimes/libjoynr-runtime/dbus/LibJoynrDbusRuntime.h"
 
 #include "common/dbus/DbusMessagingStubAdapter.h"
-#include "joynr/system/routingtypes/QtCommonApiDbusAddress.h"
+#include "joynr/system/RoutingTypes/QtCommonApiDbusAddress.h"
 #include "joynr/DBusMessageRouterAdapter.h"
 #include "common/dbus/DbusSettings.h"
 #include "libjoynr/dbus/DbusMessagingStubFactory.h"
@@ -43,13 +43,13 @@ LibJoynrDbusRuntime::LibJoynrDbusRuntime(QSettings* settings)
     libjoynrMessagingServiceUrl = QString(
             QString("%0:%1:%2").arg(libjoynrMessagingDomain).arg(libjoynrMessagingServiceName).arg(
                     libjoynrMessagingId));
-    QSharedPointer<joynr::system::routingtypes::QtAddress> libjoynrMessagingAddress(
-            new system::routingtypes::QtCommonApiDbusAddress(
+    QSharedPointer<joynr::system::RoutingTypes::QtAddress> libjoynrMessagingAddress(
+            new system::RoutingTypes::QtCommonApiDbusAddress(
                     libjoynrMessagingDomain, libjoynrMessagingServiceName, libjoynrMessagingId));
 
     // create connection to parent routing service
-    QSharedPointer<joynr::system::routingtypes::QtAddress> ccMessagingAddress(
-            new system::routingtypes::QtCommonApiDbusAddress(
+    QSharedPointer<joynr::system::RoutingTypes::QtAddress> ccMessagingAddress(
+            new system::RoutingTypes::QtCommonApiDbusAddress(
                     dbusSettings->getClusterControllerMessagingDomain(),
                     dbusSettings->getClusterControllerMessagingServiceName(),
                     dbusSettings->getClusterControllerMessagingParticipantId()));

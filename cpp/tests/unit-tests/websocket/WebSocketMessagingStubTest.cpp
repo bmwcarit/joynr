@@ -29,7 +29,7 @@
 #include "joynr/JoynrMessage.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/JsonSerializer.h"
-#include "joynr/system/routingtypes/QtWebSocketAddress.h"
+#include "joynr/system/RoutingTypes/QtWebSocketAddress.h"
 #include "libjoynr/websocket/WebSocketMessagingStub.h"
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
 
@@ -81,8 +81,8 @@ public:
         webSocket = new QWebSocket();
         QSignalSpy webSocketConnectedSignalSpy(webSocket, SIGNAL(connected()));
         // ownership of server address is passed over to messaging stub
-        serverAddress = new joynr::system::routingtypes::QtWebSocketAddress(
-                    joynr::system::routingtypes::QtWebSocketProtocol::WS,
+        serverAddress = new joynr::system::RoutingTypes::QtWebSocketAddress(
+                    joynr::system::RoutingTypes::QtWebSocketProtocol::WS,
                     QStringLiteral("localhost"),
                     server.serverPort(),
                     QString()
@@ -129,7 +129,7 @@ public Q_SLOTS:
         }
     }
 
-    void onMessagingStubClosed(const joynr::system::routingtypes::QtAddress& address) {
+    void onMessagingStubClosed(const joynr::system::RoutingTypes::QtAddress& address) {
         LOG_TRACE(logger, QString("on messaging stub closed: %0").arg(address.toString()));
     }
 
@@ -137,7 +137,7 @@ protected:
     joynr::joynr_logging::Logger* logger;
     QWebSocketServer server;
     QList<QWebSocket*> clients;
-    joynr::system::routingtypes::QtWebSocketAddress* serverAddress;
+    joynr::system::RoutingTypes::QtWebSocketAddress* serverAddress;
     QWebSocket* webSocket;
 };
 
@@ -146,7 +146,7 @@ TEST_F(WebSocketMessagingStubTest, emitsClosedSignal) {
 
     // create messaging stub
     joynr::WebSocketMessagingStub messagingStub(serverAddress, webSocket);
-    QSignalSpy messagingStubClosedSpy(&messagingStub, SIGNAL(closed(joynr::system::routingtypes::QtAddress)));
+    QSignalSpy messagingStubClosedSpy(&messagingStub, SIGNAL(closed(joynr::system::RoutingTypes::QtAddress)));
 
     // close websocket
     QTimer::singleShot(0, webSocket, SLOT(close()));
@@ -159,7 +159,7 @@ TEST_F(WebSocketMessagingStubTest, emitsClosedSignal) {
     QList<QVariant> args = messagingStubClosedSpy.takeFirst();
     ASSERT_EQ(1, args.size());
     EXPECT_EQ(QVariant::UserType, args.first().type());
-    EXPECT_TRUE(args.first().canConvert<joynr::system::routingtypes::QtAddress>());
+    EXPECT_TRUE(args.first().canConvert<joynr::system::RoutingTypes::QtAddress>());
 }
 
 TEST_F(WebSocketMessagingStubTest, transmitMessage) {
