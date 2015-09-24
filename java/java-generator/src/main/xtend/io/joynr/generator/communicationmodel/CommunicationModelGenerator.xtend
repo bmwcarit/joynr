@@ -45,7 +45,7 @@ class CommunicationModelGenerator {
 				}
 				generateFile(
 					fsa,
-					path.toLowerCase + type.joynrName + ".java",
+					path + type.joynrName + ".java",
 					complexTypeTemplate,
 					type
 				)
@@ -60,7 +60,7 @@ class CommunicationModelGenerator {
 			if(type instanceof FEnumerationType) {
 				generateFile(
 					fsa,
-					path.toLowerCase + type.joynrName + ".java",
+					path + type.joynrName + ".java",
 					enumTemplate,
 					type
 				)
