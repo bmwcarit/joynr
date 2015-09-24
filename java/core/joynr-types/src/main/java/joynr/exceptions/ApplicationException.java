@@ -151,7 +151,7 @@ public class ApplicationException extends Exception implements JoynrException {
                                       JsonGenerator jgen,
                                       SerializerProvider provider,
                                       TypeSerializer typeSer) throws IOException, JsonProcessingException {
-            typeSer.writeTypePrefixForObject(value, jgen);
+            typeSer.writeCustomTypePrefixForObject(value, jgen, value.getClass().getName().replace("$", "."));
             jgen.writeFieldName(JSON_FIELD_NAME_ERROR_ENUM);
             jgen.writeString(value.name());
             typeSer.writeTypeSuffixForObject(value, jgen);
@@ -210,7 +210,13 @@ public class ApplicationException extends Exception implements JoynrException {
             try {
                 return Enum.valueOf(Class.forName(typeName).asSubclass(Enum.class), enumName);
             } catch (ClassNotFoundException e) {
-                throw new IOException(e);
+                try {
+                    int indexOfLastDot = typeName.lastIndexOf(".");
+                    typeName = new StringBuilder(typeName).replace(indexOfLastDot, indexOfLastDot + 1, "$").toString();
+                    return Enum.valueOf(Class.forName(typeName).asSubclass(Enum.class), enumName);
+                } catch (ClassNotFoundException e2) {
+                    throw new IOException(e2);
+                }
             }
         }
     }
