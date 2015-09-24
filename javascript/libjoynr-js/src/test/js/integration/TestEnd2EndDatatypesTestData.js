@@ -164,7 +164,7 @@
             },
             {
                 attribute : "structAttribute",
-                joynrType : "joynr.datatypes.exampletypes.ComplexRadioStation",
+                joynrType : "joynr.datatypes.exampleTypes.ComplexRadioStation",
                 jsRuntimeType : "ComplexRadioStation",
                 values : [
                     new ComplexRadioStation({
@@ -192,7 +192,7 @@
     if (typeof define === 'function' && define.amd) {
         define(
                 "integration/TestEnd2EndDatatypesTestData",
-                [ "joynr/datatypes/exampletypes/ComplexRadioStation"
+                [ "joynr/datatypes/exampleTypes/ComplexRadioStation"
                 ],
                 function(ComplexRadioStation) {
                     return setupData(ComplexRadioStation);

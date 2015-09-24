@@ -22,8 +22,8 @@
 joynrTestRequire("joynr/messaging/websocket/TestWebSocketMessagingSkeletion", [
     "joynr/messaging/websocket/WebSocketMessagingSkeleton",
     "joynr/messaging/JoynrMessage",
-    "joynr/system/routingtypes/WebSocketAddress",
-    "joynr/system/routingtypes/WebSocketClientAddress",
+    "joynr/system/RoutingTypes/WebSocketAddress",
+    "joynr/system/RoutingTypes/WebSocketClientAddress",
     "joynr/messaging/websocket/SharedWebSocket"
 ], function(
         WebSocketMessagingSkeleton,

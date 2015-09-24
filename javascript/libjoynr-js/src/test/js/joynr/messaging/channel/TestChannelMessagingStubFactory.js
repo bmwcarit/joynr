@@ -21,7 +21,7 @@
 
 joynrTestRequire("joynr/messaging/channel/TestChannelMessagingStubFactory", [
     "global/Promise",
-    "joynr/system/routingtypes/ChannelAddress",
+    "joynr/system/RoutingTypes/ChannelAddress",
     "joynr/messaging/channel/ChannelMessagingStubFactory"
 ], function(Promise, ChannelAddress, ChannelMessagingStubFactory) {
 

@@ -24,7 +24,7 @@ joynrTestRequire("integration/TestEnd2EndDatatypes", [
     "global/Promise",
     "joynr",
     "joynr/datatypes/DatatypesProxy",
-    "joynr/datatypes/exampletypes/Country",
+    "joynr/datatypes/exampleTypes/Country",
     "integration/TestEnd2EndDatatypesTestData",
     "integration/IntegrationUtils",
     "joynr/provisioning/provisioning_cc"
