@@ -28,10 +28,12 @@ import io.joynr.dispatching.RequestReplyManagerImpl;
 import io.joynr.dispatching.rpc.RpcUtils;
 import io.joynr.logging.JoynrAppenderManagerFactory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.MessageSenderImpl;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingSettings;
+import io.joynr.messaging.channel.ChannelMessagingSkeleton;
 import io.joynr.messaging.http.operation.HttpClientProvider;
 import io.joynr.messaging.http.operation.HttpDefaultRequestConfigProvider;
 import io.joynr.messaging.inprocess.InProcessAddress;
@@ -113,6 +115,13 @@ public class DefaultRuntimeModule extends AbstractModule {
     Address getChannelUrlDirectoryAddress(@Named(MessagingPropertyKeys.CHANNELID) String channelId,
                                           @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_CHANNEL_ID) String channelUrlDirectoryChannelId) {
         return getAddress(channelId, channelUrlDirectoryChannelId);
+    }
+
+    @Provides
+    @Singleton
+    @Named(ConfigurableMessagingSettings.PROPERTY_CLUSTERCONTROLER_MESSAGING_SKELETON)
+    IMessaging getClusterControllerMessagingSkeleton(MessageRouter messageRouter) {
+        return new ChannelMessagingSkeleton(messageRouter);
     }
 
     private Address getAddress(String localChannelId, String targetChannelId) {

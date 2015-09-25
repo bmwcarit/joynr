@@ -20,18 +20,13 @@ package io.joynr.dispatching;
  */
 
 import io.joynr.accesscontrol.AccessController;
-import io.joynr.dispatching.rpc.ReplyCaller;
-import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.dispatching.subscription.PublicationManager;
 import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
-import io.joynr.exceptions.JoynrShutdownException;
-import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.MessagingQos;
-import io.joynr.messaging.ReceiverStatusListener;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.proxy.Callback;
 import io.joynr.security.PlatformSecurityManager;
@@ -49,7 +44,6 @@ import joynr.Request;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
-import joynr.system.routingtypes.ChannelAddress;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,54 +65,26 @@ public class DispatcherImpl implements Dispatcher {
     private PlatformSecurityManager securityManager;
     private ObjectMapper objectMapper;
     private AccessController accessController;
-    private MessageReceiver messageReceiver;
-    private boolean shutdown = false;
-    private boolean registering = false;
-    private RequestCallerDirectory requestCallerDirectory;
-    private ReplyCallerDirectory replyCallerDirectory;
-    private CallerDirectoryListener<RequestCaller> requestCallerDirectoryListener;
-    private CallerDirectoryListener<ReplyCaller> replyCallerDirectoryListener;
-
-    private class CallerDirectoryListenerImpl<T> implements CallerDirectoryListener<T> {
-
-        @Override
-        public void callerAdded(String participantId, T caller) {
-            startReceiver();
-        }
-
-        public void callerRemoved(String participantId) {
-        }
-    }
 
     @Inject
     @Singleton
     // CHECKSTYLE:OFF
-    public DispatcherImpl(RequestCallerDirectory requestCallerDirectory,
-                          ReplyCallerDirectory replyCallerDirectory,
-                          RequestReplyDispatcher requestReplyDispatcher,
+    public DispatcherImpl(RequestReplyDispatcher requestReplyDispatcher,
                           SubscriptionManager subscriptionManager,
                           PublicationManager publicationManager,
                           MessageRouter messageRouter,
-                          MessageReceiver messageReceiver,
                           PlatformSecurityManager securityManager,
                           AccessController accessController,
                           JoynrMessageFactory joynrMessageFactory,
                           ObjectMapper objectMapper) {
-        this.requestCallerDirectory = requestCallerDirectory;
-        this.replyCallerDirectory = replyCallerDirectory;
         this.requestReplyDispatcher = requestReplyDispatcher;
         this.subscriptionManager = subscriptionManager;
         this.publicationManager = publicationManager;
         this.messageRouter = messageRouter;
-        this.messageReceiver = messageReceiver;
         this.securityManager = securityManager;
         this.accessController = accessController;
         this.joynrMessageFactory = joynrMessageFactory;
         this.objectMapper = objectMapper;
-        requestCallerDirectoryListener = new CallerDirectoryListenerImpl<RequestCaller>();
-        replyCallerDirectoryListener = new CallerDirectoryListenerImpl<ReplyCaller>();
-        requestCallerDirectory.addListener(requestCallerDirectoryListener);
-        replyCallerDirectory.addListener(replyCallerDirectoryListener);
     }
 
     // CHECKSTYLE:ON
@@ -210,10 +176,9 @@ public class DispatcherImpl implements Dispatcher {
                 if (JoynrMessage.MESSAGE_TYPE_REQUEST.equals(type)) {
                     // handle only if this message creator (userId) has permissions
                     if (accessController.hasConsumerPermission(message)) {
-                        final String replyToChannelId = message.getHeaderValue(JoynrMessage.HEADER_NAME_REPLY_CHANNELID);
                         final Request request = objectMapper.readValue(message.getPayload(), Request.class);
                         logger.debug("Parsed request from message payload :" + message.getPayload());
-                        handle(request, message.getFrom(), message.getTo(), replyToChannelId, expiryDate);
+                        handle(request, message.getFrom(), message.getTo(), expiryDate);
                     }
                 } else if (JoynrMessage.MESSAGE_TYPE_ONE_WAY.equals(type)) {
                     OneWay oneWayRequest = objectMapper.readValue(message.getPayload(), OneWay.class);
@@ -223,11 +188,10 @@ public class DispatcherImpl implements Dispatcher {
                         || JoynrMessage.MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST.equals(type)) {
                     // handle only if this message creator (userId) has permissions
                     if (accessController.hasConsumerPermission(message)) {
-                        final String replyToChannelId = message.getHeaderValue(JoynrMessage.HEADER_NAME_REPLY_CHANNELID);
                         SubscriptionRequest subscriptionRequest = objectMapper.readValue(message.getPayload(),
                                                                                          SubscriptionRequest.class);
                         logger.debug("Parsed subscription request from message payload :" + message.getPayload());
-                        handle(subscriptionRequest, message.getFrom(), message.getTo(), replyToChannelId);
+                        handle(subscriptionRequest, message.getFrom(), message.getTo());
                     }
                 } else if (JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_STOP.equals(type)) {
                     SubscriptionStop subscriptionStop = objectMapper.readValue(message.getPayload(),
@@ -251,10 +215,7 @@ public class DispatcherImpl implements Dispatcher {
     private void handle(final Request request,
                         final String fromParticipantId,
                         final String toParticipantId,
-                        final String replyToChannelId,
                         final long expiryDate) {
-        addRequestorToMessageRouter(fromParticipantId, replyToChannelId);
-
         requestReplyDispatcher.handleRequest(new Callback<Reply>() {
             @Override
             public void onSuccess(Reply reply) {
@@ -297,26 +258,13 @@ public class DispatcherImpl implements Dispatcher {
 
     private void handle(SubscriptionRequest subscriptionRequest,
                         final String fromParticipantId,
-                        final String toParticipantId,
-                        final String channelId) {
-        addRequestorToMessageRouter(fromParticipantId, channelId);
-
+                        final String toParticipantId) {
         publicationManager.addSubscriptionRequest(fromParticipantId, toParticipantId, subscriptionRequest);
     }
 
     @Override
     public void shutdown(boolean clear) {
         logger.info("SHUTTING DOWN RequestReplyDispatcher");
-        requestCallerDirectory.removeListener(requestCallerDirectoryListener);
-        replyCallerDirectory.removeListener(replyCallerDirectoryListener);
-        shutdown = true;
-
-        try {
-            messageReceiver.shutdown(clear);
-        } catch (Exception e) {
-            logger.error("error shutting down messageReceiver");
-        }
-
     }
 
     @Override
@@ -378,53 +326,4 @@ public class DispatcherImpl implements Dispatcher {
         publicationManager.stopPublication(subscriptionStop.getSubscriptionId());
     }
 
-    private void addRequestorToMessageRouter(String requestorParticipantId, String replyToChannelId) {
-        if (replyToChannelId != null && !replyToChannelId.isEmpty()) {
-            messageRouter.addNextHop(requestorParticipantId, new ChannelAddress(replyToChannelId));
-        } else {
-            /*
-             * TODO make sure that all requests (ie not one-way) also have replyTo
-             * set, otherwise log an error.
-             * Caution: the replyToChannelId is not set in case of local communication
-             */
-        }
-    }
-
-    private void startReceiver() {
-        if (shutdown) {
-            throw new JoynrShutdownException("cannot start receiver: dispatcher is already shutting down");
-        }
-
-        synchronized (messageReceiver) {
-            if (registering == false) {
-                registering = true;
-
-                if (!messageReceiver.isStarted()) {
-                    // The messageReceiver gets the message off the wire and passes it on to the message Listener.
-                    // Starting the messageReceiver triggers a registration with the channelUrlDirectory, thus causing
-                    // reply messages to be sent back to this message Receiver. It is therefore necessary to register
-                    // the message receiver before registering the message listener.
-
-                    // NOTE LongPollMessageReceiver creates a channel synchronously before returning
-
-                    // TODO this will lead to a unique messageReceiver => all servlets share one channelId
-                    messageReceiver.start(DispatcherImpl.this, new ReceiverStatusListener() {
-
-                        @Override
-                        public void receiverStarted() {
-                        }
-
-                        @Override
-                        // Exceptions that could not be resolved from within the receiver require a shutdown
-                        public void receiverException(Throwable e) {
-                            // clear == false means that offboard resources (registrations, existing channels etc are
-                            // not affected
-                            shutdown(false);
-                        }
-                    });
-
-                }
-            }
-        }
-    }
 }

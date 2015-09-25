@@ -37,6 +37,7 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
     // "joynr.messaging.channelUrlDirectoryUrl";
     // public static final String PROPERTY_BOUNCE_PROXY_URL = "joynr.messaging.bounceProxyUrl";
     public static final String PROPERTY_LIBJOYNR_MESSAGING_ADDRESS = "joynr.messaging.libjoynrmessagingaddress";
+    public static final String PROPERTY_CLUSTERCONTROLER_MESSAGING_SKELETON = "joynr.messaging.clustercontrollermessagingskeleton";
     public static final String PROPERTY_ARBITRATION_MINIMUMRETRYDELAY = "joynr.arbitration.minimumretrydelay";
     public static final String PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID = "joynr.messaging.capabilitiesdirectoryparticipantid";
     public static final String PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID = "joynr.messaging.capabilitiesdirectorychannelid";
