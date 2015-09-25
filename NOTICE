@@ -137,6 +137,12 @@ This project has dependencies to:
   io.joynr.java:integration-tests under The Apache Software License, Version 2.0
   io.joynr.java:javaapi under The Apache Software License, Version 2.0
   io.joynr.java:messaging under The Apache Software License, Version 2.0
+  io.joynr.javascript.apps:radio under The Apache Software License, Version 2.0
+  io.joynr.javascript.inter-tab:inter-tab-comm under The Apache Software License, Version 2.0
+  io.joynr.javascript:apps under The Apache Software License, Version 2.0
+  io.joynr.javascript:inter-tab under The Apache Software License, Version 2.0
+  io.joynr.javascript:js-dependencies under The Apache Software License, Version 2.0
+  io.joynr.javascript:libjoynr-js under The Apache Software License, Version 2.0
   io.joynr.tools.generator:cpp-generator under The Apache Software License, Version 2.0
   io.joynr.tools.generator:dependency-libs under The Apache Software License, Version 2.0
   io.joynr.tools.generator:generator-framework under The Apache Software License, Version 2.0
@@ -152,6 +158,7 @@ This project has dependencies to:
   io.joynr:cpp under The Apache Software License, Version 2.0
   io.joynr:examples under The Apache Software License, Version 2.0
   io.joynr:java under The Apache Software License, Version 2.0
+  io.joynr:javascript under The Apache Software License, Version 2.0
   io.joynr:joynr under The Apache Software License, Version 2.0
   io.joynr:tools under The Apache Software License, Version 2.0
   JACC 1.4 API under lgpl
@@ -214,6 +221,8 @@ This project has dependencies to:
   JMS 1.1 under The Apache Software License, Version 2.0
   JMS 1.1 API under lgpl
   JPA 2.0 API under Sun Binary Code License
+  jquery under MIT License
+  js-test-driver under The Apache Software License, Version 2.0
   JSON Small and Fast Parser under The Apache Software License, Version 2.0
   json-path under Apache 2.0
   JSON.simple under The Apache Software License, Version 2.0

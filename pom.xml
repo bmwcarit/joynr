@@ -61,6 +61,13 @@
 
 	<profiles>
 		<profile>
+			<!-- Build and test javascript -->
+			<id>javascript</id>
+			<modules>
+				<module>javascript</module>
+			</modules>
+		</profile>
+		<profile>
 			<!-- Build and test Android distribution -->
 			<id>android</id>
 			<modules>
