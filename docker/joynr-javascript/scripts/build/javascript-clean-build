@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source /data/src/docker/joynr-base/scripts/global.sh
+
 cd /data/src
 
 # fail on first error
