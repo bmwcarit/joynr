@@ -37,6 +37,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 
 import joynr.PeriodicSubscriptionQos;
+import joynr.exceptions.PublicationMissedException;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -110,7 +111,7 @@ public class SubscriptionTimersTest {
         subscriptionManager.registerAttributeSubscription(fromParticipantId, toParticipantId, subscriptionRequest);
         subscriptionId = subscriptionRequest.getSubscriptionId();
         Thread.sleep(subscriptionLength);
-        verify(attributeSubscriptionCallback, times(numberOfPublications)).onError();
+        verify(attributeSubscriptionCallback, times(numberOfPublications)).onError(new PublicationMissedException(subscriptionId));
 
         // wait some additional time to see whether there are unwanted publications
         Thread.sleep(2 * period);
@@ -187,8 +188,8 @@ public class SubscriptionTimersTest {
 
         int missedPublicationAlerts = (lastPublicationIsMissedPublication) ? missedPublicationsCounter - 1
                 : missedPublicationsCounter;
-        verify(attributeSubscriptionCallback, atLeast(missedPublicationAlerts)).onError();
-        verify(attributeSubscriptionCallback, atMost(missedPublicationsCounter)).onError();
+        verify(attributeSubscriptionCallback, atLeast(missedPublicationAlerts)).onError(new PublicationMissedException(subscriptionId));
+        verify(attributeSubscriptionCallback, atMost(missedPublicationsCounter)).onError(new PublicationMissedException(subscriptionId));
         // verify callback is not called
         verifyNoMoreInteractions(attributeSubscriptionCallback);
         LOG.trace("finishing test.");

@@ -26,6 +26,7 @@ import io.joynr.dispatcher.rpc.JoynrSyncInterface;
 import io.joynr.dispatching.RequestReplyManager;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.dispatching.subscription.SubscriptionManager;
+import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
@@ -127,7 +128,7 @@ public class ConnectorTests {
                 }
 
                 @Override
-                public void onError() {
+                public void onError(JoynrException error) {
                 }
             };
             Object[] args = new Object[]{ listener, subscriptionQos, subscriptionId };

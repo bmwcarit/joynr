@@ -171,7 +171,8 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                                                                        heartbeat.getHeartbeat(),
                                                                        heartbeat.getAlertAfterInterval(),
                                                                        request.getAttributeSubscriptionListener(),
-                                                                       subscriptionStates.get(request.getSubscriptionId())));
+                                                                       subscriptionStates.get(request.getSubscriptionId()),
+                                                                       request.getSubscriptionId()));
             }
         }
 

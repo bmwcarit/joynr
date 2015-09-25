@@ -157,7 +157,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         SubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(period_ms, expiryDate_ms, alertInterval_ms, 0);
         String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQos);
         Thread.sleep(subscriptionDuration);
-        verify(integerListener, times(0)).onError();
+        verify(integerListener, times(0)).onError(null);
         // TODO verify publications shipped correct data
         verify(integerListener, times(1)).onReceive(eq(42));
         verify(integerListener, times(1)).onReceive(eq(43));
@@ -179,7 +179,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         String subscriptionId = proxy.subscribeToComplexTestAttribute(gpsListener, subscriptionQos);
         Thread.sleep(subscriptionDuration);
         // 100 2100 4100 6100
-        verify(gpsListener, times(0)).onError();
+        verify(gpsListener, times(0)).onError(null);
         verify(gpsListener, atLeast(4)).onReceive(eq(provider.getComplexTestAttributeSync()));
 
         proxy.unsubscribeFromComplexTestAttribute(subscriptionId);
@@ -200,7 +200,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         String subscriptionId = proxy.subscribeToEnumAttribute(testEnumListener, subscriptionQos);
         Thread.sleep(subscriptionDuration);
         // 100 2100 4100 6100
-        verify(testEnumListener, times(0)).onError();
+        verify(testEnumListener, times(0)).onError(null);
         verify(testEnumListener, atLeast(4)).onReceive(eq(expectedTestEnum));
 
         proxy.unsubscribeFromEnumAttribute(subscriptionId);
@@ -218,7 +218,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
 
         String subscriptionId = proxy.subscribeToListOfInts(integerListListener, subscriptionQos);
         Thread.sleep(subscriptionDuration);
-        verify(integerListListener, times(0)).onError();
+        verify(integerListListener, times(0)).onError(null);
 
         verify(integerListListener, times(1)).onReceive(eq(Arrays.asList(42)));
         verify(integerListListener, times(1)).onReceive(eq(Arrays.asList(42, 43)));
@@ -238,7 +238,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
 
         String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQos);
         Thread.sleep(subscriptionDuration);
-        verify(integerListener, times(0)).onError();
+        verify(integerListener, times(0)).onError(null);
         verify(integerListener, atLeast(2)).onReceive(anyInt());
 
         reset(integerListener);
@@ -268,7 +268,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
                                                                                         publicationTtl_ms);
 
         String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQosMixed);
-        verify(integerListener, times(0)).onError();
+        verify(integerListener, times(0)).onError(null);
         Thread.sleep(expected_latency_ms);
 
         // when subscribing, we automatically get 1 publication. Expect the starting-publication
@@ -313,7 +313,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
                                                                                         publicationTtl_ms);
 
         String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQosMixed);
-        verify(integerListener, times(0)).onError();
+        verify(integerListener, times(0)).onError(null);
         Thread.sleep(expected_latency_ms);
 
         // when subscribing, we automatically get 1 publication. Expect the
@@ -351,7 +351,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
                                                                                         publicationTtl_ms);
 
         String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQosMixed);
-        verify(integerListener, times(0)).onError();
+        verify(integerListener, times(0)).onError(null);
         Thread.sleep(expected_latency_ms);
 
         // when subscribing, we automatically get 1 publication. Expect the
@@ -386,7 +386,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
 
         String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQos);
         Thread.sleep(expected_latency_ms);
-        verify(integerListener, times(0)).onError();
+        verify(integerListener, times(0)).onError(null);
         // when subscribing, we automatically get 1 publication. This might not
         // be the case in java?
         verify(integerListener, times(1)).onReceive(anyInt());

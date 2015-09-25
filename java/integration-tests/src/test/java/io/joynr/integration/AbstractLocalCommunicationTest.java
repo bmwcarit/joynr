@@ -3,7 +3,7 @@ package io.joynr.integration;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -133,7 +133,7 @@ public abstract class AbstractLocalCommunicationTest {
         }, period, period);
 
         Thread.sleep(lengthInMS);// - (System.currentTimeMillis() - currentTime));
-        verify(listener, times(0)).onError();
+        verify(listener, times(0)).onError(null);
         // verify(listener, times(times)).receive(anyInt());
         // TODO verify publications shipped correct data
         for (int i = 42; i < 42 + times; i++) {
@@ -171,7 +171,7 @@ public abstract class AbstractLocalCommunicationTest {
         proxy.subscribeToATTRIBUTEWITHCAPITALLETTERS(listener, subscriptionQos);
 
         Thread.sleep(lengthInMS + 100);// - (System.currentTimeMillis() - currentTime));
-        verify(listener, times(0)).onError();
+        verify(listener, times(0)).onError(null);
         verify(listener, times(times)).onReceive(anyInt());
         // TODO verify publications shipped correct data
         for (int i = 42; i < 42 + times; i++) {

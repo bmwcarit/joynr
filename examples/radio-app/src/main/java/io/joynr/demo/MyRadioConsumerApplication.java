@@ -234,9 +234,9 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
                                                                                     }
 
                                                                                     @Override
-                                                                                    public void onError() {
+                                                                                    public void onError(JoynrException error) {
                                                                                         LOG.info(PRINT_BORDER
-                                                                                                + "ATTRIBUTE SUBSCRIPTION: publication missed "
+                                                                                                + "ATTRIBUTE SUBSCRIPTION: " + error
                                                                                                 + PRINT_BORDER);
                                                                                     }
                                                                                 },

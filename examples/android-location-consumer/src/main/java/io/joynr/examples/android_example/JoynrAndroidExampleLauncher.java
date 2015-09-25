@@ -23,6 +23,7 @@ import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrCommunicationException;
+import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.joynrandroidruntime.JoynrAndroidRuntime;
 import io.joynr.messaging.MessagingQos;
@@ -128,7 +129,7 @@ public class JoynrAndroidExampleLauncher {
             }
 
             @Override
-            public void onError() {
+            public void onError(JoynrException error) {
                 // TODO Handle missed updates
 
             }
