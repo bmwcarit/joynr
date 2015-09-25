@@ -25,6 +25,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.RequestCaller;
 import io.joynr.dispatching.RequestCallerDirectory;
@@ -107,6 +108,7 @@ public class PushingPublicationTest {
 
         requestCallerFactory = new RequestCallerFactory();
         requestCaller = requestCallerFactory.create(provider);
+
         setupMocks();
     }
 
@@ -163,6 +165,9 @@ public class PushingPublicationTest {
                                                         any(SubscriptionPublication.class),
                                                         any(MessagingQos.class));
 
+        when(requestCallerDirectory.getCaller(eq(providerId))).thenReturn(requestCaller);
+        when(requestCallerDirectory.containsCaller(eq(providerId))).thenReturn(true);
+
     }
 
     @Test
@@ -171,7 +176,7 @@ public class PushingPublicationTest {
                                                   JsonMappingException, IOException {
         setupMixedQos();
 
-        publicationManager.addSubscriptionRequest(proxyId, providerId, subscriptionRequest, requestCaller);
+        publicationManager.addSubscriptionRequest(proxyId, providerId, subscriptionRequest);
         Thread.sleep(100);
         provider.setTestAttribute(testAttribute);
         Thread.sleep(1500);
@@ -192,7 +197,7 @@ public class PushingPublicationTest {
                                                                              JsonMappingException, IOException {
         setupPureOnChangedQos();
 
-        publicationManager.addSubscriptionRequest(proxyId, providerId, subscriptionRequest, requestCaller);
+        publicationManager.addSubscriptionRequest(proxyId, providerId, subscriptionRequest);
         provider.setTestAttribute(testAttribute);
 
         ArgumentCaptor<SubscriptionPublication> sentPublication = ArgumentCaptor.forClass(SubscriptionPublication.class);

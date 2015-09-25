@@ -19,7 +19,6 @@ package io.joynr.dispatching.subscription;
  * #L%
  */
 
-import io.joynr.dispatching.RequestCaller;
 import io.joynr.dispatching.subscription.PublicationManagerImpl.PublicationInformation;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
@@ -46,18 +45,6 @@ public interface PublicationManager {
     void addSubscriptionRequest(String fromParticipantId,
                                 String toParticipantId,
                                 SubscriptionRequest subscriptionRequest);
-
-    /**
-     * Adds the SubscriptionRequest for event or attribute
-     * @param fromParticipantId origin participant id
-     * @param toParticipantId destination participant id
-     * @param subscriptionRequest request to be added
-     * @param requestCaller caller of the request
-     */
-    void addSubscriptionRequest(String fromParticipantId,
-                                String toParticipantId,
-                                SubscriptionRequest subscriptionRequest,
-                                RequestCaller requestCaller);
 
     /**
      * Stops the sending of publications

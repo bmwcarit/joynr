@@ -24,6 +24,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.RequestCaller;
 import io.joynr.dispatching.RequestCallerDirectory;
@@ -100,12 +101,17 @@ public class PublicationTimersTest {
         String proxyId = "proxyId";
         String providerId = "providerId";
 
+        RequestCallerDirectory requestCallerDirectory = Mockito.mock(RequestCallerDirectory.class);
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(subscriptionId, attributeName, qos);
         PublicationManager publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                                            dispatcher,
-                                                                           new RequestCallerDirectory(),
+                                                                           requestCallerDirectory,
                                                                            cleanupScheduler);
-        publicationManager.addSubscriptionRequest(proxyId, providerId, subscriptionRequest, requestCaller);
+
+        when(requestCallerDirectory.getCaller(eq(providerId))).thenReturn(requestCaller);
+        when(requestCallerDirectory.containsCaller(eq(providerId))).thenReturn(true);
+
+        publicationManager.addSubscriptionRequest(proxyId, providerId, subscriptionRequest);
 
         Thread.sleep(subscriptionLength + period / 2);
 

@@ -242,11 +242,10 @@ public class PublicationManagerImpl implements PublicationManager, CallerDirecto
                                                                          broadcastListener));
     }
 
-    @Override
-    public void addSubscriptionRequest(String proxyParticipantId,
-                                       String providerParticipantId,
-                                       SubscriptionRequest subscriptionRequest,
-                                       RequestCaller requestCaller) {
+    private void addSubscriptionRequest(String proxyParticipantId,
+                                        String providerParticipantId,
+                                        SubscriptionRequest subscriptionRequest,
+                                        RequestCaller requestCaller) {
 
         // Check that this is a valid subscription
         SubscriptionQos subscriptionQos = subscriptionRequest.getQos();
