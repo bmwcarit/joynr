@@ -105,7 +105,7 @@ public class Executor {
 
     private ModelLoader prepareGeneratorEnvironment(IGenerator generator) {
         String outputPath = arguments.getOutputPath();
-        String modelPath = arguments.getModelpath();
+        String modelPath = arguments.getModelPath();
 
         createFileSystemAccess(outputFileSystem, outputPath);
 

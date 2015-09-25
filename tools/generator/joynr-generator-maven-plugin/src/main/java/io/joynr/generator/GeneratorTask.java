@@ -62,11 +62,7 @@ public class GeneratorTask {
     }
 
     public IGenerator prepareGenerator() throws ClassNotFoundException, InstantiationException, IllegalAccessException {
-        if (arguments.isValid()) {
-            return executor.setup();
-        } else {
-            throw new IllegalArgumentException(arguments.getErrorMessage());
-        }
-
+        arguments.checkArguments();
+        return executor.setup();
     }
 }
