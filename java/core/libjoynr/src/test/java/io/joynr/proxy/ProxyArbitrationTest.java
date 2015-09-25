@@ -25,10 +25,12 @@ import io.joynr.common.ExpiryDate;
 import io.joynr.dispatcher.rpc.JoynrSyncInterface;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 import io.joynr.dispatching.JoynrMessageFactory;
+import io.joynr.dispatching.RequestCallerDirectory;
 import io.joynr.dispatching.RequestReplyManager;
 import io.joynr.dispatching.RequestReplyManagerImpl;
 import io.joynr.dispatching.rpc.ReplyCaller;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
+import io.joynr.dispatching.rpc.RequestInterpreter;
 import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.MessagingQos;
@@ -38,6 +40,7 @@ import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.messaging.routing.RoutingTableImpl;
 
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
 
 import joynr.JoynrMessage;
 import joynr.Reply;
@@ -103,7 +106,12 @@ public class ProxyArbitrationTest {
 
         routingTable.put(participantId, correctEndpointAddress);
 
-        RequestReplyManager requestReplyManager = new RequestReplyManagerImpl(joynrMessageFactory, messageRouter);
+        RequestReplyManager requestReplyManager = new RequestReplyManagerImpl(joynrMessageFactory,
+                                                                              replyCallerDirectory,
+                                                                              Mockito.mock(RequestCallerDirectory.class),
+                                                                              messageRouter,
+                                                                              Mockito.mock(RequestInterpreter.class),
+                                                                              Mockito.mock(ScheduledExecutorService.class));
         JoynrMessagingConnectorFactory joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(requestReplyManager,
                                                                                                            replyCallerDirectory,
                                                                                                            subscriptionManager);

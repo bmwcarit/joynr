@@ -80,7 +80,6 @@ public class RequestReplyManagerTest {
     private static final Logger logger = LoggerFactory.getLogger(RequestReplyManagerTest.class);
     private static final int TIME_OUT_MS = 10 * 1000;
     private static final long TIME_TO_LIVE = 10000L;
-    private RequestReplyDispatcher requestReplyDispatcher;
     private RequestReplyManager requestReplyManager;
     private ReplyCallerDirectory replyCallerDirectory;
     private RequestCallerDirectory requestCallerDirectory;
@@ -125,7 +124,7 @@ public class RequestReplyManagerTest {
             @Override
             protected void configure() {
                 bind(MessageRouter.class).toInstance(messageRouterMock);
-                bind(RequestReplyDispatcher.class).to(RequestReplyDispatcherImpl.class);
+                bind(RequestReplyManager.class).to(RequestReplyManagerImpl.class);
                 bind(RequestReplyManager.class).to(RequestReplyManagerImpl.class);
                 bind(PlatformSecurityManager.class).toInstance(platformSecurityManagerMock);
                 requestStaticInjection(RpcUtils.class, Request.class, JoynrMessagingConnectorFactory.class);
@@ -140,7 +139,7 @@ public class RequestReplyManagerTest {
         objectMapper = injector.getInstance(ObjectMapper.class);
         objectMapper.registerSubtypes(Request.class, OneWay.class);
 
-        requestReplyDispatcher = injector.getInstance(RequestReplyDispatcher.class);
+        requestReplyManager = injector.getInstance(RequestReplyManager.class);
         requestCallerDirectory = injector.getInstance(RequestCallerDirectory.class);
         replyCallerDirectory = injector.getInstance(ReplyCallerDirectory.class);
         requestReplyManager = injector.getInstance(RequestReplyManager.class);
@@ -199,7 +198,7 @@ public class RequestReplyManagerTest {
 
     @After
     public void tearDown() {
-        requestReplyDispatcher.removeListener(testMessageListenerParticipantId);
+        requestReplyManager.removeListener(testMessageListenerParticipantId);
         requestCallerDirectory.removeCaller(testMessageResponderParticipantId);
     }
 
@@ -246,10 +245,7 @@ public class RequestReplyManagerTest {
 
         requestCallerDirectory.addCaller(testMessageResponderParticipantId, testRequestCallerSpy);
         ReplyCallback replyCallbackMock = mock(ReplyCallback.class);
-        requestReplyDispatcher.handleRequest(replyCallbackMock,
-                                             testMessageResponderParticipantId,
-                                             request1,
-                                             TIME_TO_LIVE);
+        requestReplyManager.handleRequest(replyCallbackMock, testMessageResponderParticipantId, request1, TIME_TO_LIVE);
 
         String reply = (String) testRequestCallerSpy.getSentPayloadFor(request1);
 
@@ -267,7 +263,7 @@ public class RequestReplyManagerTest {
                                             ExpiryDate.fromRelativeTtl(TIME_TO_LIVE * 2));
 
         Reply reply = new Reply(request1.getRequestReplyId(), payload1);
-        requestReplyDispatcher.handleReply(reply);
+        requestReplyManager.handleReply(reply);
 
         verify(replyCaller).messageCallBack(reply);
     }
@@ -276,14 +272,14 @@ public class RequestReplyManagerTest {
     public void queueMessagesForUnregisteredResponder() throws InterruptedException {
         ReplyCallback replyCallbackMock = mock(ReplyCallback.class);
 
-        requestReplyDispatcher.handleRequest(replyCallbackMock,
-                                             testResponderUnregisteredParticipantId,
-                                             request1,
-                                             ExpiryDate.fromRelativeTtl((int) (TIME_TO_LIVE * 0.03)).getValue());
-        requestReplyDispatcher.handleRequest(replyCallbackMock,
-                                             testResponderUnregisteredParticipantId,
-                                             request2,
-                                             ExpiryDate.fromRelativeTtl((int) (TIME_TO_LIVE * 5)).getValue());
+        requestReplyManager.handleRequest(replyCallbackMock,
+                                          testResponderUnregisteredParticipantId,
+                                          request1,
+                                          ExpiryDate.fromRelativeTtl((int) (TIME_TO_LIVE * 0.03)).getValue());
+        requestReplyManager.handleRequest(replyCallbackMock,
+                                          testResponderUnregisteredParticipantId,
+                                          request2,
+                                          ExpiryDate.fromRelativeTtl((int) (TIME_TO_LIVE * 5)).getValue());
 
         Thread.sleep((long) (TIME_TO_LIVE * 0.03 + 20));
         TestRequestCaller testResponderUnregistered = new TestRequestCaller(1);
@@ -305,8 +301,8 @@ public class RequestReplyManagerTest {
         replyCallerDirectory.addReplyCaller(request1.getRequestReplyId(), replyCaller, ttlReplyCaller);
 
         Thread.sleep(ttlReplyCaller.getRelativeTtl() + 100);
-        requestReplyDispatcher.handleReply(new Reply(request1.getRequestReplyId(),
-                                                     testResponder.getSentPayloadFor(request1)));
+        requestReplyManager.handleReply(new Reply(request1.getRequestReplyId(),
+                                                  testResponder.getSentPayloadFor(request1)));
 
         verify(replyCaller, never()).messageCallBack(any(Reply.class));
     }
@@ -316,9 +312,9 @@ public class RequestReplyManagerTest {
                                JsonGenerationException, JsonMappingException, IOException {
 
         TestOneWayRecipient oneWayRecipient = new TestOneWayRecipient(1);
-        requestReplyDispatcher.addOneWayRecipient(testMessageListenerParticipantId, oneWayRecipient);
+        requestReplyManager.addOneWayRecipient(testMessageListenerParticipantId, oneWayRecipient);
 
-        requestReplyDispatcher.handleOneWayRequest(testMessageListenerParticipantId, oneWay1, TIME_TO_LIVE);
+        requestReplyManager.handleOneWayRequest(testMessageListenerParticipantId, oneWay1, TIME_TO_LIVE);
 
         oneWayRecipient.assertAllPayloadsReceived(TIME_OUT_MS);
     }
@@ -332,7 +328,7 @@ public class RequestReplyManagerTest {
         TestRequestCaller testResponder = new TestRequestCaller(1);
         requestCallerDirectory.addCaller(testMessageResponderParticipantId, testResponder);
         ReplyCaller replyCaller = mock(ReplyCaller.class);
-        requestReplyDispatcher.addReplyCaller(request1.getRequestReplyId(), replyCaller, TIME_TO_LIVE * 2);
+        requestReplyManager.addReplyCaller(request1.getRequestReplyId(), replyCaller, TIME_TO_LIVE * 2);
 
         requestReplyManager.sendRequest(testSenderParticipantId,
                                         testMessageResponderParticipantId,

@@ -62,7 +62,7 @@ import com.google.inject.name.Names;
 public class DispatcherImplTest {
 
     @Mock
-    private RequestReplyDispatcher requestReplyDispatcherMock;
+    private RequestReplyManager requestReplyManagerMock;
     @Mock
     private SubscriptionManager subscriptionManagerMock;
     @Mock
@@ -86,7 +86,7 @@ public class DispatcherImplTest {
             @Override
             protected void configure() {
                 bind(Dispatcher.class).to(DispatcherImpl.class);
-                bind(RequestReplyDispatcher.class).toInstance(requestReplyDispatcherMock);
+                bind(RequestReplyManager.class).toInstance(requestReplyManagerMock);
                 bind(SubscriptionManager.class).toInstance(subscriptionManagerMock);
                 bind(PublicationManager.class).toInstance(publicationManagerMock);
                 bind(MessageRouter.class).toInstance(messageRouterMock);

@@ -59,7 +59,6 @@ public class DispatcherTestModule extends AbstractModule {
         bind(RequestReplyManager.class).to(RequestReplyManagerImpl.class);
         bind(MessageRouter.class).to(MessageRouterImpl.class);
         bind(RoutingTable.class).to(RoutingTableImpl.class).asEagerSingleton();
-        bind(RequestReplyDispatcher.class).to(RequestReplyDispatcherImpl.class);
         bind(Dispatcher.class).to(DispatcherImpl.class);
         bind(SubscriptionManager.class).to(SubscriptionManagerImpl.class);
         bind(PublicationManager.class).to(PublicationManagerImpl.class);

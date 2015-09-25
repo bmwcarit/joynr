@@ -24,9 +24,11 @@ import io.joynr.dispatching.rpc.SynchronizedReplyCaller;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
+import io.joynr.proxy.Callback;
 
 import java.io.IOException;
 
+import joynr.OneWay;
 import joynr.Reply;
 import joynr.Request;
 
@@ -136,6 +138,25 @@ public interface RequestReplyManager {
                                                                                                                          JsonGenerationException,
                                                                                                                          JsonMappingException,
                                                                                                                          IOException;
+
+    /**
+     * Removes the listener registered for the interface address.
+     * @param participantId participant id
+     */
+    public void removeListener(final String participantId);
+
+    void addOneWayRecipient(String participantId, PayloadListener<?> listener);
+
+    public void handleReply(Reply reply);
+
+    public void handleRequest(Callback<Reply> replyCallback,
+                              String providerParticipant,
+                              Request request,
+                              long expiryDate);
+
+    public void handleOneWayRequest(String providerParticipantId, OneWay request, long expiryDate);
+
+    public void handleError(Request request, Throwable error);
 
     public void shutdown();
 }

@@ -21,8 +21,6 @@ package io.joynr.dispatching;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import io.joynr.dispatching.RequestCaller;
-import io.joynr.dispatching.RequestReplyDispatcherImpl;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.Promise;
 import io.joynr.pubsub.publication.AttributeListener;
@@ -43,7 +41,7 @@ public class TestRequestCaller extends WaitTillCondition implements RequestCalle
 
     // maps from request payload to response
     private Map<Object, Object> sentPayloads = new HashMap<Object, Object>();
-    private static final Logger logger = LoggerFactory.getLogger(RequestReplyDispatcherImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(TestRequestCaller.class);
 
     public TestRequestCaller(int numberOfMessagesExpected) {
         super(numberOfMessagesExpected);

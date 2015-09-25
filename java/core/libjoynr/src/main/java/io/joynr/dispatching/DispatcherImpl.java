@@ -58,7 +58,7 @@ public class DispatcherImpl implements Dispatcher {
 
     private static final Logger logger = LoggerFactory.getLogger(DispatcherImpl.class);
     private final JoynrMessageFactory joynrMessageFactory;
-    private RequestReplyDispatcher requestReplyDispatcher;
+    private RequestReplyManager requestReplyManager;
     private SubscriptionManager subscriptionManager;
     private PublicationManager publicationManager;
     private final MessageRouter messageRouter;
@@ -69,7 +69,7 @@ public class DispatcherImpl implements Dispatcher {
     @Inject
     @Singleton
     // CHECKSTYLE:OFF
-    public DispatcherImpl(RequestReplyDispatcher requestReplyDispatcher,
+    public DispatcherImpl(RequestReplyManager requestReplyManager,
                           SubscriptionManager subscriptionManager,
                           PublicationManager publicationManager,
                           MessageRouter messageRouter,
@@ -77,7 +77,7 @@ public class DispatcherImpl implements Dispatcher {
                           AccessController accessController,
                           JoynrMessageFactory joynrMessageFactory,
                           ObjectMapper objectMapper) {
-        this.requestReplyDispatcher = requestReplyDispatcher;
+        this.requestReplyManager = requestReplyManager;
         this.subscriptionManager = subscriptionManager;
         this.publicationManager = publicationManager;
         this.messageRouter = messageRouter;
@@ -216,7 +216,7 @@ public class DispatcherImpl implements Dispatcher {
                         final String fromParticipantId,
                         final String toParticipantId,
                         final long expiryDate) {
-        requestReplyDispatcher.handleRequest(new Callback<Reply>() {
+        requestReplyManager.handleRequest(new Callback<Reply>() {
             @Override
             public void onSuccess(Reply reply) {
                 try {
@@ -243,17 +243,17 @@ public class DispatcherImpl implements Dispatcher {
                 }
             }
         },
-                                             toParticipantId,
-                                             request,
-                                             expiryDate);
+                                          toParticipantId,
+                                          request,
+                                          expiryDate);
     }
 
     private void handle(Reply reply) {
-        requestReplyDispatcher.handleReply(reply);
+        requestReplyManager.handleReply(reply);
     }
 
     private void handle(OneWay oneWayRequest, String toParticipantId, final long expiryDate) {
-        requestReplyDispatcher.handleOneWayRequest(toParticipantId, oneWayRequest, expiryDate);
+        requestReplyManager.handleOneWayRequest(toParticipantId, oneWayRequest, expiryDate);
     }
 
     private void handle(SubscriptionRequest subscriptionRequest,
@@ -264,7 +264,7 @@ public class DispatcherImpl implements Dispatcher {
 
     @Override
     public void shutdown(boolean clear) {
-        logger.info("SHUTTING DOWN RequestReplyDispatcher");
+        logger.info("SHUTTING DOWN RequestReplyManager");
     }
 
     @Override
@@ -278,7 +278,7 @@ public class DispatcherImpl implements Dispatcher {
         try {
             if (type.equals(JoynrMessage.MESSAGE_TYPE_REQUEST)) {
                 Request request = objectMapper.readValue(message.getPayload(), Request.class);
-                requestReplyDispatcher.handleError(request, error);
+                requestReplyManager.handleError(request, error);
             }
         } catch (IOException e) {
             logger.error("Error extracting payload for message " + message.getId() + ", raw payload: "

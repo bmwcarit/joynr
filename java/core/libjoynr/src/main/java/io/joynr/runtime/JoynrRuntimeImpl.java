@@ -27,7 +27,6 @@ import io.joynr.dispatching.CallerDirectoryListener;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.RequestCaller;
 import io.joynr.dispatching.RequestCallerDirectory;
-import io.joynr.dispatching.RequestReplyDispatcher;
 import io.joynr.dispatching.RequestReplyManager;
 import io.joynr.dispatching.rpc.ReplyCaller;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
@@ -75,8 +74,6 @@ public class JoynrRuntimeImpl implements JoynrRuntime {
     private RequestReplyManager requestReplyManager;
     @Inject
     private PublicationManager publicationManager;
-    @Inject
-    private RequestReplyDispatcher requestReplyDispatcher;
     private Dispatcher dispatcher;
 
     @Inject
@@ -189,7 +186,7 @@ public class JoynrRuntimeImpl implements JoynrRuntime {
 
         try {
             // TODO The channel is deleted but not deregistered from the Channel Url Directory
-            requestReplyDispatcher.shutdown();
+            requestReplyManager.shutdown();
             publicationManager.shutdown();
             dispatcher.shutdown(clear);
             requestCallerDirectory.removeListener(requestCallerDirectoryListener);
