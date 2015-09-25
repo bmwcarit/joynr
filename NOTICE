@@ -95,7 +95,6 @@ This project has dependencies to:
   Interceptors 1.1 API under lgpl
   io.joynr.android:robolectric-unittests under The Apache Software License, Version 2.0
   io.joynr.cpp:common-api-model under The Apache Software License, Version 2.0
-  io.joynr.cpp:cpp-generator under The Apache Software License, Version 2.0
   io.joynr.cpp:libjoynr under The Apache Software License, Version 2.0
   io.joynr.cpp:libs under The Apache Software License, Version 2.0
   io.joynr.cpp:tests under The Apache Software License, Version 2.0
@@ -136,13 +135,15 @@ This project has dependencies to:
   io.joynr.java:common under The Apache Software License, Version 2.0
   io.joynr.java:core under The Apache Software License, Version 2.0
   io.joynr.java:integration-tests under The Apache Software License, Version 2.0
-  io.joynr.java:java-generator under The Apache Software License, Version 2.0
   io.joynr.java:javaapi under The Apache Software License, Version 2.0
   io.joynr.java:messaging under The Apache Software License, Version 2.0
+  io.joynr.tools.generator:cpp-generator under The Apache Software License, Version 2.0
   io.joynr.tools.generator:dependency-libs under The Apache Software License, Version 2.0
   io.joynr.tools.generator:generator-framework under The Apache Software License, Version 2.0
+  io.joynr.tools.generator:java-generator under The Apache Software License, Version 2.0
   io.joynr.tools.generator:joynr-generator-maven-plugin under The Apache Software License, Version 2.0
   io.joynr.tools.generator:joynr-generator-standalone under The Apache Software License, Version 2.0
+  io.joynr.tools.generator:js-generator under The Apache Software License, Version 2.0
   io.joynr.tools:build-resources under The Apache Software License, Version 2.0
   io.joynr.tools:generator under The Apache Software License, Version 2.0
   io.joynr.tools:license-check under The Apache Software License, Version 2.0

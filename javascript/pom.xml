@@ -16,7 +16,6 @@
 	<modules>
 		<module>build-resources</module>
 		<module>js-dependencies</module>
-		<module>js-generator</module>
 		<module>inter-tab</module>
 		<module>libjoynr-js</module>
 		<module>apps</module>

@@ -58,7 +58,7 @@
 				</executions>
 				<dependencies>
 					<dependency>
-						<groupId>io.joynr.cpp</groupId>
+						<groupId>io.joynr.tools.generator</groupId>
 						<artifactId>cpp-generator</artifactId>
 						<version>${project.version}</version>
 					</dependency>

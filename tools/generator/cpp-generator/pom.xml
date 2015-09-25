@@ -18,17 +18,16 @@
   -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>io.joynr.java</groupId>
-	<artifactId>java-generator</artifactId>
+	<groupId>io.joynr.tools.generator</groupId>
+	<artifactId>cpp-generator</artifactId>
 	<packaging>jar</packaging>
-
 	<name>${project.groupId}:${project.artifactId}</name>
 
 	<parent>
 		<groupId>io.joynr.tools</groupId>
 		<artifactId>generator</artifactId>
 		<version>0.9.4-SNAPSHOT</version>
-		<relativePath>../../tools/generator/pom.xml</relativePath>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<dependencies>
@@ -36,6 +35,12 @@
 			<groupId>io.joynr.tools.generator</groupId>
 			<artifactId>generator-framework</artifactId>
 			<version>${project.version}</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>jsr305</artifactId>
+					<groupId>com.google.code.findbugs</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 	</dependencies>
 
@@ -106,6 +111,8 @@
 					</filesets>
 				</configuration>
 			</plugin>
+
 		</plugins>
 	</build>
+
 </project>
