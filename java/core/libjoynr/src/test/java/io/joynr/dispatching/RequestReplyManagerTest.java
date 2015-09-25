@@ -39,7 +39,6 @@ import io.joynr.security.PlatformSecurityManager;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -58,8 +57,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -76,27 +73,17 @@ import com.google.inject.name.Names;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class RequestReplyManagerTest {
-    @SuppressWarnings("unused")
-    private static final Logger logger = LoggerFactory.getLogger(RequestReplyManagerTest.class);
-    private static final int TIME_OUT_MS = 10 * 1000;
     private static final long TIME_TO_LIVE = 10000L;
     private RequestReplyManager requestReplyManager;
     private ReplyCallerDirectory replyCallerDirectory;
     private RequestCallerDirectory requestCallerDirectory;
-    private String channelId;
     private String testSenderParticipantId;
     private String testMessageListenerParticipantId;
     private String testMessageResponderParticipantId;
-    private String testListenerUnregisteredParticipantId;
     private String testResponderUnregisteredParticipantId;
-
-    private JoynrMessage messageToResponder;
-    private JoynrMessage messageToUnregisteredListener1;
-    private JoynrMessage messageToUnregisteredListener2;
 
     private final String payload1 = "testPayload 1";
     private final String payload2 = "testPayload 2";
-    private final String payload3 = "testPayload 3";
 
     private Request request1;
     private Request request2;
@@ -106,8 +93,6 @@ public class RequestReplyManagerTest {
 
     @Mock
     private MessageRouter messageRouterMock;
-    @Mock
-    private PlatformSecurityManager platformSecurityManagerMock;
 
     @Before
     public void setUp() throws NoSuchMethodException, SecurityException, JsonGenerationException, IOException {
@@ -115,10 +100,8 @@ public class RequestReplyManagerTest {
         testMessageListenerParticipantId = "testMessageListenerParticipantId";
         testMessageResponderParticipantId = "testMessageResponderParticipantId";
         testSenderParticipantId = "testSenderParticipantId";
-        testListenerUnregisteredParticipantId = "testListenerUnregisteredParticipantId";
         testResponderUnregisteredParticipantId = "testResponderUnregisteredParticipantId";
 
-        channelId = "disTest-" + UUID.randomUUID().toString();
         Injector injector = Guice.createInjector(new AbstractModule() {
 
             @Override
@@ -126,7 +109,7 @@ public class RequestReplyManagerTest {
                 bind(MessageRouter.class).toInstance(messageRouterMock);
                 bind(RequestReplyManager.class).to(RequestReplyManagerImpl.class);
                 bind(RequestReplyManager.class).to(RequestReplyManagerImpl.class);
-                bind(PlatformSecurityManager.class).toInstance(platformSecurityManagerMock);
+                bind(PlatformSecurityManager.class).toInstance(mock(PlatformSecurityManager.class));
                 requestStaticInjection(RpcUtils.class, Request.class, JoynrMessagingConnectorFactory.class);
 
                 ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.Cleanup-%d").build();
@@ -165,27 +148,6 @@ public class RequestReplyManagerTest {
         headerToResponder.put(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID, testSenderParticipantId);
         headerToResponder.put(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID, testMessageResponderParticipantId);
         headerToResponder.put(JoynrMessage.HEADER_NAME_CONTENT_TYPE, JoynrMessage.CONTENT_TYPE_TEXT_PLAIN);
-        messageToResponder = new JoynrMessage();
-        messageToResponder.setHeader(headerToResponder);
-        messageToResponder.setType(JoynrMessage.MESSAGE_TYPE_REQUEST);
-        messageToResponder.setPayload(payload1);
-
-        Map<String, String> headerToUnregisteredListener = Maps.newHashMap();
-        headerToUnregisteredListener.put(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID, testSenderParticipantId);
-        headerToUnregisteredListener.put(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID,
-                                         testListenerUnregisteredParticipantId);
-
-        messageToUnregisteredListener1 = new JoynrMessage();
-        messageToUnregisteredListener1.setHeader(headerToUnregisteredListener);
-        messageToUnregisteredListener1.setType(JoynrMessage.MESSAGE_TYPE_ONE_WAY);
-
-        messageToUnregisteredListener1.setPayload(payload2);
-
-        messageToUnregisteredListener2 = new JoynrMessage();
-        messageToUnregisteredListener2.setHeader(headerToUnregisteredListener);
-        messageToUnregisteredListener2.setType(JoynrMessage.MESSAGE_TYPE_ONE_WAY);
-
-        messageToUnregisteredListener2.setPayload(payload3);
 
         Map<String, String> requestHeader = Maps.newHashMap();
         requestHeader.put(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID, testSenderParticipantId);
@@ -193,7 +155,6 @@ public class RequestReplyManagerTest {
         requestHeader.put(JoynrMessage.HEADER_NAME_EXPIRY_DATE, String.valueOf(System.currentTimeMillis()
                 + TIME_TO_LIVE));
         requestHeader.put(JoynrMessage.HEADER_NAME_CONTENT_TYPE, JoynrMessage.CONTENT_TYPE_APPLICATION_JSON);
-        requestHeader.put(JoynrMessage.HEADER_NAME_REPLY_CHANNELID, channelId);
     }
 
     @After
@@ -316,7 +277,7 @@ public class RequestReplyManagerTest {
 
         requestReplyManager.handleOneWayRequest(testMessageListenerParticipantId, oneWay1, TIME_TO_LIVE);
 
-        oneWayRecipient.assertAllPayloadsReceived(TIME_OUT_MS);
+        oneWayRecipient.assertAllPayloadsReceived(TIME_TO_LIVE);
     }
 
     @Test
