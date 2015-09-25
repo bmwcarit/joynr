@@ -38,6 +38,7 @@ import io.joynr.runtime.PropertyLoader;
 import joynr.OnChangeSubscriptionQos;
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
 import joynr.PeriodicSubscriptionQos;
+import joynr.exceptions.ProviderRuntimeException;
 import joynr.tests.testProxy;
 import joynr.tests.testTypes.TestEnum;
 import joynr.types.Localisation.GpsLocation;
@@ -57,6 +58,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 
+import javassist.compiler.ast.ASTList;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
@@ -398,6 +400,52 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
 
         proxy.unsubscribeFromTestAttribute(subscriptionId);
 
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void subscribeToAttributeWithProviderRuntimeException() throws InterruptedException {
+        AttributeSubscriptionListener<Integer> providerRuntimeExceptionListener = mock(AttributeSubscriptionListener.class);
+        ProviderRuntimeException expectedException = new ProviderRuntimeException(PubSubTestProviderImpl.MESSAGE_PROVIDERRUNTIMEEXCEPTION);
+
+        int periods = 4;
+        int subscriptionDuration = (period_ms * periods);
+        long alertInterval_ms = 500;
+        long expiryDate_ms = System.currentTimeMillis() + subscriptionDuration;
+        SubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(period_ms, expiryDate_ms, alertInterval_ms, 0);
+
+        String subscriptionId = proxy.subscribeToAttributeWithProviderRuntimeException(providerRuntimeExceptionListener,
+                                                                                       subscriptionQos);
+        Thread.sleep(subscriptionDuration);
+        // 100 2100 4100 6100
+        verify(providerRuntimeExceptionListener, atLeast(periods)).onError(expectedException);
+        verify(providerRuntimeExceptionListener, atMost(periods + 1)).onError(expectedException);
+        verify(providerRuntimeExceptionListener, times(0)).onReceive(null);
+
+        proxy.unsubscribeFromEnumAttribute(subscriptionId);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void subscribeToAttributeWithThrownException() throws InterruptedException {
+        AttributeSubscriptionListener<Integer> providerRuntimeExceptionListener = mock(AttributeSubscriptionListener.class);
+        ProviderRuntimeException expectedException = new ProviderRuntimeException(new IllegalArgumentException(PubSubTestProviderImpl.MESSAGE_THROWN_PROVIDERRUNTIMEEXCEPTION).toString());
+
+        int periods = 4;
+        int subscriptionDuration = (period_ms * periods);
+        long alertInterval_ms = 500;
+        long expiryDate_ms = System.currentTimeMillis() + subscriptionDuration;
+        SubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(period_ms, expiryDate_ms, alertInterval_ms, 0);
+
+        String subscriptionId = proxy.subscribeToAttributeWithThrownException(providerRuntimeExceptionListener,
+                                                                              subscriptionQos);
+        Thread.sleep(subscriptionDuration);
+        // 100 2100 4100 6100
+        verify(providerRuntimeExceptionListener, atLeast(periods)).onError(expectedException);
+        verify(providerRuntimeExceptionListener, atMost(periods + 1)).onError(expectedException);
+        verify(providerRuntimeExceptionListener, times(0)).onReceive(null);
+
+        proxy.unsubscribeFromEnumAttribute(subscriptionId);
     }
 
     @SuppressWarnings("unchecked")

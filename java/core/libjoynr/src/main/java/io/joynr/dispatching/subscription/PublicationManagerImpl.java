@@ -560,25 +560,35 @@ public class PublicationManagerImpl implements PublicationManager, CallerDirecto
         }
     }
 
+    private void sendPublicationError(JoynrException error, PublicationInformation publicationInformation) {
+        SubscriptionPublication publication = new SubscriptionPublication(error,
+                                                                          publicationInformation.getSubscriptionId());
+        sendPublication(publication, publicationInformation);
+    }
+
     private void triggerPublication(final PublicationInformation publicationInformation,
                                     RequestCaller requestCaller,
                                     Method method) {
-        Promise<?> attributeGetterPromise = attributePollInterpreter.execute(requestCaller, method);
-        attributeGetterPromise.then(new PromiseListener() {
+        try {
+            Promise<?> attributeGetterPromise = attributePollInterpreter.execute(requestCaller, method);
+            attributeGetterPromise.then(new PromiseListener() {
 
-            @Override
-            public void onRejection(JoynrException error) {
-                // TODO transmit application layer exception to proxy
+                @Override
+                public void onRejection(JoynrException error) {
+                    sendPublicationError(error, publicationInformation);
 
-            }
+                }
 
-            @Override
-            public void onFulfillment(Object... values) {
-                // attribute getters only return a single value
-                sendPublication(prepareAttributePublication(values[0], publicationInformation.getSubscriptionId()),
-                                publicationInformation);
-            }
-        });
+                @Override
+                public void onFulfillment(Object... values) {
+                    // attribute getters only return a single value
+                    sendPublication(prepareAttributePublication(values[0], publicationInformation.getSubscriptionId()),
+                                    publicationInformation);
+                }
+            });
+        } catch (JoynrRuntimeException error) {
+            sendPublicationError(error, publicationInformation);
+        }
     }
 
     private Method findGetterForAttributeName(Class<?> clazz, String attributeName) throws NoSuchMethodException {

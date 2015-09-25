@@ -108,6 +108,8 @@ interface test {
 
 	attribute Int32 attributeWithProviderRuntimeException
 
+	attribute Int32 attributeWithThrownException
+
 	method addNumbers {
 		in {
 			Int32 first

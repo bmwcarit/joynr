@@ -20,16 +20,21 @@ package io.joynr.dispatching.subscription;
  */
 
 import io.joynr.provider.Deferred;
+import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import joynr.exceptions.ProviderRuntimeException;
 import joynr.tests.DefaulttestProvider;
 import joynr.types.Localisation.GpsFixEnum;
 import joynr.types.Localisation.GpsLocation;
 
 public class PubSubTestProviderImpl extends DefaulttestProvider {
+
+    public static final String MESSAGE_PROVIDERRUNTIMEEXCEPTION = "ProviderRuntimeException";
+    public static final String MESSAGE_THROWN_PROVIDERRUNTIMEEXCEPTION = "thrownException";
 
     List<Integer> list = new ArrayList<Integer>();
 
@@ -60,6 +65,19 @@ public class PubSubTestProviderImpl extends DefaulttestProvider {
 
     public GpsLocation getComplexTestAttributeSync() {
         return complexTestAttribute;
+    }
+
+    @Override
+    public Promise<Deferred<Integer>> getAttributeWithProviderRuntimeException() {
+        Deferred<Integer> deferred = new Deferred<Integer>();
+        ProviderRuntimeException error = new ProviderRuntimeException(MESSAGE_PROVIDERRUNTIMEEXCEPTION);
+        deferred.reject(error);
+        return new Promise<Deferred<Integer>>(deferred);
+    }
+
+    @Override
+    public Promise<Deferred<Integer>> getAttributeWithThrownException() {
+        throw new IllegalArgumentException(MESSAGE_THROWN_PROVIDERRUNTIMEEXCEPTION);
     }
 
 }
