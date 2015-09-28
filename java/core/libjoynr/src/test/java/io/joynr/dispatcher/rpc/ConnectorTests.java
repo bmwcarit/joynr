@@ -42,7 +42,7 @@ import java.util.ArrayList;
 import joynr.PeriodicSubscriptionQos;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
-import joynr.types.localisation.GpsPosition;
+import joynr.types.Localisation.GpsPosition;
 import joynr.vehicle.LocalisationSubscriptionInterface;
 
 import org.junit.Assert;

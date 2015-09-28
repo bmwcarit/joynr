@@ -26,7 +26,7 @@ import java.util.logging.Logger;
 
 import javax.ws.rs.core.MediaType;
 
-import joynr.infrastructure.dactypes.Role;
+import joynr.infrastructure.DacTypes.Role;
 
 import org.junit.Test;
 import org.mockito.Mockito;

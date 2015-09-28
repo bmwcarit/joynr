@@ -45,8 +45,8 @@ import com.google.inject.name.Names;
 
 public class JoynrJavaGeneratorExtensionsTest {
 
-    private static final String SECOND_LEVEL_STRUCT_TYPE_NAME = "joynr.io.joyn.generator.util.testtypes.SecondLevelStruct";
-    private static final String TOP_LEVEL_STRUCT_INCLUDE = "joynr.io.joyn.generator.util.testtypes.TopLevelStruct";
+    private static final String SECOND_LEVEL_STRUCT_TYPE_NAME = "joynr.io.joyn.generator.util.TestTypes.SecondLevelStruct";
+    private static final String TOP_LEVEL_STRUCT_INCLUDE = "joynr.io.joyn.generator.util.TestTypes.TopLevelStruct";
     private JoynrJavaGeneratorExtensions fixture;
     private static final String FIXTURE_TYPE_NAME = "fixture";
 

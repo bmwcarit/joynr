@@ -20,7 +20,7 @@ package io.joynr.accesscontrol;
  */
 
 import joynr.JoynrMessage;
-import joynr.infrastructure.dactypes.TrustLevel;
+import joynr.infrastructure.DacTypes.TrustLevel;
 
 /**
  * Checks incoming messages permissions

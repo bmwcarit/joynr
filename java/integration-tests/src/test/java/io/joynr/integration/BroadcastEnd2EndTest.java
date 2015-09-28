@@ -47,9 +47,9 @@ import joynr.tests.testBroadcastInterface;
 import joynr.tests.testBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters;
 import joynr.tests.testLocationUpdateSelectiveBroadcastFilter;
 import joynr.tests.testProxy;
-import joynr.tests.testtypes.TestEnum;
-import joynr.types.localisation.GpsFixEnum;
-import joynr.types.localisation.GpsLocation;
+import joynr.tests.testTypes.TestEnum;
+import joynr.types.Localisation.GpsFixEnum;
+import joynr.types.Localisation.GpsLocation;
 
 import org.eclipse.jetty.server.Server;
 import org.junit.After;

@@ -42,7 +42,7 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 		}
 		if (packagepath!="") {
 			if (includeTypeCollection && datatype.partOfTypeCollection) {
-				packagepath += separator + datatype.typeCollectionName.toLowerCase;
+				packagepath += separator + datatype.typeCollectionName;
 			}
 		};
 		return packagepath;

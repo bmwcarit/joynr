@@ -20,7 +20,7 @@ package io.joynr.accesscontrol;
  */
 
 import static org.junit.Assert.assertEquals;
-import joynr.infrastructure.dactypes.TrustLevel;
+import joynr.infrastructure.DacTypes.TrustLevel;
 
 import org.junit.Test;
 

@@ -22,7 +22,7 @@ package io.joynr.accesscontrol;
 import java.util.HashMap;
 import java.util.Map;
 
-import joynr.infrastructure.dactypes.TrustLevel;
+import joynr.infrastructure.DacTypes.TrustLevel;
 
 public class TrustLevelComparator {
 

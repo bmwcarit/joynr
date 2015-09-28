@@ -21,7 +21,7 @@ package io.joynr.accesscontrol.primarykey;
 
 import java.io.Serializable;
 
-import joynr.infrastructure.dactypes.Role;
+import joynr.infrastructure.DacTypes.Role;
 
 /**
  * A key consisting of uid, role

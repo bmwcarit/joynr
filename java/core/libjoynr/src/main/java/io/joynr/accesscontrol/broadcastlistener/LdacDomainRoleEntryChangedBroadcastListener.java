@@ -21,8 +21,8 @@ package io.joynr.accesscontrol.broadcastlistener;
 
 import io.joynr.accesscontrol.DomainAccessControlStore;
 import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.DomainRoleEntryChangedBroadcastListener;
-import joynr.infrastructure.dactypes.ChangeType;
-import joynr.infrastructure.dactypes.DomainRoleEntry;
+import joynr.infrastructure.DacTypes.ChangeType;
+import joynr.infrastructure.DacTypes.DomainRoleEntry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

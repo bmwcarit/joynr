@@ -31,8 +31,8 @@ import java.util.concurrent.TimeUnit;
 
 import joynr.types.CustomParameter;
 import joynr.types.ProviderQos;
-import joynr.types.localisation.GpsFixEnum;
-import joynr.types.localisation.GpsLocation;
+import joynr.types.Localisation.GpsFixEnum;
+import joynr.types.Localisation.GpsLocation;
 import joynr.vehicle.DefaultGpsProvider;
 import android.content.Context;
 import android.location.Location;
