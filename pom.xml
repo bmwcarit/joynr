@@ -378,7 +378,7 @@
 			are referenced.
 		-->
 		<jersey.version>1.17</jersey.version>
-		<jackson.version>2.2.1</jackson.version>
+		<jackson.version>2.6.2</jackson.version>
 		<guice.version>3.0</guice.version>
 		<jetty.version>9.2.13.v20150730</jetty.version>
 		<tycho.version>0.15.0</tycho.version>
@@ -585,6 +585,11 @@
 			</dependency>
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-core</artifactId>
+				<version>${jackson.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-databind</artifactId>
 				<version>${jackson.version}</version>
 			</dependency>
@@ -667,7 +672,7 @@
 			<dependency>
 				<groupId>com.fasterxml.jackson.jaxrs</groupId>
 				<artifactId>jackson-jaxrs-json-provider</artifactId>
-				<version>2.2.1</version>
+				<version>${jackson.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.sun.jersey</groupId>
