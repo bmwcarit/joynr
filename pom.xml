@@ -64,11 +64,7 @@
 			<!-- Build and test Android distribution -->
 			<id>android</id>
 			<modules>
-				<module>tools</module>
-				<module>basemodel</module>
-				<module>java</module>
 				<module>android</module>
-				<module>examples</module>
 			</modules>
 		</profile>
 		<profile>
