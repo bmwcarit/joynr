@@ -21,6 +21,7 @@ package io.joynr.dispatching.subscription;
 
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import io.joynr.dispatching.Dispatcher;
+import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingQos;
@@ -274,6 +275,17 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
             logger.error("No subscription listener found for incoming publication!");
         } else {
             listener.onReceive(attributeValue);
+        }
+    }
+
+    @Override
+    public <T> void handleAttributePublicationError(String subscriptionId, JoynrException error) {
+        touchSubscriptionState(subscriptionId);
+        AttributeSubscriptionListener<T> listener = getSubscriptionListener(subscriptionId);
+        if (listener == null) {
+            logger.error("No subscription listener found for incoming publication!");
+        } else {
+            listener.onError(error);
         }
     }
 
