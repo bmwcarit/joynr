@@ -49,16 +49,7 @@ var stationsList = [
                 })
             ];
 
-var numberOfStations = 0;
 var myRadioProvider;
-
-var numberOfStationChanged = function() {
-    if(typeof myRadioProvider === "object") {
-        myRadioProvider.numberOfStations.valueChanged(parseInt(numberOfStations, 10) + stationsList.length);
-    } else {
-        error("radioProvider.numberOfStationChanged() called but instance of radioProvider not set. Call setProvider(...) first.");
-    }
-};
 
 exports.setProvider = function(radioProvider) {
     myRadioProvider = radioProvider;
@@ -73,16 +64,6 @@ exports.implementation = {
             return stationsList[currentStationIndex];
         }
     },
-    numberOfStations : {
-        get : function() {
-            prettyLog("radioProvider.numberOfStations.get() called");
-            return parseInt(numberOfStations, 10) + stationsList.length;
-        },
-        set : function(value) {
-            prettyLog("radioProvider.numberOfStations.set(" + value + ") called");
-            numberOfStations = value;
-        }
-    },
     addFavoriteStation : function(opArgs) {
         prettyLog("radioProvider.addFavoriteStation(" + JSON.stringify(opArgs)
                 + ") called");
@@ -94,7 +75,6 @@ exports.implementation = {
             prettyLog("operation argument \"newFavoriteStation\" is undefined!");
         }
         stationsList.push(opArgs.newFavoriteStation);
-        numberOfStationChanged();
         return false;
     },
     addFavoriteStationList : function(opArgs) {
