@@ -34,8 +34,11 @@ This project has dependencies to:
 
 * log4javascript (http://log4javascript.org/), Version 1.4.10
   License: Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0.html)
-  Location: libjoynr-js/src/main/resources/lib/log4javascript_uncompressed.js
+  Location: js-dependencies/src/main/js/log4javascript/log4javascript_uncompressed.js
   Modifications: none
+  Webjar: <groupId>org.webjars</groupId>
+          <artifactId>log4javascript</artifactId>
+          <version>1.4.10</version>
 
 * RequireJS (https://github.com/jrburke/requirejs)
   License: MIT License (https://github.com/jrburke/requirejs/blob/master/LICENSE)

@@ -321,7 +321,7 @@
 									<version>${project.version}</version>
 									<type>jar</type>
 									<outputDirectory>${project.build.directory}/dependencies/</outputDirectory>
-									<includes>JsonParser/JsonParser.js,uuid/uuid-annotated.js</includes>
+									<includes>JsonParser/JsonParser.js,uuid/uuid-annotated.js,log4javascript/log4javascript_uncompressed.js</includes>
 								</artifactItem>
 								<artifactItem>
 									<groupId>io.joynr.javascript</groupId>
@@ -461,6 +461,12 @@
 									<directory>${project.build.directory}/dependencies/uuid/</directory>
 									<includes>
 										<include>uuid-annotated.js</include>
+									</includes>
+								</resource>
+								<resource>
+									<directory>${project.build.directory}/dependencies/log4javascript/</directory>
+									<includes>
+										<include>log4javascript_uncompressed.js</include>
 									</includes>
 								</resource>
 							</resources>
