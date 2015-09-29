@@ -22,7 +22,9 @@ package io.joynr.joynrandroidruntime;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Messenger;
+
 import com.google.inject.Module;
+
 import io.joynr.capabilities.RegistrationFuture;
 import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.provider.JoynrProvider;
@@ -114,8 +116,8 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
 
     @Override
     public void shutdown(boolean clear) {
-        // TODO implement shutdown method for JoynAndroidRuntime
-
+        JoynrRuntime runtime = getJoynrRuntime();
+        runtime.shutdown(clear);
     }
 
 }
