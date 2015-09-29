@@ -17,7 +17,7 @@
 	<properties>
 		<jquery.version>2.1.0</jquery.version>
 		<jquery.fullVersion>${jquery.version}-2</jquery.fullVersion>
-		<project.build.optimizerResources>${basedir}/src/main/optimizer/resources</project.build.optimizerResources>
+		<project.build.optimizerResources>${project.build.directory}/build-resources/almond</project.build.optimizerResources>
 	</properties>
 
 	<dependencies>
@@ -63,6 +63,32 @@
 					<execution>
 						<id>lint-project</id>
 						<phase>process-sources</phase>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- Unpack JavaScript dependencies -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>unpack-js-build-resources</id>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<phase>generate-sources</phase>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>io.joynr.javascript</groupId>
+									<artifactId>build-resources</artifactId>
+									<version>${project.version}</version>
+									<outputDirectory>${project.build.directory}/build-resources</outputDirectory>
+									<includes>almond/almond-0.2.5.js</includes>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>

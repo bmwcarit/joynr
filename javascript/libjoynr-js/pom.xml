@@ -23,7 +23,7 @@
 		<jetty.version>9.2.2.v20140723</jetty.version>
 		<phantomjs-maven-plugin.version>0.4</phantomjs-maven-plugin.version>
 		<netbeans.hint.deploy.server>gfv3ee6</netbeans.hint.deploy.server>
-		<project.build.optimizerResources>${basedir}/src/main/optimizer/resources</project.build.optimizerResources>
+		<project.build.optimizerResources>${project.build.directory}/build-resources/almond</project.build.optimizerResources>
 		<joynr.provisioning.bounceProxyBaseUrl>http://127.0.0.1:8080</joynr.provisioning.bounceProxyBaseUrl>
 		<joynr.provisioning.testTtl>5000</joynr.provisioning.testTtl>
 	</properties>
@@ -327,9 +327,10 @@
 									<groupId>io.joynr.javascript</groupId>
 									<artifactId>build-resources</artifactId>
 									<version>${project.version}</version>
-									<outputDirectory>target/build-resources</outputDirectory>
+									<outputDirectory>${project.build.directory}/build-resources</outputDirectory>
 									<includes>js-formatter/code-formatter-config.xml,
-											  js-test-driver/phantomjs-jstd.js</includes>
+											  js-test-driver/phantomjs-jstd.js,
+											  almond/almond-0.2.5.js</includes>
 								</artifactItem>
 								<artifactItem>
 									<groupId>org.atmosphere.client</groupId>

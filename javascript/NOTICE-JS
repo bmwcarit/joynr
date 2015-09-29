@@ -61,8 +61,7 @@ This project has dependencies to:
 
 * almond (https://github.com/jrburke/almond), Version 0.2.5
   License: MIT License (https://github.com/jrburke/almond/blob/master/LICENSE)
-  Location: inter-tab/inter-tab-comm/src/main/optimizer/resources/almond-0.2.5.js
-            libjoynr-js/src/main/optimizer/resources/almond-0.2.5.js
+  Location: build-resources/src/main/resources/almond/almond-0.2.5.js
   Modifications: none
 
 * bluebird (https://github.com/petkaantonov/bluebird)
