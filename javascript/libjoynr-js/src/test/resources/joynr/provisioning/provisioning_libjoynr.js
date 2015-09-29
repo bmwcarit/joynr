@@ -23,7 +23,7 @@
     var setupProvisionedData = function(provisioning) {
         var discoveryCapability = {
             domain : "io.joynr",
-            interfaceName : "system/discovery",
+            interfaceName : "system/Discovery",
             providerQos : {
                 qos : [],
                 version : 0,
@@ -36,7 +36,7 @@
 
         var routingCapability = {
             domain : "io.joynr",
-            interfaceName : "system/routing",
+            interfaceName : "system/Routing",
             providerQos : {
                 qos : [],
                 version : 0,

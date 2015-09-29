@@ -200,7 +200,7 @@ interface Datatypes  {
 			Double doubleArg
 			String stringArg
 			String [] listArg
-			exampleTypes.ComplexRadioStation joynr_datatypes_exampletypes_ComplexRadioStationArg
+			exampleTypes.ComplexRadioStation joynr_datatypes_exampleTypes_ComplexRadioStationArg
 		}
 		out {
 			String serialized

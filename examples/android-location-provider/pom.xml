@@ -21,7 +21,7 @@
 	<parent>
 		<artifactId>examples</artifactId>
 		<groupId>io.joynr</groupId>
-		<version>0.9.3</version>
+		<version>0.9.4</version>
 	</parent>
 	<groupId>io.joynr.examples</groupId>
 	<artifactId>android-location-provider</artifactId>
@@ -186,7 +186,7 @@
 				</executions>
 				<dependencies>
 					<dependency>
-						<groupId>io.joynr.java</groupId>
+						<groupId>io.joynr.tools.generator</groupId>
 						<artifactId>java-generator</artifactId>
 						<version>${project.version}</version>
 					</dependency>

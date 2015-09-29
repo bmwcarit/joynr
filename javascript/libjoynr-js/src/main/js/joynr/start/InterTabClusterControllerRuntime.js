@@ -46,7 +46,7 @@ define(
             "joynr/messaging/CommunicationModule",
             "joynr/util/InProcessSkeleton",
             "joynr/util/InProcessStub",
-            "joynr/system/routingtypes/ChannelAddress",
+            "joynr/system/RoutingTypes/ChannelAddress",
             "joynr/messaging/inprocess/InProcessMessagingStubFactory",
             "joynr/messaging/inprocess/InProcessMessagingSkeleton",
             "joynr/messaging/inprocess/InProcessMessagingStub",

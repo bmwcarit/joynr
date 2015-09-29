@@ -10,13 +10,11 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>joynr</artifactId>
-		<version>0.9.3</version>
+		<version>0.9.4</version>
 	</parent>
 
 	<modules>
-		<module>build-resources</module>
 		<module>js-dependencies</module>
-		<module>js-generator</module>
 		<module>inter-tab</module>
 		<module>libjoynr-js</module>
 		<module>apps</module>
@@ -151,8 +149,8 @@
 							</goals>
 							<configuration>
 								<lineEnding>KEEP</lineEnding>
-								<configJsFile>target/build-resources/js-formatter/code-formatter-config.xml</configJsFile>
-								<configFile>target/build-resources/js-formatter/code-formatter-config.xml</configFile>
+								<configJsFile>${project.build.directory}/build-resources/js-formatter/code-formatter-config.xml</configJsFile>
+								<configFile>${project.build.directory}/build-resources/js-formatter/code-formatter-config.xml</configFile>
 								<directories>
 									<directory>${basedir}/src/main/js</directory>
 									<directory>${basedir}/src/test/js</directory>

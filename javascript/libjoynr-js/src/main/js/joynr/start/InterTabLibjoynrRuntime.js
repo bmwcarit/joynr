@@ -41,7 +41,7 @@ define(
             "joynr/messaging/MessagingStubFactory",
             "joynr/messaging/routing/MessageRouter",
             "joynr/messaging/routing/MessageQueue",
-            "joynr/system/routingtypes/BrowserAddress",
+            "joynr/system/RoutingTypes/BrowserAddress",
             "joynr/messaging/inprocess/InProcessMessagingStubFactory",
             "joynr/messaging/inprocess/InProcessMessagingSkeleton",
             "joynr/messaging/inprocess/InProcessMessagingStub",

@@ -70,7 +70,7 @@ public:
 protected:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesRegistrarTest);
     MockDispatcher* mockDispatcher;
-    QSharedPointer<joynr::system::QtAddress> messagingStubAddress;
+    QSharedPointer<joynr::system::RoutingTypes::QtAddress> messagingStubAddress;
     QSharedPointer<MockParticipantIdStorage> mockParticipantIdStorage;
     MockDiscovery mockDiscovery;
     CapabilitiesRegistrar* capabilitiesRegistrar;

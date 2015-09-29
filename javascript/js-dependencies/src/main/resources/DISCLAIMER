@@ -3,11 +3,19 @@
 The software library "json_parse_state" included in JsonParser/JsonParser.js
 and JsonParser/json_parse_state.js is “Public Domain”.
 
+--- log4javascript -------------------------------------------------------------
+
+The software library “log4javascipt” included in some files in js/ is licensed
+under the "Apache License, Version 2.0". A copy of that license in the English
+original version with a copyright notice, a disclaimer of warranty, and an
+exclusion of liability is included in the META-INF/licenses/Apache-2.txt
+document.
+
 --- UUID -----------------------------------------------------------------------
 
 Files in uuid/ are licensed under the "WTF Public License". A copy of that
-license in the English original version is included in the uuid/LICENSE.txt
-document.
+license in the English original version is included in the
+META-INF/licenses/WTF-Public-License.uuid.txt document.
 
 --- JasminAdapter --------------------------------------------------------------
 
@@ -15,12 +23,13 @@ The software library "JasminAdapter" included in
 jasmine_jstd_adapter/JasmineAdapter.js is licensed under the “MIT/X11 license”
 A copy of that license in the English original version with a copyright notice,
 a disclaimer of warranty, and an exclusion of liability is included in the
-jasmine_jstd_adapter/LICENSE.txt document.
+META-INF/licenses/MIT.JasmineAdapter.txt document.
 
 --- JsHamcrest -----------------------------------------------------------------
 
 The software library "JsHamcrest" included in jshamcrest/jshamcrest.js is
 licensed under the “BSD-3 Clause license”. A copy of that license in the English
 original version with a copyright notice, a disclaimer of warranty, and an
-exclusion of liability is included in the jshamcrest/LICENSE.txt document.
+exclusion of liability is included in the
+META-INF/licenses/BSD.JsHamcrest.txt document.
 

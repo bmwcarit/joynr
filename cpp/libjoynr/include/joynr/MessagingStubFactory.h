@@ -59,8 +59,9 @@ public:
     // void registerInProcessMessagingSkeleton(QSharedPointer<InProcessMessagingSkeleton>
     // messagingSkeleton);
 
-    QSharedPointer<IMessaging> create(std::string destParticipantId,
-                                      const joynr::system::QtAddress& destinationAddress);
+    QSharedPointer<IMessaging> create(
+            std::string destParticipantId,
+            const joynr::system::RoutingTypes::QtAddress& destinationAddress);
     void remove(std::string destParticipantId);
     bool contains(std::string destParticipantId);
 

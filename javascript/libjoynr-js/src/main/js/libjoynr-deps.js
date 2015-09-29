@@ -52,11 +52,11 @@ define("libjoynr-deps", [
     "joynr/types/CustomParameter",
     "joynr/proxy/DiscoveryQos",
     "joynr/types/DiscoveryScope",
-    "joynr/system/routingtypes/BrowserAddress",
-    "joynr/system/routingtypes/ChannelAddress",
-    "joynr/system/routingtypes/CommonApiDbusAddress",
-    "joynr/system/routingtypes/WebSocketAddress",
-    "joynr/system/routingtypes/WebSocketClientAddress",
+    "joynr/system/RoutingTypes/BrowserAddress",
+    "joynr/system/RoutingTypes/ChannelAddress",
+    "joynr/system/RoutingTypes/CommonApiDbusAddress",
+    "joynr/system/RoutingTypes/WebSocketAddress",
+    "joynr/system/RoutingTypes/WebSocketClientAddress",
     "joynr/util/LongTimer"
 ], function() { // load all external modules
     var nsContext, nsElem, nsElems, i, value;

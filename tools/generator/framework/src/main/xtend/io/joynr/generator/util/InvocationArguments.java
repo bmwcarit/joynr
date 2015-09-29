@@ -46,7 +46,7 @@ public class InvocationArguments {
         }
     }
 
-    private String modelpath = null;
+    private String modelPath = null;
 
     private String templatesDir = null;
 
@@ -67,28 +67,22 @@ public class InvocationArguments {
     public InvocationArguments() {
     }
 
-    public InvocationArguments(String[] args) throws IllegalStateException {
+    public InvocationArguments(String[] args) throws IllegalArgumentException {
         if (args.length == 0) {
-            throw new IllegalStateException("No parameters provided!" + dumpCorrectInvocation());
+            throw new IllegalArgumentException("No parameters provided!" + dumpCorrectInvocation());
         }
         parseArguments(args);
-
-        if (!new File(modelpath).exists()) {
-            throw new IllegalStateException("Path to model \"" + modelpath + "\" is not correct!"
-                    + dumpCorrectInvocation());
-        }
-        if (rootGenerator == null) {
-            throw new IllegalStateException("Root generator could not be found!" + dumpCorrectInvocation());
-        }
+        checkArguments(true);
     }
 
-    private String getLanguages() {
+    private String getLanguages(String seperator) {
+        assert (seperator != null);
         StringBuffer appender = new StringBuffer();
         for (String language : languages.keySet()) {
-            appender.append(language + ", ");
+            appender.append(language + seperator);
         }
         if (!languages.isEmpty()) {
-            appender.delete(appender.length() - 2, appender.length());
+            appender.delete(appender.length() - seperator.length(), appender.length());
         } else {
             appender.append("none");
         }
@@ -100,13 +94,13 @@ public class InvocationArguments {
         result += ("------------------------------------------------------------------------\n");
         result += ("Generator could not be started due to wrong parameter settings!\n");
         result += ("------------------------------------------------------------------------\n");
-        result += ("Start the application with the following params: \n");
+        result += ("Start the application with the following parameters: \n");
         result += ("      Required: \n");
-        result += ("       -modelpath <path to model>\n");
-        result += ("       -outputPath <path to output directory>\n");
-        result += ("      Also one of:\n");
-        result += ("       -rootGenerator <full name of template root> OR\n");
-        result += ("       -generationLanguage <cpp|java>\n");
+        result += ("       " + dumpModelPathDefinition() + "\n");
+        result += ("       " + dumpOutputPathDefinition() + "\n");
+        result += ("      One of:\n");
+        result += ("       " + dumpRootGeneratorDefinition() + " OR\n");
+        result += ("       " + dumpGenerationLanguageDefinition() + "\n");
         result += ("      Optional: \n");
         result += ("       -templatesDir <folder name of templates directory>\n");
         result += ("       -templatesEncoding <encoding of templates>\n");
@@ -117,13 +111,29 @@ public class InvocationArguments {
         return result;
     }
 
+    private String dumpOutputPathDefinition() {
+        return "-outputPath <path to output directory>";
+    }
+
+    private String dumpModelPathDefinition() {
+        return "-modelPath <path to model>";
+    }
+
+    private String dumpRootGeneratorDefinition() {
+        return "-rootGenerator <full name of template root>";
+    }
+
+    private String dumpGenerationLanguageDefinition() {
+        return "-generationLanguage <" + getLanguages("|") + ">";
+    }
+
     public void parseArguments(String[] args) {
         for (int i = 0; i < args.length; i++) {
             if (args[i].equalsIgnoreCase("-templatesDir")) {
                 setTemplatesDir(new File(args[i + 1]).getAbsolutePath());
                 i++;
-            } else if (args[i].equalsIgnoreCase("-modelpath")) {
-                setModelpath(args[i + 1]);
+            } else if (args[i].equalsIgnoreCase("-modelPath")) {
+                setModelPath(args[i + 1]);
                 i++;
             } else if (args[i].equalsIgnoreCase("-rootGenerator")) {
                 setRootGenerator(args[i + 1].replace("\"", ""));
@@ -149,9 +159,6 @@ public class InvocationArguments {
                 setGenerate(args[i + 1].equalsIgnoreCase("true"));
                 i++;
             }
-        }
-        if (!isValid()) {
-            System.out.println(getErrorMessage());
         }
     }
 
@@ -180,32 +187,44 @@ public class InvocationArguments {
         return clean;
     }
 
-    public boolean isValid() {
-        return (outputPath != null && modelpath != null && rootGenerator != null);
+    public void checkArguments() throws IllegalArgumentException {
+        checkArguments(false);
     }
 
-    // Return an error message describing what is invalid
-    public String getErrorMessage() {
-        StringBuffer message = new StringBuffer();
-        message.append("Please set:\n");
+    public void checkArguments(boolean checkIfModelPathIsValid) throws IllegalArgumentException {
+        StringBuilder errorMessages = new StringBuilder();
+        String newLine = System.getProperty("line.separator");
         if (outputPath == null) {
-            message.append("outputPath\n");
+            errorMessages.append("- Output path is missing. Please invoke the generator with the following argument: "
+                    + dumpOutputPathDefinition());
+            errorMessages.append(newLine);
         }
-        if (modelpath == null) {
-            message.append("modelpath\n");
+        if (modelPath == null) {
+            errorMessages.append("- Model path is missing. Please invoke the generator with the following argument: "
+                    + dumpModelPathDefinition());
+            errorMessages.append(newLine);
+        } else if (checkIfModelPathIsValid && !new File(modelPath).exists()) {
+            errorMessages.append("- Path to model \"" + modelPath + "\" is not correct. File could not be found");
+            errorMessages.append(newLine);
         }
         if (rootGenerator == null) {
-            message.append("rootGenerator or generationLanguage\n");
+            errorMessages.append("- Root generator could not be found. Please invoke the generator with the following argument: "
+                    + dumpRootGeneratorDefinition() + " OR " + dumpGenerationLanguageDefinition());
+            errorMessages.append(newLine);
         }
-        return message.toString();
+
+        if (errorMessages.length() > 0) {
+            throw new IllegalArgumentException("Invocation arguments are not set properly. See the following error messages for further details "
+                    + newLine + errorMessages.toString() + dumpCorrectInvocation());
+        }
     }
 
-    public String getModelpath() {
-        return modelpath;
+    public String getModelPath() {
+        return modelPath;
     }
 
-    public void setModelpath(String modelpath) {
-        this.modelpath = modelpath;
+    public void setModelPath(String modelPath) {
+        this.modelPath = modelPath;
     }
 
     public String getTemplatesDir() {
@@ -228,11 +247,12 @@ public class InvocationArguments {
         if (rootGenerator == null && generationLanguage != null) {
             this.rootGenerator = languages.get(generationLanguage);
             if (rootGenerator == null) {
-                throw new IllegalStateException("The generation language \""
+                throw new IllegalArgumentException("The generation language \""
                         + generationLanguage
                         + "\" could not be found in the configuration. The following languages have been found: "
-                        + getLanguages()
-                        + ". Be sure to have the respective generation templates included in your dependencies. The package of generator templates shall start with \"io\", \"com\", \"org\" or \"de\"");
+                        + getLanguages(", ")
+                        + ". Be sure to have the respective generation templates included in your dependencies. The package of generator templates shall start with \"io\", \"com\", \"org\" or \"de\""
+                        + dumpCorrectInvocation());
             }
         }
     }

@@ -35,7 +35,7 @@ provisioning.channelUrls[discoveryChannelId] =
         ];
 var globalCapDirCapability = {
     domain : "io.joynr",
-    interfaceName : "infrastructure/globalcapabilitiesdirectory",
+    interfaceName : "infrastructure/GlobalCapabilitiesDirectory",
     providerQos : {
         qos : [],
         version : 0,
@@ -48,7 +48,7 @@ var globalCapDirCapability = {
 };
 var channelUrlDirCapability = {
     domain : "io.joynr",
-    interfaceName : "infrastructure/channelurldirectory",
+    interfaceName : "infrastructure/ChannelUrlDirectory",
     providerQos : {
         qos : [],
         version : 0,
@@ -61,7 +61,7 @@ var channelUrlDirCapability = {
 };
 var discoveryCapability = {
     domain : "io.joynr",
-    interfaceName : "system/discovery",
+    interfaceName : "system/Discovery",
     providerQos : {
         qos : [],
         version : 0,
@@ -73,7 +73,7 @@ var discoveryCapability = {
 };
 var routingCapability = {
     domain : "io.joynr",
-    interfaceName : "system/routing",
+    interfaceName : "system/Routing",
     providerQos : {
         qos : [],
         version : 0,

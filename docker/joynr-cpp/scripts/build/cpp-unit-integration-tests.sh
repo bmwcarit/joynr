@@ -2,7 +2,7 @@
 
 START=$(date +%s)
 
-source /data/scripts/global.sh
+source /data/src/docker/joynr-base/scripts/global.sh
 
 log "ENVIRONMENT"
 env

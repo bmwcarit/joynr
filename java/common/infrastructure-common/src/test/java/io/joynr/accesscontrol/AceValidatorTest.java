@@ -24,10 +24,10 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 
-import joynr.infrastructure.dactypes.MasterAccessControlEntry;
-import joynr.infrastructure.dactypes.OwnerAccessControlEntry;
-import joynr.infrastructure.dactypes.Permission;
-import joynr.infrastructure.dactypes.TrustLevel;
+import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
+import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
+import joynr.infrastructure.DacTypes.Permission;
+import joynr.infrastructure.DacTypes.TrustLevel;
 
 import org.junit.Before;
 import org.junit.Test;

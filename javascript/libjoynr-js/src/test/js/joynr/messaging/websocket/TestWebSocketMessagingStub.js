@@ -22,9 +22,9 @@
 joynrTestRequire("joynr/messaging/websocket/TestWebSocketMessagingStub", [
     "joynr/messaging/websocket/WebSocketMessagingStub",
     "joynr/messaging/websocket/WebSocketMessagingStubFactory",
-    "joynr/system/routingtypes/WebSocketAddress",
-    "joynr/system/routingtypes/WebSocketProtocol",
-    "joynr/system/routingtypes/WebSocketClientAddress",
+    "joynr/system/RoutingTypes/WebSocketAddress",
+    "joynr/system/RoutingTypes/WebSocketProtocol",
+    "joynr/system/RoutingTypes/WebSocketClientAddress",
     "joynr/messaging/websocket/SharedWebSocket"
 ], function(
         WebSocketMessagingStub,

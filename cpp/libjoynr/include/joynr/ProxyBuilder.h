@@ -68,7 +68,7 @@ public:
     ProxyBuilder(ProxyFactory* proxyFactory,
                  joynr::system::IDiscoverySync& discoveryProxy,
                  const std::string& domain,
-                 QSharedPointer<joynr::system::QtAddress> dispatcherAddress,
+                 QSharedPointer<joynr::system::RoutingTypes::QtAddress> dispatcherAddress,
                  QSharedPointer<MessageRouter> messageRouter);
 
     /** Destructor */
@@ -191,16 +191,17 @@ private:
     ArbitrationStatus::ArbitrationStatusType arbitrationStatus;
     qint64 discoveryTimeout;
 
-    QSharedPointer<joynr::system::QtAddress> dispatcherAddress;
+    QSharedPointer<joynr::system::RoutingTypes::QtAddress> dispatcherAddress;
     QSharedPointer<MessageRouter> messageRouter;
 };
 
 template <class T>
-ProxyBuilder<T>::ProxyBuilder(ProxyFactory* proxyFactory,
-                              joynr::system::IDiscoverySync& discoveryProxy,
-                              const std::string& domain,
-                              QSharedPointer<joynr::system::QtAddress> dispatcherAddress,
-                              QSharedPointer<MessageRouter> messageRouter)
+ProxyBuilder<T>::ProxyBuilder(
+        ProxyFactory* proxyFactory,
+        joynr::system::IDiscoverySync& discoveryProxy,
+        const std::string& domain,
+        QSharedPointer<joynr::system::RoutingTypes::QtAddress> dispatcherAddress,
+        QSharedPointer<MessageRouter> messageRouter)
         : domain(domain),
           cached(false),
           hasArbitrationStarted(false),

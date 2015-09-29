@@ -26,13 +26,13 @@ import java.util.List;
 
 import javax.annotation.CheckForNull;
 
-import joynr.infrastructure.dactypes.MasterAccessControlEntry;
-import joynr.infrastructure.dactypes.MasterRegistrationControlEntry;
-import joynr.infrastructure.dactypes.OwnerAccessControlEntry;
-import joynr.infrastructure.dactypes.OwnerRegistrationControlEntry;
-import joynr.infrastructure.dactypes.Permission;
-import joynr.infrastructure.dactypes.Role;
-import joynr.infrastructure.dactypes.TrustLevel;
+import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
+import joynr.infrastructure.DacTypes.MasterRegistrationControlEntry;
+import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
+import joynr.infrastructure.DacTypes.OwnerRegistrationControlEntry;
+import joynr.infrastructure.DacTypes.Permission;
+import joynr.infrastructure.DacTypes.Role;
+import joynr.infrastructure.DacTypes.TrustLevel;
 
 /**
  * Manages access control lists for local providers.

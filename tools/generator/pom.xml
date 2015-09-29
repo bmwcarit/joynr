@@ -27,13 +27,16 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>tools</artifactId>
-		<version>0.9.3</version>
+		<version>0.9.4</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	
 	<modules>
 		<module>dependency-libs</module>
 		<module>framework</module>
+		<module>cpp-generator</module>
+		<module>java-generator</module>
+		<module>js-generator</module>
 		<module>joynr-generator-maven-plugin</module>
 		<module>joynr-generator-standalone</module>
 	</modules>

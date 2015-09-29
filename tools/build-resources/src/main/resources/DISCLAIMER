@@ -1,0 +1,14 @@
+--- almond ---------------------------------------------------------------------
+
+The software library "almond" included in some files in js/ is licensed under
+the “MIT/X11 license”. A copy of that license in the English original version
+with a copyright notice, a disclaimer of warranty, and an exclusion of liability
+is included in the META-INF/licenses/MIT.almond.txt document.
+
+--- js-test-driver-phantomjs ---------------------------------------------------
+
+Files in javascript/build-resources/src/main/resources/js-test-driver are
+licensed under the “MIT/X11 license”. A copy of that license in the English
+original version with a copyright notice, a disclaimer of warranty, and an
+exclusion of liability is included in the
+META-INF/licenses/MIT.js-test-driver-phantomjs.txt document.

@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>android</artifactId>
-		<version>0.9.3</version>
+		<version>0.9.4</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -73,4 +73,35 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+	<build>
+	<plugins>
+		<plugin>
+		<groupId>org.apache.maven.plugins</groupId>
+		<artifactId>maven-surefire-plugin</artifactId>
+		<dependencies>
+			<dependency>
+				<groupId>org.json</groupId>
+				<artifactId>json</artifactId>
+				<version>20141113</version>
+			</dependency>
+			<dependency>
+				<groupId>org.robolectric</groupId>
+				<artifactId>android-all</artifactId>
+				<version>5.0.0_r2-robolectric-1</version>
+			</dependency>
+			<dependency>
+				<groupId>org.robolectric</groupId>
+				<artifactId>shadows-core</artifactId>
+				<version>3.0</version>
+				<classifier>21</classifier>
+			</dependency>
+			<dependency>
+				<groupId>org.ccil.cowan.tagsoup</groupId>
+				<artifactId>tagsoup</artifactId>
+				<version>1.2</version>
+			</dependency>
+		</dependencies>
+	</plugin>
+	</plugins>
+	</build>
 </project>

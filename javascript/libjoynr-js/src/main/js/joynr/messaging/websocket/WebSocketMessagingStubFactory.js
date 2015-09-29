@@ -20,7 +20,7 @@
 define("joynr/messaging/websocket/WebSocketMessagingStubFactory", [
     "joynr/util/Util",
     "joynr/messaging/websocket/WebSocketMessagingStub",
-    "joynr/system/routingtypes/WebSocketAddress"
+    "joynr/system/RoutingTypes/WebSocketAddress"
 ], function(Util, WebSocketMessagingStub, WebSocketAddress) {
 
     /**

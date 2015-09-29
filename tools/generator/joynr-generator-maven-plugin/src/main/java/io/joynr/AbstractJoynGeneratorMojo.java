@@ -180,7 +180,7 @@ public abstract class AbstractJoynGeneratorMojo extends AbstractMojo {
 
     protected InvocationArguments createInvocationArguments() {
         InvocationArguments arguments = new InvocationArguments();
-        arguments.setModelpath(model);
+        arguments.setModelPath(model);
         arguments.setTemplatesDir(templatesDir);
         arguments.setTemplatesEncoding(templatesEncoding);
         arguments.setRootGenerator(rootGenerator);

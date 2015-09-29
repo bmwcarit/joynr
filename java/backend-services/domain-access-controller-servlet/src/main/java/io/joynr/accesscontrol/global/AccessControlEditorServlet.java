@@ -35,10 +35,10 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import joynr.infrastructure.dactypes.DomainRoleEntry;
-import joynr.infrastructure.dactypes.MasterAccessControlEntry;
-import joynr.infrastructure.dactypes.OwnerAccessControlEntry;
-import joynr.infrastructure.dactypes.Role;
+import joynr.infrastructure.DacTypes.DomainRoleEntry;
+import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
+import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
+import joynr.infrastructure.DacTypes.Role;
 
 import com.google.inject.Inject;
 import com.sun.jersey.api.core.InjectParam;

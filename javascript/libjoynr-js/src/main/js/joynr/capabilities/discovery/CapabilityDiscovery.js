@@ -28,7 +28,7 @@ define(
         [
             "global/Promise",
             "joynr/types/CapabilityInformation",
-            "joynr/system/routingtypes/ChannelAddress",
+            "joynr/system/RoutingTypes/ChannelAddress",
             "joynr/types/DiscoveryEntry",
             "joynr/types/DiscoveryQos",
             "joynr/types/DiscoveryScope",

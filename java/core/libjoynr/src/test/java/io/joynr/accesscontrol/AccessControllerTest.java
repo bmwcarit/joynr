@@ -34,8 +34,8 @@ import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 import io.joynr.messaging.MessagingModule;
 import joynr.JoynrMessage;
 import joynr.Request;
-import joynr.infrastructure.dactypes.Permission;
-import joynr.infrastructure.dactypes.TrustLevel;
+import joynr.infrastructure.DacTypes.Permission;
+import joynr.infrastructure.DacTypes.TrustLevel;
 import joynr.types.ProviderQos;
 
 import org.junit.Before;

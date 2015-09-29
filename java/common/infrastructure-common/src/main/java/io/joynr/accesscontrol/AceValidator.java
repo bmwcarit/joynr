@@ -19,8 +19,8 @@ package io.joynr.accesscontrol;
  * #L%
  */
 
-import joynr.infrastructure.dactypes.MasterAccessControlEntry;
-import joynr.infrastructure.dactypes.OwnerAccessControlEntry;
+import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
+import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
 
 public class AceValidator {
 

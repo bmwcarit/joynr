@@ -33,21 +33,25 @@ namespace joynr
 
 namespace system
 {
+
+namespace RoutingTypes
+{
 class QtAddress;
+}
 }
 
 class WebSocketMessagingStub : public QObject, public IMessaging
 {
     Q_OBJECT
 public:
-    WebSocketMessagingStub(system::QtAddress* address,
+    WebSocketMessagingStub(system::RoutingTypes::QtAddress* address,
                            QWebSocket* webSocket,
                            QObject* parent = Q_NULLPTR);
     virtual ~WebSocketMessagingStub();
     virtual void transmit(JoynrMessage& message);
 
 Q_SIGNALS:
-    void closed(const joynr::system::QtAddress& address);
+    void closed(const joynr::system::RoutingTypes::QtAddress& address);
     void queueTextMessage(QString message);
 
 private Q_SLOTS:
@@ -56,7 +60,7 @@ private Q_SLOTS:
 
 private:
     static joynr_logging::Logger* logger;
-    system::QtAddress* address;
+    system::RoutingTypes::QtAddress* address;
     QWebSocket* webSocket;
     DISALLOW_COPY_AND_ASSIGN(WebSocketMessagingStub);
 };

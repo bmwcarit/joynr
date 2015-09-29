@@ -32,10 +32,7 @@ public class ExecutorCL {
         InvocationArguments invocationArguments = new InvocationArguments(args);
         Executor executor = new Executor(invocationArguments);
         IGenerator generator = executor.setup();
-
-        if (invocationArguments.isValid()) {
-            executor.generate(generator);
-        }
+        executor.generate(generator);
     }
 
 }

@@ -31,10 +31,10 @@ joynrTestRequire(
             "joynr/system/DiscoveryProxy",
             "joynr/system/RoutingProxy",
             "joynr/system/RoutingProvider",
-            "joynr/system/routingtypes/ChannelAddress",
-            "joynr/system/routingtypes/BrowserAddress",
-            "joynr/system/routingtypes/WebSocketAddress",
-            "joynr/system/routingtypes/CommonApiDbusAddress",
+            "joynr/system/RoutingTypes/ChannelAddress",
+            "joynr/system/RoutingTypes/BrowserAddress",
+            "joynr/system/RoutingTypes/WebSocketAddress",
+            "joynr/system/RoutingTypes/CommonApiDbusAddress",
             "joynr/vehicle/RadioProxy",
             "joynr/vehicle/RadioProvider",
             "joynr/vehicle/radiotypes/RadioStation",
@@ -634,7 +634,7 @@ joynrTestRequire(
                                                 .lookup(
                                                         {
                                                             domain : domain,
-                                                            interfaceName : "vehicle/radio",
+                                                            interfaceName : "vehicle/Radio",
                                                             discoveryQos : new DiscoveryQos(
                                                                     {
                                                                         discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL
@@ -653,7 +653,7 @@ joynrTestRequire(
                                                                                         .lookup(
                                                                                                 {
                                                                                                     domain : domain,
-                                                                                                    interfaceName : "vehicle/radio",
+                                                                                                    interfaceName : "vehicle/Radio",
                                                                                                     discoveryQos : new DiscoveryQos(
                                                                                                             {
                                                                                                                 discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL
