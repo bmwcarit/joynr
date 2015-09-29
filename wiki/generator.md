@@ -1,7 +1,7 @@
 #The joynr Code Generator
-The joynr Code Generator can be used to create **Java** and **C++** Code from Franca model
-files (*.fidl). Code generation itself is integrated into the Maven build process. See also
-the Demo App tutorial and sample code.
+The joynr Code Generator can be used to create **Java**, **C++** and **Javascript** code
+from Franca model files (*.fidl). Code generation itself is integrated into the Maven
+build process. See also the Demo App tutorial and sample code.
 
 
 ## Maven configuration
@@ -45,6 +45,14 @@ have to be provided in the Maven configuration:
             <version><JOYNR_VERSION></version>
         </dependency>
 
+        <!-- For JavaScript code generation:
+             add the JavaScript generator dependency -->
+        <dependency>
+            <groupId>io.joynr.javascript</groupId>
+            <artifactId>js-generator</artifactId>
+            <version><JOYNR_VERSION></version>
+        </dependency>
+
         <!-- optionally, use model files from a dependency artifact -->
         <dependency>
             <groupId><MODEL_GROUP_ID></groupId>
@@ -57,10 +65,12 @@ have to be provided in the Maven configuration:
 
 
 ## Choosing the generation language
-The **&lt;GENERATION_LANGUAGE&gt;** can be either ```java``` or ```cpp```. In each case,
-the corresponding dependency has to be added to the plugin's dependencies section (see above):
+The **&lt;GENERATION_LANGUAGE&gt;** can be either ```java```, ```cpp```, or ```javascript```.
+In each case, the corresponding dependency has to be added to the plugin's dependencies
+section (see above):
 * for ```java```: the artifact **io.joynr.cpp: cpp-generator**
 * for ```cpp```: the artifact **io.joynr.java: java-generator**
+* for ```javascript```: the artifact **io.joynr.javascript: js-generator**
 
 
 ## Providing the Franca model files
@@ -90,7 +100,7 @@ the local Maven repository. The standalone jar resides in the target directory i
 with the following command line arguments:
 * ```-outputPath```: output directory for the generated code
 * ```-modelpath```: path to the Franca model files
-* ```-generationLanguage```: either ```java``` or ```cpp```
+* ```-generationLanguage```: either ```java```, ```cpp``` or ```javascript```
 
 **Example:**
 ```bash
@@ -107,7 +117,7 @@ to *gen*.
       -outputPath <path to output directory>
     Also one of:
       -rootGenerator <full name of template root> OR
-      -generationLanguage <cpp|java>
+      -generationLanguage <cpp|java|javascript>
     Optional:
       -templatesDir <folder name of templates directory>
       -templatesEncoding <encoding of templates>
