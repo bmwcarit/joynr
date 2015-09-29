@@ -343,7 +343,7 @@
 									<includes>JsonParser/JsonParser.js,uuid/uuid-annotated.js,log4javascript/log4javascript_uncompressed.js</includes>
 								</artifactItem>
 								<artifactItem>
-									<groupId>io.joynr.javascript</groupId>
+									<groupId>io.joynr.tools</groupId>
 									<artifactId>build-resources</artifactId>
 									<version>${project.version}</version>
 									<outputDirectory>${project.build.directory}/build-resources</outputDirectory>

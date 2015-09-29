@@ -100,7 +100,7 @@
 						<configuration>
 							<artifactItems>
 								<artifactItem>
-									<groupId>io.joynr.javascript</groupId>
+									<groupId>io.joynr.tools</groupId>
 									<artifactId>build-resources</artifactId>
 									<version>${project.version}</version>
 									<outputDirectory>${project.build.directory}/build-resources</outputDirectory>
