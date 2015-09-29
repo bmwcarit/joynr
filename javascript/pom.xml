@@ -150,8 +150,8 @@
 							</goals>
 							<configuration>
 								<lineEnding>KEEP</lineEnding>
-								<configJsFile>target/build-resources/js-formatter/code-formatter-config.xml</configJsFile>
-								<configFile>target/build-resources/js-formatter/code-formatter-config.xml</configFile>
+								<configJsFile>${project.build.directory}/build-resources/js-formatter/code-formatter-config.xml</configJsFile>
+								<configFile>${project.build.directory}/build-resources/js-formatter/code-formatter-config.xml</configFile>
 								<directories>
 									<directory>${basedir}/src/main/js</directory>
 									<directory>${basedir}/src/test/js</directory>
