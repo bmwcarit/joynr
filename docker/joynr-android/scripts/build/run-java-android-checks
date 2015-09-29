@@ -23,7 +23,7 @@ mvn install -N
   mvn install -P no-java-formatter,no-checkstyle -DskipTests
 )
 
-mvn package checkstyle:checkstyle \
+mvn install checkstyle:checkstyle \
 -P findbugs,no-license-and-notice,no-java-formatter,android \
 -DskipTests
 
