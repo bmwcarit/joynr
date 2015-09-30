@@ -84,17 +84,16 @@ class EnumTypeGenerator {
 	'''
 
 	def getEnumerators(FEnumerationType type)'''
-	«FOR literal: type.enumerators SEPARATOR ", " »
+	«FOR enumValue: getEnumElementsAndBaseEnumElements(type) SEPARATOR ", " »
 		/**
-		 * @name «type.joynrName».«literal.joynrName»
+		 * @name «type.joynrName».«enumValue.joynrName»
 		 * @readonly
-		 «IF literal.comment != null»
-		 	* @summary
-		 	«appendJSDocSummaryAndWriteSeeAndDescription(literal, "* ")»
-		 «ENDIF»
+		«IF enumValue.comment != null»
+			 * @summary
+			 «appendJSDocSummaryAndWriteSeeAndDescription(enumValue, "* ")»
+		«ENDIF»
 		 */
-		«literal.joynrName»: «IF literal.value==null»"«literal.joynrName»"«ELSE»«literal.value»«ENDIF»
+		«enumValue.joynrName»: «IF enumValue.value==null»"«enumValue.joynrName»"«ELSE»«enumValue.value»«ENDIF»
 	«ENDFOR»
 	'''
-
 }
