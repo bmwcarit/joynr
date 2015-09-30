@@ -363,7 +363,8 @@ joynrTestRequire(
                         function callRequestReplyManagerSync(
                                 methodName,
                                 testParam,
-                                testParamDatatype) {
+                                testParamDatatype,
+                                useInvalidProviderParticipantId) {
                             var providerParticipantId = "providerParticipantId";
                             var provider = {
                                 attributeName : {
@@ -400,6 +401,11 @@ joynrTestRequire(
                             });
 
                             requestReplyManager.addRequestCaller(providerParticipantId, provider);
+
+                            if (useInvalidProviderParticipantId) {
+                                providerParticipantId = "nonExistentProviderId";
+                            }
+
                             requestReplyManager.handleRequest(
                                     providerParticipantId,
                                     request,
@@ -412,12 +418,17 @@ joynrTestRequire(
                             };
                         }
 
-                        function callRequestReplyManager(methodName, testParam, testParamDatatype) {
+                        function callRequestReplyManager(
+                                methodName,
+                                testParam,
+                                testParamDatatype,
+                                useInvalidProviderParticipantId) {
                             var test =
                                     callRequestReplyManagerSync(
                                             methodName,
                                             testParam,
-                                            testParamDatatype);
+                                            testParamDatatype,
+                                            useInvalidProviderParticipantId);
 
                             waitsFor(function() {
                                 return test.callbackDispatcher.calls.length > 0;
@@ -570,43 +581,97 @@ joynrTestRequire(
                                     });
                                 });
 
-                        it("throws upon none existent provider", function() {
-                            expect(
-                                    function() {
-                                        requestReplyManager.handleRequest(
-                                                "nonExistentProviderId",
-                                                new Request({
-                                                    methodName : "testFunction",
-                                                    paramDatatypes : [],
-                                                    params : {}
-                                                }),
-                                                jasmine.createSpy("callbackDispatcherSpy"));
-                                    }).toThrow();
-                        });
+                        it(
+                                "delivers exception upon non-existent provider",
+                                function() {
+                                    var test =
+                                            callRequestReplyManager(
+                                                    "testFunction",
+                                                    testParam,
+                                                    testParamDatatype,
+                                                    true);
+                                    runs(function() {
+                                        expect(test.callbackDispatcher).toHaveBeenCalled();
+                                        expect(test.callbackDispatcher)
+                                                .toHaveBeenCalledWith(
+                                                        new Reply(
+                                                                {
+                                                                    error : {
+                                                                        "_typeName" : "joynr.exceptions.MethodInvocationException",
+                                                                        "detailMessage" : 'error handling request: {"paramDatatypes":["String"],"params":["myTestParameter"],"methodName":"testFunction","requestReplyId":"'
+                                                                            + test.request.requestReplyId
+                                                                            + '","_typeName":"joynr.Request"} for providerParticipantId nonExistentProviderId'
+                                                                    },
+                                                                    requestReplyId : test.request.requestReplyId
+                                                                }));
+                                    });
+                                });
 
-                        it("throws upon not existent operation and attribute", function() {
-                            expect(
-                                    function() {
-                                        callRequestReplyManagerSync(
-                                                "notExistentOperationOrAttribute",
-                                                testParam,
-                                                testParamDatatype);
-                                    }).toThrow();
-                            expect(
-                                    function() {
-                                        callRequestReplyManagerSync(
-                                                "getNotExistentOperationOrAttribute",
-                                                testParam,
-                                                testParamDatatype);
-                                    }).toThrow();
-                            expect(
-                                    function() {
-                                        callRequestReplyManagerSync(
-                                                "setNotExistentOperationOrAttribute",
-                                                testParam,
-                                                testParamDatatype);
-                                    }).toThrow();
-                        });
-
+                        it(
+                                "delivers exception when calling not existing operation",
+                                function() {
+                                    var test =
+                                            callRequestReplyManager(
+                                                    "notExistentOperationOrAttribute",
+                                                    testParam,
+                                                    testParamDatatype);
+                                    runs(function() {
+                                        expect(test.callbackDispatcher).toHaveBeenCalled();
+                                        expect(test.callbackDispatcher)
+                                                .toHaveBeenCalledWith(
+                                                        new Reply(
+                                                                {
+                                                                    error : {
+                                                                        "_typeName" : "joynr.exceptions.MethodInvocationException",
+                                                                        "detailMessage" : 'Could not find an operation "notExistentOperationOrAttribute" in the provider'
+                                                                    },
+                                                                    requestReplyId : test.request.requestReplyId
+                                                                }));
+                                    });
+                                });
+                        it(
+                                "delivers exception when calling getter for not existing attribute",
+                                function() {
+                                    var test =
+                                            callRequestReplyManager(
+                                                    "getNotExistentOperationOrAttribute",
+                                                    testParam,
+                                                    testParamDatatype);
+                                    runs(function() {
+                                        expect(test.callbackDispatcher).toHaveBeenCalled();
+                                        expect(test.callbackDispatcher)
+                                                .toHaveBeenCalledWith(
+                                                        new Reply(
+                                                                {
+                                                                    error : {
+                                                                        "_typeName" : "joynr.exceptions.MethodInvocationException",
+                                                                        "detailMessage" : 'Could not find an operation "getNotExistentOperationOrAttribute" or an attribute "notExistentOperationOrAttribute" in the provider'
+                                                                    },
+                                                                    requestReplyId : test.request.requestReplyId
+                                                                }));
+                                    });
+                                });
+                        it(
+                                "delivers exception when calling setter for not existing attribute",
+                                function() {
+                                    var test =
+                                            callRequestReplyManager(
+                                                    "setNotExistentOperationOrAttribute",
+                                                    testParam,
+                                                    testParamDatatype);
+                                    runs(function() {
+                                        expect(test.callbackDispatcher).toHaveBeenCalled();
+                                        expect(test.callbackDispatcher)
+                                                .toHaveBeenCalledWith(
+                                                        new Reply(
+                                                                {
+                                                                    error : {
+                                                                        "_typeName" : "joynr.exceptions.MethodInvocationException",
+                                                                        "detailMessage" : 'Could not find an operation "setNotExistentOperationOrAttribute" or an attribute "notExistentOperationOrAttribute" in the provider'
+                                                                    },
+                                                                    requestReplyId : test.request.requestReplyId
+                                                                }));
+                                    });
+                                });
                     });
         }); // require
