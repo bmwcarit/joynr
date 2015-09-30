@@ -305,8 +305,8 @@ joynrTestRequire(
                                                         {
                                                             from : providerId,
                                                             to : proxyId,
-                                                            expiryDate : Date.now()
-                                                                + onChangeSubscriptionRequest.qos.publicationTtl
+                                                            expiryDate : (Date.now() + onChangeSubscriptionRequest.qos.publicationTtl)
+                                                                    .toString()
                                                         },
                                                         new SubscriptionPublication(
                                                                 {

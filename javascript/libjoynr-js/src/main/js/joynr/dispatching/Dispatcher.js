@@ -109,10 +109,12 @@ define("joynr/dispatching/Dispatcher", [
             joynrMessage.creator = securityManager.getCurrentProcessUserId();
             joynrMessage.from = settings.from;
             joynrMessage.to = settings.to;
-            joynrMessage.expiryDate = Date.now() + settings.messagingQos.ttl;
-            if (joynrMessage.expiryDate > Util.getMaxLongValue()) {
-                joynrMessage.expiryDate = Util.getMaxLongValue();
+            var expiryDate = Date.now() + settings.messagingQos.ttl;
+            if (expiryDate > Util.getMaxLongValue()) {
+                expiryDate = Util.getMaxLongValue();
             }
+
+            joynrMessage.expiryDate = expiryDate.toString();
             // send message
             return clusterControllerMessagingStub.transmit(joynrMessage);
         }
@@ -298,6 +300,8 @@ define("joynr/dispatching/Dispatcher", [
          *            settings.from participantId of the sender
          * @param {String}
          *            settings.to participantId of the receiver
+         * @param {Number}
+         *            settings.expiryDate time-to-live
          * @param {MessagingQos}
          *            settings.messagingQos quality-of-service parameters such as time-to-live
          * @param {String}

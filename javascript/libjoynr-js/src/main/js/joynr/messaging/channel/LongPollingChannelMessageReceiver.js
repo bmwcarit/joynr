@@ -207,7 +207,6 @@ define(
                                                                         JSON
                                                                                 .stringify(DiagnosticTags
                                                                                         .forJoynrMessage(joynrMessage)));
-                                                        joynrMessage.header[JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE] = parseInt(joynrMessage.header[JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE], 10);
                                                         onMessageCallback(joynrMessage);
                                                     }
                                                 }

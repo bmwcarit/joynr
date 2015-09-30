@@ -171,7 +171,7 @@ define(
                     dispatcher.sendPublication({
                         from : subscriptionInfo.providerParticipantId,
                         to : subscriptionInfo.proxyParticipantId,
-                        expiryDate : Date.now() + subscriptionInfo.qos.publicationTtl
+                        expiryDate : (Date.now() + subscriptionInfo.qos.publicationTtl).toString()
                     }, new SubscriptionPublication({
                         response : value,
                         subscriptionId : subscriptionInfo.subscriptionId

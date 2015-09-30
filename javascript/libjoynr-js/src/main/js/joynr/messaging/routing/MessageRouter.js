@@ -265,10 +265,6 @@ define(
                  */
                 this.route =
                         function route(joynrMessage) {
-                                var obj = joynrMessage.header[JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE];
-                                if (obj === undefined || Typing.getObjectType(obj) !== "Number") {
-                                    return Promise.reject(new Error("The expiryDate of joynrMessage " + joynrMessage + " is invalid: " + obj));
-                                }
                                 return that.resolveNextHop(joynrMessage.to).then(function(address) {
                                         var errorMsg;
                                         // Error: The participant is not registered yet.
