@@ -25,8 +25,8 @@ import java.util.List;
 
 import javax.annotation.CheckForNull;
 
-import joynr.system.routingtypes.Address;
-import joynr.system.routingtypes.ChannelAddress;
+import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.types.CapabilityInformation;
 import joynr.types.ProviderQos;
 

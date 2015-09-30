@@ -22,10 +22,10 @@ package io.joynr.accesscontrol;
 import java.util.Arrays;
 import java.util.List;
 
-import joynr.infrastructure.dactypes.MasterAccessControlEntry;
-import joynr.infrastructure.dactypes.OwnerAccessControlEntry;
-import joynr.infrastructure.dactypes.Permission;
-import joynr.infrastructure.dactypes.TrustLevel;
+import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
+import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
+import joynr.infrastructure.DacTypes.Permission;
+import joynr.infrastructure.DacTypes.TrustLevel;
 
 import org.junit.Assert;
 import org.junit.Before;

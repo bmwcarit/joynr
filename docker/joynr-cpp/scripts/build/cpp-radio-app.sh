@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source /data/scripts/global.sh
+source /data/src/docker/joynr-base/scripts/global.sh
 
 START=$(date +%s)
 JOBS=20
@@ -36,8 +36,9 @@ cd /data/src/
 mvn clean install -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests \
 --projects \
 io.joynr.tools.generator:generator-framework,\
-io.joynr.java:java-generator,\
-io.joynr.cpp:cpp-generator,\
+io.joynr.tools.generator:joynr-generator-maven-plugin,\
+io.joynr.tools.generator:java-generator,\
+io.joynr.tools.generator:cpp-generator,\
 io.joynr.examples:radio-app
 
 rm -rf /data/build/radio

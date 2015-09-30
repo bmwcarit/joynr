@@ -1,3 +1,24 @@
+#joynr 0.9.4
+
+This is a minor bug fix release.
+
+##API relevant changes
+* **[Java, C++, JS]** Use spelling of Franca element names (packages, type collections,
+  interfaces, ...) as defined in the model (.fidl files) in generated code. I.e. perform
+  no upper/lower case conversions on Franca element names.
+
+##Other changes
+* **[C++]** Param datatypes in a joynr request message includes type collection names
+* **[JS]** Fix radio example made for node, to be compatible with the radio example
+  in C++, Java and the browser-based JavaScript application.
+* **[Tooling]** Minor fixes in build scripts.
+* **[Tooling]** Move java-generator, cpp-generator and js-generator into the tools folder.
+  All generator modules have the Maven group ID "io.joynr.tools.generator".
+* **[Tooling]** The joynr-generator-standalone supports JavaScript code generation
+  language.
+* **[Tooling, JS]** The joynr JavaScript build is part of the profile "javascript" of the
+  root joynr Maven POM.
+
 #joynr 0.9.3
 
 This is a minor bug fix release. It includes a preview version of the **joynr JavaScript** language
@@ -32,7 +53,7 @@ None.
 * **[Android]** callback onProxyCreationError is now called correctly when an error occurs creating
   a proxy. onProxyCreation is no longer called with null.
 * **[Java]** problems with multiple calls to register and deregister the same provider have been
-  resolved
+  resolved.
 * logging settings in the examples have been reduced to focus on the sent and received messages.
 
 #joynr 0.9.0
@@ -41,7 +62,7 @@ None.
 * **[Java, C++]** The provider class hierarchy has been simplified. A class diagram is at
   docs/diagram/ClassDiagram-JavaProvider.png. To implement a provider from scratch, extend
   <Interface>AbstractProvider. To implement a provider based on the default implementation extend
-  Default<Interface>Provider
+  Default<Interface>Provider.
 * **[C++]** Qt-related datatypes have been removed from the API, both in generated classes and in
   runtime classes used for proxy creation, provider registration etc. Std types are now used
   instead.

@@ -25,8 +25,8 @@ import io.joynr.messaging.routing.MessageRouter;
 
 import javax.annotation.CheckForNull;
 
-import joynr.system.routingtypes.Address;
-import joynr.system.routingtypes.ChannelAddress;
+import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.ChannelAddress;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

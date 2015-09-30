@@ -40,7 +40,7 @@ define(
             "joynr/messaging/channel/ChannelMessagingSender",
             "joynr/messaging/channel/ChannelMessagingStubFactory",
             "joynr/messaging/channel/ChannelMessagingSkeleton",
-            "joynr/system/routingtypes/ChannelAddress",
+            "joynr/system/RoutingTypes/ChannelAddress",
             "joynr/messaging/MessagingStubFactory",
             "joynr/messaging/routing/MessageRouter",
             "joynr/messaging/routing/MessageQueue",

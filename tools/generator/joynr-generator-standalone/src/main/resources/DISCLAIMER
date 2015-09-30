@@ -28,8 +28,9 @@ disclaimer of warranty, and an exclusion of liability is included in this docume
     further information included with the dependency is included in the
     info/guice-3.0-jar directory
   Guava: Google Core Libraries for Java
-  io.joynr.cpp:cpp-generator
-  io.joynr.java:java-generator
+  io.joynr.tools.generator:cpp-generator
+  io.joynr.tools.generator:java-generator
+  io.joynr.tools.generator:js-generator
   io.joynr.tools.generator:generator-framework
   XML Commons External Components XML APIs
     further information included with the dependency is included in the

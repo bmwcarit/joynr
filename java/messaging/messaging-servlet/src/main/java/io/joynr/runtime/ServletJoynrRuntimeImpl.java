@@ -31,7 +31,7 @@ import io.joynr.proxy.ProxyBuilderFactory;
 
 import javax.inject.Named;
 
-import joynr.system.routingtypes.Address;
+import joynr.system.RoutingTypes.Address;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;

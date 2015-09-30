@@ -45,8 +45,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import joynr.JoynrMessage;
 import joynr.Reply;
 import joynr.Request;
-import joynr.system.routingtypes.Address;
-import joynr.system.routingtypes.ChannelAddress;
+import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.ChannelAddress;
 
 import org.junit.Before;
 import org.junit.Test;

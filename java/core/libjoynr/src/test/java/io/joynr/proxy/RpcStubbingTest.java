@@ -61,8 +61,8 @@ import java.util.UUID;
 import joynr.Reply;
 import joynr.Request;
 import joynr.exceptions.ApplicationException;
-import joynr.types.localisation.GpsFixEnum;
-import joynr.types.localisation.GpsLocation;
+import joynr.types.Localisation.GpsFixEnum;
+import joynr.types.Localisation.GpsLocation;
 
 import org.junit.Before;
 import org.junit.Test;

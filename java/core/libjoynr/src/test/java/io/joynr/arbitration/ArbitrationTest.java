@@ -37,8 +37,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import joynr.system.routingtypes.Address;
-import joynr.system.routingtypes.ChannelAddress;
+import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.types.CustomParameter;
 import joynr.types.ProviderQos;
 

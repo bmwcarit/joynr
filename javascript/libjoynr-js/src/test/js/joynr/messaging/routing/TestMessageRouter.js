@@ -24,8 +24,8 @@ joynrTestRequire(
         "joynr/messaging/routing/TestMessageRouter",
         [
             "joynr/messaging/routing/MessageRouter",
-            "joynr/system/routingtypes/BrowserAddress",
-            "joynr/system/routingtypes/ChannelAddress",
+            "joynr/system/RoutingTypes/BrowserAddress",
+            "joynr/system/RoutingTypes/ChannelAddress",
             "joynr/messaging/JoynrMessage",
             "joynr/start/TypeRegistry",
             "global/Promise",
@@ -144,8 +144,8 @@ joynrTestRequire(
                             });
 
                             typeRegistry = new TypeRegistry();
-                            typeRegistry.addType("joynr.system.routingtypes.ChannelAddress", ChannelAddress);
-                            typeRegistry.addType("joynr.system.routingtypes.BrowserAddress", BrowserAddress);
+                            typeRegistry.addType("joynr.system.RoutingTypes.ChannelAddress", ChannelAddress);
+                            typeRegistry.addType("joynr.system.RoutingTypes.BrowserAddress", BrowserAddress);
 
                         });
 

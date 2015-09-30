@@ -28,7 +28,7 @@ import io.joynr.messaging.routing.MessageRouter;
 import java.io.IOException;
 
 import joynr.JoynrMessage;
-import joynr.system.routingtypes.ChannelAddress;
+import joynr.system.RoutingTypes.ChannelAddress;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

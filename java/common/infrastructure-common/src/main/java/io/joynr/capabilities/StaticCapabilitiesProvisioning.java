@@ -24,7 +24,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
-import joynr.system.routingtypes.ChannelAddress;
+import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.types.CapabilityInformation;
 
 import org.slf4j.Logger;

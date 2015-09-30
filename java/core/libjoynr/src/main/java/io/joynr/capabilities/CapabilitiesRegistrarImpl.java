@@ -28,7 +28,7 @@ import io.joynr.provider.RequestCallerFactory;
 
 import javax.inject.Named;
 
-import joynr.system.routingtypes.Address;
+import joynr.system.RoutingTypes.Address;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;

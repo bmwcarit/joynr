@@ -51,8 +51,8 @@ import java.util.concurrent.ThreadFactory;
 
 import javax.inject.Named;
 
-import joynr.system.routingtypes.Address;
-import joynr.system.routingtypes.ChannelAddress;
+import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.ChannelAddress;
 
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;

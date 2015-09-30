@@ -21,8 +21,8 @@ package io.joynr.accesscontrol;
 
 import java.util.Collection;
 
-import joynr.infrastructure.dactypes.DomainRoleEntry;
-import joynr.infrastructure.dactypes.MasterAccessControlEntry;
+import joynr.infrastructure.DacTypes.DomainRoleEntry;
+import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 
 public interface DomainAccessControlProvisioning {
 

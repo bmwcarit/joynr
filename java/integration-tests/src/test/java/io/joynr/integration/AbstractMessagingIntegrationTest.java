@@ -47,7 +47,7 @@ import java.util.Properties;
 import java.util.UUID;
 
 import joynr.JoynrMessage;
-import joynr.system.routingtypes.ChannelAddress;
+import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.types.ChannelUrlInformation;
 
 import org.junit.After;

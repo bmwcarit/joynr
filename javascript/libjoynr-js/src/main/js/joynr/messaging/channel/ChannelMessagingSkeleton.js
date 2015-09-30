@@ -19,7 +19,7 @@
 
 define("joynr/messaging/channel/ChannelMessagingSkeleton", [
     "joynr/util/Util",
-    "joynr/system/routingtypes/ChannelAddress"
+    "joynr/system/RoutingTypes/ChannelAddress"
 ], function(Util, ChannelAddress) {
 
     /**

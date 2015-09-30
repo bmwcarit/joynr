@@ -32,7 +32,7 @@
         // joynr.provisioning.messaging.maxQueueSizeInKBytes = 10000;
         var globalCapDirCapability = {
             domain : "io.joynr",
-            interfaceName : "infrastructure/globalcapabilitiesdirectory",
+            interfaceName : "infrastructure/GlobalCapabilitiesDirectory",
             providerQos : {
                 qos : [],
                 version : 0,
@@ -46,7 +46,7 @@
 
         var channelUrlDirCapability = {
             domain : "io.joynr",
-            interfaceName : "infrastructure/channelurldirectory",
+            interfaceName : "infrastructure/ChannelUrlDirectory",
             providerQos : {
                 qos : [],
                 version : 0,
@@ -81,8 +81,8 @@
                 }
             }
         };
-        localStorage.setItem("joynr.participant.io.joynr.system.discovery.", "CC.DiscoveryProvider.ParticipantId");
-        localStorage.setItem("joynr.participant.io.joynr.system.routing.", "CC.RoutingProvider.ParticipantId");
+        localStorage.setItem("joynr.participant.io.joynr.system.Discovery.", "CC.DiscoveryProvider.ParticipantId");
+        localStorage.setItem("joynr.participant.io.joynr.system.Routing.", "CC.RoutingProvider.ParticipantId");
         return provisioning;
     };
 

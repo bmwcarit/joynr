@@ -28,7 +28,7 @@ import javax.inject.Inject;
 
 import com.google.inject.name.Named;
 
-import joynr.system.routingtypes.Address;
+import joynr.system.RoutingTypes.Address;
 
 public class ProxyBuilderFactoryImpl implements ProxyBuilderFactory {
 

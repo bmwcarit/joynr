@@ -66,7 +66,7 @@ import joynr.OnChangeSubscriptionQos;
 import joynr.Reply;
 import joynr.Request;
 import joynr.exceptions.ApplicationException;
-import joynr.system.routingtypes.ChannelAddress;
+import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.types.ProviderQos;
 import joynr.vehicle.NavigationBroadcastInterface.LocationUpdateBroadcastListener;
 import joynr.vehicle.NavigationBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters;

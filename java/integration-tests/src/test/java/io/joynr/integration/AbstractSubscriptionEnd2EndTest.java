@@ -39,8 +39,8 @@ import joynr.OnChangeSubscriptionQos;
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
 import joynr.PeriodicSubscriptionQos;
 import joynr.tests.testProxy;
-import joynr.tests.testtypes.TestEnum;
-import joynr.types.localisation.GpsLocation;
+import joynr.tests.testTypes.TestEnum;
+import joynr.types.Localisation.GpsLocation;
 
 import org.junit.After;
 import org.junit.Before;

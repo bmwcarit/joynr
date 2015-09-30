@@ -41,8 +41,8 @@ import java.util.concurrent.ThreadFactory;
 import javax.inject.Named;
 
 import joynr.Request;
-import joynr.system.routingtypes.Address;
-import joynr.system.routingtypes.ChannelAddress;
+import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.ChannelAddress;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;

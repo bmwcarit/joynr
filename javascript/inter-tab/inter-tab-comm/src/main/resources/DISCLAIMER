@@ -1,10 +1,3 @@
---- almond ---------------------------------------------------------------------
-
-The software library "almond" included in some files is licensed under
-the “MIT/X11 license”. A copy of that license in the English original version
-with a copyright notice, a disclaimer of warranty, and an exclusion of liability
-is included in the META-INF/licenses/MIT.almond.txt document.
-
 --- json_parse_state -----------------------------------------------------------
 
 The software library "json_parse_state" included in some files is

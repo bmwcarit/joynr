@@ -31,8 +31,8 @@ importScripts("../joynr/provisioning/provisioning_common.js");
 importScripts("../joynr/provisioning/provisioning_cc.js");
 importScripts("provisioning_end2end_common.js");
 
-importScripts("../joynr/datatypes/exampletypes/Country.js");
-importScripts("../joynr/datatypes/exampletypes/ComplexRadioStation.js");
+importScripts("../joynr/datatypes/exampleTypes/Country.js");
+importScripts("../joynr/datatypes/exampleTypes/ComplexRadioStation.js");
 importScripts("../joynr/datatypes/DatatypesProvider.js");
 importScripts("TestEnd2EndDatatypesTestData.js");
 importScripts("../../classes/lib/bluebird.js");

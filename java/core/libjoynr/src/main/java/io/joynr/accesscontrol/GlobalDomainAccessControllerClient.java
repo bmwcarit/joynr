@@ -20,11 +20,11 @@ import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.Maste
 import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.MediatorAccessControlEntryChangedBroadcastFilterParameters;
 import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.OwnerAccessControlEntryChangedBroadcastFilterParameters;
 import joynr.infrastructure.GlobalDomainAccessControllerProxy;
-import joynr.infrastructure.dactypes.DomainRoleEntry;
-import joynr.infrastructure.dactypes.MasterAccessControlEntry;
-import joynr.infrastructure.dactypes.MasterRegistrationControlEntry;
-import joynr.infrastructure.dactypes.OwnerAccessControlEntry;
-import joynr.infrastructure.dactypes.OwnerRegistrationControlEntry;
+import joynr.infrastructure.DacTypes.DomainRoleEntry;
+import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
+import joynr.infrastructure.DacTypes.MasterRegistrationControlEntry;
+import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
+import joynr.infrastructure.DacTypes.OwnerRegistrationControlEntry;
 
 /*
  * #%L

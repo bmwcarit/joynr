@@ -23,7 +23,7 @@ import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 import io.joynr.runtime.AbstractJoynrApplication;
 import joynr.chat.DefaultMessengerProvider;
-import joynr.chat.messagetypecollection.Message;
+import joynr.chat.MessageTypeCollection.Message;
 
 public class ServletJoynrChatApplication extends AbstractJoynrApplication {
 

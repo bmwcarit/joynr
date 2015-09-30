@@ -220,13 +220,13 @@
 				<dependencies>
 					<!-- The following part is only required for target language Java -->
 					<dependency>
-						<groupId>io.joynr.java</groupId>
+						<groupId>io.joynr.tools.generator</groupId>
 						<artifactId>java-generator</artifactId>
 						<version>${joynr.version}</version>
 					</dependency>
 					<!-- The following part is only required for target language C++ -->
 					<dependency>
-						<groupId>io.joynr.cpp</groupId>
+						<groupId>io.joynr.tools.generator</groupId>
 						<artifactId>cpp-generator</artifactId>
 						<version>${joynr.version}</version>
 					</dependency>

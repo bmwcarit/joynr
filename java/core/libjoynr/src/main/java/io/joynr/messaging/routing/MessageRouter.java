@@ -26,7 +26,7 @@ import java.io.IOException;
 
 import joynr.JoynrMessage;
 import joynr.system.RoutingProvider;
-import joynr.system.routingtypes.Address;
+import joynr.system.RoutingTypes.Address;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;

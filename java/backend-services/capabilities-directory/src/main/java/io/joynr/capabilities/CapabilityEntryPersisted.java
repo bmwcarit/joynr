@@ -42,7 +42,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
-import joynr.system.routingtypes.Address;
+import joynr.system.RoutingTypes.Address;
 import joynr.types.CapabilityInformation;
 import joynr.types.ProviderQos;
 

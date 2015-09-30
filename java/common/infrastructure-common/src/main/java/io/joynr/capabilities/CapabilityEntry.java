@@ -21,7 +21,7 @@ package io.joynr.capabilities;
 
 import java.util.List;
 
-import joynr.system.routingtypes.Address;
+import joynr.system.RoutingTypes.Address;
 import joynr.types.CapabilityInformation;
 import joynr.types.ProviderQos;
 

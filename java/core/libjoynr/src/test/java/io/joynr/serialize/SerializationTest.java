@@ -64,12 +64,12 @@ import joynr.exceptions.IllegalAccessException;
 import joynr.exceptions.MethodInvocationException;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.tests.testBroadcastInterface;
-import joynr.tests.testtypes.TestEnum;
+import joynr.tests.testTypes.TestEnum;
 import joynr.types.CapabilityInformation;
 import joynr.types.ProviderQos;
-import joynr.types.localisation.GpsFixEnum;
-import joynr.types.localisation.GpsLocation;
-import joynr.types.localisation.GpsPosition;
+import joynr.types.Localisation.GpsFixEnum;
+import joynr.types.Localisation.GpsLocation;
+import joynr.types.Localisation.GpsPosition;
 
 import org.junit.Assert;
 import org.junit.Before;

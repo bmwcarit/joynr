@@ -26,8 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import joynr.tests.DefaulttestProvider;
-import joynr.types.localisation.GpsFixEnum;
-import joynr.types.localisation.GpsLocation;
+import joynr.types.Localisation.GpsFixEnum;
+import joynr.types.Localisation.GpsLocation;
 
 public class PubSubTestProviderImpl extends DefaulttestProvider {
 

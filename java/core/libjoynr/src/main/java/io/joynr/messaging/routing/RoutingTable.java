@@ -19,7 +19,7 @@ package io.joynr.messaging.routing;
  * #L%
  */
 
-import joynr.system.routingtypes.Address;
+import joynr.system.RoutingTypes.Address;
 
 public interface RoutingTable {
     public Address get(String participantId);

@@ -56,8 +56,8 @@ import joynr.tests.testBroadcastInterface;
 import joynr.tests.testLocationUpdateSelectiveBroadcastFilter;
 import joynr.tests.testLocationUpdateWithSpeedSelectiveBroadcastFilter;
 import joynr.tests.testProvider;
-import joynr.types.localisation.GpsFixEnum;
-import joynr.types.localisation.GpsLocation;
+import joynr.types.Localisation.GpsFixEnum;
+import joynr.types.Localisation.GpsLocation;
 
 import org.junit.Before;
 import org.junit.Test;

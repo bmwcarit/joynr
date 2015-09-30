@@ -21,7 +21,7 @@ package io.joynr.arbitration;
 
 import java.util.List;
 
-import joynr.system.routingtypes.Address;
+import joynr.system.RoutingTypes.Address;
 
 public class ArbitrationResult {
     private String participantId;

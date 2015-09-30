@@ -79,7 +79,7 @@ joynrTestRequire(
 
                         beforeEach(function() {
                             domain = "myDomain";
-                            interfaceName = "vehicle/radio";
+                            interfaceName = "vehicle/Radio";
                             discoveryQos = new DiscoveryQos({
                                 discoveryTimeout : 5000,
                                 discoveryRetryDelay : 900,

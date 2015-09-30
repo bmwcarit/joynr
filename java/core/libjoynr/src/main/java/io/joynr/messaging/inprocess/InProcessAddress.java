@@ -23,7 +23,7 @@ import io.joynr.subtypes.JoynrType;
 
 import java.io.Serializable;
 
-import joynr.system.routingtypes.Address;
+import joynr.system.RoutingTypes.Address;
 
 public class InProcessAddress extends Address implements Serializable, JoynrType {
 

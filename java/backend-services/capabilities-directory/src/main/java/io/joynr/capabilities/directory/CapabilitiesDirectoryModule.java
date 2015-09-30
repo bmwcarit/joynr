@@ -32,7 +32,7 @@ import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.runtime.AbstractJoynrApplication;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryAbstractProvider;
-import joynr.system.routingtypes.Address;
+import joynr.system.RoutingTypes.Address;
 import joynr.types.CustomParameter;
 import joynr.types.ProviderQos;
 

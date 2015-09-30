@@ -54,7 +54,7 @@ import joynr.Request;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
-import joynr.system.routingtypes.Address;
+import joynr.system.RoutingTypes.Address;
 
 import org.reflections.Reflections;
 import org.slf4j.Logger;

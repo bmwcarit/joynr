@@ -35,12 +35,12 @@ import javax.inject.Singleton;
 
 import joynr.JoynrMessage;
 import joynr.system.RoutingAbstractProvider;
-import joynr.system.routingtypes.Address;
-import joynr.system.routingtypes.BrowserAddress;
-import joynr.system.routingtypes.ChannelAddress;
-import joynr.system.routingtypes.CommonApiDbusAddress;
-import joynr.system.routingtypes.WebSocketAddress;
-import joynr.system.routingtypes.WebSocketClientAddress;
+import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.BrowserAddress;
+import joynr.system.RoutingTypes.ChannelAddress;
+import joynr.system.RoutingTypes.CommonApiDbusAddress;
+import joynr.system.RoutingTypes.WebSocketAddress;
+import joynr.system.RoutingTypes.WebSocketClientAddress;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

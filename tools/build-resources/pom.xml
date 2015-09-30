@@ -46,6 +46,25 @@
 					</execution>
 				</executions>
 			</plugin>
+			<!-- NOTE the license to be added to the source header files must be
+				specifically (redundantly) defined below -->
+			<!-- This is a shortcoming of the license-maven-plugin -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<configuration>
+					<verbose>false</verbose>
+					<addSvnKeyWords>true</addSvnKeyWords>
+					<licenseName>apache_v2</licenseName>
+					<roots>
+						<root>.</root>
+					</roots>
+					<excludes>
+						<exclude>src/main/resources/js-test-driver/phantomjs-jstd.js</exclude>
+						<exclude>src/main/resources/almond/almond-0.2.5.js</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 

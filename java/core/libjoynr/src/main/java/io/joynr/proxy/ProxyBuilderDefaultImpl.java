@@ -34,7 +34,7 @@ import io.joynr.messaging.routing.MessageRouter;
 
 import java.util.UUID;
 
-import joynr.system.routingtypes.Address;
+import joynr.system.RoutingTypes.Address;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

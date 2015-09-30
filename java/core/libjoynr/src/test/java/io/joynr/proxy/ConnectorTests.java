@@ -38,9 +38,9 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 import joynr.PeriodicSubscriptionQos;
-import joynr.system.routingtypes.Address;
-import joynr.system.routingtypes.ChannelAddress;
-import joynr.types.localisation.GpsPosition;
+import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.ChannelAddress;
+import joynr.types.Localisation.GpsPosition;
 import joynr.vehicle.LocalisationSubscriptionInterface;
 
 import org.junit.Assert;

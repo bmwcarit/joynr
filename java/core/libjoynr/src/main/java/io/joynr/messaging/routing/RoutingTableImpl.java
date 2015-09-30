@@ -24,7 +24,7 @@ import io.joynr.messaging.ConfigurableMessagingSettings;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentMap;
 
-import joynr.system.routingtypes.Address;
+import joynr.system.RoutingTypes.Address;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

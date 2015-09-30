@@ -1,4 +1,4 @@
-/*jslint node: true */
+/*jslint node: true  es5: true */
 
 /*
  * #%L
@@ -21,82 +21,45 @@
 
 var log = require("./logging.js").log;
 var prettyLog = require("./logging.js").prettyLog;
+var joynr = require("joynr");
+var RadioStation;
+var Country;
+var currentStationSubscriptionId;
+var subscriptionQosOnChange;
 
-var runDemo = function(radioProxy, onDone) {
-    radioProxy.isOn.get().fail(function(error) {
-        prettyLog("radioProxy.isOn.get.fail: " + error);
+var runDemo = function(radioProxy) {
+    prettyLog("ATTRIBUTE GET: currentStation...");
+    radioProxy.currentStation.get().catch(function(error) {
+        prettyLog("ATTRIBUTE GET: currentStation failed: " + error);
     }).then(function(value) {
-        prettyLog("Is the radio on?: radioProxy.isOn.get.done: " + value);
-        return radioProxy.isOn.set({
-            value : true
-        });
-    }).fail(function(error) {
-        prettyLog("radioProxy.isOn.set(" + true + ").fail: " + error);
-    }).then(function() {
-        prettyLog("Switch the radio on: radioProxy.isOn.set(" + true + ").done");
-        return radioProxy.isOn.get();
-    }).fail(function(error) {
-        prettyLog("radioProxy.isOn.get.fail: " + error);
-    }).then(function(value) {
-        prettyLog("The radio should be on now: radioProxy.isOn.get.then: " + value);
-        return radioProxy.numberOfStations.get();
-    }).fail(function(error) {
-        prettyLog("radioProxy.numberOfStations.get.fail: " + error);
-    }).then(function(value) {
-        prettyLog("radioProxy.numberOfStations.get.done: " + value);
-        return radioProxy.addFavoriteStation({
-            radioStation : "runDemoFavoriteStation"
-        });
-    }).fail(function(error) {
-        prettyLog("radioProxy.addFavoriteStation(" + JSON.stringify({
-            radioStation : "runDemoFavoriteStation"
-        }) + ").fail: " + error);
-    }).then(function(value) {
-        prettyLog("radioProxy.addFavoriteStation(" + JSON.stringify({
-            radioStation : "runDemoFavoriteStation"
-        }) + ").done. Return value of operation from provider: " + JSON.stringify(value));
-        return radioProxy.numberOfStations.get();
-    }).fail(function(error) {
-        prettyLog("radioProxy.numberOfStations.get.fail: " + error);
-    }).then(function(value) {
-        prettyLog("radioProxy.numberOfStations.get.done: " + value);
-        if (onDone) {
-            onDone();
-        }
-    });
-};
-
-var subscription = require("./subscription.js");
-var isOnSubscription = {};
-isOnSubscription.subscriptions = {};
-isOnSubscription.setJoynr = function(joynr) {
-    this.joynr = joynr;
-};
-isOnSubscription.subscribe =
-        function(radioProxy, onDone) {
-            if (!this.joynr) {
-                log("you first have to initialize me with setJoynr! Aborting.");
-            } else {
-                var subscriptionQosOnChange = new this.joynr.proxy.OnChangeSubscriptionQos({
-                    minInterval : 50
-                });
-
-                var onPublicationIsOn = function(value) {
-                    prettyLog("Received update of isOn: " + value);
-                };
-
-                subscription.subscribeAttribute(
-                        radioProxy,
-                        "isOn",
-                        "onChange",
-                        subscriptionQosOnChange,
-                        onPublicationIsOn,
-                        this.subscriptions,
-                        onDone);
+        prettyLog("ATTRIBUTE GET: currentStation returned: " + JSON.stringify(value));
+        prettyLog("RPC: radioProxy.addFavoriteStation(radioStation)...");
+        return radioProxy.addFavoriteStation(
+            {
+                newFavoriteStation : new RadioStation({
+                    name : "runDemoFavoriteStation",
+                    trafficService : true,
+                    country : Country.GERMANY
+                })
             }
-        };
-isOnSubscription.unsubscribe = function(radioProxy, onDone) {
-    subscription.unsubscribeAttributeSubscriptions(radioProxy, "isOn", this.subscriptions, onDone);
+        );
+    }).catch(function(error) {
+        prettyLog("RPC: radioProxy.addFavoriteStation(radioStation) failed: " + error);
+    }).then(function() {
+        prettyLog("RPC: radioProxy.addFavoriteStation(radioStation) returned");
+        prettyLog("radioProxy.shuffleStations()...");
+        return radioProxy.shuffleStations();
+    }).catch(function(error) {
+        prettyLog("RPC: radioProxy.shuffleStations() failed: " + error);
+    }).then(function(value) {
+        prettyLog("RPC: radioProxy.shuffleStations() returned");
+        prettyLog("ATTRIBUTE GET: currentStation after shuffle...");
+        return radioProxy.currentStation.get();
+    }).catch(function(error) {
+        prettyLog("ATTRIBUTE GET: currentStation failed: " + error);
+    }).then(function(value) {
+        prettyLog("ATTRIBUTE GET: currentStation returned: " + JSON.stringify(value));
+    });
 };
 
 var runInteractiveConsole =
@@ -115,39 +78,31 @@ var runInteractiveConsole =
                     description : "quit",
                     options : {}
                 },
-                SET_IS_ON : {
-                    value : "setIsOn",
-                    description : "set value for isOn",
-                    options : {
-                        TRUE : "true",
-                        FALSE : "false"
-                    }
-                },
-                GET_IS_ON : {
-                    value : "getIsOn",
-                    description : "get value for isOn",
+                SHUFFLE_STATIONS : {
+                    value : "s",
+                    description : "shuffle stations",
                     options : {}
                 },
                 ADD_FAVORITE_STATION : {
-                    value : "addFavStation",
+                    value : "a",
                     description : "add a Favorite Station",
                     options : {
                         NAME : "name"
                     }
                 },
-                GET_NUM_STATIONS : {
-                    value : "getNumStations",
-                    description : "get the number of favorite stations",
-                    options : {}
-                },
                 SUBSCRIBE : {
                     value : "subscribe",
-                    description : "subscribe to isOn attribute",
+                    description : "subscribe to current station",
                     options : {}
                 },
                 UNSUBSCRIBE : {
                     value : "unsubscribe",
-                    description : "unsubscribe from isOn attribute",
+                    description : "unsubscribe from current station",
+                    options : {}
+                },
+                GET_CURRENT_STATION : {
+                    value : "c",
+                    description : "get current station",
                     options : {}
                 }
             };
@@ -162,68 +117,84 @@ var runInteractiveConsole =
                     case MODES.QUIT.value:
                         rl.close();
                         break;
-                    case MODES.SET_IS_ON.value:
-                        var value;
-                        if (!input[1]) {
-                            log("please define an option");
-                        } else if (input[1] === MODES.SET_IS_ON.options.TRUE) {
-                            value = true;
-                        } else if (input[1] === MODES.SET_IS_ON.options.FALSE) {
-                            value = false;
-                        } else {
-                            log('invalid option: ' + input[1]);
-                        }
-                        if (value !== undefined) {
-                            radioProxy.isOn.set({
-                                value : value
-                            }).done(function() {
-                                log("radioProxy.isOn.set(" + value + ").done");
-                            }).fail(function(error) {
-                                log("radioProxy.isOn.set(" + value + ").fail: " + error);
-                            });
-                        }
-                        break;
-                    case MODES.GET_IS_ON.value:
-                        radioProxy.isOn.get().done(function(value) {
-                            prettyLog("radioProxy.isOn.get.done: " + value);
-                        }).fail(function(error) {
-                            prettyLog("radioProxy.isOn.get.fail: " + error);
-                        });
-                        break;
                     case MODES.ADD_FAVORITE_STATION.value:
                         if (!input[1]) {
                             log("please define a name");
                         } else {
-                            var operationArguments = {
-                                radioStation : input[1]
-                            };
-                            radioProxy.addFavoriteStation(operationArguments).done(
+                            var newFavoriteStation = new RadioStation({
+                                name : input[1],
+                                trafficService : true,
+                                country : Country.GERMANY
+                            });
+
+                            radioProxy.addFavoriteStation({newFavoriteStation: newFavoriteStation})
+                                .then(
                                     function(returnValue) {
-                                        log("radioProxy.addFavoriteStation("
-                                            + JSON.stringify(operationArguments)
-                                            + ").done. Return value of operation from provider: "
+                                        prettyLog("RPC: radioProxy.addFavoriteStation("
+                                            + JSON.stringify(newFavoriteStation)
+                                            + ") returned: "
                                             + JSON.stringify(returnValue));
-                                    }).fail(
+                                    }).catch(
                                     function(error) {
-                                        log("radioProxy.addFavoriteStation("
-                                            + JSON.stringify(operationArguments)
-                                            + ").fail: "
+                                        prettyLog("RPC: radioProxy.addFavoriteStation("
+                                            + JSON.stringify(newFavoriteStation)
+                                            + ") failed."
                                             + error);
                                     });
                         }
                         break;
-                    case MODES.GET_NUM_STATIONS.value:
-                        radioProxy.numberOfStations.get().done(function(value) {
-                            prettyLog("radioProxy.numberOfStations.get.done: " + value);
-                        }).fail(function(error) {
-                            prettyLog("radioProxy.numberOfStations.get.fail: " + error);
+                    case MODES.SHUFFLE_STATIONS.value:
+                        radioProxy.shuffleStations().then(function() {
+                            prettyLog("RPC: radioProxy.shuffleStations returned. ");
+                        }).catch(function(error) {
+                            prettyLog("RPC: radioProxy.shuffleStations failed: " + error);
                         });
                         break;
                     case MODES.SUBSCRIBE.value:
-                        isOnSubscription.subscribe(radioProxy);
+                        if (currentStationSubscriptionId === undefined) {
+                            var currentStationOnReceiveCallback = function currentStationOnReceiveCallback(value) {
+                                prettyLog("radioProxy.currentStation.subscribe.onReceive",
+                                          JSON.stringify(value));
+                            };
+                            var currentStationOnErrorCallback = function currentStationOnErrorCallback() {
+                                prettyLog("radioProxy.currentStation.subscribe.onPublicationMissed",
+                                          "publication missed");
+                            };
+
+                            radioProxy.currentStation.subscribe({
+                                subscriptionQos : subscriptionQosOnChange,
+                                onReceive : currentStationOnReceiveCallback,
+                                onError : currentStationOnErrorCallback
+                            }).then(function(subscriptionId) {
+                                currentStationSubscriptionId = subscriptionId;
+                                prettyLog("radioProxy.currentStation.subscribe.done",
+                                          "Subscription ID: "+ subscriptionId);
+                            }).catch(function(error) {
+                                prettyLog("radioProxy.currentStation.subscribe.fail", error);
+                            });
+                        }
                         break;
                     case MODES.UNSUBSCRIBE.value:
-                        isOnSubscription.unsubscribe(radioProxy);
+                        if (currentStationSubscriptionId !== undefined) {
+                            radioProxy.currentStation.unsubscribe({
+                                "subscriptionId" : currentStationSubscriptionId
+                            }).then(function() {
+                                prettyLog("radioProxy.currentStation.unsubscribe.done",
+                                          "Subscription ID: " + currentStationSubscriptionId);
+                                currentStationSubscriptionId = undefined;
+                            }).catch(function(error) {
+                                prettyLog("radioProxy.currentStation.unsubscribe.fail",
+                                          "Subscription ID: " + currentStationSubscriptionId + " ERROR" + error
+                                );
+                            });
+                        }
+                        break;
+                    case MODES.GET_CURRENT_STATION.value:
+                        radioProxy.currentStation.get().then(function(currentStation) {
+                            prettyLog("RPC: radioProxy.getCurrentStation returned: " + JSON.stringify(currentStation));
+                        }).catch(function(error) {
+                            prettyLog("RPC: radioProxy.getCurrentStation failed: " + error);
+                        });
                         break;
                     case '':
                         break;
@@ -251,9 +222,11 @@ if (process.argv.length !== 3) {
 var domain = process.argv[2];
 log("domain: " + domain);
 
-var joynr = require("joynr");
 var provisioning = require("./provisioning_common.js");
 joynr.load(provisioning, function(error, loadedJoynr) {
+    RadioStation = require("../generated/js/joynr/vehicle/RadioStation");
+    Country = require("../generated/js/joynr/vehicle/Country");
+    require("../generated/js/joynr/vehicle/GeoPosition");
     if (error) {
         throw error;
     }
@@ -262,26 +235,23 @@ joynr.load(provisioning, function(error, loadedJoynr) {
     var messagingQos = new joynr.messaging.MessagingQos({
         ttl : 60000
     });
+
+    subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
+        minInterval : 50
+	});
+
     var RadioProxy = require("../generated/js/joynr/vehicle/RadioProxy.js");
     joynr.proxyBuilder.build(RadioProxy, {
         domain : domain,
         messagingQos : messagingQos
-    }).done(function(radioProxy) {
+    }).then(function(radioProxy) {
         log("radio proxy build");
-        runDemo(radioProxy, function() {
-            isOnSubscription.setJoynr(joynr); // TODO this should not be necessary => setting the
-                                                // values for OnChangeSubscriptionQos should be
-                                                // possible without joynr
-            isOnSubscription.subscribe(radioProxy, function() {
-                runInteractiveConsole(radioProxy, function() {
-                    log("stopping all isOn subscriptions");
-                    isOnSubscription.unsubscribe(radioProxy, function() {
-                        process.exit(0);
-                    });
-                });
-            });
+        runDemo(radioProxy);
+        runInteractiveConsole(radioProxy, function() {
+            log("exiting...");
+            process.exit(0);
         });
-    }).fail(function(error) {
-        log("error building radioProxy: " + error);
+    }).catch(function(error) {
+        log("error running radioProxy: " + error);
     });
 });

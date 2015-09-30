@@ -227,7 +227,7 @@
 				</executions>
 				<dependencies>
 					<dependency>
-						<groupId>io.joynr.java</groupId>
+						<groupId>io.joynr.tools.generator</groupId>
 						<artifactId>java-generator</artifactId>
 						<version>${project.version}</version>
 					</dependency>

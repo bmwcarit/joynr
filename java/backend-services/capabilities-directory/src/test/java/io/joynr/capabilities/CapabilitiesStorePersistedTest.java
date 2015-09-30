@@ -31,7 +31,7 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.UUID;
 
-import joynr.system.routingtypes.Address;
+import joynr.system.RoutingTypes.Address;
 import joynr.types.CapabilityInformation;
 import joynr.types.CustomParameter;
 import joynr.types.ProviderQos;

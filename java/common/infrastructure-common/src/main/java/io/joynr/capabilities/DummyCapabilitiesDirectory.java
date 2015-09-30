@@ -25,7 +25,7 @@ import java.util.ArrayList;
 
 import javax.annotation.CheckForNull;
 
-import joynr.system.routingtypes.ChannelAddress;
+import joynr.system.RoutingTypes.ChannelAddress;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
