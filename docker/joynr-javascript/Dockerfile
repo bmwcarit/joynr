@@ -1,4 +1,4 @@
-FROM joynr-base:latest
+FROM joynr-android:latest
 
 ###################################################
 # install node.js
