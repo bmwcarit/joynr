@@ -397,5 +397,17 @@ joynrTestRequire(
                                     });
                                 });
 
+                    it(
+                    "returns a rejected promise when unsubscribing with a non-existant subscriptionId",
+                    function(done) {
+                            subscriptionManager.unregisterSubscription({
+                                subscriptionId : "non-existant"
+                            }).then().catch(function(value){
+                                expect(value).toBeDefined();
+                                var className = Object.prototype.toString.call(value).slice(8, -1);
+                                expect(className).toMatch("Error");
+                                done();
+                            });
                     });
+              });
         });

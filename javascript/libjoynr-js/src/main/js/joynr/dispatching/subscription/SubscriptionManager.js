@@ -394,9 +394,11 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
          */
         this.unregisterSubscription = function unregisterSubscription(settings) {
             var subscriptionInfo = subscriptionInfos[settings.subscriptionId];
+            var errorMessage;
             if (subscriptionInfo === undefined) {
-                log.error("Cannot find subscription with id: " + settings.subscriptionId);
-                return;
+                errorMessage = "Cannot find subscription with id: " + settings.subscriptionId;
+                log.error(errorMessage);
+                return Promise.reject(new Error(errorMessage));
             }
 
             var subscriptionStop = new SubscriptionStop({
