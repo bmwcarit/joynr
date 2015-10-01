@@ -611,10 +611,22 @@ define(
                                             DiscoveryProvider,
                                             {
                                                 add : function(opArgs) {
+                                                    /*FIXME remove discoveryEntry transformation,
+                                                     * once the deserialization of enums works correctly
+                                                     */
+                                                    if (typeof opArgs.discoveryEntry.qos.scope === "string") {
+                                                        opArgs.discoveryEntry.qos.scope = ProviderScope[opArgs.discoveryEntry.qos.scope];
+                                                    }
                                                     return capabilityDiscovery
                                                             .add(opArgs.discoveryEntry);
                                                 },
                                                 lookup : function(opArgs) {
+                                                    /*FIXME remove discoveryQos transformation,
+                                                     * once the deserialization of enums works correctly
+                                                     */
+                                                    if (typeof opArgs.discoveryQos.discoveryScope === "string") {
+                                                        opArgs.discoveryQos.discoveryScope = DiscoveryScope[opArgs.discoveryQos.discoveryScope];
+                                                    }
                                                     return capabilityDiscovery.lookup(
                                                             opArgs.domain,
                                                             opArgs.interfaceName,

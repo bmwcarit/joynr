@@ -18,8 +18,10 @@
  */
 
 // This data file is used in Test[ProxyProvider]Operation
-define("test/data/Operation", [ "joynr/vehicle/radiotypes/RadioStation"
-], function(RadioStation) {
+define("test/data/Operation", [
+    "joynr/vehicle/radiotypes/RadioStation",
+    "joynr/tests/testTypes/TestEnum"
+], function(RadioStation, TestEnum) {
 
     var testData = [
         {
@@ -34,6 +36,20 @@ define("test/data/Operation", [ "joynr/vehicle/radiotypes/RadioStation"
             paramDatatypes : [ "String"
             ],
             params : [ "asdf"
+            ]
+        },
+        {
+            signature : [ {
+                name : "parameter",
+                type : "joynr.tests.testTypes.TestEnum"
+            }
+            ],
+            namedArguments : {
+                parameter : TestEnum.ZERO
+            },
+            paramDatatypes : [ "joynr.tests.testTypes.TestEnum"
+            ],
+            params : [ TestEnum.ZERO
             ]
         },
         {

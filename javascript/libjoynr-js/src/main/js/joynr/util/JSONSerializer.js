@@ -41,7 +41,13 @@ define("joynr/util/JSONSerializer", [ "joynr/util/Util"
      *          the value in JSON notation
      */
     JSONSerializer.stringify = function stringify(value) {
-        return JSON.stringify(value);
+        var replacerFunction = function replacerFunction(key, src) {
+            if (Util.isEnumType(src)) {
+                return src.name;
+            }
+            return src;
+        };
+        return JSON.stringify(value, replacerFunction);
     };
 
     return JSONSerializer;

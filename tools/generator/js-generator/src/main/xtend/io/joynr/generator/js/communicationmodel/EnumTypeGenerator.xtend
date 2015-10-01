@@ -51,13 +51,45 @@ class EnumTypeGenerator {
 		 * <br/>Generation date: «generationDate»
 		 «appendJSDocSummaryAndWriteSeeAndDescription(type, "* ")»
 		 */
-		var «type.joynrName» = {«getEnumerators(type)»};
+		var «type.joynrName» = function «type.joynrName»(settings){
+			if (!(this instanceof «type.joynrName»)) {
+				// in case someone calls constructor without new keyword (e.g. var c = Constructor({..}))
+				return new «type.joynrName»(members);
+			}
+
+			if (settings !== undefined) {
+				this.name = settings.name;
+				this.value = settings.value;
+			}
+
+			/**
+			 * Used for serialization.
+			 * @name «type.joynrName»#_typeName
+			 * @type String
+			 * @field
+			 * @readonly
+			 */
+			Object.defineProperty(this, "_typeName", {
+				configurable : false,
+				writable : false,
+				enumerable : true,
+				value : "«type.toTypesEnum»"
+			});
+
+		};
+
+		var createLiterals = function() {
+			«getEnumerators(type)»
+		};
 
 		«IF requireJSSupport»
 		// AMD support
 		if (typeof define === 'function' && define.amd) {
 			define(«type.defineName»["joynr"], function (joynr) {
-				joynr.addType("«type.toTypesEnum»", «type.joynrName»);
+				«type.joynrName».prototype = new joynr.JoynrObject();
+				«type.joynrName».prototype.constructor = «type.joynrName»;
+				createLiterals();
+				joynr.addType("«type.toTypesEnum»", «type.joynrName», true);
 				return «type.joynrName»;
 			});
 		} else if (typeof exports !== 'undefined' ) {
@@ -68,23 +100,32 @@ class EnumTypeGenerator {
 				exports.«type.joynrName» = «type.joynrName»;
 			}
 			var joynr = require("joynr");
-			joynr.addType("«type.toTypesEnum»", «type.joynrName»);
+			«type.joynrName».prototype = new joynr.JoynrObject();
+			«type.joynrName».prototype.constructor = «type.joynrName»;
+			createLiterals();
+			joynr.addType("«type.toTypesEnum»", «type.joynrName», true);
 		} else {
 			//we assume a correct order of script loading
 			joynr = window.joynr;
-			joynr.addType("«type.toTypesEnum»", «type.joynrName»);
+			«type.joynrName».prototype = new joynr.JoynrObject();
+			«type.joynrName».prototype.constructor = «type.joynrName»;
+			createLiterals();
+			joynr.addType("«type.toTypesEnum»", «type.joynrName», true);
 			window.«type.joynrName» = «type.joynrName»;
 		}
 		«ELSE»
 		//we assume a correct order of script loading
-		window.joynr.addType("«type.toTypesEnum»", «type.joynrName»);
+		«type.joynrName».prototype = new window.joynr.JoynrObject();
+		«type.joynrName».prototype.constructor = «type.joynrName»;
+		createLiterals();
+		window.joynr.addType("«type.toTypesEnum»", «type.joynrName», true);
 		window.«type.joynrName» = «type.joynrName»;
 		«ENDIF»
 	})();
 	'''
 
-	def getEnumerators(FEnumerationType type)'''
-	«FOR literal: type.enumerators SEPARATOR ", " »
+	private def getEnumerators(FEnumerationType type)'''
+	«FOR literal: type.enumerators»
 		/**
 		 * @name «type.joynrName».«literal.joynrName»
 		 * @readonly
@@ -93,7 +134,10 @@ class EnumTypeGenerator {
 		 	«appendJSDocSummaryAndWriteSeeAndDescription(literal, "* ")»
 		 «ENDIF»
 		 */
-		«literal.joynrName»: «IF literal.value==null»"«literal.joynrName»"«ELSE»«literal.value.enumeratorValue»«ENDIF»
+		«type.joynrName».«literal.joynrName» = new «type.joynrName»({
+			name: "«literal.joynrName»",
+			value: «IF literal.value==null»"«literal.joynrName»"«ELSE»«literal.value.enumeratorValue»«ENDIF»
+		});
 	«ENDFOR»
 	'''
 

@@ -247,17 +247,17 @@ define(
                         function lookup(domain, interfaceName, discoveryQos) {
                             var localCapabilities, globalCapabilities;
 
-                            switch (discoveryQos.discoveryScope) {
+                            switch (discoveryQos.discoveryScope.value) {
 
                                 // only interested in local results
-                                case DiscoveryScope.LOCAL_ONLY:
+                                case DiscoveryScope.LOCAL_ONLY.value:
                                     return Promise.resolve(localCapabilitiesStore.lookup({
                                         domain : domain,
                                         interfaceName : interfaceName
                                     }));
 
                                     // if anything local use it. Otherwise lookup global.
-                                case DiscoveryScope.LOCAL_THEN_GLOBAL:
+                                case DiscoveryScope.LOCAL_THEN_GLOBAL.value:
                                     localCapabilities = localCapabilitiesStore.lookup({
                                         domain : domain,
                                         interfaceName : interfaceName
@@ -280,7 +280,7 @@ define(
                                             localCapabilities);
 
                                     // Use local results, but then lookup global
-                                case DiscoveryScope.LOCAL_AND_GLOBAL:
+                                case DiscoveryScope.LOCAL_AND_GLOBAL.value:
                                     localCapabilities = localCapabilitiesStore.lookup({
                                         domain : domain,
                                         interfaceName : interfaceName
@@ -300,7 +300,7 @@ define(
                                     return Promise.resolve(localCapabilities
                                             .concat(globalCapabilities));
 
-                                case DiscoveryScope.GLOBAL_ONLY:
+                                case DiscoveryScope.GLOBAL_ONLY.value:
                                     globalCapabilities = globalCapabilitiesCache.lookup({
                                         domain : domain,
                                         interfaceName : interfaceName,

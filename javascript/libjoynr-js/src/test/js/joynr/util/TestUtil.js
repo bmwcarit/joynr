@@ -383,8 +383,7 @@ joynrTestRequire(
                         trafficService : false,
                         country : {}
                     });
-                    //isEnumType returns still false, as the enum generator is not yet adapted
-                    expect(Util.isEnumType(fixture)).toBe(false);
+                    expect(Util.isEnumType(fixture)).toBe(true);
                     expect(Util.isEnumType("TestString")).toBe(false);
                     expect(Util.isEnumType(123)).toBe(false);
                     expect(Util.isEnumType(radioStation)).toBe(false);

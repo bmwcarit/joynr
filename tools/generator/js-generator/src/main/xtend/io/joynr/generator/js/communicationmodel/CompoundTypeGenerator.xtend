@@ -60,22 +60,25 @@ class CompoundTypeGenerator {
 
 	def checkPropertyTypeName(FField field) {
 		if (field.isArray) {
-			return "Array"
+			return "\"Array\""
 		}
 		if (field.type.isPrimitive) {
 			if (field.type.getPrimitive.bool) {
-				return "Boolean"
+				return "\"Boolean\""
 			}
 			if (field.type.getPrimitive.string) {
-				return "String"
+				return "\"String\""
 			}
-			return "Number"
+			return "\"Number\""
 		} else {
 			if (field.type.complex) {
-				return field.type.derived.joynrName
+				return "\"" + field.type.derived.joynrName + "\""
 			}
 			else {
-				return "String"
+				/* TODO in the final version, enumerations must always be represented as object.
+				 * Thus, String must be removed here once enums are fully supported
+				 */
+				return  "[\"String\", \"Object\", \"" + field.type.derived.joynrName + "\"]" 
 			}
 		}
 	}
@@ -153,7 +156,7 @@ class CompoundTypeGenerator {
 					enumerable: false,
 					value: function checkMembers(check) {
 						«FOR member : members»
-						check(this.«member.joynrName», "«member.checkPropertyTypeName»", "members.«member.joynrName»");
+						check(this.«member.joynrName», «member.checkPropertyTypeName», "members.«member.joynrName»");
 						«ENDFOR»
 					}
 				});
