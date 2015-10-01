@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -494,13 +494,13 @@ class MockGpsProvider : public joynr::vehicle::DefaultGpsProvider
 class MockTestRequestCaller : public joynr::tests::testRequestCaller {
 public:
     void invokeLocationOnSuccessFct(std::function<void(const joynr::types::Localisation::GpsLocation&)> onSuccess,
-                            std::function<void(const joynr::JoynrException&)> onError) {
+                            std::function<void(const joynr::exceptions::JoynrException&)> onError) {
         joynr::types::Localisation::GpsLocation location;
         onSuccess(location);
     }
 
     void invokeListOfStringsOnSuccessFct(std::function<void(const std::vector<std::string>&)> onSuccess,
-                            std::function<void(const joynr::JoynrException&)> onError) {
+                            std::function<void(const joynr::exceptions::JoynrException&)> onError) {
         std::vector<std::string> listOfStrings;
         listOfStrings.push_back("firstString");
         onSuccess(listOfStrings);
@@ -539,10 +539,10 @@ public:
 
     MOCK_METHOD2(getLocation,
                  void(std::function<void(const joynr::types::Localisation::GpsLocation& location)>,
-                      std::function<void(const joynr::JoynrException& exception)>));
+                      std::function<void(const joynr::exceptions::JoynrException& exception)>));
     MOCK_METHOD2(getListOfStrings,
                  void(std::function<void(const std::vector<std::string>& listOfStrings)>,
-                      std::function<void(const joynr::JoynrException& exception)>));
+                      std::function<void(const joynr::exceptions::JoynrException& exception)>));
     MOCK_METHOD2(registerAttributeListener, void(const std::string& attributeName, joynr::IAttributeListener* attributeListener));
     MOCK_METHOD2(registerBroadcastListener, void(const std::string& broadcastName, joynr::IBroadcastListener* broadcastListener));
     MOCK_METHOD2(unregisterAttributeListener, void(const std::string& attributeName, joynr::IAttributeListener* attributeListener));
@@ -554,7 +554,7 @@ class MockGpsRequestCaller : public joynr::vehicle::GpsRequestCaller {
 public:
     MockGpsRequestCaller() : joynr::vehicle::GpsRequestCaller(std::make_shared<MockGpsProvider>() ) {}
     MOCK_METHOD2(getLocation, void(std::function<void(const joynr::RequestStatus& status, const joynr::types::Localisation::GpsLocation& location)>,
-                                   std::function<void(const joynr::JoynrException& exception)>));
+                                   std::function<void(const joynr::exceptions::JoynrException& exception)>));
     MOCK_METHOD2(registerAttributeListener, void(const std::string& attributeName, joynr::IAttributeListener* attributeListener));
     MOCK_METHOD2(unregisterAttributeListener, void(const std::string& attributeName, joynr::IAttributeListener* attributeListener));
 };

@@ -84,7 +84,7 @@ void «interfaceName»RequestInterpreter::execute(
 		const QList<QVariant>& paramValues,
 		const QList<QVariant>& paramTypes,
 		std::function<void (const QList<QVariant>&)> onSuccess,
-		std::function<void (const JoynrException& exception)> onError
+		std::function<void (const exceptions::JoynrException& exception)> onError
 ) {
 	Q_UNUSED(paramValues);//if all methods of the interface are empty, the paramValues would not be used and give a warning.
 	Q_UNUSED(paramTypes);//if all methods of the interface are empty, the paramTypes would not be used and give a warning.
@@ -208,7 +208,7 @@ void «interfaceName»RequestInterpreter::execute(
 
 	LOG_FATAL(logger, "unknown method name for interface «interfaceName»: " + methodName);
 	assert(false);
-	onError(JoynrException("unknown method name for interface «interfaceName»: " + TypeUtil::toStd(methodName)));
+	onError(exceptions::JoynrRuntimeException("unknown method name for interface «interfaceName»: " + TypeUtil::toStd(methodName)));
 }
 
 «getNamespaceEnder(serviceInterface)»

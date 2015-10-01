@@ -50,7 +50,6 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 «ENDFOR»
 
 #include "joynr/Future.h"
-#include "joynr/exceptions.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 #include "joynr/RequestStatus.h"

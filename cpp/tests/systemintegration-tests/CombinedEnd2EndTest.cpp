@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -588,7 +588,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToNonExistentDomain) {
     // Time how long arbitration takes
     QTime timer;
     timer.start();
-	bool haveArbitrationException = false;
+	bool haveDiscoveryException = false;
     int elapsed = 0;
 
 	// Expect an ArbitrationException
@@ -607,12 +607,12 @@ TEST_F(CombinedEnd2EndTest, subscribeToNonExistentDomain) {
 
         std::string subscriptionId = testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
 
-	} catch (JoynrArbitrationFailedException e) {
-        haveArbitrationException = true;
+	} catch (exceptions::DiscoveryException e) {
+		haveDiscoveryException = true;
         elapsed = timer.elapsed();
 	}
 
-	ASSERT_TRUE(haveArbitrationException);
+	ASSERT_TRUE(haveDiscoveryException);
     ASSERT_GE(elapsed, arbitrationTimeout);
     delete testProxyBuilder;
 }

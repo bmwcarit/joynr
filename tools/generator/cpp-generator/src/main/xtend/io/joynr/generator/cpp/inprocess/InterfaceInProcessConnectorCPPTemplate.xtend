@@ -66,7 +66,7 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 #include "joynr/SubscriptionCallback.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/Future.h"
-#include "joynr/exceptions.h"
+#include "joynr/exceptions/JoynrException.h"
 #include "joynr/TypeUtil.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/RequestStatusCode.h"
@@ -120,9 +120,9 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 						future->onSuccess(«attributeName»);
 					};
 
-			std::function<void(const JoynrException&)> onError =
-					[future] (const JoynrException& exception) {
-						(void) exception;
+			std::function<void(const exceptions::JoynrException&)> onError =
+					[future] (const exceptions::JoynrException& error) {
+						(void) error;
 						future->onError(RequestStatusCode::ERROR);
 					};
 
@@ -156,9 +156,9 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 						}
 					};
 
-			std::function<void(const JoynrException&)> onErrorWrapper =
-					[future, onError] (const JoynrException& exception) {
-						(void) exception;
+			std::function<void(const exceptions::JoynrException&)> onErrorWrapper =
+					[future, onError] (const exceptions::JoynrException& error) {
+						(void) error;
 						future->onError(RequestStatusCode::ERROR);
 						if (onError) {
 							onError(RequestStatusCode::ERROR);
@@ -193,9 +193,9 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 						}
 					};
 
-			std::function<void(const JoynrException&)> onErrorWrapper =
-					[future, onError] (const JoynrException& exception) {
-						(void) exception;
+			std::function<void(const exceptions::JoynrException&)> onErrorWrapper =
+					[future, onError] (const exceptions::JoynrException& error) {
+						(void) error;
 						future->onError(RequestStatusCode::ERROR);
 						if (onError) {
 							onError(RequestStatusCode::ERROR);
@@ -223,9 +223,9 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 						future->onSuccess();
 					};
 
-			std::function<void(const JoynrException&)> onError =
-					[future] (const JoynrException& exception) {
-						(void) exception;
+			std::function<void(const exceptions::JoynrException&)> onError =
+					[future] (const exceptions::JoynrException& error) {
+						(void) error;
 						future->onError(RequestStatusCode::ERROR);
 					};
 
@@ -357,9 +357,9 @@ joynr::RequestStatus «interfaceName»InProcessConnector::«methodname»(
 				);
 			};
 
-	std::function<void(const JoynrException&)> onError =
-			[future] (const JoynrException& exception) {
-				(void) exception;
+	std::function<void(const exceptions::JoynrException&)> onError =
+			[future] (const exceptions::JoynrException& error) {
+				(void) error;
 				future->onError(RequestStatusCode::ERROR);
 			};
 
@@ -397,9 +397,9 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 				}
 			};
 
-	std::function<void(const JoynrException&)> onErrorWrapper =
-			[future, onError] (const JoynrException& exception) {
-				(void) exception;
+	std::function<void(const exceptions::JoynrException&)> onErrorWrapper =
+			[future, onError] (const exceptions::JoynrException& error) {
+				(void) error;
 				future->onError(RequestStatusCode::ERROR);
 				if (onError) {
 					onError(RequestStatusCode::ERROR);

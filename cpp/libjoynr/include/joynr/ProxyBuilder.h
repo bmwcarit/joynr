@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@
 #include "joynr/ProviderArbitrator.h"
 #include "joynr/ProviderArbitratorFactory.h"
 #include "joynr/MessageRouter.h"
-#include "joynr/exceptions.h"
+#include "joynr/exceptions/JoynrException.h"
 #include "joynr/system/IDiscovery.h"
 #include "Future.h"
 #include <QCoreApplication>
@@ -304,12 +304,12 @@ void ProxyBuilder<T>::setArbitrationStatus(
         if (!participantId.empty() && connection != joynr::types::CommunicationMiddleware::NONE) {
             arbitrationSemaphore.release();
         } else {
-            throw JoynrArbitrationFailedException("Arbitration was set to successfull by "
-                                                  "arbitrator, but either ParticipantId or "
-                                                  "MessagingEndpointAddress were empty");
+            throw exceptions::DiscoveryException("Arbitration was set to successfull by "
+                                                 "arbitrator, but either ParticipantId or "
+                                                 "MessagingEndpointAddress were empty");
         }
     } else {
-        throw JoynrArbitrationFailedException("Arbitration finished without success.");
+        throw exceptions::DiscoveryException("Arbitration finished without success.");
     }
 }
 
@@ -342,7 +342,7 @@ void ProxyBuilder<T>::waitForArbitrationAndCheckStatus(uint16_t timeout)
         waitForArbitrationAndCheckStatus(0);
         break;
     case ArbitrationStatus::ArbitrationCanceledForever:
-        throw JoynrArbitrationFailedException(
+        throw exceptions::DiscoveryException(
                 "Arbitration for this interface has not been successful.");
         break;
     }
@@ -358,7 +358,7 @@ template <class T>
 void ProxyBuilder<T>::waitForArbitration(uint16_t timeout)
 {
     if (!arbitrationSemaphore.tryAcquire(1, TypeUtil::toQt(timeout))) {
-        throw JoynrArbitrationTimeOutException("Arbitration could not be finished in time.");
+        throw exceptions::DiscoveryException("Arbitration could not be finished in time.");
     }
     arbitrationSemaphore.release();
 }

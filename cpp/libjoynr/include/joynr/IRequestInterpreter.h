@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@
 #include <memory>
 #include <QVariant>
 #include <QMap>
-#include "joynr/exceptions.h"
+#include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
 {
@@ -44,12 +44,13 @@ public:
       * Executes method \param methodName with parameters \param methodParams
       * on the \param requestCaller object.
       */
-    virtual void execute(std::shared_ptr<RequestCaller> requestCaller,
-                         const QString& methodName,
-                         const QList<QVariant>& paramValues,
-                         const QList<QVariant>& paramTypes,
-                         std::function<void(const QList<QVariant>& outParams)> onSuccess,
-                         std::function<void(const JoynrException& exception)> onError) = 0;
+    virtual void execute(
+            std::shared_ptr<RequestCaller> requestCaller,
+            const QString& methodName,
+            const QList<QVariant>& paramValues,
+            const QList<QVariant>& paramTypes,
+            std::function<void(const QList<QVariant>& outParams)> onSuccess,
+            std::function<void(const exceptions::JoynrException& exception)> onError) = 0;
 };
 
 } // namespace joynr

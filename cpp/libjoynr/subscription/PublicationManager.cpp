@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,6 @@
 #include "joynr/LibjoynrSettings.h"
 
 #include "joynr/SubscriptionUtil.h"
-#include "joynr/exceptions.h"
 
 #include <QFile>
 #include <cassert>
@@ -821,7 +820,7 @@ void PublicationManager::sendPublicationError(
         std::shared_ptr<Publication> publication,
         std::shared_ptr<SubscriptionInformation> subscriptionInformation,
         std::shared_ptr<SubscriptionRequest> request,
-        const JoynrException& exception)
+        const exceptions::JoynrException& exception)
 {
     /*
      * TODO implement sendPublicationError
@@ -937,9 +936,9 @@ void PublicationManager::pollSubscription(const QString& subscriptionId)
             }
         };
 
-        std::function<void(const JoynrException&)> onError =
+        std::function<void(const exceptions::JoynrException&)> onError =
                 [publication, publicationInterval, qos, subscriptionRequest, this, subscriptionId](
-                        const JoynrException& exception) {
+                        const exceptions::JoynrException& exception) {
 
             sendPublicationError(publication, subscriptionRequest, subscriptionRequest, exception);
 

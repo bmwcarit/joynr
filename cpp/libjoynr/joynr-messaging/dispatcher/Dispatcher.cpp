@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@
 #include "joynr/InterfaceRegistrar.h"
 #include "joynr/MetaTypeRegistrar.h"
 #include "joynr/Request.h"
-#include "joynr/exceptions.h"
+#include "joynr/exceptions/JoynrException.h"
 
 #include <QUuid>
 #include <chrono>
@@ -191,9 +191,9 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
                                  reply);
     };
 
-    std::function<void(const JoynrException&)> onError =
+    std::function<void(const exceptions::JoynrException&)> onError =
             [requestReplyId, requestExpiryDate, this, senderId, receiverId](
-                    const JoynrException& exception) {
+                    const exceptions::JoynrException& exception) {
         Reply reply;
         reply.setRequestReplyId(requestReplyId);
         /*

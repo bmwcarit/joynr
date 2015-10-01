@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,7 @@ TEST_F(RequestInterpreterTest, execute_callsMethodOnRequestCaller) {
     EXPECT_CALL(
             *mockCaller,
             getLocation(A<std::function<void(const types::Localisation::GpsLocation&)>>(),
-                        A<std::function<void(const joynr::JoynrException&)>>())
+                        A<std::function<void(const exceptions::JoynrException&)>>())
     )
             .Times(1);
 
@@ -67,7 +67,7 @@ TEST_F(RequestInterpreterTest, execute_callsMethodOnRequestCaller) {
     QVariantList paramDatatypes;
 
     std::function<void(const QVariant& response)> onSuccess = [] (const QVariant& response) {};
-    std::function<void(const JoynrException& exception)> onError = [] (const JoynrException& exception) {};
+    std::function<void(const exceptions::JoynrException& exception)> onError = [] (const exceptions::JoynrException& exception) {};
     interpreter.execute(mockCaller, methodName, paramValues, paramDatatypes, onSuccess, onError);
 }
 

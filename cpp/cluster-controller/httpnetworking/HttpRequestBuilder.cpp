@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
  */
 #include "cluster-controller/httpnetworking/HttpRequestBuilder.h"
 #include "cluster-controller/httpnetworking/DefaultHttpRequest.h"
-#include "joynr/exceptions.h"
+#include "joynr/exceptions/JoynrException.h"
 
 #include <curl/curl.h>
 
@@ -136,7 +136,7 @@ HttpRequest* HttpRequestBuilder::build()
         LOG_WARN(logger,
                  "The method build of HttpBuilder may be called only once on a specific "
                  "instance. Throwing an Exception from worker thread.");
-        throw JoynrException(
+        throw exceptions::JoynrRuntimeException(
                 "The method build of HttpBuilder may be called only once on a specific instance");
     }
     built = true;

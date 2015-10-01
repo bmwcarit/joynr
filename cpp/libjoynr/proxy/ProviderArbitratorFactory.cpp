@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
  * #L%
  */
 #include "joynr/ProviderArbitratorFactory.h"
-#include "joynr/exceptions.h"
+#include "joynr/exceptions/JoynrException.h"
 #include "joynr/system/IDiscovery.h"
 
 namespace joynr
@@ -37,16 +37,17 @@ ProviderArbitrator* ProviderArbitratorFactory::createArbitrator(
     case DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT:
         return new FixedParticipantArbitrator(domain, interfaceName, discoveryProxy, discoveryQos);
     case DiscoveryQos::ArbitrationStrategy::LOCAL_ONLY:
-        throw JoynrException("Arbitration: Local-only not implemented yet.");
+        throw exceptions::DiscoveryException("Arbitration: Local-only not implemented yet.");
     case DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY:
         return new QosArbitrator(domain, interfaceName, discoveryProxy, discoveryQos);
     case DiscoveryQos::ArbitrationStrategy::KEYWORD:
         if (discoveryQos.getCustomParameters().count("keyword") == 0) {
-            throw JoynrArbitrationException("KeywordArbitrator creation failed: keyword not set");
+            throw exceptions::DiscoveryException(
+                    "KeywordArbitrator creation failed: keyword not set");
         }
         return new KeywordArbitrator(domain, interfaceName, discoveryProxy, discoveryQos);
     default:
-        throw JoynrArbitrationException("Arbitrator creation failed: Invalid strategy!");
+        throw exceptions::DiscoveryException("Arbitrator creation failed: Invalid strategy!");
     }
 }
 

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,11 @@ class IPublicationSender;
 class RequestCaller;
 class QtSubscriptionQos;
 class IBroadcastFilter;
+
+namespace exceptions
+{
 class JoynrException;
+}
 
 /**
   * \class PublicationManager
@@ -263,7 +267,7 @@ private:
     void sendPublicationError(std::shared_ptr<Publication> publication,
                               std::shared_ptr<SubscriptionInformation> subscriptionInformation,
                               std::shared_ptr<SubscriptionRequest> subscriptionRequest,
-                              const JoynrException& exception);
+                              const exceptions::JoynrException& exception);
     void handleAttributeSubscriptionRequest(
             std::shared_ptr<SubscriptionRequestInformation> requestInfo,
             std::shared_ptr<RequestCaller> requestCaller,

@@ -71,7 +71,7 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 						const «returnType»& «attributeName.toFirstLower»
 				)> onSuccess,
 				std::function<void(
-						const JoynrException&
+						const exceptions::JoynrException&
 				)> onError
 		) {
 			/*
@@ -86,7 +86,7 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 				const «returnType»& «attributeName.toFirstLower»,
 				std::function<void()> onSuccess,
 				std::function<void(
-						const JoynrException&
+						const exceptions::JoynrException&
 				)> onError
 		) {
 			/*
@@ -116,7 +116,7 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 				)> onSuccess,
 			«ENDIF»
 			std::function<void(
-					const JoynrException&
+					const exceptions::JoynrException&
 			)> onError
 	) {
 		/*

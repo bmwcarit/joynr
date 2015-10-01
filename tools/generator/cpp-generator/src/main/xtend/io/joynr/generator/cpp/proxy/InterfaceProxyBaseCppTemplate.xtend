@@ -44,7 +44,6 @@ class InterfaceProxyBaseCppTemplate  implements InterfaceTemplate{
 «warning()»
 
 #include "«getPackagePathWithJoynrPrefix(fInterface, "/")»/«className».h"
-#include "joynr/exceptions.h"
 #include "joynr/ConnectorFactory.h"
 #include "joynr/ISubscriptionListener.h"
 #include "«getPackagePathWithJoynrPrefix(fInterface, "/")»/«serviceName»InProcessConnector.h"

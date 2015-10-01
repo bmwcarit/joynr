@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@
 #include "tests/utils/MockLocalCapabilitiesDirectoryCallback.h"
 #include "cluster-controller/capabilities-client/IGlobalCapabilitiesCallback.h"
 #include "utils/QThreadSleep.h"
-#include "joynr/exceptions.h"
+#include "joynr/exceptions/JoynrException.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/CapabilityEntry.h"
 using namespace ::testing;
@@ -186,7 +186,7 @@ public:
     }
 
     void simulateTimeout(){
-        throw JoynrTimeOutException("Simulating timeout");
+        throw exceptions::JoynrTimeOutException("Simulating timeout");
     }
 
 protected:
@@ -537,7 +537,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRegisterCapabilitiesMultipleTimesDoes
                 connections
             );
             localCapabilitiesDirectory->add(entry);
-        } catch (JoynrException& e){
+        } catch (exceptions::JoynrException& e){
             exceptionCounter++;
         }
     }
@@ -577,7 +577,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeLocalCapabilityByParticipantId){
             .WillOnce(InvokeWithoutArgs(this, &LocalCapabilitiesDirectoryTest::simulateTimeout));
     //JoynrTimeOutException timeoutException;
     EXPECT_THROW(localCapabilitiesDirectory->lookup(dummyParticipantId1, callback),
-                 JoynrTimeOutException);
+                 exceptions::JoynrTimeOutException);
     EXPECT_EQ(0, callback->getResults(10).size());
 }
 
@@ -650,7 +650,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalThenGl
             .Times(1)
             .WillOnce(InvokeWithoutArgs(this, &LocalCapabilitiesDirectoryTest::simulateTimeout));
     EXPECT_THROW(localCapabilitiesDirectory->lookup(DOMAIN_1_NAME, INTERFACE_1_NAME, callback, discoveryQos),
-                 JoynrTimeOutException);
+                 exceptions::JoynrTimeOutException);
     EXPECT_EQ(0, callback->getResults(10).size());
     callback->clearResults();
 }
@@ -731,7 +731,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupGlobalOnly)
             .WillOnce(InvokeWithoutArgs(this, &LocalCapabilitiesDirectoryTest::simulateTimeout));
     //JoynrTimeOutException timeoutException;
     EXPECT_THROW(localCapabilitiesDirectory->lookup(DOMAIN_1_NAME, INTERFACE_1_NAME, callback, discoveryQos),
-                 JoynrTimeOutException);
+                 exceptions::JoynrTimeOutException);
     EXPECT_EQ(0, callback->getResults(10).size());
     callback->clearResults();
 
@@ -752,7 +752,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupGlobalOnly)
             .Times(1)
             .WillOnce(InvokeWithoutArgs(this, &LocalCapabilitiesDirectoryTest::simulateTimeout));
     EXPECT_THROW(localCapabilitiesDirectory->lookup(DOMAIN_1_NAME, INTERFACE_1_NAME, callback, discoveryQos),
-                 JoynrTimeOutException);
+                 exceptions::JoynrTimeOutException);
     EXPECT_EQ(0, callback->getResults(10).size());
     callback->clearResults();
 }
@@ -826,7 +826,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocalThenG
             .Times(1)
             .WillOnce(InvokeWithoutArgs(this, &LocalCapabilitiesDirectoryTest::simulateTimeout));
     EXPECT_THROW(localCapabilitiesDirectory->lookup(DOMAIN_1_NAME, INTERFACE_1_NAME, callback, discoveryQos),
-                 JoynrTimeOutException);
+                 exceptions::JoynrTimeOutException);
 
     EXPECT_EQ(0, callback->getResults(10).size());
 }

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@
 #include "joynr/JoynrClusterControllerRuntimeExport.h"
 
 #include "joynr/CapabilitiesRegistrar.h"
-#include "joynr/exceptions.h"
+#include "joynr/exceptions/JoynrException.h"
 #include "joynr/ProxyBuilder.h"
 #include "joynr/ParticipantIdStorage.h"
 #include "joynr/ProxyFactory.h"
@@ -122,8 +122,9 @@ public:
     ProxyBuilder<TIntfProxy>* createProxyBuilder(const std::string& domain)
     {
         if (!proxyFactory) {
-            throw JoynrException("Exception in JoynrRuntime: Creating a proxy before "
-                                 "startMessaging was called is not yet supported.");
+            throw exceptions::JoynrRuntimeException(
+                    "Exception in JoynrRuntime: Creating a proxy before "
+                    "startMessaging was called is not yet supported.");
         }
         ProxyBuilder<TIntfProxy>* builder = new ProxyBuilder<TIntfProxy>(
                 proxyFactory, *discoveryProxy, domain, dispatcherAddress, messageRouter);
