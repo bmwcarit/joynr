@@ -53,7 +53,7 @@ class CommunicationModelGenerator {
 		}
 
 		for( type: getEnumDataTypes(fModel)){
-			var path = getPackagePathWithJoynrPrefix(type, File::separator) + File::separator 
+			var path = getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
 			if (type.isPartOfTypeCollection) {
 				path += type.typeCollectionName + File::separator
 			}
