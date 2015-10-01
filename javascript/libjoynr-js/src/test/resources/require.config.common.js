@@ -35,6 +35,7 @@
                 "joynr/provisioning": "../test-classes/joynr/provisioning",
                 "Date" : "../test-classes/global/Date",
                 "joynr/vehicle": "../test-classes/joynr/vehicle",
+                "joynr/tests": "../test-classes/joynr/tests",
                 "test/data": "../test-classes/test/data",
                 "JstdConsoleAppender" : "../test-classes/logging/JstdConsoleAppender"
             },

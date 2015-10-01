@@ -91,6 +91,21 @@ define("joynr/util/Util", [
     };
 
     /**
+     * Returns true if the object is a joynr enum type modelled in Franca
+     * @function Util#isEnumType
+     */
+    Util.isEnumType =
+            function isEnumType(value) {
+                /*jslint nomen: true */
+                var result =
+                        typeof value === "object"
+                            && Util.isComplexJoynrType(value)
+                            && TypeRegistrySingleton.getInstance().isEnumType(value._typeName);
+                /*jslint nomen: false */
+                return result;
+            };
+
+    /**
      * @function Util#ensureTypedValues
      * @param {Object} value
      * @param {Object} typeRegistry

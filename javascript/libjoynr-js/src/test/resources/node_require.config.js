@@ -55,6 +55,7 @@ requirejs.config({
 
         "joynr/Runtime" : "joynr/Runtime.inprocess",
 
+        "joynr/tests" : "../test-classes/joynr/tests",
         "joynr/vehicle" : "../test-classes/joynr/vehicle",
         "joynr/provisioning" : "../test-classes/joynr/provisioning",
         "test/data" : "../test-classes/test/data",

@@ -28,9 +28,10 @@ joynrTestRequire(
             "joynr/messaging/JoynrMessage",
             "joynr/system/LoggerFactory",
             "joynr/start/TypeRegistry",
-            "joynr/vehicle/radiotypes/RadioStation"
+            "joynr/vehicle/radiotypes/RadioStation",
+            "joynr/tests/testTypes/TestEnum"
         ],
-        function(Promise, Util, JoynrMessage, LoggerFactory, TypeRegistry, RadioStation) {
+        function(Promise, Util, JoynrMessage, LoggerFactory, TypeRegistry, RadioStation, TestEnum) {
 
             var argument = {
                 someObjectKey : "andValue"
@@ -373,6 +374,20 @@ joynrTestRequire(
 
                     returnValue = Util.ensureTypedValues(stringValue, typeRegistry);
                     expect(typeof returnValue === "string").toBe(true);
+                });
+
+                it("isEnumType accepts enum types", function() {
+                    var fixture = TestEnum.ZERO, radioStation;
+                    radioStation = new RadioStation({
+                        name : "name",
+                        trafficService : false,
+                        country : {}
+                    });
+                    //isEnumType returns still false, as the enum generator is not yet adapted
+                    expect(Util.isEnumType(fixture)).toBe(false);
+                    expect(Util.isEnumType("TestString")).toBe(false);
+                    expect(Util.isEnumType(123)).toBe(false);
+                    expect(Util.isEnumType(radioStation)).toBe(false);
                 });
             });
 

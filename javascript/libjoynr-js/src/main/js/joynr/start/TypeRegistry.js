@@ -36,6 +36,7 @@ define("joynr/start/TypeRegistry", [
      */
     function TypeRegistry() {
         var registry = {};
+        var enumRegistry = {};
         var registryPromise = {};
         var log = LoggerFactory.getLogger("joynr.start.TypeRegistry");
 
@@ -49,14 +50,33 @@ define("joynr/start/TypeRegistry", [
          *            joynrTypeName - the joynr type name that is sent on the wire.
          * @param {Function}
          *            typeConstructor - the corresponding JavaScript constructor for this type.
+         * @param {boolean}
+         *            isEnum - optional flag if the added type is an enumeration type
          */
-        this.addType = function addType(joynrTypeName, typeConstructor) {
+        this.addType = function addType(joynrTypeName, typeConstructor, isEnum) {
+            if (isEnum) {
+                enumRegistry[joynrTypeName] = typeConstructor;
+            }
             registry[joynrTypeName] = typeConstructor;
             if (registryPromise[joynrTypeName] && registryPromise[joynrTypeName].pending) {
                 registryPromise[joynrTypeName].pending = false;
                 registryPromise[joynrTypeName].resolve(typeConstructor);
             }
             return this;
+        };
+
+        /**
+         * Detects if asked joynr type is an enumeration type
+         *
+         * @name TypeRegistry#isEnumType
+         * @function
+         *
+         * @param {String}
+         *            joynrTypeName - the joynr type name that is sent/received on the wire.
+         * @returns {boolean} true if the asked joynr type is an enumeration type
+         */
+        this.isEnumType = function isEnumType(joynrTypeName) {
+            return enumRegistry[joynrTypeName] !== undefined;
         };
 
         /**
