@@ -17,8 +17,11 @@
  * #L%
  */
 
-define("joynr/util/Typing", [ "joynr/TypesEnum"
-], function(TypesEnum) {
+define("joynr/util/Typing", [
+    "joynr",
+    "joynr/TypesEnum",
+    "joynr/types/TypeRegistrySingleton"
+], function(joynr, TypesEnum, TypeRegistrySingleton) {
 
     var translateJoynrTypeToJavascriptTypeTable = {};
     translateJoynrTypeToJavascriptTypeTable[TypesEnum.BOOL] = "Boolean";
@@ -163,6 +166,30 @@ define("joynr/util/Typing", [ "joynr/TypesEnum"
         obj[memberName || "_typeName"] = packageName + Typing.getObjectType(obj);
         return obj;
     };
+
+    /**
+     * Returns true if the object is a joynr complex type modelled in Franca
+     * @function Typing#isComplexJoynrType
+     */
+    Typing.isComplexJoynrType = function isComplexJoynrType(value) {
+        var valuePrototype = Object.getPrototypeOf(value);
+        return (valuePrototype && valuePrototype instanceof joynr.JoynrObject);
+    };
+
+    /**
+     * Returns true if the object is a joynr enum type modelled in Franca
+     * @function Typing#isEnumType
+     */
+    Typing.isEnumType =
+            function isEnumType(value) {
+                /*jslint nomen: true */
+                var result =
+                        typeof value === "object"
+                            && Typing.isComplexJoynrType(value)
+                            && TypeRegistrySingleton.getInstance().isEnumType(value._typeName);
+                /*jslint nomen: false */
+                return result;
+            };
 
     return Typing;
 

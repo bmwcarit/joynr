@@ -23,8 +23,10 @@
 
 joynrTestRequire("joynr/Util/TestTyping", [
     "joynr/util/Typing",
-    "joynr/start/TypeRegistry"
-], function(Typing, TypeRegistry) {
+    "joynr/start/TypeRegistry",
+    "joynr/vehicle/radiotypes/RadioStation",
+    "joynr/tests/testTypes/TestEnum"
+], function(Typing, TypeRegistry, RadioStation, TestEnum) {
 
     function MyCustomObj() {}
     function _TestConstructor123_() {}
@@ -359,6 +361,20 @@ joynrTestRequire("joynr/Util/TestTyping", [
                 Typing.augmentTypeName(undefined);
             }).toThrow();
         });
+
+        it("isEnumType accepts enum types", function() {
+            var fixture = TestEnum.ZERO, radioStation;
+            radioStation = new RadioStation({
+                name : "name",
+                trafficService : false,
+                country : {}
+            });
+            expect(Typing.isEnumType(fixture)).toBe(true);
+            expect(Typing.isEnumType("TestString")).toBe(false);
+            expect(Typing.isEnumType(123)).toBe(false);
+            expect(Typing.isEnumType(radioStation)).toBe(false);
+        });
+
     });
 
 });

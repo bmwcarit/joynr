@@ -82,30 +82,6 @@ define("joynr/util/Util", [
     };
 
     /**
-     * Returns true if the object is a joynr complex type modelled in Franca
-     * @function Util#isComplexJoynrType
-     */
-    Util.isComplexJoynrType = function isComplexJoynrType(value) {
-        var valuePrototype = Object.getPrototypeOf(value);
-        return (valuePrototype && valuePrototype instanceof joynr.JoynrObject);
-    };
-
-    /**
-     * Returns true if the object is a joynr enum type modelled in Franca
-     * @function Util#isEnumType
-     */
-    Util.isEnumType =
-            function isEnumType(value) {
-                /*jslint nomen: true */
-                var result =
-                        typeof value === "object"
-                            && Util.isComplexJoynrType(value)
-                            && TypeRegistrySingleton.getInstance().isEnumType(value._typeName);
-                /*jslint nomen: false */
-                return result;
-            };
-
-    /**
      * @function Util#ensureTypedValues
      * @param {Object} value
      * @param {Object} typeRegistry
@@ -120,7 +96,7 @@ define("joynr/util/Util", [
                 for (i = 0; i < value.length; i++) {
                     value[i] = Util.ensureTypedValues(value[i]);
                 }
-            } else if (typeof value === "object" && !Util.isComplexJoynrType(value)) {
+            } else if (typeof value === "object" && !Typing.isComplexJoynrType(value)) {
                 value = Typing.augmentTypes(value, typeRegistry);
                 value.checkMembers(Util.checkPropertyIfDefined);
             }
