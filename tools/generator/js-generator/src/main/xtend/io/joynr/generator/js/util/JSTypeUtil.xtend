@@ -87,7 +87,7 @@ class JSTypeUtil extends TypeUtil {
 
 	override getTypeName(FType datatype) {
 		if (isEnum(datatype)){
-			return  "JoynrJSGeneratorExtensions.getMappedDatatype: enum datatypes are not yet supported";
+			return getEnumType(datatype).joynrName;
 		}
 		if (isPrimitive(datatype)){
 			return getTypeName(getPrimitive(datatype))
