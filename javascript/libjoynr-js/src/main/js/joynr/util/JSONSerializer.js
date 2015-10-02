@@ -42,7 +42,7 @@ define("joynr/util/JSONSerializer", [ "joynr/util/Typing"
      */
     JSONSerializer.stringify = function stringify(value) {
         var replacerFunction = function replacerFunction(key, src) {
-            if (Typing.isEnumType(src)) {
+            if (Typing.isEnumType(src, false)) {
                 return src.name;
             }
             return src;

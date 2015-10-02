@@ -259,6 +259,19 @@ class JSTypeUtil extends TypeUtil {
 	 * operations, the types are mapped to ones that are understood by the joynr framework
 	 * when sending requests.
 	 */
+	def toTypesEnum(FTypeRef datatype) {
+		if (isPrimitive(datatype)) {
+			return getPrimitive(datatype).toTypesEnum
+		} else {
+			return datatype.derived.toTypesEnum;
+		}
+	}
+
+	/**
+	 * This method is used for assembling the list of parameter types for the attribute and
+	 * operations, the types are mapped to ones that are understood by the joynr framework
+	 * when sending requests.
+	 */
 	def toTypesEnum(FType datatype) {
 		if (isPrimitive(datatype)) {
 			return toTypesEnum(getPrimitive(datatype))

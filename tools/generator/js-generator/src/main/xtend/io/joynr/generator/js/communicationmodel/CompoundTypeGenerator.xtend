@@ -161,18 +161,6 @@ class CompoundTypeGenerator {
 					}
 				});
 
-				var memberTypes = {
-					«FOR member : members SEPARATOR ","»
-					«member.joynrName»: "«member.type.typeName»"
-					«ENDFOR»
-				};
-				Object.defineProperty(this, 'getMemberType', {
-					enumerable: false,
-					value: function getMemberType(memberName) {
-						return memberTypes[memberName];
-					}
-				});
-
 				if (members !== undefined) {
 					«FOR member : members»
 					this.«member.joynrName» = members.«member.joynrName»;
@@ -180,6 +168,18 @@ class CompoundTypeGenerator {
 				}
 
 			};
+
+			var memberTypes = {
+				«FOR member : members SEPARATOR ","»
+				«member.joynrName»: "«member.type.toTypesEnum»"
+				«ENDFOR»
+			};
+			Object.defineProperty(«type.joynrName», 'getMemberType', {
+				enumerable: false,
+				value: function getMemberType(memberName) {
+					return memberTypes[memberName];
+				}
+			});
 
 			«IF requireJSSupport»
 			// AMD support

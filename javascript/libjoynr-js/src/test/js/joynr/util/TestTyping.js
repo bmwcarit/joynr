@@ -24,9 +24,19 @@
 joynrTestRequire("joynr/Util/TestTyping", [
     "joynr/util/Typing",
     "joynr/start/TypeRegistry",
+    "joynr/types/TypeRegistrySingleton",
     "joynr/vehicle/radiotypes/RadioStation",
+    "joynr/datatypes/exampleTypes/ComplexRadioStation",
+    "joynr/datatypes/exampleTypes/Country",
     "joynr/tests/testTypes/TestEnum"
-], function(Typing, TypeRegistry, RadioStation, TestEnum) {
+], function(
+        Typing,
+        TypeRegistry,
+        TypeRegistrySingleton,
+        RadioStation,
+        ComplexRadioStation,
+        Country,
+        TestEnum) {
 
     function MyCustomObj() {}
     function _TestConstructor123_() {}
@@ -324,6 +334,40 @@ joynrTestRequire("joynr/Util/TestTyping", [
             expect(function() {
                 Typing.augmentTypes(new MySecondType(), typeRegistry);
             }).toThrow();
+        });
+
+        it(
+                "augmentTypes is able to deal with enums as input",
+                function() {
+                    var fixture, expected;
+                    fixture = "ZERO";
+                    expected = TestEnum.ZERO;
+                    expect(Typing.augmentTypes(fixture, TypeRegistrySingleton.getInstance())).toBe(
+                            fixture);
+                    expect(
+                            Typing.augmentTypes(
+                                    fixture,
+                                    TypeRegistrySingleton.getInstance(),
+                                    "joynr.tests.testTypes.TestEnum")).toBe(expected);
+                });
+
+        it("augmentTypes is able to deal with structs containing enum members", function() {
+            var fixture, expected;
+            /*jslint nomen: true */
+            fixture = {
+                _typeName : "joynr.datatypes.exampleTypes.ComplexRadioStation",
+                name : "name",
+                station : "station",
+                source : "AUSTRIA"
+            };
+            /*jslint nomen: false */
+            expected = new ComplexRadioStation({
+                name : fixture.name,
+                station : fixture.station,
+                source : Country.AUSTRIA
+            });
+            expect(Typing.augmentTypes(fixture, TypeRegistrySingleton.getInstance())).toEqual(
+                    expected);
         });
 
     });
