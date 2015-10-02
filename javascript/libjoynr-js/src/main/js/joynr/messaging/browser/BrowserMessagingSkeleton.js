@@ -20,8 +20,9 @@
 define("joynr/messaging/browser/BrowserMessagingSkeleton", [
     "joynr/messaging/JoynrMessage",
     "joynr/util/UtilInternal",
+    "joynr/util/JSONSerializer",
     "joynr/system/LoggerFactory"
-], function(JoynrMessage, Util, LoggerFactory) {
+], function(JoynrMessage, Util, JSONSerializer, LoggerFactory) {
 
     /**
      * @constructor BrowserMessagingSkeleton
@@ -43,7 +44,7 @@ define("joynr/messaging/browser/BrowserMessagingSkeleton", [
                 Util.fire(receiverCallbacks, joynrMessage);
             } else {
                 log.warn("message with content \""
-                    + JSON.stringify(message)
+                    + JSONSerializer.stringify(message)
                     + "\" could not be processed");
             }
         });

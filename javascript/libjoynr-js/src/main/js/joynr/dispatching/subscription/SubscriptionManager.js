@@ -30,7 +30,8 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
     "joynr/util/LongTimer",
     "joynr/system/LoggerFactory",
     "uuid",
-    "joynr/util/UtilInternal"
+    "joynr/util/UtilInternal",
+    "joynr/util/JSONSerializer"
 ], function(
         Promise,
         MessagingQos,
@@ -42,7 +43,8 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
         LongTimer,
         LoggerFactory,
         uuid,
-        Util) {
+        Util,
+        JSONSerializer) {
     /**
      * @name SubscriptionManager
      * @constructor
@@ -377,7 +379,7 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                         subscriptionListener.onReceive(publication.response);
                     } else {
                         throw new Error("no subscription listener registered for publication "
-                            + JSON.stringify(publication));
+                            + JSONSerializer.stringify(publication));
                     }
                 };
 
