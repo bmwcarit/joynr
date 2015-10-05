@@ -178,7 +178,7 @@ class ProxyGenerator {
 					broadcastName : "«eventName»",
 					messagingQos : settings.messagingQos,
 					discoveryQos : settings.discoveryQos,
-				«IF isSelective(event)»
+					«IF isSelective(event)»
 					dependencies: {
 							subscriptionManager: settings.dependencies.subscriptionManager
 						},
@@ -187,11 +187,11 @@ class ProxyGenerator {
 							"«filterParameter»": "reservedForTypeInfo"
 						«ENDFOR»
 					}
-				«ELSE»
+					«ELSE»
 					dependencies: {
 							subscriptionManager: settings.dependencies.subscriptionManager
-						}
-				«ENDIF»
+					}
+					«ENDIF»
 				});
 	«ENDFOR»
 
