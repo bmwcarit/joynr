@@ -97,8 +97,6 @@ class ProxyGenerator {
 		 * «fInterface.proxyName», generated from the corresponding interface description.
 		 «appendJSDocSummaryAndWriteSeeAndDescription(fInterface, "* ")»
 		 *
-		 * @desc
-		 *
 		 * @param {object} settings the settings object for this function call
 		 * @param {String} settings.domain the domain name //TODO: check do we need this?
 		 * @param {String} settings.joynrName the interface name //TODO: check do we need this?
