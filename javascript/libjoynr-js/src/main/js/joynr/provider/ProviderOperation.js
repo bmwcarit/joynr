@@ -23,6 +23,7 @@ define(
         "joynr/provider/ProviderOperation",
         [
             "joynr/util/Typing",
+            "joynr/util/MethodUtil",
             "joynr/TypesEnum",
             "joynr/types/TypeRegistrySingleton",
             "joynr/exceptions/ApplicationException",
@@ -31,6 +32,7 @@ define(
         ],
         function(
             Typing,
+            MethodUtil,
             TypesEnum,
             TypeRegistrySingleton,
             ApplicationException,
@@ -94,6 +96,18 @@ define(
                 return namedArguments;
             }
 
+            function returnValueToResponseArray(returnValue, outputParameter) {
+                if (outputParameter.length === 0) {
+                    return [];
+                }
+                if (outputParameter.length === 1) {
+                    return [returnValue];
+                }
+                /*
+                 * In case of multiple output parameters, we expect that the provider returns a key-value-pair
+                 */
+                return MethodUtil.transformParameterMapToArray(returnValue || {}, outputParameter).params;
+            }
             /**
              * Constructor of ProviderAttribute object that is used in the generation of provider
              * objects
@@ -211,7 +225,9 @@ define(
                                     result = privateOperationFunc(namedArguments);
                                     if (Util.isPromise(result)) {
                                         // return promise
-                                        return result.catch(function(exceptionOrErrorEnumValue) {
+                                        return result.then(function(returnValue) {
+                                            return returnValueToResponseArray(returnValue, signature.outputParameter || []);
+                                        }).catch(function(exceptionOrErrorEnumValue) {
                                             if (exceptionOrErrorEnumValue instanceof ProviderRuntimeException) {
                                                 exception = exceptionOrErrorEnumValue;
                                             } else {
@@ -231,7 +247,7 @@ define(
                                     }
 
                                     // return direct result
-                                    return result;
+                                    return returnValueToResponseArray(result, signature.outputParameter || []);
                                 } catch(exceptionOrErrorEnumValue) {
                                     /*
                                      * If the method was implemented synchronously, we can get an

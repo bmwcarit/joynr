@@ -276,7 +276,7 @@ define(
                                 function(value) {
                                     preparePublication(
                                         subscriptionInfo,
-                                        [value],
+                                        value,
                                         triggerPublicationTimer);
                             }).catch(function(exception) {
                                 sendPublication(subscriptionInfo, undefined, exception);
@@ -383,7 +383,7 @@ define(
                             var subscriptionInfo = subscriptions[subscriptionId];
                             if (subscriptionInfo.qos.minInterval !== undefined
                                 && subscriptionInfo.qos.minInterval > 0) {
-                                preparePublication(subscriptionInfo, [value], triggerPublicationTimer);
+                                preparePublication(subscriptionInfo, value, triggerPublicationTimer);
                             }
                         }
                     }
@@ -863,7 +863,7 @@ define(
                                 function(value) {
                                     preparePublication(
                                         subscriptionInfo,
-                                            [value],
+                                            value,
                                             triggerPublicationTimer);
                                 }).catch(function(exception) {
                                     sendPublication(subscriptionInfo, undefined, exception);

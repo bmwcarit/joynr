@@ -109,7 +109,14 @@ define(
                                 // call getter function with the same arguments as this function
                                 value = privateGetterFunc();
 
-                                return value;
+                                if (Util.isPromise(value)) {
+                                    return value.then(function(returnValue) {
+                                        return [ returnValue
+                                        ];
+                                    });
+                                }
+                                return [ value
+                                ];
                             };
                 }
                 var privateSetterFunc = (implementation ? implementation.set : undefined);
@@ -150,16 +157,23 @@ define(
                                 }
                                 var oldValue = privateGetterFunc();
                                 // call setter function with the same arguments as this function
-                                privateSetterFunc(Typing.augmentTypes(
-                                        value,
-                                        typeRegistry,
-                                        attributeType));
+                                var result =
+                                        privateSetterFunc(Typing.augmentTypes(
+                                                value,
+                                                typeRegistry,
+                                                attributeType));
                                 var newValue = privateGetterFunc();
                                 if (newValue !== oldValue) {
                                     if (this.valueChanged !== undefined) {
                                         this.valueChanged(newValue);
                                     }
                                 }
+                                if (Util.isPromise(result)) {
+                                    return result.then(function() {
+                                        return [];
+                                    });
+                                }
+                                return [];
                             };
                 }
                 if (attributeCaps.match(/NOTIFY/)) {
@@ -178,7 +192,8 @@ define(
                      * @see ProviderAttribute#unregisterObserver
                      */
                     this.valueChanged = function valueChanged(value) {
-                        Util.fire(callbacks, value);
+                        Util.fire(callbacks, [ value
+                        ]);
                     };
 
                     /**

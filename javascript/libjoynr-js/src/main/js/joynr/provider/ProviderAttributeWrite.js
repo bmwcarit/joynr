@@ -85,7 +85,7 @@ define(
                  * @see ProviderAttributeWrite#registerSetter
                  */
                 this.set = function set(value) {
-                    providerAttribute.set(value);
+                    return providerAttribute.set(value);
                 };
 
                 /**

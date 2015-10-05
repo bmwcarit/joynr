@@ -211,6 +211,8 @@ joynrTestRequire(
                                 }
                             };
 
+                            provider.testFunction.callOperation.andReturn([]);
+
                             var request = new Request({
                                 methodName : "testFunction",
                                 paramDatatypes : paramDatatypes,
@@ -386,9 +388,16 @@ joynrTestRequire(
                                 }
 
                             };
-                            provider.attributeName.get.andReturn(testParam);
-                            provider.operationName.callOperation.andReturn(testParam);
-                            provider.getOperationStartingWithGet.callOperation.andReturn(testParam);
+                            provider.attributeName.get.andReturn([ testParam
+                            ]);
+                            provider.attributeName.set.andReturn([]);
+                            provider.operationName.callOperation.andReturn([ testParam
+                            ]);
+                            provider.getOperationStartingWithGet.callOperation
+                                    .andReturn([ testParam
+                                    ]);
+                            provider.getOperationHasPriority.callOperation.andReturn([ testParam
+                            ]);
 
                             var callbackDispatcher = jasmine.createSpy("callbackDispatcher");
 
@@ -496,8 +505,7 @@ joynrTestRequire(
 
                                 expect(test.callbackDispatcher).toHaveBeenCalled();
                                 expect(test.callbackDispatcher).toHaveBeenCalledWith(new Reply({
-                                    response : [ undefined
-                                    ],
+                                    response : [],
                                     requestReplyId : test.request.requestReplyId
                                 }));
                             });

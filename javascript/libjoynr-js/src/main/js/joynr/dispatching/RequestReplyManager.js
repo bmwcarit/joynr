@@ -274,9 +274,9 @@ define(
                              * and call then the callbackDispatcher
                              */
                             if (!exception && Util.isPromise(result)) {
-                                result.then(function(value) {
+                                result.then(function(response) {
                                     callbackDispatcher(new Reply({
-                                        response : [value],
+                                        response : response,
                                         requestReplyId : request.requestReplyId
                                     }));
                                 }).catch(function(internalException) {
@@ -298,7 +298,7 @@ define(
                                     // return result of call
                                     LongTimer.setTimeout(function asyncCallbackDispatcher() {
                                         callbackDispatcher(new Reply({
-                                            response : [result],
+                                            response : result,
                                             requestReplyId : request.requestReplyId
                                         }));
                                     }, 0);

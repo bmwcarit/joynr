@@ -101,10 +101,10 @@ joynrTestRequire(
                             ]);
             myOperation.registerOperation(operationSpy);
             operationSpy.reset();
-            operationSpy.andReturn(42);
+            operationSpy.andReturn(testData.returnValue);
             var result = myOperation.callOperation(testData.params, testData.paramDatatypes);
             expect(result).toBeDefined();
-            expect(result).toEqual(42);
+            expect(result).toEqual(testData.returnParams);
             expect(implementation).not.toHaveBeenCalled();
         }
 
@@ -125,6 +125,7 @@ joynrTestRequire(
                             ]);
 
             implementation.reset();
+            implementation.andReturn(testData.returnValue);
             myOperation.callOperation(testData.params, testData.paramDatatypes);
             expect(implementation).toHaveBeenCalledWith(testData.namedArguments);
         }
@@ -173,7 +174,7 @@ joynrTestRequire(
                 operationSpy.reset();
                 operationSpy.andCallFake(function() {
                     return new Promise(function(resolve, reject) {
-                        resolve(42);
+                        resolve(testData.returnValue);
                     });
                 });
                 var result = myOperation.callOperation(testData.params, testData.paramDatatypes);
@@ -195,7 +196,7 @@ joynrTestRequire(
             runs(function() {
                 expect(catchSpy).not.toHaveBeenCalled();
                 expect(thenSpy).toHaveBeenCalled();
-                expect(thenSpy).toHaveBeenCalledWith(42);
+                expect(thenSpy).toHaveBeenCalledWith(testData.returnParams);
                 expect(operationSpy).toHaveBeenCalledWith(testData.namedArguments);
                 expect(implementation).not.toHaveBeenCalled();
             });

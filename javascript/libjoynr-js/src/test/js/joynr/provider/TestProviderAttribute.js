@@ -373,7 +373,8 @@ joynrTestRequire(
                                     allAttributes[i].registerGetter(spy);
                                     var result = allAttributes[i].get();
                                     expect(spy).toHaveBeenCalled();
-                                    expect(result).toEqual(testParam);
+                                    expect(result).toEqual([ testParam
+                                    ]);
                                     ++nrGetters;
                                 }
                                 if (allAttributes[i].set) {
@@ -402,7 +403,8 @@ joynrTestRequire(
                                 if (allAttributes[i].get) {
                                     implementation.get.reset();
                                     implementation.get.andReturn(testParam);
-                                    expect(allAttributes[i].get()).toEqual(testParam);
+                                    expect(allAttributes[i].get()).toEqual([ testParam
+                                    ]);
                                     expect(implementation.get).toHaveBeenCalled();
                                 }
                                 if (allAttributes[i].set) {
@@ -444,9 +446,11 @@ joynrTestRequire(
                                 attribute.valueChanged(value);
 
                                 expect(spy1).toHaveBeenCalled();
-                                expect(spy1).toHaveBeenCalledWith(value);
+                                expect(spy1).toHaveBeenCalledWith([ value
+                                ]);
                                 expect(spy2).toHaveBeenCalled();
-                                expect(spy2).toHaveBeenCalledWith(value);
+                                expect(spy2).toHaveBeenCalledWith([ value
+                                ]);
 
                                 attribute.unregisterObserver(func2);
 
@@ -490,9 +494,11 @@ joynrTestRequire(
                                     attribute.set(value);
 
                                     expect(spy1).toHaveBeenCalled();
-                                    expect(spy1).toHaveBeenCalledWith(value);
+                                    expect(spy1).toHaveBeenCalledWith([ value
+                                    ]);
                                     expect(spy2).toHaveBeenCalled();
-                                    expect(spy2).toHaveBeenCalledWith(value);
+                                    expect(spy2).toHaveBeenCalledWith([ value
+                                    ]);
 
                                     attribute.unregisterObserver(func2);
 
@@ -548,9 +554,11 @@ joynrTestRequire(
                                     attribute.set(value);
 
                                     expect(spy1).toHaveBeenCalled();
-                                    expect(spy1).toHaveBeenCalledWith(value);
+                                    expect(spy1).toHaveBeenCalledWith([ value
+                                    ]);
                                     expect(spy2).toHaveBeenCalled();
-                                    expect(spy2).toHaveBeenCalledWith(value);
+                                    expect(spy2).toHaveBeenCalledWith([ value
+                                    ]);
 
                                     attribute.unregisterObserver(func2);
 

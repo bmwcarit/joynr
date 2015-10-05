@@ -24,7 +24,9 @@ define("test/data/Operation", [
     "joynr/vehicle/radiotypes/ErrorList",
     "joynr/tests/testTypes/TestEnum"
 ], function(RadioStation, ErrorList, TestEnum) {
-
+    var radioStationVar = new RadioStation({
+        name : "asdf"
+    });
     var testData = [
         {
             signature : {
@@ -45,6 +47,8 @@ define("test/data/Operation", [
             ],
             params : [ "asdf"
             ],
+            returnValue : undefined,
+            returnParams : [],
             errorEnumType : "no error enumeration given"
         },
         {
@@ -53,7 +57,8 @@ define("test/data/Operation", [
                     name : "parameter",
                     type : "joynr.tests.testTypes.TestEnum"
                 }
-                ]
+                ],
+                outputParameter : []
             },
             namedArguments : {
                 parameter : TestEnum.ZERO
@@ -62,6 +67,8 @@ define("test/data/Operation", [
             ],
             params : [ TestEnum.ZERO
             ],
+            returnValue : undefined,
+            returnParams : [],
             errorEnumType : "no error enumeration given"
         },
         {
@@ -77,17 +84,89 @@ define("test/data/Operation", [
                 outputParameter : []
             },
             namedArguments : {
-                complex : new RadioStation({
-                    name : "asdf"
-                })
+                complex : radioStationVar
             },
             paramDatatypes : [ "joynr.vehicle.radiotypes.RadioStation"
             ],
-            params : [ new RadioStation({
-                name : "asdf"
-            })
+            params : [ radioStationVar
             ],
+            returnValue : undefined,
+            returnParams : [],
             error : ErrorList.EXAMPLE_ERROR_1
+        },
+        {
+            signature : {
+                inputParameter : [],
+                outputParameter : [ {
+                    name : "bool",
+                    type : "Boolean"
+                }
+                ]
+            },
+            namedArguments : {},
+            paramDatatypes : [],
+            params : [],
+            returnValue : true,
+            returnParams : [ true
+            ]
+        },
+        {
+            signature : {
+                inputParameter : [],
+                outputParameter : [ {
+                    name : "int",
+                    type : "Integer"
+                }
+                ]
+            },
+            namedArguments : {},
+            paramDatatypes : [],
+            params : [],
+            returnValue : 123,
+            returnParams : [ 123
+            ]
+        },
+        {
+            signature : {
+                inputParameter : [],
+                outputParameter : [ {
+                    name : "radioStation",
+                    type : "joynr.vehicle.radiotypes.RadioStation"
+                }
+                ]
+            },
+            namedArguments : {},
+            paramDatatypes : [],
+            params : [],
+            returnValue : radioStationVar,
+            returnParams : [ radioStationVar
+            ]
+        },
+        {
+            signature : {
+                inputParameter : [],
+                outputParameter : [
+                    {
+                        name : "radioStation",
+                        type : "joynr.vehicle.radiotypes.RadioStation"
+                    },
+                    {
+                        name : "secondOutputParameter",
+                        type : "String"
+                    }
+                ]
+            },
+            namedArguments : {},
+            paramDatatypes : [],
+            params : [],
+            returnValue : {
+                radioStation : radioStationVar,
+                secondOutputParameter : "StringValue"
+            },
+            returnParams : [
+                radioStationVar,
+                "StringValue"
+            ]
         },
         {
             signature : {
@@ -142,6 +221,8 @@ define("test/data/Operation", [
                     4
                 ]
             ],
+            returnValue : undefined,
+            returnParams : [],
             errorEnumType : "no error enumeration given"
         }
     ];
