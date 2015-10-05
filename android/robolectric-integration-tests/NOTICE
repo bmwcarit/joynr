@@ -20,7 +20,7 @@ This project has dependencies to:
   android under Apache License, Version 2.0
   ant-launcher under Apache License, Version 2.0
   AOP alliance under Public Domain
-  Apache Commons Lang under The Apache Software License, Version 2.0
+  Apache Commons Lang under Apache License, Version 2.0
   Apache HttpClient under Apache License
   Apache HttpClient Mime under Apache License
   Apache HttpCore under Apache License
@@ -71,10 +71,11 @@ This project has dependencies to:
   jackson-databind under The Apache Software License, Version 2.0
   Javassist under MPL 1.1 or LGPL 2.1
   javax.inject under The Apache Software License, Version 2.0
-  Jetty :: Http Utility under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: IO Utility under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Utilities under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
-  Jetty :: Websocket under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
+  Jetty :: Websocket :: API under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
+  Jetty :: Websocket :: Client under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
+  Jetty :: Websocket :: Common under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   JUnit under Common Public License Version 1.0
   Logging under The Apache Software License, Version 2.0
   Maven Ant Tasks under The Apache Software License, Version 2.0
