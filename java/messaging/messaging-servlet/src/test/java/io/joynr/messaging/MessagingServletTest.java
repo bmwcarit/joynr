@@ -152,7 +152,8 @@ public class MessagingServletTest {
         try {
             server.stop();
         } catch (Exception e) {
-            e.printStackTrace();
+            // do nothing as we don't want tests to fail only because
+            // stopping of the server did not work
         }
     }
 
