@@ -20,7 +20,6 @@
  * #L%
  */
 
-//TODO: some of this relies on the dummy implementation, change accordingly when implementating
 joynrTestRequire(
         "joynr/proxy/TestProxyAttribute",
         [
@@ -38,6 +37,7 @@ joynrTestRequire(
             "joynr/proxy/OnChangeWithKeepAliveSubscriptionQos",
             "joynr/dispatching/RequestReplyManager",
             "joynr/dispatching/types/Request",
+            "joynr/tests/testTypes/TestEnum",
             "global/Promise"
         ],
         function(
@@ -55,6 +55,7 @@ joynrTestRequire(
                 OnChangeWithKeepAliveSubscriptionQos,
                 RequestReplyManager,
                 Request,
+                TestEnum,
                 Promise) {
 
             var asyncTimeout = 5000;
@@ -408,6 +409,40 @@ joynrTestRequire(
 
                             runs(function() {
                                 checkSpy(spy);
+                            });
+                        });
+
+                        it("get returns correct joynr objects", function() {
+                            var fixture = new ProxyAttribute(
+                                    {
+                                        proxyParticipantId : "proxy",
+                                        providerParticipantId : "provider"
+                                    },
+                                    settings,
+                                    "attributeOfTypeTestEnum",
+                                    TestEnum.ZERO._typeName,
+                                    "NOTIFYREADWRITE");
+
+
+                            expect(fixture.get).toBeDefined();
+                            expect(typeof fixture.get === "function").toBeTruthy();
+                            var spy = jasmine.createSpyObj("spy", [
+                                "onFulfilled",
+                                "onRejected"
+                            ]);
+
+                            runs(function() {
+                                requestReplyManagerSpy.sendRequest.andReturn(Promise.resolve([ "ZERO" ]));
+                                fixture.get().then(spy.onFulfilled).catch(spy.onRejected);
+                            });
+
+                            waitsFor(function() {
+                                return spy.onFulfilled.callCount > 0;
+                            }, "The promise is not pending any more", asyncTimeout);
+
+                            runs(function() {
+                                checkSpy(spy);
+                                expect(spy.onFulfilled).toHaveBeenCalledWith(TestEnum.ZERO);
                             });
                         });
 

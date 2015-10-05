@@ -22,10 +22,13 @@ define(
         [
             "joynr/util/UtilInternal",
             "joynr/dispatching/types/Request",
-            "joynr/messaging/MessagingQos"
+            "joynr/messaging/MessagingQos",
+            "joynr/util/Typing",
+            "joynr/types/TypeRegistrySingleton"
         ],
-        function(Util, Request, MessagingQos) {
+        function(Util, Request, MessagingQos, Typing, TypeRegistrySingleton) {
 
+            var typeRegistry = TypeRegistrySingleton.getInstance();
             /**
              * Constructor of ProxyAttribute object that is used in the generation of proxy objects
              *
@@ -101,7 +104,7 @@ define(
                         messagingQos : messagingQos,
                         request : request
                     }).then(function(response) {
-                        return response[0];
+                        return Typing.augmentTypes(response[0], typeRegistry, attributeType);
                     });
                 }
 
