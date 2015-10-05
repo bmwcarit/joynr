@@ -96,7 +96,7 @@ define("joynr/util/Util", [
                 for (i = 0; i < value.length; i++) {
                     value[i] = Util.ensureTypedValues(value[i]);
                 }
-            } else if (typeof value === "object" && !Typing.isComplexJoynrType(value)) {
+            } else if (typeof value === "object" && !Typing.isComplexJoynrObject(value)) {
                 value = Typing.augmentTypes(value, typeRegistry);
                 value.checkMembers(Util.checkPropertyIfDefined);
             }

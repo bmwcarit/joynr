@@ -169,9 +169,9 @@ define("joynr/util/Typing", [
 
     /**
      * Returns true if the object is a joynr complex type modelled in Franca
-     * @function Typing#isComplexJoynrType
+     * @function Typing#isComplexJoynrObject
      */
-    Typing.isComplexJoynrType = function isComplexJoynrType(value) {
+    Typing.isComplexJoynrObject = function isComplexJoynrObject(value) {
         var valuePrototype = Object.getPrototypeOf(value);
         return (valuePrototype && valuePrototype instanceof joynr.JoynrObject);
     };
