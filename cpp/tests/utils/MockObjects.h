@@ -444,9 +444,9 @@ public:
 
 class MockMessagingStubFactory : public joynr::IMessagingStubFactory {
 public:
-    MOCK_METHOD2(create, QSharedPointer<joynr::IMessaging>(std::string destParticipantId, const joynr::system::RoutingTypes::QtAddress& destEndpointAddress));
-    MOCK_METHOD1(remove, void(std::string destParticipantId));
-    MOCK_METHOD1(contains, bool(std::string destPartId));
+    MOCK_METHOD1(create, QSharedPointer<joynr::IMessaging>(const joynr::system::RoutingTypes::QtAddress& destEndpointAddress));
+    MOCK_METHOD1(remove, void(const joynr::system::RoutingTypes::QtAddress& destEndpointAddress));
+    MOCK_METHOD1(contains, bool(const joynr::system::RoutingTypes::QtAddress& destEndpointAddress));
 };
 
 class GlobalCapabilitiesMock {

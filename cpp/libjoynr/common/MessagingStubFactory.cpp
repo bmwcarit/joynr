@@ -34,27 +34,26 @@ MessagingStubFactory::~MessagingStubFactory()
 }
 
 MessagingStubFactory::MessagingStubFactory()
-        : partId2MessagingStubDirectory("MessagingStubFactory-MessagingStubDirectory"),
+        : address2MessagingStubDirectory("MessagingStubFactory-MessagingStubDirectory"),
           factoryList(),
           mutex()
 {
 }
 
 QSharedPointer<IMessaging> MessagingStubFactory::create(
-        std::string destParticipantId,
         const joynr::system::RoutingTypes::QtAddress& destinationAddress)
 {
     {
         QMutexLocker locker(&this->mutex);
 
-        if (!partId2MessagingStubDirectory.contains(destParticipantId)) {
+        if (!address2MessagingStubDirectory.contains(destinationAddress)) {
             // search for the corresponding factory
             for (QList<IMiddlewareMessagingStubFactory*>::iterator it = this->factoryList.begin();
                  it != factoryList.end();
                  ++it) {
                 if ((*it)->canCreate(destinationAddress)) {
                     QSharedPointer<IMessaging> stub = (*it)->create(destinationAddress);
-                    partId2MessagingStubDirectory.add(destParticipantId, stub);
+                    address2MessagingStubDirectory.add(destinationAddress, stub);
 
                     assert(!stub.isNull());
                     return stub;
@@ -63,17 +62,18 @@ QSharedPointer<IMessaging> MessagingStubFactory::create(
         }
     }
 
-    return partId2MessagingStubDirectory.lookup(destParticipantId);
+    return address2MessagingStubDirectory.lookup(destinationAddress);
 }
 
-void MessagingStubFactory::remove(std::string destParticipantId)
+void MessagingStubFactory::remove(const joynr::system::RoutingTypes::QtAddress& destinationAddress)
 {
-    partId2MessagingStubDirectory.remove(destParticipantId);
+    address2MessagingStubDirectory.remove(destinationAddress);
 }
 
-bool MessagingStubFactory::contains(std::string destParticipantId)
+bool MessagingStubFactory::contains(
+        const joynr::system::RoutingTypes::QtAddress& destinationAddress)
 {
-    return partId2MessagingStubDirectory.contains(destParticipantId);
+    return address2MessagingStubDirectory.contains(destinationAddress);
 }
 
 void MessagingStubFactory::registerStubFactory(IMiddlewareMessagingStubFactory* factory)

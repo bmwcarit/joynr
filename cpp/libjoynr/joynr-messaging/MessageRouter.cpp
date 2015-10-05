@@ -276,7 +276,7 @@ void MessageRouter::sendMessages(const std::string& destinationPartId,
 void MessageRouter::sendMessage(const JoynrMessage& message,
                                 QSharedPointer<joynr::system::RoutingTypes::QtAddress> destAddress)
 {
-    auto stub = messagingStubFactory->create(message.getHeaderTo().toStdString(), *destAddress);
+    auto stub = messagingStubFactory->create(*destAddress);
     if (!stub.isNull()) {
         threadPool.start(new MessageRunnable(message, stub));
     }

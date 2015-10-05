@@ -77,7 +77,7 @@ TEST_F(MessageRouterTest, DISABLED_routeDelegatesToStubFactory){
     // cH: this thest doesn't make sense anymore, since the MessageRouter
     // will create the MessagingStubFactory internally and therefor couldn't
     // be mocked. However, this test was already disabled.
-    EXPECT_CALL(*messagingStubFactory, create(_,_)).Times(1);
+    EXPECT_CALL(*messagingStubFactory, create(_)).Times(1);
 
     messageRouter->route(joynrMessage);
 
