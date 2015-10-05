@@ -150,3 +150,16 @@ TEST(UnfixturedDirectoryTest, QSPObjectsAreDeletedIfDirectoryIsDeleted)
     delete directory;
     ASSERT_EQ(TrackableObject::getInstances(), 0) << "Directory did not delete Object";
 }
+
+TEST(UnfixturedDirectoryTest, useStdStringKeys)
+{
+    std::string key = "key";
+    QSharedPointer<QString> value(new QString("value"));
+    Directory<std::string, QString> directory("Directory");
+    ASSERT_FALSE(directory.contains(key)) << "Empty directory contains entry.";
+    directory.add(key, value);
+    ASSERT_TRUE(directory.contains(key));
+    ASSERT_EQ(value, directory.lookup(key));
+    directory.remove(key);
+    ASSERT_FALSE(directory.contains(key));
+}
