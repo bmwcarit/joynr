@@ -161,6 +161,14 @@ class ProviderGenerator {
 								type : «param.typeNameForParameter»
 							}
 							«ENDFOR»
+						],
+						outputParameter: [
+							«FOR param: getOutputParameters(operation) SEPARATOR ","»
+							{
+								name : "«param.joynrName»",
+								type : «param.typeNameForParameter»
+							}
+							«ENDFOR»
 						]
 					}
 					«ENDFOR»
