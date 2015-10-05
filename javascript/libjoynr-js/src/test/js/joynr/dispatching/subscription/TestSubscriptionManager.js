@@ -34,7 +34,8 @@ joynrTestRequire(
             "global/Promise",
             "joynr/dispatching/types/Reply",
             "joynr/system/LoggerFactory",
-            "Date"
+            "Date",
+            "joynr/tests/testTypes/TestEnum"
         ],
         function(
                 SubscriptionManager,
@@ -48,7 +49,8 @@ joynrTestRequire(
                 Promise,
                 Reply,
                 LoggerFactory,
-                Date) {
+                Date,
+                TestEnum) {
 
             describe(
                     "libjoynr-js.joynr.dispatching.subscription.SubscriptionManager",
@@ -314,6 +316,60 @@ joynrTestRequire(
                                     onError : publicationMissedSpy
                                 }).then(resolveSpy.resolveMethod);
                                 increaseFakeTime(1);
+                            });
+
+                            waitsFor(function() {
+                                // wait until the subscriptionReply was received
+                                return resolveSpy.resolveMethod.callCount > 0;
+                            }, "resolveSpy.resolveMethod called", 100);
+
+                        });
+
+                        it("augments incoming publications with information from the joynr type system", function() {
+                            var publicationReceivedSpy =
+                                    jasmine.createSpy('publicationReceivedSpy');
+                            var publicationMissedSpy = jasmine.createSpy('publicationMissedSpy');
+
+                            var resolveSpy =
+                                    {
+                                        // called when the subscription is registered successfully (see below)
+                                        resolveMethod : function(subscriptionId) {
+                                            // increase time by 50ms and see if alert was triggered
+                                            increaseFakeTime(50);
+                                            expect(publicationMissedSpy).not.toHaveBeenCalled();
+                                            var publication = new SubscriptionPublication({
+                                                response : [ "ZERO" ],
+                                                subscriptionId : subscriptionId
+                                            });
+                                            // simulate incoming publication
+                                            subscriptionManager.handlePublication(publication);
+                                            // make sure publication payload is forwarded
+                                            expect(publicationReceivedSpy).toHaveBeenCalledWith(
+                                                    TestEnum.ZERO);
+
+                                        }
+                                    };
+
+                            spyOn(resolveSpy, 'resolveMethod').andCallThrough();
+
+                            runs(function() {
+                                //log.debug("registering subscription");
+                                // register the subscription and call the resolve method when ready
+                                /*jslint nomen: true */
+                                subscriptionManager.registerSubscription({
+                                    proxyId : "subscriber",
+                                    providerId : "provider",
+                                    messagingQos : new MessagingQos(),
+                                    attributeName : "testAttribute",
+                                    attributeType : TestEnum.ZERO._typeName,
+                                    qos : new OnChangeSubscriptionQos({
+                                        expiryDate : Date.now() + 250
+                                    }),
+                                    onReceive : publicationReceivedSpy,
+                                    onError : publicationMissedSpy
+                                }).then(resolveSpy.resolveMethod);
+                                increaseFakeTime(1);
+                                /*jslint nomen: false */
                             });
 
                             waitsFor(function() {

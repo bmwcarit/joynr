@@ -31,6 +31,8 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
     "joynr/system/LoggerFactory",
     "uuid",
     "joynr/util/UtilInternal",
+    "joynr/util/Typing",
+    "joynr/types/TypeRegistrySingleton",
     "joynr/util/JSONSerializer"
 ], function(
         Promise,
@@ -44,6 +46,8 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
         LoggerFactory,
         uuid,
         Util,
+        Typing,
+        TypeRegistrySingleton,
         JSONSerializer) {
     /**
      * @name SubscriptionManager
@@ -53,7 +57,7 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
      */
     function SubscriptionManager(dispatcher) {
         var log = LoggerFactory.getLogger("joynr.dispatching.subscription.SubscriptionManager");
-
+        var typeRegistry = TypeRegistrySingleton.getInstance();
         if (!(this instanceof SubscriptionManager)) {
             // in case someone calls constructor without new keyword (e.g. var c =
             // Constructor({..}))
@@ -201,6 +205,8 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
          * @param {MessagingQos}
          *            settings.messagingQos quality-of-service parameters such as time-to-live
          * @param {String}
+         *            settings.attributeType the type of the subscribing attribute
+         * @param {String}
          *            settings.attributeName the attribute name to subscribe to
          * @param {SubscriptionQos}
          *            [settings.qos] the subscriptionQos
@@ -268,7 +274,7 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                         subscriptionInfos[subscriptionId] = subscriptionInfo;
                         subscriptionListeners[subscriptionId] = new SubscriptionListener({
                             onReceive : function(response) {
-                                            settings.onReceive(response[0]);
+                                            settings.onReceive(Typing.augmentTypes(response[0], typeRegistry, settings.attributeType));
                                         },
                             onError : settings.onError
                         });

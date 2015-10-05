@@ -140,6 +140,7 @@ define(
                         providerId : parent.providerParticipantId,
                         messagingQos : messagingQos,
                         attributeName : attributeName,
+                        attributeType : attributeType,
                         qos : requestSettings.subscriptionQos,
                         subscriptionId : requestSettings.subscriptionId,
                         onReceive : requestSettings.onReceive,

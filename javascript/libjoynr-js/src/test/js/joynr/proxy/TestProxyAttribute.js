@@ -482,6 +482,7 @@ joynrTestRequire(
                                         providerId : providerParticipantId,
                                         messagingQos : messagingQos,
                                         attributeName : "isOn",
+                                        attributeType : TypesEnum.BOOL,
                                         qos : subscriptionQos,
                                         onReceive : spy.publication,
                                         onError : spy.publicationMissed
