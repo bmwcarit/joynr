@@ -98,6 +98,11 @@ define("joynr/util/Typing", [
                     return untyped;
                 }
 
+                // return already typed objects immediately
+                if (Typing.isComplexJoynrObject(untyped)) {
+                    return untyped;
+                }
+
                 // retrieve the javascript runtime type info
                 var type = Typing.getObjectType(untyped);
 
