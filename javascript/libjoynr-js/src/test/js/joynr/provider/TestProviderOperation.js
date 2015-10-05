@@ -36,18 +36,20 @@ joynrTestRequire("joynr/provider/TestProviderOperation", [
             provider = {};
             operationName = "myOperation";
             implementation = jasmine.createSpy("implementation");
-            myOperation = new ProviderOperation(provider, implementation, operationName, [
-                {
-                    "station" : {
-                        type : "String"
+            myOperation = new ProviderOperation(provider, implementation, operationName, {
+                inputParameter : [
+                    {
+                        "station" : {
+                            type : "String"
+                        }
+                    },
+                    {
+                        "station" : {
+                            type : "joynr.vehicle.radiotypes.RadioStation"
+                        }
                     }
-                },
-                {
-                    "station" : {
-                        type : "joynr.vehicle.radiotypes.RadioStation"
-                    }
-                }
-            ]);
+                ]
+            });
             operationSpy = jasmine.createSpy("operation spy");
             myOperation.registerOperation(operationSpy);
         });
@@ -111,11 +113,13 @@ joynrTestRequire("joynr/provider/TestProviderOperation", [
             /*jslint nomen: true */
             var typeName = TestEnum.ZERO._typeName;
             /*jslint nomen: false */
-            var signature = [ {
-                name : "enumArgument",
-                type : typeName
-            }
-            ];
+            var signature = {
+                inputParameter : [ {
+                    name : "enumArgument",
+                    type : typeName
+                }
+                ]
+            };
             myOperation =
                     new ProviderOperation(provider, implementation, operationName, [ signature
                     ]);

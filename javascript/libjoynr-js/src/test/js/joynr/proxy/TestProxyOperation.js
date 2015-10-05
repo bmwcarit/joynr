@@ -97,16 +97,20 @@ joynrTestRequire(
                                 }
 
                             }, "addFavoriteStation", [
-                                [ {
-                                    name : "radioStation",
-                                    type : 'joynr.vehicle.radiotypes.RadioStation'
+                                {
+                                    inputParameter : [ {
+                                        name : "radioStation",
+                                        type : 'joynr.vehicle.radiotypes.RadioStation'
+                                    }
+                                    ]
+                                },
+                                {
+                                    inputParameter : [ {
+                                        name : "radioStation",
+                                        type : 'String'
+                                    }
+                                    ]
                                 }
-                                ],
-                                [ {
-                                    name : "radioStation",
-                                    type : 'String'
-                                }
-                                ]
                             ]).buildFunction();
 
                         });

@@ -155,14 +155,16 @@ class ProxyGenerator {
 			«ENDFOR»
 			this.«operationName» = new settings.proxyElementTypes.ProxyOperation(this, settings, "«operationName»", [
 				«FOR operation: getMethods(fInterface, operationName) SEPARATOR ","»
-				[
-				«FOR param: getInputParameters(operation) SEPARATOR ","»
 				{
-					name : "«param.joynrName»",
-					type : «param.typeNameForParameter»
-				}
-				«ENDFOR»
-				]«ENDFOR»
+					inputParameter: [
+					«FOR param: getInputParameters(operation) SEPARATOR ","»
+						{
+							name : "«param.joynrName»",
+							type : «param.typeNameForParameter»
+						}
+					«ENDFOR»
+					]
+				}«ENDFOR»
 			]).buildFunction();
 	«ENDFOR»
 

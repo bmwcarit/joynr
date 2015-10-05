@@ -153,14 +153,16 @@ class ProviderGenerator {
 				«ENDFOR»
 				this.«methodName» = new dependencies.ProviderOperation(this, implementation.«methodName», "«methodName»", [
 					«FOR operation: getMethods(fInterface, methodName) SEPARATOR ","»
-					[
-						«FOR param: getInputParameters(operation) SEPARATOR ","»
-						{
-							name : "«param.joynrName»",
-							type : «param.typeNameForParameter»
-						}
-						«ENDFOR»
-					]
+					{
+						inputParameter: [
+							«FOR param: getInputParameters(operation) SEPARATOR ","»
+							{
+								name : "«param.joynrName»",
+								type : «param.typeNameForParameter»
+							}
+							«ENDFOR»
+						]
+					}
 					«ENDFOR»
 				]);
 			«ENDFOR»

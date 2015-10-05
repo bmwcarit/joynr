@@ -25,11 +25,13 @@ define("test/data/Operation", [
 
     var testData = [
         {
-            signature : [ {
-                name : "parameter",
-                type : "String"
-            }
-            ],
+            signature : {
+                inputParameter : [ {
+                    name : "parameter",
+                    type : "String"
+                }
+                ]
+            },
             namedArguments : {
                 parameter : "asdf"
             },
@@ -39,11 +41,13 @@ define("test/data/Operation", [
             ]
         },
         {
-            signature : [ {
-                name : "parameter",
-                type : "joynr.tests.testTypes.TestEnum"
-            }
-            ],
+            signature : {
+                inputParameter : [ {
+                    name : "parameter",
+                    type : "joynr.tests.testTypes.TestEnum"
+                }
+                ]
+            },
             namedArguments : {
                 parameter : TestEnum.ZERO
             },
@@ -53,11 +57,13 @@ define("test/data/Operation", [
             ]
         },
         {
-            signature : [ {
-                name : "complex",
-                type : "joynr.vehicle.radiotypes.RadioStation"
-            }
-            ],
+            signature : {
+                inputParameter : [ {
+                    name : "complex",
+                    type : "joynr.vehicle.radiotypes.RadioStation"
+                }
+                ]
+            },
             namedArguments : {
                 complex : new RadioStation({
                     name : "asdf"
@@ -71,24 +77,26 @@ define("test/data/Operation", [
             ]
         },
         {
-            signature : [
-                {
-                    name : "bool",
-                    type : "Boolean"
-                },
-                {
-                    name : "number",
-                    type : "Integer"
-                },
-                {
-                    name : "string",
-                    type : "String"
-                },
-                {
-                    name : "array",
-                    type : "List"
-                }
-            ],
+            signature : {
+                inputParameter : [
+                    {
+                        name : "bool",
+                        type : "Boolean"
+                    },
+                    {
+                        name : "number",
+                        type : "Integer"
+                    },
+                    {
+                        name : "string",
+                        type : "String"
+                    },
+                    {
+                        name : "array",
+                        type : "List"
+                    }
+                ]
+            },
             namedArguments : {
                 bool : true,
                 string : "asdf",

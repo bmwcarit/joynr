@@ -42,30 +42,32 @@ define(
              *            e.g. ["Integer", "String"]
              * @param {String}
              *            argumentDatatypes.array the datatype in string format
-             * @param {Object}
-             *            operationSignature an object with the argument name as key and an object
-             *            as value defining the type, e.g.
-             *            { nr: {type : "Integer"}, str: {type: "String"} }
-             * @param {Object}
-             *            operationSignature.PARAMETERNAME an object describing the single parameter
+             * @param {Array}
+             *            operationSignatures an array of possible signatures for this operation
+             * @param {Array}
+             *            operationSignatures.array.inputParameter an array of supported arguments for 
+             *            one specific signature
              * @param {String}
-             *            operationSignature.PARAMETERNAME.type the type of the parameter
+             *            operationSignatures.array.inputParameter.name the name of the input parameter
+             * @param {String}
+             *            operationSignatures.array.inputParameter.type the type of the input parameter
              *
              * @returns undefined if argumentDatatypes does not match operationSignature or a map
              *            containing a named argument map, e.g. &#123;nr: 1234,str: "asdf"&#125;
              */
             function getNamedArguments(unnamedArguments, argumentDatatypes, operationSignature) {
-                var i, argument, argumentName, namedArguments = {};
+                var i, argument, argumentName, namedArguments = {}, inputParameter =
+                        operationSignature.inputParameter;
 
                 // check if number of given argument types (argumentDatatypes.length) matches number
                 // of parameters in op signature (keys.length)
-                if (argumentDatatypes.length !== operationSignature.length) {
+                if (argumentDatatypes.length !== inputParameter.length) {
                     return undefined;
                 }
 
                 // cycle over all arguments
                 for (i = 0; i < argumentDatatypes.length; ++i) {
-                    argument = operationSignature[i];
+                    argument = inputParameter[i];
                     argumentName = argument.name;
                     // check if argument type matches parameter's type from operation signature
                     if (argumentDatatypes[i] !== argument.type) {

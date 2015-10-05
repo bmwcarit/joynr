@@ -64,21 +64,22 @@ define("joynr/proxy/ProxyOperation", [
         // in the operationSignature, this object will hold name, type and value and is
         // qualified to be used for serialization and will be returned
         var argument, argumentId, argumentName, operationParameter, argumentValue;
+        var inputParameter = operationSignature.inputParameter;
         var paramDatatypes = [];
         var params = [];
         var result = {};
 
         // check if number of parameters in signature matches number of arguments
-        if (Object.keys(operationSignature).length !== Object.keys(operationArguments).length) {
+        if (Object.keys(inputParameter).length !== Object.keys(operationArguments).length) {
             // signature does not match
             result.errorMessage = "signature does not match: wrong number of arguments";
             return result;
         }
 
-        for (argumentId in operationSignature) {
-            if (operationSignature.hasOwnProperty(argumentId)) {
+        for (argumentId in inputParameter) {
+            if (inputParameter.hasOwnProperty(argumentId)) {
                 // check if there's a parameter with the given name
-                argument = operationSignature[argumentId];
+                argument = inputParameter[argumentId];
 
                 argumentName = argument.name;
                 operationParameter = argument.type;
@@ -188,17 +189,14 @@ define("joynr/proxy/ProxyOperation", [
      * @param {String}
      *            operationName the name of the operation
      * @param {Array}
-     *            operationSignatures an object with the argument name as key and an object
-     *            var argument, argumentId, argumentName, operationParameter, argumentValue
-     *            as value defining the type
-     * @param {Object}
-     *            operationSignatures.array an object with the argument name as key and an
-     *            object as value defining the type
-     * @param {Object}
-     *            operationSignatures.array.PARAMETERNAME an object describing the single
-     *            parameter
+     *            operationSignatures an array of possible signatures for this operation
+     * @param {Array}
+     *            operationSignatures.array.inputParameter an array of supported arguments for 
+     *            one specific signature
      * @param {String}
-     *            operationSignatures.array.PARAMETERNAME.type the type of the parameter
+     *            operationSignatures.array.inputParameter.name the name of the input parameter
+     * @param {String}
+     *            operationSignatures.array.inputParameter.type the type of the input parameter
      */
     function ProxyOperation(parent, settings, operationName, operationSignatures) {
         if (!(this instanceof ProxyOperation)) {
