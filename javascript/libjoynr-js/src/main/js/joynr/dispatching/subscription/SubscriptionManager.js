@@ -164,7 +164,17 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
 
             subscriptionInfos[subscriptionRequest.subscriptionId] = subscriptionInfo;
             subscriptionListeners[subscriptionRequest.subscriptionId] = new SubscriptionListener({
-                onReceive : parameters.onReceive,
+                onReceive : function(response) {
+                    var responseKey;
+                    for (responseKey in response) {
+                        if (response.hasOwnProperty(responseKey)) {
+                            response[responseKey] = Typing.augmentTypes(response[responseKey],
+                                                                        typeRegistry,
+                                                                        parameters.broadcastTypes[responseKey]);
+                        }
+                    }
+                    parameters.onReceive(response);
+                },
                 onError : parameters.onError
             });
 
@@ -306,6 +316,8 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
          *            parameters.messagingQos quality-of-service parameters such as time-to-live
          * @param {String}
          *            parameters.broadcastName the name of the broadcast being subscribed to
+         * @param {String[]}
+         *            parameters.broadcastTypes the parameter types of the broadcast being subscribed to
          * @param {SubscriptionQos}
          *            [parameters.subscriptionQos] the subscriptionQos
          * @param {BroadcastFilterParameters}

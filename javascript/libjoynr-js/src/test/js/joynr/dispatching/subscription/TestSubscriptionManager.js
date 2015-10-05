@@ -24,6 +24,7 @@ joynrTestRequire(
         "joynr/dispatching/subscription/TestSubscriptionManager",
         [
             "joynr/dispatching/subscription/SubscriptionManager",
+            "joynr/TypesEnum",
             "joynr/messaging/MessagingQos",
             "joynr/dispatching/types/SubscriptionRequest",
             "joynr/dispatching/types/SubscriptionStop",
@@ -39,6 +40,7 @@ joynrTestRequire(
         ],
         function(
                 SubscriptionManager,
+                TypesEnum,
                 MessagingQos,
                 SubscriptionRequest,
                 SubscriptionStop,
@@ -367,6 +369,61 @@ joynrTestRequire(
                                     }),
                                     onReceive : publicationReceivedSpy,
                                     onError : publicationMissedSpy
+                                }).then(resolveSpy.resolveMethod);
+                                increaseFakeTime(1);
+                                /*jslint nomen: false */
+                            });
+
+                            waitsFor(function() {
+                                // wait until the subscriptionReply was received
+                                return resolveSpy.resolveMethod.callCount > 0;
+                            }, "resolveSpy.resolveMethod called", 100);
+
+                        });
+
+                        it("augments incoming broadcasts with information from the joynr type system", function() {
+                            var publicationReceivedSpy =
+                                    jasmine.createSpy('publicationReceivedSpy');
+                            var onErrorSpy = jasmine.createSpy('onErrorSpy');
+
+                            var resolveSpy =
+                                    {
+                                        // called when the subscription is registered successfully (see below)
+                                        resolveMethod : function(subscriptionId) {
+                                            var testString = "testString";
+                                            var testInt = 2;
+                                            var testEnum = TestEnum.ZERO;
+                                            expect(onErrorSpy).not.toHaveBeenCalled();
+                                            var publication = new SubscriptionPublication({
+                                                response : [ testString, testInt, testEnum.name ],
+                                                subscriptionId : subscriptionId
+                                            });
+                                            // simulate incoming publication
+                                            subscriptionManager.handlePublication(publication);
+                                            // make sure publication payload is forwarded
+                                            expect(publicationReceivedSpy).toHaveBeenCalledWith(
+                                                    [ testString, testInt, testEnum ]);
+
+                                        }
+                                    };
+
+                            spyOn(resolveSpy, 'resolveMethod').andCallThrough();
+
+                            runs(function() {
+                                //log.debug("registering subscription");
+                                // register the subscription and call the resolve method when ready
+                                /*jslint nomen: true */
+                                subscriptionManager.registerBroadcastSubscription({
+                                    proxyId : "subscriber",
+                                    providerId : "provider",
+                                    messagingQos : new MessagingQos(),
+                                    broadcastName : "broadcastName",
+                                    broadcastTypes : [ TypesEnum.STRING, TypesEnum.INT, TestEnum.ZERO._typeName ],
+                                    qos : new OnChangeSubscriptionQos({
+                                        expiryDate : Date.now() + 250
+                                    }),
+                                    onReceive : publicationReceivedSpy,
+                                    onError : onErrorSpy
                                 }).then(resolveSpy.resolveMethod);
                                 increaseFakeTime(1);
                                 /*jslint nomen: false */
