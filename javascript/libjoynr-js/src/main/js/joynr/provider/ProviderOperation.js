@@ -19,10 +19,13 @@
 
 define(
         "joynr/provider/ProviderOperation",
-        [],
+        [
+            "joynr/util/Typing",
+            "joynr/types/TypeRegistrySingleton"
+        ],
+        function(Typing, TypeRegistrySingleton) {
 
-        function() {
-
+            var typeRegistry = TypeRegistrySingleton.getInstance();
             /**
              * Checks if the given argumentDatatypes and arguments match the given operationSignature
              *
@@ -153,6 +156,13 @@ define(
                             var i;
                             var namedArguments;
 
+                            for (i = 0; i < operationArguments.length; ++i) {
+                                operationArguments[i] =
+                                        Typing.augmentTypes(
+                                                operationArguments[i],
+                                                typeRegistry,
+                                                operationArgumentTypes[i]);
+                            }
                             // cycle through multiple available operation signatures
                             for (i = 0; i < operationSignatures.length
                                 && namedArguments === undefined; ++i) {

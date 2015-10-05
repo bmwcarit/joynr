@@ -22,8 +22,9 @@
 joynrTestRequire("joynr/provider/TestProviderOperation", [
     "joynr/provider/ProviderOperation",
     "joynr/types/ProviderQos",
-    "test/data/Operation"
-], function(ProviderOperation, ProviderQos, testDataOperation) {
+    "test/data/Operation",
+    "joynr/tests/testTypes/TestEnum"
+], function(ProviderOperation, ProviderQos, testDataOperation, TestEnum) {
 
     var safetyTimeoutDelta = 100;
 
@@ -104,6 +105,28 @@ joynrTestRequire("joynr/provider/TestProviderOperation", [
             for (i = 0; i < testDataOperation.length; ++i) {
                 testCallProvidedOperation(testDataOperation[i]);
             }
+        });
+
+        it("calls provided implementation with enum as operation argument", function() {
+            /*jslint nomen: true */
+            var typeName = TestEnum.ZERO._typeName;
+            /*jslint nomen: false */
+            var signature = [ {
+                name : "enumArgument",
+                type : typeName
+            }
+            ];
+            myOperation =
+                    new ProviderOperation(provider, implementation, operationName, [ signature
+                    ]);
+
+            implementation.reset();
+            myOperation.callOperation([ "ZERO"
+            ], [ typeName
+            ]);
+            expect(implementation).toHaveBeenCalledWith({
+                enumArgument : TestEnum.ZERO
+            });
         });
 
     });
