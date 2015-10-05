@@ -38,11 +38,13 @@ public class Reply implements JoynrMessageType {
     public Reply(String requestReplyId, Object... response) {
         this.requestReplyId = requestReplyId;
         this.response = Arrays.asList(response);
+        this.error = null;
     }
 
     public Reply(String requestReplyId, JoynrException error) {
         this.requestReplyId = requestReplyId;
         this.error = error;
+        this.response = null;
     }
 
     public List<?> getResponse() {
@@ -59,7 +61,8 @@ public class Reply implements JoynrMessageType {
 
     @Override
     public String toString() {
-        return "Reply: " + "requestReplyId: " + requestReplyId + ", response: " + response + ", error: " + error;
+        return "Reply: " + "requestReplyId: " + requestReplyId + (response == null ? "" : ", response: " + response)
+                + (error == null ? "" : ", error: " + error);
     }
 
     @Override
