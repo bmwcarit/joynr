@@ -263,7 +263,7 @@ class JSTypeUtil extends TypeUtil {
 		if (isPrimitive(datatype)) {
 			return getPrimitive(datatype).toTypesEnum
 		} else {
-			return datatype.derived.toTypesEnum;
+			return "\"" + datatype.derived.toTypesEnum + "\"";
 		}
 	}
 

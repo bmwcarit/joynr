@@ -150,7 +150,7 @@ define("joynr/util/Typing", [
                             if (Constructor.getMemberType !== undefined) {
                                 typedObj[i] =
                                         Typing.augmentTypes(untyped[i], typeRegistry, Constructor
-                                                .getMemberType(i));
+                                                .getMemberType(i, TypesEnum));
                             } else {
                                 typedObj[i] = Typing.augmentTypes(untyped[i], typeRegistry);
                             }
