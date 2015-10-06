@@ -33,14 +33,14 @@ Arbitration is concerned with the rules in determining the preferred provider to
 
 ## Capabilities directory
 
-A capability states the domain and interface name for which a provider is registered. 
+A capability states the domain and interface name for which a provider is registered.
 
- These information entries contain access information as well as supported Qos (Quality of Service). This 
+ These information entries contain access information as well as supported Qos (Quality of Service). This
 information is used in the arbitration process to pick a provider for a proxy.
 
 A capabilities directory is a list of capabilities for providers currently registered in a joynr network, and is available globally and locally.
 
-* The global directory is accessible from any joynr-enabled endpoint, and contains a global list of capabilities that may be accessed by joynr consumers. 
+* The global directory is accessible from any joynr-enabled endpoint, and contains a global list of capabilities that may be accessed by joynr consumers.
 * The local capabilities directory serves as a cache for the global directory, but also maintains a list of capabilities that only should be discovered locally. Only local consumers attached to the same cluster controller are able to use these capabilities.
 
 
@@ -69,7 +69,7 @@ The **scope** can be
 The entries found that match the selected scope are then evaluated based on the arbitration strategy.
 
 The **arbitration strategy** can be one of the following:
-* **NotSet** (not allowed in the app, otherwise arbitration will throw JoynrArbitrationException)
+* **NotSet** (not allowed in the app, otherwise arbitration will throw DiscoveryException)
 * **FixedChannel** (also see FixedParticipantArbitrator)
 * **Keyword** Only entries that have a matching keyword will be considered
 * **HighestPriority** Entries will be considered according to priority

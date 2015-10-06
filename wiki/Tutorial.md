@@ -254,7 +254,7 @@ int main(int argc, char* argv[])
     DiscoveryQos discoveryQos;
     // As soon as the discovery QoS is set on the proxy builder, discovery of suitable providers
     // is triggered. If the discovery process does not find matching providers within the
-    // arbitration timeout duration it will be terminated and you will get an arbitration exception.
+    // discovery timeout duration, discovery will be terminated and you will get a discovery exception.
     discoveryQos.setDiscoveryTimeout(40000);
     // Provider entries in the global capabilities directory are cached locally. Discovery will
     // consider entries in this cache valid if they are younger as the max age of cached
@@ -314,9 +314,9 @@ int main(int argc, char* argv[])
 
     public void run() {
         DiscoveryQos discoveryQos = new DiscoveryQos();
-        // As soon as the arbitration QoS is set on the proxy builder, discovery of suitable providers
+        // As soon as the discovery QoS is set on the proxy builder, discovery of suitable providers
         // is triggered. If the discovery process does not find matching providers within the
-        // arbitration timeout duration it will be terminated and you will get an arbitration exception.
+        // discovery timeout duration it will be terminated and you will get a discovery exception.
         discoveryQos.setDiscoveryTimeout(10000);
         // Provider entries in the global capabilities directory are cached locally. Discovery will
         // consider entries in this cache valid if they are younger as the max age of cached
@@ -324,7 +324,7 @@ int main(int argc, char* argv[])
         // for and arbitrating the "best" matching provider.
         // NOTE: Valid cache entries might prevent triggering a lookup in the global capabilities
         // directory. Therefore, not all providers registered with the global capabilities
-        // directory might be taken into account during arbitration.
+        // directory might be taken into account during discovery.
         discoveryQos.setCacheMaxAge(Long.MAX_VALUE);
         // The discovery process outputs a list of matching providers. The arbitration strategy then
         // chooses one or more of them to be used by the proxy.
@@ -397,7 +397,7 @@ int main(int argc, char* argv[])
             currentStation = radioProxy.getCurrentStation();
             LOG.info(PRINT_BORDER + "The current radio station after shuffling is: " + currentStation + PRINT_BORDER);
             ...
-        } catch (JoynArbitrationException e) {
+        } catch (DiscoveryException e) {
         } catch (JoynCommunicationException e) {
         }
     }
