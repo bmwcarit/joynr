@@ -50,12 +50,6 @@
 			<groupId>io.joynr.java.backend-services</groupId>
 			<artifactId>capabilities-directory</artifactId>
 			<version>${project.version}</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>jboss-logging</artifactId>
-					<groupId>org.jboss.logging</groupId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.backend-services</groupId>
