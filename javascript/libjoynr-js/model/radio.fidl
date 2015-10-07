@@ -75,6 +75,16 @@ interface Radio {
 		}
 	}
 
+	method operationWithEnumsAsInputAndOutput {
+		in {
+			Country enumInput
+			Country[] enumArrayInput
+		}
+		out {
+			Country enumOutput
+		}
+	}
+
 	/**
 	 * When this event is triggered, details about the radio
 	 * station will be included.

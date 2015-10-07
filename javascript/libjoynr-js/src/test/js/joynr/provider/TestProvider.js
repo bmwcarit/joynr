@@ -64,66 +64,69 @@ joynrTestRequire("joynr/provider/TestProvider", [
         };
 
         beforeEach(function() {
-            implementation = {
-                isOn : {
-                    value : false,
-                    get : function() {
-                        return this.value;
-                    },
-                    set : function(newValue) {
-                        this.value = newValue;
-                    }
-                },
-                numberOfStations : {
-                    value : 0,
-                    get : function() {
-                        return this.value;
-                    },
-                    set : function(newValue) {
-                        this.value = newValue;
-                    }
-                },
-                mixedSubscriptions : {
-                    value : "testvalue",
-                    get : function() {
-                        return this.value;
-                    },
-                    set : function(newValue) {
-                        this.value = newValue;
-                    }
-                },
-                enumAttribute : {
-                    value : Country.GERMANY,
-                    get : function() {
-                        return this.value;
-                    },
-                    set : function(newValue) {
-                        this.value = newValue;
-                    }
-                },
-                enumArrayAttribute : {
-                    value : [ Country.GERMANY
-                    ],
-                    get : function() {
-                        return this.value;
-                    },
-                    set : function(newValue) {
-                        this.value = newValue;
-                    }
-                },
-                attrProvidedImpl : {
-                    value : "testValue2",
-                    get : function() {
-                        return this.value;
-                    },
-                    set : function(newValue) {
-                        this.value = newValue;
-                    }
-                },
-                addFavoriteStation : jasmine.createSpy("addFavoriteStation"),
-                weakSignal : jasmine.createSpy("weakSignal"),
-                methodProvidedImpl : jasmine.createSpy("methodProvidedImpl")
-            };
+            implementation =
+                    {
+                        isOn : {
+                            value : false,
+                            get : function() {
+                                return this.value;
+                            },
+                            set : function(newValue) {
+                                this.value = newValue;
+                            }
+                        },
+                        numberOfStations : {
+                            value : 0,
+                            get : function() {
+                                return this.value;
+                            },
+                            set : function(newValue) {
+                                this.value = newValue;
+                            }
+                        },
+                        mixedSubscriptions : {
+                            value : "testvalue",
+                            get : function() {
+                                return this.value;
+                            },
+                            set : function(newValue) {
+                                this.value = newValue;
+                            }
+                        },
+                        enumAttribute : {
+                            value : Country.GERMANY,
+                            get : function() {
+                                return this.value;
+                            },
+                            set : function(newValue) {
+                                this.value = newValue;
+                            }
+                        },
+                        enumArrayAttribute : {
+                            value : [ Country.GERMANY
+                            ],
+                            get : function() {
+                                return this.value;
+                            },
+                            set : function(newValue) {
+                                this.value = newValue;
+                            }
+                        },
+                        attrProvidedImpl : {
+                            value : "testValue2",
+                            get : function() {
+                                return this.value;
+                            },
+                            set : function(newValue) {
+                                this.value = newValue;
+                            }
+                        },
+                        addFavoriteStation : jasmine.createSpy("addFavoriteStation"),
+                        weakSignal : jasmine.createSpy("weakSignal"),
+                        methodProvidedImpl : jasmine.createSpy("methodProvidedImpl"),
+                        operationWithEnumsAsInputAndOutput : jasmine
+                                .createSpy("operationWithEnumsAsInputAndOutput")
+                    };
         });
 
         it(
@@ -208,6 +211,9 @@ joynrTestRequire("joynr/provider/TestProvider", [
                     .toBeTruthy();
             expect(radioProvider.addFavoriteStation).toBeDefined();
             expect(radioProvider.addFavoriteStation instanceof ProviderOperation).toBeTruthy();
+            expect(radioProvider.operationWithEnumsAsInputAndOutput).toBeDefined();
+            expect(radioProvider.operationWithEnumsAsInputAndOutput instanceof ProviderOperation)
+                    .toBeTruthy();
             expect(radioProvider.weakSignal).toBeDefined();
             expect(radioProvider.weakSignal instanceof ProviderEvent).toBeTruthy();
             expect(radioProvider.interfaceName).toBeDefined();

@@ -537,6 +537,48 @@ joynrTestRequire(
                                             false);
                                 });
 
+                        it(
+                                "can call an operation with enum arguments and enum return type",
+                                function() {
+                                    testOperationArgumentsAndReturnValue(
+                                            radioProxy.operationWithEnumsAsInputAndOutput,
+                                            {
+                                                enumInput : Country.GERMANY,
+                                                enumArrayInput : []
+                                            },
+                                            Country.GERMANY);
+                                    testOperationArgumentsAndReturnValue(
+                                            radioProxy.operationWithEnumsAsInputAndOutput,
+                                            {
+                                                enumInput : Country.GERMANY,
+                                                enumArrayInput : [Country.AUSTRIA]
+                                            },
+                                            Country.AUSTRIA);
+                                    testOperationArgumentsAndReturnValue(
+                                            radioProxy.operationWithEnumsAsInputAndOutput,
+                                            {
+                                                enumInput : Country.GERMANY,
+                                                enumArrayInput : [Country.AUSTRIA, Country.GERMANY, Country.AUSTRALIA]
+                                            },
+                                            Country.AUSTRIA);
+                                    testOperationArgumentsAndReturnValue(
+                                            radioProxy.operationWithEnumsAsInputAndOutput,
+                                            {
+                                                enumInput : Country.GERMANY,
+                                                enumArrayInput : [Country.CANADA, Country.AUSTRIA, Country.ITALY]
+                                            },
+                                            Country.CANADA);
+                                    /* Check if comparison with string is possible as well
+                                    testOperationArgumentsAndReturnValue(
+                                            radioProxy.operationWithEnumsAsInputAndOutput,
+                                            {
+                                                enumInput : Country.GERMANY,
+                                                enumArrayInput : []
+                                            },
+                                            Country.GERMANY.name);
+                                    */
+                               });
+
                         it("can start a subscription and provides a subscription id", function() {
                             var spy;
 
