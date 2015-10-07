@@ -190,28 +190,6 @@ class JavaTypeUtil extends AbstractTypeUtil {
 		}
 	}
 
-	def String getObjectDataTypeForPlainType(String plainType) {
-		var type = plainType.toLowerCase
-		switch (plainType) {
-			case FBasicTypeId::BOOLEAN.getName: type = "Boolean"
-			case FBasicTypeId::INT8.getName: type = "Byte"
-			case FBasicTypeId::UINT8.getName: type = "Byte"
-			case FBasicTypeId::INT16.getName: type = "Integer"
-			case FBasicTypeId::UINT16.getName: type = "Integer"
-			case FBasicTypeId::INT32.getName: type = "Integer"
-			case FBasicTypeId::UINT32.getName: type = "Integer"
-			case FBasicTypeId::INT64.getName: type = "Long"
-			case FBasicTypeId::UINT64.getName: type = "Long"
-			case FBasicTypeId::FLOAT.getName: type = "Double"
-			case FBasicTypeId::DOUBLE.getName: type = "Double"
-			case FBasicTypeId::STRING.getName: type = "String"
-			case FBasicTypeId::BYTE_BUFFER.getName: type = "byte[]"
-			case "void": type = "Void"
-			default :  type = plainType
-		}
-
-		return type
-	}
 	override getTypeName(FType datatype) {
 		datatype.joynrName
 	}
