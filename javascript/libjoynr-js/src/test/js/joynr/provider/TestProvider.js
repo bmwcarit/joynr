@@ -21,6 +21,7 @@
 
 joynrTestRequire("joynr/provider/TestProvider", [
     "joynr/vehicle/RadioProvider",
+    "joynr/datatypes/exampleTypes/Country",
     "joynr/provider/ProviderAttributeNotifyReadWrite",
     "joynr/provider/ProviderAttributeNotifyRead",
     "joynr/provider/ProviderAttributeNotifyWrite",
@@ -34,6 +35,7 @@ joynrTestRequire("joynr/provider/TestProvider", [
     "joynr/util/uuid"
 ], function(
         RadioProvider,
+        Country,
         ProviderAttributeNotifyReadWrite,
         ProviderAttributeNotifyRead,
         ProviderAttributeNotifyWrite,
@@ -83,6 +85,25 @@ joynrTestRequire("joynr/provider/TestProvider", [
                 },
                 mixedSubscriptions : {
                     value : "testvalue",
+                    get : function() {
+                        return this.value;
+                    },
+                    set : function(newValue) {
+                        this.value = newValue;
+                    }
+                },
+                enumAttribute : {
+                    value : Country.GERMANY,
+                    get : function() {
+                        return this.value;
+                    },
+                    set : function(newValue) {
+                        this.value = newValue;
+                    }
+                },
+                enumArrayAttribute : {
+                    value : [ Country.GERMANY
+                    ],
                     get : function() {
                         return this.value;
                     },
@@ -179,6 +200,12 @@ joynrTestRequire("joynr/provider/TestProvider", [
             var radioProvider = new RadioProvider({}, dependencies);
             expect(radioProvider.isOn).toBeDefined();
             expect(radioProvider.isOn instanceof ProviderAttributeNotifyReadWrite).toBeTruthy();
+            expect(radioProvider.enumAttribute).toBeDefined();
+            expect(radioProvider.enumAttribute instanceof ProviderAttributeNotifyReadWrite)
+                    .toBeTruthy();
+            expect(radioProvider.enumArrayAttribute).toBeDefined();
+            expect(radioProvider.enumArrayAttribute instanceof ProviderAttributeNotifyReadWrite)
+                    .toBeTruthy();
             expect(radioProvider.addFavoriteStation).toBeDefined();
             expect(radioProvider.addFavoriteStation instanceof ProviderOperation).toBeTruthy();
             expect(radioProvider.weakSignal).toBeDefined();

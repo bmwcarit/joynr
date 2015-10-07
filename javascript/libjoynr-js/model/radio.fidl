@@ -17,7 +17,9 @@
  * #L%
  */
 
- package vehicle
+package vehicle
+
+import datatypes.exampleTypes.* from  "datatypes.fidl"
 
 typeCollection radiotypes {
 	struct RadioStation {
@@ -25,9 +27,8 @@ typeCollection radiotypes {
 	}
 }
 
-
 <** @description : "This is a description about the radio interface" **>
-interface Radio  {
+interface Radio {
 	/**
 	 * This attribute is subscribe-able and a getIsOn() and setIsOn(bool on)
 	 * is generated.
@@ -40,6 +41,10 @@ interface Radio  {
 
 	attribute Boolean attrProvidedImpl
 
+	attribute Country enumAttribute
+
+	attribute Country[] enumArrayAttribute
+
 	/**
 	 * An operation with return value and parameters.
 	 */
@@ -51,6 +56,7 @@ interface Radio  {
 			Boolean returnValue
 		}
 	}
+
 	method addFavoriteStation {
 		in {
 			radiotypes.RadioStation radioStation
@@ -79,4 +85,3 @@ interface Radio  {
 		}
 	}
 }
-

@@ -27,6 +27,7 @@ joynrTestRequire(
             "joynr",
             "joynr/vehicle/RadioProxy",
             "joynr/vehicle/radiotypes/RadioStation",
+            "joynr/datatypes/exampleTypes/Country",
             "integration/IntegrationUtils",
             "joynr/provisioning/provisioning_cc",
             "integration/provisioning_end2end_common"
@@ -36,6 +37,7 @@ joynrTestRequire(
                 joynr,
                 RadioProxy,
                 RadioStation,
+                Country,
                 IntegrationUtils,
                 provisioning,
                 provisioning_end2end) {
@@ -308,9 +310,9 @@ joynrTestRequire(
                             });
                         }
 
-                        it("gets the attribute", function() {
+                        var getAttribute = function(attributeName, expectedValue) {
                             var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
-                            console.log("gets the attribute with participantId: "
+                            console.log("gets the " + attributeName + "with participantId: "
                                 + radioProxy.proxyParticipantId);
 
                             waitsFor(function() {
@@ -318,27 +320,27 @@ joynrTestRequire(
                             }, "radioProxy is defined", provisioning.ttl);
 
                             runs(function() {
-                                radioProxy.isOn.get().then(function(value) {
-                                    expect(value).toBe(true);
+                                radioProxy[attributeName].get().then(function(value) {
+                                    expect(value).toEqual(expectedValue);
                                     onFulfilledSpy(value);
                                 }).catch(IntegrationUtils.outputPromiseError);
                             });
 
                             waitsFor(function() {
                                 return onFulfilledSpy.callCount > 0;
-                            }, "attribute is received", provisioning.ttl);
+                            }, "attribute " + attributeName + " is received", provisioning.ttl);
 
                             runs(function() {
                                 expect(onFulfilledSpy).toHaveBeenCalled();
                             });
-                        });
+                        };
 
-                        it("sets the attribute", function() {
+                        var setAttribute = function(attributeName, value) {
                             var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
 
                             runs(function() {
-                                radioProxy.isOn.set({
-                                    value : true
+                                radioProxy[attributeName].set({
+                                    value : value
                                 }).then(onFulfilledSpy).catch(IntegrationUtils.outputPromiseError);
                             });
 
@@ -349,6 +351,28 @@ joynrTestRequire(
                             runs(function() {
                                 expect(onFulfilledSpy).toHaveBeenCalled();
                             });
+                        };
+
+                        it("gets the attribute", function() {
+                            getAttribute("isOn", true);
+                        });
+
+                        it("gets the enumAttribute", function() {
+                            getAttribute("enumAttribute", Country.GERMANY);
+                        });
+
+                        it("sets the attribute", function() {
+                            setAttribute("isOn", true);
+                            getAttribute("isOn", true);
+                            setAttribute("isOn", false);
+                            getAttribute("isOn", false);
+                        });
+
+                        it("sets the enumAttribute", function() {
+                            setAttribute("enumAttribute", Country.AUSTRIA);
+                            getAttribute("enumAttribute", Country.AUSTRIA);
+                            setAttribute("enumAttribute", Country.AUSTRALIA);
+                            getAttribute("enumAttribute", Country.AUSTRALIA);
                         });
 
                         function setAndTestAttributeTester(attribute) {

@@ -1,5 +1,5 @@
 /*jslint es5: true */
-/*global Promise: true, WorkerUtils: true, importScripts: true, joynr: true, RadioProvider: true, domain: true, interfaceNameComm: true, providerParticipantIdComm: true, providerChannelIdComm: true, globalCapDirCapability: true, channelUrlDirCapability: true */
+/*global Promise: true, WorkerUtils: true, importScripts: true, joynr: true, Country: true, RadioProvider: true, domain: true, interfaceNameComm: true, providerParticipantIdComm: true, providerChannelIdComm: true, globalCapDirCapability: true, channelUrlDirCapability: true */
 
 /*
  * #%L
@@ -32,11 +32,14 @@ importScripts("../joynr/provisioning/provisioning_cc.js");
 importScripts("provisioning_end2end_common.js");
 importScripts("../joynr/vehicle/RadioProvider.js");
 importScripts("../joynr/vehicle/radiotypes/RadioStation.js");
+importScripts("../joynr/datatypes/exampleTypes/Country.js");
 importScripts("../../classes/lib/bluebird.js");
 
 var Promise = Promise.Promise;
 // attribute value for provider
 var isOn = true;
+var enumAttribute = Country.GERMANY;
+var enumArrayAttribute = [Country.GERMANY];
 var attrProvidedImpl;
 var numberOfStations = -1;
 var mixedSubscriptions = null;
@@ -129,6 +132,22 @@ function initializeTest(provisioningSuffix, providedDomain) {
             });
             radioProvider.isOn.registerSetter(function(value) {
                 isOn = value;
+            });
+
+            radioProvider.enumAttribute.registerGetter(function() {
+                return enumAttribute;
+            });
+
+            radioProvider.enumAttribute.registerSetter(function(value) {
+                enumAttribute = value;
+            });
+
+            radioProvider.enumArrayAttribute.registerGetter(function() {
+                return enumArrayAttribute;
+            });
+
+            radioProvider.enumArrayAttribute.registerSetter(function(value) {
+                enumArrayAttribute = value;
             });
 
             // register operation functions

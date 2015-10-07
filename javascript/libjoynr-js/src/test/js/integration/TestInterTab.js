@@ -38,6 +38,7 @@ joynrTestRequire(
             "joynr/vehicle/RadioProxy",
             "joynr/vehicle/RadioProvider",
             "joynr/vehicle/radiotypes/RadioStation",
+            "joynr/datatypes/exampleTypes/Country",
             "joynr/provisioning/provisioning_libjoynr",
             "integration/IntegrationUtils"
         ],
@@ -57,6 +58,7 @@ joynrTestRequire(
                 RadioProxy,
                 RadioProvider,
                 RadioStation,
+                Country,
                 provisioning,
                 IntegrationUtils) {
             describe(
@@ -298,6 +300,8 @@ joynrTestRequire(
                                      *   (due to missing provider)
                                      */
                                     var isOn = true;
+                                    var enumAttribute = Country.GERMANY;
+                                    var enumArrayAttribute = [Country.GERMANY];
                                     var attrProvidedImpl;
                                     var mixedSubscriptions = null;
                                     var numberOfStations = 0;
@@ -352,6 +356,22 @@ joynrTestRequire(
                                     });
                                     radioProvider.isOn.registerSetter(function(value) {
                                         isOn = value;
+                                    });
+
+                                    radioProvider.enumAttribute.registerGetter(function() {
+                                        return enumAttribute;
+                                    });
+
+                                    radioProvider.enumAttribute.registerSetter(function(value) {
+                                        enumAttribute = value;
+                                    });
+
+                                    radioProvider.enumArrayAttribute.registerGetter(function() {
+                                        return enumArrayAttribute;
+                                    });
+
+                                    radioProvider.enumArrayAttribute.registerSetter(function(value) {
+                                        enumArrayAttribute = value;
                                     });
 
                                     // register operation functions
