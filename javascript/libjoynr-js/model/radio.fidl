@@ -95,6 +95,15 @@ interface Radio {
 		}
 	}
 
+	method triggerBroadcasts {}
+
+	broadcast broadcastWithEnum {
+		out {
+			Country enumOutput
+			Country[] enumArrayOutput
+		}
+	}
+
 	/**
 	 * When this event is triggered, details about the radio
 	 * station will be included.

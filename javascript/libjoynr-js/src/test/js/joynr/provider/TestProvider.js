@@ -129,12 +129,14 @@ joynrTestRequire(
                                         addFavoriteStation : jasmine
                                                 .createSpy("addFavoriteStation"),
                                         weakSignal : jasmine.createSpy("weakSignal"),
+                                        triggerBroadcasts : jasmine.createSpy("triggerBroadcasts"),
                                         methodProvidedImpl : jasmine
                                                 .createSpy("methodProvidedImpl"),
                                         operationWithEnumsAsInputAndOutput : jasmine
                                                 .createSpy("operationWithEnumsAsInputAndOutput"),
                                         operationWithEnumsAsInputAndEnumArrayAsOutput : jasmine
-                                                .createSpy("operationWithEnumsAsInputAndEnumArrayAsOutput")
+                                                .createSpy("operationWithEnumsAsInputAndEnumArrayAsOutput"),
+                                        broadcastWithEnum : jasmine.createSpy("broadcastWithEnum")
                                     };
                         });
 
@@ -241,6 +243,9 @@ joynrTestRequire(
                                             .toBeTruthy();
                                     expect(radioProvider.weakSignal).toBeDefined();
                                     expect(radioProvider.weakSignal instanceof ProviderEvent)
+                                            .toBeTruthy();
+                                    expect(radioProvider.broadcastWithEnum).toBeDefined();
+                                    expect(radioProvider.broadcastWithEnum instanceof ProviderEvent)
                                             .toBeTruthy();
                                     expect(radioProvider.interfaceName).toBeDefined();
                                     expect(typeof radioProvider.interfaceName).toEqual("string");

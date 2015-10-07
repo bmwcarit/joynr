@@ -215,7 +215,7 @@ joynrTestRequire(
                             });
                         }
 
-                        function setupSubscriptionAndReturnSpy(attributeName, subscriptionQos){
+                        function setupSubscriptionAndReturnSpy(subscribingEntity, subscriptionQos){
                             var promise, spy = jasmine.createSpyObj("spy", [
                                                                             "onFulfilled",
                                                                             "onReceive",
@@ -223,7 +223,7 @@ joynrTestRequire(
                                                                         ]);
 
                             runs(function() {
-                                promise = radioProxy[attributeName].subscribe({
+                                promise = radioProxy[subscribingEntity].subscribe({
                                     subscriptionQos : subscriptionQos,
                                     onReceive : spy.onReceive,
                                     onError : spy.onError
@@ -413,6 +413,14 @@ joynrTestRequire(
                             setAttribute("enumAttribute", Country.ITALY);
                             expectPublication(spy, function(call) {
                                 expect(call.args[0]).toEqual(Country.ITALY);
+                            });
+                        });
+
+                        it("subscribe to broadcastWithEnum", function() {
+                            var spy = setupSubscriptionAndReturnSpy("broadcastWithEnum", subscriptionQosOnChange);
+                            callOperation("triggerBroadcasts", {});
+                            expectPublication(spy, function(call) {
+                               expect(call.args[0]).toEqual([Country.CANADA, [Country.GERMANY, Country.ITALY]]);
                             });
                         });
 

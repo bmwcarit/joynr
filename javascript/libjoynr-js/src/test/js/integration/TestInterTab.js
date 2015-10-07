@@ -409,6 +409,13 @@ joynrTestRequire(
                                         return opArgs.arg + "response";
                                     });
 
+                                    radioProvider.triggerBroadcasts.registerOperation(function() {
+                                        var outputParams = radioProvider.broadcastWithEnum.createBroadcastOutputParameters();
+                                        outputParams.setEnumOutput(Country.CANADA);
+                                        outputParams.setEnumArrayOutput([Country.GERMANY, Country.ITALY]);
+                                        return radioProvider.broadcastWithEnum.fire(outputParams);
+                                    });
+
                                     runs(function() {
                                         createDiscoveryProxy()
                                                 .then(
