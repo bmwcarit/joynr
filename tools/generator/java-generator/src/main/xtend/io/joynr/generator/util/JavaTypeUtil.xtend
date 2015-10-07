@@ -49,13 +49,7 @@ class JavaTypeUtil extends AbstractTypeUtil {
 	 *      parameter names and in parameter types.
 	 */
 	def createMethodSignatureFromInParameters(FMethod method) {
-		val nameStringBuilder = new StringBuilder(method.name);
-		for (FArgument inParam : method.inputParameters) {
-			nameStringBuilder.append(inParam.name.toFirstUpper);
-			val typeName = new StringBuilder(inParam.typeName.objectDataTypeForPlainType);
-			nameStringBuilder.append(typeName.toString());
-		}
-		return nameStringBuilder.toString;
+		createParameterSignatureForMethod(method.name, method.inputParameters);
 	}
 
 	/**
@@ -64,10 +58,14 @@ class JavaTypeUtil extends AbstractTypeUtil {
 	 *      parameter names and out parameter types.
 	 */
 	def createMethodSignatureFromOutParameters(FMethod method) {
-		val nameStringBuilder = new StringBuilder(method.name);
-		for (FArgument outParam : method.outputParameters) {
-			nameStringBuilder.append(outParam.name.toFirstUpper);
-			val typeName = new StringBuilder(outParam.typeName.objectDataTypeForPlainType);
+		createParameterSignatureForMethod(method.name, method.outputParameters);
+	}
+
+	private def createParameterSignatureForMethod(String methodName, Iterable<FArgument> arguments) {
+		val nameStringBuilder = new StringBuilder(methodName);
+		for (FArgument argument : arguments) {
+			nameStringBuilder.append(argument.name.toFirstUpper);
+			val typeName = new StringBuilder(argument.typeName.objectDataTypeForPlainType);
 			if (typeName.toString().contains("List")) {
 				typeName.deleteCharAt(4);
 				typeName.deleteCharAt(typeName.length-1);
