@@ -22,6 +22,7 @@ import com.google.inject.Singleton
 import java.util.HashMap
 import java.util.HashSet
 import org.franca.core.franca.FArgument
+import org.franca.core.franca.FInterface
 import org.franca.core.franca.FMethod
 
 @Singleton
@@ -29,6 +30,9 @@ public class MethodUtil {
 
 	@Inject
 	private extension TypeUtil;
+
+	@Inject
+	private extension NamingUtil;
 
 	def Iterable<FArgument> getOutputParameters(FMethod method) {
 		if (method == null || method.outArgs.size() == 0){
@@ -81,4 +85,36 @@ public class MethodUtil {
 	def boolean hasErrorEnum(FMethod method) {
 		return (method.errors != null) || (method.errorEnum != null);
 	}
+
+	/**
+	 * @param method the method for which the signature shall be created
+	 * @return a method signature that is unique in terms of method name, in
+	 *      parameter names and in parameter types.
+	 */
+	def createMethodSignatureFromInParameters(FMethod method) {
+		createParameterSignatureForMethod(method.name, method.inArgs.filterNull);
+	}
+
+	/**
+	 * @param method the method for which the signature shall be created
+	 * @return a method signature that is unique in terms of method name, out
+	 *      parameter names and out parameter types.
+	 */
+	def createMethodSignatureFromOutParameters(FMethod method) {
+		createParameterSignatureForMethod(method.name, method.outArgs.filterNull);
+	}
+
+	private def createParameterSignatureForMethod(String methodName, Iterable<FArgument> arguments) {
+		val nameStringBuilder = new StringBuilder(methodName);
+		for (FArgument argument : arguments) {
+			nameStringBuilder.append(argument.name.toFirstUpper);
+			var typeName = argument.type.joynrName;
+			if (argument.array) {
+				typeName = "List"+typeName
+			}
+			nameStringBuilder.append(typeName.objectDataTypeForPlainType);
+		}
+		return nameStringBuilder.toString;
+	}
+
 }

@@ -328,7 +328,44 @@ public class InterfaceUtil {
 		return hasMethodWithImplicitErrorEnum(interfaceType);
 	}
 
+	def boolean hasMethodWithArguments(FInterface interfaceType){
+		for(method: interfaceType.methods){
+			if (getInputParameters(method).size>0){
+				return true
+			}
+		}
+		return false
+	}
+
 	def getAllPrimitiveTypes(FInterface serviceInterface) {
 		serviceInterface.allRequiredTypes.filter[type | type instanceof FBasicTypeId].map[type | type as FBasicTypeId]
+	}
+
+	def methodToErrorEnumName(FInterface serviceInterface) {
+		var HashMap<FMethod, String> methodToErrorEnumName = new HashMap<FMethod, String>()
+		var uniqueMethodSignatureToErrorEnumName = new HashMap<String, String>();
+		var methodNameToCount = overloadedMethodCounts(getMethods(serviceInterface));
+		var methodNameToIndex = new HashMap<String, Integer>();
+
+		for (FMethod method : getMethods(serviceInterface)) {
+			if (methodNameToCount.get(method.name) == 1) {
+				// method not overloaded, so no index needed
+				methodToErrorEnumName.put(method, method.name.toFirstUpper + "ErrorEnum");
+			} else {
+				// initialize index if not existent
+				if (!methodNameToIndex.containsKey(method.name)) {
+					methodNameToIndex.put(method.name, 0);
+				}
+				val methodSignature = createMethodSignatureFromInParameters(method);
+				if (!uniqueMethodSignatureToErrorEnumName.containsKey(methodSignature)) {
+					var Integer index = methodNameToIndex.get(method.name);
+					index++;
+					methodNameToIndex.put(method.name, index);
+					uniqueMethodSignatureToErrorEnumName.put(methodSignature, method.name.toFirstUpper + index);
+				}
+				methodToErrorEnumName.put(method, uniqueMethodSignatureToErrorEnumName.get(methodSignature) + "ErrorEnum");
+			}
+		}
+		return methodToErrorEnumName
 	}
 }

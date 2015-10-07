@@ -29,6 +29,7 @@ import org.franca.core.franca.FMethod
 import org.franca.core.franca.FModel
 import org.franca.core.franca.FModelElement
 import org.franca.core.franca.FType
+import org.franca.core.franca.FTypeRef
 import org.franca.core.franca.FTypedElement
 
 @Singleton
@@ -82,7 +83,15 @@ class NamingUtil {
 		argument.name
 	}
 
-	def String joynrName(Object type) {
+	def joynrName(FTypeRef typeRef) {
+		if (typeRef.derived != null) {
+			typeRef.derived.joynrName
+		}
+		else {
+			typeRef.predefined.joynrName
+		}
+	}
+	def joynrName(Object type) {
 		if (type instanceof FType){
 			type.joynrName
 		}
