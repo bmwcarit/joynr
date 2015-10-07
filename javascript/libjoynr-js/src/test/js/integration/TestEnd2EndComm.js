@@ -208,16 +208,15 @@ joynrTestRequire(
                             });
                         }
 
-                        function publishesValue(subscriptionQos) {
-                            var promise, spy;
+                        function setupSubscriptionAndReturnSpy(attributeName, subscriptionQos){
+                            var promise, spy = jasmine.createSpyObj("spy", [
+                                                                            "onFulfilled",
+                                                                            "publication",
+                                                                            "publicationMissed"
+                                                                        ]);
 
                             runs(function() {
-                                spy = jasmine.createSpyObj("spy", [
-                                    "onFulfilled",
-                                    "publication",
-                                    "publicationMissed"
-                                ]);
-                                promise = radioProxy.numberOfStations.subscribe({
+                                promise = radioProxy[attributeName].subscribe({
                                     subscriptionQos : subscriptionQos,
                                     onReceive : spy.publication,
                                     onError : spy.publicationMissed
@@ -228,10 +227,9 @@ joynrTestRequire(
                                 return spy.onFulfilled.callCount > 0;
                             }, "subscription to be registered", provisioning.ttl);
 
-                            runs(function() {
-                                expect(spy.onFulfilled).toHaveBeenCalled();
-                            });
-
+                            return spy;
+                        }
+                        function expectPublication(spy, expectationFct){
                             waitsFor(
                                     function() {
                                         return (spy.publication.calls.length > 0 || spy.publicationMissed.calls.length > 0);
@@ -241,9 +239,15 @@ joynrTestRequire(
 
                             runs(function() {
                                 expect(spy.publication).toHaveBeenCalled();
-                                expect(typeof spy.publication.mostRecentCall.args[0] === "number")
-                                        .toBeTruthy();
                                 expect(spy.publicationMissed).not.toHaveBeenCalled();
+                                expectationFct(spy.publication.mostRecentCall);
+                                spy.publication.reset();
+                            });
+                        }
+                        function publishesValue(subscriptionQos) {
+                            var spy = setupSubscriptionAndReturnSpy("numberOfStations", subscriptionQos);
+                            expectPublication(spy, function(publicationCallback) {
+                                expect(typeof publicationCallback.args[0] === "number").toBeTruthy();
                             });
                         }
 
