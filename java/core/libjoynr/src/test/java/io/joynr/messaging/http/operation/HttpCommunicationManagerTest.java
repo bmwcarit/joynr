@@ -56,7 +56,7 @@ import com.jayway.restassured.specification.RequestSpecification;
 
 /**
  * HttpCommunicationManager tested by sending a request to the local host and checking the received message.
- * 
+ *
  */
 
 @RunWith(MockitoJUnitRunner.class)
@@ -85,7 +85,13 @@ public class HttpCommunicationManagerTest {
 
     @AfterClass
     public static void stopBounceProxy() throws Exception {
-        server.stop();
+        try {
+            server.stop();
+        } catch (Exception e) {
+            // do nothing as we don't want tests to fail only because
+            // stopping of the server did not work
+        }
+        ;
     }
 
     @Mock
@@ -167,7 +173,7 @@ public class HttpCommunicationManagerTest {
 
     /**
      * initialize a RequestSpecification with the given timeout
-     * 
+     *
      * @param timeout_ms
      *            : a SocketTimeoutException will be thrown if no response is received in this many milliseconds
      * @return

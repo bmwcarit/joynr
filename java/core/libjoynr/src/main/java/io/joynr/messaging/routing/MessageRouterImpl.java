@@ -50,6 +50,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 
 public class MessageRouterImpl extends RoutingAbstractProvider implements MessageRouter {
 
+    private static final int UUID_TAIL = 32;
     private static final Logger logger = LoggerFactory.getLogger(MessageRouterImpl.class);
     private final RoutingTable routingTable;
     private final MessageSender messageSender;
@@ -108,6 +109,7 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
         return new Promise<ResolveNextHopDeferred>(deferred);
     }
 
+    @Override
     public void route(JoynrMessage message) throws JoynrSendBufferFullException, JoynrMessageNotSentException,
                                            JsonGenerationException, JsonMappingException, IOException {
         String toParticipantId = message.getTo();
@@ -125,17 +127,24 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
                                                                              JsonGenerationException,
                                                                              JsonMappingException, IOException {
 
+        String messageId = message.getId().substring(UUID_TAIL);
         if (address instanceof ChannelAddress) {
-            logger.info("SEND messageId: {} type: {} from: {} to: {} header: {}",
-                        new String[]{ message.getId(), message.getType(),
+            logger.info(">>>>> SEND  ID:{}:{} from: {} to: {} header: {}",
+                        new String[]{ messageId, message.getType(),
                                 message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
                                 message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID),
                                 message.getHeader().toString() });
-            logger.debug("\r\n>>>>>>>>>>>>>>>>\r\n:{}", message.toLogMessage());
+            logger.debug(">>>>> body  ID:{}:{}: {}", new String[]{ messageId, message.getType(), message.getPayload() });
 
             String destinationChannelId = ((ChannelAddress) address).getChannelId();
             messageSender.sendMessage(destinationChannelId, message);
         } else if (address instanceof InProcessAddress) {
+            logger.info("+++++ ROUTE ID:{}:{} from: {} to: {} header: {}",
+                        new String[]{ messageId, message.getType(),
+                                message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
+                                message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID),
+                                message.getHeader().toString() });
+            logger.debug("+++++ body  ID:{}:{}: {}", new String[]{ messageId, message.getType(), message.getPayload() });
             /*
              * This creation should be done by a factory, avoiding that the MessageRouter is aware of the
              * different address types

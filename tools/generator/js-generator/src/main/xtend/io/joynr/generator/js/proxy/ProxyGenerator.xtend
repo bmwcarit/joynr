@@ -81,7 +81,7 @@ class ProxyGenerator {
 	def generate(FInterface fInterface, Iterable<FType> types)'''
 	«val generationDate = (new Date()).toString»
 	/**
-	 * PLEASE NOTE. THIS IS A GENERATED FILE!
+	 * PLEASE NOTE: THIS IS A GENERATED FILE!
 	 * Generation date: «generationDate»
 	 *
 	 * «fInterface.proxyName», generated from the corresponding interface description.
@@ -92,98 +92,10 @@ class ProxyGenerator {
 		 * @constructor
 		 *
 		 * @classdesc
-		 * PLEASE NOTE. THIS IS A GENERATED FILE!
 		 * <br/>Generation date: «generationDate»
 		 * <br/><br/>
 		 * «fInterface.proxyName», generated from the corresponding interface description.
 		 «appendJSDocSummaryAndWriteSeeAndDescription(fInterface, "* ")»
-		 *
-		 * @desc
-		 * <pre>
-		 * // namespace flattening
-		 * var ProxyBuilder = joynr.proxy.ProxyBuilder;
-		 * var DiscoveryQos = joynr.types.DiscoveryQos;
-		 * var ArbitrationStrategyCollection = joynr.types.ArbitrationStrategyCollection;
-		 * var DiscoveryScope = joynr.capabilities.discovery.DiscoveryScope;
-		 * var MessagingQos = joynr.messaging.MessagingQos;
-		 *
-		 * // instantiating proxy
-		 * var settings = {domain: "myDomain"}; // minimal version
-		 * var settings = {domain: "myDomain",
-		 *                 discoveryQos: new DiscoveryQos({discoveryTimeout: 30000,
-		 *                                                 retryInterval: 1000,
-		 *                                                 arbitrationStrategy: ArbitrationStrategyCollection.HighestPriority,
-		 *                                                 cacheMaxAge: 0,
-		 *                                                 discoveryScope: DiscoveryScope.LOCAL_AND_GLOBAL,
-		 *                                                 additionalParameters: {}}),
-		 *                 messagingQos: new MessagingQos({ttl: 40000})}; // full version
-		 * ProxyBuilder.build(«fInterface.proxyName», settings).then(function(«fInterface.proxyName.toFirstLower») {
-		 *	useProxySomehow(«fInterface.proxyName.toFirstLower»);
-		 * });
-		 *
-		«FOR attribute : getAttributes(fInterface)»
-			«val attributeName = attribute.joynrName»
-			 *
-			 * +----------------+
-			 * | Attribute «attributeName» |
-			 * +----------------+
-			 *
-			 *  // get «attributeName» attribute
-			 *	«fInterface.proxyName.toFirstLower».«attributeName».get().then(function(value) { processValue(value); });
-			 *
-			 *  // set isOn attribute
-			 *	«fInterface.proxyName.toFirstLower».«attributeName».set({"value": value}).then(function() { processDone(); });
-			 *
-			 *  // subscribe to «attributeName» attribute
-			 *	var subscriptionToken;
-			 *	«fInterface.proxyName.toFirstLower».«attributeName».subscribe({
-			 *		subscriptionQos: new OnChangeSubscriptionQos(),
-			 *		publication: function(value) { processValue(value); },
-			 *		publicationMissed: function() { publicationMissed(); }
-			 *	})then(function(token) {
-			 *		subscriptionToken = token;
-			 *	});
-			 *
-			 *  // unsubscribe from «attributeName» attribute
-			 *	«fInterface.proxyName.toFirstLower».«attributeName».unsubscribe({'subscriptionToken': subscriptionToken}).then(function(){ processUnsubscribed(); });
-			 *
-		«ENDFOR»
-		 *
-		«FOR method: getMethods(fInterface)»
-			«val methodName = method.joynrName»
-			 *
-			 * +-------------------------------+
-			 * | Operation «methodName» |
-			 * +-------------------------------+
-			 *
-			 *	«fInterface.proxyName.toFirstLower».«methodName»(«getExemplaryInstantiationOfInputParameter(method)»).then(function(returnValue) { processReturnValue(returnValue); });
-		«ENDFOR»
-		«FOR event: getEvents(fInterface)»
-			«val eventName = event.joynrName»
-			 *
-			 * +------------------+
-			 * | Event «eventName» |
-			 * +------------------+
-			 *
-			 *  // subscribe to «eventName» event
-			 *	var subscriptionToken;
-			 *	«fInterface.proxyName.toFirstLower».«eventName».subscribe({
-			 *		subscriptionQos: new OnChangeSubscriptionQoS(),
-			 *		receive: function(value) { processValue(value); }
-			 *	}).then(function(token) {
-			 *		subscriptionToken = token;
-			 *	});
-			 *
-			 *  // unsubscribe from «eventName» event
-			 *	«fInterface.proxyName.toFirstLower».«eventName».unsubscribe({
-			 *		subscriptionToken: subscriptionToken
-			 *	}).then(function(){
-			 *		processUnsubscribed();
-			 *  });
-		«ENDFOR»
-		 *
-		 * </pre>
-		 *
 		 *
 		 * @param {object} settings the settings object for this function call
 		 * @param {String} settings.domain the domain name //TODO: check do we need this?

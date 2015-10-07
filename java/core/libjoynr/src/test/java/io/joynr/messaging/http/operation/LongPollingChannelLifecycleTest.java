@@ -119,6 +119,12 @@ public class LongPollingChannelLifecycleTest {
 
     @After
     public void tearDown() throws Exception {
-        server.stop();
+        try {
+            server.stop();
+        } catch (Exception e) {
+            // do nothing as we don't want tests to fail only because
+            // stopping of the server did not work
+        }
+        ;
     }
 }

@@ -42,16 +42,16 @@ import org.slf4j.LoggerFactory;
  * their requests to either the bounceproxy or the bounceproxy controller,
  * depending on the request path.<br>
  * For more detailed information on how requests are dispatched, see {@link TestRequestDispatcher}.
- * 
+ *
  * To be able to use built-in forwarding mechanisms, all so-called server
  * instances run on the same Jetty server. Dispatcher and each server instance
  * are represented by their own context (e.g. /dispatcher, /instance0,
  * /instance1, ...). In each "instance" context, both a bounceproxy and a
  * bounceproxy controller are deployed, i.e. /instance0/controller and
  * /instance0/bounceproxy.
- * 
+ *
  * @author christina.strobel
- * 
+ *
  */
 public class ClusteredBounceProxyWithDispatcher implements BounceProxyServerSetup {
 
@@ -105,7 +105,12 @@ public class ClusteredBounceProxyWithDispatcher implements BounceProxyServerSetu
         }
 
         Thread.sleep(1000l);
-        server.stop();
+        try {
+            server.stop();
+        } catch (Exception e) {
+            // do nothing as we don't want tests to fail only because
+            // stopping of the server did not work
+        }
     }
 
     @Override

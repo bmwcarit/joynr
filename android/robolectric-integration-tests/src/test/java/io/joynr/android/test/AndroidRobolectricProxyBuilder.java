@@ -32,9 +32,9 @@ import android.util.Log;
 public class AndroidRobolectricProxyBuilder<T extends JoynrInterface> extends AndroidProxyBuilder<T> {
 
     public AndroidRobolectricProxyBuilder(InitRuntimeTask runtimeInitTask,
-                               String providerDomain,
-                               Class<T> proxyInterface,
-                               UILogger uiLogger) {
+                                          String providerDomain,
+                                          Class<T> proxyInterface,
+                                          UILogger uiLogger) {
         super(runtimeInitTask, providerDomain, proxyInterface, uiLogger);
     }
 

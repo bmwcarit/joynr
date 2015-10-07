@@ -65,7 +65,7 @@ The following base imports are required for a Java Consumer application:
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
-import io.joynr.exceptions.JoynrArbitrationException;
+import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
@@ -140,7 +140,7 @@ public static void main(String[] args) throws IOException {
 
 The class ```DiscoveryQos``` configures how the search for a provider will be handled. It has the following members:
 
-* **discoveryTimeout**  Timeout for discovery process (milliseconds), afterwards triggers JoynrArbitrationException
+* **discoveryTimeout**  Timeout for discovery process (milliseconds), afterwards triggers DiscoveryException
 * **cacheMaxAge** Defines the maximum allowed age of cached entries (milliseconds), only younger entries will be considered. If no suitable providers are found, then depending on the discoveryScope, a remote global lookup may be triggered.
 * **arbitrationStrategy** The arbitration strategy (see below)
 * **customParameters** special parameters, that must match, e.g. keyword (see below)
@@ -160,7 +160,7 @@ Whenever global entries are involved, they are first searched in the local cache
 
 The enumeration ```ArbitrationStrategy``` defines special options to select a Provider:
 
-* **NotSet** (not allowed in the app, otherwise arbitration will throw JoynrArbitrationException)
+* **NotSet** (not allowed in the app, otherwise arbitration will throw DiscoveryException)
 * **FixedChannel** (also see FixedParticipantArbitrator)
 * **Keyword** Only entries that have a matching keyword will be considered
 * **HighestPriority** Entries will be considered according to priority
@@ -217,7 +217,7 @@ Inside the ```run()``` method, the consumer application instance must create one
 * **subscribe** or **unsubscribe** to its **attributes** or **update** a subscription
 * **subscribe** or **unsubscribe** to its **broadcasts** or **update** a subscription
 
-In case no suitable provider can be found during discovery, a ```JoynrArbitrationException``` is thrown.
+In case no suitable provider can be found during discovery, a ```DiscoveryException``` is thrown.
 In case of communication errors, a ```JoynrCommunicationException``` is thrown.
 
 ```java
@@ -235,7 +235,7 @@ public void run() {
             build();
         // call methods, subscribe to broadcasts etc.
         // enter some event loop
-    } catch (JoynrArbitrationException e) {
+    } catch (DiscoveryException e) {
         // no provider found
     } catch (JoynrCommunicationException e) {
         // could not send message
@@ -259,7 +259,7 @@ public void run() {
     try {
         <ReturnType> retval;
         retval = <interface>Proxy.<method>([inputVal1, ..., inputValN]);
-    } catch (JoynrArbitrationException) {
+    } catch (DiscoveryException) {
         // error handling
     }
 }
@@ -283,7 +283,7 @@ public void run() {
         //   retval.<returnParameter1>
         //   ...
         //   retval.<returnParameterN>
-    } catch (JoynrArbitrationException) {
+    } catch (DiscoveryException) {
         // error handling
     }
 }
@@ -449,7 +449,7 @@ public void run() {
             },
             qos
         );
-    } catch (JoynrArbitrationException e) {
+    } catch (DiscoveryException e) {
         // handle error
     } catch (JoynrCommunicationExceptin e) {
         // handle error
@@ -495,7 +495,7 @@ public void run() {
         // subscriptionId must have been assigned by previous call
         ...
         <interface>Proxy.unsubscribeFrom<Attribute>(subscriptionId);
-    } catch (JoynrArbitrationException e) {
+    } catch (DiscoveryException e) {
         // handle error
     } catch (JoynrCommunicationExceptin e) {
         // handle error
@@ -546,7 +546,7 @@ public void run() {
             qos
         );
         ...
-    } catch (JoynrArbitrationException e) {
+    } catch (DiscoveryException e) {
         // handle error
     } catch (JoynrCommunicationExceptin e) {
         // handle error
@@ -628,7 +628,7 @@ public void run() {
             filter
         );
         ...
-    } catch (JoynrArbitrationException e) {
+    } catch (DiscoveryException e) {
         // handle error
     } catch (JoynrCommunicationExceptin e) {
         // handle error
@@ -673,7 +673,7 @@ public void run() {
     try {
         <interface>Proxy.unsubscribeFrom<Broadcast>Broadcast(subscriptionId);
         ...
-    } catch (JoynrArbitrationException e) {
+    } catch (DiscoveryException e) {
         // handle error
     } catch (JoynrCommunicationExceptin e) {
         // handle error

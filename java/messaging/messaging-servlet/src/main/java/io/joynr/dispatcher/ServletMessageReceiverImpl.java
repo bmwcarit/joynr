@@ -156,7 +156,9 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
     public void receive(JoynrMessage message) {
         if (message != null) {
 
-            logger.info("\r\n########### CHANNEL: " + channelId + "\r\nARRIVED:\r\n{}", message);
+            logger.debug("\r\n<<<<<<<< ARRIVED ON CHANNEL: " + channelId + " messageId: {}\r\n{}",
+                         message.getId(),
+                         message);
             messageListener.messageArrived(message);
         } else {
             logger.warn("ServletMessageReceiver CHANNEL: {} message was null", channelId);

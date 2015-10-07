@@ -101,8 +101,7 @@ joynr.load(provisioning, function(error, loadedJoynr) {
 The ```DiscoveryQos``` configures how the search for a provider will be handled. It has the
 following members:
 
-* **discoveryTimeout**  Timeout for the discovery process (milliseconds). A timeout triggers a
-JoynrArbitrationException
+* **discoveryTimeout**  Timeout for the discovery process (milliseconds). A timeout triggers an exception.
 * **cacheMaxAge** Defines the maximum allowed age of cached entries (milliseconds); only younger
 entries will be considered. If no suitable providers are found, depending on the discoveryScope,
 a remote global lookup may be triggered.

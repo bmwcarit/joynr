@@ -194,7 +194,12 @@ public class MonitoringServiceClientTest {
     @Test
     public void testNotifyStartupWhenServerIsUnreachable() throws Exception {
 
-        server.stop();
+        try {
+            server.stop();
+        } catch (Exception e) {
+            // do nothing as we don't want tests to fail only because
+            // stopping of the server did not work
+        }
         server.awaitTermination(3000);
 
         reporter.startStartupReporting();
@@ -250,7 +255,12 @@ public class MonitoringServiceClientTest {
     @Test
     public void testNotifyShutdownWhenServerIsUnreachable() throws Exception {
 
-        server.stop();
+        try {
+            server.stop();
+        } catch (Exception e) {
+            // do nothing as we don't want tests to fail only because
+            // stopping of the server did not work
+        }
         server.awaitTermination(3000);
 
         // configuration: maximum time of 1 second, so at tick 1000 it should
@@ -297,7 +307,7 @@ public class MonitoringServiceClientTest {
      * Sets the HTTP response returned by the
      * {@link HttpRequestHandler#handle(HttpRequest, HttpResponse, HttpContext)}
      * method.
-     * 
+     *
      * @param httpStatus
      *            the desired HTTP status to be returned as HTTP response
      * @throws HttpException
@@ -318,9 +328,9 @@ public class MonitoringServiceClientTest {
      * startup request. It will only check if query and header parameters are
      * sent correctly. A full check for the whole header would not be very fault
      * tolerant as it includes timestamps etc.
-     * 
+     *
      * @author christina.strobel
-     * 
+     *
      */
     class IsAnyStartupHttpRequest extends ArgumentMatcher<HttpRequest> {
 
@@ -334,6 +344,7 @@ public class MonitoringServiceClientTest {
             this.url4bpc = url4bpc;
         }
 
+        @Override
         public boolean matches(Object arg) {
 
             try {
@@ -383,9 +394,9 @@ public class MonitoringServiceClientTest {
      * shutdown request. It will only check if query and header parameters are
      * sent correctly. A full check for the whole header would not be very fault
      * tolerant as it includes timestamps etc.
-     * 
+     *
      * @author christina.strobel
-     * 
+     *
      */
     class IsAnyShutdownHttpRequest extends ArgumentMatcher<HttpRequest> {
 
@@ -395,6 +406,7 @@ public class MonitoringServiceClientTest {
             this.bpId = bpId;
         }
 
+        @Override
         public boolean matches(Object arg) {
 
             try {

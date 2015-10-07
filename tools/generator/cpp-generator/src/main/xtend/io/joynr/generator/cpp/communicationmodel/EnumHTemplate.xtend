@@ -119,6 +119,10 @@ public:
 	}
 };
 
+inline uint qHash(«type.typeName» key, uint seed = 0) {
+	return uint(key) ^ seed;
+}
+
 «getNamespaceEnder(type)»
 
 namespace joynr {
@@ -141,10 +145,6 @@ Q_DECLARE_METATYPE(«type.typeNameOfContainingClass.replace("::","__")»)
 typedef «type.typeName» «type.typeName.replace("::","__")»;
 Q_DECLARE_METATYPE(«type.typeName.replace("::","__")»)
 Q_DECLARE_METATYPE(QList<«type.typeName.replace("::","__")»>)
-
-inline uint qHash(«type.typeName» key, uint seed = 0) {
-	return uint(key) ^ seed;
-}
 
 #endif // «headerGuard»
 '''
