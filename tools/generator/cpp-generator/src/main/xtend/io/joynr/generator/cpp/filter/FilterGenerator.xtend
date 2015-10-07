@@ -19,6 +19,8 @@ package io.joynr.generator.cpp.filter
 
 import com.google.inject.Inject
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.templates.util.BroadcastUtil
+import io.joynr.generator.templates.util.NamingUtil
 import java.io.File
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FBroadcast
@@ -28,6 +30,12 @@ class FilterGenerator {
 
 	@Inject
 	extension JoynrCppGeneratorExtensions
+
+	@Inject
+	extension NamingUtil
+
+	@Inject
+	extension BroadcastUtil
 
 	@Inject
 	FilterParameterTemplate filterParameterTemplate;

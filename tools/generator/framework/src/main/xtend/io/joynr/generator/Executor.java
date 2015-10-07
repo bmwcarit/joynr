@@ -21,9 +21,9 @@ package io.joynr.generator;
 
 import static io.joynr.generator.util.FileSystemAccessUtil.createFileSystemAccess;
 import io.joynr.generator.loading.ModelLoader;
+import io.joynr.generator.templates.util.JoynrGeneratorExtensions;
 import io.joynr.generator.util.FrancaIDLFrameworkStandaloneSetup;
 import io.joynr.generator.util.InvocationArguments;
-import io.joynr.generator.util.JoynrGeneratorExtensions;
 import io.joynr.generator.util.TemplatesLoader;
 
 import java.util.logging.Logger;

@@ -18,6 +18,7 @@ package io.joynr.generator.provider
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.templates.util.NamingUtil
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import java.io.File
 import org.eclipse.xtext.generator.IFileSystemAccess
@@ -27,6 +28,9 @@ class ProviderGenerator {
 
 	@Inject
 	extension JoynrJavaGeneratorExtensions
+
+	@Inject
+	extension NamingUtil
 
 	@Inject
 	InterfaceProviderTemplate interfaceProvider

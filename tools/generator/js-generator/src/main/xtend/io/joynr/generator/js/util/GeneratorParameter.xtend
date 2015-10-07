@@ -21,6 +21,7 @@ package io.joynr.generator.js.util
 import com.google.common.collect.Sets
 import com.google.inject.Inject
 import com.google.inject.Singleton
+import io.joynr.generator.templates.util.NamingUtil
 import java.util.Map
 import org.franca.core.franca.FModelElement
 import org.franca.core.franca.FType
@@ -28,8 +29,8 @@ import org.franca.core.franca.FType
 @Singleton
 class GeneratorParameter {
 
-	@Inject
-	extension JoynrJSGeneratorExtensions
+	@Inject extension JoynrJSGeneratorExtensions
+	@Inject private extension NamingUtil
 
 	private Map<String, String> parameters;
 

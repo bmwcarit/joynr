@@ -20,18 +20,15 @@ package io.joynr.generator.js.communicationmodel
 
 import com.google.inject.Inject
 import io.joynr.generator.js.util.GeneratorParameter
-import io.joynr.generator.js.util.JoynrJSGeneratorExtensions
-import org.franca.core.franca.FEnumerationType
 import io.joynr.generator.js.util.JSTypeUtil
+import io.joynr.generator.templates.util.NamingUtil
 import java.util.Date
+import org.franca.core.franca.FEnumerationType
 
 class EnumTypeGenerator {
 
-	@Inject
-	extension JoynrJSGeneratorExtensions
-
-	@Inject
-	extension JSTypeUtil
+	@Inject extension JSTypeUtil
+	@Inject private extension NamingUtil
 
 	@Inject
 	extension GeneratorParameter

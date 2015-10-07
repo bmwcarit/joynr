@@ -17,27 +17,23 @@ package io.joynr.generator.js.communicationmodel
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import com.google.inject.Inject
-import io.joynr.generator.js.util.JoynrJSGeneratorExtensions
-import java.util.Set
-import org.franca.core.franca.FCompoundType
-import org.franca.core.franca.FStructType
-import org.franca.core.franca.FUnionType
-import java.util.Date
-import org.franca.core.franca.FField
 import io.joynr.generator.js.util.GeneratorParameter
 import io.joynr.generator.js.util.JSTypeUtil
+import io.joynr.generator.templates.util.NamingUtil
+import java.util.Date
+import java.util.Set
+import org.franca.core.franca.FCompoundType
+import org.franca.core.franca.FField
+import org.franca.core.franca.FStructType
+import org.franca.core.franca.FUnionType
 
 class CompoundTypeGenerator {
 
-	@Inject
-	extension JoynrJSGeneratorExtensions
-
-	@Inject
-	extension JSTypeUtil
-
-	@Inject
-	extension GeneratorParameter
+	@Inject extension JSTypeUtil
+	@Inject extension GeneratorParameter
+	@Inject private extension NamingUtil
 
 	def generateCompoundType(FCompoundType compoundType, Set<Object> generatedTypes) '''
 		«IF !generatedTypes.contains(compoundType)»

@@ -23,7 +23,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import io.joynr.generator.loading.ModelLoader;
-import io.joynr.generator.util.JoynrGeneratorExtensions;
+import io.joynr.generator.templates.util.JoynrGeneratorExtensions;
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions;
 
 import java.util.Iterator;

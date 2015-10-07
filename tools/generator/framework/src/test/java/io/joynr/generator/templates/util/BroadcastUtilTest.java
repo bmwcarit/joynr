@@ -1,10 +1,10 @@
-package io.joynr.generator.util;
+package io.joynr.generator.templates.util;
 
 /*
  * #%L
  * io.joynr.tools.generator:generator-framework
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ package io.joynr.generator.util;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
 import io.joynr.generator.loading.ModelLoader;
 
 import java.net.URL;
@@ -30,44 +29,24 @@ import java.util.ArrayList;
 
 import org.eclipse.emf.ecore.resource.Resource;
 import org.franca.core.franca.FBroadcast;
-import org.franca.core.franca.FCompoundType;
-import org.franca.core.franca.FField;
 import org.franca.core.franca.FModel;
-import org.franca.core.franca.FStructType;
-import org.franca.core.franca.FTypeRef;
-import org.franca.core.franca.FrancaFactory;
 import org.junit.Test;
-import org.mockito.internal.stubbing.answers.CallsRealMethods;
 
-public class JoynrGeneratorExtensionsTest {
+import com.google.inject.Guice;
 
-    @Test
-    public void testRecurstiveStruct() throws Exception {
-        FStructType structType = FrancaFactory.eINSTANCE.createFStructType();
-        structType.setName("TestStruct");
-        FField field = FrancaFactory.eINSTANCE.createFField();
-        field.setName("exampleField");
-        field.setArray(true);
-        FTypeRef typeRef = FrancaFactory.eINSTANCE.createFTypeRef();
-        typeRef.setDerived(structType);
-        field.setType(typeRef);
-        structType.getElements().add(field);
-        JoynrGeneratorExtensions extension = mock(JoynrGeneratorExtensions.class, new CallsRealMethods());
-        FCompoundType result = extension.getComplexType(structType);
-        assertEquals(structType, result);
-    }
+public class BroadcastUtilTest {
 
     @Test
     public void testFilterParameters() throws Exception {
-        URL fixtureURL = JoynrGeneratorExtensionsTest.class.getResource("FilterParameters.fidl");
+        URL fixtureURL = BroadcastUtilTest.class.getResource("FilterParameters.fidl");
         ModelLoader loader = new ModelLoader(fixtureURL.getPath());
         Resource fixtureResource = loader.getResource(loader.getURIs().iterator().next());
-        JoynrGeneratorExtensions extension = mock(JoynrGeneratorExtensions.class, new CallsRealMethods());
+        BroadcastUtil broadcastUtil = Guice.createInjector().getInstance(BroadcastUtil.class);
 
         FModel model = (FModel) fixtureResource.getContents().get(0);
         FBroadcast fixture = model.getInterfaces().get(0).getBroadcasts().get(0);
 
-        ArrayList<String> result = extension.getFilterParameters(fixture);
+        ArrayList<String> result = broadcastUtil.getFilterParameters(fixture);
         assertEquals(result.size(), 2);
         assertTrue(result.contains("genre"));
         assertTrue(result.contains("language"));

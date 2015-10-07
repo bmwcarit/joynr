@@ -18,13 +18,15 @@ package io.joynr.generator.proxy
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.templates.InterfaceTemplate
+import io.joynr.generator.templates.util.NamingUtil
+import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import io.joynr.generator.util.TemplateBase
 import org.franca.core.franca.FInterface
-import io.joynr.generator.util.JoynrJavaGeneratorExtensions
-import io.joynr.generator.util.InterfaceTemplate
 
 class InterfaceProxyTemplate implements InterfaceTemplate{
-	@Inject	extension JoynrJavaGeneratorExtensions
+	@Inject extension JoynrJavaGeneratorExtensions
+	@Inject extension NamingUtil
 	@Inject extension TemplateBase
 
 	override generate(FInterface fInterface) {

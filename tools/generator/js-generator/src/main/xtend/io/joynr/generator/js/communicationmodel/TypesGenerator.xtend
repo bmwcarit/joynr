@@ -20,6 +20,7 @@ package io.joynr.generator.js.communicationmodel
 
 import com.google.inject.Inject
 import io.joynr.generator.js.util.JoynrJSGeneratorExtensions
+import io.joynr.generator.templates.util.NamingUtil
 import java.io.File
 import java.util.HashSet
 import org.eclipse.xtext.generator.IFileSystemAccess
@@ -29,14 +30,10 @@ import org.franca.core.franca.FType
 
 class TypesGenerator {
 
-	@Inject
-	extension JoynrJSGeneratorExtensions
-
-	@Inject
-	extension EnumTypeGenerator
-
-	@Inject
-	extension CompoundTypeGenerator
+	@Inject extension JoynrJSGeneratorExtensions
+	@Inject extension EnumTypeGenerator
+	@Inject extension CompoundTypeGenerator
+	@Inject private extension NamingUtil
 
 	def generateTypes(Iterable<FType> types, IFileSystemAccess fsa) {
 		var generatedTypes = new HashSet<Object>;

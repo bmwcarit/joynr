@@ -20,17 +20,21 @@ package io.joynr.generator.cpp.filter
 import com.google.inject.Inject
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.cpp.util.QtTypeUtil
 import io.joynr.generator.cpp.util.TemplateBase
-import io.joynr.generator.util.BroadcastTemplate
+import io.joynr.generator.templates.BroadcastTemplate
+import io.joynr.generator.templates.util.BroadcastUtil
+import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FArgument
 import org.franca.core.franca.FBroadcast
 import org.franca.core.franca.FInterface
-import io.joynr.generator.cpp.util.QtTypeUtil
 
 class FilterTemplate implements BroadcastTemplate {
 	@Inject	extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
 	@Inject extension CppStdTypeUtil
+	@Inject extension NamingUtil
+	@Inject extension BroadcastUtil
 
 	@Inject
 	private QtTypeUtil qtTypeUtil

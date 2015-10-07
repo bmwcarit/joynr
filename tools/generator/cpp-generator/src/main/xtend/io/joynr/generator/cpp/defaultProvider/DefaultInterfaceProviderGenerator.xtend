@@ -18,16 +18,19 @@ package io.joynr.generator.cpp.defaultProvider
  */
 
 import com.google.inject.Inject
-
+import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.templates.util.NamingUtil
 import java.io.File
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FModel
-import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 
 class DefaultInterfaceProviderGenerator {
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
+
+	@Inject
+	private extension NamingUtil
 
 	@Inject
 	DefaultInterfaceProviderHTemplate defaultProviderHTemplate;

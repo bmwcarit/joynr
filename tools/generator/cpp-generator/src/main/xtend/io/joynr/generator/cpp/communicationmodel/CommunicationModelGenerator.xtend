@@ -18,17 +18,25 @@ package io.joynr.generator.cpp.communicationmodel
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.templates.util.NamingUtil
+import io.joynr.generator.templates.util.TypeUtil
 import java.io.File
 import org.eclipse.xtext.generator.IFileSystemAccess
-import org.franca.core.franca.FModel
-import org.franca.core.franca.FEnumerationType
 import org.franca.core.franca.FCompoundType
-import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import org.franca.core.franca.FEnumerationType
+import org.franca.core.franca.FModel
 
 class CommunicationModelGenerator {
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
+
+	@Inject
+	private extension TypeUtil
+
+	@Inject
+	private extension NamingUtil
 
 	@Inject
 	InterfaceHTemplate interfaceH;

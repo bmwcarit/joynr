@@ -21,7 +21,8 @@ import com.google.inject.Inject
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
-import io.joynr.generator.util.CompoundTypeTemplate
+import io.joynr.generator.templates.CompoundTypeTemplate
+import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FCompoundType
 
 class StdTypeCppTemplate implements CompoundTypeTemplate{
@@ -34,6 +35,9 @@ class StdTypeCppTemplate implements CompoundTypeTemplate{
 
 	@Inject
 	private extension CppStdTypeUtil
+
+	@Inject
+	private extension NamingUtil
 
 	override generate(FCompoundType type) '''
 «val typeName = type.joynrName»

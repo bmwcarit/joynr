@@ -17,16 +17,21 @@ package io.joynr.generator.interfaces
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import com.google.inject.Inject
+import io.joynr.generator.templates.InterfaceTemplate
+import io.joynr.generator.templates.util.BroadcastUtil
+import io.joynr.generator.templates.util.NamingUtil
+import io.joynr.generator.util.JavaTypeUtil
+import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import io.joynr.generator.util.TemplateBase
 import org.franca.core.franca.FInterface
-import io.joynr.generator.util.JoynrJavaGeneratorExtensions
-import io.joynr.generator.util.InterfaceTemplate
-import io.joynr.generator.util.JavaTypeUtil
 
 class InterfaceBroadcastTemplate implements InterfaceTemplate{
 	@Inject extension JoynrJavaGeneratorExtensions
 	@Inject extension JavaTypeUtil
+	@Inject extension NamingUtil
+	@Inject extension BroadcastUtil
 	@Inject extension TemplateBase
 
 	override generate(FInterface serviceInterface) {

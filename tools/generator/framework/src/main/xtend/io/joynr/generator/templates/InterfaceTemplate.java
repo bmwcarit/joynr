@@ -1,4 +1,4 @@
-package io.joynr.generator.util;
+package io.joynr.generator.templates;
 
 /*
  * #%L
@@ -19,12 +19,12 @@ package io.joynr.generator.util;
  * #L%
  */
 
-import org.franca.core.franca.FCompoundType;
+import org.franca.core.franca.FInterface;
 
 /*
- * This interface shall be used by all generation templates which process a Franca compound type
+ * This interface shall be used by all generation templates which process a Franca interface type
  */
-public interface CompoundTypeTemplate {
+public interface InterfaceTemplate {
 
-    public CharSequence generate(FCompoundType compoundType);
+    public CharSequence generate(FInterface serviceInterface);
 }

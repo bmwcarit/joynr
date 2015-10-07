@@ -1,6 +1,9 @@
 package io.joynr.generator.util
 
 import com.google.inject.Inject
+import io.joynr.generator.templates.util.AbstractTypeUtil
+import io.joynr.generator.templates.util.BroadcastUtil
+import io.joynr.generator.templates.util.MethodUtil
 import java.util.Collections
 import java.util.HashMap
 import java.util.Map
@@ -11,8 +14,10 @@ import org.franca.core.franca.FMethod
 import org.franca.core.franca.FType
 import org.franca.core.franca.FTypedElement
 
-class JavaTypeUtil extends TypeUtil {
+class JavaTypeUtil extends AbstractTypeUtil {
 
+	@Inject private extension MethodUtil
+	@Inject private extension BroadcastUtil
 	@Inject private extension JoynrJavaGeneratorExtensions
 
 	private Map<FBasicTypeId,String> primitiveDataTypeDefaultMap;

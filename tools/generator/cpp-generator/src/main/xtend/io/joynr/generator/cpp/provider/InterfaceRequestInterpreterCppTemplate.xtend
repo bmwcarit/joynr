@@ -23,23 +23,24 @@ import io.joynr.generator.cpp.util.DatatypeSystemTransformation
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.QtTypeUtil
 import io.joynr.generator.cpp.util.TemplateBase
-import io.joynr.generator.util.InterfaceTemplate
+import io.joynr.generator.templates.InterfaceTemplate
+import io.joynr.generator.templates.util.AttributeUtil
+import io.joynr.generator.templates.util.InterfaceUtil
+import io.joynr.generator.templates.util.MethodUtil
+import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FType
 
 class InterfaceRequestInterpreterCppTemplate implements InterfaceTemplate{
 
-	@Inject
-	private extension TemplateBase
-
-	@Inject
-	private CppStdTypeUtil cppStdTypeUtil
-
-	@Inject
-	private QtTypeUtil qtTypeUtil
-
-	@Inject
-	private extension JoynrCppGeneratorExtensions
+	@Inject private extension TemplateBase
+	@Inject private extension CppStdTypeUtil
+	@Inject private QtTypeUtil qtTypeUtil
+	@Inject private extension JoynrCppGeneratorExtensions
+	@Inject private extension NamingUtil
+	@Inject private extension AttributeUtil
+	@Inject private extension MethodUtil
+	@Inject private extension InterfaceUtil
 
 	override generate(FInterface serviceInterface)
 '''
@@ -94,7 +95,7 @@ void «interfaceName»RequestInterpreter::execute(
 	«IF !attributes.empty»
 		«FOR attribute : attributes»
 			«val attributeName = attribute.joynrName»
-			«val returnType = cppStdTypeUtil.getTypeName(attribute)»
+			«val returnType = getTypeName(attribute)»
 		«IF attribute.readable»
 			if (methodName == "get«attributeName.toFirstUpper»"){
 				std::function<void(«returnType» «attributeName»)> onSuccess =
@@ -153,7 +154,7 @@ void «interfaceName»RequestInterpreter::execute(
 					&& paramTypes.at(«iterator=iterator+1») == "«getJoynrTypeName(input)»"
 				«ENDFOR»
 			) {
-				«val outputTypedParamList = cppStdTypeUtil.getCommaSeperatedTypedConstOutputParameterList(method)»
+				«val outputTypedParamList = getCommaSeperatedTypedConstOutputParameterList(method)»
 				std::function<void(«outputTypedParamList»)> onSuccess =
 						[callbackFct](«outputTypedParamList»){
 							QList<QVariant> outParams;

@@ -1,7 +1,8 @@
-package io.joynr.generator.js.communicationmodel;
+package io.joynr.generator.templates.util;
 
 /*
  * #%L
+ * io.joynr.tools.generator:generator-framework
  * %%
  * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
@@ -19,30 +20,22 @@ package io.joynr.generator.js.communicationmodel;
  * #L%
  */
 
-import io.joynr.generator.templates.util.JoynrGeneratorExtensions;
+import static org.junit.Assert.assertEquals;
 
+import org.franca.core.franca.FCompoundType;
 import org.franca.core.franca.FField;
-import org.franca.core.franca.FModel;
 import org.franca.core.franca.FStructType;
-import org.franca.core.franca.FTypeCollection;
 import org.franca.core.franca.FTypeRef;
 import org.franca.core.franca.FrancaFactory;
 import org.junit.Test;
 
-import com.google.common.collect.Sets;
-import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
-import com.google.inject.name.Names;
 
-public class CompoundTypeGeneratorTest {
+public class TypeUtilTest {
 
     @Test
-    public void testRecursiveStruct() throws Exception {
-        FModel model = FrancaFactory.eINSTANCE.createFModel();
+    public void testRecurstiveStruct() throws Exception {
         FStructType structType = FrancaFactory.eINSTANCE.createFStructType();
-        FTypeCollection typeCollection = FrancaFactory.eINSTANCE.createFTypeCollection();
-        typeCollection.getTypes().add(structType);
-        model.getTypeCollections().add(typeCollection);
         structType.setName("TestStruct");
         FField field = FrancaFactory.eINSTANCE.createFField();
         field.setName("exampleField");
@@ -51,18 +44,9 @@ public class CompoundTypeGeneratorTest {
         typeRef.setDerived(structType);
         field.setType(typeRef);
         structType.getElements().add(field);
-
-        CompoundTypeGenerator generator = Guice.createInjector(new AbstractModule() {
-
-            @Override
-            protected void configure() {
-                bind(Boolean.class).annotatedWith(Names.named(JoynrGeneratorExtensions.JOYNR_GENERATOR_GENERATE))
-                                   .toInstance(true);
-                bind(Boolean.class).annotatedWith(Names.named(JoynrGeneratorExtensions.JOYNR_GENERATOR_CLEAN))
-                                   .toInstance(false);
-            }
-        }).getInstance(CompoundTypeGenerator.class);
-        generator.generateCompoundType(structType, Sets.newHashSet());
+        TypeUtil typeUtil = Guice.createInjector().getInstance(TypeUtil.class);
+        FCompoundType result = typeUtil.getComplexType(structType);
+        assertEquals(structType, result);
     }
 
 }

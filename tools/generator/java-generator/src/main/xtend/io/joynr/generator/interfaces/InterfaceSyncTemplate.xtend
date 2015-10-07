@@ -18,18 +18,26 @@ package io.joynr.generator.interfaces
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.templates.InterfaceTemplate
+import io.joynr.generator.templates.util.AttributeUtil
+import io.joynr.generator.templates.util.InterfaceUtil
+import io.joynr.generator.templates.util.MethodUtil
+import io.joynr.generator.templates.util.NamingUtil
+import io.joynr.generator.util.JavaTypeUtil
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import io.joynr.generator.util.TemplateBase
-import org.franca.core.franca.FInterface
-import io.joynr.generator.util.InterfaceTemplate
-import java.util.HashMap
-import org.franca.core.franca.FMethod
 import java.util.ArrayList
-import io.joynr.generator.util.JavaTypeUtil
+import java.util.HashMap
+import org.franca.core.franca.FInterface
+import org.franca.core.franca.FMethod
 
 class InterfaceSyncTemplate implements InterfaceTemplate{
 	@Inject extension JoynrJavaGeneratorExtensions
 	@Inject extension JavaTypeUtil
+	@Inject extension MethodUtil
+	@Inject extension AttributeUtil
+	@Inject extension InterfaceUtil
+	@Inject extension NamingUtil
 	@Inject extension TemplateBase
 	def init(FInterface serviceInterface, HashMap<FMethod, String> methodToReturnTypeName, ArrayList<FMethod> uniqueMultioutMethods) {
 		var uniqueMultioutMethodSignatureToContainerNames = new HashMap<String, String>();

@@ -1,4 +1,4 @@
-package io.joynr.generator.util;
+package io.joynr.generator.templates.util;
 
 /*
  * #%L
@@ -29,7 +29,6 @@ import java.net.URL;
 import java.util.Iterator;
 
 import org.eclipse.emf.ecore.resource.Resource;
-import org.franca.core.franca.FAttribute;
 import org.franca.core.franca.FBasicTypeId;
 import org.franca.core.franca.FMethod;
 import org.franca.core.franca.FModel;
@@ -38,14 +37,13 @@ import org.junit.Test;
 import org.mockito.internal.stubbing.answers.CallsRealMethods;
 import org.mockito.invocation.InvocationOnMock;
 
-import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 
-public class TypeUtilTest {
+public class AbstractTypeUtilTest {
 
     @Test
     public void testMultipleOutParameters() throws Exception {
-        URL fixtureURL = TypeUtilTest.class.getResource("MultipleOutParameters.fidl");
+        URL fixtureURL = AbstractTypeUtilTest.class.getResource("MultipleOutParameters.fidl");
         ModelLoader loader = new ModelLoader(fixtureURL.getPath());
         Resource fixtureResource = loader.getResource(loader.getURIs().iterator().next());
         class MyCallsRealMethods extends CallsRealMethods {
@@ -68,16 +66,9 @@ public class TypeUtilTest {
             }
         }
 
-        TypeUtil typeUtil = mock(TypeUtil.class, new MyCallsRealMethods());
+        AbstractTypeUtil typeUtil = mock(AbstractTypeUtil.class, new MyCallsRealMethods());
 
-        Guice.createInjector(new AbstractModule() {
-
-            @Override
-            protected void configure() {
-                bind(JoynrGeneratorExtensions.class).toInstance(createJoynrGeneratorExtensions());
-
-            }
-        }).injectMembers(typeUtil);
+        Guice.createInjector().injectMembers(typeUtil);
         FModel model = (FModel) fixtureResource.getContents().get(0);
         String stringDatatype = FBasicTypeId.STRING.getName();
         String numberDatatype = FBasicTypeId.INT16.getName();
@@ -91,24 +82,4 @@ public class TypeUtilTest {
         assertFalse(result.hasNext());
     }
 
-    private JoynrGeneratorExtensions createJoynrGeneratorExtensions() {
-        return new JoynrGeneratorExtensions() {
-
-            @Override
-            public String getOneLineWarning() {
-                return null;
-            }
-
-            @Override
-            public boolean isReadonly(FAttribute field) {
-                return false;
-            }
-
-            @Override
-            public boolean isObservable(FAttribute field) {
-                return false;
-            }
-
-        };
-    }
 }

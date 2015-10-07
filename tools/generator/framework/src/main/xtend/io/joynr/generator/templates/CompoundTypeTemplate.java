@@ -1,4 +1,4 @@
-package io.joynr.generator.util;
+package io.joynr.generator.templates;
 
 /*
  * #%L
@@ -19,13 +19,12 @@ package io.joynr.generator.util;
  * #L%
  */
 
-import org.franca.core.franca.FBroadcast;
-import org.franca.core.franca.FInterface;
+import org.franca.core.franca.FCompoundType;
 
 /*
- * This interface shall be used by all generation templates which process a Franca broadcast type
+ * This interface shall be used by all generation templates which process a Franca compound type
  */
-public interface BroadcastTemplate {
+public interface CompoundTypeTemplate {
 
-    public CharSequence generate(FInterface serviceInterface, FBroadcast broadcast);
+    public CharSequence generate(FCompoundType compoundType);
 }

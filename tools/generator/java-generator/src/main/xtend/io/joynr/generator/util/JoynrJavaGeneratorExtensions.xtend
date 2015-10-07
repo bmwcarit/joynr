@@ -17,6 +17,12 @@ package io.joynr.generator.util
  * limitations under the License.
  */
 
+import com.google.inject.Inject
+import io.joynr.generator.templates.util.BroadcastUtil
+import io.joynr.generator.templates.util.InterfaceUtil
+import io.joynr.generator.templates.util.JoynrGeneratorExtensions
+import io.joynr.generator.templates.util.MethodUtil
+import java.util.HashMap
 import java.util.Iterator
 import java.util.TreeSet
 import org.franca.core.franca.FAnnotation
@@ -24,15 +30,15 @@ import org.franca.core.franca.FAnnotationType
 import org.franca.core.franca.FBroadcast
 import org.franca.core.franca.FCompoundType
 import org.franca.core.franca.FInterface
+import org.franca.core.franca.FMethod
 import org.franca.core.franca.FModelElement
 import org.franca.core.franca.FType
-import org.franca.core.franca.FMethod
-import io.joynr.generator.util.JavaTypeUtil
-import com.google.inject.Inject
-import java.util.HashMap
 
 class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 	@Inject extension JavaTypeUtil
+	@Inject extension InterfaceUtil
+	@Inject extension MethodUtil
+	@Inject extension BroadcastUtil
 
 	def buildPackagePath(FType datatype, String separator, boolean includeTypeCollection) {
 		if (datatype == null) {
@@ -66,64 +72,6 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 
 	def String getNamespaceEnder(FType datatype) {
 		getNamespaceEnder(getPackageNames(datatype));
-	}
-
-	def boolean hasReadAttribute(FInterface interfaceType){
-		for(attribute: interfaceType.attributes){
-			if (isReadable(attribute)){
-				return true
-			}
-		}
-		return false
-	}
-
-	def boolean hasWriteAttribute(FInterface interfaceType){
-		for(attribute: interfaceType.attributes){
-			if (isWritable(attribute)){
-				return true
-			}
-		}
-		return false
-	}
-
-	def boolean hasMethodWithReturnValue(FInterface interfaceType){
-		for(method: interfaceType.methods){
-			if (!method.outputParameters.empty){
-				return true
-			}
-		}
-		return false
-	}
-
-	def boolean hasMethodWithoutReturnValue(FInterface interfaceType) {
-		for (method: interfaceType.methods) {
-			if (method.outputParameters.empty) {
-				return true
-			}
-		}
-		return false
-	}
-
-	def boolean hasMethodWithImplicitErrorEnum(FInterface interfaceType){
-		for(method: interfaceType.methods){
-			if (method.errors != null) {
-				return true
-			}
-		}
-		return false
-	}
-
-	def boolean hasMethodWithErrorEnum(FInterface interfaceType) {
-		for (method : interfaceType.methods) {
-			if (method.errorEnum != null) {
-				return true;
-			}
-		}
-		return hasMethodWithImplicitErrorEnum(interfaceType);
-	}
-
-	def boolean hasErrorEnum(FMethod method) {
-		return (method.errors != null) || (method.errorEnum != null);
 	}
 
 	def methodToErrorEnumName(FInterface serviceInterface) {

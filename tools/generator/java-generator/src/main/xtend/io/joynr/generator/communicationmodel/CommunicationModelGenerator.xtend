@@ -24,11 +24,19 @@ import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FCompoundType
 import org.franca.core.franca.FEnumerationType
 import org.franca.core.franca.FModel
+import io.joynr.generator.templates.util.TypeUtil
+import io.joynr.generator.templates.util.NamingUtil
 
 class CommunicationModelGenerator {
 
 	@Inject
 	extension JoynrJavaGeneratorExtensions
+
+	@Inject
+	private extension TypeUtil
+
+	@Inject
+	private extension NamingUtil
 
 	@Inject
 	EnumTypeTemplate enumTemplate

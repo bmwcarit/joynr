@@ -19,14 +19,15 @@ package io.joynr.generator.cpp.proxy
 
 import com.google.inject.Inject
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.templates.util.NamingUtil
 import java.io.File
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FModel
 
 class ProxyGenerator {
 
-	@Inject
-	extension JoynrCppGeneratorExtensions
+	@Inject extension JoynrCppGeneratorExtensions
+	@Inject private extension NamingUtil
 
 	@Inject
 	IInterfaceConnectorHTemplate iInterfaceConnectorHTemplate

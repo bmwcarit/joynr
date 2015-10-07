@@ -1,4 +1,4 @@
-package io.joynr.generator.util;
+package io.joynr.generator.templates;
 
 /*
  * #%L
@@ -19,12 +19,12 @@ package io.joynr.generator.util;
  * #L%
  */
 
-import org.franca.core.franca.FInterface;
+import org.franca.core.franca.FEnumerationType;
 
 /*
- * This interface shall be used by all generation templates which process a Franca interface type
+ * This interface shall be used by all generation templates which process a Franca enumeration type
  */
-public interface InterfaceTemplate {
+public interface EnumTemplate {
 
-    public CharSequence generate(FInterface serviceInterface);
+    public CharSequence generate(FEnumerationType enumType);
 }

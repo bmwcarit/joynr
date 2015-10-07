@@ -19,23 +19,27 @@ package io.joynr.generator.js.util
  */
 
 import com.google.inject.Inject
-import io.joynr.generator.util.TypeUtil
+import io.joynr.generator.templates.util.AbstractTypeUtil
+import io.joynr.generator.templates.util.MethodUtil
+import io.joynr.generator.templates.util.NamingUtil
 import java.util.Collections
 import java.util.HashMap
 import java.util.Map
 import java.util.logging.Logger
+import org.franca.core.franca.FAnnotationType
 import org.franca.core.franca.FArgument
 import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FMethod
-import org.franca.core.franca.FType
-import org.franca.core.franca.FTypedElement
 import org.franca.core.franca.FModelElement
-import org.franca.core.franca.FAnnotationType
+import org.franca.core.franca.FType
 import org.franca.core.franca.FTypeRef
+import org.franca.core.franca.FTypedElement
 
-class JSTypeUtil extends TypeUtil {
+class JSTypeUtil extends AbstractTypeUtil {
 
 	@Inject private extension JoynrJSGeneratorExtensions
+	@Inject private extension NamingUtil
+	@Inject private extension MethodUtil
 
 	Logger logger = Logger::getLogger("JSTypeUtil")
 

@@ -1,4 +1,4 @@
-package io.joynr.generator.util;
+package io.joynr.generator.templates;
 
 /*
  * #%L
@@ -19,12 +19,13 @@ package io.joynr.generator.util;
  * #L%
  */
 
-import org.franca.core.franca.FEnumerationType;
+import org.franca.core.franca.FBroadcast;
+import org.franca.core.franca.FInterface;
 
 /*
- * This interface shall be used by all generation templates which process a Franca enumeration type
+ * This interface shall be used by all generation templates which process a Franca broadcast type
  */
-public interface EnumTemplate {
+public interface BroadcastTemplate {
 
-    public CharSequence generate(FEnumerationType enumType);
+    public CharSequence generate(FInterface serviceInterface, FBroadcast broadcast);
 }

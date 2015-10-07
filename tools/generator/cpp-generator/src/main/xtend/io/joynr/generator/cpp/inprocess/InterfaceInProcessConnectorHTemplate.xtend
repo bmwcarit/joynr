@@ -23,25 +23,21 @@ import io.joynr.generator.cpp.util.InterfaceSubscriptionUtil
 import io.joynr.generator.cpp.util.InterfaceUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
-import io.joynr.generator.util.InterfaceTemplate
+import io.joynr.generator.templates.InterfaceTemplate
+import io.joynr.generator.templates.util.AttributeUtil
+import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
 
 class InterfaceInProcessConnectorHTemplate implements InterfaceTemplate{
 
-	@Inject
-	private extension TemplateBase
-
-	@Inject
-	private extension CppStdTypeUtil
-
-	@Inject
-	private extension JoynrCppGeneratorExtensions
-
-	@Inject
-	private extension InterfaceUtil
-
-	@Inject
-	private extension InterfaceSubscriptionUtil
+	@Inject private extension TemplateBase
+	@Inject private extension CppStdTypeUtil
+	@Inject private extension JoynrCppGeneratorExtensions
+	@Inject private extension InterfaceUtil
+	@Inject private extension NamingUtil
+	@Inject private extension AttributeUtil
+	@Inject private extension io.joynr.generator.templates.util.InterfaceUtil
+	@Inject private extension InterfaceSubscriptionUtil
 
 	override  generate(FInterface serviceInterface)
 '''
