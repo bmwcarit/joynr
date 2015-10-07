@@ -392,6 +392,23 @@ joynrTestRequire(
                             getAttribute("enumAttribute", Country.AUSTRALIA);
                         });
 
+                        it("subscribe to enumAttribute", function() {
+                            setAttribute("enumAttribute", Country.AUSTRIA);
+                            var spy = setupSubscriptionAndReturnSpy("enumAttribute", subscriptionQosOnChange);
+                            expectPublication(spy, function(call) {
+                               expect(call.args[0]).toEqual(Country.AUSTRIA);
+                            });
+                            setAttribute("enumAttribute", Country.AUSTRALIA);
+                            expectPublication(spy, function(call) {
+                                expect(call.args[0]).toEqual(Country.AUSTRALIA);
+                            });
+
+                            setAttribute("enumAttribute", Country.ITALY);
+                            expectPublication(spy, function(call) {
+                                expect(call.args[0]).toEqual(Country.ITALY);
+                            });
+                        });
+
                         function setAndTestAttributeTester(attribute) {
                             var lastRecursionIndex = -1, recursions = 5, onFulfilledSpy =
                                     jasmine.createSpy("onFulfilledSpy");
