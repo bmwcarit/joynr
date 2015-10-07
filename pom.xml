@@ -20,7 +20,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.joynr</groupId>
 	<artifactId>joynr</artifactId>
-	<version>0.9.4</version>
+	<version>0.10.0</version>
 	<packaging>pom</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<url>http://joynr.io</url>
@@ -377,15 +377,18 @@
 			are referenced.
 		-->
 		<jersey.version>1.17</jersey.version>
-		<jackson.version>2.2.1</jackson.version>
+		<jackson.version>2.6.2</jackson.version>
 		<guice.version>3.0</guice.version>
-		<jetty.version>9.2.2.v20140723</jetty.version>
+		<jetty.version>9.2.13.v20150730</jetty.version>
 		<tycho.version>0.15.0</tycho.version>
 		<hibernate.version>4.3.8.Final</hibernate.version>
 		<android.platform.version>5.0.1_r2</android.platform.version>
 		<android.platform.level>21</android.platform.level>
 		<javaassist.version>3.12.1.GA</javaassist.version>
 		<skipTests>true</skipTests>
+		<franca.version>0.10.0</franca.version>
+		<xtend.version>2.8.4</xtend.version>
+		<xtext.version>2.8.4</xtext.version>
 	</properties>
 
 	<!--
@@ -506,7 +509,17 @@
 			<dependency>
 				<groupId>org.eclipse.xtend</groupId>
 				<artifactId>org.eclipse.xtend.lib</artifactId>
-				<version>2.7.2</version>
+				<version>${xtend.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.xtend</groupId>
+				<artifactId>org.eclipse.xtend.core</artifactId>
+				<version>${xtend.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.xtext</groupId>
+				<artifactId>org.eclipse.xtext</artifactId>
+				<version>${xtext.version}</version>
 			</dependency>
 			<!--
 				This dependecy is needed to avoid conflicts with Java 5 code (generics)
@@ -518,11 +531,6 @@
 				<groupId>org.eclipse.equinox</groupId>
 				<artifactId>org.eclipse.equinox.app</artifactId>
 				<version>[1.3.1,2.0.0)</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.xtend</groupId>
-				<artifactId>org.eclipse.xtend.standalone</artifactId>
-				<version>2.4.1</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.emf</groupId>
@@ -573,6 +581,11 @@
 				<groupId>com.sun.jersey.contribs</groupId>
 				<artifactId>jersey-guice</artifactId>
 				<version>${jersey.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-core</artifactId>
+				<version>${jackson.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
@@ -658,7 +671,7 @@
 			<dependency>
 				<groupId>com.fasterxml.jackson.jaxrs</groupId>
 				<artifactId>jackson-jaxrs-json-provider</artifactId>
-				<version>2.2.1</version>
+				<version>${jackson.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.sun.jersey</groupId>
@@ -723,17 +736,17 @@
 			<dependency>
 				<groupId>org.franca</groupId>
 				<artifactId>org.franca.core.dsl</artifactId>
-				<version>0.8.8</version>
+				<version>${franca.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.franca</groupId>
 				<artifactId>org.franca.core</artifactId>
-				<version>0.8.8</version>
+				<version>${franca.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.franca</groupId>
 				<artifactId>org.franca.deploymodel.dsl</artifactId>
-				<version>0.8.8</version>
+				<version>${franca.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.genivi.commonapi</groupId>
@@ -1030,7 +1043,7 @@
 				<plugin>
 					<groupId>com.simpligility.maven.plugins</groupId>
 					<artifactId>android-maven-plugin</artifactId>
-					<version>4.2.0</version>
+					<version>4.3.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.eclipse.tycho</groupId>
@@ -1065,6 +1078,7 @@
 						</webApp>
 						<stopPort>9966</stopPort>
 						<stopKey>joynr</stopKey>
+						<stopWait>60</stopWait>
 						<contextHandlers>
 							<contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
 								<war>${project.build.directory}/bounceproxy.war</war>
@@ -1098,7 +1112,7 @@
 				<plugin>
 					<groupId>org.eclipse.xtend</groupId>
 					<artifactId>xtend-maven-plugin</artifactId>
-					<version>2.7.2</version>
+					<version>${xtend.version}</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -1353,62 +1367,6 @@
 				</executions>
 			</plugin>
 			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>build-helper-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>copy-notice-and-license-files</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>add-resource</goal>
-						</goals>
-						<configuration>
-							<skip>${skip.copy-notice-and-license-files}</skip>
-							<resources>
-								<resource>
-									<directory>${basedir}</directory>
-									<includes>
-										<include>NOTICE*</include>
-										<include>*LICENSE*</include>
-									</includes>
-								</resource>
-								<resource>
-									<directory>${project.build.directory}</directory>
-									<includes>
-										<include>LICENSE</include>
-									</includes>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-					<execution>
-						<id>copy-notice-and-license-files-test</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>add-test-resource</goal>
-						</goals>
-						<configuration>
-							<skip>${skip.copy-notice-and-license-files}</skip>
-							<resources>
-								<resource>
-									<directory>${basedir}</directory>
-									<includes>
-										<include>NOTICE*</include>
-										<include>*LICENSE*</include>
-									</includes>
-								</resource>
-								<resource>
-									<directory>${project.build.directory}</directory>
-									<includes>
-										<include>LICENSE</include>
-									</includes>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-resources-plugin</artifactId>
 				<executions>
@@ -1420,13 +1378,12 @@
 						</goals>
 						<configuration>
 							<skip>${skip.copy-notice-and-license-files}</skip>
-							<outputDirectory>${project.build.directory}/apidocs</outputDirectory>
+							<outputDirectory>${project.build.directory}/apidocs/META-INF</outputDirectory>
 							<resources>
 								<resource>
 									<directory>${basedir}</directory>
 									<includes>
 										<include>NOTICE*</include>
-										<include>*LICENSE*</include>
 									</includes>
 								</resource>
 								<resource>
@@ -1446,13 +1403,12 @@
 						</goals>
 						<configuration>
 							<skip>${skip.copy-notice-and-license-files}</skip>
-							<outputDirectory>${project.build.directory}/classes</outputDirectory>
+							<outputDirectory>${project.build.directory}/classes/META-INF</outputDirectory>
 							<resources>
 								<resource>
 									<directory>${basedir}</directory>
 									<includes>
 										<include>NOTICE*</include>
-										<include>*LICENSE*</include>
 									</includes>
 								</resource>
 								<resource>
@@ -1472,13 +1428,12 @@
 						</goals>
 						<configuration>
 							<skip>${skip.copy-notice-and-license-files}</skip>
-							<outputDirectory>${project.build.directory}/test-classes</outputDirectory>
+							<outputDirectory>${project.build.directory}/test-classes/META-INF</outputDirectory>
 							<resources>
 								<resource>
 									<directory>${basedir}</directory>
 									<includes>
 										<include>NOTICE*</include>
-										<include>*LICENSE*</include>
 									</includes>
 								</resource>
 								<resource>

@@ -21,6 +21,7 @@
 
 #include <QObject>
 #include <QDate>
+#include <QSharedPointer>
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/SubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"

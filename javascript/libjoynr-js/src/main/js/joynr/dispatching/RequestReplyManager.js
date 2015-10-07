@@ -278,7 +278,11 @@ define(
                             }
 
                             try {
-                                replyCaller.resolve(reply.response);
+                                if (reply.error) {
+                                    replyCaller.reject(reply.error);
+                                } else {
+                                    replyCaller.resolve(reply.response);
+                                }
                                 // deletedReplyCallers[reply.requestReplyId] = replyCallers[reply.requestReplyId];
                                 delete replyCallers[reply.requestReplyId];
                             } catch (e) {

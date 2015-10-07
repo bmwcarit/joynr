@@ -25,7 +25,7 @@ import io.joynr.dispatcher.rpc.JoynrAsyncInterface;
 import io.joynr.dispatcher.rpc.JoynrBroadcastSubscriptionInterface;
 import io.joynr.dispatcher.rpc.JoynrSubscriptionInterface;
 import io.joynr.dispatcher.rpc.JoynrSyncInterface;
-import io.joynr.exceptions.JoynrArbitrationException;
+import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -48,6 +48,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+
+import joynr.exceptions.ApplicationException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -102,8 +104,8 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
      * @see java.lang.reflect.InvocationHandler#invoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
      */
     @CheckForNull
-    private Object executeSyncMethod(Method method, Object[] args) throws IllegalArgumentException,
-                                                                  InterruptedException, Throwable {
+    private Object executeSyncMethod(Method method, Object[] args) throws ApplicationException,
+                                                                   JoynrRuntimeException {
 
         try {
             if (waitForConnectorFinished()) {
@@ -112,14 +114,14 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
                 }
                 return connector.executeSyncMethod(method, args);
             }
-        } catch (JoynrRuntimeException e) {
+        } catch (ApplicationException | JoynrRuntimeException e) {
             throw e;
 
         } catch (Throwable e) {
             throw new JoynrRuntimeException(e);
         }
 
-        throw new JoynrArbitrationException("Arbitration and Connector failed: domain: " + domain + " interface: "
+        throw new DiscoveryException("Arbitration and Connector failed: domain: " + domain + " interface: "
                 + interfaceName + " qos: " + discoveryQos + ": Arbitration could not be finished in time.");
 
     }
@@ -380,8 +382,12 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
         return connector.executeAsyncMethod(method, args, future);
     }
 
-    private UnsubscribeInvocation unsubscribe(UnsubscribeInvocation unsubscribeInvocation) {
-        connector.unregisterSubscription(unsubscribeInvocation.getSubscriptionId());
+    private UnsubscribeInvocation unsubscribe(UnsubscribeInvocation unsubscribeInvocation)
+                                                                                          throws JoynrSendBufferFullException,
+                                                                                          JoynrMessageNotSentException,
+                                                                                          JsonGenerationException,
+                                                                                          JsonMappingException,
+                                                                                          IOException {
         connectorStatusLock.lock();
         try {
             if (!isConnectorReady()) {

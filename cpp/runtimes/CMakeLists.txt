@@ -5,7 +5,6 @@ message(STATUS "#############################################\n")
 get_target_property(qjson_PUBLIC_INCLUDE_DIRECTORY qjson PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
-get_target_property(JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY JoynrClusterController PUBLIC_INCLUDE_DIRECTORY)
 
 set(
     runtime_PUBLIC_INCLUDE_DIRECTORY
@@ -19,15 +18,6 @@ file(
 )
 
 set(
-    JoynrClusterControllerRuntime_INCLUDE_DIRECTORIES
-    ${runtime_PUBLIC_INCLUDE_DIRECTORY}
-    "../"
-    ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
-    ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
-    ${JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY}
-)
-
-set(
     JoynrRuntime_INCLUDE_DIRECTORIES
     ${runtime_PUBLIC_INCLUDE_DIRECTORY}
     "../"
@@ -35,91 +25,106 @@ set(
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
 )
 
-set(
-    JoynrClusterControllerRuntime_TARGET_LIBRARIES
-    JoynrCommon
-    Joynr
-    JoynrClusterController
-)
-
-set(
-    JoynrClusterControllerRuntime_EXPORT_HEADER
-    "include/joynr/JoynrClusterControllerRuntimeExport.h"
-)
-
-file(
-    GLOB JoynrClusterControllerRuntime_PRIVATE_HEADERS
-    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    "*.h"
-    "cluster-controller-runtime/*.h"
-)
-
-set(
-    JoynrClusterControllerRuntime_HEADERS
-    ${JoynrClusterControllerRuntime_PRIVATE_HEADERS}
-    ${runtime_PUBLIC_HEADERS}
-)
-
-file(
-    GLOB JoynrClusterControllerRuntime_SOURCES
-    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    "*.cpp"
-    "cluster-controller-runtime/*.cpp"
-)
-
-include_directories(
-    ${JoynrClusterControllerRuntime_INCLUDE_DIRECTORIES}
-)
-
-add_library(
-    JoynrClusterControllerRuntime
-    SHARED
-    ${JoynrClusterControllerRuntime_HEADERS}
-    ${JoynrClusterControllerRuntime_SOURCES}
-)
-
-if(${ENABLE_CLANG_FORMATTER})
-    set(COMMENT "running C++ code formatter: clang-format")
-    set(COMMENT "${COMMENT}\nworking directory: ${CMAKE_CURRENT_SOURCE_DIR}")
-    set(COMMENT "${COMMENT}\nprocessing header files:\n${JoynrClusterControllerRuntime_HEADERS}")
-    set(COMMENT "${COMMENT}\nprocessing source files:\n${JoynrClusterControllerRuntime_SOURCES}")
-
-    add_custom_target(
-        format-JoynrClusterControllerRuntime
-        COMMAND clang-format -i ${JoynrClusterControllerRuntime_HEADERS} ${JoynrClusterControllerRuntime_SOURCES}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        COMMENT "${COMMENT}"
-        VERBATIM
+if(${BUILD_CLUSTER_CONTROLLER})
+    get_target_property(JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY JoynrClusterController PUBLIC_INCLUDE_DIRECTORY)
+    set(
+        JoynrClusterControllerRuntime_INCLUDE_DIRECTORIES
+        ${runtime_PUBLIC_INCLUDE_DIRECTORY}
+        "../"
+        ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
+        ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
+        ${JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY}
     )
-    add_dependencies(JoynrClusterControllerRuntime format-JoynrClusterControllerRuntime)
-endif(${ENABLE_CLANG_FORMATTER})
 
-set_target_properties(
-    JoynrClusterControllerRuntime
-    PROPERTIES
-    SOVERSION "${JOYNR_VERSION}"
-    VERSION "${JOYNR_VERSION}"
-    PUBLIC_INCLUDE_DIRECTORY "${runtime_PUBLIC_INCLUDE_DIRECTORY}"
-)
+    set(
+        JoynrClusterControllerRuntime_TARGET_LIBRARIES
+        JoynrCommon
+        Joynr
+        JoynrClusterController
+    )
 
-generate_export_header(
-    JoynrClusterControllerRuntime
-    EXPORT_FILE_NAME "${CMAKE_CURRENT_SOURCE_DIR}/${JoynrClusterControllerRuntime_EXPORT_HEADER}"
-)
+    set(
+        JoynrClusterControllerRuntime_EXPORT_HEADER
+        "include/joynr/JoynrClusterControllerRuntimeExport.h"
+    )
 
-target_link_libraries(
-    JoynrClusterControllerRuntime
-    ${JoynrClusterControllerRuntime_TARGET_LIBRARIES}
-)
+    file(
+        GLOB JoynrClusterControllerRuntime_PRIVATE_HEADERS
+        RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+        "*.h"
+        "cluster-controller-runtime/*.h"
+    )
 
-install(
-    TARGETS JoynrClusterControllerRuntime
-    EXPORT JoynrTargets
-    RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
-    LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib
-    # this will flatten directory hierarchy of header files
-    # PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}" COMPONENT dev
-)
+    set(
+        JoynrClusterControllerRuntime_HEADERS
+        ${JoynrClusterControllerRuntime_PRIVATE_HEADERS}
+        ${runtime_PUBLIC_HEADERS}
+    )
+
+    file(
+        GLOB JoynrClusterControllerRuntime_SOURCES
+        RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+        "*.cpp"
+        "cluster-controller-runtime/*.cpp"
+    )
+
+    include_directories(
+        ${JoynrClusterControllerRuntime_INCLUDE_DIRECTORIES}
+    )
+
+    add_library(
+        JoynrClusterControllerRuntime
+        SHARED
+        ${JoynrClusterControllerRuntime_HEADERS}
+        ${JoynrClusterControllerRuntime_SOURCES}
+    )
+
+    if(${ENABLE_CLANG_FORMATTER})
+        set(COMMENT "running C++ code formatter: clang-format")
+        set(COMMENT "${COMMENT}\nworking directory: ${CMAKE_CURRENT_SOURCE_DIR}")
+        set(COMMENT "${COMMENT}\nprocessing header files:\n${JoynrClusterControllerRuntime_HEADERS}")
+        set(COMMENT "${COMMENT}\nprocessing source files:\n${JoynrClusterControllerRuntime_SOURCES}")
+
+        add_custom_command(
+            TARGET JoynrClusterControllerRuntime
+            PRE_BUILD
+            COMMAND clang-format -i ${JoynrClusterControllerRuntime_HEADERS} ${JoynrClusterControllerRuntime_SOURCES}
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+            COMMENT "${COMMENT}"
+            VERBATIM
+        )
+    endif(${ENABLE_CLANG_FORMATTER})
+
+    set_target_properties(
+        JoynrClusterControllerRuntime
+        PROPERTIES
+        SOVERSION "${JOYNR_VERSION}"
+        VERSION "${JOYNR_VERSION}"
+        PUBLIC_INCLUDE_DIRECTORY "${runtime_PUBLIC_INCLUDE_DIRECTORY}"
+    )
+
+    generate_export_header(
+        JoynrClusterControllerRuntime
+        EXPORT_FILE_NAME "${CMAKE_CURRENT_SOURCE_DIR}/${JoynrClusterControllerRuntime_EXPORT_HEADER}"
+    )
+
+    target_link_libraries(
+        JoynrClusterControllerRuntime
+        ${JoynrClusterControllerRuntime_TARGET_LIBRARIES}
+    )
+
+    install(
+        TARGETS JoynrClusterControllerRuntime
+        EXPORT JoynrTargets
+        RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
+        ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT library
+        LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib
+        # this will flatten directory hierarchy of header files
+        # PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}" COMPONENT dev
+    )
+endif(${BUILD_CLUSTER_CONTROLLER})
+
+
 # so we install header files manually to preserve directory hierarchy
 install(
     DIRECTORY include/
@@ -220,6 +225,7 @@ install(
     TARGETS JoynrWsRuntime
     EXPORT JoynrTargets
     RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
+    ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT library
     LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib
     # this will flatten directory hierarchy of header files
     # PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}" COMPONENT dev
@@ -320,48 +326,50 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
 
-# executable to start the cluster controller
-set(
-    cluster-controller_HEADERS
-    StartClusterController.cpp
-)
-set(
-    cluster-controller_SOURCES
-    StartClusterController.cpp
-)
-
-add_executable(cluster-controller StartClusterController.cpp)
-
-if(${ENABLE_CLANG_FORMATTER})
-    set(COMMENT "running C++ code formatter: clang-format")
-    set(COMMENT "${COMMENT}\nworking directory: ${CMAKE_CURRENT_SOURCE_DIR}")
-    set(COMMENT "${COMMENT}\nprocessing header files:\n${cluster-controller_HEADERS}")
-    set(COMMENT "${COMMENT}\nprocessing source files:\n${cluster-controller_SOURCES}")
-
-    add_custom_target(
-        format-cluster-controller
-        COMMAND clang-format -i ${cluster-controller_HEADERS} ${cluster-controller_SOURCES}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        COMMENT "${COMMENT}"
-        VERBATIM
+if(${BUILD_CLUSTER_CONTROLLER})
+    #executable to start the cluster controller
+    set(
+        cluster-controller_HEADERS
+        StartClusterController.cpp
     )
-    add_dependencies(cluster-controller format-cluster-controller)
-endif(${ENABLE_CLANG_FORMATTER})
+    set(
+        cluster-controller_SOURCES
+        StartClusterController.cpp
+    )
 
-if(${USE_DBUS_COMMONAPI_COMMUNICATION})
+    add_executable(cluster-controller StartClusterController.cpp)
+
+    if(${ENABLE_CLANG_FORMATTER})
+        set(COMMENT "running C++ code formatter: clang-format")
+        set(COMMENT "${COMMENT}\nworking directory: ${CMAKE_CURRENT_SOURCE_DIR}")
+        set(COMMENT "${COMMENT}\nprocessing header files:\n${cluster-controller_HEADERS}")
+        set(COMMENT "${COMMENT}\nprocessing source files:\n${cluster-controller_SOURCES}")
+
+        add_custom_target(
+            format-cluster-controller
+            COMMAND clang-format -i ${cluster-controller_HEADERS} ${cluster-controller_SOURCES}
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+            COMMENT "${COMMENT}"
+            VERBATIM
+        )
+        add_dependencies(cluster-controller format-cluster-controller)
+    endif(${ENABLE_CLANG_FORMATTER})
+
+    if(${USE_DBUS_COMMONAPI_COMMUNICATION})
+        target_link_libraries(cluster-controller
+            ${DBUS1_LIBRARIES}
+            ${COMMONAPI_DBUS_LIBRARIES}
+            ${COMMONAPI_LIBRARIES}
+        )
+    endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
+
     target_link_libraries(cluster-controller
-        ${DBUS1_LIBRARIES}
-        ${COMMONAPI_DBUS_LIBRARIES}
-        ${COMMONAPI_LIBRARIES}
+        JoynrClusterControllerRuntime
     )
-endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
-target_link_libraries(cluster-controller
-    JoynrClusterControllerRuntime
-)
-
-install(
-    TARGETS cluster-controller
-    RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
-    LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib
-)
+    install(
+        TARGETS cluster-controller
+        RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
+        LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib
+    )
+endif(${BUILD_CLUSTER_CONTROLLER})

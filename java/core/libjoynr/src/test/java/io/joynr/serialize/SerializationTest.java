@@ -24,6 +24,19 @@ import static org.junit.Assert.assertTrue;
 import io.joynr.common.ExpiryDate;
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.dispatcher.rpc.JoynrInterface;
+import io.joynr.exceptions.DiscoveryException;
+import io.joynr.exceptions.JoynrChannelMissingException;
+import io.joynr.exceptions.JoynrChannelNotAssignableException;
+import io.joynr.exceptions.JoynrCommunicationException;
+import io.joynr.exceptions.JoynrHttpException;
+import io.joynr.exceptions.JoynrIllegalStateException;
+import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.exceptions.JoynrRequestInterruptedException;
+import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.exceptions.JoynrSendBufferFullException;
+import io.joynr.exceptions.JoynrShutdownException;
+import io.joynr.exceptions.JoynrTimeoutException;
+import io.joynr.exceptions.JoynrWaitExpiredException;
 import io.joynr.messaging.MessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.pubsub.SubscriptionQos;
@@ -34,9 +47,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.concurrent.RejectedExecutionException;
 
 import joynr.BroadcastSubscriptionRequest;
-import joynr.JoynrApplicationException;
 import joynr.JoynrMessage;
 import joynr.OnChangeSubscriptionQos;
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
@@ -46,6 +59,10 @@ import joynr.Request;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
+import joynr.exceptions.ApplicationException;
+import joynr.exceptions.IllegalAccessException;
+import joynr.exceptions.MethodInvocationException;
+import joynr.exceptions.ProviderRuntimeException;
 import joynr.tests.testBroadcastInterface;
 import joynr.tests.testTypes.TestEnum;
 import joynr.types.CapabilityInformation;
@@ -480,7 +497,7 @@ public class SerializationTest {
     @Test
     public void serializeReplyWithJoynrApplicationException() throws IOException {
 
-        JoynrApplicationException error = new JoynrApplicationException(TestEnum.ONE, "detail message");
+        ApplicationException error = new ApplicationException(TestEnum.ONE, "detail message");
         Reply reply = new Reply(UUID.randomUUID().toString(), error);
 
         String writeValueAsString = objectMapper.writeValueAsString(reply);
@@ -504,7 +521,467 @@ public class SerializationTest {
     @Test
     public void serializeReplyWithJoynrApplicationExceptionWithoutMessage() throws IOException {
 
-        JoynrApplicationException error = new JoynrApplicationException(TestEnum.TWO);
+        ApplicationException error = new ApplicationException(TestEnum.TWO);
+        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+
+        String writeValueAsString = objectMapper.writeValueAsString(reply);
+        System.out.println(writeValueAsString);
+
+        JoynrMessage message = new JoynrMessage();
+        String type = JoynrMessage.MESSAGE_TYPE_REPLY;
+        message.setFrom(UUID.randomUUID().toString());
+        message.setTo(UUID.randomUUID().toString());
+        message.setType(type);
+        message.setExpirationDate(ExpiryDate.fromRelativeTtl(60000));
+        message.setPayload(writeValueAsString);
+        String messageAsString = objectMapper.writeValueAsString(message);
+        System.out.println(messageAsString);
+
+        JoynrMessage receivedMessage = objectMapper.readValue(messageAsString, JoynrMessage.class);
+        Reply receivedReply = objectMapper.readValue(receivedMessage.getPayload(), Reply.class);
+        Assert.assertEquals(reply, receivedReply);
+    }
+
+    @Test
+    public void serializeReplyWithJoynrIllegalAccessException() throws IOException {
+
+        IllegalAccessException error = new IllegalAccessException("detail message: JoynrIllegalAccessException");
+        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+
+        String writeValueAsString = objectMapper.writeValueAsString(reply);
+        System.out.println(writeValueAsString);
+
+        JoynrMessage message = new JoynrMessage();
+        String type = JoynrMessage.MESSAGE_TYPE_REPLY;
+        message.setFrom(UUID.randomUUID().toString());
+        message.setTo(UUID.randomUUID().toString());
+        message.setType(type);
+        message.setExpirationDate(ExpiryDate.fromRelativeTtl(60000));
+        message.setPayload(writeValueAsString);
+        String messageAsString = objectMapper.writeValueAsString(message);
+        System.out.println(messageAsString);
+
+        JoynrMessage receivedMessage = objectMapper.readValue(messageAsString, JoynrMessage.class);
+        Reply receivedReply = objectMapper.readValue(receivedMessage.getPayload(), Reply.class);
+        Assert.assertEquals(reply, receivedReply);
+    }
+
+    @Test
+    public void serializeReplyWithMethodInvocationException() throws IOException {
+
+        MethodInvocationException error = new MethodInvocationException("detail message: MessageInvocationException");
+        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+
+        String writeValueAsString = objectMapper.writeValueAsString(reply);
+        System.out.println(writeValueAsString);
+
+        JoynrMessage message = new JoynrMessage();
+        String type = JoynrMessage.MESSAGE_TYPE_REPLY;
+        message.setFrom(UUID.randomUUID().toString());
+        message.setTo(UUID.randomUUID().toString());
+        message.setType(type);
+        message.setExpirationDate(ExpiryDate.fromRelativeTtl(60000));
+        message.setPayload(writeValueAsString);
+        String messageAsString = objectMapper.writeValueAsString(message);
+        System.out.println(messageAsString);
+
+        JoynrMessage receivedMessage = objectMapper.readValue(messageAsString, JoynrMessage.class);
+        Reply receivedReply = objectMapper.readValue(receivedMessage.getPayload(), Reply.class);
+        Assert.assertEquals(reply, receivedReply);
+    }
+
+    @Test
+    public void serializeReplyWithProviderRuntimenException() throws IOException {
+
+        ProviderRuntimeException error = new ProviderRuntimeException("detail message: ProviderRuntimeException");
+        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+
+        String writeValueAsString = objectMapper.writeValueAsString(reply);
+        System.out.println(writeValueAsString);
+
+        JoynrMessage message = new JoynrMessage();
+        String type = JoynrMessage.MESSAGE_TYPE_REPLY;
+        message.setFrom(UUID.randomUUID().toString());
+        message.setTo(UUID.randomUUID().toString());
+        message.setType(type);
+        message.setExpirationDate(ExpiryDate.fromRelativeTtl(60000));
+        message.setPayload(writeValueAsString);
+        String messageAsString = objectMapper.writeValueAsString(message);
+        System.out.println(messageAsString);
+
+        JoynrMessage receivedMessage = objectMapper.readValue(messageAsString, JoynrMessage.class);
+        Reply receivedReply = objectMapper.readValue(receivedMessage.getPayload(), Reply.class);
+        Assert.assertEquals(reply, receivedReply);
+    }
+
+    @Test
+    public void serializeReplyWithJoynrRuntimeException() throws IOException {
+
+        JoynrRuntimeException error = new JoynrRuntimeException("detail message: JoynrRuntimeException");
+        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+
+        String writeValueAsString = objectMapper.writeValueAsString(reply);
+        System.out.println(writeValueAsString);
+
+        JoynrMessage message = new JoynrMessage();
+        String type = JoynrMessage.MESSAGE_TYPE_REPLY;
+        message.setFrom(UUID.randomUUID().toString());
+        message.setTo(UUID.randomUUID().toString());
+        message.setType(type);
+        message.setExpirationDate(ExpiryDate.fromRelativeTtl(60000));
+        message.setPayload(writeValueAsString);
+        String messageAsString = objectMapper.writeValueAsString(message);
+        System.out.println(messageAsString);
+
+        JoynrMessage receivedMessage = objectMapper.readValue(messageAsString, JoynrMessage.class);
+        Reply receivedReply = objectMapper.readValue(receivedMessage.getPayload(), Reply.class);
+        Assert.assertEquals(reply, receivedReply);
+    }
+
+    @Test
+    public void serializeReplyWithJoynrRuntimeExceptionWithoutMessage() throws IOException {
+
+        JoynrRuntimeException error = new JoynrRuntimeException();
+        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+
+        String writeValueAsString = objectMapper.writeValueAsString(reply);
+        System.out.println(writeValueAsString);
+
+        JoynrMessage message = new JoynrMessage();
+        String type = JoynrMessage.MESSAGE_TYPE_REPLY;
+        message.setFrom(UUID.randomUUID().toString());
+        message.setTo(UUID.randomUUID().toString());
+        message.setType(type);
+        message.setExpirationDate(ExpiryDate.fromRelativeTtl(60000));
+        message.setPayload(writeValueAsString);
+        String messageAsString = objectMapper.writeValueAsString(message);
+        System.out.println(messageAsString);
+
+        JoynrMessage receivedMessage = objectMapper.readValue(messageAsString, JoynrMessage.class);
+        Reply receivedReply = objectMapper.readValue(receivedMessage.getPayload(), Reply.class);
+        Assert.assertEquals(reply, receivedReply);
+    }
+
+    @Test
+    public void serializeReplyWithJoynrRuntimeExceptionWithCause() throws IOException {
+
+        JoynrRuntimeException error = new JoynrRuntimeException("detail message: JoynrRuntimeExceptionWithCause",
+                                                                new IOException("cause message"));
+        System.out.println("error: " + error);
+        System.out.println("cause: " + ((Throwable) error).getCause());
+        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+
+        String writeValueAsString = objectMapper.writeValueAsString(reply);
+        System.out.println(writeValueAsString);
+
+        JoynrMessage message = new JoynrMessage();
+        String type = JoynrMessage.MESSAGE_TYPE_REPLY;
+        message.setFrom(UUID.randomUUID().toString());
+        message.setTo(UUID.randomUUID().toString());
+        message.setType(type);
+        message.setExpirationDate(ExpiryDate.fromRelativeTtl(60000));
+        message.setPayload(writeValueAsString);
+        String messageAsString = objectMapper.writeValueAsString(message);
+        System.out.println(messageAsString);
+
+        JoynrMessage receivedMessage = objectMapper.readValue(messageAsString, JoynrMessage.class);
+        Reply receivedReply = objectMapper.readValue(receivedMessage.getPayload(), Reply.class);
+        Assert.assertEquals(reply, receivedReply);
+    }
+
+    @Test
+    public void serializeReplyWithDiscoveryException() throws IOException {
+
+        DiscoveryException error = new DiscoveryException("detail message: DiscoveryException");
+        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+
+        String writeValueAsString = objectMapper.writeValueAsString(reply);
+        System.out.println(writeValueAsString);
+
+        JoynrMessage message = new JoynrMessage();
+        String type = JoynrMessage.MESSAGE_TYPE_REPLY;
+        message.setFrom(UUID.randomUUID().toString());
+        message.setTo(UUID.randomUUID().toString());
+        message.setType(type);
+        message.setExpirationDate(ExpiryDate.fromRelativeTtl(60000));
+        message.setPayload(writeValueAsString);
+        String messageAsString = objectMapper.writeValueAsString(message);
+        System.out.println(messageAsString);
+
+        JoynrMessage receivedMessage = objectMapper.readValue(messageAsString, JoynrMessage.class);
+        Reply receivedReply = objectMapper.readValue(receivedMessage.getPayload(), Reply.class);
+        Assert.assertEquals(reply, receivedReply);
+    }
+
+    @Test
+    public void serializeReplyWithJoynrChannelNotAssignableException() throws IOException {
+
+        JoynrChannelNotAssignableException error = new JoynrChannelNotAssignableException("detail message: JoynrChannelNotAssignableException",
+                                                                                          "CCID");
+        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+
+        String writeValueAsString = objectMapper.writeValueAsString(reply);
+        System.out.println(writeValueAsString);
+
+        JoynrMessage message = new JoynrMessage();
+        String type = JoynrMessage.MESSAGE_TYPE_REPLY;
+        message.setFrom(UUID.randomUUID().toString());
+        message.setTo(UUID.randomUUID().toString());
+        message.setType(type);
+        message.setExpirationDate(ExpiryDate.fromRelativeTtl(60000));
+        message.setPayload(writeValueAsString);
+        String messageAsString = objectMapper.writeValueAsString(message);
+        System.out.println(messageAsString);
+
+        JoynrMessage receivedMessage = objectMapper.readValue(messageAsString, JoynrMessage.class);
+        Reply receivedReply = objectMapper.readValue(receivedMessage.getPayload(), Reply.class);
+        Assert.assertEquals(reply, receivedReply);
+    }
+
+    @Test
+    public void serializeReplyWithJoynrCommunicationException() throws IOException {
+
+        JoynrCommunicationException error = new JoynrCommunicationException("detail message: JoynrCommunicationException");
+        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+
+        String writeValueAsString = objectMapper.writeValueAsString(reply);
+        System.out.println(writeValueAsString);
+
+        JoynrMessage message = new JoynrMessage();
+        String type = JoynrMessage.MESSAGE_TYPE_REPLY;
+        message.setFrom(UUID.randomUUID().toString());
+        message.setTo(UUID.randomUUID().toString());
+        message.setType(type);
+        message.setExpirationDate(ExpiryDate.fromRelativeTtl(60000));
+        message.setPayload(writeValueAsString);
+        String messageAsString = objectMapper.writeValueAsString(message);
+        System.out.println(messageAsString);
+
+        JoynrMessage receivedMessage = objectMapper.readValue(messageAsString, JoynrMessage.class);
+        Reply receivedReply = objectMapper.readValue(receivedMessage.getPayload(), Reply.class);
+        Assert.assertEquals(reply, receivedReply);
+    }
+
+    @Test
+    public void serializeReplyWithJoynrCommunicationExceptionWithoutMessage() throws IOException {
+
+        JoynrCommunicationException error = new JoynrCommunicationException();
+        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+
+        String writeValueAsString = objectMapper.writeValueAsString(reply);
+        System.out.println(writeValueAsString);
+
+        JoynrMessage message = new JoynrMessage();
+        String type = JoynrMessage.MESSAGE_TYPE_REPLY;
+        message.setFrom(UUID.randomUUID().toString());
+        message.setTo(UUID.randomUUID().toString());
+        message.setType(type);
+        message.setExpirationDate(ExpiryDate.fromRelativeTtl(60000));
+        message.setPayload(writeValueAsString);
+        String messageAsString = objectMapper.writeValueAsString(message);
+        System.out.println(messageAsString);
+
+        JoynrMessage receivedMessage = objectMapper.readValue(messageAsString, JoynrMessage.class);
+        Reply receivedReply = objectMapper.readValue(receivedMessage.getPayload(), Reply.class);
+        Assert.assertEquals(reply, receivedReply);
+    }
+
+    @Test
+    public void serializeReplyWithJoynrChannelMissingException() throws IOException {
+
+        JoynrChannelMissingException error = new JoynrChannelMissingException("detail message: JoynrChannelMissingException");
+        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+
+        String writeValueAsString = objectMapper.writeValueAsString(reply);
+        System.out.println(writeValueAsString);
+
+        JoynrMessage message = new JoynrMessage();
+        String type = JoynrMessage.MESSAGE_TYPE_REPLY;
+        message.setFrom(UUID.randomUUID().toString());
+        message.setTo(UUID.randomUUID().toString());
+        message.setType(type);
+        message.setExpirationDate(ExpiryDate.fromRelativeTtl(60000));
+        message.setPayload(writeValueAsString);
+        String messageAsString = objectMapper.writeValueAsString(message);
+        System.out.println(messageAsString);
+
+        JoynrMessage receivedMessage = objectMapper.readValue(messageAsString, JoynrMessage.class);
+        Reply receivedReply = objectMapper.readValue(receivedMessage.getPayload(), Reply.class);
+        Assert.assertEquals(reply, receivedReply);
+    }
+
+    @Test
+    public void serializeReplyWithJoynrHttpException() throws IOException {
+
+        JoynrHttpException error = new JoynrHttpException(404, "detail message: JoynrHttpException");
+        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+
+        String writeValueAsString = objectMapper.writeValueAsString(reply);
+        System.out.println(writeValueAsString);
+
+        JoynrMessage message = new JoynrMessage();
+        String type = JoynrMessage.MESSAGE_TYPE_REPLY;
+        message.setFrom(UUID.randomUUID().toString());
+        message.setTo(UUID.randomUUID().toString());
+        message.setType(type);
+        message.setExpirationDate(ExpiryDate.fromRelativeTtl(60000));
+        message.setPayload(writeValueAsString);
+        String messageAsString = objectMapper.writeValueAsString(message);
+        System.out.println(messageAsString);
+
+        JoynrMessage receivedMessage = objectMapper.readValue(messageAsString, JoynrMessage.class);
+        Reply receivedReply = objectMapper.readValue(receivedMessage.getPayload(), Reply.class);
+        Assert.assertEquals(reply, receivedReply);
+    }
+
+    @Test
+    public void serializeReplyWithJoynrIllegalStateException() throws IOException {
+
+        JoynrIllegalStateException error = new JoynrIllegalStateException("detail message: JoynrIllegalStateException");
+        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+
+        String writeValueAsString = objectMapper.writeValueAsString(reply);
+        System.out.println(writeValueAsString);
+
+        JoynrMessage message = new JoynrMessage();
+        String type = JoynrMessage.MESSAGE_TYPE_REPLY;
+        message.setFrom(UUID.randomUUID().toString());
+        message.setTo(UUID.randomUUID().toString());
+        message.setType(type);
+        message.setExpirationDate(ExpiryDate.fromRelativeTtl(60000));
+        message.setPayload(writeValueAsString);
+        String messageAsString = objectMapper.writeValueAsString(message);
+        System.out.println(messageAsString);
+
+        JoynrMessage receivedMessage = objectMapper.readValue(messageAsString, JoynrMessage.class);
+        Reply receivedReply = objectMapper.readValue(receivedMessage.getPayload(), Reply.class);
+        Assert.assertEquals(reply, receivedReply);
+    }
+
+    @Test
+    public void serializeReplyWithJoynrMessageNotSentException() throws IOException {
+
+        JoynrMessageNotSentException error = new JoynrMessageNotSentException("detail message: JoynrMessageNotSentException");
+        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+
+        String writeValueAsString = objectMapper.writeValueAsString(reply);
+        System.out.println(writeValueAsString);
+
+        JoynrMessage message = new JoynrMessage();
+        String type = JoynrMessage.MESSAGE_TYPE_REPLY;
+        message.setFrom(UUID.randomUUID().toString());
+        message.setTo(UUID.randomUUID().toString());
+        message.setType(type);
+        message.setExpirationDate(ExpiryDate.fromRelativeTtl(60000));
+        message.setPayload(writeValueAsString);
+        String messageAsString = objectMapper.writeValueAsString(message);
+        System.out.println(messageAsString);
+
+        JoynrMessage receivedMessage = objectMapper.readValue(messageAsString, JoynrMessage.class);
+        Reply receivedReply = objectMapper.readValue(receivedMessage.getPayload(), Reply.class);
+        Assert.assertEquals(reply, receivedReply);
+    }
+
+    @Test
+    public void serializeReplyWithJoynrRequestInterruptedException() throws IOException {
+
+        JoynrRequestInterruptedException error = new JoynrRequestInterruptedException("detail message: JoynrRequestInterruptedException");
+        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+
+        String writeValueAsString = objectMapper.writeValueAsString(reply);
+        System.out.println(writeValueAsString);
+
+        JoynrMessage message = new JoynrMessage();
+        String type = JoynrMessage.MESSAGE_TYPE_REPLY;
+        message.setFrom(UUID.randomUUID().toString());
+        message.setTo(UUID.randomUUID().toString());
+        message.setType(type);
+        message.setExpirationDate(ExpiryDate.fromRelativeTtl(60000));
+        message.setPayload(writeValueAsString);
+        String messageAsString = objectMapper.writeValueAsString(message);
+        System.out.println(messageAsString);
+
+        JoynrMessage receivedMessage = objectMapper.readValue(messageAsString, JoynrMessage.class);
+        Reply receivedReply = objectMapper.readValue(receivedMessage.getPayload(), Reply.class);
+        Assert.assertEquals(reply, receivedReply);
+    }
+
+    @Test
+    public void serializeReplyWithJoynrSendBufferFullException() throws IOException {
+
+        JoynrSendBufferFullException error = new JoynrSendBufferFullException(new RejectedExecutionException("cause message"));
+        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+
+        String writeValueAsString = objectMapper.writeValueAsString(reply);
+        System.out.println(writeValueAsString);
+
+        JoynrMessage message = new JoynrMessage();
+        String type = JoynrMessage.MESSAGE_TYPE_REPLY;
+        message.setFrom(UUID.randomUUID().toString());
+        message.setTo(UUID.randomUUID().toString());
+        message.setType(type);
+        message.setExpirationDate(ExpiryDate.fromRelativeTtl(60000));
+        message.setPayload(writeValueAsString);
+        String messageAsString = objectMapper.writeValueAsString(message);
+        System.out.println(messageAsString);
+
+        JoynrMessage receivedMessage = objectMapper.readValue(messageAsString, JoynrMessage.class);
+        Reply receivedReply = objectMapper.readValue(receivedMessage.getPayload(), Reply.class);
+        Assert.assertEquals(reply, receivedReply);
+    }
+
+    @Test
+    public void serializeReplyWithJoynrShutdownException() throws IOException {
+
+        JoynrShutdownException error = new JoynrShutdownException("detail message: JoynrShutdownException");
+        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+
+        String writeValueAsString = objectMapper.writeValueAsString(reply);
+        System.out.println(writeValueAsString);
+
+        JoynrMessage message = new JoynrMessage();
+        String type = JoynrMessage.MESSAGE_TYPE_REPLY;
+        message.setFrom(UUID.randomUUID().toString());
+        message.setTo(UUID.randomUUID().toString());
+        message.setType(type);
+        message.setExpirationDate(ExpiryDate.fromRelativeTtl(60000));
+        message.setPayload(writeValueAsString);
+        String messageAsString = objectMapper.writeValueAsString(message);
+        System.out.println(messageAsString);
+
+        JoynrMessage receivedMessage = objectMapper.readValue(messageAsString, JoynrMessage.class);
+        Reply receivedReply = objectMapper.readValue(receivedMessage.getPayload(), Reply.class);
+        Assert.assertEquals(reply, receivedReply);
+    }
+
+    @Test
+    public void serializeReplyWithJoynrTimeoutException() throws IOException {
+
+        JoynrTimeoutException error = new JoynrTimeoutException(42);
+        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+
+        String writeValueAsString = objectMapper.writeValueAsString(reply);
+        System.out.println(writeValueAsString);
+
+        JoynrMessage message = new JoynrMessage();
+        String type = JoynrMessage.MESSAGE_TYPE_REPLY;
+        message.setFrom(UUID.randomUUID().toString());
+        message.setTo(UUID.randomUUID().toString());
+        message.setType(type);
+        message.setExpirationDate(ExpiryDate.fromRelativeTtl(60000));
+        message.setPayload(writeValueAsString);
+        String messageAsString = objectMapper.writeValueAsString(message);
+        System.out.println(messageAsString);
+
+        JoynrMessage receivedMessage = objectMapper.readValue(messageAsString, JoynrMessage.class);
+        Reply receivedReply = objectMapper.readValue(receivedMessage.getPayload(), Reply.class);
+        Assert.assertEquals(reply, receivedReply);
+    }
+
+    @Test
+    public void serializeReplyWithJoynrWaitExpiredException() throws IOException {
+
+        JoynrWaitExpiredException error = new JoynrWaitExpiredException();
         Reply reply = new Reply(UUID.randomUUID().toString(), error);
 
         String writeValueAsString = objectMapper.writeValueAsString(reply);

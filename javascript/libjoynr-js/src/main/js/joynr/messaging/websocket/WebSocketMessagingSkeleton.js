@@ -17,88 +17,71 @@
  * #L%
  */
 
-define(
-        "joynr/messaging/websocket/WebSocketMessagingSkeleton",
-        [
-            "joynr/messaging/JoynrMessage",
-            "joynr/util/UtilInternal",
-            "joynr/system/LoggerFactory"
-        ],
-        function(JoynrMessage, Util, LoggerFactory) {
+define("joynr/messaging/websocket/WebSocketMessagingSkeleton", [
+    "joynr/messaging/JoynrMessage",
+    "joynr/util/UtilInternal",
+    "joynr/system/LoggerFactory"
+], function(JoynrMessage, Util, LoggerFactory) {
 
-            /**
-             * @constructor WebSocketMessagingSkeleton
-             * @param {Object}
-             *            settings
-             * @param {SharedWebSocket}
-             *            settings.sharedWebSocket
-             */
-            var WebSocketMessagingSkeleton =
-                    function WebSocketMessagingSkeleton(settings) {
-                        Util.checkProperty(settings, "Object", "settings");
-                        Util.checkProperty(
-                                settings.sharedWebSocket,
-                                "SharedWebSocket",
-                                "sharedWebSocket");
+    /**
+     * @constructor WebSocketMessagingSkeleton
+     * @param {Object}
+     *            settings
+     * @param {SharedWebSocket}
+     *            settings.sharedWebSocket
+     */
+    var WebSocketMessagingSkeleton = function WebSocketMessagingSkeleton(settings) {
+        Util.checkProperty(settings, "Object", "settings");
+        Util.checkProperty(settings.sharedWebSocket, "SharedWebSocket", "sharedWebSocket");
 
-                        var sharedWebSocket = settings.sharedWebSocket;
-                        var receiverCallbacks = [];
+        var sharedWebSocket = settings.sharedWebSocket;
+        var receiverCallbacks = [];
 
-                        sharedWebSocket.onmessage =
-                                function(event) {
-                                    var received = event.data;
-                                    if (typeof event.data === "string") {
-                                        received = JSON.parse(event.data);
-                                        var joynrMessage =
-                                                Util.extendDeep(
-                                                        new JoynrMessage(received.type),
-                                                        received);
-                                        if (joynrMessage.header[JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE] !== undefined) {
-                                            joynrMessage.header[JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE] =
-                                                    parseInt(
-                                                            joynrMessage.header[JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE],
-                                                            10);
-                                        }
+        sharedWebSocket.onmessage = function(event) {
+            var received = event.data;
+            if (typeof event.data === "string") {
+                received = JSON.parse(event.data);
+                var joynrMessage = Util.extendDeep(new JoynrMessage(received.type), received);
 
-                                        Util.fire(receiverCallbacks, joynrMessage);
-                                    }
-                                };
+                Util.fire(receiverCallbacks, joynrMessage);
+            }
+        };
 
-                        /**
-                         * Registers the listener function
-                         * @function WebSocketMessagingSkeleton#registerListener
-                         *
-                         * @param {Function}
-                         *            listener a listener function that should be added and should receive messages
-                         */
-                        this.registerListener = function registerListener(listener) {
-                            Util.checkProperty(listener, "Function", "listener");
+        /**
+         * Registers the listener function
+         * @function WebSocketMessagingSkeleton#registerListener
+         *
+         * @param {Function}
+         *            listener a listener function that should be added and should receive messages
+         */
+        this.registerListener = function registerListener(listener) {
+            Util.checkProperty(listener, "Function", "listener");
 
-                            receiverCallbacks.push(listener);
-                        };
+            receiverCallbacks.push(listener);
+        };
 
-                        /**
-                         * Unregisters the listener function
-                         * @function WebSocketMessagingSkeleton#unregisterListener
-                         *
-                         * @param {Function}
-                         *            listener the listener function that should re removed and shouldn't receive
-                         *            messages any more
-                         */
-                        this.unregisterListener = function unregisterListener(listener) {
-                            Util.checkProperty(listener, "Function", "listener");
+        /**
+         * Unregisters the listener function
+         * @function WebSocketMessagingSkeleton#unregisterListener
+         *
+         * @param {Function}
+         *            listener the listener function that should re removed and shouldn't receive
+         *            messages any more
+         */
+        this.unregisterListener = function unregisterListener(listener) {
+            Util.checkProperty(listener, "Function", "listener");
 
-                            Util.removeElementFromArray(receiverCallbacks, listener);
-                        };
+            Util.removeElementFromArray(receiverCallbacks, listener);
+        };
 
-                        /**
-                         * @function WebSocketMessagingSkeleton#shutdown
-                         */
-                        this.shutdown = function shutdown() {
-                            sharedWebSocket.close();
-                        };
-                    };
+        /**
+         * @function WebSocketMessagingSkeleton#shutdown
+         */
+        this.shutdown = function shutdown() {
+            sharedWebSocket.close();
+        };
+    };
 
-            return WebSocketMessagingSkeleton;
+    return WebSocketMessagingSkeleton;
 
-        });
+});

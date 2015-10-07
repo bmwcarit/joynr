@@ -19,7 +19,7 @@ package io.joynr.provider;
  * #L%
  */
 
-import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.exceptions.JoynrException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +27,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import joynr.exceptions.ProviderRuntimeException;
 
 public abstract class AbstractDeferred {
     private enum State {
@@ -34,7 +35,7 @@ public abstract class AbstractDeferred {
     };
 
     private State state = State.PENDING;
-    private JoynrRuntimeException error = null;
+    private JoynrException error = null;
     private Object[] values = null;
 
     private List<DeferredListener> listeners = new ArrayList<DeferredListener>();
@@ -66,7 +67,7 @@ public abstract class AbstractDeferred {
      * @return true if the promise is rejected; false in case the promise is
      *      already settled.
      */
-    public synchronized boolean reject(JoynrRuntimeException error) {
+    protected synchronized boolean reject(JoynrException error) {
         if (isSettled()) {
             return false;
         }
@@ -77,11 +78,22 @@ public abstract class AbstractDeferred {
     }
 
     /**
+     * Rejects the promise. NOTE: The thread rejecting the promise will be used
+     * to execute waiting listeners.
+     * @param error the reason that caused the rejection.
+     * @return true if the promise is rejected; false in case the promise is
+     *      already settled.
+     */
+    public synchronized boolean reject(ProviderRuntimeException error) {
+        return this.reject((JoynrException) error);
+    }
+
+    /**
      * @return the error that caused the rejection of the deferred; null if the
      *      deferred is not in rejected state.
      */
     @Nullable
-    public JoynrRuntimeException getError() {
+    public JoynrException getError() {
         return error;
     }
 

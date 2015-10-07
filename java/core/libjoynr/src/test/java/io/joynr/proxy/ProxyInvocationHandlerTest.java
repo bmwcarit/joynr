@@ -22,8 +22,6 @@ package io.joynr.proxy;
 import io.joynr.arbitration.ArbitrationResult;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.dispatcher.rpc.JoynrSyncInterface;
-import io.joynr.endpoints.EndpointAddressBase;
-import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 import io.joynr.messaging.MessagingQos;
 
 import java.util.ArrayList;
@@ -32,6 +30,9 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+
+import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.ChannelAddress;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -97,8 +98,8 @@ public class ProxyInvocationHandlerTest {
             }
         });
 
-        List<EndpointAddressBase> endpointAddresses = new ArrayList<EndpointAddressBase>();
-        JoynrMessagingEndpointAddress endpointAddress = new JoynrMessagingEndpointAddress("channelId");
+        List<Address> endpointAddresses = new ArrayList<Address>();
+        ChannelAddress endpointAddress = new ChannelAddress("channelId");
         endpointAddresses.add(endpointAddress);
         proxyInvocationHandler.createConnector(new ArbitrationResult("participantId", endpointAddresses));
 

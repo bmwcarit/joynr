@@ -11,7 +11,7 @@
 	<parent>
 		<groupId>io.joynr.javascript</groupId>
 		<artifactId>apps</artifactId>
-		<version>0.9.4</version>
+		<version>0.10.0</version>
 	</parent>
 
 	<dependencies>
@@ -239,6 +239,16 @@
 					<attachClasses>false</attachClasses>
 				</configuration>
 			</plugin>
+			<!--
+				Skip deploy because the DISCLAIMER is currently missing.
+			-->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
+			</plugin>
 		</plugins>
 
 		<!-- use for deployment to joynr servers -->
@@ -303,15 +313,6 @@
 							</execution>
 						</executions>
 					</plugin>
-
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-deploy-plugin</artifactId>
-						<configuration>
-							<skip>true</skip>
-						</configuration>
-					</plugin>
-
 				</plugins>
 			</build>
 		</profile>

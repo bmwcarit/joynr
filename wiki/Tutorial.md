@@ -11,20 +11,28 @@ If you haven't built joynr yet, please do so first:
 * [Building joynr Java](java_building_joynr.md) for the Java example only.
 * [Building joynr C++](cpp_building_joynr.md) for the C++ example.
 
-This will install the necessary dependencies to your local Maven repository and generate the radio application source files. In particular, the [Franca IDL](https://code.google.com/a/eclipselabs.org/p/franca/) dependencies that are currently not available from [Maven Central Repository](http://search.maven.org/) are installed. Since Franca is needed for joynr code generation, we ship Franca dependencies together with the joynr source code in the `<JOYNR>/tools/generator/dependency-libs/` directory.
+This will install the necessary dependencies to your local Maven repository and generate the radio
+application source files. In particular, the [Franca IDL](https://github.com/franca/franca)
+dependencies that are currently not available from [Maven Central Repository](http://search.maven.org/)
+are installed. Since Franca is needed for joynr code generation, we ship Franca dependencies together
+with the joynr source code in the `<JOYNR>/tools/generator/dependency-libs/` directory.
 
 # Exploring the demo
-The example project contains a java and c++ variation, letting you explore whichever one you find more comfortable.
+The example project contains a java and c++ variation, letting you explore whichever one you find
+more comfortable.
 
 The RadioApp demo is located in `<JOYNR>/examples/radio-app`. We refer to this location as
 `RADIO_HOME`.
 
-For exploring the Java code and for viewing the radio communication interface, you can use Eclipse and import the RadioApp (`<RADIO_HOME>/pom.xml`) as a Maven project, using the M2E plugin. For C++, open `<RADIO_HOME>/CMakeLists.txt` in QtCreator.
+For exploring the Java code and for viewing the radio communication interface, you can use Eclipse
+and import the RadioApp (`<RADIO_HOME>/pom.xml`) as a Maven project, using the M2E plugin. For C++,
+open `<RADIO_HOME>/CMakeLists.txt` in QtCreator.
 
 >**Note: Dependency Resolution**
 >
 >In Java all dependencies are resolved automatically using Maven.
->In C++ joynr must be [built from the sources](Home.md). Afterwards, joynr will be resolved using
+>In C++ joynr must be [built from the sources](cpp_building_joynr.md). Afterwards, joynr will be
+>resolved using
 >CMake's `find_package` command:
 >
 >```cmake
@@ -246,7 +254,7 @@ int main(int argc, char* argv[])
     DiscoveryQos discoveryQos;
     // As soon as the discovery QoS is set on the proxy builder, discovery of suitable providers
     // is triggered. If the discovery process does not find matching providers within the
-    // arbitration timeout duration it will be terminated and you will get an arbitration exception.
+    // discovery timeout duration, discovery will be terminated and you will get a discovery exception.
     discoveryQos.setDiscoveryTimeout(40000);
     // Provider entries in the global capabilities directory are cached locally. Discovery will
     // consider entries in this cache valid if they are younger as the max age of cached
@@ -306,9 +314,9 @@ int main(int argc, char* argv[])
 
     public void run() {
         DiscoveryQos discoveryQos = new DiscoveryQos();
-        // As soon as the arbitration QoS is set on the proxy builder, discovery of suitable providers
+        // As soon as the discovery QoS is set on the proxy builder, discovery of suitable providers
         // is triggered. If the discovery process does not find matching providers within the
-        // arbitration timeout duration it will be terminated and you will get an arbitration exception.
+        // discovery timeout duration it will be terminated and you will get a discovery exception.
         discoveryQos.setDiscoveryTimeout(10000);
         // Provider entries in the global capabilities directory are cached locally. Discovery will
         // consider entries in this cache valid if they are younger as the max age of cached
@@ -316,7 +324,7 @@ int main(int argc, char* argv[])
         // for and arbitrating the "best" matching provider.
         // NOTE: Valid cache entries might prevent triggering a lookup in the global capabilities
         // directory. Therefore, not all providers registered with the global capabilities
-        // directory might be taken into account during arbitration.
+        // directory might be taken into account during discovery.
         discoveryQos.setCacheMaxAge(Long.MAX_VALUE);
         // The discovery process outputs a list of matching providers. The arbitration strategy then
         // chooses one or more of them to be used by the proxy.
@@ -389,7 +397,7 @@ int main(int argc, char* argv[])
             currentStation = radioProxy.getCurrentStation();
             LOG.info(PRINT_BORDER + "The current radio station after shuffling is: " + currentStation + PRINT_BORDER);
             ...
-        } catch (JoynArbitrationException e) {
+        } catch (DiscoveryException e) {
         } catch (JoynCommunicationException e) {
         }
     }

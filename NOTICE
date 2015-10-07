@@ -16,12 +16,14 @@ specific language governing permissions and limitations
 under the License.
 
 This project has dependencies to:
+  3rd Party Dependencies - Library under Eclipse Public License - v 1.0
   Accessibility Test Framework under Apache License, Version 2.0
   android under Apache License, Version 2.0
   ant-launcher under Apache License, Version 2.0
+  Antlr 3 Runtime under BSD License
   AntLR Parser Generator under BSD License
   AOP alliance under Public Domain
-  Apache Commons Lang under The Apache Software License, Version 2.0
+  Apache Commons Lang under Apache License, Version 2.0
   Apache Derby Database Engine and Embedded JDBC Driver under Apache 2
   Apache Geronimo JSR-317 JPA 2.0 Spec API under The Apache Software License, Version 2.0
   Apache HttpClient under Apache License
@@ -35,7 +37,7 @@ This project has dependencies to:
   Apache XBean :: Reflect under The Apache Software License, Version 2.0
   ASM Analysis under BSD
   ASM Commons under BSD
-  ASM Core under BSD
+  ASM Core under BSD License
   ASM Tree under BSD
   ASM Util under BSD
   atmosphere-annotations under CDDL or Apache License 2.0
@@ -49,6 +51,8 @@ This project has dependencies to:
   classworlds under BSD Style License
   codegen under Eclipse Public License - v 1.0
   Common Annotations 1.1 API under lgpl
+  Common Eclipse Runtime under Eclipse Public License - v 1.0
+  Common Types Runtime Library under Eclipse Public License - v 1.0
   Commons Codec under The Apache Software License, Version 2.0
   Commons Collections under The Apache Software License, Version 2.0
   Commons IO under The Apache Software License, Version 2.0
@@ -93,6 +97,7 @@ This project has dependencies to:
   ICU4J under ICU License
   INFOMAS ASL :: Annotation Detector under The Apache Software License, Version 2.0
   Interceptors 1.1 API under lgpl
+  io.joynr.android:robolectric-integration-tests under The Apache Software License, Version 2.0
   io.joynr.android:robolectric-unittests under The Apache Software License, Version 2.0
   io.joynr.cpp:common-api-model under The Apache Software License, Version 2.0
   io.joynr.cpp:libjoynr under The Apache Software License, Version 2.0
@@ -163,12 +168,12 @@ This project has dependencies to:
   io.joynr:tools under The Apache Software License, Version 2.0
   JACC 1.4 API under lgpl
   Jackson under The Apache Software License, Version 2.0
-  Jackson-annotations under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
-  Jackson-core under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
-  jackson-databind under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
-  Jackson-JAXRS-base under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
-  Jackson-JAXRS-JSON under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
-  Jackson-module-JAXB-annotations under The Apache Software License, Version 2.0 or GNU Lesser General Public License, Version 2.1
+  Jackson-annotations under The Apache Software License, Version 2.0
+  Jackson-core under The Apache Software License, Version 2.0
+  jackson-databind under The Apache Software License, Version 2.0
+  Jackson-JAXRS-base under The Apache Software License, Version 2.0
+  Jackson-JAXRS-JSON under The Apache Software License, Version 2.0
+  Jackson-module-JAXB-annotations under The Apache Software License, Version 2.0
   Java Annotation Indexer under AL 2.0
   Java API for XML Based RPC under CDDL-1.0
   Java API for XML Registries 1.0 under lgpl
@@ -192,7 +197,6 @@ This project has dependencies to:
   JBoss Java EE 6.0 API Aggregate under lgpl
   JBoss Java Server Pages 2.2 API under lgpl
   JBoss Logging 3 under Apache License, version 2.0
-  JBoss Logging I18n Annotations under Public Domain
   Jersey Test Framework - Core under CDDL 1.1 or GPL2 w/ CPE
   Jersey Test Framework - Grizzly 2 Module under CDDL 1.1 or GPL2 w/ CPE
   jersey-client under CDDL 1.1 or GPL2 w/ CPE
@@ -210,7 +214,6 @@ This project has dependencies to:
   Jetty :: Servlet Handling under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Utilities under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Webapp Application Support under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
-  Jetty :: Websocket under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Websocket :: API under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Websocket :: Client under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Websocket :: Common under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
@@ -256,7 +259,10 @@ This project has dependencies to:
   OpenJPA Persistence JDBC under Apache Software License 2.0
   OpenJPA Utilities Library under Apache Software License 2.0
   org.apache.tools.ant under Apache License, Version 2.0
-  org.eclipse.xtend.standalone under Eclipse Public License - v 1.0
+  org.eclipse.emf.codegen under The Eclipse Public License Version 1.0
+  org.eclipse.emf.common under The Eclipse Public License Version 1.0
+  org.eclipse.emf.ecore under The Eclipse Public License Version 1.0
+  org.eclipse.emf.ecore.xmi under The Eclipse Public License Version 1.0
   org.franca.core under Eclipse Public License - v 1.0
   org.franca.core.dsl under Eclipse Public License - v 1.0
   org.franca.deploymodel.dsl under Eclipse Public License - v 1.0
@@ -283,11 +289,16 @@ This project has dependencies to:
   StAX API under The Apache Software License, Version 2.0
   TagSoup under Apache License 2.0
   Transaction 1.1 API under lgpl
+  Tycho org.eclipse.jdt.core dependency (Incubation) under Eclipse Public License
   vtd-xml under GNU GENERAL PUBLIC LICENSE Version 2, June 1991
   Xalan Java under The Apache Software License, Version 2.0
   Xalan Java Serializer under The Apache Software License, Version 2.0
+  Xbase Runtime Library under Eclipse Public License - v 1.0
   Xerces2-j under The Apache Software License, Version 2.0
   xercesMinimal under Apache License, Version 2.0
   XML Commons External Components XML APIs under The Apache Software License, Version 2.0 or The SAX License or The W3C License
   xml-path under Apache 2.0
+  Xtend Core Library under Eclipse Public License - v 1.0
+  Xtext Runtime Library under Eclipse Public License - v 1.0
+  Xtext Util under Eclipse Public License - v 1.0
 

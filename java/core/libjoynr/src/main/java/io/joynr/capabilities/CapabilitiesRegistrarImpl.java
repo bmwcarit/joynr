@@ -3,7 +3,7 @@ package io.joynr.capabilities;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,16 @@ package io.joynr.capabilities;
  * #L%
  */
 
-import io.joynr.dispatcher.RequestCaller;
-import io.joynr.dispatcher.RequestReplyDispatcher;
+import io.joynr.dispatching.RequestCaller;
+import io.joynr.dispatching.RequestCallerDirectory;
+import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.RequestCallerFactory;
-import io.joynr.pubsub.publication.PublicationManager;
+
+import javax.inject.Named;
+
+import joynr.system.RoutingTypes.Address;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -32,22 +37,25 @@ import com.google.inject.Singleton;
 public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
     private LocalCapabilitiesDirectory localCapabilitiesDirectory;
     private RequestCallerFactory requestCallerFactory;
-    private RequestReplyDispatcher dispatcher;
-    private final PublicationManager publicationManager;
+    private final MessageRouter messageRouter;
     private ParticipantIdStorage participantIdStorage;
+    private Address libjoynrMessagingAddress;
+    private RequestCallerDirectory requestCallerDirectory;
 
     @Inject
     public CapabilitiesRegistrarImpl(LocalCapabilitiesDirectory localCapabilitiesDirectory,
                                      RequestCallerFactory requestCallerFactory,
-                                     RequestReplyDispatcher dispatcher,
-                                     PublicationManager publicationManager,
-                                     ParticipantIdStorage participantIdStorage) {
+                                     MessageRouter messageRouter,
+                                     RequestCallerDirectory requestCallerDirectory,
+                                     ParticipantIdStorage participantIdStorage,
+                                     @Named(ConfigurableMessagingSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) Address libjoynrMessagingAddress) {
         super();
         this.localCapabilitiesDirectory = localCapabilitiesDirectory;
         this.requestCallerFactory = requestCallerFactory;
-        this.dispatcher = dispatcher;
-        this.publicationManager = publicationManager;
+        this.messageRouter = messageRouter;
+        this.requestCallerDirectory = requestCallerDirectory;
         this.participantIdStorage = participantIdStorage;
+        this.libjoynrMessagingAddress = libjoynrMessagingAddress;
     }
 
     /*
@@ -66,9 +74,9 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                                                                   System.currentTimeMillis());
         RequestCaller requestCaller = requestCallerFactory.create(provider);
 
-        dispatcher.addRequestCaller(participantId, requestCaller);
+        messageRouter.addNextHop(participantId, libjoynrMessagingAddress);
+        requestCallerDirectory.addCaller(participantId, requestCaller);
         RegistrationFuture ret = localCapabilitiesDirectory.add(capabilityEntry);
-        publicationManager.restoreQueuedSubscription(participantId, requestCaller);
         return ret;
     }
 
@@ -82,8 +90,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                                                                   participantId,
                                                                   System.currentTimeMillis());
         localCapabilitiesDirectory.remove(capabilityEntry);
-        dispatcher.removeRequestCaller(participantId);
-        publicationManager.stopPublicationByProviderId(participantId);
+        requestCallerDirectory.removeCaller(participantId);
     }
 
     @Override

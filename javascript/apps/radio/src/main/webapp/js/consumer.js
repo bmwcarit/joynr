@@ -26,6 +26,17 @@ var prettyLongTtl = 100 * 365 * 24 * 3600 * 1000; // 100 years TTL :-)
 
 var messagingQos, subscriptionQosOnChange, subscriptionQosPeriodic, subscriptionQosOnChangeWithKeepAlive;
 
+var filterGeoPositionMap = {
+    // Geelong, distance to Melbourne ~75 km by car
+    "AUSTRALIA": new GeoPosition({ latitude: -38.149251, longitude: 144.364415 }),
+    // Meran, distance to Bolzano ~34 km by car
+    "ITALY": new GeoPosition({ latitude: 46.670286, longitude: 11.152680 }),
+    // Redwater, distance to Edmonton ~62 km by car
+    "CANADA": new GeoPosition({ latitude: 53.950466, longitude: -113.107809 }),
+    // Nuremberg, distance to Munich ~170 km by car
+    "GERMANY": new GeoPosition({ latitude: 49.444336, longitude: 11.071728 })
+};
+
 function logHtml(line, msg) {
     $("div#divLog").prepend(msg+" <span style=\"font-size:0.8em;color:grey\">"+line+"</span><br>").show();
 }
@@ -183,6 +194,18 @@ function registerEventHandlers(radioProxy) {
     var subscriptionToWeakSignalId = null;
     var subscriptionToNewStationDiscoveredId = null;
 
+    // intialize
+    $("#lat").val(filterGeoPositionMap.AUSTRALIA.latitude.toString());
+    $("#lon").val(filterGeoPositionMap.AUSTRALIA.longitude.toString());
+
+    // change according to selection of country
+    $("#filterCountry").change(function() {
+        var value = $(this).val();
+        console.log("New value is: " + value);
+        $("#lat").val(filterGeoPositionMap[value].latitude.toString());
+        $("#lon").val(filterGeoPositionMap[value].longitude.toString());
+    });
+
     // weak signal broadcast
 
     $("#btnSubscribeToWeakSignal").click(function() {
@@ -204,17 +227,56 @@ function registerEventHandlers(radioProxy) {
                 );
                 subscriptionToWeakSignalId = newSubscriptionId;
                 $("input#btnUnsubscribeFromWeakSignal").attr("disabled", false);
+                $("input#btnSubscribeToWeakSignalUpdate").attr("disabled", false);
             }, function(error) {
                 log(
                         "radioProxy.weakSignal.subscribe",
                         "subscribe failed: " + error
                 );
                 $("input#btnSubscribeToWeakSignal").attr("disabled", false);
+                $("input#btnSubscribeToWeakSignalUpdate").attr("disabled", true);
                 });
         } else {
             log(
                     "btnSubscribeToNewStationDiscovered click",
                     "there is already a pending attribute subscription"
+            );
+        }
+    });
+
+    $("#btnSubscribeToWeakSignalUpdate").click(function() {
+        if (subscriptionToWeakSignalId) {
+            $("input#btnSubscribeToWeakSignal").attr("disabled", true);
+            $("input#btnSubscribeToWeakSignalUpdate").attr("disabled", true);
+            radioProxy.weakSignal.subscribe({
+                onReceive : function(weakSignalStation) {
+                    var weakSignalStationReadable = JSON.stringify(weakSignalStation);
+                    log(
+                            "radioProxy.weakSignal.onReceive after update",
+                            "radioProxy.weakSignal.publication: " + weakSignalStationReadable
+                    );
+                    $("div#divBroadcasts").prepend("broadcast received after update: " + weakSignalStationReadable + "<br>").show();
+                },
+                subscriptionId: subscriptionToWeakSignalId
+            }).then(function(newSubscriptionId) {
+                log(
+                        "radioProxy.weakSignal.subscribe update",
+                        "subscribe update done: " + newSubscriptionId
+                );
+                subscriptionToWeakSignalId = newSubscriptionId;
+                $("input#btnUnsubscribeFromWeakSignal").attr("disabled", false);
+            }, function(error) {
+                log(
+                        "radioProxy.weakSignal.subscribe update",
+                        "subscribe update failed: " + error
+                );
+                $("input#btnSubscribeToWeakSignal").attr("disabled", false);
+                $("input#btnSubscribeToWeakSignalUpdate").attr("disabled", false);
+                });
+        } else {
+            log(
+                    "btnSubscribeToNewStationDiscoveredUpdate click",
+                    "there is no attribute subscription that could be updated"
             );
         }
     });
@@ -230,12 +292,14 @@ function registerEventHandlers(radioProxy) {
                     "unsubscribe done"
                 );
                 $("input#btnSubscribeToWeakSignal").attr("disabled", false);
+                $("input#btnSubscribeToWeakSignalUpdate").attr("disabled", true);
             }).catch(function(error) {
                 log(
                     "radioProxy.weakSignal.unsubscribe",
                     "unsubscribe failed" + error
                 );
                 $("input#btnUnsubscribeFromWeakSignal").attr("disabled", false);
+                $("input#btnSubscribeToWeakSignalUpdate").attr("disabled", false);
             });
 
             subscriptionToWeakSignalId = null;
@@ -251,14 +315,16 @@ function registerEventHandlers(radioProxy) {
             $("input#btnSubscribeToNewStationDiscoveredSignal").attr("disabled", true);
 
             // setup filter parameters
-            var geoPosition = new GeoPosition();
-            geoPosition.latitude = 48.135125;
-            geoPosition.longitude = 11.581981;
+            var geoPosition = filterGeoPositionMap[$("select#filterCountry").val()];
             var positionOfInterest = JSON.stringify(geoPosition);
+            // distance is needed as string
+            var distance = $("select#filterDistance").val();
+            // hasTrafficService is needed as string
+            var hasTrafficService = $("select#filterTrafficService").val();
             var myFilterParameters = radioProxy.newStationDiscovered.createFilterParameters();
-            myFilterParameters.setHasTrafficService("true");
+            myFilterParameters.setHasTrafficService(hasTrafficService);
             myFilterParameters.setPositionOfInterest(positionOfInterest);
-            myFilterParameters.setRadiusOfInterestArea("200000");
+            myFilterParameters.setRadiusOfInterestArea(distance);
 
             radioProxy.newStationDiscovered.subscribe({
                 onReceive : function(newStationDiscovered) {

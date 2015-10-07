@@ -19,7 +19,7 @@ package io.joynr.messaging.http.operation;
  * #L%
  */
 
-import io.joynr.messaging.MessageReceiver;
+import io.joynr.messaging.MessageArrivedListener;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingTestModule;
 import io.joynr.messaging.ReceiverStatusListener;
@@ -64,7 +64,7 @@ public class LongPollingChannelLifecycleTest {
     private LongPollingChannelLifecycle longpollingChannelLifecycle;
 
     @Mock
-    private MessageReceiver mockMessageReceiver;
+    private MessageArrivedListener mockMessageArrivedListener;
     @Mock
     private ReceiverStatusListener mockReceiverStatusListener;
 
@@ -108,17 +108,23 @@ public class LongPollingChannelLifecycleTest {
     }
 
     private void testCreateChannel() {
-        longpollingChannelLifecycle.startLongPolling(mockMessageReceiver, mockReceiverStatusListener);
+        longpollingChannelLifecycle.startLongPolling(mockMessageArrivedListener, mockReceiverStatusListener);
 
         Mockito.verify(mockReceiverStatusListener, Mockito.timeout(5000)).receiverStarted();
         Assert.assertTrue(longpollingChannelLifecycle.isChannelCreated());
 
         Mockito.verifyNoMoreInteractions(mockReceiverStatusListener);
-        Mockito.verifyZeroInteractions(mockMessageReceiver);
+        Mockito.verifyZeroInteractions(mockMessageArrivedListener);
     }
 
     @After
     public void tearDown() throws Exception {
-        server.stop();
+        try {
+            server.stop();
+        } catch (Exception e) {
+            // do nothing as we don't want tests to fail only because
+            // stopping of the server did not work
+        }
+        ;
     }
 }

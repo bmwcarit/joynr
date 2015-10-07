@@ -107,7 +107,8 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(QCoreApplication* a
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
           wsSettings(*settings),
           wsCcMessagingSkeleton(NULL),
-          securityManager(NULL)
+          securityManager(NULL),
+          messagingIsRunning(false)
 {
     /*
       * WARNING - metatypes are not registered yet here.
@@ -376,6 +377,8 @@ void JoynrClusterControllerRuntime::registerDiscoveryProvider()
 JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
 {
     LOG_TRACE(logger, "entering ~JoynrClusterControllerRuntime");
+    stopMessaging();
+
     if (joynrDispatcher != NULL) {
         LOG_TRACE(logger, "joynrDispatcher");
         // joynrDispatcher->stopMessaging();
@@ -411,13 +414,19 @@ void JoynrClusterControllerRuntime::startMessaging()
     //    joynrDispatcher->startMessaging();
     //    joynrDispatcher->waitForMessaging();
     assert(messageReceiver != NULL);
-    messageReceiver->startReceiveQueue();
+    if (!messagingIsRunning) {
+        messageReceiver->startReceiveQueue();
+        messagingIsRunning = true;
+    }
 }
 
 void JoynrClusterControllerRuntime::stopMessaging()
 {
     // joynrDispatcher->stopMessaging();
-    messageReceiver->stopReceiveQueue();
+    if (messagingIsRunning) {
+        messageReceiver->stopReceiveQueue();
+        messagingIsRunning = false;
+    }
 }
 
 void JoynrClusterControllerRuntime::runForever()
@@ -427,9 +436,12 @@ void JoynrClusterControllerRuntime::runForever()
 
 JoynrClusterControllerRuntime* JoynrClusterControllerRuntime::create(QSettings* settings)
 {
-    int argc = 0;
-    char* argv[] = {0};
-    QCoreApplication* coreApplication = new QCoreApplication(argc, argv);
+    // Only allow one QCoreApplication instance
+    static int argc = 0;
+    static char* argv[] = {0};
+    static QCoreApplication* coreApplication =
+            (QCoreApplication::instance() == nullptr) ? new QCoreApplication(argc, argv) : nullptr;
+
     JoynrClusterControllerRuntime* runtime =
             new JoynrClusterControllerRuntime(coreApplication, settings);
     runtime->start();
@@ -445,7 +457,6 @@ void JoynrClusterControllerRuntime::unregisterProvider(const std::string& partic
 void JoynrClusterControllerRuntime::start()
 {
     startMessaging();
-    waitForChannelCreation();
     registerRoutingProvider();
     registerDiscoveryProvider();
 }

@@ -48,13 +48,16 @@ define("joynr/messaging/channel/ChannelMessagingSender", [
         var communicationModule = settings.communicationModule;
         var started = false;
 
+        var getRelativeExpiryDate = function getRelativeExpiryDate(joynrMessage) {
+            return parseInt(joynrMessage.header[JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE], 10) - Date.now();
+        };
+
         var checkIfExpired = function(queuedMessage){
             if (queuedMessage.pending === false || queuedMessage.expiryTimer === undefined) {
                 return true;
             }
 
-            var joynrMessage = queuedMessage.message;
-            var isExpired = joynrMessage.header[JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE] <= Date.now();
+            var isExpired = getRelativeExpiryDate(queuedMessage.message) <= 0;
             if (isExpired) {
                 queuedMessage.pending = false;
                 LongTimer.clearTimeout(queuedMessage.expiryTimer);
@@ -183,7 +186,7 @@ define("joynr/messaging/channel/ChannelMessagingSender", [
                                     pending : true,
                                     expiryTimer : LongTimer.setTimeout(function(){
                                         checkIfExpired(queuedMessage);
-                                    }, joynrMessage.header[JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE] - Date.now())
+                                    }, getRelativeExpiryDate(joynrMessage))
                                 };
                                 messageQueue.push(queuedMessage);
                                 LongTimer.setTimeout(notify, 0);

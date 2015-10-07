@@ -85,14 +85,10 @@ class QtTypeUtil extends CppTypeUtil {
 			}
 			else {
 				var templateParameters = new ArrayList;
+				templateParameters.add(stdTypeUtil.getTypeName(typedElement.type.derived))
+				templateParameters.add(typedElement.type.derived.typeName)
 				if (typedElement.type.isEnum) {
-					templateParameters.add(stdTypeUtil.getTypeName(typedElement.type.derived))
-					templateParameters.add(typedElement.type.derived.typeName)
 					templateParameters.add(typedElement.type.derived.typeNameOfContainingClass)
-				}
-				else {
-					templateParameters.add(stdTypeUtil.getTypeNameStd(typedElement.type.derived))
-					templateParameters.add(typedElement.type.derived.typeName)
 				}
 				return '''TypeUtil::toQt<«FOR parameter : templateParameters SEPARATOR ", "»«parameter»«ENDFOR»>(«objectName»)'''
 			}
@@ -143,14 +139,10 @@ class QtTypeUtil extends CppTypeUtil {
 			}
 			else {
 				var templateParameters = new ArrayList;
+				templateParameters.add(typedElement.type.derived.typeName)
+				templateParameters.add(stdTypeUtil.getTypeName(typedElement.type.derived))
 				if (typedElement.type.isEnum) {
-					templateParameters.add(typedElement.type.derived.typeName)
-					templateParameters.add(stdTypeUtil.getTypeName(typedElement.type.derived))
 					templateParameters.add(typedElement.type.derived.typeNameOfContainingClass)
-				}
-				else {
-					templateParameters.add(typedElement.type.derived.typeName)
-					templateParameters.add(stdTypeUtil.getTypeNameStd(typedElement.type.derived))
 				}
 				return '''TypeUtil::toStd<«FOR parameter : templateParameters SEPARATOR ", "»«parameter»«ENDFOR»>(«objectName»)'''
 			}

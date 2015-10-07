@@ -21,18 +21,12 @@ package io.joynr.messaging;
 
 import java.util.concurrent.Future;
 
-import javax.annotation.CheckForNull;
-
-import joynr.JoynrMessage;
-
 /**
  * Messaging facade.
  */
 public interface MessageReceiver {
 
     String getChannelId();
-
-    void registerMessageListener(MessageArrivedListener messageReceiver);
 
     /**
      *
@@ -41,24 +35,21 @@ public interface MessageReceiver {
      */
     void shutdown(boolean clear);
 
+    boolean isChannelCreated();
+
     boolean deleteChannel();
 
     boolean isStarted();
-
-    void receive(JoynrMessage message);
-
-    void onError(@CheckForNull JoynrMessage message, Throwable error);
 
     void suspend();
 
     void resume();
 
-    boolean isChannelCreated();
-
     /**
+     * @param messageArrivedListener the listener to be informed about received messages and errors 
      * @param receiverStatusListeners list of status listeners providing callbacks
      * for successful or failed start
      * @return a future that signals when the receiver is ready to be used.
      */
-    Future<Void> startReceiver(ReceiverStatusListener... receiverStatusListeners);
+    Future<Void> start(MessageArrivedListener messageArrivedListener, ReceiverStatusListener... receiverStatusListeners);
 }

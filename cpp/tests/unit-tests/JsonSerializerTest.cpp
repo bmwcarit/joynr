@@ -133,6 +133,37 @@ TEST_F(JsonSerializerTest, serialize_deserialize_BroadcastSubscriptionRequest) {
     EXPECT_TRUE(request == *desRequest);
 }
 
+TEST_F(JsonSerializerTest, serialize_JoynrMessage) {
+    qRegisterMetaType<joynr::Request>();
+    qRegisterMetaType<joynr::JoynrMessage>();
+    Request request;
+    request.setMethodName("serialize_JoynrMessage");
+    request.setRequestReplyId("xyz");
+    JoynrMessage joynrMessage;
+    qint64 testMilliseconds = 10000000;
+    joynrMessage.setHeaderExpiryDate(QDateTime::fromMSecsSinceEpoch(testMilliseconds));
+    joynrMessage.setType(JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST);
+    joynrMessage.setPayload(JsonSerializer::serialize(request));
+    QByteArray serializedContent(JsonSerializer::serialize(joynrMessage));
+    LOG_DEBUG(logger, QString("serialize_JoynrMessage: actual  : %1").arg(QString(serializedContent)));
+
+    QString expected(
+                "{\"_typeName\":\"joynr.JoynrMessage\","
+                "\"header\":{\"expiryDate\":\"%1\",\"msgId\":\"%2\"},"
+                "\"payload\":\"{\\\"_typeName\\\":\\\"joynr.Request\\\","
+                "\\\"methodName\\\":\\\"%3\\\","
+                "\\\"paramDatatypes\\\":[],"
+                "\\\"params\\\":[],"
+                "\\\"requestReplyId\\\":\\\"%4\\\"}\","
+                "\"type\":\"request\"}"
+    );
+    expected = expected.arg(QString::number(testMilliseconds)).arg(joynrMessage.getHeaderMessageId()).arg(request.getMethodName()).
+            arg(request.getRequestReplyId());
+
+    LOG_DEBUG(logger, QString("serialize_JoynrMessage: expected: %1").arg(expected));
+    EXPECT_EQ(expected, QString(serializedContent));
+}
+
 TEST_F(JsonSerializerTest, serialize_deserialize_byte_array) {
 
     // Build a list to test with

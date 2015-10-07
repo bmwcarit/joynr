@@ -16,9 +16,16 @@ specific language governing permissions and limitations
 under the License.
 
 This project has dependencies to:
+  3rd Party Dependencies - Library under Eclipse Public License - v 1.0
+  Antlr 3 Runtime under BSD License
   AOP alliance under Public Domain
   Apache Log4j under The Apache Software License, Version 2.0
+  ASM Commons under BSD
+  ASM Core under BSD
+  ASM Tree under BSD
   codegen under Eclipse Public License - v 1.0
+  Common Eclipse Runtime under Eclipse Public License - v 1.0
+  Common Types Runtime Library under Eclipse Public License - v 1.0
   dom4j under BSD License
   Eclipse Xbase Runtime Library under Eclipse Public License - v 1.0
   Eclipse Xtend Macro Library under Eclipse Public License - v 1.0
@@ -32,10 +39,18 @@ This project has dependencies to:
   Javassist under MPL 1.1 or LGPL 2.1
   javax.inject under The Apache Software License, Version 2.0
   JUnit under Common Public License Version 1.0
-  org.eclipse.xtend.standalone under Eclipse Public License - v 1.0
+  org.eclipse.emf.codegen under The Eclipse Public License Version 1.0
+  org.eclipse.emf.common under The Eclipse Public License Version 1.0
+  org.eclipse.emf.ecore under The Eclipse Public License Version 1.0
+  org.eclipse.emf.ecore.xmi under The Eclipse Public License Version 1.0
   org.franca.core under Eclipse Public License - v 1.0
   org.franca.core.dsl under Eclipse Public License - v 1.0
   org.franca.deploymodel.dsl under Eclipse Public License - v 1.0
   Reflections under WTFPL
+  Tycho org.eclipse.jdt.core dependency (Incubation) under Eclipse Public License
+  Xbase Runtime Library under Eclipse Public License - v 1.0
   XML Commons External Components XML APIs under The Apache Software License, Version 2.0 or The SAX License or The W3C License
+  Xtend Core Library under Eclipse Public License - v 1.0
+  Xtext Runtime Library under Eclipse Public License - v 1.0
+  Xtext Util under Eclipse Public License - v 1.0
 

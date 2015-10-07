@@ -24,19 +24,18 @@ import io.joynr.capabilities.DummyDiscoveryModule;
 import io.joynr.capabilities.DummyLocalChannelUrlDirectoryClient;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.common.ExpiryDate;
-import io.joynr.dispatcher.JoynrMessageFactory;
-import io.joynr.dispatcher.MessagingEndpointDirectory;
+import io.joynr.dispatching.JoynrMessageFactory;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.integration.util.TestMessageListener;
-import io.joynr.messaging.IMessageReceivers;
 import io.joynr.messaging.LocalChannelUrlDirectoryClient;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.routing.RoutingTable;
+import io.joynr.messaging.routing.RoutingTableImpl;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrBaseModule;
-import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.PropertyLoader;
 import io.joynr.util.PreconfiguredEndpointDirectoryModule;
 
@@ -48,6 +47,7 @@ import java.util.Properties;
 import java.util.UUID;
 
 import joynr.JoynrMessage;
+import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.types.ChannelUrlInformation;
 
 import org.junit.After;
@@ -61,11 +61,13 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
+import com.google.inject.Module;
 import com.google.inject.name.Names;
 
 public abstract class AbstractMessagingIntegrationTest {
 
-    private static final int DEFAULT_TIMEOUT = 5000;
+    // The timeout should be achievable in all test environments
+    private static final int DEFAULT_TIMEOUT = 8000;
 
     private MessageSender joynrMessageSender1;
     private MessageSender joynrMessageSender2;
@@ -80,8 +82,8 @@ public abstract class AbstractMessagingIntegrationTest {
 
     private MessageReceiver messageReceiver1;
     private MessageReceiver messageReceiver2;
-    MessagingEndpointDirectory messagingEndpointDirectory1;
-    MessagingEndpointDirectory messagingEndpointDirectory2;
+    RoutingTable routingTable1;
+    RoutingTable routingTable2;
     private JoynrMessageFactory joynrMessagingFactory;
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractMessagingIntegrationTest.class);
@@ -89,11 +91,15 @@ public abstract class AbstractMessagingIntegrationTest {
     private static final String STATIC_PERSISTENCE_FILE = "target/temp/persistence.properties";
     private LocalChannelUrlDirectoryClient localChannelUrlDirectoryClient;
     private DummyCapabilitiesDirectory localCapDir;
+
     private String bounceProxyUrl = Guice.createInjector(new JoynrBaseModule())
                                          .getInstance(Key.get(String.class,
                                                               Names.named(MessagingPropertyKeys.BOUNCE_PROXY_URL)));
 
     private long relativeTtl_ms = 10000L;
+
+    // To be provided by subclasses
+    public abstract Injector createInjector(Properties joynrConfig, Module... modules);
 
     @Before
     public void setUp() throws SecurityException {
@@ -108,15 +114,15 @@ public abstract class AbstractMessagingIntegrationTest {
         Injector injector1 = setupMessageEndpoint(channelId1, localChannelUrlDirectoryClient, localCapDir);
         joynrMessageSender1 = injector1.getInstance(MessageSender.class);
         messageReceiver1 = injector1.getInstance(MessageReceiver.class);
-        IMessageReceivers messageReceivers = injector1.getInstance(IMessageReceivers.class);
-        messageReceivers.registerMessageReceiver(messageReceiver1, channelId1);
+        //   IMessageReceivers messageReceivers = injector1.getInstance(IMessageReceivers.class);
+        // messageReceivers.registerMessageReceiver(messageReceiver1, channelId1);
 
         String channelId2 = "2_" + UUID.randomUUID().toString();
         Injector injector2 = setupMessageEndpoint(channelId2, localChannelUrlDirectoryClient, localCapDir);
         joynrMessageSender2 = injector2.getInstance(MessageSender.class);
         messageReceiver2 = injector2.getInstance(MessageReceiver.class);
-        IMessageReceivers messageReceivers2 = injector2.getInstance(IMessageReceivers.class);
-        messageReceivers2.registerMessageReceiver(messageReceiver2, channelId2);
+        //   IMessageReceivers messageReceivers2 = injector2.getInstance(IMessageReceivers.class);
+        //  messageReceivers2.registerMessageReceiver(messageReceiver2, channelId2);
 
         joynrMessagingFactory = injector1.getInstance(JoynrMessageFactory.class);
 
@@ -130,10 +136,10 @@ public abstract class AbstractMessagingIntegrationTest {
     public Injector setupMessageEndpoint(String channelId,
                                          LocalChannelUrlDirectoryClient localChannelUrlDirectoryClient,
                                          LocalCapabilitiesDirectory localCapDir) {
-        MessagingEndpointDirectory messagingEndpointDirectory = new MessagingEndpointDirectory("channelurldirectory_participantid",
-                                                                                               "discoverydirectory_channelid",
-                                                                                               "capabilitiesdirectory_participantid",
-                                                                                               "discoverydirectory_channelid");
+        RoutingTable routingTable = new RoutingTableImpl("channelurldirectory_participantid",
+                                                         new ChannelAddress("discoverydirectory_channelid"),
+                                                         "capabilitiesdirectory_participantid",
+                                                         new ChannelAddress("discoverydirectory_channelid"));
 
         ChannelUrlInformation channelUrlInformation = new ChannelUrlInformation();
         channelUrlInformation.setUrls(Arrays.asList(getChannelUrl(channelId)));
@@ -143,10 +149,9 @@ public abstract class AbstractMessagingIntegrationTest {
         joynrConfig.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, STATIC_PERSISTENCE_FILE);
         joynrConfig.put(MessagingPropertyKeys.CHANNELID, channelId);
         joynrConfig.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
-        Injector injector = new JoynrInjectorFactory(joynrConfig,
-                                                     new DummyDiscoveryModule(localChannelUrlDirectoryClient,
-                                                                              localCapDir),
-                                                     new PreconfiguredEndpointDirectoryModule(messagingEndpointDirectory)).getInjector();
+        Injector injector = createInjector(joynrConfig,
+                                           new DummyDiscoveryModule(localChannelUrlDirectoryClient, localCapDir),
+                                           new PreconfiguredEndpointDirectoryModule(routingTable));
 
         return injector;
 
@@ -168,12 +173,10 @@ public abstract class AbstractMessagingIntegrationTest {
         String channelId2 = messageReceiver2.getChannelId();
 
         TestMessageListener listener2 = new TestMessageListener(2);
-        messageReceiver2.registerMessageListener(listener2);
-        messageReceiver2.startReceiver();
+        messageReceiver2.start(listener2);
 
         TestMessageListener listener1 = new TestMessageListener(1);
-        messageReceiver1.registerMessageListener(listener1);
-        messageReceiver1.startReceiver();
+        messageReceiver1.start(listener1);
         Thread.sleep(50);
 
         // send 2 messages one way
@@ -214,11 +217,9 @@ public abstract class AbstractMessagingIntegrationTest {
         String channelId2 = messageReceiver2.getChannelId();
         // send message one way
         TestMessageListener listener2 = new TestMessageListener(1);
-        messageReceiver2.registerMessageListener(listener2);
-        messageReceiver2.startReceiver();
+        messageReceiver2.start(listener2);
         TestMessageListener listener1 = new TestMessageListener(0, 0);
-        messageReceiver1.registerMessageListener(listener1);
-        messageReceiver1.startReceiver();
+        messageReceiver1.start(listener1);
 
         Thread.sleep(50);
 
@@ -240,12 +241,10 @@ public abstract class AbstractMessagingIntegrationTest {
 
         // send 2 messages one way, one should be dropped
         TestMessageListener listener1 = new TestMessageListener(0, 1);
-        messageReceiver1.registerMessageListener(listener1);
-        messageReceiver1.startReceiver();
+        messageReceiver1.start(listener1);
 
         TestMessageListener listener2 = new TestMessageListener(1);
-        messageReceiver2.registerMessageListener(listener2);
-        messageReceiver2.startReceiver();
+        messageReceiver2.start(listener2);
 
         // stops long poll
         messageReceiver2.suspend();
@@ -274,12 +273,10 @@ public abstract class AbstractMessagingIntegrationTest {
     public void receiveMultipleMessagesInOneResponseAndDistributeToListener() throws Exception {
 
         TestMessageListener listener1 = new TestMessageListener(0, 0);
-        messageReceiver1.registerMessageListener(listener1);
-        messageReceiver1.startReceiver();
+        messageReceiver1.start(listener1);
 
         TestMessageListener listener2 = new TestMessageListener(2);
-        messageReceiver2.registerMessageListener(listener2);
-        messageReceiver2.startReceiver();
+        messageReceiver2.start(listener2);
 
         messageReceiver2.suspend();
 
@@ -311,12 +308,10 @@ public abstract class AbstractMessagingIntegrationTest {
         String channelId2 = messageReceiver2.getChannelId();
 
         TestMessageListener listener2 = new TestMessageListener(2);
-        messageReceiver2.registerMessageListener(listener2);
-        messageReceiver2.startReceiver();
+        messageReceiver2.start(listener2);
 
         TestMessageListener listener1 = new TestMessageListener(1);
-        messageReceiver1.registerMessageListener(listener1);
-        messageReceiver1.startReceiver();
+        messageReceiver1.start(listener1);
         Thread.sleep(50);
 
         // send 2 messages one way
@@ -364,9 +359,9 @@ public abstract class AbstractMessagingIntegrationTest {
         String channelId2 = messageReceiver2.getChannelId();
 
         TestMessageListener listener2 = new TestMessageListener(nMessages);
-        messageReceiver2.registerMessageListener(listener2);
-        messageReceiver2.startReceiver();
-        messageReceiver1.startReceiver();
+        messageReceiver2.start(listener2);
+        TestMessageListener listener1 = new TestMessageListener(nMessages);
+        messageReceiver1.start(listener1);
         int message_delay_ms = 50;
         // wait 5 secs plus message_delay_ms per message extra
         int ttlForManyMessages = DEFAULT_TIMEOUT + nMessages * message_delay_ms;

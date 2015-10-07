@@ -24,15 +24,15 @@
 	<packaging>jar</packaging>
 
 	<name>${project.groupId}:${project.artifactId}</name>
-	
-	<description>In a scalable environment with multiple bounce proxy instances, a bounceproxy controller 
+
+	<description>In a scalable environment with multiple bounce proxy instances, a bounceproxy controller
 		is responsible for assigning channels to bounce proxy instances to distribute load.
 	</description>
 
 	<parent>
 		<groupId>io.joynr.java.messaging</groupId>
 		<artifactId>bounceproxy</artifactId>
-		<version>0.9.4</version>
+		<version>0.10.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -66,7 +66,7 @@
 			<artifactId>javax.servlet-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
-		
+
 		<!-- Needed here to override test scope. -->
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
@@ -103,7 +103,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>io.joynr.java.messaging</groupId>
 			<artifactId>service-common</artifactId>
@@ -117,25 +117,25 @@
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
-		    <groupId>org.apache.httpcomponents</groupId>
-		    <artifactId>httpclient</artifactId>
-		    <type>test-jar</type>
-		    <scope>test</scope>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<type>test-jar</type>
+			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
-	        <groupId>org.slf4j</groupId>
-	        <artifactId>slf4j-log4j12</artifactId>
-	    </dependency>
-	    
-	    <dependency>
-	    	<groupId>io.joynr.java.messaging.bounceproxy.bounceproxy-controller-persistence</groupId>
-	    	<artifactId>persistence-common</artifactId>
-	    	<version>${project.version}</version>
-	    </dependency>
-	    
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>io.joynr.java.messaging.bounceproxy.bounceproxy-controller-persistence</groupId>
+			<artifactId>persistence-common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 	</dependencies>
 
 </project>

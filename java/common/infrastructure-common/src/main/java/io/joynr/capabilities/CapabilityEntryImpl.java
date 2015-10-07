@@ -19,15 +19,14 @@ package io.joynr.capabilities;
  * #L%
  */
 
-import io.joynr.endpoints.EndpointAddressBase;
-import io.joynr.endpoints.JoynrMessagingEndpointAddress;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import javax.annotation.CheckForNull;
 
+import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.types.CapabilityInformation;
 import joynr.types.ProviderQos;
 
@@ -39,7 +38,7 @@ public class CapabilityEntryImpl implements CapabilityEntry {
 
     protected ProviderQos providerQos;
 
-    protected List<EndpointAddressBase> endpointAddresses;
+    protected List<Address> addresses;
 
     protected long dateWhenRegistered;
     protected Origin origin;
@@ -53,7 +52,7 @@ public class CapabilityEntryImpl implements CapabilityEntry {
                                ProviderQos providerQos,
                                String participantId,
                                long dateWhenRegistered,
-                               EndpointAddressBase... endpointAddresses) {
+                               Address... addresses) {
 
         this.domain = domain;
         this.interfaceName = interfaceName;
@@ -61,8 +60,8 @@ public class CapabilityEntryImpl implements CapabilityEntry {
         this.participantId = participantId;
         this.dateWhenRegistered = dateWhenRegistered;
         origin = Origin.LOCAL;
-        this.endpointAddresses = new ArrayList<EndpointAddressBase>();
-        this.endpointAddresses.addAll(Arrays.asList(endpointAddresses));
+        this.addresses = new ArrayList<Address>();
+        this.addresses.addAll(Arrays.asList(addresses));
     }
 
     public CapabilityEntryImpl(CapabilityInformation capInfo) {
@@ -72,7 +71,7 @@ public class CapabilityEntryImpl implements CapabilityEntry {
              capInfo.getParticipantId(),
              System.currentTimeMillis(),
              // Assume the Capability entry is not local because it has been serialized
-             new JoynrMessagingEndpointAddress(capInfo.getChannelId()));
+             new ChannelAddress(capInfo.getChannelId()));
     }
 
     public static CapabilityEntryImpl fromCapabilityInformation(CapabilityInformation capInfo) {
@@ -82,7 +81,7 @@ public class CapabilityEntryImpl implements CapabilityEntry {
                                        capInfo.getParticipantId(),
                                        System.currentTimeMillis(),
                                        // Assume the Capability entry is not local because it has been serialized
-                                       new JoynrMessagingEndpointAddress(capInfo.getChannelId()));
+                                       new ChannelAddress(capInfo.getChannelId()));
     }
 
     /* (non-Javadoc)
@@ -92,9 +91,9 @@ public class CapabilityEntryImpl implements CapabilityEntry {
     @CheckForNull
     public CapabilityInformation toCapabilityInformation() {
         String channelId = null;
-        for (EndpointAddressBase endpointAddress : getEndpointAddresses()) {
-            if (endpointAddress instanceof JoynrMessagingEndpointAddress) {
-                channelId = ((JoynrMessagingEndpointAddress) endpointAddress).getChannelId();
+        for (Address endpointAddress : getAddresses()) {
+            if (endpointAddress instanceof ChannelAddress) {
+                channelId = ((ChannelAddress) endpointAddress).getChannelId();
                 break;
             }
         }
@@ -120,8 +119,8 @@ public class CapabilityEntryImpl implements CapabilityEntry {
      * @see io.joynr.capabilities.CapabilityEntry#getEndpointAddresses()
      */
     @Override
-    public List<EndpointAddressBase> getEndpointAddresses() {
-        return endpointAddresses;
+    public List<Address> getAddresses() {
+        return addresses;
     }
 
     /* (non-Javadoc)
@@ -177,8 +176,8 @@ public class CapabilityEntryImpl implements CapabilityEntry {
         this.providerQos = providerQos;
     }
 
-    protected final void setEndpointAddresses(List<EndpointAddressBase> endpointAddresses) {
-        this.endpointAddresses = endpointAddresses;
+    protected final void setEndpointAddresses(List<Address> addresses) {
+        this.addresses = addresses;
     }
 
     protected final void setParticipantId(String participantId) {
@@ -198,8 +197,8 @@ public class CapabilityEntryImpl implements CapabilityEntry {
         StringBuilder builder = new StringBuilder();
         builder.append("CapabilityEntry [providerQos=")
                .append(providerQos)
-               .append(", endpointAddresses=")
-               .append(endpointAddresses)
+               .append(", addresses=")
+               .append(addresses)
                .append(", participantId=")
                .append(participantId)
                .append(", domain=")
@@ -218,7 +217,7 @@ public class CapabilityEntryImpl implements CapabilityEntry {
         int result = 1;
         result = prime * result + (int) (getDateWhenRegistered() ^ (getDateWhenRegistered() >>> 32));
         result = prime * result + ((domain == null) ? 0 : domain.hashCode());
-        result = prime * result + ((endpointAddresses == null) ? 0 : endpointAddresses.hashCode());
+        result = prime * result + ((addresses == null) ? 0 : addresses.hashCode());
         result = prime * result + ((interfaceName == null) ? 0 : interfaceName.hashCode());
         result = prime * result + ((participantId == null) ? 0 : participantId.hashCode());
         result = prime * result + ((providerQos == null) ? 0 : providerQos.hashCode());
@@ -251,11 +250,11 @@ public class CapabilityEntryImpl implements CapabilityEntry {
         } else if (!domain.equals(other.domain)) {
             return false;
         }
-        if (endpointAddresses == null) {
-            if (other.endpointAddresses != null) {
+        if (addresses == null) {
+            if (other.addresses != null) {
                 return false;
             }
-        } else if (!endpointAddresses.equals(other.endpointAddresses)) {
+        } else if (!addresses.equals(other.addresses)) {
             return false;
         }
         if (interfaceName == null) {
@@ -276,9 +275,9 @@ public class CapabilityEntryImpl implements CapabilityEntry {
     }
 
     @Override
-    public void addEndpoint(EndpointAddressBase endpointAddress) {
-        if (!endpointAddresses.contains(endpointAddress)) {
-            endpointAddresses.add(endpointAddress);
+    public void addEndpoint(Address endpointAddress) {
+        if (!addresses.contains(endpointAddress)) {
+            addresses.add(endpointAddress);
         }
     }
 }

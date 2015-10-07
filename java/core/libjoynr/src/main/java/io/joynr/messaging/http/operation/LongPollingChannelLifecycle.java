@@ -22,7 +22,7 @@ package io.joynr.messaging.http.operation;
 import io.joynr.exceptions.JoynrChannelMissingException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.messaging.LocalChannelUrlDirectoryClient;
-import io.joynr.messaging.MessageReceiver;
+import io.joynr.messaging.MessageArrivedListener;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingSettings;
 import io.joynr.messaging.ReceiverStatusListener;
@@ -112,7 +112,7 @@ public class LongPollingChannelLifecycle {
         this.httpRequestFactory = httpRequestFactory;
     }
 
-    public synchronized void startLongPolling(final MessageReceiver messageReceiver,
+    public synchronized void startLongPolling(final MessageArrivedListener messageArrivedListener,
                                               final ReceiverStatusListener... receiverStatusListeners) {
         if (channelMonitorExecutorService == null) {
             throw new JoynrShutdownException("Channel Monitor already shutdown");
@@ -134,7 +134,7 @@ public class LongPollingChannelLifecycle {
                     while (true) {
                         channelCreated = false;
                         // Create the channel with maximal "maxRetries" retries
-                        createChannelLoop(messageReceiver, maxRetries);
+                        createChannelLoop(maxRetries);
 
                         // signal that the channel has been created
                         for (ReceiverStatusListener statusListener : receiverStatusListeners) {
@@ -154,7 +154,7 @@ public class LongPollingChannelLifecycle {
                         // Start LONG POLL lifecycle. The future will only
                         // return when the long poll loop has ended,
                         // otherwise will terminate with a JoynrShutdownException
-                        longPollLoop(messageReceiver, maxRetries);
+                        longPollLoop(messageArrivedListener, maxRetries);
                     }
                 } finally {
                     started = false;
@@ -216,7 +216,8 @@ public class LongPollingChannelLifecycle {
 
     }
 
-    private int longPollLoop(final MessageReceiver messageReceiver, int retries) throws JoynrShutdownException {
+    private int longPollLoop(final MessageArrivedListener messageArrivedListener, int retries)
+                                                                                              throws JoynrShutdownException {
         while (retries > 0) {
             logger.info("LONG POLL LOOP: Start: retries: {}", retries);
             retries--;
@@ -239,7 +240,7 @@ public class LongPollingChannelLifecycle {
                     this.longPolling = new LongPollChannel(httpclient,
                                                            defaultRequestConfig,
                                                            longPollingDisabled,
-                                                           messageReceiver,
+                                                           messageArrivedListener,
                                                            objectMapper,
                                                            settings,
                                                            httpConstants,
@@ -280,7 +281,7 @@ public class LongPollingChannelLifecycle {
         return retries;
     }
 
-    private int createChannelLoop(final MessageReceiver messageReceiver, int retries) {
+    private int createChannelLoop(int retries) {
         while (started && !channelCreated) {
 
             channelCreated = createChannel();

@@ -20,7 +20,6 @@ package io.joynr.capabilities;
  */
 
 import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.endpoints.EndpointAddressBase;
 import io.joynr.exceptions.JoynrCommunicationException;
 
 import java.util.ArrayList;
@@ -31,6 +30,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.CheckForNull;
+
+import joynr.system.RoutingTypes.Address;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,8 +59,8 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
     ConcurrentHashMap<String, List<String>> interfaceAddressToCapabilityMapping = new ConcurrentHashMap<String, List<String>>();
     ConcurrentHashMap<String, String> participantIdToCapabilityMapping = new ConcurrentHashMap<String, String>();
     ConcurrentHashMap<String, CapabilityEntry> capabilityKeyToCapabilityMapping = new ConcurrentHashMap<String, CapabilityEntry>();
-    ConcurrentHashMap<EndpointAddressBase, List<String>> endPointAddressToCapabilityMapping = new ConcurrentHashMap<EndpointAddressBase, List<String>>();
-    ConcurrentHashMap<String, List<EndpointAddressBase>> capabilityKeyToEndPointAddressMapping = new ConcurrentHashMap<String, List<EndpointAddressBase>>();
+    ConcurrentHashMap<Address, List<String>> endPointAddressToCapabilityMapping = new ConcurrentHashMap<Address, List<String>>();
+    ConcurrentHashMap<String, List<Address>> capabilityKeyToEndPointAddressMapping = new ConcurrentHashMap<String, List<Address>>();
 
     // Do not sychronize on a Boolean
     // Fixes FindBug warning: DL: Synchronization on Boolean
@@ -79,8 +80,8 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
     @Override
     public void add(CapabilityEntry capabilityEntry) {
         if (capabilityEntry.getDomain() == null || capabilityEntry.getInterfaceName() == null
-                || capabilityEntry.getParticipantId() == null || capabilityEntry.getEndpointAddresses() == null
-                || capabilityEntry.getEndpointAddresses().isEmpty()) {
+                || capabilityEntry.getParticipantId() == null || capabilityEntry.getAddresses() == null
+                || capabilityEntry.getAddresses().isEmpty()) {
             String message = "capabilityEntry being registered is not complete: " + capabilityEntry;
             logger.error(message);
             throw new JoynrCommunicationException(message);
@@ -134,8 +135,8 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
             // endpointaddresses is not null
             // checkMapDoesNotContainId(capabilityKeyToEndPointAddressMapping,
             // capabilityEntryId, 5);
-            capabilityKeyToEndPointAddressMapping.put(capabilityEntryId, capabilityEntry.getEndpointAddresses());
-            for (EndpointAddressBase endpointAddress : capabilityEntry.getEndpointAddresses()) {
+            capabilityKeyToEndPointAddressMapping.put(capabilityEntryId, capabilityEntry.getAddresses());
+            for (Address endpointAddress : capabilityEntry.getAddresses()) {
 
                 // fixes FindBugs error: Sequence of calls to concurrent
                 // abstraction may not be atomic
@@ -263,7 +264,7 @@ public class CapabilitiesStoreImpl implements CapabilitiesStore {
         }
 
         // update endpointAddress to capapbility mapping
-        for (EndpointAddressBase endpointAddress : entry.getEndpointAddresses()) {
+        for (Address endpointAddress : entry.getAddresses()) {
             mapping = endPointAddressToCapabilityMapping.get(endpointAddress);
             if (mapping != null) {
                 if (!mapping.remove(capabilityEntryId)) {

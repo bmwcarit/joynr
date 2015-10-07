@@ -22,24 +22,24 @@
 	<groupId>io.joynr.java.messaging.bounceproxy</groupId>
 	<artifactId>bounceproxy-common</artifactId>
 	<packaging>jar</packaging>
-	
+
 	<name>${project.groupId}:${project.artifactId}</name>
-	
+
 	<description>Common classes that can be used for all types of bounce proxies.</description>
 
 	<parent>
 		<groupId>io.joynr.java.messaging</groupId>
 		<artifactId>bounceproxy</artifactId>
-		<version>0.9.4</version>
+		<version>0.10.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
-	
+
 	<properties>
 		<atmosphere-version>2.0.8</atmosphere-version>
 	</properties>
 
-	<dependencies>	
-	
+	<dependencies>
+
 		<dependency>
 			<groupId>io.joynr.java.messaging</groupId>
 			<artifactId>servlet-common</artifactId>
@@ -55,7 +55,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.atmosphere</groupId>
 			<artifactId>atmosphere-runtime</artifactId>
@@ -80,7 +80,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>javax</groupId>
 			<artifactId>javaee-api</artifactId>
@@ -93,7 +93,7 @@
 			<artifactId>service-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.atmosphere</groupId>
 			<artifactId>atmosphere-guice</artifactId>
@@ -123,15 +123,15 @@
 			<artifactId>messaging-service</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
-		<!-- Don't use mockito-all here. 
-		     It contains hamcrest classes in its jar, which conflict with JUnit -->		
+
+		<!-- Don't use mockito-all here.
+		     It contains hamcrest classes in its jar, which conflict with JUnit -->
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
 			<scope>test</scope>
 		</dependency>
-		
+
 	</dependencies>
 
 </project>

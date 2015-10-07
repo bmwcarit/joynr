@@ -24,13 +24,13 @@
 	<packaging>jar</packaging>
 
 	<name>${project.groupId}:${project.artifactId}</name>
-	
+
 	<description>Defines RESTful service interfaces for sending messages to other participants</description>
 
 	<parent>
 		<groupId>io.joynr.java</groupId>
 		<artifactId>messaging</artifactId>
-		<version>0.9.4</version>
+		<version>0.10.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -44,13 +44,13 @@
 			<artifactId>servlet-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>io.joynr.java.messaging</groupId>
 			<artifactId>service-common</artifactId>
@@ -64,8 +64,8 @@
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
-		
-		<!-- Workaround for Maven bug MNG-1378: Make dependencies of test-jars transitive 
+
+		<!-- Workaround for Maven bug MNG-1378: Make dependencies of test-jars transitive
 		     Dependencies should come from service-common test-jar, but they aren't resolved
 		     transitively. Thus they are duplicated here. -->
 		<dependency>
@@ -84,7 +84,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-	
+
 		<!-- Need separate Groovy dependency because of classpath issues with REST Assured. -->
 		<dependency>
 			<groupId>org.codehaus.groovy</groupId>
@@ -108,7 +108,7 @@
 			<scope>test</scope>
 		</dependency>
 		<!-- workaround end -->
-		
+
 	</dependencies>
 
 </project>

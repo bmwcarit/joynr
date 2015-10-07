@@ -1,3 +1,42 @@
+#joynr 0.10.0
+
+joynr JavaScript is now also officially open source. JavaScript can be run in Chrome or node.js.
+Have a look in the [JavaScript Tutorial](JavaScriptTutorial.js) to get started with joynr
+JavaScript, and try out the radio app examples to see it all in action.
+
+##Known issues
+* **[Java]** Handling of “number” types and enums in Lists is not implemented correctly. Accessing
+  these values individually can result in ClassCastExceptions being thrown.
+* **[Java]** Uint types not handled correctly: Unsigned values from C++ are read as signed values
+  in Java. Workaround: the Java application must convert from signed to unsigned values itself.
+  Note that this is only an issue if values exceed the largest possible values that can be
+  represented by the signed java values.
+
+##API relevant changes
+* **[Java, C++, JS]** In order to fix compatibility in all supported languages with types using
+  type collections, the generators now use the spelling of Franca element names as-is for packages,
+  type collections, interfaces, etc., meaning that they no longer perform upper/lower case
+  conversions on Franca element names. Models that contain elements with identical spelling other
+  than case may cause unexpected behavior depending on which operating system is used. Files in
+  Windows will be overwritten, for example, while files in Linux will co-exist.
+* **[Java, C++, JS]** Franca's error enums are currently supported in Java, but not yet complete in
+  JavaScript or C++. We recommend not using FIDLs with Error Enums until 0.11 is released.
+
+##Other changes
+* **[Java]** Logging can now be focused on message flow. Set log4j.rootLogger=error and then use a
+  single logger to view messages: log4j.logger.io.joynr.messaging.routing.MessageRouterImpl=info
+  shows only the flow, =debug shows the body as well.
+* **[C++]** Now using Qt 5.5
+* **[JS]** Fix radio example made for node, to be compatible with the radio example
+  in C++, Java and the browser-based JavaScript application.
+* **[Tooling]** Minor fixes in build scripts.
+* **[Tooling]** Move java-generator, cpp-generator and js-generator into the tools folder.
+  All generator modules have the Maven group ID "io.joynr.tools.generator".
+* **[Tooling]** The joynr-generator-standalone supports JavaScript code generation
+  language.
+* **[Tooling, JS]** The joynr JavaScript build is part of the profile "javascript" of the
+  root joynr Maven POM.
+
 #joynr 0.9.4
 
 This is a minor bug fix release.

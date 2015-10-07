@@ -26,14 +26,14 @@
 	<parent>
 		<groupId>io.joynr.java</groupId>
 		<artifactId>messaging</artifactId>
-		<version>0.9.4</version>
+		<version>0.10.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<modules>
 		<module>single-bounceproxy</module>
-		<module>bounceproxy-controller</module>	
-		<module>bounceproxy-controller-nonclustered</module>	
-		<module>bounceproxy-controller-clustered</module>	
+		<module>bounceproxy-controller</module>
+		<module>bounceproxy-controller-nonclustered</module>
+		<module>bounceproxy-controller-clustered</module>
 		<module>controlled-bounceproxy</module>
 		<module>bounceproxy-common</module>
 		<module>bounceproxy-controller-persistence</module>

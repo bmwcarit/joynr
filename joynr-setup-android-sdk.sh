@@ -32,7 +32,7 @@ set -e
 (
 	log "INSTALL LOLLIPOP SDK TO MAVEN REPOSITORY"
 	cd maven-android-sdk-deployer
-	mvn clean install --projects com.simpligility.android.sdk-deployer:android-21 --also-make
+	mvn clean install --projects com.simpligility.android.sdk-deployer:android-21,com.simpligility.android.sdk-deployer:android-m2repository --also-make
 )
 (
 	log "CLEANUP"

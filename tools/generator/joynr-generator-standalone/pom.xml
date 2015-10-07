@@ -27,7 +27,7 @@
 	<parent>
 		<groupId>io.joynr.tools</groupId>
 		<artifactId>generator</artifactId>
-		<version>0.9.4</version>
+		<version>0.10.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -46,6 +46,13 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
 				<version>2.10</version>
+				<configuration>
+					<!-- exclude org.eclipse.xtext.dependencies, as it is packed as
+					     pom and the unpack-dependencies goal is unable to process
+					     these kinds of "archives"
+					-->
+					<excludeArtifactIds>org.eclipse.xtext.dependencies</excludeArtifactIds>
+				</configuration>
 				<executions>
 					<!-- unpack all non-runnable files into info -->
 					<execution>
@@ -72,11 +79,23 @@
 							<goal>unpack-dependencies</goal>
 						</goals>
 						<configuration>
-							<includes>**/*.class,**/*.xtend,**/*.tokens,**/*xmi,**/log4j.properties</includes>
+							<includes>**/*.class,**/*.xtend,**/*.xtext, **/*.xtextbin, **/*.tokens,**/*xmi,**/log4j.properties</includes>
 							<includeScope>compile</includeScope>
 							<outputDirectory>${project.build.directory}/classes</outputDirectory>
 							<overWriteReleases>true</overWriteReleases>
 							<overWriteSnapshots>true</overWriteSnapshots>
+						</configuration>
+					</execution>
+					<execution>
+						<id>load-test-franca-file</id>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>unpack-dependencies</goal>
+						</goals>
+						<configuration>
+							<includeArtifactIds>basemodel</includeArtifactIds>
+							<outputDirectory>${project.build.directory}/model</outputDirectory>
+							<overWriteIfNewer>true</overWriteIfNewer>
 						</configuration>
 					</execution>
 				</executions>
@@ -127,6 +146,32 @@
 					</archive>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.4.0</version>
+				<executions>
+					<execution>
+					<phase>verify</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<executable>java</executable>
+					<arguments>
+						<argument>-jar</argument>
+						<argument>${basedir}/target/joynr-generator-standalone-${project.version}.jar</argument>
+						<argument>-outputPath</argument>
+						<argument>${basedir}/target/standalone-gen</argument>
+						<argument>-modelpath</argument>
+						<argument>${project.build.directory}/model/joynr/Routing.fidl</argument>
+						<argument>-generationLanguage</argument>
+						<argument>java</argument>
+					</arguments>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
@@ -140,6 +185,12 @@
 			<groupId>io.joynr.tools.generator</groupId>
 			<artifactId>java-generator</artifactId>
 			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr</groupId>
+			<artifactId>basemodel</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.tools.generator</groupId>

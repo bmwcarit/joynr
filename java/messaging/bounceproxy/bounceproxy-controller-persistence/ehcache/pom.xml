@@ -24,13 +24,13 @@
 	<packaging>jar</packaging>
 
 	<name>${project.groupId}:${project.artifactId}</name>
-	
+
 	<description>ehcache implementation for directories needed by bounceproxy controller</description>
 
 	<parent>
 		<groupId>io.joynr.java.messaging.bounceproxy</groupId>
 		<artifactId>bounceproxy-controller-persistence</artifactId>
-		<version>0.9.4</version>
+		<version>0.10.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 

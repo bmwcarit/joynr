@@ -49,6 +49,11 @@ HttpNetworking::HttpNetworking()
     curlHandlePool = new PerThreadCurlHandlePool;
 }
 
+HttpNetworking::~HttpNetworking()
+{
+    delete curlHandlePool;
+}
+
 HttpNetworking* HttpNetworking::getInstance()
 {
     return httpNetworking;

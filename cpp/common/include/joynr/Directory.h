@@ -28,8 +28,10 @@
 
 #include <QString>
 #include <string>
+#include <functional>
+#include <QtGlobal>
 #include <QMutex>
-#include <QMap>
+#include <QHash>
 #include <QSharedPointer>
 
 namespace joynr
@@ -91,7 +93,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(Directory);
-    QMap<Key, QSharedPointer<T>> callbackMap;
+    QHash<Key, QSharedPointer<T>> callbackMap;
     QMutex mutex;
     SingleThreadedDelayedScheduler callBackRemoverScheduler;
     static joynr_logging::Logger* logger;
@@ -252,4 +254,14 @@ joynr_logging::Logger* RemoverRunnable<Key, IReplyCaller>::logger =
         joynr_logging::Logging::getInstance()->getLogger("MSG", "Directory");
 
 } // namespace joynr
+
+namespace std
+{
+// using std::strings as key in a Directory requires qHash to be implemented
+inline uint qHash(const std::string& key)
+{
+    return std::hash<std::string>()(key);
+}
+}
+
 #endif // DIRECTORY_H

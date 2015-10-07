@@ -38,6 +38,7 @@ define("joynr/dispatching/types/SubscriptionInformation", [
         this.providerParticipantId = providerParticipantId;
         this.subscriptionId = request.subscriptionId;
         this.subscribedToName = request.subscribedToName;
+        this.filterParameters = request.filterParameters;
         this.qos = request.qos;
         this.lastPublication = 0;
 

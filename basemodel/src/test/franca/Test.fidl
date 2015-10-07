@@ -106,6 +106,8 @@ interface test {
 	**>
 	attribute Int32 ATTRIBUTEWITHCAPITALLETTERS
 
+	attribute Int32 attributeWithProviderRuntimeException
+
 	method addNumbers {
 		in {
 			Int32 first
@@ -390,12 +392,55 @@ interface test {
 		}
 	}
 
+	method methodWithProviderRuntimeException {
+	}
+
+	method methodWithThrownException {
+	}
+
 	method methodWithMultipleOutputParameters {
 		out {
 			String aString
 			Int32 aNumber
 			GpsLocation aComplexDataType
 			testTypes.TestEnum anEnumResult
+		}
+	}
+
+	method methodWithAllPossiblePrimitiveParameters {
+		in {
+			Boolean booleanArg
+			//ByteBuffer not supported
+			Double doubleArg
+			Float floatArg
+			Int16 int16Arg
+			Int32 int32Arg
+			Int64 int64Arg
+			Int8 int8Arg
+			//Integer not supported
+			String stringArg
+			UInt16 uInt16Arg
+			UInt32 uInt32Arg
+			UInt64 uInt64Arg
+			UInt8 uInt8Arg
+			//undefined not supported
+		}
+		out {
+			Boolean booleanOut
+			//ByteBuffer not supported
+			Double doubleOut
+			Float floatOut
+			Int16 int16Out
+			Int32 int32Out
+			Int64 int64Out
+			Int8 int8Out
+			//Integer not supported
+			String stringOut
+			UInt16 uInt16Out
+			UInt32 uInt32Out
+			UInt64 uInt64Out
+			UInt8 uInt8Out
+			//undefined not supported
 		}
 	}
 

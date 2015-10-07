@@ -1,82 +1,71 @@
-This project includes software developed by
-BMW Car IT GmbH (http://www.bmw-carit.de)
-and BMW Forschung & Technik GmbH
+The software listed below included in some products is licensed under the "Apache License, Version 2.0". A copy of that license in the English original version with a copyright notice, a disclaimer of warranty, and an exclusion of liability is included in this document "META-INF/licenses/Apache-2.txt" as well as the content of the NOTICE file if applicable.
+- com.google.guava:guava:11.0.2
+- com.google.inject:guice:3.0
+  Notice file: info/guice-3.0-jar/META-INF/NOTICE
+  License file: info/guice-3.0-jar/META-INF/LICENSE
+- javax.inject:javax.inject:1
+- log4j:log4j:1.2.17
+  Notice file: info/log4j-1.2.17-jar/META-INF/NOTICE
+  License file: info/log4j-1.2.17-jar/META-INF/LICENSE
+- xml-apis:xml-apis:1.4.01
+  Notice file: info/xml-apis-1.4.01-jar/license/NOTICE
+  License file: info/xml-apis-1.4.01-jar/license/LICENSE
 
-Licensed under the Apache License, Version 2.0 (the
-"License"); you may not use this file except in compliance
-with the License. You may obtain a copy of the License at:
+The software listed below included in some products is licensed under the "BSD 3-clause". A copy of that license in the English original version with a copyright notice, a disclaimer of warranty, and an exclusion of liability is included in the documents listed below.
+- org.antlr:antlr-runtime:3.2
+  License: META-INF/licenses/BSD-3-Clause.antlr3.txt
+- org.ow2.asm:asm-commons:5.0.1
+  License: META-INF/licenses/BSD-3-Clause.asm.txt
+- org.ow2.asm:asm-tree:5.0.1
+  License: META-INF/licenses/BSD-3-Clause.asm.txt
+- org.ow2.asm:asm:5.0.1
+  License: META-INF/licenses/BSD-3-Clause.asm.txt
 
-http://www.apache.org/licenses/LICENSE-2.0
+The software listed below included in some products is licensed under the "DOM4J License". A copy of that license in the English original version with a copyright notice, a disclaimer of warranty, and an exclusion of liability is included in this document "META-INF/licenses/DOM4J-License.txt".
+- dom4j:dom4j:1.6.1
 
-Unless required by applicable law or agreed to in writing,
-software distributed under the License is distributed on
-an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-KIND, either express or implied. See the License for the
-specific language governing permissions and limitations
-under the License.
+The software listed below included in some products is licensed under the “Eclipse Public License, v.1.0”. A copy of that license in the English original version with a copyright notice, a disclaimer of warranty, and an exclusion of liability is included in this document "META-INF/licenses/EPL-1.txt". To obtain a copy of the source code for these components, visit the URLs listed below.
+- org.eclipse.emf:codegen:2.2.3
+  Sources: http://git.eclipse.org/c/emf/org.eclipse.emf.git/tree/?h=R2_2_maintenance
+- org.eclipse.emf:org.eclipse.emf.common:2.11.0-v20150123-0347
+  Sources: https://repo1.maven.org/maven2/org/eclipse/emf/org.eclipse.emf.common/2.11.0-v20150123-0347/org.eclipse.emf.common-2.11.0-v20150123-0347-sources.jar
+- org.eclipse.emf:org.eclipse.emf.ecore:2.11.0-v20150123-0347
+  Sources: https://repo1.maven.org/maven2/org/eclipse/emf/org.eclipse.emf.ecore/2.11.0-v20150123-0347/org.eclipse.emf.ecore-2.11.0-v20150123-0347-sources.jar
+- org.eclipse.emf:org.eclipse.emf.ecore.xmi:2.11.0-v20150123-0347
+  Sources: https://repo1.maven.org/maven2/org/eclipse/emf/org.eclipse.emf.ecore.xmi/2.11.0-v20150123-0347/org.eclipse.emf.ecore.xmi-2.11.0-v20150123-0347-sources.jar
+- org.eclipse.equinox:common:3.6.200-v20130402-1505
+  Sources: https://repo1.maven.org/maven2/org/eclipse/equinox/common/3.6.200-v20130402-1505/common-3.6.200-v20130402-1505-sources.jar
+- org.eclipse.tycho:org.eclipse.jdt.core:3.10.0.v20140604-1726
+  Sources: https://repo1.maven.org/maven2/org/eclipse/tycho/org.eclipse.jdt.core/3.10.0.v20140604-1726/org.eclipse.jdt.core-3.10.0.v20140604-1726-sources.jar
+- org.eclipse.xtend:org.eclipse.xtend.core:2.8.4
+  Sources: https://repo1.maven.org/maven2/org/eclipse/xtend/org.eclipse.xtend.core/2.8.4/org.eclipse.xtend.core-2.8.4-sources.jar
+- org.eclipse.xtend:org.eclipse.xtend.lib:2.8.4
+  Sources: https://repo1.maven.org/maven2/org/eclipse/xtend/org.eclipse.xtend.lib/2.8.4/org.eclipse.xtend.lib-2.8.4-sources.jar
+- org.eclipse.xtend:org.eclipse.xtend.lib.macro:2.8.4
+  Sources: https://repo1.maven.org/maven2/org/eclipse/xtend/org.eclipse.xtend.lib.macro/2.8.4/org.eclipse.xtend.lib.macro-2.8.4-sources.jar
+- org.eclipse.xtext:org.eclipse.xtext:2.8.4
+  Sources: https://repo1.maven.org/maven2/org/eclipse/xtext/org.eclipse.xtext.xtext/2.8.4/org.eclipse.xtext.xtext-2.8.4-sources.jar
+- org.eclipse.xtext:org.eclipse.xtext.common.types:2.8.4
+  Sources: https://repo1.maven.org/maven2/org/eclipse/xtext/org.eclipse.xtext.common.types/2.8.4/org.eclipse.xtext.common.types-2.8.4-sources.jar
+- org.eclipse.xtext:org.eclipse.xtext.dependencies:2.8.4
+  Sources: https://repo1.maven.org/maven2/org/eclipse/xtext/org.eclipse.xtext.dependencies/2.8.4/org.eclipse.xtext.dependencies-2.8.4.pom
+- org.eclipse.xtext:org.eclipse.xtext.util:2.8.4
+  Sources: https://repo1.maven.org/maven2/org/eclipse/xtext/org.eclipse.xtext.util/2.8.4/org.eclipse.xtext.util-2.8.4-sources.jar
+- org.eclipse.xtext:org.eclipse.xtext.xbase:2.8.4
+  Sources: https://repo1.maven.org/maven2/org/eclipse/xtext/org.eclipse.xtext.xbase/2.8.4/org.eclipse.xtext.xbase-2.8.4-sources.jar
+- org.eclipse.xtext:org.eclipse.xtext.xbase.lib:2.8.4
+  Sources: https://repo1.maven.org/maven2/org/eclipse/xtext/org.eclipse.xtext.xbase.lib/2.8.4/org.eclipse.xtext.xbase.lib-2.8.4-sources.jar
+- org.franca:org.franca.core:0.10.0
+  Sources: https://github.com/bmwcarit/joynr/blob/0.10.0/tools/generator/dependency-libs/libs/franca/0.10.0/org.franca.core.source_0.10.0.jar
+- org.franca:org.franca.core.dsl:0.10.0
+  Sources: https://github.com/bmwcarit/joynr/blob/0.10.0/tools/generator/dependency-libs/libs/franca/0.10.0/org.franca.core.dsl.source_0.10.0.jar  
+- org.franca:org.franca.deploymodel.dsl:0.10.0
+  Sources: https://github.com/bmwcarit/joynr/blob/0.10.0/tools/generator/dependency-libs/libs/franca/0.10.0/org.franca.deploymodel.dsl.source_0.10.0.jar
 
-The software listed below included in some products is licensed under the "Apache License,
-Version 2.0". A copy of that license in the English original version with a copyright notice, a
-disclaimer of warranty, and an exclusion of liability is included in this document
-"META-INF/licenses/Apache-2.txt" as well as the content of the NOTICE file if applicable.
-  Apache Log4j
-    further information included with the dependency is included in the
-    info/log4j-1.2.17-jar directory
-  FindBugs-jsr305
-  javax.inject
-  Google Guice - Core Library
-    further information included with the dependency is included in the
-    info/guice-3.0-jar directory
-  Guava: Google Core Libraries for Java
-  io.joynr.tools.generator:cpp-generator
-  io.joynr.tools.generator:java-generator
-  io.joynr.tools.generator:js-generator
-  io.joynr.tools.generator:generator-framework
-  XML Commons External Components XML APIs
-    further information included with the dependency is included in the
-    info/xml-apis-1.4.01-jar directory
-
-The software listed below included in some products is licensed under the "Eclipse License,
-Version 1.0".
-  codegen
-    further information included with the dependency is included in the
-    info/org.eclipse.xtend.standalone-2.4.1-jar directory
-  Eclipse Xbase Runtime Library
-  Eclipse Xtend Macro Library
-  Eclipse Xtend Runtime Library
-  org.eclipse.xtend.standalone
-    further information included with the dependency is included in the
-    info/org.eclipse.xtend.standalone-2.4.1-jar directory
-  org.franca.core
-    further information included with the dependency is included in the
-    info/org.franca.core-0.8.8-jar directory
-  org.franca.core.dsl
-    further information included with the dependency is included in the
-    info/org.franca.core.dsl-0.8.8-jar directory
-  org.franca.deploymodel.dsl
-    further information included with the dependency is included in the
-    info/org.franca.deploymodel.dsl-0.8.8-jar directory
-
-Software libraries listed below included in some products are free software that is licensed under
-"GNU Lesser General Public License (LGPL) v2.1". A copy of that license in the English original
-version with a disclaimer of warranty and an exclusion of liability is included in this document
-"META-INF/licenses/LGPL-2.1.txt". This free software has been developed by third parties and is
-copyrighted. It is provided for free, and you are permitted to use it according to the mentioned
-license. LGPL v 2.1 supersedes other licenses. The complete corresponding source code is included
-in the files listed below.
+Software libraries listed below included in some products are free software that is licensed under "GNU Lesser General Public License (LGPL) v2.1". A copy of that license in the English original version with a disclaimer of warranty and an exclusion of liability is included in this document "META-INF/licenses/LGPL-2.1.txt". This free software has been developed by third parties and is copyrighted. It is provided for free, and you are permitted to use it according to the mentioned license. LGPL v 2.1 supersedes other licenses. The complete corresponding source code is included in the files listed below.
 - javassist:javassist:3.12.1.GA
   Sources: info/javassist-3.12.1.GA-sources-jar
 
-The software listed below included in some products is licensed under the WTF Public License
-  Reflections
-
-The software listed below included in some products is under Public Domain
-  AOP alliance
-
-The software listed below included in some products is licensed under the "DOM4J License".
-A copy of that license in the English original version with a copyright notice, a disclaimer of warranty,
-and an exclusion of liability is included in this document "META-INF/licences/DOM4J-License.txt".
-  dom4j:dom4j:1.6.1
-    further information included with the dependency is included in the
-    info/dom4j-1.6.1-jar directory
-
+The software listed below included in some products is licensed under the "W3C® Software Notice and License". A copy of that license in the English original version with a copyright notice, a disclaimer of warranty, and an exclusion of liability is included in this document "META-INF/licenses/W3C-Software-Notice.txt".
+- files in WEB-INF/lib/xml-apis-1.4.01.jar:org/w3c/dom
+  License: WEB-INF/lib/xml-apis-1.4.01.jar:license/LICENSE.dom-software.txt

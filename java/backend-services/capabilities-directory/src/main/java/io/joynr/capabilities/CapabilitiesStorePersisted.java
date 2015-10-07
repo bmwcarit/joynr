@@ -75,8 +75,8 @@ public class CapabilitiesStorePersisted implements CapabilitiesStore {
         }
 
         if (capabilityEntry.getDomain() == null || capabilityEntry.getInterfaceName() == null
-                || capabilityEntry.getParticipantId() == null || capabilityEntry.getEndpointAddresses() == null
-                || capabilityEntry.getEndpointAddresses().isEmpty()) {
+                || capabilityEntry.getParticipantId() == null || capabilityEntry.getAddresses() == null
+                || capabilityEntry.getAddresses().isEmpty()) {
             String message = "capabilityEntry being registered is not complete: " + capabilityEntry;
             logger.error(message);
             throw new JoynrCommunicationException(message);

@@ -255,12 +255,13 @@ bool JoynrMessage::containsHeaderExpiryDate() const
 
 QDateTime JoynrMessage::getHeaderExpiryDate() const
 {
-    return QDateTime::fromMSecsSinceEpoch(getHeader<qint64>(HEADER_EXPIRY_DATE()), Qt::UTC);
+    return QDateTime::fromMSecsSinceEpoch(
+            getHeader<QString>(HEADER_EXPIRY_DATE()).toLong(), Qt::UTC);
 }
 
 void JoynrMessage::setHeaderExpiryDate(const QDateTime& expiryDate)
 {
-    setHeader<qint64>(HEADER_EXPIRY_DATE(), expiryDate.toMSecsSinceEpoch());
+    setHeader<QString>(HEADER_EXPIRY_DATE(), QString::number(expiryDate.toMSecsSinceEpoch()));
 }
 
 bool JoynrMessage::containsHeaderReplyChannelId() const

@@ -80,9 +80,9 @@ auto tupleSubset(const Tuple& tuple, IntegerList<Indices...> indices)
 }
 
 /**
- * @brief Create a tuple subset
+ * @brief Create a tuple containing the tail of the input tuple
  * @param tuple Input tuple to select from
- * @return the tuple subset
+ * @return The tail of input tuple
  */
 template <typename Head, typename... Tail>
 std::tuple<Tail...> tail(const std::tuple<Head, Tail...>& tuple)
@@ -98,7 +98,8 @@ template <class... Ts>
  * descriptions and codes related to the request.
  * This class also contains a method to block until a response is received.
  *
- * Applications instantiate this class and pass it to asynchronous proxy methods.
+ * Applications get an instance of this class as return value asynchronous
+ * proxy method calls and attribute getters/setters.
  */
 class Future
 {
@@ -114,19 +115,18 @@ public:
                          QString::number(resultReceived.available()));
     }
 
-    // TODO
-    /** @brief ResultCopier */
+    /** @brief ResultCopier helper to copy tuple entries to function arguments */
     template <typename T, typename Head, typename... Tail>
     struct ResultCopier;
 
-    // TODO
-    /** @brief ResultCopier */
+    /** @brief ResultCopier helper to copy tuple entries to function arguments */
     template <typename Head, typename... Tail>
     struct ResultCopier<std::tuple<Head, Tail...>, Head, Tail...>
     {
-        // TODO
         /**
-         * @brief Copy function
+         * @brief Copy function copies first element of tuple results to function argument value
+         *        and then recursively invoke the method with the tail of the results tuple
+         *        and all function arguments expect the first
          * @param results The results to copy from
          * @param value The value to copy to
          * @param values The values to copy to
@@ -139,14 +139,13 @@ public:
         }
     };
 
-    // TODO
-    /** @brief ResultCopier */
+    /** @brief ResultCopier variadic template termination for one single function argument */
     template <typename Head>
     struct ResultCopier<std::tuple<Head>, Head>
     {
 
         /**
-         * @brief Copy results value
+         * @brief Copy function copies single element of tuple results to function argument value
          * @param results The results to copy from
          * @param value destination to copy to
          */

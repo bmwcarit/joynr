@@ -125,7 +125,7 @@ void WebSocketMessagingStubFactory::addServer(
 void WebSocketMessagingStubFactory::onMessagingStubClosed(
         const system::RoutingTypes::QtAddress& address)
 {
-    LOG_DEBUG(logger, QString("removing messaging stub for addres: %0").arg(address.toString()));
+    LOG_DEBUG(logger, QString("removing messaging stub for address: %0").arg(address.toString()));
     if (address.inherits(
                 system::RoutingTypes::QtWebSocketClientAddress::staticMetaObject.className())) {
         const system::RoutingTypes::QtWebSocketClientAddress* wsClientAddress =

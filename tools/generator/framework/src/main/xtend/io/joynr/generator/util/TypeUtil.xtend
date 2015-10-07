@@ -21,7 +21,14 @@ import java.util.ArrayList
 import java.util.Set
 import org.franca.core.franca.FArgument
 import org.franca.core.franca.FBasicTypeId
+import org.franca.core.franca.FConstantDef
+import org.franca.core.franca.FExpression
+import org.franca.core.franca.FInitializerExpression
+import org.franca.core.franca.FIntegerConstant
 import org.franca.core.franca.FMethod
+import org.franca.core.franca.FModelElement
+import org.franca.core.franca.FQualifiedElementRef
+import org.franca.core.franca.FStringConstant
 import org.franca.core.franca.FType
 import org.franca.core.franca.FTypeRef
 import org.franca.core.franca.FTypedElement
@@ -54,7 +61,7 @@ abstract class TypeUtil {
 
 	def String getTypeName (FTypedElement typedElement) {
 		var result =
-				if (typedElement.array == '[]')
+				if (typedElement.array)
 					typedElement.type.typeNameForList
 				else
 					typedElement.type.typeName
@@ -98,5 +105,34 @@ abstract class TypeUtil {
 			originalSet.add(element);
 		}
 		return originalSet;
+	}
+
+	def String getEnumeratorValue(FExpression expression)
+	{
+		return switch (expression)
+		{
+			FIntegerConstant: expression.^val.toString
+			FStringConstant: expression.^val
+			FQualifiedElementRef: expression.element.constantValue
+			default: null
+		}
+	}
+
+	def String getConstantValue(FModelElement expression)
+	{
+		return switch (expression)
+		{
+			FConstantDef: expression.rhs.constantType
+			default: null
+		}
+	}
+
+	def String getConstantType(FInitializerExpression  expression)
+	{
+		return switch (expression)
+		{
+			FIntegerConstant: expression.^val.toString
+			default: null
+		}
 	}
 }

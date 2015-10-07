@@ -56,7 +56,7 @@ class InterfaceSyncTemplate implements InterfaceTemplate{
 					if (!indexForMethod.containsKey(method.name)) {
 						indexForMethod.put(method.name, 0);
 					}
-					val methodSignature = method.createMethodSignature;
+					val methodSignature = method.createMethodSignatureFromOutParameters;
 					if (!uniqueMultioutMethodSignatureToContainerNames.containsKey(methodSignature)) {
 						var Integer index = indexForMethod.get(method.name);
 						index++;
@@ -82,94 +82,88 @@ class InterfaceSyncTemplate implements InterfaceTemplate{
 		val hasWriteAttribute = hasWriteAttribute(serviceInterface);
 		val hasMethodWithReturnValue = hasMethodWithReturnValue(serviceInterface);
 		'''
-		«warning()»
+«warning()»
 
-		package «packagePath»;
+package «packagePath»;
 
-		«IF needsListImport(serviceInterface)»
-		import java.util.List;
+«IF needsListImport(serviceInterface)»
+	import java.util.List;
+«ENDIF»
+
+import io.joynr.dispatcher.rpc.JoynrSyncInterface;
+«IF hasReadAttribute(serviceInterface) || hasMethodWithReturnValue»
+	import io.joynr.dispatcher.rpc.annotation.JoynrRpcReturn;
+«ENDIF»
+«IF hasWriteAttribute || hasMethodWithArguments»
+	import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
+«ENDIF»
+
+import io.joynr.exceptions.JoynrRuntimeException;
+«IF hasMethodWithErrorEnum(serviceInterface)»
+	import joynr.exceptions.ApplicationException;
+«ENDIF»
+
+«FOR datatype: getRequiredIncludesFor(serviceInterface, true, true, true, false, false)»
+	import «datatype»;
+«ENDFOR»
+
+public interface «syncClassName» extends «interfaceName», JoynrSyncInterface {
+
+«FOR attribute: getAttributes(serviceInterface) SEPARATOR "\n"»
+	«var attributeName = attribute.joynrName»
+	«var attributeType = attribute.typeName.objectDataTypeForPlainType»
+	«var getAttribute = "get" + attributeName.toFirstUpper»
+	«var setAttribute = "set" + attributeName.toFirstUpper»
+		«IF isReadable(attribute)»
+			@JoynrRpcReturn(deserializationType = «getTokenTypeForArrayType(attributeType)»Token.class)
+			public «attributeType» «getAttribute»() throws JoynrRuntimeException;
 		«ENDIF»
-
-		import io.joynr.dispatcher.rpc.JoynrSyncInterface;
-		«IF hasReadAttribute(serviceInterface) || hasMethodWithReturnValue»
-		import io.joynr.dispatcher.rpc.annotation.JoynrRpcReturn;
+		«IF isWritable(attribute)»
+			void «setAttribute»(@JoynrRpcParam(value="«attributeName»", deserializationType = «getTokenTypeForArrayType(attributeType)»Token.class) «attributeType» «attributeName») throws JoynrRuntimeException;
 		«ENDIF»
-		«IF hasWriteAttribute || hasMethodWithArguments»
-		import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
-		«ENDIF»
+«ENDFOR»
 
-		import io.joynr.exceptions.JoynrArbitrationException;
-
-		«FOR datatype: getRequiredIncludesFor(serviceInterface, true, true, true, false, false)»
-			import «datatype»;
-		«ENDFOR»
-
-		public interface «syncClassName» extends «interfaceName», JoynrSyncInterface {
-
-		«FOR attribute: getAttributes(serviceInterface)»
-			«var attributeName = attribute.joynrName»
-			«var attributeType = attribute.typeName.objectDataTypeForPlainType»
-			«var getAttribute = "get" + attributeName.toFirstUpper»
-			«var setAttribute = "set" + attributeName.toFirstUpper»
-				«IF isReadable(attribute)»
-
-				@JoynrRpcReturn(deserializationType = «getTokenTypeForArrayType(attributeType)»Token.class)
-				public «attributeType» «getAttribute»() throws JoynrArbitrationException;
-				«ENDIF»
-				«IF isWritable(attribute)»
-
-					void «setAttribute»(@JoynrRpcParam(value="«attributeName»", deserializationType = «getTokenTypeForArrayType(attributeType)»Token.class) «attributeType» «attributeName») throws JoynrArbitrationException;
-				«ENDIF»
-		«ENDFOR»
-
-		«FOR method: uniqueMultioutMethods»
-		«val containerName = methodToReturnTypeName.get(method)»
-			public class «containerName» {
+«FOR method: uniqueMultioutMethods»
+	«val containerName = methodToReturnTypeName.get(method)»
+		public class «containerName» {
 			«FOR outParameter : method.outputParameters»
-					public final «outParameter.typeName» «outParameter.name»;
+				public final «outParameter.typeName» «outParameter.name»;
 			«ENDFOR»
-				public «containerName»(Object... outParameters) {
-					«var index = 0»
+			public «containerName»(Object... outParameters) {
+				«var index = 0»
 				«FOR outParameter : method.outputParameters»
 					«IF isEnum(outParameter.type)»
-							this.«outParameter.name» = «outParameter.typeName».valueOf((String) outParameters[«index++»]);
+					this.«outParameter.name» = «outParameter.typeName».valueOf((String) outParameters[«index++»]);
 					«ELSE»
-							this.«outParameter.name» = («outParameter.typeName») outParameters[«index++»];
+					this.«outParameter.name» = («outParameter.typeName») outParameters[«index++»];
 					«ENDIF»
 				«ENDFOR»
-				}
 			}
-		«ENDFOR»
+		}
+«ENDFOR»
 
-		«FOR method: getMethods(serviceInterface)»
-			«var methodName = method.joynrName»
-			«var outputParameters = method.typeNamesForOutputParameter»
-
-			«IF outputParameters.size > 1»
-				/*
-				* «methodName»
-				*/
-				public «methodToReturnTypeName.get(method)» «methodName»(
-						«method.typedParameterListJavaRpc»
-				) throws JoynrArbitrationException;
-			«ELSE»
-				/*
-				* «methodName»
-				*/
-				«IF method.typeNamesForOutputParameter.iterator.next=="void"»
+«FOR method: getMethods(serviceInterface) SEPARATOR "\n"»
+	«var methodName = method.joynrName»
+	«var outputParameters = method.typeNamesForOutputParameter»
+		/*
+		* «methodName»
+		*/
+		«IF outputParameters.size > 1»
+			public «methodToReturnTypeName.get(method)» «methodName»(
+					«method.typedParameterListJavaRpc»
+		«ELSE»
+			«IF method.typeNamesForOutputParameter.iterator.next=="void"»
 				public «methodToReturnTypeName.get(method)» «methodName»(
 						«getTypedParameterListJavaRpc(method)»
-				) throws JoynrArbitrationException;
-				«ELSE»
+			«ELSE»
 				@JoynrRpcReturn(deserializationType = «getTokenTypeForArrayType(method.typeNamesForOutputParameter.iterator.next)»Token.class)
 				public «methodToReturnTypeName.get(method)» «methodName»(
 						«getTypedParameterListJavaRpc(method)»
-				) throws JoynrArbitrationException;
-				«ENDIF»
 			«ENDIF»
-		«ENDFOR»
-		}
-
+		«ENDIF»
+		) throws JoynrRuntimeException«IF method.hasErrorEnum», ApplicationException«ENDIF»;
+«ENDFOR»
+}
 		'''
 	}
 

@@ -241,7 +241,26 @@ uint «typeName»::hashCode() const {
 	int prime = 31;
 	«ENDIF»
 	«FOR member: getMembers(type)»
-	hashCode = prime * hashCode + qHash(m_«member.joynrName»);
+		«IF member.isArray»
+			for («member.type.typeName» listEntry : m_«member.joynrName») {
+			«
+		ENDIF
+		»	hashCode = prime * hashCode + «
+		IF member.type.isPrimitive
+			»::«
+		ELSE
+			»«buildPackagePath(member.type.derived, "::", true)»«
+		ENDIF
+		»qHash(«
+		IF member.isArray
+			»listEntry«
+		ELSE
+			»m_«member.joynrName»«
+		ENDIF
+		»);
+		«IF member.isArray»
+			}
+		«ENDIF»
 	«ENDFOR»
 	return hashCode;
 }

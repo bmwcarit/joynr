@@ -23,20 +23,21 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
-import io.joynr.dispatcher.MessagingEndpointDirectory;
 import io.joynr.dispatcher.rpc.JoynrInterface;
-import io.joynr.endpoints.EndpointAddressBase;
-import io.joynr.endpoints.JoynrMessagingEndpointAddress;
+import io.joynr.dispatching.Dispatcher;
 import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
-import io.joynr.proxy.ProxyInvocationHandlerFactory;
+import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.runtime.JoynrRuntime;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.types.CapabilityInformation;
 import joynr.types.CustomParameter;
 import joynr.types.ProviderQos;
@@ -66,9 +67,11 @@ public class LocalCapabilitiesDirectoryTest {
     @Mock
     private GlobalCapabilitiesDirectoryClient globalCapabilitiesClient;
     @Mock
-    private MessagingEndpointDirectory messagingEndpointDirectoryMock;
+    private MessageRouter messageRouter;
     @Mock
-    private ProxyInvocationHandlerFactory proxyInvocationHandlerFactoryMock;
+    private Dispatcher dispatcher;
+    @Mock
+    private ProxyBuilderFactory proxyBuilderFactoryMock;
     @Mock
     protected CapabilitiesStore localCapabilitiesStoreMock;
     @Mock
@@ -118,10 +121,10 @@ public class LocalCapabilitiesDirectoryTest {
                                                                         domainAccessControllerParticipantId,
                                                                         domainAccessControllerChannelId,
                                                                         channelId,
-                                                                        messagingEndpointDirectoryMock,
                                                                         localCapabilitiesStoreMock,
                                                                         globalCapabilitiesCacheMock,
-                                                                        proxyInvocationHandlerFactoryMock);
+                                                                        messageRouter,
+                                                                        proxyBuilderFactoryMock);
 
         ProviderQos providerQos = new ProviderQos();
         List<CustomParameter> parameterList = Lists.newArrayList();
@@ -129,7 +132,7 @@ public class LocalCapabilitiesDirectoryTest {
         parameterList.add(new CustomParameter("key2", "value2"));
         providerQos.setCustomParameters(parameterList);
 
-        EndpointAddressBase endpointAddress = new JoynrMessagingEndpointAddress(channelId);
+        Address endpointAddress = new ChannelAddress(channelId);
         String participantId = "testParticipantId";
         String domain = "domain";
         capabilityEntry = new CapabilityEntryImpl(domain,

@@ -96,14 +96,14 @@ class CommunicationModelGenerator {
 
 				generateFile(
 					headerFileSystem,
-					headerpath + type.joynrNameStd + ".h",
+					headerpath + type.joynrName + ".h",
 					stdTypeH,
 					type
 				)
 
 				generateFile(
 					sourceFileSystem,
-					sourcepath + type.joynrNameStd + ".cpp",
+					sourcepath + type.joynrName + ".cpp",
 					stdTypeCpp,
 					type
 				)
@@ -127,13 +127,13 @@ class CommunicationModelGenerator {
 
 			generateFile(
 				headerFileSystem,
-				headerpath + type.joynrNameStd + ".h",
+				headerpath + type.joynrName + ".h",
 				stdEnumH,
 				type as FEnumerationType
 			)
 			generateFile(
 				sourceFileSystem,
-				sourcepath + type.joynrNameStd + ".cpp",
+				sourcepath + type.joynrName + ".cpp",
 				stdEnumCpp,
 				type as FEnumerationType
 			)

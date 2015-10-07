@@ -119,7 +119,12 @@ public class RemoteBounceProxyFacadeTest {
     @Test
     public void testChannelCreationWhenServerIsUnreachable() throws Exception {
 
-        server.stop();
+        try {
+            server.stop();
+        } catch (Exception e) {
+            // do nothing as we don't want tests to fail only because
+            // stopping of the server did not work
+        }
         server.awaitTermination(1000);
 
         try {
@@ -208,7 +213,7 @@ public class RemoteBounceProxyFacadeTest {
      * Sets the HTTP response returned by the
      * {@link HttpRequestHandler#handle(HttpRequest, HttpResponse, HttpContext)}
      * method.
-     * 
+     *
      * @param httpStatus
      *            the desired HTTP status to be returned as HTTP response
      * @throws HttpException
@@ -221,6 +226,7 @@ public class RemoteBounceProxyFacadeTest {
         // HttpResponse is set as out parameter of the handle method. The way to
         // set out parameters with Mockito is to use doAnswer
         Answer<Void> answerForHttpResponse = new Answer<Void>() {
+            @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
                 HttpResponse httpResponse = (HttpResponse) invocation.getArguments()[1];
                 httpResponse.setStatusCode(httpStatus);

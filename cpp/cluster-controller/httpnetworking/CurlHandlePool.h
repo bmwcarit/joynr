@@ -40,6 +40,8 @@ class JOYNRCLUSTERCONTROLLER_EXPORT AlwaysNewCurlHandlePool : public ICurlHandle
 public:
     void* getHandle(const QString& url);
     void returnHandle(void* handle);
+    void deleteHandle(void* handle);
+    void reset();
 };
 
 /**
@@ -112,6 +114,8 @@ class JOYNRCLUSTERCONTROLLER_EXPORT SingleThreadCurlHandlePool : public ICurlHan
 public:
     void* getHandle(const QString& url);
     void returnHandle(void* handle);
+    void deleteHandle(void* handle);
+    void reset();
 
 private:
     /**
@@ -170,6 +174,10 @@ public:
     void* getHandle(const QString& url);
 
     void returnHandle(void* handle);
+
+    void deleteHandle(void* handle);
+
+    void reset();
 
 private:
     static QString extractHost(const QString& url);

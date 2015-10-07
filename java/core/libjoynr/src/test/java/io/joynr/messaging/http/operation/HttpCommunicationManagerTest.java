@@ -22,7 +22,7 @@ package io.joynr.messaging.http.operation;
 import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.containsString;
 import io.joynr.common.ExpiryDate;
-import io.joynr.dispatcher.RequestReplyDispatcher;
+import io.joynr.dispatching.Dispatcher;
 import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingTestModule;
@@ -56,7 +56,7 @@ import com.jayway.restassured.specification.RequestSpecification;
 
 /**
  * HttpCommunicationManager tested by sending a request to the local host and checking the received message.
- * 
+ *
  */
 
 @RunWith(MockitoJUnitRunner.class)
@@ -85,11 +85,17 @@ public class HttpCommunicationManagerTest {
 
     @AfterClass
     public static void stopBounceProxy() throws Exception {
-        server.stop();
+        try {
+            server.stop();
+        } catch (Exception e) {
+            // do nothing as we don't want tests to fail only because
+            // stopping of the server did not work
+        }
+        ;
     }
 
     @Mock
-    private RequestReplyDispatcher dispatcher;
+    private Dispatcher dispatcher;
     private String bounceProxyUrlString;
 
     @Before
@@ -125,9 +131,8 @@ public class HttpCommunicationManagerTest {
         message.setExpirationDate(ExpiryDate.fromRelativeTtl(30000));
         message.setPayload("testMessage");
 
-        longpollingMessageReceiver.registerMessageListener(dispatcher);
         final Object waitForChannelCreated = new Object();
-        longpollingMessageReceiver.startReceiver(new ReceiverStatusListener() {
+        longpollingMessageReceiver.start(dispatcher, new ReceiverStatusListener() {
 
             @Override
             public void receiverStarted() {
@@ -168,7 +173,7 @@ public class HttpCommunicationManagerTest {
 
     /**
      * initialize a RequestSpecification with the given timeout
-     * 
+     *
      * @param timeout_ms
      *            : a SocketTimeoutException will be thrown if no response is received in this many milliseconds
      * @return

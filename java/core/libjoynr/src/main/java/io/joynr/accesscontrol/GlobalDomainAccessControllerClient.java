@@ -6,13 +6,11 @@ import io.joynr.accesscontrol.broadcastlistener.LdacMediatorAccessControlEntryCh
 import io.joynr.accesscontrol.broadcastlistener.LdacOwnerAccessControlEntryChangedBroadcastListener;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
-import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
-import io.joynr.proxy.ProxyBuilderDefaultImpl;
-import io.joynr.proxy.ProxyInvocationHandlerFactory;
+import io.joynr.proxy.ProxyBuilderFactory;
 
 import java.util.List;
 
@@ -52,22 +50,16 @@ public class GlobalDomainAccessControllerClient {
     // TODO: define a proper max messaging ttl
     private static final long TTL_30_DAYS_IN_MS = 30L * 24L * 60L * 60L * 1000L;
     private String domain;
-    private LocalCapabilitiesDirectory capabilitiesDirectory;
-    private ProxyInvocationHandlerFactory proxyInvocationHandlerFactory;
+    private final ProxyBuilderFactory proxyBuilderFactory;
 
-    public GlobalDomainAccessControllerClient(String domain,
-                                              LocalCapabilitiesDirectory capabilitiesDirectory,
-                                              ProxyInvocationHandlerFactory proxyInvocationHandlerFactory) {
+    public GlobalDomainAccessControllerClient(String domain, ProxyBuilderFactory proxyBuilderFactory) {
         this.domain = domain;
-        this.capabilitiesDirectory = capabilitiesDirectory;
-        this.proxyInvocationHandlerFactory = proxyInvocationHandlerFactory;
+        this.proxyBuilderFactory = proxyBuilderFactory;
     }
 
     private GlobalDomainAccessControllerProxy getProxy(long ttl) {
-        ProxyBuilder<GlobalDomainAccessControllerProxy> accessControlProxyBuilder = new ProxyBuilderDefaultImpl<GlobalDomainAccessControllerProxy>(capabilitiesDirectory,
-                                                                                                                                                   domain,
-                                                                                                                                                   GlobalDomainAccessControllerProxy.class,
-                                                                                                                                                   proxyInvocationHandlerFactory);
+        ProxyBuilder<GlobalDomainAccessControllerProxy> accessControlProxyBuilder = proxyBuilderFactory.get(domain,
+                                                                                                            GlobalDomainAccessControllerProxy.class);
         DiscoveryQos discoveryQos = new DiscoveryQos(DiscoveryScope.GLOBAL_ONLY, DiscoveryQos.NO_MAX_AGE);
         MessagingQos messagingQos = new MessagingQos(ttl);
         return accessControlProxyBuilder.setDiscoveryQos(discoveryQos).setMessagingQos(messagingQos).build();

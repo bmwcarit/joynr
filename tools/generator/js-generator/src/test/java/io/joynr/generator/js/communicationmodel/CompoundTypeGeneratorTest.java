@@ -46,7 +46,7 @@ public class CompoundTypeGeneratorTest {
         structType.setName("TestStruct");
         FField field = FrancaFactory.eINSTANCE.createFField();
         field.setName("exampleField");
-        field.setArray("[]");
+        field.setArray(true);
         FTypeRef typeRef = FrancaFactory.eINSTANCE.createFTypeRef();
         typeRef.setDerived(structType);
         field.setType(typeRef);

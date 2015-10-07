@@ -24,6 +24,7 @@
 #include "joynr/Directory.h"
 #include "joynr/IMessagingStubFactory.h"
 #include "joynr/IMiddlewareMessagingStubFactory.h"
+#include "joynr/system/RoutingTypes/QtAddress.h"
 #include <string>
 
 namespace joynr
@@ -31,10 +32,6 @@ namespace joynr
 
 class IMessaging;
 
-namespace system
-{
-class QtAddress;
-}
 class InProcessMessagingSkeleton;
 
 /**
@@ -60,17 +57,16 @@ public:
     // messagingSkeleton);
 
     QSharedPointer<IMessaging> create(
-            std::string destParticipantId,
             const joynr::system::RoutingTypes::QtAddress& destinationAddress);
-    void remove(std::string destParticipantId);
-    bool contains(std::string destParticipantId);
+    void remove(const joynr::system::RoutingTypes::QtAddress& destinationAddress);
+    bool contains(const joynr::system::RoutingTypes::QtAddress& destinationAddress);
 
     void registerStubFactory(IMiddlewareMessagingStubFactory* factory);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MessagingStubFactory);
 
-    Directory<std::string, IMessaging> partId2MessagingStubDirectory;
+    Directory<joynr::system::RoutingTypes::QtAddress, IMessaging> address2MessagingStubDirectory;
     QList<IMiddlewareMessagingStubFactory*> factoryList;
     QMutex mutex;
 };

@@ -6,3 +6,5 @@ target
 gen
 bin
 src/main/generated*
+joynr.properties
+gps-consumer-joynr.properties

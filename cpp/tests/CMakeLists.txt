@@ -112,49 +112,49 @@ endif(${CMAKE_GENERATOR} MATCHES "Visual Studio")
 
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
-get_target_property(JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY JoynrClusterController PUBLIC_INCLUDE_DIRECTORY)
-get_target_property(JoynrClusterControllerRuntime_PUBLIC_INCLUDE_DIRECTORY JoynrClusterControllerRuntime PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(qjson_PUBLIC_INCLUDE_DIRECTORY qjson PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(log4qt_PUBLIC_INCLUDE_DIRECTORY log4qt PUBLIC_INCLUDE_DIRECTORY)
+get_target_property(joynrwsruntime_PUBLIC_INCLUDE_DIRECTORY JoynrWsRuntime PUBLIC_INCLUDE_DIRECTORY)
+if(${BUILD_CLUSTER_CONTROLLER})
+    get_target_property(JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY JoynrClusterController PUBLIC_INCLUDE_DIRECTORY)
+    get_target_property(JoynrClusterControllerRuntime_PUBLIC_INCLUDE_DIRECTORY JoynrClusterControllerRuntime PUBLIC_INCLUDE_DIRECTORY)
+endif(${BUILD_CLUSTER_CONTROLLER})
 
 file(
     GLOB_RECURSE JoynrTest_GENSOURCES
-	RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     "gen/*.cpp"
 )
 
 file(
     GLOB_RECURSE JoynrTest_GENHEADERS
-	RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     "gen/*.h"
 )
 
 set(
     JoynrTest_INCLUDE_DIRECTORIES
-    "./"
-    "../"
-	"gen/include"
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    "${CMAKE_CURRENT_SOURCE_DIR}/.."
+    "${CMAKE_CURRENT_SOURCE_DIR}/gen/include"
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
-    ${JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY}
-    ${JoynrClusterControllerRuntime_PUBLIC_INCLUDE_DIRECTORY}
     ${qjson_PUBLIC_INCLUDE_DIRECTORY}
     ${log4qt_PUBLIC_INCLUDE_DIRECTORY}
+    ${joynrwsruntime_PUBLIC_INCLUDE_DIRECTORY}
 )
 
 set(
     test_TARGET_LIBRARIES
     JoynrCommon
     Joynr
-    JoynrClusterController
-    JoynrClusterControllerRuntime
     qjson
     log4qt
 )
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
-    list(
-        APPEND test_TARGET_LIBRARIES
+    set(
+        OPTIONAL_DBUS_LIBRARIES 
         JoynrDbusRuntime
     )
     get_target_property(common_api_PUBLIC_INCLUDE_DIRECTORY JoynrCommonAPI PUBLIC_INCLUDE_DIRECTORY)
@@ -162,13 +162,11 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         APPEND JoynrTest_INCLUDE_DIRECTORIES
         ${common_api_PUBLIC_INCLUDE_DIRECTORY}
     )
+else()
+    set(OPTIONAL_DBUS_LIBRARIES "")
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
-include_directories(
-    ${JoynrTest_INCLUDE_DIRECTORIES}
-)
-
-# Visual Studio uses different directories for RELEASE and DEBUG 
+# Visual Studio uses different directories for RELEASE and DEBUG
 if(${CMAKE_GENERATOR} MATCHES "Visual Studio")
     set(
         GMOCK_LINK_LIBRARY
@@ -195,7 +193,30 @@ else()
 endif(${CMAKE_GENERATOR} MATCHES "Visual Studio")
 
 set(
-    test_HEADERS
+    cluster_controller_test_INCLUDE_DIRECTORIES
+    ${JoynrTest_INCLUDE_DIRECTORIES}
+    ${JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY}
+    ${JoynrClusterControllerRuntime_PUBLIC_INCLUDE_DIRECTORY}
+)
+
+set(
+    cluster_controller_test_TARGET_LIBRARIES
+    ${test_TARGET_LIBRARIES}
+    JoynrClusterController
+    JoynrClusterControllerRuntime
+    # Link the Dbus runtime last so that the cluster controller
+    # runtime is the default runtime
+    ${OPTIONAL_DBUS_LIBRARIES}
+)
+
+set(
+    libjoynr_test_TARGET_LIBRARIES
+    ${test_TARGET_LIBRARIES}
+    JoynrWsRuntime
+)
+
+set(
+    cluster_controller_test_HEADERS
     "PrettyPrint.h"
     "utils/MockObjects.h"
     "utils/TestQString.h"
@@ -205,7 +226,16 @@ set(
 )
 
 set(
-    test_SOURCES
+    libjoynr_test_HEADERS
+    "PrettyPrint.h"
+    "utils/LibJoynrMockObjects.h"
+    "utils/TestQString.h"
+    "utils/QThreadSleep.h"
+    ${JoynrTest_GENHEADERS}
+)
+
+set(
+    cluster_controller_test_SOURCES
     "PrettyPrint.cpp"
     "utils/MockObjects.cpp"
     "utils/MockLocalCapabilitiesDirectoryCallback.cpp"
@@ -213,107 +243,222 @@ set(
     ${JoynrTest_GENSOURCES}
 )
 
-###############
-# g_UnitTests #
-###############
-
-file(
-    GLOB g_UnitTests_SOURCES
-    "unit-tests/*.cpp"
-    "unit-tests/websocket/*.cpp"
+set(
+    libjoynr_test_SOURCES
+    "PrettyPrint.cpp"
+    "TestMain.cpp"
+    ${JoynrTest_GENSOURCES}
 )
 
-if(${USE_DBUS_COMMONAPI_COMMUNICATION})
-    list(
-        APPEND g_UnitTests_SOURCES
-        "unit-tests/dbus/DbusSettingsTest.cpp"
+if(${BUILD_CLUSTER_CONTROLLER})
+    ###############
+    # g_UnitTests #
+    ###############
+
+    file(
+        GLOB g_UnitTests_SOURCES
+        "unit-tests/*.cpp"
+        "unit-tests/websocket/*.cpp"
     )
-endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
-add_executable(
-    g_UnitTests
-    ${test_HEADERS}
-    ${test_SOURCES}
-    ${g_UnitTests_SOURCES}
-)
-add_dependencies(g_UnitTests googletest)
-add_dependencies(g_UnitTests googlemock)
+    if(${USE_DBUS_COMMONAPI_COMMUNICATION})
+        list(
+            APPEND g_UnitTests_SOURCES
+            "unit-tests/dbus/DbusSettingsTest.cpp"
+        )
+    endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
-target_link_libraries(
-    g_UnitTests
-    Qt5::Test
-    ${test_TARGET_LIBRARIES}
-)
-
-set_target_properties(
-    g_UnitTests
-    PROPERTIES
-    COMPILE_FLAGS "-Wno-effc++ -Wno-unused-parameter"
-)
-
-######################
-# g_IntegrationTests #
-######################
-
-file(
-    GLOB g_IntegrationTests_SOURCES
-    "integration-tests/*.cpp"
-)
-
-if(${USE_DBUS_COMMONAPI_COMMUNICATION})
-    list(
-        APPEND g_IntegrationTests_SOURCES
-        "integration-tests/dbus/LibJoynrRuntimeTest.cpp"
-        "integration-tests/dbus/LibJoynrDbusCommunicationTests.cpp"
+    add_executable(
+        g_UnitTests
+        ${cluster_controller_test_HEADERS}
+        ${cluster_controller_test_SOURCES}
+        ${g_UnitTests_SOURCES}
     )
-endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
-add_executable(
-    g_IntegrationTests
-    ${test_HEADERS}
-    ${test_SOURCES}
-    ${g_IntegrationTests_SOURCES}
-)
-add_dependencies(g_IntegrationTests googletest)
-add_dependencies(g_IntegrationTests googlemock)
+    add_dependencies(g_UnitTests googletest)
+    add_dependencies(g_UnitTests googlemock)
 
-target_link_libraries(g_IntegrationTests ${test_TARGET_LIBRARIES})
-
-set_target_properties(
-    g_IntegrationTests
-    PROPERTIES
-    COMPILE_FLAGS "-Wno-effc++ -Wno-unused-parameter"
-)
-
-############################
-# g_SystemIntegrationTests #
-############################
-
-file(
-    GLOB g_SystemIntegrationTests_SOURCES
-    "systemintegration-tests/*.cpp"
-)
-
-if(${USE_DBUS_COMMONAPI_COMMUNICATION})
-    list(
-        APPEND g_SystemIntegrationTests_SOURCES
-        "systemintegration-tests/dbus/End2EndDbusTest.cpp"
+    target_link_libraries(
+        g_UnitTests
+        Qt5::Test
+        ${cluster_controller_test_TARGET_LIBRARIES}
     )
-endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
-add_executable(
-    g_SystemIntegrationTests
-    ${test_HEADERS}
-    ${test_SOURCES}
-    ${g_SystemIntegrationTests_SOURCES}
-)
-add_dependencies(g_SystemIntegrationTests googletest)
-add_dependencies(g_SystemIntegrationTests googlemock)
+    set_target_properties(
+        g_UnitTests
+        PROPERTIES
+        COMPILE_FLAGS "-Wno-effc++ -Wno-unused-parameter"
+    )
 
-target_link_libraries(g_SystemIntegrationTests ${test_TARGET_LIBRARIES})
+    target_include_directories(
+        g_UnitTests
+        SYSTEM
+        PRIVATE ${googletest_source_dir}/include
+        PRIVATE ${googlemock_source_dir}/include
+        PRIVATE ${cluster_controller_test_INCLUDE_DIRECTORIES}
+    )
 
-set_target_properties(
-    g_SystemIntegrationTests
-    PROPERTIES
-    COMPILE_FLAGS "-Wno-effc++ -Wno-unused-parameter"
-)
+    ######################
+    # g_IntegrationTests #
+    ######################
+
+    file(
+       GLOB g_IntegrationTests_SOURCES
+       "integration-tests/*.cpp"
+    )
+
+    if(${USE_DBUS_COMMONAPI_COMMUNICATION})
+       list(
+           APPEND g_IntegrationTests_SOURCES
+           "integration-tests/dbus/LibJoynrRuntimeTest.cpp"
+           "integration-tests/dbus/LibJoynrDbusCommunicationTests.cpp"
+       )
+    endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
+
+    add_executable(
+       g_IntegrationTests
+       ${cluster_controller_test_HEADERS}
+       ${cluster_controller_test_SOURCES}
+       ${g_IntegrationTests_SOURCES}
+    )
+    add_dependencies(g_IntegrationTests googletest)
+    add_dependencies(g_IntegrationTests googlemock)
+
+    target_link_libraries(g_IntegrationTests ${cluster_controller_test_TARGET_LIBRARIES})
+
+    set_target_properties(
+       g_IntegrationTests
+       PROPERTIES
+       COMPILE_FLAGS "-Wno-effc++ -Wno-unused-parameter"
+    )
+
+    target_include_directories(
+        g_IntegrationTests
+        SYSTEM
+        PRIVATE ${googletest_source_dir}/include
+        PRIVATE ${googlemock_source_dir}/include
+        PRIVATE ${cluster_controller_test_INCLUDE_DIRECTORIES}
+    )
+
+    ############################
+    # g_SystemIntegrationTests #
+    ############################
+
+    file(
+       GLOB g_SystemIntegrationTests_SOURCES
+       "systemintegration-tests/*.cpp"
+    )
+
+    if(${USE_DBUS_COMMONAPI_COMMUNICATION})
+       list(
+           APPEND g_SystemIntegrationTests_SOURCES
+           "systemintegration-tests/dbus/End2EndDbusTest.cpp"
+       )
+    endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
+
+    add_executable(
+       g_SystemIntegrationTests
+       ${cluster_controller_test_HEADERS}
+       ${cluster_controller_test_SOURCES}
+       ${g_SystemIntegrationTests_SOURCES}
+    )
+
+    add_dependencies(g_SystemIntegrationTests googletest)
+    add_dependencies(g_SystemIntegrationTests googlemock)
+
+    target_link_libraries(g_SystemIntegrationTests ${cluster_controller_test_TARGET_LIBRARIES})
+
+    set_target_properties(
+       g_SystemIntegrationTests
+       PROPERTIES
+       COMPILE_FLAGS "-Wno-effc++ -Wno-unused-parameter"
+    )
+
+    target_include_directories(
+        g_SystemIntegrationTests
+        SYSTEM
+        PRIVATE ${googletest_source_dir}/include
+        PRIVATE ${googlemock_source_dir}/include
+        PRIVATE ${cluster_controller_test_INCLUDE_DIRECTORIES}
+    )
+
+else()
+    # Build tests that run on libjoynr
+
+    ###############
+    # g_UnitTests #
+    ###############
+
+    set(
+        g_UnitTests_SOURCES
+        "unit-tests/JsonSerializerTest.cpp"
+    )
+
+    add_executable(
+        g_UnitTests
+        ${libjoynr_test_HEADERS}
+        ${libjoynr_test_SOURCES}
+        ${g_UnitTests_SOURCES}
+    )
+
+    add_dependencies(g_UnitTests googletest)
+    add_dependencies(g_UnitTests googlemock)
+
+    target_link_libraries(
+        g_UnitTests
+        Qt5::Test
+        ${libjoynr_test_TARGET_LIBRARIES}
+    )
+
+    set_target_properties(
+        g_UnitTests
+        PROPERTIES
+        COMPILE_FLAGS "-Wno-effc++ -Wno-unused-parameter"
+    )
+
+    target_include_directories(
+        g_UnitTests
+        SYSTEM
+        PRIVATE ${googletest_source_dir}/include
+        PRIVATE ${googlemock_source_dir}/include
+        PRIVATE ${JoynrTest_INCLUDE_DIRECTORIES}
+    )
+
+    ############################
+    # g_SystemIntegrationTests #
+    ############################
+
+    set(
+       g_SystemIntegrationTests_SOURCES
+       "systemintegration-tests/TestConfiguration.h"
+       "systemintegration-tests/CombinedEnd2EndTest.h"
+       "systemintegration-tests/CombinedEnd2EndTest.cpp"
+    )
+
+    add_executable(
+       g_SystemIntegrationTests
+       ${libjoynr_test_HEADERS}
+       ${libjoynr_test_SOURCES}
+       ${g_SystemIntegrationTests_SOURCES}
+    )
+
+    add_dependencies(g_SystemIntegrationTests googletest)
+    add_dependencies(g_SystemIntegrationTests googlemock)
+
+    target_link_libraries(g_SystemIntegrationTests ${libjoynr_test_TARGET_LIBRARIES})
+
+    set_target_properties(
+       g_SystemIntegrationTests
+       PROPERTIES
+       COMPILE_FLAGS "-Wno-effc++ -Wno-unused-parameter"
+    )
+
+    target_include_directories(
+        g_SystemIntegrationTests
+        SYSTEM
+        PRIVATE ${googletest_source_dir}/include
+        PRIVATE ${googlemock_source_dir}/include
+        PRIVATE ${JoynrTest_INCLUDE_DIRECTORIES}
+    )
+
+endif(${BUILD_CLUSTER_CONTROLLER})

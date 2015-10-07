@@ -20,29 +20,33 @@ package io.joynr.proxy;
  */
 
 import io.joynr.arbitration.ArbitrationResult;
-import io.joynr.arbitration.ArbitrationStatus;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.common.ExpiryDate;
-import io.joynr.dispatcher.JoynrMessageFactory;
-import io.joynr.dispatcher.MessagingEndpointDirectory;
-import io.joynr.dispatcher.ReplyCaller;
-import io.joynr.dispatcher.RequestReplyDispatcher;
-import io.joynr.dispatcher.RequestReplySender;
-import io.joynr.dispatcher.RequestReplySenderImpl;
-import io.joynr.dispatcher.rpc.JoynrMessagingConnectorFactory;
 import io.joynr.dispatcher.rpc.JoynrSyncInterface;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
-import io.joynr.endpoints.EndpointAddressBase;
-import io.joynr.endpoints.JoynrMessagingEndpointAddress;
+import io.joynr.dispatching.JoynrMessageFactory;
+import io.joynr.dispatching.RequestCallerDirectory;
+import io.joynr.dispatching.RequestReplyManager;
+import io.joynr.dispatching.RequestReplyManagerImpl;
+import io.joynr.dispatching.rpc.ReplyCaller;
+import io.joynr.dispatching.rpc.ReplyCallerDirectory;
+import io.joynr.dispatching.rpc.RequestInterpreter;
+import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.MessagingQos;
-import io.joynr.pubsub.subscription.SubscriptionManager;
+import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.routing.MessageRouterImpl;
+import io.joynr.messaging.routing.RoutingTable;
+import io.joynr.messaging.routing.RoutingTableImpl;
 
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
 
 import joynr.JoynrMessage;
 import joynr.Reply;
 import joynr.Request;
+import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.ChannelAddress;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -62,7 +66,7 @@ public class ProxyArbitrationTest {
     @Mock
     MessageSender messageSender;
     @Mock
-    private RequestReplyDispatcher dispatcher;
+    private ReplyCallerDirectory replyCallerDirectory;
     @Mock
     private SubscriptionManager subscriptionManager;
     @Mock
@@ -72,10 +76,10 @@ public class ProxyArbitrationTest {
 
     ProxyInvocationHandlerImpl proxyHandler;
 
-    private MessagingEndpointDirectory messagingEndpointDirectory;
+    private RoutingTable routingTable;
     private String participantId;
-    private EndpointAddressBase correctEndpointAddress;
-    private EndpointAddressBase wrongEndpointAddress;
+    private Address correctEndpointAddress;
+    private MessageRouter messageRouter;
 
     public static interface TestSyncInterface extends JoynrSyncInterface {
         public String demoMethod3();
@@ -90,43 +94,54 @@ public class ProxyArbitrationTest {
         DiscoveryQos discoveryQos = new DiscoveryQos();
         MessagingQos messagingQos = new MessagingQos();
 
-        messagingEndpointDirectory = new MessagingEndpointDirectory("channelurldirectory_participantid",
-                                                                    "discoverydirectory_channelid",
-                                                                    "capabilitiesdirectory_participantid",
-                                                                    "discoverydirectory_channelid");
+        routingTable = new RoutingTableImpl("channelurldirectory_participantid",
+                                            new ChannelAddress("discoverydirectory_channelid"),
+                                            "capabilitiesdirectory_participantid",
+                                            new ChannelAddress("discoverydirectory_channelid"));
+
+        messageRouter = new MessageRouterImpl(routingTable, messageSender);
+
         participantId = "testParticipant";
-        correctEndpointAddress = new JoynrMessagingEndpointAddress(CORRECT_CHANNELID);
-        wrongEndpointAddress = new JoynrMessagingEndpointAddress("wrongEndpointAddress");
+        correctEndpointAddress = new ChannelAddress(CORRECT_CHANNELID);
 
-        messagingEndpointDirectory.put(participantId, wrongEndpointAddress);
-        messagingEndpointDirectory.put(participantId, correctEndpointAddress);
+        routingTable.put(participantId, correctEndpointAddress);
 
-        RequestReplySender requestReplySender = new RequestReplySenderImpl(joynrMessageFactory,
-                                                                           messageSender,
-                                                                           messagingEndpointDirectory);
-        JoynrMessagingConnectorFactory joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(requestReplySender,
-                                                                                                           dispatcher,
+        RequestReplyManager requestReplyManager = new RequestReplyManagerImpl(joynrMessageFactory,
+                                                                              replyCallerDirectory,
+                                                                              Mockito.mock(RequestCallerDirectory.class),
+                                                                              messageRouter,
+                                                                              Mockito.mock(RequestInterpreter.class),
+                                                                              Mockito.mock(ScheduledExecutorService.class));
+        JoynrMessagingConnectorFactory joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(requestReplyManager,
+                                                                                                           replyCallerDirectory,
                                                                                                            subscriptionManager);
-        ConnectorFactory connectorFactory = new ConnectorFactory(joynrMessagingConnectorFactory);
+        ConnectorFactory connectorFactory = new ConnectorFactory(joynrMessagingConnectorFactory, messageRouter);
         proxyHandler = new ProxyInvocationHandlerImpl("domain",
                                                       "interfaceName",
                                                       participantId,
                                                       discoveryQos,
                                                       messagingQos,
                                                       connectorFactory);
-        List<EndpointAddressBase> endpoints = Lists.newArrayList(correctEndpointAddress);
+        List<Address> endpoints = Lists.newArrayList(correctEndpointAddress);
 
-        DiscoveryAgent discoveryAgent = new DiscoveryAgent();
-        discoveryAgent.setProxyInvocationHandler(proxyHandler);
-        discoveryAgent.setArbitrationResult(ArbitrationStatus.ArbitrationSuccesful,
-                                            new ArbitrationResult(participantId, endpoints));
+        proxyHandler.createConnector(new ArbitrationResult(participantId, endpoints));
 
         Request request = Mockito.<Request> any();
         Mockito.when(joynrMessageFactory.createRequest(Mockito.anyString(),
                                                        Mockito.anyString(),
                                                        request,
-                                                       Mockito.any(ExpiryDate.class),
-                                                       Mockito.anyString())).thenReturn(new JoynrMessage());
+                                                       Mockito.any(ExpiryDate.class)))
+               .thenAnswer(new Answer<JoynrMessage>() {
+
+                   @Override
+                   public JoynrMessage answer(InvocationOnMock invocation) throws Throwable {
+                       JoynrMessage result = new JoynrMessage();
+                       result.setFrom((String) invocation.getArguments()[0]);
+                       result.setTo((String) invocation.getArguments()[1]);
+                       return result;
+                   }
+
+               });
 
         Mockito.doAnswer(new Answer<Object>() {
 
@@ -150,7 +165,9 @@ public class ProxyArbitrationTest {
                 return null;
             }
 
-        }).when(dispatcher).addReplyCaller(Mockito.anyString(), Mockito.<ReplyCaller> any(), Mockito.anyLong());
+        }).when(replyCallerDirectory).addReplyCaller(Mockito.anyString(),
+                                                     Mockito.<ReplyCaller> any(),
+                                                     Mockito.any(ExpiryDate.class));
     }
 
     @Test

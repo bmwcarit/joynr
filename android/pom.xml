@@ -26,23 +26,24 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>joynr</artifactId>
-		<version>0.9.4</version>
+		<version>0.10.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<modules>
 		<module>joynr-android-runtime</module>
 		<module>robolectric-unittests</module>
+		<module>robolectric-integration-tests</module>
 	</modules>
-	
-	  
-  	<dependencies>
+
+
+	<dependencies>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 			<scope>provided</scope>
-		</dependency>	
-		
+		</dependency>
+
 	</dependencies>
-	
+
 </project>

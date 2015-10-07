@@ -24,13 +24,13 @@
 	<packaging>jar</packaging>
 
 	<name>${project.groupId}:${project.artifactId}</name>
-	
+
 	<description>common interfaces and implementations for directories needed by bounceproxy controller</description>
 
 	<parent>
 		<groupId>io.joynr.java.messaging.bounceproxy</groupId>
 		<artifactId>bounceproxy-controller-persistence</artifactId>
-		<version>0.9.4</version>
+		<version>0.10.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -66,7 +66,7 @@
 			<groupId>org.hamcrest</groupId>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
 			<artifactId>hamcrest-library</artifactId>
 			<groupId>org.hamcrest</groupId>

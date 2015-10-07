@@ -23,12 +23,16 @@ import org.franca.core.franca.FAnnotation
 import org.franca.core.franca.FAnnotationType
 import org.franca.core.franca.FBroadcast
 import org.franca.core.franca.FCompoundType
-import org.franca.core.franca.FEnumerationType
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FModelElement
 import org.franca.core.franca.FType
+import org.franca.core.franca.FMethod
+import io.joynr.generator.util.JavaTypeUtil
+import com.google.inject.Inject
+import java.util.HashMap
 
 class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
+	@Inject extension JavaTypeUtil
 
 	def buildPackagePath(FType datatype, String separator, boolean includeTypeCollection) {
 		if (datatype == null) {
@@ -107,6 +111,47 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 			}
 		}
 		return false
+	}
+
+	def boolean hasMethodWithErrorEnum(FInterface interfaceType) {
+		for (method : interfaceType.methods) {
+			if (method.errorEnum != null) {
+				return true;
+			}
+		}
+		return hasMethodWithImplicitErrorEnum(interfaceType);
+	}
+
+	def boolean hasErrorEnum(FMethod method) {
+		return (method.errors != null) || (method.errorEnum != null);
+	}
+
+	def methodToErrorEnumName(FInterface serviceInterface) {
+		var HashMap<FMethod, String> methodToErrorEnumName = new HashMap<FMethod, String>()
+		var uniqueMethodSignatureToErrorEnumName = new HashMap<String, String>();
+		var methodNameToCount = overloadedMethodCounts(getMethods(serviceInterface));
+		var methodNameToIndex = new HashMap<String, Integer>();
+
+		for (FMethod method : getMethods(serviceInterface)) {
+			if (methodNameToCount.get(method.name) == 1) {
+				// method not overloaded, so no index needed
+				methodToErrorEnumName.put(method, method.name.toFirstUpper + "ErrorEnum");
+			} else {
+				// initialize index if not existent
+				if (!methodNameToIndex.containsKey(method.name)) {
+					methodNameToIndex.put(method.name, 0);
+				}
+				val methodSignature = createMethodSignatureFromInParameters(method);
+				if (!uniqueMethodSignatureToErrorEnumName.containsKey(methodSignature)) {
+					var Integer index = methodNameToIndex.get(method.name);
+					index++;
+					methodNameToIndex.put(method.name, index);
+					uniqueMethodSignatureToErrorEnumName.put(methodSignature, method.name.toFirstUpper + index);
+				}
+				methodToErrorEnumName.put(method, uniqueMethodSignatureToErrorEnumName.get(methodSignature) + "ErrorEnum");
+			}
+		}
+		return methodToErrorEnumName
 	}
 
 	def boolean hasMethodWithArguments(FInterface interfaceType){
@@ -282,56 +327,5 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 
 	def getJoynTypePackagePrefix(){
 		joynrGenerationPrefix
-	}
-
-	def generateEnumCode(FEnumerationType enumType) {
-		val typeName = enumType.joynrName
-'''
-/**
-«appendJavadocSummaryAndWriteSeeAndDescription(enumType, " *")»
- */
-public enum «typeName» {
-	«FOR enumValue : getEnumElementsAndBaseEnumElements(enumType) SEPARATOR ","»
-	/**
-	 * «appendJavadocComment(enumValue, "* ")»
-	 */
-	«enumValue.joynrName»
-	«ENDFOR»;
-
-	static final Map<Integer, «typeName»> ordinalToEnumValues = new HashMap<Integer, «typeName»>();
-
-	static{
-		«var i = -1»
-		«FOR enumValue : getEnumElementsAndBaseEnumElements(enumType)»
-		ordinalToEnumValues.put(Integer.valueOf(«IF enumValue.value==null|| enumValue.value.equals("")»«i=i+1»«ELSE»«enumValue.value»«ENDIF»), «enumValue.joynrName»);
-		«ENDFOR»
-	}
-
-	/**
-	 * Get the matching enum for an ordinal number
-	 * @param ordinal The ordinal number
-	 * @return The matching enum for the given ordinal number
-	 */
-	public static «typeName» getEnumValue(Integer ordinal) {
-		return ordinalToEnumValues.get(ordinal);
-	}
-
-	/**
-	 * Get the matching ordinal number for this enum
-	 * @return The ordinal number representing this enum
-	 */
-	public Integer getOrdinal() {
-		// TODO should we use a bidirectional map from a third-party library?
-		Integer ordinal = null;
-		for(Entry<Integer, «typeName»> entry : ordinalToEnumValues.entrySet()) {
-			if(this == entry.getValue()) {
-				ordinal = entry.getKey();
-				break;
-			}
-		}
-		return ordinal;
-	}
-}
-'''
 	}
 }

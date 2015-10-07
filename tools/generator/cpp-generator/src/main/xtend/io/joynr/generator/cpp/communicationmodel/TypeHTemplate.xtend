@@ -268,6 +268,10 @@ private:
 	void registerMetatypes();
 };
 
+inline uint qHash(const «type.typeName»& key) {
+	return key.hashCode();
+}
+
 «getNamespaceEnder(type)»
 
 namespace joynr {
@@ -280,10 +284,6 @@ inline QList<«type.typeName»> Util::valueOf<QList<«type.typeName»>>(const QV
 typedef «type.typeName» «type.typeName.replace("::", "__")»;
 Q_DECLARE_METATYPE(«type.typeName.replace("::", "__")»)
 Q_DECLARE_METATYPE(QList<«type.typeName.replace("::", "__")»>)
-
-inline uint qHash(const «type.typeName»& key) {
-	return key.hashCode();
-}
 
 
 #ifdef _MSC_VER

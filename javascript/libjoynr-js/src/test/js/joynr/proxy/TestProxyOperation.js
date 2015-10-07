@@ -340,28 +340,32 @@ joynrTestRequire(
                         it(
                                 "does not throw when giving wrong or nullable operation arguments",
                                 function() {
+                                    var spy = jasmine.createSpyObj("spy", [
+                                        "onFulfilled",
+                                        "onRejected"
+                                    ]);
                                     expect(function() {
                                         addFavoriteStation({
                                             radioStation : "myRadioStation"
-                                        });
+                                        }).then(spy.onFulfilled).catch(spy.onRejected);
                                     }).not.toThrow();
 
                                     expect(function() {
                                         addFavoriteStation({
                                             radioStation : undefined
-                                        });
+                                        }).then(spy.onFulfilled).catch(spy.onRejected);
                                     }).not.toThrow();
 
                                     expect(function() {
-                                        addFavoriteStation({});
+                                        addFavoriteStation({}).then(spy.onFulfilled).catch(spy.onRejected);
                                     }).not.toThrow();
 
                                     expect(function() {
-                                        addFavoriteStation(undefined);
+                                        addFavoriteStation(undefined).then(spy.onFulfilled).catch(spy.onRejected);
                                     }).not.toThrow();
 
                                     expect(function() {
-                                        addFavoriteStation(null);
+                                        addFavoriteStation(null).then(spy.onFulfilled).catch(spy.onRejected);
                                     }).not.toThrow();
                                 });
 

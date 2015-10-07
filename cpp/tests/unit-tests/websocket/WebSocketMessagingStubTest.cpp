@@ -45,7 +45,6 @@ public:
             QWebSocketServer::NonSecureMode,
             this
         ),
-        clients(),
         serverAddress(Q_NULLPTR),
         webSocket(Q_NULLPTR)
     {
@@ -69,7 +68,6 @@ public:
     ~WebSocketMessagingStubTest() {
         QSignalSpy serverClosedSpy(&server, SIGNAL(closed()));
         server.close();
-        qDeleteAll(clients.begin(), clients.end());
         serverClosedSpy.wait();
     }
 
@@ -124,19 +122,13 @@ public Q_SLOTS:
         LOG_TRACE(logger, QStringLiteral("on disconnected"));
         QWebSocket* client = qobject_cast<QWebSocket*>(sender());
         if(client) {
-            clients.removeAll(client);
             client->deleteLater();
         }
-    }
-
-    void onMessagingStubClosed(const joynr::system::RoutingTypes::QtAddress& address) {
-        LOG_TRACE(logger, QString("on messaging stub closed: %0").arg(address.toString()));
     }
 
 protected:
     joynr::joynr_logging::Logger* logger;
     QWebSocketServer server;
-    QList<QWebSocket*> clients;
     joynr::system::RoutingTypes::QtWebSocketAddress* serverAddress;
     QWebSocket* webSocket;
 };

@@ -19,8 +19,8 @@ package io.joynr.util;
  * #L%
  */
 
-import io.joynr.dispatcher.DestinationAddress;
-import io.joynr.dispatcher.InterfaceAddress;
+import io.joynr.dispatching.DestinationAddress;
+import io.joynr.dispatching.InterfaceAddress;
 
 import java.util.Random;
 

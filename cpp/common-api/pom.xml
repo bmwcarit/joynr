@@ -27,7 +27,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>cpp</artifactId>
-		<version>0.9.4</version>
+		<version>0.10.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -73,6 +73,12 @@
 			<plugin>
 				<groupId>io.joynr.tools.generator</groupId>
 				<artifactId>joynr-generator-maven-plugin</artifactId>
+				<!-- stick to 0.9.0, as the used common api templates require
+					 franca version < 0.10.0. However, the
+					 joynr-generator-maven-plugin uses franca version 0.10.0
+					 since joynr.version 0.10.0
+				-->
+				<version>0.9.0</version>
 				<executions>
 					<execution>
 						<id>commonapi</id>

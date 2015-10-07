@@ -31,6 +31,7 @@ ENV REFRESHED_ANDROID_AT 2015-05-13
 RUN echo y | android update sdk --no-ui -a --filter ${ANDROID_API_LEVELS}
 RUN echo y | android update sdk --no-ui -a --filter build-tools-${ANDROID_BUILD_TOOLS_VERSION}
 RUN echo y | android update sdk --no-ui -a --filter platform-tools
+RUN echo y | android update sdk --no-ui -a --filter extra-android-m2repository
 
 COPY scripts/build/* /data/scripts/build/
 RUN chmod 777 -R /data/scripts/build/

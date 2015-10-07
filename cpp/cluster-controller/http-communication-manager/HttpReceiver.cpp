@@ -35,7 +35,7 @@ namespace joynr
 
 using namespace joynr_logging;
 
-Logger* HttpReceiver::logger = Logging::getInstance()->getLogger("MSG", "HttpReveicer");
+Logger* HttpReceiver::logger = Logging::getInstance()->getLogger("MSG", "HttpReceiver");
 
 HttpReceiver::HttpReceiver(const MessagingSettings& settings,
                            QSharedPointer<MessageRouter> messageRouter)
@@ -51,6 +51,9 @@ HttpReceiver::HttpReceiver(const MessagingSettings& settings,
     channelId = persist.getChannelId();
     receiverId = persist.getReceiverId();
     init();
+
+    // Remove any existing curl handles
+    HttpNetworking::getInstance()->getCurlHandlePool()->reset();
 }
 
 void HttpReceiver::init()

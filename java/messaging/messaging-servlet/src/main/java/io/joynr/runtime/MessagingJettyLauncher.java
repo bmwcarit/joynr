@@ -108,8 +108,12 @@ public class MessagingJettyLauncher {
         input.next(pattern);
 
         input.close();
-        server.stop();
-        server.join();
-
+        try {
+            server.stop();
+            server.join();
+        } catch (Exception e) {
+            // do nothing as we don't want tests to fail only because
+            // stopping of the server did not work
+        }
     }
 }

@@ -29,7 +29,7 @@
 	<parent>
 		<groupId>io.joynr.java</groupId>
 		<artifactId>messaging</artifactId>
-		<version>0.9.4</version>
+		<version>0.10.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -39,10 +39,10 @@
 	</properties>
 
 	<dependencies>
-		<!-- 
+		<!--
 			The sources of javassist must be added to the WAR due to its LGPL-2.1 license.
 			It is pulled in as transitive dependency:
-			io.joynr.java.messaging:messaging-servlet:jar:classes:0.9.4:compile
+			io.joynr.java.messaging:messaging-servlet:jar:classes:0.9.3:compile
 			+- org.reflections:reflections:jar:0.9.8:compile
 			|  +- javassist:javassist:jar:3.12.1.GA:compile
 			Please double check the correct version if these dependencies change.
@@ -83,7 +83,7 @@
 			<groupId>org.reflections</groupId>
 			<artifactId>reflections</artifactId>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>com.sun.jersey</groupId>
 			<artifactId>jersey-core</artifactId>
@@ -106,9 +106,9 @@
 			<artifactId>jersey-guice</artifactId>
 		</dependency>
 
-		<!-- <dependency> <groupId>com.sun.jersey</groupId> <artifactId>jersey-json</artifactId> 
-			<scope>compile</scope> <exclusions> <exclusion> <artifactId>stax-api</artifactId> 
-			<groupId>javax.xml.stream</groupId> </exclusion> <exclusion> <groupId>javax.activation</groupId> 
+		<!-- <dependency> <groupId>com.sun.jersey</groupId> <artifactId>jersey-json</artifactId>
+			<scope>compile</scope> <exclusions> <exclusion> <artifactId>stax-api</artifactId>
+			<groupId>javax.xml.stream</groupId> </exclusion> <exclusion> <groupId>javax.activation</groupId>
 			<artifactId>activation</artifactId> </exclusion> </exclusions> </dependency> -->
 
 		<dependency>
@@ -143,13 +143,13 @@
 			<artifactId>javax.ejb</artifactId>
 			<version>3.1.1</version>
 		</dependency-->
-            
+
 	</dependencies>
 
 
 	<build>
 		<finalName>${project.artifactId}</finalName>
-		<!-- <resources> <resource> <directory>src/main/resources</directory> </resource> 
+		<!-- <resources> <resource> <directory>src/main/resources</directory> </resource>
 			</resources> -->
 
 		<plugins>

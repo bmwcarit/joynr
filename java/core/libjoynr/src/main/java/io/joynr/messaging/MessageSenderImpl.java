@@ -53,8 +53,6 @@ public class MessageSenderImpl implements MessageSender {
     private static final DateFormat DateFormatter = new SimpleDateFormat("dd/MM HH:mm:ss:sss");
     public static final int THREADPOOLSIZE = 4;
 
-    private static final long SECONDS = 1000;
-
     private final MessagingSettings settings;
     private MessageScheduler sendRequestScheduler;
 
@@ -62,19 +60,19 @@ public class MessageSenderImpl implements MessageSender {
 
     private final ObjectMapper objectMapper;
 
-    private final IMessageReceivers messageReceivers;
+    private MessageReceiver messageReceiver;
 
     @Inject
     public MessageSenderImpl(MessageScheduler sendRequestScheduler,
                              @Named(MessagingPropertyKeys.CHANNELID) String ownChannelId,
                              MessagingSettings settings,
                              ObjectMapper objectMapper,
-                             IMessageReceivers messageReceivers) {
+                             MessageReceiver messageReceiver) {
         this.sendRequestScheduler = sendRequestScheduler;
         this.ownChannelId = ownChannelId;
         this.settings = settings;
         this.objectMapper = objectMapper;
-        this.messageReceivers = messageReceivers;
+        this.messageReceiver = messageReceiver;
     }
 
     /*
@@ -106,17 +104,7 @@ public class MessageSenderImpl implements MessageSender {
             message.setReplyTo(getReplyToChannelId());
         }
 
-        if (messageReceivers.contains(channelId)) {
-            sendMessageLocally(message, channelId);
-        } else {
-            sendMessageViaHttpClient(channelId, message);
-        }
-    }
-
-    private void sendMessageLocally(JoynrMessage message, String channelId) {
-        logger.trace("starting sendMessageLocally");
-
-        messageReceivers.getReceiverForChannelId(channelId).receive(message);
+        sendMessageViaHttpClient(channelId, message);
     }
 
     private void sendMessageViaHttpClient(final String channelId, final JoynrMessage message)
@@ -124,12 +112,8 @@ public class MessageSenderImpl implements MessageSender {
                                                                                              JsonMappingException,
                                                                                              IOException {
         if (message == null) {
-            String errorMessage = "message cannot be null in sendMessage";
-            logger.error(errorMessage);
-            NullPointerException e = new NullPointerException(errorMessage);
-
-            messageReceivers.getReceiverForChannelId(getReplyToChannelId()).onError(null, e);
-            throw e;
+            //this case should never happen
+            assert false;
         }
 
         logger.trace("starting sendMessageViaHttpClient");
@@ -163,35 +147,12 @@ public class MessageSenderImpl implements MessageSender {
                 long delay_ms = settings.getSendMsgRetryIntervalMs();
                 delay_ms += exponentialBackoff(delay_ms, messageContainer.getRetries());
 
-                // TODO Discuss how to report errors to the replycaller
-                // This would remove the replyCaller and future replies will not be received
-                // If the reply caller should be notified about all errors the implementation of onError has to be
-                // modified
-                // messageReceivers.getReceiverForChannelId(getReplyToChannelId()).onError(message, e);
-
-                // Only reschedule the message if the delay would not cause the message to timeout.
-                // Otherwise, just discard it now
-                long rescheduleTime_absolute = System.currentTimeMillis() + delay_ms;
-                if (rescheduleTime_absolute > messageContainer.getExpiryDate()) {
-                    logger.warn("DROPPING MESSAGE Retry delay would cause message to expire. channelId: {} {} reschedleTime: "
-                                        + DateFormatter.format(rescheduleTime_absolute)
-                                        + "TTL deadline: "
-                                        + DateFormatter.format(messageContainer.getExpiryDate()),
-                                channelId,
-                                message);
-                    messageReceivers.getReceiverForChannelId(getReplyToChannelId()).onError(message, error);
-                    return;
-                }
-
                 try {
                     logger.error("Rescheduling messageId: {} with delay " + delay_ms
                                          + " ms, new TTL expiration date: {}",
                                  messageContainer.getMessageId(),
                                  DateFormatter.format(messageContainer.getExpiryDate()));
-                    sendRequestScheduler.scheduleMessage(messageContainer,
-                                                         delay_ms,
-                                                         this,
-                                                         messageReceivers.getReceiverForChannelId(getReplyToChannelId()));
+                    sendRequestScheduler.scheduleMessage(messageContainer, delay_ms, this, messageReceiver);
                     return;
                 } catch (JoynrSendBufferFullException e) {
                     try {
@@ -209,13 +170,10 @@ public class MessageSenderImpl implements MessageSender {
         // try to schedule a new message once, if the buffer is full, an
         // exception is thrown
 
-        String replyToChannelId = getReplyToChannelId();
-        MessageReceiver receiverForChannelId = messageReceivers.getReceiverForChannelId(replyToChannelId);
-
         logger.trace("SEND messageId: {} from: {} to: {} scheduleRequest", new Object[]{ message.getId(),
                 message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
                 message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID) });
-        sendRequestScheduler.scheduleMessage(messageContainer, 0, failureAction, receiverForChannelId);
+        sendRequestScheduler.scheduleMessage(messageContainer, 0, failureAction, messageReceiver);
     }
 
     /*

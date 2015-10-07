@@ -20,7 +20,7 @@ package io.joynr.messaging.bounceproxy.controller.strategy;
  * #L%
  */
 
-import io.joynr.messaging.bounceproxy.controller.exception.JoynrChannelNotAssignableException;
+import io.joynr.exceptions.JoynrChannelNotAssignableException;
 import io.joynr.messaging.info.ControlledBounceProxyInformation;
 
 /**

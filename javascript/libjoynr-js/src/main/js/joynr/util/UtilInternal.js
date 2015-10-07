@@ -249,8 +249,10 @@ define("joynr/util/UtilInternal", [
      *          callbacks to be invoked
      * @param {Object}
      *          data provided as callback argument
+     * @param {Object}
+     *          filters filter array provided as callback argument
      */
-    UtilInternal.fire = function fire(callbacks, data) {
+    UtilInternal.fire = function fire(callbacks, data, filters) {
         var callbackFct;
         for (callbackFct in callbacks) {
             if (callbacks.hasOwnProperty(callbackFct)) {

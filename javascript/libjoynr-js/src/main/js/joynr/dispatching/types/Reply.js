@@ -40,9 +40,11 @@ define("joynr/dispatching/types/Reply", [
             "Object"
         ], "settings");
         Util.checkProperty(settings.requestReplyId, "String", "settings.requestReplyId");
-        Util.checkProperty(settings.response, "Array", "settings.response");
-        for (i = 0; i < settings.response.length; i++) {
-            settings.response[i] = Util.ensureTypedValues(settings.response[i]);
+        Util.checkPropertyIfDefined(settings.response, "Array", "settings.response");
+        if (settings.response) {
+            for (i = 0; i < settings.response.length; i++) {
+                settings.response[i] = Util.ensureTypedValues(settings.response[i]);
+            }
         }
 
         /**

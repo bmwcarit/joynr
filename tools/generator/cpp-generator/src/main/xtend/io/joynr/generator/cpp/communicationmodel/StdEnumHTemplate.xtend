@@ -37,7 +37,7 @@ class StdEnumHTemplate implements EnumTemplate {
 
 	override generate(FEnumerationType type)
 '''
-«val typeName = type.joynrNameStd»
+«val typeName = type.joynrName»
 «val headerGuard = (getPackagePathWithJoynrPrefix(type, "_")+"_"+typeName+"_h").toUpperCase»
 «warning»
 #ifndef «headerGuard»
@@ -57,20 +57,25 @@ class StdEnumHTemplate implements EnumTemplate {
 /** @brief Enumeration wrapper class «typeName» */
 struct «getDllExportMacro()»«typeName» {
 	«IF type.hasExtendsDeclaration»
-		// This enum inherits enumeration values from «type.extendedType.typeNameStd».
+		// This enum inherits enumeration values from «type.extendedType.typeName».
 	«ENDIF»
 	/**
 	«appendDoxygenSummaryAndWriteSeeAndDescription(type, " *")»
 	 */
 	enum «getNestedEnumName()» : uint32_t {
-		«var ordinal = 0»
+		«var ordinal = -1»
 		«FOR enumtype : getEnumElementsAndBaseEnumElements(type) SEPARATOR ','»
 			/**
 			 * @brief «appendDoxygenComment(enumtype, "* ")»
 			 */
-			«enumtype.joynrName» = «ordinal++»
-			««« TODO after switch to Franca 0.9.2 we must check for ordinals defined in the fidl
-			««««enumtype.joynrName» = «enumtype.value.enumeratorValue»
+			«{
+				ordinal = if (enumtype.value.enumeratorValue == null)
+							ordinal+1
+						else
+							Integer::valueOf(enumtype.value.enumeratorValue);
+				""
+			}»
+			«enumtype.joynrName» = «ordinal»
 		«ENDFOR»
 	};
 

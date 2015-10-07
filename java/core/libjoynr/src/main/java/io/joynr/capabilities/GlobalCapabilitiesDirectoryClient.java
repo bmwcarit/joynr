@@ -5,8 +5,7 @@ import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.ProxyBuilder;
-import io.joynr.proxy.ProxyBuilderDefaultImpl;
-import io.joynr.proxy.ProxyInvocationHandlerFactory;
+import io.joynr.proxy.ProxyBuilderFactory;
 
 import java.util.List;
 
@@ -36,24 +35,17 @@ public class GlobalCapabilitiesDirectoryClient {
 
     // TODO define a proper max messaging ttl
     private static final long TTL_30_DAYS_IN_MS = 30L * 24L * 60L * 60L * 1000L;
-    private ProxyBuilder<GlobalCapabilitiesDirectoryProxy> capabilitiesProxyBuilder;
-    private String domain;
-    private LocalCapabilitiesDirectory capabilitiesDirectory;
-    private ProxyInvocationHandlerFactory proxyInvocationHandlerFactory;
+    private final String domain;
+    private final ProxyBuilderFactory proxyBuilderFactory;
 
-    public GlobalCapabilitiesDirectoryClient(String domain,
-                                             LocalCapabilitiesDirectory capabilitiesDirectory,
-                                             ProxyInvocationHandlerFactory proxyInvocationHandlerFactory) {
+    public GlobalCapabilitiesDirectoryClient(ProxyBuilderFactory proxyBuilderFactory, String domain) {
+        this.proxyBuilderFactory = proxyBuilderFactory;
         this.domain = domain;
-        this.capabilitiesDirectory = capabilitiesDirectory;
-        this.proxyInvocationHandlerFactory = proxyInvocationHandlerFactory;
     }
 
     private GlobalCapabilitiesDirectoryProxy getProxy(long ttl) {
-        this.capabilitiesProxyBuilder = new ProxyBuilderDefaultImpl<GlobalCapabilitiesDirectoryProxy>(capabilitiesDirectory,
-                                                                                                      domain,
-                                                                                                      GlobalCapabilitiesDirectoryProxy.class,
-                                                                                                      proxyInvocationHandlerFactory);
+        ProxyBuilder<GlobalCapabilitiesDirectoryProxy> capabilitiesProxyBuilder = proxyBuilderFactory.get(domain,
+                                                                                                          GlobalCapabilitiesDirectoryProxy.class);
         DiscoveryQos discoveryQos = new DiscoveryQos(DiscoveryScope.GLOBAL_ONLY, DiscoveryQos.NO_MAX_AGE);
         MessagingQos messagingQos = new MessagingQos(ttl);
         return capabilitiesProxyBuilder.setDiscoveryQos(discoveryQos).setMessagingQos(messagingQos).build();
@@ -68,8 +60,8 @@ public class GlobalCapabilitiesDirectoryClient {
 
     }
 
-    public void remove(List<String> newArrayList) {
-        getProxy(TTL_30_DAYS_IN_MS).remove(newArrayList);
+    public void remove(Callback<Void> callback, List<String> newArrayList) {
+        getProxy(TTL_30_DAYS_IN_MS).remove(callback, newArrayList);
     }
 
     public void lookup(Callback<CapabilityInformation> callback, String participantId, long timeout) {

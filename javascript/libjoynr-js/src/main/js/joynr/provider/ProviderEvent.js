@@ -17,7 +17,10 @@
  * #L%
  */
 
-define("joynr/provider/ProviderEvent", [], function() {
+define("joynr/provider/ProviderEvent", [
+    "joynr/provider/BroadcastOutputParameters",
+    "joynr/util/UtilInternal"
+], function(BroadcastOutputParameters, Util) {
 
     /**
      * Constructor of ProviderEvent object that is used in the generation of provider objects
@@ -28,28 +31,101 @@ define("joynr/provider/ProviderEvent", [], function() {
      * @param {Provider} parent is the provider object that contains this attribute
      * @param {Object} [implementation] the definition of the event implementation
      * @param {String} eventName the name of the event
-     * @param {String} eventCaps the capabilities of the event:
-     *            [NOTIFY][READWRITE|READONLY|WRITEONLY], e.g. NOTIFYREADWRITE
-     *            if the string contains 'NOTIFY' this event contains subscribe and unsubscribe
-     *            if the string contains 'READ' or 'WRITE' this event has get and set
+     * @param {Object} outputParameterProperties the output parameter names and types
+     * @param {Object} filterSettings the filter settings
      */
-    function ProviderEvent(parent, implementation, eventName) {
+    function ProviderEvent(
+            parent,
+            implementation,
+            eventName,
+            outputParameterProperties,
+            filterSettings) {
         if (!(this instanceof ProviderEvent)) {
             // in case someone calls constructor without new keyword (e.g. var c = Constructor({..}))
             return new ProviderEvent(implementation, eventName);
         }
 
+        var callbacks = [];
+        var filters = [];
+
+        this.createBroadcastOutputParameters = function createBroadcastOutputParameters() {
+            return new BroadcastOutputParameters(outputParameterProperties);
+        };
+
         /**
-         * if this attribute is changed the applicationshould call this function with the new value
-         * which causes the a publication containing the new value to be sent to all subscribers.
+         * if this event is fired the applications should call this function with the new
+         * output parameters which causes the publication containing the values to be
+         * sent to all subscribers.
          *
-         * @name ProviderEvent#valueChanged
+         * @name ProviderEvent#fire
          * @function
          *
-         * @param {?} value the new value of the attribute
+         * @param {BroadcastOutputParameters}
+         *     broadcastOutputParameters the broadcast output parameters
          */
-        this.valueChanged = function valueChanged(value) {
-        //TODO: implement call all publish subscribers
+        this.fire = function fire(broadcastOutputParameters) {
+            // the Util.fire method accepts exactly one argument for the callback
+            var data = {
+                broadcastOutputParameters : broadcastOutputParameters,
+                filters : filters
+            };
+            Util.fire(callbacks, data);
+        };
+
+        /**
+         * Registers an Observer for value changes
+         *
+         * @name ProviderAttributeNotify#registerObserver
+         * @function
+         *
+         * @param {Function}
+         *            observer the callback function with the signature "function(value){..}"
+         * @see ProviderEvent#unregisterObserver
+         */
+        this.registerObserver = function registerObserver(observer) {
+            callbacks.push(observer);
+        };
+
+        /**
+         * Unregisters an Observer for value changes
+         *
+         * @name ProviderAttributeNotify#unregisterObserver
+         * @function
+         *
+         * @param {Function}
+         *            observer the callback function with the signature "function(value){..}"
+         * @see ProviderEvent#registerObserver
+         */
+        this.unregisterObserver = function unregisterObserver(observer) {
+            Util.removeElementFromArray(callbacks, observer);
+        };
+
+        /**
+         * Registers a filter
+         *
+         * @name ProviderEvent#addBroadcastFilter
+         * @function
+         *
+         * @param {Function}
+         *            filter the callback object that executes the filtering
+         * @see ProviderEvent#deleteBroadcastFilter
+         */
+        this.addBroadcastFilter = function addBroadcastFilter(filter) {
+            filters.push(filter);
+        };
+
+        /**
+         * Unregisters an Observer for value changes
+         *
+         * @name ProviderAttributeNotify#deleteBroadcastFilter
+         * @function
+         *
+         * @param {Function}
+         *            filter the callback object that executes the filtering
+         * @see ProviderEvent#addBroadcastFilter
+         */
+        this.deleteBroadcastFilter = function deleteBroadcastFilter(filter) {
+            Util.removeElementFromArray(filters, filter);
         };
 
         return Object.freeze(this);

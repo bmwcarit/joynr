@@ -19,27 +19,25 @@ package io.joynr.util;
  * #L%
  */
 
-import io.joynr.dispatcher.MessagingEndpointDirectory;
-import io.joynr.messaging.IMessageReceivers;
-import io.joynr.messaging.MessageReceivers;
+import io.joynr.messaging.routing.RoutingTable;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 
 public class PreconfiguredEndpointDirectoryModule extends AbstractModule {
-    MessagingEndpointDirectory messagingEndpointDirectory;
+    RoutingTable routingTable;
 
-    public PreconfiguredEndpointDirectoryModule(MessagingEndpointDirectory messagingEndpointDirectory) {
-        this.messagingEndpointDirectory = messagingEndpointDirectory;
+    public PreconfiguredEndpointDirectoryModule(RoutingTable messagingEndpointDirectory) {
+        this.routingTable = messagingEndpointDirectory;
     }
 
     @Provides
-    MessagingEndpointDirectory provideEndpointDirectory() {
-        return messagingEndpointDirectory;
+    RoutingTable provideRoutingTable() {
+        return routingTable;
     }
 
     @Override
     protected void configure() {
-        bind(IMessageReceivers.class).to(MessageReceivers.class).asEagerSingleton();
+        //do nothing
     }
 }

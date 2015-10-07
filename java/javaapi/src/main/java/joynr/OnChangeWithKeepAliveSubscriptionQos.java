@@ -3,7 +3,7 @@ package joynr;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,22 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+/**
+ * Class representing the quality of service settings for subscriptions
+ * based on changes and time periods
+ * <br>
+ * This class stores quality of service settings used for subscriptions to
+ * <b>attributes</b> in generated proxy objects. Using it for subscriptions to
+ * broadcasts is theoretically possible because of inheritance but makes no
+ * sense (in this case the additional members will be ignored).
+ * <br>
+ * Notifications will be sent if the subscribed value has changed or a time
+ * interval without notifications has expired. The subscription will
+ * automatically expire after the expiry date is reached. If no publications
+ * were received for alertAfter Interval, publicationMissed will be called.
+ * <br>
+ * minInterval can be used to prevent too many messages being sent.
+ */
 public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQos implements
         HeartbeatSubscriptionInformation {
     private static final Logger logger = LoggerFactory.getLogger(OnChangeWithKeepAliveSubscriptionQos.class);
@@ -41,16 +57,34 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
     private long maxInterval;
     private long alertAfterInterval;
 
+    /**
+     * Default Constructor
+     */
     protected OnChangeWithKeepAliveSubscriptionQos() {
     }
 
     /**
+     * Constructor of OnChangeWithKeepAliveSubscriptionQos object with specified
+     * minInterval, maxInterval, and expiry date.
+     *
      * @param minInterval_ms
      *            defines how often an update may be sent
      * @param maxInterval_ms
-     *            defines how long to wait before sending an update even if the value did not change
+     *            defines how long to wait before sending an update even if the
+     *            value did not change
      * @param expiryDate
      *            how long is the subscription valid
+     *
+     * @see OnChangeSubscriptionQos#OnChangeSubscriptionQos(long, long, long)
+     *            OnChangeSubscriptionQos.OnChangeSubscriptionQos(long, long, long)
+     *            for more information about <b>minInterval</b>
+     * @see #setMaxInterval(long)
+     * @see SubscriptionQos#SubscriptionQos(long, long)
+     *            SubscriptionQos.SubscriptionQos(long, long)
+     *            for more information on <b>expiryDate</b> and <b>publicationTtl</b>
+     *            (publicationTtl will be set to its default value)
+     * @see #setAlertAfterInterval(long) setAlertAfterInterval(long)
+     *            (alertAfterInterval will be set to its default value)
      */
     public OnChangeWithKeepAliveSubscriptionQos(long minInterval_ms, long maxInterval_ms, long expiryDate) {
         this(minInterval_ms,
@@ -61,14 +95,29 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
     }
 
     /**
+     * Constructor of OnChangeWithKeepAliveSubscriptionQos object with specified
+     * minInterval, maxInterval, expiry date, and alertAfterInterval.
+     *
      * @param minInterval_ms
      *            defines how often an update may be sent
      * @param maxInterval_ms
-     *            defines how long to wait before sending an update even if the value did not change
+     *            defines how long to wait before sending an update even if the
+     *            value did not change
      * @param expiryDate
      *            how long is the subscription valid
      * @param alertAfterInterval_ms
-     *            defines how long to wait for an update before publicationMissed is called
+     *            defines how long to wait for an update before publicationMissed
+     *            is called if no publications were received.
+     *
+     * @see OnChangeSubscriptionQos#OnChangeSubscriptionQos(long, long, long)
+     *            OnChangeSubscriptionQos.OnChangeSubscriptionQos(long, long, long)
+     *            for more information about <b>minInterval</b>
+     * @see #setMaxInterval(long)
+     * @see SubscriptionQos#SubscriptionQos(long, long)
+     *            SubscriptionQos.SubscriptionQos(long, long)
+     *            for more information on <b>expiryDate</b> and <b>publicationTtl</b>
+     *            (publicationTtl will be set to its default value)
+     * @see #setAlertAfterInterval(long)
      */
     public OnChangeWithKeepAliveSubscriptionQos(long minInterval_ms,
                                                 long maxInterval_ms,
@@ -78,16 +127,31 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
     }
 
     /**
+     * Constructor of OnChangeWithKeepAliveSubscriptionQos object with specified
+     * minInterval, maxInterval, expiry date, alertAfterInterval, and
+     * publicationTtl (full parameter set).
+     *
      * @param minInterval_ms
      *            defines how often an update may be sent
      * @param maxInterval_ms
-     *            defines how long to wait before sending an update even if the value did not change
+     *            defines how long to wait before sending an update even if the
+     *            value did not change
      * @param expiryDate_ms
      *            how long is the subscription valid
      * @param alertAfterInterval_ms
-     *            defines how long to wait for an update before publicationMissed is called
+     *            defines how long to wait for an update before publicationMissed
+     *            is called if no publications were received.
      * @param publicationTtl_ms
      *            time to live for publication messages
+     *
+     * @see OnChangeSubscriptionQos#OnChangeSubscriptionQos(long, long, long)
+     *            OnChangeSubscriptionQos.OnChangeSubscriptionQos(long, long, long)
+     *            for more information about <b>minInterval</b>
+     * @see #setMaxInterval(long)
+     * @see SubscriptionQos#SubscriptionQos(long, long)
+     *            SubscriptionQos.SubscriptionQos(long, long)
+     *            for more information on <b>expiryDate</b> and <b>publicationTtl</b>
+     * @see #setAlertAfterInterval(long)
      */
     public OnChangeWithKeepAliveSubscriptionQos(long minInterval_ms,
                                                 long maxInterval_ms,
@@ -100,33 +164,47 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
     }
 
     /**
-     * The provider will send notifications every maximum interval in milliseconds, even if the value didn't change. It
-     * will send notifications more often if on-change notifications are enabled, the value changes more often, and the
-     * minimum interval QoS does not prevent it. The maximum interval can thus be seen as a sort of heart beat.
-     * 
-     * @return maxInterval_ms The publisher will send a notification at least every maxInterval_ms.
-     * 
+     * Get the maximum interval in milliseconds.
+     * <br>
+     * The provider will send notifications every maximum interval in milliseconds,
+     * even if the value didn't change. It will send notifications more often if
+     * on-change notifications are enabled, the value changes more often, and the
+     * minimum interval QoS does not prevent it. The maximum interval can thus
+     * be seen as a sort of heart beat or keep alive interval, if no other
+     * publication has been sent within that time.
+     *
+     * @return The maxInterval in milliseconds. The publisher will send a
+     *            notification at least every maxInterval milliseconds.
      */
     public long getMaxInterval() {
         return maxInterval;
     }
 
     /**
-     * The provider will send notifications every maximum interval in milliseconds, even if the value didn't change. It
-     * will send notifications more often if on-change notifications are enabled, the value changes more often, and the
-     * minimum interval QoS does not prevent it. The maximum interval can thus be seen as a sort of heart beat.
-     * 
+     * Set the maximum interval in milliseconds.
+     * <br>
+     * The provider will send publications every maximum interval in milliseconds,
+     * even if the value didn't change. It will send notifications more often if
+     * on-change notifications are enabled, the value changes more often, and the
+     * minimum interval QoS does not prevent it. The maximum interval can thus
+     * be seen as a sort of heart beat or keep alive interval, if no other
+     * publication has been sent within that time.
+     *
      * @param maxInterval_ms
-     *            The publisher will send a notification at least every maxInterval_ms.
+     *            The publisher will send a notification at least every
+     *            maxInterval_ms.<br>
+     *            <br>
+     *            <b>Minimum and Maximum Values</b>
      *            <ul>
-     *            <li>The absolute minimum setting is {@value #MIN_MAX_INTERVAL} milliseconds. <br>
-     *            Any value less than this minimum will be treated at the absolute minimum setting of
-     *            {@value #MIN_MAX_INTERVAL} milliseconds.
-     *            <li>The absolute maximum setting is {@value #MAX_MAX_INTERVAL} milliseconds. <br>
-     *            Any value bigger than this maximum will be treated as the absolute maximum setting of
-     *            {@value #MAX_MAX_INTERVAL} milliseconds.
+     *            <li>The absolute <b>minimum</b> setting is
+     *            {@value #MIN_MAX_INTERVAL} milliseconds. <br>
+     *            Any value less than this minimum will be treated at the absolute
+     *            minimum setting of{@value #MIN_MAX_INTERVAL} milliseconds.
+     *            <li>The absolute <b>maximum</b> setting is
+     *            {@value #MAX_MAX_INTERVAL} milliseconds. <br>
+     *            Any value bigger than this maximum will be treated as the absolute
+     *            maximum setting of {@value #MAX_MAX_INTERVAL} milliseconds.
      *            </ul>
-     * 
      */
     public void setMaxInterval(long maxInterval_ms) {
         if (maxInterval_ms < this.getMinInterval()) {
@@ -147,30 +225,40 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
     }
 
     /**
-     * If no notification was received within the last alert interval, a missed publication notification will be raised.
-     * 
-     * @return alertInterval_ms If more than alertInterval_ms pass without receiving a message, subscriptionManager will
-     *         issue a publicationMissed. If set to -1 never alert.
+     * Get the alertAfterInterval in milliseconds.
+     * <br>
+     * If no notification was received within the last alert interval, a missed
+     * publication notification will be raised.
+     *
+     * @return The alertAfterInterval in milliseconds. If more than
+     *         alertAfterInterval milliseconds pass without receiving a message,
+     *         the subscriptionManager will issue a publicationMissed. If set
+     *         to 0 (NO_ALERT_AFTER_INTERVAL), never alert.
      */
     public long getAlertAfterInterval() {
         return alertAfterInterval;
     }
 
     /**
-     * Publications will be sent every maximum interval in milliseconds, even if the attribute value has not changed.
-     * The maximum interval can be thought of as a keep alive interval, if no other publication has been sent within
-     * that time
-     * 
+     * Set the alertAfterInterval in milliseconds.
+     * <br>
+     * If no notification was received within the last alert interval, a missed
+     * publication notification will be raised.
+     *
      * @param alertAfterInterval_ms
-     *            is the max time that can expire without receiving a publication before an alert will be generated. If
-     *            more than alertInterval_ms pass without receiving a message, subscriptionManager will issue a
-     *            publicationMissed.
+     *            the max time that can expire without receiving a publication
+     *            before an alert will be generated. If more than alertInterval_ms
+     *            pass without receiving a message, subscriptionManager will issue
+     *            a publicationMissed.
      *            <ul>
-     *            <li>The value cannot be set below the value of {@link #alertAfterInterval} <br>
-     *            Any value less than this minimum will cause no alerts to be generated.
-     *            <li>The absolute maximum setting is {@value #MAX_ALERT_AFTER_INTERVAL} milliseconds. <br>
-     *            Any value bigger than this maximum will be treated as the absolute maximum setting of
-     *            {@value #MAX_ALERT_AFTER_INTERVAL} milliseconds.
+     *            <li><b>Minimum</b> setting: The value cannot be set below the
+     *            value of maxInterval <br>
+     *            Any value less than this minimum will cause no alerts to be generated
+     *            by setting the alertAfterInterval to NO_ALERT_AFTER_INTERVAL (0).
+     *            <li>The absolute <b>maximum</b> setting is 2.592.000.000
+     *            milliseconds (30 days). <br>
+     *            Any value bigger than this maximum will be treated as the
+     *            absolute maximum setting of 2.592.000.000 milliseconds.
      *            </ul>
      */
     public void setAlertAfterInterval(final long alertAfterInterval_ms) {
@@ -195,6 +283,11 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
         return maxInterval;
     }
 
+    /**
+     * Calculate code for hashing based on member contents
+     *
+     * @return The calculated hash code
+     */
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -204,6 +297,12 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
         return result;
     }
 
+    /**
+     * Check for equality
+     *
+     * @param obj Reference to the object to compare to
+     * @return true, if objects are equal, false otherwise
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj)

@@ -19,17 +19,48 @@ package io.joynr.runtime;
  * #L%
  */
 
+import io.joynr.dispatching.Dispatcher;
+import io.joynr.dispatching.RequestCallerDirectory;
+import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.exceptions.JoynrCommunicationException;
+import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.IMessaging;
+import io.joynr.messaging.MessageReceiver;
 import io.joynr.provider.JoynrProvider;
+import io.joynr.proxy.ProxyBuilderFactory;
+
+import javax.inject.Named;
+
+import joynr.system.RoutingTypes.Address;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 
 public class ServletJoynrRuntimeImpl extends JoynrRuntimeImpl {
 
+    // CHECKSTYLE:OFF
     @Inject
-    public ServletJoynrRuntimeImpl(ObjectMapper objectMapper) {
-        super(objectMapper);
+    public ServletJoynrRuntimeImpl(ObjectMapper objectMapper,
+                                   ProxyBuilderFactory builderFactory,
+                                   RequestCallerDirectory requestCallerDirectory,
+                                   ReplyCallerDirectory replyCallerDirectory,
+                                   MessageReceiver messageReceiver,
+                                   Dispatcher dispatcher,
+                                   @Named(ConfigurableMessagingSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) Address libjoynrMessagingAddress,
+                                   @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_ADDRESS) Address capabilitiesDirectoryAddress,
+                                   @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_ADDRESS) Address channelUrlDirectoryAddress,
+                                   @Named(ConfigurableMessagingSettings.PROPERTY_CLUSTERCONTROLER_MESSAGING_SKELETON) IMessaging clusterControllerMessagingSkeleton) {
+        // CHECKSTYLE:ON
+        super(objectMapper,
+              builderFactory,
+              requestCallerDirectory,
+              replyCallerDirectory,
+              messageReceiver,
+              dispatcher,
+              libjoynrMessagingAddress,
+              capabilitiesDirectoryAddress,
+              channelUrlDirectoryAddress,
+              clusterControllerMessagingSkeleton);
     }
 
     @Override

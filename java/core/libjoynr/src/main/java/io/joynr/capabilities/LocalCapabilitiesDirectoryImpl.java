@@ -3,7 +3,7 @@ package io.joynr.capabilities;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,16 +21,15 @@ package io.joynr.capabilities;
 
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
-import io.joynr.dispatcher.MessagingEndpointDirectory;
-import io.joynr.endpoints.EndpointAddressBase;
-import io.joynr.endpoints.JoynrMessagingEndpointAddress;
-import io.joynr.exceptions.JoynrArbitrationException;
+import io.joynr.exceptions.DiscoveryException;
+import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
-import io.joynr.proxy.ProxyInvocationHandlerFactory;
+import io.joynr.proxy.ProxyBuilderFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,9 +40,12 @@ import java.util.Set;
 
 import javax.annotation.CheckForNull;
 
+import joynr.exceptions.ApplicationException;
 import joynr.infrastructure.ChannelUrlDirectory;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
 import joynr.infrastructure.GlobalDomainAccessController;
+import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.types.CapabilityInformation;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
@@ -63,11 +65,12 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
     private static final Logger logger = LoggerFactory.getLogger(LocalCapabilitiesDirectoryImpl.class);
 
-    private MessagingEndpointDirectory messagingEndpointDirectory;
     private String localChannelId;
     private CapabilitiesStore localCapabilitiesStore;
     private GlobalCapabilitiesDirectoryClient globalCapabilitiesClient;
     private CapabilitiesStore globalCapabilitiesCache;
+
+    private MessageRouter messageRouter;
 
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
@@ -79,13 +82,13 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                           @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID) String domainAccessControllerParticipantId,
                                           @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID) String domainAccessControllerChannelId,
                                           @Named(MessagingPropertyKeys.CHANNELID) String localChannelId,
-                                          MessagingEndpointDirectory messagingEndpointDirectory,
                                           CapabilitiesStore localCapabilitiesStore,
                                           CapabilitiesCache globalCapabilitiesCache,
-                                          ProxyInvocationHandlerFactory proxyInvocationHandlerFactory) {
+                                          MessageRouter messageRouter,
+                                          ProxyBuilderFactory proxyBuilderFactory) {
         // CHECKSTYLE:ON
         this.localChannelId = localChannelId;
-        this.messagingEndpointDirectory = messagingEndpointDirectory;
+        this.messageRouter = messageRouter;
         this.localCapabilitiesStore = localCapabilitiesStore;
         this.globalCapabilitiesCache = globalCapabilitiesCache;
         this.globalCapabilitiesCache.add(new CapabilityEntryImpl(discoveryDirectoriesDomain,
@@ -93,25 +96,24 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                                                  new ProviderQos(),
                                                                  capabilitiesDirectoryParticipantId,
                                                                  System.currentTimeMillis(),
-                                                                 new JoynrMessagingEndpointAddress(capabiltitiesDirectoryChannelId)));
+                                                                 new ChannelAddress(capabiltitiesDirectoryChannelId)));
 
         this.globalCapabilitiesCache.add(new CapabilityEntryImpl(discoveryDirectoriesDomain,
                                                                  ChannelUrlDirectory.INTERFACE_NAME,
                                                                  new ProviderQos(),
                                                                  channelUrlDirectoryParticipantId,
                                                                  System.currentTimeMillis(),
-                                                                 new JoynrMessagingEndpointAddress(channelUrlDirectoryChannelId)));
+                                                                 new ChannelAddress(channelUrlDirectoryChannelId)));
 
         this.globalCapabilitiesCache.add(new CapabilityEntryImpl(discoveryDirectoriesDomain,
                                                                  GlobalDomainAccessController.INTERFACE_NAME,
                                                                  new ProviderQos(),
                                                                  domainAccessControllerParticipantId,
                                                                  System.currentTimeMillis(),
-                                                                 new JoynrMessagingEndpointAddress(domainAccessControllerChannelId)));
+                                                                 new ChannelAddress(domainAccessControllerChannelId)));
 
-        globalCapabilitiesClient = new GlobalCapabilitiesDirectoryClient(discoveryDirectoriesDomain,
-                                                                         this,
-                                                                         proxyInvocationHandlerFactory);
+        globalCapabilitiesClient = new GlobalCapabilitiesDirectoryClient(proxyBuilderFactory,
+                                                                         discoveryDirectoriesDomain);
     }
 
     /**
@@ -119,10 +121,10 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
      */
     @Override
     public RegistrationFuture add(final CapabilityEntry capabilityEntry) {
-        JoynrMessagingEndpointAddress joynrMessagingEndpointAddress = new JoynrMessagingEndpointAddress(localChannelId);
+        ChannelAddress joynrMessagingEndpointAddress = new ChannelAddress(localChannelId);
         capabilityEntry.addEndpoint(joynrMessagingEndpointAddress);
 
-        messagingEndpointDirectory.put(capabilityEntry.getParticipantId(), joynrMessagingEndpointAddress);
+        messageRouter.addNextHop(capabilityEntry.getParticipantId(), joynrMessagingEndpointAddress);
 
         final RegistrationFuture ret = new RegistrationFuture(capabilityEntry.getParticipantId());
 
@@ -162,7 +164,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                     }
 
                     @Override
-                    public void onFailure(JoynrRuntimeException exception) {
+                    public void onFailure(JoynrException exception) {
                         ret.setStatus(RegistrationStatus.ERROR);
 
                     }
@@ -182,33 +184,25 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         // Remove from the global capabilities directory if needed
         if (capEntry.getProviderQos().getScope() != ProviderScope.LOCAL) {
 
-            // Currently Endpoint address needs to be added for remove on server side to work correctly.
-            // TODO Modify removeCapability in CapDirImpl to accept any endpoint address list
-            JoynrMessagingEndpointAddress joynrMessagingEndpointAddress = new JoynrMessagingEndpointAddress(localChannelId);
-            capEntry.addEndpoint(joynrMessagingEndpointAddress);
+            Callback<Void> callback = new Callback<Void>() {
 
-            CapabilityInformation capabilityInformation = capabilityEntry2Information(capEntry);
-            if (capabilityInformation != null) {
-                Callback<Void> callback = new Callback<Void>() {
+                @Override
+                public void onSuccess(Void result) {
+                    globalCapabilitiesCache.remove(capEntry.getParticipantId());
+                }
 
-                    @Override
-                    public void onSuccess(Void result) {
-                        globalCapabilitiesCache.remove(capEntry.getParticipantId());
-                    }
-
-                    @Override
-                    public void onFailure(JoynrRuntimeException error) {
-                        //do nothing
-                    }
-                };
-                globalCapabilitiesClient.remove(Arrays.asList(capabilityInformation.getParticipantId()));
-            }
+                @Override
+                public void onFailure(JoynrException error) {
+                    //do nothing
+                }
+            };
+            globalCapabilitiesClient.remove(callback, Arrays.asList(capEntry.getParticipantId()));
         }
 
         // Remove endpoint addresses
-        for (EndpointAddressBase ep : capEntry.getEndpointAddresses()) {
-            if (ep instanceof JoynrMessagingEndpointAddress) {
-                messagingEndpointDirectory.remove(capEntry.getParticipantId());
+        for (Address ep : capEntry.getAddresses()) {
+            if (ep instanceof ChannelAddress) {
+                messageRouter.removeNextHop(capEntry.getParticipantId());
                 break;
             }
         }
@@ -334,6 +328,9 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             retrievedCapabilitiyEntry = lookupFuture.getReply();
         } catch (InterruptedException e1) {
             logger.error("interrupted while retrieving capability entry by participant ID", e1);
+        } catch (ApplicationException e1) {
+            // should not be reachable since ApplicationExceptions are not used internally
+            logger.error("ApplicationException while retrieving capability entry by participant ID", e1);
         }
         return retrievedCapabilitiyEntry;
     }
@@ -343,8 +340,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             // TODO can a CapabilityEntry coming from the GlobalCapabilityDirectoy have more than one
             // EndpointAddress?
             // TODO when are entries purged from the messagingEndpointDirectory?
-            if (ce.getParticipantId() != null && ce.getEndpointAddresses().size() > 0) {
-                messagingEndpointDirectory.put(ce.getParticipantId(), ce.getEndpointAddresses().get(0));
+            if (ce.getParticipantId() != null && ce.getAddresses().size() > 0) {
+                messageRouter.addNextHop(ce.getParticipantId(), ce.getAddresses().get(0));
             }
         }
     }
@@ -371,8 +368,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 }
 
                 @Override
-                public void onFailure(JoynrRuntimeException exception) {
-                    capabilitiesCallback.onError(exception);
+                public void onFailure(JoynrException exception) {
+                    capabilitiesCallback.onError((Exception) exception);
 
                 }
             }, participantId, discoveryQos.getDiscoveryTimeout());
@@ -406,8 +403,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             }
 
             @Override
-            public void onFailure(JoynrRuntimeException exception) {
-                capabilitiesCallback.onError(exception);
+            public void onFailure(JoynrException exception) {
+                capabilitiesCallback.onError((Exception) exception);
             }
         }, domain, interfaceName, discoveryTimeout);
     }
@@ -448,9 +445,20 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                             return input != null ? input.getParticipantId() : null;
                         }
                     };
-                    globalCapabilitiesClient.remove(Lists.newArrayList(Collections2.transform(capInfoList,
-                                                                                              transfomerFct)));
-                } catch (JoynrArbitrationException e) {
+                    Callback<Void> callback = new Callback<Void>() {
+
+                        @Override
+                        public void onFailure(JoynrException error) {
+                        }
+
+                        @Override
+                        public void onSuccess(Void result) {
+                        }
+
+                    };
+                    globalCapabilitiesClient.remove(callback, Lists.newArrayList(Collections2.transform(capInfoList,
+                                                                                                        transfomerFct)));
+                } catch (DiscoveryException e) {
                     return;
                 }
             }

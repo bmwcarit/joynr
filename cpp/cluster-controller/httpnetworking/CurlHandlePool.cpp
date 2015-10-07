@@ -46,6 +46,16 @@ void AlwaysNewCurlHandlePool::returnHandle(void* handle)
     curl_easy_cleanup(handle);
 }
 
+void AlwaysNewCurlHandlePool::deleteHandle(void* handle)
+{
+    curl_easy_cleanup(handle);
+}
+
+void AlwaysNewCurlHandlePool::reset()
+{
+    // Do nothing
+}
+
 const int PerThreadCurlHandlePool::POOL_SIZE = 10;
 
 PerThreadCurlHandlePool::PerThreadCurlHandlePool()
@@ -71,13 +81,38 @@ void PerThreadCurlHandlePool::returnHandle(void* handle)
     pooledHandle->clearHandle();
     idleHandleMap.insert(QThread::currentThreadId(), pooledHandle);
     // handles most recently used are prepended
+    handleOrderList.removeAll(pooledHandle);
     handleOrderList.prepend(pooledHandle);
 
     if (!handleOrderList.isEmpty() && handleOrderList.size() + outHandleMap.size() > POOL_SIZE) {
-        // if the list of idle handles is too big, the last item of the ordered list is removed
+        // if the list of idle handles is too big, remove the last item of the ordered list
         QSharedPointer<PooledCurlHandle> handle2remove = handleOrderList.takeLast();
-        idleHandleMap.remove(QThread::currentThreadId(), handle2remove);
+        foreach (Qt::HANDLE threadId, idleHandleMap.keys()) {
+            int removed = idleHandleMap.remove(threadId, handle2remove);
+            if (removed > 0) {
+                break;
+            }
+        }
     }
+}
+
+void PerThreadCurlHandlePool::deleteHandle(void* handle)
+{
+    QMutexLocker lock(&mutex);
+    QSharedPointer<PooledCurlHandle> pooledHandle = outHandleMap.take(handle);
+    if (!pooledHandle.isNull()) {
+        handleOrderList.removeAll(pooledHandle);
+        idleHandleMap.remove(QThread::currentThreadId(), pooledHandle);
+    }
+}
+
+void PerThreadCurlHandlePool::reset()
+{
+    QMutexLocker lock(&mutex);
+
+    // Remove all idle handles
+    handleOrderList.clear();
+    idleHandleMap.clear();
 }
 
 QString PerThreadCurlHandlePool::extractHost(const QString& url)
@@ -178,10 +213,28 @@ void SingleThreadCurlHandlePool::returnHandle(void* handle)
     QMutexLocker lock(&mutex);
     QSharedPointer<PooledCurlHandle> pooledHandle = outHandleMap.take(handle);
     pooledHandle->clearHandle();
+    handleList.removeAll(pooledHandle);
     handleList.prepend(pooledHandle);
     if (handleList.size() + outHandleMap.size() > POOL_SIZE) {
         handleList.removeLast();
     }
+}
+
+void SingleThreadCurlHandlePool::deleteHandle(void* handle)
+{
+    QMutexLocker lock(&mutex);
+    QSharedPointer<PooledCurlHandle> pooledHandle = outHandleMap.take(handle);
+    if (!pooledHandle.isNull()) {
+        handleList.removeAll(pooledHandle);
+    }
+}
+
+void SingleThreadCurlHandlePool::reset()
+{
+    QMutexLocker lock(&mutex);
+
+    // Remove all idle handles
+    handleList.clear();
 }
 
 QString SingleThreadCurlHandlePool::extractHost(const QString& url)

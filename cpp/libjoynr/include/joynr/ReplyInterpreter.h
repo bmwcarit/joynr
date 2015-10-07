@@ -44,6 +44,12 @@ public:
         QSharedPointer<ReplyCaller<Ts...>> typedCallerQsp =
                 caller.dynamicCast<ReplyCaller<Ts...>>();
 
+        if ((reply.getResponse()).isEmpty()) {
+            LOG_ERROR(logger, QString("reply object has no response, discarding message"));
+            typedCallerQsp->timeOut();
+            return;
+        }
+
         std::tuple<Ts...> values = Util::toValueTuple<Ts...>(reply.getResponse());
         auto func = std::mem_fn(&ReplyCaller<Ts...>::returnValue);
 

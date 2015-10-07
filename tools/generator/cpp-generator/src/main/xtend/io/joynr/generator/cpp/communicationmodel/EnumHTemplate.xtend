@@ -82,16 +82,16 @@ public:
 
 	/**
 	 * @brief convert standard C++ enum value to QT specific enum value
-	 * @param «type.joynrNameStd.toFirstLower» the standard enum value to be converted
+	 * @param «type.joynrName.toFirstLower» the standard enum value to be converted
 	 * @return the converted QT specific enum value
 	 */
 	static «typeName»::«getNestedEnumName()» createQt(
-			const «IF type.isPartOfTypeCollection»«type.typeCollectionName»::«ENDIF»«type.joynrNameStd»::«getNestedEnumName()»& «type.joynrNameStd.toFirstLower»
+			const «IF type.isPartOfTypeCollection»«type.typeCollectionName»::«ENDIF»«type.joynrName»::«getNestedEnumName()»& «type.joynrName.toFirstLower»
 	) {
 		«typeName»::«getNestedEnumName()» qt«typeName»;
-		switch («type.joynrNameStd.toFirstLower») {
+		switch («type.joynrName.toFirstLower») {
 		«FOR enumtype : getEnumElementsAndBaseEnumElements(type)»
-			case «IF type.isPartOfTypeCollection»«type.typeCollectionName»::«ENDIF»«type.joynrNameStd»::«enumtype.joynrName»:
+			case «IF type.isPartOfTypeCollection»«type.typeCollectionName»::«ENDIF»«type.joynrName»::«enumtype.joynrName»:
 				qt«typeName» = «enumtype.joynrName»;
 				break;
 		«ENDFOR»
@@ -104,20 +104,24 @@ public:
 	 * @param qt«typeName» the QT specific enum value to be converted
 	 * @return the converted standard enum value
 	 */
-	static «IF type.isPartOfTypeCollection»«type.typeCollectionName»::«ENDIF»«type.joynrNameStd»::«getNestedEnumName()» createStd(
+	static «IF type.isPartOfTypeCollection»«type.typeCollectionName»::«ENDIF»«type.joynrName»::«getNestedEnumName()» createStd(
 			const «typeName»::«getNestedEnumName()»& qt«typeName»
 	) {
-		«IF type.isPartOfTypeCollection»«type.typeCollectionName»::«ENDIF»«type.joynrNameStd»::«getNestedEnumName()» «type.joynrNameStd.toFirstLower»;
+		«IF type.isPartOfTypeCollection»«type.typeCollectionName»::«ENDIF»«type.joynrName»::«getNestedEnumName()» «type.joynrName.toFirstLower»;
 		switch (qt«typeName») {
 		«FOR enumtype : getEnumElementsAndBaseEnumElements(type)»
 			case «enumtype.joynrName»:
-				«type.joynrNameStd.toFirstLower» = «IF type.isPartOfTypeCollection»«type.typeCollectionName»::«ENDIF»«type.joynrNameStd»::«enumtype.joynrName»;
+				«type.joynrName.toFirstLower» = «IF type.isPartOfTypeCollection»«type.typeCollectionName»::«ENDIF»«type.joynrName»::«enumtype.joynrName»;
 				break;
 		«ENDFOR»
 		}
-		return «type.joynrNameStd.toFirstLower»;
+		return «type.joynrName.toFirstLower»;
 	}
 };
+
+inline uint qHash(«type.typeName» key, uint seed = 0) {
+	return uint(key) ^ seed;
+}
 
 «getNamespaceEnder(type)»
 
@@ -141,10 +145,6 @@ Q_DECLARE_METATYPE(«type.typeNameOfContainingClass.replace("::","__")»)
 typedef «type.typeName» «type.typeName.replace("::","__")»;
 Q_DECLARE_METATYPE(«type.typeName.replace("::","__")»)
 Q_DECLARE_METATYPE(QList<«type.typeName.replace("::","__")»>)
-
-inline uint qHash(«type.typeName» key, uint seed = 0) {
-	return uint(key) ^ seed;
-}
 
 #endif // «headerGuard»
 '''

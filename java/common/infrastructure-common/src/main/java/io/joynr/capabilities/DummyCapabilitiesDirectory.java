@@ -20,11 +20,12 @@ package io.joynr.capabilities;
  */
 
 import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.endpoints.JoynrMessagingEndpointAddress;
 
 import java.util.ArrayList;
 
 import javax.annotation.CheckForNull;
+
+import joynr.system.RoutingTypes.ChannelAddress;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +49,7 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
 
     @Override
     public RegistrationFuture add(CapabilityEntry capabilityEntry) {
-        capabilityEntry.addEndpoint(new JoynrMessagingEndpointAddress(myChannelId));
+        capabilityEntry.addEndpoint(new ChannelAddress(myChannelId));
         registeredCapabilities.add(capabilityEntry);
         notifyCapabilityAdded(capabilityEntry);
         return new RegistrationFuture(RegistrationStatus.DONE, capabilityEntry.getParticipantId());

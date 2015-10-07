@@ -23,10 +23,14 @@ import java.util.concurrent.RejectedExecutionException;
 
 public class JoynrSendBufferFullException extends JoynrRuntimeException {
 
-    /**
-     * 
-     */
     private static final long serialVersionUID = 8826706499410640566L;
+
+    /**
+     * Constructor for deserializer
+     */
+    protected JoynrSendBufferFullException() {
+        super();
+    }
 
     public JoynrSendBufferFullException(RejectedExecutionException e) {
         super(e);

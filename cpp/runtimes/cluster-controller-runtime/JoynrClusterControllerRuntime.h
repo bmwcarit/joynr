@@ -152,6 +152,7 @@ protected:
     WebSocketSettings wsSettings;
     WebSocketCcMessagingSkeleton* wsCcMessagingSkeleton;
     IPlatformSecurityManager* securityManager;
+    bool messagingIsRunning;
 
     static joynr_logging::Logger* logger;
 

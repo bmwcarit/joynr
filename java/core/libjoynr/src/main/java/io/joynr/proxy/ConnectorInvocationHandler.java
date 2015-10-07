@@ -21,6 +21,7 @@ package io.joynr.proxy;
 
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
@@ -28,6 +29,8 @@ import io.joynr.proxy.invocation.UnsubscribeInvocation;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+
+import joynr.exceptions.ApplicationException;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -42,7 +45,8 @@ public interface ConnectorInvocationHandler {
     Object executeSyncMethod(Method method, Object[] args) throws JoynrCommunicationException,
                                                           JoynrSendBufferFullException, JoynrMessageNotSentException,
                                                           JsonGenerationException, JsonMappingException, IOException,
-                                                          InstantiationException, IllegalAccessException;
+                                                          InstantiationException, IllegalAccessException,
+                                                          ApplicationException, JoynrRuntimeException;
 
     void executeSubscriptionMethod(BroadcastSubscribeInvocation broadcastSubscription)
                                                                                       throws JoynrSendBufferFullException,
@@ -60,7 +64,5 @@ public interface ConnectorInvocationHandler {
                                                                                       JoynrMessageNotSentException,
                                                                                       JsonGenerationException,
                                                                                       JsonMappingException, IOException;
-
-    void unregisterSubscription(String subscriptionId);
 
 }

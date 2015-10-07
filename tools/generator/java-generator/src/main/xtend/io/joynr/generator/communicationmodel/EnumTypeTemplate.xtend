@@ -22,16 +22,18 @@ import io.joynr.generator.util.EnumTemplate
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import io.joynr.generator.util.TemplateBase
 import org.franca.core.franca.FEnumerationType
+import io.joynr.generator.util.JavaTypeUtil
 
 class EnumTypeTemplate implements EnumTemplate{
 
-	@Inject	extension JoynrJavaGeneratorExtensions
+	@Inject extension JoynrJavaGeneratorExtensions
+	@Inject extension JavaTypeUtil
 	@Inject extension TemplateBase
 
-	override generate(FEnumerationType enumType) {
-		val packagePath = enumType.buildPackagePath(".", true)
-		'''
-		«warning()»
+	override generate(FEnumerationType enumType)
+'''
+«val packagePath = enumType.buildPackagePath(".", true)»
+«warning()»
 
 package «packagePath»;
 
@@ -41,5 +43,61 @@ import java.util.Map.Entry;
 
 «generateEnumCode(enumType)»
 '''
+
+	def generateEnumCode(FEnumerationType enumType)
+'''
+«val typeName = enumType.joynrName»
+/**
+«appendJavadocSummaryAndWriteSeeAndDescription(enumType, " *")»
+ */
+public enum «typeName» {
+	«FOR enumValue : getEnumElementsAndBaseEnumElements(enumType) SEPARATOR ","»
+	/**
+	 * «appendJavadocComment(enumValue, "* ")»
+	 */
+	«enumValue.joynrName»
+	«ENDFOR»;
+
+	static final Map<Integer, «typeName»> ordinalToEnumValues = new HashMap<Integer, «typeName»>();
+
+	static{
+		«var ordinal = -1»
+		«FOR enumValue : getEnumElementsAndBaseEnumElements(enumType)»
+			«{
+				ordinal = if (enumValue.value.enumeratorValue == null)
+							ordinal+1
+						else
+							Integer::valueOf(enumValue.value.enumeratorValue);
+				""
+			}»
+			ordinalToEnumValues.put(«ordinal», «enumValue.joynrName»);
+		«ENDFOR»
 	}
+
+	/**
+	 * Get the matching enum for an ordinal number
+	 * @param ordinal The ordinal number
+	 * @return The matching enum for the given ordinal number
+	 */
+	public static «typeName» getEnumValue(Integer ordinal) {
+		return ordinalToEnumValues.get(ordinal);
+	}
+
+	/**
+	 * Get the matching ordinal number for this enum
+	 * @return The ordinal number representing this enum
+	 */
+	public Integer getOrdinal() {
+		// TODO should we use a bidirectional map from a third-party library?
+		Integer ordinal = null;
+		for(Entry<Integer, «typeName»> entry : ordinalToEnumValues.entrySet()) {
+			if(this == entry.getValue()) {
+				ordinal = entry.getKey();
+				break;
+			}
+		}
+		return ordinal;
+	}
+}
+'''
 }

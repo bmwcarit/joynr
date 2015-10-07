@@ -33,14 +33,14 @@ Arbitration is concerned with the rules in determining the preferred provider to
 
 ## Capabilities directory
 
-A capability states the domain and interface name for which a provider is registered. 
+A capability states the domain and interface name for which a provider is registered.
 
- These information entries contain access information as well as supported Qos (Quality of Service). This 
+ These information entries contain access information as well as supported Qos (Quality of Service). This
 information is used in the arbitration process to pick a provider for a proxy.
 
 A capabilities directory is a list of capabilities for providers currently registered in a joynr network, and is available globally and locally.
 
-* The global directory is accessible from any joynr-enabled endpoint, and contains a global list of capabilities that may be accessed by joynr consumers. 
+* The global directory is accessible from any joynr-enabled endpoint, and contains a global list of capabilities that may be accessed by joynr consumers.
 * The local capabilities directory serves as a cache for the global directory, but also maintains a list of capabilities that only should be discovered locally. Only local consumers attached to the same cluster controller are able to use these capabilities.
 
 
@@ -69,7 +69,7 @@ The **scope** can be
 The entries found that match the selected scope are then evaluated based on the arbitration strategy.
 
 The **arbitration strategy** can be one of the following:
-* **NotSet** (not allowed in the app, otherwise arbitration will throw JoynrArbitrationException)
+* **NotSet** (not allowed in the app, otherwise arbitration will throw DiscoveryException)
 * **FixedChannel** (also see FixedParticipantArbitrator)
 * **Keyword** Only entries that have a matching keyword will be considered
 * **HighestPriority** Entries will be considered according to priority
@@ -96,7 +96,18 @@ The Qos objects are described in more detail in the Developer Guides separately 
 
 ## Definition of communication interfaces
 
-The interfaces between the Provider and Consumer applications are defined using the **Franca Interface Definition Language**. The files will be used as input to automatically generate Java, C++, etc. program code depending on the target language. A Franca file must be named with extension ".fidl" and be placed at the correct location in the source tree. The generated code is then used to implement the Application modelled by the corresponding Franca files.
+The interfaces between the Provider and Consumer applications are defined using the
+**Franca Interface Definition Language**. The files will be used as input to automatically generate
+Java, C++, etc. program code depending on the target language. A Franca file must be named with
+extension ".fidl" and be placed at the correct location in the source tree. The generated code is
+then used to implement the Application modelled by the corresponding Franca files.
+
+>*Note: Since the necessary Franca dependencies are currently not available from
+>[Maven Central Repository](http://search.maven.org/), we ship Franca dependencies together with the
+>joynr source code in the `<JOYNR>/tools/generator/dependency-libs/` directory.*
+>
+>*If you build joynr yourself using the provided docker and / or Maven infrastructure, the Franca
+>dependencies are installed to your local Maven repository during the build.*
 
 
 ## Runtime Environment
@@ -105,7 +116,9 @@ joynr requires the following components to run:
 ### Bounceproxy
 Responsible for message store and forward using Comet (currently long poll), based on the Atmosphere Framework.
 
-After joynr has been built (see [Building joynr Java and common components](java_building_joynr)), you can run the bounceproxy directly within Maven (for test purposes). Just go into the bounceproxy project and run
+After joynr has been built (see [Building joynr Java and common components](java_building_joynr.md)),
+you can run the bounceproxy directly within Maven (for test purposes). Just go into the bounceproxy
+project and run
 ```bash
 <JOYNR>$ cd java/messaging/bounceproxy/single-bounceproxy
 <JOYNR>/java/messaging/bounceproxy/single-bounceproxy$ mvn jetty:run
@@ -113,21 +126,24 @@ After joynr has been built (see [Building joynr Java and common components](java
 The bounceproxy is also tested with glassfish 3.1.2.2. See [Glassfish settings]
 (Glassfish-settings.md) for configuration details.
 
-*Note: This is only for test purposes. You need to have Maven installed. Joynr is built and tested with Maven 3.2.5, but more recent versions of Maven might also work.*
+>*Note: This is only for test purposes. You need to have Maven installed. Joynr is built and tested
+>with Maven 3.2.5, but more recent versions of Maven might also work.*
 
 ### Discovery Directories
 Centralized directory to discover providers for a given domain and interface.
 
 Run the discovery directories locally along with the bounceproxy:
 
-1. Build and install the whole joynr project from the root directory (see [Building joynr Java and common components](java_building_joynr))
+1. Build and install the whole joynr project from the root directory (see [Building joynr Java and
+common components](java_building_joynr.md))
 1. start directories **and** bounceproxy on default jetty port 8080:
 ```bash
 <JOYNR>$ cd java/backend-services/discovery-directory-servlet
 <JOYNR>/java/backend-services/discovery-directory-servlet$ mvn jetty:run
 ```
 
-*Note: This is only for test purposes. You need to have Maven installed. Joynr is built and tested with Maven 3.2.5, but more recent versions of Maven might also work.*
+>*Note: This is only for test purposes. You need to have Maven installed. Joynr is built and tested
+>with Maven 3.2.5, but more recent versions of Maven might also work.*
 
 Use the following links to check whether all components are running:
 

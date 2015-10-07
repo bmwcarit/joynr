@@ -46,13 +46,13 @@ function build
     docker tag -f ${repository}joynr-java${version} ${repository}joynr-java:latest
     docker tag -f ${repository}joynr-java${version} joynr-java:latest
 
-    docker build -t ${repository}joynr-javascript${version} joynr-javascript/
-    docker tag -f ${repository}joynr-javascript${version} ${repository}joynr-javascript:latest
-    docker tag -f ${repository}joynr-javascript${version} joynr-javascript:latest
-
     docker build -t ${repository}joynr-android${version} joynr-android/
     docker tag -f ${repository}joynr-android${version} ${repository}joynr-android:latest
     docker tag -f ${repository}joynr-android${version} joynr-android:latest
+
+    docker build -t ${repository}joynr-javascript${version} joynr-javascript/
+    docker tag -f ${repository}joynr-javascript${version} ${repository}joynr-javascript:latest
+    docker tag -f ${repository}joynr-javascript${version} joynr-javascript:latest
 
     docker build -t ${repository}joynr-cpp${version} joynr-cpp/
     docker tag -f ${repository}joynr-cpp${version} ${repository}joynr-cpp:latest
@@ -70,11 +70,11 @@ function pull
     docker pull ${repository}joynr-java${version}
     docker tag -f ${repository}joynr-java${version} joynr-java
 
-    docker pull ${repository}joynr-javascript${version}
-    docker tag -f ${repository}joynr-javascript${version} joynr-javascript
-
     docker pull ${repository}joynr-android${version}
     docker tag -f ${repository}joynr-android${version} joynr-android
+
+    docker pull ${repository}joynr-javascript${version}
+    docker tag -f ${repository}joynr-javascript${version} joynr-javascript
 
     docker pull ${repository}joynr-cpp${version}
     docker tag -f ${repository}joynr-cpp${version} joynr-cpp
@@ -86,8 +86,8 @@ function push
 
     docker push ${repository}joynr-base${version}
     docker push ${repository}joynr-java${version}
-    docker push ${repository}joynr-javascript${version}
     docker push ${repository}joynr-android${version}
+    docker push ${repository}joynr-javascript${version}
     docker push ${repository}joynr-cpp${version}
 }
 

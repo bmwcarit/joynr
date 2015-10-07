@@ -3,7 +3,7 @@ package io.joynr.messaging;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,10 @@ package io.joynr.messaging;
  * #L%
  */
 
-import io.joynr.capabilities.LocalCapabilitiesDirectory;
+import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.proxy.Callback;
-import io.joynr.proxy.ProxyInvocationHandlerFactory;
+import io.joynr.proxy.ProxyBuilderFactory;
 import joynr.types.ChannelUrlInformation;
 
 import org.slf4j.Logger;
@@ -47,14 +47,12 @@ public class LocalChannelUrlDirectoryClientImpl implements LocalChannelUrlDirect
                                               @Named(MessagingPropertyKeys.CHANNELURLDIRECTORYURL) String channelUrlDirectoryUrl,
                                               @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID) String capabilitiesDirectoryChannelId,
                                               @Named(MessagingPropertyKeys.CAPABILITIESDIRECTORYURL) String capabilitiesDirectoryUrl,
-                                              LocalCapabilitiesDirectory localCapabilitiesDirectory,
                                               ChannelUrlStore channelUrlStore,
                                               MessagingSettings settings,
-                                              ProxyInvocationHandlerFactory proxyInvocationHandlerFactory) {
+                                              ProxyBuilderFactory proxyBuilderFactory) {
         // CHECKSTYLE:ON
-        this.channelUrlDirectoryClient = new GlobalChannelUrlDirectoryClient(discoveryDirectoriesDomain,
-                                                                             localCapabilitiesDirectory,
-                                                                             proxyInvocationHandlerFactory);
+        this.channelUrlDirectoryClient = new GlobalChannelUrlDirectoryClient(proxyBuilderFactory,
+                                                                             discoveryDirectoriesDomain);
         this.channelUrlStore = channelUrlStore;
         channelUrlStore.registerChannelUrl(channelUrlDirectoryChannelId, channelUrlDirectoryUrl);
         channelUrlStore.registerChannelUrl(capabilitiesDirectoryChannelId, capabilitiesDirectoryUrl);
@@ -77,9 +75,11 @@ public class LocalChannelUrlDirectoryClientImpl implements LocalChannelUrlDirect
                 }
 
                 @Override
-                public void onFailure(JoynrRuntimeException e) {
+                public void onFailure(JoynrException e) {
                     //Currently not retrying. Using long TTL instead.
-                    logger.error("exception while registering channelId: {} reason: {}", channelId, e.getMessage());
+                    logger.error("exception while registering channelId: {} reason: {}",
+                                 channelId,
+                                 ((Exception) e).getMessage());
 
                 }
             }, channelId, channelUrlInformation);

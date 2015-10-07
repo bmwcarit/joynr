@@ -25,7 +25,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
-public class JoynrMessagingEndpointAddressPersisted extends EndpointAddressBasePersisted {
+public class JoynrMessagingEndpointAddressPersisted extends AddressPersisted {
 
     private static final long serialVersionUID = 2258977417169018529L;
     private String channelId;

@@ -109,10 +109,12 @@ define("joynr/dispatching/Dispatcher", [
             joynrMessage.creator = securityManager.getCurrentProcessUserId();
             joynrMessage.from = settings.from;
             joynrMessage.to = settings.to;
-            joynrMessage.expiryDate = Date.now() + settings.messagingQos.ttl;
-            if (joynrMessage.expiryDate > Util.getMaxLongValue()) {
-                joynrMessage.expiryDate = Util.getMaxLongValue();
+            var expiryDate = Date.now() + settings.messagingQos.ttl;
+            if (expiryDate > Util.getMaxLongValue()) {
+                expiryDate = Util.getMaxLongValue();
             }
+
+            joynrMessage.expiryDate = expiryDate.toString();
             // send message
             return clusterControllerMessagingStub.transmit(joynrMessage);
         }
@@ -298,6 +300,8 @@ define("joynr/dispatching/Dispatcher", [
          *            settings.from participantId of the sender
          * @param {String}
          *            settings.to participantId of the receiver
+         * @param {Number}
+         *            settings.expiryDate time-to-live
          * @param {MessagingQos}
          *            settings.messagingQos quality-of-service parameters such as time-to-live
          * @param {String}
@@ -389,8 +393,7 @@ define("joynr/dispatching/Dispatcher", [
                                                 sendReply({
                                                     from : joynrMessage.to,
                                                     to : joynrMessage.from,
-                                                    expiryDate : joynrMessage.expiryDate,
-                                                    replyChannelId : joynrMessage.replyChannelId
+                                                    expiryDate : joynrMessage.expiryDate
                                                 }, reply);
                                             });
                                     resolve();
@@ -444,6 +447,23 @@ define("joynr/dispatching/Dispatcher", [
                                         + errorInSubscriptionRequest);
                                     reject(new Error("error handling subscriptionRequest: "
                                         + errorInSubscriptionRequest));
+                                }
+                                break;
+
+                            case JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST:
+                                try {
+                                    publicationManager.handleEventSubscriptionRequest(
+                                            joynrMessage.from,
+                                            joynrMessage.to,
+                                            new SubscriptionRequest(
+                                                    parsePayload(joynrMessage.payload)));
+                                    resolve();
+                                } catch (errorInEventSubscriptionRequest) {
+                                    // TODO handle error in handling the subscriptionRequest
+                                    log.error("error handling eventSubscriptionRequest: "
+                                        + errorInEventSubscriptionRequest);
+                                    reject(new Error("error handling eventSubscriptionRequest: "
+                                        + errorInEventSubscriptionRequest));
                                 }
                                 break;
 

@@ -41,15 +41,13 @@ import io.joynr.messaging.LocalChannelUrlDirectoryClient;
 import io.joynr.messaging.LocalChannelUrlDirectoryClientImpl;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilder;
-import io.joynr.proxy.ProxyBuilderDefaultImpl;
-import io.joynr.proxy.ProxyInvocationHandlerFactory;
+import io.joynr.proxy.ProxyBuilderFactory;
 
 import javax.annotation.CheckForNull;
 
 import joynr.infrastructure.ChannelUrlDirectoryProxy;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.Provider;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -72,10 +70,9 @@ public class DiscoveryClientModule extends AbstractModule {
     @CheckForNull
     @Provides
     @Singleton
-    ChannelUrlDirectoryProxy provideChannelUrlDirectoryClient(LocalCapabilitiesDirectory localCapabilitiesDirectory,
-                                                              @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN) String discoveryDirectoriesDomain,
+    ChannelUrlDirectoryProxy provideChannelUrlDirectoryClient(@Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN) String discoveryDirectoriesDomain,
                                                               @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT) long discoveryRequestTimeoutMs,
-                                                              Provider<ProxyInvocationHandlerFactory> proxyInvocationHandlerFactoryProvider) {
+                                                              ProxyBuilderFactory proxyBuilderFactory) {
         MessagingQos messagingQos = new MessagingQos(discoveryRequestTimeoutMs);
 
         DiscoveryQos discoveryQos = new DiscoveryQos(1000,
@@ -83,15 +80,9 @@ public class DiscoveryClientModule extends AbstractModule {
                                                      Long.MAX_VALUE,
                                                      DiscoveryScope.LOCAL_THEN_GLOBAL);
 
-        ProxyBuilder<ChannelUrlDirectoryProxy> proxyBuilder = new ProxyBuilderDefaultImpl<ChannelUrlDirectoryProxy>(localCapabilitiesDirectory,
-                                                                                                                    discoveryDirectoriesDomain,
-                                                                                                                    ChannelUrlDirectoryProxy.class,
-                                                                                                                    proxyInvocationHandlerFactoryProvider.get());
+        ProxyBuilder<ChannelUrlDirectoryProxy> proxyBuilder = proxyBuilderFactory.get(discoveryDirectoriesDomain,
+                                                                                      ChannelUrlDirectoryProxy.class);
 
-        ChannelUrlDirectoryProxy proxy = null;
-
-        proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
-
-        return proxy;
+        return proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
     }
 }

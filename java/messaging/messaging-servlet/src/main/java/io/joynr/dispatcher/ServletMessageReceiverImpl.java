@@ -19,6 +19,7 @@ package io.joynr.dispatcher;
  * #L%
  */
 
+import io.joynr.messaging.IServletMessageReceivers;
 import io.joynr.messaging.LocalChannelUrlDirectoryClient;
 import io.joynr.messaging.MessageArrivedListener;
 import io.joynr.messaging.MessagingPropertyKeys;
@@ -76,6 +77,7 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
     public ServletMessageReceiverImpl(@Named(MessagingPropertyKeys.CHANNELID) String channelId,
                                       LocalChannelUrlDirectoryClient channelUrlDirectory,
                                       LongPollingMessageReceiver longPollingReceiver,
+                                      IServletMessageReceivers receivers,
                                       @Named(MessagingPropertyKeys.PROPERTY_SERVLET_CONTEXT_ROOT) String contextRoot,
                                       @Named(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH) String hostPath,
                                       @Named(MessagingPropertyKeys.PROPERTY_SERVLET_SHUTDOWN_TIMEOUT) int servletShutdownTimeout_ms) {
@@ -86,6 +88,7 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
         this.hostPath = hostPath;
         this.servletShutdownTimeout_ms = servletShutdownTimeout_ms;
         this.started = false;
+        receivers.registerServletMessageReceiver(this, channelId);
     }
 
     @Inject(optional = true)
@@ -114,20 +117,6 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
             channelUrlDirectory.registerChannelUrls(channelId, channelUrlInformation);
             setRegistered(true);
         }
-    }
-
-    @Override
-    public void registerMessageListener(MessageArrivedListener registerMessageListener) {
-        if (this.messageListener == registerMessageListener) {
-            logger.warn("this messageListener {} is already registered", registerMessageListener);
-            return;
-        }
-        if (this.messageListener == null && registerMessageListener != null) {
-            this.messageListener = registerMessageListener;
-        } else {
-            throw new IllegalStateException();
-        }
-
     }
 
     @Override
@@ -167,7 +156,9 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
     public void receive(JoynrMessage message) {
         if (message != null) {
 
-            logger.info("\r\n########### CHANNEL: " + channelId + "\r\nARRIVED:\r\n{}", message);
+            logger.debug("\r\n<<<<<<<< ARRIVED ON CHANNEL: " + channelId + " messageId: {}\r\n{}",
+                         message.getId(),
+                         message);
             messageListener.messageArrived(message);
         } else {
             logger.warn("ServletMessageReceiver CHANNEL: {} message was null", channelId);
@@ -211,8 +202,7 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
 
         try {
             // switching to longPolling before the servlet is destroyed, to be able to unregister
-            longPollingReceiver.registerMessageListener(messageListener);
-            Future<Void> startReceiver = longPollingReceiver.startReceiver();
+            Future<Void> startReceiver = longPollingReceiver.start(messageListener);
             startReceiver.get(servletShutdownTimeout_ms, TimeUnit.MILLISECONDS);
             try {
                 unregisterChannel();
@@ -240,10 +230,12 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
     }
 
     @Override
-    public Future<Void> startReceiver(ReceiverStatusListener... statusListeners) {
-        if (messageListener == null) {
+    public Future<Void> start(MessageArrivedListener registerMessageListener, ReceiverStatusListener... statusListeners) {
+        if (registerMessageListener == null) {
             throw new IllegalStateException();
         }
+
+        this.messageListener = registerMessageListener;
         // this.messageListener must be set before calling registerChannelUrl,
         // otherwise the reply will not be able to be processed
         if (!registered) {

@@ -3,7 +3,7 @@ package io.joynr.capabilities;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,12 +23,15 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import io.joynr.dispatcher.RequestCaller;
-import io.joynr.dispatcher.RequestReplyDispatcher;
 import io.joynr.dispatcher.rpc.JoynrInterface;
+import io.joynr.dispatching.Dispatcher;
+import io.joynr.dispatching.RequestCaller;
+import io.joynr.dispatching.RequestCallerDirectory;
+import io.joynr.messaging.inprocess.InProcessAddress;
+import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
+import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.RequestCallerFactory;
-import io.joynr.pubsub.publication.PublicationManager;
 import joynr.types.ProviderQos;
 
 import org.junit.Before;
@@ -46,15 +49,19 @@ public class CapabilitiesRegistrarTests {
     @Mock
     private RequestCallerFactory requestCallerFactory;
     @Mock
-    private RequestReplyDispatcher dispatcher;
+    private RequestCallerDirectory requestCallerDirectory;
+
+    @Mock
+    private MessageRouter messageRouter;
+
+    @Mock
+    private Dispatcher dispatcher;
+
     @Mock
     private JoynrProvider provider;
 
     @Mock
     private RequestCaller requestCaller;
-
-    @Mock
-    private PublicationManager publicationManager;
 
     @Mock
     private ParticipantIdStorage participantIdStorage;
@@ -80,9 +87,10 @@ public class CapabilitiesRegistrarTests {
 
         registrar = new CapabilitiesRegistrarImpl(localCapabilitiesDirectory,
                                                   requestCallerFactory,
-                                                  dispatcher,
-                                                  publicationManager,
-                                                  participantIdStorage);
+                                                  messageRouter,
+                                                  requestCallerDirectory,
+                                                  participantIdStorage,
+                                                  new InProcessAddress(new InProcessLibjoynrMessagingSkeleton(dispatcher)));
     }
 
     @Test
@@ -90,6 +98,7 @@ public class CapabilitiesRegistrarTests {
 
         when(provider.getProviderQos()).thenReturn(providerQos);
         doReturn(ProvidedInterface.class).when(provider).getProvidedInterface();
+        when(provider.getInterfaceName()).thenReturn(TestInterface.INTERFACE_NAME);
         when(participantIdStorage.getProviderParticipantId(eq(domain), eq(ProvidedInterface.class))).thenReturn(participantId);
         when(requestCallerFactory.create(provider)).thenReturn(requestCaller);
 
@@ -101,12 +110,14 @@ public class CapabilitiesRegistrarTests {
                                                                           System.currentTimeMillis())));
         verify(requestCallerFactory).create(provider);
 
-        verify(dispatcher).addRequestCaller(participantId, requestCaller);
+        verify(requestCallerDirectory).addCaller(participantId, requestCaller);
     }
 
     @Test
     public void unregisterProvider() {
         when(provider.getProviderQos()).thenReturn(providerQos);
+        doReturn(ProvidedInterface.class).when(provider).getProvidedInterface();
+        when(provider.getInterfaceName()).thenReturn(TestInterface.INTERFACE_NAME);
         when(participantIdStorage.getProviderParticipantId(eq(domain), eq(ProvidedInterface.class))).thenReturn(participantId);
         registrar.unregisterProvider(domain, provider);
 
@@ -115,7 +126,7 @@ public class CapabilitiesRegistrarTests {
                                                                              providerQos,
                                                                              participantId,
                                                                              System.currentTimeMillis())));
-        verify(dispatcher).removeRequestCaller(eq(participantId));
+        verify(requestCallerDirectory).removeCaller(eq(participantId));
     }
 
 }

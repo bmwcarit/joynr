@@ -29,13 +29,13 @@ import io.joynr.capabilities.CapabilityEntry;
 import io.joynr.capabilities.CapabilityEntryImpl;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.common.ExpiryDate;
-import io.joynr.dispatcher.JoynrMessageFactory;
-import io.joynr.endpoints.JoynrMessagingEndpointAddress;
+import io.joynr.dispatching.JoynrMessageFactory;
 import io.joynr.messaging.MessagingModule;
 import joynr.JoynrMessage;
 import joynr.Request;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.TrustLevel;
+import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.types.ProviderQos;
 
 import org.junit.Before;
@@ -75,7 +75,6 @@ public class AccessControllerTest {
     private String testInterface = "testInterface";
     private String testOperation = "testOperation";
     private ExpiryDate expiryDate = ExpiryDate.fromRelativeTtl(1000);
-    private String replyToChannelId = "replyToId";
 
     @BeforeClass
     public static void initialize() {
@@ -100,11 +99,7 @@ public class AccessControllerTest {
 
         // Create a dummy message
         request = new Request(testOperation, new String[]{}, new Class<?>[]{});
-        message = messageFactory.createRequest(fromParticipantId,
-                                               toParticipantId,
-                                               request,
-                                               expiryDate,
-                                               replyToChannelId);
+        message = messageFactory.createRequest(fromParticipantId, toParticipantId, request, expiryDate);
         message.setHeaderValue(JoynrMessage.HEADER_NAME_CREATOR_USER_ID, DUMMY_USERID);
 
         CapabilityEntry capabilityEntry = new CapabilityEntryImpl(testDomain,
@@ -112,7 +107,7 @@ public class AccessControllerTest {
                                                                   new ProviderQos(),
                                                                   toParticipantId,
                                                                   System.currentTimeMillis(),
-                                                                  new JoynrMessagingEndpointAddress("11111"));
+                                                                  new ChannelAddress("11111"));
         when(localCapabilitiesDirectory.lookup(eq(toParticipantId), any(DiscoveryQos.class))).thenReturn(capabilityEntry);
     }
 

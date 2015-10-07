@@ -110,7 +110,7 @@ class JSTypeUtil extends TypeUtil {
 
 	def String getJsdocTypeName (FTypedElement typedElement) {
 		var result =
-				if (typedElement.array == '[]')
+				if (typedElement.isArray())
 					typedElement.type.jsdocTypeNameForList
 				else
 					typedElement.type.jsdocTypeName
@@ -317,10 +317,10 @@ class JSTypeUtil extends TypeUtil {
 
 	def String getTypeNameForParameter(FTypedElement typedElement){
 		if (typedElement.type.derived != null){
-			getTypeNameForParameter(typedElement.type.derived, typedElement.array == '[]')
+			getTypeNameForParameter(typedElement.type.derived, typedElement.isArray())
 		}
 		else{
-			getTypeNameForParameter(typedElement.type.predefined, typedElement.array == '[]')
+			getTypeNameForParameter(typedElement.type.predefined, typedElement.isArray())
 		}
 	}
 

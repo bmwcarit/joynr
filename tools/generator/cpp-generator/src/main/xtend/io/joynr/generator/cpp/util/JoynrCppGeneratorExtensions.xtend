@@ -30,6 +30,7 @@ import org.franca.core.franca.FInterface
 import org.franca.core.franca.FModelElement
 import org.franca.core.franca.FType
 import org.franca.core.franca.FTypedElement
+import org.franca.core.franca.FAnnotationType
 
 class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 
@@ -208,10 +209,6 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 
 	def joynrNameQt(FType type){
 		return "Qt" + type.joynrName
-	}
-
-	def joynrNameStd(FType type){
-		return type.joynrName
 	}
 
 	def getAllPrimitiveTypes(FInterface serviceInterface) {

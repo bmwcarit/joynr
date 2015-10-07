@@ -203,7 +203,7 @@ joynrTestRequire("integration/TestLibJoynr", [
                 testMutability(radioProvider.addFavoriteStation, "callOperation");
 
                 testMutability(radioProvider, "weakSignal");
-                testMutability(radioProvider.weakSignal, "valueChanged");
+                testMutability(radioProvider.weakSignal, "fire");
             });
         });
 

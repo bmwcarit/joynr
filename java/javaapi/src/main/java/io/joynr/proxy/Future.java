@@ -3,7 +3,7 @@ package io.joynr.proxy;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ package io.joynr.proxy;
 
 import io.joynr.dispatcher.rpc.RequestStatus;
 import io.joynr.dispatcher.rpc.RequestStatusCode;
+import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrWaitExpiredException;
 
@@ -29,10 +30,12 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import joynr.exceptions.ApplicationException;
+
 public class Future<T> {
 
     private T reply;
-    private JoynrRuntimeException exception = null;
+    private volatile JoynrException exception = null;
     RequestStatus status = new RequestStatus(RequestStatusCode.IN_PROGRESS);
     private Lock statusLock = new ReentrantLock();
     private Condition statusLockChangedCondition = statusLock.newCondition();
@@ -45,8 +48,11 @@ public class Future<T> {
      * @throws InterruptedException if the thread is interrupted.
      * @throws JoynrWaitExpiredException
      *             if timeout_ms expires
+     * @throws ApplicationException if the reply contains a ApplicationException
+     * @throws JoynrRuntimeException if the reply contains a JoynrRuntimeException
      */
-    public T getReply(long timeout_ms) throws InterruptedException, JoynrWaitExpiredException {
+    public T getReply(long timeout_ms) throws InterruptedException, JoynrWaitExpiredException, ApplicationException,
+                                      JoynrRuntimeException {
         try {
             statusLock.lock();
             if (this.status.getCode() == RequestStatusCode.OK) {
@@ -54,14 +60,20 @@ public class Future<T> {
             }
 
             if (exception != null) {
-                throw exception;
+                if (exception instanceof ApplicationException) {
+                    throw (ApplicationException) exception;
+                }
+                throw (JoynrRuntimeException) exception;
             }
 
             boolean awaitOk = statusLockChangedCondition.await(timeout_ms, TimeUnit.MILLISECONDS);
 
             // check if an exception has arrived while waiting
             if (exception != null) {
-                throw exception;
+                if (exception instanceof ApplicationException) {
+                    throw (ApplicationException) exception;
+                }
+                throw (JoynrRuntimeException) exception;
             }
 
             if (!awaitOk) {
@@ -80,8 +92,12 @@ public class Future<T> {
      * @return the result of the method call
      * @throws InterruptedException
      *             - if the current thread is interrupted (and interruption of thread suspension is supported)
+     * @throws JoynrWaitExpiredException if the timeout set to Long.MAX_VALUE expires
+     * @throws ApplicationException if the reply contains a ApplicationException
+     * @throws JoynrRuntimeException if the reply contains a JoynrRuntimeException
      */
-    public T getReply() throws InterruptedException {
+    public T getReply() throws InterruptedException, JoynrWaitExpiredException, ApplicationException,
+                       JoynrRuntimeException {
         return this.getReply(Long.MAX_VALUE);
     }
 
@@ -115,7 +131,7 @@ public class Future<T> {
      * @param newException
      *            that caused the failure
      */
-    public void onFailure(JoynrRuntimeException newException) {
+    public void onFailure(JoynrException newException) {
         exception = newException;
         status = new RequestStatus(RequestStatusCode.ERROR);
         try {
@@ -130,8 +146,6 @@ public class Future<T> {
     public void resolve(Object... response) {
         if (response.length == 0) {
             onSuccess(null);
-        } else if (response[0] instanceof JoynrRuntimeException) {
-            onFailure((JoynrRuntimeException) response[0]);
         } else {
             onSuccess((T) response[0]);
         }

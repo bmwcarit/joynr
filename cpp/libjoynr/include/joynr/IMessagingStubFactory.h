@@ -41,10 +41,9 @@ public:
     {
     }
     virtual QSharedPointer<IMessaging> create(
-            std::string destParticipantId,
             const joynr::system::RoutingTypes::QtAddress& destEndpointAddress) = 0;
-    virtual void remove(std::string destParticipantId) = 0;
-    virtual bool contains(std::string destParticipantId) = 0;
+    virtual void remove(const joynr::system::RoutingTypes::QtAddress& destParticipantId) = 0;
+    virtual bool contains(const joynr::system::RoutingTypes::QtAddress& destParticipantId) = 0;
 };
 
 } // namespace joynr
