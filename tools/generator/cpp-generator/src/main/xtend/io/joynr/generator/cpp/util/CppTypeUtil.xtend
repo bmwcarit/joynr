@@ -20,6 +20,7 @@ package io.joynr.generator.cpp.util
 import com.google.inject.Inject
 import io.joynr.generator.templates.util.AbstractTypeUtil
 import io.joynr.generator.templates.util.BroadcastUtil
+import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.MethodUtil
 import java.util.Collections
 import java.util.HashMap
@@ -38,7 +39,7 @@ import org.franca.core.franca.FTypedElement
 
 abstract class CppTypeUtil extends AbstractTypeUtil {
 	@Inject
-	private extension io.joynr.generator.templates.util.InterfaceUtil
+	private extension InterfaceUtil
 	@Inject
 	private extension MethodUtil
 	@Inject

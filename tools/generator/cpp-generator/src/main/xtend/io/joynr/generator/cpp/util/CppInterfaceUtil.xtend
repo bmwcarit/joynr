@@ -19,16 +19,17 @@ package io.joynr.generator.cpp.util
 
 import com.google.inject.Inject
 import io.joynr.generator.templates.util.AttributeUtil
+import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
 
-class InterfaceUtil {
+class CppInterfaceUtil {
 	@Inject extension NamingUtil
 	@Inject extension CppStdTypeUtil
 	@Inject extension AttributeUtil
 	@Inject extension MethodUtil
-	@Inject extension io.joynr.generator.templates.util.InterfaceUtil
+	@Inject extension InterfaceUtil
 
 	def printFutureReturnDefinition()
 '''

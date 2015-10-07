@@ -18,8 +18,8 @@ package io.joynr.generator.cpp.proxy
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.cpp.util.CppInterfaceUtil
 import io.joynr.generator.cpp.util.CppStdTypeUtil
-import io.joynr.generator.cpp.util.InterfaceUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
@@ -31,7 +31,7 @@ class InterfaceAsyncProxyHTemplate  implements InterfaceTemplate{
 	@Inject extension TemplateBase
 	@Inject extension CppStdTypeUtil
 
-	@Inject extension InterfaceUtil
+	@Inject extension CppInterfaceUtil
 	@Inject private extension NamingUtil
 
 	override generate(FInterface serviceInterface)

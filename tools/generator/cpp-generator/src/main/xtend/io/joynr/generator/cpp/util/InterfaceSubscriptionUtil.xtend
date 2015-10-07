@@ -20,11 +20,12 @@ package io.joynr.generator.cpp.util
 import com.google.inject.Inject
 import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.BroadcastUtil
+import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
 
 class InterfaceSubscriptionUtil {
-	@Inject	extension io.joynr.generator.templates.util.InterfaceUtil
+	@Inject	extension InterfaceUtil
 	@Inject	extension AttributeUtil
 	@Inject	extension BroadcastUtil
 	@Inject	extension NamingUtil
