@@ -409,6 +409,27 @@ joynrTestRequire(
                             });
                         });
 
+                        it("subscribe to enumArrayAttribute", function() {
+                            var attributeName = "enumArrayAttribute";
+                            var value1 = [Country.AUSTRIA];
+                            setAttribute(attributeName, value1);
+                            var spy = setupSubscriptionAndReturnSpy(attributeName, subscriptionQosOnChange);
+                            expectPublication(spy, function(call) {
+                               expect(call.args[0]).toEqual(value1);
+                            });
+                            var value2 = [Country.AUSTRIA, Country.GERMANY];
+                            setAttribute(attributeName, value2);
+                            expectPublication(spy, function(call) {
+                                expect(call.args[0]).toEqual(value2);
+                            });
+
+                            var value3 = [Country.AUSTRIA, Country.GERMANY, Country.ITALY];
+                            setAttribute(attributeName, value3);
+                            expectPublication(spy, function(call) {
+                                expect(call.args[0]).toEqual(value3);
+                            });
+                        });
+
                         function setAndTestAttributeTester(attribute) {
                             var lastRecursionIndex = -1, recursions = 5, onFulfilledSpy =
                                     jasmine.createSpy("onFulfilledSpy");
