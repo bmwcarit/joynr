@@ -136,7 +136,7 @@ class ProxyGenerator {
 			 «appendJSDocSummaryAndWriteSeeAndDescription(attribute, "* ")»
 			*/
 			//TODO: generate type below (TypesEnum)
-			this.«attributeName» = new settings.proxyElementTypes.ProxyAttribute«getAttributeCaps(attribute)»(this, settings, "«attributeName»", «attribute.typeNameForParameter»);
+			this.«attributeName» = new settings.proxyElementTypes.ProxyAttribute«getAttributeCaps(attribute)»(this, settings, "«attributeName»", «attribute.getTypeNameForParameter(true)»);
 	«ENDFOR»
 
 	«FOR operationName : getMethodNames(fInterface)»

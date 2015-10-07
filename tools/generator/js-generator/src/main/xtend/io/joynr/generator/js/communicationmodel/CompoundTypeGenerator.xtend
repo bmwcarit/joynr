@@ -171,7 +171,7 @@ class CompoundTypeGenerator {
 
 			var memberTypes = {
 				«FOR member : members SEPARATOR ","»
-				«member.joynrName»: function(TypesEnum) { return «member.type.toTypesEnum»; }
+				«member.joynrName»: function(TypesEnum) { return «member.getTypeNameForParameter(true)»; }
 				«ENDFOR»
 			};
 			Object.defineProperty(«type.joynrName», 'getMemberType', {

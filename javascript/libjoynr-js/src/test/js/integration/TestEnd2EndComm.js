@@ -361,6 +361,19 @@ joynrTestRequire(
                             getAttribute("enumAttribute", Country.GERMANY);
                         });
 
+                        it("gets the enumArrayAttribute", function() {
+                            getAttribute("enumArrayAttribute", [Country.GERMANY]);
+                        });
+
+                        it("sets the enumArrayAttribute", function() {
+                            var value = [];
+                            setAttribute("enumArrayAttribute", value);
+                            getAttribute("enumArrayAttribute", value);
+                            value = [Country.GERMANY, Country.AUSTRIA, Country.AUSTRALIA, Country.CANADA, Country.ITALY];
+                            setAttribute("enumArrayAttribute", value);
+                            getAttribute("enumArrayAttribute", value);
+                        });
+
                         it("sets the attribute", function() {
                             setAttribute("isOn", true);
                             getAttribute("isOn", true);

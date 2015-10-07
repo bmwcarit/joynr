@@ -305,13 +305,22 @@ class JSTypeUtil extends TypeUtil {
 			" could not be mapped to a primitive type name")
 	}
 
-	def getTypeNameForParameter(FType datatype, boolean array) {
+	private def getTypeNameForListParameter(String typeName, boolean migrateToNewListRepresentation) {
+		if (migrateToNewListRepresentation) {
+			"\"" + typeName + "[]\""
+		}
+		else {
+			"TypesEnum.LIST";
+		}
+	}
+
+	def getTypeNameForParameter(FType datatype, boolean array, boolean migrateToNewListRepresentation) {
 		val mappedDatatype = toTypesEnum(datatype);
 		var result = mappedDatatype;
 
 		// special cases: ByteBuffer => byte-array, arrays => Lists,
 		if (array || (getPrimitive(datatype) == FBasicTypeId::BYTE_BUFFER)) {
-			return "TypesEnum.LIST";
+			return getTypeNameForListParameter(result, migrateToNewListRepresentation);
 		}
 
 		if (!isPrimitive(datatype)) {
@@ -319,21 +328,25 @@ class JSTypeUtil extends TypeUtil {
 		}
 	}
 
-	def getTypeNameForParameter(FBasicTypeId datatype, boolean array) {
+	def getTypeNameForParameter(FBasicTypeId datatype, boolean array, boolean migrateToNewListRepresentation) {
 		val mappedDatatype = toTypesEnum(datatype);
 		if (array) {
-			return "TypesEnum.LIST";
+			return getTypeNameForListParameter(mappedDatatype, migrateToNewListRepresentation);
 		} else {
 			return mappedDatatype;
 		}
 	}
 
 	def String getTypeNameForParameter(FTypedElement typedElement){
+		getTypeNameForParameter(typedElement, false);
+	}
+
+	def String getTypeNameForParameter(FTypedElement typedElement, boolean migrateToNewListRepresentation){
 		if (typedElement.type.derived != null){
-			getTypeNameForParameter(typedElement.type.derived, typedElement.isArray())
+			getTypeNameForParameter(typedElement.type.derived, typedElement.isArray(), migrateToNewListRepresentation)
 		}
 		else{
-			getTypeNameForParameter(typedElement.type.predefined, typedElement.isArray())
+			getTypeNameForParameter(typedElement.type.predefined, typedElement.isArray(), migrateToNewListRepresentation)
 		}
 	}
 

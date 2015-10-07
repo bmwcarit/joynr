@@ -132,7 +132,7 @@ class ProviderGenerator {
 				 «appendJSDocSummaryAndWriteSeeAndDescription(attribute, "* ")»
 				 */
 				this.«attributeName» = new dependencies.ProviderAttribute«getAttributeCaps(attribute)»
-					(this, implementation.«attributeName», "«attributeName»", «attribute.typeNameForParameter»);
+					(this, implementation.«attributeName», "«attributeName»", «attribute.getTypeNameForParameter(true)»);
 				if (implementation.«attributeName») {
 					implementation.«attributeName».valueChanged = this.«attributeName».valueChanged;
 				}

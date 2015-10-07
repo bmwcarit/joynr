@@ -116,7 +116,16 @@ define("joynr/util/Typing", [
                 if (type === "Array") {
                     typedObj = [];
                     for (i = 0; i < untyped.length; ++i) {
-                        typedObj.push(Typing.augmentTypes(untyped[i], typeRegistry, typeHint));
+                        var filteredTypeHint =
+                                (typeHint !== undefined && typeHint.length > 2 && typeHint.substr(
+                                        typeHint.length - 2,
+                                        2) === "[]")
+                                        ? typeHint.substring(0, typeHint.length - 2)
+                                        : typeHint;
+                        typedObj.push(Typing.augmentTypes(
+                                untyped[i],
+                                typeRegistry,
+                                filteredTypeHint));
                     }
                 }
                 //check if provisioned type name is given. In this case, check for special considerations
