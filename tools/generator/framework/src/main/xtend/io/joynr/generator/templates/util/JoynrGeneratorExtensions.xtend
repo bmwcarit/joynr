@@ -35,6 +35,7 @@ import org.franca.core.franca.FBroadcast
 import org.franca.core.franca.FCompoundType
 import org.franca.core.franca.FEnumerationType
 import org.franca.core.franca.FInterface
+import org.franca.core.franca.FMethod
 import org.franca.core.franca.FModel
 import org.franca.core.franca.FModelElement
 import org.franca.core.franca.FType
@@ -76,6 +77,17 @@ abstract class JoynrGeneratorExtensions {
 			throw new IllegalStateException(errorMsg);
 		} else if (fModelElement.eContainer instanceof FModel)
 			return (fModelElement.eContainer as FModel).joynrName
+		else if (fModelElement instanceof FMethod) {
+			// include interface name for unnamed error enums (defined or extended inside method definition)
+			val finterface = fModelElement.eContainer as FModelElement
+			if (finterface == null || !(finterface instanceof FInterface)) {
+				val errorMsg = "Generator could not proceed with code generation, since "
+								+ "JoynGeneratorExtensions.getPackageNameInternal has been invoked "
+								+ "with a FMethod element which is not defined inside an interface"
+				throw new IllegalStateException(errorMsg);
+			}
+			return finterface.getPackageNameInternal(false) + '.' + finterface.joynrName
+		}
 		return (fModelElement.eContainer as FModelElement).getPackageNameInternal(true) + (if (useOwnName) '.' + fModelElement.joynrName else '')
 	}
 
