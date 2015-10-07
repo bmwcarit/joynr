@@ -43,38 +43,6 @@ class JavaTypeUtil extends AbstractTypeUtil {
 		primitiveDataTypeDefaultMap = Collections::unmodifiableMap(primitiveDataTypeDefaultValue);
 	}
 
-	/**
-	 * @param method the method for which the signature shall be created
-	 * @return a method signature that is unique in terms of method name, in
-	 *      parameter names and in parameter types.
-	 */
-	def createMethodSignatureFromInParameters(FMethod method) {
-		createParameterSignatureForMethod(method.name, method.inputParameters);
-	}
-
-	/**
-	 * @param method the method for which the signature shall be created
-	 * @return a method signature that is unique in terms of method name, out
-	 *      parameter names and out parameter types.
-	 */
-	def createMethodSignatureFromOutParameters(FMethod method) {
-		createParameterSignatureForMethod(method.name, method.outputParameters);
-	}
-
-	private def createParameterSignatureForMethod(String methodName, Iterable<FArgument> arguments) {
-		val nameStringBuilder = new StringBuilder(methodName);
-		for (FArgument argument : arguments) {
-			nameStringBuilder.append(argument.name.toFirstUpper);
-			val typeName = new StringBuilder(argument.typeName.objectDataTypeForPlainType);
-			if (typeName.toString().contains("List")) {
-				typeName.deleteCharAt(4);
-				typeName.deleteCharAt(typeName.length-1);
-			}
-			nameStringBuilder.append(typeName.toString());
-		}
-		return nameStringBuilder.toString;
-	}
-
 	def getCommaSeperatedTypedOutputParameterList(
 		Iterable<FArgument> arguments,
 		boolean linebreak
