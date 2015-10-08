@@ -164,42 +164,45 @@ define(
                  */
                 this.callOperation =
                         function callOperation(operationArguments, operationArgumentTypes) {
-                            var i;
-                            var namedArguments;
+                            var i, j;
+                            var argument, namedArguments, signature;
 
-                            for (i = 0; i < operationArguments.length; ++i) {
-                                operationArguments[i] =
-                                        Typing.augmentTypes(
-                                                operationArguments[i],
-                                                typeRegistry,
-                                                operationArgumentTypes[i]);
-                            }
                             // cycle through multiple available operation signatures
                             for (i = 0; i < operationSignatures.length
                                 && namedArguments === undefined; ++i) {
+                                signature = operationSignatures[i];
                                 // check if the parameters from the operation signature is valid for
                                 // the provided arguments
                                 namedArguments =
                                         getNamedArguments(
                                                 operationArguments,
                                                 operationArgumentTypes,
-                                                operationSignatures[i]);
+                                                signature);
+
+                                if (namedArguments !== undefined) {
+                                    // augment types
+                                    for (j = 0; j < signature.inputParameter.length; ++j) {
+                                        argument = signature.inputParameter[j];
+                                        namedArguments[argument.name] =
+                                                Typing.augmentTypes(
+                                                        namedArguments[argument.name],
+                                                        typeRegistry,
+                                                        argument.type);
+                                    }
+
+                                    // call the operation function
+                                    return privateOperationFunc(namedArguments);
+                                }
                             }
 
-                            // check if a matching operation signature was found
-                            if (namedArguments === undefined) {
-                                // TODO: proper error handling
-                                throw new Error("Could not find a valid operation signature in '"
-                                    + JSON.stringify(operationSignatures)
-                                    + "' for a call to operation '"
-                                    + operationName
-                                    + "' with the arguments: '"
-                                    + JSON.stringify(operationArguments)
-                                    + "'");
-                            }
-
-                            // eventually, call the operation function
-                            return privateOperationFunc(namedArguments);
+                            // TODO: proper error handling
+                            throw new Error("Could not find a valid operation signature in '"
+                                + JSON.stringify(operationSignatures)
+                                + "' for a call to operation '"
+                                + operationName
+                                + "' with the arguments: '"
+                                + JSON.stringify(operationArguments)
+                                + "'");
                         };
 
                 /**

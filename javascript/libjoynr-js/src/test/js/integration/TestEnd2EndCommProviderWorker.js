@@ -1,4 +1,4 @@
-/*jslint es5: true */
+/*jslint es5: true, nomen: true */
 /*global Promise: true, WorkerUtils: true, importScripts: true, joynr: true, Country: true, RadioProvider: true, domain: true, interfaceNameComm: true, providerParticipantIdComm: true, providerChannelIdComm: true, globalCapDirCapability: true, channelUrlDirCapability: true */
 
 /*
@@ -158,11 +158,30 @@ function initializeTest(provisioningSuffix, providedDomain) {
                 return !!name.match(/true/);
             });
 
+            var isCountryEnum = function(parameter) {
+                return typeof parameter === "object" &&
+                        Object.getPrototypeOf(parameter) instanceof joynr.JoynrObject &&
+                        parameter._typeName === Country.GERMANY._typeName;
+            };
+            var checkEnumInputs = function(opArgs) {
+                var enumElement;
+                if (!isCountryEnum(opArgs.enumInput)) {
+                    throw new Error("Argument enumInput with value " + opArgs.enumInput + " is not correctly typed " + Country.GERMANY._typeName);
+                } 
+                for (enumElement in opArgs.enumArrayInput) {
+                    if (opArgs.enumArrayInput.hasOwnProperty(enumElement)) {
+                        if (!isCountryEnum(opArgs.enumArrayInput[enumElement])) {
+                            throw new Error("Argument enumInput with value " + opArgs.enumArrayInput[enumElement] + " is not correctly typed " + Country.GERMANY._typeName);
+                        } 
+                    }
+                }
+            };
             // register operation function "operationWithEnumsAsInputAndOutput"
             radioProvider.operationWithEnumsAsInputAndOutput.registerOperation(function(opArgs) {
-                /* the dummy implemenation returns the first element of the enumArrayInput.
+                /* the dummy implemetnation returns the first element of the enumArrayInput.
                  * If the input array is empty, it returns the enumInput
                  */
+                checkEnumInputs(opArgs);
                 var returnValue = opArgs.enumInput;
                 if (opArgs.enumArrayInput.length !== 0) {
                     returnValue = opArgs.enumArrayInput[0];
@@ -172,9 +191,10 @@ function initializeTest(provisioningSuffix, providedDomain) {
 
             // register operation function "operationWithEnumsAsInputAndEnumArrayAsOutput"
             radioProvider.operationWithEnumsAsInputAndEnumArrayAsOutput.registerOperation(function(opArgs) {
-                /* the dummy implemenation returns the first element of the enumArrayInput.
-                 * If the input array is empty, it returns the enumInput
+                /* the dummy implementation returns the enumArrayInput.
+                 * If the enumInput is not empty, it add this entry to the return value as well
                  */
+                checkEnumInputs(opArgs);
                 var returnValue = opArgs.enumArrayInput;
                 if (opArgs.enumInput !== undefined) {
                     returnValue.push(opArgs.enumInput);
