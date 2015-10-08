@@ -52,6 +52,11 @@ public:
      * @return int unique type identifier
      */
     virtual int getTypeId() = 0;
+    /**
+     * @brief getTypeName
+     * @return std::string unique typeName
+     */
+    virtual std::string getTypeName() const = 0;
 
 private:
     IVariantHolder(const IVariantHolder&) = delete;
@@ -145,6 +150,15 @@ public:
     }
 
     /**
+     * @brief getTypeId Get the TypeId of the object held in the Variant
+     * @return int unique type identifier
+     */
+    std::string getTypeName() const
+    {
+        return pointer->getTypeName();
+    }
+
+    /**
      * @brief Get the object reference held (wrapped) in the variant
      * @return
      */
@@ -226,6 +240,15 @@ public:
     int getTypeId()
     {
         return JoynrTypeId<T>::getTypeId();
+    }
+
+    /**
+     * @brief getTypeName of wrapped object
+     * @return std::string unique type identifier
+     */
+    std::string getTypeName() const
+    {
+        return JoynrTypeId<T>::getTypeName();
     }
 
 private:

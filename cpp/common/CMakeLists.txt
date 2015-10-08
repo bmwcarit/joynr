@@ -25,6 +25,7 @@ set(
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     "../"
     ${qjson_PUBLIC_INCLUDE_DIRECTORY}
+    ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
 )
 
 set(

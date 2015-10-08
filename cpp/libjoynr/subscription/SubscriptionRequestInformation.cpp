@@ -65,7 +65,7 @@ bool SubscriptionRequestInformation::operator==(
 
 QString SubscriptionRequestInformation::toQString() const
 {
-    return JsonSerializer::serialize(*this);
+    return JsonSerializer::serializeQObject(*this);
 }
 
 } // namespace joynr

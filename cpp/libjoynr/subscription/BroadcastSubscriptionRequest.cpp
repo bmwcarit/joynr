@@ -65,7 +65,7 @@ void BroadcastSubscriptionRequest::setFilterParametersData(QVariant filterParame
 
 QString BroadcastSubscriptionRequest::toQString() const
 {
-    return JsonSerializer::serialize(*this);
+    return JsonSerializer::serializeQObject(*this);
 }
 
 void BroadcastSubscriptionRequest::setQos(std::shared_ptr<QtOnChangeSubscriptionQos> qos)

@@ -334,9 +334,6 @@ private:
     void generateAndSetMsgIdHeaderIfAbsent();
 };
 
-// printing JoynrMessage with google-test and google-mock
-void PrintTo(const joynr::JoynrMessage& value, ::std::ostream* os);
-
 } // namespace joynr
 
 Q_DECLARE_METATYPE(joynr::JoynrMessage)

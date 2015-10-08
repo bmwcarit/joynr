@@ -161,7 +161,7 @@ void JoynrMessageFactory::initMsg(JoynrMessage& msg,
     msg.setHeaderContentType(JoynrMessage::VALUE_CONTENT_TYPE_APPLICATION_JSON);
 
     // set payload
-    msg.setPayload(JsonSerializer::serialize(payload));
+    msg.setPayload(JsonSerializer::serializeQObject(payload));
 }
 
 // TODO This is a workaround which must be removed after the new serializer is introduced
@@ -183,7 +183,7 @@ void JoynrMessageFactory::initReplyMsg(JoynrMessage& msg,
     msg.setHeaderContentType(JoynrMessage::VALUE_CONTENT_TYPE_APPLICATION_JSON);
 
     // set payload
-    msg.setPayload(JsonSerializer::serializeReply(payload));
+    msg.setPayload(JsonSerializer::serializeQObject(payload));
 }
 
 void JoynrMessageFactory::initSubscriptionPublicationMsg(JoynrMessage& msg,
@@ -204,7 +204,7 @@ void JoynrMessageFactory::initSubscriptionPublicationMsg(JoynrMessage& msg,
     msg.setHeaderContentType(JoynrMessage::VALUE_CONTENT_TYPE_APPLICATION_JSON);
 
     // set payload
-    msg.setPayload(JsonSerializer::serializeSubscriptionPublication(payload));
+    msg.setPayload(JsonSerializer::serializeQObject(payload));
 }
 
 } // namespace joynr

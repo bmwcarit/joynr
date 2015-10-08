@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef JSONSERIALIZER_H
-#define JSONSERIALIZER_H
+#ifndef JSONEXCEPTIONSERIALIZER_H
+#define JSONEXCEPTIONSERIALIZER_H
 
 #include "qjson/qobjecthelper.h"
 #include "qjson/parser.h"
@@ -26,6 +26,7 @@
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/Reply.h"
 #include "joynr/SubscriptionPublication.h"
+#include "joynr/JsonSerializer.h"
 #include <QString>
 #include <QVariantMap>
 #include <QVariant>
@@ -38,22 +39,9 @@ namespace joynr
 /**
  * @brief Tool class to provide JSON serialization
  */
-class JsonSerializer
+class JsonExceptionSerializer
 {
 public:
-    /**
-     * @brief Serializes a QObject into JSON format.
-     *
-     * @param object the object to serialize.
-     * @return QByteArray the serialized byte array in JSON format, UTF-8 encoding.
-     */
-    static QByteArray serialize(const QObject& object)
-    {
-        QJson::Serializer serializer;
-        const QMetaObject* metaobject = object.metaObject();
-        return serializer.serialize(QVariant(QMetaType::type(metaobject->className()), &object));
-    }
-
     /**
      * @brief Serializes a Reply object into JSON format.
      *
@@ -62,7 +50,7 @@ public:
      */
     static QByteArray serializeReply(const Reply& reply)
     {
-        QByteArray json = serialize(reply);
+        QByteArray json = JsonSerializer::serializeQObject(reply);
         std::shared_ptr<exceptions::JoynrException> error = reply.getError();
         if (error) {
             serializeJoynrException(json, error);
@@ -78,7 +66,7 @@ public:
      */
     static QByteArray serializeSubscriptionPublication(const SubscriptionPublication& publication)
     {
-        QByteArray json = serialize(publication);
+        QByteArray json = JsonSerializer::serializeQObject(publication);
         std::shared_ptr<exceptions::JoynrRuntimeException> error = publication.getError();
         if (error) {
             serializeJoynrException(json, error);
@@ -86,83 +74,6 @@ public:
         return json;
     }
 
-    /**
-     * @brief Serializes a variant into JSON format.
-     *
-     * @param variant the variant to serialize.
-     * @return QString the serialized string in JSON format.
-     */
-    static QByteArray serialize(const QVariant& variant)
-    {
-        QJson::Serializer serializer;
-        return serializer.serialize(variant);
-    }
-
-    template <class T>
-    /**
-     * @brief Deserializes a string in JSON list format to a list of the given
-     * template type T.
-     *
-     * Template type T must inherit from QObject. The JSON String must be a
-     * valid JSON list representation of T.
-     *
-     * @param json The JSON representation of template type T.
-     * @return The deserialized list
-     */
-    static QList<T*> deserializeList(const QByteArray& json)
-    {
-
-        // Parse the JSON
-        QJson::Parser parser;
-        QVariant jsonQVar = parser.parse(json);
-        QVariantList jsonQVarList = jsonQVar.value<QVariantList>();
-
-        // Populate the list
-        QVariant value;
-        QVariantMap valueAsMap;
-        QList<T*> ret;
-        foreach (value, jsonQVarList) {
-            valueAsMap = value.value<QVariantMap>();
-            T* item = new T;
-            QJson::QObjectHelper::qvariant2qobject(valueAsMap, item);
-            ret.append(item);
-        }
-        return ret;
-    }
-
-    template <class T>
-    /**
-     * @brief Deserializes a QByteArray in JSON format to the given template type T.
-     *
-     * Template type T must inherit from QObject. The QByteArray must be a
-     * valid JSON representation of the template type T.
-     *
-     * @param json The JSON representation of template type T.
-     * @return The deserialized object, or NULL in case of deserialization error
-     */
-    static T* deserialize(const QByteArray& json)
-    {
-        QJson::Parser parser;
-
-        QVariant jsonQVar = parser.parse(json);
-        QVariantMap jsonQVarValue = jsonQVar.value<QVariantMap>();
-        if (!jsonQVarValue.contains("_typeName")) {
-            LOG_ERROR(logger,
-                      QString("_typename not specified in serialized: %1")
-                              .arg(QString::fromUtf8(json)));
-            return Q_NULLPTR;
-        }
-        QString typeName = jsonQVarValue.value("_typeName").value<QString>();
-        int classId = QJson::QObjectHelper::getClassIdForTransmittedType(typeName);
-        if (!QMetaType::isRegistered(classId)) {
-            LOG_ERROR(logger, QString("unknown type name: %1").arg(typeName));
-            return Q_NULLPTR;
-        }
-        QObject* object = (QObject*)QMetaType::create(classId);
-        QJson::QObjectHelper::qvariant2qobject(jsonQVarValue, object);
-
-        return (T*)object;
-    }
     // TODO This is a workaround which must be removed after the new serializer is introduced
     /**
          * @brief Deserializes a QByteArray in JSON format to a Reply object.
@@ -179,7 +90,7 @@ public:
         QVariant jsonQVar = parser.parse(json);
         QVariantMap jsonQVarValue = jsonQVar.value<QVariantMap>();
 
-        Reply* reply = (Reply*)deserialize<Reply>(json);
+        Reply* reply = (Reply*)JsonSerializer::deserializeQObject<Reply>(json);
         if (reply == Q_NULLPTR) {
             return reply;
         }
@@ -219,8 +130,8 @@ public:
         QVariant jsonQVar = parser.parse(json);
         QVariantMap jsonQVarValue = jsonQVar.value<QVariantMap>();
 
-        SubscriptionPublication* publication =
-                (SubscriptionPublication*)deserialize<SubscriptionPublication>(json);
+        SubscriptionPublication* publication = (SubscriptionPublication*)
+                JsonSerializer::deserializeQObject<SubscriptionPublication>(json);
         if (publication == Q_NULLPTR) {
             return publication;
         }
@@ -374,4 +285,4 @@ private:
 };
 
 } // namespace joynr
-#endif // JSONSERIALIZER_H
+#endif // JSONEXCEPTIONSERIALIZER_H

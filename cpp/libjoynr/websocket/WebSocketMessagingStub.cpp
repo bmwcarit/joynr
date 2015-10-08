@@ -79,11 +79,11 @@ void WebSocketMessagingStub::transmit(JoynrMessage& message)
         LOG_ERROR(logger,
                   QString("WebSocket not ready %0. Unable to send message %1.")
                           .arg(address->toString())
-                          .arg(QString(JsonSerializer::serialize(message))));
+                          .arg(QString(JsonSerializer::serializeQObject(message))));
         return;
     }
 
-    QByteArray serializedMessage(JsonSerializer::serialize(message));
+    QByteArray serializedMessage(JsonSerializer::serializeQObject(message));
     emit queueTextMessage(serializedMessage);
 }
 

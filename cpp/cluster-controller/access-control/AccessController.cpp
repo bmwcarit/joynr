@@ -120,21 +120,21 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
 
     if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST) {
 
-        QScopedPointer<Request> request(JsonSerializer::deserialize<Request>(jsonRequest));
+        QScopedPointer<Request> request(JsonSerializer::deserializeQObject<Request>(jsonRequest));
         if (!request.isNull()) {
             operation = TypeUtil::toQt(request->getMethodName());
         }
     } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST) {
 
         QScopedPointer<SubscriptionRequest> request(
-                JsonSerializer::deserialize<SubscriptionRequest>(jsonRequest));
+                JsonSerializer::deserializeQObject<SubscriptionRequest>(jsonRequest));
         if (!request.isNull()) {
             operation = request->getSubscribeToName();
         }
     } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
 
         QScopedPointer<BroadcastSubscriptionRequest> request(
-                JsonSerializer::deserialize<BroadcastSubscriptionRequest>(jsonRequest));
+                JsonSerializer::deserializeQObject<BroadcastSubscriptionRequest>(jsonRequest));
         if (!request.isNull()) {
             operation = request->getSubscribeToName();
         }

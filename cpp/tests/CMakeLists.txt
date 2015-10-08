@@ -117,6 +117,9 @@ endif(${CMAKE_GENERATOR} MATCHES "Visual Studio")
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(qjson_PUBLIC_INCLUDE_DIRECTORY qjson PUBLIC_INCLUDE_DIRECTORY)
+get_target_property(jsonserializer_PUBLIC_INCLUDE_DIRECTORY jsonserializer PUBLIC_INCLUDE_DIRECTORY)
+get_target_property(jsmn_PUBLIC_INCLUDE_DIRECTORY jsmn PUBLIC_INCLUDE_DIRECTORY)
+
 get_target_property(joynrwsruntime_PUBLIC_INCLUDE_DIRECTORY JoynrWsRuntime PUBLIC_INCLUDE_DIRECTORY)
 if(${BUILD_CLUSTER_CONTROLLER})
     get_target_property(JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY JoynrClusterController PUBLIC_INCLUDE_DIRECTORY)
@@ -144,6 +147,8 @@ set(
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
     ${qjson_PUBLIC_INCLUDE_DIRECTORY}
     ${spdlog_SOURCE_DIR}/include
+    ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
+    ${jsmn_PUBLIC_INCLUDE_DIRECTORY}
     ${joynrwsruntime_PUBLIC_INCLUDE_DIRECTORY}
 )
 
@@ -152,6 +157,7 @@ set(
     JoynrCommon
     Joynr
     qjson
+    jsonserializer
 )
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
@@ -227,6 +233,32 @@ set(
     ${JoynrTest_GENHEADERS}
 )
 
+file(
+    GLOB_RECURSE JsonSerailizerTest_GENSOURCES
+    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    #"gen/*.cpp" uncomment this when generate-test-sources prepared for jsonserializer
+    "unit-tests/jsonserializer/generated/*.cpp" #remove this when generate-test-sources prepared for jsonserializer
+)
+
+file(
+    GLOB_RECURSE JsonSerailizerTest_GENHEADERS
+    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    #"gen/*.h" uncomment this when generate-test-sources prepared for jsonserializer
+    "unit-tests/jsonserializer/generated/*.h" #remove this when generate-test-sources prepared for jsonserializer
+)
+
+set(
+    libjsonserializer_test_HEADERS
+    "unit-tests/jsonserializer/ExampleTypes.h"
+    ${JsonSerailizerTest_GENHEADERS}
+)
+
+set(
+    libjsonserializer_test_SOURCES
+    "unit-tests/jsonserializer/ExampleTypes.cpp"
+    ${JsonSerailizerTest_GENSOURCES}
+)
+
 set(
     libjoynr_test_HEADERS
     "PrettyPrint.h"
@@ -261,6 +293,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
         GLOB g_UnitTests_SOURCES
         "unit-tests/*.cpp"
         "unit-tests/websocket/*.cpp"
+        "unit-tests/jsonserializer/*.cpp"
     )
 
     if(${USE_DBUS_COMMONAPI_COMMUNICATION})
@@ -274,11 +307,14 @@ if(${BUILD_CLUSTER_CONTROLLER})
         g_UnitTests
         ${cluster_controller_test_HEADERS}
         ${cluster_controller_test_SOURCES}
+        ${libjsonserializer_test_HEADERS}
+        ${libjsonserializer_test_SOURCES}
         ${g_UnitTests_SOURCES}
     )
 
     add_dependencies(g_UnitTests googletest)
     add_dependencies(g_UnitTests googlemock)
+    add_dependencies(g_UnitTests jsmn)
 
     target_link_libraries(
         g_UnitTests
@@ -325,6 +361,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
     )
     add_dependencies(g_IntegrationTests googletest)
     add_dependencies(g_IntegrationTests googlemock)
+    add_dependencies(g_IntegrationTests jsmn)
 
     target_link_libraries(g_IntegrationTests ${cluster_controller_test_TARGET_LIBRARIES})
 
@@ -367,6 +404,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
 
     add_dependencies(g_SystemIntegrationTests googletest)
     add_dependencies(g_SystemIntegrationTests googlemock)
+    add_dependencies(g_SystemIntegrationTests jsmn)
 
     target_link_libraries(g_SystemIntegrationTests ${cluster_controller_test_TARGET_LIBRARIES})
 
@@ -405,6 +443,7 @@ else()
 
     add_dependencies(g_UnitTests googletest)
     add_dependencies(g_UnitTests googlemock)
+    add_dependencies(g_UnitTests jsmn)
 
     target_link_libraries(
         g_UnitTests
@@ -446,6 +485,7 @@ else()
 
     add_dependencies(g_SystemIntegrationTests googletest)
     add_dependencies(g_SystemIntegrationTests googlemock)
+    add_dependencies(g_SystemIntegrationTests jsmn)
 
     target_link_libraries(g_SystemIntegrationTests ${libjoynr_test_TARGET_LIBRARIES})
 

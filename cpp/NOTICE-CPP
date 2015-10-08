@@ -28,6 +28,9 @@ libdbus under GNU General Public License version 2
 libCommonAPI under Mozilla Public License Version 2.0
 libCommonAPI-DBus under Mozilla Public License Version 2.0
 
+--- Statically linked libraries by joynr binaries ------------------------------
+jsmn under MIT Licence
+
 --- Header only libraries used by joynr binaries -------------------------------
 spdlog under MIT License
 

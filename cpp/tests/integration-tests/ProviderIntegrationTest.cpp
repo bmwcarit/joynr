@@ -89,5 +89,5 @@ TEST_F(ProviderIntegrationTest, deserializeStructHavingMemberStruct)
                                  "{\"_typeName\":\"joynr.tests.testTypes.NeverUsedAsAttributeTypeOrMethodParameterStruct\","
                                  "\"name\":\"neverUsed\"}]}]],"
                                  "\"requestReplyId\":\"570b7626-4140-4714-922a-a7c49c52c54c\"}");
-    JsonSerializer::deserialize<Request>(serializedContent);
+    JsonSerializer::deserializeQObject<Request>(serializedContent);
 }

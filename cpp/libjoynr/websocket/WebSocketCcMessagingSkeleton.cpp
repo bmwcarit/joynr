@@ -103,8 +103,8 @@ void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString& message)
                 QString("received initialization message from websocket client: %0").arg(message));
         // register client with messaging stub factory
         joynr::system::RoutingTypes::QtWebSocketClientAddress* clientAddress =
-                JsonSerializer::deserialize<joynr::system::RoutingTypes::QtWebSocketClientAddress>(
-                        message.toUtf8());
+                JsonSerializer::deserializeQObject<
+                        joynr::system::RoutingTypes::QtWebSocketClientAddress>(message.toUtf8());
         // client address must be valid, or libjoynr and CC are deployed in different versions
         assert(clientAddress);
         messagingStubFactory.addClient(*clientAddress, client);
@@ -121,7 +121,7 @@ void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString& message)
 
     // deserialize message and transmit
     joynr::JoynrMessage* joynrMsg =
-            JsonSerializer::deserialize<joynr::JoynrMessage>(message.toUtf8());
+            JsonSerializer::deserializeQObject<joynr::JoynrMessage>(message.toUtf8());
     if (joynrMsg == Q_NULLPTR) {
         LOG_ERROR(logger,
                   QString("Unable to deserialize joynr message object from: %1").arg(message));

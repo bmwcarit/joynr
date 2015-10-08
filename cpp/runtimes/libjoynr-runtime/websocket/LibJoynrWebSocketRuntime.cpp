@@ -58,7 +58,7 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(QSettings* settings)
     loop.exec();
 
     // send intialization message containing libjoynr messaging address
-    QString initializationMsg(JsonSerializer::serialize(*libjoynrMessagingAddress));
+    QString initializationMsg(JsonSerializer::serializeQObject(*libjoynrMessagingAddress));
     LOG_TRACE(logger,
               QString("OUTGOING sending websocket intialization message\nmessage: %0\nto: %1")
                       .arg(initializationMsg)

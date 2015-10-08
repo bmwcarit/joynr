@@ -60,10 +60,10 @@ TEST_F(JsonSerializerPolymorphismTest, deserializeSuperTypeFromDerivedType) {
     derived.setTEnum(joynr::types::TestTypes::QtTEnum::TLITERALA);
     derived.setTInt32(32);
 
-    QByteArray serializedDerived = JsonSerializer::serialize(derived);
+    QByteArray serializedDerived = JsonSerializer::serializeQObject(derived);
 
     joynr::types::TestTypes::QtTStruct* deserializedSuper =
-            JsonSerializer::deserialize<joynr::types::TestTypes::QtTStruct>(serializedDerived);
+            JsonSerializer::deserializeQObject<joynr::types::TestTypes::QtTStruct>(serializedDerived);
     EXPECT_EQ(expectedSuper, *deserializedSuper);
 
     // this means the deserialized super is actually a derived
@@ -95,12 +95,12 @@ TEST_F(JsonSerializerPolymorphismTest, DISABLED_serializeDerivedTypeFromSuperTyp
     // type is lost
     joynr::types::TestTypes::QtTStruct super(derived);
 
-    QByteArray serializedSuper = JsonSerializer::serialize(super);
+    QByteArray serializedSuper = JsonSerializer::serializeQObject(super);
 
     LOG_DEBUG(logger, QString(serializedSuper));
 
     joynr::types::TestTypes::QtTStruct* deserializedSuper =
-            JsonSerializer::deserialize<joynr::types::TestTypes::QtTStruct>(serializedSuper);
+            JsonSerializer::deserializeQObject<joynr::types::TestTypes::QtTStruct>(serializedSuper);
     EXPECT_EQ(expectedSuper, *deserializedSuper);
 
     // this means the deserialized super is actually a derived
@@ -154,7 +154,7 @@ TEST_F(JsonSerializerPolymorphismTest, serializeGpsLocationListWithLocationInsid
 
     QVariantList variantList = Util::convertListToVariantList(gpsPositions);
     QVariant variant(variantList);
-    QString serializedGpsLocations = JsonSerializer::serialize(variant);
+    QString serializedGpsLocations = JsonSerializer::serializeQObject(variant);
     LOG_DEBUG(logger, serializedGpsLocations);
 
 //    EXPECT_EQ(gpsLocation, *deserializedGpsLocation);

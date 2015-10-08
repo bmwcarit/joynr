@@ -52,9 +52,15 @@ public:
      * @return
      */
     static int getTypeId();
+    /**
+     * @brief getTypeName
+     * @return
+     */
+    static std::string getTypeName();
 
 private:
     int typeId;
+    std::string typeName;
 };
 
 template <typename T>
@@ -77,10 +83,17 @@ int JoynrTypeId<T>::getTypeId()
 }
 
 template <typename T>
+std::string JoynrTypeId<T>::getTypeName()
+{
+    return instance().typeName;
+}
+
+template <typename T>
 void JoynrTypeId<T>::create(const std::string& typeName)
 {
     assert(getTypeId() == 0);
     instance().typeId = std::hash<std::string>()(typeName);
+    instance().typeName = typeName;
     assert(getTypeId() != 0);
 }
 

@@ -101,7 +101,7 @@ void HttpSender::sendMessage(const QString& channelId, const JoynrMessage& messa
 {
 
     LOG_TRACE(logger, "sendMessage: ...");
-    QByteArray serializedMessage = JsonSerializer::serialize(message);
+    QByteArray serializedMessage = JsonSerializer::serializeQObject(message);
     /** Potential issue: needs second threadpool to call the ChannelUrlDir so a deadlock cannot
      * occur
       */

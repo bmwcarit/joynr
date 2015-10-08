@@ -33,25 +33,25 @@ using namespace joynr;
 namespace joynr {
 namespace types {
     void PrintTo(const joynr::types::TestTypes::QtTStruct& value, ::std::ostream* os) {
-        *os << joynr::JsonSerializer::serialize(value).constData();
+        *os << joynr::JsonSerializer::serializeQObject(value).constData();
     }
 
     void PrintTo(const joynr::types::Localisation::QtGpsLocation& value, ::std::ostream* os) {
-        *os << joynr::JsonSerializer::serialize(value).constData();
+        *os << joynr::JsonSerializer::serializeQObject(value).constData();
     }
 
     void PrintTo(const joynr::types::Localisation::QtTrip& value, ::std::ostream* os) {
-        *os << JsonSerializer::serialize(value).constData() << std::endl;
+        *os << JsonSerializer::serializeQObject(value).constData() << std::endl;
     }
 }
 namespace types {
     void PrintTo(const joynr::types::QtDiscoveryEntry& value, ::std::ostream* os) {
-        *os << JsonSerializer::serialize(value).constData() << std::endl;
+        *os << JsonSerializer::serializeQObject(value).constData() << std::endl;
     }
 }
 namespace system {
     void PrintTo(const joynr::system::RoutingTypes::QtWebSocketAddress& value, ::std::ostream* os) {
-        *os << JsonSerializer::serialize(value).constData() << std::endl;
+        *os << JsonSerializer::serializeQObject(value).constData() << std::endl;
     }
 }
 }
@@ -82,6 +82,10 @@ void PrintTo(const QUrl& value, std::ostream* os)
      *os << value.toString() << std::endl;
  }
 
+ void PrintTo(const JoynrMessage& value, ::std::ostream* os)
+ {
+     *os << joynr::JsonSerializer::serializeQObject(value).constData();
+ }
 
 // void initPretty(void) {
 // EXPECT_TRUE(false) << ::testing::PrintToString(QString("hello"));

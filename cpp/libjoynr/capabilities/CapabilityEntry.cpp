@@ -17,7 +17,6 @@
  * #L%
  */
 #include "joynr/CapabilityEntry.h"
-#include "joynr/JsonSerializer.h"
 
 namespace joynr
 {

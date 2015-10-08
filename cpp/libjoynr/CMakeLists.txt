@@ -3,6 +3,7 @@ message(STATUS "Configuring JoynrLib...")
 message(STATUS "#############################################\n")
 
 get_target_property(qjson_PUBLIC_INCLUDE_DIRECTORY qjson PUBLIC_INCLUDE_DIRECTORY)
+get_target_property(jsonserializer_PUBLIC_INCLUDE_DIRECTORY jsonserializer PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 
 set(
@@ -16,6 +17,7 @@ set(
     ${JoynrLib_PUBLIC_INCLUDE_DIRECTORY}
     "../"
     ${qjson_PUBLIC_INCLUDE_DIRECTORY}
+    ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
 )
 
@@ -23,6 +25,7 @@ set(
     JoynrLib_TARGET_LIBRARIES
     JoynrCommon
     qjson
+    jsonserializer
 )
 
 set(
@@ -53,6 +56,7 @@ file(
     "websocket/*.h"
     "CapabilitiesRegistrar.h"
     "LibjoynrSettings.h"
+    "JsonExceptionSerializer.h"
 )
 
 
@@ -78,6 +82,7 @@ file(
     "websocket/*.cpp"
     "CapabilitiesRegistrar.cpp"
     "LibjoynrSettings.cpp"
+    "JsonExceptionSerializer.cpp"
 )
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})

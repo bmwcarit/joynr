@@ -636,7 +636,7 @@ void PublicationManager::saveSubscriptionRequestsMap(const QList<QVariant>& subs
         // Write the subscription information as a json list
         file.resize(0);
 
-        QString json = JsonSerializer::serialize(subscriptionList);
+        QString json = JsonSerializer::serializeQObject(subscriptionList);
         file.write(json.toUtf8().constData());
     }
 }

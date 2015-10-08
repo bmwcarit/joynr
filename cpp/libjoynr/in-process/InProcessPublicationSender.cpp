@@ -17,7 +17,6 @@
  * #L%
  */
 #include "joynr/InProcessPublicationSender.h"
-#include "joynr/JsonSerializer.h"
 #include "joynr/MetaTypeRegistrar.h"
 #include "joynr/IPublicationInterpreter.h"
 #include "joynr/SubscriptionPublication.h"

@@ -27,6 +27,7 @@
 #include <iostream>
 
 #include "joynr/JsonSerializer.h"
+#include "joynr/JoynrMessage.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/RequestStatusCode.h"
 #include "joynr/types/QtDiscoveryEntry.h"
@@ -71,5 +72,5 @@ void PrintTo(const QUrl& value, ::std::ostream* os);
 //void PrintTo(const QVariant& value, ::std::ostream* os);
 void PrintTo(const joynr::RequestStatusCode& value, ::std::ostream* os);
 void PrintTo(const joynr::RequestStatus& value, ::std::ostream* os);
-
+void PrintTo(const joynr::JoynrMessage& value, ::std::ostream* os);
 #endif /* PRETTYPRINT_H_ */

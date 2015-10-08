@@ -23,7 +23,6 @@
 #include "joynr/ReplyCaller.h"
 #include "joynr/Reply.h"
 #include "joynr/joynrlogging.h"
-#include "joynr/JsonSerializer.h"
 #include "joynr/Util.h"
 #include <memory>
 

@@ -314,8 +314,6 @@ include_directories(
    SYSTEM ${CURL_INCLUDE_DIRS}
 )
 
-
-
 # ---------------------------------------------- Build library --------------------------------------------------
 
 include(GenerateExportHeader)
@@ -437,6 +435,7 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 add_subdirectory(libs)
 add_subdirectory(common)
+add_subdirectory(jsonserializer)
 add_subdirectory(libjoynr)
 if(${BUILD_CLUSTER_CONTROLLER})
     add_subdirectory(cluster-controller)
@@ -462,6 +461,7 @@ set(
     Joynr
     JoynrWsRuntime
     qjson
+    jsonserializer
 )
 
 if(${BUILD_CLUSTER_CONTROLLER})
@@ -505,6 +505,7 @@ set(
     JoynrCommon
     Joynr
     qjson
+    jsonserializer
 )
 
 if(${BUILD_CLUSTER_CONTROLLER})
@@ -521,6 +522,7 @@ set(
     JoynrCommon
     Joynr
     qjson
+    jsonserializer
     JoynrWsRuntime
 )
 
@@ -530,6 +532,7 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         JoynrCommon
         Joynr
         qjson
+        jsonserializer
         JoynrDbusRuntime
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
@@ -538,6 +541,8 @@ endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(qjson_PUBLIC_INCLUDE_DIRECTORY qjson PUBLIC_INCLUDE_DIRECTORY)
+get_target_property(jsonserializer_PUBLIC_INCLUDE_DIRECTORY jsonserializer PUBLIC_INCLUDE_DIRECTORY)
+message(STATUS "variable jsonserializer_PUBLIC_INCLUDE_DIRECTORY=" ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY})
 
 set(
     JoynrConfig_INCLUDE_DIRS
@@ -545,6 +550,8 @@ set(
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
     ${qjson_PUBLIC_INCLUDE_DIRECTORY}
     ${spdlog_SOURCE_DIR}/include
+    ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
+    ${jsmn_SOURCE_DIR}
 )
 if(${BUILD_CLUSTER_CONTROLLER})
     get_target_property(JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY JoynrClusterController PUBLIC_INCLUDE_DIRECTORY)
@@ -562,6 +569,8 @@ set(
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
     ${qjson_PUBLIC_INCLUDE_DIRECTORY}
     ${spdlog_SOURCE_DIR}/include
+    ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
+    ${jsmn_SOURCE_DIR}
 )
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     set(
@@ -570,6 +579,8 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
         ${qjson_PUBLIC_INCLUDE_DIRECTORY}
         ${spdlog_SOURCE_DIR}/include
+        ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
+        ${jsmn_SOURCE_DIR}
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 set(JoynrConfig_TARGETS_FILE "${JOYNR_BINARY_DIR}/JoynrTargets.cmake")

@@ -161,7 +161,7 @@ TEST_F(WebSocketMessagingStubTest, transmitMessage) {
     // send message using messaging stub
     joynr::WebSocketMessagingStub messagingStub(serverAddress, webSocket);
     joynr::JoynrMessage joynrMsg;
-    QString expectedMessage(joynr::JsonSerializer::serialize(joynrMsg));
+    QString expectedMessage(joynr::JsonSerializer::serializeQObject(joynrMsg));
     messagingStub.transmit(joynrMsg);
 
     // wait until message is received

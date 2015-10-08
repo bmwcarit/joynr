@@ -118,7 +118,7 @@ void SubscriptionRequest::setQosData(QVariant qos)
 
 QString SubscriptionRequest::toQString() const
 {
-    return JsonSerializer::serialize(*this);
+    return JsonSerializer::serializeQObject(*this);
 }
 
 } // namespace joynr
