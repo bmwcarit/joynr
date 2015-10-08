@@ -579,6 +579,39 @@ joynrTestRequire(
                                     */
                                });
 
+                        it(
+                                "can call an operation with enum arguments and enum array as return type",
+                                function() {
+                                    testOperationArgumentsAndReturnValue(
+                                            radioProxy.operationWithEnumsAsInputAndEnumArrayAsOutput,
+                                            {
+                                                enumInput : Country.GERMANY,
+                                                enumArrayInput : []
+                                            },
+                                            [Country.GERMANY]);
+                                    testOperationArgumentsAndReturnValue(
+                                            radioProxy.operationWithEnumsAsInputAndEnumArrayAsOutput,
+                                            {
+                                                enumInput : Country.GERMANY,
+                                                enumArrayInput : [Country.AUSTRIA]
+                                            },
+                                            [Country.AUSTRIA, Country.GERMANY]);
+                                    testOperationArgumentsAndReturnValue(
+                                            radioProxy.operationWithEnumsAsInputAndEnumArrayAsOutput,
+                                            {
+                                                enumInput : Country.GERMANY,
+                                                enumArrayInput : [Country.AUSTRIA, Country.GERMANY, Country.AUSTRALIA]
+                                            },
+                                            [Country.AUSTRIA, Country.GERMANY, Country.AUSTRALIA, Country.GERMANY]);
+                                    testOperationArgumentsAndReturnValue(
+                                            radioProxy.operationWithEnumsAsInputAndEnumArrayAsOutput,
+                                            {
+                                                enumInput : Country.GERMANY,
+                                                enumArrayInput : [Country.CANADA, Country.AUSTRIA, Country.ITALY]
+                                            },
+                                            [Country.CANADA, Country.AUSTRIA, Country.ITALY, Country.GERMANY]);
+                               });
+
                         it("can start a subscription and provides a subscription id", function() {
                             var spy;
 

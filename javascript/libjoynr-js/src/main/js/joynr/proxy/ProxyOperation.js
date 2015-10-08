@@ -25,11 +25,12 @@ define(
             "global/Promise",
             "joynr/util/UtilInternal",
             "joynr/util/Typing",
+            "joynr/TypesEnum",
             "joynr/types/TypeRegistrySingleton",
             "joynr/dispatching/types/Request",
             "joynr/messaging/MessagingQos"
         ],
-        function(Promise, Util, Typing, TypeRegistrySingleton, Request, MessagingQos) {
+        function(Promise, Util, Typing, TypesEnum, TypeRegistrySingleton, Request, MessagingQos) {
             var typeRegistry = TypeRegistrySingleton.getInstance();
             /**
              * Checks if the given operationSignature is valid to be called for the given operation
@@ -88,7 +89,10 @@ define(
                         argument = inputParameter[argumentId];
 
                         argumentName = argument.name;
-                        operationParameter = argument.type;
+                        operationParameter =
+                                (argument.type.substr(argument.type.length - 2, 2) === "[]")
+                                        ? TypesEnum.LIST
+                                        : argument.type;
 
                         // if there's no parameter with the given name
                         if (!operationParameter) {

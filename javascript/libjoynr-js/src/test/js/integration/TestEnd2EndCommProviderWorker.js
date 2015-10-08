@@ -170,6 +170,18 @@ function initializeTest(provisioningSuffix, providedDomain) {
                 return returnValue;
             });
 
+            // register operation function "operationWithEnumsAsInputAndEnumArrayAsOutput"
+            radioProvider.operationWithEnumsAsInputAndEnumArrayAsOutput.registerOperation(function(opArgs) {
+                /* the dummy implemenation returns the first element of the enumArrayInput.
+                 * If the input array is empty, it returns the enumInput
+                 */
+                var returnValue = opArgs.enumArrayInput;
+                if (opArgs.enumInput !== undefined) {
+                    returnValue.push(opArgs.enumInput);
+                }
+                return returnValue;
+            });
+
             radioProvider.methodProvidedImpl.registerOperation(function(opArgs) {
                 return opArgs.arg;
             });

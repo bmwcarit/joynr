@@ -160,7 +160,7 @@ class ProxyGenerator {
 					«FOR param: getInputParameters(operation) SEPARATOR ","»
 						{
 							name : "«param.joynrName»",
-							type : «param.typeNameForParameter»
+							type : «param.getTypeNameForParameter(true)»
 						}
 					«ENDFOR»
 					],
@@ -168,7 +168,7 @@ class ProxyGenerator {
 						«FOR param: getOutputParameters(operation) SEPARATOR ","»
 						{
 							name : "«param.joynrName»",
-							type : «param.typeNameForParameter»
+							type : «param.getTypeNameForParameter(true)»
 						}
 						«ENDFOR»
 					]

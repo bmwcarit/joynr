@@ -21,9 +21,10 @@ define(
         "joynr/provider/ProviderOperation",
         [
             "joynr/util/Typing",
+            "joynr/TypesEnum",
             "joynr/types/TypeRegistrySingleton"
         ],
-        function(Typing, TypeRegistrySingleton) {
+        function(Typing, TypesEnum, TypeRegistrySingleton) {
 
             var typeRegistry = TypeRegistrySingleton.getInstance();
             /**
@@ -57,7 +58,7 @@ define(
              */
             function getNamedArguments(unnamedArguments, argumentDatatypes, operationSignature) {
                 var i, argument, argumentName, namedArguments = {}, inputParameter =
-                        operationSignature.inputParameter;
+                        operationSignature.inputParameter, filteredArgumentType;
 
                 // check if number of given argument types (argumentDatatypes.length) matches number
                 // of parameters in op signature (keys.length)
@@ -68,9 +69,17 @@ define(
                 // cycle over all arguments
                 for (i = 0; i < argumentDatatypes.length; ++i) {
                     argument = inputParameter[i];
+                    /*
+                     * this filtering can be removed, once the paramDatatypes of arrays
+                     * not "List" anymore, but the real typename of the array entries + "[]"
+                     */
+                    filteredArgumentType =
+                            (argument.type.substr(argument.type.length - 2, 2) === "[]")
+                                    ? TypesEnum.LIST
+                                    : argument.type;
                     argumentName = argument.name;
                     // check if argument type matches parameter's type from operation signature
-                    if (argumentDatatypes[i] !== argument.type) {
+                    if (argumentDatatypes[i] !== filteredArgumentType) {
                         return undefined;
                     }
 
