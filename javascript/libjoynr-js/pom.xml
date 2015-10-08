@@ -606,7 +606,7 @@
 					<browser>${phantomjs.binary};--web-security=no;--local-storage-path=${project.build.directory};${project.build.directory}/build-resources/js-test-driver/phantomjs-jstd.js;%s</browser>
 					<testOutput>${project.build.directory}/jstd-test-results</testOutput>
 					<runnerMode>QUIET</runnerMode>
-					<verbose>false</verbose>
+					<verbose>true</verbose>
 					<captureConsole>true</captureConsole>
 					<reset>true</reset>
 				</configuration>
