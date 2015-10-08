@@ -1,4 +1,4 @@
-/*global joynrTestRequire: true */
+/*global joynrTestRequire: true, xit: true */
 /*jslint es5: true */
 
 /*
@@ -397,7 +397,7 @@ joynrTestRequire(
                                     });
                                 });
 
-                    it(
+                    xit(
                     "returns a rejected promise when unsubscribing with a non-existant subscriptionId",
                     function(done) {
                             subscriptionManager.unregisterSubscription({
