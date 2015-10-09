@@ -422,7 +422,8 @@ joynrTestRequire(
                             var spy = setupSubscriptionAndReturnSpy("broadcastWithEnum", subscriptionQosOnChange);
                             callOperation("triggerBroadcasts", {});
                             expectPublication(spy, function(call) {
-                               expect(call.args[0]).toEqual([Country.CANADA, [Country.GERMANY, Country.ITALY]]);
+                               expect(call.args[0].enumOutput).toEqual(Country.CANADA);
+                               expect(call.args[0].enumArrayOutput).toEqual([Country.GERMANY, Country.ITALY]);
                             });
                         });
 

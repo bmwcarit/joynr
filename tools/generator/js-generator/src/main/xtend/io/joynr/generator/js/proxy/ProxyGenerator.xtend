@@ -189,7 +189,14 @@ class ProxyGenerator {
 			 */
 			this.«eventName» = new settings.proxyElementTypes.ProxyEvent(this, {
 					broadcastName : "«eventName»",
-					broadcastTypes : [«FOR param: event.outputParameters SEPARATOR ", "»«param.typeNameForParameter»«ENDFOR»],
+					broadcastParameter : [
+						«FOR param: event.outputParameters SEPARATOR ", "»
+						{
+							name : "«param.joynrName»",
+							type : «param.typeNameForParameter»
+						}
+						«ENDFOR»
+					],
 					messagingQos : settings.messagingQos,
 					discoveryQos : settings.discoveryQos,
 					«IF isSelective(event)»

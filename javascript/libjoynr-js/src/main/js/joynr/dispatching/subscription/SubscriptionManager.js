@@ -170,7 +170,7 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                         if (response.hasOwnProperty(responseKey)) {
                             response[responseKey] = Typing.augmentTypes(response[responseKey],
                                                                         typeRegistry,
-                                                                        parameters.broadcastTypes[responseKey]);
+                                                                        parameters.broadcastParameter[responseKey].type);
                         }
                     }
                     parameters.onReceive(response);
@@ -317,7 +317,7 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
          * @param {String}
          *            parameters.broadcastName the name of the broadcast being subscribed to
          * @param {String[]}
-         *            parameters.broadcastTypes the parameter types of the broadcast being subscribed to
+         *            parameters.broadcastParameter the parameter meta information of the broadcast being subscribed to
          * @param {SubscriptionQos}
          *            [parameters.subscriptionQos] the subscriptionQos
          * @param {BroadcastFilterParameters}

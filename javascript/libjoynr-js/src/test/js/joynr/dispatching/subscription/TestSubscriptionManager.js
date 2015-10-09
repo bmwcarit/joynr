@@ -418,7 +418,20 @@ joynrTestRequire(
                                     providerId : "provider",
                                     messagingQos : new MessagingQos(),
                                     broadcastName : "broadcastName",
-                                    broadcastTypes : [ TypesEnum.STRING, TypesEnum.INT, TestEnum.ZERO._typeName ],
+                                    broadcastParameter : [
+                                         {
+                                             name : "param1",
+                                             type : TypesEnum.STRING,
+                                         },
+                                         {
+                                             name : "param2",
+                                             type : TypesEnum.INT,
+                                         },
+                                         {
+                                             name : "param3",
+                                             type : TestEnum.ZERO._typeName,
+                                         }
+                                    ],
                                     qos : new OnChangeSubscriptionQos({
                                         expiryDate : Date.now() + 250
                                     }),
