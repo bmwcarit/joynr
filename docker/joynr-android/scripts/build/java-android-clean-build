@@ -9,7 +9,21 @@ set -e
 
 ./joynr-setup-android-sdk.sh
 
-mvn clean package -P no-license-and-notice,no-java-formatter,no-checkstyle,android \
+GOAL='install'
+
+while [ "$1" != "" ]; do
+    case $1 in
+        package )               GOAL='package'
+                                ;;
+        install )               GOAL='install'
+                                ;;
+        * )                     echo "invalid argument"
+                                exit 1
+    esac
+    shift
+done
+
+mvn clean $GOAL -P no-license-and-notice,no-java-formatter,no-checkstyle,android \
 -DskipTests=false \
 -Dmaven.test.failure.ignore=true \
 -Denforcer.skip=true -Dmaven.compile.fork=true \
