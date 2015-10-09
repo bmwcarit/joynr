@@ -51,7 +51,6 @@ class InterfaceRequestCallerHTemplate implements InterfaceTemplate{
 «getDllExportIncludeStatement()»
 #include "joynr/RequestCaller.h"
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName».h"
-#include <QSharedPointer>
 #include <memory>
 
 «FOR parameterType: getRequiredIncludesFor(serviceInterface).addElements(includeForString)»

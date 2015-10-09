@@ -29,7 +29,6 @@
 #include "joynr/types/QtCommunicationMiddleware.h"
 
 #include <string>
-#include <QSharedPointer>
 
 namespace joynr
 {

@@ -26,7 +26,6 @@
 #include "joynr/KeywordArbitrator.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/QosArbitrator.h"
-#include <QSharedPointer>
 #include <string>
 
 namespace joynr

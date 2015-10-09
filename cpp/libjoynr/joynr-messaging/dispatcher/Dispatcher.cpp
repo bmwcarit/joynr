@@ -44,13 +44,15 @@
 #include "joynr/Request.h"
 
 #include <QUuid>
-#include <QDateTime>
+#include <chrono>
+#include <stdint.h>
 #include <cassert>
 
 namespace joynr
 {
 
 using namespace joynr_logging;
+using namespace std::chrono;
 
 Logger* Dispatcher::logger = Logging::getInstance()->getLogger("MSG", "Dispatcher");
 
@@ -166,7 +168,7 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
     }
 
     QString requestReplyId = request->getRequestReplyId();
-    qint64 requestExpiryDate = message.getHeaderExpiryDate().toMSecsSinceEpoch();
+    JoynrTimePoint requestExpiryDate = message.getHeaderExpiryDate();
 
     std::function<void(const QList<QVariant>&)> callbackFct =
             [requestReplyId, requestExpiryDate, this, senderId, receiverId](
@@ -180,7 +182,8 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
         LOG_DEBUG(logger,
                   QString("Got reply from RequestInterpreter for requestReplyId %1")
                           .arg(requestReplyId));
-        qint64 ttl = requestExpiryDate - QDateTime::currentMSecsSinceEpoch();
+        JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
+        int64_t ttl = duration_cast<milliseconds>(requestExpiryDate - now).count();
         messageSender->sendReply(receiverId, // receiver of the request is sender of reply
                                  senderId,   // sender of request is receiver of reply
                                  MessagingQos(ttl),

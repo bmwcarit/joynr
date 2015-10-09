@@ -18,9 +18,11 @@
  */
 #include "common/cache/ClientMultiQCache.h"
 
-#include <QDateTime>
+#include <chrono>
 
 #include "joynr/CachedValue.h"
+
+using namespace std::chrono;
 
 namespace joynr
 {
@@ -55,8 +57,8 @@ QList<QVariant> ClientMultiQCache::lookUp(const QString& attributeId, qint64 max
 void ClientMultiQCache::insert(QString attributeId, QVariant value)
 {
     QMutexLocker locker(&mutex);
-    CachedValue<QVariant> cachedValue =
-            CachedValue<QVariant>(value, QDateTime::currentMSecsSinceEpoch());
+    int64_t timeNow = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    CachedValue<QVariant> cachedValue = CachedValue<QVariant>(value, timeNow);
     if (cache.contains(attributeId)) {
         cache.object(attributeId)->append(cachedValue);
         return;
@@ -69,7 +71,8 @@ void ClientMultiQCache::insert(QString attributeId, QVariant value)
 
 qint64 ClientMultiQCache::elapsed(qint64 entryTime)
 {
-    return QDateTime::currentMSecsSinceEpoch() - entryTime;
+    int64_t timeNow = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    return timeNow - entryTime;
 }
 
 } // namespace joynr

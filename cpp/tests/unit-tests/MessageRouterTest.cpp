@@ -26,8 +26,11 @@
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/MessageQueue.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
+#include <chrono>
+#include <stdint.h>
 
 using namespace joynr;
+using namespace std::chrono;
 
 class MessageRouterTest : public ::testing::Test {
 public:
@@ -50,7 +53,8 @@ public:
             new system::RoutingTypes::QtChannelAddress(messagingSettings.getChannelUrlDirectoryChannelId())
         );
         messageRouter->addProvisionedNextHop(messagingSettings.getChannelUrlDirectoryParticipantId().toStdString(), addressChannelUrlDirectory);
-        joynrMessage.setHeaderExpiryDate(QDateTime::currentDateTimeUtc().addMSecs(200));
+        JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
+        joynrMessage.setHeaderExpiryDate(now + milliseconds(100));
     }
 
     ~MessageRouterTest() {

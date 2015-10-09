@@ -154,7 +154,7 @@ void JoynrMessageFactory::initMsg(JoynrMessage& msg,
     msg.setHeaderTo(receiverParticipantId);
 
     // calculate expiry date
-    QDateTime expiryDate = QDateTime::currentDateTime().addMSecs(ttl);
+    JoynrTimePoint expiryDate = DispatcherUtils::convertTtlToAbsoluteTime(ttl);
     msg.setHeaderExpiryDate(expiryDate);
 
     // add content type and class

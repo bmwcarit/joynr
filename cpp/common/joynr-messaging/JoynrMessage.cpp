@@ -253,15 +253,15 @@ bool JoynrMessage::containsHeaderExpiryDate() const
     return containsHeader(HEADER_EXPIRY_DATE());
 }
 
-QDateTime JoynrMessage::getHeaderExpiryDate() const
+JoynrTimePoint JoynrMessage::getHeaderExpiryDate() const
 {
-    return QDateTime::fromMSecsSinceEpoch(
-            getHeader<QString>(HEADER_EXPIRY_DATE()).toLong(), Qt::UTC);
+    JoynrTimePoint expiryDate{std::chrono::milliseconds(getHeader<qint64>(HEADER_EXPIRY_DATE()))};
+    return expiryDate;
 }
 
-void JoynrMessage::setHeaderExpiryDate(const QDateTime& expiryDate)
+void JoynrMessage::setHeaderExpiryDate(const JoynrTimePoint& expiryDate)
 {
-    setHeader<QString>(HEADER_EXPIRY_DATE(), QString::number(expiryDate.toMSecsSinceEpoch()));
+    setHeader<qint64>(HEADER_EXPIRY_DATE(), expiryDate.time_since_epoch().count());
 }
 
 bool JoynrMessage::containsHeaderReplyChannelId() const

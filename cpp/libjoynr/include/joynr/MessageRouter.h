@@ -31,7 +31,6 @@
 #include "joynr/Directory.h"
 #include "joynr/MessageQueue.h"
 
-#include <QDateTime>
 #include <QThreadPool>
 #include <QSemaphore>
 #include <QPair>

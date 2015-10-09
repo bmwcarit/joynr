@@ -29,7 +29,6 @@
 
 #include <QObject>
 #include <QString>
-#include <QDateTime>
 #include <QDataStream>
 #include "joynr/types/QtProviderQos.h"
 #include "joynr/types/QtCommunicationMiddleware.h"

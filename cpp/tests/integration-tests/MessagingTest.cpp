@@ -28,7 +28,6 @@
 #include "joynr/Dispatcher.h"
 #include <QString>
 #include <string>
-#include <QSharedPointer>
 #include "joynr/JoynrMessageFactory.h"
 #include "joynr/system/RoutingTypes_QtChannelAddress.h"
 #include "joynr/Request.h"

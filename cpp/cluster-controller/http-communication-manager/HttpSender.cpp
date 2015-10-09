@@ -22,7 +22,6 @@
 #include "cluster-controller/httpnetworking/HttpNetworking.h"
 #include "joynr/DelayedScheduler.h"
 #include "joynr/JsonSerializer.h"
-#include "joynr/DispatcherUtils.h"
 #include "cluster-controller/httpnetworking/HttpResult.h"
 #include "cluster-controller/http-communication-manager/ChannelUrlSelector.h"
 #include "joynr/MessagingSettings.h"
@@ -30,6 +29,7 @@
 
 #include <QThread>
 #include <algorithm>
+#include <chrono>
 
 namespace joynr
 {
@@ -115,12 +115,16 @@ void HttpSender::sendMessage(const QString& channelId, const JoynrMessage& messa
      * uses QSharedDataPointer to manage the string's data, which when copied by value only copies
      * the pointer (but safely)
      */
-    scheduler->schedule(new SendMessageRunnable(this,
-                                                channelId,
-                                                message.getHeaderExpiryDate(),
-                                                serializedMessage,
-                                                *scheduler,
-                                                maxAttemptTtl_ms));
+    scheduler->schedule(new SendMessageRunnable(
+            this,
+            channelId,
+            QDateTime::fromMSecsSinceEpoch(
+                    std::chrono::duration_cast<std::chrono::milliseconds>(
+                            message.getHeaderExpiryDate().time_since_epoch()).count(),
+                    Qt::UTC),
+            serializedMessage,
+            *scheduler,
+            maxAttemptTtl_ms));
 }
 
 /**
@@ -137,7 +141,8 @@ HttpSender::SendMessageRunnable::SendMessageRunnable(HttpSender* messageSender,
                                                      const QByteArray& data,
                                                      DelayedScheduler& delayedScheduler,
                                                      qint64 maxAttemptTtl_ms)
-        : ObjectWithDecayTime(decayTime),
+        : ObjectWithDecayTime(
+                  JoynrTimePoint{std::chrono::milliseconds(decayTime.toMSecsSinceEpoch())}),
           channelId(channelId),
           data(data),
           delayedScheduler(delayedScheduler),
@@ -158,7 +163,8 @@ void HttpSender::SendMessageRunnable::run()
     if (isExpired()) {
         LOG_DEBUG(logger,
                   "Message expired, expiration time: " +
-                          DispatcherUtils::convertAbsoluteTimeToTtlString(decayTime));
+                          QString::fromStdString(
+                                  DispatcherUtils::convertAbsoluteTimeToTtlString(decayTime)));
         return;
     }
 
@@ -186,13 +192,18 @@ void HttpSender::SendMessageRunnable::run()
 
     if (sendMessageResult.getStatusCode() != 201) {
         messageSender->channelUrlCache->feedback(false, channelId, url);
-        delayedScheduler.schedule(new SendMessageRunnable(messageSender,
-                                                          channelId,
-                                                          decayTime,
-                                                          data,
-                                                          delayedScheduler,
-                                                          maxAttemptTtl_ms),
-                                  delay);
+        delayedScheduler.schedule(
+                new SendMessageRunnable(
+                        messageSender,
+                        channelId,
+                        QDateTime::fromMSecsSinceEpoch(
+                                std::chrono::duration_cast<std::chrono::milliseconds>(
+                                        decayTime.time_since_epoch()).count(),
+                                Qt::UTC),
+                        data,
+                        delayedScheduler,
+                        maxAttemptTtl_ms),
+                delay);
         QString body("NULL");
         if (!sendMessageResult.getBody().isNull()) {
             body = QString(sendMessageResult.getBody().data());
@@ -229,7 +240,7 @@ QString HttpSender::SendMessageRunnable::resolveUrlForChannelId(qint64 curlTimeo
 
     LOG_TRACE(logger,
               "Sending message; url: " + url + ", time  left: " +
-                      DispatcherUtils::convertAbsoluteTimeToTtlString(decayTime));
+                      DispatcherUtils::convertAbsoluteTimeToTtlString(decayTime).c_str());
     return url;
 }
 

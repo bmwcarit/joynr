@@ -22,7 +22,6 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/types/QtCommunicationMiddleware.h"
 
-#include <QSharedPointer>
 #include <string>
 
 namespace joynr

@@ -30,8 +30,12 @@
 #include "joynr/SubscriptionStop.h"
 #include "joynr/QtOnChangeSubscriptionQos.h"
 #include "joynr/joynrlogging.h"
+#include "joynr/DispatcherUtils.h"
+#include <chrono>
+#include <stdint.h>
 
 using namespace joynr;
+using namespace std::chrono;
 
 class JoynrMessageFactoryTest : public ::testing::Test {
 public:
@@ -142,17 +146,18 @@ TEST_F(JoynrMessageFactoryTest, createRequest){
                 request
     );
     //warning if prepareRequest needs to long this assert will fail as it compares absolute timestamps
-    QDateTime expectedExpiryDate = QDateTime::currentDateTime().addMSecs(qos.getTtl());
-    QDateTime expiryDate = joynrMessage.getHeaderExpiryDate();
-    EXPECT_NEAR(expectedExpiryDate.toMSecsSinceEpoch(), expiryDate.toMSecsSinceEpoch(), 100.);
+    JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
+    JoynrTimePoint expectedExpiryDate = now + milliseconds(qos.getTtl());
+    JoynrTimePoint expiryDate = joynrMessage.getHeaderExpiryDate();
+    EXPECT_NEAR(expectedExpiryDate.time_since_epoch().count(), expiryDate.time_since_epoch().count(), 100.);
     LOG_DEBUG(logger,
               QString("expiryDate: %1 [%2]")
-              .arg(expiryDate.toString())
-              .arg(expiryDate.toMSecsSinceEpoch()));
+              .arg(QString::fromStdString(DispatcherUtils::convertAbsoluteTimeToTtlString(expiryDate)))
+              .arg(duration_cast<milliseconds>(expiryDate.time_since_epoch()).count()));
     LOG_DEBUG(logger,
               QString("expectedExpiryDate: %1 [%2]")
-              .arg(expectedExpiryDate.toString())
-              .arg(expectedExpiryDate.toMSecsSinceEpoch()));
+              .arg(QString::fromStdString(DispatcherUtils::convertAbsoluteTimeToTtlString(expectedExpiryDate)))
+              .arg(duration_cast<milliseconds>(expectedExpiryDate.time_since_epoch()).count()));
 
     checkHeaderCreatorFromTo(joynrMessage);
     checkRequest(joynrMessage);

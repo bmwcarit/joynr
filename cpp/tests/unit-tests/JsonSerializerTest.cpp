@@ -19,7 +19,6 @@
 #include <gtest/gtest.h>
 #include <PrettyPrint.h>
 #include <QVariant>
-#include <QSharedPointer>
 #include <limits>
 #include "joynr/Util.h"
 #include "joynr/types/TestTypes_QtTEnum.h"
@@ -49,9 +48,11 @@
 #include "joynr/QtPeriodicSubscriptionQos.h"
 
 #include "joynr/infrastructure/DacTypes_QtMasterAccessControlEntry.h"
+#include <chrono>
 
 using namespace joynr;
 using namespace joynr_logging;
+using namespace std::chrono;
 
 // TODO:
 // 1. If the decision is made to use c++11, g++ >= version 5.5 then JSON literals can be
@@ -140,8 +141,8 @@ TEST_F(JsonSerializerTest, serialize_JoynrMessage) {
     request.setMethodName("serialize_JoynrMessage");
     request.setRequestReplyId("xyz");
     JoynrMessage joynrMessage;
-    qint64 testMilliseconds = 10000000;
-    joynrMessage.setHeaderExpiryDate(QDateTime::fromMSecsSinceEpoch(testMilliseconds));
+    JoynrTimePoint testExpiryDate = time_point_cast<milliseconds>(system_clock::now()) + milliseconds(10000000);
+    joynrMessage.setHeaderExpiryDate(testExpiryDate);
     joynrMessage.setType(JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST);
     joynrMessage.setPayload(JsonSerializer::serialize(request));
     QByteArray serializedContent(JsonSerializer::serialize(joynrMessage));
@@ -149,7 +150,7 @@ TEST_F(JsonSerializerTest, serialize_JoynrMessage) {
 
     QString expected(
                 "{\"_typeName\":\"joynr.JoynrMessage\","
-                "\"header\":{\"expiryDate\":\"%1\",\"msgId\":\"%2\"},"
+                "\"header\":{\"expiryDate\":\%1,\"msgId\":\"%2\"},"
                 "\"payload\":\"{\\\"_typeName\\\":\\\"joynr.Request\\\","
                 "\\\"methodName\\\":\\\"%3\\\","
                 "\\\"paramDatatypes\\\":[],"
@@ -157,7 +158,7 @@ TEST_F(JsonSerializerTest, serialize_JoynrMessage) {
                 "\\\"requestReplyId\\\":\\\"%4\\\"}\","
                 "\"type\":\"request\"}"
     );
-    expected = expected.arg(QString::number(testMilliseconds)).arg(joynrMessage.getHeaderMessageId()).arg(request.getMethodName()).
+    expected = expected.arg(QString::number(testExpiryDate.time_since_epoch().count())).arg(joynrMessage.getHeaderMessageId()).arg(request.getMethodName()).
             arg(request.getRequestReplyId());
 
     LOG_DEBUG(logger, QString("serialize_JoynrMessage: expected: %1").arg(expected));

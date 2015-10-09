@@ -26,6 +26,7 @@
 
 #include <gtest/gtest.h>
 #include <QString>
+#include <QDateTime>
 #include <curl/curl.h>
 
 using namespace joynr;

@@ -22,9 +22,12 @@
 #include "joynr/DelayedScheduler.h"
 #include <QUuid>
 #include <assert.h>
+#include <chrono>
 
 namespace joynr
 {
+
+using namespace std::chrono;
 
 class SubscriptionManager::Subscription
 {
@@ -92,8 +95,9 @@ void SubscriptionManager::registerSubscription(
         unregisterSubscription(subscriptionId);
     }
 
+    int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
     if (qos->getExpiryDate() != joynr::QtSubscriptionQos::NO_EXPIRY_DATE() &&
-        qos->getExpiryDate() < QDateTime::currentMSecsSinceEpoch()) {
+        qos->getExpiryDate() < now) {
         LOG_DEBUG(logger, "Expiry date is in the past: no subscription created");
         return;
     }
@@ -110,16 +114,18 @@ void SubscriptionManager::registerSubscription(
             SubscriptionUtil::getPeriodicPublicationInterval(qos.get()) > 0) {
             LOG_DEBUG(logger, "Will notify if updates are missed.");
             qint64 alertAfterInterval = SubscriptionUtil::getAlertInterval(qos.get());
-            qint64 expiryDate = qos->getExpiryDate();
+            JoynrTimePoint expiryDate{milliseconds(qos->getExpiryDate())};
             qint64 periodicPublicationInterval =
                     SubscriptionUtil::getPeriodicPublicationInterval(qos.get());
 
-            if (expiryDate == joynr::QtSubscriptionQos::NO_EXPIRY_DATE()) {
-                expiryDate = joynr::QtSubscriptionQos::NO_EXPIRY_DATE_TTL();
+            if (expiryDate.time_since_epoch().count() ==
+                joynr::QtSubscriptionQos::NO_EXPIRY_DATE()) {
+                expiryDate = JoynrTimePoint{
+                        milliseconds(joynr::QtSubscriptionQos::NO_EXPIRY_DATE_TTL())};
             }
 
             subscription->missedPublicationRunnableHandle = missedPublicationScheduler->schedule(
-                    new MissedPublicationRunnable(QDateTime::fromMSecsSinceEpoch(expiryDate),
+                    new MissedPublicationRunnable(expiryDate,
                                                   periodicPublicationInterval,
                                                   subscriptionId,
                                                   subscription,
@@ -127,9 +133,10 @@ void SubscriptionManager::registerSubscription(
                                                   alertAfterInterval),
                     alertAfterInterval);
         } else if (qos->getExpiryDate() != joynr::QtSubscriptionQos::NO_EXPIRY_DATE()) {
+            int64_t now =
+                    duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
             subscription->subscriptionEndRunnableHandle = missedPublicationScheduler->schedule(
-                    new SubscriptionEndRunnable(subscriptionId, *this),
-                    qos->getExpiryDate() - QDateTime::currentMSecsSinceEpoch());
+                    new SubscriptionEndRunnable(subscriptionId, *this), qos->getExpiryDate() - now);
         }
     }
     subscriptionRequest.setSubscriptionId(subscriptionId);
@@ -173,8 +180,9 @@ void SubscriptionManager::touchSubscriptionState(const QString& subscriptionId)
     }
     std::shared_ptr<Subscription> subscription = subscriptions.value(subscriptionId);
     {
+        int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
         QMutexLocker subscriptionLocker(&(subscription->mutex));
-        subscription->timeOfLastPublication = QDateTime::currentMSecsSinceEpoch();
+        subscription->timeOfLastPublication = now;
     }
 }
 
@@ -221,7 +229,7 @@ Logger* SubscriptionManager::MissedPublicationRunnable::logger =
         Logging::getInstance()->getLogger("MSG", "MissedPublicationRunnable");
 
 SubscriptionManager::MissedPublicationRunnable::MissedPublicationRunnable(
-        const QDateTime& expiryDate,
+        const JoynrTimePoint& expiryDate,
         const qint64& expectedIntervalMSecs,
         const QString& subscriptionId,
         std::shared_ptr<Subscription> subscription,
@@ -245,8 +253,8 @@ void SubscriptionManager::MissedPublicationRunnable::run()
         LOG_DEBUG(
                 logger, "Running MissedPublicationRunnable for subscription id= " + subscriptionId);
         qint64 delay = 0;
-        qint64 timeSinceLastPublication =
-                QDateTime::currentMSecsSinceEpoch() - subscription->timeOfLastPublication;
+        int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+        qint64 timeSinceLastPublication = now - subscription->timeOfLastPublication;
         bool publicationInTime = timeSinceLastPublication < alertAfterInterval;
         if (publicationInTime) {
             LOG_TRACE(logger, "Publication in time!");

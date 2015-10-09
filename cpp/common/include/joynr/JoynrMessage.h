@@ -22,11 +22,11 @@
 #include "joynr/JoynrCommonExport.h"
 
 #include "joynr/joynrlogging.h"
-
+#include "joynr/DispatcherUtils.h"
 #include <QObject>
 #include <QString>
 #include <QVariant>
-#include <QDateTime>
+#include <stdint.h>
 #include <QByteArray>
 
 namespace joynr
@@ -265,7 +265,7 @@ public:
      * value, otherwise.
      * @see JoynrMessage::HEADER_EXPIRY_DATE()
      */
-    QDateTime getHeaderExpiryDate() const;
+    JoynrTimePoint getHeaderExpiryDate() const;
     /**
      * @brief setHeaderExpiryDate Sets the expiry date of the message. If the header is already set,
      * its
@@ -275,7 +275,7 @@ public:
      * @param to the "expiry date" header to be set on the message.
      * @see JoynrMessage::HEADER_EXPIRY_DATE()
      */
-    void setHeaderExpiryDate(const QDateTime& expiryDate);
+    void setHeaderExpiryDate(const JoynrTimePoint& expiryDate);
 
     /**
      * @brief containsHeaderReplyChannelId Tests whether the "reply channel ID" header of the

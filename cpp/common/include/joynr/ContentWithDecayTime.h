@@ -20,7 +20,8 @@
 #define CONTENTWITHTTL_H
 
 #include "joynr/ObjectWithDecayTime.h"
-#include <QDateTime>
+#include "joynr/DispatcherUtils.h"
+#include <stdint.h>
 
 namespace joynr
 {
@@ -29,7 +30,7 @@ template <class T>
 class ContentWithDecayTime : public ObjectWithDecayTime
 {
 public:
-    ContentWithDecayTime(const T& content, QDateTime decayTime)
+    ContentWithDecayTime(const T& content, JoynrTimePoint decayTime)
             : ObjectWithDecayTime(decayTime), content(content)
     {
     }

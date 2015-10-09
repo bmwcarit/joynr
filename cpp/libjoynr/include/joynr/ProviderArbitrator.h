@@ -28,7 +28,6 @@
 #include "joynr/DiscoveryQos.h"
 #include "joynr/types/DiscoveryQos.h"
 
-#include <QSharedPointer>
 #include <QSemaphore>
 #include <string>
 

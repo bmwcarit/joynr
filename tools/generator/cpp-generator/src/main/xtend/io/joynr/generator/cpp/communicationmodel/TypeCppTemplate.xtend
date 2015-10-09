@@ -54,7 +54,6 @@ class TypeCppTemplate implements CompoundTypeTemplate{
 #include "joynr/TypeUtil.h"
 #include "qjson/serializer.h"
 #include <QMetaEnum>
-#include <QDateTime>
 
 #include "«stdTypeUtil.getIncludeOf(type)»"
 

@@ -19,8 +19,9 @@
 #ifndef OBJECTWITHDECAYTIME_H
 #define OBJECTWITHDECAYTIME_H
 #include "joynr/JoynrCommonExport.h"
+#include "joynr/DispatcherUtils.h"
 #include <QObject>
-#include <QDateTime>
+#include <stdint.h>
 
 namespace joynr
 {
@@ -33,13 +34,13 @@ public:
     {
     }
     //    ObjectWithDecayTime();
-    explicit ObjectWithDecayTime(const QDateTime& decayTime);
-    qint64 getRemainingTtl_ms() const;
-    QDateTime getDecayTime() const;
+    explicit ObjectWithDecayTime(const JoynrTimePoint& decayTime);
+    int64_t getRemainingTtl_ms() const;
+    JoynrTimePoint getDecayTime() const;
     bool isExpired() const;
 
 protected:
-    QDateTime decayTime;
+    JoynrTimePoint decayTime;
 };
 
 } // namespace joynr

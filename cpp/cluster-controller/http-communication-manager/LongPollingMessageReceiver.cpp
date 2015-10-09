@@ -29,6 +29,7 @@
 #include "joynr/system/RoutingTypes_QtChannelAddress.h"
 #include "joynr/MessageRouter.h"
 #include "joynr/JoynrMessage.h"
+#include <QDateTime>
 
 #include <algorithm>
 

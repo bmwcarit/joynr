@@ -33,6 +33,7 @@
 #include <QString>
 #include <QMap>
 #include <memory>
+#include <stdint.h>
 
 namespace joynr
 {
@@ -114,7 +115,7 @@ private:
     class MissedPublicationRunnable : public QRunnable, public ObjectWithDecayTime
     {
     public:
-        MissedPublicationRunnable(const QDateTime& expiryDate,
+        MissedPublicationRunnable(const JoynrTimePoint& expiryDate,
                                   const qint64& expectedIntervalMSecs,
                                   const QString& subscriptionId,
                                   std::shared_ptr<Subscription> subscription,

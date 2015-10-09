@@ -24,11 +24,22 @@
 #include "joynr/DeclareMetatypeUtil.h"
 #include "joynr/joynrlogging.h"
 
+#include <stdint.h>
+#include <string>
+#include <chrono>
+
 namespace joynr
 {
 
+// UTC time used in Joynr
+typedef std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds>
+        JoynrTimePoint;
+
 class JoynrMessage;
 
+/**
+ * @brief The DispatcherUtils class implements untility functions for ttl manipulation
+ */
 class JOYNRCOMMON_EXPORT DispatcherUtils
 {
 public:
@@ -37,10 +48,36 @@ public:
     typedef QMap<QString, QVariant>
             HeaderMap; // todo refactor this,  remove Headermap and create dataclass
 
-    static QDateTime convertTtlToAbsoluteTime(qint64 ttl_ms);
-    static QDateTime getMaxAbsoluteTime();
-    static qint64 convertAbsoluteTimeToTtl(const QDateTime& date);
-    static QString convertAbsoluteTimeToTtlString(const QDateTime& date);
+    /**
+     * @brief convertTtlToAbsoluteTime converts given ttl to UTC time
+     * @param ttl_ms time to live given in miliseconds
+     * @return UTC time
+     */
+    static JoynrTimePoint convertTtlToAbsoluteTime(int64_t ttl_ms);
+    /**
+     * @brief getMaxAbsoluteTime
+     * @return maximum UTC time
+     */
+    static JoynrTimePoint getMaxAbsoluteTime();
+    /**
+     * @brief convertAbsoluteTimeToTtl converts given UTC time to ttl
+     * @param date UTC time
+     * @return ttl in miliseconds
+     */
+    static int64_t convertAbsoluteTimeToTtl(JoynrTimePoint date);
+    /**
+     * @brief convertAbsoluteTimeToTtlString converts UTC time to ttl string
+     * (calculates difference between given UTC time and current time)
+     * @param date UTC time
+     * @return ttl as string
+     */
+    static std::string convertAbsoluteTimeToTtlString(JoynrTimePoint date);
+    /**
+     * @brief convertAbsoluteTimeToTtlString converts UTC time to formated printable string
+     * @param date UTC time
+     * @return UTC time as formated printable string
+     */
+    static std::string convertAbsoluteTimeToString(JoynrTimePoint date);
 
     static joynr_logging::Logger* logger;
 };

@@ -23,7 +23,6 @@
 #include "joynr/joynrlogging.h"
 
 #include <QSemaphore>
-#include <QSharedPointer>
 #include <cassert>
 #include <functional>
 #include <joynr/Util.h>
@@ -302,7 +301,7 @@ public:
      *
      * @param timeOut The maximum number of milliseconds to wait before this request times out
      * if no response is received.
-     * @return QSharedPointer<RequestStatus> Returns the RequestStatus for the completed request.
+     * @return RequestStatus Returns the RequestStatus for the completed request.
      */
     RequestStatus waitForFinished(uint16_t timeOut)
     {
@@ -316,7 +315,7 @@ public:
      * @brief This is a blocking call which waits until the request finishes/an error
      * occurs.
      *
-     * @return QSharedPointer<RequestStatus> Returns the RequestStatus for the completed request.
+     * @return RequestStatus Returns the RequestStatus for the completed request.
      */
     RequestStatus waitForFinished()
     {

@@ -54,9 +54,6 @@ public:
     // Those Skeletons must be registered before the MessagingStubFactory is used.
     MessagingStubFactory();
 
-    // void registerInProcessMessagingSkeleton(QSharedPointer<InProcessMessagingSkeleton>
-    // messagingSkeleton);
-
     std::shared_ptr<IMessaging> create(
             const joynr::system::RoutingTypes::QtAddress& destinationAddress);
     void remove(const joynr::system::RoutingTypes::QtAddress& destinationAddress);

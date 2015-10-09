@@ -18,10 +18,13 @@
  */
 #include "joynr/ClientQCache.h"
 
-#include <QDateTime>
+#include <chrono>
+#include <stdint.h>
 
 namespace joynr
 {
+
+using namespace std::chrono;
 
 static const int MAX_CUMMULATIVE_CACHE_COST = 1000;
 
@@ -43,14 +46,15 @@ QVariant ClientQCache::lookUp(const QString& attributeId)
 void ClientQCache::insert(QString attributeId, QVariant value)
 {
     QMutexLocker locker(&mutex);
-    CachedValue<QVariant>* cachedValue =
-            new CachedValue<QVariant>(value, QDateTime::currentMSecsSinceEpoch());
+    int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    CachedValue<QVariant>* cachedValue = new CachedValue<QVariant>(value, now);
     cache.insert(attributeId, cachedValue);
 }
 
 qint64 ClientQCache::elapsed(qint64 entryTime)
 {
-    return QDateTime::currentMSecsSinceEpoch() - entryTime;
+    int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    return now - entryTime;
 }
 
 } // namespace joynr

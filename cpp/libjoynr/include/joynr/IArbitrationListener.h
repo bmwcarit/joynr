@@ -22,7 +22,6 @@
 #include "joynr/ArbitrationStatus.h"
 #include "joynr/types/CommunicationMiddleware.h"
 
-#include <QSharedPointer>
 #include <string>
 
 namespace joynr

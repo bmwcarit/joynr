@@ -40,8 +40,12 @@ using ::testing::MatchResultListener;
 using ::testing::Matcher;
 using ::testing::MakeMatcher;
 #include <string>
+#include <chrono>
+#include <stdint.h>
 
 using namespace joynr;
+
+using namespace std::chrono;
 
 class PublicationManagerTest : public testing::Test {
 public:
@@ -542,7 +546,8 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
                         validity_ms,
                         minInterval_ms));
 
-    qos->setExpiryDate(QDateTime::currentMSecsSinceEpoch() + 5000);
+    int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    qos->setExpiryDate(now + 5000);
 
     subscriptionRequest.setSubscribeToName(QString::fromStdString(attributeName));
     subscriptionRequest.setQos(qos);
@@ -646,7 +651,8 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
     qint64 minInterval_ms = 50;
     qint64 validity_ms = 600;
     qint64 testRelExpiryDate = 500;
-    qint64 testAbsExpiryDate = QDateTime::currentMSecsSinceEpoch() + testRelExpiryDate;
+    int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    int64_t testAbsExpiryDate = now + testRelExpiryDate;
     std::shared_ptr<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
@@ -740,7 +746,8 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
     qint64 validity_ms = 600;
     qint64 testExpiryDate_shift = 2500;
     qint64 testRelExpiryDate = 500 + testExpiryDate_shift;
-    qint64 testAbsExpiryDate = QDateTime::currentMSecsSinceEpoch() + testRelExpiryDate;
+    int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    int64_t testAbsExpiryDate = now + testRelExpiryDate;
     std::shared_ptr<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
@@ -858,8 +865,8 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     std::shared_ptr<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
-
-    qos->setExpiryDate(QDateTime::currentMSecsSinceEpoch() + 5000);
+    int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    qos->setExpiryDate(now + 5000);
 
     subscriptionRequest.setSubscribeToName(QString::fromStdString(broadcastName));
     subscriptionRequest.setQos(qos);
@@ -958,7 +965,8 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     qint64 minInterval_ms = 50;
     qint64 validity_ms = 600;
     qint64 testRelExpiryDate = 500;
-    qint64 testAbsExpiryDate = QDateTime::currentMSecsSinceEpoch() + testRelExpiryDate;
+    int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    int64_t testAbsExpiryDate = now + testRelExpiryDate;
     std::shared_ptr<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
@@ -1047,7 +1055,8 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     qint64 validity_ms = 600;
     qint64 testExpiryDate_shift = 2500;
     qint64 testRelExpiryDate = 500 + testExpiryDate_shift;
-    qint64 testAbsExpiryDate = QDateTime::currentMSecsSinceEpoch() + testRelExpiryDate;
+    int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    int64_t testAbsExpiryDate = now + testRelExpiryDate;
     std::shared_ptr<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));

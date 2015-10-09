@@ -84,6 +84,8 @@ internalRequestObject.setMethodName(QString("«method.joynrName»"));
 #include "joynr/Future.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/RequestStatusCode.h"
+#include <chrono>
+#include <stdint.h>
 
 «FOR datatype: getAllComplexAndEnumTypes(serviceInterface)»
 «IF datatype instanceof FType»
@@ -94,6 +96,8 @@ internalRequestObject.setMethodName(QString("«method.joynrName»"));
 «ENDFOR»
 
 «getNamespaceStarter(serviceInterface)»
+
+using namespace std::chrono;
 
 «interfaceName»JoynrMessagingConnector::«interfaceName»JoynrMessagingConnector(
 		joynr::IJoynrMessageSender* joynrMessageSender,
@@ -295,7 +299,8 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 				clonedMessagingQos.setTtl(joynr::SubscriptionQos::NO_EXPIRY_DATE_TTL());
 			}
 			else{
-				clonedMessagingQos.setTtl(subscriptionQos.getExpiryDate() - QDateTime::currentMSecsSinceEpoch());
+				int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+				clonedMessagingQos.setTtl(subscriptionQos.getExpiryDate() - now);
 			}
 
 			«val subscriptionListenerName = if (needsDatatypeConversion(attribute)) "subscriptionListenerWrapper" else "subscriptionListener"»
@@ -480,7 +485,8 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 			clonedMessagingQos.setTtl(joynr::SubscriptionQos::NO_EXPIRY_DATE_TTL());
 		}
 		else{
-			clonedMessagingQos.setTtl(subscriptionQos.getExpiryDate() - QDateTime::currentMSecsSinceEpoch());
+			int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+			clonedMessagingQos.setTtl(subscriptionQos.getExpiryDate() - now);
 		}
 
 		«val subscriptionListenerName = if (needsDatatypeConversion(broadcast)) "subscriptionListenerWrapper" else "subscriptionListener"»

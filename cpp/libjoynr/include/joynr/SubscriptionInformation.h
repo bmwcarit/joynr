@@ -24,7 +24,6 @@
 #include "joynr/SubscriptionRequest.h"
 
 #include <QString>
-#include <QSharedPointer>
 
 namespace joynr
 {

@@ -29,6 +29,7 @@
 #include "joynr/IPlatformSecurityManager.h"
 
 #include <QMutexLocker>
+#include <chrono>
 
 #include <cassert>
 
@@ -37,6 +38,8 @@ namespace joynr
 
 using namespace joynr_logging;
 Logger* MessageRouter::logger = Logging::getInstance()->getLogger("MSG", "MessageRouter");
+
+using namespace std::chrono;
 
 //------ ConsumerPermissionCallback --------------------------------------------
 
@@ -85,7 +88,7 @@ MessageRouter::MessageRouter(IMessagingStubFactory* messagingStubFactory,
           messageQueue(messageQueue),
           messageQueueCleanerRunnable(new MessageQueueCleanerRunnable(*messageQueue)),
           runningParentResolves(new QSet<QString>()),
-          accessController(),
+          accessController(NULL),
           securityManager(securityManager),
           parentResolveMutex()
 {
@@ -113,7 +116,7 @@ MessageRouter::MessageRouter(
           messageQueue(messageQueue),
           messageQueueCleanerRunnable(new MessageQueueCleanerRunnable(*messageQueue)),
           runningParentResolves(new QSet<QString>()),
-          accessController(),
+          accessController(NULL),
           securityManager(NULL),
           parentResolveMutex()
 {
@@ -174,7 +177,8 @@ bool MessageRouter::isChildMessageRouter()
 void MessageRouter::route(const JoynrMessage& message)
 {
     assert(messagingStubFactory != NULL);
-    if (QDateTime::currentDateTimeUtc() > message.getHeaderExpiryDate()) {
+    JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
+    if (now > message.getHeaderExpiryDate()) {
         LOG_WARN(logger,
                  QString("Received expired message. Dropping the message (ID: %1).")
                          .arg(message.getHeaderMessageId()));

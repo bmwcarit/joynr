@@ -33,7 +33,8 @@
 #include "joynr/QtPeriodicSubscriptionQos.h"
 #include "joynr/QtOnChangeSubscriptionQos.h"
 #include "joynr/Util.h"
-
+#include <chrono>
+#include <stdint.h>
 
 using ::testing::A;
 using ::testing::_;
@@ -44,6 +45,8 @@ using ::testing::Between;
 
 using namespace joynr;
 
+using namespace std::chrono;
+
 TEST(SubscriptionManagerTest, registerSubscription_subscriptionRequestIsCorrect) {
     SubscriptionManager subscriptionManager;
     std::shared_ptr<ISubscriptionListener<types::Localisation::QtGpsLocation> > mockGpsSubscriptionListener(
@@ -52,7 +55,8 @@ TEST(SubscriptionManagerTest, registerSubscription_subscriptionRequestIsCorrect)
     std::shared_ptr<SubscriptionCallback<types::Localisation::QtGpsLocation> > gpslocationCallback(
                 new SubscriptionCallback<types::Localisation::QtGpsLocation>(mockGpsSubscriptionListener));
     std::shared_ptr<QtSubscriptionQos> qos(new QtOnChangeSubscriptionQos());
-    qos->setExpiryDate(QDateTime::currentMSecsSinceEpoch() + 10000);
+    int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    qos->setExpiryDate(now + 10000);
     SubscriptionRequest subscriptionRequest;
     subscriptionManager.registerSubscription(
                 "methodName",
