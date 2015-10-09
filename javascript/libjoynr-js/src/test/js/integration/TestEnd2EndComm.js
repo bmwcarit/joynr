@@ -187,14 +187,14 @@ joynrTestRequire(
                             });
                         }
 
-                        function testOperationArgumentsAndReturnValue(
-                                operation,
+                        function callOperation(
+                                operationName,
                                 opArgs,
-                                returnValue) {
+                                expectation) {
                             var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
 
                             runs(function() {
-                                operation(opArgs).then(
+                                radioProxy[operationName](opArgs).then(
                                         onFulfilledSpy).catch(IntegrationUtils.outputPromiseError);
                             });
 
@@ -204,7 +204,14 @@ joynrTestRequire(
 
                             runs(function() {
                                 expect(onFulfilledSpy).toHaveBeenCalled();
-                                expect(onFulfilledSpy).toHaveBeenCalledWith(returnValue);
+                                if (expectation !== undefined) {
+                                    if (typeof expectation === "function") {
+                                        expectation(onFulfilledSpy);
+                                    }
+                                    else {
+                                        expect(onFulfilledSpy).toHaveBeenCalledWith(expectation);
+                                    }
+                                }
                             });
                         }
 
@@ -466,60 +473,38 @@ joynrTestRequire(
                         });
 
                         it("can call an operation (String parameter)", function() {
-                            var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
-
-                            runs(function() {
-                                radioProxy.addFavoriteStation({
-                                    radioStation : 'stringStation'
-                                }).then(onFulfilledSpy).catch(IntegrationUtils.outputPromiseError);
-                            });
-
-                            waitsFor(function() {
-                                return onFulfilledSpy.callCount > 0;
-                            }, "operation call to finish", provisioning.ttl);
-
-                            runs(function() {
-                                expect(onFulfilledSpy).toHaveBeenCalled();
-                            });
+                            callOperation("addFavoriteStation",
+                                          {
+                                              radioStation : 'stringStation'
+                                          }
+                            );
                         });
 
                         it("can call an operation (parameter of complex type)", function() {
-                            var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
-
-                            runs(function() {
-                                radioProxy.addFavoriteStation({
-                                    radioStation : new RadioStation({
-                                        name : 'typedStation'
-                                    })
-                                }).then(onFulfilledSpy).catch(IntegrationUtils.outputPromiseError);
-                            });
-
-                            waitsFor(function() {
-                                return onFulfilledSpy.callCount > 0;
-                            }, "operation call to finish", provisioning.ttl);
-
-                            runs(function() {
-                                expect(onFulfilledSpy).toHaveBeenCalled();
-                            });
+                            callOperation("addFavoriteStation",
+                                    {
+                                        radioStation : 'stringStation'
+                                    }
+                            );
                         });
 
                         it(
                                 "can call an operation with working parameters and return type",
                                 function() {
-                                    testOperationArgumentsAndReturnValue(
-                                            radioProxy.addFavoriteStation,
+                                    callOperation(
+                                            "addFavoriteStation",
                                             {
                                                 radioStation : "truelyContainingTheString\"True\""
                                             },
                                             true);
-                                    testOperationArgumentsAndReturnValue(
-                                            radioProxy.addFavoriteStation,
+                                    callOperation(
+                                            "addFavoriteStation",
                                             {
                                                 radioStation : "This is false!"
                                             },
                                             false);
-                                    testOperationArgumentsAndReturnValue(
-                                            radioProxy.addFavoriteStation,
+                                    callOperation(
+                                            "addFavoriteStation",
                                             {
                                                 radioStation : new RadioStation(
                                                         {
@@ -527,8 +512,8 @@ joynrTestRequire(
                                                         })
                                             },
                                             true);
-                                    testOperationArgumentsAndReturnValue(
-                                            radioProxy.addFavoriteStation,
+                                    callOperation(
+                                            "addFavoriteStation",
                                             {
                                                 radioStation : new RadioStation({
                                                     name : "This is a false RadioStation!"
@@ -540,37 +525,37 @@ joynrTestRequire(
                         it(
                                 "can call an operation with enum arguments and enum return type",
                                 function() {
-                                    testOperationArgumentsAndReturnValue(
-                                            radioProxy.operationWithEnumsAsInputAndOutput,
+                                    callOperation(
+                                            "operationWithEnumsAsInputAndOutput",
                                             {
                                                 enumInput : Country.GERMANY,
                                                 enumArrayInput : []
                                             },
                                             Country.GERMANY);
-                                    testOperationArgumentsAndReturnValue(
-                                            radioProxy.operationWithEnumsAsInputAndOutput,
+                                    callOperation(
+                                            "operationWithEnumsAsInputAndOutput",
                                             {
                                                 enumInput : Country.GERMANY,
                                                 enumArrayInput : [Country.AUSTRIA]
                                             },
                                             Country.AUSTRIA);
-                                    testOperationArgumentsAndReturnValue(
-                                            radioProxy.operationWithEnumsAsInputAndOutput,
+                                    callOperation(
+                                            "operationWithEnumsAsInputAndOutput",
                                             {
                                                 enumInput : Country.GERMANY,
                                                 enumArrayInput : [Country.AUSTRIA, Country.GERMANY, Country.AUSTRALIA]
                                             },
                                             Country.AUSTRIA);
-                                    testOperationArgumentsAndReturnValue(
-                                            radioProxy.operationWithEnumsAsInputAndOutput,
+                                    callOperation(
+                                            "operationWithEnumsAsInputAndOutput",
                                             {
                                                 enumInput : Country.GERMANY,
                                                 enumArrayInput : [Country.CANADA, Country.AUSTRIA, Country.ITALY]
                                             },
                                             Country.CANADA);
                                     /* Check if comparison with string is possible as well
-                                    testOperationArgumentsAndReturnValue(
-                                            radioProxy.operationWithEnumsAsInputAndOutput,
+                                    callOperation(
+                                            "operationWithEnumsAsInputAndOutput",
                                             {
                                                 enumInput : Country.GERMANY,
                                                 enumArrayInput : []
@@ -582,29 +567,29 @@ joynrTestRequire(
                         it(
                                 "can call an operation with enum arguments and enum array as return type",
                                 function() {
-                                    testOperationArgumentsAndReturnValue(
-                                            radioProxy.operationWithEnumsAsInputAndEnumArrayAsOutput,
+                                    callOperation(
+                                            "operationWithEnumsAsInputAndEnumArrayAsOutput",
                                             {
                                                 enumInput : Country.GERMANY,
                                                 enumArrayInput : []
                                             },
                                             [Country.GERMANY]);
-                                    testOperationArgumentsAndReturnValue(
-                                            radioProxy.operationWithEnumsAsInputAndEnumArrayAsOutput,
+                                    callOperation(
+                                            "operationWithEnumsAsInputAndEnumArrayAsOutput",
                                             {
                                                 enumInput : Country.GERMANY,
                                                 enumArrayInput : [Country.AUSTRIA]
                                             },
                                             [Country.AUSTRIA, Country.GERMANY]);
-                                    testOperationArgumentsAndReturnValue(
-                                            radioProxy.operationWithEnumsAsInputAndEnumArrayAsOutput,
+                                    callOperation(
+                                            "operationWithEnumsAsInputAndEnumArrayAsOutput",
                                             {
                                                 enumInput : Country.GERMANY,
                                                 enumArrayInput : [Country.AUSTRIA, Country.GERMANY, Country.AUSTRALIA]
                                             },
                                             [Country.AUSTRIA, Country.GERMANY, Country.AUSTRALIA, Country.GERMANY]);
-                                    testOperationArgumentsAndReturnValue(
-                                            radioProxy.operationWithEnumsAsInputAndEnumArrayAsOutput,
+                                    callOperation(
+                                            "operationWithEnumsAsInputAndEnumArrayAsOutput",
                                             {
                                                 enumInput : Country.GERMANY,
                                                 enumArrayInput : [Country.CANADA, Country.AUSTRIA, Country.ITALY]
@@ -990,8 +975,8 @@ joynrTestRequire(
                                 "operation is working with predefined implementation on provider side",
                                 function() {
                                     var testArgument = "This is my test argument";
-                                    testOperationArgumentsAndReturnValue(
-                                            radioProxy.methodProvidedImpl,
+                                    callOperation(
+                                            "methodProvidedImpl",
                                             {
                                                 arg : testArgument
                                             },
