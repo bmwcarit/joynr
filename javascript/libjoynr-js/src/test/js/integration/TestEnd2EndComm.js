@@ -211,15 +211,15 @@ joynrTestRequire(
                         function setupSubscriptionAndReturnSpy(attributeName, subscriptionQos){
                             var promise, spy = jasmine.createSpyObj("spy", [
                                                                             "onFulfilled",
-                                                                            "publication",
-                                                                            "publicationMissed"
+                                                                            "onReceive",
+                                                                            "onError"
                                                                         ]);
 
                             runs(function() {
                                 promise = radioProxy[attributeName].subscribe({
                                     subscriptionQos : subscriptionQos,
-                                    onReceive : spy.publication,
-                                    onError : spy.publicationMissed
+                                    onReceive : spy.onReceive,
+                                    onError : spy.onError
                                 }).then(spy.onFulfilled).catch(IntegrationUtils.outputPromiseError);
                             });
 
@@ -232,16 +232,16 @@ joynrTestRequire(
                         function expectPublication(spy, expectationFct){
                             waitsFor(
                                     function() {
-                                        return (spy.publication.calls.length > 0 || spy.publicationMissed.calls.length > 0);
+                                        return (spy.onReceive.calls.length > 0 || spy.onError.calls.length > 0);
                                     },
                                     "first publication to occur",
                                     500 + provisioning.ttl);
 
                             runs(function() {
-                                expect(spy.publication).toHaveBeenCalled();
-                                expect(spy.publicationMissed).not.toHaveBeenCalled();
-                                expectationFct(spy.publication.mostRecentCall);
-                                spy.publication.reset();
+                                expect(spy.onReceive).toHaveBeenCalled();
+                                expect(spy.onError).not.toHaveBeenCalled();
+                                expectationFct(spy.onReceive.mostRecentCall);
+                                spy.onReceive.reset();
                             });
                         }
                         function publishesValue(subscriptionQos) {
@@ -257,13 +257,13 @@ joynrTestRequire(
                             runs(function() {
                                 spy = jasmine.createSpyObj("spy", [
                                     "onFulfilled",
-                                    "publication",
-                                    "publicationMissed"
+                                    "onReceive",
+                                    "onError"
                                 ]);
                                 radioProxy.numberOfStations.subscribe({
                                     subscriptionQos : subscriptionQos,
-                                    onReceive : spy.publication,
-                                    onError : spy.publicationMissed
+                                    onReceive : spy.onReceive,
+                                    onError : spy.onError
                                 }).then(function(id) {
                                     subscriptionId = id;
                                     spy.onFulfilled(id);
@@ -273,7 +273,7 @@ joynrTestRequire(
                             waitsFor(
                                     function() {
                                         return spy.onFulfilled.callCount > 0
-                                            && (spy.publication.calls.length > 0 || spy.publicationMissed.calls.length > 0);
+                                            && (spy.onReceive.calls.length > 0 || spy.onError.calls.length > 0);
                                     },
                                     "subscription to be registered and first publication to occur",
                                     provisioning.ttl);
@@ -282,7 +282,7 @@ joynrTestRequire(
                             runs(function() {
                                 expect(spy.onFulfilled).toHaveBeenCalled();
                                 spy.onFulfilled.reset();
-                                nrOfPublications = spy.publication.calls.length;
+                                nrOfPublications = spy.onReceive.calls.length;
                                 radioProxy.numberOfStations.unsubscribe({
                                     subscriptionId : subscriptionId
                                 }).then(spy.onFulfilled).catch(IntegrationUtils.outputPromiseError);
@@ -310,7 +310,7 @@ joynrTestRequire(
 
                             // check that no publications occured since the unsubscribe
                             runs(function() {
-                                expect(spy.publication.calls.length).toEqual(nrOfPublications);
+                                expect(spy.onReceive.calls.length).toEqual(nrOfPublications);
                             });
                         }
 
@@ -618,12 +618,12 @@ joynrTestRequire(
                             runs(function() {
                                 spy = jasmine.createSpyObj("spy", [
                                     "onFulfilled",
-                                    "onRejected"
+                                    "onError"
                                 ]);
                                 radioProxy.numberOfStations.subscribe({
                                     subscriptionQos : subscriptionQosOnChange
                                 }).then(spy.onFulfilled).catch(function(error) {
-                                    spy.onRejected(error);
+                                    spy.onError(error);
                                     IntegrationUtils.outputPromiseError(error);
                                 });
                             });
@@ -636,7 +636,7 @@ joynrTestRequire(
                                 expect(spy.onFulfilled).toHaveBeenCalled();
                                 expect(typeof spy.onFulfilled.mostRecentCall.args[0] === "string")
                                         .toBeTruthy();
-                                expect(spy.onRejected).not.toHaveBeenCalled();
+                                expect(spy.onError).not.toHaveBeenCalled();
                             });
                         });
 
@@ -665,13 +665,13 @@ joynrTestRequire(
                                     runs(function() {
                                         spy = jasmine.createSpyObj("spy", [
                                             "onFulfilled",
-                                            "publication",
-                                            "publicationMissed"
+                                            "onReceive",
+                                            "onError"
                                         ]);
                                         radioProxy.numberOfStations.subscribe({
                                             subscriptionQos : subscriptionQosOnChange,
-                                            onReceive : spy.publication,
-                                            onError : spy.publicationMissed
+                                            onReceive : spy.onReceive,
+                                            onError : spy.onError
                                         }).then(
                                                 spy.onFulfilled).catch(IntegrationUtils.outputPromiseError);
                                     });
@@ -679,18 +679,18 @@ joynrTestRequire(
                                     waitsFor(
                                             function() {
                                                 return spy.onFulfilled.callCount > 0
-                                                    && (spy.publication.calls.length > 0 || spy.publicationMissed.calls.length > 0);
+                                                    && (spy.onReceive.calls.length > 0 || spy.onError.calls.length > 0);
                                             },
-                                            "initial publication to occur",
+                                            "initial onReceive to occur",
                                             provisioning.ttl); // timeout for
                                     // subscription request
                                     // round trip
 
                                     runs(function() {
                                         expect(spy.onFulfilled).toHaveBeenCalled();
-                                        expect(spy.publication).toHaveBeenCalled();
-                                        expect(spy.publication.calls[0].args[0]).toEqual(-1);
-                                        expect(spy.publicationMissed).not.toHaveBeenCalled();
+                                        expect(spy.onReceive).toHaveBeenCalled();
+                                        expect(spy.onReceive.calls[0].args[0]).toEqual(-1);
+                                        expect(spy.onError).not.toHaveBeenCalled();
                                     });
                                 });
 
@@ -703,13 +703,13 @@ joynrTestRequire(
                                     runs(function() {
                                         spy = jasmine.createSpyObj("spy", [
                                             "onFulfilled",
-                                            "publication",
-                                            "publicationMissed"
+                                            "onReceive",
+                                            "onError"
                                         ]);
                                         radioProxy.numberOfStations.subscribe({
                                             subscriptionQos : subscriptionQosOnChange,
-                                            onReceive : spy.publication,
-                                            onError : spy.publicationMissed
+                                            onReceive : spy.onReceive,
+                                            onError : spy.onError
                                         }).then(
                                                 spy.onFulfilled).catch(IntegrationUtils.outputPromiseError);
                                     });
@@ -729,39 +729,39 @@ joynrTestRequire(
 
                                     waitsFor(
                                             function() {
-                                                return (spy.publication.calls.length > 0 || spy.publicationMissed.calls.length > 0);
+                                                return (spy.onReceive.calls.length > 0 || spy.onError.calls.length > 0);
                                             },
-                                            "initial publication to occur",
+                                            "initial onReceive to occur",
                                             provisioning.ttl); // timeout for
                                     // subscription request
                                     // round trip
 
                                     runs(function() {
-                                        expect(spy.publication).toHaveBeenCalled();
-                                        expect(spy.publication.calls[0].args[0]).toEqual(-1);
-                                        expect(spy.publicationMissed).not.toHaveBeenCalled();
+                                        expect(spy.onReceive).toHaveBeenCalled();
+                                        expect(spy.onReceive.calls[0].args[0]).toEqual(-1);
+                                        expect(spy.onError).not.toHaveBeenCalled();
 
-                                        spy.publication.reset();
-                                        spy.publicationMissed.reset();
+                                        spy.onReceive.reset();
+                                        spy.onError.reset();
                                     });
 
                                     waitsFor(
                                             function() {
-                                                return (spy.publication.calls.length >= nrPubs || spy.publicationMissed.calls.length > 0);
+                                                return (spy.onReceive.calls.length >= nrPubs || spy.onError.calls.length > 0);
                                             },
                                             "subscription to be registered and first publication to occur",
                                             provisioning.ttl + (nrPubs + 1) * 1000); // timeout
                                     // for subscription request round trip and nrPubs publications, safety (+1)
 
                                     runs(function() {
-                                        expect(spy.publication).toHaveBeenCalled();
-                                        expect(spy.publicationMissed).not.toHaveBeenCalled();
+                                        expect(spy.onReceive).toHaveBeenCalled();
+                                        expect(spy.onError).not.toHaveBeenCalled();
 
-                                        expect(spy.publication.calls.length).toEqual(nrPubs);
+                                        expect(spy.onReceive.calls.length).toEqual(nrPubs);
 
                                         var i;
                                         for (i = 0; i < nrPubs; ++i) {
-                                            expect(spy.publication.calls[i].args[0]).toEqual(i);
+                                            expect(spy.onReceive.calls[i].args[0]).toEqual(i);
                                         }
                                     });
                                 });
@@ -783,18 +783,17 @@ joynrTestRequire(
                                     runs(function() {
                                         spy = jasmine.createSpyObj("spy", [
                                             "onFulfilled",
-                                            "onRejected",
-                                            "publication",
-                                            "publicationMissed"
+                                            "onReceive",
+                                            "onError"
                                         ]);
                                         subscriptionQosMixed.expiryDate =
                                                 subscriptionLength + Date.now();
                                         radioProxy.mixedSubscriptions.subscribe({
                                             subscriptionQos : subscriptionQosMixed,
-                                            onReceive : spy.publication,
-                                            onError : spy.publicationMissed
+                                            onReceive : spy.onReceive,
+                                            onError : spy.onError
                                         }).then(spy.onFulfilled).catch(function(error) {
-                                            spy.onRejected(error);
+                                            spy.onError(error);
                                             IntegrationUtils.outputPromiseError(error);
                                         });
                                     });
@@ -809,7 +808,7 @@ joynrTestRequire(
 
                                     waitsFor(
                                             function() {
-                                                return (spy.publication.calls.length > 0 || spy.publicationMissed.calls.length > 0);
+                                                return (spy.onReceive.calls.length > 0 || spy.onError.calls.length > 0);
                                             },
                                             "initial publication to occur",
                                             provisioning.ttl); // timeout for
@@ -817,40 +816,40 @@ joynrTestRequire(
                                     // round trip
 
                                     runs(function() {
-                                        expect(spy.publication).toHaveBeenCalled();
-                                        expect(spy.publication.calls[0].args[0])
+                                        expect(spy.onReceive).toHaveBeenCalled();
+                                        expect(spy.onReceive.calls[0].args[0])
                                                 .toEqual("interval");
-                                        expect(spy.publicationMissed).not.toHaveBeenCalled();
+                                        expect(spy.onError).not.toHaveBeenCalled();
 
-                                        spy.publication.reset();
-                                        spy.publicationMissed.reset();
+                                        spy.onReceive.reset();
+                                        spy.onError.reset();
                                     });
 
                                     waitsFor(
                                             function() {
-                                                return (spy.publication.callCount > 0 || spy.publicationMissed.callCount > 0);
+                                                return (spy.onReceive.callCount > 0 || spy.onError.callCount > 0);
                                             },
                                             "the interval publication to occur",
                                             subscriptionQosMixed.maxInterval + provisioning.ttl);
 
                                     runs(function() {
-                                        expect(spy.publication).toHaveBeenCalled();
-                                        expect(spy.publication).toHaveBeenCalledWith("interval");
-                                        spy.publication.reset();
+                                        expect(spy.onReceive).toHaveBeenCalled();
+                                        expect(spy.onReceive).toHaveBeenCalledWith("interval");
+                                        spy.onReceive.reset();
                                     });
 
                                     waitsFor(function() {
-                                        return spy.publication.callCount > 0;
+                                        return spy.onReceive.callCount > 0;
                                     }, "the onChange publication to occur", 500 + provisioning.ttl);
 
                                     var timeout;
 
                                     runs(function() {
                                         timeout = false;
-                                        expect(spy.publication).toHaveBeenCalled();
-                                        expect(spy.publication).toHaveBeenCalledWith(
+                                        expect(spy.onReceive).toHaveBeenCalled();
+                                        expect(spy.onReceive).toHaveBeenCalledWith(
                                                 "valueChanged1");
-                                        spy.publication.reset();
+                                        spy.onReceive.reset();
                                         joynr.util.LongTimer.setTimeout(function() {
                                             timeout = true;
                                         }, subscriptionQosMixed.minInterval / 2);
@@ -858,25 +857,25 @@ joynrTestRequire(
 
                                     waitsFor(
                                             function() {
-                                                return timeout || spy.publication.callCount > 0;
+                                                return timeout || spy.onReceive.callCount > 0;
                                             },
                                             "the second onChange publication to not occur",
                                             subscriptionQosMixed.minInterval + safetyTimeout);
 
                                     runs(function() {
-                                        expect(spy.publication).not.toHaveBeenCalled();
+                                        expect(spy.onReceive).not.toHaveBeenCalled();
                                     });
 
                                     waitsFor(
                                             function() {
-                                                return spy.publication.callCount > 0;
+                                                return spy.onReceive.callCount > 0;
                                             },
                                             "the second onChange publication occur after minInterval",
                                             provisioning.ttl + safetyTimeout);
 
                                     runs(function() {
-                                        expect(spy.publication).toHaveBeenCalled();
-                                        expect(spy.publication).toHaveBeenCalledWith("interval");
+                                        expect(spy.onReceive).toHaveBeenCalled();
+                                        expect(spy.onReceive).toHaveBeenCalledWith("interval");
                                     });
                                 });
 
@@ -901,18 +900,17 @@ joynrTestRequire(
                                     runs(function() {
                                         spy = jasmine.createSpyObj("spy", [
                                             "onFulfilled",
-                                            "onRejected",
-                                            "publication",
-                                            "publicationMissed"
+                                            "onReceive",
+                                            "onError"
                                         ]);
                                         subscriptionQosMixed.expiryDate =
                                                 subscriptionQosMixed.maxInterval * 1.5 + Date.now();
                                         radioProxy.isOn.subscribe({
                                             subscriptionQos : subscriptionQosMixed,
-                                            onReceive : spy.publication,
-                                            onError : spy.publicationMissed
+                                            onReceive : spy.onReceive,
+                                            onError : spy.onError
                                         }).then(spy.onFulfilled).catch(function(error) {
-                                            spy.onRejected(error);
+                                            spy.onError(error);
                                             IntegrationUtils.outputPromiseError(error);
                                         });
                                     });
@@ -927,7 +925,7 @@ joynrTestRequire(
 
                                     waitsFor(
                                             function() {
-                                                return (spy.publication.calls.length > 0 || spy.publicationMissed.calls.length > 0);
+                                                return (spy.onReceive.calls.length > 0 || spy.onError.calls.length > 0);
                                             },
                                             "initial publication to occur",
                                             provisioning.ttl); // timeout for
@@ -935,25 +933,25 @@ joynrTestRequire(
                                     // round trip
 
                                     runs(function() {
-                                        expect(spy.publication).toHaveBeenCalled();
-                                        expect(spy.publication.calls[0].args[0]).toEqual(true);
-                                        expect(spy.publicationMissed).not.toHaveBeenCalled();
+                                        expect(spy.onReceive).toHaveBeenCalled();
+                                        expect(spy.onReceive.calls[0].args[0]).toEqual(true);
+                                        expect(spy.onError).not.toHaveBeenCalled();
 
-                                        spy.publication.reset();
-                                        spy.publicationMissed.reset();
+                                        spy.onReceive.reset();
+                                        spy.onError.reset();
                                     });
 
                                     waitsFor(
                                             function() {
-                                                return (spy.publication.callCount > 0 || spy.publicationMissed.callCount > 0);
+                                                return (spy.onReceive.callCount > 0 || spy.onError.callCount > 0);
                                             },
-                                            "the interval publication to occur",
+                                            "the interval onReceive to occur",
                                             subscriptionQosMixed.maxInterval + provisioning.ttl);
 
                                     runs(function() {
-                                        expect(spy.publication).toHaveBeenCalled();
-                                        expect(spy.publication).toHaveBeenCalledWith(true);
-                                        spy.publication.reset();
+                                        expect(spy.onReceive).toHaveBeenCalled();
+                                        expect(spy.onReceive).toHaveBeenCalledWith(true);
+                                        spy.onReceive.reset();
 
                                         joynr.util.LongTimer.setTimeout(function() {
                                             timeout = true;
@@ -962,15 +960,15 @@ joynrTestRequire(
 
                                     waitsFor(
                                             function() {
-                                                return timeout || spy.publication.callCount > 0;
+                                                return timeout || spy.onReceive.callCount > 0;
                                             },
-                                            "the interval publication not to occur again",
+                                            "the interval onReceive not to occur again",
                                             subscriptionQosMixed.maxInterval
                                                 + provisioning.ttl
                                                 + safetyTimeout);
 
                                     runs(function() {
-                                        expect(spy.publication).not.toHaveBeenCalled();
+                                        expect(spy.onReceive).not.toHaveBeenCalled();
                                     });
                                 });
 
