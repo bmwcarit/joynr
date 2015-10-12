@@ -305,22 +305,17 @@ class JSTypeUtil extends TypeUtil {
 			" could not be mapped to a primitive type name")
 	}
 
-	private def getTypeNameForListParameter(String typeName, boolean migrateToNewListRepresentation) {
-		if (migrateToNewListRepresentation) {
-			"\"" + typeName + "[]\""
-		}
-		else {
-			"TypesEnum.LIST";
-		}
+	private def getTypeNameForListParameter(String typeName) {
+		"\"" + typeName + "[]\""
 	}
 
-	def getTypeNameForParameter(FType datatype, boolean array, boolean migrateToNewListRepresentation) {
+	def getTypeNameForParameter(FType datatype, boolean array) {
 		val mappedDatatype = toTypesEnum(datatype);
 		var result = mappedDatatype;
 
 		// special cases: ByteBuffer => byte-array, arrays => Lists,
 		if (array || (getPrimitive(datatype) == FBasicTypeId::BYTE_BUFFER)) {
-			return getTypeNameForListParameter(result, migrateToNewListRepresentation);
+			return getTypeNameForListParameter(result);
 		}
 
 		if (!isPrimitive(datatype)) {
@@ -328,25 +323,21 @@ class JSTypeUtil extends TypeUtil {
 		}
 	}
 
-	def getTypeNameForParameter(FBasicTypeId datatype, boolean array, boolean migrateToNewListRepresentation) {
+	def getTypeNameForParameter(FBasicTypeId datatype, boolean array) {
 		val mappedDatatype = toTypesEnum(datatype);
 		if (array) {
-			return getTypeNameForListParameter(mappedDatatype, migrateToNewListRepresentation);
+			return getTypeNameForListParameter(mappedDatatype);
 		} else {
 			return mappedDatatype;
 		}
 	}
 
 	def String getTypeNameForParameter(FTypedElement typedElement){
-		getTypeNameForParameter(typedElement, false);
-	}
-
-	def String getTypeNameForParameter(FTypedElement typedElement, boolean migrateToNewListRepresentation){
 		if (typedElement.type.derived != null){
-			getTypeNameForParameter(typedElement.type.derived, typedElement.isArray(), migrateToNewListRepresentation)
+			getTypeNameForParameter(typedElement.type.derived, typedElement.isArray())
 		}
 		else{
-			getTypeNameForParameter(typedElement.type.predefined, typedElement.isArray(), migrateToNewListRepresentation)
+			getTypeNameForParameter(typedElement.type.predefined, typedElement.isArray())
 		}
 	}
 

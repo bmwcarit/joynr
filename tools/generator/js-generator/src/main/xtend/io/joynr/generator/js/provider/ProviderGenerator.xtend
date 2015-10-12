@@ -132,7 +132,7 @@ class ProviderGenerator {
 				 «appendJSDocSummaryAndWriteSeeAndDescription(attribute, "* ")»
 				 */
 				this.«attributeName» = new dependencies.ProviderAttribute«getAttributeCaps(attribute)»
-					(this, implementation.«attributeName», "«attributeName»", «attribute.getTypeNameForParameter(true)»);
+					(this, implementation.«attributeName», "«attributeName»", «attribute.typeNameForParameter»);
 				if (implementation.«attributeName») {
 					implementation.«attributeName».valueChanged = this.«attributeName».valueChanged;
 				}
@@ -158,7 +158,7 @@ class ProviderGenerator {
 							«FOR param: getInputParameters(operation) SEPARATOR ","»
 							{
 								name : "«param.joynrName»",
-								type : «param.getTypeNameForParameter(true)»
+								type : «param.typeNameForParameter»
 							}
 							«ENDFOR»
 						],
@@ -166,7 +166,7 @@ class ProviderGenerator {
 							«FOR param: getOutputParameters(operation) SEPARATOR ","»
 							{
 								name : "«param.joynrName»",
-								type : «param.getTypeNameForParameter(true)»
+								type : «param.typeNameForParameter»
 							}
 							«ENDFOR»
 						]

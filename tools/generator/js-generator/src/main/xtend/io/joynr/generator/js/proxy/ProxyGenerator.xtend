@@ -136,7 +136,7 @@ class ProxyGenerator {
 			 «appendJSDocSummaryAndWriteSeeAndDescription(attribute, "* ")»
 			*/
 			//TODO: generate type below (TypesEnum)
-			this.«attributeName» = new settings.proxyElementTypes.ProxyAttribute«getAttributeCaps(attribute)»(this, settings, "«attributeName»", «attribute.getTypeNameForParameter(true)»);
+			this.«attributeName» = new settings.proxyElementTypes.ProxyAttribute«getAttributeCaps(attribute)»(this, settings, "«attributeName»", «attribute.typeNameForParameter»);
 	«ENDFOR»
 
 	«FOR operationName : getMethodNames(fInterface)»
@@ -160,7 +160,7 @@ class ProxyGenerator {
 					«FOR param: getInputParameters(operation) SEPARATOR ","»
 						{
 							name : "«param.joynrName»",
-							type : «param.getTypeNameForParameter(true)»
+							type : «param.typeNameForParameter»
 						}
 					«ENDFOR»
 					],
@@ -168,7 +168,7 @@ class ProxyGenerator {
 						«FOR param: getOutputParameters(operation) SEPARATOR ","»
 						{
 							name : "«param.joynrName»",
-							type : «param.getTypeNameForParameter(true)»
+							type : «param.typeNameForParameter»
 						}
 						«ENDFOR»
 					]
@@ -186,7 +186,7 @@ class ProxyGenerator {
 			 */
 			this.«eventName» = new settings.proxyElementTypes.ProxyEvent(this, {
 					broadcastName : "«eventName»",
-					broadcastTypes : [«FOR param: event.outputParameters SEPARATOR ", "»«param.getTypeNameForParameter(true)»«ENDFOR»],
+					broadcastTypes : [«FOR param: event.outputParameters SEPARATOR ", "»«param.typeNameForParameter»«ENDFOR»],
 					messagingQos : settings.messagingQos,
 					discoveryQos : settings.discoveryQos,
 					«IF isSelective(event)»
