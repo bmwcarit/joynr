@@ -23,11 +23,13 @@ libQt5WebSockets under GNU Lesser General Public License v2.1 (LGPL-2.1)
 libQt5Network under GNU Lesser General Public License v2.1 (LGPL-2.1)
 libQt5Sql under GNU Lesser General Public License v2.1 (LGPL-2.1)
 libqjson under GNU Lesser General Public License v2.1 (LGPL-2.1)
-liblog4qt under The Apache Software License, Version 2.0
 libcurl under The curl license
 libdbus under GNU General Public License version 2
 libCommonAPI under Mozilla Public License Version 2.0
 libCommonAPI-DBus under Mozilla Public License Version 2.0
+
+--- Header only libraries used by joynr binaries -------------------------------
+spdlog under MIT License
 
 --- Libraries used during joynr build ------------------------------------------
 

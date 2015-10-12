@@ -916,7 +916,6 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          common/include/joynr/ITimeoutListener.h \
                          common/include/joynr/JoynrCommonExport.h \
                          common/include/joynr/JoynrConfig.h \
-                         common/include/joynr/joynrlogging.h \
                          common/include/joynr/joynrloggingmacros.h \
                          common/include/joynr/JoynrMessage.h \
                          common/include/joynr/ObjectWithDecayTime.h \
@@ -938,7 +937,7 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          common/InterfaceAddress.h \
                          common/joynr-messaging/JoynrMessage.cpp \
                          common/logging/joynrlogging_dlt.cpp \
-                         common/logging/joynrlogging_log4qt.cpp \
+                         common/logging/SpdlogLogging.cpp \
                          common/ObjectWithDecayTime.cpp \
                          common/rpc/JsonCallback.h \
                          common/rpc/Reply.cpp \

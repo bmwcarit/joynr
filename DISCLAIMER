@@ -22,14 +22,6 @@ English original version with a copyright notice, a disclaimer of warranty, and
 an exclusion of liability is included in the cpp/libs/common-api/Apache-2.txt
 document.
 
---- liblog4qt ------------------------------------------------------------------
-
-Software in cpp/libs/log4qt-0.3 is licensed under the "Apache License, Version
-2.0". A copy of that license in the English original version with a copyright
-notice, a disclaimer of warranty, and an exclusion of liability as well as the
-NOTICE file are included in the cpp/libs/log4qt-0.3/LICENSE-2.0.txt and
-cpp/libs/log4qt-0.3/NOTICE.txt documents.
-
 --- libQJson -------------------------------------------------------------------
 
 GNU Lesser General Public License v2.1 (LGPL-2.1)

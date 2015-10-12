@@ -253,6 +253,34 @@ else(${WIN32})
     find_package(CURL REQUIRED)
 endif(${WIN32})
 
+message(STATUS "############ Download: spdlog ############")
+# Enable ExternalProject CMake module
+include(ExternalProject)
+
+# Set default ExternalProject root directory
+set_directory_properties(PROPERTIES EP_PREFIX ${CMAKE_BINARY_DIR}/ThirdParty)
+
+### Add spdlog ###########################################################
+ExternalProject_Add(
+    spdlog
+    GIT_REPOSITORY https://github.com/gabime/spdlog
+    TIMEOUT 10
+    # Disable svn update
+    UPDATE_COMMAND ""
+    # Disable configure step
+    CONFIGURE_COMMAND ""
+    # Disable build step
+    BUILD_COMMAND ""
+    # Disable install step
+    INSTALL_COMMAND ""
+    # Wrap download, configure and build steps in a script to log output
+    LOG_DOWNLOAD ON
+    LOG_CONFIGURE ON
+    LOG_BUILD ON
+)
+
+ExternalProject_Get_Property(spdlog SOURCE_DIR)
+set(spdlog_SOURCE_DIR ${SOURCE_DIR})
 
 message(STATUS "variable CURL_FOUND=" ${CURL_FOUND})
 message(STATUS "variable CURL_VERSION_STRING=" ${CURL_VERSION_STRING})
@@ -408,7 +436,6 @@ set(
     JoynrCommon
     Joynr
     JoynrWsRuntime
-    log4qt
     qjson
 )
 
@@ -453,7 +480,6 @@ set(
     JoynrCommon
     Joynr
     qjson
-    log4qt
 )
 
 if(${BUILD_CLUSTER_CONTROLLER})
@@ -470,7 +496,6 @@ set(
     JoynrCommon
     Joynr
     qjson
-    log4qt
     JoynrWsRuntime
 )
 
@@ -480,7 +505,6 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         JoynrCommon
         Joynr
         qjson
-        log4qt
         JoynrDbusRuntime
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
@@ -489,13 +513,13 @@ endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(qjson_PUBLIC_INCLUDE_DIRECTORY qjson PUBLIC_INCLUDE_DIRECTORY)
-get_target_property(log4qt_PUBLIC_INCLUDE_DIRECTORY log4qt PUBLIC_INCLUDE_DIRECTORY)
+
 set(
     JoynrConfig_INCLUDE_DIRS
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
     ${qjson_PUBLIC_INCLUDE_DIRECTORY}
-    ${log4qt_PUBLIC_INCLUDE_DIRECTORY}
+    ${spdlog_SOURCE_DIR}/include
 )
 if(${BUILD_CLUSTER_CONTROLLER})
     get_target_property(JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY JoynrClusterController PUBLIC_INCLUDE_DIRECTORY)
@@ -512,7 +536,7 @@ set(
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
     ${qjson_PUBLIC_INCLUDE_DIRECTORY}
-    ${log4qt_PUBLIC_INCLUDE_DIRECTORY}
+    ${spdlog_SOURCE_DIR}/include
 )
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     set(
@@ -520,7 +544,7 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
         ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
         ${qjson_PUBLIC_INCLUDE_DIRECTORY}
-        ${log4qt_PUBLIC_INCLUDE_DIRECTORY}
+        ${spdlog_SOURCE_DIR}/include
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 set(JoynrConfig_TARGETS_FILE "${JOYNR_BINARY_DIR}/JoynrTargets.cmake")

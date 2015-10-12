@@ -113,7 +113,6 @@ endif(${CMAKE_GENERATOR} MATCHES "Visual Studio")
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(qjson_PUBLIC_INCLUDE_DIRECTORY qjson PUBLIC_INCLUDE_DIRECTORY)
-get_target_property(log4qt_PUBLIC_INCLUDE_DIRECTORY log4qt PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(joynrwsruntime_PUBLIC_INCLUDE_DIRECTORY JoynrWsRuntime PUBLIC_INCLUDE_DIRECTORY)
 if(${BUILD_CLUSTER_CONTROLLER})
     get_target_property(JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY JoynrClusterController PUBLIC_INCLUDE_DIRECTORY)
@@ -140,7 +139,7 @@ set(
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
     ${qjson_PUBLIC_INCLUDE_DIRECTORY}
-    ${log4qt_PUBLIC_INCLUDE_DIRECTORY}
+    ${spdlog_SOURCE_DIR}/include
     ${joynrwsruntime_PUBLIC_INCLUDE_DIRECTORY}
 )
 
@@ -149,7 +148,6 @@ set(
     JoynrCommon
     Joynr
     qjson
-    log4qt
 )
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
