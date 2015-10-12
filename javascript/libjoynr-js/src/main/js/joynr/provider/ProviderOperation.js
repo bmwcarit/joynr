@@ -46,7 +46,7 @@ define(
              * @param {Array}
              *            operationSignatures an array of possible signatures for this operation
              * @param {Array}
-             *            operationSignatures.array.inputParameter an array of supported arguments for 
+             *            operationSignatures.array.inputParameter an array of supported arguments for
              *            one specific signature
              * @param {String}
              *            operationSignatures.array.inputParameter.name the name of the input parameter
@@ -67,7 +67,7 @@ define(
                 }
 
                 // cycle over all arguments
-                for (i = 0; i < argumentDatatypes.length; ++i) {
+                for (i = 0; i < inputParameter.length; ++i) {
                     argument = inputParameter[i];
                     /*
                      * this filtering can be removed, once the paramDatatypes of arrays
