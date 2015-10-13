@@ -1321,6 +1321,13 @@
 				<artifactId>maven-enforcer-plugin</artifactId>
 				<executions>
 					<execution>
+						<id>display-platform-info</id>
+						<goals>
+							<goal>display-info</goal>
+						</goals>
+						<phase>validate</phase>
+					</execution>
+					<execution>
 						<id>enforce-maven-and-java-version</id>
 						<goals>
 							<goal>enforce</goal>
