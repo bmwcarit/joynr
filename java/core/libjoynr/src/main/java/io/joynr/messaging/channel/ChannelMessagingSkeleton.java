@@ -49,7 +49,7 @@ public class ChannelMessagingSkeleton implements IMessaging {
         try {
             messageRouter.route(message);
         } catch (JoynrSendBufferFullException | JoynrMessageNotSentException | IOException e) {
-            logger.error("Error processing incoming message. Message will be dropped ", e);
+            logger.error("Error processing incoming message. Message will be dropped: {} ", message.getHeader());
         }
     }
 

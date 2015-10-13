@@ -118,11 +118,13 @@ var joynr = {
      *            joynrTypeName - the joynr type name that is sent on the wire.
      * @param {Function}
      *            typeConstructor - the corresponding JavaScript constructor for this type.
+     * @param {boolean}
+     *            isEnum - optional flag if the added type is an enumeration type
      */
-    addType : function registerType(name, type) {
+    addType : function registerType(name, type, isEnum) {
         requirejs([ "joynr/types/TypeRegistrySingleton"
         ], function(TypeRegistrySingleton) {
-            TypeRegistrySingleton.getInstance().addType(name, type);
+            TypeRegistrySingleton.getInstance().addType(name, type, isEnum);
         });
     },
     JoynrObject : function JoynrObject() {}

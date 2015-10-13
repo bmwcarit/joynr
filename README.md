@@ -8,8 +8,10 @@
 	* [Building joynr Java](wiki/java_building_joynr.md) -- Building joynr Java and common components
 		yourself
 	* [Building joynr C++](wiki/cpp_building_joynr.md) -- Building joynr C++ yourself
+	* [Building joynr JavaScript](wiki/javascript_building_joynr.md) -- Building joynr JavaScript yourself
 * [Java Developer Guide](wiki/java.md) -- Developing Java applications with joynr
 * [C++ Developer Guide](wiki/cplusplus.md) -- Developing C++ applications with joynr
+* [JavaScript Developer Guide](wiki/javascript.md) -- Developing JavaScript applications with joynr
 * [Radio App Tutorial](wiki/Tutorial.md) -- Make your first joynr app: define a communication
 	interface, implement a provider, and create a consumer.
 * [Broadcast Tutorial](wiki/Broadcast-Tutorial.md) -- Learn about (selective) broadcasts and

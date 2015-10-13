@@ -22,9 +22,10 @@ define(
         [
             "global/Promise",
             "joynr/util/UtilInternal",
+            "joynr/util/JSONSerializer",
             "joynr/system/LoggerFactory"
         ],
-        function(Promise, Util, LoggerFactory) {
+        function(Promise, Util, JSONSerializer, LoggerFactory) {
 
             /**
              * @name WebMessagingStub
@@ -75,10 +76,11 @@ define(
                              stack: "Error: An object could not be cloned.
                              __proto__: DOMException
                              */
-                            log.debug("transmit message: \"" + JSON.stringify(message) + "\"");
-                            settings.window.postMessage(
-                                    JSON.parse(JSON.stringify(message)),
-                                    settings.origin);
+                            log.debug("transmit message: \""
+                                + JSONSerializer.stringify(message)
+                                + "\"");
+                            settings.window.postMessage(JSON.parse(JSONSerializer
+                                    .stringify(message)), settings.origin);
 
                             return Promise.resolve();
                         };

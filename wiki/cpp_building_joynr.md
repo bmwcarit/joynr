@@ -11,7 +11,7 @@ sudo docker run --rm --sig-proxy -e DEV_UID="$(id -u)" \
     -v <FULL_PATH_TO_MAVEN_DIRECTORY>:/home/joynr/.m2 \
     -v <FULL_PATH_TO_BUILD_DIRECTORY>:/data/build \
     joynr-cpp \
-    /data/src/docker/joynr-cpp/scripts/build/cpp-generate.sh --jobs 4
+    /data/src/docker/joynr-cpp/scripts/build/cpp-generate.sh
 
 sudo docker run --rm --sig-proxy -e DEV_UID="$(id -u)" \
     -v <FULL_PATH_TO_JOYNR_SOURCES>:/data/src \

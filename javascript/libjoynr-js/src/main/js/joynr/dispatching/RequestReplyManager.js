@@ -29,6 +29,7 @@ define(
             "joynr/TypesEnum",
             "joynr/util/Typing",
             "joynr/util/UtilInternal",
+            "joynr/util/JSONSerializer",
             "joynr/util/LongTimer",
             "joynr/types/MethodInvocationException",
             "joynr/system/LoggerFactory"
@@ -41,6 +42,7 @@ define(
                 TypesEnum,
                 Typing,
                 Util,
+                JSONSerializer,
                 LongTimer,
                 MethodInvocationException,
                 LoggerFactory) {
@@ -181,7 +183,7 @@ define(
                                 // Do we need to add a task to handleRequest later?
                                 exception = new MethodInvocationException({
                                     detailMessage: "error handling request: "
-                                        + JSON.stringify(request)
+                                        + JSONSerializer.stringify(request)
                                         + " for providerParticipantId "
                                         + providerParticipantId
                                 });
@@ -308,7 +310,7 @@ define(
                             if (replyCaller === undefined) {
                                 log
                                         .error("error handling reply resolve, because replyCaller could not be found: "
-                                            + JSON.stringify(reply, undefined, 4));
+                                            + JSONSerializer.stringify(reply, undefined, 4));
                                 return;
                             }
 
@@ -322,7 +324,7 @@ define(
                                 delete replyCallers[reply.requestReplyId];
                             } catch (e) {
                                 log.error("exception thrown during handling reply "
-                                    + JSON.stringify(reply, undefined, 4)
+                                    + JSONSerializer.stringify(reply, undefined, 4)
                                     + ":\n"
                                     + e.stack);
                             }

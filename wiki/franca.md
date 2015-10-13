@@ -181,3 +181,4 @@ interface myInterface {
 
 For details about using joynr with Java see [joynr Java Developer Guide](java.md).
 For details about using joynr with C++ see [joynr C\+\+ Developer Guide](cplusplus.md).
+For details about using joynr with JavaScript see [joynr JavaScript Developer Guide](javascript.md).

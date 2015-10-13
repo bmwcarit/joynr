@@ -2,7 +2,7 @@
 
 A variable number of **Provider** applications can be registered to provide services for **Consumer** applications. A suitable Provider can be selected by the Consumer through a number of discovery lookup strategies.
 
-Joynr supports several programming languages (Java, C\+\+, etc.) within the same system, i.e. a Java Consumer can interact with a C\+\+ Provider etc.
+Joynr supports several programming languages (Java, C\+\+, JavaScript) within the same system, i.e. a Java Consumer can interact with a C\+\+ Provider etc.
 
 Data serialisation and transfer is transparent to the application. The current implementation supports a number of different transport mechanisms (dbus, Web Sockets, HTTP Long Polling), and serialises to JSON.
 

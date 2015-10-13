@@ -23,8 +23,9 @@ define("joynr/system/DistributedLoggingAppender", [
     "joynr/system/JoynrLogEvent",
     "joynr/system/JoynrLoggingContextTag",
     "joynr/system/LoggingManager",
-    "joynr/util/UtilInternal"
-], function(JoynrLogEvent, JoynrLoggingContextTag, LoggingManager, Util) {
+    "joynr/util/UtilInternal",
+    "joynr/util/JSONSerializer"
+], function(JoynrLogEvent, JoynrLoggingContextTag, LoggingManager, Util, JSONSerializer) {
     var DEFAULT_FLUSH_INTERVAL_MS = 60000;
     var DEFAULT_FLUSH_MAX_LOGEVENTS_COUNT = 20;
     /**
@@ -142,7 +143,7 @@ define("joynr/system/DistributedLoggingAppender", [
             tags = Util.transform(senderLoggingContext, function(value, key) {
                 var stringValue;
                 if (typeof value === "object") {
-                    stringValue = JSON.stringify(value);
+                    stringValue = JSONSerializer.stringify(value);
                 } else {
                     stringValue = value.toString();
                 }
@@ -157,7 +158,7 @@ define("joynr/system/DistributedLoggingAppender", [
                 timestamp : loggingEvent.timeStampInMilliseconds,
                 eventVersion : "1",
                 path : loggingEvent.logger.name,
-                message : JSON.stringify(loggingEvent.messages),
+                message : JSONSerializer.stringify(loggingEvent.messages),
                 priority : loggingEvent.level.name,
                 tags : tags
             });

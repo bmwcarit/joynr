@@ -25,9 +25,10 @@ define(
             "global/Promise",
             "global/WebSocket",
             "joynr/util/Util",
+            "joynr/util/JSONSerializer",
             "joynr/system/LoggerFactory"
         ],
-        function(Promise, WebSocket, Util, LoggerFactory) {
+        function(Promise, WebSocket, Util, JSONSerializer, LoggerFactory) {
             var log = LoggerFactory.getLogger("joynr.messaging.websocket.SharedWebSocket");
             /**
              * @param address
@@ -65,7 +66,7 @@ define(
                 while (queuedMessages.length) {
                     queued = queuedMessages.shift();
                     try {
-                        websocket.send(JSON.stringify(queued.message));
+                        websocket.send(JSONSerializer.stringify(queued.message));
                         queued.resolve();
                         // Error is thrown if the socket is no longer open
                     } catch (e) {
@@ -80,7 +81,7 @@ define(
                 return new Promise(function(resolve, reject){
                     if (websocket.readyState === WebSocket.OPEN) {
                         try {
-                            websocket.send(JSON.stringify(joynrMessage));
+                            websocket.send(JSONSerializer.stringify(joynrMessage));
                             resolve();
                             // Error is thrown if the socket is no longer open, so requeue to the front
                         } catch (e) {

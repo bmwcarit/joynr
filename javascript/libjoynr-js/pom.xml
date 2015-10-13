@@ -242,6 +242,17 @@
 						</configuration>
 					</execution>
 					<execution>
+						<id>testProxyAndProvider</id>
+						<phase>generate-test-sources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<model>Test.fidl</model>
+							<outputPath>${basedir}/src/test/generated</outputPath>
+						</configuration>
+					</execution>
+					<execution>
 						<id>generate-franca-name-test-model</id>
 						<phase>generate-test-sources</phase>
 						<goals>

@@ -19,7 +19,6 @@ package io.joynr.messaging.routing;
  * #L%
  */
 
-import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessageSender;
@@ -117,7 +116,7 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
             Address address = routingTable.get(toParticipantId);
             routeMessageByAddress(message, address);
         } else {
-            throw new JoynrCommunicationException("Failed to send Request: No route for given participantId: "
+            throw new JoynrMessageNotSentException("Failed to send Request: No route for given participantId: "
                     + toParticipantId);
         }
     }
@@ -151,7 +150,7 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
              */
             new InProcessMessagingStub(((InProcessAddress) address).getSkeleton()).transmit(message);
         } else {
-            throw new JoynrCommunicationException("Failed to send Request: Address type not supported");
+            throw new JoynrMessageNotSentException("Failed to send Request: Address type not supported");
         }
     }
 

@@ -27,9 +27,10 @@ define(
             "joynr/system/DiagnosticTags",
             "joynr/system/LoggerFactory",
             "joynr/messaging/JoynrMessage",
-            "joynr/util/Typing"
+            "joynr/util/Typing",
+            "joynr/util/JSONSerializer",
         ],
-        function(Promise, DiagnosticTags, LoggerFactory, JoynrMessage, Typing) {
+        function(Promise, DiagnosticTags, LoggerFactory, JoynrMessage, Typing, JSONSerializer) {
 
             /**
              * Message Router receives a message and forwards it to the correct endpoint, as looked up in the {@link RoutingTable}
@@ -314,7 +315,7 @@ define(
                         function addNextHop(participantId, address) {
                             // store the address of the participantId persistently
                             routingTable[participantId] = address;
-                            var serializedAddress = JSON.stringify(address);
+                            var serializedAddress = JSONSerializer.stringify(address);
                             var promise;
                             if ((serializedAddress === undefined
                                 || serializedAddress === null || serializedAddress === '{}')) {
