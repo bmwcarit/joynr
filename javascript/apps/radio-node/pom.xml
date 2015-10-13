@@ -11,7 +11,7 @@
 	<parent>
 		<groupId>io.joynr.javascript</groupId>
 		<artifactId>apps</artifactId>
-		<version>0.10.1</version>
+		<version>0.10.2-SNAPSHOT</version>
 	</parent>
 
 	<dependencies>
