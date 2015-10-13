@@ -18,10 +18,9 @@
  */
 
 define("joynr/util/Util", [
-    "joynr",
     "joynr/util/Typing",
     "joynr/types/TypeRegistrySingleton"
-], function(joynr, Typing, TypeRegistrySingleton) {
+], function(Typing, TypeRegistrySingleton) {
 
     /**
      * @name Util
