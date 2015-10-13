@@ -23,11 +23,12 @@ define("joynr/messaging/channel/ChannelMessagingSender", [
     "global/Promise",
     "joynr/util/UtilInternal",
     "joynr/util/Typing",
+    "joynr/util/JSONSerializer",
     "joynr/messaging/JoynrMessage",
     "joynr/util/LongTimer",
     "joynr/system/DiagnosticTags",
     "joynr/system/LoggerFactory"
-], function(Promise, Util, Typing, JoynrMessage, LongTimer, DiagnosticTags, LoggerFactory) {
+], function(Promise, Util, Typing, JSONSerializer, JoynrMessage, LongTimer, DiagnosticTags, LoggerFactory) {
 
     /**
      * ChannelMessagingSender sends JoynrMessages to their destinations via Http
@@ -62,7 +63,7 @@ define("joynr/messaging/channel/ChannelMessagingSender", [
                 queuedMessage.pending = false;
                 LongTimer.clearTimeout(queuedMessage.expiryTimer);
                 delete queuedMessage.expiryTimer;
-                var errMsg = "DISCARDED " + JSON.stringify(queuedMessage) + ": ttl expired";
+                var errMsg = "DISCARDED " + JSONSerializer.stringify(queuedMessage) + ": ttl expired";
                 log.warn(errMsg);
                 queuedMessage.reject(new Error(errMsg));
             }
@@ -94,16 +95,16 @@ define("joynr/messaging/channel/ChannelMessagingSender", [
             }
 
             messageProcessors--;
-            log.info("sending message. timeout in (ms): " + timeout, JSON.stringify(DiagnosticTags
+            log.info("sending message. timeout in (ms): " + timeout, JSONSerializer.stringify(DiagnosticTags
                     .forJoynrMessage(queuedMessage.message)));
             log.trace("sending message. timeout in (ms): "
                 + timeout
-                + JSON.stringify(queuedMessage.message, undefined, 4));
+                + JSONSerializer.stringify(queuedMessage.message, undefined, 4));
 
             communicationModule.createXMLHTTPRequest({
                 type : "POST",
                 url : queuedMessage.to,
-                data : JSON.stringify(queuedMessage.message),
+                data : JSONSerializer.stringify(queuedMessage.message),
                 timeout : timeout
             }).then(
                     function(xhr) {

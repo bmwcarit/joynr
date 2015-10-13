@@ -93,7 +93,7 @@ class EnumTypeGenerator {
 		 	«appendJSDocSummaryAndWriteSeeAndDescription(literal, "* ")»
 		 «ENDIF»
 		 */
-		«literal.joynrName»: «IF literal.value==null»"«literal.joynrName»"«ELSE»«literal.value»«ENDIF»
+		«literal.joynrName»: «IF literal.value==null»"«literal.joynrName»"«ELSE»«literal.value.enumeratorValue»«ENDIF»
 	«ENDFOR»
 	'''
 

@@ -1,3 +1,13 @@
+#joynr 0.10.1
+
+This is a minor bug fix release.
+
+##Other changes
+* **[Java]** Correct exception handling when messages are not routable
+* **[JS]** Integrate JavaScript markdown in general documentation
+* **[JS]** Fix bug in documentation regarding the Maven group ID of the joynr
+  generators
+
 #joynr 0.10.0
 
 joynr JavaScript is now also officially open source. JavaScript can be run in Chrome or node.js.
