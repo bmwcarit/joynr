@@ -138,6 +138,9 @@
 								</goals>
 							</execution>
 						</executions>
+						<configuration>
+							<keyname>joynr@bmw-carit.de</keyname>
+						</configuration>
 					</plugin>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
