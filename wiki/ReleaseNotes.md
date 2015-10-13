@@ -1,6 +1,21 @@
+#joynr 0.10.2
+
+This is a minor bug fix release.
+
+##API relevant changes
+None.
+
+##Other changes
+* **[JS]** Reworked the handling of enums defined in Franca models.
+  This resolves issues when using enums as input/output parameter of
+  methods in JavaScript.
+
 #joynr 0.10.1
 
 This is a minor bug fix release.
+
+##API relevant changes
+None.
 
 ##Other changes
 * **[Java]** Correct exception handling when messages are not routable
