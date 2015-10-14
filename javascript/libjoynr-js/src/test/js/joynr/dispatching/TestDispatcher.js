@@ -22,6 +22,7 @@
 joynrTestRequire(
         "joynr/dispatching/TestDispatcher",
         [
+            "joynr/util/Util",
             "joynr/dispatching/Dispatcher",
             "joynr/dispatching/subscription/PublicationManager",
             "joynr/dispatching/subscription/SubscriptionManager",
@@ -34,9 +35,11 @@ joynrTestRequire(
             "joynr/dispatching/types/SubscriptionRequest",
             "joynr/dispatching/types/SubscriptionReply",
             "joynr/dispatching/types/SubscriptionStop",
-            "joynr/dispatching/types/SubscriptionPublication"
+            "joynr/dispatching/types/SubscriptionPublication",
+            "joynr/tests/testTypes/TestEnum"
         ],
         function(
+                Util,
                 Dispatcher,
                 PublicationManager,
                 SubscriptionManager,
@@ -49,7 +52,8 @@ joynrTestRequire(
                 SubscriptionRequest,
                 SubscriptionReply,
                 SubscriptionStop,
-                SubscriptionPublication) {
+                SubscriptionPublication,
+                TestEnum) {
 
             var providerId = "providerId";
             var proxyId = "proxyId";

@@ -188,13 +188,14 @@ joynrTestRequire(
                             runs(function() {
                                 expect(resolved).toBeTruthy();
                                 expect(capDiscoverySpy.lookup).toHaveBeenCalled();
-                                expect(capDiscoverySpy.lookup).toHaveBeenCalledWith(
-                                        domain,
-                                        interfaceName,
-                                        new DiscoveryQosGen({
-                                            discoveryScope : discoveryQos.discoveryScope,
-                                            cacheMaxAge : discoveryQos.cacheMaxAge
-                                        }));
+                                /* The arbitrator.startArbitration does a deep copy of its arguments.
+                                 * Thus, two discoveryScope objects cannot be compared, as during deep copy
+                                 * complex types are created as pure objects
+                                 */
+                                expect(capDiscoverySpy.lookup.mostRecentCall.args[0]).toBe(domain);
+                                expect(capDiscoverySpy.lookup.mostRecentCall.args[1]).toBe(interfaceName);
+                                expect(capDiscoverySpy.lookup.mostRecentCall.args[2].cacheMaxAge).toBe(discoveryQos.cacheMaxAge);
+                                expect(capDiscoverySpy.lookup.mostRecentCall.args[2].discoveryScope.name).toBe(discoveryQos.discoveryScope.name);
                             });
                         });
 

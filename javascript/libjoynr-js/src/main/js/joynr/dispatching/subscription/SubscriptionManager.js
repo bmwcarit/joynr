@@ -31,6 +31,8 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
     "joynr/system/LoggerFactory",
     "uuid",
     "joynr/util/UtilInternal",
+    "joynr/util/Typing",
+    "joynr/types/TypeRegistrySingleton",
     "joynr/util/JSONSerializer"
 ], function(
         Promise,
@@ -44,6 +46,8 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
         LoggerFactory,
         uuid,
         Util,
+        Typing,
+        TypeRegistrySingleton,
         JSONSerializer) {
     /**
      * @name SubscriptionManager
@@ -53,7 +57,7 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
      */
     function SubscriptionManager(dispatcher) {
         var log = LoggerFactory.getLogger("joynr.dispatching.subscription.SubscriptionManager");
-
+        var typeRegistry = TypeRegistrySingleton.getInstance();
         if (!(this instanceof SubscriptionManager)) {
             // in case someone calls constructor without new keyword (e.g. var c =
             // Constructor({..}))
@@ -160,7 +164,17 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
 
             subscriptionInfos[subscriptionRequest.subscriptionId] = subscriptionInfo;
             subscriptionListeners[subscriptionRequest.subscriptionId] = new SubscriptionListener({
-                onReceive : parameters.onReceive,
+                onReceive : function(response) {
+                    var responseKey;
+                    for (responseKey in response) {
+                        if (response.hasOwnProperty(responseKey)) {
+                            response[responseKey] = Typing.augmentTypes(response[responseKey],
+                                                                        typeRegistry,
+                                                                        parameters.broadcastTypes[responseKey]);
+                        }
+                    }
+                    parameters.onReceive(response);
+                },
                 onError : parameters.onError
             });
 
@@ -200,6 +214,8 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
          *            settings.providerId participantId of the receiver
          * @param {MessagingQos}
          *            settings.messagingQos quality-of-service parameters such as time-to-live
+         * @param {String}
+         *            settings.attributeType the type of the subscribing attribute
          * @param {String}
          *            settings.attributeName the attribute name to subscribe to
          * @param {SubscriptionQos}
@@ -268,7 +284,7 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                         subscriptionInfos[subscriptionId] = subscriptionInfo;
                         subscriptionListeners[subscriptionId] = new SubscriptionListener({
                             onReceive : function(response) {
-                                            settings.onReceive(response[0]);
+                                            settings.onReceive(Typing.augmentTypes(response[0], typeRegistry, settings.attributeType));
                                         },
                             onError : settings.onError
                         });
@@ -300,6 +316,8 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
          *            parameters.messagingQos quality-of-service parameters such as time-to-live
          * @param {String}
          *            parameters.broadcastName the name of the broadcast being subscribed to
+         * @param {String[]}
+         *            parameters.broadcastTypes the parameter types of the broadcast being subscribed to
          * @param {SubscriptionQos}
          *            [parameters.subscriptionQos] the subscriptionQos
          * @param {BroadcastFilterParameters}

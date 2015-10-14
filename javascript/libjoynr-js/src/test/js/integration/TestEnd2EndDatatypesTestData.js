@@ -18,7 +18,7 @@
  */
 
 (function() {
-    var setupData = function(ComplexRadioStation) {
+    var setupData = function(ComplexRadioStation, Country) {
         var TestEnd2EndDatatypesTestData = [
             {
                 attribute : "booleanAttribute",
@@ -170,17 +170,17 @@
                     new ComplexRadioStation({
                         name : "name",
                         station : "station",
-                        source : "88.8"
+                        source : Country.AUSTRALIA
                     }),
                     new ComplexRadioStation({
                         name : "",
                         station : "",
-                        source : "0"
+                        source : Country.AUSTRIA
                     }),
                     new ComplexRadioStation({
                         name : "another name",
                         station : "other station",
-                        source : "104.0"
+                        source : Country.GERMANY
                     })
                 ]
             }
@@ -190,14 +190,13 @@
 
     // AMD support
     if (typeof define === 'function' && define.amd) {
-        define(
-                "integration/TestEnd2EndDatatypesTestData",
-                [ "joynr/datatypes/exampleTypes/ComplexRadioStation"
-                ],
-                function(ComplexRadioStation) {
-                    return setupData(ComplexRadioStation);
-                });
+        define("integration/TestEnd2EndDatatypesTestData", [
+            "joynr/datatypes/exampleTypes/ComplexRadioStation",
+            "joynr/datatypes/exampleTypes/Country"
+        ], function(ComplexRadioStation, Country) {
+            return setupData(ComplexRadioStation, Country);
+        });
     } else {
-        window.TestEnd2EndDatatypesTestData = setupData(window.ComplexRadioStation);
+        window.TestEnd2EndDatatypesTestData = setupData(window.ComplexRadioStation, window.Country);
     }
 }());

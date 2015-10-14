@@ -20,7 +20,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.joynr</groupId>
 	<artifactId>joynr</artifactId>
-	<version>0.10.1</version>
+	<version>0.10.2</version>
 	<packaging>pom</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<url>http://joynr.io</url>
@@ -138,6 +138,9 @@
 								</goals>
 							</execution>
 						</executions>
+						<configuration>
+							<keyname>joynr@bmw-carit.de</keyname>
+						</configuration>
 					</plugin>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>

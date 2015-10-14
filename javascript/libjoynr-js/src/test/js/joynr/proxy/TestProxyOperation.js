@@ -30,6 +30,8 @@ joynrTestRequire(
             "joynr/dispatching/types/Request",
             "test/data/Operation",
             "global/Promise",
+            "joynr/TypesEnum",
+            "joynr/tests/testTypes/TestEnum",
             "joynr/vehicle/radiotypes/RadioStation"
         ],
         function(
@@ -40,6 +42,8 @@ joynrTestRequire(
                 Request,
                 testDataOperation,
                 Promise,
+                TypesEnum,
+                TestEnum,
                 RadioStation) {
 
             var asyncTimeout = 5000;
@@ -78,9 +82,7 @@ joynrTestRequire(
                                     jasmine.createSpyObj("requestReplyManager", [ "sendRequest"
                                     ]);
                             requestReplyManagerSpy.sendRequest.andReturn(Promise.resolve({
-                                result : {
-                                    resultKey : "resultValue"
-                                }
+                                result : "resultValue"
                             }));
 
                             operationName = "myOperation";
@@ -97,16 +99,20 @@ joynrTestRequire(
                                 }
 
                             }, "addFavoriteStation", [
-                                [ {
-                                    name : "radioStation",
-                                    type : 'joynr.vehicle.radiotypes.RadioStation'
+                                {
+                                    inputParameter : [ {
+                                        name : "radioStation",
+                                        type : 'joynr.vehicle.radiotypes.RadioStation'
+                                    }
+                                    ]
+                                },
+                                {
+                                    inputParameter : [ {
+                                        name : "radioStation",
+                                        type : 'String'
+                                    }
+                                    ]
                                 }
-                                ],
-                                [ {
-                                    name : "radioStation",
-                                    type : 'String'
-                                }
-                                ]
                             ]).buildFunction();
 
                         });
@@ -217,6 +223,77 @@ joynrTestRequire(
                                     runs(function() {
                                         checkSpy(spy);
                                     });
+                                });
+
+                        var testForCorrectReturnValues = function(methodName, outputParameter, replyResponse) {
+                            var originalArguments = arguments;
+                            var spy = jasmine.createSpyObj("spy", [
+                               "onFulfilled",
+                               "onRejected"
+                           ]);
+                           var proxy = {
+                               proxyParticipantId : proxyParticipantId,
+                               providerParticipantId : providerParticipantId
+                           };
+
+                           requestReplyManagerSpy.sendRequest.andReturn(Promise.resolve(replyResponse));
+
+                           var testMethodHavingEnumAsReturnValue = new ProxyOperation(proxy, {
+                               dependencies : {
+                                   requestReplyManager : requestReplyManagerSpy
+                               }
+
+                           }, methodName, [
+                               {
+                                   inputParameter : [],
+                                   outputParameter : outputParameter
+                               }
+                           ]).buildFunction();
+
+                           runs(function() {
+                               testMethodHavingEnumAsReturnValue().then(spy.onFulfilled).catch(spy.onRejected);
+                           });
+
+                           waitsFor(function() {
+                               return spy.onFulfilled.callCount > 0;
+                           }, "The promise is not pending any more", asyncTimeout);
+
+                           runs(function() {
+                               checkSpy(spy);
+                               var expectedSpy = expect(spy.onFulfilled);
+                               /* The following line takes all arguments expect the first 3 and passes them to the toHaveBeenCalledWith function.
+                                * This way, it is possible to use the testForCorrectReturnValues function with a
+                                */
+                               expectedSpy.toHaveBeenCalledWith.apply(expectedSpy, (Array.prototype.slice.call(originalArguments, 3)));
+                           });
+                        };
+                        it(
+                                "expect correct joynr enum object as return value",
+                                function() {
+                                    /*jslint nomen: true */
+                                    testForCorrectReturnValues("testMethodHavingEnumAsReturnValue",
+                                                                [ {
+                                                                    name : "returnEnum",
+                                                                    type : TestEnum.ZERO._typeName
+                                                                }],
+                                                                ["ZERO"],
+                                                                TestEnum.ZERO);
+                                    /*jslint nomen: false */
+                                });
+
+                        it(
+                                "expect correct joynr enum object array as return value",
+                                function() {
+                                    /*jslint nomen: true */
+                                    testForCorrectReturnValues("testMethodHavingEnumArrayAsReturnValue",
+                                                                [ {
+                                                                    name : "returnEnum",
+                                                                    // currently, we generate the type of the array element into the signature 
+                                                                    type : TestEnum.ZERO._typeName
+                                                                }],
+                                                                [["ZERO", "ONE"]],
+                                                                [TestEnum.ZERO, TestEnum.ONE]);
+                                    /*jslint nomen: false */
                                 });
 
                         it(

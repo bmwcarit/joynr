@@ -31,7 +31,10 @@ joynrTestRequire(
             "joynr/provider/ProviderAttributeReadWrite",
             "joynr/provider/ProviderAttributeRead",
             "joynr/provider/ProviderAttributeWrite",
-            "joynr/types/ProviderQos"
+            "joynr/types/ProviderQos",
+            "joynr/tests/testTypes/TestEnum",
+            "joynr/datatypes/exampleTypes/ComplexRadioStation",
+            "joynr/datatypes/exampleTypes/Country"
         ],
         function(
                 TypesEnum,
@@ -43,7 +46,10 @@ joynrTestRequire(
                 ProviderAttributeReadWrite,
                 ProviderAttributeRead,
                 ProviderAttributeWrite,
-                ProviderQos) {
+                ProviderQos,
+                TestEnum,
+                ComplexRadioStation,
+                Country) {
 
             var safetyTimeoutDelta = 100;
 
@@ -476,11 +482,11 @@ joynrTestRequire(
                                     expect(spy1).not.toHaveBeenCalled();
                                     expect(spy2).not.toHaveBeenCalled();
 
-                                    value = {
-                                        key : "value",
-                                        1 : 1,
-                                        object : {}
-                                    };
+                                    value = new ComplexRadioStation({
+                                        name : "nameValue",
+                                        station : "stationValue",
+                                        source : Country.GERMANY
+                                    });
                                     attribute.set(value);
 
                                     expect(spy1).toHaveBeenCalled();
@@ -490,11 +496,12 @@ joynrTestRequire(
 
                                     attribute.unregisterObserver(func2);
 
-                                    value = {
-                                        key : "value",
-                                        1 : 2,
-                                        object : {}
-                                    };
+                                    value = new ComplexRadioStation({
+                                        name : "nameValue2",
+                                        station : "stationValue2",
+                                        source : Country.AUSTRIA
+                                    });
+
                                     attribute.set(value);
 
                                     expect(spy1.callCount).toEqual(2);
@@ -502,11 +509,11 @@ joynrTestRequire(
 
                                     attribute.unregisterObserver(func1);
 
-                                    value = {
-                                        key : "value",
-                                        1 : 3,
-                                        object : {}
-                                    };
+                                    value = new ComplexRadioStation({
+                                        name : "nameValue3",
+                                        station : "stationValue3",
+                                        source : Country.AUSTRALIA
+                                    });
                                     attribute.set(value);
 
                                     expect(spy1.callCount).toEqual(2);
@@ -533,11 +540,11 @@ joynrTestRequire(
                                     expect(spy1).not.toHaveBeenCalled();
                                     expect(spy2).not.toHaveBeenCalled();
 
-                                    value = {
-                                        key : "value",
-                                        1 : 1,
-                                        object : {}
-                                    };
+                                    value = new ComplexRadioStation({
+                                        name : "nameValue",
+                                        station : "stationValue1",
+                                        source : Country.AUSTRIA
+                                    });
                                     attribute.set(value);
 
                                     expect(spy1).toHaveBeenCalled();
@@ -556,6 +563,24 @@ joynrTestRequire(
                                 }
                             }
                         });
+
+                        it(
+                                "calls provided setter implementation with enum as operation argument",
+                                function() {
+                                    /*jslint nomen: true */
+                                    var fixture =
+                                            new ProviderAttribute(
+                                                    {},
+                                                    implementation,
+                                                    "testWithEnumAsAttributeType",
+                                                    TestEnum.ZERO._typeName,
+                                                    "WRITEONLY");
+                                    /*jslint nomen: false */
+
+                                    fixture.set("ZERO");
+                                    expect(implementation.set).toHaveBeenCalledWith(TestEnum.ZERO);
+                                });
+
                     });
 
         }); // require
