@@ -22,8 +22,9 @@
 joynrTestRequire("joynr/provider/TestProviderOperation", [
     "joynr/provider/ProviderOperation",
     "joynr/types/ProviderQos",
-    "test/data/Operation"
-], function(ProviderOperation, ProviderQos, testDataOperation) {
+    "test/data/Operation",
+    "joynr/tests/testTypes/TestEnum"
+], function(ProviderOperation, ProviderQos, testDataOperation, TestEnum) {
 
     var safetyTimeoutDelta = 100;
 
@@ -35,18 +36,20 @@ joynrTestRequire("joynr/provider/TestProviderOperation", [
             provider = {};
             operationName = "myOperation";
             implementation = jasmine.createSpy("implementation");
-            myOperation = new ProviderOperation(provider, implementation, operationName, [
-                {
-                    "station" : {
-                        type : "String"
+            myOperation = new ProviderOperation(provider, implementation, operationName, {
+                inputParameter : [
+                    {
+                        "station" : {
+                            type : "String"
+                        }
+                    },
+                    {
+                        "station" : {
+                            type : "joynr.vehicle.radiotypes.RadioStation"
+                        }
                     }
-                },
-                {
-                    "station" : {
-                        type : "joynr.vehicle.radiotypes.RadioStation"
-                    }
-                }
-            ]);
+                ]
+            });
             operationSpy = jasmine.createSpy("operation spy");
             myOperation.registerOperation(operationSpy);
         });
@@ -104,6 +107,30 @@ joynrTestRequire("joynr/provider/TestProviderOperation", [
             for (i = 0; i < testDataOperation.length; ++i) {
                 testCallProvidedOperation(testDataOperation[i]);
             }
+        });
+
+        it("calls provided implementation with enum as operation argument", function() {
+            /*jslint nomen: true */
+            var typeName = TestEnum.ZERO._typeName;
+            /*jslint nomen: false */
+            var signature = {
+                inputParameter : [ {
+                    name : "enumArgument",
+                    type : typeName
+                }
+                ]
+            };
+            myOperation =
+                    new ProviderOperation(provider, implementation, operationName, [ signature
+                    ]);
+
+            implementation.reset();
+            myOperation.callOperation([ "ZERO"
+            ], [ typeName
+            ]);
+            expect(implementation).toHaveBeenCalledWith({
+                enumArgument : TestEnum.ZERO
+            });
         });
 
     });

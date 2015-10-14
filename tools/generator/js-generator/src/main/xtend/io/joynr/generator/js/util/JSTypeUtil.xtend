@@ -87,7 +87,7 @@ class JSTypeUtil extends TypeUtil {
 
 	override getTypeName(FType datatype) {
 		if (isEnum(datatype)){
-			return  "JoynrJSGeneratorExtensions.getMappedDatatype: enum datatypes are not yet supported";
+			return getEnumType(datatype).joynrName;
 		}
 		if (isPrimitive(datatype)){
 			return getTypeName(getPrimitive(datatype))
@@ -259,6 +259,19 @@ class JSTypeUtil extends TypeUtil {
 	 * operations, the types are mapped to ones that are understood by the joynr framework
 	 * when sending requests.
 	 */
+	def toTypesEnum(FTypeRef datatype) {
+		if (isPrimitive(datatype)) {
+			return getPrimitive(datatype).toTypesEnum
+		} else {
+			return "\"" + datatype.derived.toTypesEnum + "\"";
+		}
+	}
+
+	/**
+	 * This method is used for assembling the list of parameter types for the attribute and
+	 * operations, the types are mapped to ones that are understood by the joynr framework
+	 * when sending requests.
+	 */
 	def toTypesEnum(FType datatype) {
 		if (isPrimitive(datatype)) {
 			return toTypesEnum(getPrimitive(datatype))
@@ -292,13 +305,17 @@ class JSTypeUtil extends TypeUtil {
 			" could not be mapped to a primitive type name")
 	}
 
+	private def getTypeNameForListParameter(String typeName) {
+		"\"" + typeName + "[]\""
+	}
+
 	def getTypeNameForParameter(FType datatype, boolean array) {
 		val mappedDatatype = toTypesEnum(datatype);
 		var result = mappedDatatype;
 
 		// special cases: ByteBuffer => byte-array, arrays => Lists,
 		if (array || (getPrimitive(datatype) == FBasicTypeId::BYTE_BUFFER)) {
-			return "TypesEnum.LIST";
+			return getTypeNameForListParameter(result);
 		}
 
 		if (!isPrimitive(datatype)) {
@@ -309,7 +326,7 @@ class JSTypeUtil extends TypeUtil {
 	def getTypeNameForParameter(FBasicTypeId datatype, boolean array) {
 		val mappedDatatype = toTypesEnum(datatype);
 		if (array) {
-			return "TypesEnum.LIST";
+			return getTypeNameForListParameter(mappedDatatype);
 		} else {
 			return mappedDatatype;
 		}

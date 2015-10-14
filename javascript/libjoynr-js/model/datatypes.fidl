@@ -17,7 +17,7 @@
  * #L%
  */
 
- package datatypes
+package datatypes
 
 typeCollection exampleTypes {
 	enumeration Country {
@@ -37,7 +37,7 @@ typeCollection exampleTypes {
 }
 
 <** @description : "This interface is purely for testing puposes, to test all the different combinations of arguments passed through joynr" **>
-interface Datatypes  {
+interface Datatypes {
 
 	attribute Boolean booleanAttribute
 	attribute Int8 int8Attribute

@@ -36,6 +36,7 @@
                 "Date" : "../test-classes/global/Date",
                 "joynr/vehicle": "../test-classes/joynr/vehicle",
                 "joynr/tests": "../test-classes/joynr/tests",
+                "joynr/datatypes": "../test-classes/joynr/datatypes",
                 "test/data": "../test-classes/test/data",
                 "JstdConsoleAppender" : "../test-classes/logging/JstdConsoleAppender"
             },

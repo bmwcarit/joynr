@@ -155,14 +155,24 @@ class ProxyGenerator {
 			«ENDFOR»
 			this.«operationName» = new settings.proxyElementTypes.ProxyOperation(this, settings, "«operationName»", [
 				«FOR operation: getMethods(fInterface, operationName) SEPARATOR ","»
-				[
-				«FOR param: getInputParameters(operation) SEPARATOR ","»
 				{
-					name : "«param.joynrName»",
-					type : «param.typeNameForParameter»
-				}
-				«ENDFOR»
-				]«ENDFOR»
+					inputParameter: [
+					«FOR param: getInputParameters(operation) SEPARATOR ","»
+						{
+							name : "«param.joynrName»",
+							type : «param.typeNameForParameter»
+						}
+					«ENDFOR»
+					],
+					outputParameter: [
+						«FOR param: getOutputParameters(operation) SEPARATOR ","»
+						{
+							name : "«param.joynrName»",
+							type : «param.typeNameForParameter»
+						}
+						«ENDFOR»
+					]
+				}«ENDFOR»
 			]).buildFunction();
 	«ENDFOR»
 
@@ -176,9 +186,10 @@ class ProxyGenerator {
 			 */
 			this.«eventName» = new settings.proxyElementTypes.ProxyEvent(this, {
 					broadcastName : "«eventName»",
+					broadcastTypes : [«FOR param: event.outputParameters SEPARATOR ", "»«param.typeNameForParameter»«ENDFOR»],
 					messagingQos : settings.messagingQos,
 					discoveryQos : settings.discoveryQos,
-				«IF isSelective(event)»
+					«IF isSelective(event)»
 					dependencies: {
 							subscriptionManager: settings.dependencies.subscriptionManager
 						},
@@ -187,11 +198,11 @@ class ProxyGenerator {
 							"«filterParameter»": "reservedForTypeInfo"
 						«ENDFOR»
 					}
-				«ELSE»
+					«ELSE»
 					dependencies: {
 							subscriptionManager: settings.dependencies.subscriptionManager
-						}
-				«ENDIF»
+					}
+					«ENDIF»
 				});
 	«ENDFOR»
 
