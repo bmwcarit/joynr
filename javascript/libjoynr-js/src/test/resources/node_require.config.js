@@ -57,6 +57,7 @@ requirejs.config({
 
         "joynr/tests" : "../test-classes/joynr/tests",
         "joynr/vehicle" : "../test-classes/joynr/vehicle",
+        "joynr/datatypes" : "../test-classes/joynr/datatypes",
         "joynr/provisioning" : "../test-classes/joynr/provisioning",
         "test/data" : "../test-classes/test/data",
         "Date" : "../test-classes/global/Date"

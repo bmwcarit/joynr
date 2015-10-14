@@ -611,10 +611,22 @@ define(
                                             DiscoveryProvider,
                                             {
                                                 add : function(opArgs) {
+                                                    /*FIXME remove discoveryEntry transformation,
+                                                     * once the deserialization of enums works correctly
+                                                     */
+                                                    if (typeof opArgs.discoveryEntry.qos.scope === "string") {
+                                                        opArgs.discoveryEntry.qos.scope = ProviderScope[opArgs.discoveryEntry.qos.scope];
+                                                    }
                                                     return capabilityDiscovery
                                                             .add(opArgs.discoveryEntry);
                                                 },
                                                 lookup : function(opArgs) {
+                                                    /*FIXME remove discoveryQos transformation,
+                                                     * once the deserialization of enums works correctly
+                                                     */
+                                                    if (typeof opArgs.discoveryQos.discoveryScope === "string") {
+                                                        opArgs.discoveryQos.discoveryScope = DiscoveryScope[opArgs.discoveryQos.discoveryScope];
+                                                    }
                                                     return capabilityDiscovery.lookup(
                                                             opArgs.domain,
                                                             opArgs.interfaceName,
@@ -635,23 +647,23 @@ define(
                             routingProvider =
                                     providerBuilder.build(RoutingProvider, {
                                         addNextHop : function(opArgs) {
+                                            var address;
                                             if (opArgs.channelAddress !== undefined) {
-                                                messageRouter.addNextHop(
-                                                        opArgs.participantId,
-                                                        opArgs.channelAddress);
+                                                address = opArgs.channelAddress; 
                                             } else if (opArgs.commonApiDbusAddress !== undefined) {
-                                                messageRouter.addNextHop(
-                                                        opArgs.participantId,
-                                                        opArgs.commonApiDbusAddress);
+                                                address = opArgs.commonApiDbusAddress;
                                             } else if (opArgs.browserAddress !== undefined) {
-                                                messageRouter.addNextHop(
-                                                        opArgs.participantId,
-                                                        opArgs.browserAddress);
+                                                address = opArgs.browserAddress;
                                             } else if (opArgs.webSocketAddress !== undefined) {
-                                                messageRouter.addNextHop(
-                                                        opArgs.participantId,
-                                                        opArgs.webSocketAddress);
+                                                address = opArgs.webSocketAddress;
                                             }
+                                            if (address !== undefined) {
+                                                return messageRouter.addNextHop(
+                                                    opArgs.participantId,
+                                                    address);
+                                            }
+                                            return Promise.reject(new Error("RoutingProvider.addNextHop failed, because address " +
+                                                    "could not be found in the operation arguments " + JSON.stringify(opArgs)));
                                         },
                                         resolveNextHop : function(opArgs) {
                                             return messageRouter.resolveNextHop(opArgs.participantId)
@@ -663,7 +675,7 @@ define(
                                                     });
                                         },
                                         removeNextHop : function(opArgs) {
-                                            messageRouter.removeNextHop(opArgs.participantId);
+                                            return messageRouter.removeNextHop(opArgs.participantId);
                                         }
                                     });
                             registerRoutingProviderPromise =

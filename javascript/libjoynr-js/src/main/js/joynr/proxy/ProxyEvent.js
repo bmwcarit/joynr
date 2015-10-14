@@ -41,6 +41,8 @@ define("joynr/proxy/ProxyEvent", [ "joynr/proxy/BroadcastFilterParameters"
      *            settings.dependencies.subscriptionManager
      * @param {String}
      *            settings.broadcastName the name of the broadcast as modelled in Franca
+     * @param {String[]}
+     *            settings.broadcastTypes the parameter types of the broadcast being subscribed to
      * @returns {ProxyEvent}
      */
     function ProxyEvent(parent, settings) {
@@ -77,6 +79,7 @@ define("joynr/proxy/ProxyEvent", [ "joynr/proxy/BroadcastFilterParameters"
                 providerId : parent.providerParticipantId,
                 messagingQos : settings.messagingQos,
                 broadcastName : settings.broadcastName,
+                broadcastTypes : settings.broadcastTypes,
                 subscriptionQos : subscribeParameters.subscriptionQos,
                 subscriptionId : subscribeParameters.subscriptionId,
                 onReceive : subscribeParameters.onReceive,

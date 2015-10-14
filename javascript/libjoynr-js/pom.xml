@@ -665,30 +665,6 @@
 				</executions>
 			</plugin>
 
-			<plugin>
-				<groupId>org.eclipse.jetty</groupId>
-				<artifactId>jetty-maven-plugin</artifactId>
-				<version>${jetty.version}</version>
-				<executions>
-					<execution>
-						<id>start-jetty</id>
-						<phase>pre-integration-test</phase>
-						<goals>
-							<goal>deploy-war</goal>
-						</goals>
-						<configuration>
-							<daemon>true</daemon>
-						</configuration>
-					</execution>
-					<execution>
-						<id>stop-jetty</id>
-						<phase>post-integration-test</phase>
-						<goals>
-							<goal>stop</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
 			<!-- Configure packaging of production version matter libjoynr-js -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -845,11 +821,37 @@
 
 			<activation>
 				<property>
-					<name>!skipTests</name>
+					<name>skipTests</name>
+					<value>false</value>
 				</property>
 			</activation>
 			<build>
 				<plugins>
+					<!-- jetty only needs to run in case of test execution -->
+					<plugin>
+						<groupId>org.eclipse.jetty</groupId>
+						<artifactId>jetty-maven-plugin</artifactId>
+						<version>${jetty.version}</version>
+						<executions>
+							<execution>
+								<id>start-jetty</id>
+								<phase>pre-integration-test</phase>
+								<goals>
+									<goal>deploy-war</goal>
+								</goals>
+								<configuration>
+									<daemon>true</daemon>
+								</configuration>
+							</execution>
+							<execution>
+								<id>stop-jetty</id>
+								<phase>post-integration-test</phase>
+								<goals>
+									<goal>stop</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
 					<!-- jasmine-node for node.js tests -->
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>

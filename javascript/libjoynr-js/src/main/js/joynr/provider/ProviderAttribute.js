@@ -19,10 +19,14 @@
 
 define(
         "joynr/provider/ProviderAttribute",
-        [ "joynr/util/UtilInternal"
+        [
+            "joynr/util/UtilInternal",
+            "joynr/util/Typing",
+            "joynr/types/TypeRegistrySingleton"
         ],
-        function(Util) {
+        function(Util, Typing, TypeRegistrySingleton) {
 
+            var typeRegistry = TypeRegistrySingleton.getInstance();
             /**
              * Constructor of ProviderAttribute object that is used in the generation of provider attributes
              *
@@ -146,7 +150,10 @@ define(
                                 }
                                 var oldValue = privateGetterFunc();
                                 // call setter function with the same arguments as this function
-                                privateSetterFunc(value);
+                                privateSetterFunc(Typing.augmentTypes(
+                                        value,
+                                        typeRegistry,
+                                        attributeType));
                                 var newValue = privateGetterFunc();
                                 if (newValue !== oldValue) {
                                     if (this.valueChanged !== undefined) {

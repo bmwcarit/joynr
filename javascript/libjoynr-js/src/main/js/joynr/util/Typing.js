@@ -17,8 +17,11 @@
  * #L%
  */
 
-define("joynr/util/Typing", [ "joynr/TypesEnum"
-], function(TypesEnum) {
+define("joynr/util/Typing", [
+    "joynr",
+    "joynr/TypesEnum",
+    "joynr/types/TypeRegistrySingleton"
+], function(joynr, TypesEnum, TypeRegistrySingleton) {
 
     var translateJoynrTypeToJavascriptTypeTable = {};
     translateJoynrTypeToJavascriptTypeTable[TypesEnum.BOOL] = "Boolean";
@@ -78,17 +81,25 @@ define("joynr/util/Typing", [ "joynr/TypesEnum"
      *            untyped the untyped object
      * @param {TypeRegistry}
      *            typeRegistry the typeRegistry to retrieve type information from
+     * @param {String}
+     *            typeHint optional parameter which provides the type informed of the untyped object.
+     *            This is used i.e. for enums, where the type information is not included in the untyped object itself 
      * @returns a deep copy of the untyped object with the types being augmented
      * @throws {Error}
      *             if in any of the objects contains a member of type "Function" or the type of the
      *             untyped object is not (Boolean|Number|String|Array|Object)
      */
     Typing.augmentTypes =
-            function(untyped, typeRegistry) {
-                var i, typedObj;
+            function(untyped, typeRegistry, typeHint) {
+                var i, typedObj, typeName;
 
                 // return nullable values immediately
                 if (untyped === null || untyped === undefined) {
+                    return untyped;
+                }
+
+                // return already typed objects immediately
+                if (Typing.isComplexJoynrObject(untyped)) {
                     return untyped;
                 }
 
@@ -101,16 +112,29 @@ define("joynr/util/Typing", [ "joynr/TypesEnum"
                     throw new Error("cannot augment object type \"" + type + "\"");
                 }
 
-                // leave integral data types untyped
-                if (type === "Boolean" || type === "Number" || type === "String") {
-                    typedObj = untyped;
-                }
                 // try to type each single element of an array
-                else if (type === "Array") {
+                if (type === "Array") {
                     typedObj = [];
                     for (i = 0; i < untyped.length; ++i) {
-                        typedObj.push(Typing.augmentTypes(untyped[i], typeRegistry));
+                        var filteredTypeHint =
+                                (typeHint !== undefined && typeHint.length > 2 && typeHint.substr(
+                                        typeHint.length - 2,
+                                        2) === "[]")
+                                        ? typeHint.substring(0, typeHint.length - 2)
+                                        : typeHint;
+                        typedObj.push(Typing.augmentTypes(
+                                untyped[i],
+                                typeRegistry,
+                                filteredTypeHint));
                     }
+                }
+                //check if provisioned type name is given. In this case, check for special considerations
+                else if (typeHint !== undefined && typeRegistry.isEnumType(typeHint)) {
+                    typedObj = typeRegistry.getConstructor(typeHint)[untyped];
+                }
+                // leave integral data types untyped
+                else if (type === "Boolean" || type === "Number" || type === "String") {
+                    typedObj = untyped;
                 }
                 // try to type each single member of an object, and use registered constructor if
                 // available
@@ -132,7 +156,13 @@ define("joynr/util/Typing", [ "joynr/TypesEnum"
                     // copy over and type each single member
                     for (i in untyped) {
                         if (untyped.hasOwnProperty(i)) {
-                            typedObj[i] = Typing.augmentTypes(untyped[i], typeRegistry);
+                            if (Constructor.getMemberType !== undefined) {
+                                typedObj[i] =
+                                        Typing.augmentTypes(untyped[i], typeRegistry, Constructor
+                                                .getMemberType(i, TypesEnum));
+                            } else {
+                                typedObj[i] = Typing.augmentTypes(untyped[i], typeRegistry);
+                            }
                         }
                     }
                 } else {
@@ -163,6 +193,43 @@ define("joynr/util/Typing", [ "joynr/TypesEnum"
         obj[memberName || "_typeName"] = packageName + Typing.getObjectType(obj);
         return obj;
     };
+
+    /**
+     * Returns true if the object is a joynr complex type modelled in Franca
+     * @function Typing#isComplexJoynrObject
+     */
+    Typing.isComplexJoynrObject = function isComplexJoynrObject(value) {
+        try {
+            var valuePrototype = Object.getPrototypeOf(value);
+            return (valuePrototype && valuePrototype instanceof joynr.JoynrObject);
+        } catch (error) {
+            // This can be the case when the value is a primitive type
+        }
+        return false;
+    };
+
+    /**
+     * Returns true if the object is a joynr enum type modelled in Franca
+     * @function Typing#isEnumType
+     * @param {Object} value the object to be check for typing
+     * @param {Boolean} checkForJoynrObject an optional member. If set to true, 
+     *                  the parameter value is forced to be an instance of the root
+     *                  joynr object type
+     * @returns {Boolean} true if the provided value is an enum type
+     */
+    Typing.isEnumType =
+            function isEnumType(value, checkForJoynrObject) {
+                var isJoynrObject =
+                        checkForJoynrObject === undefined
+                            || (!checkForJoynrObject || Typing.isComplexJoynrObject(value));
+                /*jslint nomen: true */
+                var result =
+                        typeof value === "object"
+                            && isJoynrObject
+                            && TypeRegistrySingleton.getInstance().isEnumType(value._typeName);
+                /*jslint nomen: false */
+                return result;
+            };
 
     return Typing;
 

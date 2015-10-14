@@ -20,8 +20,8 @@
  * #L%
  */
 
-define("joynr/util/JSONSerializer", [ "joynr/util/Util"
-], function(Util) {
+define("joynr/util/JSONSerializer", [ "joynr/util/Typing"
+], function(Typing) {
 
     /**
      * @name JSONSerializer
@@ -41,7 +41,13 @@ define("joynr/util/JSONSerializer", [ "joynr/util/Util"
      *          the value in JSON notation
      */
     JSONSerializer.stringify = function stringify(value) {
-        return JSON.stringify(value);
+        var replacerFunction = function replacerFunction(key, src) {
+            if (Typing.isEnumType(src, false)) {
+                return src.name;
+            }
+            return src;
+        };
+        return JSON.stringify(value, replacerFunction);
     };
 
     return JSONSerializer;
