@@ -52,6 +52,14 @@ public:
      * @return The detail message string of the exception.
      */
     virtual const std::string getMessage() const throw();
+    /**
+     * return The typeName of the exception used for serialization.
+     */
+    virtual const std::string getTypeName() const;
+    /**
+     * @brief The typeName of the exception used for serialization.
+     */
+    static const std::string TYPE_NAME;
 
 protected:
     /**
@@ -88,6 +96,11 @@ public:
      * @param message Further description of the reported runtime error
      */
     JoynrRuntimeException(const std::string& message) throw();
+    virtual const std::string getTypeName() const;
+    /**
+     * @brief The typeName used for serialization.
+     */
+    static const std::string TYPE_NAME;
 };
 
 /**
@@ -102,6 +115,11 @@ public:
      * @param message Further description of the reported timeout
      */
     JoynrTimeOutException(const std::string& message) throw();
+    virtual const std::string getTypeName() const;
+    /**
+     * @brief The typeName used for serialization.
+     */
+    static const std::string TYPE_NAME;
 };
 
 /**
@@ -130,6 +148,11 @@ public:
      * @param message Further description of the reported discovery error
      */
     DiscoveryException(const std::string& message) throw();
+    virtual const std::string getTypeName() const;
+    /**
+     * @brief The typeName used for serialization.
+     */
+    static const std::string TYPE_NAME;
 };
 
 /**
@@ -145,6 +168,11 @@ public:
      * @param message Further description of the reported invocation error
      */
     MethodInvocationException(const std::string& message) throw();
+    virtual const std::string getTypeName() const;
+    /**
+     * @brief The typeName used for serialization.
+     */
+    static const std::string TYPE_NAME;
 };
 
 /**
@@ -161,6 +189,11 @@ public:
      * @param message Further description of the reported error
      */
     ProviderRuntimeException(const std::string& message) throw();
+    virtual const std::string getTypeName() const;
+    /**
+     * @brief The typeName used for serialization.
+     */
+    static const std::string TYPE_NAME;
 };
 
 /**
@@ -187,6 +220,11 @@ public:
      * belongs to.
      */
     std::string getSubscriptionId() const throw();
+    virtual const std::string getTypeName() const;
+    /**
+     * @brief The typeName used for serialization.
+     */
+    static const std::string TYPE_NAME;
 
 private:
     std::string subscriptionId;
@@ -245,6 +283,11 @@ public:
      * @return The type name of the error enumeration.
      */
     std::string getErrorTypeName() const throw();
+    virtual const std::string getTypeName() const;
+    /**
+     * @brief The typeName of the exception used for serialization.
+     */
+    static const std::string TYPE_NAME;
 
 private:
     uint32_t value;

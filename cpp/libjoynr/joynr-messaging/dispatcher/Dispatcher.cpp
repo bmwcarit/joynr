@@ -139,7 +139,6 @@ void Dispatcher::receive(const JoynrMessage& message)
 
 void Dispatcher::handleRequestReceived(const JoynrMessage& message)
 {
-
     std::string senderId = message.getHeaderFrom().toStdString();
     std::string receiverId = message.getHeaderTo().toStdString();
 
@@ -229,7 +228,9 @@ void Dispatcher::handleReplyReceived(const JoynrMessage& message)
     QByteArray jsonReply = message.getPayload();
 
     // deserialize the jsonReply
-    Reply* reply = JsonSerializer::deserialize<Reply>(jsonReply);
+    // TODO This is a workaround which must be replaced by the generic deserialize function after
+    // the new serializer is introduced
+    Reply* reply = JsonSerializer::deserializeReply(jsonReply);
     if (reply == Q_NULLPTR) {
         LOG_ERROR(logger,
                   QString("Unable to deserialize reply object from: %1")

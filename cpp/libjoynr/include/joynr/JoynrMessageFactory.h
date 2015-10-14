@@ -96,6 +96,12 @@ private:
                  const qint64 ttl,
                  const QObject& payload);
 
+    void initReplyMsg(JoynrMessage& msg,
+                      const QString& senderParticipantId,
+                      const QString& receiverParticipantId,
+                      const qint64 ttl,
+                      const Reply& payload);
+
     IPlatformSecurityManager* securityManager;
     joynr_logging::Logger* logger;
 };

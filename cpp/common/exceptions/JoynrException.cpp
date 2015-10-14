@@ -24,6 +24,18 @@ namespace joynr
 namespace exceptions
 {
 
+// TODO This is a workaround which must be removed after the new serializer is introduced
+const std::string JoynrException::TYPE_NAME = "io.joynr.exceptions.JoynrException";
+const std::string JoynrRuntimeException::TYPE_NAME = "io.joynr.exceptions.JoynrRuntimeException";
+const std::string JoynrTimeOutException::TYPE_NAME = "io.joynr.exceptions.JoynrTimeoutException";
+const std::string DiscoveryException::TYPE_NAME = "io.joynr.exceptions.DiscoveryException";
+const std::string MethodInvocationException::TYPE_NAME =
+        "joynr.exceptions.MethodInvocationException";
+const std::string ProviderRuntimeException::TYPE_NAME = "joynr.exceptions.ProviderRuntimeException";
+const std::string PublicationMissedException::TYPE_NAME =
+        "joynr.exceptions.PublicationMissedException";
+const std::string ApplicationException::TYPE_NAME = "joynr.exceptions.ApplicationException";
+
 JoynrException::JoynrException() throw() : message("")
 {
 }
@@ -55,14 +67,29 @@ void JoynrException::setMessage(std::string message)
     this->message = message;
 }
 
+const std::string JoynrException::getTypeName() const
+{
+    return JoynrException::TYPE_NAME;
+}
+
 JoynrRuntimeException::JoynrRuntimeException(const std::string& message) throw()
         : JoynrException(message)
 {
 }
 
+const std::string JoynrRuntimeException::getTypeName() const
+{
+    return JoynrRuntimeException::TYPE_NAME;
+}
+
 JoynrTimeOutException::JoynrTimeOutException(const std::string& message) throw()
         : JoynrRuntimeException(message)
 {
+}
+
+const std::string JoynrTimeOutException::getTypeName() const
+{
+    return JoynrTimeOutException::TYPE_NAME;
 }
 
 JoynrParseError::JoynrParseError(const std::string& message) throw()
@@ -75,14 +102,29 @@ DiscoveryException::DiscoveryException(const std::string& message) throw()
 {
 }
 
+const std::string DiscoveryException::getTypeName() const
+{
+    return DiscoveryException::TYPE_NAME;
+}
+
 MethodInvocationException::MethodInvocationException(const std::string& message) throw()
         : JoynrRuntimeException(message)
 {
 }
 
+const std::string MethodInvocationException::getTypeName() const
+{
+    return MethodInvocationException::TYPE_NAME;
+}
+
 ProviderRuntimeException::ProviderRuntimeException(const std::string& message) throw()
         : JoynrRuntimeException(message)
 {
+}
+
+const std::string ProviderRuntimeException::getTypeName() const
+{
+    return ProviderRuntimeException::TYPE_NAME;
 }
 
 PublicationMissedException::PublicationMissedException(const std::string& subscriptionId) throw()
@@ -99,6 +141,11 @@ PublicationMissedException::PublicationMissedException(
 std::string PublicationMissedException::getSubscriptionId() const throw()
 {
     return subscriptionId;
+}
+
+const std::string PublicationMissedException::getTypeName() const
+{
+    return PublicationMissedException::TYPE_NAME;
 }
 
 ApplicationException::ApplicationException(const ApplicationException& other) throw()
@@ -142,6 +189,11 @@ std::string ApplicationException::getName() const throw()
 std::string ApplicationException::getErrorTypeName() const throw()
 {
     return typeName;
+}
+
+const std::string ApplicationException::getTypeName() const
+{
+    return ApplicationException::TYPE_NAME;
 }
 
 } // namespace exceptions
