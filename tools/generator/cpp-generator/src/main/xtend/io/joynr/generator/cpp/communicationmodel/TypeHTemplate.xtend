@@ -46,7 +46,7 @@ class TypeHTemplate implements CompoundTypeTemplate{
 	override generate(FCompoundType type)
 '''
 «val typeName = type.joynrNameQt»
-«val headerGuard = ("GENERATED_TYPE_"+getPackagePathWithJoynrPrefix(type, "_")+"_"+typeName+"_H").toUpperCase»
+«val headerGuard = ("GENERATED_TYPE_"+getPackagePathWithJoynrPrefix(type, "_", true)+"_"+typeName+"_H").toUpperCase»
 «warning()»
 #ifndef «headerGuard»
 #define «headerGuard»

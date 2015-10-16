@@ -42,7 +42,7 @@ class StdEnumHTemplate implements EnumTemplate {
 	override generate(FEnumerationType type)
 '''
 «val typeName = type.joynrName»
-«val headerGuard = (getPackagePathWithJoynrPrefix(type, "_")+"_"+typeName+"_h").toUpperCase»
+«val headerGuard = (getPackagePathWithJoynrPrefix(type, "_", true)+"_"+typeName+"_h").toUpperCase»
 «warning»
 #ifndef «headerGuard»
 #define «headerGuard»

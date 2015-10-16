@@ -42,7 +42,7 @@ class StdTypeHTemplate implements CompoundTypeTemplate{
 	override generate(FCompoundType type)
 '''
 «val typeName = type.joynrName»
-«val headerGuard = ("GENERATED_TYPE_"+getPackagePathWithJoynrPrefix(type, "_")+"_"+typeName+"_H").toUpperCase»
+«val headerGuard = ("GENERATED_TYPE_"+getPackagePathWithJoynrPrefix(type, "_", true)+"_"+typeName+"_H").toUpperCase»
 «warning()»
 #ifndef «headerGuard»
 #define «headerGuard»

@@ -103,9 +103,16 @@ abstract class JoynrGeneratorExtensions {
 		Iterators::forArray(fModelElement.packageName.split(separator))
 	}
 
+	def getPackagePathWithJoynrPrefix(FType datatype, String separator, boolean includeTypeCollection) {
+		var packagePath = getPackagePathWithJoynrPrefix(datatype, separator);
+		if (includeTypeCollection && datatype.isPartOfTypeCollection) {
+			packagePath += separator + datatype.typeCollectionName;
+		}
+		return packagePath
+	}
+
 	def getPackagePathWithJoynrPrefix(FModelElement fModelElement, String separator) {
-		return joynrGenerationPrefix + separator + getPackageName(fModelElement).replace('.', separator)
-		// Get the package path but remove the leading namespace
+		joynrGenerationPrefix + separator + getPackagePathWithoutJoynrPrefix(fModelElement, separator)
 	}
 
 	def getPackagePathWithoutJoynrPrefix(FModelElement fModelElement, String separator) {
