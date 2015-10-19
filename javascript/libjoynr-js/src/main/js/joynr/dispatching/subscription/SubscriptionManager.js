@@ -33,6 +33,7 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
     "joynr/util/UtilInternal",
     "joynr/util/Typing",
     "joynr/types/TypeRegistrySingleton",
+    "joynr/exceptions/PublicationMissedException",
     "joynr/util/JSONSerializer"
 ], function(
         Promise,
@@ -48,6 +49,7 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
         Util,
         Typing,
         TypeRegistrySingleton,
+        PublicationMissedException,
         JSONSerializer) {
     /**
      * @name SubscriptionManager
@@ -124,7 +126,11 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
             if (alertAfterInterval > 0 && timeSinceLastPublication >= alertAfterInterval) {
                 // log.warn("publication missed for subscription id: " + subscriptionId);
                 if (subscriptionListener.onError) {
-                    subscriptionListener.onError();
+                    var publicationMissedException = new PublicationMissedException({
+                        detailMessage : "alertAfterInterval period exceeded without receiving publication",
+                        subscriptionId : subscriptionId
+                    });
+                    subscriptionListener.onError(publicationMissedException);
                 }
             }
 
@@ -393,11 +399,21 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                 function handlePublication(publication) {
                     setLastPublicationTime(publication.subscriptionId, Date.now());
                     var subscriptionListener = subscriptionListeners[publication.subscriptionId];
-                    if (subscriptionListener.onReceive) {
-                        subscriptionListener.onReceive(publication.response);
-                    } else {
-                        throw new Error("no subscription listener registered for publication "
-                            + JSONSerializer.stringify(publication));
+                    if (publication.error) {
+                        if (subscriptionListener.onError) {
+                            subscriptionListener.onError(publication.error);
+                        } else {
+                            throw new Error("no subscription error handler registered for publication "
+                                + JSONSerializer.stringify(publication));
+                        }
+                    }
+                    if (publication.response) {
+                        if (subscriptionListener.onReceive) {
+                            subscriptionListener.onReceive(publication.response);
+                        } else {
+                            throw new Error("no subscription listener registered for publication "
+                                + JSONSerializer.stringify(publication));
+                        }
                     }
                 };
 

@@ -34,6 +34,7 @@ joynrTestRequire(
             "joynr/dispatching/types/SubscriptionPublication",
             "global/Promise",
             "joynr/dispatching/types/Reply",
+            "joynr/exceptions/PublicationMissedException",
             "joynr/system/LoggerFactory",
             "Date",
             "joynr/tests/testTypes/TestEnum"
@@ -50,6 +51,7 @@ joynrTestRequire(
                 SubscriptionPublication,
                 Promise,
                 Reply,
+                PublicationMissedException,
                 LoggerFactory,
                 Date,
                 TestEnum) {
@@ -168,6 +170,7 @@ joynrTestRequire(
                             var publicationReceivedSpy =
                                     jasmine.createSpy('publicationReceivedSpy');
                             var publicationMissedSpy = jasmine.createSpy('publicationMissedSpy');
+                            var subscriptionId;
 
                             runs(function() {
                                 //log.debug("registering subscription");
@@ -182,13 +185,24 @@ joynrTestRequire(
                                     }),
                                     onReceive : publicationReceivedSpy,
                                     onError : publicationMissedSpy
+                                }).then(function(returnedSubscriptionId) {
+                                    subscriptionId = returnedSubscriptionId;
                                 }).catch(function(error) {
                                     log.error("Error in sendSubscriptionRequest :" + error);
                                 });
-                                increaseFakeTime(50);
+                                increaseFakeTime(1);
+                            });
+
+                            waitsFor(function() {
+                                return subscriptionId !== undefined;
+                            }, "subscription to be registered", 500);
+
+                            runs(function() {
                                 expect(publicationMissedSpy).not.toHaveBeenCalled();
-                                increaseFakeTime(51);
+                                increaseFakeTime(101);
                                 expect(publicationMissedSpy).toHaveBeenCalled();
+                                expect(publicationMissedSpy.calls[0].args[0] instanceof PublicationMissedException);
+                                expect(publicationMissedSpy.calls[0].args[0].subscriptionId).toEqual(subscriptionId);
                                 increaseFakeTime(101);
                                 expect(publicationMissedSpy.callCount).toEqual(2);
                                 // expiryDate should be reached, expect no more interactions
