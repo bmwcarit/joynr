@@ -54,10 +54,7 @@ class DefaultInterfaceProviderTemplate implements InterfaceTemplate {
 		'''
 «warning()»
 package «packagePath»;
-«IF needsListImport(serviceInterface)»
-	import java.util.ArrayList;
-	import java.util.List;
-«ENDIF»
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

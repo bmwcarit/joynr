@@ -109,10 +109,6 @@ class InterfaceAsyncTemplate implements InterfaceTemplate{
 «warning()»
 package «packagePath»;
 
-«IF needsListImport(serviceInterface)»
-import java.util.List;
-«ENDIF»
-import com.fasterxml.jackson.core.type.TypeReference;
 import io.joynr.dispatcher.rpc.JoynrAsyncInterface;
 «IF getMethods(serviceInterface).size > 0 || hasReadAttribute»
 import io.joynr.proxy.Callback;
@@ -140,21 +136,16 @@ import io.joynr.exceptions.DiscoveryException;
 
 public interface «asyncClassName» extends «interfaceName», JoynrAsyncInterface {
 
-	public static class VoidToken extends TypeReference<Void> {
-
-	}
 	«FOR attribute: getAttributes(serviceInterface)»
 		«var attributeName = attribute.joynrName»
 		«var attributeType = attribute.typeName.objectDataTypeForPlainType»
 		«var getAttribute = "get" + attributeName.toFirstUpper»
 		«var setAttribute = "set" + attributeName.toFirstUpper»
 		«IF isReadable(attribute)»
-
-			public Future<«attributeType»> «getAttribute»(@JoynrRpcCallback(deserializationType = «getTokenTypeForArrayType(attributeType)»Token.class) Callback<«attributeType»> callback);
+			public Future<«attributeType»> «getAttribute»(@JoynrRpcCallback(deserializationType = «attributeType»«IF attribute.array»[]«ENDIF».class) Callback<«attributeType»> callback);
 		«ENDIF»
 		«IF isWritable(attribute)»
-
-			Future<Void> «setAttribute»(@JoynrRpcCallback(deserializationType = VoidToken.class) Callback<Void> callback, @JoynrRpcParam(value="«attributeName»", deserializationType = «getTokenTypeForArrayType(attributeType)»Token.class) «attributeType» «attributeName») throws DiscoveryException;
+			Future<Void> «setAttribute»(@JoynrRpcCallback(deserializationType = Void.class) Callback<Void> callback, @JoynrRpcParam(value="«attributeName»", deserializationType = «attributeType».class) «attributeType» «attributeName») throws DiscoveryException;
 		«ENDIF»
 	«ENDFOR»
 
@@ -215,19 +206,20 @@ public interface «asyncClassName» extends «interfaceName», JoynrAsyncInterfa
 	}
 
 	def getCallbackParameter(FMethod method, HashMap<FMethod, String> methodToCallbackName) {
-		var outPutParameterType = method.typeNamesForOutputParameter.iterator.next;
+		var outputParameterType = method.typeNamesForOutputParameter.iterator.next;
+		var outputObjectType = getObjectDataTypeForPlainType(outputParameterType);
 		var callbackType = methodToCallbackName.get(method);
-		var outPutObjectType = getObjectDataTypeForPlainType(outPutParameterType);
 		if (method.outputParameters.size < 2) {
-			if (outPutParameterType!="void"){
-				if (outPutObjectType == ""){
-					return "@JoynrRpcCallback(deserializationType = "+getTokenTypeForArrayType(outPutParameterType)+"Token.class) "+ callbackType + " callback"
+			if (outputParameterType!="void"){
+				if (outputObjectType == ""){
+					throw new IllegalArgumentException("error in method: " + method
+						+ ". outputObjectType is empty even though outputParameterType is not void")
 				}
 				else{
-					return "@JoynrRpcCallback(deserializationType = "+getTokenTypeForArrayType(outPutObjectType)+"Token.class) " + callbackType + " callback"
+					return "@JoynrRpcCallback(deserializationType = " + outputObjectType + ".class) " + callbackType + " callback"
 				}
 			} else {
-				return "@JoynrRpcCallback(deserializationType = VoidToken.class) Callback<Void> callback"
+				return "@JoynrRpcCallback(deserializationType = Void.class) Callback<Void> callback"
 			}
 		} else {
 			return "@JoynrRpcCallback " + callbackType + " callback"

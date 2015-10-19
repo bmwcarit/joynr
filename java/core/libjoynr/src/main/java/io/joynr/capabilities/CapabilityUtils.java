@@ -19,16 +19,17 @@ package io.joynr.capabilities;
  * #L%
  */
 
-import com.google.common.collect.Lists;
+import java.util.Collection;
+import java.util.List;
+
+import javax.annotation.CheckForNull;
+
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.types.CapabilityInformation;
 import joynr.types.CommunicationMiddleware;
 import joynr.types.DiscoveryEntry;
 
-import javax.annotation.CheckForNull;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import com.google.common.collect.Lists;
 
 /**
  * Conversion helpers for CapabilityInformation, CapabilityEntry and DiscoveryEntry
@@ -41,7 +42,7 @@ public class CapabilityUtils {
                                   capabilityEntry.getInterfaceName(),
                                   capabilityEntry.getParticipantId(),
                                   capabilityEntry.getProviderQos(),
-                                  Arrays.asList(CommunicationMiddleware.JOYNR));
+                                  new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR });
     }
 
     @CheckForNull
@@ -54,7 +55,7 @@ public class CapabilityUtils {
                                   capabilityInformation.getInterfaceName(),
                                   capabilityInformation.getParticipantId(),
                                   capabilityInformation.getProviderQos(),
-                                  Arrays.asList(CommunicationMiddleware.JOYNR));
+                                  new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR });
     }
 
     public static CapabilityEntry capabilitiesInfo2CapabilityEntry(CapabilityInformation capabilityInformation) {

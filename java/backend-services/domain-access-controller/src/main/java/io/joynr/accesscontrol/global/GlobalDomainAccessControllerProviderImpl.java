@@ -21,6 +21,9 @@ package io.joynr.accesscontrol.global;
 
 import io.joynr.accesscontrol.DomainAccessControlStore;
 import io.joynr.provider.Promise;
+
+import java.util.Arrays;
+
 import joynr.infrastructure.GlobalDomainAccessControllerAbstractProvider;
 import joynr.infrastructure.DacTypes.ChangeType;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
@@ -51,7 +54,7 @@ public class GlobalDomainAccessControllerProviderImpl extends GlobalDomainAccess
     @Override
     public Promise<GetDomainRolesDeferred> getDomainRoles(String uid) {
         GetDomainRolesDeferred deferred = new GetDomainRolesDeferred();
-        deferred.resolve(domainAccessStore.getDomainRoles(uid));
+        deferred.resolve(domainAccessStore.getDomainRoles(uid).toArray(new DomainRoleEntry[0]));
         return new Promise<GetDomainRolesDeferred>(deferred);
     }
 
@@ -83,14 +86,15 @@ public class GlobalDomainAccessControllerProviderImpl extends GlobalDomainAccess
     @Override
     public Promise<GetMasterAccessControlEntries1Deferred> getMasterAccessControlEntries(String uid) {
         GetMasterAccessControlEntries1Deferred deferred = new GetMasterAccessControlEntries1Deferred();
-        deferred.resolve(domainAccessStore.getMasterAccessControlEntries(uid));
+        deferred.resolve(domainAccessStore.getMasterAccessControlEntries(uid).toArray(new MasterAccessControlEntry[0]));
         return new Promise<GetMasterAccessControlEntries1Deferred>(deferred);
     }
 
     @Override
     public Promise<GetEditableMasterAccessControlEntriesDeferred> getEditableMasterAccessControlEntries(String uid) {
         GetEditableMasterAccessControlEntriesDeferred deferred = new GetEditableMasterAccessControlEntriesDeferred();
-        deferred.resolve(domainAccessStore.getEditableMasterAccessControlEntries(uid));
+        deferred.resolve(domainAccessStore.getEditableMasterAccessControlEntries(uid)
+                                          .toArray(new MasterAccessControlEntry[0]));
         return new Promise<GetEditableMasterAccessControlEntriesDeferred>(deferred);
     }
 
@@ -98,7 +102,8 @@ public class GlobalDomainAccessControllerProviderImpl extends GlobalDomainAccess
     public Promise<GetMasterAccessControlEntries1Deferred> getMasterAccessControlEntries(String domain,
                                                                                          String interfaceName) {
         GetMasterAccessControlEntries1Deferred deferred = new GetMasterAccessControlEntries1Deferred();
-        deferred.resolve(domainAccessStore.getMasterAccessControlEntries(domain, interfaceName));
+        deferred.resolve(domainAccessStore.getMasterAccessControlEntries(domain, interfaceName)
+                                          .toArray(new MasterAccessControlEntry[0]));
         return new Promise<GetMasterAccessControlEntries1Deferred>(deferred);
     }
 
@@ -124,7 +129,7 @@ public class GlobalDomainAccessControllerProviderImpl extends GlobalDomainAccess
     private boolean hasRoleMaster(String userId, String domain) {
 
         DomainRoleEntry domainRole = domainAccessStore.getDomainRole(userId, Role.MASTER);
-        if (domainRole == null || !domainRole.getDomains().contains(domain)) {
+        if (domainRole == null || !Arrays.asList(domainRole.getDomains()).contains(domain)) {
             return false;
         }
 
@@ -158,14 +163,16 @@ public class GlobalDomainAccessControllerProviderImpl extends GlobalDomainAccess
     @Override
     public Promise<GetMediatorAccessControlEntries1Deferred> getMediatorAccessControlEntries(String uid) {
         GetMediatorAccessControlEntries1Deferred deferred = new GetMediatorAccessControlEntries1Deferred();
-        deferred.resolve(domainAccessStore.getMediatorAccessControlEntries(uid));
+        deferred.resolve(domainAccessStore.getMediatorAccessControlEntries(uid)
+                                          .toArray(new MasterAccessControlEntry[0]));
         return new Promise<GetMediatorAccessControlEntries1Deferred>(deferred);
     }
 
     @Override
     public Promise<GetEditableMediatorAccessControlEntriesDeferred> getEditableMediatorAccessControlEntries(String uid) {
         GetEditableMediatorAccessControlEntriesDeferred deferred = new GetEditableMediatorAccessControlEntriesDeferred();
-        deferred.resolve(domainAccessStore.getEditableMediatorAccessControlEntries(uid));
+        deferred.resolve(domainAccessStore.getEditableMediatorAccessControlEntries(uid)
+                                          .toArray(new MasterAccessControlEntry[0]));
         return new Promise<GetEditableMediatorAccessControlEntriesDeferred>(deferred);
     }
 
@@ -173,7 +180,8 @@ public class GlobalDomainAccessControllerProviderImpl extends GlobalDomainAccess
     public Promise<GetMediatorAccessControlEntries1Deferred> getMediatorAccessControlEntries(String domain,
                                                                                              String interfaceName) {
         GetMediatorAccessControlEntries1Deferred deferred = new GetMediatorAccessControlEntries1Deferred();
-        deferred.resolve(domainAccessStore.getMediatorAccessControlEntries(domain, interfaceName));
+        deferred.resolve(domainAccessStore.getMediatorAccessControlEntries(domain, interfaceName)
+                                          .toArray(new MasterAccessControlEntry[0]));
         return new Promise<GetMediatorAccessControlEntries1Deferred>(deferred);
     }
 
@@ -225,7 +233,7 @@ public class GlobalDomainAccessControllerProviderImpl extends GlobalDomainAccess
     @Override
     public Promise<GetOwnerAccessControlEntries1Deferred> getOwnerAccessControlEntries(String uid) {
         GetOwnerAccessControlEntries1Deferred deferred = new GetOwnerAccessControlEntries1Deferred();
-        deferred.resolve(domainAccessStore.getOwnerAccessControlEntries(uid));
+        deferred.resolve(domainAccessStore.getOwnerAccessControlEntries(uid).toArray(new OwnerAccessControlEntry[0]));
         return new Promise<GetOwnerAccessControlEntries1Deferred>(deferred);
     }
 
@@ -233,14 +241,16 @@ public class GlobalDomainAccessControllerProviderImpl extends GlobalDomainAccess
     public Promise<GetOwnerAccessControlEntries1Deferred> getOwnerAccessControlEntries(String domain,
                                                                                        String interfaceName) {
         GetOwnerAccessControlEntries1Deferred deferred = new GetOwnerAccessControlEntries1Deferred();
-        deferred.resolve(domainAccessStore.getOwnerAccessControlEntries(domain, interfaceName));
+        deferred.resolve(domainAccessStore.getOwnerAccessControlEntries(domain, interfaceName)
+                                          .toArray(new OwnerAccessControlEntry[0]));
         return new Promise<GetOwnerAccessControlEntries1Deferred>(deferred);
     }
 
     @Override
     public Promise<GetEditableOwnerAccessControlEntriesDeferred> getEditableOwnerAccessControlEntries(String uid) {
         GetEditableOwnerAccessControlEntriesDeferred deferred = new GetEditableOwnerAccessControlEntriesDeferred();
-        deferred.resolve(domainAccessStore.getEditableOwnerAccessControlEntries(uid));
+        deferred.resolve(domainAccessStore.getEditableOwnerAccessControlEntries(uid)
+                                          .toArray(new OwnerAccessControlEntry[0]));
         return new Promise<GetEditableOwnerAccessControlEntriesDeferred>(deferred);
     }
 

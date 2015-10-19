@@ -25,16 +25,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import io.joynr.common.ExpiryDate;
-import io.joynr.dispatching.rpc.ReplyCaller;
-import io.joynr.dispatching.rpc.ReplyCallerDirectory;
-import io.joynr.dispatching.rpc.RpcUtils;
-import io.joynr.exceptions.JoynrMessageNotSentException;
-import io.joynr.exceptions.JoynrSendBufferFullException;
-import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.proxy.Callback;
-import io.joynr.proxy.JoynrMessagingConnectorFactory;
-import io.joynr.security.PlatformSecurityManager;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -42,11 +32,6 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
-
-import joynr.JoynrMessage;
-import joynr.OneWay;
-import joynr.Reply;
-import joynr.Request;
 
 import org.junit.After;
 import org.junit.Before;
@@ -67,6 +52,21 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.name.Names;
+
+import io.joynr.common.ExpiryDate;
+import io.joynr.dispatching.rpc.ReplyCaller;
+import io.joynr.dispatching.rpc.ReplyCallerDirectory;
+import io.joynr.dispatching.rpc.RpcUtils;
+import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.exceptions.JoynrSendBufferFullException;
+import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.proxy.Callback;
+import io.joynr.proxy.JoynrMessagingConnectorFactory;
+import io.joynr.security.PlatformSecurityManager;
+import joynr.JoynrMessage;
+import joynr.OneWay;
+import joynr.Reply;
+import joynr.Request;
 
 /**
  * This test mocks the Http Communication Manager out and tests only the functionality contained in the Dispatcher.
@@ -213,7 +213,7 @@ public class RequestReplyManagerTest {
         ArgumentCaptor<Reply> replyCapture = ArgumentCaptor.forClass(Reply.class);
         verify(testRequestCallerSpy).respond(Mockito.eq(payload1));
         verify(replyCallbackMock).onSuccess(replyCapture.capture());
-        assertEquals(reply, replyCapture.getValue().getResponse().get(0));
+        assertEquals(reply, replyCapture.getValue().getResponse()[0]);
     }
 
     @Test

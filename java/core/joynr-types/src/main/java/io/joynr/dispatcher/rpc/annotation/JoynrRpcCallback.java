@@ -24,16 +24,14 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PARAMETER)
 public @interface JoynrRpcCallback {
     /**
-     * A type token. This is needed to correctly deserialize collection types because their type information is erased
+     * A type token. This is needed to correctly deserialize Callback types because their type information is erased
      * after compilation in Java
      *
      * @return the deserialization class
      */
-    Class<? extends TypeReference<?>> deserializationType() default DefaultTypeReference.class;
+    Class<?> deserializationType() default Object.class;
 }

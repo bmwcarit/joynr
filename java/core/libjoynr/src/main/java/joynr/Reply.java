@@ -1,5 +1,7 @@
 package joynr;
 
+import java.util.Arrays;
+
 /*
  * #%L
  * %%
@@ -21,14 +23,11 @@ package joynr;
 
 import io.joynr.exceptions.JoynrException;
 
-import java.util.Arrays;
-import java.util.List;
-
 /**
  * Value class for the response of a JSON-RPC function call.
  */
 public class Reply implements JoynrMessageType {
-    private List<?> response;
+    private Object[] response;
     private JoynrException error;
     private String requestReplyId;
 
@@ -37,7 +36,7 @@ public class Reply implements JoynrMessageType {
 
     public Reply(String requestReplyId, Object... response) {
         this.requestReplyId = requestReplyId;
-        this.response = Arrays.asList(response);
+        this.response = response;
         this.error = null;
     }
 
@@ -47,7 +46,8 @@ public class Reply implements JoynrMessageType {
         this.response = null;
     }
 
-    public List<?> getResponse() {
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "EI_EXPOSE_REP", justification = "response is just a data container and only accessed by trusted code.")
+    public Object[] getResponse() {
         return response;
     }
 
@@ -61,7 +61,8 @@ public class Reply implements JoynrMessageType {
 
     @Override
     public String toString() {
-        return "Reply: " + "requestReplyId: " + requestReplyId + (response == null ? "" : ", response: " + response)
+        return "Reply: " + "requestReplyId: " + requestReplyId
+                + (response == null ? "" : ", response: " + Arrays.toString(response))
                 + (error == null ? "" : ", error: " + error);
     }
 
@@ -95,7 +96,7 @@ public class Reply implements JoynrMessageType {
             if (other.response != null) {
                 return false;
             }
-        } else if (!response.equals(other.response)) {
+        } else if (!Arrays.deepEquals(response, other.response)) {
             return false;
         }
         return true;
@@ -107,7 +108,7 @@ public class Reply implements JoynrMessageType {
         int result = 1;
         result = prime * result + ((error == null) ? 0 : error.hashCode());
         result = prime * result + ((requestReplyId == null) ? 0 : requestReplyId.hashCode());
-        result = prime * result + ((response == null) ? 0 : response.hashCode());
+        result = prime * result + ((response == null) ? 0 : Arrays.hashCode(response));
         return result;
     }
 }

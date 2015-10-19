@@ -26,7 +26,6 @@ import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.ReceiverStatusListener;
 import io.joynr.messaging.http.operation.LongPollingMessageReceiver;
 
-import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -111,7 +110,7 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
         }
 
         String[] urls = { hostPath + contextRoot + "/channels/" + channelId + "/" };
-        channelUrlInformation.setUrls(Arrays.asList(urls));
+        channelUrlInformation.setUrls(urls);
 
         synchronized (registeredSynchronizer) {
             channelUrlDirectory.registerChannelUrls(channelId, channelUrlInformation);

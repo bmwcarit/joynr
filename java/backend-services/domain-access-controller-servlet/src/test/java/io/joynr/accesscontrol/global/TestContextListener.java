@@ -23,7 +23,6 @@ import static org.mockito.Matchers.eq;
 import io.joynr.accesscontrol.DomainAccessControlStore;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import javax.servlet.ServletContextEvent;
@@ -69,33 +68,26 @@ public class TestContextListener extends GuiceServletContextListener {
     public static GlobalDomainAccessStoreAdmin mockedStore = Mockito.mock(GlobalDomainAccessStoreAdmin.class);
 
     public static final String OWNER1 = "owner1";
-    public static final DomainRoleEntry domainRoleEntry_1 = new DomainRoleEntry(OWNER1,
-                                                                                Arrays.asList(domain1,
-                                                                                              domain2,
-                                                                                              "domain3"),
-                                                                                Role.MASTER);
+    public static final DomainRoleEntry domainRoleEntry_1 = new DomainRoleEntry(OWNER1, new String[]{ domain1, domain2,
+            "domain3" }, Role.MASTER);
     public static final String OWNER2 = "owner2";
-    public static final DomainRoleEntry domainRoleEntry_2 = new DomainRoleEntry(OWNER2,
-                                                                                Arrays.asList(domain1,
-                                                                                              domain2,
-                                                                                              "domain3"),
-                                                                                Role.OWNER);
+    public static final DomainRoleEntry domainRoleEntry_2 = new DomainRoleEntry(OWNER2, new String[]{ domain1, domain2,
+            "domain3" }, Role.OWNER);
     public static final MasterAccessControlEntry masterAccessControlEntry = new MasterAccessControlEntry(user1,
                                                                                                          domain1,
                                                                                                          interface1,
                                                                                                          TrustLevel.LOW,
-                                                                                                         Arrays.asList(TrustLevel.MID),
+                                                                                                         new TrustLevel[]{ TrustLevel.MID },
                                                                                                          TrustLevel.HIGH,
-                                                                                                         Arrays.asList(TrustLevel.LOW),
+                                                                                                         new TrustLevel[]{ TrustLevel.LOW },
                                                                                                          operation1,
                                                                                                          Permission.ASK,
-                                                                                                         Arrays.asList(Permission.ASK));
+                                                                                                         new Permission[]{ Permission.ASK });
 
     // Create a dummy domain role entry to allow the servlet access to add/update/delete
     private static final String DUMMY_USER_ID = "dummyUserId";
-    private static final DomainRoleEntry DUMMY_DOMAIN_ROLE = new DomainRoleEntry(DUMMY_USER_ID,
-                                                                                 Arrays.asList(domain1, domain2),
-                                                                                 Role.MASTER);
+    private static final DomainRoleEntry DUMMY_DOMAIN_ROLE = new DomainRoleEntry(DUMMY_USER_ID, new String[]{ domain1,
+            domain2 }, Role.MASTER);
 
     @Override
     public void contextInitialized(ServletContextEvent servletContextEvent) {
@@ -158,12 +150,12 @@ public class TestContextListener extends GuiceServletContextListener {
                                                    domain2,
                                                    interface2,
                                                    TrustLevel.LOW,
-                                                   Arrays.asList(TrustLevel.MID),
+                                                   new TrustLevel[]{ TrustLevel.MID },
                                                    TrustLevel.HIGH,
-                                                   Arrays.asList(TrustLevel.LOW),
+                                                   new TrustLevel[]{ TrustLevel.LOW },
                                                    operation2,
                                                    Permission.ASK,
-                                                   Arrays.asList(Permission.ASK)));
+                                                   new Permission[]{ Permission.ASK }));
         return masterAcl;
     }
 

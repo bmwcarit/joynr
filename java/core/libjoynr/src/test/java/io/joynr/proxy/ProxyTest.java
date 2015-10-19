@@ -30,8 +30,6 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.capabilities.CapabilitiesCallback;
-import io.joynr.capabilities.CapabilityEntry;
-import io.joynr.capabilities.CapabilityEntryImpl;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.common.ExpiryDate;
 import io.joynr.dispatcher.rpc.JoynrAsyncInterface;
@@ -60,14 +58,12 @@ import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.UUID;
 
 import joynr.OnChangeSubscriptionQos;
 import joynr.Reply;
 import joynr.Request;
 import joynr.exceptions.ApplicationException;
-import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.types.CommunicationMiddleware;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
@@ -139,9 +135,9 @@ public class ProxyTest {
     }
 
     public interface AsyncTestInterface extends JoynrAsyncInterface {
-        Future<String> asyncMethod(@JoynrRpcCallback(deserializationType = StringTypeRef.class) Callback<String> callback);
+        Future<String> asyncMethod(@JoynrRpcCallback(deserializationType = String.class) Callback<String> callback);
 
-        Future<String> asyncMethodWithApplicationError(@JoynrRpcCallback(deserializationType = StringTypeRef.class) Callback<String> callback);
+        Future<String> asyncMethodWithApplicationError(@JoynrRpcCallback(deserializationType = String.class) Callback<String> callback);
     }
 
     public interface TestInterface extends SyncTestInterface, AsyncTestInterface {
@@ -184,16 +180,18 @@ public class ProxyTest {
                                                                    TestInterface.INTERFACE_NAME,
                                                                    toParticipantId,
                                                                    new ProviderQos(),
-                                                                   Arrays.asList(CommunicationMiddleware.JOYNR));
+                                                                   new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR });
 
                 fakeCapabilitiesResult.add(discoveryEntry);
                 ((CapabilitiesCallback) args[3]).processCapabilitiesReceived(fakeCapabilitiesResult);
                 return null;
             }
-        }).when(capabilitiesClient).lookup(Mockito.<String> any(),
-                                           Mockito.<String> any(),
-                                           Mockito.<DiscoveryQos> any(),
-                                           Mockito.<CapabilitiesCallback> any());
+        })
+               .when(capabilitiesClient)
+               .lookup(Mockito.<String> any(),
+                       Mockito.<String> any(),
+                       Mockito.<DiscoveryQos> any(),
+                       Mockito.<CapabilitiesCallback> any());
 
         Mockito.doAnswer(new Answer<Object>() {
             @Override

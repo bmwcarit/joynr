@@ -46,19 +46,12 @@ class InterfaceSubscriptionTemplate implements InterfaceTemplate{
 		«warning()»
 		package «packagePath»;
 
-		«IF needsListImport(serviceInterface, false, true)»
-		import java.util.List;
-
-		«ENDIF»
 		import io.joynr.dispatcher.rpc.JoynrSubscriptionInterface;
 
-		«IF getAttributes(serviceInterface).size > 0»
-		import com.fasterxml.jackson.core.type.TypeReference;
-		«IF hasReadAttribute(serviceInterface)»
+		«IF getAttributes(serviceInterface).size > 0 && hasReadAttribute(serviceInterface)»
 		import io.joynr.dispatcher.rpc.annotation.JoynrRpcSubscription;
 		import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 		import io.joynr.pubsub.SubscriptionQos;
-		«ENDIF»
 		«ENDIF»
 
 		«FOR datatype: getRequiredIncludesFor(serviceInterface, false, false, false, true, false)»
@@ -67,21 +60,15 @@ class InterfaceSubscriptionTemplate implements InterfaceTemplate{
 
 		public interface «subscriptionClassName» extends JoynrSubscriptionInterface, «interfaceName» {
 
-		«val attrTypeset = new HashSet(Collections2::transform(getAttributes(serviceInterface), [attribute | attribute.typeName]))»
-
-			«FOR attributeType: attrTypeset»
-			public static class «attributeType.tokenTypeForArrayType»Reference extends TypeReference<«attributeType»> {}
-			«ENDFOR»
-
 		«FOR attribute: getAttributes(serviceInterface)»
 		«var attributeName = attribute.joynrName»
 		«var attributeType = attribute.typeName.objectDataTypeForPlainType»
 			«IF isNotifiable(attribute)»
 
-				@JoynrRpcSubscription(attributeName = "«attributeName»", attributeType = «attributeType.tokenTypeForArrayType»Reference.class)
+				@JoynrRpcSubscription(attributeName = "«attributeName»", attributeType = «attributeType».class)
 				public String subscribeTo«attributeName.toFirstUpper»(AttributeSubscriptionListener<«attributeType»> listener, SubscriptionQos subscriptionQos);
 
-				@JoynrRpcSubscription(attributeName = "«attributeName»", attributeType = «attributeType.tokenTypeForArrayType»Reference.class)
+				@JoynrRpcSubscription(attributeName = "«attributeName»", attributeType = «attributeType».class)
 				public String subscribeTo«attributeName.toFirstUpper»(AttributeSubscriptionListener<«attributeType»> listener, SubscriptionQos subscriptionQos, String subscriptionId);
 
 				public void unsubscribeFrom«attributeName.toFirstUpper»(String subscriptionId);

@@ -19,8 +19,13 @@ package io.joynr.integration;
  * #L%
  */
 
-import com.google.inject.Module;
-
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
@@ -44,9 +49,18 @@ import io.joynr.pubsub.publication.BroadcastListener;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.PropertyLoader;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.UUID;
+import java.util.concurrent.Semaphore;
+
+import joynr.OnChangeSubscriptionQos;
 import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
-import joynr.OnChangeSubscriptionQos;
 import joynr.tests.DefaulttestProvider;
 import joynr.tests.test.MethodWithErrorEnumExtendedErrorEnum;
 import joynr.tests.test.MethodWithImplicitErrorEnumErrorEnum;
@@ -76,18 +90,7 @@ import org.mockito.MockitoAnnotations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.UUID;
-import java.util.concurrent.Semaphore;
-
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
+import com.google.inject.Module;
 
 public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest {
     private static final Logger logger = LoggerFactory.getLogger(AbstractProviderProxyEnd2EndTest.class);
@@ -286,7 +289,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         @Override
         public Promise<MethodWithEnumListReturnDeferred> methodWithEnumListReturn(Integer input) {
             MethodWithEnumListReturnDeferred deferred = new MethodWithEnumListReturnDeferred();
-            deferred.resolve(Arrays.asList(TestEnum.getEnumValue(input)));
+            deferred.resolve(new TestEnum[]{ TestEnum.getEnumValue(input) });
             return new Promise<MethodWithEnumListReturnDeferred>(deferred);
         }
 
@@ -442,11 +445,11 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         locationList.add(new GpsLocation(50.1, 20.1, 500.0, GpsFixEnum.MODE3D, 0.0, 0.0, 0.0, 0.0, 0l, 0l, 1000));
         locationList.add(new GpsLocation(50.1, 20.1, 500.0, GpsFixEnum.MODE3D, 0.0, 0.0, 0.0, 0.0, 0l, 0l, 1000));
         locationList.add(new GpsLocation(50.1, 20.1, 500.0, GpsFixEnum.MODE3D, 0.0, 0.0, 0.0, 0.0, 0l, 0l, 1000));
-        Trip testObject = new Trip(locationList, "Title");
+        Trip testObject = new Trip(locationList.toArray(new GpsLocation[0]), "Title");
         Trip result;
 
         result = proxy.optimizeTrip(testObject);
-        Assert.assertEquals(Double.valueOf(500.0), result.getLocations().get(0).getAltitude());
+        Assert.assertEquals(Double.valueOf(500.0), result.getLocations()[0].getAltitude());
 
     }
 
@@ -778,8 +781,8 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
-        List<TestEnum> enumList = proxy.methodWithEnumListReturn(2);
-        assertArrayEquals(new TestEnum[]{ TestEnum.TWO }, enumList.toArray());
+        TestEnum[] enums = proxy.methodWithEnumListReturn(2);
+        assertArrayEquals(new TestEnum[]{ TestEnum.TWO }, enums);
 
     }
 
@@ -899,6 +902,15 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         } catch (Exception e) {
             Assert.fail(e.toString());
         }
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void syncMethodCallWithArrayParameter() {
+        ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
+        testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        ComplexTestType customParam = new ComplexTestType(1, 2);
+        ComplexTestType2[] customListParam = { new ComplexTestType2(3, 4), new ComplexTestType2(5, 6) };
+        proxy.methodCustomCustomListParameters(customParam, customListParam);
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)

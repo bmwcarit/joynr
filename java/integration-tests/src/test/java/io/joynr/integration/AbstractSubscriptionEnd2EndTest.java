@@ -19,8 +19,15 @@ package io.joynr.integration;
  * #L%
  */
 
-import com.google.inject.Module;
-
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.atMost;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
@@ -35,6 +42,10 @@ import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.PropertyLoader;
+
+import java.util.Properties;
+import java.util.UUID;
+
 import joynr.OnChangeSubscriptionQos;
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
 import joynr.PeriodicSubscriptionQos;
@@ -53,15 +64,7 @@ import org.mockito.MockitoAnnotations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
-import java.util.UUID;
-
-import javassist.compiler.ast.ASTList;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
+import com.google.inject.Module;
 
 public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
     private static final Logger logger = LoggerFactory.getLogger(AbstractSubscriptionEnd2EndTest.class);
@@ -211,21 +214,21 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
     @SuppressWarnings("unchecked")
     @Test
     public void registerSubscriptionForListAndReceiveUpdates() throws InterruptedException {
-        AttributeSubscriptionListener<List<Integer>> integerListListener = mock(AttributeSubscriptionListener.class);
+        AttributeSubscriptionListener<Integer[]> integersListener = mock(AttributeSubscriptionListener.class);
         provider.setTestAttribute(42);
 
         int subscriptionDuration = (period_ms * 3);
         long expiryDate_ms = System.currentTimeMillis() + subscriptionDuration;
         SubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(period_ms, expiryDate_ms, 0, 0);
 
-        String subscriptionId = proxy.subscribeToListOfInts(integerListListener, subscriptionQos);
+        String subscriptionId = proxy.subscribeToListOfInts(integersListener, subscriptionQos);
         Thread.sleep(subscriptionDuration);
-        verify(integerListListener, times(0)).onError(null);
+        verify(integersListener, times(0)).onError(null);
 
-        verify(integerListListener, times(1)).onReceive(eq(Arrays.asList(42)));
-        verify(integerListListener, times(1)).onReceive(eq(Arrays.asList(42, 43)));
-        verify(integerListListener, times(1)).onReceive(eq(Arrays.asList(42, 43, 44)));
-        verifyNoMoreInteractions(integerListListener);
+        verify(integersListener, times(1)).onReceive(eq(new Integer[]{ 42 }));
+        verify(integersListener, times(1)).onReceive(eq(new Integer[]{ 42, 43 }));
+        verify(integersListener, times(1)).onReceive(eq(new Integer[]{ 42, 43, 44 }));
+        verifyNoMoreInteractions(integersListener);
 
         proxy.unsubscribeFromListOfInts(subscriptionId);
     }

@@ -56,11 +56,11 @@ public class PubSubTestProviderImpl extends DefaulttestProvider {
     }
 
     @Override
-    public Promise<Deferred<List<Integer>>> getListOfInts() {
-        Deferred<List<Integer>> deferred = new Deferred<List<Integer>>();
+    public Promise<Deferred<Integer[]>> getListOfInts() {
+        Deferred<Integer[]> deferred = new Deferred<Integer[]>();
         list.add(testAttribute++);
-        deferred.resolve(list);
-        return new Promise<Deferred<List<Integer>>>(deferred);
+        deferred.resolve(list.toArray(new Integer[list.size()]));
+        return new Promise<Deferred<Integer[]>>(deferred);
     }
 
     public GpsLocation getComplexTestAttributeSync() {

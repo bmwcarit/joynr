@@ -26,6 +26,7 @@ import io.joynr.capabilities.CapabilityEntryPersisted;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -69,7 +70,7 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
     }
 
     @Override
-    public Promise<DeferredVoid> add(List<CapabilityInformation> capabilitiesInformation) {
+    public Promise<DeferredVoid> add(CapabilityInformation[] capabilitiesInformation) {
         DeferredVoid deferred = new DeferredVoid();
         // TODO check interfaces before adding them
         List<CapabilityEntry> capabilityEntries = Lists.newArrayList();
@@ -94,12 +95,12 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
     }
 
     @Override
-    public Promise<DeferredVoid> remove(List<String> capabilities) {
+    public Promise<DeferredVoid> remove(String[] capabilities) {
         DeferredVoid deferred = new DeferredVoid();
         // TODO who is allowed to remove capabilities
         List<CapabilityEntry> capabilityEntries = Lists.newArrayList();
         logger.debug("Removing capabilities: Capabilities {}", capabilityEntries);
-        capabiltiesStore.remove(capabilities);
+        capabiltiesStore.remove(Arrays.asList(capabilities));
         deferred.resolve();
         return new Promise<DeferredVoid>(deferred);
     }
@@ -108,10 +109,12 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
     public Promise<Lookup1Deferred> lookup(final String domain, final String interfaceName) {
         Lookup1Deferred deferred = new Lookup1Deferred();
         logger.debug("Searching channels for domain: " + domain + " interfaceName: " + interfaceName + " {}");
-        List<CapabilityInformation> capabilityInformationList = Lists.newArrayList();
         Collection<CapabilityEntry> entryCollection = capabiltiesStore.lookup(domain, interfaceName);
+        CapabilityInformation[] capabilityInformationList = new CapabilityInformation[entryCollection.size()];
+        int index = 0;
         for (CapabilityEntry entry : entryCollection) {
-            capabilityInformationList.add(entry.toCapabilityInformation());
+            capabilityInformationList[index] = entry.toCapabilityInformation();
+            index++;
         }
         deferred.resolve(capabilityInformationList);
         return new Promise<Lookup1Deferred>(deferred);

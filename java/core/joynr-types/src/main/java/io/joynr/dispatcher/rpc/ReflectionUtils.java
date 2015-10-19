@@ -19,15 +19,11 @@ package io.joynr.dispatcher.rpc;
  * #L%
  */
 
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcReturn;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-
-import javax.annotation.CheckForNull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,9 +34,9 @@ import org.slf4j.LoggerFactory;
 public class ReflectionUtils {
     /**
      * Utility function to find a method in a class by name.
-     * 
+     *
      * @param parameterTypes
-     * 
+     *
      * @return any method in the class that has the specified method name
      */
     private static final Logger logger = LoggerFactory.getLogger(ReflectionUtils.class);
@@ -108,56 +104,19 @@ public class ReflectionUtils {
             throw new IllegalArgumentException(msg);
         }
 
-        Class<?>[] currentMethodParamTypes = method.getParameterTypes();
+        String[] currentMethodParamTypes = toDatatypeNames(method.getParameterTypes());
         if (paramTypeNames.size() != currentMethodParamTypes.length) {
             return false;
 
         }
         for (int i = 0; i < currentMethodParamTypes.length; i++) {
-            String currentParamName = currentMethodParamTypes[i].getName();
+            String currentParamName = currentMethodParamTypes[i];
             String matchingParamName = paramTypeNames.get(i);
             if (!currentParamName.equals(matchingParamName)) {
                 return false;
             }
         }
         return true;
-    }
-
-    @CheckForNull
-    public static JoynrRpcReturn findReturnAnnotation(Method method) {
-        JoynrRpcReturn res = method.getAnnotation(JoynrRpcReturn.class);
-        if (res != null) {
-            return res;
-        }
-
-        for (Class<?> interfaceClass : method.getDeclaringClass().getInterfaces()) {
-            try {
-                if (JoynrSyncInterface.class.isAssignableFrom(interfaceClass)) {
-
-                    res = findReturnAnnotation(findMethodByParamTypes(interfaceClass,
-                                                                      method.getName(),
-                                                                      method.getParameterTypes()));
-                    if (res != null) {
-                        return res;
-                    }
-                }
-            } catch (NoSuchMethodException e) {
-            }
-        }
-
-        if (method.getDeclaringClass().getSuperclass() != null) {
-            try {
-                res = findReturnAnnotation(findMethodByParamTypes(method.getDeclaringClass().getSuperclass(),
-                                                                  method.getName(),
-                                                                  method.getParameterTypes()));
-                if (res != null) {
-                    return res;
-                }
-            } catch (NoSuchMethodException e) {
-            }
-        }
-
-        return null;
     }
 
     /**
@@ -216,5 +175,22 @@ public class ReflectionUtils {
         }
 
         return true;
+    }
+
+    public static String[] toDatatypeNames(Class<?>... types) {
+        if (types == null) {
+            return null;
+        }
+
+        String[] strings = new String[types.length];
+        for (int i = 0; i < types.length; i++) {
+            Class<?> type = types[i];
+            if (type == null) {
+                continue;
+            } else {
+                strings[i] = type.getCanonicalName().replace("java.lang.", "");
+            }
+        }
+        return strings;
     }
 }

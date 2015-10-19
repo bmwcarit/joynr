@@ -25,9 +25,6 @@ import io.joynr.accesscontrol.broadcastlistener.LdacDomainRoleEntryChangedBroadc
 import io.joynr.accesscontrol.broadcastlistener.LdacMasterAccessControlEntryChangedBroadcastListener;
 import io.joynr.accesscontrol.broadcastlistener.LdacMediatorAccessControlEntryChangedBroadcastListener;
 import io.joynr.accesscontrol.broadcastlistener.LdacOwnerAccessControlEntryChangedBroadcastListener;
-
-import java.util.Arrays;
-
 import joynr.infrastructure.DacTypes.ChangeType;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
@@ -59,17 +56,17 @@ public class GdacBroadcastListenerTest {
     @Before
     public void setup() {
         // instantiate some template objects
-        userDre = new DomainRoleEntry(UID1, Arrays.asList(DOMAIN1), Role.OWNER);
+        userDre = new DomainRoleEntry(UID1, new String[]{ DOMAIN1 }, Role.OWNER);
         masterAce = new MasterAccessControlEntry(UID1,
                                                  DOMAIN1,
                                                  INTERFACE1,
                                                  TrustLevel.LOW,
-                                                 Arrays.asList(TrustLevel.MID, TrustLevel.LOW),
+                                                 new TrustLevel[]{ TrustLevel.MID, TrustLevel.LOW },
                                                  TrustLevel.LOW,
-                                                 Arrays.asList(TrustLevel.MID, TrustLevel.LOW),
+                                                 new TrustLevel[]{ TrustLevel.MID, TrustLevel.LOW },
                                                  OPEARATION1,
                                                  Permission.NO,
-                                                 Arrays.asList(Permission.ASK, Permission.NO));
+                                                 new Permission[]{ Permission.ASK, Permission.NO });
         ownerAce = new OwnerAccessControlEntry(UID1,
                                                DOMAIN1,
                                                INTERFACE1,

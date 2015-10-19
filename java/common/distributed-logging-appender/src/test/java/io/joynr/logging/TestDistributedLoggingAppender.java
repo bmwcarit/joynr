@@ -136,13 +136,13 @@ public class TestDistributedLoggingAppender {
         Thread.sleep(200);
 
         @SuppressWarnings("unchecked")
-        ArgumentCaptor<List<JoynrLogEvent>> argument = ArgumentCaptor.forClass((Class) List.class);
+        ArgumentCaptor<JoynrLogEvent[]> argument = ArgumentCaptor.forClass(JoynrLogEvent[].class);
 
         verify(loggingProxy, times(3)).log(argument.capture());
-        List<List<JoynrLogEvent>> capturedLoggingEvents = argument.getAllValues();
-        assertThat(capturedLoggingEvents.get(0).get(0).getMessage(), containsString("test1"));
-        assertThat(capturedLoggingEvents.get(1).get(0).getMessage(), containsString("test2"));
-        assertThat(capturedLoggingEvents.get(2).get(0).getMessage(), containsString("test3"));
+        List<JoynrLogEvent[]> capturedLoggingEvents = argument.getAllValues();
+        assertThat(capturedLoggingEvents.get(0)[0].getMessage(), containsString("test1"));
+        assertThat(capturedLoggingEvents.get(1)[0].getMessage(), containsString("test2"));
+        assertThat(capturedLoggingEvents.get(2)[0].getMessage(), containsString("test3"));
     }
 
     @Test
@@ -178,12 +178,12 @@ public class TestDistributedLoggingAppender {
         Thread.sleep(1500);
 
         @SuppressWarnings("unchecked")
-        ArgumentCaptor<List<JoynrLogEvent>> argument = ArgumentCaptor.forClass((Class) List.class);
+        ArgumentCaptor<JoynrLogEvent[]> argument = ArgumentCaptor.forClass(JoynrLogEvent[].class);
         verify(loggingProxy, atMost(2)).log(argument.capture());
-        verify(loggingProxy, atLeast(1)).log(Matchers.<List<JoynrLogEvent>> any());
+        verify(loggingProxy, atLeast(1)).log(Matchers.<JoynrLogEvent[]> any());
 
         for (int i = 0; i < numberOfLogEvents; i++) {
-            assertThat(argument.getValue().get(i).getMessage(), containsString("test" + i));
+            assertThat(argument.getValue()[i].getMessage(), containsString("test" + i));
         }
 
     }
@@ -216,13 +216,14 @@ public class TestDistributedLoggingAppender {
         logger.debug("test3");
 
         @SuppressWarnings("unchecked")
-        ArgumentCaptor<List<JoynrLogEvent>> argument = ArgumentCaptor.forClass((Class) List.class);
+        ArgumentCaptor<JoynrLogEvent[]> argument = ArgumentCaptor.forClass(JoynrLogEvent[].class);
+
         verify(loggingProxy, times(3)).log(argument.capture());
 
-        List<List<JoynrLogEvent>> capturedLoggingEvents = argument.getAllValues();
-        assertThat(capturedLoggingEvents.get(0).get(0).getMessage(), containsString("test1"));
-        assertThat(capturedLoggingEvents.get(1).get(0).getMessage(), containsString("test2"));
-        assertThat(capturedLoggingEvents.get(2).get(0).getMessage(), containsString("test3"));
+        List<JoynrLogEvent[]> capturedLoggingEvents = argument.getAllValues();
+        assertThat(capturedLoggingEvents.get(0)[0].getMessage(), containsString("test1"));
+        assertThat(capturedLoggingEvents.get(1)[0].getMessage(), containsString("test2"));
+        assertThat(capturedLoggingEvents.get(2)[0].getMessage(), containsString("test3"));
 
     }
 
@@ -343,13 +344,13 @@ public class TestDistributedLoggingAppender {
         Thread.sleep(1010);
 
         @SuppressWarnings("unchecked")
-        ArgumentCaptor<List<JoynrLogEvent>> argument = ArgumentCaptor.forClass((Class) List.class);
+        ArgumentCaptor<JoynrLogEvent[]> argument = ArgumentCaptor.forClass(JoynrLogEvent[].class);
         verify(loggingProxy, times(3)).log(argument.capture());
 
-        List<List<JoynrLogEvent>> capturedLoggingEvents = argument.getAllValues();
-        assertThat(capturedLoggingEvents.get(0).get(0).getMessage(), containsString("test1"));
-        assertThat(capturedLoggingEvents.get(1).get(0).getMessage(), containsString("test2"));
-        assertThat(capturedLoggingEvents.get(2).get(0).getMessage(), containsString("test3"));
+        List<JoynrLogEvent[]> capturedLoggingEvents = argument.getAllValues();
+        assertThat(capturedLoggingEvents.get(0)[0].getMessage(), containsString("test1"));
+        assertThat(capturedLoggingEvents.get(1)[0].getMessage(), containsString("test2"));
+        assertThat(capturedLoggingEvents.get(2)[0].getMessage(), containsString("test3"));
     }
 
 }

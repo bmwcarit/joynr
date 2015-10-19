@@ -1,5 +1,16 @@
 package io.joynr.proxy;
 
+import java.io.IOException;
+import java.lang.reflect.Method;
+
+import javax.annotation.CheckForNull;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+
 /*
  * #%L
  * %%
@@ -35,22 +46,10 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
 import io.joynr.proxy.invocation.UnsubscribeInvocation;
-
-import java.io.IOException;
-import java.lang.reflect.Method;
-
-import javax.annotation.CheckForNull;
-
 import joynr.MethodMetaInformation;
 import joynr.Reply;
 import joynr.Request;
 import joynr.exceptions.ApplicationException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 
 //TODO maybe Connector should not be a dynamic proxy. ProxyInvocationHandler could call execute...Method() directly.
 final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocationHandler {
@@ -164,7 +163,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
             if (method.getReturnType().equals(void.class)) {
                 return null;
             }
-            return RpcUtils.reconstructReturnedObject(method, methodMetaInformation, reply.getResponse().toArray());
+            return RpcUtils.reconstructReturnedObject(method, methodMetaInformation, reply.getResponse());
         } else if (reply.getError() instanceof ApplicationException) {
             throw (ApplicationException) reply.getError();
         } else {

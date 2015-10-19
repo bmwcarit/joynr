@@ -1,5 +1,8 @@
 package io.joynr.proxy;
 
+import java.util.Arrays;
+import java.util.List;
+
 /*
  * #%L
  * %%
@@ -21,25 +24,23 @@ package io.joynr.proxy;
 
 import io.joynr.dispatching.RequestCaller;
 
-import java.util.List;
-
 public class MethodSignature {
     private RequestCaller requestCaller;
     private String methodName;
-    private List<String> fullyQualifiedParameterTypeNames;
+    private String[] parameterTypeNames;
 
-    public MethodSignature(RequestCaller requestCaller, String methodName, List<String> fullyQualifiedParameterTypeNames) {
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "EI_EXPOSE_REP2", justification = "parameterTypeName is not modified by external code.")
+    public MethodSignature(RequestCaller requestCaller, String methodName, String[] parameterTypeNames) {
         this.requestCaller = requestCaller;
         this.methodName = methodName;
-        this.fullyQualifiedParameterTypeNames = fullyQualifiedParameterTypeNames;
+        this.parameterTypeNames = parameterTypeNames;
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result
-                + ((fullyQualifiedParameterTypeNames == null) ? 0 : fullyQualifiedParameterTypeNames.hashCode());
+        result = prime * result + ((parameterTypeNames == null) ? 0 : Arrays.hashCode(parameterTypeNames));
         result = prime * result + ((methodName == null) ? 0 : methodName.hashCode());
         result = prime * result + ((requestCaller == null) ? 0 : requestCaller.getClass().hashCode());
         return result;
@@ -57,11 +58,11 @@ public class MethodSignature {
             return false;
         }
         MethodSignature other = (MethodSignature) obj;
-        if (fullyQualifiedParameterTypeNames == null) {
-            if (other.fullyQualifiedParameterTypeNames != null) {
+        if (parameterTypeNames == null) {
+            if (other.parameterTypeNames != null) {
                 return false;
             }
-        } else if (!fullyQualifiedParameterTypeNames.equals(other.fullyQualifiedParameterTypeNames)) {
+        } else if (!Arrays.equals(parameterTypeNames, other.parameterTypeNames)) {
             return false;
         }
         if (methodName == null) {
@@ -89,8 +90,8 @@ public class MethodSignature {
         return methodName;
     }
 
-    public List<String> getFullyQualifiedParameterTypeNames() {
-        return fullyQualifiedParameterTypeNames;
+    public List<String> getParameterTypeNames() {
+        return Arrays.asList(parameterTypeNames);
     }
 
 }

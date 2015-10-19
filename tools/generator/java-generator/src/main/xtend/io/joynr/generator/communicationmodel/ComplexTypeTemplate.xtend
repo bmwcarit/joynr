@@ -47,11 +47,7 @@ import io.joynr.subtypes.JoynrType;
 import «member»;
 «ENDFOR»
 «IF hasArrayMembers(complexType)»
-import java.util.List;
-«ENDIF»
-«IF hasListsInConstructor(complexType)»
-import java.util.ArrayList;
-import com.google.common.collect.Lists;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 «ENDIF»
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -70,7 +66,7 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «com
 	«val memberType = member.typeName.replace("::","__")»
 	@JsonProperty("«member.joynrName»")
 	«IF isArray(member)»
-	private «memberType» «member.joynrName» = Lists.newArrayList();
+	private «memberType» «member.joynrName» = {};
 	«ELSE»
 	private «memberType» «member.joynrName»;
 	«ENDIF»
@@ -81,7 +77,9 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «com
 	 */
 	public «typeName»() {
 		«FOR member : getMembers(complexType)»
-		this.«member.joynrName» = «member.defaultValue»;
+			«IF !(isArray(member))»
+				this.«member.joynrName» = «member.defaultValue»;
+			«ENDIF»
 		«ENDFOR»
 	}
 
@@ -97,17 +95,7 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «com
 		«ENDIF»
 		«FOR member : getMembers(complexType)»
 		«IF isArray(member)»
-			«IF isComplex(member.type)»
-			«val memberType = member.type.typeName»
-			this.«member.joynrName» = «member.defaultValue»;
-			if («copyObjName».«member.joynrName» != null){
-				for («memberType» element : «copyObjName».«member.joynrName») {
-					this.«member.joynrName».add(new «memberType»(element));
-				}
-			}
-			«ELSE»
-			this.«member.joynrName» = «getDefaultValue(member, copyObjName + "." + member.joynrName)»;
-			«ENDIF»
+			this.«member.joynrName» = «copyObjName».«member.joynrName»;
 		«ELSE»
 			«IF isComplex(member.type)»
 			«val memberType = member.type.typeName»
@@ -127,6 +115,7 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «com
 	 «appendJavadocParameter(member, "*")»
 	 «ENDFOR»
 	 */
+	«IF hasArrayMembers(complexType)»@SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "joynr object not used for storing internal state")«ENDIF»
 	public «typeName»(
 		«FOR member : getMembersRecursive(complexType) SEPARATOR ','»
 		«member.typeName.replace("::","__")» «member.joynrName»
@@ -153,6 +142,7 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «com
 	 *
 	 * @return «appendJavadocComment(member, "* ")»
 	 */
+	«IF member.array»@SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "joynr object not used for storing internal state")«ENDIF»
 	@JsonIgnore
 	public «memberType» get«memberName.toFirstUpper»() {
 		return this.«member.joynrName»;
@@ -163,6 +153,7 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «com
 	 *
 	 «appendJavadocParameter(member, "*")»
 	 */
+	«IF member.array»@SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "joynr object not used for storing internal state")«ENDIF»
 	@JsonIgnore
 	public void set«memberName.toFirstUpper»(«memberType» «member.joynrName») {
 		this.«member.joynrName» = «member.joynrName»;
@@ -182,7 +173,11 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «com
 				+ super.toString() + ", "
 		«ENDIF»
 		«FOR member : getMembers(complexType) SEPARATOR " + \", \""»
-			+ "«member.joynrName»=" + this.«member.joynrName»
+			«IF member.array»
+				+ "«member.joynrName»=" + java.util.Arrays.toString(this.«member.joynrName»)
+			«ELSE»
+				+ "«member.joynrName»=" + this.«member.joynrName»
+			«ENDIF»
 		«ENDFOR»
 		+ "]";
 	}
@@ -217,6 +212,10 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «com
 			} else if (!java.util.Arrays.equals(this.«member.joynrName», other.«member.joynrName»)){
 				return false;
 			}
+			«ELSEIF member.array»
+			} else if (!java.util.Arrays.deepEquals(this.«member.joynrName», other.«member.joynrName»)){
+				return false;
+			}
 			«ELSE»
 			} else if (!this.«member.joynrName».equals(other.«member.joynrName»)){
 				return false;
@@ -242,7 +241,7 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «com
 		final int prime = 31;
 		«ENDIF»
 		«FOR member : getMembers(complexType)»
-			«IF isByteBuffer(member.type)»
+			«IF isByteBuffer(member.type) || member.array»
 				result = prime * result + ((this.«member.joynrName» == null) ? 0 : java.util.Arrays.hashCode(this.«member.joynrName»));
 			«ELSE»
 				result = prime * result + ((this.«member.joynrName» == null) ? 0 : this.«member.joynrName».hashCode());

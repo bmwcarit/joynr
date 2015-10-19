@@ -89,7 +89,7 @@ public class DistributedLoggingManager extends AbstractManager {
         }
 
         if (sendingEvents.size() > 0) {
-            loggingProxy.log(sendingEvents);
+            loggingProxy.log(sendingEvents.toArray(new JoynrLogEvent[0]));
         }
     }
 

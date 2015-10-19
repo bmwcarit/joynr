@@ -34,8 +34,6 @@ import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.PropertyLoader;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -99,16 +97,16 @@ public class ChannelUrlDirectoryTest {
         String testChannelId = name.getMethodName() + UUID.randomUUID().toString();
         String[] urls = { "http://testurl.com/" + testChannelId + "/" };
         ChannelUrlInformation channelUrlInformation = new ChannelUrlInformation();
-        channelUrlInformation.setUrls(Arrays.asList(urls));
+        channelUrlInformation.setUrls(urls);
 
         proxy.registerChannelUrls(testChannelId, channelUrlInformation);
 
         ChannelUrlInformation urlsForChannelId = proxy.getUrlsForChannel(testChannelId);
 
-        List<String> urlsFromServer = urlsForChannelId.getUrls();
         proxy.unregisterChannelUrls(testChannelId);
 
-        Assert.assertArrayEquals(urls, urlsFromServer.toArray(new String[urlsFromServer.size()]));
+        String[] urlsFromServer = urlsForChannelId.getUrls();
+        Assert.assertArrayEquals(urls, urlsFromServer);
         proxy.unregisterChannelUrls(testChannelId);
 
     }

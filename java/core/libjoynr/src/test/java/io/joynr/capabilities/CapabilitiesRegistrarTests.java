@@ -42,8 +42,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.Arrays;
-
 @RunWith(MockitoJUnitRunner.class)
 public class CapabilitiesRegistrarTests {
 
@@ -111,7 +109,7 @@ public class CapabilitiesRegistrarTests {
                                                                      TestInterface.INTERFACE_NAME,
                                                                      participantId,
                                                                      providerQos,
-                                                                     Arrays.asList(CommunicationMiddleware.JOYNR))));
+                                                                     new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR })));
 
         verify(requestCallerFactory).create(provider);
 
@@ -130,7 +128,7 @@ public class CapabilitiesRegistrarTests {
                                                                         TestInterface.INTERFACE_NAME,
                                                                         participantId,
                                                                         providerQos,
-                                                                        Arrays.asList(CommunicationMiddleware.JOYNR))));
+                                                                        new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR })));
         verify(requestCallerDirectory).removeCaller(eq(participantId));
     }
 

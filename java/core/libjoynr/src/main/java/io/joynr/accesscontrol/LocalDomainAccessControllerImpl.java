@@ -29,6 +29,7 @@ import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilderFactory;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -116,9 +117,14 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
     public boolean hasRole(String userId, String domain, Role role) {
         boolean hasRole = false;
         DomainRoleEntry dre = localDomainAccessStore.getDomainRole(userId, role);
-        if (dre != null && dre.getDomains().contains(domain)) {
-            hasRole = true;
-        } else {
+        if (dre != null) {
+            List<String> domains = Arrays.asList(dre.getDomains());
+            if (domains.contains(domain)) {
+                hasRole = true;
+            }
+        }
+
+        if (!hasRole) {
             subscribeForDreChange(userId);
         }
 

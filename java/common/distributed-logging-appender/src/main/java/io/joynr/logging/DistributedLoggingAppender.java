@@ -20,8 +20,6 @@ package io.joynr.logging;
  */
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
 import joynr.system.JoynrLogEvent;
 import joynr.system.JoynrLogLevel;
@@ -72,7 +70,6 @@ public class DistributedLoggingAppender extends AbstractAppender {
             if (thrown != null) {
                 exception = new JoynrLoggedError(thrown.getClass().getName(), thrown.getMessage());
             }
-            List<JoynrLoggingContextTag> tags = new ArrayList<JoynrLoggingContextTag>();
             JoynrLogEvent logEvent = new JoynrLogEvent(event.getMillis(),
                                                        "1",
                                                        "host",
@@ -80,7 +77,7 @@ public class DistributedLoggingAppender extends AbstractAppender {
                                                        message,
                                                        JoynrLogLevel.valueOf(event.getLevel().name()),
                                                        exception,
-                                                       tags);
+                                                       new JoynrLoggingContextTag[0]);
             manager.queue(logEvent);
         } catch (final Exception ex) {
             throw new AppenderLoggingException(ex);

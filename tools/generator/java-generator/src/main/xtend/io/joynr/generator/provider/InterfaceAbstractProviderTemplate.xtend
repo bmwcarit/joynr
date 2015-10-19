@@ -45,10 +45,6 @@ class InterfaceAbstractProviderTemplate implements InterfaceTemplate{
 «warning()»
 package «packagePath»;
 
-«IF needsListImport(serviceInterface, false, true)»
-	import java.util.List;
-«ENDIF»
-
 import io.joynr.provider.AbstractJoynrProvider;
 
 «FOR datatype : getRequiredIncludesFor(serviceInterface, false, false, false, true, true)»

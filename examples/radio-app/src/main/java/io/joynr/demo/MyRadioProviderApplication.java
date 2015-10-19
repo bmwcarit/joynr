@@ -29,7 +29,6 @@ import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Properties;
 
 import jline.console.ConsoleReader;
@@ -201,12 +200,12 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
                                                                                             domain,
                                                                                             MyRadioProvider.INTERFACE_NAME,
                                                                                             TrustLevel.LOW,
-                                                                                            Arrays.asList(TrustLevel.LOW),
+                                                                                            new TrustLevel[]{ TrustLevel.LOW },
                                                                                             TrustLevel.LOW,
-                                                                                            Arrays.asList(TrustLevel.LOW),
+                                                                                            new TrustLevel[]{ TrustLevel.LOW },
                                                                                             "*",
                                                                                             Permission.YES,
-                                                                                            Arrays.asList(Permission.YES));
+                                                                                            new Permission[]{ Permission.YES });
 
         MasterAccessControlEntry[] provisionedAccessControlEntries = { newMasterAccessControlEntry };
         String provisionedAccessControlEntriesAsJson = objectMapper.writeValueAsString(provisionedAccessControlEntries);

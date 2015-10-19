@@ -34,7 +34,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
  */
 public class AttributeSubscribeInvocation extends SubscriptionInvocation {
     private final AttributeSubscriptionListener<?> attributeSubscriptionListener;
-    private final Class<? extends TypeReference<?>> attributeTypeReference;
+    private final Class<?> attributeTypeReference;
     private String subscriptionId = "";
     private final SubscriptionQos qos;
     private final String attributeName;
@@ -88,7 +88,7 @@ public class AttributeSubscribeInvocation extends SubscriptionInvocation {
         return attributeSubscriptionListener;
     }
 
-    public Class<? extends TypeReference<?>> getAttributeTypeReference() {
+    public Class<?> getAttributeTypeReference() {
         return attributeTypeReference;
     }
 

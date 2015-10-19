@@ -19,6 +19,8 @@ package joynr;
  * #L%
  */
 
+import io.joynr.dispatcher.rpc.ReflectionUtils;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -33,6 +35,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  */
 public class Request implements JoynrMessageType {
 
+    private static final long serialVersionUID = 1L;
     private String methodName;
     private String requestReplyId;
     private String[] paramDatatypes;
@@ -61,44 +64,7 @@ public class Request implements JoynrMessageType {
     }
 
     public Request(String name, Object[] params, Class<?>[] parameterTypes) {
-        this(name, params, toDatatypeNames(parameterTypes), null);
-    }
-
-    private static String[] toDatatypeNames(Class<?>[] types) {
-        if (types == null) {
-            return null;
-        }
-
-        String[] strings = new String[types.length];
-        for (int i = 0; i < types.length; i++) {
-            Class<?> type = types[i];
-            String typeName = null;
-            if (type == null) {
-                continue;
-            } else if (Boolean.class.isAssignableFrom(type)) {
-                typeName = "Boolean";
-            } else if (Byte.class.isAssignableFrom(type)) {
-                typeName = "Byte";
-            } else if (Short.class.isAssignableFrom(type)) {
-                typeName = "Short";
-            } else if (Integer.class.isAssignableFrom(type)) {
-                typeName = "Integer";
-            } else if (Long.class.isAssignableFrom(type)) {
-                typeName = "Long";
-            } else if (Float.class.isAssignableFrom(type)) {
-                typeName = "Float";
-            } else if (Double.class.isAssignableFrom(type)) {
-                typeName = "Double";
-            } else if (String.class.isAssignableFrom(type)) {
-                typeName = "String";
-            } else if (List.class.isAssignableFrom(type)) {
-                typeName = "List";
-            } else {
-                typeName = type.getCanonicalName();
-            }
-            strings[i] = typeName;
-        }
-        return strings;
+        this(name, params, ReflectionUtils.toDatatypeNames(parameterTypes), null);
     }
 
     @JsonIgnore
@@ -178,12 +144,15 @@ public class Request implements JoynrMessageType {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
 
         Request other = (Request) obj;
 

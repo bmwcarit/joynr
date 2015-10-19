@@ -29,13 +29,11 @@ import io.joynr.provider.RequestCallerFactory;
 import javax.inject.Named;
 
 import joynr.system.RoutingTypes.Address;
-
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import joynr.types.CommunicationMiddleware;
 import joynr.types.DiscoveryEntry;
 
-import java.util.Arrays;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 @Singleton
 public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
@@ -75,7 +73,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                                                            provider.getInterfaceName(),
                                                            participantId,
                                                            provider.getProviderQos(),
-                                                           Arrays.asList(CommunicationMiddleware.JOYNR));
+                                                           new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR });
         RequestCaller requestCaller = requestCallerFactory.create(provider);
 
         messageRouter.addNextHop(participantId, libjoynrMessagingAddress);
@@ -92,7 +90,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                                                            provider.getInterfaceName(),
                                                            participantId,
                                                            provider.getProviderQos(),
-                                                           Arrays.asList(CommunicationMiddleware.JOYNR));
+                                                           new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR });
         localCapabilitiesDirectory.remove(discoveryEntry);
         requestCallerDirectory.removeCaller(participantId);
     }

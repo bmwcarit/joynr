@@ -24,7 +24,6 @@ import io.joynr.examples.android_location_provider.MyLocation.LocationResult;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.Promise;
 
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -36,8 +35,6 @@ import joynr.types.Localisation.GpsLocation;
 import joynr.vehicle.DefaultGpsProvider;
 import android.content.Context;
 import android.location.Location;
-
-import com.google.common.collect.Lists;
 
 public class AndroidLocationProvider extends DefaultGpsProvider {
 
@@ -54,8 +51,7 @@ public class AndroidLocationProvider extends DefaultGpsProvider {
         this.output = output;
         this.location = new GpsLocation();
         if (keyword != null && !keyword.equals("")) {
-            List<CustomParameter> qosParameterList = Lists.newArrayList();
-            qosParameterList.add(new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, keyword));
+            CustomParameter[] qosParameterList = { new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, keyword) };
             providerQos.setCustomParameters(qosParameterList);
         }
         providerQos.setPriority(System.currentTimeMillis());

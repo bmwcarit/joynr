@@ -161,11 +161,11 @@ class JavaTypeUtil extends AbstractTypeUtil {
 	}
 
 	override getTypeNameForList(FBasicTypeId datatype) {
-		"List<" + getObjectDataTypeForPlainType(datatype.typeName) + ">";
+		getObjectDataTypeForPlainType(datatype.typeName) + "[]";
 	}
 
 	override getTypeNameForList(FType datatype) {
-		"List<" + getObjectDataTypeForPlainType(datatype.typeName) + ">";
+		getObjectDataTypeForPlainType(datatype.typeName) + "[]";
 	}
 
 	def String getTypedParameterListJavaRpc(FMethod method) {
@@ -211,74 +211,23 @@ class JavaTypeUtil extends AbstractTypeUtil {
 		return sb.toString
 	}
 
-	def String getTokenTypeForArrayType(String plainType) {
-		if (plainType.contains("List<")) {
-			return "List" + getObjectDataTypeForPlainType(plainType.substring(5, plainType.length-1));
-		} else {
-			return getObjectDataTypeForPlainType(plainType);
-		}
-	}
-
 	def getDefaultValue(FTypedElement element) {
 		getDefaultValue(element, "");
 	}
 
 	def getDefaultValue(FTypedElement element, String constructorParams) {
-		//default values are not supported (currently) by the Franca IDL
-/*		if (member.getDEFAULTVALUE()!=null && !member.getDEFAULTVALUE().isEmpty()){
-			if (isEnum(member)){
-				val ENUMDATATYPETYPE enumDatatype = getDatatype(id) as ENUMDATATYPETYPE
-				for (ENUMELEMENTTYPE element : getEnumElements(enumDatatype)){
-					if (element.VALUE == member.DEFAULTVALUE){
-						return enumDatatype.SHORTNAME.toFirstUpper + "::" + element.SYNONYM
-					}
-				}
-				return getPackagePath(enumDatatype, "::") + "::" + enumDatatype.SHORTNAME.toFirstUpper + "::" +  (enumDatatype.ENUMERATIONELEMENTS.ENUMELEMENT.get(0) as ENUMELEMENTTYPE).SYNONYM
-			}
-			else if (isLong(member.getDATATYPEREF().getIDREF())){
-				return member.getDEFAULTVALUE() + "L"
-			}
-			else if (isDouble(member.getDATATYPEREF().getIDREF())){
-				return member.getDEFAULTVALUE() + "d"
-			}
-			else{
-				return member.getDEFAULTVALUE();
-			}
-		} else */ if (isComplex(element.type)) {
-			if ((isArray(element))){
-				return "new ArrayList<" + element.type.complexType.joynrName + ">(" + constructorParams + ")";
-			} else {
-				return "new " + element.type.complexType.joynrName + "(" + constructorParams + ")";
-			}
+		if ((isArray(element))){
+			return "{}";
+		} 
+
+		if (isComplex(element.type)) {
+			return "new " + element.type.complexType.joynrName + "(" + constructorParams + ")";
 		} else if (isEnum(element.type)) {
-			if ((isArray(element))) {
-				return "new ArrayList<" + element.type.enumType.joynrName + ">(" + constructorParams + ")";
-			} else {
-				return  element.type.enumType.joynrName + "." + element.type.enumType.enumerators.get(0).joynrName;
-			}
+			return  element.type.enumType.joynrName + "." + element.type.enumType.enumerators.get(0).joynrName;
 		} else if (!primitiveDataTypeDefaultMap.containsKey(element.type.predefined)) {
  			return "NaN";
  		} else if (isPrimitive(element.type)) {
-			if ((isArray(element))){
-				return "new ArrayList<" + getPrimitive(element.type).typeName + ">(" + constructorParams + ")";
-			} else {
-				return primitiveDataTypeDefaultMap.get(element.type.predefined);
-			}
+			return primitiveDataTypeDefaultMap.get(element.type.predefined);
 		}
-	}
-
-	def String getJoynFullyQualifiedTypeName(FTypedElement typedElement) {
-		if (typedElement.array == '[]') {
-			return "List"
-		}
-		if (typedElement.type.derived != null) {
-			getJoynFullyQualifiedTypeName(typedElement.type.derived)
-		} else {
-			typedElement.type.predefined.typeName
-		}
-	}
-
-	def getJoynFullyQualifiedTypeName(FType type) {
-		joynTypePackagePrefix + "." + type.typeName
 	}
 }

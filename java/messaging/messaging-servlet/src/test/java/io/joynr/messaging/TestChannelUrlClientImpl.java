@@ -43,7 +43,7 @@ public class TestChannelUrlClientImpl implements ChannelUrlDirectoryProxy {
     }
 
     @Override
-    public Future<Void> registerChannelUrls(@JoynrRpcCallback(deserializationType = VoidToken.class) Callback<Void> callback,
+    public Future<Void> registerChannelUrls(@JoynrRpcCallback(deserializationType = Void.class) Callback<Void> callback,
                                             @JoynrRpcParam("channelId") String channelId,
                                             @JoynrRpcParam("channelUrlInformation") ChannelUrlInformation channelUrlInformation) {
         entries.put(channelId, channelUrlInformation);
@@ -53,7 +53,7 @@ public class TestChannelUrlClientImpl implements ChannelUrlDirectoryProxy {
     }
 
     @Override
-    public Future<Void> unregisterChannelUrls(@JoynrRpcCallback(deserializationType = VoidToken.class) Callback<Void> callback,
+    public Future<Void> unregisterChannelUrls(@JoynrRpcCallback(deserializationType = Void.class) Callback<Void> callback,
                                               @JoynrRpcParam("channelId") String channelId) {
         Future<Void> future = new Future<Void>();
         future.onSuccess(null);
@@ -61,7 +61,7 @@ public class TestChannelUrlClientImpl implements ChannelUrlDirectoryProxy {
     }
 
     @Override
-    public Future<ChannelUrlInformation> getUrlsForChannel(@JoynrRpcCallback(deserializationType = ChannelUrlInformationToken.class) Callback<ChannelUrlInformation> callback,
+    public Future<ChannelUrlInformation> getUrlsForChannel(@JoynrRpcCallback(deserializationType = ChannelUrlInformation.class) Callback<ChannelUrlInformation> callback,
                                                            @JoynrRpcParam("channelId") String channelId) {
         // TODO Auto-generated method stub
         return null;
