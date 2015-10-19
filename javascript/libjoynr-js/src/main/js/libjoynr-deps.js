@@ -54,6 +54,7 @@ define("libjoynr-deps", [
     "joynr/exceptions/IllegalAccessException",
     "joynr/exceptions/MethodInvocationException",
     "joynr/exceptions/ProviderRuntimeException",
+    "joynr/exceptions/PublicationMissedException",
     "joynr/types/ProviderQos",
     "joynr/types/ProviderScope",
     "joynr/types/CustomParameter",
