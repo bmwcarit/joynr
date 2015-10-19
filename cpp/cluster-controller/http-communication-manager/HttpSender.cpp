@@ -26,10 +26,13 @@
 #include "cluster-controller/http-communication-manager/ChannelUrlSelector.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/RequestStatus.h"
+#include "joynr/TypeUtil.h"
 
 #include <QThread>
 #include <algorithm>
 #include <chrono>
+
+using namespace std::chrono;
 
 namespace joynr
 {
@@ -115,16 +118,12 @@ void HttpSender::sendMessage(const QString& channelId, const JoynrMessage& messa
      * uses QSharedDataPointer to manage the string's data, which when copied by value only copies
      * the pointer (but safely)
      */
-    scheduler->schedule(new SendMessageRunnable(
-            this,
-            channelId,
-            QDateTime::fromMSecsSinceEpoch(
-                    std::chrono::duration_cast<std::chrono::milliseconds>(
-                            message.getHeaderExpiryDate().time_since_epoch()).count(),
-                    Qt::UTC),
-            serializedMessage,
-            *scheduler,
-            maxAttemptTtl_ms));
+    scheduler->schedule(new SendMessageRunnable(this,
+                                                channelId,
+                                                message.getHeaderExpiryDate(),
+                                                serializedMessage,
+                                                *scheduler,
+                                                maxAttemptTtl_ms));
 }
 
 /**
@@ -137,12 +136,11 @@ int HttpSender::SendMessageRunnable::messageRunnableCounter = 0;
 
 HttpSender::SendMessageRunnable::SendMessageRunnable(HttpSender* messageSender,
                                                      const QString& channelId,
-                                                     const QDateTime& decayTime,
+                                                     const JoynrTimePoint& decayTime,
                                                      const QByteArray& data,
                                                      DelayedScheduler& delayedScheduler,
                                                      qint64 maxAttemptTtl_ms)
-        : ObjectWithDecayTime(
-                  JoynrTimePoint{std::chrono::milliseconds(decayTime.toMSecsSinceEpoch())}),
+        : ObjectWithDecayTime(decayTime),
           channelId(channelId),
           data(data),
           delayedScheduler(delayedScheduler),
@@ -159,7 +157,7 @@ HttpSender::SendMessageRunnable::~SendMessageRunnable()
 
 void HttpSender::SendMessageRunnable::run()
 {
-    qint64 startTime = QDateTime::currentMSecsSinceEpoch();
+    qint64 startTime = TypeUtil::toQt(DispatcherUtils::nowInMilliseconds());
     if (isExpired()) {
         LOG_DEBUG(logger,
                   "Message expired, expiration time: " +
@@ -185,25 +183,20 @@ void HttpSender::SendMessageRunnable::run()
     HttpResult sendMessageResult = buildRequestAndSend(url, curlTimeout);
 
     // Delay the next request if an error occurs
-    qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
+    qint64 currentTime = TypeUtil::toQt(DispatcherUtils::nowInMilliseconds());
     qint64 delay = messageSender->messageSendRetryInterval - (currentTime - startTime);
     if (delay < 0)
         delay = 10;
 
     if (sendMessageResult.getStatusCode() != 201) {
         messageSender->channelUrlCache->feedback(false, channelId, url);
-        delayedScheduler.schedule(
-                new SendMessageRunnable(
-                        messageSender,
-                        channelId,
-                        QDateTime::fromMSecsSinceEpoch(
-                                std::chrono::duration_cast<std::chrono::milliseconds>(
-                                        decayTime.time_since_epoch()).count(),
-                                Qt::UTC),
-                        data,
-                        delayedScheduler,
-                        maxAttemptTtl_ms),
-                delay);
+        delayedScheduler.schedule(new SendMessageRunnable(messageSender,
+                                                          channelId,
+                                                          decayTime,
+                                                          data,
+                                                          delayedScheduler,
+                                                          maxAttemptTtl_ms),
+                                  delay);
         QString body("NULL");
         if (!sendMessageResult.getBody().isNull()) {
             body = QString(sendMessageResult.getBody().data());
@@ -217,7 +210,7 @@ void HttpSender::SendMessageRunnable::run()
         LOG_DEBUG(logger,
                   "sending message - success; url: " + url + " status code: " +
                           QString::number(sendMessageResult.getStatusCode()) + " at " +
-                          QString::number(QDateTime::currentMSecsSinceEpoch()));
+                          QString::number(TypeUtil::toQt(DispatcherUtils::nowInMilliseconds())));
     }
 }
 QString HttpSender::SendMessageRunnable::resolveUrlForChannelId(qint64 curlTimeout)

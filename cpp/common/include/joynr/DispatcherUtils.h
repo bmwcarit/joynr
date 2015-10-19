@@ -79,6 +79,17 @@ public:
      */
     static std::string convertAbsoluteTimeToString(JoynrTimePoint date);
 
+    /**
+     * @brief returns the current time in chrono time_point representation
+     * @return current time in chrono time_point representation
+     */
+    static std::chrono::system_clock::time_point now();
+
+    /**
+     * @brief returns the current time since epoch in milliseconds
+     * @return current time in milliseconds as uint64_t
+     */
+    static uint64_t nowInMilliseconds();
     static joynr_logging::Logger* logger;
 };
 

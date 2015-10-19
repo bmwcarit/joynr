@@ -20,7 +20,6 @@
 #define QTSUBSCRIPTIONQOS_H
 
 #include <QObject>
-#include <QDate>
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/SubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"

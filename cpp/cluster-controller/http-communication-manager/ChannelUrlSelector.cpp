@@ -19,8 +19,8 @@
 #include "cluster-controller/http-communication-manager/ChannelUrlSelector.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/Future.h"
+#include "joynr/DispatcherUtils.h"
 
-#include <QDateTime>
 #include <cmath>
 #include <memory>
 
@@ -209,7 +209,7 @@ ChannelUrlSelectorEntry::ChannelUrlSelectorEntry(
         const types::QtChannelUrlInformation& urlInformation,
         double punishmentFactor,
         qint64 timeForOneRecouperation)
-        : lastUpdate(QDateTime::currentMSecsSinceEpoch()),
+        : lastUpdate(DispatcherUtils::nowInMilliseconds()),
           fitness(),
           urlInformation(urlInformation),
           punishmentFactor(punishmentFactor),
@@ -273,7 +273,7 @@ void ChannelUrlSelectorEntry::updateFitness()
     LOG_TRACE(logger, "updateFitness ...");
     // Is it time to increase the fitness of all Urls? (counterbalances punishments, forget some
     // history)
-    qint64 timeSinceLastUpdate = QDateTime::currentMSecsSinceEpoch() - lastUpdate;
+    uint64_t timeSinceLastUpdate = DispatcherUtils::nowInMilliseconds() - lastUpdate;
     double numberOfIncreases = floor(((double)timeSinceLastUpdate / timeForOneRecouperation));
     if (numberOfIncreases < 1) {
         return;
@@ -291,7 +291,7 @@ void ChannelUrlSelectorEntry::updateFitness()
         }
         fitness.replace(i, urlFitness);
     }
-    lastUpdate = QDateTime::currentMSecsSinceEpoch();
+    lastUpdate = DispatcherUtils::nowInMilliseconds();
 }
 
 QList<double> ChannelUrlSelectorEntry::getFitness()

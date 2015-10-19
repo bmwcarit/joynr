@@ -22,6 +22,7 @@
 #include <memory>
 #include <string>
 #include <stdint.h>
+#include "joynr/DispatcherUtils.h"
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "runtimes/libjoynr-runtime/dbus/LibJoynrDbusRuntime.h"
@@ -101,7 +102,7 @@ public:
     void registerTestProvider() {
         // create provider
         types::ProviderQos providerQos;
-        providerQos.setPriority(QDateTime::currentDateTime().toMSecsSinceEpoch());
+        providerQos.setPriority(DispatcherUtils::nowInMilliseconds());
 
         std::shared_ptr<tests::testProvider> provider(new MockTestProvider(providerQos));
 
@@ -247,7 +248,7 @@ TEST_F(End2EndDbusTest, performance_sendManyRequests) {
     // connect the proxy
     connectProxy();
 
-    qint64 startTime = QDateTime::currentMSecsSinceEpoch();
+    uint64_t startTime = DispatcherUtils::nowInMilliseconds();
     QList<std::shared_ptr<Future<int32_t> > >testFutureList;
     int numberOfMessages = 500;
     int successFullMessages = 0;
@@ -271,9 +272,9 @@ TEST_F(End2EndDbusTest, performance_sendManyRequests) {
         }
     }
 
-    qint64 stopTime = QDateTime::currentMSecsSinceEpoch();
+    uint64_t stopTime = DispatcherUtils::nowInMilliseconds();
     //check if all Messages were received:
     EXPECT_EQ(numberOfMessages, successFullMessages);
     Logger* logger = Logging::getInstance()->getLogger("TEST", "End2EndDbusTest");
-    LOG_INFO(logger,"Required Time for " + QString::number(numberOfMessages) + " Messages: " + QString::number(stopTime - startTime));
+    LOG_INFO(logger,"Required Time for " + QString::number(numberOfMessages) + " Messages: " + QString::number(TypeUtil::toQt(stopTime - startTime)));
 }

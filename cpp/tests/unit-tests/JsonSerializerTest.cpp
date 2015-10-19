@@ -48,6 +48,7 @@
 #include "joynr/QtPeriodicSubscriptionQos.h"
 
 #include "joynr/infrastructure/DacTypes_QtMasterAccessControlEntry.h"
+#include "QTime"
 #include <chrono>
 
 using namespace joynr;

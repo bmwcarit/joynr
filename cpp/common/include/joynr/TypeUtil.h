@@ -28,6 +28,9 @@
 #include <vector>
 #include <QByteArray>
 #include <stdint.h>
+#include <chrono>
+
+using namespace std::chrono;
 
 namespace joynr
 {
@@ -617,6 +620,23 @@ public:
             qtValue.append(entry);
         }
         return qtValue;
+    }
+
+    /**
+      * Converts a std::chrono::system_clock::time_point to milliseconds
+      */
+    static uint64_t toMilliseconds(const system_clock::time_point& timePoint)
+    {
+        return duration_cast<milliseconds>(timePoint.time_since_epoch()).count();
+    }
+
+    /**
+      * Converts a std::chrono::system_clock::time_point to a printable string
+      */
+    static std::string toDateString(const system_clock::time_point& timePoint)
+    {
+        std::time_t time = system_clock::to_time_t(timePoint);
+        return std::ctime(&time);
     }
 };
 } // namespace joynr

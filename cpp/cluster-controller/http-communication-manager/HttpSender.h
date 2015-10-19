@@ -31,6 +31,7 @@
 #include <QString>
 #include <QByteArray>
 #include <QThreadPool>
+#include "joynr/DispatcherUtils.h"
 #include <memory>
 
 namespace joynr
@@ -81,7 +82,7 @@ private:
     public:
         SendMessageRunnable(HttpSender* messageSender,
                             const QString& channelId,
-                            const QDateTime& decayTime,
+                            const JoynrTimePoint& decayTime,
                             const QByteArray& data,
                             DelayedScheduler& delayedScheduler,
                             qint64 maxAttemptTtl_ms);

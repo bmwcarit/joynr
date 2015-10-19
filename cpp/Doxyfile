@@ -831,7 +831,6 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          cluster-controller/capabilities-client/LocalCapabilitiesDirectory.cpp \
                          cluster-controller/http-communication-manager/ChannelUrlSelector.cpp \
                          cluster-controller/http-communication-manager/ChannelUrlSelector.h \
-                         cluster-controller/http-communication-manager/ContentWithTtl.h \
                          cluster-controller/http-communication-manager/HttpReceiver.cpp \
                          cluster-controller/http-communication-manager/HttpReceiver.h \
                          cluster-controller/http-communication-manager/HttpSender.cpp \

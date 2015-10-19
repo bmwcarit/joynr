@@ -31,7 +31,7 @@
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/Future.h"
 #include "joynr/SettingsMerger.h"
-
+#include "joynr/DispatcherUtils.h"
 using namespace ::testing;
 
 using namespace joynr;
@@ -120,7 +120,7 @@ TEST_F(End2EndPerformanceTest, sendManyRequests) {
                                                ->setCached(false)
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
-    qint64 startTime = QDateTime::currentMSecsSinceEpoch();
+    uint64_t startTime = DispatcherUtils::nowInMilliseconds();
     QList<std::shared_ptr<Future<int> > >testFutureList;
     int numberOfMessages = 150;
     int successFullMessages = 0;
@@ -143,10 +143,10 @@ TEST_F(End2EndPerformanceTest, sendManyRequests) {
             EXPECT_EQ(expectedValue, actualValue);
         }
     }
-    qint64 stopTime = QDateTime::currentMSecsSinceEpoch();
+    uint64_t stopTime = DispatcherUtils::nowInMilliseconds();
     //check if all Messages were received:
     EXPECT_EQ(numberOfMessages, successFullMessages);
     Logger* logger = Logging::getInstance()->getLogger("TEST", "CombinedEnd2EndTest");
-    LOG_INFO(logger,"Required Time for 1000 Messages: " + QString::number(stopTime - startTime));
+    LOG_INFO(logger,"Required Time for 1000 Messages: " + QString::number(TypeUtil::toQt(stopTime - startTime)));
 }
 

@@ -100,4 +100,13 @@ std::string DispatcherUtils::convertAbsoluteTimeToString(JoynrTimePoint date)
     return stringStream.str();
 }
 
+system_clock::time_point DispatcherUtils::now()
+{
+    return system_clock::now();
+}
+
+std::uint64_t DispatcherUtils::nowInMilliseconds()
+{
+    return duration_cast<milliseconds>(DispatcherUtils::now().time_since_epoch()).count();
+}
 } // namespace joynr

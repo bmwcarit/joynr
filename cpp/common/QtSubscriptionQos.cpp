@@ -22,6 +22,10 @@
 #include "joynr/QtOnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/DispatcherUtils.h"
 #include <limits>
+#include <chrono>
+#include <stdint.h>
+
+using namespace std::chrono;
 
 namespace joynr
 {
@@ -102,7 +106,7 @@ qint64 QtSubscriptionQos::getExpiryDate() const
 void QtSubscriptionQos::setExpiryDate(const qint64& expiryDate)
 {
     this->expiryDate = expiryDate;
-    if (this->expiryDate < QDateTime::currentMSecsSinceEpoch()) {
+    if (this->expiryDate < TypeUtil::toQt(DispatcherUtils::nowInMilliseconds())) {
         clearExpiryDate();
     }
 }
@@ -117,7 +121,7 @@ void QtSubscriptionQos::setValidity(const qint64& validity)
     if (validity == -1) {
         setExpiryDate(joynr::QtSubscriptionQos::NO_EXPIRY_DATE());
     } else {
-        setExpiryDate(QDateTime::currentMSecsSinceEpoch() + validity);
+        setExpiryDate(TypeUtil::toQt(DispatcherUtils::nowInMilliseconds()) + validity);
     }
 }
 

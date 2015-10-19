@@ -27,6 +27,7 @@
 #include "joynr/types/QtChannelUrlInformation.h"
 #include "joynr/BounceProxyUrl.h"
 #include <QtGlobal>
+#include <stdint.h>
 #include <memory>
 
 // Forward declare test classes
@@ -167,7 +168,7 @@ private:
     friend class ::ChannelUrlSelectorTest_updateTest_Test;
     friend class ::ChannelUrlSelectorTest_initFittnessTest_Test;
 
-    qint64 lastUpdate;
+    uint64_t lastUpdate;
     QList<double> fitness;
     types::QtChannelUrlInformation urlInformation;
     double punishmentFactor;

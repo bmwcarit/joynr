@@ -21,6 +21,9 @@
 #include "joynr/Util.h"
 #include "joynr/JsonSerializer.h"
 #include "joynr/DispatcherUtils.h"
+#include <cstdlib>
+#include <stdint.h>
+#include "joynr/TypeUtil.h"
 #include "cluster-controller/httpnetworking/HttpResult.h"
 #include "joynr/ILocalChannelUrlDirectory.h"
 #include "joynr/Future.h"
@@ -29,9 +32,10 @@
 #include "joynr/system/RoutingTypes_QtChannelAddress.h"
 #include "joynr/MessageRouter.h"
 #include "joynr/JoynrMessage.h"
-#include <QDateTime>
 
 #include <algorithm>
+
+using namespace std::chrono;
 
 namespace joynr
 {
@@ -216,13 +220,12 @@ void LongPollingMessageReceiver::checkServerTime()
     LOG_DEBUG(logger,
               QString("CheckServerTime: sending request to Bounce Proxy (") + timeCheckUrl +
                       QString(")"));
-    QDateTime localTimeBeforeRequest = QDateTime::currentDateTime();
+    system_clock::time_point localTimeBeforeRequest = DispatcherUtils::now();
     HttpResult timeCheckResult = timeCheckRequest->execute();
-    QDateTime localTimeAfterRequest = QDateTime::currentDateTime();
-    QDateTime localTime =
-            QDateTime::fromMSecsSinceEpoch((localTimeBeforeRequest.toMSecsSinceEpoch() +
-                                            localTimeAfterRequest.toMSecsSinceEpoch()) /
-                                           2);
+    system_clock::time_point localTimeAfterRequest = DispatcherUtils::now();
+    uint64_t localTime = (TypeUtil::toMilliseconds(localTimeBeforeRequest) +
+                          TypeUtil::toMilliseconds(localTimeAfterRequest)) /
+                         2;
     if (timeCheckResult.getStatusCode() != 200) {
         LOG_ERROR(logger,
                   QString("CheckServerTime: Bounce Proxy not reached [statusCode=%1] [body=%2]")
@@ -233,14 +236,16 @@ void LongPollingMessageReceiver::checkServerTime()
                   QString("CheckServerTime: reply received [statusCode=%1] [body=%2]")
                           .arg(QString::number(timeCheckResult.getStatusCode()))
                           .arg(QString(timeCheckResult.getBody())));
-        QDateTime serverTime =
-                QDateTime::fromMSecsSinceEpoch(QString(timeCheckResult.getBody()).toLongLong());
-        qint64 diff = qAbs(serverTime.msecsTo(localTime));
+        uint64_t serverTime =
+                TypeUtil::toStdUInt64(QString(timeCheckResult.getBody()).toLongLong());
+        uint64_t diff = abs(serverTime - localTime);
 
         LOG_INFO(logger,
                  QString("CheckServerTime [server time=%1] [local time=%2] [diff=%3 ms]")
-                         .arg(serverTime.toString())
-                         .arg(localTime.toString())
+                         .arg(TypeUtil::toQt(
+                                 TypeUtil::toDateString(JoynrTimePoint(milliseconds(serverTime)))))
+                         .arg(TypeUtil::toQt(
+                                 TypeUtil::toDateString(JoynrTimePoint(milliseconds(localTime)))))
                          .arg(QString::number(diff)));
         if (diff > 500) {
             LOG_ERROR(logger,
