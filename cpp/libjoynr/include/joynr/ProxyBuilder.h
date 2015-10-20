@@ -306,10 +306,10 @@ void ProxyBuilder<T>::setArbitrationStatus(
         } else {
             throw JoynrArbitrationFailedException("Arbitration was set to successfull by "
                                                   "arbitrator, but either ParticipantId or "
-                                                  "MessagingEndpointAddress where empty");
+                                                  "MessagingEndpointAddress were empty");
         }
     } else {
-        throw JoynrArbitrationFailedException("Arbitration finished unsucessfully.");
+        throw JoynrArbitrationFailedException("Arbitration finished without success.");
     }
 }
 
