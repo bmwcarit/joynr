@@ -82,22 +82,26 @@ class CommunicationModelGenerator {
 			if(type instanceof FCompoundType) {
 				var sourcepath = dataTypePath + getPackageSourceDirectory(type) + File::separator
 				var headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
+				var sourcepathQt = sourcepath
+				var headerpathQt = headerpath
 
 				if (type.isPartOfTypeCollection) {
 					headerpath += type.typeCollectionName + File::separator
 					sourcepath += type.typeCollectionName + File::separator
+					headerpathQt += type.typeCollectionName + "_"
+					sourcepathQt += type.typeCollectionName + "_"
 				}
 
 				generateFile(
 					headerFileSystem,
-					headerpath + type.joynrNameQt + ".h",
+					headerpathQt + type.joynrNameQt + ".h",
 					typeH,
 					type
 				)
 				
 				generateFile(
 					sourceFileSystem,
-					sourcepath + type.joynrNameQt + ".cpp",
+					sourcepathQt + type.joynrNameQt + ".cpp",
 					typeCpp,
 					type
 				)
@@ -121,14 +125,16 @@ class CommunicationModelGenerator {
 		for (type : getEnumDataTypes(fModel)) {
 			var sourcepath = dataTypePath + getPackageSourceDirectory(type) + File::separator
 			var headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
+			var headerpathQt = headerpath
 			if (type.isPartOfTypeCollection) {
 				headerpath += type.typeCollectionName + File::separator
 				sourcepath += type.typeCollectionName + File::separator
+				headerpathQt += type.typeCollectionName + "_"
 			}
 
 			generateFile(
 				headerFileSystem,
-				headerpath + type.joynrNameQt + ".h",
+				headerpathQt + type.joynrNameQt + ".h",
 				enumh,
 				type as FEnumerationType
 			)

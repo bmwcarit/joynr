@@ -21,8 +21,8 @@
 #include "AceValidator.h"
 #include "TrustLevelComparator.h"
 
-#include "joynr/infrastructure/DacTypes/QtMasterAccessControlEntry.h"
-#include "joynr/infrastructure/DacTypes/QtOwnerAccessControlEntry.h"
+#include "joynr/infrastructure/DacTypes_QtMasterAccessControlEntry.h"
+#include "joynr/infrastructure/DacTypes_QtOwnerAccessControlEntry.h"
 
 #include <cassert>
 

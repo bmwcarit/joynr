@@ -19,7 +19,7 @@
 #include "runtimes/libjoynr-runtime/dbus/LibJoynrDbusRuntime.h"
 
 #include "common/dbus/DbusMessagingStubAdapter.h"
-#include "joynr/system/RoutingTypes/QtCommonApiDbusAddress.h"
+#include "joynr/system/RoutingTypes_QtCommonApiDbusAddress.h"
 #include "joynr/DBusMessageRouterAdapter.h"
 #include "common/dbus/DbusSettings.h"
 #include "libjoynr/dbus/DbusMessagingStubFactory.h"

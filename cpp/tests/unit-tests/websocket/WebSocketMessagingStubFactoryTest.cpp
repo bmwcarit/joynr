@@ -25,11 +25,11 @@
 #include <QtWebSockets/QWebSocket>
 
 #include "joynr/IMessaging.h"
-#include "joynr/system/RoutingTypes/QtWebSocketAddress.h"
-#include "joynr/system/RoutingTypes/QtWebSocketClientAddress.h"
-#include "joynr/system/RoutingTypes/QtChannelAddress.h"
-#include "joynr/system/RoutingTypes/QtCommonApiDbusAddress.h"
-#include "joynr/system/RoutingTypes/QtBrowserAddress.h"
+#include "joynr/system/RoutingTypes_QtWebSocketAddress.h"
+#include "joynr/system/RoutingTypes_QtWebSocketClientAddress.h"
+#include "joynr/system/RoutingTypes_QtChannelAddress.h"
+#include "joynr/system/RoutingTypes_QtCommonApiDbusAddress.h"
+#include "joynr/system/RoutingTypes_QtBrowserAddress.h"
 
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
 #include "libjoynr/websocket/WebSocketMessagingStub.h"

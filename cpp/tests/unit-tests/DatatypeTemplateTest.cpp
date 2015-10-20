@@ -18,10 +18,10 @@
  */
 #include "gtest/gtest.h"
 using namespace ::testing;
-#include "joynr/types/Localisation/QtTrip.h"
-#include "joynr/types/Localisation/QtGpsLocation.h"
-#include "joynr/types/TestTypes/QtWord.h"
-#include "joynr/types/TestTypes/QtVowel.h"
+#include "joynr/types/Localisation_QtTrip.h"
+#include "joynr/types/Localisation_QtGpsLocation.h"
+#include "joynr/types/TestTypes_QtWord.h"
+#include "joynr/types/TestTypes_QtVowel.h"
 
 using namespace joynr;
 

@@ -30,7 +30,7 @@
 #include <string>
 #include <QSharedPointer>
 #include "joynr/JoynrMessageFactory.h"
-#include "joynr/system/RoutingTypes/QtChannelAddress.h"
+#include "joynr/system/RoutingTypes_QtChannelAddress.h"
 #include "joynr/Request.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/InProcessMessagingAddress.h"

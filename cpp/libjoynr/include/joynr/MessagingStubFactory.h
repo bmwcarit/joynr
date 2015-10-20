@@ -24,7 +24,7 @@
 #include "joynr/Directory.h"
 #include "joynr/IMessagingStubFactory.h"
 #include "joynr/IMiddlewareMessagingStubFactory.h"
-#include "joynr/system/RoutingTypes/QtAddress.h"
+#include "joynr/system/RoutingTypes_QtAddress.h"
 #include <string>
 #include <memory>
 

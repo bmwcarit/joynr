@@ -37,7 +37,7 @@
 
 #include "joynr/tests/Itest.h"
 #include "joynr/tests/testRequestInterpreter.h"
-#include "joynr/types/Localisation/QtGpsLocation.h"
+#include "joynr/types/Localisation_QtGpsLocation.h"
 #include "joynr/MetaTypeRegistrar.h"
 
 using namespace ::testing;

@@ -22,11 +22,11 @@
 #include <QSharedPointer>
 #include <limits>
 #include "joynr/Util.h"
-#include "joynr/types/TestTypes/QtTEnum.h"
-#include "joynr/types/TestTypes/QtTStruct.h"
-#include "joynr/types/TestTypes/QtTStructExtended.h"
-#include "joynr/types/TestTypes/QtTStructComposition.h"
-#include "joynr/types/Localisation/QtTrip.h"
+#include "joynr/types/TestTypes_QtTEnum.h"
+#include "joynr/types/TestTypes_QtTStruct.h"
+#include "joynr/types/TestTypes_QtTStructExtended.h"
+#include "joynr/types/TestTypes_QtTStructComposition.h"
+#include "joynr/types/Localisation_QtTrip.h"
 #include "joynr/types/QtChannelUrlInformation.h"
 #include "joynr/types/QtCapabilityInformation.h"
 #include "joynr/types/QtProviderQos.h"
@@ -37,18 +37,18 @@
 #include "joynr/JsonSerializer.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/DeclareMetatypeUtil.h"
-#include "joynr/system/RoutingTypes/QtChannelAddress.h"
-#include "joynr/system/RoutingTypes/QtCommonApiDbusAddress.h"
-#include "joynr/system/RoutingTypes/QtWebSocketAddress.h"
-#include "joynr/system/RoutingTypes/QtWebSocketClientAddress.h"
-#include "joynr/tests/testTypes/QtTestEnum.h"
+#include "joynr/system/RoutingTypes_QtChannelAddress.h"
+#include "joynr/system/RoutingTypes_QtCommonApiDbusAddress.h"
+#include "joynr/system/RoutingTypes_QtWebSocketAddress.h"
+#include "joynr/system/RoutingTypes_QtWebSocketClientAddress.h"
+#include "joynr/tests/testTypes_QtTestEnum.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/QtOnChangeSubscriptionQos.h"
 #include "joynr/QtOnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/QtPeriodicSubscriptionQos.h"
 
-#include "joynr/infrastructure/DacTypes/QtMasterAccessControlEntry.h"
+#include "joynr/infrastructure/DacTypes_QtMasterAccessControlEntry.h"
 
 using namespace joynr;
 using namespace joynr_logging;

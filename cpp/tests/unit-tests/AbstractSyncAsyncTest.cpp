@@ -21,7 +21,7 @@
 #include <gmock/gmock.h>
 #include "PrettyPrint.h"
 #include "joynr/tests/testProxy.h"
-#include "joynr/types/Localisation/QtGpsLocation.h"
+#include "joynr/types/Localisation_QtGpsLocation.h"
 #include "joynr/ConnectorFactory.h"
 #include "joynr/IClientCache.h"
 #include "joynr/IMessaging.h"

@@ -21,7 +21,7 @@
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/Directory.h"
 #include "joynr/joynrlogging.h"
-#include "joynr/system/RoutingTypes/QtAddress.h"
+#include "joynr/system/RoutingTypes_QtAddress.h"
 #include "joynr/types/QtProviderQos.h"
 #include "joynr/RequestStatusCode.h"
 #include "joynr/JsonSerializer.h"

@@ -25,9 +25,9 @@
 #include <assert.h>
 
 #include "websocket/WebSocketMessagingStub.h"
-#include "joynr/system/RoutingTypes/QtAddress.h"
-#include "joynr/system/RoutingTypes/QtWebSocketAddress.h"
-#include "joynr/system/RoutingTypes/QtWebSocketClientAddress.h"
+#include "joynr/system/RoutingTypes_QtAddress.h"
+#include "joynr/system/RoutingTypes_QtWebSocketAddress.h"
+#include "joynr/system/RoutingTypes_QtWebSocketClientAddress.h"
 
 namespace joynr
 {

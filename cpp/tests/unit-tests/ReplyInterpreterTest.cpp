@@ -21,7 +21,7 @@
 #include "joynr/ReplyInterpreter.h"
 #include "joynr/MetaTypeRegistrar.h"
 
-#include "joynr/types/Localisation/QtGpsLocation.h"
+#include "joynr/types/Localisation_QtGpsLocation.h"
 #include "joynr/IReplyCaller.h"
 //#needed:?
 #include "joynr/JoynrMessageSender.h"

@@ -18,7 +18,7 @@
  */
 #include "JoynrMessagingStubFactory.h"
 
-#include "joynr/system/RoutingTypes/QtChannelAddress.h"
+#include "joynr/system/RoutingTypes_QtChannelAddress.h"
 #include "joynr/IMessageSender.h"
 #include "cluster-controller/messaging/joynr-messaging/JoynrMessagingStub.h"
 

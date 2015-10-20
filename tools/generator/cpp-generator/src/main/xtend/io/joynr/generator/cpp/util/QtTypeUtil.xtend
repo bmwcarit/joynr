@@ -240,11 +240,11 @@ class QtTypeUtil extends CppTypeUtil {
 	}
 
 	override getIncludeOf(FType dataType) {
-		var path = getPackagePathWithJoynrPrefix(dataType, "/")
+		var path = getPackagePathWithJoynrPrefix(dataType, "/") + "/"
 		if (dataType.isPartOfTypeCollection) {
-			path += "/" + dataType.typeCollectionName
+			path += dataType.typeCollectionName + "_"
 		}
-		return path + "/" + dataType.joynrNameQt + ".h";
+		return path + dataType.joynrNameQt + ".h";
 	}
 
 	override getTypeName(FType datatype) {

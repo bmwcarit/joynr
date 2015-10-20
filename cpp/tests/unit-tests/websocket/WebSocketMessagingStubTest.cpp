@@ -29,7 +29,7 @@
 #include "joynr/JoynrMessage.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/JsonSerializer.h"
-#include "joynr/system/RoutingTypes/QtWebSocketAddress.h"
+#include "joynr/system/RoutingTypes_QtWebSocketAddress.h"
 #include "libjoynr/websocket/WebSocketMessagingStub.h"
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
 

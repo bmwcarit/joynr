@@ -36,7 +36,7 @@
 #include <QString>
 #include "joynr/LibjoynrSettings.h"
 
-#include "joynr/types/Localisation/QtGpsLocation.h"
+#include "joynr/types/Localisation_QtGpsLocation.h"
 
 using namespace ::testing;
 

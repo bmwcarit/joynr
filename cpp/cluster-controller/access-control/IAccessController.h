@@ -20,7 +20,7 @@
 #ifndef IACCESSCONTROLLER_H
 #define IACCESSCONTROLLER_H
 
-#include "joynr/infrastructure/DacTypes/QtTrustLevel.h"
+#include "joynr/infrastructure/DacTypes_QtTrustLevel.h"
 
 #include <memory>
 

@@ -22,7 +22,7 @@
 
 #include "IAccessController.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/infrastructure/DacTypes/QtTrustLevel.h"
+#include "joynr/infrastructure/DacTypes_QtTrustLevel.h"
 #include <memory>
 #include <QList>
 

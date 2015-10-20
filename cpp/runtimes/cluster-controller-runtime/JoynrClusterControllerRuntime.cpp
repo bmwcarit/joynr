@@ -45,7 +45,7 @@
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
 #include "joynr/LocalChannelUrlDirectory.h"
 #include "joynr/SystemServicesSettings.h"
-#include "joynr/system/RoutingTypes/QtChannelAddress.h"
+#include "joynr/system/RoutingTypes_QtChannelAddress.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include "cluster-controller/messaging/joynr-messaging/JoynrMessagingStubFactory.h"
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"

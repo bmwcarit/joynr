@@ -17,7 +17,7 @@
  * #L%
  */
 #include "DbusMessagingStubFactory.h"
-#include "joynr/system/RoutingTypes/QtCommonApiDbusAddress.h"
+#include "joynr/system/RoutingTypes_QtCommonApiDbusAddress.h"
 #include "common/dbus/DbusMessagingStubAdapter.h"
 
 #include <QMutexLocker>

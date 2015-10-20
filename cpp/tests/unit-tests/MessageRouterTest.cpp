@@ -22,7 +22,7 @@
 #include "gmock/gmock.h"
 #include "joynr/MessageRouter.h"
 #include "tests/utils/MockObjects.h"
-#include "joynr/system/RoutingTypes/QtChannelAddress.h"
+#include "joynr/system/RoutingTypes_QtChannelAddress.h"
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/MessageQueue.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"

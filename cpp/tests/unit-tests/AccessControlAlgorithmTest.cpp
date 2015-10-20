@@ -21,10 +21,10 @@
 #include "gtest/gtest.h"
 #include "cluster-controller/access-control/AccessControlAlgorithm.h"
 
-#include "joynr/infrastructure/DacTypes/QtMasterAccessControlEntry.h"
-#include "joynr/infrastructure/DacTypes/QtOwnerAccessControlEntry.h"
-#include "joynr/infrastructure/DacTypes/QtPermission.h"
-#include "joynr/infrastructure/DacTypes/QtTrustLevel.h"
+#include "joynr/infrastructure/DacTypes_QtMasterAccessControlEntry.h"
+#include "joynr/infrastructure/DacTypes_QtOwnerAccessControlEntry.h"
+#include "joynr/infrastructure/DacTypes_QtPermission.h"
+#include "joynr/infrastructure/DacTypes_QtTrustLevel.h"
 
 using namespace ::testing;
 using namespace joynr;

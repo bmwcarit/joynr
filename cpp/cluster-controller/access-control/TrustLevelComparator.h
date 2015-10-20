@@ -21,7 +21,7 @@
 #define TRUSTLEVELCOMPARATOR_H
 
 #include "joynr/JoynrClusterControllerExport.h"
-#include "joynr/infrastructure/DacTypes/QtTrustLevel.h"
+#include "joynr/infrastructure/DacTypes_QtTrustLevel.h"
 
 namespace joynr
 {

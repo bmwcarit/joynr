@@ -26,7 +26,7 @@
 #include "joynr/Future.h"
 #include "joynr/types/QtChannelUrlInformation.h"
 #include "joynr/JoynrMessage.h"
-#include "joynr/system/RoutingTypes/QtChannelAddress.h"
+#include "joynr/system/RoutingTypes_QtChannelAddress.h"
 #include "joynr/MessageRouter.h"
 #include "joynr/JoynrMessage.h"
 
