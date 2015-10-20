@@ -128,6 +128,20 @@ function initializeTest(provisioningSuffix, providedDomain) {
                 mixedSubscriptions = value;
             });
 
+            radioProvider.failingSyncAttribute.registerGetter(function() {
+                throw new joynr.exceptions.ProviderRuntimeException({
+                    detailMessage: "failure in failingSyncAttribute getter"
+                });
+            });
+
+            radioProvider.failingAsyncAttribute.registerGetter(function() {
+                return new Promise(function(resolve, reject) {
+                    reject(new joynr.exceptions.ProviderRuntimeException({
+                        detailMessage: "failure in failingAsyncAttribute getter"
+                    }));
+                });
+            });
+
             radioProvider.isOn.registerGetter(function() {
                 return isOn;
             });

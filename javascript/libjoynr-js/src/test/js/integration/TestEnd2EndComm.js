@@ -253,6 +253,21 @@ joynrTestRequire(
                                 spy.onReceive.reset();
                             });
                         }
+                        function expectPublicationError(spy){
+                            waitsFor(
+                                    function() {
+                                        return (spy.onReceive.calls.length > 0 || spy.onError.calls.length > 0);
+                                    },
+                                    "first error to occur",
+                                    500 + provisioning.ttl);
+
+                            runs(function() {
+                                expect(spy.onReceive).not.toHaveBeenCalled();
+                                expect(spy.onError).toHaveBeenCalled();
+                                expect(spy.onError.calls[0].args[0]._typeName).toEqual("joynr.exceptions.ProviderRuntimeException");
+                                spy.onError.reset();
+                            });
+                        }
                         function publishesValue(subscriptionQos) {
                             var spy = setupSubscriptionAndReturnSpy("numberOfStations", subscriptionQos);
                             expectPublication(spy, function(publicationCallback) {
@@ -399,6 +414,16 @@ joynrTestRequire(
                             getAttribute("enumAttribute", Country.AUSTRIA);
                             setAttribute("enumAttribute", Country.AUSTRALIA);
                             getAttribute("enumAttribute", Country.AUSTRALIA);
+                        });
+
+                        it("subscribe to failingSyncAttribute", function() {
+                            var spy = setupSubscriptionAndReturnSpy("failingSyncAttribute", subscriptionQosInterval);
+                            expectPublicationError(spy);
+                        });
+
+                        it("subscribe to failingAsyncAttribute", function() {
+                            var spy = setupSubscriptionAndReturnSpy("failingAsyncAttribute", subscriptionQosInterval);
+                            expectPublicationError(spy);
                         });
 
                         it("subscribe to enumAttribute", function() {

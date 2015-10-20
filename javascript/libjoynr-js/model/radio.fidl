@@ -49,6 +49,10 @@ interface Radio {
 
 	attribute Country[] enumArrayAttribute
 
+	attribute Int32 failingSyncAttribute readonly
+
+	attribute Int32 failingAsyncAttribute readonly
+
 	/**
 	 * An operation with return value and parameters.
 	 */

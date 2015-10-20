@@ -31,6 +31,7 @@ define(
             "joynr/provider/ProviderEvent",
             "joynr/util/Typing",
             "joynr/dispatching/subscription/util/SubscriptionUtil",
+            "joynr/exceptions/ProviderRuntimeException",
             "joynr/util/LongTimer",
             "joynr/util/UtilInternal",
             "joynr/system/LoggerFactory"
@@ -45,6 +46,7 @@ define(
                 ProviderEvent,
                 Typing,
                 SubscriptionUtil,
+                ProviderRuntimeException,
                 LongTimer,
                 Util,
                 LoggerFactory) {
@@ -145,13 +147,29 @@ define(
                         getAttribute(
                                 subscriptionInfo.providerParticipantId,
                                 subscriptionInfo.subscribedToName), value;
-                    value = attribute.get();
-                    if (Util.isPromise(value)) {
-                        return value.catch(function(error) {
-                            throw new Error("Error occured when calling getter \""
-                                    + value
-                                    + "\" on the provider: " + error.stack);
-                        });
+                    try {
+                        value = attribute.get();
+                        if (Util.isPromise(value)) {
+                            return value.catch(function(error) {
+                                if (error instanceof ProviderRuntimeException) {
+                                    throw error;
+                                }
+                                throw new ProviderRuntimeException({
+                                    detailMessage: "getter method for attribute " +
+                                        subscriptionInfo.subscribedToName + " reported an error"
+                                });
+                            });
+                        }
+                    } catch(error) {
+                        if (error instanceof ProviderRuntimeException) {
+                            return Promise.reject(error);
+                        }
+                        return Promise.reject(
+                            new ProviderRuntimeException({
+                                detailMessage: "getter method for attribute " +
+                                    subscriptionInfo.subscribedToName + " reported an error"
+                            })
+                        );
                     }
                     return Promise.resolve(value);
                 }
@@ -160,7 +178,7 @@ define(
                  * @name PublicationManager#sendPublication
                  * @private
                  */
-                function sendPublication(subscriptionInfo, value) {
+                function sendPublication(subscriptionInfo, value, exception) {
                     log.debug("send Publication for subscriptionId "
                         + subscriptionInfo.subscriptionId
                         + " and attribute/event "
@@ -168,14 +186,25 @@ define(
                         + ": "
                         + value);
                     subscriptionInfo.lastPublication = Date.now();
+                    var subscriptionPublication;
+
+                    if (exception) {
+                        subscriptionPublication =  new SubscriptionPublication({
+                            error : exception,
+                            subscriptionId : subscriptionInfo.subscriptionId
+                        });
+                    } else {
+                        subscriptionPublication = new SubscriptionPublication({
+                            response : value,
+                            subscriptionId : subscriptionInfo.subscriptionId
+                        });
+                    }
                     dispatcher.sendPublication({
                         from : subscriptionInfo.providerParticipantId,
                         to : subscriptionInfo.proxyParticipantId,
                         expiryDate : (Date.now() + subscriptionInfo.qos.publicationTtl).toString()
-                    }, new SubscriptionPublication({
-                        response : value,
-                        subscriptionId : subscriptionInfo.subscriptionId
-                    }));
+                    }, subscriptionPublication
+                    );
                 }
 
                 /**
@@ -244,12 +273,14 @@ define(
                                 callback();
                             }
                             getAttributeValue(subscriptionInfo).then(
-                                    function(value) {
-                                        preparePublication(
-                                                subscriptionInfo,
-                                                [value],
-                                                triggerPublicationTimer);
-                                    });
+                                function(value) {
+                                    preparePublication(
+                                        subscriptionInfo,
+                                        [value],
+                                        triggerPublicationTimer);
+                            }).catch(function(exception) {
+                                sendPublication(subscriptionInfo, undefined, exception);
+                            });
                         }, delay);
                     }
                 }
@@ -829,12 +860,14 @@ define(
 
                             // publish value immediately
                             getAttributeValue(subscriptionInfo).then(
-                                    function(value) {
-                                        preparePublication(
-                                                subscriptionInfo,
-                                                [value],
-                                                triggerPublicationTimer);
-                                    });
+                                function(value) {
+                                    preparePublication(
+                                        subscriptionInfo,
+                                            [value],
+                                            triggerPublicationTimer);
+                                }).catch(function(exception) {
+                                    sendPublication(subscriptionInfo, undefined, exception);
+                                });
                         };
 
                 /**
