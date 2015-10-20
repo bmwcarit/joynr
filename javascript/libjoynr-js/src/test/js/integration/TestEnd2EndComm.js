@@ -340,8 +340,6 @@ joynrTestRequire(
 
                         var getAttribute = function(attributeName, expectedValue) {
                             var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
-                            console.log("gets the " + attributeName + "with participantId: "
-                                + radioProxy.proxyParticipantId);
 
                             waitsFor(function() {
                                 return radioProxy !== undefined;
@@ -360,6 +358,33 @@ joynrTestRequire(
 
                             runs(function() {
                                 expect(onFulfilledSpy).toHaveBeenCalled();
+                            });
+                        };
+
+                        var getFailingAttribute = function(attributeName) {
+                            var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
+                            var catchSpy = jasmine.createSpy("catchSpy");
+
+                            waitsFor(function() {
+                                return radioProxy !== undefined;
+                            }, "radioProxy is defined", provisioning.ttl);
+
+                            runs(function() {
+                                radioProxy[attributeName].get().then(function(value) {
+                                    onFulfilledSpy(value);
+                                }).catch(function(exception) {
+                                    catchSpy(exception);
+                                });
+                            });
+
+                            waitsFor(function() {
+                                return catchSpy.callCount > 0;
+                            }, "getter for attribute " + attributeName + " returns exception", provisioning.ttl);
+
+                            runs(function() {
+                                expect(catchSpy).toHaveBeenCalled();
+                                expect(catchSpy.calls[0].args[0]._typeName).toBeDefined();
+                                expect(catchSpy.calls[0].args[0]._typeName).toEqual("joynr.exceptions.ProviderRuntimeException");
                             });
                         };
 
@@ -391,6 +416,14 @@ joynrTestRequire(
 
                         it("gets the enumArrayAttribute", function() {
                             getAttribute("enumArrayAttribute", [Country.GERMANY]);
+                        });
+
+                        it("gets an exception for failingSyncAttribute", function() {
+                            getFailingAttribute("failingSyncAttribute");
+                        });
+
+                        it("gets an exception for failingAsyncAttribute", function() {
+                            getFailingAttribute("failingAsyncAttribute");
                         });
 
                         it("sets the enumArrayAttribute", function() {

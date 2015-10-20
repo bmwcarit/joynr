@@ -227,12 +227,21 @@ define(
                                     // if the attribute exists in the provider
                                     if (provider[attributeName]
                                         && !provider[attributeName].callOperation) {
-                                        if (getSet === "get") {
-                                            //TODO: assumes the getter is not throwing exception
-                                            result = provider[attributeName].get();
-                                        } else if (getSet === "set") {
-                                            //TODO: assumes the setter is not throwing exception
-                                            provider[attributeName].set(request.params[0]);
+                                        try {
+                                            if (getSet === "get") {
+                                                result = provider[attributeName].get();
+                                            } else if (getSet === "set") {
+                                                result = provider[attributeName].set(request.params[0]);
+                                            }
+                                        } catch(internalGetterSetterException) {
+                                            if (internalGetterSetterException instanceof ProviderRuntimeException) {
+                                                exception = internalGetterSetterException;
+                                            } else {
+                                                exception = new ProviderRuntimeException({
+                                                    detailMessage: "getter/setter method of attribute " +
+                                                        attributeName + " reported an error"
+                                                });
+                                            }
                                         }
                                     }
                                     // if neither an operation nor an attribute exists in the
