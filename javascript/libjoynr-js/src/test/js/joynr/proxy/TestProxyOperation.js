@@ -148,7 +148,7 @@ joynrTestRequire(
                                 });
 
                         it(
-                                "expect correct error reporting after operation call with wrong type of argumnet",
+                                "expect correct error reporting after operation call with wrong type of argument",
                                 function() {
                                     var spy = jasmine.createSpyObj("spy", [
                                         "onFulfilled",

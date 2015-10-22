@@ -19,27 +19,26 @@ package io.joynr.arbitration;
  * #L%
  */
 
-import io.joynr.capabilities.CapabilityEntry;
-
 import java.util.Collection;
 import java.util.Map;
 
 import joynr.types.CustomParameter;
+import joynr.types.DiscoveryEntry;
 
 public class KeywordArbitrationStrategyFunction extends ArbitrationStrategyFunction {
 
     @Override
-    public CapabilityEntry select(Map<String, String> parameters, Collection<CapabilityEntry> capabilities) {
+    public DiscoveryEntry select(Map<String, String> parameters, Collection<DiscoveryEntry> capabilities) {
         String requestedKeyword = parameters.get(ArbitrationConstants.KEYWORD_PARAMETER);
-        CapabilityEntry capabilityWithKeyword = null;
+        DiscoveryEntry capabilityWithKeyword = null;
 
-        for (CapabilityEntry capEntry : capabilities) {
+        for (DiscoveryEntry discoveryEntry : capabilities) {
             // Search for a matching keyword parameter
-            CustomParameter keywordParameter = findQosParameter(capEntry, ArbitrationConstants.KEYWORD_PARAMETER);
+            CustomParameter keywordParameter = findQosParameter(discoveryEntry, ArbitrationConstants.KEYWORD_PARAMETER);
             if (keywordParameter != null) {
                 String currentKeyword = keywordParameter.getValue();
                 if (currentKeyword.equals(requestedKeyword)) {
-                    capabilityWithKeyword = capEntry;
+                    capabilityWithKeyword = discoveryEntry;
                     break;
                 }
             }

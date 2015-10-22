@@ -19,11 +19,10 @@ package io.joynr.arbitration;
  * #L%
  */
 
-import io.joynr.capabilities.CapabilityEntry;
-
 import java.util.Collection;
 import java.util.Map;
 
+import joynr.types.DiscoveryEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,17 +35,17 @@ public class HighestPriorityArbitrationStrategyFunction extends ArbitrationStrat
     private static final Logger logger = LoggerFactory.getLogger(HighestPriorityArbitrationStrategyFunction.class);
 
     @Override
-    public final CapabilityEntry select(Map<String, String> parameters, final Collection<CapabilityEntry> capabilities) {
+    public final DiscoveryEntry select(Map<String, String> parameters, final Collection<DiscoveryEntry> capabilities) {
         logger.trace("starting select Provider by priority");
-        CapabilityEntry highestPriorityCapability = null;
+        DiscoveryEntry highestPriorityCapability = null;
         long highestPriority = -1L;
-        for (CapabilityEntry capEntry : capabilities) {
+        for (DiscoveryEntry discoveryEntry : capabilities) {
             // Search for the provider with the highest priority
-            Long priority = capEntry.getProviderQos().getPriority();
+            Long priority = discoveryEntry.getQos().getPriority();
             logger.trace("Looking at capability with priority " + priority.toString());
             if (highestPriority < priority) {
                 highestPriority = priority;
-                highestPriorityCapability = capEntry;
+                highestPriorityCapability = discoveryEntry;
             }
         }
         logger.trace("capability with highest priority: " + highestPriority + "\r\n" + highestPriorityCapability);

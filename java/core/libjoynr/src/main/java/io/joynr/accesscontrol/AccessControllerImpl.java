@@ -22,7 +22,6 @@ package io.joynr.accesscontrol;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
-import io.joynr.capabilities.CapabilityEntry;
 import io.joynr.capabilities.CapabilityListener;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 
@@ -33,6 +32,7 @@ import joynr.Request;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.TrustLevel;
 
+import joynr.types.DiscoveryEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,13 +61,13 @@ public class AccessControllerImpl implements AccessController {
         localCapabilitiesDirectory.addCapabilityListener(new CapabilityListener() {
 
             @Override
-            public void capabilityRemoved(CapabilityEntry removedCapability) {
+            public void capabilityRemoved(DiscoveryEntry removedCapability) {
                 localDomainAccessController.unsubscribeFromAceChanges(removedCapability.getDomain(),
                                                                       removedCapability.getInterfaceName());
             }
 
             @Override
-            public void capabilityAdded(CapabilityEntry addedCapability) {
+            public void capabilityAdded(DiscoveryEntry addedCapability) {
                 // NOOP
             }
         });
@@ -77,14 +77,14 @@ public class AccessControllerImpl implements AccessController {
     public boolean hasConsumerPermission(final JoynrMessage message) {
         // Check permission at the interface level
         // First get the domain and interface that is being called from appropriate capability entry
-        CapabilityEntry capabilityEntry = getCapabilityEntry(message);
-        if (capabilityEntry == null) {
+        DiscoveryEntry discoveryEntry = getCapabilityEntry(message);
+        if (discoveryEntry == null) {
             logger.error("Failed to get capability for participant id {} for acl check", message.getTo());
             return false;
         }
 
-        String domain = capabilityEntry.getDomain();
-        String interfaceName = capabilityEntry.getInterfaceName();
+        String domain = discoveryEntry.getDomain();
+        String interfaceName = discoveryEntry.getInterfaceName();
 
         // try determine permission without expensive message deserialization
         // since obtaining trust level from message header is still not supported use TrustLevel.HIGH
@@ -121,7 +121,7 @@ public class AccessControllerImpl implements AccessController {
             return true;
         default:
             logger.warn("Message {} to domain {}, interface {} failed AccessControl check", new Object[]{
-                    message.getId(), capabilityEntry.getDomain(), capabilityEntry.getInterfaceName() });
+                    message.getId(), discoveryEntry.getDomain(), discoveryEntry.getInterfaceName() });
             return false;
         }
     }
@@ -133,7 +133,7 @@ public class AccessControllerImpl implements AccessController {
     }
 
     // Get the capability entry for the given message
-    private CapabilityEntry getCapabilityEntry(JoynrMessage message) {
+    private DiscoveryEntry getCapabilityEntry(JoynrMessage message) {
 
         long cacheMaxAge = Long.MAX_VALUE;
         DiscoveryQos discoveryQos = new DiscoveryQos(DiscoveryQos.NO_MAX_AGE,

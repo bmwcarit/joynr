@@ -19,11 +19,10 @@ package io.joynr.arbitration;
  * #L%
  */
 
-import io.joynr.capabilities.CapabilityEntry;
-
 import java.util.Collection;
 import java.util.Map;
 
+import joynr.types.DiscoveryEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,13 +30,13 @@ public class FixedParticipantArbitrationStrategyFunction extends ArbitrationStra
     private static final Logger logger = LoggerFactory.getLogger(FixedParticipantArbitrationStrategyFunction.class);
 
     @Override
-    public CapabilityEntry select(Map<String, String> parameters, Collection<CapabilityEntry> capabilities) {
+    public DiscoveryEntry select(Map<String, String> parameters, Collection<DiscoveryEntry> capabilities) {
         String participantId = parameters.get(ArbitrationConstants.FIXEDPARTICIPANT_KEYWORD);
         logger.trace("starting select Provider by participant Id: {}", participantId);
-        CapabilityEntry capabilityWithParticipantId = null;
-        for (CapabilityEntry capEntry : capabilities) {
-            if (capEntry.getParticipantId().equals(participantId)) {
-                capabilityWithParticipantId = capEntry;
+        DiscoveryEntry capabilityWithParticipantId = null;
+        for (DiscoveryEntry discoveryEntry : capabilities) {
+            if (discoveryEntry.getParticipantId().equals(participantId)) {
+                capabilityWithParticipantId = discoveryEntry;
                 break;
             }
         }

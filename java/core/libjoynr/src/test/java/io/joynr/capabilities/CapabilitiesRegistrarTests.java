@@ -32,6 +32,8 @@ import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.RequestCallerFactory;
+import joynr.types.CommunicationMiddleware;
+import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
 
 import org.junit.Before;
@@ -39,6 +41,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import java.util.Arrays;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CapabilitiesRegistrarTests {
@@ -103,11 +107,12 @@ public class CapabilitiesRegistrarTests {
         when(requestCallerFactory.create(provider)).thenReturn(requestCaller);
 
         registrar.registerProvider(domain, provider);
-        verify(localCapabilitiesDirectory).add(eq(new CapabilityEntryImpl(domain,
-                                                                          TestInterface.INTERFACE_NAME,
-                                                                          providerQos,
-                                                                          participantId,
-                                                                          System.currentTimeMillis())));
+        verify(localCapabilitiesDirectory).add(eq(new DiscoveryEntry(domain,
+                                                                     TestInterface.INTERFACE_NAME,
+                                                                     participantId,
+                                                                     providerQos,
+                                                                     Arrays.asList(CommunicationMiddleware.JOYNR))));
+
         verify(requestCallerFactory).create(provider);
 
         verify(requestCallerDirectory).addCaller(participantId, requestCaller);
@@ -121,11 +126,11 @@ public class CapabilitiesRegistrarTests {
         when(participantIdStorage.getProviderParticipantId(eq(domain), eq(ProvidedInterface.class))).thenReturn(participantId);
         registrar.unregisterProvider(domain, provider);
 
-        verify(localCapabilitiesDirectory).remove(eq(new CapabilityEntryImpl(domain,
-                                                                             TestInterface.INTERFACE_NAME,
-                                                                             providerQos,
-                                                                             participantId,
-                                                                             System.currentTimeMillis())));
+        verify(localCapabilitiesDirectory).remove(eq(new DiscoveryEntry(domain,
+                                                                        TestInterface.INTERFACE_NAME,
+                                                                        participantId,
+                                                                        providerQos,
+                                                                        Arrays.asList(CommunicationMiddleware.JOYNR))));
         verify(requestCallerDirectory).removeCaller(eq(participantId));
     }
 

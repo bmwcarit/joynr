@@ -19,6 +19,8 @@ package io.joynr.capabilities;
  * #L%
  */
 
+import joynr.types.DiscoveryEntry;
+
 import javax.annotation.CheckForNull;
 
 /**
@@ -28,7 +30,7 @@ import javax.annotation.CheckForNull;
  */
 
 public interface CapabilityCallback {
-    void processCapabilityReceived(@CheckForNull CapabilityEntry capability);
+    void processCapabilityReceived(@CheckForNull DiscoveryEntry capability);
 
     void onError(Throwable e);
 }

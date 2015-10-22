@@ -22,6 +22,7 @@ package io.joynr.capabilities;
 import java.util.List;
 
 import com.google.common.collect.Lists;
+import joynr.types.DiscoveryEntry;
 
 public abstract class AbstractLocalCapabilitiesDirectory implements LocalCapabilitiesDirectory {
     List<CapabilityListener> capabilityListeners = Lists.newArrayList();
@@ -43,7 +44,7 @@ public abstract class AbstractLocalCapabilitiesDirectory implements LocalCapabil
      * Notifies all capability listeners about a newly added capability entry.
      * @param addedCapability the added entry.
      */
-    protected void notifyCapabilityAdded(CapabilityEntry addedCapability) {
+    protected void notifyCapabilityAdded(DiscoveryEntry addedCapability) {
         for (CapabilityListener capabilityListener : capabilityListeners) {
             capabilityListener.capabilityAdded(addedCapability);
         }
@@ -53,7 +54,7 @@ public abstract class AbstractLocalCapabilitiesDirectory implements LocalCapabil
      * Notifies all capability listeners about a rmoved capability entry.
      * @param removedCapability the removed entry.
      */
-    protected void notifyCapabilityRemoved(CapabilityEntry removedCapability) {
+    protected void notifyCapabilityRemoved(DiscoveryEntry removedCapability) {
         for (CapabilityListener capabilityListener : capabilityListeners) {
             capabilityListener.capabilityRemoved(removedCapability);
         }

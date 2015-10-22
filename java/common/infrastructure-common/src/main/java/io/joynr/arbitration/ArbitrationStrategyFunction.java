@@ -1,13 +1,12 @@
 package io.joynr.arbitration;
 
-import io.joynr.capabilities.CapabilityEntry;
-
 import java.util.Collection;
 import java.util.Map;
 
 import javax.annotation.CheckForNull;
 
 import joynr.types.CustomParameter;
+import joynr.types.DiscoveryEntry;
 
 /*
  * #%L
@@ -30,11 +29,11 @@ import joynr.types.CustomParameter;
 
 public abstract class ArbitrationStrategyFunction {
 
-    abstract CapabilityEntry select(Map<String, String> parameters, Collection<CapabilityEntry> capabilities);
+    abstract DiscoveryEntry select(Map<String, String> parameters, Collection<DiscoveryEntry> capabilities);
 
     @CheckForNull
-    protected CustomParameter findQosParameter(CapabilityEntry capEntry, String parameterName) {
-        for (CustomParameter parameter : capEntry.getProviderQos().getCustomParameters()) {
+    protected CustomParameter findQosParameter(DiscoveryEntry discoveryEntry, String parameterName) {
+        for (CustomParameter parameter : discoveryEntry.getQos().getCustomParameters()) {
             if (parameterName.equals(parameter.getName())) {
                 return parameter;
             }
