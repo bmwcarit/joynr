@@ -122,7 +122,6 @@ public class Arbitrator {
                                                                                         capabilities);
 
                 if (selectedCapability != null) {
-                    arbitrationResult.setAddress(selectedCapability.getAddresses());
                     arbitrationResult.setParticipantId(selectedCapability.getParticipantId());
                     arbitrationStatus = ArbitrationStatus.ArbitrationSuccesful;
                     updateArbitrationResultAtListener();

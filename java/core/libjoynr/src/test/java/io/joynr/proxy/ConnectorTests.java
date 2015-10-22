@@ -174,9 +174,6 @@ public class ConnectorTests {
 
     private ConnectorInvocationHandler createConnector() {
         ArbitrationResult arbitrationResult = new ArbitrationResult();
-        ArrayList<Address> addresses = new ArrayList<Address>();
-        addresses.add(address);
-        arbitrationResult.setAddress(addresses);
         arbitrationResult.setParticipantId(toParticipantId);
         JoynrMessagingConnectorFactory joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(requestReplyManager,
                                                                                                            replyCallerDirectory,

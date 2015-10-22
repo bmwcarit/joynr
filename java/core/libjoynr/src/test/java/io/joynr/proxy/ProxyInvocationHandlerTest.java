@@ -98,10 +98,7 @@ public class ProxyInvocationHandlerTest {
             }
         });
 
-        List<Address> endpointAddresses = new ArrayList<Address>();
-        ChannelAddress endpointAddress = new ChannelAddress("channelId");
-        endpointAddresses.add(endpointAddress);
-        proxyInvocationHandler.createConnector(new ArbitrationResult("participantId", endpointAddresses));
+        proxyInvocationHandler.createConnector(new ArbitrationResult("participantId"));
 
         // if the bug that causes one thread to hang in arbitration exists, one
         // of these calls will never return, causing the test to timeout and fail

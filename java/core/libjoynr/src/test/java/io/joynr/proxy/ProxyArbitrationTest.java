@@ -124,9 +124,8 @@ public class ProxyArbitrationTest {
                                                       discoveryQos,
                                                       messagingQos,
                                                       connectorFactory);
-        List<Address> endpoints = Lists.newArrayList(correctEndpointAddress);
 
-        proxyHandler.createConnector(new ArbitrationResult(participantId, endpoints));
+        proxyHandler.createConnector(new ArbitrationResult(participantId));
 
         Request request = Mockito.<Request> any();
         Mockito.when(joynrMessageFactory.createRequest(Mockito.anyString(),

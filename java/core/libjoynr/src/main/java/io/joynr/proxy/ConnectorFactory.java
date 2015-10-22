@@ -25,9 +25,6 @@ import io.joynr.messaging.routing.MessageRouter;
 
 import javax.annotation.CheckForNull;
 
-import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.ChannelAddress;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,18 +60,9 @@ public class ConnectorFactory {
                                              final ArbitrationResult arbitrationResult,
                                              final MessagingQos qosSettings) {
 
-        for (Address endpointAddress : arbitrationResult.getEndpointAddress()) {
-            if (endpointAddress instanceof ChannelAddress) {
-                messageRouter.addNextHop(arbitrationResult.getParticipantId(), (ChannelAddress) endpointAddress);
-                return joynrMessagingConnectorFactory.create(fromParticipantId,
-                                                             arbitrationResult.getParticipantId(),
-                                                             qosSettings);
-            }
-
-            logger.warn("Unknown EndpointAddress type: Did not create to create connector: " + endpointAddress);
-
-        }
-        return null;
+        return joynrMessagingConnectorFactory.create(fromParticipantId,
+                                                     arbitrationResult.getParticipantId(),
+                                                     qosSettings);
 
     }
 }
