@@ -70,7 +70,7 @@ define(
              */
             function getNamedArguments(unnamedArguments, argumentDatatypes, operationSignature) {
                 var i, argument, argumentName, namedArguments = {}, inputParameter =
-                        operationSignature.inputParameter, filteredArgumentType;
+                        operationSignature.inputParameter;
 
                 // check if number of given argument types (argumentDatatypes.length) matches number
                 // of parameters in op signature (keys.length)
@@ -81,17 +81,9 @@ define(
                 // cycle over all arguments
                 for (i = 0; i < inputParameter.length; ++i) {
                     argument = inputParameter[i];
-                    /*
-                     * this filtering can be removed, once the paramDatatypes of arrays
-                     * not "List" anymore, but the real typename of the array entries + "[]"
-                     */
-                    filteredArgumentType =
-                            (argument.type.substr(argument.type.length - 2, 2) === "[]")
-                                    ? TypesEnum.LIST
-                                    : argument.type;
                     argumentName = argument.name;
                     // check if argument type matches parameter's type from operation signature
-                    if (argumentDatatypes[i] !== filteredArgumentType) {
+                    if (argumentDatatypes[i] !== argument.type) {
                         return undefined;
                     }
 

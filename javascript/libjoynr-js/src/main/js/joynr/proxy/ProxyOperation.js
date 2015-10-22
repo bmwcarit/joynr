@@ -68,7 +68,7 @@ define(
                 // if for all operationArguments there is a matching (name and type) parameter found
                 // in the operationSignature, this object will hold name, type and value and is
                 // qualified to be used for serialization and will be returned
-                var argument, argumentId, argumentName, operationParameter, argumentValue;
+                var argument, argumentId, argumentName, argumentType, argumentValue;
                 var inputParameter = operationSignature.inputParameter;
                 var outputParameter = operationSignature.outputParameter;
                 var inputParamDatatypes = [];
@@ -89,13 +89,10 @@ define(
                         argument = inputParameter[argumentId];
 
                         argumentName = argument.name;
-                        operationParameter =
-                                (argument.type.substr(argument.type.length - 2, 2) === "[]")
-                                        ? TypesEnum.LIST
-                                        : argument.type;
+                        argumentType = argument.type;
 
                         // if there's no parameter with the given name
-                        if (!operationParameter) {
+                        if (!argumentType) {
                             // signature does not match
                             result.errorMessage =
                                     "signature does not match: type for argument \""
@@ -123,7 +120,7 @@ define(
                         var objectType =
                                 argumentValue._typeName || Typing.getObjectType(argumentValue);
                         /*jslint nomen: false */
-                        if (Typing.translateJoynrTypeToJavascriptType(operationParameter) !== objectType) {
+                        if (Typing.translateJoynrTypeToJavascriptType(argumentType) !== objectType) {
                             // signature does not match
                             result.errorMessage =
                                     "Signature does not match: type \""
@@ -132,7 +129,7 @@ define(
                                         + argumentName
                                         + "\" does not match with expected type \""
                                         + Typing
-                                                .translateJoynrTypeToJavascriptType(operationParameter)
+                                                .translateJoynrTypeToJavascriptType(argumentType)
                                         + "\"";
                             return result;
                         }
@@ -140,7 +137,7 @@ define(
                         // we found a matching parameter/argument-pair that has the same name and
                         // type, let's add it to our qualified operation
                         // argument object for later use in serialization
-                        inputParamDatatypes.push(operationParameter);
+                        inputParamDatatypes.push(argumentType);
                         params.push(argumentValue);
                     }
                 }

@@ -73,12 +73,6 @@ define("joynr/TypesEnum", [], function() {
      * @readonly
      */
     TypesEnum.STRING = "String";
-    /**
-     * @type {String}
-     * @member
-     * @readonly
-     */
-    TypesEnum.LIST = "List";
 
     /**
      * Map of the primitive types

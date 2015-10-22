@@ -106,7 +106,7 @@ define("test/data/Operation", [
                     },
                     {
                         name : "array",
-                        type : "List"
+                        type : "Integer[]"
                     }
                 ],
                 error : {
@@ -129,7 +129,7 @@ define("test/data/Operation", [
                 "Boolean",
                 "Integer",
                 "String",
-                "List"
+                "Integer[]"
             ],
             params : [
                 true,

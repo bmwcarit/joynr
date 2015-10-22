@@ -115,49 +115,6 @@ joynrTestRequire(
             });
 
             describe(
-                    "libjoynr-js.joynr.Typing.translateJoynrTypeToJavascriptType",
-                    function() {
-                        it(
-                                "returns the correct type strings",
-                                function() {
-                                    expect(Typing.translateJoynrTypeToJavascriptType("Boolean"))
-                                            .toEqual("Boolean");
-                                    expect(Typing.translateJoynrTypeToJavascriptType("Byte"))
-                                            .toEqual("Number");
-                                    expect(Typing.translateJoynrTypeToJavascriptType("Short"))
-                                            .toEqual("Number");
-                                    expect(Typing.translateJoynrTypeToJavascriptType("Integer"))
-                                            .toEqual("Number");
-                                    expect(Typing.translateJoynrTypeToJavascriptType("Long"))
-                                            .toEqual("Number");
-                                    expect(Typing.translateJoynrTypeToJavascriptType("Float"))
-                                            .toEqual("Number");
-                                    expect(Typing.translateJoynrTypeToJavascriptType("Double"))
-                                            .toEqual("Number");
-                                    expect(Typing.translateJoynrTypeToJavascriptType("String"))
-                                            .toEqual("String");
-                                    expect(Typing.translateJoynrTypeToJavascriptType("List"))
-                                            .toEqual("Array");
-                                    expect(
-                                            Typing
-                                                    .translateJoynrTypeToJavascriptType("some.custom.namespace.and.Class"))
-                                            .toEqual("some.custom.namespace.and.Class");
-                                });
-
-                        it("throws if no object is provided", function() {
-                            expect(function() {
-                                Typing.translateJoynrTypeToJavascriptType();
-                            }).toThrow();
-                            expect(function() {
-                                Typing.translateJoynrTypeToJavascriptType(null);
-                            }).toThrow();
-                            expect(function() {
-                                Typing.translateJoynrTypeToJavascriptType(undefined);
-                            }).toThrow();
-                        });
-                    });
-
-            describe(
                     "libjoynr-js.joynr.Typing.augmentType",
                     function() {
 

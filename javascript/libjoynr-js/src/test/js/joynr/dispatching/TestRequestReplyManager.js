@@ -159,7 +159,7 @@ joynrTestRequire(
                                         ]
                                     },
                                     {
-                                        paramDatatype : [ TypesEnum.LIST
+                                        paramDatatype : [ "Integer[]"
                                         ],
                                         params : [ [
                                             1,
@@ -171,7 +171,7 @@ joynrTestRequire(
                                         ]
                                     },
                                     {
-                                        paramDatatype : [ TypesEnum.LIST
+                                        paramDatatype : [ "joynr.vehicle.radiotypes.RadioStation[]"
                                         ],
                                         params : [ [
                                             fm4,
