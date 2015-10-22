@@ -59,14 +59,14 @@ public class AttributePollInterpreter {
             throw new MethodInvocationException(message);
         } catch (InvocationTargetException e) {
             Throwable cause = e.getCause();
-            String message = String.format("Calling method \"%s\" on \"%s\" provider throwed an exception: \"%s\"",
+            String message = String.format("Calling method \"%s\" on \"%s\" provider threw an exception: \"%s\"",
                                            method.getName(),
                                            requestCaller.getInterfaceName(),
                                            cause == null ? e.toString() : cause.toString());
             logger.error(message);
             throw new ProviderRuntimeException(cause == null ? e.toString() : cause.toString());
         } catch (Exception e) {
-            String message = String.format("Calling method \"%s\" on \"%s\" provider throwed an unexpected exception: \"%s\"",
+            String message = String.format("Calling method \"%s\" on \"%s\" provider threw an unexpected exception: \"%s\"",
                                            method.getName(),
                                            requestCaller.getInterfaceName(),
                                            e.toString());
