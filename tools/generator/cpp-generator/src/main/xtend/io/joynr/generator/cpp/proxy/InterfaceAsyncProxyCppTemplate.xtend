@@ -97,7 +97,7 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 				return future;
 			}
 			else{
-				return connector->«getAttribute»Async(onSuccess);
+				return connector->«getAttribute»Async(onSuccess, onError);
 			}
 		}
 
@@ -126,7 +126,7 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 				return future;
 			}
 			else{
-				return connector->«setAttribute»Async(«attributeName», onSuccess);
+				return connector->«setAttribute»Async(«attributeName», onSuccess, onError);
 			}
 		}
 
@@ -158,7 +158,7 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 			return future;
 		}
 		else{
-			return connector->«methodName»Async(«inputParamList»«IF !method.inputParameters.empty», «ENDIF»onSuccess);
+			return connector->«methodName»Async(«inputParamList»«IF !method.inputParameters.empty», «ENDIF»onSuccess, onError);
 		}
 	}
 
