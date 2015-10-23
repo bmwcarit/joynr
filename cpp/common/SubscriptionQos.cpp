@@ -20,6 +20,7 @@
 #include "joynr/DispatcherUtils.h"
 #include <limits>
 #include <chrono>
+#include <stdexcept>
 
 namespace joynr
 {
@@ -103,6 +104,8 @@ void SubscriptionQos::setExpiryDate(const int64_t& expiryDate)
     int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
     if (this->expiryDate < now) {
         clearExpiryDate();
+        throw std::invalid_argument("Subscription ExpiryDate " + std::to_string(expiryDate) +
+                                    " in the past. Now: " + std::to_string(now));
     }
 }
 

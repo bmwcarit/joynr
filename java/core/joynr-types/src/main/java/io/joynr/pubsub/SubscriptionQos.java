@@ -132,7 +132,7 @@ public abstract class SubscriptionQos implements JoynrType {
     public void setExpiryDate(final long expiryDate_ms) {
         long now = System.currentTimeMillis();
         if (expiryDate_ms <= now && expiryDate_ms != NO_EXPIRY_DATE) {
-            logger.error("Subscription ExpiryDate {} is in the past. Now: {}", expiryDate_ms, now);
+            throw new IllegalArgumentException("Subscription ExpiryDate " + expiryDate_ms + " in the past. Now: " + now);
         }
         this.expiryDate = expiryDate_ms;
     }
