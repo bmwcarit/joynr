@@ -139,7 +139,9 @@ public abstract class AbstractMessagingIntegrationTest {
         RoutingTable routingTable = new RoutingTableImpl("channelurldirectory_participantid",
                                                          new ChannelAddress("discoverydirectory_channelid"),
                                                          "capabilitiesdirectory_participantid",
-                                                         new ChannelAddress("discoverydirectory_channelid"));
+                                                         new ChannelAddress("discoverydirectory_channelid"),
+                                                         "domainaccesscontroller_participantid",
+                                                         new ChannelAddress("domainaccesscontroller_channelid"));
 
         ChannelUrlInformation channelUrlInformation = new ChannelUrlInformation();
         channelUrlInformation.setUrls(Arrays.asList(getChannelUrl(channelId)));

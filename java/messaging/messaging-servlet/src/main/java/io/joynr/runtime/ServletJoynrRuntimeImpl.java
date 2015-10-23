@@ -49,6 +49,7 @@ public class ServletJoynrRuntimeImpl extends JoynrRuntimeImpl {
                                    @Named(ConfigurableMessagingSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) Address libjoynrMessagingAddress,
                                    @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_ADDRESS) Address capabilitiesDirectoryAddress,
                                    @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_ADDRESS) Address channelUrlDirectoryAddress,
+                                   @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_ADDRESS) Address domainAccessControllerAddress,
                                    @Named(ConfigurableMessagingSettings.PROPERTY_CLUSTERCONTROLER_MESSAGING_SKELETON) IMessaging clusterControllerMessagingSkeleton) {
         // CHECKSTYLE:ON
         super(objectMapper,
@@ -60,6 +61,7 @@ public class ServletJoynrRuntimeImpl extends JoynrRuntimeImpl {
               libjoynrMessagingAddress,
               capabilitiesDirectoryAddress,
               channelUrlDirectoryAddress,
+              domainAccessControllerAddress,
               clusterControllerMessagingSkeleton);
     }
 
@@ -67,7 +69,7 @@ public class ServletJoynrRuntimeImpl extends JoynrRuntimeImpl {
     /**
      * Unregistering currently is not receiving any answers, cauing timrout exceptions
      * The reason is that the unregister happens in the ServletContextListener at contextDestroyed
-     * which happens after the servlet has already been destroyed. Since the response to unregister 
+     * which happens after the servlet has already been destroyed. Since the response to unregister
      * would have to arrive via the messaging receiver servlet, this is obviously too late to unregister,
      * but there is no obvious fix (other than create a long polling message receiver for the unregister)
      * since the servelet lifecycle does not consist of any further usful events.

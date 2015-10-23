@@ -116,6 +116,14 @@ public class DefaultRuntimeModule extends AbstractModule {
 
     @Provides
     @Singleton
+    @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_ADDRESS)
+    Address getDomainAccessControllerAddress(@Named(MessagingPropertyKeys.CHANNELID) String channelId,
+                                             @com.google.inject.name.Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID) String domainAccessControllerChannelId) {
+        return getAddress(channelId, domainAccessControllerChannelId);
+    }
+
+    @Provides
+    @Singleton
     @Named(ConfigurableMessagingSettings.PROPERTY_CLUSTERCONTROLER_MESSAGING_SKELETON)
     IMessaging getClusterControllerMessagingSkeleton(MessageRouter messageRouter) {
         return new ChannelMessagingSkeleton(messageRouter);

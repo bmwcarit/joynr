@@ -103,6 +103,7 @@ public class JoynrRuntimeImpl implements JoynrRuntime {
             startReceiver();
         }
 
+        @Override
         public void callerRemoved(String participantId) {
         }
     }
@@ -118,6 +119,7 @@ public class JoynrRuntimeImpl implements JoynrRuntime {
                             @Named(ConfigurableMessagingSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) Address libjoynrMessagingAddress,
                             @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_ADDRESS) Address capabilitiesDirectoryAddress,
                             @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_ADDRESS) Address channelUrlDirectoryAddress,
+                            @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_ADDRESS) Address domainAccessControllerAddress,
                             @Named(ConfigurableMessagingSettings.PROPERTY_CLUSTERCONTROLER_MESSAGING_SKELETON) IMessaging clusterControllerMessagingSkeleton) {
         // CHECKSTYLE:ON
         this.requestCallerDirectory = requestCallerDirectory;
@@ -142,6 +144,10 @@ public class JoynrRuntimeImpl implements JoynrRuntime {
         if (capabilitiesDirectoryAddress instanceof InProcessAddress) {
             ((InProcessAddress) capabilitiesDirectoryAddress).setSkeleton(new InProcessLibjoynrMessagingSkeleton(dispatcher));
         }
+        if (domainAccessControllerAddress instanceof InProcessAddress) {
+            ((InProcessAddress) domainAccessControllerAddress).setSkeleton(new InProcessLibjoynrMessagingSkeleton(dispatcher));
+        }
+
         requestCallerDirectoryListener = new CallerDirectoryListenerImpl<RequestCaller>();
         replyCallerDirectoryListener = new CallerDirectoryListenerImpl<ReplyCaller>();
         requestCallerDirectory.addListener(requestCallerDirectoryListener);

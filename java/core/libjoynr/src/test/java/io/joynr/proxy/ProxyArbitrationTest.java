@@ -97,7 +97,9 @@ public class ProxyArbitrationTest {
         routingTable = new RoutingTableImpl("channelurldirectory_participantid",
                                             new ChannelAddress("discoverydirectory_channelid"),
                                             "capabilitiesdirectory_participantid",
-                                            new ChannelAddress("discoverydirectory_channelid"));
+                                            new ChannelAddress("discoverydirectory_channelid"),
+                                            "domainaccesscontroller_participantid",
+                                            new ChannelAddress("domainaccesscontroller_channelid"));
 
         messageRouter = new MessageRouterImpl(routingTable, messageSender);
 
