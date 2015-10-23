@@ -117,3 +117,25 @@ TEST_F(DispatcherUtilsTest, convertTtlToAbsoluteTimeHandelsZeroTtl) {
     EXPECT_TRUE(duration_cast<milliseconds>(now - ttlZero).count() < 10);
 
 }
+
+TEST_F(DispatcherUtilsTest, testJoynrTimePointWithWithHugeNumbers) {
+    uint64_t hugeNumber = 9007199254740991;
+    uint64_t nowInMs = DispatcherUtils::nowInMilliseconds();
+    uint64_t deltaInMs = hugeNumber - nowInMs;
+    JoynrTimePoint now{std::chrono::milliseconds(nowInMs)};
+    JoynrTimePoint fixture{std::chrono::milliseconds(hugeNumber)};
+    JoynrTimePoint delta{std::chrono::milliseconds(deltaInMs)};
+    LOG_DEBUG(
+                logger,
+                QString("time delta between %1 and %2: %3")
+                .arg(QString::number(hugeNumber))
+                .arg(QString::number(nowInMs))
+                .arg(QString::number(deltaInMs))
+    );
+
+    EXPECT_EQ(deltaInMs, duration_cast<milliseconds>(fixture.time_since_epoch()).count() - duration_cast<milliseconds>(now.time_since_epoch()).count());
+    JoynrTimePoint calculatedDelta{fixture -now};
+    EXPECT_EQ(delta, calculatedDelta);
+    EXPECT_GT(fixture, now);
+
+}
