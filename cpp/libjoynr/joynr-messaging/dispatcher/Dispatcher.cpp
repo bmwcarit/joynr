@@ -42,6 +42,7 @@
 #include "joynr/InterfaceRegistrar.h"
 #include "joynr/MetaTypeRegistrar.h"
 #include "joynr/Request.h"
+#include "joynr/exceptions.h"
 
 #include <QUuid>
 #include <chrono>
@@ -170,7 +171,7 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
     QString requestReplyId = request->getRequestReplyId();
     JoynrTimePoint requestExpiryDate = message.getHeaderExpiryDate();
 
-    std::function<void(const QList<QVariant>&)> callbackFct =
+    std::function<void(const QList<QVariant>&)> onSuccess =
             [requestReplyId, requestExpiryDate, this, senderId, receiverId](
                     const QList<QVariant>& returnValueQVar) {
         Reply reply;
@@ -189,12 +190,34 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
                                  MessagingQos(ttl),
                                  reply);
     };
+
+    std::function<void(const JoynrException&)> onError =
+            [requestReplyId, requestExpiryDate, this, senderId, receiverId](
+                    const JoynrException& exception) {
+        Reply reply;
+        reply.setRequestReplyId(requestReplyId);
+        /*
+         * TODO: add error to the reply object
+         * reply.setError(exception);
+         */
+        (void)exception;
+        LOG_DEBUG(logger,
+                  QString("Got error reply from RequestInterpreter for requestReplyId %1")
+                          .arg(requestReplyId));
+        JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
+        int64_t ttl = duration_cast<milliseconds>(requestExpiryDate - now).count();
+        messageSender->sendReply(receiverId, // receiver of the request is sender of reply
+                                 senderId,   // sender of request is receiver of reply
+                                 MessagingQos(ttl),
+                                 reply);
+    };
     // execute request
     requestInterpreter->execute(caller,
                                 request->getMethodName(),
                                 request->getParams(),
                                 request->getParamDatatypes(),
-                                callbackFct);
+                                onSuccess,
+                                onError);
 
     delete request;
 }

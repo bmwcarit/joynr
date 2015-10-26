@@ -45,6 +45,7 @@ class InterfaceRequestInterpreterHTemplate implements InterfaceTemplate{
 #include "joynr/IRequestInterpreter.h"
 
 #include "joynr/joynrlogging.h"
+#include "joynr/exceptions.h"
 
 #include <QVariant>
 #include <memory>
@@ -67,14 +68,16 @@ public:
 	 * @param methodName The name of the method to be executed
 	 * @param paramValues The list of parameter values
 	 * @param paramTypes The list of parameter types
-	 * @param callbackFct A callback function to be called once the asynchronous computation has
-	 * finished. It must expect the method out parameters.
+	 * @param onSuccess A callback function to be called once the asynchronous computation has
+	 * finished with success. It must expect the method out parameters.
+	 * @param onError A callback function to be called once the asynchronous computation fails. It must expect the exception.
 	 */
 	void execute(std::shared_ptr<joynr::RequestCaller> requestCaller,
 					 const QString& methodName,
 					 const QList<QVariant>& paramValues,
 					 const QList<QVariant>& paramTypes,
-					 std::function<void (const QList<QVariant>& outParams)> callbackFct);
+					 std::function<void (const QList<QVariant>& outParams)> onSuccess,
+					 std::function<void (const JoynrException& exception)> onError);
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(«interfaceName»RequestInterpreter);

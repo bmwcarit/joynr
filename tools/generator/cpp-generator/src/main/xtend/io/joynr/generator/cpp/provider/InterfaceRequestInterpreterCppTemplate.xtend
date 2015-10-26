@@ -83,8 +83,13 @@ void «interfaceName»RequestInterpreter::execute(
 		const QString& methodName,
 		const QList<QVariant>& paramValues,
 		const QList<QVariant>& paramTypes,
-		std::function<void (const QList<QVariant>&)> callbackFct
+		std::function<void (const QList<QVariant>&)> onSuccess,
+		std::function<void (const JoynrException& exception)> onError
 ) {
+	/*
+	 * Invoke the onError callback function in case the reuqest caller returns errors. The respective templates change comes with subsequent patches
+	 */
+	(void) onError;
 	Q_UNUSED(paramValues);//if all methods of the interface are empty, the paramValues would not be used and give a warning.
 	Q_UNUSED(paramTypes);//if all methods of the interface are empty, the paramTypes would not be used and give a warning.
 	// cast generic RequestCaller to «interfaceName»Requestcaller
@@ -98,15 +103,15 @@ void «interfaceName»RequestInterpreter::execute(
 			«val returnType = getTypeName(attribute)»
 		«IF attribute.readable»
 			if (methodName == "get«attributeName.toFirstUpper»"){
-				std::function<void(«returnType» «attributeName»)> onSuccess =
-						[callbackFct] («returnType» «attributeName») {
+				std::function<void(«returnType» «attributeName»)> requestCallerOnSuccess =
+						[onSuccess] («returnType» «attributeName») {
 							«val convertedAttribute = qtTypeUtil.fromStdTypeToQTType(attribute, attributeName, true)»
 							QVariant singleOutParam(«IF isArray(attribute)»joynr::Util::convertListToVariantList<«qtTypeUtil.getTypeName(attribute.type)»>(«convertedAttribute»)«ELSE»QVariant::fromValue(«convertedAttribute»)«ENDIF»);
 							QList<QVariant> outParams;
 							outParams.insert(0, singleOutParam);
-							callbackFct(outParams);
+							onSuccess(outParams);
 						};
-				«requestCallerName»->get«attributeName.toFirstUpper»(onSuccess);
+				«requestCallerName»->get«attributeName.toFirstUpper»(requestCallerOnSuccess);
 				return;
 			}
 		«ENDIF»
@@ -132,12 +137,12 @@ void «interfaceName»RequestInterpreter::execute(
 					«qtTypeUtil.getTypeName(attribute)» typedInput«attributeName.toFirstUpper» =
 							«attributeRef»;
 				«ENDIF»
-				std::function<void()> onSuccess =
-						[callbackFct] () {
+				std::function<void()> requestCallerOnSuccess =
+						[onSuccess] () {
 							QList<QVariant> outParams;
-							callbackFct(outParams);
+							onSuccess(outParams);
 						};
-				«requestCallerName»->set«attributeName.toFirstUpper»(«qtTypeUtil.fromQTTypeToStdType(attribute, '''typedInput«attributeName.toFirstUpper»''')», onSuccess);
+				«requestCallerName»->set«attributeName.toFirstUpper»(«qtTypeUtil.fromQTTypeToStdType(attribute, '''typedInput«attributeName.toFirstUpper»''')», requestCallerOnSuccess);
 				return;
 			}
 		«ENDIF»
@@ -155,8 +160,8 @@ void «interfaceName»RequestInterpreter::execute(
 				«ENDFOR»
 			) {
 				«val outputTypedParamList = getCommaSeperatedTypedConstOutputParameterList(method)»
-				std::function<void(«outputTypedParamList»)> onSuccess =
-						[callbackFct](«outputTypedParamList»){
+				std::function<void(«outputTypedParamList»)> requestCallerOnSuccess =
+						[onSuccess](«outputTypedParamList»){
 							QList<QVariant> outParams;
 							«var index = 0»
 							«FOR param : method.outputParameters»
@@ -170,7 +175,7 @@ void «interfaceName»RequestInterpreter::execute(
 										«ENDIF»
 								);
 							«ENDFOR»
-							callbackFct(outParams);
+							onSuccess(outParams);
 						};
 
 				«var iterator2 = -1»
@@ -198,7 +203,7 @@ void «interfaceName»RequestInterpreter::execute(
 
 				«requestCallerName»->«methodName»(
 						«IF !method.inputParameters.empty»«inputUntypedParamList»,«ENDIF»
-						onSuccess);
+						requestCallerOnSuccess);
 				return;
 			}
 		«ENDFOR»
@@ -207,7 +212,7 @@ void «interfaceName»RequestInterpreter::execute(
 	LOG_FATAL(logger, "unknown method name for interface «interfaceName»: " + methodName);
 	assert(false);
 	QList<QVariant> outParams;
-	callbackFct(outParams);
+	onSuccess(outParams);
 }
 
 «getNamespaceEnder(serviceInterface)»

@@ -38,6 +38,7 @@
 #include "joynr/LibjoynrSettings.h"
 
 #include "joynr/SubscriptionUtil.h"
+#include "joynr/exceptions.h"
 
 #include <QFile>
 #include <cassert>
@@ -816,6 +817,21 @@ qint64 PublicationManager::getPublicationTtl(
     return subscriptionRequest->getQos()->getPublicationTtl();
 }
 
+void PublicationManager::sendPublicationError(
+        std::shared_ptr<Publication> publication,
+        std::shared_ptr<SubscriptionInformation> subscriptionInformation,
+        std::shared_ptr<SubscriptionRequest> request,
+        const JoynrException& exception)
+{
+    /*
+     * TODO implement sendPublicationError
+     */
+    (void)publication;
+    (void)subscriptionInformation;
+    (void)request;
+    (void)exception;
+}
+
 void PublicationManager::sendPublication(
         std::shared_ptr<Publication> publication,
         std::shared_ptr<SubscriptionInformation> subscriptionInformation,
@@ -907,7 +923,7 @@ void PublicationManager::pollSubscription(const QString& subscriptionId)
                 InterfaceRegistrar::instance().getRequestInterpreter(
                         requestCaller->getInterfaceName()));
 
-        std::function<void(const QList<QVariant>&)> callbackFct =
+        std::function<void(const QList<QVariant>&)> onSuccess =
                 [publication, publicationInterval, qos, subscriptionRequest, this, subscriptionId](
                         const QList<QVariant>& response) {
             sendPublication(publication, subscriptionRequest, subscriptionRequest, response);
@@ -921,9 +937,28 @@ void PublicationManager::pollSubscription(const QString& subscriptionId)
             }
         };
 
+        std::function<void(const JoynrException&)> onError =
+                [publication, publicationInterval, qos, subscriptionRequest, this, subscriptionId](
+                        const JoynrException& exception) {
+
+            sendPublicationError(publication, subscriptionRequest, subscriptionRequest, exception);
+
+            // Reschedule the next poll
+            if (publicationInterval > 0 && (!isSubscriptionExpired(qos))) {
+                LOG_DEBUG(logger,
+                          QString("rescheduling runnable with delay: %1").arg(publicationInterval));
+                delayedScheduler->schedule(
+                        new PublisherRunnable(*this, subscriptionId), publicationInterval);
+            }
+        };
+
         LOG_DEBUG(logger, QString("run: executing requestInterpreter= %1").arg(attributeGetter));
-        requestInterpreter->execute(
-                requestCaller, attributeGetter, QList<QVariant>(), QList<QVariant>(), callbackFct);
+        requestInterpreter->execute(requestCaller,
+                                    attributeGetter,
+                                    QList<QVariant>(),
+                                    QList<QVariant>(),
+                                    onSuccess,
+                                    onError);
     }
 }
 
