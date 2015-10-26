@@ -185,9 +185,12 @@ TEST_F(LibJoynrRuntimeTest, registerProviderAddsNextHopToCcMessageRouter) {
                 mockTestProvider
     );
     bool resolved = false;
-    RequestStatus status(routingProxy->resolveNextHop(resolved, participantId));
-    ASSERT_TRUE(status.successful());
-    EXPECT_TRUE(resolved);
+    try {
+        routingProxy->resolveNextHop(resolved, participantId);
+        EXPECT_TRUE(resolved);
+    } catch (exceptions::JoynrException& e) {
+        ADD_FAILURE()<< "resolveNextHop was not successful";
+    }
 }
 
 TEST_F(LibJoynrRuntimeTest, unregisterProviderRemovesNextHopToCcMessageRouter) {
@@ -199,14 +202,20 @@ TEST_F(LibJoynrRuntimeTest, unregisterProviderRemovesNextHopToCcMessageRouter) {
     );
 
     bool resolved = false;
-    RequestStatus status(routingProxy->resolveNextHop(resolved, participantId));
-    ASSERT_TRUE(status.successful());
-    EXPECT_TRUE(resolved);
+    try {
+        routingProxy->resolveNextHop(resolved, participantId);
+        EXPECT_TRUE(resolved);
+    } catch (exceptions::JoynrException& e) {
+        ADD_FAILURE()<< "resolveNextHop was not successful";
+    }
 
     runtime->unregisterProvider(participantId);
-    status = routingProxy->resolveNextHop(resolved, participantId);
-    ASSERT_TRUE(status.successful());
-    EXPECT_FALSE(resolved);
+    try {
+        routingProxy->resolveNextHop(resolved, participantId);
+        EXPECT_FALSE(resolved);
+    } catch (exceptions::JoynrException& e) {
+        ADD_FAILURE()<< "resolveNextHop after unregisterProvider was not successful";
+    }
 }
 
 TEST_F(LibJoynrRuntimeTest, registerProviderAddsEntryToLocalCapDir) {
@@ -228,9 +237,12 @@ TEST_F(LibJoynrRuntimeTest, registerProviderAddsEntryToLocalCapDir) {
                 connections
     );
     joynr::types::DiscoveryEntry discoveryEntry;
-    RequestStatus status = discoveryProxy->lookup(discoveryEntry, participantId);
-    ASSERT_TRUE(status.successful());
-    EXPECT_EQ(expectedDiscoveryEntry, discoveryEntry);
+    try {
+        discoveryProxy->lookup(discoveryEntry, participantId);
+        EXPECT_EQ(expectedDiscoveryEntry, discoveryEntry);
+    } catch (exceptions::JoynrException& e) {
+        ADD_FAILURE()<< "lookup was not successful";
+    }
 }
 
 TEST_F(LibJoynrRuntimeTest, arbitrateRegisteredProvider) {
@@ -289,12 +301,16 @@ TEST_F(LibJoynrRuntimeTest, callAsyncFunctionOnProvider) {
     ints.push_back(12);
     int32_t expectedSum = 22;
     std::shared_ptr<Future<int32_t> > future(testProxy->sumIntsAsync(ints));
-    future->waitForFinished(500);
+    try {
+        future->wait(500);
 
-    ASSERT_TRUE(future->getStatus().successful());
-    int32_t actualValue;
-    future->getValues(actualValue);
-    EXPECT_EQ(expectedSum, actualValue);
+        ASSERT_TRUE(future->getStatus().successful());
+        int32_t actualValue;
+        future->get(actualValue);
+        EXPECT_EQ(expectedSum, actualValue);
+    } catch (exceptions::JoynrTimeOutException& e) {
+        ADD_FAILURE()<< "Timeout waiting for sumIntsAsync";
+    }
 
     delete testProxyBuilder;
     delete testProxy;
@@ -329,9 +345,12 @@ TEST_F(LibJoynrRuntimeTest, callSyncFunctionOnProvider) {
     ints.push_back(12);
     int32_t expectedSum = 22;
     int32_t sum = 0;
-    RequestStatus status(testProxy->sumInts(sum, ints));
-    ASSERT_TRUE(status.successful());
-    EXPECT_EQ(expectedSum, sum);
+    try {
+        testProxy->sumInts(sum, ints);
+    } catch (exceptions::JoynrException& e) {
+        ADD_FAILURE()<< "sumInts was not successful";
+        EXPECT_EQ(expectedSum, sum);
+    }
 
     delete testProxyBuilder;
     delete testProxy;

@@ -392,9 +392,9 @@ void MessageRouter::addNextHopToParent(
         std::function<void(void)> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    std::function<void(const RequestStatus&)> onErrorWrapper =
-            [onError](const RequestStatus& status) {
-        onError(joynr::exceptions::ProviderRuntimeException(status.toString()));
+    std::function<void(const exceptions::JoynrException&)> onErrorWrapper =
+            [onError](const exceptions::JoynrException& error) {
+        onError(joynr::exceptions::ProviderRuntimeException(error.getMessage()));
     };
 
     // add to parent router
@@ -468,9 +468,9 @@ void MessageRouter::removeNextHop(
     routingTable.remove(participantId);
     routingTableLock.unlock();
 
-    std::function<void(const RequestStatus&)> onErrorWrapper =
-            [onError](const RequestStatus& status) {
-        onError(joynr::exceptions::ProviderRuntimeException(status.toString()));
+    std::function<void(const exceptions::JoynrException&)> onErrorWrapper =
+            [onError](const exceptions::JoynrException& error) {
+        onError(joynr::exceptions::ProviderRuntimeException(error.getMessage()));
     };
 
     // remove from parent router

@@ -97,8 +97,6 @@ TEST_F(CapabilitiesRegistrarTest, add){
     ;
     EXPECT_CALL(*mockDispatcher, addRequestCaller(expectedParticipantId,_))
             .Times(1);
-    joynr::RequestStatus status;
-    status.setCode(joynr::RequestStatusCode::OK);
     EXPECT_CALL(
                 mockDiscovery,
                 add(
@@ -109,7 +107,7 @@ TEST_F(CapabilitiesRegistrarTest, add){
                         Property(&joynr::types::DiscoveryEntry::getQos, Eq(testQos))
                     )
                 )
-    ).WillOnce(Return(status));
+    ).WillOnce(Return());
 
     std::string participantId = capabilitiesRegistrar->add(domain, mockProvider);
     EXPECT_EQ(expectedParticipantId, participantId);
@@ -125,13 +123,11 @@ TEST_F(CapabilitiesRegistrarTest, removeWithDomainAndProviderObject){
             .WillOnce(Return(expectedParticipantId));
     EXPECT_CALL(*mockDispatcher, removeRequestCaller(expectedParticipantId))
             .Times(1);
-    joynr::RequestStatus status;
-    status.setCode(joynr::RequestStatusCode::OK);
     EXPECT_CALL(mockDiscovery, remove(
                     expectedParticipantId
     ))
             .Times(1)
-            .WillOnce(Return(status))
+            .WillOnce(Return())
     ;
     std::string participantId = capabilitiesRegistrar->remove(domain, mockProvider);
     EXPECT_EQ(expectedParticipantId, participantId);
@@ -140,13 +136,11 @@ TEST_F(CapabilitiesRegistrarTest, removeWithDomainAndProviderObject){
 TEST_F(CapabilitiesRegistrarTest, removeWithParticipantId){
     EXPECT_CALL(*mockDispatcher, removeRequestCaller(expectedParticipantId))
             .Times(1);
-    joynr::RequestStatus status;
-    status.setCode(joynr::RequestStatusCode::OK);
     EXPECT_CALL(mockDiscovery, remove(
                     expectedParticipantId
     ))
             .Times(1)
-            .WillOnce(Return(status))
+            .WillOnce(Return())
     ;
     capabilitiesRegistrar->remove(expectedParticipantId);
 }
@@ -168,8 +162,6 @@ TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapabili
             .Times(1)
             .WillRepeatedly(Return(testQos));
 
-    joynr::RequestStatus status;
-    status.setCode(joynr::RequestStatusCode::OK);
     EXPECT_CALL(
                 mockDiscovery,
                 add(
@@ -180,7 +172,7 @@ TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapabili
                         Property(&joynr::types::DiscoveryEntry::getQos, Eq(testQos))
                     )
                 )
-    ).Times(1).WillOnce(Return(status))
+    ).Times(1).WillOnce(Return())
     ;
 
     EXPECT_CALL(*mockDispatcher, addRequestCaller(expectedParticipantId,_))
@@ -222,8 +214,6 @@ TEST_F(CapabilitiesRegistrarTest, removeDispatcher){
             .Times(1)
             .WillRepeatedly(Return(testQos));
 
-    joynr::RequestStatus status;
-    status.setCode(joynr::RequestStatusCode::OK);
     EXPECT_CALL(
                 mockDiscovery,
                 add(
@@ -234,7 +224,7 @@ TEST_F(CapabilitiesRegistrarTest, removeDispatcher){
                         Property(&joynr::types::DiscoveryEntry::getQos, Eq(testQos))
                     )
                 )
-    ).Times(1).WillOnce(Return(status))
+    ).Times(1).WillOnce(Return())
     ;
 
     EXPECT_CALL(*mockDispatcher, addRequestCaller(expectedParticipantId,_))

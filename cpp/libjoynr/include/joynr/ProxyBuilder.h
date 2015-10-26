@@ -255,8 +255,12 @@ T* ProxyBuilder<T>::build()
     // Wait in the Qt event loop until the result becomes available
     // processEvents() processes all events delivered to this thread
     do {
+        try {
+            future->wait(100);
+        } catch (exceptions::JoynrException& e) {
+        }
         QCoreApplication::processEvents();
-    } while (future->waitForFinished(100).getCode() == RequestStatusCode::IN_PROGRESS);
+    } while (future->getStatus().getCode() == RequestStatusCode::IN_PROGRESS);
 
     return proxy;
 }

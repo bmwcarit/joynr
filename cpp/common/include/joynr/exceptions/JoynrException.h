@@ -24,6 +24,7 @@
 #include <exception>
 #include <QString>
 #include <string>
+#include <memory>
 
 namespace joynr
 {
@@ -56,6 +57,10 @@ public:
      * return The typeName of the exception used for serialization.
      */
     virtual const std::string getTypeName() const;
+    /**
+     * @return A copy of the exception object.
+     */
+    virtual JoynrException* clone() const;
     /**
      * @brief The typeName of the exception used for serialization.
      */
@@ -97,6 +102,7 @@ public:
      */
     JoynrRuntimeException(const std::string& message) throw();
     virtual const std::string getTypeName() const;
+    virtual JoynrRuntimeException* clone() const;
     /**
      * @brief The typeName used for serialization.
      */
@@ -116,6 +122,7 @@ public:
      */
     JoynrTimeOutException(const std::string& message) throw();
     virtual const std::string getTypeName() const;
+    virtual JoynrTimeOutException* clone() const;
     /**
      * @brief The typeName used for serialization.
      */
@@ -149,6 +156,7 @@ public:
      */
     DiscoveryException(const std::string& message) throw();
     virtual const std::string getTypeName() const;
+    virtual DiscoveryException* clone() const;
     /**
      * @brief The typeName used for serialization.
      */
@@ -169,6 +177,7 @@ public:
      */
     MethodInvocationException(const std::string& message) throw();
     virtual const std::string getTypeName() const;
+    virtual MethodInvocationException* clone() const;
     /**
      * @brief The typeName used for serialization.
      */
@@ -190,6 +199,7 @@ public:
      */
     ProviderRuntimeException(const std::string& message) throw();
     virtual const std::string getTypeName() const;
+    virtual ProviderRuntimeException* clone() const;
     /**
      * @brief The typeName used for serialization.
      */
@@ -221,6 +231,7 @@ public:
      */
     std::string getSubscriptionId() const throw();
     virtual const std::string getTypeName() const;
+    virtual PublicationMissedException* clone() const;
     /**
      * @brief The typeName used for serialization.
      */
@@ -284,6 +295,7 @@ public:
      */
     std::string getErrorTypeName() const throw();
     virtual const std::string getTypeName() const;
+    virtual ApplicationException* clone() const;
     /**
      * @brief The typeName of the exception used for serialization.
      */

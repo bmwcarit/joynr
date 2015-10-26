@@ -166,12 +166,12 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
             ->build();
 
     std::shared_ptr<Future<types::Localisation::GpsLocation> > future(testProxy->getLocationAsync());
-    future->waitForFinished(500);
+    future->wait(500);
 
     EXPECT_EQ(tests::testProxy::INTERFACE_NAME(), testProxy->INTERFACE_NAME());
     ASSERT_EQ(RequestStatusCode::OK, future->getStatus().getCode());
     joynr::types::Localisation::GpsLocation actualValue;
-    future->getValues(actualValue);
+    future->get(actualValue);
     EXPECT_EQ(gpsLocation, actualValue);
     delete testProxy;
     delete testProxyBuilder;
@@ -212,12 +212,12 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
             ->build();
 
     std::shared_ptr<Future<int> > future(testProxy->sumIntsAsync(ints));
-    future->waitForFinished(500);
+    future->wait(500);
 
     EXPECT_EQ(tests::testProxy::INTERFACE_NAME(), testProxy->INTERFACE_NAME());
     ASSERT_EQ(RequestStatusCode::OK, future->getStatus().getCode());
     int actualValue;
-    future->getValues(actualValue);
+    future->get(actualValue);
     EXPECT_EQ(sum, actualValue);
     delete testProxy;
     delete testProxyBuilder;

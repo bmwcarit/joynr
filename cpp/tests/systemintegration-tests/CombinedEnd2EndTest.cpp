@@ -170,11 +170,11 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         list.push_back(4);
         list.push_back(8);
         std::shared_ptr<Future<int> >gpsFuture (testProxy->sumIntsAsync(list));
-        gpsFuture->waitForFinished();
+        gpsFuture->wait();
         int expectedValue = 2+4+8;
         ASSERT_TRUE(gpsFuture->getStatus().successful());
         int actualValue;
-        gpsFuture->getValues(actualValue);
+        gpsFuture->get(actualValue);
         EXPECT_EQ(expectedValue, actualValue);
         //TODO CA: shared pointer for proxy builder?
 
@@ -190,10 +190,10 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         types::Localisation::Trip inputTrip;
         inputTrip.setLocations(inputLocationList);
         std::shared_ptr<Future<types::Localisation::Trip> > tripFuture (testProxy->optimizeTripAsync(inputTrip));
-        tripFuture->waitForFinished();
+        tripFuture->wait();
         ASSERT_EQ(RequestStatusCode::OK, tripFuture->getStatus().getCode());
         types::Localisation::Trip actualTrip;
-        tripFuture->getValues(actualTrip);
+        tripFuture->get(actualTrip);
         EXPECT_EQ(inputTrip, actualTrip);
 
      /*
@@ -206,11 +206,11 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         primesBelow6.push_back(3);
         primesBelow6.push_back(5);
         std::vector<int> result;
-        RequestStatus rs(testProxy->returnPrimeNumbers(result, 6));
-        if (rs.successful()) {
+        try {
+            testProxy->returnPrimeNumbers(result, 6);
             EXPECT_EQ(primesBelow6, result);
-        } else {
-            FAIL() << "Requeststatus was not successful";
+        } catch (exceptions::JoynrException& e) {
+            FAIL()<< "returnPrimeNumbers was not successful";
         }
 
         delete testProxyBuilder;
@@ -228,7 +228,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
 //       inputWord.push_back("o");
 //       std::shared_ptr<Future<std::vector<QtVowel> > > wordFuture (new std::shared_ptr<Future<std::vector<QtVowel> > >());
 //       testProxy->optimizeWord(wordFuture, inputTrip);
-//       wordFuture->waitForFinished();
+//       wordFuture->wait();
 //       ASSERT_EQ(RequestStatusCode::OK, wordFuture->getStatus().getCode());
 //       inputTrip.push_back("a"); //thats what optimize word does.. appending an a.
 //       EXPECT_EQ(inputTrip, tripFuture->getValue());
@@ -243,10 +243,10 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         inputGpsLocationList.push_back(types::Localisation::GpsLocation(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 5));
         inputGpsLocationList.push_back(types::Localisation::GpsLocation(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 6));
         std::shared_ptr<Future<std::vector<types::Localisation::GpsLocation> > > listLocationFuture (testProxy->optimizeLocationListAsync(inputGpsLocationList));
-        listLocationFuture->waitForFinished();
+        listLocationFuture->wait();
         ASSERT_EQ(RequestStatusCode::OK, listLocationFuture->getStatus().getCode());
         std::vector<joynr::types::Localisation::GpsLocation> actualLocation;
-        listLocationFuture->getValues(actualLocation);
+        listLocationFuture->get(actualLocation);
         EXPECT_EQ(inputGpsLocationList, actualLocation);
 
      /*
@@ -267,8 +267,11 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         testProvider->setFirstPrime(testPrimeValue, onSuccess, onError);
 
         int primeResult(0);
-        RequestStatus status(testProxy->getFirstPrime(primeResult));
-        ASSERT_TRUE(status.successful());
+        try {
+            testProxy->getFirstPrime(primeResult);
+        } catch (exceptions::JoynrException& e) {
+            FAIL()<< "getFirstPrime was not successful";
+        }
         EXPECT_EQ(primeResult, 15);
 
         // List of strings,
@@ -280,8 +283,11 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         localStrList.push_back("four {");
         testProvider->setListOfStrings(localStrList, onSuccess, onError);
 
-        status = testProxy->getListOfStrings(remoteStrList);
-        ASSERT_TRUE(status.successful());
+        try {
+            testProxy->getListOfStrings(remoteStrList);
+        } catch (exceptions::JoynrException& e) {
+            FAIL()<< "getListOfStrings was not successful";
+        }
         EXPECT_EQ(localStrList, remoteStrList);
 
      /*
@@ -289,10 +295,16 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
       *
       */
 
-        RequestStatus statusOfSet(testProxy->setFirstPrime(19));
-        ASSERT_TRUE(statusOfSet.successful());
-        status = testProxy->getFirstPrime(primeResult);
-        ASSERT_TRUE(status.successful());
+        try {
+            testProxy->setFirstPrime(19);
+        } catch (exceptions::JoynrException& e) {
+            FAIL()<< "setFirstPrime was not successful";
+        }
+        try {
+            testProxy->getFirstPrime(primeResult);
+        } catch (exceptions::JoynrException& e) {
+            FAIL()<< "getFirstPrime was not successful";
+        }
         EXPECT_EQ(primeResult, 19);
 
       /*
@@ -306,8 +318,11 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         inputIntList.push_back(5);
         testProvider->setListOfInts(inputIntList, onSuccess, onError);
         std::vector<int> outputIntLIst;
-        status = testProxy->getListOfInts(outputIntLIst);
-        ASSERT_TRUE(status.successful());
+        try {
+            testProxy->getListOfInts(outputIntLIst);
+        } catch (exceptions::JoynrException& e) {
+            FAIL()<< "getListOfInts was not successful";
+        }
         EXPECT_EQ(outputIntLIst, inputIntList);
         EXPECT_EQ(outputIntLIst.at(1), 3);
         //test remote setter
@@ -315,9 +330,16 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         inputIntList.push_back(7);
         inputIntList.push_back(11);
         inputIntList.push_back(13);
-        statusOfSet = testProxy->setListOfInts(inputIntList);
-        status = testProxy->getListOfInts(outputIntLIst);
-        ASSERT_TRUE(status.successful());
+        try {
+            testProxy->setListOfInts(inputIntList);
+        } catch (exceptions::JoynrException& e) {
+            FAIL()<< "setListOfInts was not successful";
+        }
+        try {
+            testProxy->getListOfInts(outputIntLIst);
+        } catch (exceptions::JoynrException& e) {
+            FAIL()<< "getListOfInts was not successful";
+        }
         EXPECT_EQ(outputIntLIst, inputIntList);
         EXPECT_EQ(outputIntLIst.at(1), 11);
     }
@@ -337,7 +359,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
                                                    ->setDiscoveryQos(discoveryQos)
                                                    ->build());
         std::shared_ptr<Future<int> > testFuture(testProxy->addNumbersAsync(1, 2, 3));
-        testFuture->waitForFinished();
+        testFuture->wait();
         ASSERT_EQ(testFuture->getStatus().getCode(), RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE);
         //TODO CA: shared pointer for proxy builder?
         delete testProxyBuilder;
@@ -609,7 +631,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToNonExistentDomain) {
 
         std::string subscriptionId = testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
 
-	} catch (exceptions::DiscoveryException e) {
+	} catch (exceptions::DiscoveryException& e) {
 		haveDiscoveryException = true;
         elapsed = timer.elapsed();
 	}
@@ -697,13 +719,13 @@ TEST_F(CombinedEnd2EndTest, deleteChannelViaReceiver) {
                                                ->build());
     QThreadSleep::msleep(150);
     std::shared_ptr<Future<int> > testFuture(testProxy->addNumbersAsync(1, 2, 3));
-    testFuture->waitForFinished();
+    testFuture->wait();
 
     // runtime1->deleteChannel();
     // runtime2->deleteChannel();
 
     std::shared_ptr<Future<int> > gpsFuture2(testProxy->addNumbersAsync(1, 2, 3));
-    gpsFuture2->waitForFinished(1000);
+    gpsFuture2->wait(1000);
 
     delete testProxyBuilder;
 }
@@ -811,15 +833,19 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation) {
                                                    ->build());
 
     // Setup a callbackFct
-    std::function<void(const joynr::RequestStatus& status)> onError = [] (const joynr::RequestStatus& status){
-       ASSERT_TRUE(status.successful());
+    std::function<void()> onSuccess = [] (){
+       SUCCEED();
+    };
+    std::function<void(const exceptions::JoynrException& error)> onError =
+            [] (const exceptions::JoynrException& error){
+        FAIL();
     };
 
     // Asynchonously call the void operation
-    std::shared_ptr<Future<void> > future (testProxy->voidOperationAsync(nullptr, onError));
+    std::shared_ptr<Future<void> > future (testProxy->voidOperationAsync(onSuccess, onError));
 
     // Wait for the operation to finish and check for a successful callback
-    future->waitForFinished();
+    future->wait();
     ASSERT_TRUE(future->getStatus().successful());
 
     delete testProxyBuilder;
@@ -859,16 +885,22 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation_failure) {
     QThreadSleep::msleep(5000);
 
     // Setup an onError callback function
-    std::function<void(const joynr::RequestStatus&)> onError = [] (const joynr::RequestStatus& status) {
-        ASSERT_FALSE(status.successful());
+    std::function<void(const exceptions::JoynrException&)> onError =
+            [] (const exceptions::JoynrException& error) {
+        EXPECT_EQ(exceptions::JoynrTimeOutException::TYPE_NAME, error.getTypeName());
     };
 
     // Asynchonously call the void operation
     std::shared_ptr<Future<void> > future (testProxy->voidOperationAsync(nullptr, onError));
 
     // Wait for the operation to finish and check for a failure callback
-    future->waitForFinished();
+    future->wait();
     ASSERT_FALSE(future->getStatus().successful());
+    try {
+        future->get();
+        ADD_FAILURE();
+    } catch (exceptions::JoynrTimeOutException& e) {
+    }
 
     runtime1->unregisterProvider(testProviderParticipantId);
 

@@ -92,6 +92,7 @@
 #include "joynr/IMessageSender.h"
 #include "joynr/BounceProxyUrl.h"
 #include "joynr/Directory.h"
+#include "joynr/exceptions/JoynrException.h"
 
 using ::testing::A;
 using ::testing::_;
@@ -123,11 +124,11 @@ public:
                      const std::string& domain,
                      const std::string& interfaceName,
                      std::function<void(const std::vector<joynr::types::CapabilityInformation>& capabilities)> onSuccess,
-                     std::function<void(const joynr::RequestStatus& status)> onError));
+                     std::function<void(const joynr::exceptions::JoynrException& error)> onError));
     MOCK_METHOD3(lookup, void(
                      const std::string& participantId,
                      std::function<void(const std::vector<joynr::types::CapabilityInformation>& capabilities)> callbackFct,
-                     std::function<void(const joynr::RequestStatus& status)> onError));
+                     std::function<void(const joynr::exceptions::JoynrException& error)> onError));
     MOCK_METHOD0(getLocalChannelId, std::string());
 
 };
@@ -277,7 +278,7 @@ template <typename T>
 class MockReplyCaller : public joynr::ReplyCaller<T> {
 public:
     MockReplyCaller(std::function<void(const joynr::RequestStatus& status, const T& returnValue)> callbackFct,
-                    std::function<void(const joynr::RequestStatus& status)> errorFct) : joynr::ReplyCaller<T>(callbackFct, errorFct) {}
+                    std::function<void(const joynr::RequestStatus& status, std::shared_ptr<joynr::exceptions::JoynrException> error)> errorFct) : joynr::ReplyCaller<T>(callbackFct, errorFct) {}
     MOCK_METHOD1_T(returnValue, void(const T& payload));
     MOCK_METHOD0_T(timeOut, void());
     MOCK_CONST_METHOD0_T(getType, QString());
@@ -314,20 +315,20 @@ class MockDiscovery : public joynr::system::IDiscovery {
 public:
     MOCK_METHOD1(
             add,
-            joynr::RequestStatus(
+            void(
                 const joynr::types::DiscoveryEntry& entry
             )
     );
     MOCK_METHOD2(
             lookup,
-            joynr::RequestStatus(
+            void(
                 joynr::types::DiscoveryEntry& result,
                 const std::string& participantId
             )
     );
     MOCK_METHOD4(
             lookup,
-            joynr::RequestStatus(
+            void(
                 std::vector<joynr::types::DiscoveryEntry> & result,
                 const std::string& domain,
                 const std::string& interfaceName,
@@ -336,7 +337,7 @@ public:
     );
     MOCK_METHOD1(
             remove,
-            joynr::RequestStatus(
+            void(
                 const std::string& participantId
             )
     );
@@ -345,7 +346,7 @@ public:
             std::shared_ptr<joynr::Future<void>>(
                 const joynr::types::DiscoveryEntry& discoveryEntry,
                 std::function<void(void)> onSuccess,
-                std::function<void(const joynr::RequestStatus& status)> onError
+                std::function<void(const joynr::exceptions::JoynrException& error)> onError
             )
     );
     MOCK_METHOD3(
@@ -354,7 +355,7 @@ public:
                 const std::string& participantId,
                 std::function<void(const joynr::types::DiscoveryEntry& result)>
                         onSuccess,
-                std::function<void(const joynr::RequestStatus&)> onError
+                std::function<void(const joynr::exceptions::JoynrException& error)> onError
             )
     );
     MOCK_METHOD5(
@@ -365,7 +366,7 @@ public:
                 const joynr::types::DiscoveryQos& discoveryQos,
                 std::function<void(const std::vector<joynr::types::DiscoveryEntry>& result)>
                         onSuccess,
-                std::function<void(const joynr::RequestStatus&)> onError
+                std::function<void(const joynr::exceptions::JoynrException& error)> onError
             )
     );
     MOCK_METHOD3(
@@ -373,7 +374,7 @@ public:
             std::shared_ptr<joynr::Future<void>>(
                 const std::string& participantId,
                 std::function<void(void)> onSuccess,
-                std::function<void(const joynr::RequestStatus&)> onError
+                std::function<void(const joynr::exceptions::JoynrException& error)> onError
             )
     );
 };
@@ -431,7 +432,8 @@ template <typename ... Ts>
 class MockCallback{
 public:
     MOCK_METHOD1_T(onSuccess, void(const Ts&... result));
-    MOCK_METHOD1_T(onError, void(const joynr::RequestStatus& status));
+    MOCK_METHOD2_T(onError, void(const joynr::RequestStatus& status,
+                std::shared_ptr<joynr::exceptions::JoynrException> error));
 };
 
 template<>
@@ -439,7 +441,8 @@ class MockCallback<void> {
 
 public:
     MOCK_METHOD0(onSuccess, void(void));
-    MOCK_METHOD1(onError, void(const joynr::RequestStatus& status));
+    MOCK_METHOD2(onError, void(const joynr::RequestStatus& status,
+            std::shared_ptr<joynr::exceptions::JoynrException> error));
 };
 
 class MockMessagingStubFactory : public joynr::IMessagingStubFactory {
@@ -451,7 +454,7 @@ public:
 
 class GlobalCapabilitiesMock {
 public:
-    MOCK_METHOD1(capabilitiesReceived, joynr::RequestStatus(const std::vector<joynr::types::CapabilityInformation>& results));
+    MOCK_METHOD1(capabilitiesReceived, void(const std::vector<joynr::types::CapabilityInformation>& results));
 };
 
 class MockGpsProvider : public joynr::vehicle::DefaultGpsProvider
@@ -470,8 +473,8 @@ class MockGpsProvider : public joynr::vehicle::DefaultGpsProvider
         return RequestStatus(RequestStatusCode::OK);
     }
     */
-    MOCK_METHOD1(getLocation, joynr::RequestStatus(joynr::types::Localisation::GpsLocation& result) );
-    MOCK_METHOD1(setLocation, joynr::RequestStatus(joynr::types::Localisation::GpsLocation gpsLocation));
+    MOCK_METHOD1(getLocation, void(joynr::types::Localisation::GpsLocation& result) );
+    MOCK_METHOD1(setLocation, void(joynr::types::Localisation::GpsLocation gpsLocation));
     //MOCK_METHOD2(calculateAvailableSatellites,joynr::RequestStatus(int32_t& result));
     //MOCK_METHOD2(restartWithRetries, joynr::RequestStatus(int32_t gpsFix));
 
@@ -553,7 +556,7 @@ public:
 class MockGpsRequestCaller : public joynr::vehicle::GpsRequestCaller {
 public:
     MockGpsRequestCaller() : joynr::vehicle::GpsRequestCaller(std::make_shared<MockGpsProvider>() ) {}
-    MOCK_METHOD2(getLocation, void(std::function<void(const joynr::RequestStatus& status, const joynr::types::Localisation::GpsLocation& location)>,
+    MOCK_METHOD2(getLocation, void(std::function<void(const joynr::types::Localisation::GpsLocation& location)>,
                                    std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>));
     MOCK_METHOD2(registerAttributeListener, void(const std::string& attributeName, joynr::IAttributeListener* attributeListener));
     MOCK_METHOD2(unregisterAttributeListener, void(const std::string& attributeName, joynr::IAttributeListener* attributeListener));
@@ -622,7 +625,7 @@ public:
                  std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> (
                      const std::string& channelId,
                      std::function<void(const joynr::types::ChannelUrlInformation& urls)> onSuccess,
-                     std::function<void(const joynr::RequestStatus& status)> onError
+                     std::function<void(const joynr::exceptions::JoynrException& error)> onError
                  )
     );
 
@@ -631,7 +634,7 @@ public:
                      const std::string& channelId,
                      const joynr::types::ChannelUrlInformation& channelUrlInformation,
                      std::function<void(void)> onSuccess,
-                     std::function<void(const joynr::RequestStatus&)> onError
+                     std::function<void(const joynr::exceptions::JoynrException& error)> onError
                  )
     );
 
@@ -639,7 +642,7 @@ public:
                  std::shared_ptr<joynr::Future<void>>(
                      const std::string& channelId,
                      std::function<void(void)> onSuccess,
-                     std::function<void(const joynr::RequestStatus&)> onError
+                     std::function<void(const joynr::exceptions::JoynrException& error)> onError
                  )
     );
 };
@@ -652,7 +655,7 @@ public:
                      const std::string& channelId,
                      joynr::types::ChannelUrlInformation channelUrlInformation,
                      std::function<void(void)> onSuccess,
-                     std::function<void(const joynr::RequestStatus&)> onError
+                     std::function<void(const joynr::exceptions::JoynrException& error)> onError
                  )
     );
 
@@ -660,7 +663,7 @@ public:
                  std::shared_ptr<joynr::Future<void>>(
                      const std::string& channelId,
                      std::function<void(void)> onSuccess,
-                     std::function<void(const joynr::RequestStatus&)> onError
+                     std::function<void(const joynr::exceptions::JoynrException& error)> onError
                  )
     );
 
@@ -669,7 +672,7 @@ public:
                      const std::string& channelId,
                      const qint64& timeout_ms,
                      std::function<void(const joynr::types::ChannelUrlInformation&)> onSuccess,
-                     std::function<void(const joynr::RequestStatus&)> onError
+                     std::function<void(const joynr::exceptions::JoynrException& error)> onError
                  )
     );
 };
@@ -739,7 +742,7 @@ public:
                 std::function<void(
                     const std::vector<joynr::infrastructure::DacTypes::DomainRoleEntry>& domainRoleEntries
                 )> onSuccess,
-                std::function<void(const joynr::RequestStatus&)> onError
+                std::function<void(const joynr::exceptions::JoynrException&)> onError
             )
     );
 
@@ -751,7 +754,7 @@ public:
                 std::function<void(
                     const std::vector<joynr::infrastructure::DacTypes::MasterAccessControlEntry>& masterAces
                 )> onSuccess,
-                std::function<void(const joynr::RequestStatus&)> onError
+                std::function<void(const joynr::exceptions::JoynrException&)> onError
             )
     );
 
@@ -763,7 +766,7 @@ public:
                 std::function<void(
                     const std::vector<joynr::infrastructure::DacTypes::MasterAccessControlEntry>& mediatorAces
                 )> onSuccess,
-                std::function<void(const joynr::RequestStatus&)> onError
+                std::function<void(const joynr::exceptions::JoynrException&)> onError
             )
     );
 
@@ -775,7 +778,7 @@ public:
                 std::function<void(
                     const std::vector<joynr::infrastructure::DacTypes::OwnerAccessControlEntry>& ownerAces
                 )> onSuccess,
-                std::function<void(const joynr::RequestStatus&)> onError
+                std::function<void(const joynr::exceptions::JoynrException&)> onError
             )
     );
 

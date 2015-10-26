@@ -192,9 +192,12 @@ public:
                 .WillOnce(Invoke(&callBackActions, &CallBackActions::executeCallBackGpsLocationResult));
 
         types::Localisation::GpsLocation gpsLocation;
-        RequestStatus status(testFixture->getLocation(gpsLocation));
+        try {
+            testFixture->getLocation(gpsLocation);
+        } catch (exceptions::JoynrException& e) {
+            ADD_FAILURE()<< "getLocation was not successful";
+        }
         EXPECT_EQ(expectedGpsLocation, gpsLocation);
-        EXPECT_TRUE(status.successful());
         delete testFixture;
     }
 
@@ -226,9 +229,12 @@ public:
         ON_CALL(mockClientCache, lookUp(_)).WillByDefault(Return(qvariant));
 
         types::Localisation::GpsLocation gpsLocation;
-        RequestStatus status(testFixture->getLocation(gpsLocation));
+        try {
+            testFixture->getLocation(gpsLocation);
+        } catch (exceptions::JoynrException& e) {
+            ADD_FAILURE()<< "getLocation was not successful";
+        }
         EXPECT_EQ(expectedGpsLocation, gpsLocation);
-        EXPECT_TRUE(status.successful());
         delete testFixture;
     }
 
@@ -251,9 +257,12 @@ public:
                 .WillOnce(Invoke(&callBackActions, &CallBackActions::executeCallBackIntResult));
 
         int result;
-        RequestStatus requestStatus(testFixture->methodWithNoInputParameters(result));
+        try {
+            testFixture->methodWithNoInputParameters(result);
+        } catch (exceptions::JoynrException& e) {
+            ADD_FAILURE()<< "methodWithNoInputParameters was not successful";
+        }
         EXPECT_EQ(expectedInt, result);
-        EXPECT_TRUE(requestStatus.successful());
         delete testFixture;
     }
 

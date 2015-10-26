@@ -120,8 +120,11 @@ TEST_F(SystemServicesRoutingTest, unknowParticipantIsNotResolvable)
 
     std::string participantId("SystemServicesRoutingTest.ParticipantId.A");
     bool isResolvable = false;
-    RequestStatus status(routingProxy->resolveNextHop(isResolvable, participantId));
-    EXPECT_EQ(RequestStatusCode::OK, status.getCode());
+    try {
+        routingProxy->resolveNextHop(isResolvable, participantId);
+    } catch (exceptions::JoynrException& e) {
+        ADD_FAILURE()<< "resolveNextHop was not successful";
+    }
     EXPECT_FALSE(isResolvable);
 }
 
@@ -138,14 +141,23 @@ TEST_F(SystemServicesRoutingTest, addNextHop)
     joynr::system::RoutingTypes::ChannelAddress address("SystemServicesRoutingTest.ChanneldId.A");
     bool isResolvable = false;
 
-    RequestStatus status(routingProxy->resolveNextHop(isResolvable, participantId));
-    EXPECT_EQ(RequestStatusCode::OK, status.getCode());
+    try {
+        routingProxy->resolveNextHop(isResolvable, participantId);
+    } catch (exceptions::JoynrException& e) {
+        ADD_FAILURE()<< "resolveNextHop was not successful";
+    }
     EXPECT_FALSE(isResolvable);
 
-    status = routingProxy->addNextHop(participantId, address);
-    EXPECT_EQ(RequestStatusCode::OK, status.getCode());
-    status = routingProxy->resolveNextHop(isResolvable, participantId);
-    EXPECT_EQ(RequestStatusCode::OK, status.getCode());
+    try {
+        routingProxy->addNextHop(participantId, address);
+    } catch (exceptions::JoynrException& e) {
+        ADD_FAILURE()<< "addNextHop was not successful";
+    }
+    try {
+        routingProxy->resolveNextHop(isResolvable, participantId);
+    } catch (exceptions::JoynrException& e) {
+        ADD_FAILURE()<< "resolveNextHop was not successful";
+    }
     EXPECT_TRUE(isResolvable);
 }
 
@@ -161,19 +173,34 @@ TEST_F(SystemServicesRoutingTest, removeNextHop)
     joynr::system::RoutingTypes::ChannelAddress address("SystemServicesRoutingTest.ChanneldId.A");
     bool isResolvable = false;
 
-    RequestStatus status(routingProxy->resolveNextHop(isResolvable, participantId));
-    EXPECT_EQ(RequestStatusCode::OK, status.getCode());
+    try {
+        routingProxy->resolveNextHop(isResolvable, participantId);
+    } catch (exceptions::JoynrException& e) {
+        ADD_FAILURE()<< "resolveNextHop was not successful";
+    }
     EXPECT_FALSE(isResolvable);
 
-    status = routingProxy->addNextHop(participantId, address);
-    EXPECT_EQ(RequestStatusCode::OK, status.getCode());
-    status = routingProxy->resolveNextHop(isResolvable, participantId);
-    EXPECT_EQ(RequestStatusCode::OK, status.getCode());
+    try {
+        routingProxy->addNextHop(participantId, address);
+    } catch (exceptions::JoynrException& e) {
+        ADD_FAILURE()<< "addNextHop was not successful";
+    }
+    try {
+        routingProxy->resolveNextHop(isResolvable, participantId);
+    } catch (exceptions::JoynrException& e) {
+        ADD_FAILURE()<< "resolveNextHop was not successful";
+    }
     EXPECT_TRUE(isResolvable);
 
-    status = routingProxy->removeNextHop(participantId);
-    EXPECT_EQ(RequestStatusCode::OK, status.getCode());
-    status = routingProxy->resolveNextHop(isResolvable, participantId);
-    EXPECT_EQ(RequestStatusCode::OK, status.getCode());
+    try {
+        routingProxy->removeNextHop(participantId);
+    } catch (exceptions::JoynrException& e) {
+        ADD_FAILURE()<< "removeNextHop was not successful";
+    }
+    try {
+        routingProxy->resolveNextHop(isResolvable, participantId);
+    } catch (exceptions::JoynrException& e) {
+        ADD_FAILURE()<< "resolveNextHop was not successful";
+    }
     EXPECT_FALSE(isResolvable);
 }

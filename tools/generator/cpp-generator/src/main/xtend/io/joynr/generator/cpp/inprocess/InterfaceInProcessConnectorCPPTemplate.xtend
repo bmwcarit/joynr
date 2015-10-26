@@ -65,8 +65,8 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 #include "joynr/PublicationManager.h"
 #include "joynr/SubscriptionCallback.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
+#include "joynr/Util.h"
 #include "joynr/Future.h"
-#include "joynr/exceptions/JoynrException.h"
 #include "joynr/TypeUtil.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/RequestStatusCode.h"
@@ -104,7 +104,7 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 	«val setAttributeName = "set" + attribute.joynrName.toFirstUpper»
 	«IF attribute.readable»
 		«val getAttributeName = "get" + attribute.joynrName.toFirstUpper»
-		joynr::RequestStatus «interfaceName»InProcessConnector::«getAttributeName»(
+		void «interfaceName»InProcessConnector::«getAttributeName»(
 					«returnType»& attributeValue
 		) {
 			assert(address);
@@ -122,22 +122,17 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 
 			std::function<void(const exceptions::ProviderRuntimeException&)> onError =
 					[future] (const exceptions::ProviderRuntimeException& error) {
-						(void) error;
-						future->onError(RequestStatusCode::ERROR);
+						future->onError(RequestStatusCode::ERROR, error);
 					};
 
 			//see header for more information
 			«serviceInterface.interfaceCaller»->«getAttributeName»(onSuccess, onError);
-			joynr::RequestStatus status(future->waitForFinished());
-			if (status.successful()) {
-				future->getValues(attributeValue);
-			}
-			return status;
+			future->get(attributeValue);
 		}
 
 		std::shared_ptr<joynr::Future<«returnType»>> «interfaceName»InProcessConnector::«getAttributeName»Async(
 				std::function<void(const «returnType»& «attributeName»)> onSuccess,
-				std::function<void(const joynr::RequestStatus& status)> onError
+				std::function<void(const exceptions::JoynrException& error)> onError
 		) {
 			std::ignore = onError; // not used yet
 			assert(address);
@@ -158,10 +153,9 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 
 			std::function<void(const exceptions::ProviderRuntimeException&)> onErrorWrapper =
 					[future, onError] (const exceptions::ProviderRuntimeException& error) {
-						(void) error;
-						future->onError(RequestStatusCode::ERROR);
+						future->onError(RequestStatusCode::ERROR, error);
 						if (onError) {
-							onError(RequestStatusCode::ERROR);
+							onError(error);
 						}
 					};
 
@@ -175,7 +169,7 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 		std::shared_ptr<joynr::Future<void>> «interfaceName»InProcessConnector::«setAttributeName»Async(
 				«returnType» input,
 				std::function<void(void)> onSuccess,
-				std::function<void(const joynr::RequestStatus& status)> onError
+				std::function<void(const exceptions::JoynrException& error)> onError
 		) {
 			std::ignore = onError; // not used yet
 			assert(address);
@@ -195,10 +189,9 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 
 			std::function<void(const exceptions::ProviderRuntimeException&)> onErrorWrapper =
 					[future, onError] (const exceptions::ProviderRuntimeException& error) {
-						(void) error;
-						future->onError(RequestStatusCode::ERROR);
+						future->onError(RequestStatusCode::ERROR, error);
 						if (onError) {
-							onError(RequestStatusCode::ERROR);
+							onError(error);
 						}
 					};
 
@@ -208,7 +201,7 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 			return future;
 		}
 
-		joynr::RequestStatus «interfaceName»InProcessConnector::«setAttributeName»(
+		void «interfaceName»InProcessConnector::«setAttributeName»(
 				const «returnType»& input
 		) {
 			assert(address);
@@ -225,13 +218,12 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 
 			std::function<void(const exceptions::ProviderRuntimeException&)> onError =
 					[future] (const exceptions::ProviderRuntimeException& error) {
-						(void) error;
-						future->onError(RequestStatusCode::ERROR);
+						future->onError(RequestStatusCode::ERROR, error);
 					};
 
 			//see header for more information
 			«serviceInterface.interfaceCaller»->«setAttributeName»(input, onSuccess, onError);
-			return future->waitForFinished();
+			return future->get();
 		}
 
 	«ENDIF»
@@ -339,7 +331,7 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 «var outputTypedParamList = cppStdTypeUtil.getCommaSeperatedTypedOutputParameterList(method)»
 «var outputUntypedParamList = cppStdTypeUtil.getCommaSeperatedUntypedOutputParameterList(method)»
 
-joynr::RequestStatus «interfaceName»InProcessConnector::«methodname»(
+void «interfaceName»InProcessConnector::«methodname»(
 		«outputTypedParamList»«IF method.outputParameters.size > 0 && method.inputParameters.size > 0», «ENDIF»«inputTypedParamList»
 ) {
 	assert(address);
@@ -359,25 +351,16 @@ joynr::RequestStatus «interfaceName»InProcessConnector::«methodname»(
 
 	std::function<void(const exceptions::JoynrException&)> onError =
 			[future] (const exceptions::JoynrException& error) {
-				(void) error;
-				future->onError(RequestStatusCode::ERROR);
+				future->onError(RequestStatusCode::ERROR, error);
 			};
 
 	«serviceInterface.interfaceCaller»->«methodname»(«IF !method.inputParameters.empty»«inputParamList», «ENDIF»onSuccess, onError);
-	«IF method.outputParameters.empty»
-		return future->waitForFinished();
-	«ELSE»
-		joynr::RequestStatus status = future->waitForFinished();
-		if (status.successful()) {
-			future->getValues(«cppStdTypeUtil.getCommaSeperatedUntypedOutputParameterList(method)»);
-		}
-		return status;
-	«ENDIF»
+	future->get(«cppStdTypeUtil.getCommaSeperatedUntypedOutputParameterList(method)»);
 }
 
 std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcessConnector::«methodname»Async(«cppStdTypeUtil.getCommaSeperatedTypedConstInputParameterList(method)»«IF !method.inputParameters.empty»,«ENDIF»
 			std::function<void(«outputTypedConstParamList»)> onSuccess,
-			std::function<void(const joynr::RequestStatus& status)> onError)
+			std::function<void(const exceptions::JoynrException& error)> onError)
 {
 	std::ignore = onError; // not used yet
 	assert(address);
@@ -399,10 +382,9 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 
 	std::function<void(const exceptions::JoynrException&)> onErrorWrapper =
 			[future, onError] (const exceptions::JoynrException& error) {
-				(void) error;
-				future->onError(RequestStatusCode::ERROR);
+				future->onError(RequestStatusCode::ERROR, error);
 				if (onError) {
-					onError(RequestStatusCode::ERROR);
+					onError(error);
 				}
 			};
 

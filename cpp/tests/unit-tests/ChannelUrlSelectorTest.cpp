@@ -88,8 +88,7 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesLocalDirectory) {
                     A<const std::string&>(),
                     A<const qint64&>(),
                     A<std::function<void(const types::ChannelUrlInformation& urls)>>(),
-                    A<std::function<void(
-                        const RequestStatus& status)>>()))
+                    A<std::function<void(const exceptions::JoynrException& error)>>()))
             .WillOnce(WithArgs<0,1>(Invoke(pseudoGetChannelUrls)));
 
     RequestStatus* status = new RequestStatus();
@@ -130,8 +129,7 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesFeedbackToChangeProviderUrl) {
                     A<const std::string&>(),
                     A<const qint64&>(),
                     A<std::function<void(const types::ChannelUrlInformation& urls)>>(),
-                    A<std::function<void(
-                        const RequestStatus& status)>>()))
+                    A<std::function<void(const exceptions::JoynrException& error)>>()))
             .WillOnce(WithArgs<0,1>(Invoke(pseudoGetChannelUrls)));
 
     RequestStatus* status = new RequestStatus();
@@ -186,8 +184,7 @@ TEST(ChannelUrlSelectorTest, obtainUrlRetriesUrlOfHigherPriority) {
                     A<const std::string&>(),
                     A<const qint64&>(),
                     A<std::function<void(const types::ChannelUrlInformation& urls)>>(),
-                    A<std::function<void(
-                        const RequestStatus& status)>>()))
+                    A<std::function<void(const exceptions::JoynrException& error)>>()))
             .WillOnce(WithArgs<0,1>(Invoke(pseudoGetChannelUrls)));
 
     RequestStatus* status = new RequestStatus();

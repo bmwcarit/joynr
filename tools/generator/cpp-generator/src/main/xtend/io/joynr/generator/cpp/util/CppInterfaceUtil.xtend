@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.util
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ class CppInterfaceUtil {
 	def printOnErrorFctParamDefinition()
 '''
 	* @param onError A callback function to be called once the asynchronous computation has
-	* failed. It must expect the request status object.
+	* failed. It must expect a JoynrException object.
 '''
 
 	def produceSyncGetters(FInterface serviceInterface, boolean pure)
@@ -59,9 +59,9 @@ class CppInterfaceUtil {
 		* @brief Synchronous getter for the «attributeName» attribute.
 		*
 		* @param result The result that will be returned to the caller.
-		* @returns the RequestStatus of the get«attributeName.toFirstUpper» call
+		* @throws JoynrException if the request is not successful
 		*/
-		virtual joynr::RequestStatus get«attributeName.toFirstUpper»(
+		virtual void get«attributeName.toFirstUpper»(
 				«returnType»& result
 		)«IF pure»=0«ENDIF»;
 
@@ -83,7 +83,7 @@ class CppInterfaceUtil {
 		*/
 		virtual std::shared_ptr<joynr::Future<«returnType»> > get«attributeName.toFirstUpper»Async(
 				std::function<void(const «returnType»& «attributeName.toFirstLower»)> onSuccess = nullptr,
-				std::function<void(const joynr::RequestStatus& status)> onError = nullptr
+				std::function<void(const joynr::exceptions::JoynrException& error)> onError = nullptr
 		)«IF pure»=0«ENDIF»;
 	«ENDFOR»
 '''
@@ -98,9 +98,9 @@ class CppInterfaceUtil {
 		* @brief Synchronous setter for the «attributeName» attribute.
 		*
 		* @param «attributeName.toFirstLower» The value to set.
-		* @return the RequestStatus of the set«attributeName.toFirstUpper» call
+		* @throws JoynrException if the request is not successful
 		*/
-		virtual joynr::RequestStatus set«attributeName.toFirstUpper»(
+		virtual void set«attributeName.toFirstUpper»(
 				const «returnType»& «attributeName.toFirstLower»
 		)«IF pure»=0«ENDIF»;
 	«ENDFOR»
@@ -123,7 +123,7 @@ class CppInterfaceUtil {
 		virtual std::shared_ptr<joynr::Future<void> > set«attributeName.toFirstUpper»Async(
 				«returnType» «attributeName.toFirstLower»,
 				std::function<void(void)> onSuccess = nullptr,
-				std::function<void(const joynr::RequestStatus& status)> onError = nullptr
+				std::function<void(const joynr::exceptions::JoynrException& error)> onError = nullptr
 		)«IF pure»=0«ENDIF»;
 	«ENDFOR»
 '''
@@ -144,9 +144,9 @@ class CppInterfaceUtil {
 		«FOR inputParam: method.inputParameters»
 		* @param «inputParam.typeName» «inputParam.joynrName»
 		«ENDFOR»
-		* @return the internal status of the request which will be returned to the caller.
+		* @throws JoynrException if the request is not successful
 		*/
-		virtual joynr::RequestStatus «method.joynrName»(
+		virtual void «method.joynrName»(
 				«outputTypedParamList»«IF method.outputParameters.size > 0 && method.inputParameters.size > 0», «ENDIF»«inputTypedParamList»
 		)«IF pure»=0«ENDIF»;
 	«ENDFOR»
@@ -168,7 +168,7 @@ class CppInterfaceUtil {
 		virtual std::shared_ptr<joynr::Future<«outputParameters»> > «method.joynrName»Async(
 				«method.commaSeperatedTypedConstInputParameterList»«IF !method.inputParameters.empty»,«ENDIF»
 				std::function<void(«outputTypedParamList»)> onSuccess = nullptr,
-				std::function<void(const joynr::RequestStatus& status)> onError = nullptr
+				std::function<void(const joynr::exceptions::JoynrException& error)> onError = nullptr
 		)«IF pure»=0«ENDIF»;
 	«ENDFOR»
 '''

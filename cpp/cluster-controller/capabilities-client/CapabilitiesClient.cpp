@@ -77,8 +77,9 @@ void CapabilitiesClient::add(std::vector<types::CapabilityInformation> capabilit
         // TM switching from sync to async
         // capabilitiesProxy->add(rs, capabilitiesInformationList);
 
-        std::function<void(const RequestStatus& status)> onError = [](const RequestStatus& status) {
-            std::ignore = status;
+        std::function<void(const exceptions::JoynrException&)> onError =
+                [](const exceptions::JoynrException& error) {
+            (void)error;
             LOG_ERROR(logger,
                       QString("Error occured during the execution of capabilitiesProxy->add"));
         };
@@ -116,7 +117,7 @@ void CapabilitiesClient::lookup(
         const std::string& domain,
         const std::string& interfaceName,
         std::function<void(const std::vector<types::CapabilityInformation>& result)> onSuccess,
-        std::function<void(const joynr::RequestStatus& status)> onError)
+        std::function<void(const exceptions::JoynrException& error)> onError)
 {
     assert(capabilitiesProxy); // calls to the capabilitiesClient are only allowed, once
                                // the capabilitiesProxy has been set via the init method
@@ -128,7 +129,7 @@ void CapabilitiesClient::lookup(
         const std::string& participantId,
         std::function<void(const std::vector<joynr::types::CapabilityInformation>& result)>
                 onSuccess,
-        std::function<void(const joynr::RequestStatus& status)> onError)
+        std::function<void(const exceptions::JoynrException& error)> onError)
 {
     assert(capabilitiesProxy); // calls to the capabilitiesClient are only allowed, once
                                // the capabilitiesProxy has been set via the init method

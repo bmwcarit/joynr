@@ -65,7 +65,7 @@ public:
                 [this](const RequestStatus& status, const types::Localisation::QtGpsLocation& location) {
                     mockCallback->onSuccess(location);
                 },
-                [] (const RequestStatus status){
+                [] (const RequestStatus status, std::shared_ptr<exceptions::JoynrException> error){
                 })),
         mockGpsLocationListener(new MockSubscriptionListenerOneType<types::Localisation::QtGpsLocation>()),
         mockTestEnumSubscriptionListener(new MockSubscriptionListenerOneType<tests::testTypes::QtTestEnum::Enum>()),

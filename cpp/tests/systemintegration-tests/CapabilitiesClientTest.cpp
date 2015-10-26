@@ -129,7 +129,7 @@ TEST_F(CapabilitiesClientTest, registerAndRetrieveCapability) {
            .WillRepeatedly(
                 DoAll(
                     ReleaseSemaphore(&semaphore),
-                    Return(RequestStatus(RequestStatusCode::OK))
+                    Return()
                 ));
     std::function<void(const std::vector<types::CapabilityInformation>&)> onSuccess =
             [&](const std::vector<types::CapabilityInformation>& capabilities) {

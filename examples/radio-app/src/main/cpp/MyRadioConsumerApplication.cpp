@@ -195,8 +195,11 @@ int main(int argc, char* argv[])
                                          ->build();
 
     vehicle::RadioStation currentStation;
-    RequestStatus status(proxy->getCurrentStation(currentStation));
-    assert(status.successful());
+    try {
+        proxy->getCurrentStation(currentStation);
+    } catch (exceptions::JoynrException& e) {
+        assert(false);
+    }
     MyRadioHelper::prettyLog(
             logger,
             QString("ATTRIBUTE GET: %1").arg(QString::fromStdString(currentStation.toString())));

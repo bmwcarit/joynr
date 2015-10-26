@@ -49,7 +49,6 @@ class InterfaceSyncProxyCppTemplate  implements InterfaceTemplate{
 #include "joynr/Reply.h"
 #include "joynr/Dispatcher.h"
 #include "joynr/DispatcherUtils.h"
-#include "joynr/RequestStatus.h"
 
 «FOR datatype: getRequiredIncludesFor(fInterface)»
 	#include «datatype»
@@ -78,12 +77,13 @@ class InterfaceSyncProxyCppTemplate  implements InterfaceTemplate{
 	«var getAttribute = "get" + attributeName.toFirstUpper»
 	«var setAttribute = "set" + attributeName.toFirstUpper»
 	«IF attribute.readable»
-		joynr::RequestStatus «syncClassName»::«getAttribute»(«attributeType»& result)
+		void «syncClassName»::«getAttribute»(«attributeType»& result)
 		{
 			if (connector==NULL){
 				«val errorMsg = "proxy cannot invoke " + getAttribute + " because the communication end partner is not (yet) known"»
 				LOG_WARN(logger, "«errorMsg»");
-				return joynr::RequestStatus(joynr::RequestStatusCode::ERROR, "«errorMsg»");
+				exceptions::JoynrRuntimeException error("«errorMsg»");
+				throw error;
 			}
 			else{
 				return connector->«getAttribute»(result);
@@ -91,12 +91,13 @@ class InterfaceSyncProxyCppTemplate  implements InterfaceTemplate{
 		}
 	«ENDIF»
 	«IF attribute.writable»
-		joynr::RequestStatus «syncClassName»::«setAttribute»(const «attributeType»& value)
+		void «syncClassName»::«setAttribute»(const «attributeType»& value)
 		{
 			if (connector==NULL){
 				«val errorMsg = "proxy cannot invoke " + setAttribute + " because the communication end partner is not (yet) known"»
 				LOG_WARN(logger, "«errorMsg»");
-				return joynr::RequestStatus(joynr::RequestStatusCode::ERROR, "«errorMsg»");
+				exceptions::JoynrRuntimeException error("«errorMsg»");
+				throw error;
 			}
 			else{
 				return connector->«setAttribute»(value);
@@ -115,13 +116,14 @@ class InterfaceSyncProxyCppTemplate  implements InterfaceTemplate{
 	 * «methodName»
 	 */
 
-	joynr::RequestStatus «syncClassName»::«methodName»(
+	void «syncClassName»::«methodName»(
 		«outputTypedParamList»«IF method.outputParameters.size > 0 && method.inputParameters.size > 0», «ENDIF»«inputTypedParamList»)
 	{
 		if (connector==NULL){
 			«val errorMsg = "proxy cannot invoke " + methodName + " because the communication end partner is not (yet) known"»
 			LOG_WARN(logger, "«errorMsg»");
-			return joynr::RequestStatus(joynr::RequestStatusCode::ERROR, "«errorMsg»");
+				exceptions::JoynrRuntimeException error("«errorMsg»");
+				throw error;
 		}
 		else{
 			return connector->«methodName»(«outputUntypedParamList»«IF method.outputParameters.size > 0 && method.inputParameters.size > 0», «ENDIF»«params»);

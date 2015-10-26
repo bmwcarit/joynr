@@ -595,11 +595,11 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
         initialiser->update();
     };
 
-    std::function<void(const RequestStatus& status)> domainRoleOnError =
-            [this, initialiser](const RequestStatus& status) {
+    std::function<void(const exceptions::JoynrException&)> domainRoleOnError =
+            [this, initialiser](const exceptions::JoynrException& error) {
         LOG_ERROR(logger,
                   QString("Aborting ACL initialisation due to communication error:\n%1")
-                          .arg(QString::fromStdString(status.toString())));
+                          .arg(QString::fromStdString(error.getMessage())));
 
         // Abort the initialisation
         initialiser->abort();
@@ -619,11 +619,11 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
         initialiser->update();
     };
 
-    std::function<void(const RequestStatus& status)> masterAceOnError =
-            [this, initialiser](const RequestStatus& status) {
+    std::function<void(const exceptions::JoynrException& error)> masterAceOnError =
+            [this, initialiser](const exceptions::JoynrException& error) {
         LOG_ERROR(logger,
                   QString("Aborting ACL initialisation due to communication error:\n%1")
-                          .arg(QString::fromStdString(status.toString())));
+                          .arg(QString::fromStdString(error.getMessage())));
 
         // Abort the initialisation
         initialiser->abort();
@@ -644,11 +644,11 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
         initialiser->update();
     };
 
-    std::function<void(const RequestStatus& status)> mediatorAceOnError =
-            [this, initialiser](const RequestStatus& status) {
+    std::function<void(const exceptions::JoynrException& error)> mediatorAceOnError =
+            [this, initialiser](const exceptions::JoynrException& error) {
         LOG_ERROR(logger,
                   QString("Aborting ACL initialisation due to communication error:\n%1")
-                          .arg(QString::fromStdString(status.toString())));
+                          .arg(QString::fromStdString(error.getMessage())));
 
         // Abort the initialisation
         initialiser->abort();
@@ -668,11 +668,11 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
         initialiser->update();
     };
 
-    std::function<void(const RequestStatus& status)> ownerAceOnError =
-            [this, initialiser](const RequestStatus& status) {
+    std::function<void(const exceptions::JoynrException& error)> ownerAceOnError =
+            [this, initialiser](const exceptions::JoynrException& error) {
         LOG_ERROR(logger,
                   QString("Aborting ACL initialisation due to communication error:\n%1")
-                          .arg(QString::fromStdString(status.toString())));
+                          .arg(QString::fromStdString(error.getMessage())));
 
         // Abort the initialisation
         initialiser->abort();

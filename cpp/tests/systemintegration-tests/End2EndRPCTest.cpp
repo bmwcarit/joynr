@@ -110,10 +110,10 @@ TEST_F(End2EndRPCTest, call_rpc_method_and_get_expected_result)
             ->setDiscoveryQos(discoveryQos)
             ->build());
     std::shared_ptr<Future<int> >gpsFuture (gpsProxy->calculateAvailableSatellitesAsync());
-    gpsFuture->waitForFinished();
+    gpsFuture->wait();
     int expectedValue = 42; //as defined in MockGpsProvider
     int actualValue;
-    gpsFuture->getValues(actualValue);
+    gpsFuture->get(actualValue);
     EXPECT_EQ(expectedValue, actualValue);
     //TODO CA: shared pointer for proxy builder?
     delete gpsProxyBuilder;
@@ -146,7 +146,7 @@ TEST_F(End2EndRPCTest, call_void_operation)
             ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build();
-    RequestStatus status(testProxy->voidOperation());
+    testProxy->voidOperation();
 //    EXPECT_EQ(expectedValue, gpsFuture->getValue());
     //TODO CA: shared pointer for proxy builder?
     delete testProxy;

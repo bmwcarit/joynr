@@ -81,18 +81,19 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 
 		std::shared_ptr<joynr::Future<«attributeType»>> «asyncClassName»::«getAttribute»Async(
 				std::function<void(const «attributeType»& «attributeName»)> onSuccess,
-				std::function<void(const joynr::RequestStatus& status)> onError
+				std::function<void(const joynr::exceptions::JoynrException& error)> onError
 		)
 		{
 			if (connector==NULL){
 				«val errorMsg = "proxy cannot invoke " + getAttribute + ", because the communication end partner is not (yet) known"»
 				LOG_WARN(logger, "«errorMsg»");
 				joynr::RequestStatus status(RequestStatusCode::ERROR, "«errorMsg»");
+				exceptions::JoynrRuntimeException error = exceptions::JoynrRuntimeException(status.toString());
 				if (onError) {
-					onError(status);
+					onError(error);
 				}
 				std::shared_ptr<joynr::Future<«attributeType»>> future(new joynr::Future<«attributeType»>());
-				future->onError(status);
+				future->onError(status, error);
 				return future;
 			}
 			else{
@@ -110,18 +111,19 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 		std::shared_ptr<joynr::Future<void>> «asyncClassName»::«setAttribute»Async(
 				«attributeType» «attributeName»,
 				std::function<void(void)> onSuccess,
-				std::function<void(const joynr::RequestStatus& status)> onError
+				std::function<void(const joynr::exceptions::JoynrException& error)> onError
 		)
 		{
 			if (connector==NULL){
 				«val errorMsg = "proxy cannot invoke " + setAttribute + ", because the communication end partner is not (yet) known"»
 				LOG_WARN(logger, "«errorMsg»");
 				joynr::RequestStatus status(RequestStatusCode::ERROR, "«errorMsg»");
+				exceptions::JoynrRuntimeException error = exceptions::JoynrRuntimeException(status.toString());
 				if (onError) {
-					onError(status);
+					onError(error);
 				}
 				std::shared_ptr<joynr::Future<void>> future(new joynr::Future<void>());
-				future->onError(status);
+				future->onError(status, error);
 				return future;
 			}
 			else{
@@ -142,18 +144,19 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 	std::shared_ptr<joynr::Future<«outputParameters»> > «asyncClassName»::«methodName»Async(
 			«IF !method.inputParameters.empty»«method.commaSeperatedTypedConstInputParameterList»,«ENDIF»
 			std::function<void(«outputTypedParamList»)> onSuccess,
-			std::function<void(const joynr::RequestStatus& status)> onError
+			std::function<void(const joynr::exceptions::JoynrException& error)> onError
 	)
 	{
 		if (connector==NULL){
 			«val errorMsg = "proxy cannot invoke " + methodName + ", because the communication end partner is not (yet) known"»
 			LOG_WARN(logger, "«errorMsg»");
 			joynr::RequestStatus status(RequestStatusCode::ERROR, "«errorMsg»");
+			exceptions::JoynrRuntimeException error = exceptions::JoynrRuntimeException(status.toString());
 			if (onError) {
-				onError(status);
+				onError(error);
 			}
 			std::shared_ptr<joynr::Future<«outputParameters»>> future(new joynr::Future<«outputParameters»>());
-			future->onError(status);
+			future->onError(status, error);
 			return future;
 		}
 		else{

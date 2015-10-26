@@ -43,8 +43,7 @@ TEST_F(CombinedEnd2EndTest, channelUrlProxyGetsNoUrlOnNonRegisteredChannel) {
 
     types::ChannelUrlInformation result;
     std::string channelId("test");
-    RequestStatus status(channelUrlDirectoryProxy->getUrlsForChannel(result, channelId));
-    EXPECT_EQ(status.getCode(), RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE);
+    EXPECT_THROW(channelUrlDirectoryProxy->getUrlsForChannel(result, channelId), exceptions::JoynrTimeOutException);
 }
 
 TEST_F(CombinedEnd2EndTest, channelUrlProxyRegistersUrlsCorrectly) {
@@ -72,14 +71,20 @@ TEST_F(CombinedEnd2EndTest, channelUrlProxyRegistersUrlsCorrectly) {
     types::ChannelUrlInformation channelUrlInformation;
     std::vector<std::string> urls = { "bogusTestUrl_1", "bogusTestUrl_2" };
     channelUrlInformation.setUrls(urls);
-    RequestStatus status1(channelUrlDirectoryProxy->registerChannelUrls(
+    try {
+        channelUrlDirectoryProxy->registerChannelUrls(
                 channelId,
-                channelUrlInformation));
+                channelUrlInformation);
+    } catch (exceptions::JoynrException& e) {
+        ADD_FAILURE() << "Registering Url was not successful";
+    }
 
-    EXPECT_TRUE(status1.successful()) << "Registering Url was not successful";
     types::ChannelUrlInformation result;
-    RequestStatus status2(channelUrlDirectoryProxy->getUrlsForChannel(result, channelId));
-    EXPECT_TRUE(status2.successful())<< "Requesting Url was not successful";
+    try {
+        channelUrlDirectoryProxy->getUrlsForChannel(result, channelId);
+    } catch (exceptions::JoynrException& e) {
+        ADD_FAILURE()<< "Requesting Url was not successful";
+    }
     EXPECT_EQ(channelUrlInformation,result) << "Returned Url did not match Expected Url";
 }
 
@@ -105,21 +110,33 @@ TEST_F(CombinedEnd2EndTest, DISABLED_channelUrlProxyUnRegistersUrlsCorrectly) {
     types::ChannelUrlInformation channelUrlInformation;
     std::vector<std::string> urls = { "bogusTestUrl_1", "bogusTestUrl_2" };
     channelUrlInformation.setUrls(urls);
-    RequestStatus status1(channelUrlDirectoryProxy->registerChannelUrls(channelId, channelUrlInformation));
+    try {
+        channelUrlDirectoryProxy->registerChannelUrls(channelId, channelUrlInformation);
+    }  catch (exceptions::JoynrException& e) {
+        ADD_FAILURE()<< "registerChannelUrls was not successful";
+    }
 
-    EXPECT_TRUE(status1.successful());
     types::ChannelUrlInformation result;
-    RequestStatus status2(channelUrlDirectoryProxy->getUrlsForChannel(result, channelId));
-    EXPECT_TRUE(status2.successful());
+    try {
+        channelUrlDirectoryProxy->getUrlsForChannel(result, channelId);
+    } catch (exceptions::JoynrException& e) {
+        ADD_FAILURE()<< "getUrlsForChannel was not successful";
+    }
     EXPECT_EQ(channelUrlInformation,result);
 
-    RequestStatus status3(channelUrlDirectoryProxy->unregisterChannelUrls(channelId));
-    EXPECT_TRUE(status3.successful());
+    try {
+        channelUrlDirectoryProxy->unregisterChannelUrls(channelId);
+    } catch (exceptions::JoynrException& e) {
+        ADD_FAILURE()<< "unregisterChannelUrls was not successful";
+    }
 
     types::ChannelUrlInformation result2;
-    RequestStatus status4(channelUrlDirectoryProxy->getUrlsForChannel(result2, channelId));
+    try {
+        channelUrlDirectoryProxy->getUrlsForChannel(result2, channelId);
+        ADD_FAILURE()<< "getUrlsForChannel was successful";
+    } catch (exceptions::JoynrException& e) {
+    }
     EXPECT_EQ(0,result2.getUrls().size());
-    EXPECT_FALSE(status4.successful());
 }
 
 

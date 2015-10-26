@@ -72,6 +72,11 @@ const std::string JoynrException::getTypeName() const
     return JoynrException::TYPE_NAME;
 }
 
+JoynrException* JoynrException::clone() const
+{
+    return new JoynrException(static_cast<JoynrException>(*this));
+}
+
 JoynrRuntimeException::JoynrRuntimeException(const std::string& message) throw()
         : JoynrException(message)
 {
@@ -82,6 +87,11 @@ const std::string JoynrRuntimeException::getTypeName() const
     return JoynrRuntimeException::TYPE_NAME;
 }
 
+JoynrRuntimeException* JoynrRuntimeException::clone() const
+{
+    return new JoynrRuntimeException(static_cast<JoynrRuntimeException>(*this));
+}
+
 JoynrTimeOutException::JoynrTimeOutException(const std::string& message) throw()
         : JoynrRuntimeException(message)
 {
@@ -90,6 +100,11 @@ JoynrTimeOutException::JoynrTimeOutException(const std::string& message) throw()
 const std::string JoynrTimeOutException::getTypeName() const
 {
     return JoynrTimeOutException::TYPE_NAME;
+}
+
+JoynrTimeOutException* JoynrTimeOutException::clone() const
+{
+    return new JoynrTimeOutException(static_cast<JoynrTimeOutException>(*this));
 }
 
 JoynrParseError::JoynrParseError(const std::string& message) throw()
@@ -107,6 +122,11 @@ const std::string DiscoveryException::getTypeName() const
     return DiscoveryException::TYPE_NAME;
 }
 
+DiscoveryException* DiscoveryException::clone() const
+{
+    return new DiscoveryException(static_cast<DiscoveryException>(*this));
+}
+
 MethodInvocationException::MethodInvocationException(const std::string& message) throw()
         : JoynrRuntimeException(message)
 {
@@ -117,6 +137,11 @@ const std::string MethodInvocationException::getTypeName() const
     return MethodInvocationException::TYPE_NAME;
 }
 
+MethodInvocationException* MethodInvocationException::clone() const
+{
+    return new MethodInvocationException(static_cast<MethodInvocationException>(*this));
+}
+
 ProviderRuntimeException::ProviderRuntimeException(const std::string& message) throw()
         : JoynrRuntimeException(message)
 {
@@ -125,6 +150,11 @@ ProviderRuntimeException::ProviderRuntimeException(const std::string& message) t
 const std::string ProviderRuntimeException::getTypeName() const
 {
     return ProviderRuntimeException::TYPE_NAME;
+}
+
+ProviderRuntimeException* ProviderRuntimeException::clone() const
+{
+    return new ProviderRuntimeException(static_cast<ProviderRuntimeException>(*this));
 }
 
 PublicationMissedException::PublicationMissedException(const std::string& subscriptionId) throw()
@@ -146,6 +176,11 @@ std::string PublicationMissedException::getSubscriptionId() const throw()
 const std::string PublicationMissedException::getTypeName() const
 {
     return PublicationMissedException::TYPE_NAME;
+}
+
+PublicationMissedException* PublicationMissedException::clone() const
+{
+    return new PublicationMissedException(static_cast<PublicationMissedException>(*this));
 }
 
 ApplicationException::ApplicationException(const ApplicationException& other) throw()
@@ -194,6 +229,11 @@ std::string ApplicationException::getErrorTypeName() const throw()
 const std::string ApplicationException::getTypeName() const
 {
     return ApplicationException::TYPE_NAME;
+}
+
+ApplicationException* ApplicationException::clone() const
+{
+    return new ApplicationException(static_cast<ApplicationException>(*this));
 }
 
 } // namespace exceptions

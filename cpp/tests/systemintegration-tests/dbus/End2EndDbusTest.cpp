@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -156,9 +156,12 @@ TEST_F(End2EndDbusTest, call_sync_method)
 
     // call method
     std::string actualValue;
-    RequestStatus status(testProxy->sayHello(actualValue));
-    ASSERT_TRUE(status.successful());
-    ASSERT_EQ("Hello World", actualValue);
+    try {
+        testProxy->sayHello(actualValue);
+        ASSERT_EQ("Hello World", actualValue);
+    } catch (exceptions::JoynrException& e) {
+        ADD_FAILURE()<< "sayHello was not successful";
+    }
 }
 
 TEST_F(End2EndDbusTest, call_async_method)
@@ -170,10 +173,10 @@ TEST_F(End2EndDbusTest, call_async_method)
     connectProxy();
 
     std::shared_ptr<Future<std::string>> sayHelloFuture(testProxy->sayHelloAsync());
-    sayHelloFuture->waitForFinished();
+    sayHelloFuture->wait();
     ASSERT_TRUE(sayHelloFuture->isOk());
     std::string actualValue;
-    sayHelloFuture->getValues(actualValue);
+    sayHelloFuture->get(actualValue);
     ASSERT_EQ("Hello World", actualValue);
 }
 
@@ -185,13 +188,19 @@ TEST_F(End2EndDbusTest, get_set_attribute_sync)
     // connect the proxy
     connectProxy();
 
-    // synchonous
-    RequestStatus status(testProxy->setTestAttribute(15));
-    ASSERT_TRUE(status.successful());
+    // synchronous
+    try {
+        testProxy->setTestAttribute(15);
+    } catch (exceptions::JoynrException& e) {
+        ADD_FAILURE()<< "setTestAttribute was not successful";
+    }
 
     int result = 0;
-    status = testProxy->getTestAttribute(result);
-    ASSERT_TRUE(status.successful());
+    try {
+        testProxy->getTestAttribute(result);
+    } catch (exceptions::JoynrException& e) {
+        ADD_FAILURE()<< "getTestAttribute was not successful";
+    }
     ASSERT_EQ(15, result);
 }
 
@@ -205,14 +214,14 @@ TEST_F(End2EndDbusTest, get_set_attribute_async)
 
     // asynchronous
     std::shared_ptr<Future<void>> setAttributeFuture(testProxy->setTestAttributeAsync(18));
-    setAttributeFuture->waitForFinished();
+    setAttributeFuture->wait();
     ASSERT_TRUE(setAttributeFuture->isOk());
 
     std::shared_ptr<Future<int>> getAttributeFuture(testProxy->getTestAttributeAsync());
-    getAttributeFuture->waitForFinished();
+    getAttributeFuture->wait();
     ASSERT_TRUE(getAttributeFuture->isOk());
     int actualValue;
-    getAttributeFuture->getValues(actualValue);
+    getAttributeFuture->get(actualValue);
     ASSERT_EQ(18, actualValue);
 }
 
@@ -262,13 +271,17 @@ TEST_F(End2EndDbusTest, performance_sendManyRequests) {
     }
 
     for (int i=0; i<numberOfMessages; i++){
-        testFutureList.at(i)->waitForFinished(25 * numberOfMessages);
-        int32_t expectedValue = 2+4+8+i;
-        if (testFutureList.at(i)->getStatus().successful()) {
-            successFullMessages++;
-            int actualValue;
-            testFutureList.at(i)->getValues(actualValue);
-            EXPECT_EQ(expectedValue, actualValue);
+        try {
+            testFutureList.at(i)->wait(25 * numberOfMessages);
+            int32_t expectedValue = 2+4+8+i;
+            if (testFutureList.at(i)->getStatus().successful()) {
+                successFullMessages++;
+                int actualValue;
+                testFutureList.at(i)->get(actualValue);
+                EXPECT_EQ(expectedValue, actualValue);
+            }
+        } catch (exceptions::JoynrTimeOutException& e) {
+            ADD_FAILURE()<< "Timeout waiting for response";
         }
     }
 
