@@ -306,7 +306,7 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription) {
     EXPECT_CALL(
             *mockRequestCaller,
             getLocation(A<std::function<void(const types::Localisation::GpsLocation&)>>(),
-                        A<std::function<void(const joynr::exceptions::JoynrException&)>>())
+                        A<std::function<void(const joynr::exceptions::ProviderRuntimeException&)>>())
     )
             .WillOnce(DoAll(
                     Invoke(mockRequestCaller.get(), &MockTestRequestCaller::invokeLocationOnSuccessFct),
@@ -359,7 +359,8 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam) {
 
     EXPECT_CALL(
             *provider,
-            getListOfStrings(A<std::function<void(const std::vector<std::string> &)>>())
+            getListOfStrings(A<std::function<void(const std::vector<std::string> &)>>(),
+                    A<std::function<void(const joynr::exceptions::ProviderRuntimeException&)>>())
     )
             .WillOnce(DoAll(
                     Invoke(provider.get(), &MockTestProvider::invokeListOfStringsOnSuccess),

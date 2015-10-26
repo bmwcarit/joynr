@@ -93,7 +93,8 @@ public:
     }
 
     void invokeOnSuccessWithGpsLocation(
-            std::function<void(const joynr::types::Localisation::GpsLocation location)> onSuccess
+            std::function<void(const joynr::types::Localisation::GpsLocation location)> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError
     ) {
         onSuccess(gpsLocation);
     }
@@ -135,7 +136,8 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
 
     EXPECT_CALL(
             *mockTestProvider,
-            getLocation(A<std::function<void(const types::Localisation::GpsLocation&)>>())
+            getLocation(A<std::function<void(const types::Localisation::GpsLocation&)>>(),
+                        A<std::function<void(const joynr::exceptions::ProviderRuntimeException&)>>())
     )
             .WillOnce(Invoke(
                       this,
@@ -228,7 +230,8 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
 
     EXPECT_CALL(
             *mockTestProvider,
-            getLocation(A<std::function<void(const types::Localisation::GpsLocation&)>>())
+            getLocation(A<std::function<void(const types::Localisation::GpsLocation&)>>(),
+                        A<std::function<void(const joynr::exceptions::ProviderRuntimeException&)>>())
     )
             .Times(Between(1, 2))
             .WillRepeatedly(Invoke(
@@ -284,7 +287,8 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
 
     EXPECT_CALL(
             *mockTestProvider,
-            getLocation(A<std::function<void(const types::Localisation::GpsLocation&)>>())
+            getLocation(A<std::function<void(const types::Localisation::GpsLocation&)>>(),
+                        A<std::function<void(const joynr::exceptions::ProviderRuntimeException&)>>())
     )
             .Times(Between(3, 4))
             .WillRepeatedly(Invoke(

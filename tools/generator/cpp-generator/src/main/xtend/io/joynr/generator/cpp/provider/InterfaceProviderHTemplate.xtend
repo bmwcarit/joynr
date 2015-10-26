@@ -23,6 +23,7 @@ import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
+import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
@@ -33,6 +34,7 @@ class InterfaceProviderHTemplate implements InterfaceTemplate{
 	@Inject private extension CppStdTypeUtil
 	@Inject private extension NamingUtil
 	@Inject private extension AttributeUtil
+	@Inject private extension InterfaceUtil
 	@Inject private extension MethodUtil
 
 	override generate(FInterface serviceInterface)
@@ -87,26 +89,30 @@ public:
 		«IF attribute.readable»
 			/**
 			 * @brief Gets «attributeName.toFirstUpper»
-			 * @param callbackFct A callback function to be called once the asynchronous computation has
-			 * finished. It must expect a request status object as well as the attribute value.
+			 * @param onSucess A callback function to be called once the asynchronous computation has
+			 * finished with success. It must expect a request status object as well as the attribute value.
+			 * @param onError A callback function to be called once the asynchronous computation fails. It must expect the exception.
 			 * @return the value of the attribute «attributeName.toFirstUpper»
 			 */
 			virtual void get«attributeName.toFirstUpper»(
 					std::function<void(
 							const «attribute.typeName»&
-					)> onSuccess
+					)> onSuccess,
+					std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
 			) = 0;
 		«ENDIF»
 		«IF attribute.writable»
 			/**
 			 * @brief Sets «attributeName.toFirstUpper»
 			 * @param «attributeName» the new value of the attribute
-			 * @param callbackFct A callback function to be called once the asynchronous computation has
-			 * finished. It must expect a request status object.
+			 * @param onSuccess A callback function to be called once the asynchronous computation has
+			 * finished with success. It must expect a request status object.
+			 * @param onError A callback function to be called once the asynchronous computation fails. It must expect the exception.
 			 */
 			virtual void set«attributeName.toFirstUpper»(
 					const «attribute.typeName»& «attributeName»,
-					std::function<void()> onSuccess
+					std::function<void()> onSuccess,
+					std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
 			) = 0;
 		«ENDIF»
 		«IF attribute.notifiable»
@@ -125,24 +131,36 @@ public:
 	«IF !serviceInterface.methods.empty»
 		// methods
 	«ENDIF»
+	«val methodToErrorEnumName = serviceInterface.methodToErrorEnumName»
 	«FOR method : serviceInterface.methods»
 		«val outputTypedParamList = method.commaSeperatedTypedConstOutputParameterList»
 		«val inputTypedParamList = getCommaSeperatedTypedConstInputParameterList(method)»
 		/**
 		 * @brief Implementation of the Franca method «method.joynrName»
-		 * @param callbackFct A callback function to be called once the asynchronous computation has
-		 * finished. It must expect a request status object as well as the method out parameters.
+		 * @param onSuccess A callback function to be called once the asynchronous computation has
+		 * finished with success. It must expect a request status object as well as the method out parameters.
+		 * @param onError A callback function to be called once the asynchronous computation fails. It must expect the exception.
 		 */
 		virtual void «method.joynrName»(
 				«IF !method.inputParameters.empty»
 					«inputTypedParamList.substring(1)»,
 				«ENDIF»
 				«IF method.outputParameters.empty»
-					std::function<void()> onSuccess
+					std::function<void()> onSuccess,
 				«ELSE»
 					std::function<void(
 							«outputTypedParamList.substring(1)»
-					)> onSuccess
+					)> onSuccess,
+				«ENDIF»
+				«IF method.hasErrorEnum»
+					«IF method.errors != null»
+						«val packagePath = getPackagePathWithJoynrPrefix(method.errors, "::")»
+						std::function<void (const «packagePath»::«methodToErrorEnumName.get(method)»::«nestedEnumName»& errorEnum)> onError
+					«ELSE»
+						std::function<void (const «method.errorEnum.typeName»& errorEnum)> onError
+					«ENDIF»
+				«ELSE»
+				std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
 				«ENDIF»
 		) = 0;
 

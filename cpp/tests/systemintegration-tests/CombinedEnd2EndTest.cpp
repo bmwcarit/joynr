@@ -258,11 +258,13 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
 
         std::function<void()> onSuccess = [] () {};
 
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError = [] (const joynr::exceptions::ProviderRuntimeException& exception) {};
+
         /*
          * because of the implementation of the MockTestProvider,
          * we can use the async API of the testProvider in a sync way
          */
-        testProvider->setFirstPrime(testPrimeValue, onSuccess);
+        testProvider->setFirstPrime(testPrimeValue, onSuccess, onError);
 
         int primeResult(0);
         RequestStatus status(testProxy->getFirstPrime(primeResult));
@@ -276,7 +278,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         localStrList.push_back("two 漢語");
         localStrList.push_back("three ـتـ");
         localStrList.push_back("four {");
-        testProvider->setListOfStrings(localStrList, onSuccess);
+        testProvider->setListOfStrings(localStrList, onSuccess, onError);
 
         status = testProxy->getListOfStrings(remoteStrList);
         ASSERT_TRUE(status.successful());
@@ -302,7 +304,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         inputIntList.push_back(2);
         inputIntList.push_back(3);
         inputIntList.push_back(5);
-        testProvider->setListOfInts(inputIntList, onSuccess);
+        testProvider->setListOfInts(inputIntList, onSuccess, onError);
         std::vector<int> outputIntLIst;
         status = testProxy->getListOfInts(outputIntLIst);
         ASSERT_TRUE(status.successful());

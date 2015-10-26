@@ -414,9 +414,12 @@ void LocalCapabilitiesDirectory::registerReceivedCapabilities(
 }
 
 // inherited method from joynr::system::DiscoveryProvider
-void LocalCapabilitiesDirectory::add(const types::DiscoveryEntry& discoveryEntry,
-                                     std::function<void()> onSuccess)
+void LocalCapabilitiesDirectory::add(
+        const types::DiscoveryEntry& discoveryEntry,
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
+    (void)onError;
     add(discoveryEntry);
     onSuccess();
 }
@@ -426,8 +429,10 @@ void LocalCapabilitiesDirectory::lookup(
         const std::string& domain,
         const std::string& interfaceName,
         const types::DiscoveryQos& discoveryQos,
-        std::function<void(const std::vector<joynr::types::DiscoveryEntry>& result)> onSuccess)
+        std::function<void(const std::vector<joynr::types::DiscoveryEntry>& result)> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
+    (void)onError;
     std::shared_ptr<LocalCapabilitiesFuture> future(new LocalCapabilitiesFuture());
     lookup(domain, interfaceName, future, discoveryQos);
     std::vector<CapabilityEntry> capabilities = future->get();
@@ -439,8 +444,10 @@ void LocalCapabilitiesDirectory::lookup(
 // inherited method from joynr::system::DiscoveryProvider
 void LocalCapabilitiesDirectory::lookup(
         const std::string& participantId,
-        std::function<void(const joynr::types::DiscoveryEntry&)> onSuccess)
+        std::function<void(const joynr::types::DiscoveryEntry&)> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
+    (void)onError;
     std::shared_ptr<LocalCapabilitiesFuture> future(new LocalCapabilitiesFuture());
     lookup(participantId, future);
     std::vector<CapabilityEntry> capabilities = future->get();
@@ -460,9 +467,12 @@ void LocalCapabilitiesDirectory::lookup(
 }
 
 // inherited method from joynr::system::DiscoveryProvider
-void LocalCapabilitiesDirectory::remove(const std::string& participantId,
-                                        std::function<void()> onSuccess)
+void LocalCapabilitiesDirectory::remove(
+        const std::string& participantId,
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
+    (void)onError;
     remove(participantId);
     onSuccess();
 }

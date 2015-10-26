@@ -57,7 +57,7 @@ TEST_F(RequestInterpreterTest, execute_callsMethodOnRequestCaller) {
     EXPECT_CALL(
             *mockCaller,
             getLocation(A<std::function<void(const types::Localisation::GpsLocation&)>>(),
-                        A<std::function<void(const exceptions::JoynrException&)>>())
+                        A<std::function<void(const exceptions::ProviderRuntimeException&)>>())
     )
             .Times(1);
 

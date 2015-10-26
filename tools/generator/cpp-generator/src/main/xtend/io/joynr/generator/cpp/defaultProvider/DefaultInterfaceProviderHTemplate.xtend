@@ -91,17 +91,20 @@ public:
 			virtual void get«attributeName.toFirstUpper»(
 					std::function<void(
 							const «attribute.typeName»&
-					)> onSuccess
+					)> onSuccess,
+					std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
 			);
 		«ENDIF»
 		«IF attribute.writable»
 			virtual void set«attributeName.toFirstUpper»(
 					const «attribute.typeName»& «attributeName»,
-					std::function<void()> onSuccess
+					std::function<void()> onSuccess,
+					std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
 			);
 		«ENDIF»
 
 	«ENDFOR»
+	«val methodToErrorEnumName = serviceInterface.methodToErrorEnumName»
 	«IF !serviceInterface.methods.empty»
 		// methods
 	«ENDIF»
@@ -113,11 +116,21 @@ public:
 					«inputTypedParamList.substring(1)»,
 				«ENDIF»
 				«IF method.outputParameters.empty»
-					std::function<void()> onSuccess
+					std::function<void()> onSuccess,
 				«ELSE»
 					std::function<void(
 							«outputTypedParamList.substring(1)»
-					)> onSuccess
+					)> onSuccess,
+				«ENDIF»
+				«IF method.hasErrorEnum»
+					«IF method.errors != null»
+						«val packagePath = getPackagePathWithJoynrPrefix(method.errors, "::")»
+						std::function<void (const «packagePath»::«methodToErrorEnumName.get(method)»::«nestedEnumName»& errorEnum)> onError
+					«ELSE»
+						std::function<void (const «method.errorEnum.typeName»& errorEnum)> onError
+					«ENDIF»
+				«ELSE»
+				std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
 				«ENDIF»
 		);
 

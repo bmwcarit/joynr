@@ -120,8 +120,8 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 						future->onSuccess(«attributeName»);
 					};
 
-			std::function<void(const exceptions::JoynrException&)> onError =
-					[future] (const exceptions::JoynrException& error) {
+			std::function<void(const exceptions::ProviderRuntimeException&)> onError =
+					[future] (const exceptions::ProviderRuntimeException& error) {
 						(void) error;
 						future->onError(RequestStatusCode::ERROR);
 					};
@@ -156,8 +156,8 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 						}
 					};
 
-			std::function<void(const exceptions::JoynrException&)> onErrorWrapper =
-					[future, onError] (const exceptions::JoynrException& error) {
+			std::function<void(const exceptions::ProviderRuntimeException&)> onErrorWrapper =
+					[future, onError] (const exceptions::ProviderRuntimeException& error) {
 						(void) error;
 						future->onError(RequestStatusCode::ERROR);
 						if (onError) {
@@ -193,8 +193,8 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 						}
 					};
 
-			std::function<void(const exceptions::JoynrException&)> onErrorWrapper =
-					[future, onError] (const exceptions::JoynrException& error) {
+			std::function<void(const exceptions::ProviderRuntimeException&)> onErrorWrapper =
+					[future, onError] (const exceptions::ProviderRuntimeException& error) {
 						(void) error;
 						future->onError(RequestStatusCode::ERROR);
 						if (onError) {
@@ -223,8 +223,8 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 						future->onSuccess();
 					};
 
-			std::function<void(const exceptions::JoynrException&)> onError =
-					[future] (const exceptions::JoynrException& error) {
+			std::function<void(const exceptions::ProviderRuntimeException&)> onError =
+					[future] (const exceptions::ProviderRuntimeException& error) {
 						(void) error;
 						future->onError(RequestStatusCode::ERROR);
 					};

@@ -234,7 +234,16 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 
 	def Set<String> getRequiredIncludesFor(FInterface serviceInterface){
 		val includeSet = new HashSet<String>();
-		for(datatype: getAllComplexAndEnumTypes(serviceInterface)){
+		for(datatype: getAllComplexAndEnumTypes(
+			serviceInterface,
+			false,
+			true,
+			true,
+			true,
+			true,
+			true,
+			true
+		)){
 			if (datatype instanceof FType){
 				includeSet.add("\"" + getIncludeOf(datatype) + "\"");
 			}

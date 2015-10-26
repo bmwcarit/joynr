@@ -74,12 +74,18 @@ int main(int argc, char* argv[])
     // Register the provider
     runtime->registerProvider<vehicle::RadioProvider>(providerDomain, provider);
 
+    std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError =
+            [logger](const joynr::exceptions::ProviderRuntimeException& exception) {
+        MyRadioHelper::prettyLog(
+                logger, QString("Exception: %1").arg(TypeUtil::toQt(exception.getMessage())));
+    };
+
     // Run until the user hits q
     int key;
     while ((key = MyRadioHelper::getch()) != 'q') {
         switch (key) {
         case 's':
-            provider->shuffleStations([]() {});
+            provider->shuffleStations([]() {}, onError);
             break;
         case 'w':
             provider->fireWeakSignalBroadcast();

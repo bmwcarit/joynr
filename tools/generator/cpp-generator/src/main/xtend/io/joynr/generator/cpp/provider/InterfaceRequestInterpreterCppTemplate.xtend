@@ -208,7 +208,7 @@ void «interfaceName»RequestInterpreter::execute(
 
 	LOG_FATAL(logger, "unknown method name for interface «interfaceName»: " + methodName);
 	assert(false);
-	onError(exceptions::JoynrRuntimeException("unknown method name for interface «interfaceName»: " + TypeUtil::toStd(methodName)));
+	onError(exceptions::MethodInvocationException("unknown method name for interface «interfaceName»: " + TypeUtil::toStd(methodName)));
 }
 
 «getNamespaceEnder(serviceInterface)»

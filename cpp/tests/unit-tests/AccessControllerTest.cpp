@@ -94,10 +94,11 @@ public:
     ~AccessControllerTest() {
     }
 
-    void invokeCallbackFct (std::string participantId,
-                            std::function<void(const joynr::types::DiscoveryEntry&)> callbackFct) {
+    void invokeOnSuccessCallbackFct (std::string participantId,
+                            std::function<void(const joynr::types::DiscoveryEntry&)> onSuccess,
+                            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) {
         Q_UNUSED(participantId);
-        callbackFct(discoveryEntry);
+        onSuccess(discoveryEntry);
     }
 
     void SetUp(){
@@ -129,11 +130,12 @@ public:
         );
         EXPECT_CALL(
                 localCapabilitiesDirectoryMock,
-                lookup(toParticipantId, A<std::function<void(
-                           const joynr::types::DiscoveryEntry&)>>())
+                lookup(toParticipantId,
+                       A<std::function<void(const joynr::types::DiscoveryEntry&)>>(),
+                       A<std::function<void(const joynr::exceptions::ProviderRuntimeException&)>>())
         )
                 .Times(1)
-                .WillOnce(Invoke(this, &AccessControllerTest::invokeCallbackFct));
+                .WillOnce(Invoke(this, &AccessControllerTest::invokeOnSuccessCallbackFct));
     }
 
     void TearDown(){

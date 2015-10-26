@@ -262,7 +262,7 @@ void AccessController::hasConsumerPermission(
 
     // Get the domain and interface of the message destination
     std::string participantId = message.getHeaderTo().toStdString();
-    std::function<void(const types::DiscoveryEntry&)> lookupCallback =
+    std::function<void(const types::DiscoveryEntry&)> lookupSuccessCallback =
             [this, message, callback, participantId](const types::DiscoveryEntry& discoveryEntry) {
         if (discoveryEntry.getParticipantId() != participantId) {
             LOG_ERROR(logger,
@@ -296,7 +296,13 @@ void AccessController::hasConsumerPermission(
         localDomainAccessController.getConsumerPermission(
                 msgCreatorUid.toStdString(), domain, interfaceName, TrustLevel::HIGH, ldacCallback);
     };
-    localCapabilitiesDirectory.lookup(participantId, lookupCallback);
+
+    std::function<void(const joynr::exceptions::ProviderRuntimeException&)> lookupErrorCallback =
+            [callback](const joynr::exceptions::ProviderRuntimeException& exception) {
+        (void)exception;
+        callback->hasConsumerPermission(false);
+    };
+    localCapabilitiesDirectory.lookup(participantId, lookupSuccessCallback, lookupErrorCallback);
 }
 
 bool AccessController::hasProviderPermission(const QString& userId,

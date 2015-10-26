@@ -494,7 +494,7 @@ class MockGpsProvider : public joynr::vehicle::DefaultGpsProvider
 class MockTestRequestCaller : public joynr::tests::testRequestCaller {
 public:
     void invokeLocationOnSuccessFct(std::function<void(const joynr::types::Localisation::GpsLocation&)> onSuccess,
-                            std::function<void(const joynr::exceptions::JoynrException&)> onError) {
+                            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) {
         joynr::types::Localisation::GpsLocation location;
         onSuccess(location);
     }
@@ -539,7 +539,7 @@ public:
 
     MOCK_METHOD2(getLocation,
                  void(std::function<void(const joynr::types::Localisation::GpsLocation& location)>,
-                      std::function<void(const joynr::exceptions::JoynrException& exception)>));
+                      std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>));
     MOCK_METHOD2(getListOfStrings,
                  void(std::function<void(const std::vector<std::string>& listOfStrings)>,
                       std::function<void(const joynr::exceptions::JoynrException& exception)>));
@@ -554,7 +554,7 @@ class MockGpsRequestCaller : public joynr::vehicle::GpsRequestCaller {
 public:
     MockGpsRequestCaller() : joynr::vehicle::GpsRequestCaller(std::make_shared<MockGpsProvider>() ) {}
     MOCK_METHOD2(getLocation, void(std::function<void(const joynr::RequestStatus& status, const joynr::types::Localisation::GpsLocation& location)>,
-                                   std::function<void(const joynr::exceptions::JoynrException& exception)>));
+                                   std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>));
     MOCK_METHOD2(registerAttributeListener, void(const std::string& attributeName, joynr::IAttributeListener* attributeListener));
     MOCK_METHOD2(unregisterAttributeListener, void(const std::string& attributeName, joynr::IAttributeListener* attributeListener));
 };
@@ -846,11 +846,12 @@ public:
         messageRouter(),
         LocalCapabilitiesDirectory(messagingSettings,NULL, messageRouter){}
 
-    MOCK_METHOD2(
+    MOCK_METHOD3(
             lookup,
             void(
                 const std::string& participantId,
-                std::function<void(const joynr::types::DiscoveryEntry&)> lookupCallback
+                std::function<void(const joynr::types::DiscoveryEntry&)> onSuccess,
+                std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError
             ));
 
 private:

@@ -91,7 +91,7 @@ public:
 							const «attribute.typeName»&
 					)> onSuccess,
 					std::function<void(
-							const exceptions::JoynrException&
+							const exceptions::ProviderRuntimeException&
 					)> onError
 			);
 		«ENDIF»
@@ -107,7 +107,7 @@ public:
 					const «attribute.typeName»& «attributeName»,
 					std::function<void()> onSuccess,
 					std::function<void(
-							const exceptions::JoynrException&
+							const exceptions::ProviderRuntimeException&
 					)> onError
 			);
 		«ENDIF»
