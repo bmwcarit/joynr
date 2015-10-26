@@ -66,6 +66,7 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 #include "joynr/SubscriptionCallback.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/Future.h"
+#include "joynr/exceptions.h"
 #include "joynr/TypeUtil.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/RequestStatusCode.h"
@@ -119,8 +120,14 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 						future->onSuccess(«attributeName»);
 					};
 
+			std::function<void(const JoynrException&)> onError =
+					[future] (const JoynrException& exception) {
+						(void) exception;
+						future->onError(RequestStatusCode::ERROR);
+					};
+
 			//see header for more information
-			«serviceInterface.interfaceCaller»->«getAttributeName»(onSuccess);
+			«serviceInterface.interfaceCaller»->«getAttributeName»(onSuccess, onError);
 			joynr::RequestStatus status(future->waitForFinished());
 			if (status.successful()) {
 				future->getValues(attributeValue);
@@ -149,8 +156,17 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 						}
 					};
 
+			std::function<void(const JoynrException&)> onErrorWrapper =
+					[future, onError] (const JoynrException& exception) {
+						(void) exception;
+						future->onError(RequestStatusCode::ERROR);
+						if (onError) {
+							onError(RequestStatusCode::ERROR);
+						}
+					};
+
 			//see header for more information
-			«serviceInterface.interfaceCaller»->«getAttributeName»(onSuccessWrapper);
+			«serviceInterface.interfaceCaller»->«getAttributeName»(onSuccessWrapper, onErrorWrapper);
 			return future;
 		}
 
@@ -177,9 +193,18 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 						}
 					};
 
+			std::function<void(const JoynrException&)> onErrorWrapper =
+					[future, onError] (const JoynrException& exception) {
+						(void) exception;
+						future->onError(RequestStatusCode::ERROR);
+						if (onError) {
+							onError(RequestStatusCode::ERROR);
+						}
+					};
+
 			//see header for more information
 			LOG_ERROR(logger,"#### WARNING ##### «interfaceName»InProcessConnector::«setAttributeName»(Future) is synchronous.");
-			«serviceInterface.interfaceCaller»->«setAttributeName»(input, onSuccessWrapper);
+			«serviceInterface.interfaceCaller»->«setAttributeName»(input, onSuccessWrapper, onErrorWrapper);
 			return future;
 		}
 
@@ -198,8 +223,14 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 						future->onSuccess();
 					};
 
+			std::function<void(const JoynrException&)> onError =
+					[future] (const JoynrException& exception) {
+						(void) exception;
+						future->onError(RequestStatusCode::ERROR);
+					};
+
 			//see header for more information
-			«serviceInterface.interfaceCaller»->«setAttributeName»(input, onSuccess);
+			«serviceInterface.interfaceCaller»->«setAttributeName»(input, onSuccess, onError);
 			return future->waitForFinished();
 		}
 
@@ -326,7 +357,13 @@ joynr::RequestStatus «interfaceName»InProcessConnector::«methodname»(
 				);
 			};
 
-	«serviceInterface.interfaceCaller»->«methodname»(«IF !method.inputParameters.empty»«inputParamList», «ENDIF»onSuccess);
+	std::function<void(const JoynrException&)> onError =
+			[future] (const JoynrException& exception) {
+				(void) exception;
+				future->onError(RequestStatusCode::ERROR);
+			};
+
+	«serviceInterface.interfaceCaller»->«methodname»(«IF !method.inputParameters.empty»«inputParamList», «ENDIF»onSuccess, onError);
 	«IF method.outputParameters.empty»
 		return future->waitForFinished();
 	«ELSE»
@@ -359,7 +396,17 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 					onSuccess(«outputUntypedParamList»);
 				}
 			};
-	«serviceInterface.interfaceCaller»->«methodname»(«IF !method.inputParameters.empty»«inputParamList», «ENDIF»onSuccessWrapper);
+
+	std::function<void(const JoynrException&)> onErrorWrapper =
+			[future, onError] (const JoynrException& exception) {
+				(void) exception;
+				future->onError(RequestStatusCode::ERROR);
+				if (onError) {
+					onError(RequestStatusCode::ERROR);
+				}
+			};
+
+	«serviceInterface.interfaceCaller»->«methodname»(«IF !method.inputParameters.empty»«inputParamList», «ENDIF»onSuccessWrapper, onErrorWrapper);
 	return future;
 }
 

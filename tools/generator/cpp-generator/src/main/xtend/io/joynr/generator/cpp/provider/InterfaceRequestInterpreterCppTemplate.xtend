@@ -86,10 +86,6 @@ void «interfaceName»RequestInterpreter::execute(
 		std::function<void (const QList<QVariant>&)> onSuccess,
 		std::function<void (const JoynrException& exception)> onError
 ) {
-	/*
-	 * Invoke the onError callback function in case the reuqest caller returns errors. The respective templates change comes with subsequent patches
-	 */
-	(void) onError;
 	Q_UNUSED(paramValues);//if all methods of the interface are empty, the paramValues would not be used and give a warning.
 	Q_UNUSED(paramTypes);//if all methods of the interface are empty, the paramTypes would not be used and give a warning.
 	// cast generic RequestCaller to «interfaceName»Requestcaller
@@ -111,7 +107,7 @@ void «interfaceName»RequestInterpreter::execute(
 							outParams.insert(0, singleOutParam);
 							onSuccess(outParams);
 						};
-				«requestCallerName»->get«attributeName.toFirstUpper»(requestCallerOnSuccess);
+				«requestCallerName»->get«attributeName.toFirstUpper»(requestCallerOnSuccess, onError);
 				return;
 			}
 		«ENDIF»
@@ -142,7 +138,7 @@ void «interfaceName»RequestInterpreter::execute(
 							QList<QVariant> outParams;
 							onSuccess(outParams);
 						};
-				«requestCallerName»->set«attributeName.toFirstUpper»(«qtTypeUtil.fromQTTypeToStdType(attribute, '''typedInput«attributeName.toFirstUpper»''')», requestCallerOnSuccess);
+				«requestCallerName»->set«attributeName.toFirstUpper»(«qtTypeUtil.fromQTTypeToStdType(attribute, '''typedInput«attributeName.toFirstUpper»''')», requestCallerOnSuccess, onError);
 				return;
 			}
 		«ENDIF»
@@ -203,7 +199,8 @@ void «interfaceName»RequestInterpreter::execute(
 
 				«requestCallerName»->«methodName»(
 						«IF !method.inputParameters.empty»«inputUntypedParamList»,«ENDIF»
-						requestCallerOnSuccess);
+						requestCallerOnSuccess,
+						onError);
 				return;
 			}
 		«ENDFOR»
@@ -211,8 +208,7 @@ void «interfaceName»RequestInterpreter::execute(
 
 	LOG_FATAL(logger, "unknown method name for interface «interfaceName»: " + methodName);
 	assert(false);
-	QList<QVariant> outParams;
-	onSuccess(outParams);
+	onError(JoynrException("unknown method name for interface «interfaceName»: " + TypeUtil::toStd(methodName)));
 }
 
 «getNamespaceEnder(serviceInterface)»

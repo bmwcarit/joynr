@@ -78,7 +78,8 @@ public:
     }
 
     void invokeOnSuccessWithGpsLocation(
-            std::function<void(const joynr::types::Localisation::GpsLocation& location)> onSuccess) {
+            std::function<void(const joynr::types::Localisation::GpsLocation& location)> onSuccess,
+            std::function<void(const joynr::JoynrException& exception)> onError) {
         onSuccess(gpsLocation1);
     }
 
@@ -115,7 +116,8 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
     EXPECT_CALL(
                 *mockRequestCaller,
                 getLocation(
-                    A<std::function<void(const joynr::types::Localisation::GpsLocation&)>>()
+                    A<std::function<void(const joynr::types::Localisation::GpsLocation&)>>(),
+                    A<std::function<void(const joynr::JoynrException&)>>()
                 )
     ).WillOnce(Invoke(this, &DispatcherTest::invokeOnSuccessWithGpsLocation));
 

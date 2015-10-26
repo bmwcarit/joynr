@@ -69,16 +69,30 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 		void «interfaceName»RequestCaller::get«attributeName.toFirstUpper»(
 				std::function<void(
 						const «returnType»& «attributeName.toFirstLower»
-				)> onSuccess
+				)> onSuccess,
+				std::function<void(
+						const JoynrException&
+				)> onError
 		) {
+			/*
+			 * TODO: forward the onError callback to the provider. This code comes with subsequent patches
+			 */
+			(void) onError;
 			provider->get«attributeName.toFirstUpper»(onSuccess);
 		}
 	«ENDIF»
 	«IF attribute.writable»
 		void «interfaceName»RequestCaller::set«attributeName.toFirstUpper»(
 				const «returnType»& «attributeName.toFirstLower»,
-				std::function<void()> onSuccess
+				std::function<void()> onSuccess,
+				std::function<void(
+						const JoynrException&
+				)> onError
 		) {
+			/*
+			 * TODO: forward the onError callback to the provider. This code comes with subsequent patches
+			 */
+			(void) onError;
 			provider->set«attributeName.toFirstUpper»(«attributeName.toFirstLower», onSuccess);
 		}
 	«ENDIF»
@@ -95,13 +109,20 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 	void «interfaceName»RequestCaller::«methodName»(
 			«IF !method.inputParameters.empty»«inputTypedParamList»,«ENDIF»
 			«IF method.outputParameters.empty»
-				std::function<void()> onSuccess
+				std::function<void()> onSuccess,
 			«ELSE»
 				std::function<void(
 						«outputTypedParamList.substring(1)»
-				)> onSuccess
+				)> onSuccess,
 			«ENDIF»
+			std::function<void(
+					const JoynrException&
+			)> onError
 	) {
+		/*
+		 * TODO: forward the onError callback to the provider. This code comes with subsequent patches
+		 */
+		(void) onError;
 		provider->«methodName»(
 				«IF !method.inputParameters.empty»«inputUntypedParamList»,«ENDIF»
 				onSuccess
