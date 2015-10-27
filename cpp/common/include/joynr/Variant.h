@@ -172,6 +172,13 @@ public:
     template <typename T>
     const T& get() const;
 
+    // Serialize a variant
+    /**
+     * @brief serialize Do actual serialization to output stream
+     * @param stream
+     */
+    void serialize(std::ostream& stream);
+
 private:
     /**
      * @brief Variant Constructor that allows transfer of wrapped object to another Variant
@@ -210,7 +217,9 @@ public:
      * @brief VariantHolder copy constructor
      * @param other
      */
-    // VariantHolder(const T& other) : payload(other) {}
+    VariantHolder(const T& other) : payload(other)
+    {
+    }
     /**
      * @brief VariantHolder move constructor
      * @param otherRvalue

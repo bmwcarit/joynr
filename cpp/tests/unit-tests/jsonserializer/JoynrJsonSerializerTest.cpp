@@ -21,7 +21,7 @@
 #include "jsonserializer/JsonTokenizer.h"
 #include "ExampleTypes.h"
 #include "joynr/Request.h"
-#include "generated/RequestSerializer.h"
+#include "jsonserializer/RequestSerializer.h"
 #include "joynr/joynrlogging.h"
 
 #include "gtest/gtest.h"
@@ -170,21 +170,19 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrRequest)
     std::string someString{"Hello World"};
     Variant param1 = Variant::make<std::string>(someString);
     //params.emplace_back(param);
-    params.push_back(std::forward<Variant>(param1));
+    request.addParam(param1, "String");
     const int32_t expectedInt = 101;
     Variant param2 = Variant::make<int>(expectedInt);
-    params.push_back(std::forward<Variant>(param2));
+    request.addParam(param2, "Integer");
     const int aValue = 2;
     Variant param3 = Variant::make<SomeOtherType>(aValue);
-    params.push_back(std::forward<Variant>(param3));
+    request.addParam(param3, "SomeOtherType");
     const float expectedFloat = 9.99f;
     Variant param4 = Variant::make<float>(expectedFloat);
-    params.push_back(std::forward<Variant>(param4));
+    request.addParam(param4, "Float");
     bool expectedBool = true;
     Variant param5 = Variant::make<bool>(expectedBool);
-    params.push_back(std::forward<Variant>(param5));
-
-    request.setParams(std::move(params));
+    request.addParam(param5, "Bool");
 
     // Serialize into JSON
     std::stringstream stream;
@@ -266,6 +264,16 @@ TEST_F(JoynrJsonSerializerTest, serializeDeserializeMasterAccessControlEntry)
     }
 
     // Check that the object serialized/deserialized correctly
+    EXPECT_EQ(expectedMac.getDefaultConsumerPermission(), mac.getDefaultConsumerPermission());
+    EXPECT_EQ(expectedMac.getDefaultRequiredControlEntryChangeTrustLevel(), mac.getDefaultRequiredControlEntryChangeTrustLevel());
+    EXPECT_EQ(expectedMac.getDefaultRequiredTrustLevel(), mac.getDefaultRequiredTrustLevel());
+    EXPECT_EQ(expectedMac.getDomain(), mac.getDomain());
+    EXPECT_EQ(expectedMac.getInterfaceName(), mac.getInterfaceName());
+    EXPECT_EQ(expectedMac.getOperation(), mac.getOperation());
+    EXPECT_EQ(expectedMac.getPossibleConsumerPermissions(), mac.getPossibleConsumerPermissions());
+    EXPECT_EQ(expectedMac.getPossibleRequiredControlEntryChangeTrustLevels(), mac.getPossibleRequiredControlEntryChangeTrustLevels());
+    EXPECT_EQ(expectedMac.getPossibleRequiredTrustLevels(), mac.getPossibleRequiredTrustLevels());
+    EXPECT_EQ(expectedMac.getUid(), mac.getUid());
     EXPECT_EQ(expectedMac, mac);
 }
 

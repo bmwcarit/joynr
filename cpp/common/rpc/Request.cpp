@@ -22,6 +22,8 @@
 namespace joynr
 {
 
+bool isRequestTypeRegistered = Variant::registerType<Request>("joynr.Request");
+
 Request::Request() : requestReplyId(), methodName(), params(), paramDatatypes()
 {
     this->requestReplyId = Util::createUuid().toStdString();

@@ -29,28 +29,26 @@ namespace joynr
 {
 
 // Register the Request type id and serializer/deserializer
-static const bool isRequestRegistered =
-        Variant::registerType<Request>("joynr.infrastructure.Request");
-
 static const bool isRequestSerializerRegistered =
-        SerializerRegistry::registerType<Request>("joynr.infrastructure.Request");
+        SerializerRegistry::registerType<Request>("joynr.Request");
 
 template <>
-void ClassDeserializer<Request>::deserialize(Request &t, IObject &o)
+void ClassDeserializer<Request>::deserialize(Request& request, IObject& o)
 {
     while (o.hasNextField()) {
         IField& field = o.nextField();
         if (field.name() == "requestReplyId") {
-            t.setRequestReplyId(field.value());
-
+            request.setRequestReplyId(field.value());
         } else if (field.name() == "methodName") {
-            t.setMethodName(field.value());
-
+            request.setMethodName(field.value());
         } else if (field.name() == "params") {
-
             IArray& array = field.value();
             auto&& converted = convertArray<Variant>(array, convertVariant);
-            t.setParams(std::forward<std::vector<Variant>>(converted));
+            request.setParams(std::forward<std::vector<Variant>>(converted));
+        } else if (field.name() == "paramDatatypes") {
+            IArray& array = field.value();
+            auto&& converted = convertArray<std::string>(array, convertString);
+            request.setParamDatatypes(std::forward<std::vector<std::string>>(converted));
         }
     }
 }
@@ -58,16 +56,15 @@ void ClassDeserializer<Request>::deserialize(Request &t, IObject &o)
 template <>
 void ClassSerializer<Request>::serialize(const Request& request, std::ostream& stream)
 {
-    stream << "{";
-    stream << "\"_typeName\": \"" << JoynrTypeId<Request>::getTypeName() << "\",";
-    stream << "\"requestReplyId\": \"" << request.getRequestReplyId() << "\",";
-    stream << "\"methodName\": \"" << request.getMethodName() << "\",";
-    stream << "\"params\": ";
+    stream << R"({)";
+    stream << R"("_typeName": ")" << JoynrTypeId<Request>::getTypeName() << R"(",)";
+    stream << R"("requestReplyId": ")" << request.getRequestReplyId() << R"(",)";
+    stream << R"("methodName": ")" << request.getMethodName() << R"(",)";
+    stream << R"("paramDatatypes": )";
+    ArraySerializer::serialize<std::string>(request.getParamDatatypes(), stream);
+    stream << R"(, "params": )";
     ArraySerializer::serialize<Variant>(request.getParams(), stream);
-    // ArraySerializer::serializeStrings(xxx, stream);
-    // ClassSerializer<SomeObject>::serialize(object, stream);
-    stream << "}";
-
+    stream << R"(})";
 }
 
 } /* namespace joynr */

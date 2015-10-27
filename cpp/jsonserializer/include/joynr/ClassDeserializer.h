@@ -25,6 +25,7 @@
 #include <functional>
 #include <vector>
 #include <utility>
+#include <map>
 
 namespace joynr
 {
@@ -67,7 +68,7 @@ public:
      * @param typeReference Reference to instance of given type
      * @param object Reference to object produced by Serializer Engine
      */
-    static void deserialize(T& typeReference, IObject& object);
+    static void deserialize(T& typeReference, IObject& value);
     /**
      * @brief deserializeVariant
      * @param object
@@ -106,20 +107,6 @@ Variant convertVariant(IValue& value);
 std::string convertString(IValue& value);
 
 /**
- * @brief convertObject
- * @param value
- * @return
- */
-template<typename T>
-T convertObject(IValue& value)
-{
-    ClassDeserializer<T> deserializer;
-    T obj;
-    deserializer.deserialize(obj, value);
-    return obj;
-}
-
-/**
  * @brief Converts an IArray into a std::vector, used for deserialization
  */
 template <typename T>
@@ -131,6 +118,53 @@ std::vector<T> convertArray(IArray& array, std::function<T(IValue&)> fn)
         resultVector.push_back(fn(array.nextValue()));
     }
     return resultVector;
+}
+
+/**
+ * @brief Converts an IArray into a std::vector, used for deserialization
+ */
+template <typename T>
+std::vector<T> convertArray(IArray& array, std::function<void(T&, IValue&)> fn)
+{
+    std::vector<T> resultVector;
+
+    while (array.hasNextValue()) {
+        T value;
+        fn(value, array.nextValue());
+        resultVector.push_back(value);
+    }
+    return resultVector;
+}
+
+/**
+ * @brief Converts an IObject into a std::map, used for deserialization
+ */
+template <typename T>
+std::map<std::string, T> convertMap(IObject& map, std::function<T(IValue&)> fn)
+{
+    std::map<std::string, T> resultMap;
+
+    while (map.hasNextField()) {
+        IField& keyValuePair = map.nextField();
+        std::string keyName = keyValuePair.name();
+        T value = fn(keyValuePair.value());
+        resultMap.emplace(keyName, std::move(value));
+    }
+    return resultMap;
+}
+
+/**
+ * @brief convertObject
+ * @param value
+ * @return
+ */
+template<typename T>
+T convertObject(IValue& value)
+{
+    ClassDeserializer<T> deserializer;
+    T obj;
+    deserializer.deserialize(obj, value);
+    return obj;
 }
 
 template<typename T>

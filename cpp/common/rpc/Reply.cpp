@@ -22,6 +22,8 @@
 namespace joynr
 {
 
+bool isReplyRegistered = Variant::registerType<Reply>("joynr.Reply");
+
 const Reply Reply::NULL_RESPONSE = Reply();
 
 Reply::Reply() : requestReplyId(), response(), error(NULL)

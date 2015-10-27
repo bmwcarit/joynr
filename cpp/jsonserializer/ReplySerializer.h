@@ -16,25 +16,26 @@
  * limitations under the License.
  * #L%
  */
-#ifndef REQUESTSERIALIZER_H
-#define REQUESTSERIALIZER_H
+#ifndef REPLYSERIALIZER_H
+#define REPLYSERIALIZER_H
 
 #include "joynr/ClassDeserializer.h"
 #include "joynr/ClassSerializer.h"
-#include "joynr/Request.h"
+#include "joynr/Reply.h"
+#include "IDeserializer.h"
 
-#include <sstream>
+#include <ostream>
 
 namespace joynr
 {
 
-// Serializes a request
+// Serializes a Reply
 template <>
-void ClassSerializer<Request>::serialize(const Request& request, std::ostream& o);
+void ClassSerializer<Reply>::serialize(const Reply& reply, std::ostream& o);
 
-// Deserializes a request
+// Deserializes a Reply
 template <>
-void ClassDeserializer<Request>::deserialize(Request& t, IObject& o);
+void ClassDeserializer<Reply>::deserialize(Reply& t, IObject& o);
 
 } /* namespace joynr */
-#endif // REQUESTSERIALIZER_H
+#endif // REPLYSERIALIZER_H

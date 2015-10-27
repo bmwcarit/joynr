@@ -22,6 +22,10 @@ import io.joynr.generator.cpp.communicationmodel.qt.EnumHTemplate
 import io.joynr.generator.cpp.communicationmodel.qt.TypeCppTemplate
 import io.joynr.generator.cpp.communicationmodel.qt.TypeHTemplate
 import io.joynr.generator.cpp.util.CppStdTypeUtil
+import io.joynr.generator.cpp.communicationmodel.serializer.EnumSerializerCppTemplate
+import io.joynr.generator.cpp.communicationmodel.serializer.EnumSerializerHTemplate
+import io.joynr.generator.cpp.communicationmodel.serializer.TypeSerializerCppTemplate
+import io.joynr.generator.cpp.communicationmodel.serializer.TypeSerializerHTemplate
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.QtTypeUtil
 import io.joynr.generator.templates.util.NamingUtil
@@ -81,6 +85,15 @@ class CommunicationModelGenerator {
 	@Inject
 	StdTypeCppTemplate stdTypeCpp;
 
+	@Inject
+	TypeSerializerHTemplate typeSerializerH;
+	@Inject
+	TypeSerializerCppTemplate typeSerializerCpp;
+	@Inject
+	EnumSerializerHTemplate enumSerializerH;
+	@Inject
+	EnumSerializerCppTemplate enumSerializerCpp;
+
 	def doGenerate(FModel fModel,
 		IFileSystemAccess sourceFileSystem,
 		IFileSystemAccess headerFileSystem,
@@ -135,6 +148,21 @@ class CommunicationModelGenerator {
 					stdTypeCpp,
 					type
 				)
+
+				generateFile(
+					headerFileSystem,
+					headerpath + type.joynrName + "Serializer.h",
+					typeSerializerH,
+					type
+				)
+
+				generateFile(
+					sourceFileSystem,
+					sourcepath + type.joynrName + "Serializer.cpp",
+					typeSerializerCpp,
+					type
+				)
+
 			}
 		}
 
@@ -156,6 +184,19 @@ class CommunicationModelGenerator {
 				headerpath + stdTypeUtil.getGenerationTypeName(type) + ".h",
 				sourcepath + stdTypeUtil.getGenerationTypeName(type) + ".cpp"
 			);
+
+			generateFile(
+				headerFileSystem,
+				headerpath + type.joynrName + "Serializer.h",
+				enumSerializerH,
+				type as FEnumerationType
+			)
+			generateFile(
+				sourceFileSystem,
+				sourcepath + type.joynrName + "Serializer.cpp",
+				enumSerializerCpp,
+				type as FEnumerationType
+			)
 		}
 
 		val interfacePath = sourceContainerPath + "interfaces" + File::separator

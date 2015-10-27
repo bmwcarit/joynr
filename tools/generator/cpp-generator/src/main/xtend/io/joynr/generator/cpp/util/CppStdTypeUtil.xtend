@@ -102,12 +102,20 @@ class CppStdTypeUtil extends CppTypeUtil {
 		return includes;
 	}
 
+	def String getIncludeOfSerializer(FType dataType) {
+		getIncludeOf(dataType, "Serializer")
+	}
+
 	override String getIncludeOf(FType dataType) {
+		getIncludeOf(dataType, "")
+	}
+
+	private def String getIncludeOf(FType dataType, String nameSuffix) {
 		var path = getPackagePathWithJoynrPrefix(dataType, "/")
 		if (dataType.isPartOfTypeCollection) {
 			path += "/" + dataType.typeCollectionName
 		}
-		return path + "/" + dataType.joynrName + ".h";
+		return path + "/" + dataType.joynrName + nameSuffix + ".h";
 	}
 
 	override getDefaultValue(FTypedElement element) {
