@@ -21,7 +21,7 @@ package io.joynr.runtime;
 
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import io.joynr.capabilities.CapabilitiesRegistrar;
-import io.joynr.capabilities.RegistrationFuture;
+import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.dispatching.CallerDirectoryListener;
 import io.joynr.dispatching.Dispatcher;
@@ -40,6 +40,7 @@ import io.joynr.messaging.ReceiverStatusListener;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
 import io.joynr.provider.JoynrProvider;
+import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.subtypes.JoynrType;
@@ -54,6 +55,7 @@ import joynr.Request;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
+import joynr.system.DiscoveryProxy;
 import joynr.system.RoutingTypes.Address;
 
 import org.reflections.Reflections;
@@ -116,11 +118,14 @@ public class JoynrRuntimeImpl implements JoynrRuntime {
                             ReplyCallerDirectory replyCallerDirectory,
                             MessageReceiver messageReceiver,
                             Dispatcher dispatcher,
+                            LocalDiscoveryAggregator localDiscoveryAggregator,
+                            @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
                             @Named(ConfigurableMessagingSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) Address libjoynrMessagingAddress,
                             @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_ADDRESS) Address capabilitiesDirectoryAddress,
                             @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_ADDRESS) Address channelUrlDirectoryAddress,
                             @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_ADDRESS) Address domainAccessControllerAddress,
-                            @Named(ConfigurableMessagingSettings.PROPERTY_CLUSTERCONTROLER_MESSAGING_SKELETON) IMessaging clusterControllerMessagingSkeleton) {
+                            @Named(ConfigurableMessagingSettings.PROPERTY_CLUSTERCONTROLER_MESSAGING_SKELETON) IMessaging clusterControllerMessagingSkeleton,
+                            @Named(SystemServicesSettings.PROPERTY_CC_DISCOVERY_PROVIDER_ADDRESS) Address discoveryProviderAddress) {
         // CHECKSTYLE:ON
         this.requestCallerDirectory = requestCallerDirectory;
         this.replyCallerDirectory = replyCallerDirectory;
@@ -148,10 +153,17 @@ public class JoynrRuntimeImpl implements JoynrRuntime {
             ((InProcessAddress) domainAccessControllerAddress).setSkeleton(new InProcessLibjoynrMessagingSkeleton(dispatcher));
         }
 
+        if (discoveryProviderAddress instanceof InProcessAddress) {
+            ((InProcessAddress) discoveryProviderAddress).setSkeleton(new InProcessLibjoynrMessagingSkeleton(dispatcher));
+        }
+
         requestCallerDirectoryListener = new CallerDirectoryListenerImpl<RequestCaller>();
         replyCallerDirectoryListener = new CallerDirectoryListenerImpl<ReplyCaller>();
         requestCallerDirectory.addListener(requestCallerDirectoryListener);
         replyCallerDirectory.addListener(replyCallerDirectoryListener);
+
+        ProxyBuilder<DiscoveryProxy> discoveryProxyBuilder = getProxyBuilder(systemServicesDomain, DiscoveryProxy.class);
+        localDiscoveryAggregator.setDiscoveryProxy(discoveryProxyBuilder.build());
     }
 
     @Override
@@ -170,7 +182,7 @@ public class JoynrRuntimeImpl implements JoynrRuntime {
     }
 
     @Override
-    public RegistrationFuture registerProvider(String domain, JoynrProvider provider) {
+    public Future<Void> registerProvider(String domain, JoynrProvider provider) {
         return capabilitiesRegistrar.registerProvider(domain, provider);
     }
 

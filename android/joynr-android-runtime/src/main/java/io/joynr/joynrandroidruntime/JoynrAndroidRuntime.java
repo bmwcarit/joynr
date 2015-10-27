@@ -19,15 +19,9 @@ package io.joynr.joynrandroidruntime;
  * #L%
  */
 
-import android.content.Context;
-import android.os.AsyncTask;
-import android.os.Messenger;
-
-import com.google.inject.Module;
-
-import io.joynr.capabilities.RegistrationFuture;
 import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.provider.JoynrProvider;
+import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.JoynrRuntime;
 
@@ -35,6 +29,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
+
+import android.content.Context;
+import android.os.AsyncTask;
+import android.os.Messenger;
+
+import com.google.inject.Module;
 
 public class JoynrAndroidRuntime implements JoynrRuntime {
 
@@ -79,16 +79,14 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
     }
 
     @Override
-    public RegistrationFuture registerProvider(String domain, JoynrProvider provider) {
+    public Future<Void> registerProvider(String domain, JoynrProvider provider) {
         // this will block until the runtime is created successfully
         // TODO since the caller expects the register call to be async, we need to check if
         // this will not block to long
         JoynrRuntime runtime = getJoynrRuntime();
 
         // registration of providers is asynchronously
-        RegistrationFuture future = runtime.registerProvider(domain, provider);
-
-        return future;
+        return runtime.registerProvider(domain, provider);
     }
 
     @Override

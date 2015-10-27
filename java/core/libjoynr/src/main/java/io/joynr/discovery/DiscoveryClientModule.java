@@ -19,6 +19,7 @@ package io.joynr.discovery;
  * #L%
  */
 
+import io.joynr.arbitration.ArbitrationConstants;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.ArbitratorFactory;
 import io.joynr.arbitration.DiscoveryQos;
@@ -29,7 +30,7 @@ import io.joynr.capabilities.CapabilitiesRegistrar;
 import io.joynr.capabilities.CapabilitiesRegistrarImpl;
 import io.joynr.capabilities.CapabilitiesStore;
 import io.joynr.capabilities.CapabilitiesStoreImpl;
-import io.joynr.capabilities.DefaultCapabilitiesProvisioning;
+import io.joynr.capabilities.InProcessCapabilitiesProvisioning;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.capabilities.LocalCapabilitiesDirectoryImpl;
 import io.joynr.capabilities.ParticipantIdStorage;
@@ -45,20 +46,25 @@ import io.joynr.proxy.ProxyBuilderFactory;
 
 import javax.annotation.CheckForNull;
 
+import io.joynr.runtime.SystemServicesSettings;
 import joynr.infrastructure.ChannelUrlDirectoryProxy;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+import joynr.system.DiscoveryAsync;
+import joynr.system.DiscoveryProxy;
 
 public class DiscoveryClientModule extends AbstractModule {
 
     @Override
     protected void configure() {
+        bind(LocalDiscoveryAggregator.class).in(Singleton.class);
+        bind(DiscoveryAsync.class).to(LocalDiscoveryAggregator.class);
         bind(ChannelUrlStore.class).to(ChannelUrlStoreImpl.class).in(Singleton.class);
         bind(LocalCapabilitiesDirectory.class).to(LocalCapabilitiesDirectoryImpl.class).in(Singleton.class);
-        bind(CapabilitiesProvisioning.class).to(DefaultCapabilitiesProvisioning.class);
+        bind(CapabilitiesProvisioning.class).to(InProcessCapabilitiesProvisioning.class);
         bind(CapabilitiesRegistrar.class).to(CapabilitiesRegistrarImpl.class);
         bind(LocalChannelUrlDirectoryClient.class).to(LocalChannelUrlDirectoryClientImpl.class).in(Singleton.class);
         bind(CapabilitiesStore.class).to(CapabilitiesStoreImpl.class);
@@ -82,6 +88,25 @@ public class DiscoveryClientModule extends AbstractModule {
 
         ProxyBuilder<ChannelUrlDirectoryProxy> proxyBuilder = proxyBuilderFactory.get(discoveryDirectoriesDomain,
                                                                                       ChannelUrlDirectoryProxy.class);
+
+        return proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+    }
+
+    @CheckForNull
+    @Provides
+    @Singleton
+    DiscoveryProxy provideDiscoveryProxy(@Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
+                                         @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT) long discoveryRequestTimeoutMs,
+                                         @Named(SystemServicesSettings.PROPERTY_CC_DISCOVERY_PROVIDER_PARTICIPANT_ID) String discoveryProviderParticipantId,
+                                         ProxyBuilderFactory proxyBuilderFactory) {
+        MessagingQos messagingQos = new MessagingQos(discoveryRequestTimeoutMs);
+
+        DiscoveryQos discoveryQos = new DiscoveryQos(1000,
+                                                     ArbitrationStrategy.FixedChannel,
+                                                     Long.MAX_VALUE,
+                                                     DiscoveryScope.LOCAL_ONLY);
+        discoveryQos.addCustomParameter(ArbitrationConstants.FIXEDPARTICIPANT_KEYWORD, discoveryProviderParticipantId);
+        ProxyBuilder<DiscoveryProxy> proxyBuilder = proxyBuilderFactory.get(systemServicesDomain, DiscoveryProxy.class);
 
         return proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
     }

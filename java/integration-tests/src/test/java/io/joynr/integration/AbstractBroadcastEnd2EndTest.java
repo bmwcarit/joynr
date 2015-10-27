@@ -27,11 +27,13 @@ import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.PropertyLoader;
 import joynr.OnChangeSubscriptionQos;
+import joynr.exceptions.ApplicationException;
 import joynr.tests.DefaulttestProvider;
 import joynr.tests.testBroadcastInterface;
 import joynr.tests.testBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters;
@@ -109,7 +111,7 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
         consumerRuntime.shutdown(true);
     }
 
-    private void setupProviderRuntime(String methodName) throws InterruptedException {
+    private void setupProviderRuntime(String methodName) throws InterruptedException, ApplicationException {
         Properties factoryPropertiesProvider;
 
         String channelIdProvider = "JavaTest-" + UUID.randomUUID().getLeastSignificantBits()
@@ -122,7 +124,8 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
         providerRuntime = getRuntime(factoryPropertiesProvider, new StaticDomainAccessControlProvisioningModule());
 
         provider = new DefaulttestProvider();
-        providerRuntime.registerProvider(domain, provider).waitForFullRegistration(CONST_DEFAULT_TEST_TIMEOUT);
+        Future<Void> voidFuture = providerRuntime.registerProvider(domain, provider);//.waitForFullRegistration(CONST_DEFAULT_TEST_TIMEOUT);
+        voidFuture.get(CONST_DEFAULT_TEST_TIMEOUT);
     }
 
     private void setupConsumerRuntime(String methodName) throws DiscoveryException, JoynrIllegalStateException,

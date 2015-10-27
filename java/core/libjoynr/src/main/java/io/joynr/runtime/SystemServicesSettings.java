@@ -25,5 +25,5 @@ package io.joynr.runtime;
 public class SystemServicesSettings {
     public static final String PROPERTY_SYSTEM_SERVICES_DOMAIN = "joynr.messaging.systemservicesdomain";
     public static final String PROPERTY_CC_DISCOVERY_PROVIDER_PARTICIPANT_ID = "joynr.messaging.discoveryproviderparticipantid";
-
+    public static final String PROPERTY_CC_DISCOVERY_PROVIDER_ADDRESS = "joynr.messaging.discoveryprovideraddress";
 }

@@ -28,7 +28,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.capabilities.LocalCapabilitiesDirectory;
+import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.inprocess.InProcessAddress;
@@ -79,7 +79,7 @@ public class LocalDomainAccessControllerTest {
     @Mock
     private ProxyInvocationHandler proxyInvocationHandlerMock;
     @Mock
-    private LocalCapabilitiesDirectory localCapabilitiesDirectoryMock;
+    private LocalDiscoveryAggregator localDiscoveryAggregator;
     @Mock
     private MessageRouter messageRouter;
     @Mock
@@ -100,10 +100,11 @@ public class LocalDomainAccessControllerTest {
         InProcessAddress libjoynrMessagingAddress = new InProcessAddress(new InProcessLibjoynrMessagingSkeleton(dispatcher));
         localDomainAccessController = new LocalDomainAccessControllerImpl(accessControlDomain,
                                                                           domainAccessControlStore,
-                                                                          new ProxyBuilderFactoryImpl(localCapabilitiesDirectoryMock,
+                                                                          new ProxyBuilderFactoryImpl(localDiscoveryAggregator,
                                                                                                       proxyInvocationHandlerFactoryMock,
                                                                                                       messageRouter,
-                                                                                                      libjoynrMessagingAddress));
+                                                                                                      libjoynrMessagingAddress),
+                                                                          "systemServiceDomain");
 
         // instantiate some template objects
         userDre = new DomainRoleEntry(UID1, new String[]{ DOMAIN1 }, Role.OWNER);

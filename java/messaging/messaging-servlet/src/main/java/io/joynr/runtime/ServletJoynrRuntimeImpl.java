@@ -19,6 +19,9 @@ package io.joynr.runtime;
  * #L%
  */
 
+import io.joynr.capabilities.CapabilitiesRegistrar;
+import io.joynr.capabilities.LocalCapabilitiesDirectory;
+import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.RequestCallerDirectory;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
@@ -36,7 +39,7 @@ import joynr.system.RoutingTypes.Address;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 
-public class ServletJoynrRuntimeImpl extends JoynrRuntimeImpl {
+public class ServletJoynrRuntimeImpl extends InProcessRuntime {
 
     // CHECKSTYLE:OFF
     @Inject
@@ -46,11 +49,16 @@ public class ServletJoynrRuntimeImpl extends JoynrRuntimeImpl {
                                    ReplyCallerDirectory replyCallerDirectory,
                                    MessageReceiver messageReceiver,
                                    Dispatcher dispatcher,
+                                   LocalDiscoveryAggregator localDiscoveryAggregator,
+                                   LocalCapabilitiesDirectory localCapabilitiesDirectory,
                                    @Named(ConfigurableMessagingSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) Address libjoynrMessagingAddress,
                                    @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_ADDRESS) Address capabilitiesDirectoryAddress,
                                    @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_ADDRESS) Address channelUrlDirectoryAddress,
                                    @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_ADDRESS) Address domainAccessControllerAddress,
-                                   @Named(ConfigurableMessagingSettings.PROPERTY_CLUSTERCONTROLER_MESSAGING_SKELETON) IMessaging clusterControllerMessagingSkeleton) {
+                                   @Named(ConfigurableMessagingSettings.PROPERTY_CLUSTERCONTROLER_MESSAGING_SKELETON) IMessaging clusterControllerMessagingSkeleton,
+                                   @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
+                                   CapabilitiesRegistrar capabilitiesRegistrar,
+                                   @Named(SystemServicesSettings.PROPERTY_CC_DISCOVERY_PROVIDER_ADDRESS) Address discoveryProviderAddress) {
         // CHECKSTYLE:ON
         super(objectMapper,
               builderFactory,
@@ -58,18 +66,23 @@ public class ServletJoynrRuntimeImpl extends JoynrRuntimeImpl {
               replyCallerDirectory,
               messageReceiver,
               dispatcher,
+              localCapabilitiesDirectory,
+              localDiscoveryAggregator,
               libjoynrMessagingAddress,
               capabilitiesDirectoryAddress,
               channelUrlDirectoryAddress,
               domainAccessControllerAddress,
-              clusterControllerMessagingSkeleton);
+              clusterControllerMessagingSkeleton,
+              systemServicesDomain,
+              capabilitiesRegistrar,
+              discoveryProviderAddress);
     }
 
     @Override
     /**
      * Unregistering currently is not receiving any answers, cauing timrout exceptions
      * The reason is that the unregister happens in the ServletContextListener at contextDestroyed
-     * which happens after the servlet has already been destroyed. Since the response to unregister
+     * which happens after the servlet has already been destroyed. Since the response to unregister 
      * would have to arrive via the messaging receiver servlet, this is obviously too late to unregister,
      * but there is no obvious fix (other than create a long polling message receiver for the unregister)
      * since the servelet lifecycle does not consist of any further usful events.

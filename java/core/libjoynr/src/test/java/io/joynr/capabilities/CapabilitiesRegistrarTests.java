@@ -19,10 +19,19 @@ package io.joynr.capabilities;
  * #L%
  */
 
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+
+import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.RequestCaller;
@@ -32,22 +41,17 @@ import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.RequestCallerFactory;
+import io.joynr.proxy.Callback;
 import joynr.types.CommunicationMiddleware;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CapabilitiesRegistrarTests {
 
     CapabilitiesRegistrar registrar;
     @Mock
-    private LocalCapabilitiesDirectory localCapabilitiesDirectory;
+    private LocalDiscoveryAggregator localDiscoveryAggregator;
     @Mock
     private RequestCallerFactory requestCallerFactory;
     @Mock
@@ -87,7 +91,7 @@ public class CapabilitiesRegistrarTests {
     @Before
     public void setUp() {
 
-        registrar = new CapabilitiesRegistrarImpl(localCapabilitiesDirectory,
+        registrar = new CapabilitiesRegistrarImpl(localDiscoveryAggregator,
                                                   requestCallerFactory,
                                                   messageRouter,
                                                   requestCallerDirectory,
@@ -105,11 +109,12 @@ public class CapabilitiesRegistrarTests {
         when(requestCallerFactory.create(provider)).thenReturn(requestCaller);
 
         registrar.registerProvider(domain, provider);
-        verify(localCapabilitiesDirectory).add(eq(new DiscoveryEntry(domain,
-                                                                     TestInterface.INTERFACE_NAME,
-                                                                     participantId,
-                                                                     providerQos,
-                                                                     new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR })));
+        verify(localDiscoveryAggregator).add(any(Callback.class),
+                                             eq(new DiscoveryEntry(domain,
+                                                                   TestInterface.INTERFACE_NAME,
+                                                                   participantId,
+                                                                   providerQos,
+                                                                   new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR })));
 
         verify(requestCallerFactory).create(provider);
 
@@ -124,11 +129,7 @@ public class CapabilitiesRegistrarTests {
         when(participantIdStorage.getProviderParticipantId(eq(domain), eq(ProvidedInterface.class))).thenReturn(participantId);
         registrar.unregisterProvider(domain, provider);
 
-        verify(localCapabilitiesDirectory).remove(eq(new DiscoveryEntry(domain,
-                                                                        TestInterface.INTERFACE_NAME,
-                                                                        participantId,
-                                                                        providerQos,
-                                                                        new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR })));
+        verify(localDiscoveryAggregator).remove(any(Callback.class), eq(participantId));
         verify(requestCallerDirectory).removeCaller(eq(participantId));
     }
 

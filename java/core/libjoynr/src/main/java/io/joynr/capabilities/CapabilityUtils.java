@@ -21,22 +21,18 @@ package io.joynr.capabilities;
 
 import java.util.Collection;
 import java.util.List;
-
 import javax.annotation.CheckForNull;
-
+import com.google.common.collect.Lists;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.types.CapabilityInformation;
 import joynr.types.CommunicationMiddleware;
 import joynr.types.DiscoveryEntry;
-
-import com.google.common.collect.Lists;
 
 /**
  * Conversion helpers for CapabilityInformation, CapabilityEntry and DiscoveryEntry
  */
 public class CapabilityUtils {
 
-    @CheckForNull
     public static DiscoveryEntry capabilityEntry2DiscoveryEntry(CapabilityEntry capabilityEntry) {
         return new DiscoveryEntry(capabilityEntry.getDomain(),
                                   capabilityEntry.getInterfaceName(),

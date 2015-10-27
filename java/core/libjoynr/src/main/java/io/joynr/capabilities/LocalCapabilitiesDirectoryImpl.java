@@ -18,29 +18,38 @@ package io.joynr.capabilities;
  * limitations under the License.
  * #L%
  */
-
-import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.arbitration.DiscoveryScope;
-import io.joynr.exceptions.DiscoveryException;
-import io.joynr.exceptions.JoynrException;
-import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.proxy.Callback;
-import io.joynr.proxy.Future;
-import io.joynr.proxy.ProxyBuilderFactory;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-
 import javax.annotation.CheckForNull;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.Lists;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.google.inject.name.Named;
+import io.joynr.arbitration.ArbitrationStrategy;
+import io.joynr.arbitration.DiscoveryQos;
+import io.joynr.arbitration.DiscoveryScope;
+import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
+import io.joynr.exceptions.DiscoveryException;
+import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.provider.DeferredVoid;
+import io.joynr.provider.Promise;
+import io.joynr.proxy.Callback;
+import io.joynr.proxy.Future;
+import io.joynr.proxy.ProxyBuilderFactory;
 import joynr.exceptions.ApplicationException;
+import joynr.exceptions.ProviderRuntimeException;
 import joynr.infrastructure.ChannelUrlDirectory;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
 import joynr.infrastructure.GlobalDomainAccessController;
@@ -51,16 +60,6 @@ import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.Lists;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import com.google.inject.name.Named;
-
 @Singleton
 public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDirectory {
 
@@ -70,6 +69,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     private CapabilitiesStore localCapabilitiesStore;
     private GlobalCapabilitiesDirectoryClient globalCapabilitiesClient;
     private CapabilitiesStore globalCapabilitiesCache;
+    private static final long DEFAULT_DISCOVERYTIMEOUT = 30000;
 
     private MessageRouter messageRouter;
 
@@ -119,18 +119,17 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
      * Adds local capability to local and (depending on SCOPE) the global directory
      */
     @Override
-    public RegistrationFuture add(final DiscoveryEntry discoveryEntry) {
+    public Promise<DeferredVoid> add(final DiscoveryEntry discoveryEntry) {
+        final DeferredVoid deferred = new DeferredVoid();
         ChannelAddress joynrMessagingEndpointAddress = new ChannelAddress(localChannelId);
-
-        final RegistrationFuture ret = new RegistrationFuture(discoveryEntry.getParticipantId());
 
         if (localCapabilitiesStore.hasCapability(CapabilityUtils.discoveryEntry2CapEntry(discoveryEntry, localChannelId))) {
             DiscoveryQos discoveryQos = new DiscoveryQos(DiscoveryScope.LOCAL_AND_GLOBAL, DiscoveryQos.NO_MAX_AGE);
             if (discoveryEntry.getQos().getScope().equals(ProviderScope.LOCAL)
                     || globalCapabilitiesCache.lookup(discoveryEntry.getParticipantId(), discoveryQos.getCacheMaxAge()) != null) {
                 // in this case, no further need for global registration is required. Registration completed.
-                ret.setStatus(RegistrationStatus.DONE);
-                return ret;
+                deferred.resolve();
+                return new Promise<>(deferred);
             }
             // in the other case, the global registration needs to be done
         } else {
@@ -140,8 +139,6 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
         // Register globally
         if (discoveryEntry.getQos().getScope().equals(ProviderScope.GLOBAL)) {
-
-            ret.setStatus(RegistrationStatus.REGISTERING_GLOBALLY);
 
             final CapabilityInformation capabilityInformation = CapabilityUtils.discoveryEntry2Information(discoveryEntry,
                                                                                                            joynrMessagingEndpointAddress.getChannelId());
@@ -156,22 +153,21 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                     public void onSuccess(Void nothing) {
                         logger.info("global registration for " + capabilityInformation.getDomain() + " : "
                                 + capabilityInformation.getInterfaceName() + " completed");
-                        ret.setStatus(RegistrationStatus.DONE);
+                        deferred.resolve();
                         globalCapabilitiesCache.add(CapabilityUtils.discoveryEntry2CapEntry(discoveryEntry,
                                                                                             localChannelId));
                     }
 
                     @Override
                     public void onFailure(JoynrException exception) {
-                        ret.setStatus(RegistrationStatus.ERROR);
-
+                        deferred.reject(new ProviderRuntimeException(exception.toString()));
                     }
                 }, capabilityInformation);
             }
         } else {
-            ret.setStatus(RegistrationStatus.DONE);
+            deferred.resolve();
         }
-        return ret;
+        return new Promise<>(deferred);
     }
 
     @Override
@@ -307,7 +303,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     @Override
     @CheckForNull
     public DiscoveryEntry lookup(String participantId, DiscoveryQos discoveryQos) {
-        final Future<DiscoveryEntry> lookupFuture = new Future<DiscoveryEntry>();
+        final Future<DiscoveryEntry> lookupFuture = new Future<>();
         lookup(participantId, discoveryQos, new CapabilityCallback() {
 
             @Override
@@ -423,7 +419,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         if (unregisterAllRegisteredCapabilities) {
             Set<CapabilityEntry> allCapabilities = localCapabilitiesStore.getAllCapabilities();
 
-            List<CapabilityInformation> capInfoList = new ArrayList<CapabilityInformation>(allCapabilities.size());
+            List<CapabilityInformation> capInfoList = new ArrayList<>(allCapabilities.size());
 
             for (CapabilityEntry capabilityEntry : allCapabilities) {
                 if (capabilityEntry.getProviderQos().getScope() == ProviderScope.GLOBAL) {
@@ -453,11 +449,60 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
                     };
                     globalCapabilitiesClient.remove(callback, Lists.newArrayList(Collections2.transform(capInfoList,
-                                                                                                        transfomerFct)));
+                            transfomerFct)));
                 } catch (DiscoveryException e) {
-                    return;
                 }
             }
         }
+    }
+
+    @Override
+    public Promise<Lookup1Deferred> lookup(@JoynrRpcParam("domain") String domain,
+                                           @JoynrRpcParam("interfaceName") String interfaceName,
+                                           @JoynrRpcParam("discoveryQos") joynr.types.DiscoveryQos discoveryQos) {
+        final Lookup1Deferred deferred = new Lookup1Deferred();
+        CapabilitiesCallback callback = new CapabilitiesCallback() {
+            @Override
+            public void processCapabilitiesReceived(@CheckForNull Collection<DiscoveryEntry> capabilities) {
+                if (capabilities == null) {
+                    deferred.reject(new ProviderRuntimeException("Received capablities collection was null"));
+                } else {
+                    deferred.resolve(capabilities.toArray(new DiscoveryEntry[0]));
+                }
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                deferred.reject(new ProviderRuntimeException(e.toString()));
+            }
+        };
+        DiscoveryScope discoveryScope = DiscoveryScope.valueOf(discoveryQos.getDiscoveryScope().name());
+        lookup(domain, interfaceName, new DiscoveryQos(DEFAULT_DISCOVERYTIMEOUT,
+                                                       ArbitrationStrategy.NotSet,
+                                                       discoveryQos.getCacheMaxAge(),
+                                                       discoveryScope), callback);
+
+        return new Promise<>(deferred);
+    }
+
+    @Override
+    public Promise<Lookup2Deferred> lookup(@JoynrRpcParam("participantId") String participantId) {
+        Lookup2Deferred deferred = new Lookup2Deferred();
+        DiscoveryEntry discoveryEntry = lookup(participantId, DiscoveryQos.NO_FILTER);
+        deferred.resolve(discoveryEntry);
+        return new Promise<>(deferred);
+    }
+
+    @Override
+    public Promise<DeferredVoid> remove(@JoynrRpcParam("participantId") String participantId) {
+        DeferredVoid deferred = new DeferredVoid();
+        CapabilityEntry entryToRemove = localCapabilitiesStore.lookup(participantId, Long.MAX_VALUE);
+        if (entryToRemove != null) {
+            remove(CapabilityUtils.capabilityEntry2DiscoveryEntry(entryToRemove));
+            deferred.resolve();
+        } else {
+            deferred.reject(new ProviderRuntimeException("Failed to remove participantId: " + participantId));
+        }
+        return new Promise<>(deferred);
     }
 }

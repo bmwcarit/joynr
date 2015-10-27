@@ -41,9 +41,7 @@ import joynr.types.DiscoveryEntry;
 import joynr.types.DiscoveryQos;
 import joynr.types.ProviderQos;
 
-/**
- *
- */
+
 public class LocalDiscoveryAggregator implements DiscoveryAsync {
 
     private static final Logger logger = LoggerFactory.getLogger(LocalDiscoveryAggregator.class);
@@ -92,7 +90,9 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
                                                DiscoveryQos discoveryQos) {
         if (provisionedDiscoveryEntries.containsKey(domain + interfaceName)) {
             DiscoveryEntry discoveryEntry = provisionedDiscoveryEntries.get(domain + interfaceName);
-            callback.resolve(discoveryEntry);
+            DiscoveryEntry[] result = new DiscoveryEntry[] {discoveryEntry};
+            // prevent varargs from interpreting the array as mulitple arguments
+            callback.resolve((Object) result);
 
             Future<DiscoveryEntry[]> discoveryEntryFuture = new Future<>();
             discoveryEntryFuture.resolve(Lists.newArrayList(discoveryEntry));

@@ -49,6 +49,7 @@ import java.util.UUID;
 import joynr.OnChangeSubscriptionQos;
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
 import joynr.PeriodicSubscriptionQos;
+import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.tests.testProxy;
 import joynr.tests.testTypes.TestEnum;
@@ -108,7 +109,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         consumerRuntime.shutdown(true);
     }
 
-    private void setupProviderRuntime(String methodName) throws InterruptedException {
+    private void setupProviderRuntime(String methodName) throws InterruptedException, ApplicationException {
         Properties factoryPropertiesProvider;
 
         String channelIdProvider = "JavaTest-" + UUID.randomUUID().getLeastSignificantBits()
@@ -121,7 +122,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         providerRuntime = getRuntime(factoryPropertiesProvider, new StaticDomainAccessControlProvisioningModule());
 
         provider = new PubSubTestProviderImpl();
-        providerRuntime.registerProvider(domain, provider).waitForFullRegistration(CONST_DEFAULT_TEST_TIMEOUT);
+        providerRuntime.registerProvider(domain, provider).get(CONST_DEFAULT_TEST_TIMEOUT);
     }
 
     private void setupConsumerRuntime(String methodName) throws DiscoveryException, JoynrIllegalStateException,

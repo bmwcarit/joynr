@@ -39,10 +39,10 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import io.joynr.capabilities.CapabilitiesCallback;
-import io.joynr.capabilities.LocalCapabilitiesDirectory;
+import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.exceptions.DiscoveryException;
+import io.joynr.proxy.Callback;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.types.CommunicationMiddleware;
@@ -64,7 +64,7 @@ public class ArbitrationTest {
     }
 
     @Mock
-    private LocalCapabilitiesDirectory capabilitiesSource;
+    private LocalDiscoveryAggregator localDiscoveryAggregator;
     @Mock
     private ArbitrationCallback arbitrationCallback;
     protected ArrayList<DiscoveryEntry> capabilitiesList;
@@ -82,14 +82,14 @@ public class ArbitrationTest {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 Object[] arguments = invocation.getArguments();
-                assert (arguments[3] instanceof CapabilitiesCallback);
-                ((CapabilitiesCallback) arguments[3]).processCapabilitiesReceived(capabilitiesList);
+                assert (arguments[0] instanceof Callback);
+                ((Callback) arguments[0]).resolve((Object) capabilitiesList.toArray(new DiscoveryEntry[0]));
                 return null;
             }
-        }).when(capabilitiesSource).lookup(Mockito.eq(domain),
-                                           Mockito.eq(interfaceName),
-                                           Mockito.<DiscoveryQos> any(),
-                                           Mockito.<CapabilitiesCallback> any());
+        }).when(localDiscoveryAggregator).lookup(Mockito.<Callback> any(),
+                                                 Mockito.eq(domain),
+                                                 Mockito.eq(interfaceName),
+                                                 Mockito.<joynr.types.DiscoveryQos> any());
 
     }
 
@@ -117,7 +117,10 @@ public class ArbitrationTest {
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.Keyword, Long.MAX_VALUE);
         discoveryQos.addCustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, testKeyword);
         try {
-            Arbitrator arbitrator = ArbitratorFactory.create(domain, interfaceName, discoveryQos, capabilitiesSource);
+            Arbitrator arbitrator = ArbitratorFactory.create(domain,
+                                                             interfaceName,
+                                                             discoveryQos,
+                                                             localDiscoveryAggregator);
             arbitrator.setArbitrationListener(arbitrationCallback);
             arbitrator.startArbitration();
             Mockito.verify(arbitrationCallback, Mockito.times(1))
@@ -159,7 +162,10 @@ public class ArbitrationTest {
         discoveryQos.addCustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, testKeyword);
 
         try {
-            Arbitrator arbitrator = ArbitratorFactory.create(domain, interfaceName, discoveryQos, capabilitiesSource);
+            Arbitrator arbitrator = ArbitratorFactory.create(domain,
+                                                             interfaceName,
+                                                             discoveryQos,
+                                                             localDiscoveryAggregator);
             arbitrator.setArbitrationListener(arbitrationCallback);
             arbitrator.startArbitration();
             Mockito.verify(arbitrationCallback, Mockito.times(1))
@@ -208,7 +214,10 @@ public class ArbitrationTest {
         discoveryQos.addCustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, testKeyword);
         discoveryQos.setProviderMustSupportOnChange(true);
         try {
-            Arbitrator arbitrator = ArbitratorFactory.create(domain, interfaceName, discoveryQos, capabilitiesSource);
+            Arbitrator arbitrator = ArbitratorFactory.create(domain,
+                                                             interfaceName,
+                                                             discoveryQos,
+                                                             localDiscoveryAggregator);
             arbitrator.setArbitrationListener(arbitrationCallback);
             arbitrator.startArbitration();
             Mockito.verify(arbitrationCallback, Mockito.times(1))
@@ -258,7 +267,10 @@ public class ArbitrationTest {
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
 
         try {
-            Arbitrator arbitrator = ArbitratorFactory.create(domain, interfaceName, discoveryQos, capabilitiesSource);
+            Arbitrator arbitrator = ArbitratorFactory.create(domain,
+                                                             interfaceName,
+                                                             discoveryQos,
+                                                             localDiscoveryAggregator);
             arbitrator.setArbitrationListener(arbitrationCallback);
             arbitrator.startArbitration();
             Mockito.verify(arbitrationCallback, Mockito.times(1))
@@ -306,7 +318,10 @@ public class ArbitrationTest {
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
 
         try {
-            Arbitrator arbitrator = ArbitratorFactory.create(domain, interfaceName, discoveryQos, capabilitiesSource);
+            Arbitrator arbitrator = ArbitratorFactory.create(domain,
+                                                             interfaceName,
+                                                             discoveryQos,
+                                                             localDiscoveryAggregator);
             arbitrator.setArbitrationListener(arbitrationCallback);
             arbitrator.startArbitration();
             Mockito.verify(arbitrationCallback, Mockito.atLeast(1))
@@ -368,7 +383,10 @@ public class ArbitrationTest {
         discoveryQos.setProviderMustSupportOnChange(true);
 
         try {
-            Arbitrator arbitrator = ArbitratorFactory.create(domain, interfaceName, discoveryQos, capabilitiesSource);
+            Arbitrator arbitrator = ArbitratorFactory.create(domain,
+                                                             interfaceName,
+                                                             discoveryQos,
+                                                             localDiscoveryAggregator);
             arbitrator.setArbitrationListener(arbitrationCallback);
             arbitrator.startArbitration();
             Mockito.verify(arbitrationCallback, Mockito.times(1))
@@ -399,7 +417,7 @@ public class ArbitrationTest {
         when(arbitrationStrategyFunction.select(any(Map.class), any(Collection.class))).thenReturn(discoveryEntry);
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, arbitrationStrategyFunction, Long.MAX_VALUE);
 
-        Arbitrator arbitrator = ArbitratorFactory.create(domain, interfaceName, discoveryQos, capabilitiesSource);
+        Arbitrator arbitrator = ArbitratorFactory.create(domain, interfaceName, discoveryQos, localDiscoveryAggregator);
         arbitrator.setArbitrationListener(arbitrationCallback);
         arbitrator.startArbitration();
 

@@ -1,5 +1,7 @@
 package io.joynr.messaging;
 
+import io.joynr.arbitration.ArbitrationConstants;
+import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.proxy.Callback;
@@ -33,16 +35,22 @@ public class GlobalChannelUrlDirectoryClient {
     private static final long TTL_30_DAYS_IN_MS = 30L * 24L * 60L * 60L * 1000L;
     private ProxyBuilder<ChannelUrlDirectoryProxy> channelUrlProxyBuilder;
     private String domain;
+    private String channelUrlDirectoryParticipantId;
     private ProxyBuilderFactory proxyBuilderFactory;
 
-    public GlobalChannelUrlDirectoryClient(ProxyBuilderFactory proxyBuilderFactory, String domain) {
+    public GlobalChannelUrlDirectoryClient(ProxyBuilderFactory proxyBuilderFactory,
+                                           String domain,
+                                           String channelUrlDirectoryParticipantId) {
         this.proxyBuilderFactory = proxyBuilderFactory;
         this.domain = domain;
+        this.channelUrlDirectoryParticipantId = channelUrlDirectoryParticipantId;
     }
 
     private ChannelUrlDirectoryProxy getProxy(long ttl) {
         this.channelUrlProxyBuilder = proxyBuilderFactory.get(domain, ChannelUrlDirectoryProxy.class);
         DiscoveryQos discoveryQos = new DiscoveryQos(DiscoveryScope.GLOBAL_ONLY, DiscoveryQos.NO_MAX_AGE);
+        discoveryQos.setArbitrationStrategy(ArbitrationStrategy.FixedChannel);
+        discoveryQos.addCustomParameter(ArbitrationConstants.FIXEDPARTICIPANT_KEYWORD, channelUrlDirectoryParticipantId);
         MessagingQos messagingQos = new MessagingQos(ttl);
         return channelUrlProxyBuilder.setDiscoveryQos(discoveryQos).setMessagingQos(messagingQos).build();
     }

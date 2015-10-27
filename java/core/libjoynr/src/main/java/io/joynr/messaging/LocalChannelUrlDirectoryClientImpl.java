@@ -47,12 +47,14 @@ public class LocalChannelUrlDirectoryClientImpl implements LocalChannelUrlDirect
                                               @Named(MessagingPropertyKeys.CHANNELURLDIRECTORYURL) String channelUrlDirectoryUrl,
                                               @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID) String capabilitiesDirectoryChannelId,
                                               @Named(MessagingPropertyKeys.CAPABILITIESDIRECTORYURL) String capabilitiesDirectoryUrl,
+                                              @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_PARTICIPANT_ID) String channelUrlDirectoryParticipantId,
                                               ChannelUrlStore channelUrlStore,
                                               MessagingSettings settings,
                                               ProxyBuilderFactory proxyBuilderFactory) {
         // CHECKSTYLE:ON
         this.channelUrlDirectoryClient = new GlobalChannelUrlDirectoryClient(proxyBuilderFactory,
-                                                                             discoveryDirectoriesDomain);
+                                                                             discoveryDirectoriesDomain,
+                                                                             channelUrlDirectoryParticipantId);
         this.channelUrlStore = channelUrlStore;
         channelUrlStore.registerChannelUrl(channelUrlDirectoryChannelId, channelUrlDirectoryUrl);
         channelUrlStore.registerChannelUrl(capabilitiesDirectoryChannelId, capabilitiesDirectoryUrl);

@@ -23,8 +23,10 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 import joynr.types.DiscoveryEntry;
+import joynr.system.DiscoveryAbstractProvider;
 
-public abstract class AbstractLocalCapabilitiesDirectory implements LocalCapabilitiesDirectory {
+public abstract class AbstractLocalCapabilitiesDirectory extends DiscoveryAbstractProvider implements
+        LocalCapabilitiesDirectory {
     List<CapabilityListener> capabilityListeners = Lists.newArrayList();
 
     @Override

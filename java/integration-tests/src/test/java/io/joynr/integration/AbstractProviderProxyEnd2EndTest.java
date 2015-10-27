@@ -186,12 +186,11 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
         // check that registerProvider does not block
         long startTime = System.currentTimeMillis();
-        providerRuntime.registerProvider(domain, provider).waitForFullRegistration(CONST_DEFAULT_TEST_TIMEOUT);
+        providerRuntime.registerProvider(domain, provider).get(CONST_DEFAULT_TEST_TIMEOUT);
         long endTime = System.currentTimeMillis();
         timeTookToRegisterProvider = endTime - startTime;
 
-        providerRuntime.registerProvider(domainAsync, providerAsync)
-                       .waitForFullRegistration(CONST_DEFAULT_TEST_TIMEOUT);
+        providerRuntime.registerProvider(domainAsync, providerAsync).get(CONST_DEFAULT_TEST_TIMEOUT);
 
         // The timeouts should not be to small because some test environments are slow
         messagingQos = new MessagingQos(10000);

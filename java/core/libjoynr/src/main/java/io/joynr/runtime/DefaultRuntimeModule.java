@@ -68,7 +68,7 @@ public class DefaultRuntimeModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(JoynrRuntime.class).to(JoynrRuntimeImpl.class).in(Singleton.class);
+        bind(JoynrRuntime.class).to(InProcessRuntime.class).in(Singleton.class);
         install(new FactoryModuleBuilder().implement(ProxyInvocationHandler.class, ProxyInvocationHandlerImpl.class)
                                           .build(ProxyInvocationHandlerFactory.class));
 
@@ -120,6 +120,13 @@ public class DefaultRuntimeModule extends AbstractModule {
     Address getDomainAccessControllerAddress(@Named(MessagingPropertyKeys.CHANNELID) String channelId,
                                              @com.google.inject.name.Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID) String domainAccessControllerChannelId) {
         return getAddress(channelId, domainAccessControllerChannelId);
+    }
+
+    @Provides
+    @Singleton
+    @Named(SystemServicesSettings.PROPERTY_CC_DISCOVERY_PROVIDER_ADDRESS)
+    Address getDiscoveryProviderAddress() {
+        return new InProcessAddress();
     }
 
     @Provides

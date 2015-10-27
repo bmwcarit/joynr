@@ -36,6 +36,7 @@ import java.util.Map;
 
 import javax.annotation.CheckForNull;
 
+import io.joynr.runtime.SystemServicesSettings;
 import joynr.OnChangeSubscriptionQos;
 import joynr.infrastructure.ChannelUrlDirectory;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
@@ -53,6 +54,7 @@ import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.Role;
 import joynr.infrastructure.DacTypes.TrustLevel;
 
+import joynr.system.Discovery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,6 +79,7 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
     private GlobalDomainAccessControllerClient globalDomainAccessControllerClient;
 
     private DomainAccessControlStore localDomainAccessStore;
+    private String systemServicesDomain;
 
     // Class that holds subscription ids.
     static class AceSubscription {
@@ -106,9 +109,11 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
     @Inject
     public LocalDomainAccessControllerImpl(@Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN) String discoveryDirectoriesDomain,
                                            DomainAccessControlStore localDomainAccessStore,
-                                           ProxyBuilderFactory proxyBuilderFactory) {
+                                           ProxyBuilderFactory proxyBuilderFactory,
+                                           @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain) {
         this.discoveryDirectoriesDomain = discoveryDirectoriesDomain;
         this.localDomainAccessStore = localDomainAccessStore;
+        this.systemServicesDomain = systemServicesDomain;
         globalDomainAccessControllerClient = new GlobalDomainAccessControllerClient(discoveryDirectoriesDomain,
                                                                                     proxyBuilderFactory);
     }
@@ -173,10 +178,11 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
     private Permission handleSpecialCases(String domain, String interfaceName) {
 
         // Allow access to the global directories
-        if (domain.equals(discoveryDirectoriesDomain)) {
+        if (domain.equals(discoveryDirectoriesDomain) || domain.equals(systemServicesDomain)) {
             if (interfaceName.equals(GlobalCapabilitiesDirectory.INTERFACE_NAME)
                     || interfaceName.equals(ChannelUrlDirectory.INTERFACE_NAME)
-                    || interfaceName.equals(GlobalDomainAccessController.INTERFACE_NAME)) {
+                    || interfaceName.equals(GlobalDomainAccessController.INTERFACE_NAME)
+                    || interfaceName.equals(Discovery.INTERFACE_NAME)) {
                 return Permission.YES;
             }
         }

@@ -98,7 +98,7 @@ public class LocalDiscoveryAggregatorTest {
                                         systemServicesDomain,
                                         Discovery.INTERFACE_NAME,
                                         new DiscoveryQos());
-        Mockito.verify(lookupCallback).resolve(Mockito.eq(discoveryProviderEntry));
+        Mockito.verify(lookupCallback).resolve(Mockito.eq(new DiscoveryEntry[]{ discoveryProviderEntry }));
     }
 
     @Test
@@ -147,5 +147,4 @@ public class LocalDiscoveryAggregatorTest {
         localDiscoveryAggregator.remove(removeCallback, "anyParticipant");
         Mockito.verify(removeCallback, Mockito.never()).resolve();
     }
-
 }

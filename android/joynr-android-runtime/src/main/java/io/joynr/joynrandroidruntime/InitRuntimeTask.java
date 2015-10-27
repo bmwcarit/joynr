@@ -27,6 +27,7 @@ import com.google.inject.Module;
 import io.joynr.joynrandroidruntime.messaging.AndroidLongPollingMessagingModule;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.runtime.InProcessRuntime;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.JoynrRuntimeImpl;
@@ -97,7 +98,7 @@ public class InitRuntimeTask extends AsyncTask<Object, String, JoynrRuntime> {
             Module[] moduleArray = modules.toArray(new Module[modules.size()]);
             Injector injectorA = new JoynrInjectorFactory(joynrConfig, moduleArray).createChildInjector();
 
-            JoynrRuntimeImpl runtime = injectorA.getInstance(JoynrRuntimeImpl.class);
+            JoynrRuntimeImpl runtime = injectorA.getInstance(InProcessRuntime.class);
             if (runtime != null) {
                 Log.d("JAS", "joynr runtime started");
             } else {
