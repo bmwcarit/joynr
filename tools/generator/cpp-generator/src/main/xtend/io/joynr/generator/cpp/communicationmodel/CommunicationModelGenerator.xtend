@@ -18,6 +18,9 @@ package io.joynr.generator.cpp.communicationmodel
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.cpp.communicationmodel.qt.EnumHTemplate
+import io.joynr.generator.cpp.communicationmodel.qt.TypeCppTemplate
+import io.joynr.generator.cpp.communicationmodel.qt.TypeHTemplate
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.templates.util.NamingUtil
 import io.joynr.generator.templates.util.TypeUtil
