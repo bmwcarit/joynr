@@ -25,24 +25,30 @@ import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessMessagingStub;
+import io.joynr.messaging.websocket.WebSocketMessagingStubFactory;
 import joynr.JoynrMessage;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
+import joynr.system.RoutingTypes.WebSocketAddress;
 
 import java.io.IOException;
 
 public class MessagingStubFactory {
 
+    private final WebSocketMessagingStubFactory webSocketMessagingStubFactory;
     private MessageSender messageSender;
 
     @Inject
     public MessagingStubFactory(MessageSender messageSender) {
         this.messageSender = messageSender;
+        //TODO create a injected map of factories
+        webSocketMessagingStubFactory = new WebSocketMessagingStubFactory();
     }
 
     public IMessaging create(Address address) {
         IMessaging messagingStub;
 
+        //TODO move creation to {Middleware}MessagingStubFactory.java and inject a list of Factories
         if (address instanceof ChannelAddress) {
             final String destinationChannelId = ((ChannelAddress) address).getChannelId();
             messagingStub = new IMessaging() {
@@ -53,6 +59,8 @@ public class MessagingStubFactory {
             };
         } else if (address instanceof InProcessAddress) {
             messagingStub = new InProcessMessagingStub(((InProcessAddress) address).getSkeleton());
+        } else if (address instanceof WebSocketAddress) {
+            messagingStub = webSocketMessagingStubFactory.create((WebSocketAddress) address);
         } else {
             throw new JoynrMessageNotSentException("Failed to send Request: Address type not supported");
         }
