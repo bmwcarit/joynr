@@ -99,7 +99,11 @@ class CppStdTypeUtil extends CppTypeUtil {
 	}
 
 	override String getIncludeOf(FType dataType) {
-		dataType.includeOfStd
+		var path = getPackagePathWithJoynrPrefix(dataType, "/")
+		if (dataType.isPartOfTypeCollection) {
+			path += "/" + dataType.typeCollectionName
+		}
+		return path + "/" + dataType.joynrName + ".h";
 	}
 
 	override getDefaultValue(FTypedElement element) {
@@ -111,11 +115,4 @@ class CppStdTypeUtil extends CppTypeUtil {
 		}
 	}
 
-	def getIncludeOfStd(FType dataType) {
-		var path = getPackagePathWithJoynrPrefix(dataType, "/")
-		if (dataType.isPartOfTypeCollection) {
-			path += "/" + dataType.typeCollectionName
-		}
-		return path + "/" + dataType.joynrName + ".h";
-	}
 }

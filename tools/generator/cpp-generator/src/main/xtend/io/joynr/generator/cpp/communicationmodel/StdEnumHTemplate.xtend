@@ -53,7 +53,7 @@ class StdEnumHTemplate implements EnumTemplate {
 #include <string>
 
 «IF type.hasExtendsDeclaration»
-	#include "«type.extendedType.includeOfStd»"
+	#include "«type.extendedType.includeOf»"
 
 «ENDIF»
 «getNamespaceStarter(type, true)»
