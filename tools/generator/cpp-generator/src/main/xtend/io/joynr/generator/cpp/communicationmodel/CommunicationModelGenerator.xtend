@@ -21,10 +21,12 @@ import com.google.inject.Inject
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.templates.util.NamingUtil
 import io.joynr.generator.templates.util.TypeUtil
+import io.joynr.generator.templates.util.InterfaceUtil
 import java.io.File
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FCompoundType
 import org.franca.core.franca.FEnumerationType
+import org.franca.core.franca.FInterface
 import org.franca.core.franca.FModel
 
 class CommunicationModelGenerator {
@@ -37,6 +39,9 @@ class CommunicationModelGenerator {
 
 	@Inject
 	private extension NamingUtil
+
+	@Inject
+	private extension InterfaceUtil
 
 	@Inject
 	InterfaceHTemplate interfaceH;
@@ -132,25 +137,15 @@ class CommunicationModelGenerator {
 				headerpathQt += type.typeCollectionName + "_"
 			}
 
-			generateFile(
+			generateEnum(
 				headerFileSystem,
-				headerpathQt + type.joynrNameQt + ".h",
-				enumh,
-				type as FEnumerationType
-			)
-
-			generateFile(
-				headerFileSystem,
-				headerpath + type.joynrName + ".h",
-				stdEnumH,
-				type as FEnumerationType
-			)
-			generateFile(
 				sourceFileSystem,
-				sourcepath + type.joynrName + ".cpp",
-				stdEnumCpp,
-				type as FEnumerationType
-			)
+				type as FEnumerationType,
+				headerpathQt + type.joynrNameQt + ".h",
+				headerpath + type.joynrName + ".h",
+				sourcepath + type.joynrName + ".cpp"
+			);
+
 		}
 
 		val interfacePath = sourceContainerPath + "interfaces" + File::separator
@@ -177,7 +172,68 @@ class CommunicationModelGenerator {
 				interfaceCpp,
 				serviceInterface
 			);
+
+			generateErrorEnumTypes(
+				headerFileSystem,
+				sourceFileSystem,
+				dataTypePath,
+				serviceInterface
+				);
 		}
-		
+	}
+
+	def generateErrorEnumTypes(IFileSystemAccess headerFileSystem, IFileSystemAccess sourceFileSystem, String dataTypePath, FInterface fInterface)
+	{
+		var methodToErrorEnumName = fInterface.methodToErrorEnumName;
+		for (method: getMethods(fInterface)) {
+			var enumType = method.errors;
+			if (enumType != null) {
+				enumType.name = methodToErrorEnumName.get(method);
+				val path = getPackagePathWithJoynrPrefix(enumType, File::separator)
+				val headerFilename = path + File::separator + enumType.joynrName + ".h"
+				val sourceFilepath = dataTypePath + getPackageSourceDirectory(fInterface) + File::separator + fInterface.joynrName;
+				val sourceFilename = sourceFilepath + File::separator + enumType.joynrName + ".cpp"
+				val headerFilenameQt = path + File::separator + enumType.joynrNameQt + ".h"
+
+				generateEnum(
+					headerFileSystem,
+					sourceFileSystem,
+					enumType,
+					headerFilenameQt,
+					headerFilename,
+					sourceFilename
+				)
+			}
+		}
+	}
+
+	def generateEnum (
+		IFileSystemAccess headerFileSystem,
+		IFileSystemAccess sourceFileSystem,
+		FEnumerationType enumType,
+		String headerFilenameQt,
+		String headerFilename,
+		String sourceFilename
+	) {
+		generateFile(
+			headerFileSystem,
+			headerFilenameQt,
+			enumh,
+			enumType
+		)
+
+		generateFile(
+			headerFileSystem,
+			headerFilename,
+			stdEnumH,
+			enumType
+		)
+
+		generateFile(
+			sourceFileSystem,
+			sourceFilename,
+			stdEnumCpp,
+			enumType
+		)
 	}
 }
