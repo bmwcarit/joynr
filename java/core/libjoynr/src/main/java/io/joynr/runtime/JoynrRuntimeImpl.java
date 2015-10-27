@@ -45,6 +45,7 @@ import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.subtypes.JoynrType;
 
+import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -253,7 +254,11 @@ public class JoynrRuntimeImpl implements JoynrRuntime {
                     messageReceiver.start(new MessageArrivedListener() {
                         @Override
                         public void messageArrived(JoynrMessage message) {
-                            clusterControllerMessagingSkeleton.transmit(message);
+                            try {
+                                clusterControllerMessagingSkeleton.transmit(message);
+                            } catch (IOException e) {
+                                logger.error("Failed to transmit message: ", e);
+                            }
                         }
 
                         @Override

@@ -21,9 +21,7 @@ package io.joynr.messaging.routing;
 
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
-import io.joynr.messaging.MessageSender;
-import io.joynr.messaging.inprocess.InProcessAddress;
-import io.joynr.messaging.inprocess.InProcessMessagingStub;
+import io.joynr.messaging.IMessaging;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 
@@ -40,25 +38,21 @@ import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.CommonApiDbusAddress;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-
 public class MessageRouterImpl extends RoutingAbstractProvider implements MessageRouter {
 
-    private static final int UUID_TAIL = 32;
-    private static final Logger logger = LoggerFactory.getLogger(MessageRouterImpl.class);
+    private Logger logger = LoggerFactory.getLogger(MessageRouterImpl.class);
     private final RoutingTable routingTable;
-    private final MessageSender messageSender;
+    private MessagingStubFactory messagingStubFactory;
+    private static final int UUID_TAIL = 32;
 
     @Inject
     @Singleton
-    public MessageRouterImpl(RoutingTable routingTable, MessageSender messageSender) {
+    public MessageRouterImpl(RoutingTable routingTable, MessagingStubFactory messagingStubFactory) {
         this.routingTable = routingTable;
-        this.messageSender = messageSender;
+        this.messagingStubFactory = messagingStubFactory;
     }
 
     private Promise<DeferredVoid> addNextHopInternal(String participantId, Address address) {
@@ -110,7 +104,7 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
 
     @Override
     public void route(JoynrMessage message) throws JoynrSendBufferFullException, JoynrMessageNotSentException,
-                                           JsonGenerationException, JsonMappingException, IOException {
+                                           IOException {
         String toParticipantId = message.getTo();
         if (toParticipantId != null && routingTable.containsKey(toParticipantId)) {
             Address address = routingTable.get(toParticipantId);
@@ -122,36 +116,15 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
     }
 
     private void routeMessageByAddress(JoynrMessage message, Address address) throws JoynrSendBufferFullException,
-                                                                             JoynrMessageNotSentException,
-                                                                             JsonGenerationException,
-                                                                             JsonMappingException, IOException {
+                                                                             JoynrMessageNotSentException, IOException {
 
         String messageId = message.getId().substring(UUID_TAIL);
-        if (address instanceof ChannelAddress) {
-            logger.info(">>>>> SEND  ID:{}:{} from: {} to: {} header: {}",
-                        new String[]{ messageId, message.getType(),
-                                message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
-                                message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID),
-                                message.getHeader().toString() });
-            logger.debug(">>>>> body  ID:{}:{}: {}", new String[]{ messageId, message.getType(), message.getPayload() });
-
-            String destinationChannelId = ((ChannelAddress) address).getChannelId();
-            messageSender.sendMessage(destinationChannelId, message);
-        } else if (address instanceof InProcessAddress) {
-            logger.info("+++++ ROUTE ID:{}:{} from: {} to: {} header: {}",
-                        new String[]{ messageId, message.getType(),
-                                message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
-                                message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID),
-                                message.getHeader().toString() });
-            logger.debug("+++++ body  ID:{}:{}: {}", new String[]{ messageId, message.getType(), message.getPayload() });
-            /*
-             * This creation should be done by a factory, avoiding that the MessageRouter is aware of the
-             * different address types
-             */
-            new InProcessMessagingStub(((InProcessAddress) address).getSkeleton()).transmit(message);
-        } else {
-            throw new JoynrMessageNotSentException("Failed to send Request: Address type not supported");
-        }
+        logger.info(">>>>> SEND  ID:{}:{} from: {} to: {} header: {}", new String[]{ messageId, message.getType(),
+                message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
+                message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID), message.getHeader().toString() });
+        logger.debug(">>>>> body  ID:{}:{}: {}", new String[]{ messageId, message.getType(), message.getPayload() });
+        IMessaging messagingStub = messagingStubFactory.create(address);
+        messagingStub.transmit(message);
     }
 
     @Override
@@ -161,7 +134,7 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
 
     @Override
     public void shutdown() {
-        messageSender.shutdown();
+        messagingStubFactory.shutdown();
     }
 
 }

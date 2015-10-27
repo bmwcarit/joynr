@@ -36,6 +36,7 @@ import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.MessageRouterImpl;
+import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.messaging.routing.RoutingTableImpl;
 
@@ -101,7 +102,8 @@ public class ProxyArbitrationTest {
                                             "domainaccesscontroller_participantid",
                                             new ChannelAddress("domainaccesscontroller_channelid"));
 
-        messageRouter = new MessageRouterImpl(routingTable, messageSender);
+        MessagingStubFactory messagingStubFactory = new MessagingStubFactory(messageSender);
+        messageRouter = new MessageRouterImpl(routingTable, messagingStubFactory);
 
         participantId = "testParticipant";
         correctEndpointAddress = new ChannelAddress(CORRECT_CHANNELID);

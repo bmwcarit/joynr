@@ -2,6 +2,8 @@ package io.joynr.messaging;
 
 import joynr.JoynrMessage;
 
+import java.io.IOException;
+
 /*
  * #%L
  * %%
@@ -22,6 +24,6 @@ import joynr.JoynrMessage;
  */
 
 public interface IMessaging {
-    public void transmit(JoynrMessage message);
+    public void transmit(JoynrMessage message) throws IOException;
 
 }
