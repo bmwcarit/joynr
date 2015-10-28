@@ -33,7 +33,6 @@ define(
             "joynr/util/LongTimer",
             "joynr/exceptions/MethodInvocationException",
             "joynr/exceptions/ProviderRuntimeException",
-            "joynr/exceptions/ApplicationException",
             "joynr/system/LoggerFactory"
         ],
         function(
@@ -48,7 +47,6 @@ define(
                 LongTimer,
                 MethodInvocationException,
                 ProviderRuntimeException,
-                ApplicationException,
                 LoggerFactory) {
 
             /**
