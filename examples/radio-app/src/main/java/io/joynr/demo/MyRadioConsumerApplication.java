@@ -41,6 +41,7 @@ import java.util.Properties;
 
 import jline.console.ConsoleReader;
 import joynr.exceptions.ApplicationException;
+import joynr.exceptions.ProviderRuntimeException;
 import joynr.OnChangeSubscriptionQos;
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
 import joynr.vehicle.Country;
@@ -310,11 +311,32 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
 
             boolean success;
 
-            // add favorite radio station
-            RadioStation favoriteStation = new RadioStation("99.3 The Fox Rocks", false, Country.CANADA);
-            success = radioProxy.addFavoriteStation(favoriteStation);
-            LOG.info(PRINT_BORDER + "METHOD: added favorite station: " + favoriteStation + ": " + success
-                    + PRINT_BORDER);
+            try {
+                // add favorite radio station
+                RadioStation favoriteStation = new RadioStation("99.3 The Fox Rocks", false, Country.CANADA);
+                success = radioProxy.addFavoriteStation(favoriteStation);
+                LOG.info(PRINT_BORDER + "METHOD: added favorite station: " + favoriteStation + ": " + success
+                         + PRINT_BORDER);
+                success = radioProxy.addFavoriteStation(favoriteStation);
+            } catch (ApplicationException exception) {
+                String errorName = exception.getError().name();
+                String expectation = errorName.equals(joynr.vehicle.Radio.AddFavoriteStationErrorEnum.DUPLICATE_RADIOSTATION.name()) ? "expected" : "unexpected";
+                LOG.info(PRINT_BORDER + "METHOD: addFavoriteStation failed with the following " + expectation + " exception: " + errorName);
+            }
+
+            try {
+                // add favorite radio station
+                RadioStation favoriteStation = new RadioStation("", false, Country.GERMANY);
+                success = radioProxy.addFavoriteStation(favoriteStation);
+                LOG.info(PRINT_BORDER + "METHOD: addFavoriteStation completed unexpected with the following output: " + success);
+            } catch (ApplicationException exception) {
+                String errorName = exception.getError().name();
+                LOG.info(PRINT_BORDER + "METHOD: addFavoriteStation failed with the following unexpected ApplicationExcecption: " + errorName);
+            } catch (ProviderRuntimeException exception) {
+                String errorName = exception.getMessage();
+                String expectation = errorName.equals(MyRadioProvider.MISSING_NAME) ? "expected" : "unexpected";
+                LOG.info(PRINT_BORDER + "METHOD: addFavoriteStation failed with the following " + expectation + " exception: " + errorName);
+            }
 
             // shuffle the stations
             radioProxy.shuffleStations();

@@ -179,8 +179,8 @@ function registerMethodHandlers(radioProxy) {
             $("input#txtAddFavoriteStationSuccess").val(JSON.stringify(success));
         }).catch(function(error) {
             log(
-                    "radioProxy.addFavoriteStation.fail",
-                    JSON.stringify(operationArguments) + " ERROR: " + error
+                    "radioProxy.addFavoriteStation.failed",
+                    JSON.stringify(operationArguments) + " error: " + JSON.stringify(error)
             );
         });
     });
