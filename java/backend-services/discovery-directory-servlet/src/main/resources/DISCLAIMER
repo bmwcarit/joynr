@@ -67,6 +67,8 @@ The software listed below included in some products is licensed under the "Apach
   About file: WEB-INF/lib/jetty-util-9.2.13.v20150730.jar:about.html
 - org.javassist:javassist:3.18.1-GA
 - org.jboss:jandex:1.1.0.Final
+- org.jboss.logging:jboss-logging:jar:3.1.3.GA
+  License file: WEB-INF/lib/jboss-logging-3.1.3.GA.jar:/META-INF/LICENSE
 - xml-apis:xml-apis:1.4.01
   Notice file: WEB-INF/lib/xml-apis-1.4.01.jar:/license/NOTICE
   License file: WEB-INF/lib/xml-apis-1.4.01.jar:/license/LICENSE

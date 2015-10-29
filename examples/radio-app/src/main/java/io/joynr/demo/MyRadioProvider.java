@@ -27,8 +27,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import joynr.exceptions.ProviderRuntimeException;
 import joynr.vehicle.Country;
 import joynr.vehicle.GeoPosition;
+import joynr.vehicle.Radio.AddFavoriteStationErrorEnum;
 import joynr.vehicle.RadioAbstractProvider;
 import joynr.vehicle.RadioProvider;
 import joynr.vehicle.RadioStation;
@@ -37,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MyRadioProvider extends RadioAbstractProvider {
+    public static final String MISSING_NAME = "MISSING_NAME";
     private static final String PRINT_BORDER = "\n####################\n";
     private static final Logger LOG = LoggerFactory.getLogger(MyRadioProvider.class);
 
@@ -83,9 +86,22 @@ public class MyRadioProvider extends RadioAbstractProvider {
     @Override
     public Promise<AddFavoriteStationDeferred> addFavoriteStation(RadioStation radioStation) {
         AddFavoriteStationDeferred deferred = new AddFavoriteStationDeferred();
-        LOG.info(PRINT_BORDER + "addFavoriteStation(" + radioStation + ")" + PRINT_BORDER);
-        stationsList.add(radioStation);
-        deferred.resolve(true);
+        if (radioStation.getName().isEmpty()) {
+            deferred.reject(new ProviderRuntimeException(MISSING_NAME));
+        }
+        boolean duplicateFound = false;
+        for (RadioStation station : stationsList) {
+            if (!duplicateFound && station.getName().equals(radioStation.getName())) {
+                duplicateFound = true;
+                deferred.reject(AddFavoriteStationErrorEnum.DUPLICATE_RADIOSTATION);
+                break;
+            }
+        }
+        if (!duplicateFound) {
+            LOG.info(PRINT_BORDER + "addFavoriteStation(" + radioStation + ")" + PRINT_BORDER);
+            stationsList.add(radioStation);
+            deferred.resolve(true);
+        }
         return new Promise<AddFavoriteStationDeferred>(deferred);
     }
 

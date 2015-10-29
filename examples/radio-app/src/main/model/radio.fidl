@@ -136,6 +136,9 @@ interface Radio {
 			**>
 			Boolean success
 		}
+		error {
+			DUPLICATE_RADIOSTATION
+		}
 	}
 
 	<**
