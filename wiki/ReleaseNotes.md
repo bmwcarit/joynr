@@ -1,3 +1,47 @@
+#joynr 0.11.0
+
+##Notes
+* **[Java]** Uint types are not supported in Java: Unsigned values are thus read as
+  signed values, meaning for example that 255 is represented as -1 in a Java Byte. The
+  Java application is responsible for converting from signed to unsigned values as
+  required. Note that this is only an issue if values exceed the largest possible
+  values that can be represented by the signed java values.
+  
+##Known issues
+* **[Java]** Handling of "number" types and enums in Lists is not implemented
+  correctly. Accessing these values individually can result in ClassCastExceptions
+  being thrown.
+* **[Java]** uint16 and int16 declarations in Franca are currently being represented
+  as Integer in Java.Though this is not associated with any functional problem, in
+  the future int16 types will be generated to Short.
+* **[C++]** Missing support of exceptions for methods/attributes. While the
+  exception handling is already implemented for Java + JS, required extensions for C++
+  are currently under development and planned for the upcoming major release
+  0.12.0 mid November 2015.
+
+##API relevant changes
+* **[Java]** The onError callback of subscriptions expects now a JoynrException as input parameter
+  instead of an empty parameter list. In addition, exceptions received from subscription publication
+  are now forwarded to the onError callback.
+* **[Java,JS]** Support of exceptions for methods/attributes. Exceptions at provider side are now
+  communicated via joynr to the consumer, informing him about unexpected behavior. joynr providers
+  are able to reject method calls by using error enum values as associated with the method in the
+  Franca model.
+* **[JS]** The callback provided at broadcast subscription is now called with key value pairs for
+  the broadcast parameters. Previously, the callback has been invoked with individual function
+  arguments for each broadcast parameter.
+* **]Java,JS,C++]** Harmonised the handling of expiry dates in SubscriptionQos
+
+##Other changes
+* **[C++]** Replaced QSharedPointer with std::shared_ptr
+* **[C++]** Replaced QDatetime with std counterpart "chrono"
+* **[C++]** Replaced log4qt with spdlog
+* **[C++]** Fixed bug which prevented the onError callback of async method calls to be called in
+  case of unexpected behavior (e.g. timeouts)
+* **[Java,JS,C++]** Fixed bug which caused joynr message loss due to wrong time interpreation in
+  case of very high expiry dates.
+* **[Java,JS]** Enriched the radio example with exception handling
+
 #joynr 0.10.2
 
 This is a minor bug fix release.
