@@ -24,13 +24,14 @@ define(
         [
             "global/Promise",
             "joynr/util/UtilInternal",
+            "joynr/util/JSONSerializer",
             "joynr/util/Typing",
             "joynr/TypesEnum",
             "joynr/types/TypeRegistrySingleton",
             "joynr/dispatching/types/Request",
             "joynr/messaging/MessagingQos"
         ],
-        function(Promise, Util, Typing, TypesEnum, TypeRegistrySingleton, Request, MessagingQos) {
+        function(Promise, Util, JSONSerializer, Typing, TypesEnum, TypeRegistrySingleton, Request, MessagingQos) {
             var typeRegistry = TypeRegistrySingleton.getInstance();
             /**
              * Checks if the given operationSignature is valid to be called for the given operation
@@ -72,7 +73,6 @@ define(
                 var inputParameter = operationSignature.inputParameter;
                 var outputParameter = operationSignature.outputParameter;
                 var inputParamDatatypes = [];
-                var outputParamDatatypes = [];
                 var params = [];
                 var result = {};
 
@@ -144,19 +144,12 @@ define(
 
                 // TODO: check for default arguments!
 
-                for (argumentId in outputParameter) {
-                    if (outputParameter.hasOwnProperty(argumentId)) {
-                        outputParamDatatypes.push(outputParameter[argumentId].type);
-                    }
-                }
                 result.signature = {
                     inputParameter : {
                         paramDatatypes : inputParamDatatypes,
                         params : params
                     },
-                    outputParameter : {
-                        paramDatatypes : outputParamDatatypes
-                    }
+                    outputParameter : outputParameter || {}
                 };
                 return result;
             }
@@ -348,12 +341,17 @@ define(
                                         var responseKey;
                                         for (responseKey in response) {
                                             if (response.hasOwnProperty(responseKey)) {
-                                                response[responseKey] =
-                                                    Typing
-                                                    .augmentTypes(
-                                                            response[responseKey],
-                                                            typeRegistry,
-                                                            foundValidOperationSignature.outputParameter.paramDatatypes[responseKey]);
+                                                if (foundValidOperationSignature.outputParameter[responseKey] !== undefined) {
+                                                    response[responseKey] =
+                                                        Typing
+                                                        .augmentTypes(
+                                                                response[responseKey],
+                                                                typeRegistry,
+                                                                foundValidOperationSignature.outputParameter[responseKey].type);
+                                                } else {
+                                                    return Promise
+                                                    .reject(new Error("Unexpected response: " + JSONSerializer.stringify(response[responseKey])));
+                                                }
                                             }
                                         }
                                         
