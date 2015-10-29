@@ -21,8 +21,8 @@
 #define ACCESSCONTROLALGORITHM_H
 
 #include "joynr/JoynrClusterControllerExport.h"
-#include "joynr/infrastructure/DacTypes/QtPermission.h"
-#include "joynr/infrastructure/DacTypes/QtTrustLevel.h"
+#include "joynr/infrastructure/DacTypes_QtPermission.h"
+#include "joynr/infrastructure/DacTypes_QtTrustLevel.h"
 #include "joynr/Optional.h"
 
 #include <QList>

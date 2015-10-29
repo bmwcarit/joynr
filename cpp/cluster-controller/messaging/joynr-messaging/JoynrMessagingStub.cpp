@@ -24,7 +24,7 @@
 namespace joynr
 {
 
-JoynrMessagingStub::JoynrMessagingStub(QSharedPointer<IMessageSender> messageSender,
+JoynrMessagingStub::JoynrMessagingStub(std::shared_ptr<IMessageSender> messageSender,
                                        QString destinationChannelId,
                                        QString receiveChannelId)
         : messageSender(messageSender),

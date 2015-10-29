@@ -482,12 +482,11 @@ in the main function of MyRadioConsumerApplication.cpp) is used to work out whic
 
 >**Note**: Since the C\+\+ radio application has been built using docker ([Building joynr C++](cpp_building_joynr.md)), the shared joynr libraries are only found if your build directory is ```/data/build/``` as in the docker container. After building joynr C++ with docker, you can either copy your build directory to this location or add the following directories to your library path:
 >* ```<CPP_BUILD_DIRECTORY>/joynr/bin```
->* ```<CPP_BUILD_DIRECTORY>/joynr/bin/lib/log4qt```
 >* ```<CPP_BUILD_DIRECTORY>/joynr/bin/lib/qjson```
 >
 >In Linux, this can be achieved by
 >```
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<BUILD_DIRECTORY>/joynr/bin:<BUILD_DIRECTORY>/joynr/bin/lib/qjson:<BUILD_DIRECTORY>/joynr/bin/lib/log4qt
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<BUILD_DIRECTORY>/joynr/bin:<BUILD_DIRECTORY>/joynr/bin/lib/qjson
 ```
 >Afterwards, the C++ radio application can be started as explained.
 

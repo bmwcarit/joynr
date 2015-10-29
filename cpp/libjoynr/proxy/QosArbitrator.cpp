@@ -94,7 +94,7 @@ void QosArbitrator::receiveCapabilitiesLookupResults(
     if (res == "") {
         LOG_WARN(logger,
                  "There was more than one entries in capabilitiesEntries, but none had a "
-                 "Priority > 1");
+                 "Priority > -1");
         return;
     }
 

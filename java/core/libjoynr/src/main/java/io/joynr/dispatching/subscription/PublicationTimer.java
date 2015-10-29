@@ -23,6 +23,7 @@ import io.joynr.dispatching.RequestCaller;
 import io.joynr.dispatching.subscription.PublicationManagerImpl.PublicationInformation;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.provider.Promise;
 import io.joynr.provider.PromiseListener;
@@ -112,23 +113,26 @@ public class PublicationTimer extends PubSubTimerBase {
                 } else {
                     logger.debug("run: executing attributePollInterpreter for attribute "
                             + publicationInformation.getSubscribedToName());
-                    Promise<?> attributeGetterPromise = attributePollInterpreter.execute(requestCaller, method);
-                    attributeGetterPromise.then(new PromiseListener() {
+                    try {
+                        Promise<?> attributeGetterPromise = attributePollInterpreter.execute(requestCaller, method);
+                        attributeGetterPromise.then(new PromiseListener() {
 
-                        @Override
-                        public void onRejection(JoynrException error) {
-                            // TODO Auto-generated method stub
+                            @Override
+                            public void onRejection(JoynrException error) {
+                                sendPublicationError(error);
+                            }
 
-                        }
-
-                        @Override
-                        public void onFulfillment(Object... values) {
-                            // attribute getters only return a single value
-                            SubscriptionPublication publication = new SubscriptionPublication(Arrays.asList(values[0]),
-                                                                                              publicationInformation.getSubscriptionId());
-                            sendPublication(publication);
-                        }
-                    });
+                            @Override
+                            public void onFulfillment(Object... values) {
+                                // attribute getters only return a single value
+                                SubscriptionPublication publication = new SubscriptionPublication(Arrays.asList(values[0]),
+                                                                                                  publicationInformation.getSubscriptionId());
+                                sendPublication(publication);
+                            }
+                        });
+                    } catch (JoynrRuntimeException error) {
+                        sendPublicationError(error);
+                    }
 
                     delayUntilNextPublication = period;
                 }
@@ -141,6 +145,12 @@ public class PublicationTimer extends PubSubTimerBase {
                 }
             }
         }
+    }
+
+    private void sendPublicationError(JoynrException error) {
+        SubscriptionPublication publication = new SubscriptionPublication(error,
+                                                                          publicationInformation.getSubscriptionId());
+        sendPublication(publication);
     }
 
     protected void sendPublication(final SubscriptionPublication publication) {

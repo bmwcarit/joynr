@@ -29,10 +29,10 @@ joynr_logging::Logger* CapabilitiesRegistrar::logger =
 CapabilitiesRegistrar::CapabilitiesRegistrar(
         QList<IDispatcher*> dispatcherList,
         joynr::system::IDiscoverySync& discoveryProxy,
-        QSharedPointer<joynr::system::RoutingTypes::QtAddress> messagingStubAddress,
-        QSharedPointer<ParticipantIdStorage> participantIdStorage,
-        QSharedPointer<joynr::system::RoutingTypes::QtAddress> dispatcherAddress,
-        QSharedPointer<MessageRouter> messageRouter)
+        std::shared_ptr<joynr::system::RoutingTypes::QtAddress> messagingStubAddress,
+        std::shared_ptr<ParticipantIdStorage> participantIdStorage,
+        std::shared_ptr<joynr::system::RoutingTypes::QtAddress> dispatcherAddress,
+        std::shared_ptr<MessageRouter> messageRouter)
         : dispatcherList(dispatcherList),
           discoveryProxy(discoveryProxy),
           messagingStubAddress(messagingStubAddress),
@@ -56,7 +56,7 @@ void CapabilitiesRegistrar::remove(const std::string& participantId)
                           .arg(QString::fromStdString(status.getCode().toString())));
     }
 
-    QSharedPointer<joynr::Future<void>> future(new Future<void>());
+    std::shared_ptr<joynr::Future<void>> future(new Future<void>());
     auto onSuccess = [future]() { future->onSuccess(); };
     messageRouter->removeNextHop(participantId, onSuccess);
     future->waitForFinished();

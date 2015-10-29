@@ -32,6 +32,10 @@ import joynr.system.RoutingTypes.Address;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import joynr.types.CommunicationMiddleware;
+import joynr.types.DiscoveryEntry;
+
+import java.util.Arrays;
 
 @Singleton
 public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
@@ -67,16 +71,16 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
     @Override
     public RegistrationFuture registerProvider(final String domain, JoynrProvider provider) {
         String participantId = participantIdStorage.getProviderParticipantId(domain, provider.getProvidedInterface());
-        CapabilityEntry capabilityEntry = new CapabilityEntryImpl(domain,
-                                                                  provider.getInterfaceName(),
-                                                                  provider.getProviderQos(),
-                                                                  participantId,
-                                                                  System.currentTimeMillis());
+        DiscoveryEntry discoveryEntry = new DiscoveryEntry(domain,
+                                                           provider.getInterfaceName(),
+                                                           participantId,
+                                                           provider.getProviderQos(),
+                                                           Arrays.asList(CommunicationMiddleware.JOYNR));
         RequestCaller requestCaller = requestCallerFactory.create(provider);
 
         messageRouter.addNextHop(participantId, libjoynrMessagingAddress);
         requestCallerDirectory.addCaller(participantId, requestCaller);
-        RegistrationFuture ret = localCapabilitiesDirectory.add(capabilityEntry);
+        RegistrationFuture ret = localCapabilitiesDirectory.add(discoveryEntry);
         return ret;
     }
 
@@ -84,12 +88,12 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
     public void unregisterProvider(String domain, JoynrProvider provider) {
 
         String participantId = participantIdStorage.getProviderParticipantId(domain, provider.getProvidedInterface());
-        CapabilityEntry capabilityEntry = new CapabilityEntryImpl(domain,
-                                                                  provider.getInterfaceName(),
-                                                                  provider.getProviderQos(),
-                                                                  participantId,
-                                                                  System.currentTimeMillis());
-        localCapabilitiesDirectory.remove(capabilityEntry);
+        DiscoveryEntry discoveryEntry = new DiscoveryEntry(domain,
+                                                           provider.getInterfaceName(),
+                                                           participantId,
+                                                           provider.getProviderQos(),
+                                                           Arrays.asList(CommunicationMiddleware.JOYNR));
+        localCapabilitiesDirectory.remove(discoveryEntry);
         requestCallerDirectory.removeCaller(participantId);
     }
 

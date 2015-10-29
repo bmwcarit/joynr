@@ -20,6 +20,8 @@ package io.joynr.dispatching;
  */
 
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
+
+import com.google.inject.Singleton;
 import io.joynr.dispatching.rpc.RpcUtils;
 import io.joynr.dispatching.subscription.PublicationManager;
 import io.joynr.dispatching.subscription.PublicationManagerImpl;
@@ -28,6 +30,7 @@ import io.joynr.dispatching.subscription.SubscriptionManagerImpl;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.MessageSender;
+import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.MessageRouterImpl;
 import io.joynr.messaging.routing.RoutingTable;
@@ -81,5 +84,12 @@ public class DispatcherTestModule extends AbstractModule {
     @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_ADDRESS)
     Address getChannelUrlDirectoryAddress(@Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_CHANNEL_ID) String channelUrlDirectoryChannelId) {
         return new ChannelAddress(channelUrlDirectoryChannelId);
+    }
+
+    @Provides
+    @Singleton
+    @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_ADDRESS)
+    Address getDomainAccessControllerAddress(@com.google.inject.name.Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID) String domainAccessControllerChannelId) {
+        return new ChannelAddress(domainAccessControllerChannelId);
     }
 }

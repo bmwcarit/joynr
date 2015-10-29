@@ -30,7 +30,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>javascript</artifactId>
-		<version>0.10.2</version>
+		<version>0.11.0</version>
 	</parent>
 
 	<properties>
@@ -617,7 +617,7 @@
 					<browser>${phantomjs.binary};--web-security=no;--local-storage-path=${project.build.directory};${project.build.directory}/build-resources/js-test-driver/phantomjs-jstd.js;%s</browser>
 					<testOutput>${project.build.directory}/jstd-test-results</testOutput>
 					<runnerMode>QUIET</runnerMode>
-					<verbose>false</verbose>
+					<verbose>true</verbose>
 					<captureConsole>true</captureConsole>
 					<reset>true</reset>
 				</configuration>

@@ -17,18 +17,24 @@ package io.joynr.generator.interfaces
  * limitations under the License.
  */
 
-import com.google.inject.Inject
-import io.joynr.generator.util.TemplateBase
-import org.franca.core.franca.FInterface
-import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import com.google.common.collect.Collections2
-import java.util.HashSet
-import io.joynr.generator.util.InterfaceTemplate
+import com.google.inject.Inject
+import io.joynr.generator.templates.InterfaceTemplate
+import io.joynr.generator.templates.util.AttributeUtil
+import io.joynr.generator.templates.util.InterfaceUtil
+import io.joynr.generator.templates.util.NamingUtil
 import io.joynr.generator.util.JavaTypeUtil
+import io.joynr.generator.util.JoynrJavaGeneratorExtensions
+import io.joynr.generator.util.TemplateBase
+import java.util.HashSet
+import org.franca.core.franca.FInterface
 
 class InterfaceSubscriptionTemplate implements InterfaceTemplate{
 	@Inject	extension JoynrJavaGeneratorExtensions
 	@Inject extension JavaTypeUtil
+	@Inject extension NamingUtil
+	@Inject extension InterfaceUtil
+	@Inject extension AttributeUtil
 	@Inject extension TemplateBase
 
 	override generate(FInterface serviceInterface) {

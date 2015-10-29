@@ -24,7 +24,7 @@
 #include <memory>
 #include "PrettyPrint.h"
 
-#include "joynr/types/Localisation/QtGpsLocation.h"
+#include "joynr/types/Localisation_QtGpsLocation.h"
 #include "joynr/tests/DefaulttestProvider.h"
 #include "joynr/ISubscriptionListener.h"
 

@@ -21,7 +21,7 @@
 namespace joynr
 {
 
-InProcessAddress::InProcessAddress(QSharedPointer<RequestCaller> requestCaller)
+InProcessAddress::InProcessAddress(std::shared_ptr<RequestCaller> requestCaller)
         : requestCaller(requestCaller)
 {
 }
@@ -30,7 +30,7 @@ InProcessAddress::~InProcessAddress()
 {
 }
 
-QSharedPointer<RequestCaller> InProcessAddress::getRequestCaller() const
+std::shared_ptr<RequestCaller> InProcessAddress::getRequestCaller() const
 {
     return requestCaller;
 }

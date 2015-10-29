@@ -18,18 +18,22 @@ package io.joynr.generator.interfaces
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.communicationmodel.EnumTypeTemplate
+import io.joynr.generator.templates.InterfaceTemplate
+import io.joynr.generator.templates.util.InterfaceUtil
+import io.joynr.generator.templates.util.NamingUtil
+import io.joynr.generator.util.JavaTypeUtil
+import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import io.joynr.generator.util.TemplateBase
 import java.util.ArrayList
 import java.util.Collection
 import org.franca.core.franca.FInterface
-import io.joynr.generator.util.JoynrJavaGeneratorExtensions
-import io.joynr.generator.util.InterfaceTemplate
-import io.joynr.generator.util.JavaTypeUtil
-import io.joynr.generator.communicationmodel.EnumTypeTemplate
 
 class InterfacesTemplate implements InterfaceTemplate{
 	@Inject extension JoynrJavaGeneratorExtensions
 	@Inject extension JavaTypeUtil
+	@Inject extension NamingUtil
+	@Inject extension InterfaceUtil
 	@Inject extension EnumTypeTemplate
 	@Inject extension TemplateBase
 
@@ -66,8 +70,8 @@ public interface «className»  {
 	public static String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(serviceInterface, "/")»/«interfaceName»";
 
 	«FOR type : filterTypesByToken(getAllTypes(serviceInterface))»
-		public static class «if (type.joynrNameQt==null) "Typename not found" else getTokenTypeForArrayType(type.joynrNameQt)»Token extends TypeReference<«getTokenTypeForArrayType(type.joynrNameQt)»> {}
-		public static class List«getTokenTypeForArrayType(type.joynrNameQt)»Token extends TypeReference<List<«getTokenTypeForArrayType(type.joynrNameQt)»> > {}
+		public static class «if (type.joynrName==null) "Typename not found" else getTokenTypeForArrayType(type.joynrName)»Token extends TypeReference<«getTokenTypeForArrayType(type.joynrName)»> {}
+		public static class List«getTokenTypeForArrayType(type.joynrName)»Token extends TypeReference<List<«getTokenTypeForArrayType(type.joynrName)»> > {}
 	«ENDFOR»
 
 	«FOR method: getMethods(serviceInterface)»
@@ -87,9 +91,9 @@ public interface «className»  {
 		val result = new ArrayList<Object>()
 		val tokens = new ArrayList<String>();
 		for (object: objects){
-			if (object!=null && !tokens.contains(getTokenTypeForArrayType(object.joynrNameQt))){
+			if (object!=null && !tokens.contains(getTokenTypeForArrayType(object.joynrName))){
 				result.add(object)
-				tokens.add(getTokenTypeForArrayType(object.joynrNameQt))
+				tokens.add(getTokenTypeForArrayType(object.joynrName))
 			}
 		}
 		return result;

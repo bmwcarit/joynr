@@ -21,8 +21,9 @@
 
 #include "joynr/IPublicationSender.h"
 #include "joynr/joynrlogging.h"
-#include <QSharedPointer>
 #include <string>
+
+#include <memory>
 
 namespace joynr
 {
@@ -80,7 +81,7 @@ public:
                              const std::string& receiverParticipantId,
                              const MessagingQos& qos,
                              const Request& request,
-                             QSharedPointer<IReplyCaller> callback) = 0;
+                             std::shared_ptr<IReplyCaller> callback) = 0;
     /*
      * Prepares and sends a reply message (an answer to a request)
      */

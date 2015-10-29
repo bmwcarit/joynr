@@ -24,8 +24,9 @@
 #include "joynr/Directory.h"
 #include "joynr/IMessagingStubFactory.h"
 #include "joynr/IMiddlewareMessagingStubFactory.h"
-#include "joynr/system/RoutingTypes/QtAddress.h"
+#include "joynr/system/RoutingTypes_QtAddress.h"
 #include <string>
+#include <memory>
 
 namespace joynr
 {
@@ -53,10 +54,7 @@ public:
     // Those Skeletons must be registered before the MessagingStubFactory is used.
     MessagingStubFactory();
 
-    // void registerInProcessMessagingSkeleton(QSharedPointer<InProcessMessagingSkeleton>
-    // messagingSkeleton);
-
-    QSharedPointer<IMessaging> create(
+    std::shared_ptr<IMessaging> create(
             const joynr::system::RoutingTypes::QtAddress& destinationAddress);
     void remove(const joynr::system::RoutingTypes::QtAddress& destinationAddress);
     bool contains(const joynr::system::RoutingTypes::QtAddress& destinationAddress);

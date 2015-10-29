@@ -22,14 +22,17 @@
 #include "joynr/ContentWithDecayTime.h"
 #include "joynr/JoynrMessage.h"
 
-#include <QDateTime>
+#include <chrono>
+#include <stdint.h>
 
 using namespace joynr;
+using namespace std::chrono;
 
 TEST(ContentWithDecayTimeTest, messageWithDecayTime)
 {
     JoynrMessage message;
-    QDateTime decaytime = QDateTime::currentDateTime().addMSecs(2000);
+    int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    JoynrTimePoint decaytime{milliseconds(now + 2000)};
     ContentWithDecayTime<JoynrMessage> mwdt =  ContentWithDecayTime<JoynrMessage>(message, decaytime);
     EXPECT_TRUE(!mwdt.isExpired());
     EXPECT_GT(mwdt.getRemainingTtl_ms(), 1500);

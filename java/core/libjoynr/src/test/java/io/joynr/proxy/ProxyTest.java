@@ -60,6 +60,7 @@ import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.UUID;
 
 import joynr.OnChangeSubscriptionQos;
@@ -67,6 +68,8 @@ import joynr.Reply;
 import joynr.Request;
 import joynr.exceptions.ApplicationException;
 import joynr.system.RoutingTypes.ChannelAddress;
+import joynr.types.CommunicationMiddleware;
+import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.vehicle.NavigationBroadcastInterface.LocationUpdateBroadcastListener;
 import joynr.vehicle.NavigationBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters;
@@ -176,13 +179,14 @@ public class ProxyTest {
             @Override
             public Object answer(InvocationOnMock invocation) {
                 Object[] args = invocation.getArguments();
-                ArrayList<CapabilityEntry> fakeCapabilitiesResult = new ArrayList<CapabilityEntry>();
-                fakeCapabilitiesResult.add(new CapabilityEntryImpl(domain,
+                ArrayList<DiscoveryEntry> fakeCapabilitiesResult = new ArrayList<DiscoveryEntry>();
+                DiscoveryEntry discoveryEntry = new DiscoveryEntry(domain,
                                                                    TestInterface.INTERFACE_NAME,
-                                                                   new ProviderQos(),
                                                                    toParticipantId,
-                                                                   System.currentTimeMillis(),
-                                                                   new ChannelAddress("testChannelId")));
+                                                                   new ProviderQos(),
+                                                                   Arrays.asList(CommunicationMiddleware.JOYNR));
+
+                fakeCapabilitiesResult.add(discoveryEntry);
                 ((CapabilitiesCallback) args[3]).processCapabilitiesReceived(fakeCapabilitiesResult);
                 return null;
             }

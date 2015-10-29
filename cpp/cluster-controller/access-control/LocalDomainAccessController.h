@@ -21,13 +21,13 @@
 #define LOCALDOMAINACCESSCONTROLLER_H
 
 #include "joynr/JoynrClusterControllerExport.h"
-#include "joynr/infrastructure/DacTypes/QtMasterAccessControlEntry.h"
-#include "joynr/infrastructure/DacTypes/QtOwnerAccessControlEntry.h"
-#include "joynr/infrastructure/DacTypes/QtMasterRegistrationControlEntry.h"
+#include "joynr/infrastructure/DacTypes_QtMasterAccessControlEntry.h"
+#include "joynr/infrastructure/DacTypes_QtOwnerAccessControlEntry.h"
+#include "joynr/infrastructure/DacTypes_QtMasterRegistrationControlEntry.h"
 #include "joynr/infrastructure/DacTypes/OwnerRegistrationControlEntry.h"
-#include "joynr/infrastructure/DacTypes/QtPermission.h"
-#include "joynr/infrastructure/DacTypes/QtTrustLevel.h"
-#include "joynr/infrastructure/DacTypes/QtRole.h"
+#include "joynr/infrastructure/DacTypes_QtPermission.h"
+#include "joynr/infrastructure/DacTypes_QtTrustLevel.h"
+#include "joynr/infrastructure/DacTypes_QtRole.h"
 #include "joynr/ISubscriptionListener.h"
 #include "AccessControlAlgorithm.h"
 #include "joynr/PrivateCopyAssign.h"
@@ -84,7 +84,7 @@ public:
      * The init method has to be called first, only afterwards LocalDomainAccessController may be
      * used.
      */
-    virtual void init(QSharedPointer<infrastructure::GlobalDomainAccessControllerProxy>
+    virtual void init(std::shared_ptr<infrastructure::GlobalDomainAccessControllerProxy>
                               globalDomainAccessControllerProxy);
 
     /**
@@ -117,7 +117,7 @@ public:
                                        const std::string& domain,
                                        const std::string& interfaceName,
                                        infrastructure::DacTypes::TrustLevel::Enum trustLevel,
-                                       QSharedPointer<IGetConsumerPermissionCallback> callback);
+                                       std::shared_ptr<IGetConsumerPermissionCallback> callback);
 
     /**
       * Get consumer permission to access an interface operation
@@ -455,7 +455,7 @@ private:
 
     QHash<QString, AceSubscription> aceSubscriptions;
 
-    QSharedPointer<infrastructure::GlobalDomainAccessControllerProxy>
+    std::shared_ptr<infrastructure::GlobalDomainAccessControllerProxy>
             globalDomainAccessControllerProxy;
     LocalDomainAccessStore* localDomainAccessStore;
 
@@ -486,7 +486,7 @@ private:
         std::string domain;
         std::string interfaceName;
         infrastructure::DacTypes::TrustLevel::Enum trustLevel;
-        QSharedPointer<IGetConsumerPermissionCallback> callbacks;
+        std::shared_ptr<IGetConsumerPermissionCallback> callbacks;
     };
 
     QHash<QString, QList<ConsumerPermissionRequest>> consumerPermissionRequests;

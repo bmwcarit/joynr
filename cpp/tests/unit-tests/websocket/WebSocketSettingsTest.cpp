@@ -21,7 +21,7 @@
 #include <QFile>
 #include "PrettyPrint.h"
 #include "libjoynr/websocket/WebSocketSettings.h"
-#include "joynr/system/RoutingTypes/QtWebSocketAddress.h"
+#include "joynr/system/RoutingTypes_QtWebSocketAddress.h"
 
 using namespace joynr;
 

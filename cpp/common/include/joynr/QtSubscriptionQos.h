@@ -20,14 +20,14 @@
 #define QTSUBSCRIPTIONQOS_H
 
 #include <QObject>
-#include <QDate>
-#include <QSharedPointer>
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/SubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/PeriodicSubscriptionQos.h"
 #include "joynr/TypeUtil.h"
+
+#include <memory>
 
 namespace joynr
 {
@@ -211,6 +211,6 @@ private:
 } // namespace joynr
 
 Q_DECLARE_METATYPE(joynr::QtSubscriptionQos)
-Q_DECLARE_METATYPE(QSharedPointer<joynr::QtSubscriptionQos>)
+Q_DECLARE_METATYPE(std::shared_ptr<joynr::QtSubscriptionQos>)
 
 #endif // QTSUBSCRIPTIONQOS_H

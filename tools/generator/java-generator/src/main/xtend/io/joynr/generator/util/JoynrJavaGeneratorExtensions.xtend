@@ -17,6 +17,9 @@ package io.joynr.generator.util
  * limitations under the License.
  */
 
+import com.google.inject.Inject
+import io.joynr.generator.templates.util.BroadcastUtil
+import io.joynr.generator.templates.util.InterfaceUtil
 import java.util.Iterator
 import java.util.TreeSet
 import org.franca.core.franca.FAnnotation
@@ -26,13 +29,11 @@ import org.franca.core.franca.FCompoundType
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FModelElement
 import org.franca.core.franca.FType
-import org.franca.core.franca.FMethod
-import io.joynr.generator.util.JavaTypeUtil
-import com.google.inject.Inject
-import java.util.HashMap
 
-class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
+class JoynrJavaGeneratorExtensions extends io.joynr.generator.templates.util.JoynrGeneratorExtensions {
 	@Inject extension JavaTypeUtil
+	@Inject extension InterfaceUtil
+	@Inject extension BroadcastUtil
 
 	def buildPackagePath(FType datatype, String separator, boolean includeTypeCollection) {
 		if (datatype == null) {
@@ -66,101 +67,6 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 
 	def String getNamespaceEnder(FType datatype) {
 		getNamespaceEnder(getPackageNames(datatype));
-	}
-
-	def boolean hasReadAttribute(FInterface interfaceType){
-		for(attribute: interfaceType.attributes){
-			if (isReadable(attribute)){
-				return true
-			}
-		}
-		return false
-	}
-
-	def boolean hasWriteAttribute(FInterface interfaceType){
-		for(attribute: interfaceType.attributes){
-			if (isWritable(attribute)){
-				return true
-			}
-		}
-		return false
-	}
-
-	def boolean hasMethodWithReturnValue(FInterface interfaceType){
-		for(method: interfaceType.methods){
-			if (!method.outputParameters.empty){
-				return true
-			}
-		}
-		return false
-	}
-
-	def boolean hasMethodWithoutReturnValue(FInterface interfaceType) {
-		for (method: interfaceType.methods) {
-			if (method.outputParameters.empty) {
-				return true
-			}
-		}
-		return false
-	}
-
-	def boolean hasMethodWithImplicitErrorEnum(FInterface interfaceType){
-		for(method: interfaceType.methods){
-			if (method.errors != null) {
-				return true
-			}
-		}
-		return false
-	}
-
-	def boolean hasMethodWithErrorEnum(FInterface interfaceType) {
-		for (method : interfaceType.methods) {
-			if (method.errorEnum != null) {
-				return true;
-			}
-		}
-		return hasMethodWithImplicitErrorEnum(interfaceType);
-	}
-
-	def boolean hasErrorEnum(FMethod method) {
-		return (method.errors != null) || (method.errorEnum != null);
-	}
-
-	def methodToErrorEnumName(FInterface serviceInterface) {
-		var HashMap<FMethod, String> methodToErrorEnumName = new HashMap<FMethod, String>()
-		var uniqueMethodSignatureToErrorEnumName = new HashMap<String, String>();
-		var methodNameToCount = overloadedMethodCounts(getMethods(serviceInterface));
-		var methodNameToIndex = new HashMap<String, Integer>();
-
-		for (FMethod method : getMethods(serviceInterface)) {
-			if (methodNameToCount.get(method.name) == 1) {
-				// method not overloaded, so no index needed
-				methodToErrorEnumName.put(method, method.name.toFirstUpper + "ErrorEnum");
-			} else {
-				// initialize index if not existent
-				if (!methodNameToIndex.containsKey(method.name)) {
-					methodNameToIndex.put(method.name, 0);
-				}
-				val methodSignature = createMethodSignatureFromInParameters(method);
-				if (!uniqueMethodSignatureToErrorEnumName.containsKey(methodSignature)) {
-					var Integer index = methodNameToIndex.get(method.name);
-					index++;
-					methodNameToIndex.put(method.name, index);
-					uniqueMethodSignatureToErrorEnumName.put(methodSignature, method.name.toFirstUpper + index);
-				}
-				methodToErrorEnumName.put(method, uniqueMethodSignatureToErrorEnumName.get(methodSignature) + "ErrorEnum");
-			}
-		}
-		return methodToErrorEnumName
-	}
-
-	def boolean hasMethodWithArguments(FInterface interfaceType){
-		for(method: interfaceType.methods){
-			if (getInputParameters(method).size>0){
-				return true
-			}
-		}
-		return false
 	}
 
 	def private String getNamespaceStarter(Iterator<String> packageList){
@@ -227,7 +133,10 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 		val includeSet = new TreeSet<String>();
 		for(datatype : getAllComplexAndEnumTypes(serviceInterface, methods, readAttributes, writeAttributes, notifyAttributes, broadcasts)) {
 			if (datatype instanceof FType){
-				includeSet.add(getIncludeOf(datatype));
+				val include = getIncludeOf(datatype);
+				if (include != null) {
+					includeSet.add(include);
+				}
 			}
 //			else{
 //				includeSet.add(getIncludeOf(datatype as FBasicTypeId));

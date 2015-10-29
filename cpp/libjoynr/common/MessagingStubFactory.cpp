@@ -40,7 +40,7 @@ MessagingStubFactory::MessagingStubFactory()
 {
 }
 
-QSharedPointer<IMessaging> MessagingStubFactory::create(
+std::shared_ptr<IMessaging> MessagingStubFactory::create(
         const joynr::system::RoutingTypes::QtAddress& destinationAddress)
 {
     {
@@ -52,10 +52,10 @@ QSharedPointer<IMessaging> MessagingStubFactory::create(
                  it != factoryList.end();
                  ++it) {
                 if ((*it)->canCreate(destinationAddress)) {
-                    QSharedPointer<IMessaging> stub = (*it)->create(destinationAddress);
+                    std::shared_ptr<IMessaging> stub = (*it)->create(destinationAddress);
                     address2MessagingStubDirectory.add(destinationAddress, stub);
 
-                    assert(!stub.isNull());
+                    assert(stub);
                     return stub;
                 }
             }

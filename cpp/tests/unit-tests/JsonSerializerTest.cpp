@@ -19,14 +19,13 @@
 #include <gtest/gtest.h>
 #include <PrettyPrint.h>
 #include <QVariant>
-#include <QSharedPointer>
 #include <limits>
 #include "joynr/Util.h"
-#include "joynr/types/TestTypes/QtTEnum.h"
-#include "joynr/types/TestTypes/QtTStruct.h"
-#include "joynr/types/TestTypes/QtTStructExtended.h"
-#include "joynr/types/TestTypes/QtTStructComposition.h"
-#include "joynr/types/Localisation/QtTrip.h"
+#include "joynr/types/TestTypes_QtTEnum.h"
+#include "joynr/types/TestTypes_QtTStruct.h"
+#include "joynr/types/TestTypes_QtTStructExtended.h"
+#include "joynr/types/TestTypes_QtTStructComposition.h"
+#include "joynr/types/Localisation_QtTrip.h"
 #include "joynr/types/QtChannelUrlInformation.h"
 #include "joynr/types/QtCapabilityInformation.h"
 #include "joynr/types/QtProviderQos.h"
@@ -37,21 +36,24 @@
 #include "joynr/JsonSerializer.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/DeclareMetatypeUtil.h"
-#include "joynr/system/RoutingTypes/QtChannelAddress.h"
-#include "joynr/system/RoutingTypes/QtCommonApiDbusAddress.h"
-#include "joynr/system/RoutingTypes/QtWebSocketAddress.h"
-#include "joynr/system/RoutingTypes/QtWebSocketClientAddress.h"
-#include "joynr/tests/testTypes/QtTestEnum.h"
+#include "joynr/system/RoutingTypes_QtChannelAddress.h"
+#include "joynr/system/RoutingTypes_QtCommonApiDbusAddress.h"
+#include "joynr/system/RoutingTypes_QtWebSocketAddress.h"
+#include "joynr/system/RoutingTypes_QtWebSocketClientAddress.h"
+#include "joynr/tests/testTypes_QtTestEnum.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/QtOnChangeSubscriptionQos.h"
 #include "joynr/QtOnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/QtPeriodicSubscriptionQos.h"
 
-#include "joynr/infrastructure/DacTypes/QtMasterAccessControlEntry.h"
+#include "joynr/infrastructure/DacTypes_QtMasterAccessControlEntry.h"
+#include "QTime"
+#include <chrono>
 
 using namespace joynr;
 using namespace joynr_logging;
+using namespace std::chrono;
 
 // TODO:
 // 1. If the decision is made to use c++11, g++ >= version 5.5 then JSON literals can be
@@ -111,7 +113,7 @@ protected:
 TEST_F(JsonSerializerTest, serialize_deserialize_SubscriptionRequest) {
     qRegisterMetaType<joynr::SubscriptionRequest>();
     SubscriptionRequest request;
-    QSharedPointer<QtSubscriptionQos> subscriptionQos(new QtSubscriptionQos(5000));
+    std::shared_ptr<QtSubscriptionQos> subscriptionQos(new QtSubscriptionQos(5000));
     request.setQos(subscriptionQos);
     QByteArray result = JsonSerializer::serialize(request);
     LOG_DEBUG(logger, QString(result));
@@ -122,7 +124,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_SubscriptionRequest) {
 TEST_F(JsonSerializerTest, serialize_deserialize_BroadcastSubscriptionRequest) {
     qRegisterMetaType<joynr::BroadcastSubscriptionRequest>();
     BroadcastSubscriptionRequest request;
-    QSharedPointer<QtOnChangeSubscriptionQos> subscriptionQos(new QtOnChangeSubscriptionQos(5000, 2000));
+    std::shared_ptr<QtOnChangeSubscriptionQos> subscriptionQos(new QtOnChangeSubscriptionQos(5000, 2000));
     request.setQos(subscriptionQos);
     QtBroadcastFilterParameters filterParams;
     filterParams.setFilterParameter("MyFilter", "MyFilterValue");
@@ -140,8 +142,8 @@ TEST_F(JsonSerializerTest, serialize_JoynrMessage) {
     request.setMethodName("serialize_JoynrMessage");
     request.setRequestReplyId("xyz");
     JoynrMessage joynrMessage;
-    qint64 testMilliseconds = 10000000;
-    joynrMessage.setHeaderExpiryDate(QDateTime::fromMSecsSinceEpoch(testMilliseconds));
+    JoynrTimePoint testExpiryDate = time_point_cast<milliseconds>(system_clock::now()) + milliseconds(10000000);
+    joynrMessage.setHeaderExpiryDate(testExpiryDate);
     joynrMessage.setType(JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST);
     joynrMessage.setPayload(JsonSerializer::serialize(request));
     QByteArray serializedContent(JsonSerializer::serialize(joynrMessage));
@@ -149,7 +151,7 @@ TEST_F(JsonSerializerTest, serialize_JoynrMessage) {
 
     QString expected(
                 "{\"_typeName\":\"joynr.JoynrMessage\","
-                "\"header\":{\"expiryDate\":\"%1\",\"msgId\":\"%2\"},"
+                "\"header\":{\"expiryDate\":\%1,\"msgId\":\"%2\"},"
                 "\"payload\":\"{\\\"_typeName\\\":\\\"joynr.Request\\\","
                 "\\\"methodName\\\":\\\"%3\\\","
                 "\\\"paramDatatypes\\\":[],"
@@ -157,7 +159,7 @@ TEST_F(JsonSerializerTest, serialize_JoynrMessage) {
                 "\\\"requestReplyId\\\":\\\"%4\\\"}\","
                 "\"type\":\"request\"}"
     );
-    expected = expected.arg(QString::number(testMilliseconds)).arg(joynrMessage.getHeaderMessageId()).arg(request.getMethodName()).
+    expected = expected.arg(QString::number(testExpiryDate.time_since_epoch().count())).arg(joynrMessage.getHeaderMessageId()).arg(request.getMethodName()).
             arg(request.getRequestReplyId());
 
     LOG_DEBUG(logger, QString("serialize_JoynrMessage: expected: %1").arg(expected));
@@ -1163,13 +1165,13 @@ TEST_F(JsonSerializerTest, deserialize_GPSLocation) {
 
 TEST_F(JsonSerializerTest, serialize_OnchangeWithKeepAliveSubscription) {
     qRegisterMetaType<joynr::QtSubscriptionQos>("joynr::QtSubscriptionQos");
-    qRegisterMetaType<QSharedPointer<QtSubscriptionQos>>();
+    qRegisterMetaType<std::shared_ptr<QtSubscriptionQos>>();
 
     qRegisterMetaType<joynr::QtOnChangeSubscriptionQos>("joynr::QtOnChangeSubscriptionQos");
-    qRegisterMetaType<QSharedPointer<QtOnChangeSubscriptionQos>>();
+    qRegisterMetaType<std::shared_ptr<QtOnChangeSubscriptionQos>>();
 
     qRegisterMetaType<joynr::QtOnChangeWithKeepAliveSubscriptionQos>("joynr::QtOnChangeWithKeepAliveSubscriptionQos");
-    qRegisterMetaType<QSharedPointer<joynr::QtOnChangeWithKeepAliveSubscriptionQos>>();
+    qRegisterMetaType<std::shared_ptr<joynr::QtOnChangeWithKeepAliveSubscriptionQos>>();
 
 
     joynr::QtOnChangeWithKeepAliveSubscriptionQos qos(750, 100, 900, 1050);

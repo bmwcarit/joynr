@@ -24,7 +24,7 @@
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "joynr/tests/testProxy.h"
-#include "joynr/types/Localisation/QtGpsLocation.h"
+#include "joynr/types/Localisation_QtGpsLocation.h"
 #include "joynr/types/QtProviderQos.h"
 #include "joynr/types/QtCapabilityInformation.h"
 #include "joynr/CapabilitiesRegistrar.h"
@@ -341,7 +341,7 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
     qlonglong qosRoundTripTTL = 500;
 
     // Send a message and expect to get a result
-    QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
+    std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
                                                ->setMessagingQos(MessagingQos(qosRoundTripTTL))
                                                ->setCached(false)
                                                ->setDiscoveryQos(discoveryQos)
@@ -428,7 +428,7 @@ TEST_F(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
     qlonglong qosRoundTripTTL = 500;
 
     // Send a message and expect to get a result
-    QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
+    std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
                                                ->setMessagingQos(MessagingQos(qosRoundTripTTL))
                                                ->setCached(false)
                                                ->setDiscoveryQos(discoveryQos)
@@ -496,7 +496,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
     qlonglong qosRoundTripTTL = 500;
 
     // Send a message and expect to get a result
-    QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
+    std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
                                                ->setMessagingQos(MessagingQos(qosRoundTripTTL))
                                                ->setCached(false)
                                                ->setDiscoveryQos(discoveryQos)
@@ -569,7 +569,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
     qlonglong qosRoundTripTTL = 500;
 
     // Send a message and expect to get a result
-    QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
+    std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
                                                ->setMessagingQos(MessagingQos(qosRoundTripTTL))
                                                ->setCached(false)
                                                ->setDiscoveryQos(discoveryQos)
@@ -647,7 +647,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
     qlonglong qosRoundTripTTL = 500;
 
     // Send a message and expect to get a result
-    QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
+    std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
                                                ->setMessagingQos(MessagingQos(qosRoundTripTTL))
                                                ->setCached(false)
                                                ->setDiscoveryQos(discoveryQos)
@@ -724,7 +724,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
     qlonglong qosRoundTripTTL = 500;
 
     // Send a message and expect to get a result
-    QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
+    std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
                                                ->setMessagingQos(MessagingQos(qosRoundTripTTL))
                                                ->setCached(false)
                                                ->setDiscoveryQos(discoveryQos)
@@ -810,7 +810,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
     qlonglong qosRoundTripTTL = 500;
 
     // Send a message and expect to get a result
-    QSharedPointer<tests::testProxy> testProxy(testProxyBuilder
+    std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
                                                ->setMessagingQos(MessagingQos(qosRoundTripTTL))
                                                ->setCached(false)
                                                ->setDiscoveryQos(discoveryQos)

@@ -18,15 +18,18 @@ package io.joynr.generator.interfaces
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.templates.util.NamingUtil
+import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import java.io.File
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FInterface
-import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 
 class InterfaceGenerator {
 
 	@Inject
 	extension JoynrJavaGeneratorExtensions	
+	@Inject
+	extension NamingUtil	
 
 	@Inject
 	InterfacesTemplate interfaces

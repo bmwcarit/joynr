@@ -21,16 +21,21 @@
 #include "joynr/Util.h"
 #include "joynr/JsonSerializer.h"
 #include "joynr/DispatcherUtils.h"
+#include <cstdlib>
+#include <stdint.h>
+#include "joynr/TypeUtil.h"
 #include "cluster-controller/httpnetworking/HttpResult.h"
 #include "joynr/ILocalChannelUrlDirectory.h"
 #include "joynr/Future.h"
 #include "joynr/types/QtChannelUrlInformation.h"
 #include "joynr/JoynrMessage.h"
-#include "joynr/system/RoutingTypes/QtChannelAddress.h"
+#include "joynr/system/RoutingTypes_QtChannelAddress.h"
 #include "joynr/MessageRouter.h"
 #include "joynr/JoynrMessage.h"
 
 #include <algorithm>
+
+using namespace std::chrono;
 
 namespace joynr
 {
@@ -46,8 +51,8 @@ LongPollingMessageReceiver::LongPollingMessageReceiver(
         const QString& receiverId,
         const LongPollingMessageReceiverSettings& settings,
         QSemaphore* channelCreatedSemaphore,
-        QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory,
-        QSharedPointer<MessageRouter> messageRouter)
+        std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
+        std::shared_ptr<MessageRouter> messageRouter)
         : bounceProxyUrl(bounceProxyUrl),
           channelId(channelId),
           receiverId(receiverId),
@@ -77,9 +82,9 @@ void LongPollingMessageReceiver::run()
     checkServerTime();
     QString createChannelUrl = bounceProxyUrl.getCreateChannelUrl(channelId).toString();
     LOG_INFO(logger, "Running lpmr with channelId " + channelId);
-    QSharedPointer<IHttpPostBuilder> createChannelRequestBuilder(
+    std::shared_ptr<IHttpPostBuilder> createChannelRequestBuilder(
             HttpNetworking::getInstance()->createHttpPostBuilder(createChannelUrl));
-    QSharedPointer<HttpRequest> createChannelRequest(
+    std::shared_ptr<HttpRequest> createChannelRequest(
             createChannelRequestBuilder->addHeader("X-Atmosphere-tracking-id", receiverId)
                     ->withContentType("application/json")
                     ->withTimeout_ms(settings.bounceProxyTimeout_ms)
@@ -114,10 +119,10 @@ void LongPollingMessageReceiver::run()
 
     while (!isInterrupted()) {
 
-        QSharedPointer<IHttpGetBuilder> longPollRequestBuilder(
+        std::shared_ptr<IHttpGetBuilder> longPollRequestBuilder(
                 HttpNetworking::getInstance()->createHttpGetBuilder(channelUrl));
 
-        QSharedPointer<HttpRequest> longPollRequest(
+        std::shared_ptr<HttpRequest> longPollRequest(
                 longPollRequestBuilder->acceptGzip()
                         ->addHeader("Accept", "application/json")
                         ->addHeader("X-Atmosphere-tracking-id", receiverId)
@@ -190,7 +195,7 @@ void LongPollingMessageReceiver::processReceivedQjsonObjects(const QByteArray& j
         msg->getType() == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
         // TODO ca: check if replyTo header info is available?
         QString replyChannelId = msg->getHeaderReplyChannelId();
-        QSharedPointer<system::RoutingTypes::QtChannelAddress> address(
+        std::shared_ptr<system::RoutingTypes::QtChannelAddress> address(
                 new system::RoutingTypes::QtChannelAddress(replyChannelId));
         messageRouter->addNextHop(msg->getHeaderFrom().toStdString(), address);
     }
@@ -206,22 +211,21 @@ void LongPollingMessageReceiver::checkServerTime()
 {
     QString timeCheckUrl = bounceProxyUrl.getTimeCheckUrl().toString();
 
-    QSharedPointer<IHttpGetBuilder> timeCheckRequestBuilder(
+    std::shared_ptr<IHttpGetBuilder> timeCheckRequestBuilder(
             HttpNetworking::getInstance()->createHttpGetBuilder(timeCheckUrl));
-    QSharedPointer<HttpRequest> timeCheckRequest(
+    std::shared_ptr<HttpRequest> timeCheckRequest(
             timeCheckRequestBuilder->addHeader("Accept", "text/plain")
                     ->withTimeout_ms(settings.bounceProxyTimeout_ms)
                     ->build());
     LOG_DEBUG(logger,
               QString("CheckServerTime: sending request to Bounce Proxy (") + timeCheckUrl +
                       QString(")"));
-    QDateTime localTimeBeforeRequest = QDateTime::currentDateTime();
+    system_clock::time_point localTimeBeforeRequest = DispatcherUtils::now();
     HttpResult timeCheckResult = timeCheckRequest->execute();
-    QDateTime localTimeAfterRequest = QDateTime::currentDateTime();
-    QDateTime localTime =
-            QDateTime::fromMSecsSinceEpoch((localTimeBeforeRequest.toMSecsSinceEpoch() +
-                                            localTimeAfterRequest.toMSecsSinceEpoch()) /
-                                           2);
+    system_clock::time_point localTimeAfterRequest = DispatcherUtils::now();
+    uint64_t localTime = (TypeUtil::toMilliseconds(localTimeBeforeRequest) +
+                          TypeUtil::toMilliseconds(localTimeAfterRequest)) /
+                         2;
     if (timeCheckResult.getStatusCode() != 200) {
         LOG_ERROR(logger,
                   QString("CheckServerTime: Bounce Proxy not reached [statusCode=%1] [body=%2]")
@@ -232,14 +236,16 @@ void LongPollingMessageReceiver::checkServerTime()
                   QString("CheckServerTime: reply received [statusCode=%1] [body=%2]")
                           .arg(QString::number(timeCheckResult.getStatusCode()))
                           .arg(QString(timeCheckResult.getBody())));
-        QDateTime serverTime =
-                QDateTime::fromMSecsSinceEpoch(QString(timeCheckResult.getBody()).toLongLong());
-        qint64 diff = qAbs(serverTime.msecsTo(localTime));
+        uint64_t serverTime =
+                TypeUtil::toStdUInt64(QString(timeCheckResult.getBody()).toLongLong());
+        uint64_t diff = abs(serverTime - localTime);
 
         LOG_INFO(logger,
                  QString("CheckServerTime [server time=%1] [local time=%2] [diff=%3 ms]")
-                         .arg(serverTime.toString())
-                         .arg(localTime.toString())
+                         .arg(TypeUtil::toQt(
+                                 TypeUtil::toDateString(JoynrTimePoint(milliseconds(serverTime)))))
+                         .arg(TypeUtil::toQt(
+                                 TypeUtil::toDateString(JoynrTimePoint(milliseconds(localTime)))))
                          .arg(QString::number(diff)));
         if (diff > 500) {
             LOG_ERROR(logger,

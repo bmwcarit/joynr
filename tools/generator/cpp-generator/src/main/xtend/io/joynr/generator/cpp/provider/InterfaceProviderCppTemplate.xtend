@@ -19,22 +19,22 @@ package io.joynr.generator.cpp.provider
 
 import com.google.inject.Inject
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.cpp.util.QtTypeUtil
 import io.joynr.generator.cpp.util.TemplateBase
-import io.joynr.generator.util.InterfaceTemplate
+import io.joynr.generator.templates.InterfaceTemplate
+import io.joynr.generator.templates.util.InterfaceUtil
+import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FType
-import io.joynr.generator.cpp.util.QtTypeUtil
 
 class InterfaceProviderCppTemplate implements InterfaceTemplate{
 
-	@Inject
-	private extension TemplateBase
+	@Inject private extension TemplateBase
+	@Inject private extension QtTypeUtil
+	@Inject private extension JoynrCppGeneratorExtensions
+	@Inject private extension NamingUtil
+	@Inject private extension InterfaceUtil
 
-	@Inject
-	private extension QtTypeUtil
-
-	@Inject
-	private extension JoynrCppGeneratorExtensions
 	override generate(FInterface serviceInterface)
 '''
 «warning()»

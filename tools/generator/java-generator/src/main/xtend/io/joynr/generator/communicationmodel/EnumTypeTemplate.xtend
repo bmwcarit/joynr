@@ -18,16 +18,18 @@ package io.joynr.generator.communicationmodel
  */
 
 import com.google.inject.Inject
-import io.joynr.generator.util.EnumTemplate
+import io.joynr.generator.templates.EnumTemplate
+import io.joynr.generator.templates.util.NamingUtil
+import io.joynr.generator.util.JavaTypeUtil
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import io.joynr.generator.util.TemplateBase
 import org.franca.core.franca.FEnumerationType
-import io.joynr.generator.util.JavaTypeUtil
 
 class EnumTypeTemplate implements EnumTemplate{
 
 	@Inject extension JoynrJavaGeneratorExtensions
 	@Inject extension JavaTypeUtil
+	@Inject extension NamingUtil
 	@Inject extension TemplateBase
 
 	override generate(FEnumerationType enumType)

@@ -420,6 +420,33 @@ public class SerializationTest {
     }
 
     @Test
+    public void serializePublicationWithJoynrRuntimeException() throws JsonGenerationException, JsonMappingException,
+                                                               IOException {
+
+        JoynrRuntimeException error = new JoynrRuntimeException("detail message: JoynrRuntimeException");
+        String subscriptionId = "12345";
+        SubscriptionPublication publication = new SubscriptionPublication(error, subscriptionId);
+
+        String writeValueAsString = objectMapper.writeValueAsString(publication);
+
+        JoynrMessage message = new JoynrMessage();
+        String type = JoynrMessage.MESSAGE_TYPE_PUBLICATION;
+        message.setFrom(UUID.randomUUID().toString());
+        message.setTo(UUID.randomUUID().toString());
+        message.setType(type);
+        message.setExpirationDate(ExpiryDate.fromRelativeTtl(60000));
+        message.setPayload(writeValueAsString);
+        String messageAsString = objectMapper.writeValueAsString(message);
+        System.out.println(messageAsString);
+
+        System.out.println(writeValueAsString);
+        JoynrMessage receivedMessage = objectMapper.readValue(messageAsString, JoynrMessage.class);
+        SubscriptionPublication receivedPublication = objectMapper.readValue(receivedMessage.getPayload(),
+                                                                             SubscriptionPublication.class);
+        Assert.assertEquals(publication, receivedPublication);
+    }
+
+    @Test
     public void serializeSubscriptionStop() throws JsonGenerationException, JsonMappingException, IOException {
 
         SubscriptionStop stop = new SubscriptionStop("testID");

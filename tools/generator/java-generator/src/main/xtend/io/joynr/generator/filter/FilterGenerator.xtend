@@ -18,7 +18,8 @@ package io.joynr.generator.filter
  */
 
 import com.google.inject.Inject
-import io.joynr.generator.filter.FilterTemplate
+import io.joynr.generator.templates.util.BroadcastUtil
+import io.joynr.generator.templates.util.NamingUtil
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import java.io.File
 import org.eclipse.xtext.generator.IFileSystemAccess
@@ -28,6 +29,10 @@ class FilterGenerator {
 
 	@Inject
 	extension JoynrJavaGeneratorExtensions
+	@Inject
+	extension BroadcastUtil
+	@Inject
+	extension NamingUtil
 
 	@Inject
 	FilterTemplate filterTemplate;

@@ -3,7 +3,7 @@ package io.joynr.dispatching.subscription;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@ import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 
 import java.util.TimerTask;
 
+import joynr.exceptions.PublicationMissedException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,17 +33,20 @@ public class MissedPublicationTimer extends PubSubTimerBase {
     private final AttributeSubscriptionListener<?> callback;
     private final long alertAfterInterval_ms;
     private long expectedInterval_ms;
+    private final String subscriptionId;
     private static final Logger logger = LoggerFactory.getLogger(MissedPublicationTimer.class);
 
     public MissedPublicationTimer(long expiryDate,
                                   long expectedInterval_ms,
                                   long alertAfterInterval_ms,
                                   AttributeSubscriptionListener<?> callback,
-                                  PubSubState state) {
+                                  PubSubState state,
+                                  String subscrptionId) {
         super(expiryDate, state);
         this.expectedInterval_ms = expectedInterval_ms;
         this.alertAfterInterval_ms = alertAfterInterval_ms;
         this.callback = callback;
+        this.subscriptionId = subscrptionId;
         startTimer();
     }
 
@@ -57,9 +62,9 @@ public class MissedPublicationTimer extends PubSubTimerBase {
                     logger.info("Publication in time.");
                     delay = alertAfterInterval_ms - timeSinceLastPublication;
                 } else {
-                    logger.info("Missed publication!");
+                    logger.info("Missed publication of subscriptionId \"" + subscriptionId + "\"!");
                     delay = alertAfterInterval_ms - timeSinceLastExpectedPublication(timeSinceLastPublication);
-                    callback.onError();
+                    callback.onError(new PublicationMissedException(subscriptionId));
                 }
                 logger.info("Rescheduling MissedPublicationTimer with delay: " + delay);
                 rescheduleTimer(delay);

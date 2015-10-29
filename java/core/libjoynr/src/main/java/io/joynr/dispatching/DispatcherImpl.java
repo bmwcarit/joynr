@@ -303,18 +303,24 @@ public class DispatcherImpl implements Dispatcher {
                 }
                 subscriptionManager.handleBroadcastPublication(subscriptionId, broadcastValues);
             } else {
-                Class<?> receivedType = subscriptionManager.getAttributeType(subscriptionId);
-
-                Object attributeValue;
-                if (TypeReference.class.isAssignableFrom(receivedType)) {
-                    TypeReference<?> typeRef = (TypeReference<?>) receivedType.newInstance();
-                    attributeValue = objectMapper.convertValue(((List<?>) publication.getResponse()).get(0), typeRef);
+                JoynrException error = publication.getError();
+                if (error != null) {
+                    subscriptionManager.handleAttributePublicationError(subscriptionId, error);
                 } else {
-                    attributeValue = objectMapper.convertValue(((List<?>) publication.getResponse()).get(0),
-                                                               receivedType);
-                }
+                    Class<?> receivedType = subscriptionManager.getAttributeType(subscriptionId);
 
-                subscriptionManager.handleAttributePublication(subscriptionId, attributeValue);
+                    Object attributeValue;
+                    if (TypeReference.class.isAssignableFrom(receivedType)) {
+                        TypeReference<?> typeRef = (TypeReference<?>) receivedType.newInstance();
+                        attributeValue = objectMapper.convertValue(((List<?>) publication.getResponse()).get(0),
+                                                                   typeRef);
+                    } else {
+                        attributeValue = objectMapper.convertValue(((List<?>) publication.getResponse()).get(0),
+                                                                   receivedType);
+                    }
+
+                    subscriptionManager.handleAttributePublication(subscriptionId, attributeValue);
+                }
             }
         } catch (Exception e) {
             logger.error("Error delivering publication: {} : {}", e.getClass(), e.getMessage());

@@ -31,6 +31,7 @@
 #include <QString>
 #include <QSettings>
 #include <QSemaphore>
+#include <memory>
 
 class DispatcherIntegrationTest;
 class CapabilitiesClientTest;
@@ -59,7 +60,7 @@ class JOYNRCLUSTERCONTROLLER_EXPORT HttpReceiver : public IMessageReceiver
 
 public:
     explicit HttpReceiver(const MessagingSettings& settings,
-                          QSharedPointer<MessageRouter> messageRouter);
+                          std::shared_ptr<MessageRouter> messageRouter);
     virtual ~HttpReceiver();
 
     /**
@@ -91,7 +92,7 @@ public:
       */
     virtual void stopReceiveQueue();
 
-    virtual void init(QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory);
+    virtual void init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(HttpReceiver);
@@ -114,8 +115,8 @@ private:
 
     MessagingSettings settings;
     LongPollingMessageReceiver* messageReceiver;
-    QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory;
-    QSharedPointer<MessageRouter> messageRouter;
+    std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory;
+    std::shared_ptr<MessageRouter> messageRouter;
 
     friend class ::DispatcherIntegrationTest;
     friend class ::CapabilitiesClientTest;

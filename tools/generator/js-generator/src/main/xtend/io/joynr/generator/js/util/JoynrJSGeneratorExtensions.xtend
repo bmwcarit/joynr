@@ -18,12 +18,15 @@ package io.joynr.generator.js.util
  * limitations under the License.
  */
 
-import io.joynr.generator.util.JoynrGeneratorExtensions
+import com.google.inject.Inject
+import io.joynr.generator.templates.util.AttributeUtil
+import io.joynr.generator.templates.util.JoynrGeneratorExtensions
 import org.franca.core.franca.FAttribute
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FType
 
 class JoynrJSGeneratorExtensions extends JoynrGeneratorExtensions {
+	@Inject private extension AttributeUtil
 
 	override getOneLineWarning() {
 		throw new UnsupportedOperationException("Auto-generated function stub")

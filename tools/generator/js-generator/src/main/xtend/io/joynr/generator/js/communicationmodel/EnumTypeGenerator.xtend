@@ -20,18 +20,15 @@ package io.joynr.generator.js.communicationmodel
 
 import com.google.inject.Inject
 import io.joynr.generator.js.util.GeneratorParameter
-import io.joynr.generator.js.util.JoynrJSGeneratorExtensions
-import org.franca.core.franca.FEnumerationType
 import io.joynr.generator.js.util.JSTypeUtil
+import io.joynr.generator.templates.util.NamingUtil
 import java.util.Date
+import org.franca.core.franca.FEnumerationType
 
 class EnumTypeGenerator {
 
-	@Inject
-	extension JoynrJSGeneratorExtensions
-
-	@Inject
-	extension JSTypeUtil
+	@Inject extension JSTypeUtil
+	@Inject private extension NamingUtil
 
 	@Inject
 	extension GeneratorParameter
@@ -124,21 +121,20 @@ class EnumTypeGenerator {
 	})();
 	'''
 
-	private def getEnumerators(FEnumerationType type)'''
-	«FOR literal: type.enumerators»
+	def getEnumerators(FEnumerationType type)'''
+	«FOR enumValue: getEnumElementsAndBaseEnumElements(type)»
 		/**
-		 * @name «type.joynrName».«literal.joynrName»
+		 * @name «type.joynrName».«enumValue.joynrName»
 		 * @readonly
-		 «IF literal.comment != null»
-		 	* @summary
-		 	«appendJSDocSummaryAndWriteSeeAndDescription(literal, "* ")»
-		 «ENDIF»
+		«IF enumValue.comment != null»
+			 * @summary
+			 «appendJSDocSummaryAndWriteSeeAndDescription(enumValue, "* ")»
+		«ENDIF»
 		 */
-		«type.joynrName».«literal.joynrName» = new «type.joynrName»({
-			name: "«literal.joynrName»",
-			value: «IF literal.value==null»"«literal.joynrName»"«ELSE»«literal.value.enumeratorValue»«ENDIF»
+		«type.joynrName».«enumValue.joynrName» = new «type.joynrName»({
+			name: "«enumValue.joynrName»",
+			value: «IF enumValue.value==null»"«enumValue.joynrName»"«ELSE»«enumValue.value.enumeratorValue»«ENDIF»
 		});
 	«ENDFOR»
 	'''
-
 }

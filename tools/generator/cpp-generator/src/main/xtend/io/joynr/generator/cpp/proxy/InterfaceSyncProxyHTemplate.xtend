@@ -18,11 +18,12 @@ package io.joynr.generator.cpp.proxy
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.cpp.util.CppInterfaceUtil
 import io.joynr.generator.cpp.util.CppStdTypeUtil
-import io.joynr.generator.cpp.util.InterfaceUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
-import io.joynr.generator.util.InterfaceTemplate
+import io.joynr.generator.templates.InterfaceTemplate
+import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
 
 class InterfaceSyncProxyHTemplate implements InterfaceTemplate{
@@ -30,7 +31,8 @@ class InterfaceSyncProxyHTemplate implements InterfaceTemplate{
 	@Inject extension TemplateBase
 
 	@Inject extension CppStdTypeUtil
-	@Inject extension InterfaceUtil
+	@Inject extension CppInterfaceUtil
+	@Inject private extension NamingUtil
 
 	override generate(FInterface serviceInterface)
 '''
@@ -52,6 +54,8 @@ class InterfaceSyncProxyHTemplate implements InterfaceTemplate{
 	#include «parameterType»
 «ENDFOR»
 
+#include <memory>
+
 «getNamespaceStarter(serviceInterface)»
 /** @brief Synchronous proxy for interface «interfaceName» */
 class «getDllExportMacro()» «syncClassName»: virtual public «className»Base, virtual public I«interfaceName»Sync {
@@ -66,7 +70,7 @@ public:
 	 * @param cached True, if cached, false otherwise
 	 */
 	«syncClassName»(
-			QSharedPointer<joynr::system::RoutingTypes::QtAddress> messagingAddress,
+			std::shared_ptr<joynr::system::RoutingTypes::QtAddress> messagingAddress,
 			joynr::ConnectorFactory* connectorFactory,
 			joynr::IClientCache* cache,
 			const std::string& domain,

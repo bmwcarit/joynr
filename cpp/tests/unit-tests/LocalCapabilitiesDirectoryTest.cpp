@@ -26,7 +26,7 @@
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
 #include "joynr/ClusterControllerDirectories.h"
-#include "joynr/system/RoutingTypes/QtChannelAddress.h"
+#include "joynr/system/RoutingTypes_QtChannelAddress.h"
 #include "common/capabilities/CapabilitiesMetaTypes.h"
 #include "tests/utils/MockLocalCapabilitiesDirectoryCallback.h"
 #include "cluster-controller/capabilities-client/IGlobalCapabilitiesCallback.h"
@@ -66,8 +66,8 @@ public:
         dummyParticipantId1 = QUuid::createUuid().toString().toStdString();
         dummyParticipantId2 = QUuid::createUuid().toString().toStdString();
         dummyParticipantId3 = QUuid::createUuid().toString().toStdString();
-        localJoynrMessagingAddress1 = QSharedPointer<system::RoutingTypes::QtChannelAddress>(new system::RoutingTypes::QtChannelAddress("LOCAL_CHANNEL_ID"));
-        callback = QSharedPointer<MockLocalCapabilitiesDirectoryCallback>(new MockLocalCapabilitiesDirectoryCallback());
+        localJoynrMessagingAddress1 = std::shared_ptr<system::RoutingTypes::QtChannelAddress>(new system::RoutingTypes::QtChannelAddress("LOCAL_CHANNEL_ID"));
+        callback = std::shared_ptr<MockLocalCapabilitiesDirectoryCallback>(new MockLocalCapabilitiesDirectoryCallback());
         discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL);
         discoveryQos.setCacheMaxAge(10000);
         EXPECT_CALL(*capabilitiesClient, getLocalChannelId()).WillRepeatedly(Return(LOCAL_CHANNEL_ID));
@@ -199,7 +199,7 @@ protected:
     std::string dummyParticipantId1;
     std::string dummyParticipantId2;
     std::string dummyParticipantId3;
-    QSharedPointer<system::RoutingTypes::QtChannelAddress> localJoynrMessagingAddress1;
+    std::shared_ptr<system::RoutingTypes::QtChannelAddress> localJoynrMessagingAddress1;
     joynr::types::DiscoveryQos discoveryQos;
     QMap<std::string, CapabilityEntry> globalCapEntryMap;
 
@@ -212,7 +212,7 @@ protected:
     static const std::string LOCAL_CHANNEL_ID;
     static const std::string EXTERNAL_CHANNEL_ID;
     static const int TIMEOUT;
-    QSharedPointer<MockLocalCapabilitiesDirectoryCallback> callback;
+    std::shared_ptr<MockLocalCapabilitiesDirectoryCallback> callback;
     std::vector<joynr::types::CommunicationMiddleware::Enum> connections;
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesDirectoryTest);

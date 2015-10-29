@@ -30,8 +30,9 @@
 
 #include <QString>
 #include <QByteArray>
-#include <QSharedPointer>
 #include <QThreadPool>
+#include "joynr/DispatcherUtils.h"
+#include <memory>
 
 namespace joynr
 {
@@ -60,7 +61,7 @@ public:
     * @brief The MessageSender needs the localChannelUrlDirectory to obtain Url's for
     * the channelIds.
     */
-    void init(QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory,
+    void init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
               const MessagingSettings& settings);
 
 private:
@@ -81,7 +82,7 @@ private:
     public:
         SendMessageRunnable(HttpSender* messageSender,
                             const QString& channelId,
-                            const QDateTime& decayTime,
+                            const JoynrTimePoint& decayTime,
                             const QByteArray& data,
                             DelayedScheduler& delayedScheduler,
                             qint64 maxAttemptTtl_ms);

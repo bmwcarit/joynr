@@ -23,7 +23,7 @@
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/IMessaging.h"
 
-#include <QSharedPointer>
+#include <memory>
 
 namespace joynr
 {
@@ -36,7 +36,7 @@ class InProcessMessagingSkeleton;
 class JOYNRCOMMON_EXPORT InProcessMessagingStub : public IMessaging
 {
 public:
-    InProcessMessagingStub(QSharedPointer<InProcessMessagingSkeleton> skeleton);
+    InProcessMessagingStub(std::shared_ptr<InProcessMessagingSkeleton> skeleton);
     virtual ~InProcessMessagingStub()
     {
     }
@@ -44,7 +44,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(InProcessMessagingStub);
-    QSharedPointer<InProcessMessagingSkeleton> skeleton;
+    std::shared_ptr<InProcessMessagingSkeleton> skeleton;
 };
 
 } // namespace joynr

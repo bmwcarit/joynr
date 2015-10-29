@@ -21,7 +21,6 @@
 
 #include <QMetaType>
 #include <QObject>
-#include <QSharedPointer>
 #include <QList>
 
 // http://doc.qt.nokia.com/4.7-snapshot/qmetatype.html#Q_DECLARE_METATYPE
@@ -32,7 +31,6 @@
 // Use this header file to place Q_DECLARE_METATYPE that could not placed
 // directly below the declaration of the class or struct.
 
-Q_DECLARE_METATYPE(QSharedPointer<QObject>)
 Q_DECLARE_METATYPE(qint8)
 Q_DECLARE_METATYPE(QList<int>)
 Q_DECLARE_METATYPE(QList<qint8>)
@@ -51,8 +49,5 @@ uint qHash(const QList<T>& key, uint seed = 0)
     }
     return hashCode;
 }
-
-//#include "Reply.h"
-// Q_DECLARE_METATYPE(QSharedPointer<Reply>) // TM I think this should be moved to Reply.h
 
 #endif // DECLAREMETATYPEUTIL_H

@@ -23,7 +23,8 @@
 
 #include <QObject>
 #include <QString>
-#include <QSharedPointer>
+
+#include <memory>
 
 namespace joynr
 {
@@ -53,6 +54,6 @@ private:
 } // namespace joynr
 
 Q_DECLARE_METATYPE(joynr::SubscriptionStop)
-Q_DECLARE_METATYPE(QSharedPointer<joynr::SubscriptionStop>)
+Q_DECLARE_METATYPE(std::shared_ptr<joynr::SubscriptionStop>)
 
 #endif // SUBSCRIPTIONSTOP_H

@@ -21,8 +21,7 @@
 #include "joynr/ReplyInterpreter.h"
 #include "joynr/MetaTypeRegistrar.h"
 
-#include <QSharedPointer>
-#include "joynr/types/Localisation/QtGpsLocation.h"
+#include "joynr/types/Localisation_QtGpsLocation.h"
 #include "joynr/IReplyCaller.h"
 //#needed:?
 #include "joynr/JoynrMessageSender.h"
@@ -59,13 +58,13 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller) {
     registrar.registerReplyMetaType<types::Localisation::QtGpsLocation>();
 
     // Create a mock callback
-    QSharedPointer<MockCallback<joynr::types::Localisation::QtGpsLocation>> callback(new MockCallback<joynr::types::Localisation::QtGpsLocation>());
+    std::shared_ptr<MockCallback<joynr::types::Localisation::QtGpsLocation>> callback(new MockCallback<joynr::types::Localisation::QtGpsLocation>());
     int myAltitude = 13;
     EXPECT_CALL(*callback, onSuccess(Property(&types::Localisation::QtGpsLocation::getAltitude, myAltitude)))
                 .Times(1);
 
     // Create a reply caller
-    QSharedPointer<IReplyCaller> icaller(new ReplyCaller<types::Localisation::QtGpsLocation>(
+    std::shared_ptr<IReplyCaller> icaller(new ReplyCaller<types::Localisation::QtGpsLocation>(
             [callback](const RequestStatus& status, const types::Localisation::QtGpsLocation& location) {
                 callback->onSuccess(location);
             },

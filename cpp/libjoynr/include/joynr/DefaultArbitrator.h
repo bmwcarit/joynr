@@ -23,7 +23,6 @@
 #include "joynr/joynrlogging.h"
 #include <vector>
 #include "joynr/ProviderArbitrator.h"
-#include <QSharedPointer>
 #include <string>
 #include "joynr/types/QtDiscoveryEntry.h"
 

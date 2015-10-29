@@ -22,7 +22,8 @@ import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.QtTypeUtil
 import io.joynr.generator.cpp.util.TemplateBase
-import io.joynr.generator.util.CompoundTypeTemplate
+import io.joynr.generator.templates.CompoundTypeTemplate
+import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FCompoundType
 
 class TypeCppTemplate implements CompoundTypeTemplate{
@@ -32,6 +33,9 @@ class TypeCppTemplate implements CompoundTypeTemplate{
 
 	@Inject
 	private extension QtTypeUtil
+
+	@Inject
+	private extension NamingUtil
 
 	@Inject
 	private CppStdTypeUtil stdTypeUtil
@@ -50,7 +54,6 @@ class TypeCppTemplate implements CompoundTypeTemplate{
 #include "joynr/TypeUtil.h"
 #include "qjson/serializer.h"
 #include <QMetaEnum>
-#include <QDateTime>
 
 #include "«stdTypeUtil.getIncludeOf(type)»"
 

@@ -20,7 +20,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.joynr</groupId>
 	<artifactId>joynr</artifactId>
-	<version>0.10.2</version>
+	<version>0.11.0</version>
 	<packaging>pom</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<url>http://joynr.io</url>
@@ -1320,6 +1320,13 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>
 				<executions>
+					<execution>
+						<id>display-platform-info</id>
+						<goals>
+							<goal>display-info</goal>
+						</goals>
+						<phase>validate</phase>
+					</execution>
 					<execution>
 						<id>enforce-maven-and-java-version</id>
 						<goals>

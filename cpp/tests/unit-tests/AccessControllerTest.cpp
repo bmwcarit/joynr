@@ -45,7 +45,7 @@ public:
             const std::string& domain,
             const std::string& interfaceName,
             TrustLevel::Enum trustLevel,
-            QSharedPointer<LocalDomainAccessController::IGetConsumerPermissionCallback> callback
+            std::shared_ptr<LocalDomainAccessController::IGetConsumerPermissionCallback> callback
     ) {
         Q_UNUSED(userId)
         Q_UNUSED(domain)
@@ -59,7 +59,7 @@ public:
             const std::string& domain,
             const std::string& interfaceName,
             TrustLevel::Enum trustLevel,
-            QSharedPointer<LocalDomainAccessController::IGetConsumerPermissionCallback> callback
+            std::shared_ptr<LocalDomainAccessController::IGetConsumerPermissionCallback> callback
     ) {
         Q_UNUSED(userId)
         Q_UNUSED(domain)
@@ -141,7 +141,7 @@ public:
 
 protected:
     MockLocalDomainAccessController localDomainAccessControllerMock;
-    QSharedPointer<MockConsumerPermissionCallback> accessControllerCallback;
+    std::shared_ptr<MockConsumerPermissionCallback> accessControllerCallback;
     QSettings settings;
     MockMessagingSettings messagingSettingsMock;
     MockLocalCapabilitiesDirectory localCapabilitiesDirectoryMock;
@@ -191,7 +191,7 @@ TEST_F(AccessControllerTest, accessWithInterfaceLevelAccessControl) {
 
     accessController.hasConsumerPermission(
             message,
-            accessControllerCallback.dynamicCast<IAccessController::IHasConsumerPermissionCallback>()
+            std::dynamic_pointer_cast<IAccessController::IHasConsumerPermissionCallback>(accessControllerCallback)
     );
 }
 
@@ -223,7 +223,7 @@ TEST_F(AccessControllerTest, accessWithOperationLevelAccessControl) {
 
     accessController.hasConsumerPermission(
             message,
-            accessControllerCallback.dynamicCast<IAccessController::IHasConsumerPermissionCallback>()
+            std::dynamic_pointer_cast<IAccessController::IHasConsumerPermissionCallback>(accessControllerCallback)
     );
 }
 
@@ -246,7 +246,7 @@ TEST_F(AccessControllerTest, accessWithOperationLevelAccessControlAndFaultyMessa
 
     accessController.hasConsumerPermission(
             message,
-            accessControllerCallback.dynamicCast<IAccessController::IHasConsumerPermissionCallback>()
+            std::dynamic_pointer_cast<IAccessController::IHasConsumerPermissionCallback>(accessControllerCallback)
     );
 }
 

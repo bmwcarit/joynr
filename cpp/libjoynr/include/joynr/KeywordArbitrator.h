@@ -24,7 +24,6 @@
 #include <vector>
 #include "joynr/ProviderArbitrator.h"
 #include <QString>
-#include <QSharedPointer>
 #include <string>
 namespace joynr
 {

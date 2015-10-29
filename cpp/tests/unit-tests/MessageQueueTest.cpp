@@ -23,9 +23,12 @@
 #include "joynr/MessageQueue.h"
 #include "QThread"
 #include <QThreadPool>
+#include <chrono>
+#include <stdint.h>
 
 
 using namespace joynr;
+using namespace std::chrono;
 
 class MessageQueueTest : public ::testing::Test {
 public:
@@ -108,9 +111,9 @@ TEST_F(MessageQueueTest, dequeueInvalidParticipantId) {
 }
 
 TEST_F(MessageQueueTest, removeOutdatedMessage) {
-    QDateTime now = QDateTime::currentDateTimeUtc();
     JoynrMessage msg10;
-    msg10.setHeaderExpiryDate(now.addMSecs(10));
+    JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
+    msg10.setHeaderExpiryDate(now + milliseconds(10));
     EXPECT_EQ(messageQueue->queueMessage(msg10), 1);
     QThread::msleep(5);
     EXPECT_EQ(messageQueue->removeOutdatedMessages(), 0);
@@ -119,13 +122,13 @@ TEST_F(MessageQueueTest, removeOutdatedMessage) {
 }
 
 TEST_F(MessageQueueTest, removeOutdatedMessagesWithRunnable) {
-    QDateTime now = QDateTime::currentDateTimeUtc();
     JoynrMessage msg25;
-    msg25.setHeaderExpiryDate(now.addMSecs(25));
+    JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
+    msg25.setHeaderExpiryDate(now + milliseconds(25));
     JoynrMessage msg250;
-    msg250.setHeaderExpiryDate(now.addMSecs(250));
+    msg250.setHeaderExpiryDate(now + milliseconds(250));
     JoynrMessage msg300;
-    msg300.setHeaderExpiryDate(now.addMSecs(250));
+    msg300.setHeaderExpiryDate(now + milliseconds(250));
     EXPECT_EQ(messageQueue->queueMessage(msg25), 1);
     EXPECT_EQ(messageQueue->queueMessage(msg250), 2);
     EXPECT_EQ(messageQueue->queueMessage(msg300), 3);

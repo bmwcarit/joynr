@@ -25,11 +25,11 @@
 #include <QtWebSockets/QWebSocket>
 
 #include "joynr/IMessaging.h"
-#include "joynr/system/RoutingTypes/QtWebSocketAddress.h"
-#include "joynr/system/RoutingTypes/QtWebSocketClientAddress.h"
-#include "joynr/system/RoutingTypes/QtChannelAddress.h"
-#include "joynr/system/RoutingTypes/QtCommonApiDbusAddress.h"
-#include "joynr/system/RoutingTypes/QtBrowserAddress.h"
+#include "joynr/system/RoutingTypes_QtWebSocketAddress.h"
+#include "joynr/system/RoutingTypes_QtWebSocketClientAddress.h"
+#include "joynr/system/RoutingTypes_QtChannelAddress.h"
+#include "joynr/system/RoutingTypes_QtCommonApiDbusAddress.h"
+#include "joynr/system/RoutingTypes_QtBrowserAddress.h"
 
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
 #include "libjoynr/websocket/WebSocketMessagingStub.h"
@@ -78,7 +78,7 @@ TEST_F(WebSocketMessagingStubFactoryTest, canOnlyCreateWebSocketAddressses) {
 TEST_F(WebSocketMessagingStubFactoryTest, createReturnsNullForUnknownClient) {
     WebSocketMessagingStubFactory factory;
 
-    EXPECT_TRUE(factory.create(webSocketClientAddress).isNull());
+    EXPECT_TRUE((factory.create(webSocketClientAddress)).get() == 0);
 }
 
 TEST_F(WebSocketMessagingStubFactoryTest, createReturnsMessagingStub) {
@@ -88,8 +88,8 @@ TEST_F(WebSocketMessagingStubFactoryTest, createReturnsMessagingStub) {
 
     factory.addClient(webSocketClientAddress, clientWebsocket);
     factory.addServer(webSocketServerAddress, serverWebsocket);
-    EXPECT_FALSE(factory.create(webSocketClientAddress).isNull());
-    EXPECT_FALSE(factory.create(webSocketServerAddress).isNull());
+    EXPECT_FALSE(factory.create(webSocketClientAddress).get() == 0);
+    EXPECT_FALSE(factory.create(webSocketServerAddress).get() == 0);
 }
 
 TEST_F(WebSocketMessagingStubFactoryTest, closedMessagingStubsAreRemoved) {
@@ -97,15 +97,15 @@ TEST_F(WebSocketMessagingStubFactoryTest, closedMessagingStubsAreRemoved) {
     QWebSocket* websocket = new QWebSocket();
 
     factory.addClient(webSocketClientAddress, websocket);
-    QSharedPointer<joynr::IMessaging> messagingStub(factory.create(webSocketClientAddress));
-    QSharedPointer<joynr::WebSocketMessagingStub> wsMessagingStub(messagingStub.dynamicCast<joynr::WebSocketMessagingStub>());
-    QSignalSpy wsMessagingStubClosedSpy(wsMessagingStub.data(), SIGNAL(closed(joynr::system::RoutingTypes::QtAddress)));
-    EXPECT_FALSE(messagingStub.isNull());
+    std::shared_ptr<joynr::IMessaging> messagingStub(factory.create(webSocketClientAddress));
+    std::shared_ptr<joynr::WebSocketMessagingStub> wsMessagingStub(std::dynamic_pointer_cast<joynr::WebSocketMessagingStub>(messagingStub));
+    QSignalSpy wsMessagingStubClosedSpy(wsMessagingStub.get(), SIGNAL(closed(joynr::system::RoutingTypes::QtAddress)));
+    EXPECT_FALSE(messagingStub.get() == 0);
 
-    QTimer::singleShot(0, wsMessagingStub.data(), SLOT(onSocketDisconnected()));
+    QTimer::singleShot(0, wsMessagingStub.get(), SLOT(onSocketDisconnected()));
     EXPECT_TRUE(wsMessagingStubClosedSpy.wait());
     EXPECT_EQ(1, wsMessagingStubClosedSpy.count());
-    EXPECT_TRUE(factory.create(webSocketClientAddress).isNull());
+    EXPECT_TRUE((factory.create(webSocketClientAddress)).get() == 0);
 }
 
 TEST_F(WebSocketMessagingStubFactoryTest, removeClientRemovesMessagingStub) {
@@ -113,9 +113,9 @@ TEST_F(WebSocketMessagingStubFactoryTest, removeClientRemovesMessagingStub) {
     QWebSocket* websocket = new QWebSocket();
 
     factory.addClient(webSocketClientAddress, websocket);
-    EXPECT_FALSE(factory.create(webSocketClientAddress).isNull());
+    EXPECT_FALSE(factory.create(webSocketClientAddress).get() == 0);
     factory.removeClient(webSocketClientAddress);
-    EXPECT_TRUE(factory.create(webSocketClientAddress).isNull());
+    EXPECT_TRUE((factory.create(webSocketClientAddress)).get() == 0);
 }
 
 TEST_F(WebSocketMessagingStubFactoryTest, convertWebSocketAddressToUrl) {

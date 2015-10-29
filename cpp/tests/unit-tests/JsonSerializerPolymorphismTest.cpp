@@ -18,19 +18,19 @@
  */
 #include <gtest/gtest.h>
 #include "PrettyPrint.h"
-#include "joynr/types/Localisation/QtGpsPosition.h"
-#include "joynr/types/Localisation/QtGpsPositionExtended.h"
-#include "joynr/types/Localisation/QtGpsLocation.h"
-#include "joynr/types/Localisation/QtGpsFixEnum.h"
-#include "joynr/types/Localisation/QtTrip.h"
+#include "joynr/types/Localisation_QtGpsPosition.h"
+#include "joynr/types/Localisation_QtGpsPositionExtended.h"
+#include "joynr/types/Localisation_QtGpsLocation.h"
+#include "joynr/types/Localisation_QtGpsFixEnum.h"
+#include "joynr/types/Localisation_QtTrip.h"
 #include "joynr/JsonSerializer.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/DeclareMetatypeUtil.h"
 #include "joynr/Util.h"
 #include <QList>
 
-#include "joynr/types/TestTypes/QtTStruct.h"
-#include "joynr/types/TestTypes/QtTStructExtended.h"
+#include "joynr/types/TestTypes_QtTStruct.h"
+#include "joynr/types/TestTypes_QtTStructExtended.h"
 
 using namespace joynr;
 using namespace joynr_logging;

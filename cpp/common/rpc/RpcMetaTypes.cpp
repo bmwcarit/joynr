@@ -27,7 +27,7 @@ void registerRpcMetaTypes()
 {
     qRegisterMetaType<Request>("Request");
     qRegisterMetaType<Reply>("Reply");
-    qRegisterMetaType<QSharedPointer<Reply>>("QSharedPointerJsonReply");
+    qRegisterMetaType<std::shared_ptr<Reply>>("std::shared_ptrJsonReply");
 }
 
 } // namespace joynr

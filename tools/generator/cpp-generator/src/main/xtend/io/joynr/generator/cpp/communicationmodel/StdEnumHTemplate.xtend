@@ -21,7 +21,8 @@ import com.google.inject.Inject
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
-import io.joynr.generator.util.EnumTemplate
+import io.joynr.generator.templates.EnumTemplate
+import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FEnumerationType
 
 class StdEnumHTemplate implements EnumTemplate {
@@ -35,10 +36,13 @@ class StdEnumHTemplate implements EnumTemplate {
 	@Inject
 	private extension CppStdTypeUtil
 
+	@Inject
+	private extension NamingUtil
+
 	override generate(FEnumerationType type)
 '''
 «val typeName = type.joynrName»
-«val headerGuard = (getPackagePathWithJoynrPrefix(type, "_")+"_"+typeName+"_h").toUpperCase»
+«val headerGuard = (getPackagePathWithJoynrPrefix(type, "_", true)+"_"+typeName+"_h").toUpperCase»
 «warning»
 #ifndef «headerGuard»
 #define «headerGuard»

@@ -18,17 +18,25 @@ package io.joynr.generator.cpp.communicationmodel
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.templates.util.NamingUtil
+import io.joynr.generator.templates.util.TypeUtil
 import java.io.File
 import org.eclipse.xtext.generator.IFileSystemAccess
-import org.franca.core.franca.FModel
-import org.franca.core.franca.FEnumerationType
 import org.franca.core.franca.FCompoundType
-import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import org.franca.core.franca.FEnumerationType
+import org.franca.core.franca.FModel
 
 class CommunicationModelGenerator {
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
+
+	@Inject
+	private extension TypeUtil
+
+	@Inject
+	private extension NamingUtil
 
 	@Inject
 	InterfaceHTemplate interfaceH;
@@ -74,22 +82,26 @@ class CommunicationModelGenerator {
 			if(type instanceof FCompoundType) {
 				var sourcepath = dataTypePath + getPackageSourceDirectory(type) + File::separator
 				var headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
+				var sourcepathQt = sourcepath
+				var headerpathQt = headerpath
 
 				if (type.isPartOfTypeCollection) {
 					headerpath += type.typeCollectionName + File::separator
 					sourcepath += type.typeCollectionName + File::separator
+					headerpathQt += type.typeCollectionName + "_"
+					sourcepathQt += type.typeCollectionName + "_"
 				}
 
 				generateFile(
 					headerFileSystem,
-					headerpath + type.joynrNameQt + ".h",
+					headerpathQt + type.joynrNameQt + ".h",
 					typeH,
 					type
 				)
 				
 				generateFile(
 					sourceFileSystem,
-					sourcepath + type.joynrNameQt + ".cpp",
+					sourcepathQt + type.joynrNameQt + ".cpp",
 					typeCpp,
 					type
 				)
@@ -113,14 +125,16 @@ class CommunicationModelGenerator {
 		for (type : getEnumDataTypes(fModel)) {
 			var sourcepath = dataTypePath + getPackageSourceDirectory(type) + File::separator
 			var headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
+			var headerpathQt = headerpath
 			if (type.isPartOfTypeCollection) {
 				headerpath += type.typeCollectionName + File::separator
 				sourcepath += type.typeCollectionName + File::separator
+				headerpathQt += type.typeCollectionName + "_"
 			}
 
 			generateFile(
 				headerFileSystem,
-				headerpath + type.joynrNameQt + ".h",
+				headerpathQt + type.joynrNameQt + ".h",
 				enumh,
 				type as FEnumerationType
 			)

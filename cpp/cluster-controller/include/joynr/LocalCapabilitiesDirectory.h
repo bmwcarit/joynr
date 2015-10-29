@@ -32,17 +32,6 @@
   * the data.
   */
 
-// Disable warning due to use of forward declaration with QSharedPointer
-// https://bugreports.qt-project.org/browse/QTBUG-7302
-// http://doc.qt.digia.com/qt/qscopedpointer.html#forward-declared-pointers
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4150)
-#endif
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
-
 #include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/TypedClientMultiCache.h"
 #include "joynr/Directory.h"
@@ -58,6 +47,7 @@
 #include <vector>
 
 #include <QCache>
+#include <memory>
 #include <QVariantMap>
 #include <QMutex>
 #include <string>
@@ -112,7 +102,7 @@ public:
      */
     virtual void lookup(const std::string& domain,
                         const std::string& interfaceName,
-                        QSharedPointer<ILocalCapabilitiesCallback> callback,
+                        std::shared_ptr<ILocalCapabilitiesCallback> callback,
                         const joynr::types::DiscoveryQos& discoveryQos);
 
     /*
@@ -120,7 +110,7 @@ public:
      * if it cannot be found.
      */
     virtual void lookup(const std::string& participantId,
-                        QSharedPointer<ILocalCapabilitiesCallback> callback);
+                        std::shared_ptr<ILocalCapabilitiesCallback> callback);
 
     /*
       * Returns a list of locally cached capabilitiy entries. This method is used
@@ -171,27 +161,28 @@ public:
         virtual void onProviderRemove(const types::DiscoveryEntry& discoveryEntry) = 0;
     };
 
-    void addProviderRegistrationObserver(QSharedPointer<IProviderRegistrationObserver> observer);
-    void removeProviderRegistrationObserver(QSharedPointer<IProviderRegistrationObserver> observer);
+    void addProviderRegistrationObserver(std::shared_ptr<IProviderRegistrationObserver> observer);
+    void removeProviderRegistrationObserver(
+            std::shared_ptr<IProviderRegistrationObserver> observer);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesDirectory);
     MessagingSettings& messagingSettings;
     void capabilitiesReceived(const std::vector<types::CapabilityInformation>& results,
                               std::vector<CapabilityEntry> cachedLocalCapabilies,
-                              QSharedPointer<ILocalCapabilitiesCallback> callback,
+                              std::shared_ptr<ILocalCapabilitiesCallback> callback,
                               joynr::types::DiscoveryScope::Enum discoveryScope);
 
     bool getLocalAndCachedCapabilities(const InterfaceAddress& interfaceAddress,
                                        const joynr::types::QtDiscoveryQos& discoveryQos,
-                                       QSharedPointer<ILocalCapabilitiesCallback> callback);
+                                       std::shared_ptr<ILocalCapabilitiesCallback> callback);
     bool getLocalAndCachedCapabilities(const std::string& participantId,
                                        const joynr::types::QtDiscoveryQos& discoveryQos,
-                                       QSharedPointer<ILocalCapabilitiesCallback> callback);
+                                       std::shared_ptr<ILocalCapabilitiesCallback> callback);
     bool callRecieverIfPossible(joynr::types::QtDiscoveryScope::Enum& scope,
                                 std::vector<CapabilityEntry>& localCapabilities,
                                 std::vector<CapabilityEntry>& globalCapabilities,
-                                QSharedPointer<ILocalCapabilitiesCallback> callback);
+                                std::shared_ptr<ILocalCapabilitiesCallback> callback);
 
     void insertInCache(const CapabilityEntry& entry, bool localCache, bool globalCache);
     void insertInCache(const joynr::types::DiscoveryEntry& entry,
@@ -227,7 +218,7 @@ private:
 
     std::vector<types::CapabilityInformation> registeredGlobalCapabilities;
     MessageRouter& messageRouter;
-    QList<QSharedPointer<IProviderRegistrationObserver>> observers;
+    QList<std::shared_ptr<IProviderRegistrationObserver>> observers;
 
     void informObserversOnAdd(const types::DiscoveryEntry& discoveryEntry);
     void informObserversOnRemove(const types::DiscoveryEntry& discoveryEntry);

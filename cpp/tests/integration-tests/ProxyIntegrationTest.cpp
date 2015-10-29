@@ -30,7 +30,7 @@
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionStop.h"
 #include "joynr/SubscriptionReply.h"
-#include "joynr/system/RoutingTypes/QtChannelAddress.h"
+#include "joynr/system/RoutingTypes_QtChannelAddress.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 
@@ -61,8 +61,6 @@ public:
         messagingQos(),
         endPointAddress(new system::RoutingTypes::QtChannelAddress("endPointAddress"))
     {
-        //moved to initializationlist
-        //endPointAddress = QSharedPointer<system::RoutingTypes::QtChannelAddress>(new system::RoutingTypes::QtChannelAddress("endPointAddress"));
     }
 
     // Sets up the test fixture.
@@ -87,7 +85,7 @@ protected:
     MockJoynrMessageSender* mockJoynrMessageSender;
     std::string domain;
     MessagingQos messagingQos;
-    QSharedPointer<system::RoutingTypes::QtChannelAddress> endPointAddress;
+    std::shared_ptr<system::RoutingTypes::QtChannelAddress> endPointAddress;
 
 
 private:

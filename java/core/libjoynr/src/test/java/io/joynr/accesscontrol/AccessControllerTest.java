@@ -25,8 +25,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.capabilities.CapabilityEntry;
-import io.joynr.capabilities.CapabilityEntryImpl;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.common.ExpiryDate;
 import io.joynr.dispatching.JoynrMessageFactory;
@@ -35,7 +33,8 @@ import joynr.JoynrMessage;
 import joynr.Request;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.TrustLevel;
-import joynr.system.RoutingTypes.ChannelAddress;
+import joynr.types.CommunicationMiddleware;
+import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
 
 import org.junit.Before;
@@ -49,6 +48,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+
+import java.util.Arrays;
 
 /**
  * Test the AccessController
@@ -102,13 +103,12 @@ public class AccessControllerTest {
         message = messageFactory.createRequest(fromParticipantId, toParticipantId, request, expiryDate);
         message.setHeaderValue(JoynrMessage.HEADER_NAME_CREATOR_USER_ID, DUMMY_USERID);
 
-        CapabilityEntry capabilityEntry = new CapabilityEntryImpl(testDomain,
-                                                                  testInterface,
-                                                                  new ProviderQos(),
-                                                                  toParticipantId,
-                                                                  System.currentTimeMillis(),
-                                                                  new ChannelAddress("11111"));
-        when(localCapabilitiesDirectory.lookup(eq(toParticipantId), any(DiscoveryQos.class))).thenReturn(capabilityEntry);
+        DiscoveryEntry discoveryEntry = new DiscoveryEntry(testDomain,
+                                                           testInterface,
+                                                           toParticipantId,
+                                                           new ProviderQos(),
+                                                           Arrays.asList(CommunicationMiddleware.JOYNR));
+        when(localCapabilitiesDirectory.lookup(eq(toParticipantId), any(DiscoveryQos.class))).thenReturn(discoveryEntry);
     }
 
     @Test

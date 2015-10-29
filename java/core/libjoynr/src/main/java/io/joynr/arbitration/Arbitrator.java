@@ -20,7 +20,6 @@ package io.joynr.arbitration;
  */
 
 import io.joynr.capabilities.CapabilitiesCallback;
-import io.joynr.capabilities.CapabilityEntry;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrShutdownException;
@@ -31,6 +30,7 @@ import java.util.concurrent.Semaphore;
 
 import javax.annotation.CheckForNull;
 
+import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
 
 import org.slf4j.Logger;
@@ -104,25 +104,24 @@ public class Arbitrator {
         localCapabilitiesDirectory.lookup(domain, interfaceName, discoveryQos, new CapabilitiesCallback() {
 
             @Override
-            public void processCapabilitiesReceived(@CheckForNull Collection<CapabilityEntry> capabilities) {
+            public void processCapabilitiesReceived(@CheckForNull Collection<DiscoveryEntry> capabilities) {
                 assert (capabilities != null);
 
                 // If onChange subscriptions are required ignore providers that do not support them
                 if (discoveryQos.getProviderMustSupportOnChange()) {
-                    for (Iterator<CapabilityEntry> iterator = capabilities.iterator(); iterator.hasNext();) {
-                        CapabilityEntry capabilityEntry = (CapabilityEntry) iterator.next();
-                        ProviderQos providerQos = capabilityEntry.getProviderQos();
+                    for (Iterator<DiscoveryEntry> iterator = capabilities.iterator(); iterator.hasNext();) {
+                        DiscoveryEntry discoveryEntry = (DiscoveryEntry) iterator.next();
+                        ProviderQos providerQos = discoveryEntry.getQos();
                         if (!providerQos.getSupportsOnChangeSubscriptions()) {
                             iterator.remove();
                         }
                     }
                 }
 
-                CapabilityEntry selectedCapability = arbitrationStrategyFunction.select(discoveryQos.getCustomParameters(),
-                                                                                        capabilities);
+                DiscoveryEntry selectedCapability = arbitrationStrategyFunction.select(discoveryQos.getCustomParameters(),
+                                                                                       capabilities);
 
                 if (selectedCapability != null) {
-                    arbitrationResult.setAddress(selectedCapability.getAddresses());
                     arbitrationResult.setParticipantId(selectedCapability.getParticipantId());
                     arbitrationStatus = ArbitrationStatus.ArbitrationSuccesful;
                     updateArbitrationResultAtListener();

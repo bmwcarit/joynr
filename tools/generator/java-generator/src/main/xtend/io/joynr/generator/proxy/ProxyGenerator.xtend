@@ -18,15 +18,17 @@ package io.joynr.generator.proxy
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.templates.util.NamingUtil
+import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import java.io.File
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FInterface
-import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 
 class ProxyGenerator {
 
 	@Inject
-	extension JoynrJavaGeneratorExtensions	
+	extension JoynrJavaGeneratorExtensions
+	@Inject private extension NamingUtil
 
 	@Inject
 	InterfaceProxyTemplate interfaceProxy

@@ -21,6 +21,39 @@ define("joynr/proxy/ProxyEvent", [ "joynr/proxy/BroadcastFilterParameters"
 ], function(BroadcastFilterParameters) {
 
     /**
+     * Checks if the given datatypes and values match the given broadcast parameters
+     *
+     * @name ProxyEvent#getNamedArguments
+     * @function
+     * @private
+     *
+     * @param {Array}
+     *            unnamedBroadcastValues an array containing the unnamedBroadcastValues, e.g. [1234, "asdf"]
+     * @param {?}
+     *            unnamedBroadcastValues.array the broadcast value
+     * @param {Array}
+     *            broadcastParameter an array of supported parametes
+     * @returns undefined if unnamedBroadcastValues does not match broadcastSignature
+     */
+    function getNamedParameters(unnamedBroadcastValues, broadcastParameter) {
+        var i, parameter, parameterName, namedParameters = {}, filteredParameterType;
+
+        // check if number of given parameters matches number
+        // of parameters in broadcast signature (keys.length)
+        if (unnamedBroadcastValues.length !== broadcastParameter.length) {
+            return undefined;
+        }
+
+        // cycle over all parameters
+        for (i = 0; i < unnamedBroadcastValues.length; ++i) {
+            parameter = broadcastParameter[i];
+            namedParameters[parameter.name] = unnamedBroadcastValues[i];
+        }
+
+        return namedParameters;
+    }
+
+    /**
      * Constructor of ProxyEvent object that is used in the generation of proxy objects
      *
      * @constructor
@@ -42,7 +75,7 @@ define("joynr/proxy/ProxyEvent", [ "joynr/proxy/BroadcastFilterParameters"
      * @param {String}
      *            settings.broadcastName the name of the broadcast as modelled in Franca
      * @param {String[]}
-     *            settings.broadcastTypes the parameter types of the broadcast being subscribed to
+     *            settings.broadcastParameter the parameter meta information of the broadcast being subscribed to
      * @returns {ProxyEvent}
      */
     function ProxyEvent(parent, settings) {
@@ -73,20 +106,26 @@ define("joynr/proxy/ProxyEvent", [ "joynr/proxy/BroadcastFilterParameters"
          *          when the request is sent; later will be resolved once the subscriptionReply is
          *          received. See TODO # 1319
          */
-        this.subscribe = function subscribe(subscribeParameters) {
-            return settings.dependencies.subscriptionManager.registerBroadcastSubscription({
-                proxyId : parent.proxyParticipantId,
-                providerId : parent.providerParticipantId,
-                messagingQos : settings.messagingQos,
-                broadcastName : settings.broadcastName,
-                broadcastTypes : settings.broadcastTypes,
-                subscriptionQos : subscribeParameters.subscriptionQos,
-                subscriptionId : subscribeParameters.subscriptionId,
-                onReceive : subscribeParameters.onReceive,
-                onError : subscribeParameters.onError,
-                filterParameters : subscribeParameters.filterParameters
-            });
-        };
+        this.subscribe =
+                function subscribe(subscribeParameters) {
+                    return settings.dependencies.subscriptionManager
+                            .registerBroadcastSubscription({
+                                proxyId : parent.proxyParticipantId,
+                                providerId : parent.providerParticipantId,
+                                messagingQos : settings.messagingQos,
+                                broadcastName : settings.broadcastName,
+                                broadcastParameter : settings.broadcastParameter,
+                                subscriptionQos : subscribeParameters.subscriptionQos,
+                                subscriptionId : subscribeParameters.subscriptionId,
+                                onReceive : function(response) {
+                                    subscribeParameters.onReceive(getNamedParameters(
+                                            response,
+                                            settings.broadcastParameter));
+                                },
+                                onError : subscribeParameters.onError,
+                                filterParameters : subscribeParameters.filterParameters
+                            });
+                };
 
         this.createFilterParameters = function createFilterParameters() {
             return new BroadcastFilterParameters(settings.filterParameters);

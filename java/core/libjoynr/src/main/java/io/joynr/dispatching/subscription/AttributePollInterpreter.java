@@ -3,7 +3,7 @@ package io.joynr.dispatching.subscription;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,9 @@ import java.lang.reflect.Method;
 
 import javax.annotation.Nonnull;
 
+import joynr.exceptions.MethodInvocationException;
+import joynr.exceptions.ProviderRuntimeException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,23 +44,34 @@ public class AttributePollInterpreter {
         try {
             returnValueFromProvider = method.invoke(requestCaller);
         } catch (IllegalAccessException e) {
-            String message = String.format("Method \"%s\" is not accessible on \"%s\" provider.",
+            String message = String.format("Method \"%s\" is not accessible on \"%s\" provider (exception: \"%s\").",
                                            method.getName(),
-                                           requestCaller.getInterfaceName());
-            logger.error(message, e);
-            throw new JoynrRuntimeException(message, e);
-        } catch (IllegalArgumentException e) {
-            String message = String.format("Provider of interface \"%s\" does not declare method \"%s\"",
                                            requestCaller.getInterfaceName(),
-                                           method.getName());
-            logger.error(message, e);
-            throw new JoynrRuntimeException(message, e);
-        } catch (InvocationTargetException e) {
-            String message = String.format("Calling method \"%s\" on \"%s\" provider throwed an exception.",
+                                           e.toString());
+            logger.error(message);
+            throw new MethodInvocationException(message);
+        } catch (IllegalArgumentException e) {
+            String message = String.format("Provider of interface \"%s\" does not declare method \"%s\" (exception: \"%s\")",
+                                           requestCaller.getInterfaceName(),
                                            method.getName(),
-                                           requestCaller.getInterfaceName());
-            logger.error(message, e);
-            throw new JoynrRuntimeException(message, e);
+                                           e.toString());
+            logger.error(message);
+            throw new MethodInvocationException(message);
+        } catch (InvocationTargetException e) {
+            Throwable cause = e.getCause();
+            String message = String.format("Calling method \"%s\" on \"%s\" provider threw an exception: \"%s\"",
+                                           method.getName(),
+                                           requestCaller.getInterfaceName(),
+                                           cause == null ? e.toString() : cause.toString());
+            logger.error(message);
+            throw new ProviderRuntimeException(cause == null ? e.toString() : cause.toString());
+        } catch (Exception e) {
+            String message = String.format("Calling method \"%s\" on \"%s\" provider threw an unexpected exception: \"%s\"",
+                                           method.getName(),
+                                           requestCaller.getInterfaceName(),
+                                           e.toString());
+            logger.error(message);
+            throw new MethodInvocationException(message);
         }
 
         if (returnValueFromProvider == null) {

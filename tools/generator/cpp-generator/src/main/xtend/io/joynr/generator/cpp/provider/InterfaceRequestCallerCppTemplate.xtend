@@ -21,19 +21,20 @@ import com.google.inject.Inject
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
-import io.joynr.generator.util.InterfaceTemplate
+import io.joynr.generator.templates.InterfaceTemplate
+import io.joynr.generator.templates.util.AttributeUtil
+import io.joynr.generator.templates.util.MethodUtil
+import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
 
 class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 
-	@Inject
-	private extension TemplateBase
-
-	@Inject
-	private extension CppStdTypeUtil
-
-	@Inject
-	private extension JoynrCppGeneratorExtensions
+	@Inject private extension TemplateBase
+	@Inject private extension CppStdTypeUtil
+	@Inject private extension JoynrCppGeneratorExtensions
+	@Inject private extension NamingUtil
+	@Inject private extension AttributeUtil
+	@Inject private extension MethodUtil
 
 	override generate(FInterface serviceInterface)
 '''
@@ -68,16 +69,30 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 		void «interfaceName»RequestCaller::get«attributeName.toFirstUpper»(
 				std::function<void(
 						const «returnType»& «attributeName.toFirstLower»
-				)> onSuccess
+				)> onSuccess,
+				std::function<void(
+						const JoynrException&
+				)> onError
 		) {
+			/*
+			 * TODO: forward the onError callback to the provider. This code comes with subsequent patches
+			 */
+			(void) onError;
 			provider->get«attributeName.toFirstUpper»(onSuccess);
 		}
 	«ENDIF»
 	«IF attribute.writable»
 		void «interfaceName»RequestCaller::set«attributeName.toFirstUpper»(
 				const «returnType»& «attributeName.toFirstLower»,
-				std::function<void()> onSuccess
+				std::function<void()> onSuccess,
+				std::function<void(
+						const JoynrException&
+				)> onError
 		) {
+			/*
+			 * TODO: forward the onError callback to the provider. This code comes with subsequent patches
+			 */
+			(void) onError;
 			provider->set«attributeName.toFirstUpper»(«attributeName.toFirstLower», onSuccess);
 		}
 	«ENDIF»
@@ -94,13 +109,20 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 	void «interfaceName»RequestCaller::«methodName»(
 			«IF !method.inputParameters.empty»«inputTypedParamList»,«ENDIF»
 			«IF method.outputParameters.empty»
-				std::function<void()> onSuccess
+				std::function<void()> onSuccess,
 			«ELSE»
 				std::function<void(
 						«outputTypedParamList.substring(1)»
-				)> onSuccess
+				)> onSuccess,
 			«ENDIF»
+			std::function<void(
+					const JoynrException&
+			)> onError
 	) {
+		/*
+		 * TODO: forward the onError callback to the provider. This code comes with subsequent patches
+		 */
+		(void) onError;
 		provider->«methodName»(
 				«IF !method.inputParameters.empty»«inputUntypedParamList»,«ENDIF»
 				onSuccess

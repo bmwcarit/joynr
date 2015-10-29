@@ -14,7 +14,6 @@ configure_file(
 )
 
 get_target_property(qjson_PUBLIC_INCLUDE_DIRECTORY qjson PUBLIC_INCLUDE_DIRECTORY)
-get_target_property(log4qt_PUBLIC_INCLUDE_DIRECTORY log4qt PUBLIC_INCLUDE_DIRECTORY)
 
 set(
     JoynrCommon_PUBLIC_INCLUDE_DIRECTORY
@@ -26,7 +25,6 @@ set(
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     "../"
     ${qjson_PUBLIC_INCLUDE_DIRECTORY}
-    ${log4qt_PUBLIC_INCLUDE_DIRECTORY}
 )
 
 set(
@@ -34,7 +32,6 @@ set(
     Qt5::Core
     Qt5::WebSockets
     qjson
-    log4qt
 )
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
@@ -91,12 +88,18 @@ file(
     "in-process/*.cpp"
     "joynr-messaging/*.cpp"
     "cache/*.cpp"
-    "logging/joynrlogging_log4qt.cpp"
     "capabilities/*.cpp"
     "rpc/*.cpp"
     "exceptions/*.cpp"
     "SettingsMerger.cpp"
 )
+
+
+list(
+    APPEND JoynrCommon_SOURCES
+    "logging/SpdlogLogging.cpp"
+)
+
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     list(
@@ -138,12 +141,22 @@ set_target_properties(
     PUBLIC_INCLUDE_DIRECTORY "${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}"
 )
 
+# make spdlog system directory to avoid compiler warnings
+set_target_properties(
+    JoynrCommon
+    PROPERTIES
+    APPEND_STRING
+    PROPERTY COMPILE_FLAGS "${CMAKE_INCLUDE_SYSTEM_FLAG_CXX} ${spdlog_SOURCE_DIR}/include"
+)
+
 generate_export_header(
     JoynrCommon
     EXPORT_FILE_NAME "${CMAKE_CURRENT_SOURCE_DIR}/${JoynrCommon_EXPORT_HEADER}"
 )
 
 target_link_libraries(JoynrCommon ${JoynrCommon_TARGET_LIBRARIES})
+
+add_dependencies(JoynrCommon spdlog)
 
 if(${ENABLE_CLANG_FORMATTER})
     set(COMMENT "running C++ code formatter: clang-format")

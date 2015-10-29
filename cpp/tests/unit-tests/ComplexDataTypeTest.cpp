@@ -22,7 +22,7 @@
 #include "joynr/joynrlogging.h"
 #include <string>
 
-#include "joynr/types/TestTypes/QtTStructExtended.h"
+#include "joynr/types/TestTypes_QtTStructExtended.h"
 #include "joynr/types/TestTypes/TStructExtended.h"
 
 using namespace joynr::types;

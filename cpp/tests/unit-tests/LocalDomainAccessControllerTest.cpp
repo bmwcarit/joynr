@@ -88,7 +88,7 @@ public:
         localDomainAccessController =
                 new LocalDomainAccessController(localDomainAccessStore);
         mockGdacProxy = new MockGlobalDomainAccessControllerProxy();
-        QSharedPointer<GlobalDomainAccessControllerProxy> mockGDACPtr(mockGdacProxy);
+        std::shared_ptr<GlobalDomainAccessControllerProxy> mockGDACPtr(mockGdacProxy);
         localDomainAccessController->init(mockGDACPtr);
 
         userDre = DomainRoleEntry(TEST_USER, DOMAINS, Role::OWNER);
@@ -297,7 +297,7 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionAmbigious) {
     DefaultValue<QString>::Set(defaultString);
 
     // Get the consumer permission (async)
-    QSharedPointer<ConsumerPermissionCallback> getConsumerPersmissionCallback(
+    std::shared_ptr<ConsumerPermissionCallback> getConsumerPersmissionCallback(
             new ConsumerPermissionCallback()
     );
 
@@ -371,7 +371,7 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionCommunicationFailure) 
     DefaultValue<QString>::Set(defaultString);
 
     // Get the consumer permission (async)
-    QSharedPointer<ConsumerPermissionCallback> getConsumerPermissionCallback(
+    std::shared_ptr<ConsumerPermissionCallback> getConsumerPermissionCallback(
             new ConsumerPermissionCallback()
     );
 
@@ -431,7 +431,7 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionQueuedRequests) {
     DefaultValue<QString>::Set(defaultString);
 
     // Get the consumer permission (async)
-    QSharedPointer<ConsumerPermissionCallback> getConsumerPermissionCallback1(
+    std::shared_ptr<ConsumerPermissionCallback> getConsumerPermissionCallback1(
             new ConsumerPermissionCallback()
     );
 
@@ -444,7 +444,7 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionQueuedRequests) {
     );
 
     // Make another request for consumer permission
-    QSharedPointer<ConsumerPermissionCallback> getConsumerPermissionCallback2(
+    std::shared_ptr<ConsumerPermissionCallback> getConsumerPermissionCallback2(
                 new ConsumerPermissionCallback()
     );
 

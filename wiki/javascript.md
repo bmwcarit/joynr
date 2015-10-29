@@ -187,7 +187,7 @@ var messagingQos, discoveryQos;
 
 // setup messagingQos, discoveryQos
 var domain = "<ProviderDomain>";
-joynr.proxybuilder.build(<Interface>Proxy, {
+joynr.proxyBuilder.build(<Interface>Proxy, {
     domain: domain,
     discoveryQos: discoveryQos, // optional
     messagingQos: messagingQos  // optional
@@ -438,9 +438,12 @@ The **subscriptionId** returned by the call can be used later to update the subs
 unsubscribe.
 
 ```javascript
+var fParam = <interface>Proxy.<broadcast>.createFilterParameters();
+// for each parameter
+fParam.set<Parameter>(parameterValue);
 <interface>Proxy.<Broadcast>.subscribe({
     subscriptionQos : subscriptionQosOnChange,
-    filterParameters : { ... },
+    filterParameters : fParam,
     onReceive : function(value) {
         // handle subscription broadcast
     },
@@ -461,10 +464,13 @@ The **subscribeTo** method can also be used to update an existing subscription, 
 
 
 ```javascript
+var fParam = <interface>Proxy.<broadcast>.createFilterParameters();
+// for each parameter
+fParam.set<Parameter>(parameterValue);
 <interface>Proxy.<Broadcast>.subscribe({
     subscriptionQos : subscriptionQosOnChange,
     subscriptionId: subscriptionId,
-    filterParameters : { ... },
+    filterParameters : fParam,
     onReceive : function(value) {
         // handle subscription broadcast
     },
@@ -556,8 +562,8 @@ defined in the Franca interface.
 ```javascript
 $(function() {
     // for each <Interface> where a Provider should be registered for later
-    var <Interface>provider = null;
-    var <Interface>providerImpl = new <Interface>ProviderImpl();
+    var <interface>provider = null;
+    var <interface>ProviderImpl = new <Interface>ProviderImpl();
 
     var provisioning = {};
     provisioning.channelId = "someChannel";
@@ -586,15 +592,18 @@ the interface, the provider's domain and the provider's quality of service setti
 parameters.
 
 ```javascript
-var <Interface>providerQos;
-<Interface>Provider = joynr.providerBuilder.build(<Interface>Provider, providerImpl);
+var <interface>providerQos;
+<interface>Provider = joynr.providerBuilder.build(<Interface>Provider, <interface>ProviderImpl);
+
+// for any filter of a broadcast with filter
+<interface>Provider.<broadcast>.addBroadcastFilter(new <Filter>BroadcastFilter());
 
 // setup <interface>ProviderQos
 joynr.capabilities.registerCapability(
     "Provider.authToken",
     domain,
-    <Interface>Provider,
-    <Interface>ProviderQos
+    <interface>Provider,
+    <interface>ProviderQos
 ).then(function() {
     // registration successful
 }).catch(function() {
@@ -625,26 +634,49 @@ for every attribute.
 ```javascript
 var <Interface>ProviderImpl =
     function <Interface>ProviderImpl() {
+        var self = this;
+
         // define <method> handler
 
         // define internal representation of <attribute> and
         // getter handlers per <attribute>
+        // wrappers to fire broadcasts
     };
 ```
 
 ## Method handler
 Each handler for a Franca method for a specific interface is implemented as a function object
-attribute of **this**. The parameters are provided as objects.
+member of **this**. The parameters are provided as objects. The implementation can be done
+either asynchronously or synchronously.
+
+### Synchronous implementation
 ```javascript
 this.<method> = function(parameters) {
     // handle method, return returnValue of type <returnType>
     return returnValue;
 };
+```
 
+### Asynchronous implementation
+```javascript
+this.<method> = function(parameters) {
+    var result = new Promise(function(resolve, reject) {
+        // handle method, then either return the value
+        // of type <returnType> with
+        // resolve(returnValue);
+        // - or -
+        // reject(errorEnumerationValue);
+        // - or -
+        // reject(new ProviderRuntimeException({ detailMessage: "reason" }));
+    });
+
+    // handle method, return returnValue of type <returnType>
+    return result;
+};
 ```
 
 ## Attribute handler
-For each Franca attribute of an interface, an attribute of **this** named after the
+For each Franca attribute of an interface, a member of **this** named after the
 ```<attribute>``` has to be created which consists of an object which includes a getter function
 as attribute that returns the current value of the ```<attribute>```. Also an internal
 representation of the Franca attribute value has to be created and properly intialized.
@@ -667,6 +699,62 @@ on the given attribute.
 this.<attribute>.valueChanged(newValue);
 ```
 ## Sending a broadcast
+For each Franca broadcast, a member of **this** named after the ```<broadcast>```
+has to be created which consists of an empty object.
 
-To be defined, currently, the ProviderEvent code lacks a method for firing an event, i.e.
-broadcasting it to subscribed consumers.
+```javascript
+this.<broadcast> = {};
+```
+
+The broadcast can then later be fired using
+```javascript
+this.fire<Broadcast> = function() {
+    var outputParameters;
+    outputParameters = self.<broadcast>.createBroadcastOutputParameters();
+    // foreach output parameter of the broadcast
+    outputParameters.set<Parameter>(value);
+    self.<broadcast>.fire(outputParameters);
+}
+```
+
+## Selective (filtered) broadcasts
+
+In contrast to unfiltered broadcasts, to realize selective (filtered) broadcasts, the filter logic
+has to be implemented and registered by the provider. If multiple filters are registered on the
+same provider and broadcast, all filters are applied in a chain and the broadcast is only
+delivered if all filters in the chain return true.
+
+### The broadcast filter object
+A broadcast filter object implements a filtering function called ```filter()``` which returns a
+boolean value indicating whether the broadcast should be delivered. The input parameters of the
+```filter()``` method consist of the output parameters of the broadcast and the filter parameters
+used by the consumer on subscription.
+
+```javascript
+(function(undefined) {
+    var <Filter>BroadcastFilter = function <Filter>BroadcastFilter() {
+        if (!(this instanceof <Filter>BroadcastFilter)) {
+            return new <Filter>BroadcastFilter();
+        }
+
+        Object.defineProperty(this, 'filter', {
+            enumerable: false,
+            value: function(broadcastOutputParameters, filterParameters) {
+                // Parameter value can be evaluated by calling getter functions, e.g.
+                // broadcastOutputParameters.get<OutputParameter>()
+                // filterParameters can be evaluated by using properties, e.g.
+                // filterParameters.<property>
+                //
+                // Evaluate whether the broadcastOutputParameters fulfill
+                // the filterParameter here, then return true, if this is
+                // the case and the publication should be done, false
+                // otherwise.
+
+                return <booleanValue>;
+            };
+        });
+    };
+
+    return <Filter>BroadcastFilter;
+}());
+```

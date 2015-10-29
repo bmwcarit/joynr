@@ -19,10 +19,13 @@
 #include "joynr/SubscriptionQos.h"
 #include "joynr/DispatcherUtils.h"
 #include <limits>
-#include <QDate>
+#include <chrono>
+#include <stdexcept>
 
 namespace joynr
 {
+
+using namespace std::chrono;
 
 const int64_t& SubscriptionQos::DEFAULT_PUBLICATION_TTL()
 {
@@ -98,8 +101,11 @@ int64_t SubscriptionQos::getExpiryDate() const
 void SubscriptionQos::setExpiryDate(const int64_t& expiryDate)
 {
     this->expiryDate = expiryDate;
-    if (this->expiryDate < QDateTime::currentMSecsSinceEpoch()) {
+    int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    if (this->expiryDate < now) {
         clearExpiryDate();
+        throw std::invalid_argument("Subscription ExpiryDate " + std::to_string(expiryDate) +
+                                    " in the past. Now: " + std::to_string(now));
     }
 }
 
@@ -113,7 +119,8 @@ void SubscriptionQos::setValidity(const int64_t& validity)
     if (validity == -1) {
         setExpiryDate(joynr::SubscriptionQos::NO_EXPIRY_DATE());
     } else {
-        setExpiryDate(QDateTime::currentMSecsSinceEpoch() + validity);
+        int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+        setExpiryDate(now + validity);
     }
 }
 

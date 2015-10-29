@@ -23,7 +23,7 @@
 
 #include "joynr/JsonSerializer.h"
 #include "joynr/JoynrMessage.h"
-#include "joynr/system/RoutingTypes/QtAddress.h"
+#include "joynr/system/RoutingTypes_QtAddress.h"
 
 namespace joynr
 {

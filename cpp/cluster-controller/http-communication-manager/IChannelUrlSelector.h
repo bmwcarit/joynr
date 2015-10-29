@@ -22,8 +22,7 @@
 #include "joynr/joynrlogging.h"
 #include "joynr/ILocalChannelUrlDirectory.h"
 #include "joynr/RequestStatus.h"
-
-#include <QSharedPointer>
+#include <memory>
 
 namespace joynr
 {
@@ -46,7 +45,7 @@ public:
     *
     * @param channelUrlDirectoryProxy
     */
-    virtual void init(QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory,
+    virtual void init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
                       const MessagingSettings& settings) = 0;
 
     /**

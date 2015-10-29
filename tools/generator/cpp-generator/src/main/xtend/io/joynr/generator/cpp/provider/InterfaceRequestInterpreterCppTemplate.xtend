@@ -23,23 +23,24 @@ import io.joynr.generator.cpp.util.DatatypeSystemTransformation
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.QtTypeUtil
 import io.joynr.generator.cpp.util.TemplateBase
-import io.joynr.generator.util.InterfaceTemplate
+import io.joynr.generator.templates.InterfaceTemplate
+import io.joynr.generator.templates.util.AttributeUtil
+import io.joynr.generator.templates.util.InterfaceUtil
+import io.joynr.generator.templates.util.MethodUtil
+import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FType
 
 class InterfaceRequestInterpreterCppTemplate implements InterfaceTemplate{
 
-	@Inject
-	private extension TemplateBase
-
-	@Inject
-	private CppStdTypeUtil cppStdTypeUtil
-
-	@Inject
-	private QtTypeUtil qtTypeUtil
-
-	@Inject
-	private extension JoynrCppGeneratorExtensions
+	@Inject private extension TemplateBase
+	@Inject private extension CppStdTypeUtil
+	@Inject private QtTypeUtil qtTypeUtil
+	@Inject private extension JoynrCppGeneratorExtensions
+	@Inject private extension NamingUtil
+	@Inject private extension AttributeUtil
+	@Inject private extension MethodUtil
+	@Inject private extension InterfaceUtil
 
 	override generate(FInterface serviceInterface)
 '''
@@ -78,34 +79,35 @@ joynr::joynr_logging::Logger* «interfaceName»RequestInterpreter::logger = joyn
 «val attributes = getAttributes(serviceInterface)»
 «val methods = getMethods(serviceInterface)»
 void «interfaceName»RequestInterpreter::execute(
-		QSharedPointer<joynr::RequestCaller> requestCaller,
+		std::shared_ptr<joynr::RequestCaller> requestCaller,
 		const QString& methodName,
 		const QList<QVariant>& paramValues,
 		const QList<QVariant>& paramTypes,
-		std::function<void (const QList<QVariant>&)> callbackFct
+		std::function<void (const QList<QVariant>&)> onSuccess,
+		std::function<void (const JoynrException& exception)> onError
 ) {
 	Q_UNUSED(paramValues);//if all methods of the interface are empty, the paramValues would not be used and give a warning.
 	Q_UNUSED(paramTypes);//if all methods of the interface are empty, the paramTypes would not be used and give a warning.
 	// cast generic RequestCaller to «interfaceName»Requestcaller
-	QSharedPointer<«interfaceName»RequestCaller> «requestCallerName» =
-			requestCaller.dynamicCast<«interfaceName»RequestCaller>();
+	std::shared_ptr<«interfaceName»RequestCaller> «requestCallerName» =
+			std::dynamic_pointer_cast<«interfaceName»RequestCaller>(requestCaller);
 
 	// execute operation
 	«IF !attributes.empty»
 		«FOR attribute : attributes»
 			«val attributeName = attribute.joynrName»
-			«val returnType = cppStdTypeUtil.getTypeName(attribute)»
+			«val returnType = getTypeName(attribute)»
 		«IF attribute.readable»
 			if (methodName == "get«attributeName.toFirstUpper»"){
-				std::function<void(«returnType» «attributeName»)> onSuccess =
-						[callbackFct] («returnType» «attributeName») {
+				std::function<void(«returnType» «attributeName»)> requestCallerOnSuccess =
+						[onSuccess] («returnType» «attributeName») {
 							«val convertedAttribute = qtTypeUtil.fromStdTypeToQTType(attribute, attributeName, true)»
 							QVariant singleOutParam(«IF isArray(attribute)»joynr::Util::convertListToVariantList<«qtTypeUtil.getTypeName(attribute.type)»>(«convertedAttribute»)«ELSE»QVariant::fromValue(«convertedAttribute»)«ENDIF»);
 							QList<QVariant> outParams;
 							outParams.insert(0, singleOutParam);
-							callbackFct(outParams);
+							onSuccess(outParams);
 						};
-				«requestCallerName»->get«attributeName.toFirstUpper»(onSuccess);
+				«requestCallerName»->get«attributeName.toFirstUpper»(requestCallerOnSuccess, onError);
 				return;
 			}
 		«ENDIF»
@@ -131,12 +133,12 @@ void «interfaceName»RequestInterpreter::execute(
 					«qtTypeUtil.getTypeName(attribute)» typedInput«attributeName.toFirstUpper» =
 							«attributeRef»;
 				«ENDIF»
-				std::function<void()> onSuccess =
-						[callbackFct] () {
+				std::function<void()> requestCallerOnSuccess =
+						[onSuccess] () {
 							QList<QVariant> outParams;
-							callbackFct(outParams);
+							onSuccess(outParams);
 						};
-				«requestCallerName»->set«attributeName.toFirstUpper»(«qtTypeUtil.fromQTTypeToStdType(attribute, '''typedInput«attributeName.toFirstUpper»''')», onSuccess);
+				«requestCallerName»->set«attributeName.toFirstUpper»(«qtTypeUtil.fromQTTypeToStdType(attribute, '''typedInput«attributeName.toFirstUpper»''')», requestCallerOnSuccess, onError);
 				return;
 			}
 		«ENDIF»
@@ -153,9 +155,9 @@ void «interfaceName»RequestInterpreter::execute(
 					&& paramTypes.at(«iterator=iterator+1») == "«getJoynrTypeName(input)»"
 				«ENDFOR»
 			) {
-				«val outputTypedParamList = cppStdTypeUtil.getCommaSeperatedTypedConstOutputParameterList(method)»
-				std::function<void(«outputTypedParamList»)> onSuccess =
-						[callbackFct](«outputTypedParamList»){
+				«val outputTypedParamList = getCommaSeperatedTypedConstOutputParameterList(method)»
+				std::function<void(«outputTypedParamList»)> requestCallerOnSuccess =
+						[onSuccess](«outputTypedParamList»){
 							QList<QVariant> outParams;
 							«var index = 0»
 							«FOR param : method.outputParameters»
@@ -169,7 +171,7 @@ void «interfaceName»RequestInterpreter::execute(
 										«ENDIF»
 								);
 							«ENDFOR»
-							callbackFct(outParams);
+							onSuccess(outParams);
 						};
 
 				«var iterator2 = -1»
@@ -197,7 +199,8 @@ void «interfaceName»RequestInterpreter::execute(
 
 				«requestCallerName»->«methodName»(
 						«IF !method.inputParameters.empty»«inputUntypedParamList»,«ENDIF»
-						onSuccess);
+						requestCallerOnSuccess,
+						onError);
 				return;
 			}
 		«ENDFOR»
@@ -205,8 +208,7 @@ void «interfaceName»RequestInterpreter::execute(
 
 	LOG_FATAL(logger, "unknown method name for interface «interfaceName»: " + methodName);
 	assert(false);
-	QList<QVariant> outParams;
-	callbackFct(outParams);
+	onError(JoynrException("unknown method name for interface «interfaceName»: " + TypeUtil::toStd(methodName)));
 }
 
 «getNamespaceEnder(serviceInterface)»

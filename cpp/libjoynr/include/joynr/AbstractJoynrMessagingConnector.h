@@ -36,6 +36,8 @@
 #include "joynr/ReplyCaller.h"
 #include "joynr/JoynrExport.h"
 #include <string>
+#include <memory>
+
 namespace joynr
 {
 
@@ -67,7 +69,7 @@ public:
 
      */
     template <typename T>
-    void attributeRequest(QString methodName, QSharedPointer<IReplyCaller> replyCaller)
+    void attributeRequest(QString methodName, std::shared_ptr<IReplyCaller> replyCaller)
     {
         QString attributeID = QString::fromStdString(domain) + ":" +
                               QString::fromStdString(interfaceName) + ":" + methodName;
@@ -82,8 +84,8 @@ public:
                 assert(false);
             } else {
                 LOG_DEBUG(logger, "Returning cached value for method " + methodName);
-                QSharedPointer<ReplyCaller<T>> typedReplyCaller =
-                        replyCaller.dynamicCast<ReplyCaller<T>>();
+                std::shared_ptr<ReplyCaller<T>> typedReplyCaller =
+                        std::dynamic_pointer_cast<ReplyCaller<T>>(replyCaller);
                 typedReplyCaller->returnValue(entry.value<T>());
             }
         } else {
@@ -100,7 +102,7 @@ public:
      * @param replyCaller
      * @param request
      */
-    void operationRequest(QSharedPointer<IReplyCaller> replyCaller, const Request& request);
+    void operationRequest(std::shared_ptr<IReplyCaller> replyCaller, const Request& request);
 
 protected:
     IJoynrMessageSender* joynrMessageSender;
@@ -118,7 +120,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(AbstractJoynrMessagingConnector);
 
     // Request jsonRequest;
-    void sendRequest(const Request& request, QSharedPointer<IReplyCaller> replyCaller);
+    void sendRequest(const Request& request, std::shared_ptr<IReplyCaller> replyCaller);
 
     Reply makeRequest(QString methodName, RequestStatus* status, QVariantMap params);
 };

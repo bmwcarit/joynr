@@ -31,7 +31,6 @@ Logger* BroadcastSubscriptionRequest::logger =
 BroadcastSubscriptionRequest::BroadcastSubscriptionRequest() : filterParameters()
 {
     qRegisterMetaType<QtBroadcastFilterParameters>("QtBroadcastFilterParameters");
-    qRegisterMetaType<QSharedPointer<QtBroadcastFilterParameters>>();
 }
 
 BroadcastSubscriptionRequest::BroadcastSubscriptionRequest(
@@ -69,7 +68,7 @@ QString BroadcastSubscriptionRequest::toQString() const
     return JsonSerializer::serialize(*this);
 }
 
-void BroadcastSubscriptionRequest::setQos(QSharedPointer<QtOnChangeSubscriptionQos> qos)
+void BroadcastSubscriptionRequest::setQos(std::shared_ptr<QtOnChangeSubscriptionQos> qos)
 {
     SubscriptionRequest::setQos(qos);
 }

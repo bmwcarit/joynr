@@ -1,0 +1,234 @@
+package io.joynr.generator.templates.util
+/*
+ * !!!
+ *
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import com.google.common.collect.Iterators
+import com.google.inject.Inject
+import com.google.inject.name.Named
+import io.joynr.generator.templates.BroadcastTemplate
+import io.joynr.generator.templates.CompoundTypeTemplate
+import io.joynr.generator.templates.EnumTemplate
+import io.joynr.generator.templates.InterfaceTemplate
+import java.io.BufferedReader
+import java.io.IOException
+import java.io.StringReader
+import java.util.HashSet
+import org.eclipse.emf.ecore.impl.BasicEObjectImpl
+import org.eclipse.xtext.generator.IFileSystemAccess
+import org.franca.core.franca.FBasicTypeId
+import org.franca.core.franca.FBroadcast
+import org.franca.core.franca.FCompoundType
+import org.franca.core.franca.FEnumerationType
+import org.franca.core.franca.FInterface
+import org.franca.core.franca.FMethod
+import org.franca.core.franca.FModel
+import org.franca.core.franca.FModelElement
+import org.franca.core.franca.FType
+
+abstract class JoynrGeneratorExtensions {
+
+	public final static String JOYNR_GENERATOR_GENERATE = "JOYNR_GENERATOR_GENERATE";
+	public final static String JOYNR_GENERATOR_CLEAN = "JOYNR_GENERATOR_CLEAN";
+
+	@Inject
+	protected extension NamingUtil;
+
+	@Inject
+	protected extension TypeUtil;
+
+	@Inject(optional = true)
+	@Named(JOYNR_GENERATOR_GENERATE)
+	public boolean generate = true;
+
+	@Inject(optional = true)
+	@Named(JOYNR_GENERATOR_CLEAN)
+	public boolean clean = false;
+
+	def Iterable<FInterface> getInterfaces(FModel model) {
+		return model.interfaces
+	}
+
+	def String getPackageNameInternal(FModelElement fModelElement, boolean useOwnName) {
+		if (fModelElement == null){
+			throw new IllegalStateException("Generator could not proceed with code generation, since JoynGeneratorExtensions.getPackageNameInternal has been invoked with an empty model element");
+		} else if (fModelElement.eContainer == null){
+			val errorMsg = "Generator could not proceed with code generation, since " +
+							if (fModelElement.joynrName != null)
+								"the container of model element " + fModelElement.joynrName + " is not known" else "the resource " +
+							(if (fModelElement instanceof BasicEObjectImpl)
+								 (fModelElement as BasicEObjectImpl).eProxyURI
+							else
+								fModelElement.eResource.toString) + " cannot be parsed correctly"
+			throw new IllegalStateException(errorMsg);
+		} else if (fModelElement.eContainer instanceof FModel)
+			return (fModelElement.eContainer as FModel).joynrName
+		else if (fModelElement instanceof FMethod) {
+			// include interface name for unnamed error enums (defined or extended inside method definition)
+			val finterface = fModelElement.eContainer as FModelElement
+			if (finterface == null || !(finterface instanceof FInterface)) {
+				val errorMsg = "Generator could not proceed with code generation, since "
+								+ "JoynGeneratorExtensions.getPackageNameInternal has been invoked "
+								+ "with a FMethod element which is not defined inside an interface"
+				throw new IllegalStateException(errorMsg);
+			}
+			return finterface.getPackageNameInternal(false) + '.' + finterface.joynrName
+		}
+		return (fModelElement.eContainer as FModelElement).getPackageNameInternal(true) + (if (useOwnName) '.' + fModelElement.joynrName else '')
+	}
+
+	def getPackageName(FModelElement fModelElement) {
+		getPackageNameInternal(fModelElement, false)
+	}
+
+	def getPackageNames(FModelElement fModelElement) {
+		getPackageNames(fModelElement, "\\.")
+	}
+
+	def getPackageNames(FModelElement fModelElement, String separator) {
+		Iterators::forArray(fModelElement.packageName.split(separator))
+	}
+
+	def getPackagePathWithJoynrPrefix(FType datatype, String separator, boolean includeTypeCollection) {
+		var packagePath = getPackagePathWithJoynrPrefix(datatype, separator);
+		if (includeTypeCollection && datatype.isPartOfTypeCollection) {
+			packagePath += separator + datatype.typeCollectionName;
+		}
+		return packagePath
+	}
+
+	def getPackagePathWithJoynrPrefix(FModelElement fModelElement, String separator) {
+		joynrGenerationPrefix + separator + getPackagePathWithoutJoynrPrefix(fModelElement, separator)
+	}
+
+	def getPackagePathWithoutJoynrPrefix(FModelElement fModelElement, String separator) {
+		return getPackageName(fModelElement).replace('.', separator)
+	}
+
+	def getDataTypes(FModel fModel) {
+		val referencedFTypes = new HashSet<FType>()
+
+		fModel.typeCollections.forEach[referencedFTypes.addAll(types)]
+
+		fModel.interfaces.forEach[referencedFTypes.addAll(types)]
+
+		return referencedFTypes
+	}
+
+	def getComplexDataTypes(FModel fModel) {
+		getDataTypes(fModel).filter(type | type.isComplex)
+	}
+
+	def getPrimitiveDataTypes() {
+		FBasicTypeId::values.filter[value != FBasicTypeId::UNDEFINED_VALUE && value != FBasicTypeId::BYTE_BUFFER_VALUE] // filter out "undefined" and "buffer" data type
+	}
+
+	def getEnumDataTypes(FModel fModel) {
+		getDataTypes(fModel).filter(type | type.isEnum)
+	}
+
+
+	def prependCommaIfNotEmpty(String input) {
+		if (input.equals("")) {
+			return input;
+		}
+		return ", " + input;
+	}
+
+	def String getOneLineWarning()
+
+	def addWarningsToEachLine(String input) {
+		val str = new StringBuilder();
+
+		val reader = new BufferedReader(new StringReader(input));
+		try {
+			var line = "";
+			while ((line = reader.readLine()) != null) {
+				val outputLine = getOneLineWarning() + line + "\n";
+				str.append(outputLine);
+			}
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return str.toString();
+	}
+
+	def escapeQuotes(String string) {
+		string.replace('\"', '\\\"')
+	}
+
+	def getJoynrGenerationPrefix() {
+		"joynr"
+	}
+
+	def generateFile(
+		IFileSystemAccess fsa,
+		String path,
+		InterfaceTemplate generator,
+		FInterface serviceInterface
+	) {
+		if (clean) {
+			fsa.deleteFile(path);
+		}
+		if (generate) {
+			fsa.generateFile(path, generator.generate(serviceInterface).toString);
+		}
+	}
+
+	def generateFile(IFileSystemAccess fsa,
+		String path,
+		BroadcastTemplate generator,
+		FInterface serviceInterface,
+		FBroadcast broadcast
+	) {
+		if (clean) {
+			fsa.deleteFile(path);
+		}
+		if (generate) {
+			fsa.generateFile(path, generator.generate(serviceInterface, broadcast).toString);
+		}
+	}
+
+	def generateFile(
+		IFileSystemAccess fsa,
+		String path,
+		EnumTemplate generator,
+		FEnumerationType enumType
+	) {
+		if (clean) {
+			fsa.deleteFile(path);
+		}
+		if (generate) {
+			fsa.generateFile(path, generator.generate(enumType).toString);
+		}
+	}
+
+	def generateFile(
+		IFileSystemAccess fsa,
+		String path,
+		CompoundTypeTemplate generator,
+		FCompoundType compoundType
+	) {
+		if (clean) {
+			fsa.deleteFile(path);
+		}
+		if (generate) {
+			fsa.generateFile(path, generator.generate(compoundType).toString);
+		}
+	}
+}

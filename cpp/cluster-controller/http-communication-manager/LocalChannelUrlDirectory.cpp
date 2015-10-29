@@ -27,7 +27,7 @@ joynr_logging::Logger* LocalChannelUrlDirectory::logger =
 
 LocalChannelUrlDirectory::LocalChannelUrlDirectory(
         MessagingSettings& messagingSettings,
-        QSharedPointer<infrastructure::ChannelUrlDirectoryProxy> channelUrlDirectoryProxy)
+        std::shared_ptr<infrastructure::ChannelUrlDirectoryProxy> channelUrlDirectoryProxy)
         : messagingSettings(messagingSettings),
           channelUrlDirectoryProxy(channelUrlDirectoryProxy),
           localCache()
@@ -111,7 +111,7 @@ std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> LocalChannel
         }
         return future;
     }
-    assert(!channelUrlDirectoryProxy.isNull());
+    assert(channelUrlDirectoryProxy);
     std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> future(
             channelUrlDirectoryProxy->getUrlsForChannelAsync(channelId, onSuccess, onError));
     future->waitForFinished(timeout_ms);

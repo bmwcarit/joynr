@@ -117,6 +117,18 @@ joynrTestRequire(
                                                 this.value = newValue;
                                             }
                                         },
+                                        failingSyncAttribute : {
+                                            value : 0,
+                                            get : function() {
+                                                return this.value;
+                                            }
+                                        },
+                                        failingAsyncAttribute : {
+                                            value : 0,
+                                            get : function() {
+                                                return this.value;
+                                            }
+                                        },
                                         attrProvidedImpl : {
                                             value : "testValue2",
                                             get : function() {

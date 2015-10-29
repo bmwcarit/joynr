@@ -43,9 +43,12 @@ public class RoutingTableImpl implements RoutingTable {
     public RoutingTableImpl(@Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_PARTICIPANT_ID) String channelUrlDirectoryParticipantId,
                             @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_ADDRESS) Address channelUrlDirectoryAddress,
                             @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID) String capabilitiesDirectoryParticipantId,
-                            @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_ADDRESS) Address capabiltitiesDirectoryAddress) {
+                            @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_ADDRESS) Address capabiltitiesDirectoryAddress,
+                            @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID) String domainAccessControllerParticipantId,
+                            @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_ADDRESS) Address domainAccessControllerAddress) {
         this.put(capabilitiesDirectoryParticipantId, capabiltitiesDirectoryAddress);
         this.put(channelUrlDirectoryParticipantId, channelUrlDirectoryAddress);
+        this.put(domainAccessControllerParticipantId, domainAccessControllerAddress);
     }
 
     public Address get(String participantId) {

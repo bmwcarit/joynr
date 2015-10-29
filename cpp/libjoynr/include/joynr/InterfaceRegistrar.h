@@ -27,6 +27,7 @@
 #include <QMutex>
 #include <QHash>
 #include <string>
+#include <memory>
 
 namespace joynr
 {
@@ -60,7 +61,7 @@ public:
     /**
       * Get a request interpreter for the given interface
       */
-    QSharedPointer<IRequestInterpreter> getRequestInterpreter(const std::string& interfaceName);
+    std::shared_ptr<IRequestInterpreter> getRequestInterpreter(const std::string& interfaceName);
 
     /**
       * Reset the InterfaceRegistrar - for use in tests
@@ -73,7 +74,7 @@ private:
     static InterfaceRegistrar* registrarInstance;
 
     // Thread safe hash table of request interpreters
-    QHash<QString, QSharedPointer<IRequestInterpreter>> requestInterpreters;
+    QHash<QString, std::shared_ptr<IRequestInterpreter>> requestInterpreters;
     QMutex requestInterpretersMutex;
 
     // A count of how many registrations are done for each request interpreter
@@ -87,7 +88,7 @@ void InterfaceRegistrar::registerRequestInterpreter(const std::string& interface
     QMutexLocker locker(&requestInterpretersMutex);
     QString qInterfaceName(QString::fromStdString(interfaceName));
     if (!requestInterpreters.contains(qInterfaceName)) {
-        requestInterpreters.insert(qInterfaceName, QSharedPointer<IRequestInterpreter>(new T()));
+        requestInterpreters.insert(qInterfaceName, std::shared_ptr<IRequestInterpreter>(new T()));
         requestInterpreterCounts.insert(qInterfaceName, 1);
     } else {
         ++requestInterpreterCounts[qInterfaceName];

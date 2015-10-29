@@ -20,6 +20,7 @@
 #define IMESSAGINGSTUBFACTORY_H
 
 #include <string>
+#include <memory>
 
 namespace joynr
 {
@@ -40,7 +41,7 @@ public:
     virtual ~IMessagingStubFactory()
     {
     }
-    virtual QSharedPointer<IMessaging> create(
+    virtual std::shared_ptr<IMessaging> create(
             const joynr::system::RoutingTypes::QtAddress& destEndpointAddress) = 0;
     virtual void remove(const joynr::system::RoutingTypes::QtAddress& destParticipantId) = 0;
     virtual bool contains(const joynr::system::RoutingTypes::QtAddress& destParticipantId) = 0;

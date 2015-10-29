@@ -24,10 +24,13 @@
 #include <QCache>
 #include <QList>
 #include <QMutex>
-#include <QDateTime>
+#include <chrono>
+#include <stdint.h>
 
 namespace joynr
 {
+
+using namespace std::chrono;
 
 /**
  * Implements a typed cache. Stores SEVERAL objects with a key
@@ -148,7 +151,8 @@ template <class Key, class T>
 void TypedClientMultiCache<Key, T>::insert(const Key& key, T object)
 {
     QMutexLocker locker(&mutex);
-    CachedValue<T> cachedValue = CachedValue<T>(object, QDateTime::currentMSecsSinceEpoch());
+    int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    CachedValue<T> cachedValue = CachedValue<T>(object, now);
     if (cache.contains(key)) {
         cache.object(key)->append(cachedValue);
         return;
@@ -167,7 +171,8 @@ void TypedClientMultiCache<Key, T>::remove(const Key& key, T object)
         return;
     }
     QList<CachedValue<T>>* list = cache.object(key);
-    CachedValue<T> cachedValue = CachedValue<T>(object, QDateTime::currentMSecsSinceEpoch());
+    int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    CachedValue<T> cachedValue = CachedValue<T>(object, now);
     if (!list->contains(cachedValue)) {
         return;
     }
@@ -221,7 +226,8 @@ void TypedClientMultiCache<Key, T>::cleanup(qint64 maxAcceptedAgeInMs)
 template <class Key, class T>
 qint64 TypedClientMultiCache<Key, T>::elapsed(qint64 entryTime)
 {
-    return QDateTime::currentMSecsSinceEpoch() - entryTime;
+    int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    return now - entryTime;
 }
 
 template <class Key, class T>

@@ -45,9 +45,9 @@ public:
           voidFixture(std::bind(&MockCallback<void>::onSuccess, voidCallback),
                       std::bind(&MockCallback<void>::onError, voidCallback, std::placeholders::_1)) {}
 
-    QSharedPointer<MockCallback<int>> intCallback;
+    std::shared_ptr<MockCallback<int>> intCallback;
     ReplyCaller<int> intFixture;
-    QSharedPointer<MockCallback<void>> voidCallback;
+    std::shared_ptr<MockCallback<void>> voidCallback;
     ReplyCaller<void> voidFixture;
 };
 
@@ -58,7 +58,7 @@ TEST_F(ReplyCallerTest, getType) {
 }
 
 TEST_F(ReplyCallerTest, getTypeQInt64) {
-    QSharedPointer<MockCallback<qint64>> callback(new MockCallback<qint64>());
+    std::shared_ptr<MockCallback<qint64>> callback(new MockCallback<qint64>());
     ReplyCaller<qint64> qint64ReplyCaller(
                 [callback](const RequestStatus& status, const qint64& value) {
                     callback->onSuccess(value);
@@ -69,7 +69,7 @@ TEST_F(ReplyCallerTest, getTypeQInt64) {
 }
 
 TEST_F(ReplyCallerTest, getTypeQInt8) {
-    QSharedPointer<MockCallback<qint8>> callback(new MockCallback<qint8>());
+    std::shared_ptr<MockCallback<qint8>> callback(new MockCallback<qint8>());
     ReplyCaller<qint8> qint8ReplyCaller(
                 [callback](const RequestStatus& status, const qint8& value) {
                     callback->onSuccess(value);

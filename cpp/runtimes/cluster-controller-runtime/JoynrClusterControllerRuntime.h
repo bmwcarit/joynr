@@ -117,7 +117,7 @@ protected:
     QCoreApplication* app;
     ICapabilitiesClient* capabilitiesClient;
     std::shared_ptr<LocalCapabilitiesDirectory> localCapabilitiesDirectory;
-    QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory;
+    std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory;
     // Reason why CapabilitiesAggregator (CA) has to be a QSP:
     // CA has to be a member variable, because it is passed to ProxyBuilder in createProxyBuilder()
     // CA has to be a pointer instead of a reference, because it has to be initialised to NULL
@@ -127,12 +127,12 @@ protected:
     ClientQCache cache;
     // messageRouter must be shared pointer since it is also registered as
     // joynr::system::Routing provider and register capability expects shared pointer
-    QSharedPointer<infrastructure::ChannelUrlDirectoryProxy> channelUrlDirectoryProxy;
+    std::shared_ptr<infrastructure::ChannelUrlDirectoryProxy> channelUrlDirectoryProxy;
 
-    QSharedPointer<InProcessMessagingSkeleton> libJoynrMessagingSkeleton;
+    std::shared_ptr<InProcessMessagingSkeleton> libJoynrMessagingSkeleton;
 
-    QSharedPointer<IMessageReceiver> messageReceiver;
-    QSharedPointer<IMessageSender> messageSender;
+    std::shared_ptr<IMessageReceiver> messageReceiver;
+    std::shared_ptr<IMessageSender> messageSender;
 
     QList<IDispatcher*> dispatcherList;
     InProcessConnectorFactory* inProcessConnectorFactory;

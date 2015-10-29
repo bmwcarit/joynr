@@ -18,17 +18,25 @@ package io.joynr.generator.provider
  */
 
 import com.google.inject.Inject
-import io.joynr.generator.util.TemplateBase
-import org.franca.core.franca.FInterface
-import io.joynr.generator.util.JoynrJavaGeneratorExtensions
-import io.joynr.generator.util.InterfaceTemplate
-import org.franca.core.franca.FMethod
-import java.util.HashMap
-import java.util.ArrayList
+import io.joynr.generator.templates.InterfaceTemplate
+import io.joynr.generator.templates.util.AttributeUtil
+import io.joynr.generator.templates.util.InterfaceUtil
+import io.joynr.generator.templates.util.MethodUtil
+import io.joynr.generator.templates.util.NamingUtil
 import io.joynr.generator.util.JavaTypeUtil
+import io.joynr.generator.util.JoynrJavaGeneratorExtensions
+import io.joynr.generator.util.TemplateBase
+import java.util.ArrayList
+import java.util.HashMap
+import org.franca.core.franca.FInterface
+import org.franca.core.franca.FMethod
 
 class DefaultInterfaceProviderTemplate implements InterfaceTemplate {
 	@Inject extension JoynrJavaGeneratorExtensions
+	@Inject extension NamingUtil
+	@Inject extension InterfaceUtil
+	@Inject extension AttributeUtil
+	@Inject extension MethodUtil
 	@Inject extension JavaTypeUtil
 	@Inject extension TemplateBase
 	@Inject extension InterfaceProviderTemplate

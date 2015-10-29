@@ -18,7 +18,8 @@ package io.joynr.generator.communicationmodel
  */
 
 import com.google.inject.Inject
-import io.joynr.generator.util.CompoundTypeTemplate
+import io.joynr.generator.templates.CompoundTypeTemplate
+import io.joynr.generator.templates.util.NamingUtil
 import io.joynr.generator.util.JavaTypeUtil
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import io.joynr.generator.util.TemplateBase
@@ -29,6 +30,7 @@ class ComplexTypeTemplate implements CompoundTypeTemplate{
 	@Inject	extension JoynrJavaGeneratorExtensions
 	@Inject extension JavaTypeUtil
 	@Inject extension TemplateBase
+	@Inject extension NamingUtil
 
 	override generate(FCompoundType complexType) {
 		val typeName = complexType.joynrName

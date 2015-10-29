@@ -20,9 +20,9 @@
 #ifndef IACCESSCONTROLLER_H
 #define IACCESSCONTROLLER_H
 
-#include "joynr/infrastructure/DacTypes/QtTrustLevel.h"
+#include "joynr/infrastructure/DacTypes_QtTrustLevel.h"
 
-#include <QSharedPointer>
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 class QString;
@@ -68,8 +68,9 @@ public:
      * \param message The message to check
      * \param callback An object that will be called back with the result
      */
-    virtual void hasConsumerPermission(const JoynrMessage& message,
-                                       QSharedPointer<IHasConsumerPermissionCallback> callback) = 0;
+    virtual void hasConsumerPermission(
+            const JoynrMessage& message,
+            std::shared_ptr<IHasConsumerPermissionCallback> callback) = 0;
 
     /**
      * Does the provider with given userId and given trust level, have permission to expose given

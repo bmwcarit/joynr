@@ -23,11 +23,12 @@
 #include <QString>
 #include <QVariant>
 #include <QObject>
-#include <QSharedPointer>
 #include <QMetaType>
 
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/BroadcastFilterParameters.h"
+
+#include <memory>
 
 namespace joynr
 {
@@ -68,5 +69,5 @@ private:
 } // namespace joynr
 
 Q_DECLARE_METATYPE(joynr::QtBroadcastFilterParameters)
-Q_DECLARE_METATYPE(QSharedPointer<joynr::QtBroadcastFilterParameters>)
+Q_DECLARE_METATYPE(std::shared_ptr<joynr::QtBroadcastFilterParameters>)
 #endif // QTBROADCASTFILTERPARAMETERS_H

@@ -18,7 +18,10 @@ package io.joynr.generator.cpp.util
  */
 
 import com.google.inject.Inject
-import io.joynr.generator.util.TypeUtil
+import io.joynr.generator.templates.util.AbstractTypeUtil
+import io.joynr.generator.templates.util.BroadcastUtil
+import io.joynr.generator.templates.util.InterfaceUtil
+import io.joynr.generator.templates.util.MethodUtil
 import java.util.Collections
 import java.util.HashMap
 import java.util.HashSet
@@ -34,7 +37,13 @@ import org.franca.core.franca.FMethod
 import org.franca.core.franca.FType
 import org.franca.core.franca.FTypedElement
 
-abstract class CppTypeUtil extends TypeUtil {
+abstract class CppTypeUtil extends AbstractTypeUtil {
+	@Inject
+	private extension InterfaceUtil
+	@Inject
+	private extension MethodUtil
+	@Inject
+	private extension BroadcastUtil
 	@Inject
 	protected extension JoynrCppGeneratorExtensions
 

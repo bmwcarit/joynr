@@ -55,11 +55,28 @@ class JOYNRCOMMON_EXPORT Logging
 {
 public:
     virtual ~Logging(){};
+    /**
+     * @brief shutdown does necessary cleanup before Logging object has been destroyed
+     */
     virtual void shutdown() = 0;
-
+    /**
+     * @brief getLogger Logging may have more than one Logger for various contextId's and
+     * classNames. This function reaches registered Logger for given contextId and className.
+     * @param contextId
+     * @param className
+     * @return Logger instance registered for given contextId and className
+     */
     virtual Logger* getLogger(QString contextId, QString className) = 0;
+    /**
+     * @brief destroyLogger Logger previously registered for given contextId and className
+     * @param contextId
+     * @param className
+     */
     virtual void destroyLogger(QString contextId, QString className) = 0;
-
+    /**
+     * @brief getInstance
+     * @return singleton Logging instance
+     */
     static Logging* getInstance();
 };
 
@@ -75,7 +92,17 @@ class JOYNRCOMMON_EXPORT Logger
 {
 public:
     virtual ~Logger(){};
+    /**
+     * @brief log
+     * @param logLevel
+     * @param message
+     */
     virtual void log(LogLevel logLevel, const char* message) = 0;
+    /**
+     * @brief log
+     * @param logLevel
+     * @param message
+     */
     virtual void log(LogLevel logLevel, const QString& message) = 0;
 };
 

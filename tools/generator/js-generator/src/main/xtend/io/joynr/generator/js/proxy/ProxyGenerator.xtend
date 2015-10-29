@@ -20,24 +20,27 @@ package io.joynr.generator.js.proxy
 
 import com.google.inject.Inject
 import io.joynr.generator.js.util.GeneratorParameter
+import io.joynr.generator.js.util.JSTypeUtil
 import io.joynr.generator.js.util.JoynrJSGeneratorExtensions
+import io.joynr.generator.templates.util.BroadcastUtil
+import io.joynr.generator.templates.util.InterfaceUtil
+import io.joynr.generator.templates.util.MethodUtil
+import io.joynr.generator.templates.util.NamingUtil
 import java.io.File
 import java.util.Date
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FType
-import io.joynr.generator.js.util.JSTypeUtil
 
 class ProxyGenerator {
 
-	@Inject
-	extension JoynrJSGeneratorExtensions
-
-	@Inject
-	extension JSTypeUtil
-
-	@Inject
-	extension GeneratorParameter
+	@Inject extension JoynrJSGeneratorExtensions
+	@Inject extension JSTypeUtil
+	@Inject extension GeneratorParameter
+	@Inject private extension NamingUtil
+	@Inject private extension MethodUtil
+	@Inject private extension BroadcastUtil
+	@Inject private extension InterfaceUtil
 
 	int packagePathDepth
 
@@ -186,7 +189,14 @@ class ProxyGenerator {
 			 */
 			this.«eventName» = new settings.proxyElementTypes.ProxyEvent(this, {
 					broadcastName : "«eventName»",
-					broadcastTypes : [«FOR param: event.outputParameters SEPARATOR ", "»«param.typeNameForParameter»«ENDFOR»],
+					broadcastParameter : [
+						«FOR param: event.outputParameters SEPARATOR ", "»
+						{
+							name : "«param.joynrName»",
+							type : «param.typeNameForParameter»
+						}
+						«ENDFOR»
+					],
 					messagingQos : settings.messagingQos,
 					discoveryQos : settings.discoveryQos,
 					«IF isSelective(event)»
@@ -233,7 +243,7 @@ class ProxyGenerator {
 				});
 		} else if (typeof exports !== 'undefined' ) {
 			if ((module !== undefined) && module.exports) {				
-				«FOR datatype : fInterface.getAllComplexAndEnumTypes.filter[a | a instanceof FType]»
+				«FOR datatype : getAllComplexAndEnumTypes(fInterface, false, true, true, true, true, true, false).filter[a | a instanceof FType]»
 					require("«relativePathToBase() + (datatype as FType).getDependencyPath()»");
 				«ENDFOR»
 				exports = module.exports = «fInterface.proxyName»;

@@ -19,18 +19,12 @@ package io.joynr.arbitration;
  * #L%
  */
 
-import java.util.List;
-
-import joynr.system.RoutingTypes.Address;
-
 public class ArbitrationResult {
     private String participantId;
-    private List<Address> address;
 
-    public ArbitrationResult(final String participantId, final List<Address> expectedAddress) {
+    public ArbitrationResult(final String participantId) {
         super();
         this.participantId = participantId;
-        this.address = expectedAddress;
     }
 
     public ArbitrationResult() {
@@ -44,19 +38,10 @@ public class ArbitrationResult {
         this.participantId = participantId;
     }
 
-    public List<Address> getEndpointAddress() {
-        return address;
-    }
-
-    public void setAddress(final List<Address> address) {
-        this.address = address;
-    }
-
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((address == null) ? 0 : address.hashCode());
         result = prime * result + ((participantId == null) ? 0 : participantId.hashCode());
         return result;
     }
@@ -73,13 +58,6 @@ public class ArbitrationResult {
             return false;
         }
         ArbitrationResult other = (ArbitrationResult) obj;
-        if (address == null) {
-            if (other.address != null) {
-                return false;
-            }
-        } else if (!address.equals(other.address)) {
-            return false;
-        }
         if (participantId == null) {
             if (other.participantId != null) {
                 return false;

@@ -21,12 +21,12 @@
 #include <QtDebug>
 
 #include "joynr/JsonSerializer.h"
-#include "joynr/types/Localisation/QtGpsLocation.h"
-#include "joynr/types/Localisation/QtTrip.h"
+#include "joynr/types/Localisation_QtGpsLocation.h"
+#include "joynr/types/Localisation_QtTrip.h"
 #include "joynr/JoynrMessage.h"
-#include "joynr/types/TestTypes/QtTStruct.h"
+#include "joynr/types/TestTypes_QtTStruct.h"
 #include "joynr/types/QtDiscoveryEntry.h"
-#include "joynr/system/RoutingTypes/QtWebSocketAddress.h"
+#include "joynr/system/RoutingTypes_QtWebSocketAddress.h"
 
 using namespace joynr;
 

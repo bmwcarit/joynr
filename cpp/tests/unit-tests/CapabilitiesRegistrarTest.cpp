@@ -70,14 +70,14 @@ public:
 protected:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesRegistrarTest);
     MockDispatcher* mockDispatcher;
-    QSharedPointer<joynr::system::RoutingTypes::QtAddress> messagingStubAddress;
-    QSharedPointer<MockParticipantIdStorage> mockParticipantIdStorage;
+    std::shared_ptr<joynr::system::RoutingTypes::QtAddress> messagingStubAddress;
+    std::shared_ptr<MockParticipantIdStorage> mockParticipantIdStorage;
     MockDiscovery mockDiscovery;
     CapabilitiesRegistrar* capabilitiesRegistrar;
     std::shared_ptr<MockProvider> mockProvider;
     std::string domain;
     std::string expectedParticipantId;
-    QSharedPointer<MockMessageRouter> mockMessageRouter;
+    std::shared_ptr<MockMessageRouter> mockMessageRouter;
 };
 
 TEST_F(CapabilitiesRegistrarTest, add){

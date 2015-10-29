@@ -30,7 +30,7 @@
 #include "joynr/MessageRouter.h"
 #include "joynr/IMessaging.h"
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
-#include "joynr/system/RoutingTypes/QtWebSocketAddress.h"
+#include "joynr/system/RoutingTypes_QtWebSocketAddress.h"
 
 #include "joynr/JoynrExport.h"
 

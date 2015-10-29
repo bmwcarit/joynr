@@ -23,7 +23,6 @@
 
 #include <typeinfo>
 #include <QMetaType>
-#include <QSharedPointer>
 #include "joynr/RequestStatus.h"
 #include <functional>
 #include "joynr/Util.h"

@@ -77,7 +77,7 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesLocalDirectory) {
                 ChannelUrlSelector::PUNISHMENT_FACTOR());
 
     MockLocalChannelUrlDirectory* mockDir = new MockLocalChannelUrlDirectory();
-    QSharedPointer<MockLocalChannelUrlDirectory>  mockDirectory(mockDir);
+    std::shared_ptr<MockLocalChannelUrlDirectory>  mockDirectory(mockDir);
     QSettings *qsettings = new QSettings(settingsFileName, QSettings::IniFormat);
     MessagingSettings *settings = new MessagingSettings(*qsettings);
     urlCache->init(
@@ -119,7 +119,7 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesFeedbackToChangeProviderUrl) {
                 ChannelUrlSelector::PUNISHMENT_FACTOR());
 
     MockLocalChannelUrlDirectory* mockDir = new MockLocalChannelUrlDirectory();
-    QSharedPointer<ILocalChannelUrlDirectory> mockDirectory(mockDir);
+    std::shared_ptr<ILocalChannelUrlDirectory> mockDirectory(mockDir);
     QSettings *qsettings = new QSettings(settingsFileName, QSettings::IniFormat);
     MessagingSettings *settings = new MessagingSettings(*qsettings);
     urlCache->init(
@@ -175,7 +175,7 @@ TEST(ChannelUrlSelectorTest, obtainUrlRetriesUrlOfHigherPriority) {
                 punishmentFactor);
 
     MockLocalChannelUrlDirectory* mockDir = new MockLocalChannelUrlDirectory();
-    QSharedPointer<ILocalChannelUrlDirectory>  mockDirectory(mockDir);
+    std::shared_ptr<ILocalChannelUrlDirectory>  mockDirectory(mockDir);
     QSettings* qsettings = new QSettings(settingsFileName, QSettings::IniFormat);
     MessagingSettings *settings = new MessagingSettings(*qsettings);
     urlCache->init(

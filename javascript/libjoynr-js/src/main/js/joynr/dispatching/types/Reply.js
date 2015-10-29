@@ -40,11 +40,31 @@ define("joynr/dispatching/types/Reply", [
             "Object"
         ], "settings");
         Util.checkProperty(settings.requestReplyId, "String", "settings.requestReplyId");
+        // "response" is not set in case an exception is returned
         Util.checkPropertyIfDefined(settings.response, "Array", "settings.response");
         if (settings.response) {
             for (i = 0; i < settings.response.length; i++) {
                 settings.response[i] = Util.ensureTypedValues(settings.response[i]);
             }
+        }
+        // if present "error" must be one of the exception types
+        Util.checkPropertyIfDefined(settings.error, [
+            "Object",
+            "ApplicationException",
+            "DiscoveryException",
+            "IllegalAccessException",
+            "JoynrException",
+            "JoynrRuntimeException",
+            "MethodInvocationException",
+            "ProviderRuntimeException"
+        ], "settings.error");
+
+        // must contain exactly one of the two alternatives
+        if (!settings.response && !settings.error) {
+            throw new Error("Reply object does neither contain response nor error");
+        }
+        if (settings.response && settings.error) {
+            throw new Error("Reply object contains both response and error");
         }
 
         /**

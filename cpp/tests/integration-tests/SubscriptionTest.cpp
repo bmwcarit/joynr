@@ -40,7 +40,7 @@
 #include <string>
 #include "joynr/LibjoynrSettings.h"
 
-#include "joynr/types/Localisation/QtGpsLocation.h"
+#include "joynr/types/Localisation_QtGpsLocation.h"
 
 using namespace ::testing;
 
@@ -95,11 +95,11 @@ public:
     }
 
 protected:
-    QSharedPointer<MockMessageRouter> mockMessageRouter;
-    QSharedPointer<MockCallback<types::Localisation::QtGpsLocation> > mockCallback;
+    std::shared_ptr<MockMessageRouter> mockMessageRouter;
+    std::shared_ptr<MockCallback<types::Localisation::QtGpsLocation> > mockCallback;
 
-    QSharedPointer<MockTestRequestCaller> mockRequestCaller;
-    QSharedPointer<MockReplyCaller<types::Localisation::QtGpsLocation> > mockReplyCaller;
+    std::shared_ptr<MockTestRequestCaller> mockRequestCaller;
+    std::shared_ptr<MockReplyCaller<types::Localisation::QtGpsLocation> > mockReplyCaller;
     std::shared_ptr<MockSubscriptionListenerOneType<types::Localisation::QtGpsLocation> > mockSubscriptionListener;
 
     types::Localisation::GpsLocation gpsLocation1;
@@ -131,14 +131,14 @@ TEST_F(SubscriptionTest, receive_subscriptionRequestAndPollAttribute) {
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
     QSemaphore semaphore(0);
-    EXPECT_CALL(*mockRequestCaller, getLocation(_))
+    EXPECT_CALL(*mockRequestCaller, getLocation(_,_))
             .WillRepeatedly(
                 DoAll(
-                    Invoke(mockRequestCaller.data(), &MockTestRequestCaller::invokeOnSuccessFct),
+                    Invoke(mockRequestCaller.get(), &MockTestRequestCaller::invokeOnSuccessFct),
                     ReleaseSemaphore(&semaphore)));
 
     QString attributeName = "Location";
-    auto subscriptionQos = QSharedPointer<QtSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
+    auto subscriptionQos = std::shared_ptr<QtSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
                 80, // validity_ms
                 100, // minInterval_ms
                 200, // maxInterval_ms
@@ -184,7 +184,7 @@ TEST_F(SubscriptionTest, receive_publication ) {
 
     //register the subscription on the consumer side
     QString attributeName = "Location";
-    auto subscriptionQos = QSharedPointer<QtSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
+    auto subscriptionQos = std::shared_ptr<QtSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
                 80, // validity_ms
                 100, // minInterval_ms
                 200, // maxInterval_ms
@@ -199,7 +199,7 @@ TEST_F(SubscriptionTest, receive_publication ) {
     response.append(QVariant::fromValue(types::Localisation::QtGpsLocation::createQt(gpsLocation1)));
     subscriptionPublication.setResponse(response);
 
-    QSharedPointer<SubscriptionCallback<types::Localisation::QtGpsLocation>> subscriptionCallback(
+    std::shared_ptr<SubscriptionCallback<types::Localisation::QtGpsLocation>> subscriptionCallback(
             new SubscriptionCallback<types::Localisation::QtGpsLocation>(mockSubscriptionListener));
 
 
@@ -239,14 +239,15 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription) {
     QSemaphore semaphore(0);
     EXPECT_CALL(
             *mockRequestCaller,
-            getLocation(A<std::function<void(const types::Localisation::GpsLocation&)>>())
+            getLocation(A<std::function<void(const types::Localisation::GpsLocation&)>>(),
+                        A<std::function<void(const joynr::JoynrException&)>>())
     )
             .WillOnce(DoAll(
-                    Invoke(mockRequestCaller.data(), &MockTestRequestCaller::invokeOnSuccessFct),
+                    Invoke(mockRequestCaller.get(), &MockTestRequestCaller::invokeOnSuccessFct),
                     ReleaseSemaphore(&semaphore)
             ));
     QString attributeName = "Location";
-    auto subscriptionQos = QSharedPointer<QtSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
+    auto subscriptionQos = std::shared_ptr<QtSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
                 80, // validity_ms
                 100, // minInterval_ms
                 200, // maxInterval_ms
@@ -285,15 +286,15 @@ TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications) {
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
     QSemaphore semaphore(0);
-    EXPECT_CALL(*mockRequestCaller, getLocation(_))
+    EXPECT_CALL(*mockRequestCaller, getLocation(_,_))
             .WillRepeatedly(
                 DoAll(
-                    Invoke(mockRequestCaller.data(), &MockTestRequestCaller::invokeOnSuccessFct),
+                    Invoke(mockRequestCaller.get(), &MockTestRequestCaller::invokeOnSuccessFct),
                     ReleaseSemaphore(&semaphore)));
 
     dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
     QString attributeName = "Location";
-    auto subscriptionQos = QSharedPointer<QtSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
+    auto subscriptionQos = std::shared_ptr<QtSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
                 1200, // validity_ms
                 10, // minInterval_ms
                 100, // maxInterval_ms
@@ -332,15 +333,15 @@ TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
     QSemaphore semaphore(0);
-    EXPECT_CALL(*mockRequestCaller, getLocation(_))
+    EXPECT_CALL(*mockRequestCaller, getLocation(_,_))
             .WillRepeatedly(
                 DoAll(
-                    Invoke(mockRequestCaller.data(), &MockTestRequestCaller::invokeOnSuccessFct),
+                    Invoke(mockRequestCaller.get(), &MockTestRequestCaller::invokeOnSuccessFct),
                     ReleaseSemaphore(&semaphore)));
 
     dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
     QString attributeName = "Location";
-    auto subscriptionQos = QSharedPointer<QtSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
+    auto subscriptionQos = std::shared_ptr<QtSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
                 1200, // validity_ms
                 10, // minInterval_ms
                 100, // maxInterval_ms

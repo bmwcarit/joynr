@@ -1,3 +1,5 @@
+/*jslint es5: true */
+
 /*
  * #%L
  * %%
@@ -22,9 +24,19 @@ define(
         [
             "joynr/util/Typing",
             "joynr/TypesEnum",
-            "joynr/types/TypeRegistrySingleton"
+            "joynr/types/TypeRegistrySingleton",
+            "joynr/exceptions/ApplicationException",
+            "joynr/exceptions/ProviderRuntimeException",
+            "joynr/util/UtilInternal"
         ],
-        function(Typing, TypesEnum, TypeRegistrySingleton) {
+        function(
+            Typing,
+            TypesEnum,
+            TypeRegistrySingleton,
+            ApplicationException,
+            ProviderRuntimeException,
+            Util
+        ) {
 
             var typeRegistry = TypeRegistrySingleton.getInstance();
             /**
@@ -166,6 +178,9 @@ define(
                         function callOperation(operationArguments, operationArgumentTypes) {
                             var i, j;
                             var argument, namedArguments, signature;
+                            var result;
+                            var errorEnumType;
+                            var exception;
 
                             // cycle through multiple available operation signatures
                             for (i = 0; i < operationSignatures.length
@@ -178,20 +193,75 @@ define(
                                                 operationArguments,
                                                 operationArgumentTypes,
                                                 signature);
+                            }
 
-                                if (namedArguments !== undefined) {
-                                    // augment types
-                                    for (j = 0; j < signature.inputParameter.length; ++j) {
-                                        argument = signature.inputParameter[j];
-                                        namedArguments[argument.name] =
-                                                Typing.augmentTypes(
-                                                        namedArguments[argument.name],
-                                                        typeRegistry,
-                                                        argument.type);
+                            if (namedArguments) {
+                                if (signature.error
+                                    && signature.error.type) {
+                                    errorEnumType = signature.error.type;
+                                }
+                                // augment types
+                                for (j = 0; j < signature.inputParameter.length; ++j) {
+                                    argument = signature.inputParameter[j];
+                                    namedArguments[argument.name] =
+                                            Typing.augmentTypes(
+                                                    namedArguments[argument.name],
+                                                    typeRegistry,
+                                                    argument.type);
+                                }
+
+                                try {
+                                    /*
+                                     * call the operation function
+                                     * may return either promise (preferred) or direct result
+                                     * and may possibly also throw exception in the latter case.
+                                     */
+                                    result = privateOperationFunc(namedArguments);
+                                    if (Util.isPromise(result)) {
+                                        // return promise
+                                        return result.catch(function(exceptionOrErrorEnumValue) {
+                                            if (exceptionOrErrorEnumValue instanceof ProviderRuntimeException) {
+                                                exception = exceptionOrErrorEnumValue;
+                                            } else {
+                                                if (Typing.isComplexJoynrObject(exceptionOrErrorEnumValue)) {
+                                                    exception = new ApplicationException({
+                                                        detailMessage: "Application exception, details see error enum",
+                                                        error: exceptionOrErrorEnumValue
+                                                    });
+                                                } else {
+                                                    exception = new ProviderRuntimeException({
+                                                        detailMessage: "Implementation references unknown error enum value"
+                                                    });
+                                                }
+                                            }
+                                            throw exception;
+                                        });
                                     }
 
-                                    // call the operation function
-                                    return privateOperationFunc(namedArguments);
+                                    // return direct result
+                                    return result;
+                                } catch(exceptionOrErrorEnumValue) {
+                                    /*
+                                     * If the method was implemented synchronously, we can get an
+                                     * exception. The content of the exception is either an instance
+                                     * of ProviderRuntimeException or an error enumeration value. In
+                                     * the latter case, it must be wrapped into an ApplicationException.
+                                     */
+                                    if (exceptionOrErrorEnumValue instanceof ProviderRuntimeException) {
+                                        exception = exceptionOrErrorEnumValue;
+                                    } else {
+                                        if (Typing.isComplexJoynrObject(exceptionOrErrorEnumValue)) {
+                                            exception = new ApplicationException({
+                                                detailMessage: "Application exception, details see error enum",
+                                                error: exceptionOrErrorEnumValue
+                                            });
+                                        } else {
+                                            exception = new ProviderRuntimeException({
+                                                detailMessage: "Implementation references unknown error enum value"
+                                            });
+                                        }
+                                    }
+                                    throw exception;
                                 }
                             }
 

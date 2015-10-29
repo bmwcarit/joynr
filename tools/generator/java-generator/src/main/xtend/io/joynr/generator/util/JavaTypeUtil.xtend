@@ -1,6 +1,9 @@
 package io.joynr.generator.util
 
 import com.google.inject.Inject
+import io.joynr.generator.templates.util.AbstractTypeUtil
+import io.joynr.generator.templates.util.BroadcastUtil
+import io.joynr.generator.templates.util.MethodUtil
 import java.util.Collections
 import java.util.HashMap
 import java.util.Map
@@ -11,8 +14,10 @@ import org.franca.core.franca.FMethod
 import org.franca.core.franca.FType
 import org.franca.core.franca.FTypedElement
 
-class JavaTypeUtil extends TypeUtil {
+class JavaTypeUtil extends AbstractTypeUtil {
 
+	@Inject private extension MethodUtil
+	@Inject private extension BroadcastUtil
 	@Inject private extension JoynrJavaGeneratorExtensions
 
 	private Map<FBasicTypeId,String> primitiveDataTypeDefaultMap;
@@ -36,40 +41,6 @@ class JavaTypeUtil extends TypeUtil {
 		primitiveDataTypeDefaultValue.put(FBasicTypeId::UNDEFINED,"");
 
 		primitiveDataTypeDefaultMap = Collections::unmodifiableMap(primitiveDataTypeDefaultValue);
-	}
-
-	/**
-	 * @param method the method for which the signature shall be created
-	 * @return a method signature that is unique in terms of method name, in
-	 *      parameter names and in parameter types.
-	 */
-	def createMethodSignatureFromInParameters(FMethod method) {
-		val nameStringBuilder = new StringBuilder(method.name);
-		for (FArgument inParam : method.inputParameters) {
-			nameStringBuilder.append(inParam.name.toFirstUpper);
-			val typeName = new StringBuilder(inParam.typeName.objectDataTypeForPlainType);
-			nameStringBuilder.append(typeName.toString());
-		}
-		return nameStringBuilder.toString;
-	}
-
-	/**
-	 * @param method the method for which the signature shall be created
-	 * @return a method signature that is unique in terms of method name, out
-	 *      parameter names and out parameter types.
-	 */
-	def createMethodSignatureFromOutParameters(FMethod method) {
-		val nameStringBuilder = new StringBuilder(method.name);
-		for (FArgument outParam : method.outputParameters) {
-			nameStringBuilder.append(outParam.name.toFirstUpper);
-			val typeName = new StringBuilder(outParam.typeName.objectDataTypeForPlainType);
-			if (typeName.toString().contains("List")) {
-				typeName.deleteCharAt(4);
-				typeName.deleteCharAt(typeName.length-1);
-			}
-			nameStringBuilder.append(typeName.toString());
-		}
-		return nameStringBuilder.toString;
 	}
 
 	def getCommaSeperatedTypedOutputParameterList(
@@ -185,28 +156,6 @@ class JavaTypeUtil extends TypeUtil {
 		}
 	}
 
-	def String getObjectDataTypeForPlainType(String plainType) {
-		var type = plainType.toLowerCase
-		switch (plainType) {
-			case FBasicTypeId::BOOLEAN.getName: type = "Boolean"
-			case FBasicTypeId::INT8.getName: type = "Byte"
-			case FBasicTypeId::UINT8.getName: type = "Byte"
-			case FBasicTypeId::INT16.getName: type = "Integer"
-			case FBasicTypeId::UINT16.getName: type = "Integer"
-			case FBasicTypeId::INT32.getName: type = "Integer"
-			case FBasicTypeId::UINT32.getName: type = "Integer"
-			case FBasicTypeId::INT64.getName: type = "Long"
-			case FBasicTypeId::UINT64.getName: type = "Long"
-			case FBasicTypeId::FLOAT.getName: type = "Double"
-			case FBasicTypeId::DOUBLE.getName: type = "Double"
-			case FBasicTypeId::STRING.getName: type = "String"
-			case FBasicTypeId::BYTE_BUFFER.getName: type = "byte[]"
-			case "void": type = "Void"
-			default :  type = plainType
-		}
-
-		return type
-	}
 	override getTypeName(FType datatype) {
 		datatype.joynrName
 	}

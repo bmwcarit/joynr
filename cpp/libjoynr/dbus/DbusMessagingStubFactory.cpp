@@ -17,7 +17,7 @@
  * #L%
  */
 #include "DbusMessagingStubFactory.h"
-#include "joynr/system/RoutingTypes/QtCommonApiDbusAddress.h"
+#include "joynr/system/RoutingTypes_QtCommonApiDbusAddress.h"
 #include "common/dbus/DbusMessagingStubAdapter.h"
 
 #include <QMutexLocker>
@@ -35,7 +35,7 @@ bool DbusMessagingStubFactory::canCreate(const joynr::system::RoutingTypes::QtAd
             system::RoutingTypes::QtCommonApiDbusAddress::staticMetaObject.className());
 }
 
-QSharedPointer<IMessaging> DbusMessagingStubFactory::create(
+std::shared_ptr<IMessaging> DbusMessagingStubFactory::create(
         const joynr::system::RoutingTypes::QtAddress& destAddress)
 {
     const system::RoutingTypes::QtCommonApiDbusAddress* dbusAddress =
@@ -47,7 +47,7 @@ QSharedPointer<IMessaging> DbusMessagingStubFactory::create(
         QMutexLocker locker(&mutex);
         if (!stubMap.contains(address)) {
             // create new stub
-            auto stub = QSharedPointer<IMessaging>(new DbusMessagingStubAdapter(address));
+            auto stub = std::shared_ptr<IMessaging>(new DbusMessagingStubAdapter(address));
             stubMap.insert(address, stub);
         }
     }

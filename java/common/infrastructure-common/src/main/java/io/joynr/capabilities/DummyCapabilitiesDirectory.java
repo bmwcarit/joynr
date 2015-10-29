@@ -25,8 +25,7 @@ import java.util.ArrayList;
 
 import javax.annotation.CheckForNull;
 
-import joynr.system.RoutingTypes.ChannelAddress;
-
+import joynr.types.DiscoveryEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +36,7 @@ import com.google.inject.name.Named;
 public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirectory {
     private static final Logger logger = LoggerFactory.getLogger(DummyCapabilitiesDirectory.class);
     private static final DummyCapabilitiesDirectory instance = new DummyCapabilitiesDirectory();
-    private ArrayList<CapabilityEntry> registeredCapabilities = Lists.newArrayList();
+    private ArrayList<DiscoveryEntry> registeredCapabilities = Lists.newArrayList();
 
     @Inject
     @Named("joynr.messaging.channelId")
@@ -48,15 +47,14 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
     }
 
     @Override
-    public RegistrationFuture add(CapabilityEntry capabilityEntry) {
-        capabilityEntry.addEndpoint(new ChannelAddress(myChannelId));
-        registeredCapabilities.add(capabilityEntry);
-        notifyCapabilityAdded(capabilityEntry);
-        return new RegistrationFuture(RegistrationStatus.DONE, capabilityEntry.getParticipantId());
+    public RegistrationFuture add(DiscoveryEntry discoveryEntry) {
+        registeredCapabilities.add(discoveryEntry);
+        notifyCapabilityAdded(discoveryEntry);
+        return new RegistrationFuture(RegistrationStatus.DONE, discoveryEntry.getParticipantId());
     }
 
     @Override
-    public void remove(CapabilityEntry interfaces) {
+    public void remove(DiscoveryEntry interfaces) {
         logger.info("!!!!!!!!!!!!!!!removeCapabilities");
 
     }
@@ -67,8 +65,8 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
                        DiscoveryQos discoveryQos,
                        CapabilitiesCallback capabilitiesCallback) {
         logger.info("!!!!!!!!!!!!!!!getCapabilities async");
-        ArrayList<CapabilityEntry> foundCapabilities = Lists.newArrayList();
-        for (CapabilityEntry ce : registeredCapabilities) {
+        ArrayList<DiscoveryEntry> foundCapabilities = Lists.newArrayList();
+        for (DiscoveryEntry ce : registeredCapabilities) {
             if (ce.getDomain().equals(domain) && ce.getInterfaceName().equals(interfaceName)) {
                 foundCapabilities.add(ce);
             }
@@ -84,16 +82,16 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
 
     @Override
     @CheckForNull
-    public CapabilityEntry lookup(String participantId, DiscoveryQos discoveryQos) {
+    public DiscoveryEntry lookup(String participantId, DiscoveryQos discoveryQos) {
         logger.info("!!!!!!!!!!!!!!!getCapabilitiesForParticipantId");
-        CapabilityEntry retrievedCapabilityEntry = null;
-        for (CapabilityEntry entry : registeredCapabilities) {
+        DiscoveryEntry retrievedDiscoveryEntry = null;
+        for (DiscoveryEntry entry : registeredCapabilities) {
             if (entry.getParticipantId().equals(participantId)) {
-                retrievedCapabilityEntry = entry;
+                retrievedDiscoveryEntry = entry;
                 break;
             }
         }
-        return retrievedCapabilityEntry;
+        return retrievedDiscoveryEntry;
     }
 
     @Override

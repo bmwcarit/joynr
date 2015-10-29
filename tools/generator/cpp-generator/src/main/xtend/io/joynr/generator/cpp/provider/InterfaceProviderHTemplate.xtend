@@ -21,18 +21,19 @@ import com.google.inject.Inject
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
-import io.joynr.generator.util.InterfaceTemplate
+import io.joynr.generator.templates.InterfaceTemplate
+import io.joynr.generator.templates.util.AttributeUtil
+import io.joynr.generator.templates.util.MethodUtil
+import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
 
 class InterfaceProviderHTemplate implements InterfaceTemplate{
-	@Inject
-	private extension TemplateBase
-
-	@Inject
-	private extension JoynrCppGeneratorExtensions
-
-	@Inject
-	private extension CppStdTypeUtil
+	@Inject private extension TemplateBase
+	@Inject private extension JoynrCppGeneratorExtensions
+	@Inject private extension CppStdTypeUtil
+	@Inject private extension NamingUtil
+	@Inject private extension AttributeUtil
+	@Inject private extension MethodUtil
 
 	override generate(FInterface serviceInterface)
 '''
@@ -174,8 +175,8 @@ namespace joynr {
 template<>
 class RequestCallerFactoryHelper<«getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»Provider> {
 public:
-	QSharedPointer<joynr::RequestCaller> create(std::shared_ptr<«getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»Provider> provider) {
-		return QSharedPointer<joynr::RequestCaller>(new «getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»RequestCaller(provider));
+	std::shared_ptr<joynr::RequestCaller> create(std::shared_ptr<«getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»Provider> provider) {
+		return std::shared_ptr<joynr::RequestCaller>(new «getPackagePathWithJoynrPrefix(serviceInterface, "::")»::«interfaceName»RequestCaller(provider));
 	}
 };
 } // namespace joynr

@@ -42,15 +42,18 @@
 #include "joynr/InterfaceRegistrar.h"
 #include "joynr/MetaTypeRegistrar.h"
 #include "joynr/Request.h"
+#include "joynr/exceptions.h"
 
 #include <QUuid>
-#include <QDateTime>
+#include <chrono>
+#include <stdint.h>
 #include <cassert>
 
 namespace joynr
 {
 
 using namespace joynr_logging;
+using namespace std::chrono;
 
 Logger* Dispatcher::logger = Logging::getInstance()->getLogger("MSG", "Dispatcher");
 
@@ -84,7 +87,7 @@ Dispatcher::~Dispatcher()
 }
 
 void Dispatcher::addRequestCaller(const std::string& participantId,
-                                  QSharedPointer<RequestCaller> requestCaller)
+                                  std::shared_ptr<RequestCaller> requestCaller)
 {
     QMutexLocker locker(&subscriptionHandlingMutex);
     LOG_DEBUG(logger, "addRequestCaller id= " + QString::fromStdString(participantId));
@@ -112,7 +115,7 @@ void Dispatcher::removeRequestCaller(const std::string& participantId)
 }
 
 void Dispatcher::addReplyCaller(const std::string& requestReplyId,
-                                QSharedPointer<IReplyCaller> replyCaller,
+                                std::shared_ptr<IReplyCaller> replyCaller,
                                 const MessagingQos& qosSettings)
 {
     LOG_DEBUG(logger, "addReplyCaller id= " + QString::fromStdString(requestReplyId));
@@ -143,7 +146,7 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
     // json request
     // lookup necessary data
     QByteArray jsonRequest = message.getPayload();
-    QSharedPointer<RequestCaller> caller = requestCallerDirectory.lookup(receiverId);
+    std::shared_ptr<RequestCaller> caller = requestCallerDirectory.lookup(receiverId);
     if (caller == NULL) {
         LOG_ERROR(logger,
                   "caller not found in the RequestCallerDirectory for receiverId " +
@@ -153,7 +156,7 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
     std::string interfaceName = caller->getInterfaceName();
 
     // Get the request interpreter that has been registered with this interface name
-    QSharedPointer<IRequestInterpreter> requestInterpreter =
+    std::shared_ptr<IRequestInterpreter> requestInterpreter =
             InterfaceRegistrar::instance().getRequestInterpreter(interfaceName);
 
     // deserialize json
@@ -166,9 +169,9 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
     }
 
     QString requestReplyId = request->getRequestReplyId();
-    qint64 requestExpiryDate = message.getHeaderExpiryDate().toMSecsSinceEpoch();
+    JoynrTimePoint requestExpiryDate = message.getHeaderExpiryDate();
 
-    std::function<void(const QList<QVariant>&)> callbackFct =
+    std::function<void(const QList<QVariant>&)> onSuccess =
             [requestReplyId, requestExpiryDate, this, senderId, receiverId](
                     const QList<QVariant>& returnValueQVar) {
         Reply reply;
@@ -180,7 +183,29 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
         LOG_DEBUG(logger,
                   QString("Got reply from RequestInterpreter for requestReplyId %1")
                           .arg(requestReplyId));
-        qint64 ttl = requestExpiryDate - QDateTime::currentMSecsSinceEpoch();
+        JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
+        int64_t ttl = duration_cast<milliseconds>(requestExpiryDate - now).count();
+        messageSender->sendReply(receiverId, // receiver of the request is sender of reply
+                                 senderId,   // sender of request is receiver of reply
+                                 MessagingQos(ttl),
+                                 reply);
+    };
+
+    std::function<void(const JoynrException&)> onError =
+            [requestReplyId, requestExpiryDate, this, senderId, receiverId](
+                    const JoynrException& exception) {
+        Reply reply;
+        reply.setRequestReplyId(requestReplyId);
+        /*
+         * TODO: add error to the reply object
+         * reply.setError(exception);
+         */
+        (void)exception;
+        LOG_DEBUG(logger,
+                  QString("Got error reply from RequestInterpreter for requestReplyId %1")
+                          .arg(requestReplyId));
+        JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
+        int64_t ttl = duration_cast<milliseconds>(requestExpiryDate - now).count();
         messageSender->sendReply(receiverId, // receiver of the request is sender of reply
                                  senderId,   // sender of request is receiver of reply
                                  MessagingQos(ttl),
@@ -191,7 +216,8 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
                                 request->getMethodName(),
                                 request->getParams(),
                                 request->getParamDatatypes(),
-                                callbackFct);
+                                onSuccess,
+                                onError);
 
     delete request;
 }
@@ -212,7 +238,8 @@ void Dispatcher::handleReplyReceived(const JoynrMessage& message)
     }
     QString requestReplyId = reply->getRequestReplyId();
 
-    QSharedPointer<IReplyCaller> caller = replyCallerDirectory.lookup(requestReplyId.toStdString());
+    std::shared_ptr<IReplyCaller> caller =
+            replyCallerDirectory.lookup(requestReplyId.toStdString());
     if (caller == NULL) {
         // This used to be a fatal error, but it is possible that the replyCallerDirectory removed
         // the caller
@@ -245,7 +272,7 @@ void Dispatcher::handleSubscriptionRequestReceived(const JoynrMessage& message)
     assert(publicationManager != NULL);
 
     QString receiverId = message.getHeaderTo();
-    QSharedPointer<RequestCaller> caller = requestCallerDirectory.lookup(receiverId.toStdString());
+    std::shared_ptr<RequestCaller> caller = requestCallerDirectory.lookup(receiverId.toStdString());
 
     QByteArray jsonSubscriptionRequest = message.getPayload();
 
@@ -259,7 +286,7 @@ void Dispatcher::handleSubscriptionRequestReceived(const JoynrMessage& message)
         return;
     }
 
-    if (caller.isNull()) {
+    if (!caller) {
         // Provider not registered yet
         // Dispatcher will call publicationManger->restore when a new provider is added to activate
         // subscriptions for that provider
@@ -284,7 +311,7 @@ void Dispatcher::handleBroadcastSubscriptionRequestReceived(const JoynrMessage& 
     assert(publicationManager != NULL);
 
     QString receiverId = message.getHeaderTo();
-    QSharedPointer<RequestCaller> caller = requestCallerDirectory.lookup(receiverId.toStdString());
+    std::shared_ptr<RequestCaller> caller = requestCallerDirectory.lookup(receiverId.toStdString());
 
     QByteArray jsonSubscriptionRequest = message.getPayload();
 
@@ -298,7 +325,7 @@ void Dispatcher::handleBroadcastSubscriptionRequestReceived(const JoynrMessage& 
         return;
     }
 
-    if (caller.isNull()) {
+    if (!caller) {
         // Provider not registered yet
         // Dispatcher will call publicationManger->restore when a new provider is added to activate
         // subscriptions for that provider
@@ -348,9 +375,9 @@ void Dispatcher::handlePublicationReceived(const JoynrMessage& message)
 
     assert(subscriptionManager != NULL);
 
-    QSharedPointer<ISubscriptionCallback> callback =
+    std::shared_ptr<ISubscriptionCallback> callback =
             subscriptionManager->getSubscriptionCallback(subscriptionId);
-    if (callback.isNull()) {
+    if (!callback) {
         LOG_ERROR(logger,
                   "Dropping reply for non/no more existing subscription with id=" + subscriptionId);
         delete subscriptionPublication;

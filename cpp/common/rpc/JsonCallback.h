@@ -22,6 +22,7 @@
 #include "joynr/ICallback.h"
 #include "joynr/Reply.h"
 #include "joynr/IReplyCaller.h"
+#include <memory>
 
 namespace joynr
 {
@@ -38,7 +39,7 @@ class JsonCallback : public ICallback<Reply>
 {
 
 public:
-    JsonCallback(QSharedPointer<ICallback<T>> callback) : callback(callback)
+    JsonCallback(std::shared_ptr<ICallback<T>> callback) : callback(callback)
     {
     }
 
@@ -58,7 +59,7 @@ public:
     }
 
 private:
-    QSharedPointer<ICallback<T>> callback;
+    std::shared_ptr<ICallback<T>> callback;
 };
 
 template <>
@@ -69,7 +70,7 @@ template <>
 class JsonCallback<void> : public ICallback<Reply>
 {
 public:
-    JsonCallback(QSharedPointer<ICallback<void>> callback) : callback(callback)
+    JsonCallback(std::shared_ptr<ICallback<void>> callback) : callback(callback)
     {
     }
 
@@ -89,7 +90,7 @@ public:
     }
 
 private:
-    QSharedPointer<ICallback<void>> callback;
+    std::shared_ptr<ICallback<void>> callback;
 };
 
 } // namespace joynr

@@ -22,14 +22,17 @@
 #include "cluster-controller/httpnetworking/HttpNetworking.h"
 #include "joynr/DelayedScheduler.h"
 #include "joynr/JsonSerializer.h"
-#include "joynr/DispatcherUtils.h"
 #include "cluster-controller/httpnetworking/HttpResult.h"
 #include "cluster-controller/http-communication-manager/ChannelUrlSelector.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/RequestStatus.h"
+#include "joynr/TypeUtil.h"
 
 #include <QThread>
 #include <algorithm>
+#include <chrono>
+
+using namespace std::chrono;
 
 namespace joynr
 {
@@ -79,7 +82,7 @@ HttpSender::HttpSender(const BounceProxyUrl& bounceProxyUrl,
                                            messageSendRetryInterval);
 }
 
-void HttpSender::init(QSharedPointer<ILocalChannelUrlDirectory> channelUrlDirectory,
+void HttpSender::init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
                       const MessagingSettings& settings)
 {
     channelUrlCache->init(channelUrlDirectory, settings);
@@ -133,7 +136,7 @@ int HttpSender::SendMessageRunnable::messageRunnableCounter = 0;
 
 HttpSender::SendMessageRunnable::SendMessageRunnable(HttpSender* messageSender,
                                                      const QString& channelId,
-                                                     const QDateTime& decayTime,
+                                                     const JoynrTimePoint& decayTime,
                                                      const QByteArray& data,
                                                      DelayedScheduler& delayedScheduler,
                                                      qint64 maxAttemptTtl_ms)
@@ -154,11 +157,12 @@ HttpSender::SendMessageRunnable::~SendMessageRunnable()
 
 void HttpSender::SendMessageRunnable::run()
 {
-    qint64 startTime = QDateTime::currentMSecsSinceEpoch();
+    qint64 startTime = TypeUtil::toQt(DispatcherUtils::nowInMilliseconds());
     if (isExpired()) {
         LOG_DEBUG(logger,
                   "Message expired, expiration time: " +
-                          DispatcherUtils::convertAbsoluteTimeToTtlString(decayTime));
+                          QString::fromStdString(
+                                  DispatcherUtils::convertAbsoluteTimeToTtlString(decayTime)));
         return;
     }
 
@@ -179,7 +183,7 @@ void HttpSender::SendMessageRunnable::run()
     HttpResult sendMessageResult = buildRequestAndSend(url, curlTimeout);
 
     // Delay the next request if an error occurs
-    qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
+    qint64 currentTime = TypeUtil::toQt(DispatcherUtils::nowInMilliseconds());
     qint64 delay = messageSender->messageSendRetryInterval - (currentTime - startTime);
     if (delay < 0)
         delay = 10;
@@ -206,7 +210,7 @@ void HttpSender::SendMessageRunnable::run()
         LOG_DEBUG(logger,
                   "sending message - success; url: " + url + " status code: " +
                           QString::number(sendMessageResult.getStatusCode()) + " at " +
-                          QString::number(QDateTime::currentMSecsSinceEpoch()));
+                          QString::number(TypeUtil::toQt(DispatcherUtils::nowInMilliseconds())));
     }
 }
 QString HttpSender::SendMessageRunnable::resolveUrlForChannelId(qint64 curlTimeout)
@@ -229,17 +233,17 @@ QString HttpSender::SendMessageRunnable::resolveUrlForChannelId(qint64 curlTimeo
 
     LOG_TRACE(logger,
               "Sending message; url: " + url + ", time  left: " +
-                      DispatcherUtils::convertAbsoluteTimeToTtlString(decayTime));
+                      DispatcherUtils::convertAbsoluteTimeToTtlString(decayTime).c_str());
     return url;
 }
 
 HttpResult HttpSender::SendMessageRunnable::buildRequestAndSend(const QString& url,
                                                                 qint64 curlTimeout)
 {
-    QSharedPointer<IHttpPostBuilder> sendMessageRequestBuilder(
+    std::shared_ptr<IHttpPostBuilder> sendMessageRequestBuilder(
             HttpNetworking::getInstance()->createHttpPostBuilder(url));
 
-    QSharedPointer<HttpRequest> sendMessageRequest(
+    std::shared_ptr<HttpRequest> sendMessageRequest(
             sendMessageRequestBuilder->withContentType("application/json")
                     ->withTimeout_ms(std::min(maxAttemptTtl_ms, curlTimeout))
                     ->postContent(data)

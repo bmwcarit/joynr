@@ -19,6 +19,8 @@ package io.joynr.capabilities;
  * #L%
  */
 
+import joynr.types.DiscoveryEntry;
+
 /**
  * Listener for changes in the capability directory.
  */
@@ -27,12 +29,12 @@ public interface CapabilityListener {
      * Called when a capability entry was added to the capabilities directory.
      * @param addedCapability the entry that was added.
      */
-    void capabilityAdded(CapabilityEntry addedCapability);
+    void capabilityAdded(DiscoveryEntry addedCapability);
 
     /**
      * Called when a capability entry was removed from the capabilities
      * directory.
      * @param removedCapability the entry that was removed.
      */
-    void capabilityRemoved(CapabilityEntry removedCapability);
+    void capabilityRemoved(DiscoveryEntry removedCapability);
 }

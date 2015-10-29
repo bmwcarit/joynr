@@ -22,11 +22,15 @@
 #include "gmock/gmock.h"
 #include "joynr/MessageRouter.h"
 #include "tests/utils/MockObjects.h"
-#include "joynr/system/RoutingTypes/QtChannelAddress.h"
+#include "joynr/system/RoutingTypes_QtChannelAddress.h"
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/MessageQueue.h"
+#include "libjoynr/in-process/InProcessMessagingStubFactory.h"
+#include <chrono>
+#include <stdint.h>
 
 using namespace joynr;
+using namespace std::chrono;
 
 class MessageRouterTest : public ::testing::Test {
 public:
@@ -40,16 +44,17 @@ public:
         joynrMessage()
     {
         // provision global capabilities directory
-        QSharedPointer<joynr::system::RoutingTypes::QtAddress> addressCapabilitiesDirectory(
+        std::shared_ptr<joynr::system::RoutingTypes::QtAddress> addressCapabilitiesDirectory(
             new system::RoutingTypes::QtChannelAddress(messagingSettings.getCapabilitiesDirectoryChannelId())
         );
         messageRouter->addProvisionedNextHop(messagingSettings.getCapabilitiesDirectoryParticipantId().toStdString(), addressCapabilitiesDirectory);
         // provision channel url directory
-        QSharedPointer<joynr::system::RoutingTypes::QtAddress> addressChannelUrlDirectory(
+        std::shared_ptr<joynr::system::RoutingTypes::QtAddress> addressChannelUrlDirectory(
             new system::RoutingTypes::QtChannelAddress(messagingSettings.getChannelUrlDirectoryChannelId())
         );
         messageRouter->addProvisionedNextHop(messagingSettings.getChannelUrlDirectoryParticipantId().toStdString(), addressChannelUrlDirectory);
-        joynrMessage.setHeaderExpiryDate(QDateTime::currentDateTimeUtc().addMSecs(100));
+        JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
+        joynrMessage.setHeaderExpiryDate(now + milliseconds(100));
     }
 
     ~MessageRouterTest() {
@@ -109,7 +114,7 @@ TEST_F(MessageRouterTest, resendMessageWhenDestinationAddressIsAdded){
     EXPECT_EQ(messageQueue->getQueueLength(), 1);
 
     // add destination address -> message should be routed
-    QSharedPointer<system::RoutingTypes::QtChannelAddress> address(new system::RoutingTypes::QtChannelAddress("TEST"));
+    std::shared_ptr<system::RoutingTypes::QtChannelAddress> address(new system::RoutingTypes::QtChannelAddress("TEST"));
     messageRouter->addNextHop("TEST", address);
     EXPECT_EQ(messageQueue->getQueueLength(), 0);
 }

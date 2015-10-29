@@ -305,6 +305,8 @@ joynrTestRequire(
                                     var attrProvidedImpl;
                                     var mixedSubscriptions = null;
                                     var numberOfStations = 0;
+                                    var failingSyncAttribute = 0;
+                                    var failingAsyncAttribute = 0;
 
                                     var providerRegistered, providerUnRegistered, proxyResolved;
 
@@ -372,6 +374,14 @@ joynrTestRequire(
 
                                     radioProvider.enumArrayAttribute.registerSetter(function(value) {
                                         enumArrayAttribute = value;
+                                    });
+
+                                    radioProvider.failingSyncAttribute.registerGetter(function() {
+                                        return failingSyncAttribute;
+                                    });
+
+                                    radioProvider.failingAsyncAttribute.registerGetter(function() {
+                                        return failingAsyncAttribute;
                                     });
 
                                     // register operation functions

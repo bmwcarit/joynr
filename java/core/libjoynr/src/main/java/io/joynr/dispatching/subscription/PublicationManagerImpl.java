@@ -220,9 +220,12 @@ public class PublicationManagerImpl implements PublicationManager, CallerDirecto
             cancelPublicationCreation(subscriptionId);
             logger.error("Error subscribing: {}. The provider does not have the requested attribute",
                          subscriptionRequest);
+            throw new JoynrRuntimeException("Error subscribing: The provider does not have the requested attribute: "
+                    + e);
         } catch (IllegalArgumentException e) {
             cancelPublicationCreation(subscriptionId);
             logger.error("Error subscribing: " + subscriptionRequest, e);
+            throw new JoynrRuntimeException("Error subscribing: " + e);
 
         }
 
@@ -247,53 +250,60 @@ public class PublicationManagerImpl implements PublicationManager, CallerDirecto
                                         SubscriptionRequest subscriptionRequest,
                                         RequestCaller requestCaller) {
 
-        // Check that this is a valid subscription
-        SubscriptionQos subscriptionQos = subscriptionRequest.getQos();
-        long subscriptionEndDelay = subscriptionQos.getExpiryDate() == SubscriptionQos.NO_EXPIRY_DATE ? SubscriptionQos.NO_EXPIRY_DATE
-                : subscriptionQos.getExpiryDate() - System.currentTimeMillis();
-
-        if (subscriptionEndDelay < 0) {
-            logger.error("Not adding subscription which ends in {} ms", subscriptionEndDelay);
-            return;
-        }
-
-        // See if the publications for this subscription are already handled
-        final String subscriptionId = subscriptionRequest.getSubscriptionId();
-        if (publicationExists(subscriptionId)) {
-            logger.info("updating publication: " + subscriptionRequest.toString());
-            removePublication(subscriptionId);
-        } else {
-            logger.info("adding publication: " + subscriptionRequest.toString());
-        }
-
         PublicationInformation publicationInformation = new PublicationInformation(providerParticipantId,
                                                                                    proxyParticipantId,
                                                                                    subscriptionRequest);
-        subscriptionId2PublicationInformation.put(subscriptionId, publicationInformation);
 
-        if (subscriptionRequest instanceof BroadcastSubscriptionRequest) {
-            handleBroadcastSubscriptionRequest(proxyParticipantId,
-                                               providerParticipantId,
-                                               (BroadcastSubscriptionRequest) subscriptionRequest,
-                                               requestCaller);
-        } else {
-            handleSubscriptionRequest(publicationInformation, subscriptionRequest, requestCaller);
+        try {
+            // Check that this is a valid subscription
+            SubscriptionQos subscriptionQos = subscriptionRequest.getQos();
+            long subscriptionEndDelay = subscriptionQos.getExpiryDate() == SubscriptionQos.NO_EXPIRY_DATE ? SubscriptionQos.NO_EXPIRY_DATE
+                    : subscriptionQos.getExpiryDate() - System.currentTimeMillis();
+
+            if (subscriptionEndDelay < 0) {
+                logger.error("Not adding subscription which ends in {} ms", subscriptionEndDelay);
+                return;
+            }
+
+            // See if the publications for this subscription are already handled
+            final String subscriptionId = subscriptionRequest.getSubscriptionId();
+            if (publicationExists(subscriptionId)) {
+                logger.info("updating publication: " + subscriptionRequest.toString());
+                removePublication(subscriptionId);
+            } else {
+                logger.info("adding publication: " + subscriptionRequest.toString());
+            }
+
+            subscriptionId2PublicationInformation.put(subscriptionId, publicationInformation);
+
+            if (subscriptionRequest instanceof BroadcastSubscriptionRequest) {
+                handleBroadcastSubscriptionRequest(proxyParticipantId,
+                                                   providerParticipantId,
+                                                   (BroadcastSubscriptionRequest) subscriptionRequest,
+                                                   requestCaller);
+            } else {
+                handleSubscriptionRequest(publicationInformation, subscriptionRequest, requestCaller);
+            }
+
+            if (subscriptionQos.getExpiryDate() != SubscriptionQos.NO_EXPIRY_DATE) {
+                // Create a runnable to remove the publication when the subscription expires
+                ScheduledFuture<?> subscriptionEndFuture = cleanupScheduler.schedule(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        logger.info("Publication with Id " + subscriptionId + " expired...");
+                        removePublication(subscriptionId);
+                    }
+
+                }, subscriptionEndDelay, TimeUnit.MILLISECONDS);
+                subscriptionEndFutures.put(subscriptionId, subscriptionEndFuture);
+            }
+            logger.info("publication added: " + subscriptionRequest.toString());
+        } catch (Exception e) {
+            JoynrRuntimeException error = new JoynrRuntimeException("Error processing subscription request ("
+                    + subscriptionRequest + "): " + e);
+            sendPublicationError(error, publicationInformation);
         }
-
-        if (subscriptionQos.getExpiryDate() != SubscriptionQos.NO_EXPIRY_DATE) {
-            // Create a runnable to remove the publication when the subscription expires
-            ScheduledFuture<?> subscriptionEndFuture = cleanupScheduler.schedule(new Runnable() {
-
-                @Override
-                public void run() {
-                    logger.info("Publication with Id " + subscriptionId + " expired...");
-                    removePublication(subscriptionId);
-                }
-
-            }, subscriptionEndDelay, TimeUnit.MILLISECONDS);
-            subscriptionEndFutures.put(subscriptionId, subscriptionEndFuture);
-        }
-        logger.info("publication added: " + subscriptionRequest.toString());
     }
 
     private void cancelPublicationCreation(String subscriptionId) {
@@ -397,7 +407,17 @@ public class PublicationManagerImpl implements PublicationManager, CallerDirecto
 
     @Override
     public void stopPublication(String subscriptionId) {
-        removePublication(subscriptionId);
+        PublicationInformation publicationInformation = subscriptionId2PublicationInformation.get(subscriptionId);
+        if (publicationInformation == null) {
+            return;
+        }
+        try {
+            removePublication(subscriptionId);
+        } catch (Exception e) {
+            JoynrRuntimeException error = new JoynrRuntimeException("Error stopping subscription " + subscriptionId
+                    + ": " + e);
+            sendPublicationError(error, publicationInformation);
+        }
     }
 
     /**
@@ -452,7 +472,7 @@ public class PublicationManagerImpl implements PublicationManager, CallerDirecto
             PublicationInformation publicationInformation = subscriptionId2PublicationInformation.get(subscriptionId);
 
             if (isExpired(publicationInformation)) {
-                stopPublication(subscriptionId);
+                removePublication(subscriptionId);
             } else {
                 PublicationTimer publicationTimer = publicationTimers.get(subscriptionId);
                 SubscriptionPublication publication = prepareAttributePublication(value, subscriptionId);
@@ -560,25 +580,35 @@ public class PublicationManagerImpl implements PublicationManager, CallerDirecto
         }
     }
 
+    private void sendPublicationError(JoynrException error, PublicationInformation publicationInformation) {
+        SubscriptionPublication publication = new SubscriptionPublication(error,
+                                                                          publicationInformation.getSubscriptionId());
+        sendPublication(publication, publicationInformation);
+    }
+
     private void triggerPublication(final PublicationInformation publicationInformation,
                                     RequestCaller requestCaller,
                                     Method method) {
-        Promise<?> attributeGetterPromise = attributePollInterpreter.execute(requestCaller, method);
-        attributeGetterPromise.then(new PromiseListener() {
+        try {
+            Promise<?> attributeGetterPromise = attributePollInterpreter.execute(requestCaller, method);
+            attributeGetterPromise.then(new PromiseListener() {
 
-            @Override
-            public void onRejection(JoynrException error) {
-                // TODO transmit application layer exception to proxy
+                @Override
+                public void onRejection(JoynrException error) {
+                    sendPublicationError(error, publicationInformation);
 
-            }
+                }
 
-            @Override
-            public void onFulfillment(Object... values) {
-                // attribute getters only return a single value
-                sendPublication(prepareAttributePublication(values[0], publicationInformation.getSubscriptionId()),
-                                publicationInformation);
-            }
-        });
+                @Override
+                public void onFulfillment(Object... values) {
+                    // attribute getters only return a single value
+                    sendPublication(prepareAttributePublication(values[0], publicationInformation.getSubscriptionId()),
+                                    publicationInformation);
+                }
+            });
+        } catch (JoynrRuntimeException error) {
+            sendPublicationError(error, publicationInformation);
+        }
     }
 
     private Method findGetterForAttributeName(Class<?> clazz, String attributeName) throws NoSuchMethodException {

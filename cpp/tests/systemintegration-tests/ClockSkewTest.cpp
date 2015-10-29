@@ -121,10 +121,10 @@ TEST_F(ClockSkewTest, DISABLED_checkClockSkew) {
     ASSERT_FALSE(epochsecs < -1) << "Could not parse date from bounce proxy.";
 
     // Compare the time with the local time
-    QDateTime now        = QDateTime::currentDateTime();
-    QDateTime remoteTime = QDateTime::fromTime_t(epochsecs);
+    uint64_t now        = DispatcherUtils::nowInMilliseconds();
+    uint64_t remoteTime = duration_cast<milliseconds>(std::chrono::system_clock::from_time_t(epochsecs).time_since_epoch()).count();
 
-    LOG_INFO(logger, QString("Time difference is %1 msecs").arg(now.msecsTo(remoteTime)));
-    EXPECT_TRUE(abs(now.secsTo(remoteTime)) < 2) << "Time difference between local and remote is over 2 seconds";
+    LOG_INFO(logger, QString("Time difference is %1 msecs").arg(QString::number(TypeUtil::toQt(now))));
+    EXPECT_TRUE(abs(now - remoteTime) < 2000) << "Time difference between local and remote is over 2 seconds";
 
 }

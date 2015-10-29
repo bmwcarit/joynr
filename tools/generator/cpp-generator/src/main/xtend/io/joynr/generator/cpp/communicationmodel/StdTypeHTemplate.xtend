@@ -20,7 +20,8 @@ package io.joynr.generator.cpp.communicationmodel
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
-import io.joynr.generator.util.CompoundTypeTemplate
+import io.joynr.generator.templates.CompoundTypeTemplate
+import io.joynr.generator.templates.util.NamingUtil
 import javax.inject.Inject
 import org.franca.core.franca.FCompoundType
 
@@ -33,12 +34,15 @@ class StdTypeHTemplate implements CompoundTypeTemplate{
 	private extension CppStdTypeUtil
 
 	@Inject
+	private extension NamingUtil
+
+	@Inject
 	private extension TemplateBase
 
 	override generate(FCompoundType type)
 '''
 «val typeName = type.joynrName»
-«val headerGuard = ("GENERATED_TYPE_"+getPackagePathWithJoynrPrefix(type, "_")+"_"+typeName+"_H").toUpperCase»
+«val headerGuard = ("GENERATED_TYPE_"+getPackagePathWithJoynrPrefix(type, "_", true)+"_"+typeName+"_H").toUpperCase»
 «warning()»
 #ifndef «headerGuard»
 #define «headerGuard»

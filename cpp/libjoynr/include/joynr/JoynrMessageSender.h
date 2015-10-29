@@ -24,6 +24,7 @@
 #include "joynr/IJoynrMessageSender.h"
 #include "joynr/JoynrMessageFactory.h"
 #include <string>
+#include <memory>
 
 namespace joynr
 {
@@ -57,7 +58,7 @@ class MessageRouter;
 class JOYNR_EXPORT JoynrMessageSender : public IJoynrMessageSender
 {
 public:
-    JoynrMessageSender(QSharedPointer<MessageRouter> messagingRouter);
+    JoynrMessageSender(std::shared_ptr<MessageRouter> messagingRouter);
 
     virtual ~JoynrMessageSender();
 
@@ -70,7 +71,7 @@ public:
                              const std::string& receiverParticipantId,
                              const MessagingQos& qos,
                              const Request& request,
-                             QSharedPointer<IReplyCaller> callback);
+                             std::shared_ptr<IReplyCaller> callback);
     /*
      * Prepares and sends a reply message (an answer to a request)
      */
@@ -109,7 +110,7 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrMessageSender);
     IDispatcher* dispatcher;
-    QSharedPointer<MessageRouter> messageRouter;
+    std::shared_ptr<MessageRouter> messageRouter;
     JoynrMessageFactory messageFactory;
     static joynr_logging::Logger* logger;
 };

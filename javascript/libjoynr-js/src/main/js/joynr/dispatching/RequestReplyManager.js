@@ -31,6 +31,8 @@ define(
             "joynr/util/UtilInternal",
             "joynr/util/JSONSerializer",
             "joynr/util/LongTimer",
+            "joynr/exceptions/MethodInvocationException",
+            "joynr/exceptions/ProviderRuntimeException",
             "joynr/system/LoggerFactory"
         ],
         function(
@@ -43,6 +45,8 @@ define(
                 Util,
                 JSONSerializer,
                 LongTimer,
+                MethodInvocationException,
+                ProviderRuntimeException,
                 LoggerFactory) {
 
             /**
@@ -174,14 +178,22 @@ define(
                 this.handleRequest =
                         function handleRequest(providerParticipantId, request, callbackDispatcher) {
                             var provider = providers[providerParticipantId];
+                            var exception;
                             if (!provider) {
                                 // TODO error handling request
                                 // TODO what if no provider is found in the mean time?
                                 // Do we need to add a task to handleRequest later?
-                                throw new Error("error handling request: "
-                                    + JSONSerializer.stringify(request)
-                                    + " for providerParticipantId "
-                                    + providerParticipantId);
+                                exception = new MethodInvocationException({
+                                    detailMessage: "error handling request: "
+                                        + JSONSerializer.stringify(request)
+                                        + " for providerParticipantId "
+                                        + providerParticipantId
+                                });
+                                callbackDispatcher(new Reply({
+                                    error : exception,
+                                    requestReplyId : request.requestReplyId
+                                }));
+                                return;
                             }
 
                             // augment the type information
@@ -191,14 +203,21 @@ define(
                             var result;
                             if (provider[request.methodName]
                                 && provider[request.methodName].callOperation) {
-                                //TODO: treat errors/exceptions here
-                                result =
+                                // may throw an immediate exception when callOperation checks the
+                                // arguments, in this case exception must be caught.
+                                // If final customer provided method implementation gets called,
+                                // that one may return either promise (preferred) or direct result
+                                // and may possibly also throw exception in the latter case.
+                                try {
+                                    result =
                                         provider[request.methodName].callOperation(
-                                                request.params,
-                                                request.paramDatatypes);
-                            }
+                                            request.params,
+                                            request.paramDatatypes);
+                                } catch(internalException) {
+                                    exception = internalException;
+                                }
                             // otherwise, check whether request is an attribute get, set or an operation
-                            else {
+                            } else {
                                 var match = request.methodName.match(/([gs]et)?(\w+)/);
                                 var getSet = match[1];
                                 if (getSet) {
@@ -206,28 +225,42 @@ define(
                                     // if the attribute exists in the provider
                                     if (provider[attributeName]
                                         && !provider[attributeName].callOperation) {
-                                        if (getSet === "get") {
-                                            result = provider[attributeName].get();
-                                        } else if (getSet === "set") {
-                                            provider[attributeName].set(request.params[0]);
+                                        try {
+                                            if (getSet === "get") {
+                                                result = provider[attributeName].get();
+                                            } else if (getSet === "set") {
+                                                result = provider[attributeName].set(request.params[0]);
+                                            }
+                                        } catch(internalGetterSetterException) {
+                                            if (internalGetterSetterException instanceof ProviderRuntimeException) {
+                                                exception = internalGetterSetterException;
+                                            } else {
+                                                exception = new ProviderRuntimeException({
+                                                    detailMessage: "getter/setter method of attribute " +
+                                                        attributeName + " reported an error"
+                                                });
+                                            }
                                         }
                                     }
                                     // if neither an operation nor an attribute exists in the
-                                    // provider => throw an error
+                                    // provider => deliver MethodInvocationException
                                     else {
-                                        throw new Error("Could not find an operation \""
-                                            + request.methodName
-                                            + "\" or an attribute \""
-                                            + attributeName
-                                            + "\" in the provider");
+                                        exception = new MethodInvocationException({
+                                            detailMessage: "Could not find an operation \""
+                                                + request.methodName
+                                                + "\" or an attribute \""
+                                                + attributeName
+                                                + "\" in the provider"
+                                        });
                                     }
                                 }
                                 // if no operation was found and methodName didn't start with "get"
-                                // or "set" => throw an error
+                                // or "set" => deliver MethodInvocationException
                                 else {
-                                    throw new Error("Could not find an operation \""
-                                        + request.methodName
-                                        + "\" in the provider");
+                                    exception = new MethodInvocationException({
+                                        detailMessage: "Could not find an operation \""
+                                            + request.methodName + "\" in the provider"
+                                    });
                                 }
                             }
 
@@ -240,24 +273,36 @@ define(
                              * object. In this case, we wait until the promise object is resolved
                              * and call then the callbackDispatcher
                              */
-                            if (Util.isPromise(result)) {
+                            if (!exception && Util.isPromise(result)) {
                                 result.then(function(value) {
                                     callbackDispatcher(new Reply({
                                         response : [value],
                                         requestReplyId : request.requestReplyId
                                     }));
-                                }).catch(function(error) {
-                                    throw new Error("Error occured when calling operation \""
-                                        + request.methodName
-                                        + "\" on the provider: " + error.stack);
-                                });
-                            } else {
-                                LongTimer.setTimeout(function asyncCallbackDispatcher() {
+                                }).catch(function(internalException) {
                                     callbackDispatcher(new Reply({
-                                        response : [result],
+                                        error : internalException,
                                         requestReplyId : request.requestReplyId
                                     }));
-                                }, 0);
+                                });
+                            } else {
+                                if (exception) {
+                                    // return stored exception
+                                    LongTimer.setTimeout(function asyncCallbackDispatcher() {
+                                        callbackDispatcher(new Reply({
+                                            error : exception,
+                                            requestReplyId : request.requestReplyId
+                                        }));
+                                    }, 0);
+                                } else {
+                                    // return result of call
+                                    LongTimer.setTimeout(function asyncCallbackDispatcher() {
+                                        callbackDispatcher(new Reply({
+                                            response : [result],
+                                            requestReplyId : request.requestReplyId
+                                        }));
+                                    }, 0);
+                                }
                             }
                         };
 

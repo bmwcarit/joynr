@@ -25,8 +25,8 @@
 
 #include "joynr/ConnectorFactory.h"
 
-#include <QSharedPointer>
 #include <string>
+#include <memory>
 
 namespace joynr
 {
@@ -38,7 +38,7 @@ class JoynrMessageSender;
 class JOYNR_EXPORT ProxyFactory
 {
 public:
-    ProxyFactory(QSharedPointer<joynr::system::RoutingTypes::QtAddress> messagingEndpointAddress,
+    ProxyFactory(std::shared_ptr<joynr::system::RoutingTypes::QtAddress> messagingEndpointAddress,
                  ConnectorFactory* connectorFactory,
                  IClientCache* cache);
 
@@ -54,7 +54,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ProxyFactory);
-    QSharedPointer<joynr::system::RoutingTypes::QtAddress> messagingEndpointAddress;
+    std::shared_ptr<joynr::system::RoutingTypes::QtAddress> messagingEndpointAddress;
     ConnectorFactory* connectorFactory;
     IClientCache* cache;
 };

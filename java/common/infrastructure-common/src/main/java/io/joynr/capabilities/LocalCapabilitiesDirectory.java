@@ -20,6 +20,7 @@ package io.joynr.capabilities;
  */
 
 import io.joynr.arbitration.DiscoveryQos;
+import joynr.types.DiscoveryEntry;
 
 import javax.annotation.CheckForNull;
 
@@ -28,17 +29,17 @@ public interface LocalCapabilitiesDirectory {
      * Adds a capability to the list of registered local capabilities. May also transmit the updated list to the
      * capabilities directory.
      *
-     * @param capabilityEntry The capability to be added.
+     * @param discoveryEntry The capability to be added.
      * @return future to get the async result of the call
      */
-    RegistrationFuture add(CapabilityEntry capabilityEntry);
+    RegistrationFuture add(DiscoveryEntry discoveryEntry);
 
     /**
      * Removes capabilities from the list of local capabilities and at the capabilities directory.
      *
-     * @param capabilityEntry entry to remove
+     * @param discoveryEntry entry to remove
      */
-    void remove(CapabilityEntry capabilityEntry);
+    void remove(DiscoveryEntry discoveryEntry);
 
     /**
      * Adds a listener for capability changes to the directory.
@@ -84,7 +85,7 @@ public interface LocalCapabilitiesDirectory {
      * @return the capability with the given participant ID. Or null if not found.
      */
     @CheckForNull
-    CapabilityEntry lookup(String participantId, DiscoveryQos discoveryQos);
+    DiscoveryEntry lookup(String participantId, DiscoveryQos discoveryQos);
 
     /**
      * Shuts down the local capabilities directory and all used thread pools.

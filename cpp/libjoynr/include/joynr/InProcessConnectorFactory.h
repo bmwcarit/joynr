@@ -25,8 +25,8 @@
 #include "joynr/types/QtCommunicationMiddleware.h"
 #include "joynr/IRequestCallerDirectory.h"
 
-#include <QSharedPointer>
 #include <string>
+#include <memory>
 
 namespace joynr
 {
@@ -45,7 +45,7 @@ public:
               PublicationManager* publicationManager,
               const std::string& proxyParticipantId,
               const std::string& providerParticipantId,
-              QSharedPointer<InProcessAddress> address)
+              std::shared_ptr<InProcessAddress> address)
     {
         Q_UNUSED(subscriptionManager);
         Q_UNUSED(publicationManager);
@@ -75,9 +75,9 @@ public:
     template <class T>
     T* create(const std::string& proxyParticipantId, const std::string& providerParticipantId)
     {
-        QSharedPointer<RequestCaller> requestCaller =
+        std::shared_ptr<RequestCaller> requestCaller =
                 requestCallerDirectory->lookupRequestCaller(providerParticipantId);
-        QSharedPointer<InProcessAddress> inProcessEndpointAddress(
+        std::shared_ptr<InProcessAddress> inProcessEndpointAddress(
                 new InProcessAddress(requestCaller));
 
         return InProcessConnectorFactoryHelper<T>().create(subscriptionManager,

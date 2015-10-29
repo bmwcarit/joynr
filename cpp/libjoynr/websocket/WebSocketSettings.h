@@ -24,7 +24,7 @@
 #include <QObject>
 #include <QSettings>
 
-#include "joynr/system/RoutingTypes/QtWebSocketAddress.h"
+#include "joynr/system/RoutingTypes_QtWebSocketAddress.h"
 
 namespace joynr
 {

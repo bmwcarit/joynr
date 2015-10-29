@@ -19,8 +19,10 @@ package io.joynr.pubsub.subscription;
  * #L%
  */
 
+import io.joynr.exceptions.JoynrException;
+
 public interface AttributeSubscriptionListener<T> {
     void onReceive(T value);
 
-    void onError();
+    void onError(JoynrException error);
 }

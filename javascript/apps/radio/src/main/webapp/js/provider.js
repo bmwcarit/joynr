@@ -1,5 +1,5 @@
 /*jslint devel: true es5: true */
-/*global $: true, joynr: true, provisioning: true, RadioProvider: true, RadioStation: true, GeoPosition: true, domain: true, getBuildSignatureString: true, TrafficServiceBroadcastFilter : true, GeocastBroadcastFilter: true */
+/*global $: true, joynr: true, provisioning: true, AddFavoriteStationErrorEnum: true, RadioProvider: true, RadioStation: true, GeoPosition: true, domain: true, getBuildSignatureString: true, TrafficServiceBroadcastFilter : true, GeocastBroadcastFilter: true, Promise: true */
 
 /*
  * #%L
@@ -115,43 +115,85 @@ var RadioProviderImpl =
 
             this.addFavoriteStation =
                     function(opArgs) {
-                        log("radioProvider.addFavoriteStation", "called with args: "
-                            + JSON.stringify(opArgs));
+                        return new Promise(function(resolve, reject) {
+                            /*
+                             * synchronous method implementation can be used if no
+                             * further asynchronous activity is required to obtain
+                             * the result.
+                             * In case of error a ProviderRuntimeException or an
+                             * error enum value suitable for the method can be
+                             * thrown. The latter will be automatically wrapped
+                             * inside an ApplicationException.
+                             */
+                            log("radioProvider.addFavoriteStation", "called with args: "
+                                + JSON.stringify(opArgs));
 
-                        if (opArgs === undefined) {
-                            log(
-                                    "radioProvider.addFavoriteStation",
-                                    "operation arguments is undefined!");
-                            return;
-                        }
-                        if (opArgs.newFavoriteStation === undefined) {
-                            log(
-                                    "radioProvider.addFavoriteStation",
-                                    "operation argument \"newFavoriteStation\" is undefined!");
-                            return;
-                        }
+                            if (opArgs === undefined) {
+                                log(
+                                        "radioProvider.addFavoriteStation",
+                                        "operation arguments is undefined!");
+                                reject(new joynr.exceptions.ProviderRuntimeException({ detailMessage: "operation arguments is undefined!" }));
+                            }
+                            else if (opArgs.newFavoriteStation === undefined) {
+                                log(
+                                        "radioProvider.addFavoriteStation",
+                                        "operation argument \"newFavoriteStation\" is undefined!");
+                                reject(new joynr.exceptions.ProviderRuntimeException({ detailMessage: "operation argument \"newFavoriteStation\" is undefined!" }));
+                            }
+                            else if (opArgs.newFavoriteStation.name === "") {
+                                reject(new joynr.exceptions.ProviderRuntimeException({ detailMessage: "MISSING_NAME" }));
+                            }
+                            else {
+                                var duplicateFound = false, i;
+                                // copy over and type each single member
+                                for (i in stationsList) {
+                                    if (stationsList.hasOwnProperty(i)) {
+                                        if (!duplicateFound && stationsList[i].name === opArgs.newFavoriteStation.name) {
+                                            duplicateFound = true;
+                                            reject(AddFavoriteStationErrorEnum.DUPLICATE_RADIOSTATION);
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (!duplicateFound) {
+                                    stationsList.push(opArgs.newFavoriteStation);
 
-                        stationsList.push(opArgs.newFavoriteStation);
+                                    showFavoriteStationsInHtml(stationsList);
+                                    resolve(true);
+                                }
+                            }
+                        });
 
-                        showFavoriteStationsInHtml(stationsList);
-                        return true;
                     };
 
             this.shuffleStations =
                     function() {
+                        /*
+                         * asynchronous method implementation is required if
+                         * the result depends on other asynchronous activity.
+                         *
+                         * When activity is finished, then based on the positive
+                         * or negative outcome, resolve() or reject() has to be
+                         * called. For resolve() any output parameters have to be
+                         * provided. For reject a ProviderRuntimeException or an
+                         * error enum value suitable for the method must be
+                         * provided. The latter will be automatically wrapped
+                         * inside an ApplicationException.
+                         */
                         log("radioProvider.shuffleStations", "called");
+                        return new Promise(function(resolve, reject) {
+                            var oldStationIndex = currentStationIndex;
+                            currentStationIndex++;
+                            currentStationIndex = currentStationIndex % stationsList.length;
+                            self.currentStation.valueChanged(stationsList[currentStationIndex]);
+                            log("radioProvider.shuffleStations", JSON
+                                    .stringify(stationsList[oldStationIndex])
+                                + " -> "
+                                + JSON.stringify(stationsList[currentStationIndex]));
 
-                        var oldStationIndex = currentStationIndex;
-
-                        currentStationIndex++;
-                        currentStationIndex = currentStationIndex % stationsList.length;
-                        self.currentStation.valueChanged(stationsList[currentStationIndex]);
-                        log("radioProvider.shuffleStations", JSON
-                                .stringify(stationsList[oldStationIndex])
-                            + " -> "
-                            + JSON.stringify(stationsList[currentStationIndex]));
-
-                        showCurrentStationInHtml(stationsList[currentStationIndex]);
+                            showCurrentStationInHtml(stationsList[currentStationIndex]);
+                            resolve();
+                        });
                     };
 
             // Provide broadcast specific implementation stubs. Properties will

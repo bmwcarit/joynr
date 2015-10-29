@@ -21,13 +21,21 @@ import com.google.inject.Inject
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
-import io.joynr.generator.util.InterfaceTemplate
+import io.joynr.generator.templates.InterfaceTemplate
+import io.joynr.generator.templates.util.AttributeUtil
+import io.joynr.generator.templates.util.BroadcastUtil
+import io.joynr.generator.templates.util.InterfaceUtil
+import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
 
 class InterfaceProxyBaseHTemplate implements InterfaceTemplate{
 	@Inject	extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
 	@Inject extension CppStdTypeUtil
+	@Inject private extension NamingUtil
+	@Inject private extension AttributeUtil
+	@Inject private extension BroadcastUtil
+	@Inject private extension InterfaceUtil
 
 	override generate(FInterface serviceInterface)
 '''
@@ -44,7 +52,6 @@ class InterfaceProxyBaseHTemplate implements InterfaceTemplate{
 «FOR parameterType: getRequiredIncludesFor(serviceInterface).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
-#include <QSharedPointer>
 #include <memory>
 
 «getDllExportIncludeStatement()»
@@ -65,7 +72,7 @@ public:
 	 * @param cached True, if cached, false otherwise
 	 */
 	«className»(
-			QSharedPointer<joynr::system::RoutingTypes::QtAddress> messagingAddress,
+			std::shared_ptr<joynr::system::RoutingTypes::QtAddress> messagingAddress,
 			joynr::ConnectorFactory* connectorFactory,
 			joynr::IClientCache* cache,
 			const std::string& domain,
@@ -182,7 +189,7 @@ public:
 
 protected:
 	/** @brief The joynr messaging address */
-	QSharedPointer<joynr::system::RoutingTypes::QtAddress> messagingAddress;
+	std::shared_ptr<joynr::system::RoutingTypes::QtAddress> messagingAddress;
 	/** @brief The kind of connector */
 	I«interfaceName»Connector* connector;
 

@@ -56,14 +56,14 @@ bool AbstractJoynrMessagingConnector::usesClusterController() const
     return true;
 }
 
-void AbstractJoynrMessagingConnector::operationRequest(QSharedPointer<IReplyCaller> replyCaller,
+void AbstractJoynrMessagingConnector::operationRequest(std::shared_ptr<IReplyCaller> replyCaller,
                                                        const Request& request)
 {
     sendRequest(request, replyCaller);
 }
 
 void AbstractJoynrMessagingConnector::sendRequest(const Request& request,
-                                                  QSharedPointer<IReplyCaller> replyCaller)
+                                                  std::shared_ptr<IReplyCaller> replyCaller)
 {
     joynrMessageSender->sendRequest(
             proxyParticipantId, providerParticipantId, qosSettings, request, replyCaller);

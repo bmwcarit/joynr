@@ -20,15 +20,18 @@ package io.joynr.generator.cpp.communicationmodel
 import com.google.inject.Inject
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
-import io.joynr.generator.cpp.util.TemplateBase
-import io.joynr.generator.util.EnumTemplate
-import org.franca.core.franca.FEnumerationType
 import io.joynr.generator.cpp.util.QtTypeUtil
+import io.joynr.generator.cpp.util.TemplateBase
+import io.joynr.generator.templates.EnumTemplate
+import io.joynr.generator.templates.util.NamingUtil
+import org.franca.core.franca.FEnumerationType
 
 class EnumHTemplate implements EnumTemplate{
 
 	@Inject
 	private extension TemplateBase
+	@Inject
+	private extension NamingUtil
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
@@ -42,7 +45,7 @@ class EnumHTemplate implements EnumTemplate{
 	override generate(FEnumerationType type)
 '''
 «val typeName = type.joynrNameQt»
-«val headerGuard = ("GENERATED_ENUM_"+getPackagePathWithJoynrPrefix(type, "_")+"_"+typeName+"_h").toUpperCase»
+«val headerGuard = ("GENERATED_ENUM_"+getPackagePathWithJoynrPrefix(type, "_", true)+"_"+typeName+"_h").toUpperCase»
 «warning»
 #ifndef «headerGuard»
 #define «headerGuard»

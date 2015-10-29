@@ -23,7 +23,6 @@
 #include "joynr/SubscriptionInformation.h"
 
 #include <QString>
-#include <QSharedPointer>
 
 namespace joynr
 {
@@ -61,6 +60,5 @@ private:
 } // namespace joynr
 
 Q_DECLARE_METATYPE(joynr::SubscriptionRequestInformation)
-Q_DECLARE_METATYPE(QSharedPointer<joynr::SubscriptionRequestInformation>)
 
 #endif // SUBSCRIPTIONREQUESTINFORMATION_H

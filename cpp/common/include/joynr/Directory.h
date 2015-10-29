@@ -32,7 +32,8 @@
 #include <QtGlobal>
 #include <QMutex>
 #include <QHash>
-#include <QSharedPointer>
+
+#include <memory>
 
 namespace joynr
 {
@@ -59,14 +60,14 @@ public:
     virtual ~IDirectory()
     {
     }
-    virtual QSharedPointer<T> lookup(const Key& keyId) = 0;
+    virtual std::shared_ptr<T> lookup(const Key& keyId) = 0;
     virtual bool contains(const Key& keyId) = 0;
 
     virtual void add(const Key& keyId, T* value) = 0;
-    virtual void add(const Key& keyId, QSharedPointer<T> value) = 0;
+    virtual void add(const Key& keyId, std::shared_ptr<T> value) = 0;
 
     virtual void add(const Key& keyId, T* value, qint64 ttl_ms) = 0;
-    virtual void add(const Key& keyId, QSharedPointer<T> value, qint64 ttl_ms) = 0;
+    virtual void add(const Key& keyId, std::shared_ptr<T> value, qint64 ttl_ms) = 0;
     virtual void remove(const Key& keyId) = 0;
 };
 
@@ -77,23 +78,23 @@ class Directory : public IDirectory<Key, T>
 public:
     virtual ~Directory();
     Directory(const std::string& directoryName);
-    QSharedPointer<T> lookup(const Key& keyId);
+    std::shared_ptr<T> lookup(const Key& keyId);
     bool contains(const Key& keyId);
     /*
      * Adds an element and keeps it until actively removed (using the 'remove' method)
      */
     void add(const Key& keyId, T* value);
-    void add(const Key& keyId, QSharedPointer<T> value);
+    void add(const Key& keyId, std::shared_ptr<T> value);
     /*
      * Adds an element and removes it automatically after ttl_ms milliseconds have past.
      */
     void add(const Key& keyId, T* value, qint64 ttl_ms);
-    void add(const Key& keyId, QSharedPointer<T> value, qint64 ttl_ms);
+    void add(const Key& keyId, std::shared_ptr<T> value, qint64 ttl_ms);
     void remove(const Key& keyId);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(Directory);
-    QHash<Key, QSharedPointer<T>> callbackMap;
+    QHash<Key, std::shared_ptr<T>> callbackMap;
     QMutex mutex;
     SingleThreadedDelayedScheduler callBackRemoverScheduler;
     static joynr_logging::Logger* logger;
@@ -138,7 +139,7 @@ Directory<Key, T>::Directory(const std::string& directoryName)
 }
 
 template <typename Key, typename T>
-QSharedPointer<T> Directory<Key, T>::lookup(const Key& keyId)
+std::shared_ptr<T> Directory<Key, T>::lookup(const Key& keyId)
 {
     QMutexLocker locker(&mutex);
     return callbackMap.value(keyId);
@@ -155,12 +156,12 @@ template <typename Key, typename T>
 // ownership passed off to the directory, which passes off to SharedPointer
 void Directory<Key, T>::add(const Key& keyId, T* value)
 {
-    QSharedPointer<T> valuePtr = QSharedPointer<T>(value);
+    std::shared_ptr<T> valuePtr = std::shared_ptr<T>(value);
     add(keyId, valuePtr);
 }
 
 template <typename Key, typename T>
-void Directory<Key, T>::add(const Key& keyId, QSharedPointer<T> value)
+void Directory<Key, T>::add(const Key& keyId, std::shared_ptr<T> value)
 {
     QMutexLocker locker(&mutex);
     callbackMap.insert(keyId, value);
@@ -170,12 +171,12 @@ void Directory<Key, T>::add(const Key& keyId, QSharedPointer<T> value)
 template <typename Key, typename T>
 void Directory<Key, T>::add(const Key& keyId, T* value, qint64 ttl_ms)
 {
-    QSharedPointer<T> valuePtr = QSharedPointer<T>(value);
+    std::shared_ptr<T> valuePtr = std::shared_ptr<T>(value);
     add(keyId, valuePtr, ttl_ms);
 }
 
 template <typename Key, typename T>
-void Directory<Key, T>::add(const Key& keyId, QSharedPointer<T> value, qint64 ttl_ms)
+void Directory<Key, T>::add(const Key& keyId, std::shared_ptr<T> value, qint64 ttl_ms)
 {
     // Insert the value
     {
@@ -206,7 +207,7 @@ void RemoverRunnable<Key, T>::run()
 {
     //    LOG_TRACE(logger, "Calling Directory<Key,T>" );
 
-    QSharedPointer<T> val = directory->lookup(keyId);
+    std::shared_ptr<T> val = directory->lookup(keyId);
     directory->remove(keyId);
 }
 
@@ -235,8 +236,8 @@ private:
 template <typename Key>
 void RemoverRunnable<Key, IReplyCaller>::run()
 {
-    QSharedPointer<IReplyCaller> value = directory->lookup(keyId);
-    if (!value.isNull()) {
+    std::shared_ptr<IReplyCaller> value = directory->lookup(keyId);
+    if (value) {
         value->timeOut();
         directory->remove(keyId);
     }

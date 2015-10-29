@@ -20,14 +20,15 @@
 #include "joynr/Directory.h"
 #include "utils/QThreadSleep.h"
 #include <QRunnable>
-#include <QDateTime>
+#include <chrono>
+#include <stdint.h>
 #include "joynr/DelayedScheduler.h"
 #include "joynr/joynrlogging.h"
 
 using namespace ::testing;
 using namespace joynr;
 using namespace joynr_logging;
-
+using namespace std::chrono;
 
 Logger* logger = Logging::getInstance()->getLogger("MSG", "DelayedSchedulerTest");
 
@@ -38,11 +39,11 @@ static qint64 timerAccuracy_ms = 25;
 class DummyRunnable : public QRunnable {
 public:
     DummyRunnable(qint64 delay, bool& wasTooEarly) :
-        eta_ms(QDateTime::currentMSecsSinceEpoch() + delay),
+        eta_ms(duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count() + delay),
         wasTooEarly(wasTooEarly)
     {}
     void run() {
-        qint64 now_ms = QDateTime::currentMSecsSinceEpoch();
+        int64_t now_ms = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
 
         LOG_TRACE(logger, "Running runnable");
         LOG_TRACE(logger, QString(" ETA        : %1").arg(eta_ms));
@@ -61,7 +62,7 @@ public:
 class TriggerRunnable : public QRunnable {
 public:
     TriggerRunnable(qint64 delay, bool& triggered) :
-        eta_ms(QDateTime::currentMSecsSinceEpoch() + delay),
+        eta_ms(duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count() + delay),
         triggered(triggered)
     {}
     void run() {

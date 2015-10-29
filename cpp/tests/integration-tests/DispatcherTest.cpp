@@ -37,7 +37,7 @@
 
 #include "joynr/tests/Itest.h"
 #include "joynr/tests/testRequestInterpreter.h"
-#include "joynr/types/Localisation/QtGpsLocation.h"
+#include "joynr/types/Localisation_QtGpsLocation.h"
 #include "joynr/MetaTypeRegistrar.h"
 
 using namespace ::testing;
@@ -78,18 +78,19 @@ public:
     }
 
     void invokeOnSuccessWithGpsLocation(
-            std::function<void(const joynr::types::Localisation::GpsLocation& location)> onSuccess) {
+            std::function<void(const joynr::types::Localisation::GpsLocation& location)> onSuccess,
+            std::function<void(const joynr::JoynrException& exception)> onError) {
         onSuccess(gpsLocation1);
     }
 
 protected:
     joynr_logging::Logger* logger;
-    QSharedPointer<MockMessageRouter> mockMessageRouter;
-    QSharedPointer<MockCallback<types::Localisation::GpsLocation> > mockCallback;
+    std::shared_ptr<MockMessageRouter> mockMessageRouter;
+    std::shared_ptr<MockCallback<types::Localisation::GpsLocation> > mockCallback;
 
-    QSharedPointer<MockTestRequestCaller> mockRequestCaller;
-    QSharedPointer<MockReplyCaller<types::Localisation::QtGpsLocation> > mockReplyCaller;
-    QSharedPointer<MockSubscriptionListenerOneType<types::Localisation::GpsLocation> > mockSubscriptionListener;
+    std::shared_ptr<MockTestRequestCaller> mockRequestCaller;
+    std::shared_ptr<MockReplyCaller<types::Localisation::QtGpsLocation> > mockReplyCaller;
+    std::shared_ptr<MockSubscriptionListenerOneType<types::Localisation::GpsLocation> > mockSubscriptionListener;
 
     types::Localisation::GpsLocation gpsLocation1;
 
@@ -115,7 +116,8 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
     EXPECT_CALL(
                 *mockRequestCaller,
                 getLocation(
-                    A<std::function<void(const joynr::types::Localisation::GpsLocation&)>>()
+                    A<std::function<void(const joynr::types::Localisation::GpsLocation&)>>(),
+                    A<std::function<void(const joynr::JoynrException&)>>()
                 )
     ).WillOnce(Invoke(this, &DispatcherTest::invokeOnSuccessWithGpsLocation));
 

@@ -25,7 +25,6 @@
 #include "joynr/joynrlogging.h"
 
 #include <QMultiMap>
-#include <QSharedPointer>
 #include <QString>
 #include <QVariant>
 #include <QMutex>
@@ -46,6 +45,7 @@ class IPublicationSender;
 class RequestCaller;
 class QtSubscriptionQos;
 class IBroadcastFilter;
+class JoynrException;
 
 /**
   * \class PublicationManager
@@ -68,7 +68,7 @@ public:
      */
     void add(const QString& proxyParticipantId,
              const QString& providerParticipantId,
-             QSharedPointer<RequestCaller> requestCaller,
+             std::shared_ptr<RequestCaller> requestCaller,
              SubscriptionRequest& subscriptionRequest,
              IPublicationSender* publicationSender);
 
@@ -90,7 +90,7 @@ public:
      */
     void add(const QString& proxyParticipantId,
              const QString& providerParticipantId,
-             QSharedPointer<RequestCaller> requestCaller,
+             std::shared_ptr<RequestCaller> requestCaller,
              BroadcastSubscriptionRequest& subscriptionRequest,
              IPublicationSender* publicationSender);
 
@@ -127,7 +127,7 @@ public:
      * @param publicationSender
      */
     void restore(const QString& providerId,
-                 QSharedPointer<RequestCaller> requestCaller,
+                 std::shared_ptr<RequestCaller> requestCaller,
                  IPublicationSender* publicationSender);
 
     /**
@@ -157,10 +157,10 @@ private:
     class Publication;
 
     // Information for each publication is keyed by subcriptionId
-    QMap<QString, QSharedPointer<Publication>> publications;
-    QMap<QString, QSharedPointer<SubscriptionRequestInformation>>
+    QMap<QString, std::shared_ptr<Publication>> publications;
+    QMap<QString, std::shared_ptr<SubscriptionRequestInformation>>
             subscriptionId2SubscriptionRequest;
-    QMap<QString, QSharedPointer<BroadcastSubscriptionRequestInformation>>
+    QMap<QString, std::shared_ptr<BroadcastSubscriptionRequestInformation>>
             subscriptionId2BroadcastSubscriptionRequest;
 
     // .. and protected with a read/write lock
@@ -182,13 +182,13 @@ private:
     // Queues all subscription requests that are either received by the
     // dispatcher or restored from the subscription storage file before
     // the corresponding provider is added
-    QMultiMap<QString, QSharedPointer<SubscriptionRequestInformation>> queuedSubscriptionRequests;
+    QMultiMap<QString, std::shared_ptr<SubscriptionRequestInformation>> queuedSubscriptionRequests;
     QMutex queuedSubscriptionRequestsMutex;
 
     // Queues all broadcast subscription requests that are either received by the
     // dispatcher or restored from the subscription storage file before
     // the corresponding provider is added
-    QMultiMap<QString, QSharedPointer<BroadcastSubscriptionRequestInformation>>
+    QMultiMap<QString, std::shared_ptr<BroadcastSubscriptionRequestInformation>>
             queuedBroadcastSubscriptionRequests;
     QMutex queuedBroadcastSubscriptionRequestsMutex;
 
@@ -238,8 +238,8 @@ private:
      *          amount of ms to wait, if interval was too short;
      *          -1 on error
      */
-    qint64 getTimeUntilNextPublication(QSharedPointer<Publication> publication,
-                                       QSharedPointer<QtSubscriptionQos> qos);
+    qint64 getTimeUntilNextPublication(std::shared_ptr<Publication> publication,
+                                       std::shared_ptr<QtSubscriptionQos> qos);
 
     void saveSubscriptionRequestsMap(const QList<QVariant>& subscriptionList,
                                      const QString& storageFilename);
@@ -248,38 +248,42 @@ private:
     void loadSavedSubscriptionRequestsMap(
             const QString& storageFilename,
             QMutex& mutex,
-            QMultiMap<QString, QSharedPointer<RequestInformationType>>& queuedSubscriptions);
+            QMultiMap<QString, std::shared_ptr<RequestInformationType>>& queuedSubscriptions);
 
     template <class RequestInformationType>
     QList<QVariant> subscriptionMapToListCopy(
-            const QMap<QString, QSharedPointer<RequestInformationType>>& map);
+            const QMap<QString, std::shared_ptr<RequestInformationType>>& map);
 
     bool isShuttingDown();
-    qint64 getPublicationTtl(QSharedPointer<SubscriptionRequest> subscriptionRequest) const;
-    void sendPublication(QSharedPointer<Publication> publication,
-                         QSharedPointer<SubscriptionInformation> subscriptionInformation,
-                         QSharedPointer<SubscriptionRequest> subscriptionRequest,
+    qint64 getPublicationTtl(std::shared_ptr<SubscriptionRequest> subscriptionRequest) const;
+    void sendPublication(std::shared_ptr<Publication> publication,
+                         std::shared_ptr<SubscriptionInformation> subscriptionInformation,
+                         std::shared_ptr<SubscriptionRequest> subscriptionRequest,
                          const QList<QVariant>& value);
+    void sendPublicationError(std::shared_ptr<Publication> publication,
+                              std::shared_ptr<SubscriptionInformation> subscriptionInformation,
+                              std::shared_ptr<SubscriptionRequest> subscriptionRequest,
+                              const JoynrException& exception);
     void handleAttributeSubscriptionRequest(
-            QSharedPointer<SubscriptionRequestInformation> requestInfo,
-            QSharedPointer<RequestCaller> requestCaller,
+            std::shared_ptr<SubscriptionRequestInformation> requestInfo,
+            std::shared_ptr<RequestCaller> requestCaller,
             IPublicationSender* publicationSender);
 
     void handleBroadcastSubscriptionRequest(
-            QSharedPointer<BroadcastSubscriptionRequestInformation> requestInfo,
-            QSharedPointer<RequestCaller> requestCaller,
+            std::shared_ptr<BroadcastSubscriptionRequestInformation> requestInfo,
+            std::shared_ptr<RequestCaller> requestCaller,
             IPublicationSender* publicationSender);
 
     void addOnChangePublication(const QString& subscriptionId,
-                                QSharedPointer<SubscriptionRequestInformation> request,
-                                QSharedPointer<Publication> publication);
+                                std::shared_ptr<SubscriptionRequestInformation> request,
+                                std::shared_ptr<Publication> publication);
     void addBroadcastPublication(const QString& subscriptionId,
-                                 QSharedPointer<BroadcastSubscriptionRequestInformation> request,
-                                 QSharedPointer<Publication> publication);
+                                 std::shared_ptr<BroadcastSubscriptionRequestInformation> request,
+                                 std::shared_ptr<Publication> publication);
     void removeOnChangePublication(const QString& subscriptionId,
-                                   QSharedPointer<SubscriptionRequestInformation> request,
-                                   QSharedPointer<Publication> publication);
-    void removePublicationEndRunnable(QSharedPointer<Publication> publication);
+                                   std::shared_ptr<SubscriptionRequestInformation> request,
+                                   std::shared_ptr<Publication> publication);
+    void removePublicationEndRunnable(std::shared_ptr<Publication> publication);
 
     bool processFilterChain(const QString& subscriptionId,
                             const QList<QVariant>& broadcastValues,

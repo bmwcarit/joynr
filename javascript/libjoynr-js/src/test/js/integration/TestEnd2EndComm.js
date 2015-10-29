@@ -1,5 +1,5 @@
 /*global joynrTestRequire: true, it: true, console: true */
-/*jslint es5: true */
+/*jslint es5: true, nomen: true */
 
 /*
  * #%L
@@ -27,6 +27,7 @@ joynrTestRequire(
             "joynr",
             "joynr/vehicle/RadioProxy",
             "joynr/vehicle/radiotypes/RadioStation",
+            "joynr/vehicle/radiotypes/ErrorList",
             "joynr/datatypes/exampleTypes/Country",
             "integration/IntegrationUtils",
             "joynr/provisioning/provisioning_cc",
@@ -37,6 +38,7 @@ joynrTestRequire(
                 joynr,
                 RadioProxy,
                 RadioStation,
+                ErrorList,
                 Country,
                 IntegrationUtils,
                 provisioning,
@@ -251,6 +253,21 @@ joynrTestRequire(
                                 spy.onReceive.reset();
                             });
                         }
+                        function expectPublicationError(spy){
+                            waitsFor(
+                                    function() {
+                                        return (spy.onReceive.calls.length > 0 || spy.onError.calls.length > 0);
+                                    },
+                                    "first error to occur",
+                                    500 + provisioning.ttl);
+
+                            runs(function() {
+                                expect(spy.onReceive).not.toHaveBeenCalled();
+                                expect(spy.onError).toHaveBeenCalled();
+                                expect(spy.onError.calls[0].args[0]._typeName).toEqual("joynr.exceptions.ProviderRuntimeException");
+                                spy.onError.reset();
+                            });
+                        }
                         function publishesValue(subscriptionQos) {
                             var spy = setupSubscriptionAndReturnSpy("numberOfStations", subscriptionQos);
                             expectPublication(spy, function(publicationCallback) {
@@ -323,8 +340,6 @@ joynrTestRequire(
 
                         var getAttribute = function(attributeName, expectedValue) {
                             var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
-                            console.log("gets the " + attributeName + "with participantId: "
-                                + radioProxy.proxyParticipantId);
 
                             waitsFor(function() {
                                 return radioProxy !== undefined;
@@ -343,6 +358,33 @@ joynrTestRequire(
 
                             runs(function() {
                                 expect(onFulfilledSpy).toHaveBeenCalled();
+                            });
+                        };
+
+                        var getFailingAttribute = function(attributeName) {
+                            var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
+                            var catchSpy = jasmine.createSpy("catchSpy");
+
+                            waitsFor(function() {
+                                return radioProxy !== undefined;
+                            }, "radioProxy is defined", provisioning.ttl);
+
+                            runs(function() {
+                                radioProxy[attributeName].get().then(function(value) {
+                                    onFulfilledSpy(value);
+                                }).catch(function(exception) {
+                                    catchSpy(exception);
+                                });
+                            });
+
+                            waitsFor(function() {
+                                return catchSpy.callCount > 0;
+                            }, "getter for attribute " + attributeName + " returns exception", provisioning.ttl);
+
+                            runs(function() {
+                                expect(catchSpy).toHaveBeenCalled();
+                                expect(catchSpy.calls[0].args[0]._typeName).toBeDefined();
+                                expect(catchSpy.calls[0].args[0]._typeName).toEqual("joynr.exceptions.ProviderRuntimeException");
                             });
                         };
 
@@ -376,6 +418,14 @@ joynrTestRequire(
                             getAttribute("enumArrayAttribute", [Country.GERMANY]);
                         });
 
+                        it("gets an exception for failingSyncAttribute", function() {
+                            getFailingAttribute("failingSyncAttribute");
+                        });
+
+                        it("gets an exception for failingAsyncAttribute", function() {
+                            getFailingAttribute("failingAsyncAttribute");
+                        });
+
                         it("sets the enumArrayAttribute", function() {
                             var value = [];
                             setAttribute("enumArrayAttribute", value);
@@ -399,6 +449,16 @@ joynrTestRequire(
                             getAttribute("enumAttribute", Country.AUSTRALIA);
                         });
 
+                        it("subscribe to failingSyncAttribute", function() {
+                            var spy = setupSubscriptionAndReturnSpy("failingSyncAttribute", subscriptionQosInterval);
+                            expectPublicationError(spy);
+                        });
+
+                        it("subscribe to failingAsyncAttribute", function() {
+                            var spy = setupSubscriptionAndReturnSpy("failingAsyncAttribute", subscriptionQosInterval);
+                            expectPublicationError(spy);
+                        });
+
                         it("subscribe to enumAttribute", function() {
                             setAttribute("enumAttribute", Country.AUSTRIA);
                             var spy = setupSubscriptionAndReturnSpy("enumAttribute", subscriptionQosOnChange);
@@ -420,7 +480,8 @@ joynrTestRequire(
                             var spy = setupSubscriptionAndReturnSpy("broadcastWithEnum", subscriptionQosOnChange);
                             callOperation("triggerBroadcasts", {});
                             expectPublication(spy, function(call) {
-                               expect(call.args[0]).toEqual([Country.CANADA, [Country.GERMANY, Country.ITALY]]);
+                               expect(call.args[0].enumOutput).toEqual(Country.CANADA);
+                               expect(call.args[0].enumArrayOutput).toEqual([Country.GERMANY, Country.ITALY]);
                             });
                         });
 
@@ -480,12 +541,126 @@ joynrTestRequire(
                             setAndTestAttributeTester(radioProxy.isOn);
                         });
 
-                        it("can call an operation (String parameter)", function() {
+                        it("can call an operation successfully (Provider sync, String parameter)", function() {
                             callOperation("addFavoriteStation",
-                                          {
-                                              radioStation : 'stringStation'
-                                          }
+                                    {
+                                radioStation : 'stringStation'
+                                    }
                             );
+                        });
+
+                        it("can call an operation and get a ProviderRuntimeException (Provider sync, String parameter)", function() {
+                            var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
+                            var catchSpy = jasmine.createSpy("catchSpy");
+
+                            runs(function() {
+                                radioProxy.addFavoriteStation({
+                                    radioStation : 'stringStationerror'
+                                }).then(onFulfilledSpy).catch(catchSpy);
+                            });
+
+                            waitsFor(function() {
+                                return catchSpy.callCount > 0;
+                            }, "operation call to fail", provisioning.ttl);
+
+                            runs(function() {
+                                expect(onFulfilledSpy).not.toHaveBeenCalled();
+                                expect(catchSpy).toHaveBeenCalled();
+                                expect(catchSpy.calls[0].args[0]._typeName).toBeDefined();
+                                expect(catchSpy.calls[0].args[0]._typeName).toEqual("joynr.exceptions.ProviderRuntimeException");
+                                expect(catchSpy.calls[0].args[0].detailMessage).toBeDefined();
+                                expect(catchSpy.calls[0].args[0].detailMessage).toEqual("example message sync");
+                            });
+                        });
+
+                        it("can call an operation and get an ApplicationException (Provider sync, String parameter)", function() {
+                            var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
+                            var catchSpy = jasmine.createSpy("catchSpy");
+
+                            runs(function() {
+                                radioProxy.addFavoriteStation({
+                                    radioStation : 'stringStationerrorApplicationException'
+                                }).then(onFulfilledSpy).catch(catchSpy);
+                            });
+
+                            waitsFor(function() {
+                                return catchSpy.callCount > 0;
+                            }, "operation call to fail", provisioning.ttl);
+
+                            runs(function() {
+                                expect(onFulfilledSpy).not.toHaveBeenCalled();
+                                expect(catchSpy).toHaveBeenCalled();
+                                expect(catchSpy.calls[0].args[0]._typeName).toBeDefined();
+                                expect(catchSpy.calls[0].args[0]._typeName).toEqual("joynr.exceptions.ApplicationException");
+                                expect(catchSpy.calls[0].args[0].error).toBeDefined();
+                                expect(catchSpy.calls[0].args[0].error).toEqual(ErrorList.EXAMPLE_ERROR_2);
+                            });
+                        });
+
+                        it("can call an operation successfully (Provider async, String parameter)", function() {
+                            var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
+
+                            runs(function() {
+                                radioProxy.addFavoriteStation({
+                                    radioStation : 'stringStationasync'
+                                }).then(onFulfilledSpy).catch(IntegrationUtils.outputPromiseError);
+                            });
+
+                            waitsFor(function() {
+                                return onFulfilledSpy.callCount > 0;
+                            }, "operation call to finish", provisioning.ttl);
+
+                            runs(function() {
+                                expect(onFulfilledSpy).toHaveBeenCalled();
+                            });
+                        });
+
+                        it("can call an operation and get a ProviderRuntimeException (Provider async, String parameter)", function() {
+                            var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
+                            var catchSpy = jasmine.createSpy("catchSpy");
+
+                            runs(function() {
+                                radioProxy.addFavoriteStation({
+                                    radioStation : 'stringStationasyncerror'
+                                }).then(onFulfilledSpy).catch(catchSpy);
+                            });
+
+                            waitsFor(function() {
+                                return catchSpy.callCount > 0;
+                            }, "operation call to fail", provisioning.ttl);
+
+                            runs(function() {
+                                expect(onFulfilledSpy).not.toHaveBeenCalled();
+                                expect(catchSpy).toHaveBeenCalled();
+                                expect(catchSpy.calls[0].args[0]._typeName).toBeDefined();
+                                expect(catchSpy.calls[0].args[0]._typeName).toEqual("joynr.exceptions.ProviderRuntimeException");
+                                expect(catchSpy.calls[0].args[0].detailMessage).toBeDefined();
+                                expect(catchSpy.calls[0].args[0].detailMessage).toEqual("example message async");
+                            });
+                        });
+
+                        it("can call an operation and get an ApplicationException (Provider async, String parameter)", function() {
+                            var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
+                            var catchSpy = jasmine.createSpy("catchSpy");
+
+                            runs(function() {
+                                radioProxy.addFavoriteStation({
+                                    radioStation : 'stringStationasyncerrorApplicationException'
+                                }).then(onFulfilledSpy).catch(catchSpy);
+                            });
+
+                            waitsFor(function() {
+                                return catchSpy.callCount > 0;
+                            }, "operation call to fail", provisioning.ttl);
+
+                            runs(function() {
+                                expect(onFulfilledSpy).not.toHaveBeenCalled();
+                                expect(catchSpy).toHaveBeenCalled();
+                                expect(catchSpy.calls[0].args[0]._typeName).toBeDefined();
+                                expect(catchSpy.calls[0].args[0]._typeName).toEqual("joynr.exceptions.ApplicationException");
+                                expect(catchSpy.calls[0].args[0].error).toBeDefined();
+                                expect(catchSpy.calls[0].args[0].error).toEqual(ErrorList.EXAMPLE_ERROR_1);
+                            });
                         });
 
                         it("can call an operation (parameter of complex type)", function() {

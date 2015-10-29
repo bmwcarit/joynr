@@ -31,8 +31,8 @@
 *
 */
 
-#include <QSharedPointer>
 #include <string>
+#include <memory>
 #include <vector>
 
 namespace joynr
@@ -65,7 +65,7 @@ public:
     /*
       * The init method has to be caleld before any calls to the CapabilitiesClient are made.
       */
-    void init(QSharedPointer<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy);
+    void init(std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy);
 
     /*
        Add a capabilities record to the directory containing a list of capabilities and the
@@ -111,13 +111,13 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesClient);
-    void sendOneWayFunctionCall(QSharedPointer<QObject> jsonFunctionCallSharedPtr,
+    void sendOneWayFunctionCall(std::shared_ptr<QObject> jsonFunctionCallSharedPtr,
                                 MessagingQos qosSettings);
-    Reply sendSynchronizedRequestFunctionCall(QSharedPointer<QObject> jsonFunctionCallSharedPtr,
+    Reply sendSynchronizedRequestFunctionCall(std::shared_ptr<QObject> jsonFunctionCallSharedPtr,
                                               MessagingQos qosSettings);
-    void sendRequest(QSharedPointer<QObject> jsonFunctionCallSharedPtr,
+    void sendRequest(std::shared_ptr<QObject> jsonFunctionCallSharedPtr,
                      MessagingQos qosSettings,
-                     QSharedPointer<IReplyCaller> callBack);
+                     std::shared_ptr<IReplyCaller> callBack);
 
     qint64 defaultRequestTTL;
     qint64 defaultRequestRoundtripTTL;
@@ -126,7 +126,7 @@ private:
     std::string localChannelId;
 
     // capabilitiesProxy is a QSP, because ownership is shared between CapabilitiesClient and Joynr
-    QSharedPointer<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy;
+    std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy;
 
     static joynr_logging::Logger* logger;
 };

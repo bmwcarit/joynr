@@ -34,7 +34,6 @@
 #include <QString>
 #include <string>
 #include <QList>
-#include <QSharedPointer>
 #include <cassert>
 #include <memory>
 
@@ -50,16 +49,16 @@ public:
     CapabilitiesRegistrar(
             QList<IDispatcher*> dispatcherList,
             joynr::system::IDiscoverySync& discoveryProxy,
-            QSharedPointer<joynr::system::RoutingTypes::QtAddress> messagingStubAddress,
-            QSharedPointer<ParticipantIdStorage> participantIdStorage,
-            QSharedPointer<joynr::system::RoutingTypes::QtAddress> dispatcherAddress,
-            QSharedPointer<MessageRouter> messageRouter);
+            std::shared_ptr<joynr::system::RoutingTypes::QtAddress> messagingStubAddress,
+            std::shared_ptr<ParticipantIdStorage> participantIdStorage,
+            std::shared_ptr<joynr::system::RoutingTypes::QtAddress> dispatcherAddress,
+            std::shared_ptr<MessageRouter> messageRouter);
 
     template <class T>
     std::string add(const std::string& domain, std::shared_ptr<T> provider)
     {
 
-        QSharedPointer<RequestCaller> caller = RequestCallerFactory::create<T>(provider);
+        std::shared_ptr<RequestCaller> caller = RequestCallerFactory::create<T>(provider);
 
         std::string interfaceName = provider->getInterfaceName();
 
@@ -91,7 +90,7 @@ public:
         }
 
         // add next hop to dispatcher
-        QSharedPointer<joynr::Future<void>> future(new Future<void>());
+        std::shared_ptr<joynr::Future<void>> future(new Future<void>());
         auto onSuccess = [future]() { future->onSuccess(); };
         messageRouter->addNextHop(participantId, dispatcherAddress, onSuccess);
         future->waitForFinished();
@@ -132,7 +131,7 @@ public:
                               .arg(QString::fromStdString(status.getCode().toString())));
         }
 
-        QSharedPointer<joynr::Future<void>> future(new Future<void>());
+        std::shared_ptr<joynr::Future<void>> future(new Future<void>());
         auto callbackFct = [future]() { future->onSuccess(); };
         messageRouter->removeNextHop(participantId, callbackFct);
         future->waitForFinished();
@@ -153,10 +152,10 @@ private:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesRegistrar);
     QList<IDispatcher*> dispatcherList;
     joynr::system::IDiscoverySync& discoveryProxy;
-    QSharedPointer<joynr::system::RoutingTypes::QtAddress> messagingStubAddress;
-    QSharedPointer<ParticipantIdStorage> participantIdStorage;
-    QSharedPointer<joynr::system::RoutingTypes::QtAddress> dispatcherAddress;
-    QSharedPointer<MessageRouter> messageRouter;
+    std::shared_ptr<joynr::system::RoutingTypes::QtAddress> messagingStubAddress;
+    std::shared_ptr<ParticipantIdStorage> participantIdStorage;
+    std::shared_ptr<joynr::system::RoutingTypes::QtAddress> dispatcherAddress;
+    std::shared_ptr<MessageRouter> messageRouter;
     static joynr_logging::Logger* logger;
 };
 

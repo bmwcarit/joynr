@@ -19,6 +19,8 @@ package io.joynr.pubsub.subscription;
  * #L%
  */
 
+import io.joynr.exceptions.JoynrException;
+
 public class AttributeSubscriptionAdapter<T> implements AttributeSubscriptionListener<T> {
 
     @Override
@@ -27,7 +29,7 @@ public class AttributeSubscriptionAdapter<T> implements AttributeSubscriptionLis
     }
 
     @Override
-    public void onError() {
+    public void onError(JoynrException error) {
         // empty implementation
     }
 }

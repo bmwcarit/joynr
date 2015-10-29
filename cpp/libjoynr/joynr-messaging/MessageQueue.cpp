@@ -19,9 +19,12 @@
 #include "joynr/MessageQueue.h"
 #include "joynr/DispatcherUtils.h"
 #include <QThread>
+#include <chrono>
 
 namespace joynr
 {
+
+using namespace std::chrono;
 
 MessageQueue::MessageQueue() : queue(new QMap<std::string, MessageQueueItem*>()), queueMutex()
 {
@@ -39,7 +42,7 @@ qint64 MessageQueue::getQueueLength()
 
 qint64 MessageQueue::queueMessage(const JoynrMessage& message)
 {
-    QDateTime absTtl = message.getHeaderExpiryDate();
+    JoynrTimePoint absTtl = message.getHeaderExpiryDate();
     MessageQueueItem* item = new MessageQueueItem(message, absTtl);
     {
         QMutexLocker locker(&queueMutex);
@@ -65,7 +68,7 @@ qint64 MessageQueue::removeOutdatedMessages()
     }
 
     QMap<std::string, MessageQueueItem*>::iterator i;
-    QDateTime now = QDateTime::currentDateTime();
+    JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
     {
         QMutexLocker locker(&queueMutex);
         for (i = queue->begin(); i != queue->end();) {

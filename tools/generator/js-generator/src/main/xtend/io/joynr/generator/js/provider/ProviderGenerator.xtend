@@ -20,24 +20,28 @@ package io.joynr.generator.js.provider
 
 import com.google.inject.Inject
 import io.joynr.generator.js.util.GeneratorParameter
+import io.joynr.generator.js.util.JSTypeUtil
 import io.joynr.generator.js.util.JoynrJSGeneratorExtensions
+import io.joynr.generator.templates.util.BroadcastUtil
+import io.joynr.generator.templates.util.InterfaceUtil
+import io.joynr.generator.templates.util.MethodUtil
+import io.joynr.generator.templates.util.NamingUtil
 import java.io.File
 import java.util.Date
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FInterface
+import org.franca.core.franca.FMethod
 import org.franca.core.franca.FType
-import io.joynr.generator.js.util.JSTypeUtil
 
 class ProviderGenerator {
 
-	@Inject
-	extension JoynrJSGeneratorExtensions
-
-	@Inject
-	extension JSTypeUtil
-
-	@Inject
-	extension GeneratorParameter
+	@Inject extension JoynrJSGeneratorExtensions
+	@Inject extension JSTypeUtil
+	@Inject extension GeneratorParameter
+	@Inject private extension NamingUtil
+	@Inject private extension MethodUtil
+	@Inject private extension BroadcastUtil
+	@Inject private extension InterfaceUtil
 
 	def generateProvider(FInterface fInterface, Iterable<FType> types, IFileSystemAccess fsa){
 		var containerpath = File::separator
@@ -137,6 +141,7 @@ class ProviderGenerator {
 					implementation.«attributeName».valueChanged = this.«attributeName».valueChanged;
 				}
 			«ENDFOR»
+			«val methodToErrorEnumName = fInterface.methodToErrorEnumName»
 			«FOR methodName : getMethodNames(fInterface)»
 				«val operations = getMethods(fInterface, methodName)»
 				«FOR operation : operations»
@@ -162,6 +167,9 @@ class ProviderGenerator {
 							}
 							«ENDFOR»
 						],
+						error: {
+							type: "«determErrorTypeName(operation, methodToErrorEnumName.get(operation))»"
+						},
 						outputParameter: [
 							«FOR param: getOutputParameters(operation) SEPARATOR ","»
 							{
@@ -248,4 +256,19 @@ class ProviderGenerator {
 		«ENDIF»
 	})();
 	'''
+
+	def determErrorTypeName(FMethod method, String errorEnumName) {
+		var enumType = method.errors;
+		if (enumType != null) {
+			enumType.name = errorEnumName;
+			return getTypeNameForErrorEnumType(method, enumType);
+		}
+		else if (method.errorEnum != null){
+			return method.errorEnum.toTypesEnum;
+		}
+		else {
+			return "no error enumeration given"
+		}
+	}
+
 }

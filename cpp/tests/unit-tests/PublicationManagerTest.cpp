@@ -40,8 +40,12 @@ using ::testing::MatchResultListener;
 using ::testing::Matcher;
 using ::testing::MakeMatcher;
 #include <string>
+#include <chrono>
+#include <stdint.h>
 
 using namespace joynr;
+
+using namespace std::chrono;
 
 class PublicationManagerTest : public testing::Test {
 public:
@@ -86,7 +90,7 @@ TEST_F(PublicationManagerTest, add_requestCallerIsCalledCorrectlyByPublisherRunn
                 sendSubscriptionPublication(_,_,_,_))
             .Times(Between(3, 5));
 
-    QSharedPointer<MockTestRequestCaller> requestCaller(mockTestRequestCaller);
+    std::shared_ptr<MockTestRequestCaller> requestCaller(mockTestRequestCaller);
     PublicationManager publicationManager;
 
     //SubscriptionRequest
@@ -97,7 +101,7 @@ TEST_F(PublicationManagerTest, add_requestCallerIsCalledCorrectlyByPublisherRunn
     qint64 period_ms = 100;
     qint64 validity_ms = 500;
     qint64 alertInterval_ms = 2000;
-    QSharedPointer<QtSubscriptionQos> qos(new QtPeriodicSubscriptionQos(
+    std::shared_ptr<QtSubscriptionQos> qos(new QtPeriodicSubscriptionQos(
                         validity_ms,
                         period_ms,
                         alertInterval_ms));
@@ -124,7 +128,7 @@ TEST_F(PublicationManagerTest, stop_publications) {
                 sendSubscriptionPublication(_,_,_,_))
             .Times(AtMost(2));
 
-    QSharedPointer<MockTestRequestCaller> requestCaller(mockTestRequestCaller);
+    std::shared_ptr<MockTestRequestCaller> requestCaller(mockTestRequestCaller);
     PublicationManager publicationManager;
 
     //SubscriptionRequest
@@ -135,7 +139,7 @@ TEST_F(PublicationManagerTest, stop_publications) {
     qint64 period_ms = 100;
     qint64 validity_ms = 10000;
     qint64 alertInterval_ms = 1000;
-    QSharedPointer<QtSubscriptionQos> qos(new QtPeriodicSubscriptionQos(
+    std::shared_ptr<QtSubscriptionQos> qos(new QtPeriodicSubscriptionQos(
                         validity_ms,
                         period_ms,
                         alertInterval_ms));
@@ -168,7 +172,7 @@ TEST_F(PublicationManagerTest, remove_all_publications) {
                 sendSubscriptionPublication(_,_,_,_))
             .Times(AtMost(2));
 
-    QSharedPointer<MockTestRequestCaller> requestCaller(mockTestRequestCaller);
+    std::shared_ptr<MockTestRequestCaller> requestCaller(mockTestRequestCaller);
     PublicationManager publicationManager;
 
     //SubscriptionRequest
@@ -179,7 +183,7 @@ TEST_F(PublicationManagerTest, remove_all_publications) {
     qint64 period_ms = 100;
     qint64 validity_ms = 10000;
     qint64 alertInterval_ms = 1000;
-    QSharedPointer<QtSubscriptionQos> qos(new QtPeriodicSubscriptionQos(
+    std::shared_ptr<QtSubscriptionQos> qos(new QtPeriodicSubscriptionQos(
                         validity_ms,
                         period_ms,
                         alertInterval_ms));
@@ -200,7 +204,7 @@ TEST_F(PublicationManagerTest, restore_publications) {
     MockPublicationSender mockPublicationSender;
 
     //the first publicationManager will get this requestCaller:
-    QSharedPointer<MockTestRequestCaller> requestCaller(new MockTestRequestCaller(Between(1,3)));
+    std::shared_ptr<MockTestRequestCaller> requestCaller(new MockTestRequestCaller(Between(1,3)));
 
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
@@ -208,7 +212,7 @@ TEST_F(PublicationManagerTest, restore_publications) {
 
     //the second publicationManager will get this requestCaller
     //if restoring works, this caller will be called as well.
-    QSharedPointer<MockTestRequestCaller> requestCaller2(new MockTestRequestCaller(AtLeast(2)));
+    std::shared_ptr<MockTestRequestCaller> requestCaller2(new MockTestRequestCaller(AtLeast(2)));
 
     PublicationManager* publicationManager = new PublicationManager() ;
 
@@ -220,7 +224,7 @@ TEST_F(PublicationManagerTest, restore_publications) {
     qint64 period_ms = 100;
     qint64 validity_ms = 1000;
     qint64 alertInterval_ms = 1000;
-    QSharedPointer<QtSubscriptionQos> qos(new QtPeriodicSubscriptionQos(
+    std::shared_ptr<QtSubscriptionQos> qos(new QtPeriodicSubscriptionQos(
                         validity_ms,
                         period_ms,
                         alertInterval_ms));
@@ -292,7 +296,7 @@ TEST_F(PublicationManagerTest, add_onChangeSubscription) {
     )
             .Times(1);
 
-    QSharedPointer<MockTestRequestCaller> requestCaller(mockTestRequestCaller);
+    std::shared_ptr<MockTestRequestCaller> requestCaller(mockTestRequestCaller);
     PublicationManager publicationManager;
 
     //SubscriptionRequest
@@ -301,7 +305,7 @@ TEST_F(PublicationManagerTest, add_onChangeSubscription) {
     //QtSubscriptionQos
     qint64 minInterval_ms = 50;
     qint64 validity_ms = 500;
-    QSharedPointer<QtSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
+    std::shared_ptr<QtSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
 
@@ -359,7 +363,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
 
     EXPECT_CALL(*mockTestRequestCaller,unregisterAttributeListener(attributeName, _)).Times(1);
 
-    QSharedPointer<MockTestRequestCaller> requestCaller(mockTestRequestCaller);
+    std::shared_ptr<MockTestRequestCaller> requestCaller(mockTestRequestCaller);
     PublicationManager publicationManager;
 
     //SubscriptionRequest
@@ -368,7 +372,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
     //QtSubscriptionQos
     qint64 minInterval_ms = 500;
     qint64 validity_ms = -1; //no expiry date -> infinite subscription
-    QSharedPointer<QtSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
+    std::shared_ptr<QtSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
 
@@ -434,7 +438,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval) {
 
     EXPECT_CALL(*mockTestRequestCaller,unregisterAttributeListener(attributeName, _)).Times(1);
 
-    QSharedPointer<MockTestRequestCaller> requestCaller(mockTestRequestCaller);
+    std::shared_ptr<MockTestRequestCaller> requestCaller(mockTestRequestCaller);
     PublicationManager publicationManager;
 
     //SubscriptionRequest
@@ -443,7 +447,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval) {
     //QtSubscriptionQos
     qint64 minInterval_ms = 500;
     qint64 validity_ms = 600;
-    QSharedPointer<QtSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
+    std::shared_ptr<QtSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
 
@@ -527,8 +531,8 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
 
     EXPECT_CALL(*mockTestRequestCaller2,unregisterAttributeListener(attributeName, _)).Times(1);
 
-    QSharedPointer<MockTestRequestCaller> requestCaller(mockTestRequestCaller);
-    QSharedPointer<MockTestRequestCaller> requestCaller2(mockTestRequestCaller2);
+    std::shared_ptr<MockTestRequestCaller> requestCaller(mockTestRequestCaller);
+    std::shared_ptr<MockTestRequestCaller> requestCaller2(mockTestRequestCaller2);
 
     PublicationManager publicationManager;
 
@@ -538,11 +542,12 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
     //QtSubscriptionQos
     qint64 minInterval_ms = 100;
     qint64 validity_ms = 600;
-    QSharedPointer<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
+    std::shared_ptr<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
 
-    qos->setExpiryDate(QDateTime::currentMSecsSinceEpoch() + 5000);
+    int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    qos->setExpiryDate(now + 5000);
 
     subscriptionRequest.setSubscribeToName(QString::fromStdString(attributeName));
     subscriptionRequest.setQos(qos);
@@ -635,7 +640,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
 
     EXPECT_CALL(*mockTestRequestCaller,unregisterAttributeListener(attributeName, _)).Times(2);
 
-    QSharedPointer<MockTestRequestCaller> requestCaller(mockTestRequestCaller);
+    std::shared_ptr<MockTestRequestCaller> requestCaller(mockTestRequestCaller);
 
     PublicationManager publicationManager;
 
@@ -646,8 +651,9 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
     qint64 minInterval_ms = 50;
     qint64 validity_ms = 600;
     qint64 testRelExpiryDate = 500;
-    qint64 testAbsExpiryDate = QDateTime::currentMSecsSinceEpoch() + testRelExpiryDate;
-    QSharedPointer<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
+    int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    int64_t testAbsExpiryDate = now + testRelExpiryDate;
+    std::shared_ptr<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
 
@@ -728,7 +734,7 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
 
     EXPECT_CALL(*mockTestRequestCaller,unregisterAttributeListener(attributeName, _)).Times(2);
 
-    QSharedPointer<MockTestRequestCaller> requestCaller(mockTestRequestCaller);
+    std::shared_ptr<MockTestRequestCaller> requestCaller(mockTestRequestCaller);
 
     PublicationManager publicationManager;
 
@@ -740,8 +746,9 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
     qint64 validity_ms = 600;
     qint64 testExpiryDate_shift = 2500;
     qint64 testRelExpiryDate = 500 + testExpiryDate_shift;
-    qint64 testAbsExpiryDate = QDateTime::currentMSecsSinceEpoch() + testRelExpiryDate;
-    QSharedPointer<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
+    int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    int64_t testAbsExpiryDate = now + testRelExpiryDate;
+    std::shared_ptr<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
 
@@ -844,8 +851,8 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
 
     EXPECT_CALL(*mockTestRequestCaller2,unregisterBroadcastListener(broadcastName, _)).Times(1);
 
-    QSharedPointer<MockTestRequestCaller> requestCaller(mockTestRequestCaller);
-    QSharedPointer<MockTestRequestCaller> requestCaller2(mockTestRequestCaller2);
+    std::shared_ptr<MockTestRequestCaller> requestCaller(mockTestRequestCaller);
+    std::shared_ptr<MockTestRequestCaller> requestCaller2(mockTestRequestCaller2);
 
     PublicationManager publicationManager;
 
@@ -855,11 +862,11 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     //QtSubscriptionQos
     qint64 minInterval_ms = 100;
     qint64 validity_ms = 600;
-    QSharedPointer<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
+    std::shared_ptr<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
-
-    qos->setExpiryDate(QDateTime::currentMSecsSinceEpoch() + 5000);
+    int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    qos->setExpiryDate(now + 5000);
 
     subscriptionRequest.setSubscribeToName(QString::fromStdString(broadcastName));
     subscriptionRequest.setQos(qos);
@@ -947,7 +954,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
 
     EXPECT_CALL(*mockTestRequestCaller,unregisterBroadcastListener(broadcastName, _)).Times(2);
 
-    QSharedPointer<MockTestRequestCaller> requestCaller(mockTestRequestCaller);
+    std::shared_ptr<MockTestRequestCaller> requestCaller(mockTestRequestCaller);
 
     PublicationManager publicationManager;
 
@@ -958,8 +965,9 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     qint64 minInterval_ms = 50;
     qint64 validity_ms = 600;
     qint64 testRelExpiryDate = 500;
-    qint64 testAbsExpiryDate = QDateTime::currentMSecsSinceEpoch() + testRelExpiryDate;
-    QSharedPointer<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
+    int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    int64_t testAbsExpiryDate = now + testRelExpiryDate;
+    std::shared_ptr<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
 
@@ -1035,7 +1043,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
 
     EXPECT_CALL(*mockTestRequestCaller,unregisterBroadcastListener(broadcastName, _)).Times(2);
 
-    QSharedPointer<MockTestRequestCaller> requestCaller(mockTestRequestCaller);
+    std::shared_ptr<MockTestRequestCaller> requestCaller(mockTestRequestCaller);
 
     PublicationManager publicationManager;
 
@@ -1047,8 +1055,9 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     qint64 validity_ms = 600;
     qint64 testExpiryDate_shift = 2500;
     qint64 testRelExpiryDate = 500 + testExpiryDate_shift;
-    qint64 testAbsExpiryDate = QDateTime::currentMSecsSinceEpoch() + testRelExpiryDate;
-    QSharedPointer<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
+    int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    int64_t testAbsExpiryDate = now + testRelExpiryDate;
+    std::shared_ptr<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
 
@@ -1115,7 +1124,7 @@ TEST_F(PublicationManagerTest, remove_onChangeSubscription) {
 
     EXPECT_CALL(*mockTestRequestCaller,unregisterAttributeListener(attributeName, _)).Times(1);
 
-    QSharedPointer<MockTestRequestCaller> requestCaller(mockTestRequestCaller);
+    std::shared_ptr<MockTestRequestCaller> requestCaller(mockTestRequestCaller);
     PublicationManager publicationManager;
 
     //SubscriptionRequest
@@ -1124,7 +1133,7 @@ TEST_F(PublicationManagerTest, remove_onChangeSubscription) {
     //QtSubscriptionQos
     qint64 minInterval_ms = 1;
     qint64 validity_ms = 100;
-    QSharedPointer<QtSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
+    std::shared_ptr<QtSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
 

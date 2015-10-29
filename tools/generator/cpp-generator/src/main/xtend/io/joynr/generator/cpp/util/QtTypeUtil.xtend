@@ -18,6 +18,9 @@ package io.joynr.generator.cpp.util
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.templates.util.BroadcastUtil
+import io.joynr.generator.templates.util.MethodUtil
+import java.util.ArrayList
 import java.util.HashSet
 import org.franca.core.franca.FArgument
 import org.franca.core.franca.FBasicTypeId
@@ -25,12 +28,15 @@ import org.franca.core.franca.FBroadcast
 import org.franca.core.franca.FMethod
 import org.franca.core.franca.FType
 import org.franca.core.franca.FTypedElement
-import java.util.ArrayList
 
 class QtTypeUtil extends CppTypeUtil {
 
 	@Inject
 	private CppStdTypeUtil stdTypeUtil
+	@Inject
+	private extension BroadcastUtil
+	@Inject
+	private extension MethodUtil
 
 	override getTypeName(FBasicTypeId datatype) {
 		switch datatype {
@@ -234,11 +240,11 @@ class QtTypeUtil extends CppTypeUtil {
 	}
 
 	override getIncludeOf(FType dataType) {
-		var path = getPackagePathWithJoynrPrefix(dataType, "/")
+		var path = getPackagePathWithJoynrPrefix(dataType, "/") + "/"
 		if (dataType.isPartOfTypeCollection) {
-			path += "/" + dataType.typeCollectionName
+			path += dataType.typeCollectionName + "_"
 		}
-		return path + "/" + dataType.joynrNameQt + ".h";
+		return path + dataType.joynrNameQt + ".h";
 	}
 
 	override getTypeName(FType datatype) {

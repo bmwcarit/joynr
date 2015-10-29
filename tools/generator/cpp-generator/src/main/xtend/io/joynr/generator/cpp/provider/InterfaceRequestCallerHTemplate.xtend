@@ -21,19 +21,20 @@ import com.google.inject.Inject
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
-import io.joynr.generator.util.InterfaceTemplate
+import io.joynr.generator.templates.InterfaceTemplate
+import io.joynr.generator.templates.util.AttributeUtil
+import io.joynr.generator.templates.util.MethodUtil
+import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
 
 class InterfaceRequestCallerHTemplate implements InterfaceTemplate{
 
-	@Inject
-	private extension TemplateBase
-
-	@Inject
-	private extension CppStdTypeUtil
-
-	@Inject
-	private extension JoynrCppGeneratorExtensions
+	@Inject private extension TemplateBase
+	@Inject private extension CppStdTypeUtil
+	@Inject private extension JoynrCppGeneratorExtensions
+	@Inject private extension NamingUtil
+	@Inject private extension AttributeUtil
+	@Inject private extension MethodUtil
 
 	override generate(FInterface serviceInterface)
 '''
@@ -49,8 +50,8 @@ class InterfaceRequestCallerHTemplate implements InterfaceTemplate{
 #include "joynr/PrivateCopyAssign.h"
 «getDllExportIncludeStatement()»
 #include "joynr/RequestCaller.h"
+#include "joynr/exceptions.h"
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName».h"
-#include <QSharedPointer>
 #include <memory>
 
 «FOR parameterType: getRequiredIncludesFor(serviceInterface).addElements(includeForString)»
@@ -81,25 +82,33 @@ public:
 		«IF attribute.readable»
 			/**
 			 * @brief Gets the value of the Franca attribute «attributeName.toFirstUpper»
-			 * @param callbackFct A callback function to be called once the asynchronous computation has
-			 * finished. It must expect a request status object as well as the return value.
+			 * @param onSuccess A callback function to be called once the asynchronous computation has
+			 * finished with success. It must expect a request status object as well as the return value.
+			 * @param onError A callback function to be called once the asynchronous computation fails. It must expect the exception.
 			 */
 			virtual void get«attributeName.toFirstUpper»(
 					std::function<void(
 							const «attribute.typeName»&
-					)> onSuccess
+					)> onSuccess,
+					std::function<void(
+							const JoynrException&
+					)> onError
 			);
 		«ENDIF»
 		«IF attribute.writable»
 			/**
 			 * @brief Sets the value of the Franca attribute «attributeName.toFirstUpper»
 			 * @param «attributeName» The new value of the attribute
-			 * @param callbackFct A callback function to be called once the asynchronous computation has
-			 * finished. It must expect a request status object.
+			 * @param onSuccess A callback function to be called once the asynchronous computation has
+			 * finished with success. It must expect a request status object.
+			 * @param onError A callback function to be called once the asynchronous computation fails. It must expect the exception.
 			 */
 			virtual void set«attributeName.toFirstUpper»(
 					const «attribute.typeName»& «attributeName»,
-					std::function<void()> onSuccess
+					std::function<void()> onSuccess,
+					std::function<void(
+							const JoynrException&
+					)> onError
 			);
 		«ENDIF»
 
@@ -118,19 +127,23 @@ public:
 		 «ENDFOR»
 		 «ENDIF»
 		 * @param onSuccess A callback function to be called once the asynchronous computation has
-		 * finished. It must expect the output parameter list, if parameters are present.
+		 * finished with success. It must expect the output parameter list, if parameters are present.
+		 * @param onError A callback function to be called once the asynchronous computation fails. It must expect the exception.
 		 */
 		virtual void «method.joynrName»(
 				«IF !method.inputParameters.empty»
 					«inputTypedParamList.substring(1)»,
 				«ENDIF»
 				«IF method.outputParameters.empty»
-					std::function<void()> onSuccess
+					std::function<void()> onSuccess,
 				«ELSE»
 					std::function<void(
 							«outputTypedParamList.substring(1)»
-					)> onSuccess
+					)> onSuccess,
 				«ENDIF»
+				std::function<void(
+						const JoynrException&
+				)> onError
 		);
 
 	«ENDFOR»

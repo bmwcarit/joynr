@@ -18,16 +18,18 @@ package io.joynr.generator.filter
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.templates.BroadcastTemplate
+import io.joynr.generator.templates.util.NamingUtil
+import io.joynr.generator.util.JavaTypeUtil
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import io.joynr.generator.util.TemplateBase
 import org.franca.core.franca.FBroadcast
 import org.franca.core.franca.FInterface
-import io.joynr.generator.util.BroadcastTemplate
-import io.joynr.generator.util.JavaTypeUtil
 
 class FilterTemplate implements BroadcastTemplate{
 	@Inject extension JoynrJavaGeneratorExtensions
 	@Inject extension JavaTypeUtil
+	@Inject extension NamingUtil
 	@Inject extension TemplateBase
 
 	override generate(FInterface serviceInterface, FBroadcast broadcast) {

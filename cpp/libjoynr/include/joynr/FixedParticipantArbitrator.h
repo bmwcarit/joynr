@@ -23,7 +23,6 @@
 
 #include <vector>
 #include "joynr/ProviderArbitrator.h"
-#include <QSharedPointer>
 #include <string>
 
 namespace joynr

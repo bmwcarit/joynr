@@ -66,7 +66,7 @@ PerThreadCurlHandlePool::PerThreadCurlHandlePool()
 void* PerThreadCurlHandlePool::getHandle(const QString& url)
 {
     QMutexLocker lock(&mutex);
-    QSharedPointer<PooledCurlHandle> pooledHandle;
+    std::shared_ptr<PooledCurlHandle> pooledHandle;
     QString host = extractHost(url);
     pooledHandle = takeOrCreateHandle(QThread::currentThreadId(), host);
     pooledHandle->setActiveHost(host);
@@ -77,7 +77,7 @@ void* PerThreadCurlHandlePool::getHandle(const QString& url)
 void PerThreadCurlHandlePool::returnHandle(void* handle)
 {
     QMutexLocker lock(&mutex);
-    QSharedPointer<PooledCurlHandle> pooledHandle = outHandleMap.take(handle);
+    std::shared_ptr<PooledCurlHandle> pooledHandle = outHandleMap.take(handle);
     pooledHandle->clearHandle();
     idleHandleMap.insert(QThread::currentThreadId(), pooledHandle);
     // handles most recently used are prepended
@@ -86,7 +86,7 @@ void PerThreadCurlHandlePool::returnHandle(void* handle)
 
     if (!handleOrderList.isEmpty() && handleOrderList.size() + outHandleMap.size() > POOL_SIZE) {
         // if the list of idle handles is too big, remove the last item of the ordered list
-        QSharedPointer<PooledCurlHandle> handle2remove = handleOrderList.takeLast();
+        std::shared_ptr<PooledCurlHandle> handle2remove = handleOrderList.takeLast();
         foreach (Qt::HANDLE threadId, idleHandleMap.keys()) {
             int removed = idleHandleMap.remove(threadId, handle2remove);
             if (removed > 0) {
@@ -99,8 +99,8 @@ void PerThreadCurlHandlePool::returnHandle(void* handle)
 void PerThreadCurlHandlePool::deleteHandle(void* handle)
 {
     QMutexLocker lock(&mutex);
-    QSharedPointer<PooledCurlHandle> pooledHandle = outHandleMap.take(handle);
-    if (!pooledHandle.isNull()) {
+    std::shared_ptr<PooledCurlHandle> pooledHandle = outHandleMap.take(handle);
+    if (pooledHandle) {
         handleOrderList.removeAll(pooledHandle);
         idleHandleMap.remove(QThread::currentThreadId(), pooledHandle);
     }
@@ -121,15 +121,15 @@ QString PerThreadCurlHandlePool::extractHost(const QString& url)
     return qurl.host() + ":" + QString::number(qurl.port());
 }
 
-QSharedPointer<PooledCurlHandle> PerThreadCurlHandlePool::takeOrCreateHandle(
+std::shared_ptr<PooledCurlHandle> PerThreadCurlHandlePool::takeOrCreateHandle(
         const Qt::HANDLE& threadId,
         QString host)
 {
     if (idleHandleMap.contains(threadId)) {
-        QList<QSharedPointer<PooledCurlHandle>> handleList = idleHandleMap.values(threadId);
-        QListIterator<QSharedPointer<PooledCurlHandle>> i(handleList);
+        QList<std::shared_ptr<PooledCurlHandle>> handleList = idleHandleMap.values(threadId);
+        QListIterator<std::shared_ptr<PooledCurlHandle>> i(handleList);
         while (i.hasNext()) {
-            QSharedPointer<PooledCurlHandle> pooledHandle = i.next();
+            std::shared_ptr<PooledCurlHandle> pooledHandle = i.next();
             // prefer handles which have already been connected to the desired host address.
             // Reusing open connections has performance benefits
             if (pooledHandle->hasHost(host)) {
@@ -139,7 +139,7 @@ QSharedPointer<PooledCurlHandle> PerThreadCurlHandlePool::takeOrCreateHandle(
         }
         return idleHandleMap.take(threadId);
     } else {
-        return QSharedPointer<PooledCurlHandle>(new PooledCurlHandle());
+        return std::shared_ptr<PooledCurlHandle>(new PooledCurlHandle());
     }
 }
 
@@ -202,7 +202,7 @@ void* SingleThreadCurlHandlePool::getHandle(const QString& url)
     QString host(extractHost(url));
     QMutexLocker lock(&mutex);
 
-    QSharedPointer<PooledCurlHandle> pooledHandle = takeOrCreateHandle(host);
+    std::shared_ptr<PooledCurlHandle> pooledHandle = takeOrCreateHandle(host);
     pooledHandle->setActiveHost(host);
     outHandleMap.insert(pooledHandle->getHandle(), pooledHandle);
     return pooledHandle->getHandle();
@@ -211,7 +211,7 @@ void* SingleThreadCurlHandlePool::getHandle(const QString& url)
 void SingleThreadCurlHandlePool::returnHandle(void* handle)
 {
     QMutexLocker lock(&mutex);
-    QSharedPointer<PooledCurlHandle> pooledHandle = outHandleMap.take(handle);
+    std::shared_ptr<PooledCurlHandle> pooledHandle = outHandleMap.take(handle);
     pooledHandle->clearHandle();
     handleList.removeAll(pooledHandle);
     handleList.prepend(pooledHandle);
@@ -223,8 +223,8 @@ void SingleThreadCurlHandlePool::returnHandle(void* handle)
 void SingleThreadCurlHandlePool::deleteHandle(void* handle)
 {
     QMutexLocker lock(&mutex);
-    QSharedPointer<PooledCurlHandle> pooledHandle = outHandleMap.take(handle);
-    if (!pooledHandle.isNull()) {
+    std::shared_ptr<PooledCurlHandle> pooledHandle = outHandleMap.take(handle);
+    if (pooledHandle) {
         handleList.removeAll(pooledHandle);
     }
 }
@@ -243,11 +243,12 @@ QString SingleThreadCurlHandlePool::extractHost(const QString& url)
     return qurl.host() + ":" + QString::number(qurl.port());
 }
 
-QSharedPointer<PooledCurlHandle> SingleThreadCurlHandlePool::takeOrCreateHandle(const QString& host)
+std::shared_ptr<PooledCurlHandle> SingleThreadCurlHandlePool::takeOrCreateHandle(
+        const QString& host)
 {
-    QMutableLinkedListIterator<QSharedPointer<PooledCurlHandle>> i(handleList);
+    QMutableLinkedListIterator<std::shared_ptr<PooledCurlHandle>> i(handleList);
     while (i.hasNext()) {
-        QSharedPointer<PooledCurlHandle> handle = i.next();
+        std::shared_ptr<PooledCurlHandle> handle = i.next();
         if (handle->hasHost(host)) {
             i.remove();
             return handle;
@@ -258,7 +259,7 @@ QSharedPointer<PooledCurlHandle> SingleThreadCurlHandlePool::takeOrCreateHandle(
         return handleList.takeLast();
     }
 
-    return QSharedPointer<PooledCurlHandle>(new PooledCurlHandle());
+    return std::shared_ptr<PooledCurlHandle>(new PooledCurlHandle());
 }
 
 } // namespace joynr

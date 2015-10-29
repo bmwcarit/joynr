@@ -33,12 +33,12 @@ bool InProcessMessagingStubFactory::canCreate(
     return destAddress.inherits(InProcessMessagingAddress::staticMetaObject.className());
 }
 
-QSharedPointer<IMessaging> InProcessMessagingStubFactory::create(
+std::shared_ptr<IMessaging> InProcessMessagingStubFactory::create(
         const joynr::system::RoutingTypes::QtAddress& destAddress)
 {
     const InProcessMessagingAddress* inprocessAddress =
             dynamic_cast<const InProcessMessagingAddress*>(&destAddress);
-    return QSharedPointer<IMessaging>(new InProcessMessagingStub(inprocessAddress->getSkeleton()));
+    return std::shared_ptr<IMessaging>(new InProcessMessagingStub(inprocessAddress->getSkeleton()));
 }
 
 } // namespace joynr
