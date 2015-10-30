@@ -234,6 +234,22 @@ function initializeTest(provisioningSuffix, providedDomain) {
                 return returnValue;
             });
 
+            // register operation function "operationWithMultipleOutputParameters"
+            radioProvider.operationWithMultipleOutputParameters.registerOperation(function(opArgs) {
+                var returnValue = {
+                    enumArrayOutput: opArgs.enumArrayInput,
+                    enumOutput: opArgs.enumInput,
+                    stringOutput: opArgs.stringInput,
+                    booleanOutput: opArgs.syncTest,
+                };
+                if (opArgs.syncTest) {
+                    return returnValue;
+                }
+                return new Promise(function(resolve, reject){
+                    resolve(returnValue);
+                });
+            });
+
             // register operation function "operationWithEnumsAsInputAndEnumArrayAsOutput"
             radioProvider.operationWithEnumsAsInputAndEnumArrayAsOutput.registerOperation(function(opArgs) {
                 /* the dummy implementation returns the enumArrayInput.

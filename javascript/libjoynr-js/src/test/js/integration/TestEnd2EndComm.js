@@ -748,6 +748,47 @@ joynrTestRequire(
                                });
 
                         it(
+                                "can call an operation with multiple return values and async provider",
+                                function() {
+                                    var inputData = {
+                                        enumInput : Country.GERMANY,
+                                        enumArrayInput : [Country.GERMANY, Country.ITALY],
+                                        stringInput : "StringTest",
+                                        syncTest : false
+                                    };
+                                    callOperation(
+                                            "operationWithMultipleOutputParameters",
+                                            inputData,
+                                            {
+                                                enumArrayOutput : inputData.enumArrayInput,
+                                                enumOutput : inputData.enumInput,
+                                                stringOutput : inputData.stringInput,
+                                                booleanOutput : inputData.syncTest
+                                            });
+
+                        });
+
+                        it(
+                                "can call an operation with multiple return values and sync provider",
+                                function() {
+                                    var inputData = {
+                                        enumInput : Country.GERMANY,
+                                        enumArrayInput : [Country.GERMANY, Country.ITALY],
+                                        stringInput : "StringTest",
+                                        syncTest : true
+                                    };
+                                    callOperation(
+                                            "operationWithMultipleOutputParameters",
+                                            inputData,
+                                            {
+                                                enumArrayOutput : inputData.enumArrayInput,
+                                                enumOutput : inputData.enumInput,
+                                                stringOutput : inputData.stringInput,
+                                                booleanOutput : inputData.syncTest
+                                            });
+                        });
+
+                        it(
                                 "can call an operation with enum arguments and enum array as return type",
                                 function() {
                                     callOperation(
