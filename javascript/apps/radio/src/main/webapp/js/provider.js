@@ -1,5 +1,5 @@
 /*jslint devel: true es5: true */
-/*global $: true, joynr: true, provisioning: true, AddFavoriteStationErrorEnum: true, RadioProvider: true, RadioStation: true, GeoPosition: true, domain: true, getBuildSignatureString: true, TrafficServiceBroadcastFilter : true, GeocastBroadcastFilter: true, Promise: true */
+/*global $: true, joynr: true, provisioning: true, Country: true, AddFavoriteStationErrorEnum: true, RadioProvider: true, RadioStation: true, GeoPosition: true, domain: true, getBuildSignatureString: true, TrafficServiceBroadcastFilter : true, GeocastBroadcastFilter: true, Promise: true */
 
 /*
  * #%L
@@ -62,22 +62,22 @@ var RadioProviderImpl =
                 new RadioStation({
                     name : "ABC Trible J",
                     trafficService : true,
-                    country : "AUSTRALIA"
+                    country : Country.AUSTRALIA
                 }),
                 new RadioStation({
                     name : "Radio Popolare",
                     trafficService : false,
-                    country : "ITALY"
+                    country : Country.ITALY
                 }),
                 new RadioStation({
                     name : "JAZZ.FM91",
                     trafficService : false,
-                    country : "CANADA"
+                    country : Country.CANADA
                 }),
                 new RadioStation({
                     name : "Bayern 3",
                     trafficService : true,
-                    country : "GERMANY"
+                    country : Country.GERMANY
                 })
             ];
 
@@ -221,7 +221,7 @@ var RadioProviderImpl =
                 var outputParameters;
                 var geoPosition;
 
-                geoPosition = countryGeoPositionMap[stationsList[currentStationIndex].country];
+                geoPosition = countryGeoPositionMap[stationsList[currentStationIndex].country.name];
                 outputParameters = self.newStationDiscovered.createBroadcastOutputParameters();
                 outputParameters.setGeoPosition(geoPosition);
                 outputParameters.setDiscoveredStation(stationsList[currentStationIndex]);
@@ -231,7 +231,10 @@ var RadioProviderImpl =
             this.getLocationOfCurrentStation =
                 function() {
                     log("radioProvider.getLocationOfCurrentStation", "called");
-                    return stationsList[currentStationIndex].country;
+                    return {
+                        country : stationsList[currentStationIndex].country,
+                        location : countryGeoPositionMap[stationsList[currentStationIndex].country.name]
+                    };
                 };
 
             // fill current station into fields

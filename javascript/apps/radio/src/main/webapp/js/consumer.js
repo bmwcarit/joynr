@@ -185,6 +185,23 @@ function registerMethodHandlers(radioProxy) {
             );
         });
     });
+
+    $("input#btnGetLocationOfCurrentStation").click(function() {
+        radioProxy.getLocationOfCurrentStation().then(function(opArgs) {
+            var country = opArgs.country;
+            var location = opArgs.location;
+            log(
+                    "radioProxy.getLocationOfCurrentStation.done",
+                    "Country: " + JSON.stringify(country) + ", location: " + JSON.stringify(location)
+            );
+            $("input#txtGetLocationOfCurrentStation").val("Country: " + JSON.stringify(country) + ", location: " + JSON.stringify(location));
+        }).catch(function(error) {
+            log(
+                    "radioProxy.getLocationOfCurrentStation.failed",
+                    "Error: " + JSON.stringify(error)
+            );
+        });
+    });
 }
 
 /**
@@ -446,6 +463,7 @@ $(function() { // DOM ready
             $("input#btnCurrentStationGet").attr("disabled", false);
             $("input#btnShuffleStations").attr("disabled", false);
             $("input#btnAddFavoriteStation").attr("disabled", false);
+            $("input#btnGetLocationOfCurrentStation").attr("disabled", false);
             $("input#btnSubscribeToWeakSignal").attr("disabled", false);
             $("input#btnSubscribeToNewStationDiscoveredSignal").attr("disabled", false);
          });
