@@ -30,7 +30,7 @@ define(
 
             MethodUtil.transformParameterMapToArray =
                     function transformParameterMapToArray(operationArguments, parameter) {
-                        var argument, argumentName, argumentValue, argumentId, operationParameter, transformedParameterList =
+                        var argument, argumentName, argumentValue, argumentId, argumentType, transformedParameterList =
                                 {
                                     params : [],
                                     paramDatatypes : []
@@ -47,13 +47,10 @@ define(
                                 argument = parameter[argumentId];
 
                                 argumentName = argument.name;
-                                operationParameter =
-                                        (argument.type.substr(argument.type.length - 2, 2) === "[]")
-                                                ? TypesEnum.LIST
-                                                : argument.type;
+                                argumentType = argument.type;
 
                                 // if there's no parameter with the given name
-                                if (!operationParameter) {
+                                if (!argumentType) {
                                     // signature does not match
                                     throw new Error(
                                             "signature does not match: type for argument \""
@@ -79,23 +76,21 @@ define(
                                         argumentValue._typeName
                                             || Typing.getObjectType(argumentValue);
                                 /*jslint nomen: false */
-                                if (Typing.translateJoynrTypeToJavascriptType(operationParameter) !== objectType) {
+                                if (Typing.translateJoynrTypeToJavascriptType(argumentType) !== objectType) {
                                     // signature does not match
-                                    throw new Error(
-                                            "Signature does not match: type \""
-                                                + objectType
-                                                + "\" of argument \""
-                                                + argumentName
-                                                + "\" does not match with expected type \""
-                                                + Typing
-                                                        .translateJoynrTypeToJavascriptType(operationParameter)
-                                                + "\"");
+                                    throw new Error("Signature does not match: type \""
+                                        + objectType
+                                        + "\" of argument \""
+                                        + argumentName
+                                        + "\" does not match with expected type \""
+                                        + Typing.translateJoynrTypeToJavascriptType(argumentType)
+                                        + "\"");
                                 }
 
                                 // we found a matching parameter/argument-pair that has the same name and
                                 // type, let's add it to our qualified operation
                                 // argument object for later use in serialization
-                                transformedParameterList.paramDatatypes.push(operationParameter);
+                                transformedParameterList.paramDatatypes.push(argumentType);
                                 transformedParameterList.params.push(argumentValue);
                             }
                         }

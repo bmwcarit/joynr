@@ -66,7 +66,7 @@ define("joynr/util/Typing", [
         if (joynrType === undefined || joynrType === null) {
             throw new Error("cannot determine javascript type of \"" + joynrType + "\"");
         }
-        
+
         if (joynrType.charAt(joynrType.length - 1) === ']') {
             return "Array";
         }
