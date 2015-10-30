@@ -55,6 +55,10 @@ class CppStdTypeUtil extends CppTypeUtil {
 		"std::vector<" + datatype.typeName + "> ";
 	}
 
+	override getGenerationTypeName(FType datatype) {
+		datatype.joynrName
+	}
+
 	override getTypeName(FType datatype) {
 		var typeName = buildPackagePath(datatype, "::", true) + datatype.joynrName;
 		if (isEnum(datatype)){

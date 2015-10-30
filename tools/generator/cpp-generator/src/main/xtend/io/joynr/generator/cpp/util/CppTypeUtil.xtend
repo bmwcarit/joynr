@@ -252,4 +252,11 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 		}
 		return includeSet;
 	}
+
+	abstract def String getGenerationTypeName (FType datatype);
+
+	def getTypeNameOfContainingClass (FType datatype) {
+		val packagepath = buildPackagePath(datatype, "::", true);
+		return  packagepath + datatype.generationTypeName
+	}
 }

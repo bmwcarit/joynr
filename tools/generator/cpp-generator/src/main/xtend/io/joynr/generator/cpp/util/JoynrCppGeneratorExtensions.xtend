@@ -212,10 +212,6 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 		return "";
 	}
 
-	def joynrNameQt(FType type){
-		return "Qt" + type.joynrName
-	}
-
 	def String getIncludeOfFilterParametersContainer(FInterface serviceInterface, FBroadcast broadcast) {
 		return getPackagePathWithJoynrPrefix(serviceInterface, "/")
 			+ "/" + serviceInterface.name.toFirstUpper

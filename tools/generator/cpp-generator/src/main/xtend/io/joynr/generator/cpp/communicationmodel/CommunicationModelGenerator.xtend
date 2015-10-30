@@ -21,7 +21,9 @@ import com.google.inject.Inject
 import io.joynr.generator.cpp.communicationmodel.qt.EnumHTemplate
 import io.joynr.generator.cpp.communicationmodel.qt.TypeCppTemplate
 import io.joynr.generator.cpp.communicationmodel.qt.TypeHTemplate
+import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.cpp.util.QtTypeUtil
 import io.joynr.generator.templates.util.NamingUtil
 import io.joynr.generator.templates.util.TypeUtil
 import io.joynr.generator.templates.util.InterfaceUtil
@@ -39,6 +41,12 @@ class CommunicationModelGenerator {
 
 	@Inject
 	private extension TypeUtil
+
+	@Inject
+	private QtTypeUtil qtTypeUtil
+
+	@Inject
+	private CppStdTypeUtil stdTypeUtil
 
 	@Inject
 	private extension NamingUtil
@@ -102,28 +110,28 @@ class CommunicationModelGenerator {
 
 				generateFile(
 					headerFileSystem,
-					headerpathQt + type.joynrNameQt + ".h",
+					headerpathQt + qtTypeUtil.getGenerationTypeName(type) + ".h",
 					typeH,
 					type
 				)
-				
+
 				generateFile(
 					sourceFileSystem,
-					sourcepathQt + type.joynrNameQt + ".cpp",
+					sourcepathQt + qtTypeUtil.getGenerationTypeName(type) + ".cpp",
 					typeCpp,
 					type
 				)
 
 				generateFile(
 					headerFileSystem,
-					headerpath + type.joynrName + ".h",
+					headerpath + stdTypeUtil.getGenerationTypeName(type) + ".h",
 					stdTypeH,
 					type
 				)
 
 				generateFile(
 					sourceFileSystem,
-					sourcepath + type.joynrName + ".cpp",
+					sourcepath + stdTypeUtil.getGenerationTypeName(type) + ".cpp",
 					stdTypeCpp,
 					type
 				)
@@ -144,11 +152,10 @@ class CommunicationModelGenerator {
 				headerFileSystem,
 				sourceFileSystem,
 				type as FEnumerationType,
-				headerpathQt + type.joynrNameQt + ".h",
-				headerpath + type.joynrName + ".h",
-				sourcepath + type.joynrName + ".cpp"
+				headerpathQt + qtTypeUtil.getGenerationTypeName(type) + ".h",
+				headerpath + stdTypeUtil.getGenerationTypeName(type) + ".h",
+				sourcepath + stdTypeUtil.getGenerationTypeName(type) + ".cpp"
 			);
-
 		}
 
 		val interfacePath = sourceContainerPath + "interfaces" + File::separator
@@ -193,10 +200,10 @@ class CommunicationModelGenerator {
 			if (enumType != null) {
 				enumType.name = methodToErrorEnumName.get(method);
 				val path = getPackagePathWithJoynrPrefix(enumType, File::separator)
-				val headerFilename = path + File::separator + enumType.joynrName + ".h"
+				val headerFilename = path + File::separator + stdTypeUtil.getGenerationTypeName(enumType) + ".h"
 				val sourceFilepath = dataTypePath + getPackageSourceDirectory(fInterface) + File::separator + fInterface.joynrName;
-				val sourceFilename = sourceFilepath + File::separator + enumType.joynrName + ".cpp"
-				val headerFilenameQt = path + File::separator + enumType.joynrNameQt + ".h"
+				val sourceFilename = sourceFilepath + File::separator + stdTypeUtil.getGenerationTypeName(enumType) + ".cpp"
+				val headerFilenameQt = path + File::separator + qtTypeUtil.getGenerationTypeName(enumType) + ".h"
 
 				generateEnum(
 					headerFileSystem,
