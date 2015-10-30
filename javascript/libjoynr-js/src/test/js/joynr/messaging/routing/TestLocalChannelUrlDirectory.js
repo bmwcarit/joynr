@@ -203,8 +203,9 @@ joynrTestRequire("joynr/messaging/routing/TestLocalChannelUrlDirectory", [
 
         it("caches urls locally", function() {
             var fulfilledSpy = jasmine.createSpy("fulfilledSpy");
-            globalChannelUrlDirectoryProxy.getUrlsForChannel.andReturn(Promise
-                    .resolve(channelUrlInformation));
+            globalChannelUrlDirectoryProxy.getUrlsForChannel.andReturn(Promise.resolve({
+                result : channelUrlInformation
+            }));
             runs(function() {
                 localChannelUrlDirectory.getUrlsForChannel({
                     channelId : channelId
@@ -238,8 +239,9 @@ joynrTestRequire("joynr/messaging/routing/TestLocalChannelUrlDirectory", [
         it("calls the global proxy if freshness has expired", function() {
             var spy = jasmine.createSpyObj("spy", [ "fulfilled"
             ]);
-            globalChannelUrlDirectoryProxy.getUrlsForChannel.andReturn(Promise
-                    .resolve(channelUrlInformation));
+            globalChannelUrlDirectoryProxy.getUrlsForChannel.andReturn(Promise.resolve({
+                result : channelUrlInformation
+            }));
             runs(function() {
                 localChannelUrlDirectory.getUrlsForChannel({
                     channelId : channelId

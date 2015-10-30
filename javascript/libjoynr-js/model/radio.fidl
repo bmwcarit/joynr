@@ -80,7 +80,7 @@ interface Radio {
 			String arg
 		}
 		out {
-			String return
+			String returnValue
 		}
 	}
 

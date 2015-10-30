@@ -253,7 +253,8 @@ joynrTestRequire(
                                                                     })
                                                         })
                                                 .then(
-                                                        function(discoveredStubs) {
+                                                        function(opArgs) {
+                                                            var discoveredStubs = opArgs.result;
                                                             var discoveryId;
                                                             if (discoveredStubs.length === 0) {
                                                                 resolve();
@@ -532,7 +533,8 @@ joynrTestRequire(
                                         radioProxy.addFavoriteStation({
                                             radioStation : "radioStation"
                                         }).then(
-                                                function(result) {
+                                                function(opArgs) {
+                                                    var result = opArgs.returnValue;
                                                     expect(result).toEqual(true);
                                                     joynr.capabilities.unregisterCapability(
                                                             "",
@@ -637,7 +639,8 @@ joynrTestRequire(
                                         radioProxy.addFavoriteStation({
                                             radioStation : "radioStation"
                                         }).then(
-                                                function(result) {
+                                                function(opArgs) {
+                                                    var result = opArgs.returnValue;
                                                     expect(result).toEqual(false);
                                                     IntegrationUtils.shutdownWebWorker(
                                                             providerWorkerId).then(function() {
@@ -718,7 +721,8 @@ joynrTestRequire(
                                                                     })
                                                         })
                                                 .then(
-                                                        function(discoveredStubs) {
+                                                        function(opArgs) {
+                                                            var discoveredStubs = opArgs.result;
                                                             expect(discoveredStubs.length).toEqual(
                                                                     1);
                                                             IntegrationUtils
@@ -738,7 +742,8 @@ joynrTestRequire(
                                                                                                 })
                                                                                         .then(
                                                                                                 function(
-                                                                                                        discoveredStubs) {
+                                                                                                        opArgs) {
+                                                                                                    var discoveredStubs = opArgs.result;
                                                                                                     discoveredEntries =
                                                                                                             discoveredStubs;
                                                                                                     expect(
@@ -807,7 +812,8 @@ joynrTestRequire(
                                                                             })
                                                                     .then(
                                                                             function(
-                                                                                    discoveredStubs) {
+                                                                                    opArgs) {
+                                                                                var discoveredStubs = opArgs.result;
                                                                                 expect(
                                                                                         discoveredStubs.length)
                                                                                         .toEqual(1);
@@ -841,7 +847,8 @@ joynrTestRequire(
                                                                                                                     })
                                                                                                             .then(
                                                                                                                     function(
-                                                                                                                            discoveredStubs) {
+                                                                                                                            opArgs) {
+                                                                                                                        var discoveredStubs = opArgs.result;
                                                                                                                         expect(
                                                                                                                                 discoveredStubs.length)
                                                                                                                                 .toEqual(
@@ -880,7 +887,8 @@ joynrTestRequire(
                                                                                                                                                                                 })
                                                                                                                                                                         .then(
                                                                                                                                                                                 function(
-                                                                                                                                                                                        discoveredStubs) {
+                                                                                                                                                                                        opArgs) {
+                                                                                                                                                                                    var discoveredStubs = opArgs.result;
                                                                                                                                                                                     expect(
                                                                                                                                                                                             discoveredStubs.length)
                                                                                                                                                                                             .toEqual(
@@ -993,7 +1001,8 @@ joynrTestRequire(
                                                     participantId : providerParticipantId
                                                 })
                                                 .then(
-                                                        function(success) {
+                                                        function(opArgs) {
+                                                            var success = opArgs.resolved;
                                                             expect(success).toBeFalsy();
                                                             joynr.proxyBuilder
                                                                     .build(RadioProxy, {
@@ -1034,7 +1043,8 @@ joynrTestRequire(
                                         routingProxy.resolveNextHop({
                                             participantId : providerParticipantId
                                         }).then(
-                                                function(success) {
+                                                function(opArgs) {
+                                                    var success = opArgs.resolved;
                                                     expect(success).toBeTruthy();
                                                     IntegrationUtils.shutdownWebWorker(
                                                             providerWorkerId).then(function() {
@@ -1057,7 +1067,8 @@ joynrTestRequire(
 
                                         routingProxy.resolveNextHop({
                                             participantId : testParticipantId
-                                        }).then(function(success) {
+                                        }).then(function(opArgs) {
+                                            var success = opArgs.resolved;
                                             expect(success).toBeFalsy();
                                             routingProxy.addNextHop({
                                                 participantId : testParticipantId,
@@ -1065,7 +1076,8 @@ joynrTestRequire(
                                             }).then(function() {
                                                 routingProxy.resolveNextHop({
                                                     participantId : testParticipantId
-                                                }).then(function(success) {
+                                                }).then(function(opArgs) {
+                                                    var success = opArgs.resolved;
                                                     expect(success).toBeTruthy();
                                                     routingProxy.removeNextHop({
                                                         participantId : testParticipantId
@@ -1090,7 +1102,8 @@ joynrTestRequire(
                                         });
                                         routingProxy.resolveNextHop({
                                             participantId : testParticipantId
-                                        }).then(function(success) {
+                                        }).then(function(opArgs) {
+                                            var success = opArgs.resolved;
                                             expect(success).toBeFalsy();
                                             routingProxy.addNextHop({
                                                 participantId : testParticipantId,
@@ -1098,7 +1111,8 @@ joynrTestRequire(
                                             }).then(function() {
                                                 routingProxy.resolveNextHop({
                                                     participantId : testParticipantId
-                                                }).then(function(success) {
+                                                }).then(function(opArgs) {
+                                                    var success = opArgs.resolved;
                                                     expect(success).toBeTruthy();
                                                     routingProxy.removeNextHop({
                                                         participantId : testParticipantId
@@ -1125,7 +1139,8 @@ joynrTestRequire(
 
                                         routingProxy.resolveNextHop({
                                             participantId : testParticipantId
-                                        }).then(function(success) {
+                                        }).then(function(opArgs) {
+                                            var success = opArgs.resolved;
                                             expect(success).toBeFalsy();
                                             routingProxy.addNextHop({
                                                 participantId : testParticipantId,
@@ -1133,7 +1148,8 @@ joynrTestRequire(
                                             }).then(function() {
                                                 routingProxy.resolveNextHop({
                                                     participantId : testParticipantId
-                                                }).then(function(success) {
+                                                }).then(function(opArgs) {
+                                                    var success = opArgs.resolved;
                                                     expect(success).toBeTruthy();
                                                     routingProxy.removeNextHop({
                                                         participantId : testParticipantId
@@ -1164,7 +1180,8 @@ joynrTestRequire(
                                                     participantId : testParticipantId
                                                 })
                                                 .then(
-                                                        function(success) {
+                                                        function(opArgs) {
+                                                            var success = opArgs.resolved;
                                                             expect(success).toBeFalsy();
                                                             routingProxy
                                                                     .addNextHop(
@@ -1181,7 +1198,8 @@ joynrTestRequire(
                                                                                                 })
                                                                                         .then(
                                                                                                 function(
-                                                                                                        success) {
+                                                                                                        opArgs) {
+                                                                                                    var success = opArgs.resolved;
                                                                                                     expect(
                                                                                                             success)
                                                                                                             .toBeTruthy();
@@ -1199,7 +1217,8 @@ joynrTestRequire(
                                                                                                                                         })
                                                                                                                                 .then(
                                                                                                                                         function(
-                                                                                                                                                success) {
+                                                                                                                                                opArgs) {
+                                                                                                                                            var success = opArgs.resolved;
                                                                                                                                             expect(
                                                                                                                                                     success)
                                                                                                                                                     .toBeFalsy();

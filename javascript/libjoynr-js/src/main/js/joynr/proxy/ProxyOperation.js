@@ -283,9 +283,6 @@ define(
                                             }
                                         }
 
-                                        if (foundValidOperationSignature.outputParameter.length === 1) {
-                                            return argumentValue[foundValidOperationSignature.outputParameter[0].name];
-                                        }
                                         return argumentValue;
                                     })
                                     .catch(

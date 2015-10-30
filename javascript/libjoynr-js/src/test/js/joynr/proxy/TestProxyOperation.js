@@ -277,7 +277,9 @@ joynrTestRequire(
                                                                     type : TestEnum.ZERO._typeName
                                                                 }],
                                                                 ["ZERO"],
-                                                                TestEnum.ZERO);
+                                                                {
+                                                                   returnEnum: TestEnum.ZERO
+                                                                });
                                     /*jslint nomen: false */
                                 });
 
@@ -312,7 +314,9 @@ joynrTestRequire(
                                                                     type : TestEnum.ZERO._typeName
                                                                 }],
                                                                 [["ZERO", "ONE"]],
-                                                                [TestEnum.ZERO, TestEnum.ONE]);
+                                                                {
+                                                                    returnEnum : [TestEnum.ZERO, TestEnum.ONE]
+                                                                });
                                     /*jslint nomen: false */
                                 });
 

@@ -171,7 +171,8 @@ function registerMethodHandlers(radioProxy) {
             })
         };
 
-        radioProxy.addFavoriteStation(operationArguments).then(function(success) {
+        radioProxy.addFavoriteStation(operationArguments).then(function(opArgs) {
+            var success = opArgs.success;
             log(
                     "radioProxy.addFavoriteStation.done",
                     JSON.stringify(operationArguments) + " -> " + JSON.stringify(success)
