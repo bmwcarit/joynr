@@ -388,7 +388,9 @@ joynrTestRequire(
                                     // register operation functions
                                     radioProvider.addFavoriteStation.registerOperation(function(
                                             opArgs) {
-                                        return true;
+                                        return {
+                                            returnValue : true
+                                        };
                                     });
 
                                     // register operation function "operationWithEnumsAsInputAndOutput"
@@ -400,7 +402,9 @@ joynrTestRequire(
                                         if (opArgs.enumArrayInput.length !== 0) {
                                             returnValue = opArgs.enumArrayInput[0];
                                         }
-                                        return returnValue;
+                                        return {
+                                            enumOutput : returnValue
+                                        };
                                     });
 
                                     // register operation function "operationWithMultipleOutputParameters"
@@ -428,12 +432,16 @@ joynrTestRequire(
                                         if (opArgs.enumInput !== undefined) {
                                             returnValue.push(opArgs.enumInput);
                                         }
-                                        return returnValue;
+                                        return {
+                                            enumOutput : returnValue
+                                        };
                                     });
 
                                     radioProvider.methodProvidedImpl.registerOperation(function(
                                             opArgs) {
-                                        return opArgs.arg + "response";
+                                        return {
+                                            returnValue : opArgs.arg + "response"
+                                        };
                                     });
 
                                     radioProvider.triggerBroadcasts.registerOperation(function() {

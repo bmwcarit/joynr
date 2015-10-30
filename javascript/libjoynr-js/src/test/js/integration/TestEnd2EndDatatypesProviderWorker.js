@@ -121,13 +121,19 @@ function initializeTest(provisioningSuffix) {
 
             // registering operation functions
             datatypesProvider.getJavascriptType.registerOperation(function(opArgs) {
-                return getObjectType(opArgs.arg);
+                return {
+                    javascriptType: getObjectType(opArgs.arg)
+                };
             });
             datatypesProvider.getArgumentBack.registerOperation(function(opArgs) {
-                return opArgs.arg;
+                return {
+                    returnValue : opArgs.arg
+                };
             });
             datatypesProvider.multipleArguments.registerOperation(function(opArgs) {
-                return JSON.stringify(opArgs);
+                return {
+                    serialized : JSON.stringify(opArgs)
+                };
             });
 
             // register provider at the given domain

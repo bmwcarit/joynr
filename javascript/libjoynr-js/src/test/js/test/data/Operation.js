@@ -106,7 +106,9 @@ define("test/data/Operation", [
             namedArguments : {},
             paramDatatypes : [],
             params : [],
-            returnValue : true,
+            returnValue : {
+                bool: true
+            },
             returnParams : [ true
             ]
         },
@@ -122,7 +124,9 @@ define("test/data/Operation", [
             namedArguments : {},
             paramDatatypes : [],
             params : [],
-            returnValue : 123,
+            returnValue : {
+                int: 123
+            },
             returnParams : [ 123
             ]
         },
@@ -138,7 +142,9 @@ define("test/data/Operation", [
             namedArguments : {},
             paramDatatypes : [],
             params : [],
-            returnValue : radioStationVar,
+            returnValue : {
+                radioStation: radioStationVar
+            },
             returnParams : [ radioStationVar
             ]
         },

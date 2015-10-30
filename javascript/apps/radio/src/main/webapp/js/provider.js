@@ -159,7 +159,9 @@ var RadioProviderImpl =
                                     stationsList.push(opArgs.newFavoriteStation);
 
                                     showFavoriteStationsInHtml(stationsList);
-                                    resolve(true);
+                                    resolve({
+                                        success : true
+                                    });
                                 }
                             }
                         });

@@ -100,9 +100,6 @@ define(
                 if (outputParameter.length === 0) {
                     return [];
                 }
-                if (outputParameter.length === 1) {
-                    return [returnValue];
-                }
                 /*
                  * In case of multiple output parameters, we expect that the provider returns a key-value-pair
                  */
