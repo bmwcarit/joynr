@@ -23,6 +23,7 @@ import java.util.HashMap
 import java.util.HashSet
 import org.franca.core.franca.FArgument
 import org.franca.core.franca.FMethod
+import org.franca.core.franca.FEnumerationType
 
 @Singleton
 public class MethodUtil {
@@ -99,6 +100,15 @@ public class MethodUtil {
 
 	def boolean hasErrorEnum(FMethod method) {
 		return (method.errors != null) || (method.errorEnum != null);
+	}
+
+	def boolean hasEnumInputParameter(FMethod method) {
+		for (inputParameter : getInputParameters(method).filterNull) {
+			if (getDatatype(inputParameter.type) instanceof FEnumerationType) {
+				return true;
+			};
+		}
+		return false
 	}
 
 	/**

@@ -313,6 +313,15 @@ public class InterfaceUtil {
 		return hasMethodWithImplicitErrorEnum(interfaceType);
 	}
 
+	def boolean hasMethodWithEnumInputParameter(FInterface interfaceType) {
+		for (method : interfaceType.methods) {
+			if (method.hasEnumInputParameter) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	def boolean hasMethodWithArguments(FInterface interfaceType){
 		for(method: interfaceType.methods){
 			if (getInputParameters(method).size>0){
