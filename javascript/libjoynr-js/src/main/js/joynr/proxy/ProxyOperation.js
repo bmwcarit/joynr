@@ -74,7 +74,7 @@ define(
                 try {
                     result.signature = {
                         inputParameter : MethodUtil.transformParameterMapToArray(operationArguments, operationSignature.inputParameter),
-                        outputParameter : operationSignature.outputParameter || {}
+                        outputParameter : operationSignature.outputParameter || []
                     };
                 } catch (error) {
                     result.errorMessage = error.message;
@@ -266,11 +266,11 @@ define(
                             })
                             .then(
                                     function(response) {
-                                        var responseKey;
+                                        var responseKey, argumentValue = {};
                                         for (responseKey in response) {
                                             if (response.hasOwnProperty(responseKey)) {
                                                 if (foundValidOperationSignature.outputParameter[responseKey] !== undefined) {
-                                                    response[responseKey] =
+                                                    argumentValue[foundValidOperationSignature.outputParameter[responseKey].name] =
                                                         Typing
                                                         .augmentTypes(
                                                                 response[responseKey],
@@ -282,8 +282,11 @@ define(
                                                 }
                                             }
                                         }
-                                        
-                                        return response[0];
+
+                                        if (foundValidOperationSignature.outputParameter.length === 1) {
+                                            return argumentValue[foundValidOperationSignature.outputParameter[0].name];
+                                        }
+                                        return argumentValue;
                                     })
                                     .catch(
                                             function(error) {

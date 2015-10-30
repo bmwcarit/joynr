@@ -238,7 +238,7 @@ joynrTestRequire(
 
                            requestReplyManagerSpy.sendRequest.andReturn(Promise.resolve(replyResponse));
 
-                           var testMethodHavingEnumAsReturnValue = new ProxyOperation(proxy, {
+                           var testMethod = new ProxyOperation(proxy, {
                                dependencies : {
                                    requestReplyManager : requestReplyManagerSpy
                                }
@@ -251,7 +251,7 @@ joynrTestRequire(
                            ]).buildFunction();
 
                            runs(function() {
-                               testMethodHavingEnumAsReturnValue().then(spy.onFulfilled).catch(spy.onRejected);
+                               testMethod().then(spy.onFulfilled).catch(spy.onRejected);
                            });
 
                            waitsFor(function() {
@@ -278,6 +278,26 @@ joynrTestRequire(
                                                                 }],
                                                                 ["ZERO"],
                                                                 TestEnum.ZERO);
+                                    /*jslint nomen: false */
+                                });
+
+                        it(
+                                "expect multiple return values",
+                                function() {
+                                    /*jslint nomen: true */
+                                    testForCorrectReturnValues("testMultipleReturnValues",
+                                                                [ {
+                                                                    name : "returnEnum",
+                                                                    type : TestEnum.ZERO._typeName
+                                                                }, {
+                                                                    name : "returnString",
+                                                                    type : String
+                                                                }],
+                                                                ["ZERO", "stringValue"],
+                                                                {
+                                                                    returnEnum : TestEnum.ZERO,
+                                                                    returnString : "stringValue"
+                                                                });
                                     /*jslint nomen: false */
                                 });
 
