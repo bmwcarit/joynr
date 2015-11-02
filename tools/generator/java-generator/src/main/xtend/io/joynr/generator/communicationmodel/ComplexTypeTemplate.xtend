@@ -53,6 +53,8 @@ import java.util.List;
 import java.util.ArrayList;
 import com.google.common.collect.Lists;
 «ENDIF»
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 // NOTE: serialVersionUID is not defined since we don't support Franca versions right now.
 //       The compiler will generate a serialVersionUID based on the class and its members
@@ -66,6 +68,7 @@ import com.google.common.collect.Lists;
 public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «complexType.extendedType.typeName»«ENDIF» implements Serializable, JoynrType {
 	«FOR member : getMembers(complexType)»
 	«val memberType = member.typeName.replace("::","__")»
+	@JsonProperty("«member.joynrName»")
 	«IF isArray(member)»
 	private «memberType» «member.joynrName» = Lists.newArrayList();
 	«ELSE»
@@ -150,6 +153,7 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «com
 	 *
 	 * @return «appendJavadocComment(member, "* ")»
 	 */
+	@JsonIgnore
 	public «memberType» get«memberName.toFirstUpper»() {
 		return this.«member.joynrName»;
 	}
@@ -159,6 +163,7 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «com
 	 *
 	 «appendJavadocParameter(member, "*")»
 	 */
+	@JsonIgnore
 	public void set«memberName.toFirstUpper»(«memberType» «member.joynrName») {
 		this.«member.joynrName» = «member.joynrName»;
 	}
