@@ -67,7 +67,7 @@ RUN cd /opt \
 ###################################################
 WORKDIR /opt
 
-ENV MAVEN_VERSION=3.2.5
+ENV MAVEN_VERSION=3.3.3
 RUN wget http://mirror.serversupportforum.de/apache/maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz \
 	&& tar -xf apache-maven-${MAVEN_VERSION}-bin.tar.gz \
 	&& rm apache-maven-${MAVEN_VERSION}-bin.tar.gz \

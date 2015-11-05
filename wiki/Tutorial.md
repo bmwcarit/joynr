@@ -414,7 +414,8 @@ The radio app can be run in all combinations of consumer and provider: java-java
 and cpp-java.
 
 ### Prerequisite
-You need to have Maven installed. Joynr is tested with Maven 3.2.5, but more recent versions should also work here.
+You need to have Maven installed. Joynr is tested with Maven 3.3.3,
+but more recent versions should also work here.
 
 For both, consumer and provider, the backend (Bounceproxy and Discovery) has to be started first.
 
