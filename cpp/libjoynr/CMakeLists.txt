@@ -22,7 +22,13 @@ set(
 )
 
 set(
+    JoynrLib_SYS_INCLUDE_DIRS
+    ${libwebsockets_INCLUDE_DIRS}
+)
+
+set(
     JoynrLib_TARGET_LIBRARIES
+    ${libwebsockets_LIBRARIES}
     JoynrCommon
     jsonserializer
     Qt5::Core
@@ -33,7 +39,6 @@ set(
     JoynrLib_EXPORT_HEADER
     "include/joynr/JoynrExport.h"
 )
-
 
 file(
     GLOB_RECURSE JoynrLib_PUBLIC_HEADERS
@@ -60,7 +65,6 @@ file(
     "LibjoynrSettings.h"
     "JsonExceptionSerializer.h"
 )
-
 
 set(
     JoynrLib_HEADERS
@@ -120,12 +124,19 @@ include_directories(
     ${JoynrLib_INCLUDE_DIRECTORIES}
 )
 
+include_directories(
+    SYSTEM
+    ${JoynrLib_SYS_INCLUDE_DIRS}
+)
+
 add_library(
     Joynr
     SHARED
     ${JoynrLib_HEADERS}
     ${JoynrLib_SOURCES}
 )
+
+add_dependencies(Joynr libwebsockets)
 
 AddClangFormat(Joynr)
 

@@ -380,6 +380,42 @@ endif(${WIN32})
 
 include(AddExternalProject)
 
+### Add libwebsockets ###########################################################
+AddExternalProject(
+    libwebsockets
+    GIT_REPOSITORY https://github.com/warmcat/libwebsockets
+    TIMEOUT 10
+    # Disable svn update
+    UPDATE_COMMAND ""
+    # Configure libwebsockets library features
+    CMAKE_ARGS  -DLWS_WITH_SSL=0
+                -DLWS_WITHOUT_CLIENT=0
+                -DLWS_WITHOUT_SERVER=0
+                -DLWS_WITHOUT_EXTENSIONS=1
+                -DLWS_WITHOUT_TESTAPPS=1
+                -DLWS_WITHOUT_TEST_SERVER=1
+                -DLWS_WITHOUT_TEST_SERVER_EXTPOLL=1
+                -DLWS_WITHOUT_TEST_PING=1
+                -DLWS_WITHOUT_TEST_CLIENT=1
+                -DLWS_WITH_ZLIB=OFF
+                -DLWS_WITHOUT_TEST_FRAGGLE=1
+                -DCMAKE_INSTALL_PREFIX=${CMAKE_SOURCE_DIR}
+                -DCMAKE_POSITION_INDEPENDENT_CODE=1
+    BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/ThirdParty/src/libwebsockets-build/lib/libwebsockets.a
+)
+
+ExternalProject_Get_Property(libwebsockets SOURCE_DIR)
+ExternalProject_Get_Property(libwebsockets BINARY_DIR)
+
+set(libwebsockets_LIBRARIES ${BINARY_DIR}/lib/libwebsockets.a )
+set(libwebsockets_INCLUDE_DIRS
+    ${SOURCE_DIR}/lib
+    ${BINARY_DIR}
+)
+
+message(STATUS "variable libwebsockets_LIBRARIES=${libwebsockets_LIBRARIES}")
+message(STATUS "variable libwebsockets_INCLUDE_DIRS=${libwebsockets_INCLUDE_DIRS}")
+
 message(STATUS "variable CURL_FOUND=" ${CURL_FOUND})
 message(STATUS "variable CURL_VERSION_STRING=" ${CURL_VERSION_STRING})
 message(STATUS "variable CURL_INCLUDE_DIRS=" ${CURL_INCLUDE_DIRS})
