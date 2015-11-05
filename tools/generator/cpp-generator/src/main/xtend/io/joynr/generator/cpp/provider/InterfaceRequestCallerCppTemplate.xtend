@@ -120,15 +120,17 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 				«val errorTypeName = packagePath + "::" + methodToErrorEnumName.get(method)»
 				std::function<void (const «errorTypeName»::«nestedEnumName»&)> onErrorWrapper =
 						[onError] (const «errorTypeName»::«nestedEnumName»& errorEnum) {
-							(void)onError;
-						};
+							std::string typeName = «errorTypeName»::getTypeName();
+							std::string name = «errorTypeName»::getLiteral(errorEnum);
 			«ELSE»
-				«val errorTypeName = method.errorEnum.typeName»
-				std::function<void (const «errorTypeName»&)> onErrorWrapper =
-						[onError] (const «errorTypeName»& errorEnum) {
-							(void)onError;
-						};
+				«val errorTypeName = buildPackagePath(method.errorEnum, "::", true) + method.errorEnum.joynrName»
+				std::function<void (const «errorTypeName»::«nestedEnumName»&)> onErrorWrapper =
+						[onError] (const «errorTypeName»::«nestedEnumName»& errorEnum) {
+							std::string typeName = «errorTypeName»::getTypeName();
+							std::string name = «errorTypeName»::getLiteral(errorEnum);
 			«ENDIF»
+						onError(exceptions::ApplicationException(name, errorEnum, name, typeName));
+					};
 		«ELSE»
 		std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onErrorWrapper =
 				[onError] (const joynr::exceptions::ProviderRuntimeException& error) {

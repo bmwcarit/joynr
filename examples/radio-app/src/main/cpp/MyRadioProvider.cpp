@@ -98,12 +98,22 @@ void MyRadioProvider::addFavoriteStation(
                 onError)
 {
     QMutexLocker locker(&mutex);
-    (void)onError;
-    MyRadioHelper::prettyLog(
-            logger,
-            QString("addFavoriteStation(%1)").arg(QString::fromStdString(radioStation.toString())));
-    stationsList.append(radioStation);
-    onSuccess(true);
+
+    bool duplicateFound = false;
+    for (joynr::vehicle::RadioStation station : stationsList) {
+        if (!duplicateFound && station.getName() == radioStation.getName()) {
+            duplicateFound = true;
+            onError(joynr::vehicle::Radio::AddFavoriteStationErrorEnum::DUPLICATE_RADIOSTATION);
+            break;
+        }
+    }
+    if (!duplicateFound) {
+        MyRadioHelper::prettyLog(logger,
+                                 QString("addFavoriteStation(%1)")
+                                         .arg(QString::fromStdString(radioStation.toString())));
+        stationsList.append(radioStation);
+        onSuccess(true);
+    }
 }
 
 void MyRadioProvider::getLocationOfCurrentStation(

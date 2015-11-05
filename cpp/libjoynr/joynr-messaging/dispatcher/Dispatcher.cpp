@@ -195,11 +195,11 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
                     const exceptions::JoynrException& exception) {
         Reply reply;
         reply.setRequestReplyId(requestReplyId);
-        /*
-         * TODO: add error to the reply object
-         * reply.setError(exception);
-         */
-        (void)exception;
+        std::shared_ptr<exceptions::JoynrException> error;
+        // TODO This clone is a workaround which must be removed after the new serializer has been
+        // introduced and the reply object has been refactored
+        error.reset(exception.clone());
+        reply.setError(error);
         LOG_DEBUG(logger,
                   QString("Got error reply from RequestInterpreter for requestReplyId %1")
                           .arg(requestReplyId));

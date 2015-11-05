@@ -291,6 +291,22 @@ int main(int argc, char* argv[])
     MyRadioHelper::prettyLog(logger,
                              QString("METHOD: added favorite station: %1")
                                      .arg(QString::fromStdString(favoriteStation.toString())));
+    try {
+        proxy->addFavoriteStation(success, favoriteStation);
+    } catch (exceptions::ApplicationException& e) {
+        if (e.getError() ==
+            joynr::vehicle::Radio::AddFavoriteStationErrorEnum::DUPLICATE_RADIOSTATION) {
+            MyRadioHelper::prettyLog(
+                    logger,
+                    QString("METHOD: add favorite station a second time failed with the following "
+                            "expected exception: %1").arg(QString::fromStdString(e.getName())));
+        } else {
+            MyRadioHelper::prettyLog(
+                    logger,
+                    QString("METHOD: add favorite station a second time failed with the following "
+                            "UNEXPECTED exception: %1").arg(QString::fromStdString(e.getName())));
+        }
+    }
 
     // shuffle the stations
     MyRadioHelper::prettyLog(logger, QString("METHOD: calling shuffle stations"));
