@@ -213,7 +213,7 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
     // execute request
     try {
         requestInterpreter->execute(caller,
-                                    request->getMethodName(),
+                                    request->getMethodName().toStdString(),
                                     request->getParams(),
                                     request->getParamDatatypes(),
                                     onSuccess,

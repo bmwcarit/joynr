@@ -49,6 +49,7 @@ class InterfaceRequestInterpreterHTemplate implements InterfaceTemplate{
 
 #include <QVariant>
 #include <memory>
+#include <string>
 
 «getNamespaceStarter(serviceInterface)»
 
@@ -73,7 +74,7 @@ public:
 	 * @param onError A callback function to be called once the asynchronous computation fails. It must expect the exception.
 	 */
 	void execute(std::shared_ptr<joynr::RequestCaller> requestCaller,
-					 const QString& methodName,
+					 const std::string& methodName,
 					 const QList<QVariant>& paramValues,
 					 const QList<QVariant>& paramTypes,
 					 std::function<void (const QList<QVariant>& outParams)> onSuccess,

@@ -973,7 +973,7 @@ void PublicationManager::pollSubscription(const QString& subscriptionId)
         LOG_DEBUG(logger, QString("run: executing requestInterpreter= %1").arg(attributeGetter));
         try {
             requestInterpreter->execute(requestCaller,
-                                        attributeGetter,
+                                        attributeGetter.toStdString(),
                                         QList<QVariant>(),
                                         QList<QVariant>(),
                                         onSuccess,

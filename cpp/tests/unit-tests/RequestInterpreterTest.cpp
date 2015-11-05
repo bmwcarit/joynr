@@ -68,7 +68,7 @@ TEST_F(RequestInterpreterTest, execute_callsMethodOnRequestCaller) {
 
     std::function<void(const QVariant& response)> onSuccess = [] (const QVariant& response) {};
     std::function<void(const exceptions::JoynrException& exception)> onError = [] (const exceptions::JoynrException& exception) {};
-    interpreter.execute(mockCaller, methodName, paramValues, paramDatatypes, onSuccess, onError);
+    interpreter.execute(mockCaller, methodName.toStdString(), paramValues, paramDatatypes, onSuccess, onError);
 }
 
 

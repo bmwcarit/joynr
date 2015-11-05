@@ -21,6 +21,7 @@
 
 #include <functional>
 #include <memory>
+#include <string>
 #include <QVariant>
 #include <QMap>
 #include "joynr/exceptions/JoynrException.h"
@@ -46,7 +47,7 @@ public:
       */
     virtual void execute(
             std::shared_ptr<RequestCaller> requestCaller,
-            const QString& methodName,
+            const std::string& methodName,
             const QList<QVariant>& paramValues,
             const QList<QVariant>& paramTypes,
             std::function<void(const QList<QVariant>& outParams)> onSuccess,
