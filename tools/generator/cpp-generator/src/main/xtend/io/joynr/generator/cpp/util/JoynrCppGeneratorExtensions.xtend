@@ -166,12 +166,19 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 
 	// Convert a data type declaration into a string giving the typename
 	def String getJoynrTypeName(FTypedElement element) {
+		var typeName = getJoynrBaseTypeName(element)
+		if (isArray(element)) {
+			typeName += "[]"
+		}
+		return typeName
+	}
+
+	private def String getJoynrBaseTypeName(FTypedElement element) {
 		val datatypeRef = element.type;
 		val datatype = datatypeRef.derived;
 		val predefined = datatypeRef.predefined;
 
 		switch datatype {
-		case isArray(element)     : "List"
 		case isEnum(datatypeRef)  : buildPackagePath(datatype, ".", true) +
 									datatype.joynrName
 		case isString(predefined) : "String"
