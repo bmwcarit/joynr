@@ -31,7 +31,9 @@
 #include <tuple>
 #include <type_traits>
 #include <utility>
+#include <vector>
 #include "joynr/exceptions/JoynrException.h"
+#include "joynr/Variant.h"
 
 namespace joynr
 {
@@ -127,6 +129,19 @@ public:
             ret.append(q.value<T>());
         }
         return ret;
+    }
+
+    template <class T>
+    static std::vector<T> convertVariantVectorToVector(const std::vector<Variant>& variantVector)
+    {
+        std::vector<T> typeVector;
+
+        for (Variant variant : variantVector) {
+            assert(variant.is<T>());
+            typeVector.push_back(variant.get<T>());
+        }
+
+        return typeVector;
     }
 
     template <class T>
