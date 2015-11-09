@@ -83,19 +83,19 @@ void Request::setParams(const QList<QVariant>& params)
     this->params = params;
 }
 
-void Request::addParam(QVariant value, QString datatype)
+void Request::addParam(QVariant value, std::string datatype)
 {
     this->params.append(value);
-    this->paramDatatypes.append(datatype.toStdString());
+    this->paramDatatypes.push_back(datatype);
 }
 
-QList<std::string> Request::getParamDatatypes() const
+std::vector<std::string> Request::getParamDatatypes() const
 {
     return paramDatatypes;
 }
 
 // Set the parameter datatypes - called by the QJson deserializer
-void Request::setParamDatatypes(const QList<std::string>& paramDatatypes)
+void Request::setParamDatatypes(const std::vector<std::string>& paramDatatypes)
 {
     this->paramDatatypes = paramDatatypes;
 }

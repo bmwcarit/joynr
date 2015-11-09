@@ -26,6 +26,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace joynr
 {
@@ -37,7 +38,8 @@ class JOYNRCOMMON_EXPORT Request : public QObject
     Q_PROPERTY(std::string requestReplyId READ getRequestReplyId WRITE setRequestReplyId)
     Q_PROPERTY(std::string methodName READ getMethodName WRITE setMethodName)
     Q_PROPERTY(QList<QVariant> params READ getParams WRITE setParams)
-    Q_PROPERTY(QList<std::string> paramDatatypes READ getParamDatatypes WRITE setParamDatatypes)
+    Q_PROPERTY(std::vector<std::string> paramDatatypes READ getParamDatatypes WRITE
+                       setParamDatatypes)
 
 public:
     Request();
@@ -55,10 +57,10 @@ public:
     QList<QVariant> getParams() const;
     void setParams(const QList<QVariant>& params);
 
-    void addParam(QVariant value, QString datatype);
+    void addParam(QVariant value, std::string datatype);
 
-    QList<std::string> getParamDatatypes() const;
-    void setParamDatatypes(const QList<std::string>& paramDatatypes);
+    std::vector<std::string> getParamDatatypes() const;
+    void setParamDatatypes(const std::vector<std::string>& paramDatatypes);
 
 private:
     static QVariant parameterType(const QVariant& param);
@@ -66,7 +68,7 @@ private:
     std::string requestReplyId;
     std::string methodName;
     QList<QVariant> params;
-    QList<std::string> paramDatatypes;
+    std::vector<std::string> paramDatatypes;
 };
 
 } // namespace joynr

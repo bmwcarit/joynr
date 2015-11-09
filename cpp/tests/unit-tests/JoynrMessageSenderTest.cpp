@@ -24,6 +24,7 @@
 #include "utils/TestQString.h"
 #include "utils/QThreadSleep.h"
 #include <string>
+#include <vector>
 
 
 #include "joynr/IDispatcher.h"
@@ -101,9 +102,9 @@ TEST_F(JoynrMessageSenderTest, sendRequest_normal){
     params.append(42);
     params.append("value");
     request.setParams(params);
-    QList<std::string> paramDatatypes;
-    paramDatatypes.append("java.lang.Integer");
-    paramDatatypes.append("java.lang.String");
+    std::vector<std::string> paramDatatypes;
+    paramDatatypes.push_back("java.lang.Integer");
+    paramDatatypes.push_back("java.lang.String");
     request.setParamDatatypes(paramDatatypes);
 
     JoynrMessage message = messageFactory.createRequest(

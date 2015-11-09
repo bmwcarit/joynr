@@ -28,6 +28,7 @@
 #include "joynr/SubscriptionCallback.h"
 #include "QString"
 #include <string>
+#include <vector>
 #include "joynr/JoynrMessageFactory.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
@@ -128,7 +129,7 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
     request.setRequestReplyId(requestReplyId);
     request.setMethodName("getLocation");
     request.setParams(QList<QVariant>());
-    request.setParamDatatypes(QList<std::string>());
+    request.setParamDatatypes(std::vector<std::string>());
 
 
     JoynrMessage msg = messageFactory.createRequest(
