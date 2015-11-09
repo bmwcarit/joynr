@@ -46,6 +46,7 @@ class StdEnumCppTemplate implements EnumTemplate {
 «getDllExportIncludeStatement()»
 
 #include "«type.includeOf»"
+#include <sstream>
 
 «getNamespaceStarter(type, true)»
 
@@ -61,14 +62,15 @@ std::string «typeName»::getLiteral(«typeName»::«getNestedEnumName()» «typ
 	return literal;
 }
 
-«typeName»::«getNestedEnumName()»
-«typeName»::getEnum(std::string «typeName.toFirstLower»String) {
+«typeName»::«getNestedEnumName()» «typeName»::getEnum(std::string «typeName.toFirstLower»String) {
 	«FOR literal : getEnumElementsAndBaseEnumElements(type)»
 		if («typeName.toFirstLower»String == std::string("«literal.joynrName»")) {
 			return «literal.joynrName»;
 		}
 	«ENDFOR»
-	throw "No enum value found";
+	std::stringstream errorMessage(«typeName.toFirstLower»String);
+    errorMessage << " is unknown literal for «type.joynrName»";
+    throw std::invalid_argument(errorMessage.str());
 }
 
 std::string «typeName»::getTypeName() {

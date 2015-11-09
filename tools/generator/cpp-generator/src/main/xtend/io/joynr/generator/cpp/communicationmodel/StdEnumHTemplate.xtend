@@ -42,6 +42,7 @@ class StdEnumHTemplate implements EnumTemplate {
 	override generate(FEnumerationType type)
 '''
 «val typeName = type.joynrName»
+«val namespaceName = (getPackagePathWithJoynrPrefix(type, "::", true))»
 «val headerGuard = (getPackagePathWithJoynrPrefix(type, "_", true)+"_"+typeName+"_h").toUpperCase»
 «warning»
 #ifndef «headerGuard»
@@ -51,6 +52,8 @@ class StdEnumHTemplate implements EnumTemplate {
 #include <cstdint>
 #include <ostream>
 #include <string>
+#include "joynr/Util.h"
+#include "joynr/Variant.h"
 
 «IF type.hasExtendsDeclaration»
 	#include "«type.extendedType.includeOf»"
@@ -129,6 +132,20 @@ struct «getDllExportMacro()»«typeName» {
 void PrintTo(const «typeName»::«getNestedEnumName()»& «typeName.toFirstLower»Value, ::std::ostream* os);
 
 «getNamespaceEnder(type, true)»
+
+namespace «joynrGenerationPrefix» {
+
+template <>
+inline «type.typeName» joynr::Util::valueOf<«namespaceName+"::"+typeName»>(const Variant& variant)
+{
+  return «joynrGenerationPrefix»::Util::convertVariantToEnum<«namespaceName+"::"+typeName»>(variant);
+}
+
+/**template <>
+inline QList<«typeName»> joynr::Util::valueOf<QList<«typeName»>>(const QVariant& variant){
+   return «joynrGenerationPrefix»::Util::convertVariantListToEnumList<«typeName»>(variant.value<QVariantList>());
+}**/
+}
 
 namespace std {
 // Function object that implements a hash function for «type.buildPackagePath("::", true)»«typeName».

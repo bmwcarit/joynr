@@ -86,6 +86,13 @@ public:
         return static_cast<typename T::Enum>(metaEnum.keyToValue(v.toString().toLatin1().data()));
     }
 
+    template <typename T>
+    static typename T::Enum convertVariantToEnum(const Variant& v)
+    {
+        std::string enumValueName = v.get<std::string>();
+        return T::getEnum(enumValueName);
+    }
+
     template <class T>
     static QList<QVariant> convertEnumListToVariantList(const QList<typename T::Enum>& enumList)
     {
@@ -106,6 +113,31 @@ public:
             enumList.append(convertVariantToEnum<T>(v));
         }
         return enumList;
+    }
+
+    template <typename T>
+    static std::vector<typename T::Enum> convertVariantVectorToEnumVector(
+            const std::vector<Variant> variantVector)
+    {
+        std::vector<typename T::Enum> enumVector;
+        for (const Variant& variant : variantVector) {
+            if (variant.is<std::string>()) {
+                std::string enumValueName = variant.get<std::string>();
+                enumVector.push_back(T::getEnum(enumValueName));
+            }
+        }
+        return enumVector;
+    }
+
+    template <typename T>
+    static std::vector<Variant> convertEnumVectorToVariantVector(
+            const std::vector<typename T::Enum> enumVector)
+    {
+        std::vector<Variant> variantVector;
+        for (const typename T::Enum& enumValue : enumVector) {
+            variantVector.push_back(Variant::make<typename T::Enum>(enumValue));
+        }
+        return variantVector;
     }
 
     template <class T>
@@ -197,6 +229,12 @@ public:
     template <typename T>
     static T valueOf(const QVariant& variant);
 
+    template <typename T>
+    static T valueOf(const Variant& variant);
+
+    template <typename T>
+    static typename T::Enum valueOf(const Variant& variant);
+
     template <int TupleSize>
     struct ExpandTupleIntoFunctionArguments
     {
@@ -236,7 +274,7 @@ public:
     }
 
     template <typename... Ts>
-    static std::tuple<Ts...> toValueTuple(std::vector<QVariant> list);
+    static std::tuple<Ts...> toValueTuple(std::vector<Variant> list);
 
     template <typename... Ts>
     static std::tuple<Ts...> toValueTuple(QList<QVariant> list);
@@ -252,7 +290,7 @@ private:
     }
 
     template <typename T, typename... Ts>
-    static std::tuple<T, Ts...> toValueTuple_split(std::vector<QVariant> list)
+    static std::tuple<T, Ts...> toValueTuple_split(std::vector<Variant> list)
     {
         T value = valueOf<T>(list.front());
         list.erase(list.begin());
@@ -274,6 +312,12 @@ template <typename T>
 inline T Util::valueOf(const QVariant& variant)
 {
     return variant.value<T>();
+}
+
+template <typename T>
+inline T Util::valueOf(const Variant& variant)
+{
+    return variant.get<T>();
 }
 
 // concrete specilization for lists of primitive datatypes
@@ -347,7 +391,7 @@ struct Util::ExpandTupleIntoFunctionArguments<0>
 };
 
 template <typename... Ts>
-inline std::tuple<Ts...> Util::toValueTuple(std::vector<QVariant> list)
+inline std::tuple<Ts...> Util::toValueTuple(std::vector<Variant> list)
 {
     return toValueTuple_split<Ts...>(list);
 }
@@ -359,7 +403,7 @@ inline std::tuple<Ts...> Util::toValueTuple(QList<QVariant> list)
 }
 
 template <>
-inline std::tuple<> Util::toValueTuple<>(std::vector<QVariant> list)
+inline std::tuple<> Util::toValueTuple<>(std::vector<Variant> list)
 {
     assert(list.empty());
     Q_UNUSED(list);
