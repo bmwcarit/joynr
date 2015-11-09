@@ -243,7 +243,7 @@ TEST_F(JoynrMessageFactoryTest, testRequestContentType){
     Request request;
     QVariantList params;
     params.append("test");
-    request.setMethodName(QString("methodName"));
+    request.setMethodName("methodName");
     request.setParams(params);
 
     JoynrMessage message = messageFactory.createRequest(

@@ -102,7 +102,7 @@ public:
     }
 
     void SetUp(){
-        request.setMethodName(QString::fromStdString(TEST_OPERATION));
+        request.setMethodName(TEST_OPERATION);
         messagingQos = MessagingQos(5000);
         message = messageFactory.createRequest(QString::fromStdString(fromParticipantId),
                                      QString::fromStdString(toParticipantId),

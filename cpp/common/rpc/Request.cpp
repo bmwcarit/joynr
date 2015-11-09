@@ -62,12 +62,12 @@ void Request::setRequestReplyId(const std::string& requestReplyId)
     this->requestReplyId = requestReplyId;
 }
 
-const QString& Request::getMethodName() const
+const std::string& Request::getMethodName() const
 {
     return methodName;
 }
 
-void Request::setMethodName(const QString& methodName)
+void Request::setMethodName(const std::string& methodName)
 {
     this->methodName = methodName;
 }

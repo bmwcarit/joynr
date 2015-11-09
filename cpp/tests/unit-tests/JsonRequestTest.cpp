@@ -111,7 +111,7 @@ public:
 
 protected:
     QList<QString> list;
-    QString operationName;
+    std::string operationName;
     QString arg1;
     QString arg2;
     QString arg3;

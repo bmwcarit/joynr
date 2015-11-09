@@ -71,7 +71,7 @@ public:
                         _, // sender participant ID
                         Eq(providerParticipantId), // receiver participant ID
                         _, // messaging QoS
-                        Property(&Request::getMethodName, Eq(QString::fromStdString(methodName))), // request object to send
+                        Property(&Request::getMethodName, Eq(methodName)), // request object to send
                         Property(
                             &std::shared_ptr<IReplyCaller>::get,
                             AllOf(NotNull(), Property(&IReplyCaller::getTypeId, Eq(expectedTypeId)))

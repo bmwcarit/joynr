@@ -122,7 +122,7 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
 
         QScopedPointer<Request> request(JsonSerializer::deserialize<Request>(jsonRequest));
         if (!request.isNull()) {
-            operation = request->getMethodName();
+            operation = TypeUtil::toQt(request->getMethodName());
         }
     } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST) {
 

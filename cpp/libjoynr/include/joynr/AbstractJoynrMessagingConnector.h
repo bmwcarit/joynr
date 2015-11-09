@@ -69,21 +69,27 @@ public:
 
      */
     template <typename T>
-    void attributeRequest(QString methodName, std::shared_ptr<IReplyCaller> replyCaller)
+    void attributeRequest(const std::string& methodName, std::shared_ptr<IReplyCaller> replyCaller)
     {
         QString attributeID = QString::fromStdString(domain) + ":" +
-                              QString::fromStdString(interfaceName) + ":" + methodName;
+                              QString::fromStdString(interfaceName) + ":" +
+                              QString::fromStdString(methodName);
 
         if (cached) {
             QVariant entry = cache->lookUp(attributeID);
             if (!entry.isValid()) {
-                LOG_DEBUG(logger, "Cached value for " + methodName + " is not valid");
+                LOG_DEBUG(
+                        logger,
+                        QString::fromStdString("Cached value for " + methodName + " is not valid"));
             } else if (!entry.canConvert<T>()) {
                 LOG_DEBUG(logger,
-                          "Cached value for " + methodName + " cannot be converted to type T");
+                          QString::fromStdString("Cached value for " + methodName +
+                                                 " cannot be converted to type T"));
                 assert(false);
             } else {
-                LOG_DEBUG(logger, "Returning cached value for method " + methodName);
+                LOG_DEBUG(
+                        logger,
+                        QString::fromStdString("Returning cached value for method " + methodName));
                 std::shared_ptr<ReplyCaller<T>> typedReplyCaller =
                         std::dynamic_pointer_cast<ReplyCaller<T>>(replyCaller);
                 typedReplyCaller->returnValue(entry.value<T>());

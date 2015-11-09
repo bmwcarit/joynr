@@ -35,7 +35,7 @@ class JOYNRCOMMON_EXPORT Request : public QObject
     Q_OBJECT
 
     Q_PROPERTY(std::string requestReplyId READ getRequestReplyId WRITE setRequestReplyId)
-    Q_PROPERTY(QString methodName READ getMethodName WRITE setMethodName)
+    Q_PROPERTY(std::string methodName READ getMethodName WRITE setMethodName)
     Q_PROPERTY(QList<QVariant> params READ getParams WRITE setParams)
     Q_PROPERTY(QList<std::string> paramDatatypes READ getParamDatatypes WRITE setParamDatatypes)
 
@@ -49,8 +49,8 @@ public:
     const std::string& getRequestReplyId() const;
     void setRequestReplyId(const std::string& requestReplyId);
 
-    const QString& getMethodName() const;
-    void setMethodName(const QString& methodName);
+    const std::string& getMethodName() const;
+    void setMethodName(const std::string& methodName);
 
     QList<QVariant> getParams() const;
     void setParams(const QList<QVariant>& params);
@@ -64,7 +64,7 @@ private:
     static QVariant parameterType(const QVariant& param);
 
     std::string requestReplyId;
-    QString methodName;
+    std::string methodName;
     QList<QVariant> params;
     QList<std::string> paramDatatypes;
 };

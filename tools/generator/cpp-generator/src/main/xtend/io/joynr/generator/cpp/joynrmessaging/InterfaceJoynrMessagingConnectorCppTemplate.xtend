@@ -49,7 +49,7 @@ class InterfaceJoynrMessagingConnectorCppTemplate implements InterfaceTemplate{
 	def produceParameterSetters(FMethod method)
 '''
 joynr::Request internalRequestObject;
-internalRequestObject.setMethodName(QString("«method.joynrName»"));
+internalRequestObject.setMethodName("«method.joynrName»");
 «FOR param : getInputParameters(method)»
 	«val paramRef = qtTypeUtil.fromStdTypeToQTType(param, param.joynrName, true)»
 	«IF isEnum(param.type) && isArray(param)»
@@ -156,7 +156,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 			std::shared_ptr<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«returnTypeQT»>(
 					onSuccess,
 					onError));
-			attributeRequest<«returnTypeQT»>(QString("get«attributeName.toFirstUpper»"), replyCaller);
+			attributeRequest<«returnTypeQT»>("get«attributeName.toFirstUpper»", replyCaller);
 			future->get(«attributeName»);
 		}
 
@@ -193,7 +193,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 			std::shared_ptr<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«returnTypeQT»>(
 					onSuccessWrapper,
 					onErrorWrapper));
-			attributeRequest<«returnTypeQT»>(QString("get«attributeName.toFirstUpper»"), replyCaller);
+			attributeRequest<«returnTypeQT»>("get«attributeName.toFirstUpper»", replyCaller);
 
 			return future;
 		}
@@ -206,7 +206,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 				std::function<void(const exceptions::JoynrException& error)> onError
 		) {
 			joynr::Request internalRequestObject;
-			internalRequestObject.setMethodName(QString("set«attributeName.toFirstUpper»"));
+			internalRequestObject.setMethodName("set«attributeName.toFirstUpper»");
 			«IF isArray(attribute)»
 				QList<QVariant> «attributeName»QVarList = joynr::Util::convertListToVariantList(«qtTypeUtil.fromStdTypeToQTType(attribute, attributeName)»);
 				internalRequestObject.addParam(QVariant::fromValue(«attributeName»QVarList), "«getJoynrTypeName(attribute)»");
@@ -251,7 +251,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 				const «returnTypeStd»& «attributeName»
 		) {
 			joynr::Request internalRequestObject;
-			internalRequestObject.setMethodName(QString("set«attributeName.toFirstUpper»"));
+			internalRequestObject.setMethodName("set«attributeName.toFirstUpper»");
 			«IF isArray(attribute)»
 				QList<QVariant> «attributeName»QVarList = joynr::Util::convertListToVariantList(«qtTypeUtil.fromStdTypeToQTType(attribute, attributeName)»);
 				internalRequestObject.addParam(QVariant::fromValue(«attributeName»QVarList), "«getJoynrTypeName(attribute)»");

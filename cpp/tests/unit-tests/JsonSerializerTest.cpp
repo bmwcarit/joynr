@@ -159,7 +159,7 @@ TEST_F(JsonSerializerTest, serialize_JoynrMessage) {
                 "\\\"requestReplyId\\\":\\\"%4\\\"}\","
                 "\"type\":\"request\"}"
     );
-    expected = expected.arg(QString::number(testExpiryDate.time_since_epoch().count())).arg(joynrMessage.getHeaderMessageId()).arg(request.getMethodName()).
+    expected = expected.arg(QString::number(testExpiryDate.time_since_epoch().count())).arg(joynrMessage.getHeaderMessageId()).arg(TypeUtil::toQt(request.getMethodName())).
             arg(TypeUtil::toQt(request.getRequestReplyId()));
 
     LOG_DEBUG(logger, QString("serialize_JoynrMessage: expected: %1").arg(expected));
@@ -176,7 +176,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_byte_array) {
 
     // Set the request method name
     Request request;
-    request.setMethodName(QString("serialize_deserialize_byte_array"));
+    request.setMethodName("serialize_deserialize_byte_array");
 
     // Set the request parameters
     QVariantList variantList = Util::convertListToVariantList(list);
@@ -317,7 +317,7 @@ TEST_F(JsonSerializerTest, serialize_operation_with_multiple_params1) {
 
     // Set the request method name
     Request request;
-    request.setMethodName(QString("methodEnumDoubleParameters"));
+    request.setMethodName("methodEnumDoubleParameters");
 
     // Set the request parameters
     request.addParam(QVariant::fromValue(tests::testTypes::QtTestEnum::ONE), "joynr.tests.TestEnum");
@@ -453,7 +453,7 @@ TEST_F(JsonSerializerTest, serialize_operation_with_multiple_params2) {
 
     // Set the request method name
     Request request;
-    request.setMethodName(QString("methodStringDoubleParameters"));
+    request.setMethodName("methodStringDoubleParameters");
 
     // Set the request parameters
     request.addParam(QString("testStringParam"), "String");
@@ -777,7 +777,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequest) {
     types::Localisation::QtTrip trip1(locations, QString("trip1_name"));
 
     Request request1;
-    request1.setMethodName(QString("serialize_deserialize_JsonRequestTest_method"));
+    request1.setMethodName("serialize_deserialize_JsonRequestTest_method");
 
     QVariantList params;
     QString contentParam1("contentParam1");
@@ -896,7 +896,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequestWithLists) {
     );
 
     Request request1;
-    request1.setMethodName(QString("serialize_deserialize_JsonRequestTest_method"));
+    request1.setMethodName("serialize_deserialize_JsonRequestTest_method");
     QList<QVariant> inputQvl = Util::convertListToVariantList(inputLocationList);
     request1.addParam(inputQvl, "List");
 
@@ -944,7 +944,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_ListComplexity) {
 
     // Create a request that uses this list
     Request request1;
-    request1.setMethodName(QString("serialize_deserialize_JsonRequestTest_method"));
+    request1.setMethodName("serialize_deserialize_JsonRequestTest_method");
     QVariantList params1;
     QList<QVariant> inputQvl = Util::convertListToVariantList(inputLocationList);
     params1.append(QVariant::fromValue(inputQvl));
@@ -969,7 +969,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_ListComplexity) {
 
     // Create a request that uses this bigger list
     Request request2;
-    request2.setMethodName(QString("serialize_deserialize_JsonRequestTest_method"));
+    request2.setMethodName("serialize_deserialize_JsonRequestTest_method");
     QVariantList params2;
     QList<QVariant> inputQv2 = Util::convertListToVariantList(inputLocationList);
     params2.append(QVariant::fromValue(inputQv2));
