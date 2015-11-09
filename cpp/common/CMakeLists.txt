@@ -71,6 +71,7 @@ file(
     "capabilities/*.h"
     "rpc/*.h"
     "exceptions/*.h"
+    "concurrency/*.h"
 )
 
 set(
@@ -90,6 +91,7 @@ file(
     "rpc/*.cpp"
     "exceptions/*.cpp"
     "SettingsMerger.cpp"
+    "concurrency/*.cpp"
 )
 
 
