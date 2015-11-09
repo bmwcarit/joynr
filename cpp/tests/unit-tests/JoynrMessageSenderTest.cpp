@@ -101,7 +101,7 @@ TEST_F(JoynrMessageSenderTest, sendRequest_normal){
     params.append(42);
     params.append("value");
     request.setParams(params);
-    QList<QVariant> paramDatatypes;
+    QList<std::string> paramDatatypes;
     paramDatatypes.append("java.lang.Integer");
     paramDatatypes.append("java.lang.String");
     request.setParamDatatypes(paramDatatypes);

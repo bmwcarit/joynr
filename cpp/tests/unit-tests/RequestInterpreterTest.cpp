@@ -63,10 +63,10 @@ TEST_F(RequestInterpreterTest, execute_callsMethodOnRequestCaller) {
 
     tests::testRequestInterpreter interpreter;
     QString methodName = "getLocation";
-    QVariantList paramValues;
-    QVariantList paramDatatypes;
+    std::vector<QVariant> paramValues;
+    std::vector<std::string> paramDatatypes;
 
-    std::function<void(const QVariant& response)> onSuccess = [] (const QVariant& response) {};
+    std::function<void(const QList<QVariant>& response)> onSuccess = [] (const QList<QVariant>& response) {};
     std::function<void(const exceptions::JoynrException& exception)> onError = [] (const exceptions::JoynrException& exception) {};
     interpreter.execute(mockCaller, methodName.toStdString(), paramValues, paramDatatypes, onSuccess, onError);
 }

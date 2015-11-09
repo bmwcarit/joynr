@@ -50,6 +50,7 @@ class InterfaceRequestInterpreterHTemplate implements InterfaceTemplate{
 #include <QVariant>
 #include <memory>
 #include <string>
+#include <vector>
 
 «getNamespaceStarter(serviceInterface)»
 
@@ -75,8 +76,8 @@ public:
 	 */
 	void execute(std::shared_ptr<joynr::RequestCaller> requestCaller,
 					 const std::string& methodName,
-					 const QList<QVariant>& paramValues,
-					 const QList<QVariant>& paramTypes,
+					 const std::vector<QVariant>& paramValues,
+					 const std::vector<std::string>& paramTypes,
 					 std::function<void (const QList<QVariant>& outParams)> onSuccess,
 					 std::function<void (const exceptions::JoynrException& exception)> onError);
 

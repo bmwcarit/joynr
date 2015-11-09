@@ -128,7 +128,7 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
     request.setRequestReplyId(QString::fromStdString(requestReplyId));
     request.setMethodName("getLocation");
     request.setParams(QList<QVariant>());
-    request.setParamDatatypes(QList<QVariant>());
+    request.setParamDatatypes(QList<std::string>());
 
 
     JoynrMessage msg = messageFactory.createRequest(

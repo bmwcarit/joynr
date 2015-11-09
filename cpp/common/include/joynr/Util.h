@@ -221,6 +221,9 @@ public:
     }
 
     template <typename... Ts>
+    static std::tuple<Ts...> toValueTuple(std::vector<QVariant> list);
+
+    template <typename... Ts>
     static std::tuple<Ts...> toValueTuple(QList<QVariant> list);
 
 private:
@@ -231,6 +234,15 @@ private:
     {
         int prime = 31;
         return qMetaTypeId<T>() + prime * getTypeId<Ts...>();
+    }
+
+    template <typename T, typename... Ts>
+    static std::tuple<T, Ts...> toValueTuple_split(std::vector<QVariant> list)
+    {
+        T value = valueOf<T>(list.front());
+        list.erase(list.begin());
+
+        return std::tuple_cat(std::make_tuple(value), toValueTuple<Ts...>(list));
     }
 
     template <typename T, typename... Ts>
@@ -320,9 +332,23 @@ struct Util::ExpandTupleIntoFunctionArguments<0>
 };
 
 template <typename... Ts>
+inline std::tuple<Ts...> Util::toValueTuple(std::vector<QVariant> list)
+{
+    return toValueTuple_split<Ts...>(list);
+}
+
+template <typename... Ts>
 inline std::tuple<Ts...> Util::toValueTuple(QList<QVariant> list)
 {
     return toValueTuple_split<Ts...>(list);
+}
+
+template <>
+inline std::tuple<> Util::toValueTuple<>(std::vector<QVariant> list)
+{
+    assert(list.empty());
+    Q_UNUSED(list);
+    return std::make_tuple();
 }
 
 template <>

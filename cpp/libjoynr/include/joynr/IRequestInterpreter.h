@@ -22,8 +22,8 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <QList>
 #include <QVariant>
-#include <QMap>
 #include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
@@ -48,8 +48,8 @@ public:
     virtual void execute(
             std::shared_ptr<RequestCaller> requestCaller,
             const std::string& methodName,
-            const QList<QVariant>& paramValues,
-            const QList<QVariant>& paramTypes,
+            const std::vector<QVariant>& paramValues,
+            const std::vector<std::string>& paramTypes,
             std::function<void(const QList<QVariant>& outParams)> onSuccess,
             std::function<void(const exceptions::JoynrException& exception)> onError) = 0;
 };

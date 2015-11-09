@@ -214,8 +214,8 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
     try {
         requestInterpreter->execute(caller,
                                     request->getMethodName().toStdString(),
-                                    request->getParams(),
-                                    request->getParamDatatypes(),
+                                    TypeUtil::toStd(request->getParams()),
+                                    TypeUtil::toStd(request->getParamDatatypes()),
                                     onSuccess,
                                     onError);
     } catch (exceptions::ProviderRuntimeException& e) {

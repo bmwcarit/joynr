@@ -974,8 +974,8 @@ void PublicationManager::pollSubscription(const QString& subscriptionId)
         try {
             requestInterpreter->execute(requestCaller,
                                         attributeGetter.toStdString(),
-                                        QList<QVariant>(),
-                                        QList<QVariant>(),
+                                        std::vector<QVariant>(),
+                                        std::vector<std::string>(),
                                         onSuccess,
                                         onError);
             // ApplicationException is not possible for attributes in Franca
