@@ -54,7 +54,7 @@ void JoynrMessageSender::sendRequest(const std::string& senderParticipantId,
 {
     assert(dispatcher != NULL);
 
-    dispatcher->addReplyCaller(request.getRequestReplyId().toStdString(), callback, qos);
+    dispatcher->addReplyCaller(request.getRequestReplyId(), callback, qos);
     JoynrMessage message =
             messageFactory.createRequest(QString::fromStdString(senderParticipantId),
                                          QString::fromStdString(receiverParticipantId),

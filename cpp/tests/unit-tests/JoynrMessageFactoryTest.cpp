@@ -56,14 +56,14 @@ public:
     void SetUp(){
         senderID = QString("senderId");
         receiverID = QString("receiverID");
-        requestReplyID = QString("requestReplyID");
+        requestReplyID = "requestReplyID";
         qos = MessagingQos(456000);
         request.setMethodName("methodName");
         request.setRequestReplyId(requestReplyID);
         ;
         request.addParam(42, "java.lang.Integer");
         request.addParam("value", "java.lang.String");
-        reply.setRequestReplyId(requestReplyID);
+        reply.setRequestReplyId(TypeUtil::toQt(requestReplyID));
         QList<QVariant> response;
         response.append(QVariant("response"));
         reply.setResponse(response);
@@ -92,7 +92,7 @@ public:
                     "\"params\":[42,\"value\"],"
                     "\"requestReplyId\":\"%1\"}"
         );
-        expectedPayload = expectedPayload.arg(request.getRequestReplyId());
+        expectedPayload = expectedPayload.arg(TypeUtil::toQt(request.getRequestReplyId()));
         EXPECT_EQ(expectedPayload, QString(joynrMessage.getPayload()));
     }
 
@@ -121,7 +121,7 @@ protected:
     JoynrMessageFactory messageFactory;
     QString senderID;
     QString receiverID;
-    QString requestReplyID;
+    std::string requestReplyID;
     MessagingQos qos;
     Request request;
     Reply reply;

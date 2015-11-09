@@ -25,7 +25,7 @@ namespace joynr
 
 Request::Request() : requestReplyId(), methodName(), params(), paramDatatypes()
 {
-    this->requestReplyId = Util::createUuid();
+    this->requestReplyId = Util::createUuid().toStdString();
 }
 
 Request::Request(const Request& other)
@@ -52,12 +52,12 @@ bool Request::operator==(const Request& other) const
            params == other.getParams() && paramDatatypes == other.paramDatatypes;
 }
 
-const QString& Request::getRequestReplyId() const
+const std::string& Request::getRequestReplyId() const
 {
     return requestReplyId;
 }
 
-void Request::setRequestReplyId(const QString& requestReplyId)
+void Request::setRequestReplyId(const std::string& requestReplyId)
 {
     this->requestReplyId = requestReplyId;
 }

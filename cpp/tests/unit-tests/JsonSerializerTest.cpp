@@ -160,7 +160,7 @@ TEST_F(JsonSerializerTest, serialize_JoynrMessage) {
                 "\"type\":\"request\"}"
     );
     expected = expected.arg(QString::number(testExpiryDate.time_since_epoch().count())).arg(joynrMessage.getHeaderMessageId()).arg(request.getMethodName()).
-            arg(request.getRequestReplyId());
+            arg(TypeUtil::toQt(request.getRequestReplyId()));
 
     LOG_DEBUG(logger, QString("serialize_JoynrMessage: expected: %1").arg(expected));
     EXPECT_EQ(expected, QString(serializedContent));
@@ -192,7 +192,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_byte_array) {
                 "\"params\":[[1,2,3,-1,-2,-3]],"
                 "\"requestReplyId\":\"%1\"}"
     );
-    expected = expected.arg(request.getRequestReplyId());
+    expected = expected.arg(TypeUtil::toQt(request.getRequestReplyId()));
 
     LOG_DEBUG(logger, QString("expected: %1").arg(expected));
     EXPECT_EQ(expected, QString(serializedContent));
@@ -334,7 +334,7 @@ TEST_F(JsonSerializerTest, serialize_operation_with_multiple_params1) {
                 "\"params\":[\"ONE\",2.2],"
                 "\"requestReplyId\":\"%1\"}"
     );
-    expected = expected.arg(request.getRequestReplyId());
+    expected = expected.arg(TypeUtil::toQt(request.getRequestReplyId()));
 
     EXPECT_EQ_QSTRING(expected, serializedContent);
 }
@@ -469,7 +469,7 @@ TEST_F(JsonSerializerTest, serialize_operation_with_multiple_params2) {
                 "\"params\":[\"testStringParam\",3.33],"
                 "\"requestReplyId\":\"%1\"}"
     );
-    expected = expected.arg(request.getRequestReplyId());
+    expected = expected.arg(TypeUtil::toQt(request.getRequestReplyId()));
 
     LOG_DEBUG(logger, "Serialized method call: "+ serializedContent);
     LOG_DEBUG(logger, "Expected method call: "+ expected);
@@ -900,7 +900,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequestWithLists) {
     QList<QVariant> inputQvl = Util::convertListToVariantList(inputLocationList);
     request1.addParam(inputQvl, "List");
 
-    expectedString = expectedString.arg(request1.getRequestReplyId());
+    expectedString = expectedString.arg(TypeUtil::toQt(request1.getRequestReplyId()));
     QByteArray expected = expectedString.toUtf8();
 
     //serializing Request

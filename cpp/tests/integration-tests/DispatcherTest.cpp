@@ -125,7 +125,7 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
     qos.setTtl(1000);
     // build request for location from mock Gps Provider
     Request request;
-    request.setRequestReplyId(QString::fromStdString(requestReplyId));
+    request.setRequestReplyId(requestReplyId);
     request.setMethodName("getLocation");
     request.setParams(QList<QVariant>());
     request.setParamDatatypes(QList<std::string>());

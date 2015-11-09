@@ -167,21 +167,21 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
         return;
     }
 
-    QString requestReplyId = request->getRequestReplyId();
+    std::string requestReplyId = request->getRequestReplyId();
     JoynrTimePoint requestExpiryDate = message.getHeaderExpiryDate();
 
     std::function<void(const QList<QVariant>&)> onSuccess =
             [requestReplyId, requestExpiryDate, this, senderId, receiverId](
                     const QList<QVariant>& returnValueQVar) {
         Reply reply;
-        reply.setRequestReplyId(requestReplyId);
+        reply.setRequestReplyId(TypeUtil::toQt(requestReplyId));
         reply.setResponse(returnValueQVar);
         // send reply back to the original sender (ie. sender and receiver ids are reversed
         // on
         // purpose)
         LOG_DEBUG(logger,
                   QString("Got reply from RequestInterpreter for requestReplyId %1")
-                          .arg(requestReplyId));
+                          .arg(TypeUtil::toQt(requestReplyId)));
         JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
         int64_t ttl = duration_cast<milliseconds>(requestExpiryDate - now).count();
         messageSender->sendReply(receiverId, // receiver of the request is sender of reply
@@ -194,7 +194,7 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
             [requestReplyId, requestExpiryDate, this, senderId, receiverId](
                     const exceptions::JoynrException& exception) {
         Reply reply;
-        reply.setRequestReplyId(requestReplyId);
+        reply.setRequestReplyId(TypeUtil::toQt(requestReplyId));
         std::shared_ptr<exceptions::JoynrException> error;
         // TODO This clone is a workaround which must be removed after the new serializer has been
         // introduced and the reply object has been refactored
@@ -202,7 +202,7 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
         reply.setError(error);
         LOG_DEBUG(logger,
                   QString("Got error reply from RequestInterpreter for requestReplyId %1")
-                          .arg(requestReplyId));
+                          .arg(TypeUtil::toQt(requestReplyId)));
         JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
         int64_t ttl = duration_cast<milliseconds>(requestExpiryDate - now).count();
         messageSender->sendReply(receiverId, // receiver of the request is sender of reply

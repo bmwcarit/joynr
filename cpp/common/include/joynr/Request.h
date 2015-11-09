@@ -25,6 +25,7 @@
 #include <QVariant>
 
 #include <memory>
+#include <string>
 
 namespace joynr
 {
@@ -33,7 +34,7 @@ class JOYNRCOMMON_EXPORT Request : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString requestReplyId READ getRequestReplyId WRITE setRequestReplyId)
+    Q_PROPERTY(std::string requestReplyId READ getRequestReplyId WRITE setRequestReplyId)
     Q_PROPERTY(QString methodName READ getMethodName WRITE setMethodName)
     Q_PROPERTY(QList<QVariant> params READ getParams WRITE setParams)
     Q_PROPERTY(QList<std::string> paramDatatypes READ getParamDatatypes WRITE setParamDatatypes)
@@ -45,8 +46,8 @@ public:
     Request& operator=(const Request& other);
     bool operator==(const Request& other) const;
 
-    const QString& getRequestReplyId() const;
-    void setRequestReplyId(const QString& requestReplyId);
+    const std::string& getRequestReplyId() const;
+    void setRequestReplyId(const std::string& requestReplyId);
 
     const QString& getMethodName() const;
     void setMethodName(const QString& methodName);
@@ -62,7 +63,7 @@ public:
 private:
     static QVariant parameterType(const QVariant& param);
 
-    QString requestReplyId;
+    std::string requestReplyId;
     QString methodName;
     QList<QVariant> params;
     QList<std::string> paramDatatypes;
