@@ -18,7 +18,6 @@
   */
 #include "joynr/Request.h"
 #include "joynr/Util.h"
-#include <QStringList>
 
 namespace joynr
 {
@@ -72,20 +71,20 @@ void Request::setMethodName(const std::string& methodName)
     this->methodName = methodName;
 }
 
-QList<QVariant> Request::getParams() const
+std::vector<QVariant> Request::getParams() const
 {
     return params;
 }
 
 // Set the parameters - called by the QJson deserializer
-void Request::setParams(const QList<QVariant>& params)
+void Request::setParams(const std::vector<QVariant>& params)
 {
     this->params = params;
 }
 
 void Request::addParam(QVariant value, std::string datatype)
 {
-    this->params.append(value);
+    this->params.push_back(value);
     this->paramDatatypes.push_back(datatype);
 }
 

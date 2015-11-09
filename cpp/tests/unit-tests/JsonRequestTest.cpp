@@ -100,12 +100,12 @@ public:
 
     void checkJsonRequest(Request jsonRequest) {
         ASSERT_EQ(operationName, jsonRequest.getMethodName());
-        QVariantList params = jsonRequest.getParams();
+        std::vector<QVariant> params = jsonRequest.getParams();
         ASSERT_EQ(3, params.size());
 
         ASSERT_EQ(valueOfArg1, params.at(0));
         // arg2 is a custom type, so need to extract QVariant value
-        ASSERT_EQ(valueOfArg2, params.at(1). value<MockArgument>());
+        ASSERT_EQ(valueOfArg2, params.at(1).value<MockArgument>());
         ASSERT_EQ(valueOfArg3, params.at(2));
     }
 
@@ -130,10 +130,10 @@ typedef JsonRequestTest JsonRequestDeathTest;
 TEST_F(JsonRequestTest, buildJsonRequest)
 {
     // Build the argument list
-    QVariantList args;
-    args.append(QVariant(valueOfArg1));
-    args.append(QVariant::fromValue(valueOfArg2));
-    args.append(QVariant(valueOfArg3));
+    std::vector<QVariant> args;
+    args.push_back(QVariant(valueOfArg1));
+    args.push_back(QVariant::fromValue(valueOfArg2));
+    args.push_back(QVariant(valueOfArg3));
 
     // Build the request
     Request jsonRequest;

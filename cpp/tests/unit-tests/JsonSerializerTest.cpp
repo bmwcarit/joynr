@@ -199,7 +199,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_byte_array) {
 
     // Deserialize the request
     Request* deserializedRequest = JsonSerializer::deserialize<Request>(serializedContent);
-    QList<QVariant> paramsReceived = deserializedRequest->getParams();
+    std::vector<QVariant> paramsReceived = deserializedRequest->getParams();
     QVariantList deserializedVariantList = paramsReceived.at(0).value<QVariantList>();
 
     EXPECT_EQ(variantList, deserializedVariantList);
@@ -352,7 +352,7 @@ TEST_F(JsonSerializerTest, deserialize_operation_with_enum) {
                                  "\"params\":[\"ONE\",2.2]}");
 
     Request *request = JsonSerializer::deserialize<Request>(serializedContent);
-    QList<QVariant> params = request->getParams();
+    std::vector<QVariant> params = request->getParams();
 
     // Check the deserialized values
     QVariant enumParam = params.at(0);
@@ -779,15 +779,15 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequest) {
     Request request1;
     request1.setMethodName("serialize_deserialize_JsonRequestTest_method");
 
-    QVariantList params;
+    std::vector<QVariant> params;
     QString contentParam1("contentParam1");
-    params.append(QVariant::fromValue(contentParam1));
-    params.append(QVariant::fromValue(trip1));
+    params.push_back(QVariant::fromValue(contentParam1));
+    params.push_back(QVariant::fromValue(trip1));
     qRegisterMetaType<QList<int> >("QlistInt");
     //To serialize a QList<...> it has to be stored as a QList<QVariant>
     QList<QVariant> list;
     list.append(QVariant::fromValue(2));
-    params.append(QVariant::fromValue(list));
+    params.push_back(QVariant::fromValue(list));
 
     request1.setParams(params);
 
@@ -796,7 +796,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequest) {
 
     Request* request2 = JsonSerializer::deserialize<Request>(serializedContent);
 
-    QVariantList paramsReceived = request2->getParams();
+    std::vector<QVariant> paramsReceived = request2->getParams();
 
     EXPECT_EQ(paramsReceived.at(0).value<QString>(), contentParam1);
     EXPECT_EQ(paramsReceived.at(1).value<types::Localisation::QtTrip>(), trip1);
@@ -909,7 +909,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequestWithLists) {
 
     //deserializing Request
     Request* request2 = JsonSerializer::deserialize<Request>(serializedContent);
-    QVariantList paramsReceived = request2->getParams();
+    std::vector<QVariant> paramsReceived = request2->getParams();
 
     LOG_DEBUG(logger, QString("x1") + QString(paramsReceived.at(0).typeName()));
     ASSERT_TRUE(paramsReceived.at(0).canConvert<QList<QVariant> >()) << "Cannot convert the field of the Param Map to a QList<QVariant>";
@@ -945,9 +945,9 @@ TEST_F(JsonSerializerTest, serialize_deserialize_ListComplexity) {
     // Create a request that uses this list
     Request request1;
     request1.setMethodName("serialize_deserialize_JsonRequestTest_method");
-    QVariantList params1;
+    std::vector<QVariant> params1;
     QList<QVariant> inputQvl = Util::convertListToVariantList(inputLocationList);
-    params1.append(QVariant::fromValue(inputQvl));
+    params1.push_back(QVariant::fromValue(inputQvl));
     request1.setParams(params1);
 
     //Time request serialization
@@ -970,9 +970,9 @@ TEST_F(JsonSerializerTest, serialize_deserialize_ListComplexity) {
     // Create a request that uses this bigger list
     Request request2;
     request2.setMethodName("serialize_deserialize_JsonRequestTest_method");
-    QVariantList params2;
+    std::vector<QVariant> params2;
     QList<QVariant> inputQv2 = Util::convertListToVariantList(inputLocationList);
-    params2.append(QVariant::fromValue(inputQv2));
+    params2.push_back(QVariant::fromValue(inputQv2));
     request2.setParams(params2);
 
     // Time request serialization

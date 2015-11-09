@@ -128,7 +128,7 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
     Request request;
     request.setRequestReplyId(requestReplyId);
     request.setMethodName("getLocation");
-    request.setParams(QList<QVariant>());
+    request.setParams(std::vector<QVariant>());
     request.setParamDatatypes(std::vector<std::string>());
 
 

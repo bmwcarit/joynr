@@ -241,8 +241,8 @@ TEST_F(JoynrMessageFactoryTest, createSubscriptionStop){
 
 TEST_F(JoynrMessageFactoryTest, testRequestContentType){
     Request request;
-    QVariantList params;
-    params.append("test");
+    std::vector<QVariant> params;
+    params.push_back("test");
     request.setMethodName("methodName");
     request.setParams(params);
 
