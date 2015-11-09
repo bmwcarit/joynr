@@ -61,8 +61,8 @@ public:
         request.setMethodName("methodName");
         request.setRequestReplyId(requestReplyID);
         ;
-        request.addParam(42, "java.lang.Integer");
-        request.addParam("value", "java.lang.String");
+        request.addParam(Variant::make<int>(42), "java.lang.Integer");
+        request.addParam(Variant::make<std::string>("value"), "java.lang.String");
         reply.setRequestReplyId(TypeUtil::toQt(requestReplyID));
         QList<QVariant> response;
         response.append(QVariant("response"));
@@ -241,8 +241,8 @@ TEST_F(JoynrMessageFactoryTest, createSubscriptionStop){
 
 TEST_F(JoynrMessageFactoryTest, testRequestContentType){
     Request request;
-    std::vector<QVariant> params;
-    params.push_back("test");
+    std::vector<Variant> params;
+    params.push_back(Variant::make<std::string>("test"));
     request.setMethodName("methodName");
     request.setParams(params);
 

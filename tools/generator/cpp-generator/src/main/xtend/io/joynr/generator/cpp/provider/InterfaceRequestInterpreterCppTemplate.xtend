@@ -81,7 +81,7 @@ joynr::joynr_logging::Logger* «interfaceName»RequestInterpreter::logger = joyn
 void «interfaceName»RequestInterpreter::execute(
 		std::shared_ptr<joynr::RequestCaller> requestCaller,
 		const std::string& methodName,
-		const std::vector<QVariant>& paramValues,
+		const std::vector<Variant>& paramValues,
 		const std::vector<std::string>& paramTypes,
 		std::function<void (const QList<QVariant>&)> onSuccess,
 		std::function<void (const exceptions::JoynrException& exception)> onError
@@ -113,30 +113,31 @@ void «interfaceName»RequestInterpreter::execute(
 		«ENDIF»
 		«IF attribute.writable»
 			if (methodName == "set«attributeName.toFirstUpper»" && paramTypes.size() == 1){
-				QVariant «attributeName»QVar(paramValues.at(0));
+				Variant «attributeName»Var(paramValues.at(0));
 				«IF isEnum(attribute.type) && isArray(attribute)»
-					«val attributeRef = joynrGenerationPrefix + "::Util::convertVariantListToEnumList<" + qtTypeUtil.getTypeNameOfContainingClass(attribute.type.derived) + ">(" + attributeName + "QVar.toList())"»
-					«qtTypeUtil.getTypeName(attribute)» typedInput«attributeName.toFirstUpper» =
+					«val attributeRef = joynrGenerationPrefix + "::Util::convertVariantVectorToEnumVector<" + getTypeNameOfContainingClass(attribute.type.derived) + ">(" + attributeName + "Var.get<std::vector<Variant>>())"»
+					assert(«attributeName»Var.is<std::vector<Variant>>());
+					«getTypeName(attribute)» typedInput«attributeName.toFirstUpper» =
 						«attributeRef»;
 				«ELSEIF isEnum(attribute.type)»
-					«qtTypeUtil.getTypeName(attribute)» typedInput«attributeName.toFirstUpper» =
-						«joynrGenerationPrefix»::Util::convertVariantToEnum<«qtTypeUtil.getTypeNameOfContainingClass(attribute.type.derived)»>(«attributeName»QVar);
+					«getTypeName(attribute)» typedInput«attributeName.toFirstUpper» =
+						«joynrGenerationPrefix»::Util::convertVariantToEnum<«getTypeNameOfContainingClass(attribute.type.derived)»>(«attributeName»Var);
 				«ELSEIF isArray(attribute)»
-					«val attributeRef = joynrGenerationPrefix + "::Util::convertVariantListToList<" + qtTypeUtil.getTypeName(attribute.type) + ">(paramQList)"»
-					if (!«attributeName»QVar.canConvert<QList<QVariant> >()) {
+					«val attributeRef = joynrGenerationPrefix + "::Util::convertVariantVectorToVector<" + getTypeName(attribute.type) + ">(paramList)"»
+					if (!«attributeName»Var.is<std::vector<Variant>>()) {
 						onError(exceptions::MethodInvocationException("Illegal argument for attribute setter set«attributeName.toFirstUpper»"));
 						return;
 					}
-					QList<QVariant> paramQList = «attributeName»QVar.value<QList<QVariant> >();
-					«qtTypeUtil.getTypeName(attribute)» typedInput«attributeName.toFirstUpper» = 
+					std::vector<Variant> paramList = «attributeName»Var.get<std::vector<Variant>>();
+					«getTypeName(attribute)» typedInput«attributeName.toFirstUpper» = 
 							«attributeRef»;
 				«ELSE»
-					«val attributeRef = attributeName + "QVar.value<" + qtTypeUtil.getTypeName(attribute) + ">()"»
-					if (!«attributeName»QVar.canConvert<«qtTypeUtil.getTypeName(attribute)»>()) {
+					«val attributeRef = attributeName + "Var.get<" + getTypeName(attribute) + ">()"»
+					if (!«attributeName»Var.is<«getTypeName(attribute)»>()) {
 						onError(exceptions::MethodInvocationException("Illegal argument for attribute setter set«attributeName.toFirstUpper»"));
 						return;
 					}
-					«qtTypeUtil.getTypeName(attribute)» typedInput«attributeName.toFirstUpper» =
+					«getTypeName(attribute)» typedInput«attributeName.toFirstUpper» =
 							«attributeRef»;
 				«ENDIF»
 				std::function<void()> requestCallerOnSuccess =
@@ -144,7 +145,7 @@ void «interfaceName»RequestInterpreter::execute(
 							QList<QVariant> outParams;
 							onSuccess(outParams);
 						};
-				«requestCallerName»->set«attributeName.toFirstUpper»(«qtTypeUtil.fromQTTypeToStdType(attribute, '''typedInput«attributeName.toFirstUpper»''')», requestCallerOnSuccess, onError);
+				«requestCallerName»->set«attributeName.toFirstUpper»(typedInput«attributeName.toFirstUpper», requestCallerOnSuccess, onError);
 				return;
 			}
 		«ENDIF»
@@ -152,7 +153,7 @@ void «interfaceName»RequestInterpreter::execute(
 	«ENDIF»
 	«IF methods.size>0»
 		«FOR method: getMethods(serviceInterface)»
-			«val inputUntypedParamList = qtTypeUtil.getCommaSeperatedUntypedInputParameterList(method, DatatypeSystemTransformation.FROM_QT_TO_STANDARD)»
+			«val inputUntypedParamList = getCommaSeperatedUntypedInputParameterList(method)»
 			«val methodName = method.joynrName»
 			«val inputParams = getInputParameters(method)»
 			«var iterator = -1»
@@ -180,32 +181,33 @@ void «interfaceName»RequestInterpreter::execute(
 							onSuccess(outParams);
 						};
 
+
 				«var iterator2 = -1»
 				«FOR input : inputParams»
 					«val inputName = input.joynrName»
-					QVariant «inputName»QVar(paramValues.at(«iterator2=iterator2+1»));
+					Variant «inputName»Var(paramValues.at(«iterator2=iterator2+1»));
 					«IF isEnum(input.type) && isArray(input)»
 						//isEnumArray
-						«qtTypeUtil.getTypeName(input)» «inputName» =
-							«joynrGenerationPrefix»::Util::convertVariantListToEnumList<«qtTypeUtil.getTypeNameOfContainingClass(input.type.derived)»> («inputName»QVar.toList());
+						«getTypeName(input)» «inputName» =
+							«joynrGenerationPrefix»::Util::convertVariantVectorToEnumVector<«getTypeNameOfContainingClass(input.type.derived)»> («inputName»Var.get<std::vector<Variant>>());
 					«ELSEIF isEnum(input.type)»
 						//isEnum
-						«qtTypeUtil.getTypeName(input)» «inputName» = «joynrGenerationPrefix»::Util::convertVariantToEnum<«qtTypeUtil.getTypeNameOfContainingClass(input.type.derived)»>(«inputName»QVar);
+						«getTypeName(input)» «inputName» = «joynrGenerationPrefix»::Util::convertVariantToEnum<«buildPackagePath(input.type.derived, "::", true) + input.type.joynrName»>(«inputName»Var);
 					«ELSEIF isArray(input)»
 						//isArray
-						if (!«inputName»QVar.canConvert<QList<QVariant> >()) {
+						if (!«inputName»Var.is<std::vector<Variant>>()) {
 							onError(exceptions::MethodInvocationException("Illegal argument for method «methodName»: «inputName» («getJoynrTypeName(input)»)"));
 							return;
 						}
-						QList<QVariant> «inputName»QVarList = «inputName»QVar.value<QList<QVariant> >();
-						QList<«qtTypeUtil.getTypeName(input.type)»> «inputName» = «joynrGenerationPrefix»::Util::convertVariantListToList<«qtTypeUtil.getTypeName(input.type)»>(«inputName»QVarList);
+						std::vector<Variant> «inputName»VarList = «inputName»Var.get<std::vector<Variant>>();
+						std::vector<«getTypeName(input.type)»> «inputName» = «joynrGenerationPrefix»::Util::convertVariantVectorToVector<«getTypeName(input.type)»>(«inputName»VarList);
 					«ELSE»
-						//«qtTypeUtil.getTypeName(input)»
-						if (!«inputName»QVar.canConvert<«qtTypeUtil.getTypeName(input)»>()) {
+						//«getTypeName(input)»
+						if (!«inputName»Var.is<«getTypeName(input)»>()) {
 							onError(exceptions::MethodInvocationException("Illegal argument for method «methodName»: «inputName» («getJoynrTypeName(input)»)"));
 							return;
 						}
-						«qtTypeUtil.getTypeName(input)» «inputName» = «inputName»QVar.value<«qtTypeUtil.getTypeName(input)»>();
+						«getTypeName(input)» «inputName» = «inputName»Var.get<«getTypeName(input)»>();
 					«ENDIF»
 				«ENDFOR»
 

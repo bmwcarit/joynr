@@ -98,9 +98,9 @@ TEST_F(JoynrMessageSenderTest, sendRequest_normal){
 
     Request request;
     request.setMethodName("methodName");
-    std::vector<QVariant> params;
-    params.push_back(42);
-    params.push_back("value");
+    std::vector<Variant> params;
+    params.push_back(Variant::make<int>(42));
+    params.push_back(Variant::make<std::string>("value"));
     request.setParams(params);
     std::vector<std::string> paramDatatypes;
     paramDatatypes.push_back("java.lang.Integer");

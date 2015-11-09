@@ -974,7 +974,7 @@ void PublicationManager::pollSubscription(const QString& subscriptionId)
         try {
             requestInterpreter->execute(requestCaller,
                                         attributeGetter.toStdString(),
-                                        std::vector<QVariant>(),
+                                        std::vector<Variant>(),
                                         std::vector<std::string>(),
                                         onSuccess,
                                         onError);

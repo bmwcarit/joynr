@@ -179,8 +179,8 @@ TEST_F(JsonSerializerTest, serialize_deserialize_byte_array) {
     request.setMethodName("serialize_deserialize_byte_array");
 
     // Set the request parameters
-    QVariantList variantList = Util::convertListToVariantList(list);
-    request.addParam(variantList, "List");
+    std::vector<Variant> variantVector = TypeUtil::toVectorOfVariants(TypeUtil::toStd(list));
+    request.addParam(Variant::make<std::vector<Variant>>(variantVector), "List");
 
     // Serialize the request
     QByteArray serializedContent = JsonSerializer::serialize(request);
@@ -199,22 +199,24 @@ TEST_F(JsonSerializerTest, serialize_deserialize_byte_array) {
 
     // Deserialize the request
     Request* deserializedRequest = JsonSerializer::deserialize<Request>(serializedContent);
-    std::vector<QVariant> paramsReceived = deserializedRequest->getParams();
-    QVariantList deserializedVariantList = paramsReceived.at(0).value<QVariantList>();
+    std::vector<Variant> paramsReceived = deserializedRequest->getParams();
+    std::vector<Variant> deserializedVariantList = paramsReceived.at(0).get<std::vector<Variant>>();
 
-    EXPECT_EQ(variantList, deserializedVariantList);
+    EXPECT_EQ(variantVector, deserializedVariantList);
 
-    QListIterator<QVariant> i(variantList);
+    std::vector<Variant>::const_iterator i(variantVector.begin());
     int j = 0;
-    while (i.hasNext()) {
-        LOG_DEBUG(logger, QString("expected variant list [%1]=%2").arg(QString::number(j)).arg(QString::number(i.next().value<qint8>())));
+    while (i != variantVector.end()) {
+        LOG_DEBUG(logger, QString("expected variant list [%1]=%2").arg(QString::number(j)).arg(QString::number(i->get<uint8_t>())));
+        i++;
         j++;
     }
 
-    i = QListIterator<QVariant>(deserializedVariantList);
+    i = deserializedVariantList.begin();
     j = 0;
-    while (i.hasNext()) {
-        LOG_DEBUG(logger, QString("deserialized variant list [%1]=%2").arg(QString::number(j)).arg(QString::number(i.next().value<qint8>())));
+    while (i != deserializedVariantList.end()) {
+        LOG_DEBUG(logger, QString("deserialized variant list [%1]=%2").arg(QString::number(j)).arg(QString::number(i->get<uint8_t>())));
+        i++;
         j++;
     }
 
@@ -311,8 +313,6 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithUnsignedInt64) {
 
 TEST_F(JsonSerializerTest, serialize_operation_with_multiple_params1) {
 
-    qRegisterMetaType<joynr::Request>("joynr::Request");
-    qRegisterMetaType<tests::testTypes::QtTestEnum>();
     int typeId = qRegisterMetaType<tests::testTypes::QtTestEnum::Enum>("tests::testTypes::QtTestEnum::Enum");
 
     // Set the request method name
@@ -320,8 +320,8 @@ TEST_F(JsonSerializerTest, serialize_operation_with_multiple_params1) {
     request.setMethodName("methodEnumDoubleParameters");
 
     // Set the request parameters
-    request.addParam(QVariant::fromValue(tests::testTypes::QtTestEnum::ONE), "joynr.tests.TestEnum");
-    request.addParam(2.2, "Double");
+    request.addParam(Variant::make<tests::testTypes::TestEnum::Enum>(tests::testTypes::TestEnum::ONE), "joynr.tests.TestEnum");
+    request.addParam(Variant::make<double>(2.2), "Double");
 
     // Serialize the request
     QJson::Serializer::registerEnum(typeId, tests::testTypes::QtTestEnum::staticMetaObject.enumerator(0));
@@ -341,10 +341,6 @@ TEST_F(JsonSerializerTest, serialize_operation_with_multiple_params1) {
 
 TEST_F(JsonSerializerTest, deserialize_operation_with_enum) {
 
-    qRegisterMetaType<joynr::Request>();
-    qRegisterMetaType<tests::testTypes::QtTestEnum>();
-    qRegisterMetaType<tests::testTypes::QtTestEnum::Enum>("tests::testTypes::QtTestEnum::Enum");
-
     // Deserialize a request containing a Java style enum parameter
     QByteArray serializedContent("{\"_typeName\":\"joynr.Request\","
                                  "\"methodName\":\"methodEnumDoubleParameters\","
@@ -352,18 +348,18 @@ TEST_F(JsonSerializerTest, deserialize_operation_with_enum) {
                                  "\"params\":[\"ONE\",2.2]}");
 
     Request *request = JsonSerializer::deserialize<Request>(serializedContent);
-    std::vector<QVariant> params = request->getParams();
+    std::vector<Variant> params = request->getParams();
 
     // Check the deserialized values
-    QVariant enumParam = params.at(0);
-    QVariant doubleParam = params.at(1);
-    EXPECT_TRUE(enumParam.canConvert<QString>());
-    EXPECT_EQ(QString("ONE"), enumParam.value<QString>());
-    EXPECT_TRUE(doubleParam.canConvert<double>());
-    EXPECT_EQ(2.2, doubleParam.value<double>());
+    Variant enumParam = params.at(0);
+    Variant doubleParam = params.at(1);
+    EXPECT_TRUE(enumParam.is<std::string>());
+    EXPECT_EQ(std::string("ONE"), enumParam.get<std::string>());
+    EXPECT_TRUE(doubleParam.is<double>());
+    EXPECT_EQ(2.2, doubleParam.get<double>());
 
     // Extract the parameters in the same way as a RequestInterpreter
-    tests::testTypes::QtTestEnum::Enum value = Util::convertVariantToEnum<tests::testTypes::QtTestEnum>(enumParam);
+    tests::testTypes::TestEnum::Enum value = Util::convertVariantToEnum<tests::testTypes::TestEnum>(enumParam);
     EXPECT_EQ(1, value);
     delete(request);
 }
@@ -449,15 +445,13 @@ TEST_F(JsonSerializerTest, serializeDeserializeTypeWithEnumList) {
 
 TEST_F(JsonSerializerTest, serialize_operation_with_multiple_params2) {
 
-    qRegisterMetaType<joynr::Request>("joynr::Request");
-
     // Set the request method name
     Request request;
     request.setMethodName("methodStringDoubleParameters");
 
     // Set the request parameters
-    request.addParam(QString("testStringParam"), "String");
-    request.addParam(3.33, "Double");
+    request.addParam(Variant::make<std::string>("testStringParam"), "String");
+    request.addParam(Variant::make<double>(3.33), "Double");
 
     // Serialize the request
     QString serializedContent = JsonSerializer::serialize(request);
@@ -766,28 +760,29 @@ TEST_F(JsonSerializerTest, serialize_deserialize_trip) {
 
 
 TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequest) {
+    static bool isTypeTripRegistered = Variant::registerType<types::Localisation::Trip>("joynr::types::Localisation::Trip");
     qRegisterMetaType<joynr::Request>("joynr::Request");
-    qRegisterMetaType<joynr::types::Localisation::QtTrip>("joynr::types::Localisation::QtTrip");
+    qRegisterMetaType<joynr::types::Localisation::Trip>("joynr::types::Localisation::QtTrip");
 
-    QList<types::Localisation::QtGpsLocation> locations;
-    locations.push_back(types::Localisation::QtGpsLocation(1.1, 1.2, 1.3, types::Localisation::QtGpsFixEnum::MODE2D, 1.4, 1.5, 1.6, 1.7, 18, 19, 110));
-    locations.push_back(types::Localisation::QtGpsLocation(2.1, 2.2, 2.3, types::Localisation::QtGpsFixEnum::MODE2D, 2.4, 2.5, 2.6, 2.7, 28, 29, 210));
-    locations.push_back(types::Localisation::QtGpsLocation(3.1, 3.2, 3.3, types::Localisation::QtGpsFixEnum::MODE2D, 3.4, 3.5, 3.6, 3.7, 38, 39, 310));
+    std::vector<types::Localisation::GpsLocation> locations;
+    locations.push_back(types::Localisation::GpsLocation(1.1, 1.2, 1.3, types::Localisation::GpsFixEnum::MODE2D, 1.4, 1.5, 1.6, 1.7, 18, 19, 110));
+    locations.push_back(types::Localisation::GpsLocation(2.1, 2.2, 2.3, types::Localisation::GpsFixEnum::MODE2D, 2.4, 2.5, 2.6, 2.7, 28, 29, 210));
+    locations.push_back(types::Localisation::GpsLocation(3.1, 3.2, 3.3, types::Localisation::GpsFixEnum::MODE2D, 3.4, 3.5, 3.6, 3.7, 38, 39, 310));
 
-    types::Localisation::QtTrip trip1(locations, QString("trip1_name"));
+    types::Localisation::Trip trip1(locations, "trip1_name");
 
     Request request1;
     request1.setMethodName("serialize_deserialize_JsonRequestTest_method");
 
-    std::vector<QVariant> params;
-    QString contentParam1("contentParam1");
-    params.push_back(QVariant::fromValue(contentParam1));
-    params.push_back(QVariant::fromValue(trip1));
+    std::vector<Variant> params;
+    std::string contentParam1("contentParam1");
+    params.push_back(Variant::make<std::string>(contentParam1));
+    params.push_back(Variant::make<types::Localisation::Trip>(trip1));
     qRegisterMetaType<QList<int> >("QlistInt");
     //To serialize a QList<...> it has to be stored as a QList<QVariant>
-    QList<QVariant> list;
-    list.append(QVariant::fromValue(2));
-    params.push_back(QVariant::fromValue(list));
+    std::vector<Variant> vector;
+    vector.push_back(Variant::make<int>(2));
+    params.push_back(TypeUtil::toVariant(vector));
 
     request1.setParams(params);
 
@@ -796,10 +791,10 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequest) {
 
     Request* request2 = JsonSerializer::deserialize<Request>(serializedContent);
 
-    std::vector<QVariant> paramsReceived = request2->getParams();
+    std::vector<Variant> paramsReceived = request2->getParams();
 
-    EXPECT_EQ(paramsReceived.at(0).value<QString>(), contentParam1);
-    EXPECT_EQ(paramsReceived.at(1).value<types::Localisation::QtTrip>(), trip1);
+    EXPECT_EQ(paramsReceived.at(0).get<std::string>(), contentParam1);
+    EXPECT_EQ(paramsReceived.at(1).get<types::Localisation::Trip>(), trip1);
 
     //EXPECT_EQ on the Request doesn't work, because the == method of QVariantMap says:
     // "Warning: This function doesn't support custom types registered with qRegisterMetaType()."
@@ -840,17 +835,12 @@ TEST_F(JsonSerializerTest, serialize_deserialize_Reply_with_Array_as_Response) {
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequestWithLists) {
-    qRegisterMetaType<joynr::Request>("joynr::Request");
-    qRegisterMetaType<joynr::types::Localisation::QtGpsLocation>("joynr::types::Localisation::QtGpsLocation");
-    qRegisterMetaType<joynr__types__Localisation__QtGpsLocation>("joynr__types__Localisation__GpsLocation");
-
-    QString contentParam1("ListParameter");
 
     //creating Request
-    QList<types::Localisation::QtGpsLocation> inputLocationList;
-    inputLocationList.push_back(types::Localisation::QtGpsLocation(1.1, 2.2, 3.3, types::Localisation::QtGpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0,17));
-    inputLocationList.push_back(types::Localisation::QtGpsLocation(4.4, 5.5, 6.6, types::Localisation::QtGpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0,317));
-    inputLocationList.push_back(types::Localisation::QtGpsLocation(7.7, 8.8, 9.9, types::Localisation::QtGpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0,3317));
+    std::vector<types::Localisation::GpsLocation> inputLocationList;
+    inputLocationList.push_back(types::Localisation::GpsLocation(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0,17));
+    inputLocationList.push_back(types::Localisation::GpsLocation(4.4, 5.5, 6.6, types::Localisation::GpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0,317));
+    inputLocationList.push_back(types::Localisation::GpsLocation(7.7, 8.8, 9.9, types::Localisation::GpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0,3317));
 
     QString expectedString(
                 "{\"_typeName\":\"joynr.Request\","
@@ -897,8 +887,8 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequestWithLists) {
 
     Request request1;
     request1.setMethodName("serialize_deserialize_JsonRequestTest_method");
-    QList<QVariant> inputQvl = Util::convertListToVariantList(inputLocationList);
-    request1.addParam(inputQvl, "List");
+    std::vector<Variant> inputvl = TypeUtil::toVectorOfVariants(inputLocationList);
+    request1.addParam(Variant::make<std::vector<Variant>>(inputvl), "List");
 
     expectedString = expectedString.arg(TypeUtil::toQt(request1.getRequestReplyId()));
     QByteArray expected = expectedString.toUtf8();
@@ -909,45 +899,40 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequestWithLists) {
 
     //deserializing Request
     Request* request2 = JsonSerializer::deserialize<Request>(serializedContent);
-    std::vector<QVariant> paramsReceived = request2->getParams();
+    std::vector<Variant> paramsReceived = request2->getParams();
 
-    LOG_DEBUG(logger, QString("x1") + QString(paramsReceived.at(0).typeName()));
-    ASSERT_TRUE(paramsReceived.at(0).canConvert<QList<QVariant> >()) << "Cannot convert the field of the Param Map to a QList<QVariant>";
-    QList<QVariant> returnQvl = paramsReceived.at(0).value<QList<QVariant> >();
-    ASSERT_TRUE(returnQvl.size() == 3) << "list size size != 3";
-    LOG_DEBUG(logger, QString(returnQvl.at(0).typeName()));
+    LOG_DEBUG(logger, QString("x1") + QString::number(paramsReceived.at(0).getTypeId()));
+    ASSERT_TRUE(paramsReceived.at(0).is<std::vector<Variant>>()) << "Cannot convert the field of the Param Map to a QList<QVariant>";
+    std::vector<Variant> returnvl = paramsReceived.at(0).get<std::vector<Variant>>();
+    ASSERT_TRUE(returnvl.size() == 3) << "list size size != 3";
+    LOG_DEBUG(logger, QString::number(returnvl.at(0).getTypeId()));
 
-    ASSERT_TRUE(returnQvl.at(0).canConvert<types::Localisation::QtGpsLocation>()) << "Cannot convert the first entry of the return List to QtGpsLocation";
+    ASSERT_TRUE(returnvl.at(0).is<types::Localisation::GpsLocation>()) << "Cannot convert the first entry of the return List to QtGpsLocation";
 
-    QList<types::Localisation::QtGpsLocation> resultLocationList = Util::convertVariantListToList<types::Localisation::QtGpsLocation>(returnQvl);
-    EXPECT_EQ(resultLocationList.at(1), types::Localisation::QtGpsLocation(4.4, 5.5, 6.6, types::Localisation::QtGpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0, 317));
+    std::vector<types::Localisation::GpsLocation> resultLocationList = Util::convertVariantVectorToVector<types::Localisation::GpsLocation>(returnvl);
+    EXPECT_EQ(resultLocationList.at(1), types::Localisation::GpsLocation(4.4, 5.5, 6.6, types::Localisation::GpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0, 317));
 
     delete request2;
 }
 
 // Test to investigate whether long lists cause a problem with during deserialization
 TEST_F(JsonSerializerTest, serialize_deserialize_ListComplexity) {
-    qRegisterMetaType<joynr::Request>("joynr::Request");
-    qRegisterMetaType<joynr::types::Localisation::QtGpsLocation>("joynr::types::Localisation::QtGpsLocation");
-    qRegisterMetaType<joynr__types__Localisation__QtGpsLocation>("joynr__types__Localisation__GpsLocation");
-
-    QString contentParam1("ListParameter");
 
     //creating Request
-    QList<types::Localisation::QtGpsLocation> inputLocationList;
+    std::vector<types::Localisation::GpsLocation> inputLocationList;
 
     // Create a JSON list
     int firstListSize = 10000;
     for (int i = 0; i < firstListSize; i++) {
-        inputLocationList.push_back(types::Localisation::QtGpsLocation(1.1, 2.2, 3.3, types::Localisation::QtGpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0, 17));
+        inputLocationList.push_back(types::Localisation::GpsLocation(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0, 17));
     }
 
     // Create a request that uses this list
     Request request1;
     request1.setMethodName("serialize_deserialize_JsonRequestTest_method");
-    std::vector<QVariant> params1;
-    QList<QVariant> inputQvl = Util::convertListToVariantList(inputLocationList);
-    params1.push_back(QVariant::fromValue(inputQvl));
+    std::vector<Variant> params1;
+    std::vector<Variant> inputvl = TypeUtil::toVectorOfVariants(inputLocationList);
+    params1.push_back(Variant::make<std::vector<Variant>>(inputvl));
     request1.setParams(params1);
 
     //Time request serialization
@@ -964,15 +949,15 @@ TEST_F(JsonSerializerTest, serialize_deserialize_ListComplexity) {
 
     // Double the size of the JSON list
     for (int i = 0; i < firstListSize; i++) {
-        inputLocationList.push_back(types::Localisation::QtGpsLocation(1.1, 2.2, 3.3, types::Localisation::QtGpsFixEnum::MODE3D, 0.0, 0,0,0,0,0,17));
+        inputLocationList.push_back(types::Localisation::GpsLocation(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE3D, 0.0, 0,0,0,0,0,17));
     }
 
     // Create a request that uses this bigger list
     Request request2;
     request2.setMethodName("serialize_deserialize_JsonRequestTest_method");
-    std::vector<QVariant> params2;
-    QList<QVariant> inputQv2 = Util::convertListToVariantList(inputLocationList);
-    params2.push_back(QVariant::fromValue(inputQv2));
+    std::vector<Variant> params2;
+    std::vector<Variant> inputv2 = TypeUtil::toVectorOfVariants(inputLocationList);
+    params2.push_back(Variant::make<std::vector<Variant>>(inputv2));
     request2.setParams(params2);
 
     // Time request serialization

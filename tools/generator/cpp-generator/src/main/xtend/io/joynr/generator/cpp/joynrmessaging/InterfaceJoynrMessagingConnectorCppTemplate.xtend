@@ -51,18 +51,16 @@ class InterfaceJoynrMessagingConnectorCppTemplate implements InterfaceTemplate{
 joynr::Request internalRequestObject;
 internalRequestObject.setMethodName("«method.joynrName»");
 «FOR param : getInputParameters(method)»
-	«val paramRef = qtTypeUtil.fromStdTypeToQTType(param, param.joynrName, true)»
 	«IF isEnum(param.type) && isArray(param)»
-		internalRequestObject.addParam(joynr::Util::convertListToVariantList(«paramRef»), "«getJoynrTypeName(param)»");
+		internalRequestObject.addParam(joynr::TypeUtil::toVariant(Util::convertEnumVectorToVariantVector<«cppStdTypeUtil.getTypeNameOfContainingClass(param.type.derived)»>(input)), "«getJoynrTypeName(param)»");
 	«ELSEIF isEnum(param.type)»
-		internalRequestObject.addParam(QVariant::fromValue(«paramRef»), "«getJoynrTypeName(param)»");
+		internalRequestObject.addParam(Variant::make<«cppStdTypeUtil.getTypeName(param)»>(«param.name»), "«getJoynrTypeName(param)»");
 	«ELSEIF isArray(param)»
-		QList<QVariant> «param.joynrName»QVarList = joynr::Util::convertListToVariantList(«paramRef»);
-		internalRequestObject.addParam(QVariant::fromValue(«param.joynrName»QVarList), "«getJoynrTypeName(param)»");
+		internalRequestObject.addParam(TypeUtil::toVariant<«cppStdTypeUtil.getTypeName(param.type)»>(«param.name»), "«getJoynrTypeName(param)»");
 	«ELSEIF isComplex(param.type)»
-		internalRequestObject.addParam(QVariant::fromValue(«paramRef»), "«getJoynrTypeName(param)»");
+		internalRequestObject.addParam(Variant::make<«cppStdTypeUtil.getTypeName(param)»>(«param.name»), "«getJoynrTypeName(param)»");
 	«ELSE»
-		internalRequestObject.addParam(QVariant(«paramRef»), "«getJoynrTypeName(param)»");
+		internalRequestObject.addParam(Variant::make<«cppStdTypeUtil.getTypeName(param)»>(«param.name»), "«getJoynrTypeName(param)»");
 	«ENDIF»
 «ENDFOR»
 '''
@@ -208,10 +206,9 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 			joynr::Request internalRequestObject;
 			internalRequestObject.setMethodName("set«attributeName.toFirstUpper»");
 			«IF isArray(attribute)»
-				QList<QVariant> «attributeName»QVarList = joynr::Util::convertListToVariantList(«qtTypeUtil.fromStdTypeToQTType(attribute, attributeName)»);
-				internalRequestObject.addParam(QVariant::fromValue(«attributeName»QVarList), "«getJoynrTypeName(attribute)»");
+				internalRequestObject.addParam(TypeUtil::toVariant(«attributeName»), "«getJoynrTypeName(attribute)»");
 			«ELSE»
-				internalRequestObject.addParam(QVariant::fromValue(«qtTypeUtil.fromStdTypeToQTType(attribute, attributeName)»), "«getJoynrTypeName(attribute)»");
+				internalRequestObject.addParam(Variant::make<«cppStdTypeUtil.getTypeName(attribute)»>(«attributeName»), "«getJoynrTypeName(attribute)»");
 			«ENDIF»
 
 			std::shared_ptr<joynr::Future<void>> future(new joynr::Future<void>());
@@ -253,10 +250,9 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 			joynr::Request internalRequestObject;
 			internalRequestObject.setMethodName("set«attributeName.toFirstUpper»");
 			«IF isArray(attribute)»
-				QList<QVariant> «attributeName»QVarList = joynr::Util::convertListToVariantList(«qtTypeUtil.fromStdTypeToQTType(attribute, attributeName)»);
-				internalRequestObject.addParam(QVariant::fromValue(«attributeName»QVarList), "«getJoynrTypeName(attribute)»");
+				internalRequestObject.addParam(TypeUtil::toVariant(«attributeName»), "«getJoynrTypeName(attribute)»");
 			«ELSE»
-				internalRequestObject.addParam(QVariant::fromValue(«qtTypeUtil.fromStdTypeToQTType(attribute, attributeName)»), "«getJoynrTypeName(attribute)»");
+				internalRequestObject.addParam(Variant::make<«cppStdTypeUtil.getTypeName(attribute)»>(«attributeName»), "«getJoynrTypeName(attribute)»");
 			«ENDIF»
 
 			std::shared_ptr<joynr::Future<void> > future( new joynr::Future<void>());

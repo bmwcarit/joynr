@@ -28,8 +28,7 @@ Request::Request() : requestReplyId(), methodName(), params(), paramDatatypes()
 }
 
 Request::Request(const Request& other)
-        : QObject(),
-          requestReplyId(other.getRequestReplyId()),
+        : requestReplyId(other.getRequestReplyId()),
           methodName(other.getMethodName()),
           params(other.getParams()),
           paramDatatypes(other.paramDatatypes)
@@ -71,18 +70,18 @@ void Request::setMethodName(const std::string& methodName)
     this->methodName = methodName;
 }
 
-std::vector<QVariant> Request::getParams() const
+std::vector<Variant> Request::getParams() const
 {
     return params;
 }
 
 // Set the parameters - called by the QJson deserializer
-void Request::setParams(const std::vector<QVariant>& params)
+void Request::setParams(const std::vector<Variant>& params)
 {
     this->params = params;
 }
 
-void Request::addParam(QVariant value, std::string datatype)
+void Request::addParam(Variant value, std::string datatype)
 {
     this->params.push_back(value);
     this->paramDatatypes.push_back(datatype);

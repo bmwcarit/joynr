@@ -65,6 +65,8 @@ public:
     QList<QString> list1;
 };
 
+bool isMockArgumentRegistered = Variant::registerType<MockArgument>("MockArgument");
+
 class JsonRequestTest : public ::testing::Test {
 public:
     JsonRequestTest() :
@@ -100,13 +102,13 @@ public:
 
     void checkJsonRequest(Request jsonRequest) {
         ASSERT_EQ(operationName, jsonRequest.getMethodName());
-        std::vector<QVariant> params = jsonRequest.getParams();
+        std::vector<Variant> params = jsonRequest.getParams();
         ASSERT_EQ(3, params.size());
 
-        ASSERT_EQ(valueOfArg1, params.at(0));
+        ASSERT_EQ(valueOfArg1, params.at(0).get<std::string>());
         // arg2 is a custom type, so need to extract QVariant value
-        ASSERT_EQ(valueOfArg2, params.at(1).value<MockArgument>());
-        ASSERT_EQ(valueOfArg3, params.at(2));
+        ASSERT_EQ(valueOfArg2, params.at(1).get<MockArgument>());
+        ASSERT_EQ(valueOfArg3, params.at(2).get<std::string>());
     }
 
 protected:
@@ -116,9 +118,9 @@ protected:
     QString arg2;
     QString arg3;
 
-    QString valueOfArg1;
+    std::string valueOfArg1;
     MockArgument valueOfArg2;
-    QString valueOfArg3;
+    std::string valueOfArg3;
 };
 
 Q_DECLARE_METATYPE(MockArgument)
@@ -130,10 +132,10 @@ typedef JsonRequestTest JsonRequestDeathTest;
 TEST_F(JsonRequestTest, buildJsonRequest)
 {
     // Build the argument list
-    std::vector<QVariant> args;
-    args.push_back(QVariant(valueOfArg1));
-    args.push_back(QVariant::fromValue(valueOfArg2));
-    args.push_back(QVariant(valueOfArg3));
+    std::vector<Variant> args;
+    args.push_back(Variant::make<std::string>(valueOfArg1));
+    args.push_back(Variant::make<MockArgument>(valueOfArg2));
+    args.push_back(Variant::make<std::string>(valueOfArg3));
 
     // Build the request
     Request jsonRequest;
