@@ -211,12 +211,25 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
                                  reply);
     };
     // execute request
-    requestInterpreter->execute(caller,
-                                request->getMethodName(),
-                                request->getParams(),
-                                request->getParamDatatypes(),
-                                onSuccess,
-                                onError);
+    try {
+        requestInterpreter->execute(caller,
+                                    request->getMethodName(),
+                                    request->getParams(),
+                                    request->getParamDatatypes(),
+                                    onSuccess,
+                                    onError);
+    } catch (exceptions::ProviderRuntimeException& e) {
+        std::string message = "Could not perform an RPC invocation, caught exception: " +
+                              e.getTypeName() + ":" + e.getMessage();
+        LOG_ERROR(logger, message.c_str());
+        onError(e);
+    } catch (exceptions::JoynrException& e) {
+        std::string message = "Could not perform an RPC invocation, caught exception: " +
+                              e.getTypeName() + ":" + e.getMessage();
+        LOG_ERROR(logger, message.c_str());
+        onError(exceptions::ProviderRuntimeException("caught exception: " + e.getTypeName() + ":" +
+                                                     e.getMessage()));
+    }
 
     delete request;
 }

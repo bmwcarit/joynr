@@ -114,22 +114,28 @@ void «interfaceName»RequestInterpreter::execute(
 		«IF attribute.writable»
 			if (methodName == "set«attributeName.toFirstUpper»" && paramTypes.size() == 1){
 				QVariant «attributeName»QVar(paramValues.at(0));
-				«IF isEnum(attribute.type)»
-					«qtTypeUtil.getTypeName(attribute)» typedInput«attributeName.toFirstUpper» =
-						«joynrGenerationPrefix»::Util::convertVariantToEnum<«qtTypeUtil.getTypeNameOfContainingClass(attribute.type.derived)»>(«attributeName»QVar);
-				«ELSEIF isEnum(attribute.type) && isArray(attribute)»
+				«IF isEnum(attribute.type) && isArray(attribute)»
 					«val attributeRef = joynrGenerationPrefix + "::Util::convertVariantListToEnumList<" + qtTypeUtil.getTypeNameOfContainingClass(attribute.type.derived) + ">(" + attributeName + "QVar.toList())"»
 					«qtTypeUtil.getTypeName(attribute)» typedInput«attributeName.toFirstUpper» =
 						«attributeRef»;
+				«ELSEIF isEnum(attribute.type)»
+					«qtTypeUtil.getTypeName(attribute)» typedInput«attributeName.toFirstUpper» =
+						«joynrGenerationPrefix»::Util::convertVariantToEnum<«qtTypeUtil.getTypeNameOfContainingClass(attribute.type.derived)»>(«attributeName»QVar);
 				«ELSEIF isArray(attribute)»
 					«val attributeRef = joynrGenerationPrefix + "::Util::convertVariantListToList<" + qtTypeUtil.getTypeName(attribute.type) + ">(paramQList)"»
-					assert(«attributeName»QVar.canConvert<QList<QVariant> >());
+					if (!«attributeName»QVar.canConvert<QList<QVariant> >()) {
+						onError(exceptions::MethodInvocationException("Illegal argument for attribute setter set«attributeName.toFirstUpper»"));
+						return;
+					}
 					QList<QVariant> paramQList = «attributeName»QVar.value<QList<QVariant> >();
 					«qtTypeUtil.getTypeName(attribute)» typedInput«attributeName.toFirstUpper» = 
 							«attributeRef»;
 				«ELSE»
 					«val attributeRef = attributeName + "QVar.value<" + qtTypeUtil.getTypeName(attribute) + ">()"»
-					assert(«attributeName»QVar.canConvert<«qtTypeUtil.getTypeName(attribute)»>());
+					if (!«attributeName»QVar.canConvert<«qtTypeUtil.getTypeName(attribute)»>()) {
+						onError(exceptions::MethodInvocationException("Illegal argument for attribute setter set«attributeName.toFirstUpper»"));
+						return;
+					}
 					«qtTypeUtil.getTypeName(attribute)» typedInput«attributeName.toFirstUpper» =
 							«attributeRef»;
 				«ENDIF»
@@ -187,12 +193,18 @@ void «interfaceName»RequestInterpreter::execute(
 						«qtTypeUtil.getTypeName(input)» «inputName» = «joynrGenerationPrefix»::Util::convertVariantToEnum<«qtTypeUtil.getTypeNameOfContainingClass(input.type.derived)»>(«inputName»QVar);
 					«ELSEIF isArray(input)»
 						//isArray
-						assert(«inputName»QVar.canConvert<QList<QVariant> >());
+						if (!«inputName»QVar.canConvert<QList<QVariant> >()) {
+							onError(exceptions::MethodInvocationException("Illegal argument for method «methodName»: «inputName» («getJoynrTypeName(input)»)"));
+							return;
+						}
 						QList<QVariant> «inputName»QVarList = «inputName»QVar.value<QList<QVariant> >();
 						QList<«qtTypeUtil.getTypeName(input.type)»> «inputName» = «joynrGenerationPrefix»::Util::convertVariantListToList<«qtTypeUtil.getTypeName(input.type)»>(«inputName»QVarList);
 					«ELSE»
 						//«qtTypeUtil.getTypeName(input)»
-						assert(«inputName»QVar.canConvert<«qtTypeUtil.getTypeName(input)»>());
+						if (!«inputName»QVar.canConvert<«qtTypeUtil.getTypeName(input)»>()) {
+							onError(exceptions::MethodInvocationException("Illegal argument for method «methodName»: «inputName» («getJoynrTypeName(input)»)"));
+							return;
+						}
 						«qtTypeUtil.getTypeName(input)» «inputName» = «inputName»QVar.value<«qtTypeUtil.getTypeName(input)»>();
 					«ENDIF»
 				«ENDFOR»
