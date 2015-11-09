@@ -48,7 +48,7 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
 include_directories(
-    ${JoynrCommon_INCLUDE_DIRECTORIES}
+    ${JoynrCommon_INCLUDE_DIRECTORIES} ${CMAKE_CURRENT_SOURCE_DIR}/../libjoynr/include
 )
 
 set(

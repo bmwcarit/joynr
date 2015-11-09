@@ -24,11 +24,14 @@ namespace joynr
 
 const SubscriptionPublication SubscriptionPublication::NULL_RESPONSE = SubscriptionPublication();
 
-SubscriptionPublication::SubscriptionPublication() : subscriptionId(), response()
+SubscriptionPublication::SubscriptionPublication() : subscriptionId(), response(), error(NULL)
 {
 }
 SubscriptionPublication::SubscriptionPublication(const SubscriptionPublication& other)
-        : QObject(), subscriptionId(other.getSubscriptionId()), response(other.response)
+        : QObject(),
+          subscriptionId(other.getSubscriptionId()),
+          response(other.response),
+          error(other.error)
 {
 }
 
@@ -36,6 +39,7 @@ SubscriptionPublication& SubscriptionPublication::operator=(const SubscriptionPu
 {
     this->subscriptionId = other.getSubscriptionId();
     this->response = other.response;
+    this->error = other.error;
     return *this;
 }
 
@@ -59,9 +63,19 @@ void SubscriptionPublication::setResponse(QList<QVariant> response)
     this->response = response;
 }
 
+std::shared_ptr<exceptions::JoynrRuntimeException> SubscriptionPublication::getError() const
+{
+    return this->error;
+}
+
+void SubscriptionPublication::setError(std::shared_ptr<exceptions::JoynrRuntimeException> error)
+{
+    this->error = error;
+}
+
 bool SubscriptionPublication::operator==(const SubscriptionPublication& other) const
 {
-    return subscriptionId == other.getSubscriptionId();
+    return subscriptionId == other.getSubscriptionId() && error == other.error;
 }
 
 bool SubscriptionPublication::operator!=(const SubscriptionPublication& other) const

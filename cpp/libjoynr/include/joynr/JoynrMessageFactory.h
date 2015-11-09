@@ -102,6 +102,12 @@ private:
                       const qint64 ttl,
                       const Reply& payload);
 
+    void initSubscriptionPublicationMsg(JoynrMessage& msg,
+                                        const QString& senderParticipantId,
+                                        const QString& receiverParticipantId,
+                                        const qint64 ttl,
+                                        const SubscriptionPublication& payload);
+
     IPlatformSecurityManager* securityManager;
     joynr_logging::Logger* logger;
 };

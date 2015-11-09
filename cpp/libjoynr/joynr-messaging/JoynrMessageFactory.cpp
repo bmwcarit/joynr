@@ -94,7 +94,7 @@ JoynrMessage JoynrMessageFactory::createSubscriptionPublication(
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION);
-    initMsg(msg, senderId, receiverId, qos.getTtl(), payload);
+    initSubscriptionPublicationMsg(msg, senderId, receiverId, qos.getTtl(), payload);
     return msg;
 }
 
@@ -184,6 +184,27 @@ void JoynrMessageFactory::initReplyMsg(JoynrMessage& msg,
 
     // set payload
     msg.setPayload(JsonSerializer::serializeReply(payload));
+}
+
+void JoynrMessageFactory::initSubscriptionPublicationMsg(JoynrMessage& msg,
+                                                         const QString& senderParticipantId,
+                                                         const QString& receiverParticipantId,
+                                                         const qint64 ttl,
+                                                         const SubscriptionPublication& payload)
+{
+    msg.setHeaderCreatorUserId(securityManager->getCurrentProcessUserId());
+    msg.setHeaderFrom(senderParticipantId);
+    msg.setHeaderTo(receiverParticipantId);
+
+    // calculate expiry date
+    JoynrTimePoint expiryDate = DispatcherUtils::convertTtlToAbsoluteTime(ttl);
+    msg.setHeaderExpiryDate(expiryDate);
+
+    // add content type and class
+    msg.setHeaderContentType(JoynrMessage::VALUE_CONTENT_TYPE_APPLICATION_JSON);
+
+    // set payload
+    msg.setPayload(JsonSerializer::serializeSubscriptionPublication(payload));
 }
 
 } // namespace joynr

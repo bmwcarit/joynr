@@ -378,7 +378,7 @@ void Dispatcher::handlePublicationReceived(const JoynrMessage& message)
     QByteArray jsonSubscriptionPublication = message.getPayload();
 
     SubscriptionPublication* subscriptionPublication =
-            JsonSerializer::deserialize<SubscriptionPublication>(jsonSubscriptionPublication);
+            JsonSerializer::deserializeSubscriptionPublication(jsonSubscriptionPublication);
     if (subscriptionPublication == Q_NULLPTR) {
         LOG_ERROR(logger,
                   QString("Unable to deserialize subscription publication object from: %1")

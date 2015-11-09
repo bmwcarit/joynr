@@ -25,6 +25,7 @@
 #include "joynr/joynrlogging.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/Reply.h"
+#include "joynr/SubscriptionPublication.h"
 #include <QString>
 #include <QVariantMap>
 #include <QVariant>
@@ -53,7 +54,6 @@ public:
         return serializer.serialize(QVariant(QMetaType::type(metaobject->className()), &object));
     }
 
-    // TODO This is a workaround which must be removed after the new serializer is introduced
     /**
      * @brief Serializes a Reply object into JSON format.
      *
@@ -65,33 +65,23 @@ public:
         QByteArray json = serialize(reply);
         std::shared_ptr<exceptions::JoynrException> error = reply.getError();
         if (error) {
-            std::string typeName = error->getTypeName();
-            std::string detailMessage = error->what();
-            json.chop(1);
-            json.append((",\"" + std::string(JSON_FIELD_NAME_EXCEPTION) + "\":{").c_str());
-            json.append(
-                    ("\"" + std::string(JSON_FIELD_NAME_TYPE) + "\":\"" + typeName + "\"").c_str());
-            if (detailMessage.length() > 0) {
-                json.append((",\"" + std::string(JSON_FIELD_NAME_DETAIL_MESSAGE) + "\":\"" +
-                             detailMessage + "\"").c_str());
-            }
-            if (typeName == exceptions::PublicationMissedException::TYPE_NAME) {
-                std::shared_ptr<exceptions::PublicationMissedException> publicationMissedException =
-                        std::dynamic_pointer_cast<exceptions::PublicationMissedException>(error);
-                std::string subscriptionId = publicationMissedException->getSubscriptionId();
-                json.append((",\"" + std::string(JSON_FIELD_NAME_SUBSCRIPTION_ID) + "\":\"" +
-                             subscriptionId + "\"").c_str());
-            } else if (typeName == exceptions::ApplicationException::TYPE_NAME) {
-                std::shared_ptr<exceptions::ApplicationException> applicationException =
-                        std::dynamic_pointer_cast<exceptions::ApplicationException>(error);
-                std::string errorTypeName = applicationException->getErrorTypeName();
-                std::string name = applicationException->getName();
-                json.append((",\"" + std::string(JSON_FIELD_NAME_ERROR_ENUM) + "\":{" + "\"" +
-                             std::string(JSON_FIELD_NAME_TYPE) + "\":\"" + errorTypeName + "\",\"" +
-                             std::string(JSON_FIELD_NAME_ERROR_ENUM_NAME) + "\":\"" + name +
-                             "\"}").c_str());
-            }
-            json.append("}}");
+            serializeJoynrException(json, error);
+        }
+        return json;
+    }
+
+    /**
+     * @brief Serializes a SubsriptionPublication object into JSON format.
+     *
+     * @param publication the publication object to serialize.
+     * @return QByteArray the serialized byte array in JSON format, UTF-8 encoding.
+     */
+    static QByteArray serializeSubscriptionPublication(const SubscriptionPublication& publication)
+    {
+        QByteArray json = serialize(publication);
+        std::shared_ptr<exceptions::JoynrRuntimeException> error = publication.getError();
+        if (error) {
+            serializeJoynrException(json, error);
         }
         return json;
     }
@@ -213,6 +203,48 @@ public:
         return reply;
     }
 
+    /**
+         * @brief Deserializes a QByteArray in JSON format to a SubscriptionPublication object.
+         *
+         * The QByteArray must be a valid JSON representation of a SubscriptionPublication message.
+         *
+         * @param json The JSON representation of the publication message.
+         * @return The deserialized SubscriptionPublication object, or NULL in case of
+      *deserialization error
+         */
+    static SubscriptionPublication* deserializeSubscriptionPublication(const QByteArray& json)
+    {
+        QJson::Parser parser;
+
+        QVariant jsonQVar = parser.parse(json);
+        QVariantMap jsonQVarValue = jsonQVar.value<QVariantMap>();
+
+        SubscriptionPublication* publication =
+                (SubscriptionPublication*)deserialize<SubscriptionPublication>(json);
+        if (publication == Q_NULLPTR) {
+            return publication;
+        }
+
+        if (jsonQVarValue.contains(JSON_FIELD_NAME_EXCEPTION)) {
+            QVariantMap nestedMap = jsonQVarValue.value(JSON_FIELD_NAME_EXCEPTION).toMap();
+
+            std::shared_ptr<exceptions::JoynrRuntimeException> error =
+                    std::dynamic_pointer_cast<exceptions::JoynrRuntimeException>(
+                            deserializeJoynrException(nestedMap, json));
+            if (error) {
+                publication->setError(error);
+            } else {
+                publication->setError(std::make_shared<exceptions::JoynrRuntimeException>(
+                        "invalid Reply: unable to deserialize exception."));
+            }
+
+        } else {
+            publication->setError(NULL);
+        }
+
+        return publication;
+    }
+
 private:
     // TODO This is a workaround which must be removed after the new serializer is introduced
     static constexpr auto JSON_FIELD_NAME_TYPE = "_typeName";
@@ -221,6 +253,39 @@ private:
     static constexpr auto JSON_FIELD_NAME_SUBSCRIPTION_ID = "subscriptionId";
     static constexpr auto JSON_FIELD_NAME_ERROR_ENUM = "error";
     static constexpr auto JSON_FIELD_NAME_ERROR_ENUM_NAME = "name";
+
+    // TODO This is a workaround which must be removed after the new serializer is introduced
+    static void serializeJoynrException(QByteArray& json,
+                                        std::shared_ptr<exceptions::JoynrException> error)
+    {
+        std::string typeName = error->getTypeName();
+        std::string detailMessage = error->getMessage();
+        json.chop(1);
+        json.append((",\"" + std::string(JSON_FIELD_NAME_EXCEPTION) + "\":{").c_str());
+        json.append(("\"" + std::string(JSON_FIELD_NAME_TYPE) + "\":\"" + typeName + "\"").c_str());
+        if (detailMessage.length() > 0) {
+            json.append((",\"" + std::string(JSON_FIELD_NAME_DETAIL_MESSAGE) + "\":\"" +
+                         detailMessage + "\"").c_str());
+        }
+        if (typeName == exceptions::PublicationMissedException::TYPE_NAME) {
+            std::shared_ptr<exceptions::PublicationMissedException> publicationMissedException =
+                    std::dynamic_pointer_cast<exceptions::PublicationMissedException>(error);
+            std::string subscriptionId = publicationMissedException->getSubscriptionId();
+            json.append((",\"" + std::string(JSON_FIELD_NAME_SUBSCRIPTION_ID) + "\":\"" +
+                         subscriptionId + "\"").c_str());
+        } else if (typeName == exceptions::ApplicationException::TYPE_NAME) {
+            std::shared_ptr<exceptions::ApplicationException> applicationException =
+                    std::dynamic_pointer_cast<exceptions::ApplicationException>(error);
+            std::string errorTypeName = applicationException->getErrorTypeName();
+            std::string name = applicationException->getName();
+            json.append((",\"" + std::string(JSON_FIELD_NAME_ERROR_ENUM) + "\":{" + "\"" +
+                         std::string(JSON_FIELD_NAME_TYPE) + "\":\"" + errorTypeName + "\",\"" +
+                         std::string(JSON_FIELD_NAME_ERROR_ENUM_NAME) + "\":\"" + name +
+                         "\"}").c_str());
+        }
+        json.append("}}");
+    }
+
     // TODO This is a workaround which must be removed after the new serializer is introduced
     static std::shared_ptr<exceptions::JoynrException> deserializeJoynrException(
             const QVariantMap& errorMap,
