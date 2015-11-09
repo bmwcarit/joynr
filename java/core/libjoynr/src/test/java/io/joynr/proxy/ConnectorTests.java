@@ -20,6 +20,18 @@ package io.joynr.proxy;
  */
 
 import static org.mockito.Mockito.times;
+
+import java.lang.reflect.Method;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+
+import com.fasterxml.jackson.databind.JsonMappingException;
+
 import io.joynr.arbitration.ArbitrationResult;
 import io.joynr.dispatcher.rpc.JoynrAsyncInterface;
 import io.joynr.dispatcher.rpc.JoynrSyncInterface;
@@ -34,22 +46,10 @@ import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.proxy.invocation.UnsubscribeInvocation;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
-
-import java.lang.reflect.Method;
-
 import joynr.PeriodicSubscriptionQos;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.types.Localisation.GpsPosition;
 import joynr.vehicle.LocalisationSubscriptionInterface;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-
-import com.fasterxml.jackson.databind.JsonMappingException;
 
 public class ConnectorTests {
 
@@ -106,7 +106,7 @@ public class ConnectorTests {
             Assert.fail("Calling a method with missing callback annotation did not throw an exception.");
         } catch (Exception e) {
             // This is what is supposed to happen -> no error handling
-            Assert.assertEquals(JsonMappingException.class, e.getClass());
+            Assert.assertEquals(JoynrIllegalStateException.class, e.getClass());
         }
 
     }
