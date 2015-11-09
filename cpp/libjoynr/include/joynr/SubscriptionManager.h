@@ -37,7 +37,7 @@
 namespace joynr
 {
 
-class DelayedScheduler;
+class DelayedSchedulerOld;
 /**
   * \class SubscriptionManager
   * \brief The subscription manager is used by the proxy (via the appropriate connector)
@@ -56,7 +56,7 @@ public:
 
     SubscriptionManager();
 
-    SubscriptionManager(DelayedScheduler* scheduler);
+    SubscriptionManager(DelayedSchedulerOld* scheduler);
     /**
      * @brief Subscribe to an attribute. Modifies the subscription request to include all
      * necessary information (side effect). Takes ownership of the ISubscriptionCallback, i.e.
@@ -105,7 +105,7 @@ private:
 
     QReadWriteLock subscriptionsLock;
 
-    DelayedScheduler* missedPublicationScheduler;
+    DelayedSchedulerOld* missedPublicationScheduler;
     static joynr_logging::Logger* logger;
     /**
       * \class SubscriptionManager::MissedPublicationRunnable

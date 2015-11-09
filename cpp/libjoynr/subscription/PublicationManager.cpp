@@ -22,7 +22,7 @@
 #include "joynr/JsonSerializer.h"
 #include "joynr/IRequestInterpreter.h"
 #include "joynr/InterfaceRegistrar.h"
-#include "joynr/DelayedScheduler.h"
+#include "joynr/DelayedSchedulerOld.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/IPublicationSender.h"
 #include "joynr/SubscriptionRequest.h"
@@ -151,7 +151,7 @@ PublicationManager::~PublicationManager()
     subscriptionLocker.unlock();
 }
 
-PublicationManager::PublicationManager(DelayedScheduler* scheduler, int maxThreads)
+PublicationManager::PublicationManager(DelayedSchedulerOld* scheduler, int maxThreads)
         : publications(),
           subscriptionId2SubscriptionRequest(),
           subscriptionId2BroadcastSubscriptionRequest(),
@@ -207,7 +207,7 @@ PublicationManager::PublicationManager(int maxThreads)
 {
 
     publishingThreadPool.setMaxThreadCount(maxThreads);
-    delayedScheduler = new ThreadPoolDelayedScheduler(
+    delayedScheduler = new ThreadPoolDelayedSchedulerOld(
             publishingThreadPool, QString("PublicationManager-PublishingThreadPool"));
     loadSavedAttributeSubscriptionRequestsMap();
     loadSavedBroadcastSubscriptionRequestsMap();
@@ -836,13 +836,14 @@ void PublicationManager::removeOnChangePublication(
 // This function assumes a write lock is alrady held for the publication}
 void PublicationManager::removePublicationEndRunnable(std::shared_ptr<Publication> publication)
 {
-    if (publication->publicationEndRunnableHandle != DelayedScheduler::INVALID_RUNNABLE_HANDLE() &&
+    if (publication->publicationEndRunnableHandle !=
+                DelayedSchedulerOld::INVALID_RUNNABLE_HANDLE() &&
         !isShuttingDown()) {
         LOG_DEBUG(logger,
                   QString("Unscheduling PublicationEndRunnable with handle: %1")
                           .arg(publication->publicationEndRunnableHandle));
         delayedScheduler->unschedule(publication->publicationEndRunnableHandle);
-        publication->publicationEndRunnableHandle = DelayedScheduler::INVALID_RUNNABLE_HANDLE();
+        publication->publicationEndRunnableHandle = DelayedSchedulerOld::INVALID_RUNNABLE_HANDLE();
     }
 }
 
@@ -1216,7 +1217,7 @@ PublicationManager::Publication::Publication(IPublicationSender* publicationSend
           attributeListener(NULL),
           broadcastListener(NULL),
           mutex(QMutex::RecursionMode::Recursive),
-          publicationEndRunnableHandle(DelayedScheduler::INVALID_RUNNABLE_HANDLE())
+          publicationEndRunnableHandle(DelayedSchedulerOld::INVALID_RUNNABLE_HANDLE())
 {
 }
 
@@ -1265,7 +1266,7 @@ void PublicationManager::PublicationEndRunnable::run()
 
     {
         QMutexLocker locker(&(publication->mutex));
-        publication->publicationEndRunnableHandle = DelayedScheduler::INVALID_RUNNABLE_HANDLE();
+        publication->publicationEndRunnableHandle = DelayedSchedulerOld::INVALID_RUNNABLE_HANDLE();
     }
 }
 

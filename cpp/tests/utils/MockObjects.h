@@ -36,7 +36,7 @@
 #include <string>
 #include <vector>
 #include "utils/QThreadSleep.h"
-#include "joynr/DelayedScheduler.h"
+#include "joynr/DelayedSchedulerOld.h"
 #include "joynr/vehicle/GpsRequestCaller.h"
 #include "joynr/types/Localisation_QtGpsLocation.h"
 #include "joynr/types/Localisation_QtTrip.h"
@@ -141,10 +141,10 @@ public:
     MOCK_METHOD1(transmit, void(joynr::JoynrMessage& message));
 };
 
-class MockDelayedScheduler : public joynr::SingleThreadedDelayedScheduler
+class MockDelayedSchedulerOld : public joynr::SingleThreadedDelayedSchedulerOld
 {
 public:
-    MockDelayedScheduler(QString name) : SingleThreadedDelayedScheduler(name){};
+    MockDelayedSchedulerOld(QString name) : SingleThreadedDelayedSchedulerOld(name){};
     MOCK_METHOD1(executeRunnable, void(QRunnable* runnable));
     MOCK_METHOD1(stopRunnable, void(QRunnable* runnable));
     MOCK_METHOD2(schedule, quint32(QRunnable* runnable, int delay_ms));

@@ -27,7 +27,7 @@
 #include "utils/QThreadSleep.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/SubscriptionCallback.h"
-#include "joynr/DelayedScheduler.h"
+#include "joynr/DelayedSchedulerOld.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/Directory.h"
 #include "joynr/QtPeriodicSubscriptionQos.h"
@@ -207,7 +207,7 @@ TEST(SubscriptionManagerTest, registerSubscription_withoutExpiryDate) {
     );
     std::shared_ptr<SubscriptionCallback<types::Localisation::QtGpsLocation>> gpslocationCallback(
             new SubscriptionCallback<types::Localisation::QtGpsLocation>(mockGpsSubscriptionListener));
-    MockDelayedScheduler* mockDelayedScheduler = new MockDelayedScheduler(QString("SubscriptionManager-MockScheduler"));
+    MockDelayedSchedulerOld* mockDelayedScheduler = new MockDelayedSchedulerOld(QString("SubscriptionManager-MockScheduler"));
     EXPECT_CALL(*mockDelayedScheduler,
                 schedule(_,_))
             .Times(0);
@@ -235,7 +235,7 @@ TEST(SubscriptionManagerTest, registerSubscription_withExpiryDate) {
     );
     std::shared_ptr<SubscriptionCallback<types::Localisation::QtGpsLocation>> gpslocationCallback(
             new SubscriptionCallback<types::Localisation::QtGpsLocation>(mockGpsSubscriptionListener));
-    MockDelayedScheduler* mockDelayedScheduler = new MockDelayedScheduler(QString("SubscriptionManager-MockScheduler"));
+    MockDelayedSchedulerOld* mockDelayedScheduler = new MockDelayedSchedulerOld(QString("SubscriptionManager-MockScheduler"));
     EXPECT_CALL(*mockDelayedScheduler,
                 schedule(A<QRunnable*>(),_))
             .Times(1).WillRepeatedly(::testing::Return(runnableHandle()));
@@ -303,7 +303,7 @@ private:
 joynr_logging::Logger* TestRunnable::logger = joynr_logging::Logging::getInstance()->getLogger("MSG", "TestRunnable");
 
 TEST(SingleThreadedDelayedSchedulerTest, schedule_deletingRunnablesCorrectly) {
-    SingleThreadedDelayedScheduler scheduler(QString("SingleThreadedDelayedScheduler"));
+    SingleThreadedDelayedSchedulerOld scheduler(QString("SingleThreadedDelayedScheduler"));
     TestRunnable* runnable = new TestRunnable();
     scheduler.schedule(runnable, 1);
     QThreadSleep::msleep(100);
@@ -311,7 +311,7 @@ TEST(SingleThreadedDelayedSchedulerTest, schedule_deletingRunnablesCorrectly) {
 
 TEST(ThreadPoolDelayedSchedulerTest, schedule_deletingRunnablesCorrectly) {
     QThreadPool threadPool;
-    ThreadPoolDelayedScheduler scheduler(threadPool, QString("ThreadPoolDelayedScheduler"));
+    ThreadPoolDelayedSchedulerOld scheduler(threadPool, QString("ThreadPoolDelayedScheduler"));
     TestRunnable* runnable = new TestRunnable();
     scheduler.schedule(runnable, 1);
     QThreadSleep::msleep(100);

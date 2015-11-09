@@ -22,7 +22,7 @@
 #include <QRunnable>
 #include <chrono>
 #include <stdint.h>
-#include "joynr/DelayedScheduler.h"
+#include "joynr/DelayedSchedulerOld.h"
 #include "joynr/joynrlogging.h"
 
 using namespace ::testing;
@@ -30,7 +30,7 @@ using namespace joynr;
 using namespace joynr_logging;
 using namespace std::chrono;
 
-Logger* logger = Logging::getInstance()->getLogger("MSG", "DelayedSchedulerTest");
+Logger* logger = Logging::getInstance()->getLogger("MSG", "DelayedSchedulerOldTest");
 
 // Expected accuracy of the timer in milliseconds
 static qint64 timerAccuracy_ms = 25;
@@ -73,10 +73,10 @@ public:
     bool& triggered;
 };
 
-TEST(SingleThreadedDelayedSchedulerTest, runnableDoesNotRunTooEarly) {
+TEST(SingleThreadedDelayedSchedulerOldTest, runnableDoesNotRunTooEarly) {
     LOG_TRACE(logger, "starting test");
     qint64 delay = 500;
-    DelayedScheduler* scheduler = new SingleThreadedDelayedScheduler(QString("SingleThreadedDelayedScheduler"));
+    DelayedSchedulerOld* scheduler = new SingleThreadedDelayedSchedulerOld(QString("SingleThreadedDelayedScheduler"));
     bool wasTooEarly(false);
     DummyRunnable* runnable = new DummyRunnable(delay, wasTooEarly);
     LOG_TRACE(logger, "starting runnable");
@@ -91,10 +91,10 @@ TEST(SingleThreadedDelayedSchedulerTest, runnableDoesNotRunTooEarly) {
     delete scheduler;
 }
 
-TEST(SingleThreadedDelayedSchedulerTest, runnableCanBeStoppedBeforeRun) {
+TEST(SingleThreadedDelayedSchedulerOldTest, runnableCanBeStoppedBeforeRun) {
     LOG_TRACE(logger, "starting test");
     qint64 delay = 300;
-    DelayedScheduler* scheduler = new SingleThreadedDelayedScheduler(QString("SingleThreadedDelayedScheduler"));
+    DelayedSchedulerOld* scheduler = new SingleThreadedDelayedSchedulerOld(QString("SingleThreadedDelayedScheduler"));
     bool triggered(false);
     TriggerRunnable* runnable = new TriggerRunnable(delay, triggered);
     LOG_TRACE(logger, "starting runnable");
@@ -124,11 +124,11 @@ TEST(SingleThreadedDelayedSchedulerTest, runnableCanBeStoppedBeforeRun) {
     delete scheduler;
 }
 
-TEST(MultiThreadedDelayedSchedulerTest, runnableDoesNotRunTooEarly) {
+TEST(MultiThreadedDelayedSchedulerOldTest, runnableDoesNotRunTooEarly) {
     qint64 delay = 100;
     QThreadPool threadpool;
     threadpool.setMaxThreadCount(5);
-    DelayedScheduler* scheduler = new ThreadPoolDelayedScheduler(threadpool, QString("ThreadPoolDelayedScheduler"));
+    DelayedSchedulerOld* scheduler = new ThreadPoolDelayedSchedulerOld(threadpool, QString("ThreadPoolDelayedScheduler"));
     bool wasTooEarly;
     DummyRunnable* runnable = new DummyRunnable(delay, wasTooEarly);
     scheduler->schedule(runnable, delay);

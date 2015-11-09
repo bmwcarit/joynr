@@ -40,7 +40,7 @@
 namespace joynr
 {
 
-class DelayedScheduler;
+class DelayedSchedulerOld;
 class SubscriptionRequest;
 class BroadcastSubscriptionRequest;
 class BroadcastSubscriptionRequestInformation;
@@ -68,7 +68,7 @@ class JOYNR_EXPORT PublicationManager
 {
 public:
     explicit PublicationManager(int maxThreads = 2);
-    explicit PublicationManager(DelayedScheduler* scheduler, int maxThreads = 2);
+    explicit PublicationManager(DelayedSchedulerOld* scheduler, int maxThreads = 2);
     virtual ~PublicationManager();
     /**
      * @brief Adds the SubscriptionRequest and starts runnable to poll attributes.
@@ -179,7 +179,7 @@ private:
     QMutex fileWriteLock;
     // Publications are scheduled to run on a thread pool
     QThreadPool publishingThreadPool;
-    DelayedScheduler* delayedScheduler;
+    DelayedSchedulerOld* delayedScheduler;
 
     // Support for clean shutdowns
     QMutex shutDownMutex;

@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef DELAYED_SCHEDULER_H_
-#define DELAYED_SCHEDULER_H_
+#ifndef DELAYED_SCHEDULER_OLD_H_
+#define DELAYED_SCHEDULER_OLD_H_
 
 #include "joynr/JoynrCommonExport.h"
 
@@ -43,13 +43,13 @@ class Logger;
   * Internally uses a newly started thread with a QT event queue.
   * Because the thread is stopped in the destructor, destruction of this object can take some time.
   */
-class JOYNRCOMMON_EXPORT DelayedScheduler : public QObject
+class JOYNRCOMMON_EXPORT DelayedSchedulerOld : public QObject
 {
     Q_OBJECT
 
 public:
-    DelayedScheduler(const QString& eventThreadName, int delay_ms = 0);
-    virtual ~DelayedScheduler();
+    DelayedSchedulerOld(const QString& eventThreadName, int delay_ms = 0);
+    virtual ~DelayedSchedulerOld();
 
     static quint32 INVALID_RUNNABLE_HANDLE();
 
@@ -92,15 +92,15 @@ private:
   * An implementation of the DelayedScheduler that uses the ThreadPool passed in the constructor to
  * execute the runnables.
   */
-class JOYNRCOMMON_EXPORT ThreadPoolDelayedScheduler : public DelayedScheduler
+class JOYNRCOMMON_EXPORT ThreadPoolDelayedSchedulerOld : public DelayedSchedulerOld
 {
     Q_OBJECT
 
 public:
-    ThreadPoolDelayedScheduler(QThreadPool& threadPool,
-                               const QString& eventThreadName,
-                               int delay_ms = 0);
-    virtual ~ThreadPoolDelayedScheduler();
+    ThreadPoolDelayedSchedulerOld(QThreadPool& threadPool,
+                                  const QString& eventThreadName,
+                                  int delay_ms = 0);
+    virtual ~ThreadPoolDelayedSchedulerOld();
 
     void reportRunnableStarted();
 
@@ -120,13 +120,13 @@ private:
   * An implementation of the DelayedScheduler that uses the event thread to execute the runnables.
   * This implementation should not be used for runnables that take substantial time to complete.
   */
-class JOYNRCOMMON_EXPORT SingleThreadedDelayedScheduler : public DelayedScheduler
+class JOYNRCOMMON_EXPORT SingleThreadedDelayedSchedulerOld : public DelayedSchedulerOld
 {
     Q_OBJECT
 
 public:
-    SingleThreadedDelayedScheduler(const QString& eventThreadName, int delay_ms = 0);
-    virtual ~SingleThreadedDelayedScheduler();
+    SingleThreadedDelayedSchedulerOld(const QString& eventThreadName, int delay_ms = 0);
+    virtual ~SingleThreadedDelayedSchedulerOld();
 
 protected:
     void executeRunnable(QRunnable* runnable);
@@ -136,4 +136,4 @@ private:
 };
 
 } // namespace joynr
-#endif // DELAYED_SCHEDULER_H_
+#endif // DELAYED_SCHEDULER_OLD_H_

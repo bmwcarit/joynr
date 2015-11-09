@@ -20,7 +20,7 @@
 #define DIRECTORY_H
 #include "joynr/PrivateCopyAssign.h"
 
-#include "joynr/DelayedScheduler.h"
+#include "joynr/DelayedSchedulerOld.h"
 #include "joynr/ITimeoutListener.h"
 #include "joynr/joynrlogging.h"
 #include <typeinfo>
@@ -96,7 +96,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(Directory);
     QHash<Key, std::shared_ptr<T>> callbackMap;
     QMutex mutex;
-    SingleThreadedDelayedScheduler callBackRemoverScheduler;
+    SingleThreadedDelayedSchedulerOld callBackRemoverScheduler;
     static joynr_logging::Logger* logger;
 };
 

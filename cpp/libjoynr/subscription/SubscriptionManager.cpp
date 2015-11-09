@@ -19,7 +19,7 @@
 #include "joynr/SubscriptionManager.h"
 
 #include "joynr/SubscriptionUtil.h"
-#include "joynr/DelayedScheduler.h"
+#include "joynr/DelayedSchedulerOld.h"
 #include <QUuid>
 #include <assert.h>
 #include <chrono>
@@ -63,12 +63,12 @@ SubscriptionManager::~SubscriptionManager()
 SubscriptionManager::SubscriptionManager()
         : subscriptions(),
           subscriptionsLock(QReadWriteLock::RecursionMode::Recursive),
-          missedPublicationScheduler(new SingleThreadedDelayedScheduler(
+          missedPublicationScheduler(new SingleThreadedDelayedSchedulerOld(
                   QString("SubscriptionManager-MissedPublicationScheduler")))
 {
 }
 
-SubscriptionManager::SubscriptionManager(DelayedScheduler* scheduler)
+SubscriptionManager::SubscriptionManager(DelayedSchedulerOld* scheduler)
         : subscriptions(),
           subscriptionsLock(QReadWriteLock::RecursionMode::Recursive),
           missedPublicationScheduler(scheduler)
@@ -156,16 +156,16 @@ void SubscriptionManager::unregisterSubscription(const QString& subscriptionId)
         QMutexLocker subscriptionLocker(&(subscription->mutex));
         subscription->isStopped = true;
         if (subscription->subscriptionEndRunnableHandle !=
-            DelayedScheduler::INVALID_RUNNABLE_HANDLE()) {
+            DelayedSchedulerOld::INVALID_RUNNABLE_HANDLE()) {
             missedPublicationScheduler->unschedule(subscription->subscriptionEndRunnableHandle);
             subscription->subscriptionEndRunnableHandle =
-                    DelayedScheduler::INVALID_RUNNABLE_HANDLE();
+                    DelayedSchedulerOld::INVALID_RUNNABLE_HANDLE();
         }
         if (subscription->missedPublicationRunnableHandle !=
-            DelayedScheduler::INVALID_RUNNABLE_HANDLE()) {
+            DelayedSchedulerOld::INVALID_RUNNABLE_HANDLE()) {
             missedPublicationScheduler->unschedule(subscription->missedPublicationRunnableHandle);
             subscription->missedPublicationRunnableHandle =
-                    DelayedScheduler::INVALID_RUNNABLE_HANDLE();
+                    DelayedSchedulerOld::INVALID_RUNNABLE_HANDLE();
         }
     } else {
         LOG_DEBUG(logger,

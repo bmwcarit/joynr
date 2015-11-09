@@ -38,7 +38,7 @@ namespace joynr
 {
 
 class JoynrMessage;
-class DelayedScheduler;
+class DelayedSchedulerOld;
 class MessagingSettings;
 class HttpResult;
 
@@ -73,9 +73,9 @@ private:
     static joynr_logging::Logger* logger;
 
     QThreadPool threadPool; // used to send messages once an Url is known
-    DelayedScheduler* delayedScheduler;
+    DelayedSchedulerOld* delayedScheduler;
     QThreadPool channelUrlContactorThreadPool; // obtaining an url must be in a different threadpool
-    DelayedScheduler* channelUrlContactorDelayedScheduler;
+    DelayedSchedulerOld* channelUrlContactorDelayedScheduler;
 
     class SendMessageRunnable : public QRunnable, public ObjectWithDecayTime
     {
@@ -84,7 +84,7 @@ private:
                             const QString& channelId,
                             const JoynrTimePoint& decayTime,
                             std::string&& data,
-                            DelayedScheduler& delayedScheduler,
+                            DelayedSchedulerOld& delayedScheduler,
                             qint64 maxAttemptTtl_ms);
         ~SendMessageRunnable();
         /**
@@ -105,7 +105,7 @@ private:
         QString resolveUrlForChannelId(qint64 curlTimeout);
         QString channelId;
         std::string data;
-        DelayedScheduler& delayedScheduler;
+        DelayedSchedulerOld& delayedScheduler;
         HttpSender* messageSender;
         qint64 maxAttemptTtl_ms;
 
