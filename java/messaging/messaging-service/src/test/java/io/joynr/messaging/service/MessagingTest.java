@@ -25,19 +25,9 @@ import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGIN
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_EXPIRYDATENOTSET;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import io.joynr.common.ExpiryDate;
-import io.joynr.messaging.datatypes.JoynrMessagingError;
-import io.joynr.messaging.serialize.JoynrEnumSerializer;
-import io.joynr.messaging.serialize.JoynrListSerializer;
-import io.joynr.messaging.serialize.JoynrUntypedObjectDeserializer;
-import io.joynr.messaging.serialize.NumberSerializer;
-import io.joynr.messaging.system.SystemTimeProvider;
-import io.joynr.messaging.system.TimestampProvider;
 
 import java.io.IOException;
 import java.util.UUID;
-
-import joynr.JoynrMessage;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -47,20 +37,23 @@ import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.type.SimpleType;
 import com.google.inject.servlet.ServletModule;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
+
+import io.joynr.common.ExpiryDate;
+import io.joynr.messaging.datatypes.JoynrMessagingError;
+import io.joynr.messaging.system.SystemTimeProvider;
+import io.joynr.messaging.system.TimestampProvider;
+import joynr.JoynrMessage;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MessagingTest extends AbstractServiceInterfaceTest {
@@ -106,20 +99,10 @@ public class MessagingTest extends AbstractServiceInterfaceTest {
         TypeResolverBuilder<?> joynrTypeResolverBuilder = objectMapper.getSerializationConfig()
                                                                       .getDefaultTyper(SimpleType.construct(Object.class));
 
-        SimpleModule module = new SimpleModule("NonTypedModule", new Version(1, 0, 0, "", "", ""));
-        module.addSerializer(Number.class, new NumberSerializer());
-        module.addSerializer(new JoynrEnumSerializer());
-        module.addSerializer(new JoynrListSerializer());
-
-        TypeDeserializer typeDeserializer = joynrTypeResolverBuilder.buildTypeDeserializer(objectMapper.getDeserializationConfig(),
-                                                                                           SimpleType.construct(Object.class),
-                                                                                           null);
-
-        module.addDeserializer(Object.class, new JoynrUntypedObjectDeserializer(typeDeserializer));
-        objectMapper.registerModule(module);
         return objectMapper;
     }
 
+    @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
