@@ -1,5 +1,14 @@
 package io.joynr.proxy;
 
+import javax.annotation.CheckForNull;
+import javax.inject.Named;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 /*
  * #%L
  * %%
@@ -20,16 +29,10 @@ package io.joynr.proxy;
  */
 
 import io.joynr.arbitration.ArbitrationResult;
+import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
-
-import javax.annotation.CheckForNull;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
+import joynr.system.RoutingTypes.Address;
 
 @Singleton
 public class ConnectorFactory {
@@ -39,17 +42,21 @@ public class ConnectorFactory {
     private static final Logger logger = LoggerFactory.getLogger(ConnectorFactory.class);
 
     private MessageRouter messageRouter;
+    private Address libjoynrMessagingAddress;
 
     @Inject
-    public ConnectorFactory(JoynrMessagingConnectorFactory joynrMessagingConnectorFactory, MessageRouter messageRouter) {
+    public ConnectorFactory(JoynrMessagingConnectorFactory joynrMessagingConnectorFactory,
+                            MessageRouter messageRouter,
+                            @Named(ConfigurableMessagingSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) Address libjoynrMessagingAddress) {
         this.joynrMessagingConnectorFactory = joynrMessagingConnectorFactory;
         this.messageRouter = messageRouter;
+        this.libjoynrMessagingAddress = libjoynrMessagingAddress;
     }
 
     /**
      * Creates a new connector object using concrete connector factories chosen by the endpointAddress which is passed
      * in.
-     * 
+     *
      * @param fromParticipantId origin participant id
      * @param arbitrationResult result of arbitration
      * @param qosSettings QOS settings
@@ -59,7 +66,7 @@ public class ConnectorFactory {
     public ConnectorInvocationHandler create(final String fromParticipantId,
                                              final ArbitrationResult arbitrationResult,
                                              final MessagingQos qosSettings) {
-
+        messageRouter.addNextHop(fromParticipantId, libjoynrMessagingAddress);
         return joynrMessagingConnectorFactory.create(fromParticipantId,
                                                      arbitrationResult.getParticipantId(),
                                                      qosSettings);

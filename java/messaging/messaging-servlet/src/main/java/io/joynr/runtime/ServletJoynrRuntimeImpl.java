@@ -64,18 +64,19 @@ public class ServletJoynrRuntimeImpl extends InProcessRuntime {
               builderFactory,
               requestCallerDirectory,
               replyCallerDirectory,
-              messageReceiver,
               dispatcher,
-              localCapabilitiesDirectory,
               localDiscoveryAggregator,
+              systemServicesDomain,
               libjoynrMessagingAddress,
               capabilitiesDirectoryAddress,
               channelUrlDirectoryAddress,
               domainAccessControllerAddress,
+              discoveryProviderAddress,
               clusterControllerMessagingSkeleton,
-              systemServicesDomain,
               capabilitiesRegistrar,
-              discoveryProviderAddress);
+              localCapabilitiesDirectory,
+              messageReceiver);
+        // CHECKSTYLE:ON
     }
 
     @Override

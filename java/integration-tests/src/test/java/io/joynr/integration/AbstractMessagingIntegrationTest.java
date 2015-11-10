@@ -140,7 +140,9 @@ public abstract class AbstractMessagingIntegrationTest {
                                                          "capabilitiesdirectory_participantid",
                                                          new ChannelAddress("discoverydirectory_channelid"),
                                                          "domainaccesscontroller_participantid",
-                                                         new ChannelAddress("domainaccesscontroller_channelid"));
+                                                         new ChannelAddress("domainaccesscontroller_channelid"),
+                                                         "discovery_participantid",
+                                                         new ChannelAddress("discovery_channelid"));
 
         ChannelUrlInformation channelUrlInformation = new ChannelUrlInformation();
         channelUrlInformation.setUrls(new String[]{ getChannelUrl(channelId) });

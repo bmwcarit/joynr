@@ -20,7 +20,6 @@ package io.joynr.runtime;
  */
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 
-import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -30,7 +29,6 @@ import javax.inject.Named;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
 
-import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
@@ -44,15 +42,11 @@ import io.joynr.dispatching.RequestReplyManager;
 import io.joynr.dispatching.RequestReplyManagerImpl;
 import io.joynr.dispatching.rpc.RpcUtils;
 import io.joynr.logging.JoynrAppenderManagerFactory;
-import io.joynr.messaging.AbstractMessagingStubFactory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.IMessaging;
-import io.joynr.messaging.MessageSender;
-import io.joynr.messaging.MessageSenderImpl;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingSettings;
 import io.joynr.messaging.channel.ChannelMessagingSkeleton;
-import io.joynr.messaging.channel.ChannelMessagingStubFactory;
 import io.joynr.messaging.http.operation.HttpClientProvider;
 import io.joynr.messaging.http.operation.HttpDefaultRequestConfigProvider;
 import io.joynr.messaging.inprocess.InProcessAddress;
@@ -60,7 +54,6 @@ import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.MessageRouterImpl;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.messaging.routing.RoutingTableImpl;
-import io.joynr.messaging.websocket.WebSocketClientMessagingStubFactory;
 import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.proxy.ProxyBuilderFactoryImpl;
 import io.joynr.proxy.ProxyInvocationHandler;
@@ -68,13 +61,11 @@ import io.joynr.proxy.ProxyInvocationHandlerFactory;
 import io.joynr.proxy.ProxyInvocationHandlerImpl;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
-import joynr.system.RoutingTypes.WebSocketClientAddress;
 
 public class DefaultRuntimeModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(JoynrRuntime.class).to(InProcessRuntime.class).in(Singleton.class);
         install(new FactoryModuleBuilder().implement(ProxyInvocationHandler.class, ProxyInvocationHandlerImpl.class)
                                           .build(ProxyInvocationHandlerFactory.class));
 
@@ -82,9 +73,8 @@ public class DefaultRuntimeModule extends AbstractModule {
         bind(RequestConfig.class).toProvider(HttpDefaultRequestConfigProvider.class).in(Singleton.class);
         bind(RequestReplyManager.class).to(RequestReplyManagerImpl.class);
         bind(Dispatcher.class).to(DispatcherImpl.class);
-        bind(MessageRouter.class).to(MessageRouterImpl.class);
+        bind(MessageRouter.class).to(MessageRouterImpl.class).in(Singleton.class);
         bind(MessagingSettings.class).to(ConfigurableMessagingSettings.class);
-        bind(MessageSender.class).to(MessageSenderImpl.class);
         bind(RoutingTable.class).to(RoutingTableImpl.class).asEagerSingleton();
 
         bind(CloseableHttpClient.class).toProvider(HttpClientProvider.class).in(Singleton.class);
@@ -130,26 +120,9 @@ public class DefaultRuntimeModule extends AbstractModule {
 
     @Provides
     @Singleton
-    @Named(SystemServicesSettings.PROPERTY_CC_DISCOVERY_PROVIDER_ADDRESS)
-    Address getDiscoveryProviderAddress() {
-        return new InProcessAddress();
-    }
-
-    @Provides
-    @Singleton
     @Named(ConfigurableMessagingSettings.PROPERTY_CLUSTERCONTROLER_MESSAGING_SKELETON)
     IMessaging getClusterControllerMessagingSkeleton(MessageRouter messageRouter) {
         return new ChannelMessagingSkeleton(messageRouter);
-    }
-
-    @Provides
-    @Singleton
-    Map<Class<? extends Address>, AbstractMessagingStubFactory> provideMessagingStubFactories(WebSocketClientMessagingStubFactory webSocketClientMessagingStubFactory,
-                                                                                              ChannelMessagingStubFactory channelMessagingStubFactory) {
-        Map<Class<? extends Address>, AbstractMessagingStubFactory> factories = Maps.newHashMap();
-        factories.put(WebSocketClientAddress.class, webSocketClientMessagingStubFactory);
-        factories.put(ChannelAddress.class, channelMessagingStubFactory);
-        return factories;
     }
 
     private Address getAddress(String localChannelId, String targetChannelId) {

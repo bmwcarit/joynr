@@ -19,12 +19,17 @@ package io.joynr.messaging.http.operation;
  * #L%
  */
 
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Singleton;
+import io.joynr.capabilities.DummyDiscoveryModule;
+import io.joynr.common.JoynrPropertiesModule;
+import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessageArrivedListener;
+import io.joynr.messaging.MessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.messaging.MessagingTestModule;
+import io.joynr.messaging.MessagingSettings;
 import io.joynr.messaging.ReceiverStatusListener;
-import io.joynr.runtime.JoynrBaseModule;
-import io.joynr.runtime.JoynrInjectorFactory;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -34,6 +39,8 @@ import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.localserver.LocalTestServer;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpRequestHandler;
@@ -91,7 +98,15 @@ public class LongPollingChannelLifecycleTest {
         properties.put(MessagingPropertyKeys.CHANNELID, channelId);
         properties.put(MessagingPropertyKeys.BOUNCE_PROXY_URL, bounceProxyUrl);
 
-        Injector injector = new JoynrInjectorFactory(new JoynrBaseModule(properties, new MessagingTestModule())).getInjector();
+        Injector injector = Guice.createInjector(new AbstractModule() {
+            @Override
+            public void configure() {
+                bind(HttpRequestFactory.class).to(ApacheHttpRequestFactory.class);
+                bind(CloseableHttpClient.class).toProvider(HttpClientProvider.class).in(Singleton.class);
+                bind(RequestConfig.class).toProvider(HttpDefaultRequestConfigProvider.class).in(Singleton.class);
+                bind(MessagingSettings.class).to(ConfigurableMessagingSettings.class);
+            }
+        }, new JoynrPropertiesModule(properties), new MessagingModule(), new DummyDiscoveryModule());
         longpollingChannelLifecycle = injector.getInstance(LongPollingChannelLifecycle.class);
     }
 
@@ -119,6 +134,7 @@ public class LongPollingChannelLifecycleTest {
 
     @After
     public void tearDown() throws Exception {
+        longpollingChannelLifecycle.shutdown();
         try {
             server.stop();
         } catch (Exception e) {

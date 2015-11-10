@@ -48,7 +48,10 @@ import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
+import com.google.inject.name.Named;
 
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
@@ -67,6 +70,7 @@ import io.joynr.dispatching.rpc.RpcUtils;
 import io.joynr.dispatching.rpc.SynchronizedReplyCaller;
 import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.exceptions.JoynrCommunicationException;
+import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.inprocess.InProcessAddress;
@@ -81,6 +85,7 @@ import joynr.OnChangeSubscriptionQos;
 import joynr.Reply;
 import joynr.Request;
 import joynr.exceptions.ApplicationException;
+import joynr.system.RoutingTypes.Address;
 import joynr.types.CommunicationMiddleware;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
@@ -160,6 +165,14 @@ public class ProxyTest {
                 install(new FactoryModuleBuilder().implement(ProxyInvocationHandler.class,
                                                              ProxyInvocationHandlerImpl.class)
                                                   .build(ProxyInvocationHandlerFactory.class));
+
+            }
+
+            @Provides
+            @Singleton
+            @Named(ConfigurableMessagingSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS)
+            Address getLibJoynrMessagingAddress() {
+                return new InProcessAddress();
             }
 
         });

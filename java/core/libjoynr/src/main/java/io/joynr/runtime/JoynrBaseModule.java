@@ -49,7 +49,7 @@ public class JoynrBaseModule implements Module {
                                   new LongPollingMessagingModule(),
                                   new PubSubModule(),
                                   new DiscoveryClientModule(),
-                                  new DefaultRuntimeModule(),
+                                  new InprocessRuntimeModule(),
                                   new AccessControlClientModule()).with(modules);
     }
 }

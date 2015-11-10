@@ -55,6 +55,7 @@ import joynr.infrastructure.DacTypes.Role;
 import joynr.infrastructure.DacTypes.TrustLevel;
 
 import joynr.system.Discovery;
+import joynr.system.Routing;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -182,7 +183,7 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
             if (interfaceName.equals(GlobalCapabilitiesDirectory.INTERFACE_NAME)
                     || interfaceName.equals(ChannelUrlDirectory.INTERFACE_NAME)
                     || interfaceName.equals(GlobalDomainAccessController.INTERFACE_NAME)
-                    || interfaceName.equals(Discovery.INTERFACE_NAME)) {
+                    || interfaceName.equals(Discovery.INTERFACE_NAME) || interfaceName.equals(Routing.INTERFACE_NAME)) {
                 return Permission.YES;
             }
         }

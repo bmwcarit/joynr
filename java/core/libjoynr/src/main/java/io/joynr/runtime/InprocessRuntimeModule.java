@@ -1,9 +1,13 @@
-package io.joynr.messaging;
+package io.joynr.runtime;
+
+import java.util.Map;
+
+import javax.inject.Named;
 
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,28 +26,37 @@ package io.joynr.messaging;
 import com.google.common.collect.Maps;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
-import io.joynr.dispatcher.ServletMessageReceiver;
-import io.joynr.dispatcher.ServletMessageReceiverImpl;
+
+import io.joynr.messaging.AbstractMessagingStubFactory;
+import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.channel.ChannelMessagingStubFactory;
+import io.joynr.messaging.inprocess.InProcessAddress;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 
-import java.util.Map;
-
 /**
- * Used in conjunction with DefaultDispatcherModule to inject the application side
- *
+ *  Use this module if you want to run libjoynr and cluster controller in one process
  */
-public class ServletMessagingModule extends MessagingModule {
+public class InprocessRuntimeModule extends DefaultRuntimeModule {
 
     @Override
     protected void configure() {
         super.configure();
-        // bind(String.class).annotatedWith(Names.named("joynr.messaging.channelId")).toInstance(channelId);
-        bind(MessageListeners.class).to(MessageListenersImpl.class).asEagerSingleton();
-        bind(MessageReceiver.class).to(ServletMessageReceiverImpl.class);
-        bind(ServletMessageReceiver.class).to(ServletMessageReceiverImpl.class);
-        bind(MessageSender.class).to(MessageSenderImpl.class);
+        bind(JoynrRuntime.class).to(InProcessRuntime.class).in(Singleton.class);
+    }
+
+    @Provides
+    @Singleton
+    @Named(SystemServicesSettings.PROPERTY_CC_DISCOVERY_PROVIDER_ADDRESS)
+    Address getDiscoveryProviderAddress() {
+        return new InProcessAddress();
+    }
+
+    @Provides
+    @Singleton
+    @Named(ConfigurableMessagingSettings.PROPERTY_CC_ROUTING_PROVIDER_ADDRESS)
+    Address getRoutingProviderAddress() {
+        return new InProcessAddress();
     }
 
     @Provides
@@ -52,6 +65,12 @@ public class ServletMessagingModule extends MessagingModule {
         Map<Class<? extends Address>, AbstractMessagingStubFactory> factories = Maps.newHashMap();
         factories.put(ChannelAddress.class, channelMessagingStubFactory);
         return factories;
+    }
+
+    @Provides
+    @Named(ConfigurableMessagingSettings.PROPERTY_CC_MESSAGING_ADDRESS)
+    public Address provideCCMessagingAddress() {
+        return new InProcessAddress();
     }
 
 }

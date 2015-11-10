@@ -1,5 +1,17 @@
 package io.joynr.messaging.routing;
 
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentMap;
+
+import io.joynr.runtime.SystemServicesSettings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Maps;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.google.inject.name.Named;
+
 /*
  * #%L
  * %%
@@ -20,37 +32,31 @@ package io.joynr.messaging.routing;
  */
 
 import io.joynr.messaging.ConfigurableMessagingSettings;
-
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentMap;
-
 import joynr.system.RoutingTypes.Address;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Maps;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import com.google.inject.name.Named;
 
 @Singleton
 public class RoutingTableImpl implements RoutingTable {
     private static final Logger logger = LoggerFactory.getLogger(RoutingTableImpl.class);
     ConcurrentMap<String, Address> hashMap = Maps.newConcurrentMap();
 
+    // CHECKSTYLE:OFF
     @Inject
     public RoutingTableImpl(@Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_PARTICIPANT_ID) String channelUrlDirectoryParticipantId,
                             @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_ADDRESS) Address channelUrlDirectoryAddress,
                             @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID) String capabilitiesDirectoryParticipantId,
                             @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_ADDRESS) Address capabiltitiesDirectoryAddress,
                             @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID) String domainAccessControllerParticipantId,
-                            @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_ADDRESS) Address domainAccessControllerAddress) {
+                            @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_ADDRESS) Address domainAccessControllerAddress,
+                            @Named(SystemServicesSettings.PROPERTY_CC_DISCOVERY_PROVIDER_PARTICIPANT_ID) String discoveryProviderParticipantId,
+                            @Named(SystemServicesSettings.PROPERTY_CC_DISCOVERY_PROVIDER_ADDRESS) Address discoveryProviderAddress) {
+        // CHECKSTYLE:ON
         this.put(capabilitiesDirectoryParticipantId, capabiltitiesDirectoryAddress);
         this.put(channelUrlDirectoryParticipantId, channelUrlDirectoryAddress);
         this.put(domainAccessControllerParticipantId, domainAccessControllerAddress);
+        this.put(discoveryProviderParticipantId, discoveryProviderAddress);
     }
 
+    @Override
     public Address get(String participantId) {
         logger.debug("lookup participant: " + participantId);
         for (Entry<String, Address> eachEntry : hashMap.entrySet()) {
@@ -59,11 +65,13 @@ public class RoutingTableImpl implements RoutingTable {
         return hashMap.get(participantId);
     }
 
+    @Override
     public Address put(String participantId, Address address) {
         logger.debug("adding endpoint address: " + participantId + ": " + address);
         return hashMap.putIfAbsent(participantId, address);
     }
 
+    @Override
     public boolean containsKey(String participantId) {
         boolean containsKey = hashMap.containsKey(participantId);
         logger.debug("checking for participant: " + participantId + " success: " + containsKey);
@@ -75,6 +83,7 @@ public class RoutingTableImpl implements RoutingTable {
         return containsKey;
     }
 
+    @Override
     public void remove(String participantId) {
         hashMap.remove(participantId);
 

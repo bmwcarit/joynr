@@ -21,28 +21,33 @@ package io.joynr.dispatching;
 
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 
+import com.google.common.collect.Maps;
 import com.google.inject.Singleton;
 import io.joynr.dispatching.rpc.RpcUtils;
 import io.joynr.dispatching.subscription.PublicationManager;
 import io.joynr.dispatching.subscription.PublicationManagerImpl;
 import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.dispatching.subscription.SubscriptionManagerImpl;
+import io.joynr.messaging.AbstractMessagingStubFactory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.MessageSender;
-import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.channel.ChannelMessagingStubFactory;
+import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.MessageRouterImpl;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.messaging.routing.RoutingTableImpl;
 import io.joynr.proxy.JoynrMessagingConnectorFactory;
 
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 
 import javax.inject.Named;
 
+import io.joynr.runtime.SystemServicesSettings;
 import joynr.Request;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
@@ -91,5 +96,20 @@ public class DispatcherTestModule extends AbstractModule {
     @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_ADDRESS)
     Address getDomainAccessControllerAddress(@com.google.inject.name.Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID) String domainAccessControllerChannelId) {
         return new ChannelAddress(domainAccessControllerChannelId);
+    }
+
+    @Provides
+    @Singleton
+    @Named(SystemServicesSettings.PROPERTY_CC_DISCOVERY_PROVIDER_ADDRESS)
+    Address getDiscoveryProviderAddress() {
+        return new InProcessAddress();
+    }
+
+    @Provides
+    @Singleton
+    Map<Class<? extends Address>, AbstractMessagingStubFactory> provideMessagingStubFactories(ChannelMessagingStubFactory channelMessagingStubFactory) {
+        Map<Class<? extends Address>, AbstractMessagingStubFactory> factories = Maps.newHashMap();
+        factories.put(ChannelAddress.class, channelMessagingStubFactory);
+        return factories;
     }
 }

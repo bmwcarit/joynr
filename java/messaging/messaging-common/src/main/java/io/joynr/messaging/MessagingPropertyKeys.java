@@ -37,6 +37,11 @@ public final class MessagingPropertyKeys {
     public static final String PROPERTY_SERVLET_HOST_PATH = "joynr.servlet.hostpath";
     public static final String PROPERTY_SERVLET_SKIP_LONGPOLL_DEREGISTRATION = "joynr.servlet.skiplongpollderegistration";
 
+    public static final String CC_MESSAGING_HOST = "joynr.messaging.cc.host";
+    public static final String CC_MESSAGING_PORT = "joynr.messaging.cc.port";
+    public static final String CC_MESSAGING_PROTOCOL = "joynr.messaging.cc.protocol";
+    public static final String CC_MESSAGING_PATH = "joynr.messaging.cc.path";
+
     private MessagingPropertyKeys() {
         throw new AssertionError();
     }

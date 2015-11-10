@@ -20,8 +20,8 @@ package io.joynr.messaging;
  */
 
 import com.google.inject.Singleton;
+import io.joynr.runtime.InProcessRuntime;
 import io.joynr.runtime.JoynrRuntime;
-import io.joynr.runtime.JoynrRuntimeImpl;
 import joynr.infrastructure.ChannelUrlDirectoryProxy;
 
 import org.mockito.Mock;
@@ -41,7 +41,7 @@ public class MessagingTestModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(JoynrRuntime.class).to(JoynrRuntimeImpl.class).in(Singleton.class);
+        bind(JoynrRuntime.class).to(InProcessRuntime.class).in(Singleton.class);
         bind(MessagingSettings.class).to(ConfigurableMessagingSettings.class);
 
         // don't override like this. Override via properties passed to createJoynInjector

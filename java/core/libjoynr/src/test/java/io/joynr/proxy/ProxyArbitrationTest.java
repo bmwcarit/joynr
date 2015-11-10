@@ -32,6 +32,8 @@ import org.mockito.stubbing.Answer;
  * #L%
  */
 
+import com.google.common.collect.Maps;
+
 import io.joynr.arbitration.ArbitrationResult;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.common.ExpiryDate;
@@ -104,8 +106,10 @@ public class ProxyArbitrationTest {
                                             "capabilitiesdirectory_participantid",
                                             new ChannelAddress("discoverydirectory_channelid"),
                                             "domainaccesscontroller_participantid",
-                                            new ChannelAddress("domainaccesscontroller_channelid"));
-
+                                            new ChannelAddress("domainaccesscontroller_channelid"),
+                                            "discovery_participantid",
+                                            new ChannelAddress("discovery_channelid"));
+        websocketMessagingStubFactories = Maps.newHashMap();
         websocketMessagingStubFactories.put(ChannelAddress.class, new ChannelMessagingStubFactory(messageSender));
         MessagingStubFactory messagingStubFactory = new MessagingStubFactory(messageSender);
         messageRouter = new MessageRouterImpl(routingTable, messagingStubFactory);
@@ -124,7 +128,9 @@ public class ProxyArbitrationTest {
         JoynrMessagingConnectorFactory joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(requestReplyManager,
                                                                                                            replyCallerDirectory,
                                                                                                            subscriptionManager);
-        ConnectorFactory connectorFactory = new ConnectorFactory(joynrMessagingConnectorFactory, messageRouter);
+        ConnectorFactory connectorFactory = new ConnectorFactory(joynrMessagingConnectorFactory,
+                                                                 messageRouter,
+                                                                 libJoynrMessagingAddress);
         proxyHandler = new ProxyInvocationHandlerImpl("domain",
                                                       "interfaceName",
                                                       participantId,
@@ -178,7 +184,7 @@ public class ProxyArbitrationTest {
                                                      Mockito.any(ExpiryDate.class));
     }
 
-    @Test
+    @Test(timeout = 5000)
     public void proxyUsesCorrectEndpointToSendRequest() throws IllegalArgumentException, SecurityException,
                                                        InterruptedException, NoSuchMethodException, Throwable {
         proxyHandler.invoke(TestSyncInterface.class.getDeclaredMethod("demoMethod2", new Class<?>[]{}), new Object[]{});

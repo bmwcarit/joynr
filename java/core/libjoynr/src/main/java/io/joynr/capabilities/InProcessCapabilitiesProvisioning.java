@@ -25,7 +25,6 @@ import com.google.inject.name.Named;
 import io.joynr.runtime.SystemServicesSettings;
 import joynr.system.Discovery;
 import joynr.system.RoutingTypes.Address;
-import joynr.types.CommunicationMiddleware;
 import joynr.types.ProviderQos;
 
 import java.util.Collection;
@@ -36,7 +35,6 @@ public class InProcessCapabilitiesProvisioning extends DefaultCapabilitiesProvis
     private String discoveryProviderParticipantId;
     private String systemServicesDomain;
     private Address discoveryProviderAddress;
-    private CommunicationMiddleware clusterControllerConnection;
 
     @Inject
     public InProcessCapabilitiesProvisioning(@Named(SystemServicesSettings.PROPERTY_CC_DISCOVERY_PROVIDER_PARTICIPANT_ID) String discoveryProviderParticipantId,
@@ -57,6 +55,7 @@ public class InProcessCapabilitiesProvisioning extends DefaultCapabilitiesProvis
                                                     discoveryProviderParticipantId,
                                                     System.currentTimeMillis(),
                                                     discoveryProviderAddress));
+
         return provisionedList;
     }
 }
