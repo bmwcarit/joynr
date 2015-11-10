@@ -30,8 +30,10 @@
 #include "joynr/RequestStatus.h"
 #include "joynr/Directory.h"
 #include "joynr/MessageQueue.h"
+#include "joynr/ThreadPool.h"
+#include "joynr/Timer.h"
+#include "joynr/Runnable.h"
 
-#include <QThreadPool>
 #include <QSemaphore>
 #include <QPair>
 #include <unordered_set>
@@ -51,7 +53,6 @@ namespace joynr_logging
 {
 class Logger;
 }
-class MessageQueueCleanerRunnable;
 namespace system
 {
 class QtAddress;
@@ -151,20 +152,19 @@ private:
     IMessagingStubFactory* messagingStubFactory;
     Directory<std::string, joynr::system::RoutingTypes::QtAddress> routingTable;
     QReadWriteLock routingTableLock;
-    QThreadPool threadPool;
+    ThreadPool threadPool;
     joynr::system::RoutingProxy* parentRouter;
     std::shared_ptr<joynr::system::RoutingTypes::QtAddress> parentAddress;
     std::shared_ptr<joynr::system::RoutingTypes::QtAddress> incomingAddress;
     static joynr_logging::Logger* logger;
 
     MessageQueue* messageQueue;
-    MessageQueueCleanerRunnable* messageQueueCleanerRunnable;
+    Timer messageQueueCleanerTimer;
     std::unordered_set<std::string>* runningParentResolves;
     std::shared_ptr<IAccessController> accessController;
     IPlatformSecurityManager* securityManager;
     mutable QMutex parentResolveMutex;
 
-    void init(int maxThreads);
     void addNextHopToParent(std::string participantId,
                             std::function<void(void)> callbackFct = nullptr,
                             std::function<void(const joynr::exceptions::ProviderRuntimeException&)>
@@ -187,10 +187,11 @@ private:
 /**
  * Class to send message
  */
-class MessageRunnable : public QRunnable, public ObjectWithDecayTime
+class MessageRunnable : public joynr::Runnable, public ObjectWithDecayTime
 {
 public:
     MessageRunnable(const JoynrMessage& message, std::shared_ptr<IMessaging> messagingStub);
+    void shutdown();
     void run();
 
 private:

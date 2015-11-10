@@ -18,7 +18,7 @@
  */
 #include "joynr/MessageQueue.h"
 #include "joynr/DispatcherUtils.h"
-#include <QThread>
+
 #include <chrono>
 
 namespace joynr
@@ -86,28 +86,5 @@ int64_t MessageQueue::removeOutdatedMessages()
         }
     }
     return counter;
-}
-
-/**
- * IMPLEMENTATION of MessageQueueCleanerRunnable
- */
-
-MessageQueueCleanerRunnable::MessageQueueCleanerRunnable(MessageQueue& messageQueue,
-                                                         int64_t sleepInterval)
-        : messageQueue(messageQueue), stopped(false), sleepInterval(sleepInterval)
-{
-}
-
-void MessageQueueCleanerRunnable::stop()
-{
-    stopped = true;
-}
-
-void MessageQueueCleanerRunnable::run()
-{
-    while (!stopped) {
-        QThread::msleep(sleepInterval);
-        messageQueue.removeOutdatedMessages();
-    }
 }
 }

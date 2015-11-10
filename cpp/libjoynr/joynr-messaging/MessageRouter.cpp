@@ -62,8 +62,8 @@ private:
 
 MessageRouter::~MessageRouter()
 {
-    messageQueueCleanerRunnable->stop();
-    threadPool.waitForDone();
+    messageQueueCleanerTimer.shutdown();
+    threadPool.shutdown();
     if (parentRouter != NULL) {
         delete parentRouter;
     }
@@ -81,23 +81,28 @@ MessageRouter::MessageRouter(IMessagingStubFactory* messagingStubFactory,
           messagingStubFactory(messagingStubFactory),
           routingTable("MessageRouter-RoutingTable"),
           routingTableLock(),
-          threadPool(),
+          threadPool("MessageRouter", maxThreads),
           parentRouter(NULL),
           parentAddress(NULL),
           incomingAddress(),
           messageQueue(messageQueue),
-          messageQueueCleanerRunnable(new MessageQueueCleanerRunnable(*messageQueue)),
+          messageQueueCleanerTimer(),
           runningParentResolves(new std::unordered_set<std::string>()),
           accessController(NULL),
           securityManager(securityManager),
           parentResolveMutex()
 {
+    messageQueueCleanerTimer.addTimer(
+            [this](Timer::TimerId) { this->messageQueue->removeOutdatedMessages(); },
+            [](Timer::TimerId) {},
+            1000,
+            true);
+
     providerQos.setCustomParameters(std::vector<joynr::types::CustomParameter>());
     providerQos.setProviderVersion(1);
     providerQos.setPriority(1);
     providerQos.setScope(joynr::types::ProviderScope::LOCAL);
     providerQos.setSupportsOnChangeSubscriptions(false);
-    init(maxThreads);
 }
 
 MessageRouter::MessageRouter(
@@ -109,29 +114,28 @@ MessageRouter::MessageRouter(
           messagingStubFactory(messagingStubFactory),
           routingTable("MessageRouter-RoutingTable"),
           routingTableLock(),
-          threadPool(),
+          threadPool("MessageRouter", maxThreads),
           parentRouter(NULL),
           parentAddress(NULL),
           incomingAddress(incomingAddress),
           messageQueue(messageQueue),
-          messageQueueCleanerRunnable(new MessageQueueCleanerRunnable(*messageQueue)),
+          messageQueueCleanerTimer(),
           runningParentResolves(new std::unordered_set<std::string>()),
           accessController(NULL),
           securityManager(NULL),
           parentResolveMutex()
 {
+    messageQueueCleanerTimer.addTimer(
+            [this](Timer::TimerId) { this->messageQueue->removeOutdatedMessages(); },
+            [](Timer::TimerId) {},
+            1000,
+            true);
+
     providerQos.setCustomParameters(std::vector<joynr::types::CustomParameter>());
     providerQos.setProviderVersion(1);
     providerQos.setPriority(1);
     providerQos.setScope(joynr::types::ProviderScope::LOCAL);
     providerQos.setSupportsOnChangeSubscriptions(false);
-    init(maxThreads);
-}
-
-void MessageRouter::init(int maxThreads)
-{
-    threadPool.setMaxThreadCount(maxThreads);
-    threadPool.start(messageQueueCleanerRunnable);
 }
 
 void MessageRouter::addProvisionedNextHop(
@@ -290,7 +294,7 @@ void MessageRouter::sendMessage(const JoynrMessage& message,
 {
     auto stub = messagingStubFactory->create(*destAddress);
     if (stub) {
-        threadPool.start(new MessageRunnable(message, stub));
+        threadPool.execute(new MessageRunnable(message, stub));
     }
 }
 
@@ -508,9 +512,14 @@ Logger* MessageRunnable::logger = Logging::getInstance()->getLogger("MSG", "Mess
 
 MessageRunnable::MessageRunnable(const JoynrMessage& message,
                                  std::shared_ptr<IMessaging> messagingStub)
-        : ObjectWithDecayTime(message.getHeaderExpiryDate()),
+        : joynr::Runnable(true),
+          ObjectWithDecayTime(message.getHeaderExpiryDate()),
           message(message),
           messagingStub(messagingStub)
+{
+}
+
+void MessageRunnable::shutdown()
 {
 }
 

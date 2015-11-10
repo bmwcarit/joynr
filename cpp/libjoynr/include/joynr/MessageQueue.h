@@ -57,22 +57,6 @@ private:
     std::multimap<std::string, MessageQueueItem*>* queue;
     mutable QMutex queueMutex;
 };
-
-/**
- * Runnable to remove outdated message from message queue
- */
-class JOYNR_EXPORT MessageQueueCleanerRunnable : public QRunnable
-{
-public:
-    MessageQueueCleanerRunnable(MessageQueue& messageQueue, int64_t sleepInterval = 1000);
-    void run();
-    void stop();
-
-private:
-    MessageQueue& messageQueue;
-    bool stopped;
-    int64_t sleepInterval;
-};
 }
 
 #endif // MESSAGEQUEUE_H
