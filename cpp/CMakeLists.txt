@@ -394,7 +394,13 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 endif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++11 --stdlib=libc++ -Wno-unknown-pragmas")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++11 -Wno-unknown-pragmas")
+    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+    else()
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+    endif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        
     add_definitions(-DGTEST_USE_OWN_TR1_TUPLE=1)
 endif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 
