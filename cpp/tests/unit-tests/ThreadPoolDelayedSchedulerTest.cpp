@@ -1,0 +1,182 @@
+/*
+ * #%L
+ * %%
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+#include "gtest/gtest.h"
+#include "joynr/joynrlogging.h"
+
+#include "joynr/ThreadPoolDelayedScheduler.h"
+#include "utils/MockObjects.h"
+
+#include <stdint.h>
+#include <cassert>
+#include <chrono>
+
+#include <QString>
+
+using namespace ::testing;
+using namespace joynr;
+using namespace joynr_logging;
+
+using ::testing::StrictMock;
+
+namespace ThreadPoolDelayedSchedulerTest
+{
+Logger* logger = Logging::getInstance()->getLogger("MSG", "ThreadPoolDelayedSchedulerTest");
+}
+
+// Expected accuracy of the timer in milliseconds
+
+
+
+TEST(ThreadPoolDelayedSchedulerTest, startAndShutdownWithoutWork)
+{
+    ThreadPoolDelayedScheduler scheduler(1, "ThreadPoolDelayedScheduler", std::chrono::milliseconds::zero());
+
+    scheduler.shutdown();
+}
+
+TEST(ThreadPoolDelayedSchedulerTest, startAndShutdownWithPendingWork_callDtorOfRunnablesCorrect)
+{
+    ThreadPoolDelayedScheduler scheduler(1, "ThreadPoolDelayedScheduler", std::chrono::milliseconds::zero());
+
+    // Dtor should be called
+    StrictMock<MockRunnable>* runnable1 = new StrictMock<MockRunnable>(true);
+    scheduler.schedule(runnable1, joynr::OptionalDelay(std::chrono::milliseconds(100)));
+
+    // Dtor called after scheduler was cleaned
+    StrictMock<MockRunnable> runnable2(false);
+    scheduler.schedule(&runnable2, joynr::OptionalDelay(std::chrono::milliseconds(100)));
+
+    EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+    scheduler.shutdown();
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+    EXPECT_CALL(runnable2, dtorCalled()).Times(1);
+}
+
+TEST(ThreadPoolDelayedSchedulerTest, testAccuracyOfDelayedScheduler)
+{
+    ThreadPoolDelayedScheduler scheduler(1, "ThreadPoolDelayedScheduler", std::chrono::milliseconds::zero());
+
+    StrictMock<MockRunnableWithAccuracy> runnable1(false, 5);
+
+    scheduler.schedule(&runnable1, joynr::OptionalDelay(std::chrono::milliseconds(5)));
+
+    EXPECT_CALL(runnable1, runCalled()).Times(1);
+    EXPECT_CALL(runnable1, runCalledInTime()).Times(1);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+    scheduler.shutdown();
+
+    EXPECT_CALL(runnable1, dtorCalled()).Times(1);
+}
+
+TEST(ThreadPoolDelayedSchedulerTest, callDtorOfRunnablesAfterSchedulerHasExpired)
+{
+    ThreadPoolDelayedScheduler scheduler(1, "ThreadPoolDelayedScheduler", std::chrono::milliseconds::zero());
+
+    StrictMock<MockRunnable>* runnable1 = new StrictMock<MockRunnable>(true);
+
+    scheduler.schedule(runnable1, joynr::OptionalDelay(std::chrono::milliseconds(5)));
+
+    EXPECT_CALL(*runnable1, run()).Times(1);
+    EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+    scheduler.shutdown();
+}
+
+TEST(ThreadPoolDelayedSchedulerTest, testRunnableWithoutDelay)
+{
+    ThreadPoolDelayedScheduler scheduler(1, "ThreadPoolDelayedScheduler", std::chrono::milliseconds::zero());
+
+    StrictMock<MockRunnableWithAccuracy> runnable1(false, 0);
+
+    EXPECT_CALL(runnable1, runCalled()).Times(1);
+    EXPECT_CALL(runnable1, runCalledInTime()).Times(1);
+
+    scheduler.schedule(&runnable1, joynr::OptionalDelay(std::chrono::milliseconds::zero()));
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
+    scheduler.shutdown();
+
+    EXPECT_CALL(runnable1, dtorCalled()).Times(1);
+}
+
+TEST(ThreadPoolDelayedSchedulerTest, scheduleAndUnscheduleRunnable)
+{
+    ThreadPoolDelayedScheduler scheduler(1, "ThreadPoolDelayedScheduler", std::chrono::milliseconds::zero());
+
+    StrictMock<MockRunnableWithAccuracy> runnable1(false, 5);
+
+    joynr::DelayedScheduler::RunnableHandle handle = scheduler.schedule(&runnable1, joynr::OptionalDelay(std::chrono::milliseconds(5)));
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
+    scheduler.unschedule(handle);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+    scheduler.shutdown();
+
+    EXPECT_CALL(runnable1, dtorCalled()).Times(1);
+}
+
+TEST(ThreadPoolDelayedSchedulerTest, scheduleAndUnscheduleRunnable_CallDtorOnUnschedule)
+{
+    ThreadPoolDelayedScheduler scheduler(1, "ThreadPoolDelayedScheduler", std::chrono::milliseconds::zero());
+
+    StrictMock<MockRunnableWithAccuracy>* runnable1 = new StrictMock<MockRunnableWithAccuracy>(true, 5);
+
+    joynr::DelayedScheduler::RunnableHandle handle = scheduler.schedule(runnable1, joynr::OptionalDelay(std::chrono::milliseconds(5)));
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
+    EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
+
+    scheduler.unschedule(handle);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+    scheduler.shutdown();
+}
+
+TEST(ThreadPoolDelayedSchedulerTest, useDefaultDelay)
+{
+    ThreadPoolDelayedScheduler scheduler(1, "ThreadPoolDelayedScheduler", std::chrono::milliseconds(10));
+
+    StrictMock<MockRunnableWithAccuracy> runnable1(false, 10);
+
+    scheduler.schedule(&runnable1);
+
+    EXPECT_CALL(runnable1, runCalled()).Times(1);
+    EXPECT_CALL(runnable1, runCalledInTime()).Times(1);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(15));
+
+    scheduler.shutdown();
+
+    EXPECT_CALL(runnable1, dtorCalled()).Times(1);
+}

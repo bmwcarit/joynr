@@ -22,18 +22,15 @@
 #include "joynr/Timer.h"
 #include "joynr/joynrlogging.h"
 
+#include "joynr/TimeUtils.h"
+
 #include <QString>
 
-#include <chrono>
-#include <thread>
 #include <stdint.h>
 #include <unordered_map>
 
 using namespace joynr;
 using namespace joynr_logging;
-
-using namespace std::chrono;
-using namespace std::this_thread;
 
 using namespace ::testing;
 using ::testing::StrictMock;
@@ -107,7 +104,7 @@ private:
 joynr_logging::Logger* TimerTest::logger = joynr_logging::Logging::getInstance()->getLogger("MSG", "TimerTest");
 
 TEST_F(TimerTest, deinitializationWithoutRun_WaitSomeTime) {
-    sleep_for(milliseconds(10));
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
 }
 
 TEST_F(TimerTest, deinitializationWithoutRun_Immediately) {
@@ -117,7 +114,7 @@ TEST_F(TimerTest, shutdownWithActiveTimer_WaitSomeTime) {
 
     Timer::TimerId id = addTimer(40, false);
 
-    sleep_for(milliseconds(10));
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
     EXPECT_CALL(*this, onTimerExpired(_, _)).Times(0);
     EXPECT_CALL(*this, onTimerRemoved(id)).Times(1);
@@ -139,26 +136,26 @@ TEST_F(TimerTest, testCallbackAndAccuracy) {
     EXPECT_CALL(*this, onTimerExpired(id, Lt(20 + timerAccuracy_ms))).Times(1);
     EXPECT_CALL(*this, onTimerRemoved(id)).Times(0);
 
-    sleep_for(milliseconds(30));
+    std::this_thread::sleep_for(std::chrono::milliseconds(30));
 
 }
 
 TEST_F(TimerTest, reorganizeTimerByAddingAnEarlierTimer) {
     Timer::TimerId id50 = addTimer(50, false);
 
-    sleep_for(milliseconds(10));
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
     Timer::TimerId id10 = addTimer(10, false);
 
     EXPECT_CALL(*this, onTimerExpired(id10, Lt(10 + timerAccuracy_ms))).Times(1);
     EXPECT_CALL(*this, onTimerRemoved(_)).Times(0);
 
-    sleep_for(milliseconds(10));
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
     EXPECT_CALL(*this, onTimerExpired(id50, Lt(50 + timerAccuracy_ms))).Times(1);
     EXPECT_CALL(*this, onTimerRemoved(_)).Times(0);
 
-    sleep_for(milliseconds(40));
+    std::this_thread::sleep_for(std::chrono::milliseconds(40));
 
 }
 
@@ -167,7 +164,7 @@ TEST_F(TimerTest, reorganizeTimerByRemovingTheEarliest) {
 
     Timer::TimerId id10 = addTimer(10, false);
 
-    sleep_for(milliseconds(1));
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
     EXPECT_CALL(*this, onTimerExpired(_, _)).Times(0);
     EXPECT_CALL(*this, onTimerRemoved(id10)).Times(1);
@@ -177,20 +174,20 @@ TEST_F(TimerTest, reorganizeTimerByRemovingTheEarliest) {
     EXPECT_CALL(*this, onTimerExpired(id50, Lt(50 + timerAccuracy_ms))).Times(1);
     EXPECT_CALL(*this, onTimerRemoved(_)).Times(0);
 
-    sleep_for(milliseconds(70));
+    std::this_thread::sleep_for(std::chrono::milliseconds(70));
 }
 
 TEST_F(TimerTest, removingTheOnlyActiveTimer) {
     Timer::TimerId id10 = addTimer(10, false);
 
-    sleep_for(milliseconds(1));
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
     EXPECT_CALL(*this, onTimerExpired(_, _)).Times(0);
     EXPECT_CALL(*this, onTimerRemoved(id10)).Times(1);
 
     removeTimer(id10);
 
-    sleep_for(milliseconds(20));
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
 
 }
 
@@ -206,7 +203,7 @@ TEST_F(TimerTest, usingIntervallTimer) {
     EXPECT_CALL(*this, onTimerExpired(id150, Lt(150 + timerAccuracy_ms))).Times(1);
     EXPECT_CALL(*this, onTimerRemoved(_)).Times(0);
 
-    sleep_for(milliseconds(200));
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
 
     EXPECT_CALL(*this, onTimerRemoved(id10)).Times(1);
 
@@ -220,8 +217,8 @@ TEST_F(TimerTest, DISABLED_stressTest) {
     {
         Timer::TimerId id = addTimer(1, false);
         EXPECT_CALL(*this, onTimerExpired(id, _)).Times(1);
-        sleep_for(milliseconds(1));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
-    sleep_for(milliseconds(300));
+    std::this_thread::sleep_for(std::chrono::milliseconds(300));
 }

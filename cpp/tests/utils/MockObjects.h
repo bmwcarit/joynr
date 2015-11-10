@@ -22,6 +22,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <memory>
+#include <chrono>
 #include "PrettyPrint.h"
 #include "LibJoynrMockObjects.h"
 
@@ -37,6 +38,8 @@
 #include <vector>
 #include "utils/QThreadSleep.h"
 #include "joynr/DelayedSchedulerOld.h"
+#include "joynr/DelayedScheduler.h"
+#include "joynr/Runnable.h"
 #include "joynr/vehicle/GpsRequestCaller.h"
 #include "joynr/types/Localisation_QtGpsLocation.h"
 #include "joynr/types/Localisation_QtTrip.h"
@@ -148,6 +151,95 @@ public:
     MOCK_METHOD1(executeRunnable, void(QRunnable* runnable));
     MOCK_METHOD1(stopRunnable, void(QRunnable* runnable));
     MOCK_METHOD2(schedule, quint32(QRunnable* runnable, int delay_ms));
+};
+
+class MockDelayedScheduler : public joynr::DelayedScheduler
+{
+public:
+    MockDelayedScheduler()
+        : joynr::DelayedScheduler([](joynr::Runnable*){ assert(false); }, std::chrono::milliseconds::zero())
+    {
+    };
+
+    void shutdown() { joynr::DelayedScheduler::shutdown(); }
+    MOCK_METHOD1(unschedule, void (DelayedScheduler::RunnableHandle));
+    MOCK_METHOD2(schedule, DelayedScheduler::RunnableHandle (joynr::Runnable*, int64_t));
+};
+
+class MockRunnable : public joynr::Runnable
+{
+public:
+    MockRunnable(bool deleteMe) : joynr::Runnable(deleteMe) {}
+
+    MOCK_CONST_METHOD0(dtorCalled, void ());
+    ~MockRunnable() { dtorCalled(); }
+
+    MOCK_METHOD0(shutdown, void ());
+    MOCK_METHOD0(run, void ());
+};
+
+class MockRunnableWithAccuracy : public joynr::Runnable
+{
+public:
+    static const uint64_t timerAccuracyTolerance_ms = 5U;
+
+    MockRunnableWithAccuracy(bool deleteMe,
+                             const uint64_t delay);
+
+    MOCK_CONST_METHOD0(dtorCalled, void ());
+    ~MockRunnableWithAccuracy();
+
+    MOCK_METHOD0(shutdown, void ());
+
+    MOCK_CONST_METHOD0(runCalled, void());
+    MOCK_CONST_METHOD0(runCalledInTime, void());
+    virtual void run();
+
+private:
+    const uint64_t est_ms;
+};
+
+#include <mutex>
+#include <condition_variable>
+
+class MockRunnableBlocking : public joynr::Runnable
+{
+public:
+    MockRunnableBlocking(bool deleteMe = false)
+        : joynr::Runnable(deleteMe),
+          mutex(),
+          wait()
+    {
+    }
+
+    MOCK_CONST_METHOD0(dtorCalled, void ());
+    ~MockRunnableBlocking() { dtorCalled(); }
+
+    MOCK_METHOD0(shutdownCalled, void ());
+    void shutdown()
+    {
+        wait.notify_all();
+        shutdownCalled();
+    }
+
+    void manualShutdown()
+    {
+        wait.notify_all();
+    }
+
+    MOCK_CONST_METHOD0(runEntry, void ());
+    MOCK_CONST_METHOD0(runExit, void ());
+    void run()
+    {
+        runEntry();
+        std::unique_lock<std::mutex> lock(mutex);
+        wait.wait(lock);
+        runExit();
+    }
+
+private:
+    std::mutex mutex;
+    std::condition_variable wait;
 };
 
 class MockInProcessConnectorFactory : public joynr::InProcessConnectorFactory {

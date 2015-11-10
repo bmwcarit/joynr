@@ -22,8 +22,6 @@
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/PrivateCopyAssign.h"
 
-#include "joynr/TimeUtils.h"
-
 #include <stdint.h>
 #include <map>
 #include <thread>

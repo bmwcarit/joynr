@@ -24,15 +24,13 @@
 #include "joynr/DbusMessagingSkeleton.h"
 #include "joynr/system/RoutingTypes_QtChannelAddress.h"
 #include "joynr/system/RoutingTypes_QtCommonApiDbusAddress.h"
-#include "QString"
 
 #include "tests/utils/MockObjects.h"
 #include "joynr/IMessaging.h"
 #include "joynr/Settings.h"
 
-#include <thread>
+#include <QString>
 #include <chrono>
-#include <string>
 
 using namespace joynr;
 

@@ -20,13 +20,15 @@
 #define DBUSSKELETONWRAPPER_H
 
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/JoynrCommonExport.h"
 
 #include "joynr/joynrlogging.h"
+#include "joynr/TypeUtil.h"
+
 #include <QString>
 #include <CommonAPI/CommonAPI.h>
 
-#include "joynr/JoynrCommonExport.h"
-#include "joynr/TypeUtil.h"
+#include <chrono>
 
 namespace joynr
 {
@@ -72,7 +74,7 @@ public:
         auto runtime = CommonAPI::Runtime::load("DBus");
         bool success = runtime->getServicePublisher()->unregisterService(serviceAddress);
         // wait some time so that the service is unregistered on dbus level
-        std::this_thread::sleep_for(std::chrono::milliseconds(25));
+        ThreadUtil::sleepForMillis(25);
 
         if (success) {
             LOG_INFO(logger,

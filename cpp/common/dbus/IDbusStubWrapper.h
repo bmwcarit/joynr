@@ -20,7 +20,6 @@
 #define IDBUSSTUBWRAPPER_H
 
 #include "joynr/PrivateCopyAssign.h"
-
 #include "joynr/JoynrCommonExport.h"
 
 #include <CommonAPI/CommonAPI.h>
@@ -29,7 +28,6 @@
 #include "joynr/TypeUtil.h"
 
 #include <QString>
-#include <thread>
 #include <chrono>
 
 namespace joynr
