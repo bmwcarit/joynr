@@ -65,8 +65,8 @@ public:
     /**
      * Does the given request message have permission to reach the provider?
      *
-     * \param message The message to check
-     * \param callback An object that will be called back with the result
+     * @param message The message to check
+     * @param callback An object that will be called back with the result
      */
     virtual void hasConsumerPermission(
             const JoynrMessage& message,
@@ -76,11 +76,11 @@ public:
      * Does the provider with given userId and given trust level, have permission to expose given
      *domain interface?
      *
-     * \param userId The provider userId
-     * \param trustLevel The trustLevel for given userId
-     * \param domain The domain where provider interface belongs to
-     * \param interfaceName The interface provider wants to register
-     * \return true if the message has permission, false otherwise
+     * @param userId The provider userId
+     * @param trustLevel The trustLevel for given userId
+     * @param domain The domain where provider interface belongs to
+     * @param interfaceName The interface provider wants to register
+     * @return true if the message has permission, false otherwise
      */
     virtual bool hasProviderPermission(const QString& userId,
                                        infrastructure::DacTypes::QtTrustLevel::Enum trustLevel,

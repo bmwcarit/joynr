@@ -42,8 +42,8 @@ namespace joynr
 
 class DelayedScheduler;
 /**
-  * \class SubscriptionManager
-  * \brief The subscription manager is used by the proxy (via the appropriate connector)
+  * @class SubscriptionManager
+  * @brief The subscription manager is used by the proxy (via the appropriate connector)
   * to manage a subscription. This includes the registration and unregistration of attribute
   * subscriptions. In order to subscribe, a SubscriptionListener is passed in from the application
  * and
@@ -111,8 +111,8 @@ private:
     DelayedScheduler* missedPublicationScheduler;
     static joynr_logging::Logger* logger;
     /**
-      * \class SubscriptionManager::MissedPublicationRunnable
-      * \brief
+      * @class SubscriptionManager::MissedPublicationRunnable
+      * @brief
       */
     class MissedPublicationRunnable : public Runnable, public ObjectWithDecayTime
     {
@@ -144,8 +144,8 @@ private:
         static joynr_logging::Logger* logger;
     };
     /**
-      * \class SubscriptionManager::SubscriptionEndRunnable
-      * \brief
+      * @class SubscriptionManager::SubscriptionEndRunnable
+      * @brief
       */
     class SubscriptionEndRunnable : public Runnable
     {

@@ -91,10 +91,10 @@ public:
      * Check if user uid has role role for domain.
      * Used by an ACL editor app to verify whether the user is allowed to change ACEs or not
      *
-     * \param userId The user accessing the interface
-     * \param domain The trust level of the device accessing the interface
-     * \param role The domain that is being accessed
-     * \return Returns true, if user uid has role role for domain domain.
+     * @param userId The user accessing the interface
+     * @param domain The trust level of the device accessing the interface
+     * @param role The domain that is being accessed
+     * @return Returns true, if user uid has role role for domain domain.
      */
     virtual bool hasRole(const QString& userId,
                          const QString& domain,
@@ -103,11 +103,11 @@ public:
     /**
       * Get consumer permission to access an interface
       *
-      * \param userId        The user accessing the interface
-      * \param domain        The domain that is being accessed
-      * \param interfaceName The interface that is being accessed
-      * \param trustLevel    The trust level of the device accessing the interface
-      * \param callbacks     Object that will receive the result and then be deleted
+      * @param userId        The user accessing the interface
+      * @param domain        The domain that is being accessed
+      * @param interfaceName The interface that is being accessed
+      * @param trustLevel    The trust level of the device accessing the interface
+      * @param callbacks     Object that will receive the result and then be deleted
       *
       * Use :
       *    getConsumerPermission(String, String, String, String, QtTrustLevel, callbacks)
@@ -122,12 +122,12 @@ public:
     /**
       * Get consumer permission to access an interface operation
       *
-      * \param userId        The user accessing the interface
-      * \param domain        The domain that is being accessed
-      * \param interfaceName The interface that is being accessed
-      * \param operation     The operation user requests to execute on interface
-      * \param trustLevel    The trust level of the device accessing the interface
-      * \return the permission.
+      * @param userId        The user accessing the interface
+      * @param domain        The domain that is being accessed
+      * @param interfaceName The interface that is being accessed
+      * @param operation     The operation user requests to execute on interface
+      * @param trustLevel    The trust level of the device accessing the interface
+      * @return the permission.
       *
       * This synchronous function assumes that the data to do ACL checks is available
       * and has been obtained through a call to getConsumerPermission()
@@ -144,8 +144,8 @@ public:
      * i.e. the entries that define the access rights of the user uid.
      * Used by an Master ACL GUI to show access rights of a user.
      *
-     * \param uid The userId of the caller.
-     * \return A list of master ACEs for specified uid.
+     * @param uid The userId of the caller.
+     * @return A list of master ACEs for specified uid.
      */
     virtual std::vector<infrastructure::DacTypes::MasterAccessControlEntry>
     getMasterAccessControlEntries(const std::string& uid);
@@ -155,8 +155,8 @@ public:
      * i.e. the entries for which uid has role MASTER.
      * Used by an Master ACL GUI to show access rights of a user.
      *
-     * \param uid The userId of the caller.
-     * \return A list of editable master ACEs for specified uid.
+     * @param uid The userId of the caller.
+     * @return A list of editable master ACEs for specified uid.
      */
     virtual std::vector<infrastructure::DacTypes::MasterAccessControlEntry>
     getEditableMasterAccessControlEntries(const std::string& uid);
@@ -165,8 +165,8 @@ public:
      * Updates an existing entry (according to primary key) or adds a new entry if not already
      * existent.
      *
-     * \param updatedMasterAce The master ACE that has to be updated/added to the ACL store.
-     * \return true if update succeeded.
+     * @param updatedMasterAce The master ACE that has to be updated/added to the ACL store.
+     * @return true if update succeeded.
      */
     virtual bool updateMasterAccessControlEntry(
             const infrastructure::DacTypes::MasterAccessControlEntry& updatedMasterAce);
@@ -174,11 +174,11 @@ public:
     /**
      * Removes an existing entry (according to primary key).
      *
-     * \param uid The userId of the control entry.
-     * \param domain The domain of the control entry.
-     * \param interfaceName The interfaceName of the control entry.
-     * \param operation The operation of the control entry.
-     * \return true if remove succeeded.
+     * @param uid The userId of the control entry.
+     * @param domain The domain of the control entry.
+     * @param interfaceName The interfaceName of the control entry.
+     * @param operation The operation of the control entry.
+     * @return true if remove succeeded.
      */
     virtual bool removeMasterAccessControlEntry(const std::string& uid,
                                                 const std::string& domain,
@@ -190,8 +190,8 @@ public:
      * i.e. the entries that define the access rights of the user uid.
      * Used by an Mediator ACL GUI to show access rights of a user.
      *
-     * \param uid The userId of the caller.
-     * \return A list of mediator ACEs for specified uid.
+     * @param uid The userId of the caller.
+     * @return A list of mediator ACEs for specified uid.
      */
     virtual std::vector<infrastructure::DacTypes::MasterAccessControlEntry>
     getMediatorAccessControlEntries(const std::string& uid);
@@ -202,8 +202,8 @@ public:
      * Used by an Mediator ACL GUI to show access rights of a user.
      * Calling this function blocks calling thread until update operation finish.
      *
-     * \param uid The userId of the caller.
-     * \return A list of editable mediator ACEs for specified uid.
+     * @param uid The userId of the caller.
+     * @return A list of editable mediator ACEs for specified uid.
      */
     virtual std::vector<infrastructure::DacTypes::MasterAccessControlEntry>
     getEditableMediatorAccessControlEntries(const std::string& uid);
@@ -212,8 +212,8 @@ public:
      * Updates an existing entry (according to primary key) or adds a new entry if not already
      *existent.
      *
-     * \param updatedMediatorAce The mediator ACE that has to be updated/added to the ACL store.
-     * \return true if update succeeded.
+     * @param updatedMediatorAce The mediator ACE that has to be updated/added to the ACL store.
+     * @return true if update succeeded.
      */
     virtual bool updateMediatorAccessControlEntry(
             const infrastructure::DacTypes::MasterAccessControlEntry& updatedMediatorAce);
@@ -221,11 +221,11 @@ public:
     /**
      * Removes an existing entry (according to primary key).
      *
-     * \param uid The userId of the control entry.
-     * \param domain The domain of the control entry.
-     * \param interfaceName The interfaceName of the control entry.
-     * \param operation The operation of the control entry.
-     * \return true if remove succeeded.
+     * @param uid The userId of the control entry.
+     * @param domain The domain of the control entry.
+     * @param interfaceName The interfaceName of the control entry.
+     * @param operation The operation of the control entry.
+     * @return true if remove succeeded.
      */
     virtual bool removeMediatorAccessControlEntry(const std::string& uid,
                                                   const std::string& domain,
@@ -237,8 +237,8 @@ public:
      * i.e. the entries that define the access rights of the user uid.
      * Used by an Owner ACL GUI to show access rights of a user.
      *
-     * \param uid The userId of the caller.
-     * \return A list of owner ACEs for specified uid.
+     * @param uid The userId of the caller.
+     * @return A list of owner ACEs for specified uid.
      */
     virtual std::vector<infrastructure::DacTypes::OwnerAccessControlEntry>
     getOwnerAccessControlEntries(const std::string& uid);
@@ -249,8 +249,8 @@ public:
      * Used by an Owner ACL GUI to show access rights of a user.
      * Calling this function blocks calling thread until update operation finish.
      *
-     * \param uid The userId of the caller.
-     * \return A list of editable owner ACEs for specified uid.
+     * @param uid The userId of the caller.
+     * @return A list of editable owner ACEs for specified uid.
      */
     virtual std::vector<infrastructure::DacTypes::OwnerAccessControlEntry>
     getEditableOwnerAccessControlEntries(const std::string& uid);
@@ -259,8 +259,8 @@ public:
      * Updates an existing entry (according to primary key) or adds a new entry if not already
      *existent.
      *
-     * \param updatedOwnerAce The owner ACE that has to be updated/added to the ACL store.
-     * \return true if update succeeded.
+     * @param updatedOwnerAce The owner ACE that has to be updated/added to the ACL store.
+     * @return true if update succeeded.
      */
     virtual bool updateOwnerAccessControlEntry(
             const infrastructure::DacTypes::OwnerAccessControlEntry& updatedOwnerAce);
@@ -268,11 +268,11 @@ public:
     /**
      * Removes an existing entry (according to primary key).
      *
-     * \param uid The userId of the control entry.
-     * \param domain The domain of the control entry.
-     * \param interfaceName The interfaceName of the control entry.
-     * \param operation The operation of the control entry.
-     * \return true if remove succeeded.
+     * @param uid The userId of the control entry.
+     * @param domain The domain of the control entry.
+     * @param interfaceName The interfaceName of the control entry.
+     * @param operation The operation of the control entry.
+     * @return true if remove succeeded.
      */
     virtual bool removeOwnerAccessControlEntry(const std::string& uid,
                                                const std::string& domain,
@@ -282,10 +282,10 @@ public:
     /**
      * Get provider permission to expose an interface
      *
-     * \param uid        The userId of the provider exposing the interface
-     * \param domain        The domain where interface belongs
-     * \param interfaceName The interface that is being accessed
-     * \param trustLevel    The trust level of the device accessing the interface
+     * @param uid        The userId of the provider exposing the interface
+     * @param domain        The domain where interface belongs
+     * @param interfaceName The interface that is being accessed
+     * @param trustLevel    The trust level of the device accessing the interface
      */
     virtual infrastructure::DacTypes::Permission::Enum getProviderPermission(
             const std::string& uid,
@@ -299,8 +299,8 @@ public:
      * Used by an Master RCL GUI to show registration rights of a provider.
      * Calling this function blocks calling thread until update operation finish.
      *
-     * \param uid The provider userId.
-     * \return A list of master RCEs for specified uid.
+     * @param uid The provider userId.
+     * @return A list of master RCEs for specified uid.
      */
     virtual std::vector<infrastructure::DacTypes::MasterRegistrationControlEntry>
     getMasterRegistrationControlEntries(const std::string& uid);
@@ -310,8 +310,8 @@ public:
      *role Master,
      * i.e. the entries the user uid is allowed to edit. Used by an Master ACL editor app.
      *
-     * \param uid The userId of the caller.
-     * \return A list of entries applying to domains the user uid has role Master.
+     * @param uid The userId of the caller.
+     * @return A list of entries applying to domains the user uid has role Master.
      */
     virtual std::vector<infrastructure::DacTypes::MasterRegistrationControlEntry>
     getEditableMasterRegistrationControlEntries(const std::string& uid);
@@ -320,8 +320,8 @@ public:
      * Updates an existing entry (according to primary key) or adds a new entry if not already
      *existent.
      *
-     * \param updatedMasterRce The master RCE to be updated.
-     * \return true if update succeeded.
+     * @param updatedMasterRce The master RCE to be updated.
+     * @return true if update succeeded.
      */
     virtual bool updateMasterRegistrationControlEntry(
             const infrastructure::DacTypes::MasterRegistrationControlEntry& updatedMasterRce);
@@ -329,10 +329,10 @@ public:
     /**
      * Removes an existing entry (according to primary key).
      *
-     * \param uid Provider userId.
-     * \param domain Domain where provider has been registered.
-     * \param interfaceName Provider interface.
-     * \return true if remove succeeded.
+     * @param uid Provider userId.
+     * @param domain Domain where provider has been registered.
+     * @param interfaceName Provider interface.
+     * @return true if remove succeeded.
      */
     virtual bool removeMasterRegistrationControlEntry(const std::string& uid,
                                                       const std::string& domain,
@@ -344,8 +344,8 @@ public:
      * Used by an Mediator RCL GUI to show registration rights of a provider.
      * Calling this function blocks calling thread until update operation finish.
      *
-     * \param uid The provider userId.
-     * \return A list of mediator RCEs for specified uid.
+     * @param uid The provider userId.
+     * @return A list of mediator RCEs for specified uid.
      */
     virtual std::vector<infrastructure::DacTypes::MasterRegistrationControlEntry>
     getMediatorRegistrationControlEntries(const std::string& uid);
@@ -355,8 +355,8 @@ public:
      *role Master,
      * i.e. the entries the user uid is allowed to edit. Used by an Mediator ACL editor app.
      *
-     * \param uid The userId of the caller.
-     * \return A list of entries applying to domains the user uid has role Master.
+     * @param uid The userId of the caller.
+     * @return A list of entries applying to domains the user uid has role Master.
      */
     virtual std::vector<infrastructure::DacTypes::MasterRegistrationControlEntry>
     getEditableMediatorRegistrationControlEntries(const std::string& uid);
@@ -365,8 +365,8 @@ public:
      * Updates an existing entry (according to primary key) or adds a new entry if not already
      *existent.
      *
-     * \param updatedMediatorRce The mediator RCE to be updated.
-     * \return true if update succeeded.
+     * @param updatedMediatorRce The mediator RCE to be updated.
+     * @return true if update succeeded.
      */
     virtual bool updateMediatorRegistrationControlEntry(
             const infrastructure::DacTypes::MasterRegistrationControlEntry& updatedMediatorRce);
@@ -374,10 +374,10 @@ public:
     /**
      * Removes an existing entry (according to primary key).
      *
-     * \param uid Provider userId.
-     * \param domain Domain where provider has been registered.
-     * \param interfaceName Provider interface.
-     * \return true if remove succeeded.
+     * @param uid Provider userId.
+     * @param domain Domain where provider has been registered.
+     * @param interfaceName Provider interface.
+     * @return true if remove succeeded.
      */
     virtual bool removeMediatorRegistrationControlEntry(const std::string& uid,
                                                         const std::string& domain,
@@ -389,8 +389,8 @@ public:
      * Used by an Owner RCL GUI to show registration rights of a provider.
      * Calling this function blocks calling thread until update operation finish.
      *
-     * \param uid The provider userId.
-     * \return A list of owner RCEs for specified uid.
+     * @param uid The provider userId.
+     * @return A list of owner RCEs for specified uid.
      */
     virtual std::vector<infrastructure::DacTypes::OwnerRegistrationControlEntry>
     getOwnerRegistrationControlEntries(const std::string& uid);
@@ -400,8 +400,8 @@ public:
      *role Owner,
      * i.e. the entries the user uid is allowed to edit. Used by an Owner ACL editor app.
      *
-     * \param uid The userId of the caller.
-     * \return A list of entries applying to domains the user uid has role Owner.
+     * @param uid The userId of the caller.
+     * @return A list of entries applying to domains the user uid has role Owner.
      */
     virtual std::vector<infrastructure::DacTypes::OwnerRegistrationControlEntry>
     getEditableOwnerRegistrationControlEntries(const std::string& uid);
@@ -410,8 +410,8 @@ public:
      * Updates an existing entry (according to primary key) or adds a new entry if not already
      *existent.
      *
-     * \param updatedOwnerRce The owner RCE to be updated.
-     * \return true if update succeeded.
+     * @param updatedOwnerRce The owner RCE to be updated.
+     * @return true if update succeeded.
      */
     virtual bool updateOwnerRegistrationControlEntry(
             const infrastructure::DacTypes::OwnerRegistrationControlEntry& updatedOwnerRce);
@@ -419,10 +419,10 @@ public:
     /**
      * Removes an existing entry (according to primary key).
      *
-     * \param uid Provider userId.
-     * \param domain Domain where provider has been registered.
-     * \param interfaceName Provider interface.
-     * \return true if remove succeeded.
+     * @param uid Provider userId.
+     * @param domain Domain where provider has been registered.
+     * @param interfaceName Provider interface.
+     * @return true if remove succeeded.
      */
     virtual bool removeOwnerRegistrationControlEntry(const std::string& uid,
                                                      const std::string& domain,
@@ -430,8 +430,8 @@ public:
 
     /**
      * Unregisters a domain/interface from access control.
-     * \param domain The domain of the provider being unregistered.
-     * \param interfaceName The interface of the provider being unregistered
+     * @param domain The domain of the provider being unregistered.
+     * @param interfaceName The interface of the provider being unregistered
      */
     virtual void unregisterProvider(const std::string& domain, const std::string& interfaceName);
 

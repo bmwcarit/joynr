@@ -32,7 +32,7 @@ namespace joynr
 class RequestCaller;
 
 /**
-  * Common interface for all \class <Intf>RequestInterpreter.
+  * Common interface for all @class <Intf>RequestInterpreter.
   */
 class IRequestInterpreter
 {
@@ -42,8 +42,8 @@ public:
     }
 
     /**
-      * Executes method \param methodName with parameters \param methodParams
-      * on the \param requestCaller object.
+      * Executes method @param methodName with parameters @param methodParams
+      * on the @param requestCaller object.
       */
     virtual void execute(
             std::shared_ptr<RequestCaller> requestCaller,

@@ -57,8 +57,8 @@ class JoynrException;
 class SubscriptionQos;
 
 /**
-  * \class PublicationManager
-  * \brief Publication manager receives subscription requests and prepares publications,
+  * @class PublicationManager
+  * @brief Publication manager receives subscription requests and prepares publications,
   * which are send back to the subscription manager.
   * Responsible for deleting SubscriptionRequests and PublicationStates (the runnable notifies the
   * SubscriptionManager when it terminates - this triggeres the delete).

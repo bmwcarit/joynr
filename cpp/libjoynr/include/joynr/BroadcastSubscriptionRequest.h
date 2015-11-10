@@ -31,8 +31,8 @@
 namespace joynr
 {
 
-/** \class BroadcastSubscriptionRequest
-  * \brief SubscriptionRequest stores the information that is necessary to store a broadcast
+/** @class BroadcastSubscriptionRequest
+  * @brief SubscriptionRequest stores the information that is necessary to store a broadcast
   * subscription-Request on subscriber side, while Aribtration is handled.
   */
 

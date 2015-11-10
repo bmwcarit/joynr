@@ -28,8 +28,8 @@
 namespace joynr
 {
 
-/** \class SubscriptionInformation
-  * \brief SubscriptionInformation stores information about the context in which a concrete
+/** @class SubscriptionInformation
+  * @brief SubscriptionInformation stores information about the context in which a concrete
   * subscription request is used.
   */
 

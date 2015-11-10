@@ -60,11 +60,11 @@ public:
      * Get the consumer permission for given combination of control entries and with the given trust
      *level.
      *
-     * \param master The master access control entry
-     * \param mediator The mediator access control entry
-     * \param owner The owner access control entry
-     * \param trustLevel The trust level of the user sending the message
-     * \return The permission
+     * @param master The master access control entry
+     * @param mediator The mediator access control entry
+     * @param owner The owner access control entry
+     * @param trustLevel The trust level of the user sending the message
+     * @return The permission
      */
     virtual infrastructure::DacTypes::QtPermission::Enum getConsumerPermission(
             const Optional<infrastructure::DacTypes::QtMasterAccessControlEntry>& masterOptional,
@@ -75,11 +75,11 @@ public:
     /**
      * Get the permission for a Provider.
      *
-     * \param master A list containing a single matching master entry or an empty list
-     * \param mediator A list containing a single mediator entry or an empty list
-     * \param owner A list containing a single owner entry or an empty list
-     * \param trustLevel The trust level of the user sending the message
-     * \return Always QtPermission::YES
+     * @param master A list containing a single matching master entry or an empty list
+     * @param mediator A list containing a single mediator entry or an empty list
+     * @param owner A list containing a single owner entry or an empty list
+     * @param trustLevel The trust level of the user sending the message
+     * @return Always QtPermission::YES
      */
     virtual infrastructure::DacTypes::QtPermission::Enum getProviderPermission(
             const Optional<infrastructure::DacTypes::QtMasterAccessControlEntry>& masterOptional,

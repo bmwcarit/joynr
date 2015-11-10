@@ -49,8 +49,8 @@ class QtAddress;
 }
 
 /**
-  * \class HttpReceiver
-  * \brief Implements HTTP communication to the bounce proxy (backend)
+  * @class HttpReceiver
+  * @brief Implements HTTP communication to the bounce proxy (backend)
   *
   * Implements the IMessageReceiver interface using the httpnetworking
   * subproject that uses libcurl.

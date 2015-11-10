@@ -34,8 +34,8 @@ namespace joynr
 {
 
 /**
- * \class QtBroadcastFilterParameters
- * \brief The QtBroadcastFilterParameters class represents generic filter parameters
+ * @class QtBroadcastFilterParameters
+ * @brief The QtBroadcastFilterParameters class represents generic filter parameters
  * for selective broadcasts
  */
 class JOYNRCOMMON_EXPORT QtBroadcastFilterParameters : public QObject

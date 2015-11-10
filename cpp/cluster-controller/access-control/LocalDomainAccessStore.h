@@ -43,8 +43,8 @@ public:
     /**
      * Get the domain roles for the given user.
      *
-     * \param userId The user to get the domain roles for. No wildcards supported.
-     * \return QList of Domain QtRole Entries that apply to the user uid.
+     * @param userId The user to get the domain roles for. No wildcards supported.
+     * @return QList of Domain QtRole Entries that apply to the user uid.
      * The QList contains max two entries (since we only have two roles Master and Owner).
      * Used to get domain roles when a user logs in.
      */
@@ -53,9 +53,9 @@ public:
     /**
      * Get the domain role for the given user and role.
      *
-     * \param uid The user to get the domain role for. No wildcards supported.
-     * \param role The user to get the domain role for. No wildcards supported.
-     * \return Domain QtRole Entry that apply to the user uid and role.
+     * @param uid The user to get the domain role for. No wildcards supported.
+     * @param role The user to get the domain role for. No wildcards supported.
+     * @return Domain QtRole Entry that apply to the user uid and role.
      * Returned domain role entry domains value is empty list, if no domain role entry for uid
      *found.
      */
@@ -67,18 +67,18 @@ public:
      * Updates given domain role entry. If such doesn't already exist in the store, it will be added
      *to the store.
      *
-     * \param updatedEntry Entry that has to be updated.
-     * \return If operation succeeded return true.
+     * @param updatedEntry Entry that has to be updated.
+     * @return If operation succeeded return true.
      */
     bool updateDomainRole(const infrastructure::DacTypes::QtDomainRoleEntry& updatedEntry);
 
     /**
      * Removes an entry according to the specified primary key.
      *
-     * \param userId UserId whose DRE is going to be removed.
-     * \param role UserId role that builds with userId primary key that identifies DRE that has to
+     * @param userId UserId whose DRE is going to be removed.
+     * @param role UserId role that builds with userId primary key that identifies DRE that has to
      *be removed.
-     * \return If operation succeeded return true.
+     * @return If operation succeeded return true.
      */
     bool removeDomainRole(const QString& userId, infrastructure::DacTypes::QtRole::Enum role);
 
@@ -88,8 +88,8 @@ public:
      * This method is called when a user logs in and a client wishes to cache MasterAcl for that
      *user.
      *
-     * \param uid The user id that owns the domains.
-     * \return QList of master ACEs with entries owned by the user.
+     * @param uid The user id that owns the domains.
+     * @return QList of master ACEs with entries owned by the user.
      * If no entry has been found for specified uid, then returns master ACE with uid "*".
      */
     QList<infrastructure::DacTypes::QtMasterAccessControlEntry> getMasterAccessControlEntries(
@@ -99,8 +99,8 @@ public:
      * Returns a QList of master ACEs applying to domains the user uid has role Master,
      * i.e. the entries the user uid is allowed to edit. Used by an Master ACL editor app.
      *
-     * \param userId The user id that owns the domains.
-     * \return QList of master ACEs with entries owned by the user.
+     * @param userId The user id that owns the domains.
+     * @return QList of master ACEs with entries owned by the user.
      * In case userId has no domains with role MASTER, this function returns empty QList.
      */
     QList<infrastructure::DacTypes::QtMasterAccessControlEntry>
@@ -110,9 +110,9 @@ public:
      * Returns a list of master ACEs that apply to the domain and interface combination.
      * Used when a provider is registered to prefetch applying entries.
      *
-     * \param domain The domain you search ACE's for.
-     * \param interfaceName The interface you search ACE's for.
-     * \return List of master ACEs associated to given domain and interface.
+     * @param domain The domain you search ACE's for.
+     * @param interfaceName The interface you search ACE's for.
+     * @return List of master ACEs associated to given domain and interface.
      */
     QList<infrastructure::DacTypes::QtMasterAccessControlEntry> getMasterAccessControlEntries(
             const QString& domain,
@@ -122,10 +122,10 @@ public:
      * Get the master access control entries for an incoming message with
      * the given uid, domain, interface.
      *
-     * \param uid The userid of the incoming message
-     * \param domain The domain being called
-     * \param interfaceName The interface being called.
-     * \return The matching Master ACEs.
+     * @param uid The userid of the incoming message
+     * @param domain The domain being called
+     * @param interfaceName The interface being called.
+     * @return The matching Master ACEs.
      */
     QList<infrastructure::DacTypes::QtMasterAccessControlEntry> getMasterAccessControlEntries(
             const QString& uid,
@@ -136,11 +136,11 @@ public:
      * Get the master access control entry for an incoming message with
      * the given uid, domain, interface, operation.
      *
-     * \param uid The userid of the incoming message
-     * \param domain The domain being called
-     * \param interfaceName The interface being called.
-     * \param operation The operation being called
-     * \return Master ACE Optional associated to given uid, domain, interface and operation.
+     * @param uid The userid of the incoming message
+     * @param domain The domain being called
+     * @param interfaceName The interface being called.
+     * @param operation The operation being called
+     * @return Master ACE Optional associated to given uid, domain, interface and operation.
      * If no master ACE found for given parameters, returned Optional is null.
      */
     Optional<infrastructure::DacTypes::QtMasterAccessControlEntry> getMasterAccessControlEntry(
@@ -153,8 +153,8 @@ public:
      * Update given master access control entry.
      * If such doesn't already exist in the store, it will be added to the store.
      *
-     * \param updatedMasterAce The entry to add
-     * \return false if update fails.
+     * @param updatedMasterAce The entry to add
+     * @return false if update fails.
      */
     bool updateMasterAccessControlEntry(
             const infrastructure::DacTypes::QtMasterAccessControlEntry& updatedMasterAce);
@@ -163,11 +163,11 @@ public:
      * Remove master access control entry uniquely identified with userId, domain, interface and
      *operation.
      *
-     * \param userId
-     * \param domain
-     * \param interfaceName
-     * \param operation
-     * \return false if remove fails or master ACE that match given parameters was not found.
+     * @param userId
+     * @param domain
+     * @param interfaceName
+     * @param operation
+     * @return false if remove fails or master ACE that match given parameters was not found.
      */
     bool removeMasterAccessControlEntry(const QString& userId,
                                         const QString& domain,
@@ -180,8 +180,8 @@ public:
      * This method is called when a user logs in and a client wishes to cache MediatorAcl for that
      *user.
      *
-     * \param uid The user id that owns the domains.
-     * \return List of master ACEs with entries owned by the uid.
+     * @param uid The user id that owns the domains.
+     * @return List of master ACEs with entries owned by the uid.
      * If no entry has been found for specified uid, then returns master ACE from Mediator ACL with
      *uid "*".
      */
@@ -193,8 +193,8 @@ public:
      *MASTER,
      * i.e. the entries the user uid is allowed to edit. Used by an Mediator ACL editor app.
      *
-     * \param userId The user id that owns the domains.
-     * \return List of master ACEs with entries owned by the user.
+     * @param userId The user id that owns the domains.
+     * @return List of master ACEs with entries owned by the user.
      * In case userId has no domains with role MASTER, this function returns empty QList.
      */
     QList<infrastructure::DacTypes::QtMasterAccessControlEntry>
@@ -205,9 +205,9 @@ public:
      *combination.
      * Used when a provider is registered to prefetch applying entries.
      *
-     * \param domain The domain you search ACE's for.
-     * \param interfaceName The interface you search ACE's for.
-     * \return QList of master ACEs associated to given domain and interface.
+     * @param domain The domain you search ACE's for.
+     * @param interfaceName The interface you search ACE's for.
+     * @return QList of master ACEs associated to given domain and interface.
      */
     QList<infrastructure::DacTypes::QtMasterAccessControlEntry> getMediatorAccessControlEntries(
             const QString& domain,
@@ -217,10 +217,10 @@ public:
      * Get the master ACEs from Mediator ACL for an incoming message with
      * the given uid, domain, interface.
      *
-     * \param uid The userid of the incoming message
-     * \param domain The domain being called
-     * \param interfaceName The interface being called.
-     * \return The matching mediator ACEs
+     * @param uid The userid of the incoming message
+     * @param domain The domain being called
+     * @param interfaceName The interface being called.
+     * @return The matching mediator ACEs
      */
     QList<infrastructure::DacTypes::QtMasterAccessControlEntry> getMediatorAccessControlEntries(
             const QString& uid,
@@ -231,11 +231,11 @@ public:
      * Get the mediator access control entry for an incoming message with
      * the given uid, domain, interface, operation.
      *
-     * \param uid The userid of the incoming message
-     * \param domain The domain being called
-     * \param interfaceName The interface being called.
-     * \param operation The operation being called
-     * \return Mediator ACE Optional associated to given uid, domain, interface and operation.
+     * @param uid The userid of the incoming message
+     * @param domain The domain being called
+     * @param interfaceName The interface being called.
+     * @param operation The operation being called
+     * @return Mediator ACE Optional associated to given uid, domain, interface and operation.
      * If no mediator ACE found for given parameters, returned Optional is null.
      */
     Optional<infrastructure::DacTypes::QtMasterAccessControlEntry> getMediatorAccessControlEntry(
@@ -247,8 +247,8 @@ public:
      * Update given master ACE in MediatorACL.
      * If such doesn't already exist in the store, it will be added to the store.
      *
-     * \param updatedMediatorAce The entry to add
-     * \return false if update fails.
+     * @param updatedMediatorAce The entry to add
+     * @return false if update fails.
      */
     bool updateMediatorAccessControlEntry(
             const infrastructure::DacTypes::QtMasterAccessControlEntry& updatedMediatorAce);
@@ -256,11 +256,11 @@ public:
     /**
      * Remove mediator ACE from MediatorACL identified with userId, domain, interface and operation.
      *
-     * \param userId
-     * \param domain
-     * \param interfaceName
-     * \param operation
-     * \return false if remove fails or master ACE that match given parameters was not found.
+     * @param userId
+     * @param domain
+     * @param interfaceName
+     * @param operation
+     * @return false if remove fails or master ACE that match given parameters was not found.
      */
     bool removeMediatorAccessControlEntry(const QString& userId,
                                           const QString& domain,
@@ -273,8 +273,8 @@ public:
      * This method is called when a user logs in and a client wishes to cache OwnerAcl for that
      *user.
      *
-     * \param uid The user id that owns the domains.
-     * \return QList of owner ACEs with entries owned by the user.
+     * @param uid The user id that owns the domains.
+     * @return QList of owner ACEs with entries owned by the user.
      */
     QList<infrastructure::DacTypes::QtOwnerAccessControlEntry> getOwnerAccessControlEntries(
             const QString& uid);
@@ -285,8 +285,8 @@ public:
      * This method is called when a user logs in and a client wishes to cache OwnerAcl for that
      *user.
      *
-     * \param userId The user id that owns the domains.
-     * \return QList of owner ACEs with entries owned by the user.
+     * @param userId The user id that owns the domains.
+     * @return QList of owner ACEs with entries owned by the user.
      * In case userId has no domains with role OWNER, this function returns QList of all userId
      *owner ACEs.
      */
@@ -297,9 +297,9 @@ public:
      * Returns a list of owner ACEs that apply to the domain and interface combination.
      * Used when a provider is registered to prefetch applying entries.
      *
-     * \param domain The domain you search ACE's for.
-     * \param interfaceName The interface you search ACE's for.
-     * \return QList of owner ACEs associated to given domain and interface.
+     * @param domain The domain you search ACE's for.
+     * @param interfaceName The interface you search ACE's for.
+     * @return QList of owner ACEs associated to given domain and interface.
      */
     QList<infrastructure::DacTypes::QtOwnerAccessControlEntry> getOwnerAccessControlEntries(
             const QString& domain,
@@ -308,10 +308,10 @@ public:
     /**
      * Get the Owner ACEs for the given user,domain and interface.
      *
-     * \param userId The userid of the incoming message
-     * \param domain The domain being accessed
-     * \param interfaceName The interface being accessed
-     * \return The matching OwnerACEs
+     * @param userId The userid of the incoming message
+     * @param domain The domain being accessed
+     * @param interfaceName The interface being accessed
+     * @return The matching OwnerACEs
      */
     QList<infrastructure::DacTypes::QtOwnerAccessControlEntry> getOwnerAccessControlEntries(
             const QString& userId,
@@ -321,11 +321,11 @@ public:
     /**
      * Get the Owner ACE for the given user,domain and interface and operation.
      *
-     * \param userId The userid of the incoming message
-     * \param domain The domain being accessed
-     * \param interfaceName The interface being accessed
-     * \param operation The operation being called
-     * \return Owner ACE Optional associated to given uid, domain, interface and operation.
+     * @param userId The userid of the incoming message
+     * @param domain The domain being accessed
+     * @param interfaceName The interface being accessed
+     * @param operation The operation being called
+     * @return Owner ACE Optional associated to given uid, domain, interface and operation.
      * If no owner ACE found for given parameters, returned Optional is null.
      */
     Optional<infrastructure::DacTypes::QtOwnerAccessControlEntry> getOwnerAccessControlEntry(
@@ -338,8 +338,8 @@ public:
      * Update given owner ACE.
      * If such doesn't already exist in the store, it will be added to the store.
      *
-     * \param updatedOwnerAce The entry to add
-     * \return false if update fails.
+     * @param updatedOwnerAce The entry to add
+     * @return false if update fails.
      */
     bool updateOwnerAccessControlEntry(
             const infrastructure::DacTypes::QtOwnerAccessControlEntry& updatedOwnerAce);
@@ -347,11 +347,11 @@ public:
     /**
      * Remove ownerAce ACE identified with userId, domain, interface and operation.
      *
-     * \param userId
-     * \param domain
-     * \param interfaceName
-     * \param operation
-     * \return false if remove fails or ownerAce ACE that match given parameters was not found.
+     * @param userId
+     * @param domain
+     * @param interfaceName
+     * @param operation
+     * @return false if remove fails or ownerAce ACE that match given parameters was not found.
      */
     bool removeOwnerAccessControlEntry(const QString& userId,
                                        const QString& domain,

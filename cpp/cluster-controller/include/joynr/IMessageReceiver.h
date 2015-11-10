@@ -37,8 +37,8 @@ class QtAddress;
 }
 
 /**
-  * \class IMessageReceiver
-  * \brief Interface for message receiver
+  * @class IMessageReceiver
+  * @brief Interface for message receiver
   *
   * This interface describes basic messaging functionality available in
   * the Joynr framework. Especially, it offers a method to notify about

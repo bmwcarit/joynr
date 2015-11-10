@@ -33,8 +33,8 @@
 namespace joynr
 {
 
-/** \class SubscriptionRequest
-  * \brief SubscriptionRequest stores the information that is necessary to store a
+/** @class SubscriptionRequest
+  * @brief SubscriptionRequest stores the information that is necessary to store a
  * subscription-Request on
   * subscriber side, while Aribtration is handled.
   */

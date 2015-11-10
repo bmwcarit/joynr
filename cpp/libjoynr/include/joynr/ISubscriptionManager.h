@@ -36,8 +36,8 @@ namespace joynr
 {
 
 /**
-  * \class ISubscriptionManager
-  * \brief The subscription manager is used by the proxy (via the appropriate connector)
+  * @class ISubscriptionManager
+  * @brief The subscription manager is used by the proxy (via the appropriate connector)
   * to manage a subscription. This includes the registration and unregistration of attribute
   * subscriptions. In order to subscribe, a SubscriptionListener is passed in from the application
  * and

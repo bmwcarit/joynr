@@ -38,8 +38,8 @@ namespace joynr
 {
 
 /**
-  * \class TypeUtil
-  * \brief Container class for helper methods related with the used datatypes
+  * @class TypeUtil
+  * @brief Container class for helper methods related with the used datatypes
   */
 class JOYNRCOMMON_EXPORT TypeUtil
 {

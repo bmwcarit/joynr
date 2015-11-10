@@ -34,7 +34,7 @@ class JOYNRCLUSTERCONTROLLER_EXPORT TrustLevelComparator
 public:
     /**
      * Compare two trustlevels
-     * \return 0 if a == b, -1 if a <= b, 1 if a > b
+     * @return 0 if a == b, -1 if a <= b, 1 if a > b
      */
     static int compare(infrastructure::DacTypes::QtTrustLevel::Enum a,
                        infrastructure::DacTypes::QtTrustLevel::Enum b);

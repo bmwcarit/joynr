@@ -37,8 +37,8 @@ namespace joynr
 class Variant;
 
 /**
-  * \class IBroadcastFilter
-  * \brief The IBroadcastFilter class provides an interface for filter logic implementation.
+  * @class IBroadcastFilter
+  * @brief The IBroadcastFilter class provides an interface for filter logic implementation.
   */
 class JOYNR_EXPORT IBroadcastFilter
 {
