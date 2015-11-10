@@ -27,18 +27,19 @@
 #include "joynr/joynrlogging.h"
 #include "cluster-controller/http-communication-manager/IChannelUrlSelector.h"
 #include "joynr/ILocalChannelUrlDirectory.h"
+#include "joynr/DispatcherUtils.h"
+#include "joynr/ThreadPoolDelayedScheduler.h"
+#include "joynr/Runnable.h"
 
 #include <QString>
 #include <QByteArray>
-#include <QThreadPool>
-#include "joynr/DispatcherUtils.h"
+
 #include <memory>
 
 namespace joynr
 {
 
 class JoynrMessage;
-class DelayedSchedulerOld;
 class MessagingSettings;
 class HttpResult;
 
@@ -72,21 +73,36 @@ private:
     const int messageSendRetryInterval;
     static joynr_logging::Logger* logger;
 
-    QThreadPool threadPool; // used to send messages once an Url is known
-    DelayedSchedulerOld* delayedScheduler;
-    QThreadPool channelUrlContactorThreadPool; // obtaining an url must be in a different threadpool
-    DelayedSchedulerOld* channelUrlContactorDelayedScheduler;
+    /**
+     * @brief @ref ThreadPool used to send messages once an URL is known
+     * @todo Replace by @ref ThreadPool instead of @ref ThreadPoolDelayedScheduler
+     */
+    ThreadPoolDelayedScheduler delayedScheduler;
 
-    class SendMessageRunnable : public QRunnable, public ObjectWithDecayTime
+    /**
+     * @brief ThreadPool to obtain an URL
+     * @note Obtaining an URL must be in a different ThreadPool
+     *
+     * Create a different scheduler for the ChannelURL directory. Ideally,
+     * this should not delay messages by default. However, a race condition
+     * exists that causes intermittent errors in the system integration tests
+     * when the default delay is 0.
+     */
+    ThreadPoolDelayedScheduler channelUrlContactorDelayedScheduler;
+
+    class SendMessageRunnable : public joynr::Runnable, public ObjectWithDecayTime
     {
     public:
         SendMessageRunnable(HttpSender* messageSender,
                             const QString& channelId,
                             const JoynrTimePoint& decayTime,
                             std::string&& data,
-                            DelayedSchedulerOld& delayedScheduler,
+                            DelayedScheduler& delayedScheduler,
                             qint64 maxAttemptTtl_ms);
         ~SendMessageRunnable();
+
+        void shutdown();
+
         /**
          * @brief run
          * 1) Obtains the 'best' Url for the channelId from the ChannelUrlSelector.
@@ -105,7 +121,7 @@ private:
         QString resolveUrlForChannelId(qint64 curlTimeout);
         QString channelId;
         std::string data;
-        DelayedSchedulerOld& delayedScheduler;
+        DelayedScheduler& delayedScheduler;
         HttpSender* messageSender;
         qint64 maxAttemptTtl_ms;
 

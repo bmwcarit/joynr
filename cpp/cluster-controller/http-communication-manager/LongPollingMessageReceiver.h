@@ -24,10 +24,12 @@
 #include "joynr/BounceProxyUrl.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/Directory.h"
+#include "joynr/Thread.h"
 
-#include <QThread>
+#include <mutex>
+#include <condition_variable>
+
 #include <QSemaphore>
-#include <QMutex>
 #include <memory>
 
 namespace joynr
@@ -57,10 +59,8 @@ struct LongPollingMessageReceiverSettings
 /**
  * Class that makes long polling requests to the bounce proxy
  */
-class LongPollingMessageReceiver : public QThread
+class LongPollingMessageReceiver : public joynr::Thread
 {
-    Q_OBJECT
-
 public:
     LongPollingMessageReceiver(const BounceProxyUrl& bounceProxyUrl,
                                const QString& channelId,
@@ -69,6 +69,7 @@ public:
                                QSemaphore* channelCreatedSemaphore,
                                std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
                                std::shared_ptr<MessageRouter> messageRouter);
+    void stop();
     void run();
     void interrupt();
     bool isInterrupted();
@@ -84,8 +85,10 @@ private:
     const QString receiverId;
     const LongPollingMessageReceiverSettings settings;
 
-    QMutex interruptedMutex;
     bool interrupted;
+    std::mutex interruptedMutex;
+    std::condition_variable interruptedWait;
+
     std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory;
 
     static joynr_logging::Logger* logger;

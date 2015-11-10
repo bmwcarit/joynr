@@ -20,7 +20,6 @@
 #include "cluster-controller/http-communication-manager/HttpSender.h"
 #include "joynr/Util.h"
 #include "cluster-controller/httpnetworking/HttpNetworking.h"
-#include "joynr/DelayedSchedulerOld.h"
 #include "joynr/JsonSerializer.h"
 #include "cluster-controller/httpnetworking/HttpResult.h"
 #include "cluster-controller/http-communication-manager/ChannelUrlSelector.h"
@@ -28,7 +27,6 @@
 #include "joynr/RequestStatus.h"
 #include "joynr/TypeUtil.h"
 
-#include <QThread>
 #include <algorithm>
 #include <chrono>
 
@@ -62,24 +60,9 @@ HttpSender::HttpSender(const BounceProxyUrl& bounceProxyUrl,
                                                  ChannelUrlSelector::PUNISHMENT_FACTOR())),
           maxAttemptTtl_ms(maxAttemptTtl_ms),
           messageSendRetryInterval(messageSendRetryInterval),
-          threadPool(),
-          delayedScheduler(NULL),
-          channelUrlContactorThreadPool(),
-          channelUrlContactorDelayedScheduler(NULL)
+          delayedScheduler(6, "MessageSender", 0),
+          channelUrlContactorDelayedScheduler(3, "ChannelUrlContator", messageSendRetryInterval)
 {
-    threadPool.setMaxThreadCount(6);
-    delayedScheduler = new ThreadPoolDelayedSchedulerOld(threadPool,
-                                                         QString("MessageSender-DelayedScheduler"),
-                                                         0); // The default is to not delay messages
-
-    // Create a different scheduler for the ChannelURL directory. Ideally, this should
-    // not delay messages by default. However, a race condition exists that causes intermittent
-    // errors in the system integration tests when the default delay is 0.
-    channelUrlContactorThreadPool.setMaxThreadCount(3);
-    channelUrlContactorDelayedScheduler =
-            new ThreadPoolDelayedSchedulerOld(channelUrlContactorThreadPool,
-                                              QString("MessageSender-ChannelUrlContator"),
-                                              messageSendRetryInterval);
 }
 
 void HttpSender::init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
@@ -90,10 +73,9 @@ void HttpSender::init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirec
 
 HttpSender::~HttpSender()
 {
-    channelUrlContactorThreadPool.waitForDone();
-    threadPool.waitForDone();
-    delete channelUrlContactorDelayedScheduler;
-    delete delayedScheduler;
+    delayedScheduler.shutdown();
+    channelUrlContactorDelayedScheduler.shutdown();
+
     delete channelUrlCache;
 }
 
@@ -105,13 +87,13 @@ void HttpSender::sendMessage(const QString& channelId, const JoynrMessage& messa
     /** Potential issue: needs second threadpool to call the ChannelUrlDir so a deadlock cannot
      * occur
       */
-    DelayedSchedulerOld* scheduler;
+    DelayedScheduler* scheduler;
     QString channelUrlDirChannelId =
             TypeUtil::toQt(MessagingSettings::SETTING_CHANNEL_URL_DIRECTORY_CHANNELID());
     if (channelId == channelUrlDirChannelId) {
-        scheduler = channelUrlContactorDelayedScheduler;
+        scheduler = &channelUrlContactorDelayedScheduler;
     } else {
-        scheduler = delayedScheduler;
+        scheduler = &delayedScheduler;
     }
 
     /**
@@ -140,9 +122,10 @@ HttpSender::SendMessageRunnable::SendMessageRunnable(HttpSender* messageSender,
                                                      const QString& channelId,
                                                      const JoynrTimePoint& decayTime,
                                                      std::string&& data,
-                                                     DelayedSchedulerOld& delayedScheduler,
+                                                     DelayedScheduler& delayedScheduler,
                                                      qint64 maxAttemptTtl_ms)
-        : ObjectWithDecayTime(decayTime),
+        : joynr::Runnable(true),
+          ObjectWithDecayTime(decayTime),
           channelId(channelId),
           data(std::move(data)),
           delayedScheduler(delayedScheduler),
@@ -155,6 +138,10 @@ HttpSender::SendMessageRunnable::SendMessageRunnable(HttpSender* messageSender,
 HttpSender::SendMessageRunnable::~SendMessageRunnable()
 {
     messageRunnableCounter--;
+}
+
+void HttpSender::SendMessageRunnable::shutdown()
+{
 }
 
 void HttpSender::SendMessageRunnable::run()

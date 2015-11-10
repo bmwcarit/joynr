@@ -126,7 +126,6 @@ void HttpReceiver::startReceiveQueue()
                                                      channelCreatedSemaphore,
                                                      channelUrlDirectory,
                                                      messageRouter);
-    messageReceiver->setObjectName(QString("HttpCommunicationManager-MessageReceiver"));
     messageReceiver->start();
 }
 
@@ -143,17 +142,10 @@ void HttpReceiver::stopReceiveQueue()
     // stopReceivequeue is called, before channel is created.
     LOG_DEBUG(logger, "stopReceiveQueue");
     if (messageReceiver != NULL) {
-        messageReceiver->interrupt();
-        messageReceiver->wait(2 * 1000);
-        if (!messageReceiver->isRunning()) {
-            delete messageReceiver;
-            messageReceiver = NULL;
-        } else {
-            messageReceiver->terminate();
-            messageReceiver->wait();
-            delete messageReceiver;
-            messageReceiver = NULL;
-        }
+        messageReceiver->stop();
+
+        delete messageReceiver;
+        messageReceiver = NULL;
     }
 }
 

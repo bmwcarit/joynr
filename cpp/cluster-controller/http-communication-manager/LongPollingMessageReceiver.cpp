@@ -53,12 +53,14 @@ LongPollingMessageReceiver::LongPollingMessageReceiver(
         QSemaphore* channelCreatedSemaphore,
         std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
         std::shared_ptr<MessageRouter> messageRouter)
-        : bounceProxyUrl(bounceProxyUrl),
+        : joynr::Thread("LongPollRecv"),
+          bounceProxyUrl(bounceProxyUrl),
           channelId(channelId),
           receiverId(receiverId),
           settings(settings),
-          interruptedMutex(),
           interrupted(false),
+          interruptedMutex(),
+          interruptedWait(),
           channelUrlDirectory(channelUrlDirectory),
           channelCreatedSemaphore(channelCreatedSemaphore),
           messageRouter(messageRouter)
@@ -67,14 +69,19 @@ LongPollingMessageReceiver::LongPollingMessageReceiver(
 
 void LongPollingMessageReceiver::interrupt()
 {
-    QMutexLocker lock(&interruptedMutex);
     interrupted = true;
+    interruptedWait.notify_all();
 }
 
 bool LongPollingMessageReceiver::isInterrupted()
 {
-    QMutexLocker lock(&interruptedMutex);
-    return (interrupted) ? true : false;
+    return interrupted;
+}
+
+void LongPollingMessageReceiver::stop()
+{
+    interrupt();
+    joynr::Thread::stop();
 }
 
 void LongPollingMessageReceiver::run()
@@ -102,7 +109,9 @@ void LongPollingMessageReceiver::run()
             LOG_INFO(logger,
                      "channel creation failed; status code:" +
                              QString::number(createChannelResult.getStatusCode()));
-            usleep(settings.createChannelRetryInterval_ms * 1000);
+
+            std::unique_lock<std::mutex> lock(interruptedMutex);
+            interruptedWait.wait_for(lock, milliseconds(settings.createChannelRetryInterval_ms));
         }
     }
     /**
@@ -157,7 +166,10 @@ void LongPollingMessageReceiver::run()
                           QString("long polling failed; error message: %1; contents: %2")
                                   .arg(longPollingResult.getErrorMessage())
                                   .arg(body));
-                usleep(settings.longPollRetryInterval_ms * 1000);
+
+                std::unique_lock<std::mutex> lock(interruptedMutex);
+                interruptedWait.wait_for(
+                        lock, milliseconds(settings.createChannelRetryInterval_ms));
             }
         }
     }
