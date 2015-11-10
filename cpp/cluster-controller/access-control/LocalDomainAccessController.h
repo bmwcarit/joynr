@@ -78,7 +78,7 @@ public:
         virtual void operationNeeded() = 0;
     };
 
-    LocalDomainAccessController(LocalDomainAccessStore* localDomainAccessStore);
+    explicit LocalDomainAccessController(LocalDomainAccessStore* localDomainAccessStore);
     virtual ~LocalDomainAccessController();
     /**
      * The init method has to be called first, only afterwards LocalDomainAccessController may be

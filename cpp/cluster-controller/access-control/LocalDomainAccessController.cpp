@@ -79,7 +79,7 @@ class LocalDomainAccessController::DomainRoleEntryChangedBroadcastListener
                                        infrastructure::DacTypes::DomainRoleEntry>
 {
 public:
-    DomainRoleEntryChangedBroadcastListener(LocalDomainAccessController& parent);
+    explicit DomainRoleEntryChangedBroadcastListener(LocalDomainAccessController& parent);
     void onReceive(const infrastructure::DacTypes::ChangeType::Enum& changeType,
                    const infrastructure::DacTypes::DomainRoleEntry& changedDre);
     void onError(const exceptions::JoynrRuntimeException& error);
@@ -93,7 +93,7 @@ class LocalDomainAccessController::MasterAccessControlEntryChangedBroadcastListe
                                        infrastructure::DacTypes::MasterAccessControlEntry>
 {
 public:
-    MasterAccessControlEntryChangedBroadcastListener(LocalDomainAccessController& parent);
+    explicit MasterAccessControlEntryChangedBroadcastListener(LocalDomainAccessController& parent);
     void onReceive(const infrastructure::DacTypes::ChangeType::Enum& changeType,
                    const infrastructure::DacTypes::MasterAccessControlEntry& changedMasterAce);
     void onError(const exceptions::JoynrRuntimeException& error);
@@ -107,7 +107,8 @@ class LocalDomainAccessController::MediatorAccessControlEntryChangedBroadcastLis
                                        infrastructure::DacTypes::MasterAccessControlEntry>
 {
 public:
-    MediatorAccessControlEntryChangedBroadcastListener(LocalDomainAccessController& parent);
+    explicit MediatorAccessControlEntryChangedBroadcastListener(
+            LocalDomainAccessController& parent);
     void onReceive(const infrastructure::DacTypes::ChangeType::Enum& changeType,
                    const infrastructure::DacTypes::MasterAccessControlEntry& changedMediatorAce);
     void onError(const exceptions::JoynrRuntimeException& error);
@@ -121,7 +122,7 @@ class LocalDomainAccessController::OwnerAccessControlEntryChangedBroadcastListen
                                        infrastructure::DacTypes::OwnerAccessControlEntry>
 {
 public:
-    OwnerAccessControlEntryChangedBroadcastListener(LocalDomainAccessController& parent);
+    explicit OwnerAccessControlEntryChangedBroadcastListener(LocalDomainAccessController& parent);
     void onReceive(const infrastructure::DacTypes::ChangeType::Enum& changeType,
                    const infrastructure::DacTypes::OwnerAccessControlEntry& changedOwnerAce);
     void onError(const exceptions::JoynrRuntimeException& error);

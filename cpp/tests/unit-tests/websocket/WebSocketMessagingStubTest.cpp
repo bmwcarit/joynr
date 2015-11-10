@@ -37,7 +37,7 @@ class WebSocketMessagingStubTest : public QObject, public testing::Test
 {
     Q_OBJECT
 public:
-    WebSocketMessagingStubTest(QObject* parent = Q_NULLPTR) :
+    explicit WebSocketMessagingStubTest(QObject* parent = Q_NULLPTR) :
         QObject(parent),
         logger(joynr::joynr_logging::Logging::getInstance()->getLogger("TEST", "WebSocketMessagingStubTest")),
         server(

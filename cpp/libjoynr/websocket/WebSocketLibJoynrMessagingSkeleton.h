@@ -37,7 +37,7 @@ class WebSocketLibJoynrMessagingSkeleton : public QObject, public IMessaging
 {
     Q_OBJECT
 public:
-    WebSocketLibJoynrMessagingSkeleton(MessageRouter& messageRouter);
+    explicit WebSocketLibJoynrMessagingSkeleton(MessageRouter& messageRouter);
 
     ~WebSocketLibJoynrMessagingSkeleton();
 

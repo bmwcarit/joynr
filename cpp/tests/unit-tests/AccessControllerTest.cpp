@@ -36,7 +36,7 @@ using namespace joynr::infrastructure::DacTypes;
 class ConsumerPermissionCallbackMaker
 {
 public:
-    ConsumerPermissionCallbackMaker(Permission::Enum permission) :
+    explicit ConsumerPermissionCallbackMaker(Permission::Enum permission) :
         permission(permission)
     {}
 

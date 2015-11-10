@@ -37,7 +37,7 @@ class Logger;
 class JOYNRCLUSTERCONTROLLER_EXPORT LocalDomainAccessStore
 {
 public:
-    LocalDomainAccessStore(bool clearDatabaseOnStartup = false);
+    explicit LocalDomainAccessStore(bool clearDatabaseOnStartup = false);
     ~LocalDomainAccessStore();
 
     /**

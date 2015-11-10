@@ -190,7 +190,7 @@ class AccessController::ProviderRegistrationObserver
         : public LocalCapabilitiesDirectory::IProviderRegistrationObserver
 {
 public:
-    ProviderRegistrationObserver(LocalDomainAccessController& localDomainAccessController)
+    explicit ProviderRegistrationObserver(LocalDomainAccessController& localDomainAccessController)
             : localDomainAccessController(localDomainAccessController)
     {
     }

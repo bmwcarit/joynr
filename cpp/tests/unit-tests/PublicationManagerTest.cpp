@@ -64,7 +64,7 @@ class SubscriptionPublicationMatcherInterface : public MatcherInterface<const jo
   private:
      SubscriptionPublication& expectedSubscriptionPublication;
   public:
-    SubscriptionPublicationMatcherInterface (SubscriptionPublication& expectedSubscriptionPublication) : expectedSubscriptionPublication(expectedSubscriptionPublication){}
+     explicit SubscriptionPublicationMatcherInterface (SubscriptionPublication& expectedSubscriptionPublication) : expectedSubscriptionPublication(expectedSubscriptionPublication){}
   virtual void DescribeTo(::std::ostream* os) const {}
   virtual bool MatchAndExplain(const joynr::SubscriptionPublication& subscriptionPublication,
                                MatchResultListener* listener) const {

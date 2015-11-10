@@ -77,7 +77,7 @@ public:
      * @brief SpdlogLogger constructs logger marked with given prefix
      * @param prefix unique logger id
      */
-    SpdlogLogger(const QString& prefix);
+    explicit SpdlogLogger(const QString& prefix);
     /**
      * @brief log
      * @param logLevel

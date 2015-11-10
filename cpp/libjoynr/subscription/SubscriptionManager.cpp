@@ -35,7 +35,7 @@ using namespace std::chrono;
 class SubscriptionManager::Subscription
 {
 public:
-    Subscription(std::shared_ptr<ISubscriptionCallback> subscriptionCaller);
+    explicit Subscription(std::shared_ptr<ISubscriptionCallback> subscriptionCaller);
     ~Subscription();
 
     qint64 timeOfLastPublication;

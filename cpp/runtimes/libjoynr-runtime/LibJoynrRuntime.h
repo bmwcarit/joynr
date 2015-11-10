@@ -51,7 +51,7 @@ class LibJoynrRuntime : public JoynrRuntime
 {
 
 public:
-    LibJoynrRuntime(Settings* settings);
+    explicit LibJoynrRuntime(Settings* settings);
     virtual ~LibJoynrRuntime();
 
     static LibJoynrRuntime* create(JoynrRuntimeExecutor* runtimeExecutor);

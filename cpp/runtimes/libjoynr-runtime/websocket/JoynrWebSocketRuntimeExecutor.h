@@ -34,7 +34,7 @@ class JoynrWebSocketRuntimeExecutor : public JoynrRuntimeExecutor
     Q_OBJECT
 
 public:
-    JoynrWebSocketRuntimeExecutor(Settings* settings);
+    explicit JoynrWebSocketRuntimeExecutor(Settings* settings);
     ~JoynrWebSocketRuntimeExecutor()
     {
     }
