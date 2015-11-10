@@ -86,6 +86,24 @@ option(
     ON
 )
 
+message(STATUS "option ENABLE_CLANG_FORMATTER=" ${ENABLE_CLANG_FORMATTER})
+
+set(CLANG_FORMAT_PATH "CLANG_FORMAT_PATH-NOTFOUND" CACHE PATH "Path to 'clang-format' executable")
+
+if(${ENABLE_CLANG_FORMATTER})
+    if("${CLANG_FORMAT_PATH}" STREQUAL "CLANG_FORMAT_PATH-NOTFOUND")
+            find_program(CLANG_FORMAT_PATH clang-format)
+            if("${CLANG_FORMAT_PATH}" STREQUAL "FIND_CLANG_FORMAT-NOTFOUND")
+                message(FATAL_ERROR "Unable to locate 'clang-format'")
+            endif()
+    else("${CLANG_FORMAT_PATH}" STREQUAL "CLANG_FORMAT_PATH-NOTFOUND")
+            if(NOT EXISTS ${CLANG_FORMAT_PATH})
+                message(FATAL_ERROR "CLANG_FORMAT_PATH does not exist: '${CLANG_FORMAT_PATH}'")
+            endif()
+    endif("${CLANG_FORMAT_PATH}" STREQUAL "CLANG_FORMAT_PATH-NOTFOUND")
+    message(STATUS "CLANG_FORMAT_PATH=${CLANG_FORMAT_PATH}")
+endif(${ENABLE_CLANG_FORMATTER})
+
 option(
     BUILD_CLUSTER_CONTROLLER
     "Build ClusterController?"
@@ -93,7 +111,6 @@ option(
 )
 
 message(STATUS "option BUILD_CLUSTER_CONTROLLER=" ${BUILD_CLUSTER_CONTROLLER})
-message(STATUS "option ENABLE_CLANG_FORMATTER=" ${ENABLE_CLANG_FORMATTER})
 
 
 message(STATUS "############ VARIABLES ############")
