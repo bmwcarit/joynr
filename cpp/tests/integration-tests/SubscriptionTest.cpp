@@ -39,6 +39,7 @@
 #include <QString>
 #include <string>
 #include "joynr/LibjoynrSettings.h"
+#include "joynr/tests/testTypes_QtTestEnum.h"
 
 #include "joynr/types/Localisation_QtGpsLocation.h"
 
@@ -66,7 +67,8 @@ public:
                 },
                 [] (const RequestStatus status){
                 })),
-        mockSubscriptionListener(new MockSubscriptionListenerOneType<types::Localisation::QtGpsLocation>()),
+        mockGpsLocationListener(new MockSubscriptionListenerOneType<types::Localisation::QtGpsLocation>()),
+        mockTestEnumSubscriptionListener(new MockSubscriptionListenerOneType<tests::testTypes::QtTestEnum::Enum>()),
         gpsLocation1(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444),
         qos(2000),
         providerParticipantId("providerParticipantId"),
@@ -88,6 +90,7 @@ public:
         dispatcher.registerSubscriptionManager(subscriptionManager);
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
         MetaTypeRegistrar::instance().registerMetaType<types::Localisation::QtGpsLocation>();
+        MetaTypeRegistrar::instance().registerEnumMetaType<joynr::tests::testTypes::QtTestEnum>();
     }
 
     void TearDown(){
@@ -100,7 +103,8 @@ protected:
 
     std::shared_ptr<MockTestRequestCaller> mockRequestCaller;
     std::shared_ptr<MockReplyCaller<types::Localisation::QtGpsLocation> > mockReplyCaller;
-    std::shared_ptr<MockSubscriptionListenerOneType<types::Localisation::QtGpsLocation> > mockSubscriptionListener;
+    std::shared_ptr<MockSubscriptionListenerOneType<types::Localisation::QtGpsLocation> > mockGpsLocationListener;
+    std::shared_ptr<MockSubscriptionListenerOneType<tests::testTypes::QtTestEnum::Enum> > mockTestEnumSubscriptionListener;
 
     types::Localisation::GpsLocation gpsLocation1;
 
@@ -177,9 +181,9 @@ TEST_F(SubscriptionTest, receive_publication ) {
     // so this has to match with the type being passed to the dispatcher in the reply
     ON_CALL(*mockReplyCaller, getType()).WillByDefault(Return(QString("QtGpsLocation")));
 
-    // Use a semaphore to count and wait on calls to the mockSubscriptionListener
+    // Use a semaphore to count and wait on calls to the mockGpsLocationListener
     QSemaphore semaphore(0);
-    EXPECT_CALL(*mockSubscriptionListener, onReceive(A<const types::Localisation::QtGpsLocation&>()))
+    EXPECT_CALL(*mockGpsLocationListener, onReceive(A<const types::Localisation::QtGpsLocation&>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     //register the subscription on the consumer side
@@ -200,7 +204,7 @@ TEST_F(SubscriptionTest, receive_publication ) {
     subscriptionPublication.setResponse(response);
 
     std::shared_ptr<SubscriptionCallback<types::Localisation::QtGpsLocation>> subscriptionCallback(
-            new SubscriptionCallback<types::Localisation::QtGpsLocation>(mockSubscriptionListener));
+            new SubscriptionCallback<types::Localisation::QtGpsLocation>(mockGpsLocationListener));
 
 
     // subscriptionRequest is an out param
@@ -223,6 +227,64 @@ TEST_F(SubscriptionTest, receive_publication ) {
     ASSERT_FALSE(semaphore.tryAcquire(1, 250));
 }
 
+/**
+  * Trigger:    The dispatcher receives an enum Publication.
+  * Expected:   The SubscriptionManager retrieves the correct SubscriptionCallback and the
+  *             Interpreter executes it correctly
+  */
+TEST_F(SubscriptionTest, receive_enumPublication ) {
+
+    qRegisterMetaType<SubscriptionPublication>("SubscriptionPublication");
+
+    // getType is used by the ReplyInterpreterFactory to create an interpreter for the reply
+    // so this has to match with the type being passed to the dispatcher in the reply
+    ON_CALL(*mockReplyCaller, getType()).WillByDefault(Return(QString("QtTestEnum")));
+
+    // Use a semaphore to count and wait on calls to the mockTestEnumSubscriptionListener
+    QSemaphore semaphore(0);
+    EXPECT_CALL(*mockTestEnumSubscriptionListener, onReceive(A<const joynr::tests::testTypes::QtTestEnum::Enum&>()))
+            .WillRepeatedly(ReleaseSemaphore(&semaphore));
+
+    //register the subscription on the consumer side
+    QString attributeName = "testEnum";
+    auto subscriptionQos = std::shared_ptr<QtSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
+                80, // validity_ms
+                100, // minInterval_ms
+                200, // maxInterval_ms
+                80 // alertInterval_ms
+    ));
+
+    SubscriptionRequest subscriptionRequest;
+    //construct a reply containing a QtGpsLocation
+    SubscriptionPublication subscriptionPublication;
+    subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
+    QList<QVariant> response;
+    response.append(QVariant::fromValue(joynr::tests::testTypes::QtTestEnum::createQt(tests::testTypes::TestEnum::ZERO)));
+    subscriptionPublication.setResponse(response);
+
+    std::shared_ptr<SubscriptionCallback<joynr::tests::testTypes::QtTestEnum::Enum>> subscriptionCallback(
+            new SubscriptionCallback<joynr::tests::testTypes::QtTestEnum::Enum>(mockTestEnumSubscriptionListener));
+
+
+    // subscriptionRequest is an out param
+    subscriptionManager->registerSubscription(
+                attributeName,
+                subscriptionCallback,
+                subscriptionQos,
+                subscriptionRequest);
+    // incoming publication from the provider
+    JoynrMessage msg = messageFactory.createSubscriptionPublication(
+                QString::fromStdString(providerParticipantId),
+                QString::fromStdString(proxyParticipantId),
+                qos,
+                subscriptionPublication);
+
+    dispatcher.receive(msg);
+
+    // Assert that only one subscription message is received by the subscription listener
+    ASSERT_TRUE(semaphore.tryAcquire(1, 1000));
+    ASSERT_FALSE(semaphore.tryAcquire(1, 250));
+}
 
 /**
   * Precondition: Dispatcher receives a SubscriptionRequest for a not(yet) existing Provider.
