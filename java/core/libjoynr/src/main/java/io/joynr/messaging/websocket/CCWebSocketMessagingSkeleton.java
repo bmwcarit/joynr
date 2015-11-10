@@ -1,24 +1,5 @@
 package io.joynr.messaging.websocket;
 
-import java.io.IOException;
-
-import javax.inject.Named;
-
-import org.eclipse.jetty.http.HttpVersion;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.server.SslConnectionFactory;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.eclipse.jetty.websocket.servlet.ServletUpgradeRequest;
-import org.eclipse.jetty.websocket.servlet.ServletUpgradeResponse;
-import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
-import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
-import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /*
  * #%L
  * %%
@@ -38,10 +19,26 @@ import org.slf4j.LoggerFactory;
  * #L%
  */
 
+import java.io.IOException;
+
+import javax.inject.Named;
+
+import org.eclipse.jetty.http.HttpVersion;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.SslConnectionFactory;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.eclipse.jetty.websocket.servlet.ServletUpgradeRequest;
+import org.eclipse.jetty.websocket.servlet.ServletUpgradeResponse;
+import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
+import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
+import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
-
-import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
@@ -59,7 +56,7 @@ public class CCWebSocketMessagingSkeleton extends WebSocketMessagingSkeleton {
     private Server server;
 
     @Inject
-    public CCWebSocketMessagingSkeleton(@Named(ConfigurableMessagingSettings.PROPERTY_CC_MESSAGING_ADDRESS) WebSocketAddress address,
+    public CCWebSocketMessagingSkeleton(@Named(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_URL_ADDRESS) WebSocketAddress address,
                                         ObjectMapper objectMapper,
                                         MessageRouter messageRouter,
                                         WebSocketClientMessagingStubFactory webSocketMessagingStubFactory) {

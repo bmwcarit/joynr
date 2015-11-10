@@ -25,12 +25,12 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Names;
 import io.joynr.messaging.AbstractMessagingStubFactory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.channel.ChannelMessagingStubFactory;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.websocket.CCWebSocketMessagingSkeleton;
 import io.joynr.messaging.websocket.WebSocketClientMessagingStubFactory;
 import io.joynr.messaging.websocket.WebSocketMessagingSkeleton;
+import io.joynr.messaging.websocket.WebsocketModule;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.WebSocketAddress;
@@ -67,10 +67,10 @@ public class CCRuntimeModule extends DefaultRuntimeModule {
 
     @Provides
     @Named(ConfigurableMessagingSettings.PROPERTY_CC_MESSAGING_ADDRESS)
-    public WebSocketAddress provideCCMessagingAddress(@Named(MessagingPropertyKeys.CC_MESSAGING_HOST) String host,
-                                                      @Named(MessagingPropertyKeys.CC_MESSAGING_PROTOCOL) String protocol,
-                                                      @Named(MessagingPropertyKeys.CC_MESSAGING_PORT) int port,
-                                                      @Named(MessagingPropertyKeys.CC_MESSAGING_PATH) String path) {
+    public WebSocketAddress provideCCMessagingAddress(@Named(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST) String host,
+                                                      @Named(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL) String protocol,
+                                                      @Named(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT) int port,
+                                                      @Named(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH) String path) {
         return new WebSocketAddress(WebSocketProtocol.valueOf(protocol.toUpperCase()), host, port, path);
     }
 
