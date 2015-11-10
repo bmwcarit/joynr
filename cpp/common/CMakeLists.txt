@@ -158,22 +158,11 @@ target_link_libraries(JoynrCommon ${JoynrCommon_TARGET_LIBRARIES})
 
 add_dependencies(JoynrCommon spdlog)
 
-if(${ENABLE_CLANG_FORMATTER})
-    set(COMMENT "running C++ code formatter: clang-format")
-    set(COMMENT "${COMMENT}\nworking directory: ${CMAKE_CURRENT_SOURCE_DIR}")
-    set(COMMENT "${COMMENT}\nprocessing header files:\n${JoynrCommon_HEADERS}")
-    set(COMMENT "${COMMENT}\nprocessing source files:\n${JoynrCommon_SOURCES}")
-
-    add_custom_target(
-        format-JoynrCommon
-        COMMAND clang-format -i ${JoynrCommon_HEADERS} ${JoynrCommon_SOURCES}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        COMMENT "${COMMENT}"
-        VERBATIM
-    )
-    add_dependencies(JoynrCommon format-JoynrCommon)
-
-endif(${ENABLE_CLANG_FORMATTER})
+add_clang_format(
+    JoynrCommon
+    ${JoynrCommon_HEADERS}
+    ${JoynrCommon_SOURCES}
+)
 
 install(
     TARGETS JoynrCommon

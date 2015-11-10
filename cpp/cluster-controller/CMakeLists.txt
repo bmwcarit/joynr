@@ -123,21 +123,11 @@ add_library(
     ${JoynrClusterController_SOURCES}
 )
 
-if(${ENABLE_CLANG_FORMATTER})
-    set(COMMENT "running C++ code formatter: clang-format")
-    set(COMMENT "${COMMENT}\nworking directory: ${CMAKE_CURRENT_SOURCE_DIR}")
-    set(COMMENT "${COMMENT}\nprocessing header files:\n${JoynrClusterController_HEADERS}")
-    set(COMMENT "${COMMENT}\nprocessing source files:\n${JoynrClusterController_SOURCES}")
-
-    add_custom_target(
-        format-JoynrClusterController
-        COMMAND clang-format -i ${JoynrClusterController_HEADERS} ${JoynrClusterController_SOURCES}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        COMMENT "${COMMENT}"
-        VERBATIM
-    )
-    add_dependencies(JoynrClusterController format-JoynrClusterController)
-endif(${ENABLE_CLANG_FORMATTER})
+add_clang_format(
+    JoynrClusterController
+    ${JoynrClusterController_HEADERS}
+    ${JoynrClusterController_SOURCES}
+)
 
 set_target_properties(
     JoynrClusterController

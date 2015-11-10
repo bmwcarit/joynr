@@ -100,12 +100,15 @@ message(STATUS "variable JOYNR_SERVER=" ${JOYNR_SERVER})
 
 message(STATUS "variable CMAKE_BUILD_TYPE=" ${CMAKE_BUILD_TYPE})
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake")
 message(STATUS "variable CMAKE_MODULE_PATH=" ${CMAKE_MODULE_PATH})
 message(STATUS "variable CMAKE_PREFIX_PATH=" ${CMAKE_PREFIX_PATH})
 message(STATUS "variable CMAKE_VERSION=" ${CMAKE_VERSION})
 message(STATUS "variable CMAKE_ROOT=" ${CMAKE_ROOT})
 message(STATUS "variable CMAKE_SOURCE_DIR=" ${CMAKE_SOURCE_DIR})
 message(STATUS "variable CMAKE_CURRENT_SOURCE_DIR=" ${CMAKE_CURRENT_SOURCE_DIR})
+
+include(AddClangFormat)
 
 # Set the binary directory
 set(JOYNR_BINARY_DIR ${CMAKE_BINARY_DIR}/bin)
