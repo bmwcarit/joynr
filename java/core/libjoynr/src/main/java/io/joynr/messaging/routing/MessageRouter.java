@@ -26,6 +26,7 @@ import java.io.IOException;
 
 import joynr.JoynrMessage;
 import joynr.system.RoutingProvider;
+import joynr.system.RoutingProxy;
 import joynr.system.RoutingTypes.Address;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
@@ -39,4 +40,11 @@ public interface MessageRouter extends RoutingProvider {
     public void addNextHop(String participantId, Address address);
 
     public void shutdown();
+
+    void setParentRouter(RoutingProxy parentRouter,
+                         Address parentRouterAddress,
+                         String parentRouterParticipantId,
+                         String proxyParticipantId);
+
+    void setIncommingAddress(Address incommingAddress);
 }
