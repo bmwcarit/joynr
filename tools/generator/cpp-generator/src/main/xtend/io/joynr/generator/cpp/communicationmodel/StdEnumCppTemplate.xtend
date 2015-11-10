@@ -50,6 +50,8 @@ class StdEnumCppTemplate implements EnumTemplate {
 
 «getNamespaceStarter(type, true)»
 
+static const bool is«typeName»Registered = Variant::registerTypeForVariant<«type.typeName»>("«type.typeName.replace("::", ".")»");
+
 std::string «typeName»::getLiteral(«typeName»::«getNestedEnumName()» «typeName.toFirstLower»Value) {
 	std::string literal;
 	switch («typeName.toFirstLower»Value) {

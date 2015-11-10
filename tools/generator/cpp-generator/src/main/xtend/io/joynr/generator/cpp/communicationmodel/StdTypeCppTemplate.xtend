@@ -58,6 +58,8 @@ class StdTypeCppTemplate implements CompoundTypeTemplate{
 
 «getNamespaceStarter(type, true)»
 
+static const bool is«typeName»Registered = Variant::registerTypeForVariant<«type.typeName»>("«type.typeName.replace("::", ".")»");
+
 «typeName»::«typeName»()«IF !getMembersRecursive(type).empty»:«ENDIF»
 	«IF hasExtendsDeclaration(type)»
 		«getExtendedType(type).joynrName»()«IF !getMembers(type).empty»,«ENDIF»
