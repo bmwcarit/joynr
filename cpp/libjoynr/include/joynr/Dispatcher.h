@@ -31,11 +31,10 @@
 #include "joynr/IDispatcher.h"
 #include "joynr/LibJoynrDirectories.h"
 #include "joynr/joynrlogging.h"
+#include "joynr/ThreadPool.h"
 
 #include <string>
 #include <memory>
-
-#include <QThreadPool>
 
 namespace joynr
 {
@@ -89,7 +88,7 @@ private:
     ReplyCallerDirectory replyCallerDirectory;
     PublicationManager* publicationManager;
     ISubscriptionManager* subscriptionManager;
-    QThreadPool handleReceivedMessageThreadPool;
+    ThreadPool handleReceivedMessageThreadPool;
     static joynr_logging::Logger* logger;
     QMutex subscriptionHandlingMutex;
 

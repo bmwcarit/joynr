@@ -64,12 +64,10 @@ Dispatcher::Dispatcher(JoynrMessageSender* messageSender, int maxThreads)
           replyCallerDirectory("Dispatcher-ReplyCallerDirectory"),
           publicationManager(NULL),
           subscriptionManager(NULL),
-          handleReceivedMessageThreadPool(),
+          handleReceivedMessageThreadPool("Dispatcher", maxThreads),
           subscriptionHandlingMutex()
 
 {
-    handleReceivedMessageThreadPool.setMaxThreadCount(maxThreads);
-
     // Register metatypes
     qRegisterMetaType<Request>();
     qRegisterMetaType<Reply>();
@@ -79,7 +77,7 @@ Dispatcher::Dispatcher(JoynrMessageSender* messageSender, int maxThreads)
 Dispatcher::~Dispatcher()
 {
     LOG_DEBUG(logger, "Destructing Dispatcher");
-    handleReceivedMessageThreadPool.waitForDone();
+    handleReceivedMessageThreadPool.shutdown();
     delete publicationManager;
     delete subscriptionManager;
     publicationManager = NULL;
@@ -139,7 +137,7 @@ void Dispatcher::receive(const JoynrMessage& message)
               QString("receive(message). Message payload: %1")
                       .arg(QString::fromStdString(message.getPayload())));
     ReceivedMessageRunnable* receivedMessageRunnable = new ReceivedMessageRunnable(message, *this);
-    handleReceivedMessageThreadPool.start(receivedMessageRunnable);
+    handleReceivedMessageThreadPool.execute(receivedMessageRunnable);
 }
 
 void Dispatcher::handleRequestReceived(const JoynrMessage& message)

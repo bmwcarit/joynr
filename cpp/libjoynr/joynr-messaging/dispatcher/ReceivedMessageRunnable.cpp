@@ -30,13 +30,18 @@ Logger* ReceivedMessageRunnable::logger =
 
 ReceivedMessageRunnable::ReceivedMessageRunnable(const JoynrMessage& message,
                                                  Dispatcher& dispatcher)
-        : ObjectWithDecayTime(message.getHeaderExpiryDate()),
+        : joynr::Runnable(true),
+          ObjectWithDecayTime(message.getHeaderExpiryDate()),
           message(message),
           dispatcher(dispatcher)
 {
     LOG_DEBUG(logger,
               "Creating ReceivedMessageRunnable for message type: " +
                       TypeUtil::toQt(message.getType()));
+}
+
+void ReceivedMessageRunnable::shutdown()
+{
 }
 
 void ReceivedMessageRunnable::run()
