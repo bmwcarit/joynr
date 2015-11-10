@@ -82,7 +82,7 @@ public:
     DomainRoleEntryChangedBroadcastListener(LocalDomainAccessController& parent);
     void onReceive(const infrastructure::DacTypes::ChangeType::Enum& changeType,
                    const infrastructure::DacTypes::DomainRoleEntry& changedDre);
-    void onError();
+    void onError(const exceptions::JoynrRuntimeException& error);
 
 private:
     LocalDomainAccessController& parent;
@@ -96,7 +96,7 @@ public:
     MasterAccessControlEntryChangedBroadcastListener(LocalDomainAccessController& parent);
     void onReceive(const infrastructure::DacTypes::ChangeType::Enum& changeType,
                    const infrastructure::DacTypes::MasterAccessControlEntry& changedMasterAce);
-    void onError();
+    void onError(const exceptions::JoynrRuntimeException& error);
 
 private:
     LocalDomainAccessController& parent;
@@ -110,7 +110,7 @@ public:
     MediatorAccessControlEntryChangedBroadcastListener(LocalDomainAccessController& parent);
     void onReceive(const infrastructure::DacTypes::ChangeType::Enum& changeType,
                    const infrastructure::DacTypes::MasterAccessControlEntry& changedMediatorAce);
-    void onError();
+    void onError(const exceptions::JoynrRuntimeException& error);
 
 private:
     LocalDomainAccessController& parent;
@@ -124,7 +124,7 @@ public:
     OwnerAccessControlEntryChangedBroadcastListener(LocalDomainAccessController& parent);
     void onReceive(const infrastructure::DacTypes::ChangeType::Enum& changeType,
                    const infrastructure::DacTypes::OwnerAccessControlEntry& changedOwnerAce);
-    void onError();
+    void onError(const exceptions::JoynrRuntimeException& error);
 
 private:
     LocalDomainAccessController& parent;
@@ -900,8 +900,10 @@ void LocalDomainAccessController::DomainRoleEntryChangedBroadcastListener::onRec
               QString("Changed DRE: %1").arg(QString::fromStdString(changedDre.toString())));
 }
 
-void LocalDomainAccessController::DomainRoleEntryChangedBroadcastListener::onError()
+void LocalDomainAccessController::DomainRoleEntryChangedBroadcastListener::onError(
+        const exceptions::JoynrRuntimeException& error)
 {
+    (void)error;
     LOG_ERROR(parent.logger, QString("Change of DRE failed!"));
 }
 
@@ -933,8 +935,10 @@ void LocalDomainAccessController::MasterAccessControlEntryChangedBroadcastListen
     }
 }
 
-void LocalDomainAccessController::MasterAccessControlEntryChangedBroadcastListener::onError()
+void LocalDomainAccessController::MasterAccessControlEntryChangedBroadcastListener::onError(
+        const exceptions::JoynrRuntimeException& error)
 {
+    (void)error;
     LOG_ERROR(parent.logger, QString("Change of MasterAce failed!"));
 }
 
@@ -963,8 +967,10 @@ void LocalDomainAccessController::MediatorAccessControlEntryChangedBroadcastList
                       .arg(QString::fromStdString(changedMediatorAce.toString())));
 }
 
-void LocalDomainAccessController::MediatorAccessControlEntryChangedBroadcastListener::onError()
+void LocalDomainAccessController::MediatorAccessControlEntryChangedBroadcastListener::onError(
+        const exceptions::JoynrRuntimeException& error)
 {
+    (void)error;
     LOG_ERROR(parent.logger, QString("Change of MediatorAce failed!"));
 }
 
@@ -993,8 +999,10 @@ void LocalDomainAccessController::OwnerAccessControlEntryChangedBroadcastListene
                       .arg(QString::fromStdString(changedOwnerAce.toString())));
 }
 
-void LocalDomainAccessController::OwnerAccessControlEntryChangedBroadcastListener::onError()
+void LocalDomainAccessController::OwnerAccessControlEntryChangedBroadcastListener::onError(
+        const exceptions::JoynrRuntimeException& error)
 {
+    (void)error;
     LOG_ERROR(parent.logger, QString("Change of OwnerAce failed!"));
 }
 

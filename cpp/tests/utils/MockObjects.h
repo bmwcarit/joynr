@@ -288,7 +288,7 @@ class MockGpsFloatSubscriptionListener
         : public joynr::ISubscriptionListener<joynr::types::Localisation::GpsLocation, float> {
 public:
     MOCK_METHOD2(onReceive, void(const joynr::types::Localisation::GpsLocation& value, const float&));
-    MOCK_METHOD0(onError, void());
+    MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException&));
 };
 
 class MockPublicationSender : public joynr::IPublicationSender {

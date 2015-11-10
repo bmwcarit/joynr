@@ -63,9 +63,18 @@ public:
                                          .arg(QString::fromStdString(value.toString())));
     }
 
-    void onError()
+    void onError(const exceptions::JoynrRuntimeException& error)
     {
-        MyRadioHelper::prettyLog(logger, QString("ATTRIBUTE SUBSCRIPTION Publication Missed"));
+        if (error.getTypeName() == exceptions::PublicationMissedException::TYPE_NAME) {
+            MyRadioHelper::prettyLog(
+                    logger,
+                    QString("ATTRIBUTE SUBSCRIPTION Publication Missed, subscriptionId: %1")
+                            .arg(QString::fromStdString(error.getMessage())));
+        } else {
+            MyRadioHelper::prettyLog(logger,
+                                     QString("ATTRIBUTE SUBSCRIPTION error: %1")
+                                             .arg(QString::fromStdString(error.getMessage())));
+        }
     }
 
 private:

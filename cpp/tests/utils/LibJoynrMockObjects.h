@@ -53,20 +53,20 @@ template <typename T>
 class MockSubscriptionListenerOneType : public joynr::ISubscriptionListener<T> {
 public:
      MOCK_METHOD1_T(onReceive, void( const T& value));
-     MOCK_METHOD0(onError, void());
+     MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException&));
 };
 
 template <typename T1, typename T2, typename... Ts>
 class MockSubscriptionListenerTwoTypes : public joynr::ISubscriptionListener<T1, T2, Ts...> {
 public:
      MOCK_METHOD2_T(onReceive, void( const T1& value1, const T2& value2, const Ts&... values));
-     MOCK_METHOD0(onError, void());
+     MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException&));
 };
 
 class MockGpsSubscriptionListener : public joynr::ISubscriptionListener<joynr::types::Localisation::GpsLocation> {
 public:
     MOCK_METHOD1(onReceive, void(const joynr::types::Localisation::GpsLocation& value));
-    MOCK_METHOD0(onError, void());
+    MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException&));
 };
 
 class MockTestProvider : public joynr::tests::DefaulttestProvider
