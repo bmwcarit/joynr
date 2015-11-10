@@ -878,7 +878,7 @@ void PublicationManager::sendPublication(
 {
     LOG_DEBUG(logger, "sending subscription reply");
     SubscriptionPublication subscriptionPublication;
-    subscriptionPublication.setSubscriptionId(request->getSubscriptionId());
+    subscriptionPublication.setSubscriptionId(request->getSubscriptionId().toStdString());
     subscriptionPublication.setResponse(value);
     sendSubscriptionPublication(
             publication, subscriptionInformation, request, subscriptionPublication);

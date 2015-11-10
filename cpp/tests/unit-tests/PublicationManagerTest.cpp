@@ -263,7 +263,7 @@ TEST_F(PublicationManagerTest, add_onChangeSubscription) {
     SubscriptionRequest subscriptionRequest;
 
     SubscriptionPublication expectedPublication;
-    expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
+    expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId().toStdString());
     QList<QVariant> response;
     response.append(attributeValue);
     expectedPublication.setResponse(response);
@@ -337,7 +337,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
     SubscriptionRequest subscriptionRequest;
 
     SubscriptionPublication expectedPublication;
-    expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
+    expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId().toStdString());
     QList<QVariant> response;
     response.append(attributeValue);
     expectedPublication.setResponse(response);
@@ -412,7 +412,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval) {
     SubscriptionRequest subscriptionRequest;
 
     SubscriptionPublication expectedPublication;
-    expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
+    expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId().toStdString());
     QList<QVariant> response;
     response.append(attributeValue);
     expectedPublication.setResponse(response);
@@ -493,7 +493,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
     SubscriptionRequest subscriptionRequest;
 
     SubscriptionPublication expectedPublication;
-    expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
+    expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId().toStdString());
     QList<QVariant> response;
     response.append(attributeValue);
     expectedPublication.setResponse(response);
@@ -619,7 +619,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
     SubscriptionRequest subscriptionRequest;
 
     SubscriptionPublication expectedPublication;
-    expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
+    expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId().toStdString());
     QList<QVariant> response;
     response.append(attributeValue);
     expectedPublication.setResponse(response);
@@ -713,7 +713,7 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
     SubscriptionRequest subscriptionRequest;
 
     SubscriptionPublication expectedPublication;
-    expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
+    expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId().toStdString());
     QList<QVariant> response;
     response.append(attributeValue);
     expectedPublication.setResponse(response);
@@ -814,7 +814,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     BroadcastSubscriptionRequest subscriptionRequest;
 
     SubscriptionPublication expectedPublication;
-    expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
+    expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId().toStdString());
     expectedPublication.setResponse(broadcastValues);
 
     EXPECT_CALL(
@@ -934,7 +934,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     BroadcastSubscriptionRequest subscriptionRequest;
 
     SubscriptionPublication expectedPublication;
-    expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
+    expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId().toStdString());
     expectedPublication.setResponse(broadcastValues);
 
     EXPECT_CALL(
@@ -1023,7 +1023,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     BroadcastSubscriptionRequest subscriptionRequest;
 
     SubscriptionPublication expectedPublication;
-    expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
+    expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId().toStdString());
     expectedPublication.setResponse(broadcastValues);
 
     EXPECT_CALL(

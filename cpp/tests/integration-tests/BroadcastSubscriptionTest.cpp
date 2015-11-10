@@ -130,7 +130,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
     BroadcastSubscriptionRequest subscriptionRequest;
     //construct a reply containing a QtGpsLocation
     SubscriptionPublication subscriptionPublication;
-    subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
+    subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId().toStdString());
     QList<QVariant> response;
     response.append(QVariant::fromValue(gpsLocation1));
     subscriptionPublication.setResponse(response);
@@ -185,7 +185,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters )
     BroadcastSubscriptionRequest subscriptionRequest;
     //construct a reply containing a QtGpsLocation
     SubscriptionPublication subscriptionPublication;
-    subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
+    subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId().toStdString());
     QList<QVariant> response;
     response.append(QVariant::fromValue(gpsLocation1));
     response.append(QVariant::fromValue(speed1));

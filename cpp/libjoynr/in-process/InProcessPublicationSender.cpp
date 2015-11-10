@@ -56,7 +56,7 @@ void InProcessPublicationSender::sendSubscriptionPublication(
       * just call the InProcessDispatcher!
       */
 
-    QString subscriptionId = subscriptionPublication.getSubscriptionId();
+    QString subscriptionId = QString::fromStdString(subscriptionPublication.getSubscriptionId());
     LOG_TRACE(logger, "Sending publication. id=" + subscriptionId);
     assert(subscriptionManager != NULL);
     subscriptionManager->touchSubscriptionState(subscriptionId);

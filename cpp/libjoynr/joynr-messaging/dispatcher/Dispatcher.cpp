@@ -385,7 +385,7 @@ void Dispatcher::handlePublicationReceived(const JoynrMessage& message)
                           .arg(QString::fromUtf8(jsonSubscriptionPublication)));
         return;
     }
-    QString subscriptionId = subscriptionPublication->getSubscriptionId();
+    QString subscriptionId = QString::fromStdString(subscriptionPublication->getSubscriptionId());
 
     assert(subscriptionManager != NULL);
 

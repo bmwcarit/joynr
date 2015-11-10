@@ -202,7 +202,7 @@ TEST_F(SubscriptionTest, receive_publication ) {
     SubscriptionRequest subscriptionRequest;
     //construct a reply containing a QtGpsLocation
     SubscriptionPublication subscriptionPublication;
-    subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
+    subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId().toStdString());
     QList<QVariant> response;
     response.append(QVariant::fromValue(types::Localisation::QtGpsLocation::createQt(gpsLocation1)));
     subscriptionPublication.setResponse(response);

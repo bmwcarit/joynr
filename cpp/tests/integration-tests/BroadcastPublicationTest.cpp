@@ -61,11 +61,11 @@ public:
         QFile::remove(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME());
         publicationManager = new PublicationManager();
         subscriptionBroadcastListener =
-                new SubscriptionBroadcastListener(subscriptionId, *publicationManager);
+                new SubscriptionBroadcastListener(QString::fromStdString(subscriptionId), *publicationManager);
         publicationSender = new MockPublicationSender();
 
         request.setSubscribeToName("locationUpdateSelective");
-        request.setSubscriptionId(subscriptionId);
+        request.setSubscriptionId(QString::fromStdString(subscriptionId));
 
         auto subscriptionQos =
                 std::shared_ptr<QtOnChangeSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
@@ -106,7 +106,7 @@ protected:
 
     std::string providerParticipantId;
     std::string proxyParticipantId;
-    QString subscriptionId;
+    std::string subscriptionId;
     PublicationManager* publicationManager;
     MockPublicationSender* publicationSender;
     BroadcastSubscriptionRequest request;

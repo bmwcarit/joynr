@@ -43,12 +43,12 @@ SubscriptionPublication& SubscriptionPublication::operator=(const SubscriptionPu
     return *this;
 }
 
-QString SubscriptionPublication::getSubscriptionId() const
+std::string SubscriptionPublication::getSubscriptionId() const
 {
     return subscriptionId;
 }
 
-void SubscriptionPublication::setSubscriptionId(QString subscriptionId)
+void SubscriptionPublication::setSubscriptionId(const std::string& subscriptionId)
 {
     this->subscriptionId = subscriptionId;
 }

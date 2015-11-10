@@ -68,7 +68,7 @@ public:
         response.append(QVariant("response"));
         reply.setResponse(response);
 
-        QString subscriptionId("subscriptionTestId");
+        std::string subscriptionId("subscriptionTestId");
         subscriptionPublication.setSubscriptionId(subscriptionId);
         response.clear();
         response.append("publication");
@@ -112,7 +112,7 @@ public:
                     "\"response\":[\"publication\"],"
                     "\"subscriptionId\":\"%1\"}"
         );
-        expectedPayload = expectedPayload.arg(subscriptionPublication.getSubscriptionId());
+        expectedPayload = expectedPayload.arg(QString::fromStdString(subscriptionPublication.getSubscriptionId()));
         EXPECT_EQ(expectedPayload, QString(joynrMessage.getPayload()));
     }
 

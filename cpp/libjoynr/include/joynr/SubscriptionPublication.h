@@ -36,7 +36,7 @@ class JOYNR_EXPORT SubscriptionPublication : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString subscriptionId READ getSubscriptionId WRITE setSubscriptionId)
+    Q_PROPERTY(std::string subscriptionId READ getSubscriptionId WRITE setSubscriptionId)
     Q_PROPERTY(QList<QVariant> response READ getResponse WRITE setResponse)
 public:
     SubscriptionPublication& operator=(const SubscriptionPublication& other);
@@ -48,8 +48,8 @@ public:
     SubscriptionPublication(const SubscriptionPublication& other);
     SubscriptionPublication();
 
-    QString getSubscriptionId() const;
-    void setSubscriptionId(QString subscriptionId);
+    std::string getSubscriptionId() const;
+    void setSubscriptionId(const std::string& subscriptionId);
 
     QList<QVariant> getResponse() const;
     void setResponse(QList<QVariant> response);
@@ -58,7 +58,7 @@ public:
     void setError(std::shared_ptr<exceptions::JoynrRuntimeException> error);
 
 private:
-    QString subscriptionId;
+    std::string subscriptionId;
     QList<QVariant> response;
     std::shared_ptr<exceptions::JoynrRuntimeException> error;
 };
