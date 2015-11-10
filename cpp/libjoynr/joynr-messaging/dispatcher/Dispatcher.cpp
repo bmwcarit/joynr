@@ -174,7 +174,7 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
             [requestReplyId, requestExpiryDate, this, senderId, receiverId](
                     const QList<QVariant>& returnValueQVar) {
         Reply reply;
-        reply.setRequestReplyId(TypeUtil::toQt(requestReplyId));
+        reply.setRequestReplyId(requestReplyId);
         reply.setResponse(returnValueQVar);
         // send reply back to the original sender (ie. sender and receiver ids are reversed
         // on
@@ -194,7 +194,7 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
             [requestReplyId, requestExpiryDate, this, senderId, receiverId](
                     const exceptions::JoynrException& exception) {
         Reply reply;
-        reply.setRequestReplyId(TypeUtil::toQt(requestReplyId));
+        reply.setRequestReplyId(requestReplyId);
         std::shared_ptr<exceptions::JoynrException> error;
         // TODO This clone is a workaround which must be removed after the new serializer has been
         // introduced and the reply object has been refactored
@@ -250,17 +250,17 @@ void Dispatcher::handleReplyReceived(const JoynrMessage& message)
                           .arg(QString::fromUtf8(jsonReply)));
         return;
     }
-    QString requestReplyId = reply->getRequestReplyId();
+    std::string requestReplyId = reply->getRequestReplyId();
 
-    std::shared_ptr<IReplyCaller> caller =
-            replyCallerDirectory.lookup(requestReplyId.toStdString());
+    std::shared_ptr<IReplyCaller> caller = replyCallerDirectory.lookup(requestReplyId);
     if (caller == NULL) {
         // This used to be a fatal error, but it is possible that the replyCallerDirectory removed
         // the caller
         // because its lifetime exceeded TTL
         LOG_INFO(logger,
-                 "caller not found in the ReplyCallerDirectory for requestid " + requestReplyId +
-                         ", ignoring");
+                 QString::fromStdString(
+                         "caller not found in the ReplyCallerDirectory for requestid " +
+                         requestReplyId + ", ignoring"));
         return;
     }
 
@@ -274,7 +274,7 @@ void Dispatcher::handleReplyReceived(const JoynrMessage& message)
 
     // Clean up
     delete reply;
-    removeReplyCaller(requestReplyId.toStdString());
+    removeReplyCaller(requestReplyId);
 }
 
 void Dispatcher::handleSubscriptionRequestReceived(const JoynrMessage& message)

@@ -63,7 +63,7 @@ public:
         ;
         request.addParam(Variant::make<int>(42), "java.lang.Integer");
         request.addParam(Variant::make<std::string>("value"), "java.lang.String");
-        reply.setRequestReplyId(TypeUtil::toQt(requestReplyID));
+        reply.setRequestReplyId(requestReplyID);
         QList<QVariant> response;
         response.append(QVariant("response"));
         reply.setResponse(response);
@@ -102,7 +102,7 @@ public:
                     "\"requestReplyId\":\"%1\","
                     "\"response\":[\"response\"]}"
         );
-        expectedPayload = expectedPayload.arg(reply.getRequestReplyId());
+        expectedPayload = expectedPayload.arg(QString::fromStdString(reply.getRequestReplyId()));
         EXPECT_EQ(expectedPayload, QString(joynrMessage.getPayload()));
     }
 

@@ -144,7 +144,7 @@ TEST_F(JoynrMessageSenderTest, sendReply_normal){
     JoynrMessageSender joynrMessageSender(messagingStubQsp);
     joynrMessageSender.registerDispatcher(&mockDispatcher);
     Reply reply;
-    reply.setRequestReplyId(QUuid::createUuid().toString());
+    reply.setRequestReplyId(TypeUtil::toStd(QUuid::createUuid().toString()));
     QList<QVariant> response;
     response.append(QVariant("response"));
     reply.setResponse(response);

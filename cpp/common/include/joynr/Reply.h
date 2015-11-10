@@ -23,7 +23,7 @@
 #include "joynr/exceptions/JoynrException.h"
 
 #include <QObject>
-#include <QString>
+#include <string>
 #include <QVariant>
 #include <QList>
 #include <memory>
@@ -35,7 +35,7 @@ class JOYNRCOMMON_EXPORT Reply : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString requestReplyId READ getRequestReplyId WRITE setRequestReplyId)
+    Q_PROPERTY(std::string requestReplyId READ getRequestReplyId WRITE setRequestReplyId)
     Q_PROPERTY(QList<QVariant> response READ getResponse WRITE setResponse)
 public:
     Reply& operator=(const Reply& other);
@@ -47,8 +47,8 @@ public:
     Reply(const Reply& other);
     Reply();
 
-    QString getRequestReplyId() const;
-    void setRequestReplyId(QString requestReplyId);
+    std::string getRequestReplyId() const;
+    void setRequestReplyId(const std::string& requestReplyId);
 
     QList<QVariant> getResponse() const;
     void setResponse(QList<QVariant> response);
@@ -57,7 +57,7 @@ public:
     void setError(std::shared_ptr<exceptions::JoynrException> error);
 
 private:
-    QString requestReplyId;
+    std::string requestReplyId;
     QList<QVariant> response;
     std::shared_ptr<exceptions::JoynrException> error;
 };

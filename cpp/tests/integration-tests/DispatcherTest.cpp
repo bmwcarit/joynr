@@ -146,7 +146,7 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
     value.append(QVariant::fromValue(types::Localisation::QtGpsLocation::createQt(gpsLocation1)));
     Reply reply;
     reply.setResponse(value);
-    reply.setRequestReplyId(QString::fromStdString(requestReplyId));
+    reply.setRequestReplyId(requestReplyId);
     JoynrMessage expectedReply = messageFactory.createReply(
                 QString::fromStdString(proxyParticipantId),
                 QString::fromStdString(providerParticipantId),
@@ -187,7 +187,7 @@ TEST_F(DispatcherTest, receive_interpreteReplyAndCallReplyCaller) {
 
     //construct a reply containing a QtGpsLocation
     Reply reply;
-    reply.setRequestReplyId(QString::fromStdString(requestReplyId));
+    reply.setRequestReplyId(requestReplyId);
     QList<QVariant> response;
     response.append(QVariant::fromValue(types::Localisation::QtGpsLocation::createQt(gpsLocation1)));
     reply.setResponse(response);

@@ -43,12 +43,12 @@ Reply& Reply::operator=(const Reply& other)
     return *this;
 }
 
-QString Reply::getRequestReplyId() const
+std::string Reply::getRequestReplyId() const
 {
     return requestReplyId;
 }
 
-void Reply::setRequestReplyId(QString requestReplyId)
+void Reply::setRequestReplyId(const std::string& requestReplyId)
 {
     this->requestReplyId = requestReplyId;
 }

@@ -78,7 +78,7 @@ protected:
 
         // setup reply object
         Reply reply;
-        reply.setRequestReplyId(QString("TEST-requestReplyId"));
+        reply.setRequestReplyId("TEST-requestReplyId");
         QList<QVariant> response;
         response.append(QVariant::fromValue(value));
         reply.setResponse(response);
@@ -91,7 +91,7 @@ protected:
                     "}"
         );
         expectedReplyString = expectedReplyString
-                .arg(reply.getRequestReplyId())
+                .arg(QString::fromStdString(reply.getRequestReplyId()))
                 .arg(value);
         QByteArray expectedReply = expectedReplyString.toUtf8();
 
@@ -544,7 +544,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocation) {
 
     // Expected literal is:
     Reply reply;
-    reply.setRequestReplyId(QString("TEST-requestReplyId"));
+    reply.setRequestReplyId("TEST-requestReplyId");
     QList<QVariant> response;
     response.append(QVariant::fromValue(gps1));
     reply.setResponse(response);
@@ -570,7 +570,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocation) {
                 "}"
     );
 
-    expectedReplyString = expectedReplyString.arg(reply.getRequestReplyId());
+    expectedReplyString = expectedReplyString.arg(QString::fromStdString(reply.getRequestReplyId()));
     QByteArray expectedReply = expectedReplyString.toUtf8();
 
     QByteArray jsonReply = JsonSerializer::serialize(reply);
@@ -602,7 +602,7 @@ TEST_F(JsonSerializerTest, deserialize_replyWithVoid) {
     // null response with type invalid
     QList<QVariant> response;
     Reply reply;
-    reply.setRequestReplyId(QString("TEST-requestReplyId"));
+    reply.setRequestReplyId("TEST-requestReplyId");
     reply.setResponse(response);
 
     QString expected(
@@ -610,7 +610,7 @@ TEST_F(JsonSerializerTest, deserialize_replyWithVoid) {
                 "\"requestReplyId\":\"%1\","
                 "\"response\":[]}"
     );
-    expected = expected.arg(reply.getRequestReplyId());
+    expected = expected.arg(QString::fromStdString(reply.getRequestReplyId()));
 
 
     QByteArray jsonReply = JsonSerializer::serialize(reply);
@@ -668,11 +668,11 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocationList) {
 
     // Expected literal is:
     Reply reply;
-    reply.setRequestReplyId(QString("TEST-requestReplyId"));
+    reply.setRequestReplyId("TEST-requestReplyId");
     QList<QVariant> response;
     response.append(QVariant::fromValue(locList));
     reply.setResponse(response);
-    expectedReplyString = expectedReplyString.arg(reply.getRequestReplyId());
+    expectedReplyString = expectedReplyString.arg(QString::fromStdString(reply.getRequestReplyId()));
     QByteArray expectedReply = expectedReplyString.toUtf8();
 
     QByteArray jsonReply = JsonSerializer::serialize(reply);
