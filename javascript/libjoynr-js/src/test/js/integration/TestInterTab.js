@@ -419,11 +419,13 @@ joynrTestRequire(
                                         return opArgs.arg + "response";
                                     });
 
-                                    radioProvider.triggerBroadcasts.registerOperation(function() {
-                                        var outputParams = radioProvider.broadcastWithEnum.createBroadcastOutputParameters();
+                                    radioProvider.triggerBroadcasts.registerOperation(function(opArgs) {
+                                        var i, outputParams = radioProvider.broadcastWithEnum.createBroadcastOutputParameters();
                                         outputParams.setEnumOutput(Country.CANADA);
                                         outputParams.setEnumArrayOutput([Country.GERMANY, Country.ITALY]);
-                                        return radioProvider.broadcastWithEnum.fire(outputParams);
+                                        for (i = 0; i < opArgs.times; i++) {
+                                            radioProvider.broadcastWithEnum.fire(outputParams);
+                                        }
                                     });
 
                                     runs(function() {
