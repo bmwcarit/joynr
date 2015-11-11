@@ -20,6 +20,7 @@ package io.joynr.dispatcher.rpc;
  */
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -40,6 +41,14 @@ public class ReflectionUtils {
      * @return any method in the class that has the specified method name
      */
     private static final Logger logger = LoggerFactory.getLogger(ReflectionUtils.class);
+    private static final String BYTE = "Byte";
+    private static final String SHORT = "Short";
+    private static final String INTEGER = "Integer";
+    private static final String LONG = "Long";
+    private static final String FLOAT = "Float";
+    private static final String DOUBLE = "Double";
+    private static final String STRING = "String";
+    private static final String BOOLEAN = "Boolean";
 
     // TODO findMethod looks for the method name only. =>Overloading is not supported. ParameterTypes should be checked
     // too. Workaround for sync/async methods with same name: only sync interface is used.
@@ -192,5 +201,60 @@ public class ReflectionUtils {
             }
         }
         return strings;
+    }
+
+    public static Class<?>[] toJavaClasses(String... typeNames) {
+        if (typeNames == null) {
+            return null;
+        }
+
+        Class<?>[] classes = new Class[typeNames.length];
+        for (int i = 0; i < typeNames.length; i++) {
+            String[] nameTokens = typeNames[i].split("\\[");
+            Class<?> clazz;
+            switch (nameTokens[0]) {
+            case BOOLEAN:
+                clazz = Boolean.class;
+                break;
+            case BYTE:
+                clazz = Byte.class;
+                break;
+            case SHORT:
+                clazz = Short.class;
+                break;
+            case INTEGER:
+                clazz = Integer.class;
+                break;
+            case LONG:
+                clazz = Long.class;
+                break;
+            case FLOAT:
+                clazz = Float.class;
+                break;
+            case DOUBLE:
+                clazz = Double.class;
+                break;
+            case STRING:
+                clazz = String.class;
+                break;
+            default:
+                try {
+                    clazz = Class.forName(nameTokens[0]);
+                } catch (ClassNotFoundException e) {
+                    clazz = Object.class;
+                }
+                break;
+            }
+            clazz = processArrayTokens(clazz, nameTokens.length - 1);
+            classes[i] = clazz;
+        }
+        return classes;
+    }
+
+    private static Class<?> processArrayTokens(Class<?> clazz, int i) {
+        if (i == 0) {
+            return clazz;
+        }
+        return processArrayTokens(Array.newInstance(clazz, 0).getClass(), --i);
     }
 }

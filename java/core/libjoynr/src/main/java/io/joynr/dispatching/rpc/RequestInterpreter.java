@@ -8,7 +8,6 @@ import java.util.concurrent.ConcurrentMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 
 /*
@@ -45,12 +44,9 @@ import joynr.exceptions.ProviderRuntimeException;
 
 public class RequestInterpreter {
     private static final Logger logger = LoggerFactory.getLogger(RequestInterpreter.class);
-    private ObjectMapper objectMapper;
 
     @Inject
-    public RequestInterpreter(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-
+    public RequestInterpreter() {
     }
 
     // use for caching because creation of MethodMetaInformation is expensive
@@ -101,21 +97,11 @@ public class RequestInterpreter {
         Method method = methodSignatureToMethodMap.get(methodSignature);
 
         Object[] params = null;
-        Class<?>[] parameterTypes = null;
         try {
             if (method.getParameterTypes().length > 0) {
                 // method with parameters
                 params = request.getParams();
-                parameterTypes = method.getParameterTypes();
-                for (int i = 0; i < params.length; i++) {
-                    try {
-                        params[i] = objectMapper.convertValue(params[i], parameterTypes[i]);
-                    } catch (Exception e) {
-                        logger.error("error mapping", e);
-                    }
-                }
             }
-
             return method.invoke(requestCaller, params);
         } catch (IllegalAccessException e) {
             logger.error("RequestInterpreter: Received an RPC invocation for a non public method {}", request);

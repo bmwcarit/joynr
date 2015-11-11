@@ -40,8 +40,10 @@ import io.joynr.messaging.serialize.JoynrEnumSerializer;
 import io.joynr.messaging.serialize.JoynrListSerializer;
 import io.joynr.messaging.serialize.JoynrUntypedObjectDeserializer;
 import io.joynr.messaging.serialize.NumberSerializer;
+import io.joynr.messaging.serialize.RequestDeserializer;
 import io.joynr.security.DummyPlatformSecurityManager;
 import io.joynr.security.PlatformSecurityManager;
+import joynr.Request;
 
 public class MessagingModule extends AbstractModule {
     // private static final Logger logger = LoggerFactory.getLogger(MessagingModule.class);
@@ -78,6 +80,7 @@ public class MessagingModule extends AbstractModule {
                                                                                            SimpleType.construct(Object.class),
                                                                                            null);
 
+        module.addDeserializer(Request.class, new RequestDeserializer(objectMapper));
         module.addDeserializer(Object.class, new JoynrUntypedObjectDeserializer(typeDeserializer));
 
         module.setMixInAnnotation(Throwable.class, ThrowableMixIn.class);

@@ -46,6 +46,7 @@ import com.google.inject.Injector;
 import io.joynr.common.ExpiryDate;
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.dispatcher.rpc.JoynrInterface;
+import io.joynr.dispatcher.rpc.ReflectionUtils;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrChannelMissingException;
 import io.joynr.exceptions.JoynrChannelNotAssignableException;
@@ -174,15 +175,17 @@ public class SerializationTest {
         testObject.setMyByte((byte) 4);
         testObject.setObjects(new Object[]{ gpsLocation, "hello" });
 
-        String[] stringArray = new String[]{ "test1", "test2", "test3" };
+        String[][] stringArray = new String[][]{ { "test1", "test2", "test3" }, { "test4", "test5", "test6" } };
         Boolean[] booleanArray = { true, false };
         Boolean[] emptyArray = {};
         Object[] mixedArray = new Object[]{ "one", gpsLocation, stringArray };
 
         Object[] params = new Object[]{ true, Integer.MAX_VALUE, Long.MAX_VALUE, Double.MAX_VALUE, gpsLocation,
                 "param1", gpsLocations, stringArray, booleanArray, emptyArray, mixedArray };
-        String[] paramDatatypes = new String[]{ "Boolean", "Integer", "Long", "Double", "joynr.vehicle.GPSPosition",
-                "String", "GpsLocation[]", "String[]", "Boolean[]", "Boolean[]", "Object[]" };
+        String[] paramDatatypes = new String[params.length];
+        for (int i = 0; i < params.length; i++) {
+            paramDatatypes[i] = ReflectionUtils.toDatatypeNames(params[i].getClass())[0];
+        }
         Request request = new Request(methodName, params, paramDatatypes, null);
 
         String valueAsString = objectMapper.writeValueAsString(request);
