@@ -249,6 +249,24 @@ define(
                 }
 
                 /**
+                 * @name PublicationManager#prepareBroadcastPublication
+                 * @private
+                 */
+                function prepareBroadcastPublication(subscriptionInfo, value) {
+                    var timeSinceLastPublication = Date.now() - subscriptionInfo.lastPublication;
+                    if (subscriptionInfo.qos.minInterval === undefined
+                        || timeSinceLastPublication >= subscriptionInfo.qos.minInterval) {
+                        sendPublication(subscriptionInfo, value);
+                    } else {
+                        log.info("Two subsequent broadcasts of event "
+                                + subscriptionInfo.subscribedToName
+                                + " occured within minInterval of subscription with id "
+                                + subscriptionInfo.subscriptionId
+                                + ". Event will not be sent to the subscribing client.");
+                    }
+                }
+
+                /**
                  * This functions waits the delay time before pubslishing the value of the attribute
                  * specified in the subscription information
                  *
@@ -475,32 +493,28 @@ define(
                     for (subscriptionId in subscriptions) {
                         if (subscriptions.hasOwnProperty(subscriptionId)) {
                             var subscriptionInfo = subscriptions[subscriptionId];
-                            if (subscriptionInfo.qos.minInterval !== undefined
-                                && subscriptionInfo.qos.minInterval > 0) {
-                                // if any filters present, check them
-                                publish = true;
-                                if (filters && filters.length > 0) {
-                                    for (i = 0; i < filters.length; i++) {
-                                        if (subscriptionInfo.filterParameters &&
-                                            subscriptionInfo.filterParameters.filterParameters) {
-                                            publish = filters[i].filter(
-                                                value,
-                                                subscriptionInfo.filterParameters.filterParameters
-                                            );
-                                            // stop on first filter failure
-                                            if (publish === false) {
-                                                break;
-                                            }
+                            // if any filters present, check them
+                            publish = true;
+                            if (filters && filters.length > 0) {
+                                for (i = 0; i < filters.length; i++) {
+                                    if (subscriptionInfo.filterParameters &&
+                                        subscriptionInfo.filterParameters.filterParameters) {
+                                        publish = filters[i].filter(
+                                            value,
+                                            subscriptionInfo.filterParameters.filterParameters
+                                        );
+                                        // stop on first filter failure
+                                        if (publish === false) {
+                                            break;
                                         }
                                     }
                                 }
-                                if (publish) {
-                                    preparePublication(
-                                        subscriptionInfo,
-                                        value.outputParameters,
-                                        triggerPublicationTimer
-                                    );
-                                }
+                            }
+                            if (publish) {
+                                prepareBroadcastPublication(
+                                    subscriptionInfo,
+                                    value.outputParameters
+                                );
                             }
                         }
                     }

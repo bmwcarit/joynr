@@ -119,7 +119,11 @@ interface Radio {
 		}
 	}
 
-	method triggerBroadcasts {}
+	method triggerBroadcasts {
+		in {
+			UInt32 times
+		}
+	}
 
 	broadcast broadcastWithEnum {
 		out {
