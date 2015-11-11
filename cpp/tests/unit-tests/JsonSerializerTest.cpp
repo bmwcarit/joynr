@@ -79,8 +79,8 @@ protected:
         // setup reply object
         Reply reply;
         reply.setRequestReplyId("TEST-requestReplyId");
-        QList<QVariant> response;
-        response.append(QVariant::fromValue(value));
+        std::vector<Variant> response;
+        response.push_back(Variant::make<T>(value));
         reply.setResponse(response);
 
         QString expectedReplyString(
@@ -101,7 +101,7 @@ protected:
 
         Reply* receivedReply = JsonSerializer::deserialize<Reply>(jsonReply);
 
-        EXPECT_EQ(value, receivedReply->getResponse().at(0).value<T>());
+        EXPECT_EQ(value, receivedReply->getResponse().at(0).get<T>());
 
         // clean up
         delete receivedReply;
@@ -539,14 +539,14 @@ TEST_F(JsonSerializerTest, serialize_deserialize_TStructExtended) {
 
 TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocation) {
     qRegisterMetaType<joynr::Reply>("joynr::Reply");
-    types::Localisation::QtGpsLocation gps1(1.1, 1.2, 1.3, types::Localisation::QtGpsFixEnum::MODE3D, 1.4, 1.5, 1.6, 1.7, 18, 19, 110);
+    types::Localisation::GpsLocation gps1(1.1, 1.2, 1.3, types::Localisation::GpsFixEnum::MODE3D, 1.4, 1.5, 1.6, 1.7, 18, 19, 110);
 //    types::Localisation::QtGpsLocation gps1(1.1, 2.2, 3.3,types::Localisation::QtGpsFixEnum::MODE3D, 0.0, 0.0, 0.0, 0.0, 0, 0, 17);
 
     // Expected literal is:
     Reply reply;
     reply.setRequestReplyId("TEST-requestReplyId");
-    QList<QVariant> response;
-    response.append(QVariant::fromValue(gps1));
+    std::vector<Variant> response;
+    response.push_back(Variant::make<types::Localisation::GpsLocation>(gps1));
     reply.setResponse(response);
 
     QString expectedReplyString(
@@ -580,17 +580,17 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocation) {
     Reply* receivedReply = JsonSerializer::deserialize<Reply>(jsonReply);
 
     EXPECT_TRUE(receivedReply->getResponse().size() == 1);
-    EXPECT_TRUE(receivedReply->getResponse().at(0).canConvert<types::Localisation::QtGpsLocation>());
+    EXPECT_TRUE(receivedReply->getResponse().at(0).is<types::Localisation::GpsLocation>());
 
 //    QtGpsLocation gps2;
 
 //    QJson::QObjectHelper::qvariant2qobject(receivedReply->getResponse().value<QVariantMap>(), &gps2);
 
-    types::Localisation::QtGpsLocation gps2 = receivedReply->getResponse().at(0).value<types::Localisation::QtGpsLocation>();
+    types::Localisation::GpsLocation gps2 = receivedReply->getResponse().at(0).get<types::Localisation::GpsLocation>();
 
     EXPECT_EQ(gps1, gps2)
-            << "Gps locations gps1 " << gps1.toString().toLatin1().data()
-            << " and gps2 " << gps2.toString().toLatin1().data() << " are not the same";
+            << "Gps locations gps1 " << gps1.toString()
+            << " and gps2 " << gps2.toString() << " are not the same";
 
     // Clean up
     delete receivedReply;
@@ -600,7 +600,7 @@ TEST_F(JsonSerializerTest, deserialize_replyWithVoid) {
     qRegisterMetaType<joynr::Reply>("joynr::Reply");
 
     // null response with type invalid
-    QList<QVariant> response;
+    std::vector<Variant> response;
     Reply reply;
     reply.setRequestReplyId("TEST-requestReplyId");
     reply.setResponse(response);
@@ -628,9 +628,9 @@ TEST_F(JsonSerializerTest, deserialize_replyWithVoid) {
 TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocationList) {
     qRegisterMetaType<joynr::Reply>("joynr::Reply");
 
-    QList<QVariant> locList;
-    locList.append(QVariant::fromValue(types::Localisation::QtGpsLocation(1.1, 2.2, 3.3, types::Localisation::QtGpsFixEnum::MODE3D, 0.0, 0.0, 0.0, 0.0, 0, 0, 17)));
-    locList.append(QVariant::fromValue(types::Localisation::QtGpsLocation(4.4, 5.5, 6.6, types::Localisation::QtGpsFixEnum::MODENOFIX, 0.0, 0.0, 0.0, 0.0, 0, 0, 18)));
+    std::vector<Variant> locList;
+    locList.push_back(Variant::make<types::Localisation::GpsLocation>(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE3D, 0.0, 0.0, 0.0, 0.0, 0, 0, 17));
+    locList.push_back(Variant::make<types::Localisation::GpsLocation>(4.4, 5.5, 6.6, types::Localisation::GpsFixEnum::MODENOFIX, 0.0, 0.0, 0.0, 0.0, 0, 0, 18));
 
     QString expectedReplyString(
                 "{"
@@ -669,8 +669,8 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocationList) {
     // Expected literal is:
     Reply reply;
     reply.setRequestReplyId("TEST-requestReplyId");
-    QList<QVariant> response;
-    response.append(QVariant::fromValue(locList));
+    std::vector<Variant> response;
+    response.push_back(TypeUtil::toVariant(locList));
     reply.setResponse(response);
     expectedReplyString = expectedReplyString.arg(QString::fromStdString(reply.getRequestReplyId()));
     QByteArray expectedReply = expectedReplyString.toUtf8();
@@ -681,14 +681,17 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocationList) {
 
     Reply* receivedReply = JsonSerializer::deserialize<Reply>(jsonReply);
 
-    EXPECT_TRUE(receivedReply->getResponse().at(0).canConvert<QList<QVariant> >());
-    QListIterator<QVariant> i_received(receivedReply->getResponse().at(0).value<QList<QVariant> >());
-    QListIterator<QVariant> i_origin(reply.getResponse().at(0).value<QList<QVariant> >());
-    while(i_received.hasNext()) {
-        types::Localisation::QtGpsLocation receivedIterValue = i_received.next().value<types::Localisation::QtGpsLocation>();
-        types::Localisation::QtGpsLocation originItervalue = i_origin.next().value<types::Localisation::QtGpsLocation>();
-        LOG_DEBUG(logger, receivedIterValue.toString());
+    EXPECT_TRUE(receivedReply->getResponse().at(0).is<std::vector<Variant>>());
+    std::vector<Variant>& receivedReplyResponse = receivedReply->getResponse().at(0).get<std::vector<Variant>>();
+    std::vector<Variant>::const_iterator i_received = receivedReplyResponse.begin();
+    std::vector<Variant>::const_iterator i_origin = reply.getResponse().at(0).get<std::vector<Variant>>().begin();
+    while(i_received != receivedReplyResponse.end()) {
+        types::Localisation::GpsLocation receivedIterValue = i_received->get<types::Localisation::GpsLocation>();
+        types::Localisation::GpsLocation originItervalue = i_origin->get<types::Localisation::GpsLocation>();
+        LOG_DEBUG(logger, TypeUtil::toQt(receivedIterValue.toString()));
         EXPECT_EQ(originItervalue, receivedIterValue);
+        i_received++;
+        i_origin++;
     }
 
     delete receivedReply;
@@ -761,8 +764,6 @@ TEST_F(JsonSerializerTest, serialize_deserialize_trip) {
 
 TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequest) {
     static bool isTypeTripRegistered = Variant::registerType<types::Localisation::Trip>("joynr::types::Localisation::Trip");
-    qRegisterMetaType<joynr::Request>("joynr::Request");
-    qRegisterMetaType<joynr::types::Localisation::Trip>("joynr::types::Localisation::QtTrip");
 
     std::vector<types::Localisation::GpsLocation> locations;
     locations.push_back(types::Localisation::GpsLocation(1.1, 1.2, 1.3, types::Localisation::GpsFixEnum::MODE2D, 1.4, 1.5, 1.6, 1.7, 18, 19, 110));
@@ -779,7 +780,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequest) {
     params.push_back(Variant::make<std::string>(contentParam1));
     params.push_back(Variant::make<types::Localisation::Trip>(trip1));
     qRegisterMetaType<QList<int> >("QlistInt");
-    //To serialize a QList<...> it has to be stored as a QList<QVariant>
+    //To serialize a std::vector<...> it has to be stored as a std::vector<Variant>
     std::vector<Variant> vector;
     vector.push_back(Variant::make<int>(2));
     params.push_back(TypeUtil::toVariant(vector));
@@ -804,30 +805,27 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequest) {
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_Reply_with_Array_as_Response) {
-    qRegisterMetaType<joynr::Reply>("joynr::Reply");
-    qRegisterMetaType<joynr::types::QtCapabilityInformation>("joynr::types::QtCapabilityInformation");
-
-    QList<types::QtCapabilityInformation> capabilityInformations;
-    types::QtCapabilityInformation cap1(types::QtCapabilityInformation("domain1", "interface1", types::QtProviderQos(), "channel1", "participant1"));
-    capabilityInformations.append(cap1);
-    capabilityInformations.append(types::QtCapabilityInformation("domain2", "interface2", types::QtProviderQos(), "channel2", "participant2"));
+    std::vector<types::CapabilityInformation> capabilityInformations;
+    types::CapabilityInformation cap1(types::CapabilityInformation("domain1", "interface1", types::ProviderQos(), "channel1", "participant1"));
+    capabilityInformations.push_back(cap1);
+    capabilityInformations.push_back(types::CapabilityInformation("domain2", "interface2", types::ProviderQos(), "channel2", "participant2"));
 
     Reply reply;
 
-    QVariantList response;
+    std::vector<Variant> response;
     reply.setRequestReplyId("serialize_deserialize_Reply_with_Array_as_Response");
     //this is the magic code: do not call "append" for lists, because this will append all list elements to the outer list
-    response.insert(0, joynr::Util::convertListToVariantList<joynr::types::QtCapabilityInformation>(capabilityInformations));
+    response.push_back(joynr::TypeUtil::toVariant(capabilityInformations));
     reply.setResponse(response);
- QByteArray serializedContent = JsonSerializer::serialize(reply);
+    QByteArray serializedContent = JsonSerializer::serialize(reply);
     LOG_DEBUG(logger, QString::fromUtf8(serializedContent));
 
     Reply* deserializedReply = JsonSerializer::deserialize<Reply>(serializedContent);
 
     response = deserializedReply->getResponse();
 
-    QVariantList receivedCaps = response.at(0).value<QVariantList>();
-    types::QtCapabilityInformation receivedCap1 = receivedCaps.at(0).value<types::QtCapabilityInformation>();
+    std::vector<Variant> receivedCaps = response.at(0).get<std::vector<Variant>>();
+    types::CapabilityInformation receivedCap1 = receivedCaps.at(0).get<types::CapabilityInformation>();
     EXPECT_EQ(receivedCap1, cap1);
     EXPECT_EQ(deserializedReply->getRequestReplyId(), "serialize_deserialize_Reply_with_Array_as_Response");
 
@@ -901,11 +899,11 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequestWithLists) {
     Request* request2 = JsonSerializer::deserialize<Request>(serializedContent);
     std::vector<Variant> paramsReceived = request2->getParams();
 
-    LOG_DEBUG(logger, QString("x1") + QString::number(paramsReceived.at(0).getTypeId()));
-    ASSERT_TRUE(paramsReceived.at(0).is<std::vector<Variant>>()) << "Cannot convert the field of the Param Map to a QList<QVariant>";
+    LOG_DEBUG(logger, QString("x1%1").arg(paramsReceived.at(0).getTypeId()));
+    ASSERT_TRUE(paramsReceived.at(0).is<std::vector<Variant>>()) << "Cannot convert the field of the Param Map to a std::vector<Variant>";
     std::vector<Variant> returnvl = paramsReceived.at(0).get<std::vector<Variant>>();
     ASSERT_TRUE(returnvl.size() == 3) << "list size size != 3";
-    LOG_DEBUG(logger, QString::number(returnvl.at(0).getTypeId()));
+    LOG_DEBUG(logger, QString("%1").arg(returnvl.at(0).getTypeId()));
 
     ASSERT_TRUE(returnvl.at(0).is<types::Localisation::GpsLocation>()) << "Cannot convert the first entry of the return List to QtGpsLocation";
 

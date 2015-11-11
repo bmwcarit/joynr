@@ -24,9 +24,10 @@
 
 #include <QObject>
 #include <string>
-#include <QVariant>
-#include <QList>
+#include <vector>
 #include <memory>
+
+#include "joynr/Variant.h"
 
 namespace joynr
 {
@@ -36,7 +37,7 @@ class JOYNRCOMMON_EXPORT Reply : public QObject
     Q_OBJECT
 
     Q_PROPERTY(std::string requestReplyId READ getRequestReplyId WRITE setRequestReplyId)
-    Q_PROPERTY(QList<QVariant> response READ getResponse WRITE setResponse)
+    Q_PROPERTY(std::vector<Variant> response READ getResponse WRITE setResponse)
 public:
     Reply& operator=(const Reply& other);
     bool operator==(const Reply& other) const;
@@ -50,15 +51,15 @@ public:
     std::string getRequestReplyId() const;
     void setRequestReplyId(const std::string& requestReplyId);
 
-    QList<QVariant> getResponse() const;
-    void setResponse(QList<QVariant> response);
+    std::vector<Variant> getResponse() const;
+    void setResponse(std::vector<Variant> response);
 
     std::shared_ptr<exceptions::JoynrException> getError() const;
     void setError(std::shared_ptr<exceptions::JoynrException> error);
 
 private:
     std::string requestReplyId;
-    QList<QVariant> response;
+    std::vector<Variant> response;
     std::shared_ptr<exceptions::JoynrException> error;
 };
 

@@ -83,7 +83,7 @@ void «interfaceName»RequestInterpreter::execute(
 		const std::string& methodName,
 		const std::vector<Variant>& paramValues,
 		const std::vector<std::string>& paramTypes,
-		std::function<void (const QList<QVariant>&)> onSuccess,
+		std::function<void (const std::vector<Variant>&)> onSuccess,
 		std::function<void (const exceptions::JoynrException& exception)> onError
 ) {
 	Q_UNUSED(paramValues);//if all methods of the interface are empty, the paramValues would not be used and give a warning.
@@ -101,10 +101,9 @@ void «interfaceName»RequestInterpreter::execute(
 			if (methodName == "get«attributeName.toFirstUpper»"){
 				std::function<void(«returnType» «attributeName»)> requestCallerOnSuccess =
 						[onSuccess] («returnType» «attributeName») {
-							«val convertedAttribute = qtTypeUtil.fromStdTypeToQTType(attribute, attributeName, true)»
-							QVariant singleOutParam(«IF isArray(attribute)»joynr::Util::convertListToVariantList<«qtTypeUtil.getTypeName(attribute.type)»>(«convertedAttribute»)«ELSE»QVariant::fromValue(«convertedAttribute»)«ENDIF»);
-							QList<QVariant> outParams;
-							outParams.insert(0, singleOutParam);
+							Variant singleOutParam(«IF isArray(attribute)»joynr::TypeUtil::toVariant<«getTypeName(attribute.type)»>(«attributeName»)«ELSE»Variant::make<«getTypeName(attribute.type)»>(«attributeName»)«ENDIF»);
+							std::vector<Variant> outParams;
+							outParams.push_back(singleOutParam);
 							onSuccess(outParams);
 						};
 				«requestCallerName»->get«attributeName.toFirstUpper»(requestCallerOnSuccess, onError);
@@ -142,7 +141,7 @@ void «interfaceName»RequestInterpreter::execute(
 				«ENDIF»
 				std::function<void()> requestCallerOnSuccess =
 						[onSuccess] () {
-							QList<QVariant> outParams;
+							std::vector<Variant> outParams;
 							onSuccess(outParams);
 						};
 				«requestCallerName»->set«attributeName.toFirstUpper»(typedInput«attributeName.toFirstUpper», requestCallerOnSuccess, onError);
@@ -165,16 +164,14 @@ void «interfaceName»RequestInterpreter::execute(
 				«val outputTypedParamList = getCommaSeperatedTypedConstOutputParameterList(method)»
 				std::function<void(«outputTypedParamList»)> requestCallerOnSuccess =
 						[onSuccess](«outputTypedParamList»){
-							QList<QVariant> outParams;
+							std::vector<Variant> outParams;
 							«var index = 0»
 							«FOR param : method.outputParameters»
-								«val convertedParameter = qtTypeUtil.fromStdTypeToQTType(param, param.joynrName, true)»
-								outParams.insert(
-										«index++»,
+								outParams.push_back(
 										«IF isArray(param)»
-											joynr::Util::convertListToVariantList<«qtTypeUtil.getTypeName(param.type)»>(«convertedParameter»)
+											joynr::TypeUtil::toVariant<«getTypeName(param.type)»>(«param.joynrName»)
 										«ELSE»
-											QVariant::fromValue(«convertedParameter»)
+											Variant::make<«getTypeName(param.type)»>(«param.joynrName»)
 										«ENDIF»
 								);
 							«ENDFOR»

@@ -53,12 +53,12 @@ void SubscriptionPublication::setSubscriptionId(const std::string& subscriptionI
     this->subscriptionId = subscriptionId;
 }
 
-QList<QVariant> SubscriptionPublication::getResponse() const
+std::vector<Variant> SubscriptionPublication::getResponse() const
 {
     return response;
 }
 
-void SubscriptionPublication::setResponse(QList<QVariant> response)
+void SubscriptionPublication::setResponse(const std::vector<Variant>& response)
 {
     this->response = response;
 }

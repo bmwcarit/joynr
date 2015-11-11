@@ -145,8 +145,8 @@ TEST_F(JoynrMessageSenderTest, sendReply_normal){
     joynrMessageSender.registerDispatcher(&mockDispatcher);
     Reply reply;
     reply.setRequestReplyId(TypeUtil::toStd(QUuid::createUuid().toString()));
-    QList<QVariant> response;
-    response.append(QVariant("response"));
+    std::vector<Variant> response;
+    response.push_back(Variant::make<std::string>("response"));
     reply.setResponse(response);
 
     JoynrMessage message = messageFactory.createReply(
@@ -253,8 +253,8 @@ TEST_F(JoynrMessageSenderTest, sendPublication_normal){
     joynrMessageSender.registerDispatcher(&mockDispatcher);
     SubscriptionPublication publication;
     publication.setSubscriptionId("ignoresubscriptionid");
-    QList<QVariant> response;
-    response.append("publication");
+    std::vector<Variant> response;
+    response.push_back(Variant::make<std::string>("publication"));
     publication.setResponse(response);
     JoynrMessage message = messageFactory.createSubscriptionPublication(
                 QString::fromStdString(senderID),

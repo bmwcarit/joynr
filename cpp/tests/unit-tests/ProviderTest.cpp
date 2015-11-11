@@ -39,11 +39,11 @@ public:
         return "DummyProviderInterface";
     }
 
-    void onAttributeValueChanged(const std::string& attributeName, const QVariant& value) {
+    void onAttributeValueChanged(const std::string& attributeName, const Variant& value) {
         AbstractJoynrProvider::onAttributeValueChanged(attributeName, value);
     }
 
-    void fireBroadcast(const std::string& broadcastName, const QList<QVariant>& values) {
+    void fireBroadcast(const std::string& broadcastName, const std::vector<Variant>& values) {
         AbstractJoynrProvider::fireBroadcast(broadcastName, values);
     }
 };
@@ -52,7 +52,7 @@ TEST(ProviderTest, register_attributeListener) {
     MockPublicationManager publicationManager;
     std::string attributeName("testAttribute");
     QString subscriptionId("test-subscription-id");
-    QVariant attributeValue(42);
+    Variant attributeValue(Variant::make<int>(42));
 
     // Expect the publicationManager to be called when the attribute value changes
     EXPECT_CALL(publicationManager,
@@ -70,7 +70,7 @@ TEST(ProviderTest, unregister_attributeListener) {
     MockPublicationManager publicationManager;
     std::string attributeName("testAttribute");
     QString subscriptionId("test-subscription-id");
-    QVariant attributeValue(42);
+    Variant attributeValue(Variant::make<int>(42));
 
     // Expect the publicationManager not to be called when the attribute value changes
     EXPECT_CALL(publicationManager,

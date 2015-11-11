@@ -64,14 +64,14 @@ public:
         request.addParam(Variant::make<int>(42), "java.lang.Integer");
         request.addParam(Variant::make<std::string>("value"), "java.lang.String");
         reply.setRequestReplyId(requestReplyID);
-        QList<QVariant> response;
-        response.append(QVariant("response"));
+        std::vector<Variant> response;
+        response.push_back(Variant::make<std::string>("response"));
         reply.setResponse(response);
 
         std::string subscriptionId("subscriptionTestId");
         subscriptionPublication.setSubscriptionId(subscriptionId);
         response.clear();
-        response.append("publication");
+        response.push_back(Variant::make<std::string>("publication"));
         subscriptionPublication.setResponse(response);
     }
     void TearDown(){

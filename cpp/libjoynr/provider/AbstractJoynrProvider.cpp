@@ -72,7 +72,7 @@ void AbstractJoynrProvider::unregisterAttributeListener(const std::string& attri
 }
 
 void AbstractJoynrProvider::onAttributeValueChanged(const std::string& attributeName,
-                                                    const QVariant& value)
+                                                    const Variant& value)
 {
     QReadLocker locker(&lock);
 
@@ -102,7 +102,7 @@ void AbstractJoynrProvider::unregisterBroadcastListener(const std::string& broad
 }
 
 void AbstractJoynrProvider::fireBroadcast(const std::string& broadcastName,
-                                          const QList<QVariant>& values)
+                                          const std::vector<Variant>& values)
 {
     QReadLocker locker(&lock);
 

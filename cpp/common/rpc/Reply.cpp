@@ -53,14 +53,14 @@ void Reply::setRequestReplyId(const std::string& requestReplyId)
     this->requestReplyId = requestReplyId;
 }
 
-QList<QVariant> Reply::getResponse() const
+std::vector<Variant> Reply::getResponse() const
 {
     return response;
 }
 
-void Reply::setResponse(QList<QVariant> response)
+void Reply::setResponse(std::vector<Variant> response)
 {
-    this->response = response;
+    this->response = std::move(response);
 }
 
 std::shared_ptr<exceptions::JoynrException> Reply::getError() const

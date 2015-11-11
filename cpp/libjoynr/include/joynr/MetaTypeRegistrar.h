@@ -28,6 +28,8 @@
 #include <QHash>
 #include <QMetaType>
 
+#include "joynr/JoynrTypeId.h"
+
 namespace joynr
 {
 

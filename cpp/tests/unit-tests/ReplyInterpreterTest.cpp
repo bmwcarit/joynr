@@ -72,10 +72,10 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller) {
             }));
 
     // Create a reply
-    types::Localisation::QtGpsLocation location;
+    types::Localisation::GpsLocation location;
     location.setAltitude(myAltitude);
-    QList<QVariant> response;
-    response.append(QVariant::fromValue(location));
+    std::vector<Variant> response;
+    response.push_back(Variant::make<types::Localisation::GpsLocation>(location));
     Reply reply;
     reply.setResponse(response);
 

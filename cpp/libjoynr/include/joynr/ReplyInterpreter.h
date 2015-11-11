@@ -51,7 +51,7 @@ public:
             return;
         }
 
-        if ((reply.getResponse()).isEmpty()) {
+        if ((reply.getResponse()).empty()) {
             LOG_ERROR(logger, QString("Unexpected empty reply object. Calling error callback"));
             caller->returnError(std::make_shared<exceptions::JoynrRuntimeException>(
                     "Reply object had no response."));

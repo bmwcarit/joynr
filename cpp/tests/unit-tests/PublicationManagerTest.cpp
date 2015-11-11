@@ -257,15 +257,15 @@ TEST_F(PublicationManagerTest, add_onChangeSubscription) {
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // The attribute will change to this value
-    joynr::types::Localisation::QtGpsLocation gpsLocation;
-    QVariant attributeValue = QVariant::fromValue(gpsLocation);
+    joynr::types::Localisation::GpsLocation gpsLocation;
+    Variant attributeValue = Variant::make<joynr::types::Localisation::GpsLocation>(gpsLocation);
 
     SubscriptionRequest subscriptionRequest;
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId().toStdString());
-    QList<QVariant> response;
-    response.append(attributeValue);
+    std::vector<Variant> response;
+    response.push_back(attributeValue);
     expectedPublication.setResponse(response);
     // Expect an attribute change to send a publication as well as during registering subscription request
     EXPECT_CALL(
@@ -331,15 +331,15 @@ TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // The attribute will change to this value
-    joynr::types::Localisation::QtGpsLocation gpsLocation;
-    QVariant attributeValue = QVariant::fromValue(gpsLocation);
+    joynr::types::Localisation::GpsLocation gpsLocation;
+    Variant attributeValue = Variant::make<joynr::types::Localisation::GpsLocation>(gpsLocation);
 
     SubscriptionRequest subscriptionRequest;
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId().toStdString());
-    QList<QVariant> response;
-    response.append(attributeValue);
+    std::vector<Variant> response;
+    response.push_back(attributeValue);
     expectedPublication.setResponse(response);
     // Expect a single attribute change to send a publication + one publication when registering sub request -> 2
     EXPECT_CALL(
@@ -406,15 +406,15 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval) {
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // The attribute will change to this value
-    joynr::types::Localisation::QtGpsLocation gpsLocation;
-    QVariant attributeValue = QVariant::fromValue(gpsLocation);
+    joynr::types::Localisation::GpsLocation gpsLocation;
+    Variant attributeValue = Variant::make<joynr::types::Localisation::GpsLocation>(gpsLocation);
 
     SubscriptionRequest subscriptionRequest;
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId().toStdString());
-    QList<QVariant> response;
-    response.append(attributeValue);
+    std::vector<Variant> response;
+    response.push_back(attributeValue);
     expectedPublication.setResponse(response);
     // Expect a single attribute change to send a publication + one publication when registering sub request -> 2
     EXPECT_CALL(
@@ -483,8 +483,8 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
     MockPublicationSender mockPublicationSender2;
 
     // The attribute will change to this value
-    joynr::types::Localisation::QtGpsLocation gpsLocation;
-    QVariant attributeValue = QVariant::fromValue(gpsLocation);
+    joynr::types::Localisation::GpsLocation gpsLocation;
+    Variant attributeValue = Variant::make<joynr::types::Localisation::GpsLocation>(gpsLocation);
 
     // Expect calls to register an unregister an attribute listener
     std::string attributeName("Location");
@@ -494,8 +494,8 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId().toStdString());
-    QList<QVariant> response;
-    response.append(attributeValue);
+    std::vector<Variant> response;
+    response.push_back(attributeValue);
     expectedPublication.setResponse(response);
     EXPECT_CALL(
                 mockPublicationSender,
@@ -609,8 +609,8 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // The attribute will change to this value
-    joynr::types::Localisation::QtGpsLocation gpsLocation;
-    QVariant attributeValue = QVariant::fromValue(gpsLocation);
+    joynr::types::Localisation::GpsLocation gpsLocation;
+    Variant attributeValue = Variant::make<joynr::types::Localisation::GpsLocation>(gpsLocation);
 
     // Expect calls to register an unregister an attribute listener
     std::string attributeName("Location");
@@ -620,8 +620,8 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId().toStdString());
-    QList<QVariant> response;
-    response.append(attributeValue);
+    std::vector<Variant> response;
+    response.push_back(attributeValue);
     expectedPublication.setResponse(response);
     EXPECT_CALL(
                 mockPublicationSender,
@@ -703,8 +703,8 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // The attribute will change to this value
-    joynr::types::Localisation::QtGpsLocation gpsLocation;
-    QVariant attributeValue = QVariant::fromValue(gpsLocation);
+    joynr::types::Localisation::GpsLocation gpsLocation;
+    Variant attributeValue = Variant::make<joynr::types::Localisation::GpsLocation>(gpsLocation);
 
     // Expect calls to register an unregister an attribute listener
     std::string attributeName("Location");
@@ -714,8 +714,8 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId().toStdString());
-    QList<QVariant> response;
-    response.append(attributeValue);
+    std::vector<Variant> response;
+    response.push_back(attributeValue);
     expectedPublication.setResponse(response);
     EXPECT_CALL(
                 mockPublicationSender,
@@ -801,9 +801,9 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     MockPublicationSender mockPublicationSender2;
 
     // The broacast will fire this value
-    joynr::types::Localisation::QtGpsLocation gpsLocation;
-    QList<QVariant> broadcastValues;
-    broadcastValues.append(QVariant::fromValue(gpsLocation));
+    joynr::types::Localisation::GpsLocation gpsLocation;
+    std::vector<Variant> broadcastValues;
+    broadcastValues.push_back(Variant::make<joynr::types::Localisation::GpsLocation>(gpsLocation));
 
     QList<std::shared_ptr<IBroadcastFilter> > filters;
 
@@ -921,9 +921,9 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // The value will be fired by the broadcast
-    joynr::types::Localisation::QtGpsLocation gpsLocation;
-    QList<QVariant> broadcastValues;
-    broadcastValues.append(QVariant::fromValue(gpsLocation));
+    joynr::types::Localisation::GpsLocation gpsLocation;
+    std::vector<Variant> broadcastValues;
+    broadcastValues.push_back(Variant::make<joynr::types::Localisation::GpsLocation>(gpsLocation));
 
     QList<std::shared_ptr<IBroadcastFilter> > filters;
 
@@ -1010,9 +1010,9 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // The broadcast will fire this value
-    joynr::types::Localisation::QtGpsLocation gpsLocation;
-    QList<QVariant> broadcastValues;
-    broadcastValues.append(QVariant::fromValue(gpsLocation));
+    joynr::types::Localisation::GpsLocation gpsLocation;
+    std::vector<Variant> broadcastValues;
+    broadcastValues.push_back(Variant::make<joynr::types::Localisation::GpsLocation>(gpsLocation));
 
     QList<std::shared_ptr<IBroadcastFilter> > filters;
 

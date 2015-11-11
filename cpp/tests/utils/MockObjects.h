@@ -93,6 +93,7 @@
 #include "joynr/BounceProxyUrl.h"
 #include "joynr/Directory.h"
 #include "joynr/exceptions/JoynrException.h"
+#include "joynr/Variant.h"
 
 using ::testing::A;
 using ::testing::_;
@@ -608,7 +609,7 @@ public:
 
 class MockPublicationManager : public joynr::PublicationManager {
 public:
-    MOCK_METHOD2(attributeValueChanged, void(const QString& subscriptionId, const QVariant& value));
+    MOCK_METHOD2(attributeValueChanged, void(const QString& subscriptionId, const joynr::Variant& value));
 };
 
 //virtual public IChannelUrlDirectory, virtual public ChannelUrlDirectorySyncProxy, virtual public ChannelUrlDirectoryAsyncProxy
@@ -693,7 +694,6 @@ public:
                      const joynr::types::Localisation::GpsLocation &location,
                      const joynr::tests::TestLocationUpdateSelectiveBroadcastFilterParameters &filterParameters));
 };
-
 class MockGlobalDomainAccessControllerProxy : public virtual joynr::infrastructure::GlobalDomainAccessControllerProxy {
 public:
     MockGlobalDomainAccessControllerProxy() :

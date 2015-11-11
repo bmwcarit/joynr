@@ -57,7 +57,7 @@ public:
         mockRequestCaller(new MockTestRequestCaller()),
         mockSubscriptionListenerOne(new MockSubscriptionListenerOneType<types::Localisation::QtGpsLocation>()),
         mockSubscriptionListenerTwo(new MockSubscriptionListenerTwoTypes<types::Localisation::QtGpsLocation, double>()),
-        gpsLocation1(1.1, 2.2, 3.3, types::Localisation::QtGpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444),
+        gpsLocation1(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444),
         speed1(100),
         qos(2000),
         providerParticipantId("providerParticipantId"),
@@ -88,7 +88,7 @@ protected:
     std::shared_ptr<MockSubscriptionListenerOneType<types::Localisation::QtGpsLocation> > mockSubscriptionListenerOne;
     std::shared_ptr<MockSubscriptionListenerTwoTypes<types::Localisation::QtGpsLocation, double> > mockSubscriptionListenerTwo;
 
-    types::Localisation::QtGpsLocation gpsLocation1;
+    types::Localisation::GpsLocation gpsLocation1;
     double speed1;
 
     // create test data
@@ -131,8 +131,8 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
     //construct a reply containing a QtGpsLocation
     SubscriptionPublication subscriptionPublication;
     subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId().toStdString());
-    QList<QVariant> response;
-    response.append(QVariant::fromValue(gpsLocation1));
+    std::vector<Variant> response;
+    response.push_back(Variant::make<types::Localisation::GpsLocation>(gpsLocation1));
     subscriptionPublication.setResponse(response);
 
     std::shared_ptr<SubscriptionCallback<types::Localisation::QtGpsLocation>> subscriptionCallback(
@@ -186,9 +186,9 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters )
     //construct a reply containing a QtGpsLocation
     SubscriptionPublication subscriptionPublication;
     subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId().toStdString());
-    QList<QVariant> response;
-    response.append(QVariant::fromValue(gpsLocation1));
-    response.append(QVariant::fromValue(speed1));
+    std::vector<Variant> response;
+    response.push_back(Variant::make<types::Localisation::GpsLocation>(gpsLocation1));
+    response.push_back(Variant::make<double>(speed1));
     subscriptionPublication.setResponse(response);
 
     std::shared_ptr<SubscriptionCallback<types::Localisation::QtGpsLocation, double>> subscriptionCallback(

@@ -25,14 +25,16 @@
 template <typename K, typename V>
 class QMap;
 
-class QVariant;
 class QString;
 #include <string>
+#include <vector>
 
 typedef QMap<QString, QVariant> QVariantMap;
 
 namespace joynr
 {
+
+class Variant;
 
 /**
   * \class IBroadcastFilter
@@ -48,7 +50,7 @@ public:
     {
     }
 
-    virtual bool filter(const QList<QVariant>& eventValues,
+    virtual bool filter(const std::vector<Variant>& eventValues,
                         const BroadcastFilterParameters& filterParameters) = 0;
 
     const std::string& getName()

@@ -19,7 +19,6 @@ package io.joynr.generator.cpp.communicationmodel
 
 import com.google.inject.Inject
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
-import io.joynr.generator.cpp.util.QtTypeUtil
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
@@ -30,14 +29,16 @@ import io.joynr.generator.templates.util.NamingUtil
 import java.util.HashSet
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FType
+import io.joynr.generator.cpp.util.CppStdTypeUtil
 
 class InterfaceCppTemplate implements InterfaceTemplate{
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
 
+	
 	@Inject
-	private extension QtTypeUtil
+	private extension CppStdTypeUtil
 
 	@Inject
 	private extension NamingUtil
@@ -89,13 +90,10 @@ I«interfaceName»Base::I«interfaceName»Base()
 		// Register metatype «datatype.typeName»
 		«IF isEnum(datatype)»
 		{
-			«registerMetatypeStatement(datatype.typeNameOfContainingClass)»
-			int id = «registerMetatypeStatement(datatype.typeName)»
 			registrar.registerEnumMetaType<«datatype.typeNameOfContainingClass»>();
-			QJson::Serializer::registerEnum(id, «datatype.typeNameOfContainingClass»::staticMetaObject.enumerator(0));
 		}
 		«ELSE»
-			«registerMetatypeStatement(datatype.typeName)»
+«««			«registerMetatypeStatement(datatype.typeName)»
 			registrar.registerMetaType<«datatype.typeName»>();
 		«ENDIF»
 	«ENDFOR»

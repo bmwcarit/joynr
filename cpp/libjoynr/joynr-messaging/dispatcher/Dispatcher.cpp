@@ -170,12 +170,12 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
     std::string requestReplyId = request->getRequestReplyId();
     JoynrTimePoint requestExpiryDate = message.getHeaderExpiryDate();
 
-    std::function<void(const QList<QVariant>&)> onSuccess =
+    std::function<void(const std::vector<Variant>&)> onSuccess =
             [requestReplyId, requestExpiryDate, this, senderId, receiverId](
-                    const QList<QVariant>& returnValueQVar) {
+                    const std::vector<Variant>& returnValueVar) {
         Reply reply;
         reply.setRequestReplyId(requestReplyId);
-        reply.setResponse(returnValueQVar);
+        reply.setResponse(returnValueVar);
         // send reply back to the original sender (ie. sender and receiver ids are reversed
         // on
         // purpose)

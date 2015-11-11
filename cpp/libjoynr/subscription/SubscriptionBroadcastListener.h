@@ -24,6 +24,9 @@
 
 #include <QString>
 #include <memory>
+#include <vector>
+
+#include "joynr/Variant.h"
 
 namespace joynr
 {
@@ -44,7 +47,7 @@ public:
                                   PublicationManager& publicationManager);
 
     // Implementation of IBroadcastListener::receive
-    void broadcastOccurred(const QList<QVariant>& values,
+    void broadcastOccurred(const std::vector<Variant>& values,
                            const QList<std::shared_ptr<IBroadcastFilter>>& filters);
 
 private:

@@ -784,7 +784,7 @@ void PublicationManager::removePublicationEndRunnable(std::shared_ptr<Publicatio
 
 // This function assumes that a read lock is already held
 bool PublicationManager::processFilterChain(const QString& subscriptionId,
-                                            const QList<QVariant>& broadcastValues,
+                                            const std::vector<Variant>& broadcastValues,
                                             const QList<std::shared_ptr<IBroadcastFilter>>& filters)
 {
     bool success = true;
@@ -823,7 +823,7 @@ void PublicationManager::sendPublicationError(
 {
     LOG_DEBUG(logger, "sending subscription error");
     SubscriptionPublication subscriptionPublication;
-    subscriptionPublication.setSubscriptionId(request->getSubscriptionId());
+    subscriptionPublication.setSubscriptionId(request->getSubscriptionId().toStdString());
     std::shared_ptr<exceptions::JoynrRuntimeException> error;
     error.reset(dynamic_cast<exceptions::JoynrRuntimeException*>(exception.clone()));
     if (error) {
@@ -874,7 +874,7 @@ void PublicationManager::sendPublication(
         std::shared_ptr<Publication> publication,
         std::shared_ptr<SubscriptionInformation> subscriptionInformation,
         std::shared_ptr<SubscriptionRequest> request,
-        const QList<QVariant>& value)
+        const std::vector<Variant>& value)
 {
     LOG_DEBUG(logger, "sending subscription reply");
     SubscriptionPublication subscriptionPublication;
@@ -941,9 +941,9 @@ void PublicationManager::pollSubscription(const QString& subscriptionId)
                 InterfaceRegistrar::instance().getRequestInterpreter(
                         requestCaller->getInterfaceName()));
 
-        std::function<void(const QList<QVariant>&)> onSuccess =
+        std::function<void(const std::vector<Variant>&)> onSuccess =
                 [publication, publicationInterval, qos, subscriptionRequest, this, subscriptionId](
-                        const QList<QVariant>& response) {
+                        const std::vector<Variant>& response) {
             sendPublication(publication, subscriptionRequest, subscriptionRequest, response);
 
             // Reschedule the next poll
@@ -1004,7 +1004,7 @@ void PublicationManager::removePublication(const QString& subscriptionId)
     }
 }
 
-void PublicationManager::attributeValueChanged(const QString& subscriptionId, const QVariant& value)
+void PublicationManager::attributeValueChanged(const QString& subscriptionId, const Variant& value)
 {
     LOG_DEBUG(logger,
               QString("attributeValueChanged for onChange subscription %1").arg(subscriptionId));
@@ -1036,8 +1036,8 @@ void PublicationManager::attributeValueChanged(const QString& subscriptionId, co
 
             if (timeUntilNextPublication == 0) {
                 // Send the publication
-                QList<QVariant> values;
-                values.append(value);
+                std::vector<Variant> values;
+                values.push_back(value);
                 sendPublication(publication, subscriptionRequest, subscriptionRequest, values);
             } else {
                 reschedulePublication(subscriptionId, timeUntilNextPublication);
@@ -1047,7 +1047,7 @@ void PublicationManager::attributeValueChanged(const QString& subscriptionId, co
 }
 
 void PublicationManager::broadcastOccurred(const QString& subscriptionId,
-                                           const QList<QVariant>& values,
+                                           const std::vector<Variant>& values,
                                            const QList<std::shared_ptr<IBroadcastFilter>>& filters)
 {
     LOG_DEBUG(logger,

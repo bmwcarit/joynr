@@ -32,6 +32,9 @@
 #include <QReadWriteLock>
 #include <QThreadPool>
 #include <memory>
+#include <vector>
+
+#include "joynr/Variant.h"
 
 namespace joynr
 {
@@ -142,7 +145,7 @@ public:
       * @param subscriptionId A subscription that was listening on the attribute
       * @param value The new attribute value
       */
-    virtual void attributeValueChanged(const QString& subscriptionId, const QVariant& value);
+    virtual void attributeValueChanged(const QString& subscriptionId, const Variant& value);
 
     /**
       * @brief Publishes an broadcast publication message when a broadcast occurs
@@ -152,7 +155,7 @@ public:
       * @param values The new broadcast values
       */
     virtual void broadcastOccurred(const QString& subscriptionId,
-                                   const QList<QVariant>& values,
+                                   const std::vector<Variant>& values,
                                    const QList<std::shared_ptr<IBroadcastFilter>>& filters);
 
 private:
@@ -264,7 +267,7 @@ private:
     void sendPublication(std::shared_ptr<Publication> publication,
                          std::shared_ptr<SubscriptionInformation> subscriptionInformation,
                          std::shared_ptr<SubscriptionRequest> subscriptionRequest,
-                         const QList<QVariant>& value);
+                         const std::vector<Variant>& value);
     void sendSubscriptionPublication(
             std::shared_ptr<Publication> publication,
             std::shared_ptr<SubscriptionInformation> subscriptionInformation,
@@ -296,7 +299,7 @@ private:
     void removePublicationEndRunnable(std::shared_ptr<Publication> publication);
 
     bool processFilterChain(const QString& subscriptionId,
-                            const QList<QVariant>& broadcastValues,
+                            const std::vector<Variant>& broadcastValues,
                             const QList<std::shared_ptr<IBroadcastFilter>>& filters);
 };
 

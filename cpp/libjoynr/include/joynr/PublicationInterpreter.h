@@ -53,8 +53,8 @@ public:
             return;
         }
 
-        QList<QVariant> response = subscriptionPublication.getResponse();
-        if (response.isEmpty()) {
+        std::vector<Variant> response = subscriptionPublication.getResponse();
+        if (response.empty()) {
             LOG_ERROR(logger, QString("Publication object has no response, discarding message"));
             exceptions::JoynrRuntimeException error(
                     "Publication object had no response, discarded message");
@@ -102,7 +102,7 @@ public:
             return;
         }
 
-        if (subscriptionPublication.getResponse().isEmpty()) {
+        if (subscriptionPublication.getResponse().empty()) {
             LOG_ERROR(logger, QString("Publication object has no response, discarding message"));
             exceptions::JoynrRuntimeException error(
                     "Publication object had no response, discarded message");
@@ -111,7 +111,7 @@ public:
         }
 
         typename T::Enum value =
-                Util::convertVariantToEnum<T>(subscriptionPublication.getResponse().first());
+                Util::convertVariantToEnum<T>(subscriptionPublication.getResponse().front());
 
         std::shared_ptr<SubscriptionCallback<typename T::Enum>> typedCallbackQsp =
                 std::dynamic_pointer_cast<SubscriptionCallback<typename T::Enum>>(callback);
@@ -149,8 +149,8 @@ public:
             return;
         }
 
-        QList<QVariant> qvList = subscriptionPublication.getResponse();
-        if (qvList.isEmpty()) {
+        std::vector<Variant> qvList = subscriptionPublication.getResponse();
+        if (qvList.empty()) {
             LOG_ERROR(logger, QString("Publication object has no response, discarding message"));
             exceptions::JoynrRuntimeException error(
                     "Publication object had no response, discarded message");
@@ -158,9 +158,10 @@ public:
             return;
         }
 
-        std::shared_ptr<SubscriptionCallback<QList<typename T::Enum>>> typedCallbackQsp =
-                std::dynamic_pointer_cast<SubscriptionCallback<QList<typename T::Enum>>>(callback);
-        QList<typename T::Enum> valueList = Util::convertVariantListToEnumList<T>(qvList);
+        std::shared_ptr<SubscriptionCallback<std::vector<typename T::Enum>>> typedCallbackQsp =
+                std::dynamic_pointer_cast<SubscriptionCallback<std::vector<typename T::Enum>>>(
+                        callback);
+        std::vector<typename T::Enum> valueList = Util::convertVariantVectorToEnumVector<T>(qvList);
 
         // value is copied in onSuccess
         typedCallbackQsp->onSuccess(valueList);

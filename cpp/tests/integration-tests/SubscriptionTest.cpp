@@ -68,7 +68,7 @@ public:
                 [] (const RequestStatus status, std::shared_ptr<exceptions::JoynrException> error){
                 })),
         mockGpsLocationListener(new MockSubscriptionListenerOneType<types::Localisation::QtGpsLocation>()),
-        mockTestEnumSubscriptionListener(new MockSubscriptionListenerOneType<tests::testTypes::QtTestEnum::Enum>()),
+        mockTestEnumSubscriptionListener(new MockSubscriptionListenerOneType<tests::testTypes::TestEnum::Enum>()),
         gpsLocation1(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444),
         qos(2000),
         providerParticipantId("providerParticipantId"),
@@ -92,7 +92,7 @@ public:
         dispatcher.registerSubscriptionManager(subscriptionManager);
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
         MetaTypeRegistrar::instance().registerMetaType<types::Localisation::QtGpsLocation>();
-        MetaTypeRegistrar::instance().registerEnumMetaType<joynr::tests::testTypes::QtTestEnum>();
+        MetaTypeRegistrar::instance().registerEnumMetaType<joynr::tests::testTypes::TestEnum>();
     }
 
     void TearDown(){
@@ -106,7 +106,7 @@ protected:
     std::shared_ptr<MockTestRequestCaller> mockRequestCaller;
     std::shared_ptr<MockReplyCaller<types::Localisation::QtGpsLocation> > mockReplyCaller;
     std::shared_ptr<MockSubscriptionListenerOneType<types::Localisation::QtGpsLocation> > mockGpsLocationListener;
-    std::shared_ptr<MockSubscriptionListenerOneType<tests::testTypes::QtTestEnum::Enum> > mockTestEnumSubscriptionListener;
+    std::shared_ptr<MockSubscriptionListenerOneType<tests::testTypes::TestEnum::Enum> > mockTestEnumSubscriptionListener;
 
     types::Localisation::GpsLocation gpsLocation1;
 
@@ -203,8 +203,8 @@ TEST_F(SubscriptionTest, receive_publication ) {
     //construct a reply containing a QtGpsLocation
     SubscriptionPublication subscriptionPublication;
     subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId().toStdString());
-    QList<QVariant> response;
-    response.append(QVariant::fromValue(types::Localisation::QtGpsLocation::createQt(gpsLocation1)));
+    std::vector<Variant> response;
+    response.push_back(Variant::make<types::Localisation::GpsLocation>(gpsLocation1));
     subscriptionPublication.setResponse(response);
 
     std::shared_ptr<SubscriptionCallback<types::Localisation::QtGpsLocation>> subscriptionCallback(
@@ -246,7 +246,7 @@ TEST_F(SubscriptionTest, receive_enumPublication ) {
 
     // Use a semaphore to count and wait on calls to the mockTestEnumSubscriptionListener
     QSemaphore semaphore(0);
-    EXPECT_CALL(*mockTestEnumSubscriptionListener, onReceive(A<const joynr::tests::testTypes::QtTestEnum::Enum&>()))
+    EXPECT_CALL(*mockTestEnumSubscriptionListener, onReceive(A<const joynr::tests::testTypes::TestEnum::Enum&>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     //register the subscription on the consumer side
@@ -261,13 +261,13 @@ TEST_F(SubscriptionTest, receive_enumPublication ) {
     SubscriptionRequest subscriptionRequest;
     //construct a reply containing a QtGpsLocation
     SubscriptionPublication subscriptionPublication;
-    subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    QList<QVariant> response;
-    response.append(QVariant::fromValue(joynr::tests::testTypes::QtTestEnum::createQt(tests::testTypes::TestEnum::ZERO)));
+    subscriptionPublication.setSubscriptionId(TypeUtil::toStd(subscriptionRequest.getSubscriptionId()));
+    std::vector<Variant> response;
+    response.push_back(Variant::make<joynr::tests::testTypes::TestEnum::Enum>(tests::testTypes::TestEnum::ZERO));
     subscriptionPublication.setResponse(response);
 
-    std::shared_ptr<SubscriptionCallback<joynr::tests::testTypes::QtTestEnum::Enum>> subscriptionCallback(
-            new SubscriptionCallback<joynr::tests::testTypes::QtTestEnum::Enum>(mockTestEnumSubscriptionListener));
+    std::shared_ptr<SubscriptionCallback<joynr::tests::testTypes::TestEnum::Enum>> subscriptionCallback(
+            new SubscriptionCallback<joynr::tests::testTypes::TestEnum::Enum>(mockTestEnumSubscriptionListener));
 
 
     // subscriptionRequest is an out param

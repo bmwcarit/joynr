@@ -28,6 +28,7 @@ namespace joynr
 {
 
 class PublicationManager;
+class Variant;
 
 /**
  * An attribute listener used for onChange subscriptions
@@ -42,7 +43,7 @@ public:
                                   PublicationManager& publicationManager);
 
     // Implementation of IAttributeListener::attributeValueChanged
-    void attributeValueChanged(const QVariant& value);
+    void attributeValueChanged(const Variant& value);
 
 private:
     QString subscriptionId;

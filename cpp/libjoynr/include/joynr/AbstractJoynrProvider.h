@@ -108,14 +108,14 @@ protected:
      * @param attributeName The name of the attribute whose value changes
      * @param value The new value of the attribute
      */
-    void onAttributeValueChanged(const std::string& attributeName, const QVariant& value);
+    void onAttributeValueChanged(const std::string& attributeName, const Variant& value);
 
     /**
      * @brief Called by subclasses when a broadcast occurs
      * @param broadcastName The name of the broadcast that occurred
      * @param values The output values of the broadcast
      */
-    void fireBroadcast(const std::string& broadcastName, const QList<QVariant>& values);
+    void fireBroadcast(const std::string& broadcastName, const std::vector<Variant>& values);
 
     /** @brief The provider quality settings */
     types::ProviderQos providerQos;
