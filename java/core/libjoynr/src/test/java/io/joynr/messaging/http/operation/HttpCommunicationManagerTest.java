@@ -147,7 +147,7 @@ public class HttpCommunicationManagerTest {
         });
 
         synchronized (waitForChannelCreated) {
-            waitForChannelCreated.wait();
+            waitForChannelCreated.wait(5000);
         }
 
         // post to the channel to see if it exists
