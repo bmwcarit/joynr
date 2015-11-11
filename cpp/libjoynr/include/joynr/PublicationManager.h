@@ -21,6 +21,7 @@
 #include "joynr/PrivateCopyAssign.h"
 
 #include "joynr/JoynrExport.h"
+#include "joynr/SubscriptionPublication.h"
 
 #include "joynr/joynrlogging.h"
 
@@ -264,6 +265,11 @@ private:
                          std::shared_ptr<SubscriptionInformation> subscriptionInformation,
                          std::shared_ptr<SubscriptionRequest> subscriptionRequest,
                          const QList<QVariant>& value);
+    void sendSubscriptionPublication(
+            std::shared_ptr<Publication> publication,
+            std::shared_ptr<SubscriptionInformation> subscriptionInformation,
+            std::shared_ptr<SubscriptionRequest> request,
+            SubscriptionPublication& subscriptionPublication);
     void sendPublicationError(std::shared_ptr<Publication> publication,
                               std::shared_ptr<SubscriptionInformation> subscriptionInformation,
                               std::shared_ptr<SubscriptionRequest> subscriptionRequest,
