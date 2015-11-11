@@ -53,9 +53,9 @@ public:
 
     /**
       * Converts an enum value to the corresponding name of the value.
-      * \param T, the qt class that defines the enum, e.g. QProcess
-      * \param enumName, the name of the enum, e.g. ProcessError (defined in QProcess)
-      * \param value, the int value to convert
+      * \tparam T the qt class that defines the enum, e.g. QProcess
+      * \param enumName the name of the enum, e.g. ProcessError (defined in QProcess)
+      * \param value the int value to convert
       */
     template <class T>
     static QString convertEnumValueToString(const char* enumName, int value)
@@ -67,8 +67,8 @@ public:
 
     /**
       * Converts an enum value to a QVariant for use by the serializer
-      * \param T, the qt class that surrounds the enum
-      * \param value, the enum value to convert
+      * \tparam T the qt class that surrounds the enum
+      * \param value the enum value to convert
       */
     template <class T>
     static QVariant convertEnumToVariant(typename T::Enum value)

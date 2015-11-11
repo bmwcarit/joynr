@@ -47,10 +47,10 @@ namespace joynr
   * entry will be removed automatically after this time. The methods are thread-safe.
   *
   * This template can be used on libJoynr and ClusterController sides:
-  *     MessagingEndpointDirectory,         CC
-  *     ParticipantDirectory,               CC
-  *     <Middleware>RequestCallerDirectory, libjoynr
-  *     ReplyCallerDirectory,               libjoynr
+  *     MessagingEndpointDirectory,           CC
+  *     ParticipantDirectory,                 CC
+  *     \<Middleware\>RequestCallerDirectory, libjoynr
+  *     ReplyCallerDirectory,                 libjoynr
   */
 
 template <typename Key, typename T>

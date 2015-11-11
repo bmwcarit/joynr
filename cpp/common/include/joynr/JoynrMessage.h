@@ -152,7 +152,7 @@ public:
      * value is replaced with the new one. Use JoynrMessage::containsHeaderContentType() to check
      * whether the header is
      * already set or not.
-     * @param to the "content type" header to be set on the message.
+     * @param contentType the "content type" header to be set on the message.
      * @see JoynrMessage::HEADER_CONTENT_TYPE()
      */
     void setHeaderContentType(const std::string& contentType);
@@ -178,7 +178,7 @@ public:
      * value is replaced with the new one. Use JoynrMessage::containsHeaderMessageId() to check
      * whether the header is
      * already set or not.
-     * @param to the "message ID" header to be set on the message.
+     * @param msgId the "message ID" header to be set on the message.
      * @see JoynrMessage::HEADER_MESSAGE_ID()
      */
     void setHeaderMessageId(const std::string& msgId);
@@ -252,7 +252,7 @@ public:
      * value is replaced with the new one. Use JoynrMessage::containsHeaderFrom() to check whether
      * the header is
      * already set or not.
-     * @param to the "from" header to be set on the message.
+     * @param from the "from" header to be set on the message.
      * @see JoynrMessage::HEADER_FROM()
      */
     void setHeaderFrom(const std::string& from);
@@ -279,7 +279,7 @@ public:
      * value is replaced with the new one. Use JoynrMessage::containsHeaderExpiryDate() to check
      * whether the header is
      * already set or not.
-     * @param to the "expiry date" header to be set on the message.
+     * @param expiryDate the "expiry date" header to be set on the message.
      * @see JoynrMessage::HEADER_EXPIRY_DATE()
      */
     void setHeaderExpiryDate(const JoynrTimePoint& expiryDate);
@@ -306,7 +306,7 @@ public:
      * value is replaced with the new one. Use JoynrMessage::containsHeaderReplyChannelId() to check
      * whether the header is
      * already set or not.
-     * @param to the "reply channel ID" header to be set on the message.
+     * @param replyChannelId the "reply channel ID" header to be set on the message.
      * @see JoynrMessage::HEADER_REPLY_CHANNEL_ID()
      */
     void setHeaderReplyChannelId(const std::string& replyChannelId);
