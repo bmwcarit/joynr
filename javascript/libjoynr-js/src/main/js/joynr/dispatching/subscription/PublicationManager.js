@@ -972,21 +972,6 @@ define(
                             //(not (is not a number)) ...
                             var period = getPeriod(subscriptionInfo);
 
-                            if (!isNaN(period)) {
-                                if (period < MIN_PUBLICATION_INTERVAL) {
-                                    log.error("SubscriptionRequest error: period: "
-                                        + period
-                                        + "is smaller than MIN_PUBLICATION_INTERVAL: "
-                                        + MIN_PUBLICATION_INTERVAL);
-                                    // TODO: proper error handling when maxInterval is smaller than
-                                    // MIN_PUBLICATION_INTERVAL
-                                } else {
-                                    // call the get method on the provider at the set interval
-                                    subscriptionInfo.subscriptionInterval =
-                                            triggerPublicationTimer(subscriptionInfo, period);
-                                }
-                            }
-
                             // save subscriptionInfo to subscriptionId => subscription and
                             // ProviderEvent => subscription map
                             subscriptionInfos[subscriptionId] = subscriptionInfo;
