@@ -46,6 +46,13 @@ public:
     {
         assert(callback);
 
+        std::shared_ptr<exceptions::JoynrRuntimeException> error =
+                subscriptionPublication.getError();
+        if (error) {
+            callback->onError(*error);
+            return;
+        }
+
         QList<QVariant> response = subscriptionPublication.getResponse();
         if (response.isEmpty()) {
             LOG_ERROR(logger, QString("Publication object has no response, discarding message"));
@@ -88,6 +95,13 @@ public:
     {
         assert(callback);
 
+        std::shared_ptr<exceptions::JoynrRuntimeException> error =
+                subscriptionPublication.getError();
+        if (error) {
+            callback->onError(*error);
+            return;
+        }
+
         if (subscriptionPublication.getResponse().isEmpty()) {
             LOG_ERROR(logger, QString("Publication object has no response, discarding message"));
             exceptions::JoynrRuntimeException error(
@@ -127,6 +141,13 @@ public:
                  const SubscriptionPublication& subscriptionPublication)
     {
         assert(callback);
+
+        std::shared_ptr<exceptions::JoynrRuntimeException> error =
+                subscriptionPublication.getError();
+        if (error) {
+            callback->onError(*error);
+            return;
+        }
 
         QList<QVariant> qvList = subscriptionPublication.getResponse();
         if (qvList.isEmpty()) {
