@@ -34,10 +34,10 @@ class JavaTypeUtil extends AbstractTypeUtil {
 		primitiveDataTypeDefaultValue.put(FBasicTypeId::INT64, "0L");
 		primitiveDataTypeDefaultValue.put(FBasicTypeId::UINT64, "0l");
 		//see bug JOYN-1521: floats are interpreted as double
-		primitiveDataTypeDefaultValue.put(FBasicTypeId::FLOAT, "0d");
+		primitiveDataTypeDefaultValue.put(FBasicTypeId::FLOAT, "0f");
 		primitiveDataTypeDefaultValue.put(FBasicTypeId::DOUBLE, "0d");
 		primitiveDataTypeDefaultValue.put(FBasicTypeId::STRING, "\"\"");
-		primitiveDataTypeDefaultValue.put(FBasicTypeId::BYTE_BUFFER, "new byte[0]");
+		primitiveDataTypeDefaultValue.put(FBasicTypeId::BYTE_BUFFER, "new Byte[0]");
 		primitiveDataTypeDefaultValue.put(FBasicTypeId::UNDEFINED,"");
 
 		primitiveDataTypeDefaultMap = Collections::unmodifiableMap(primitiveDataTypeDefaultValue);
@@ -142,16 +142,16 @@ class JavaTypeUtil extends AbstractTypeUtil {
 			case FBasicTypeId::BOOLEAN: "Boolean"
 			case FBasicTypeId::INT8: "Byte"
 			case FBasicTypeId::UINT8: "Byte"
-			case FBasicTypeId::INT16: "Integer"
-			case FBasicTypeId::UINT16: "Integer"
+			case FBasicTypeId::INT16: "Short"
+			case FBasicTypeId::UINT16: "Short"
 			case FBasicTypeId::INT32: "Integer"
 			case FBasicTypeId::UINT32: "Integer"
 			case FBasicTypeId::INT64: "Long"
 			case FBasicTypeId::UINT64: "Long"
-			case FBasicTypeId::FLOAT: "Double"
+			case FBasicTypeId::FLOAT: "Float"
 			case FBasicTypeId::DOUBLE: "Double"
 			case FBasicTypeId::STRING: "String"
-			case FBasicTypeId::BYTE_BUFFER: "byte[]"
+			case FBasicTypeId::BYTE_BUFFER: "Byte[]"
 			default: throw new IllegalArgumentException("Unsupported basic type: " + datatype.joynrName)
 		}
 	}

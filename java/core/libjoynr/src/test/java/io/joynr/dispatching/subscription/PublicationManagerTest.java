@@ -557,12 +557,12 @@ public class PublicationManagerTest {
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
 
         GpsLocation location = new GpsLocation(1.0, 2.0, 3.0, GpsFixEnum.MODE2D, 4.0, 5.0, 6.0, 7.0, 9l, 10l, 11);
-        double speed = 100;
+        float speed = 100;
 
         ArrayList<BroadcastFilter> filters = new ArrayList<BroadcastFilter>();
         testLocationUpdateWithSpeedSelectiveBroadcastFilter filterTrue = mock(testLocationUpdateWithSpeedSelectiveBroadcastFilter.class);
         when(filterTrue.filter(any(GpsLocation.class),
-                               any(Double.class),
+                               any(Float.class),
                                any(testBroadcastInterface.LocationUpdateWithSpeedSelectiveBroadcastFilterParameters.class))).thenReturn(true);
         filters.add(filterTrue);
 

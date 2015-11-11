@@ -682,7 +682,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
                                                         8L,
                                                         9L,
                                                         10);
-        final Double currentSpeed = Double.MAX_VALUE;
+        final Float currentSpeed = Float.MAX_VALUE;
 
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
@@ -695,7 +695,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         proxy.subscribeToLocationUpdateWithSpeedBroadcast(new LocationUpdateWithSpeedBroadcastAdapter() {
 
             @Override
-            public void onReceive(GpsLocation receivedGpsLocation, Double receivedCurrentSpeed) {
+            public void onReceive(GpsLocation receivedGpsLocation, Float receivedCurrentSpeed) {
                 assertEquals(gpsLocation, receivedGpsLocation);
                 assertEquals(currentSpeed, receivedCurrentSpeed);
                 broadcastReceived.release();
