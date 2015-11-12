@@ -216,10 +216,10 @@ define(
                 }
 
                 /**
-                 * @name PublicationManager#preparePublication
+                 * @name PublicationManager#prepareAttributePublication
                  * @private
                  */
-                function preparePublication(subscriptionInfo, value, timer) {
+                function prepareAttributePublication(subscriptionInfo, value, timer) {
                     var timeSinceLastPublication = Date.now() - subscriptionInfo.lastPublication;
                     if (subscriptionInfo.qos.minInterval === undefined
                         || timeSinceLastPublication >= subscriptionInfo.qos.minInterval) {
@@ -292,7 +292,7 @@ define(
                             }
                             getAttributeValue(subscriptionInfo).then(
                                 function(value) {
-                                    preparePublication(
+                                    prepareAttributePublication(
                                         subscriptionInfo,
                                         value,
                                         triggerPublicationTimer);
@@ -401,7 +401,7 @@ define(
                             var subscriptionInfo = subscriptions[subscriptionId];
                             if (subscriptionInfo.qos.minInterval !== undefined
                                 && subscriptionInfo.qos.minInterval > 0) {
-                                preparePublication(subscriptionInfo, value, triggerPublicationTimer);
+                                prepareAttributePublication(subscriptionInfo, value, triggerPublicationTimer);
                             }
                         }
                     }
@@ -875,7 +875,7 @@ define(
                             // publish value immediately
                             getAttributeValue(subscriptionInfo).then(
                                 function(value) {
-                                    preparePublication(
+                                    prepareAttributePublication(
                                         subscriptionInfo,
                                             value,
                                             triggerPublicationTimer);
