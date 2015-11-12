@@ -1,5 +1,7 @@
 package joynr;
 
+import io.joynr.pubsub.SubscriptionQos;
+
 /*
  * #%L
  * %%
@@ -79,4 +81,12 @@ public class BroadcastSubscriptionRequest extends SubscriptionRequest {
         return true;
     }
 
+    @Override
+    public void setQos(SubscriptionQos qos) {
+        if (!(qos instanceof OnChangeSubscriptionQos)) {
+            throw new IllegalArgumentException("Qos of broadcast subsription is expected of type "
+                    + OnChangeSubscriptionQos.class.getSimpleName());
+        }
+        super.setQos(qos);
+    }
 }

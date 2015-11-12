@@ -235,6 +235,7 @@ public class PublicationManagerImpl implements PublicationManager, CallerDirecto
                                                     BroadcastSubscriptionRequest subscriptionRequest,
                                                     RequestCaller requestCaller) {
         logger.info("adding broadcast publication: " + subscriptionRequest.toString());
+
         BroadcastListener broadcastListener = new BroadcastListenerImpl(subscriptionRequest.getSubscriptionId(), this);
         String broadcastName = subscriptionRequest.getSubscribedToName();
         requestCaller.registerBroadcastListener(broadcastName, broadcastListener);
@@ -499,9 +500,18 @@ public class PublicationManagerImpl implements PublicationManager, CallerDirecto
             PublicationInformation publicationInformation = subscriptionId2PublicationInformation.get(subscriptionId);
 
             if (processFilterChain(publicationInformation, filters, values)) {
-                sendPublication(prepareBroadcastPublication(Arrays.asList(values), subscriptionId),
-                                publicationInformation);
-                logger.info("event occured changed for subscription id: {} sending publication: ", subscriptionId);
+                long minInterval = ((OnChangeSubscriptionQos) publicationInformation.getQos()).getMinInterval();
+                if (minInterval <= System.currentTimeMillis()
+                        - publicationInformation.getState().getTimeOfLastPublication()) {
+                    sendPublication(prepareBroadcastPublication(Arrays.asList(values), subscriptionId),
+                                    publicationInformation);
+                    logger.debug("event occured changed for subscription id: {} sending publication: ", subscriptionId);
+                } else {
+                    logger.debug("Two subsequent broadcasts of event " + publicationInformation.getSubscribedToName()
+                            + " occured within minInterval of subscription with id "
+                            + publicationInformation.getSubscriptionId()
+                            + ". Event will not be sent to the subscribing client.");
+                }
             }
 
         } else {
