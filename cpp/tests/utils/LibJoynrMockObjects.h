@@ -76,20 +76,20 @@ public:
         joynr::tests::DefaulttestProvider()
     {
         EXPECT_CALL(*this, getLocation(_))
-                .WillRepeatedly(testing::Invoke(this, &MockTestProvider::invokeOnSuccess));
+                .WillRepeatedly(testing::Invoke(this, &MockTestProvider::invokeLocationOnSuccess));
     }
     MockTestProvider(joynr::types::ProviderQos qos) :
         DefaulttestProvider()
     {
         providerQos = qos;
         EXPECT_CALL(*this, getLocation(_))
-                .WillRepeatedly(testing::Invoke(this, &MockTestProvider::invokeOnSuccess));
+                .WillRepeatedly(testing::Invoke(this, &MockTestProvider::invokeLocationOnSuccess));
     }
     ~MockTestProvider()
     {
     };
 
-    void invokeOnSuccess(std::function<void(const joynr::types::Localisation::GpsLocation&)> onSuccess) {
+    void invokeLocationOnSuccess(std::function<void(const joynr::types::Localisation::GpsLocation&)> onSuccess) {
         joynr::types::Localisation::GpsLocation location;
         onSuccess(location);
     }

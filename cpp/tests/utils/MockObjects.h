@@ -493,7 +493,7 @@ class MockGpsProvider : public joynr::vehicle::DefaultGpsProvider
 
 class MockTestRequestCaller : public joynr::tests::testRequestCaller {
 public:
-    void invokeOnSuccessFct(std::function<void(const joynr::types::Localisation::GpsLocation&)> onSuccess,
+    void invokeLocationOnSuccessFct(std::function<void(const joynr::types::Localisation::GpsLocation&)> onSuccess,
                             std::function<void(const joynr::JoynrException&)> onError) {
         joynr::types::Localisation::GpsLocation location;
         onSuccess(location);
@@ -506,7 +506,7 @@ public:
                 *this,
                 getLocation(_,_)
         )
-                .WillRepeatedly(testing::Invoke(this, &MockTestRequestCaller::invokeOnSuccessFct));
+                .WillRepeatedly(testing::Invoke(this, &MockTestRequestCaller::invokeLocationOnSuccessFct));
     }
     MockTestRequestCaller(testing::Cardinality getLocationCardinality) :
             joynr::tests::testRequestCaller(std::make_shared<MockTestProvider>())
@@ -516,7 +516,7 @@ public:
                 getLocation(_,_)
         )
                 .Times(getLocationCardinality)
-                .WillRepeatedly(testing::Invoke(this, &MockTestRequestCaller::invokeOnSuccessFct));
+                .WillRepeatedly(testing::Invoke(this, &MockTestRequestCaller::invokeLocationOnSuccessFct));
     }
     MOCK_METHOD2(getLocation,
                  void(std::function<void(const joynr::types::Localisation::GpsLocation& location)>,

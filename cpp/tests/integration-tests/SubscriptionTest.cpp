@@ -138,7 +138,7 @@ TEST_F(SubscriptionTest, receive_subscriptionRequestAndPollAttribute) {
     EXPECT_CALL(*mockRequestCaller, getLocation(_,_))
             .WillRepeatedly(
                 DoAll(
-                    Invoke(mockRequestCaller.get(), &MockTestRequestCaller::invokeOnSuccessFct),
+                    Invoke(mockRequestCaller.get(), &MockTestRequestCaller::invokeLocationOnSuccessFct),
                     ReleaseSemaphore(&semaphore)));
 
     QString attributeName = "Location";
@@ -305,7 +305,7 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription) {
                         A<std::function<void(const joynr::JoynrException&)>>())
     )
             .WillOnce(DoAll(
-                    Invoke(mockRequestCaller.get(), &MockTestRequestCaller::invokeOnSuccessFct),
+                    Invoke(mockRequestCaller.get(), &MockTestRequestCaller::invokeLocationOnSuccessFct),
                     ReleaseSemaphore(&semaphore)
             ));
     QString attributeName = "Location";
@@ -351,7 +351,7 @@ TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications) {
     EXPECT_CALL(*mockRequestCaller, getLocation(_,_))
             .WillRepeatedly(
                 DoAll(
-                    Invoke(mockRequestCaller.get(), &MockTestRequestCaller::invokeOnSuccessFct),
+                    Invoke(mockRequestCaller.get(), &MockTestRequestCaller::invokeLocationOnSuccessFct),
                     ReleaseSemaphore(&semaphore)));
 
     dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
@@ -398,7 +398,7 @@ TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
     EXPECT_CALL(*mockRequestCaller, getLocation(_,_))
             .WillRepeatedly(
                 DoAll(
-                    Invoke(mockRequestCaller.get(), &MockTestRequestCaller::invokeOnSuccessFct),
+                    Invoke(mockRequestCaller.get(), &MockTestRequestCaller::invokeLocationOnSuccessFct),
                     ReleaseSemaphore(&semaphore)));
 
     dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
