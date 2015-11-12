@@ -33,9 +33,7 @@ public class PubSubState {
     }
 
     public PubSubState() {
-        this.interrupted = false;
-        this.stopped = false;
-        this.timeOfLastPublication = 0;
+        this(false, false, 0);
     }
 
     public boolean isInterrupted() {
@@ -64,10 +62,6 @@ public class PubSubState {
 
     public long getTimeOfLastPublication() {
         return timeOfLastPublication;
-    }
-
-    public void setTimeOfLastPublication(long timeOfLastPublication) {
-        this.timeOfLastPublication = timeOfLastPublication;
     }
 
     public void updateTimeOfLastPublication() {
