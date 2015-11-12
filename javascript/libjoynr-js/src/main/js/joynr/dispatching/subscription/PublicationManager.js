@@ -52,7 +52,7 @@ define(
                 LoggerFactory) {
 
             // TODO make MIN_PUBLICATION_INTERVAL configurable
-            var MIN_PUBLICATION_INTERVAL = 100;
+            var MIN_PUBLICATION_INTERVAL = 50;
 
             /**
              * The PublicationManager is responsible for handling subscription requests.
