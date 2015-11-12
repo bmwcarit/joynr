@@ -499,6 +499,13 @@ public:
         onSuccess(location);
     }
 
+    void invokeListOfStringsOnSuccessFct(std::function<void(const std::vector<std::string>&)> onSuccess,
+                            std::function<void(const joynr::JoynrException&)> onError) {
+        std::vector<std::string> listOfStrings;
+        listOfStrings.push_back("firstString");
+        onSuccess(listOfStrings);
+    }
+
     MockTestRequestCaller() :
             joynr::tests::testRequestCaller(std::make_shared<MockTestProvider>())
     {
@@ -507,6 +514,12 @@ public:
                 getLocation(_,_)
         )
                 .WillRepeatedly(testing::Invoke(this, &MockTestRequestCaller::invokeLocationOnSuccessFct));
+        EXPECT_CALL(
+                *this,
+                getListOfStrings(_,_)
+        )
+                .WillRepeatedly(testing::Invoke(this, &MockTestRequestCaller::invokeListOfStringsOnSuccessFct));
+
     }
     MockTestRequestCaller(testing::Cardinality getLocationCardinality) :
             joynr::tests::testRequestCaller(std::make_shared<MockTestProvider>())
@@ -517,9 +530,18 @@ public:
         )
                 .Times(getLocationCardinality)
                 .WillRepeatedly(testing::Invoke(this, &MockTestRequestCaller::invokeLocationOnSuccessFct));
+        EXPECT_CALL(
+                *this,
+                getListOfStrings(_,_)
+        )
+                .WillRepeatedly(testing::Invoke(this, &MockTestRequestCaller::invokeListOfStringsOnSuccessFct));
     }
+
     MOCK_METHOD2(getLocation,
                  void(std::function<void(const joynr::types::Localisation::GpsLocation& location)>,
+                      std::function<void(const joynr::JoynrException& exception)>));
+    MOCK_METHOD2(getListOfStrings,
+                 void(std::function<void(const std::vector<std::string>& listOfStrings)>,
                       std::function<void(const joynr::JoynrException& exception)>));
     MOCK_METHOD2(registerAttributeListener, void(const std::string& attributeName, joynr::IAttributeListener* attributeListener));
     MOCK_METHOD2(registerBroadcastListener, void(const std::string& broadcastName, joynr::IBroadcastListener* broadcastListener));

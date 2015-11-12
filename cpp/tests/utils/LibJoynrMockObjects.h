@@ -73,10 +73,13 @@ class MockTestProvider : public joynr::tests::DefaulttestProvider
 {
 public:
     MockTestProvider() :
+        listOfStrings(),
         joynr::tests::DefaulttestProvider()
     {
         EXPECT_CALL(*this, getLocation(_))
                 .WillRepeatedly(testing::Invoke(this, &MockTestProvider::invokeLocationOnSuccess));
+        EXPECT_CALL(*this, getListOfStrings(_))
+                .WillRepeatedly(testing::Invoke(this, &MockTestProvider::invokeListOfStringsOnSuccess));
     }
     MockTestProvider(joynr::types::ProviderQos qos) :
         DefaulttestProvider()
@@ -84,6 +87,8 @@ public:
         providerQos = qos;
         EXPECT_CALL(*this, getLocation(_))
                 .WillRepeatedly(testing::Invoke(this, &MockTestProvider::invokeLocationOnSuccess));
+        EXPECT_CALL(*this, getListOfStrings(_))
+                .WillRepeatedly(testing::Invoke(this, &MockTestProvider::invokeListOfStringsOnSuccess));
     }
     ~MockTestProvider()
     {
@@ -94,6 +99,10 @@ public:
         onSuccess(location);
     }
 
+    void invokeListOfStringsOnSuccess(std::function<void(const std::vector<std::string>&)> onSuccess) {
+        onSuccess(listOfStrings);
+    }
+
     void fireLocationUpdateSelective(const joynr::types::Localisation::GpsLocation& location) {
         joynr::tests::testAbstractProvider::fireLocationUpdateSelective(location);
     }
@@ -102,10 +111,20 @@ public:
         joynr::tests::testAbstractProvider::fireBroadcastWithSingleArrayParameter(singleParam);
     }
 
+    void listOfStringsChanged(const std::vector<std::string> listOfStrings) {
+        joynr::tests::testAbstractProvider::listOfStringsChanged(listOfStrings);
+    }
+
     MOCK_METHOD1(
             getLocation,
             void(
                     std::function<void(const joynr::types::Localisation::GpsLocation& result)> onSuccess
+            )
+    );
+    MOCK_METHOD1(
+            getListOfStrings,
+            void(
+                    std::function<void(const std::vector<std::string>& result)> onSuccess
             )
     );
     MOCK_METHOD2(
@@ -173,6 +192,18 @@ public:
         std::string result("QtAnotherDerivedStruct");
         onSuccess(result);
     }
+
+    void setListOfStrings(
+         const std::vector<std::string> & listOfStrings,
+         std::function<void()> onSuccess
+    ) {
+        this->listOfStrings = listOfStrings;
+        listOfStringsChanged(listOfStrings);
+        onSuccess();
+    }
+
+private:
+    std::vector<std::string> listOfStrings;
 };
 
 #ifdef _MSC_VER

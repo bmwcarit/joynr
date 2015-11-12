@@ -73,9 +73,23 @@ std::string «interfaceName»AbstractProvider::getInterfaceName() const {
 	void «interfaceName»AbstractProvider::«attributeName»Changed(
 			const «attributeType»& «attributeName»
 	) {
+		«val paramRef = qtTypeUtil.fromStdTypeToQTType(attribute, attributeName, true)»
+		«IF !isEnum(attribute.type) && isArray(attribute)»
+			QList<QVariant> «attributeName»QVarList = joynr::Util::convertListToVariantList(«paramRef»);
+		«ENDIF»
 		onAttributeValueChanged(
 				"«attributeName»",
-				QVariant::fromValue(«qtTypeUtil.fromStdTypeToQTType(attribute, attributeName, true)»)
+				«IF isEnum(attribute.type) && isArray(attribute)»
+					joynr::Util::convertListToVariantList(«paramRef»)
+				«ELSEIF isEnum(attribute.type)»
+					QVariant::fromValue(«paramRef»)
+				«ELSEIF isArray(attribute)»
+					QVariant::fromValue(«attributeName»QVarList)
+				«ELSEIF isComplex(attribute.type)»
+					QVariant::fromValue(«paramRef»)
+				«ELSE»
+					QVariant(«paramRef»)
+				«ENDIF»
 		);
 	}
 «ENDFOR»

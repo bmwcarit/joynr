@@ -40,7 +40,7 @@
 #include <string>
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/tests/testTypes_QtTestEnum.h"
-
+#include "joynr/tests/testRequestCaller.h"
 #include "joynr/types/Localisation_QtGpsLocation.h"
 
 using namespace ::testing;
@@ -78,7 +78,9 @@ public:
         messageSender(mockMessageRouter),
         dispatcher(&messageSender),
         subscriptionManager(NULL),
-        publicationManager(NULL)
+        provider(new MockTestProvider),
+        publicationManager(NULL),
+        requestCaller(new joynr::tests::testRequestCaller(provider))
     {
     }
 
@@ -118,7 +120,9 @@ protected:
     JoynrMessageSender messageSender;
     Dispatcher dispatcher;
     SubscriptionManager * subscriptionManager;
+    std::shared_ptr<MockTestProvider> provider;
     PublicationManager* publicationManager;
+    std::shared_ptr<joynr::tests::testRequestCaller> requestCaller;
 private:
     DISALLOW_COPY_AND_ASSIGN(SubscriptionTest);
 };
@@ -334,6 +338,71 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription) {
     ASSERT_TRUE(semaphore.tryAcquire(1,15000));
     //Try to acquire a semaphore for up to 5 seconds. Acquireing the semaphore will only work, if the mockRequestCaller has been called
     //and will be much faster than waiting for 500ms to make sure it has been called
+}
+
+TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam) {
+
+    QString subscriptionId = "SubscriptionID";
+    auto subscriptionQos =
+            std::shared_ptr<QtOnChangeSubscriptionQos>(new QtOnChangeSubscriptionQos(
+                800, // validity_ms
+                0 // minInterval_ms
+    ));
+
+    // Use a semaphore to count and wait on calls to the mockRequestCaller
+    QSemaphore semaphore(0);
+
+    SubscriptionRequest subscriptionRequest;
+    subscriptionRequest.setSubscriptionId(subscriptionId);
+    subscriptionRequest.setSubscribeToName("listOfStrings");
+    subscriptionRequest.setQos(subscriptionQos);
+
+    EXPECT_CALL(
+            *provider,
+            getListOfStrings(A<std::function<void(const std::vector<std::string> &)>>())
+    )
+            .WillOnce(DoAll(
+                    Invoke(provider.get(), &MockTestProvider::invokeListOfStringsOnSuccess),
+                    ReleaseSemaphore(&semaphore)
+            ));
+
+    std::shared_ptr<MockMessageRouter> mockMessageRouter(std::shared_ptr<MockMessageRouter>(new MockMessageRouter()));
+    JoynrMessageSender* joynrMessageSender = new JoynrMessageSender(mockMessageRouter);
+
+    /* ensure the serialization succeeds and the first publication is send to the proxy */
+    EXPECT_CALL(*mockMessageRouter, route(
+                     AllOf(
+                         A<JoynrMessage>(),
+                         Property(&JoynrMessage::getHeaderFrom, Eq(QString::fromStdString(providerParticipantId))),
+                         Property(&JoynrMessage::getHeaderTo, Eq(QString::fromStdString(proxyParticipantId))))
+                     ));
+
+    publicationManager->add(
+                QString::fromStdString(proxyParticipantId),
+                QString::fromStdString(providerParticipantId),
+                requestCaller,
+                subscriptionRequest,
+                joynrMessageSender);
+
+    ASSERT_TRUE(semaphore.tryAcquire(1,15000));
+
+    std::vector<std::string> listOfStrings;
+    listOfStrings.push_back("1");
+    listOfStrings.push_back("2");
+
+    /* ensure the value change leads to another publication */
+    Mock::VerifyAndClear(mockMessageRouter.get());
+    EXPECT_CALL(*mockMessageRouter, route(
+                     AllOf(
+                         A<JoynrMessage>(),
+                         Property(&JoynrMessage::getHeaderFrom, Eq(QString::fromStdString(providerParticipantId))),
+                         Property(&JoynrMessage::getHeaderTo, Eq(QString::fromStdString(proxyParticipantId))))
+                     ));
+
+
+    provider->listOfStringsChanged(listOfStrings);
+
+    delete joynrMessageSender;
 }
 
 /**
