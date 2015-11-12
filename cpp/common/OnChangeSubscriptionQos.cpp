@@ -28,7 +28,7 @@ const int64_t& OnChangeSubscriptionQos::DEFAULT_MIN_INTERVAL()
 
 const int64_t& OnChangeSubscriptionQos::MIN_MIN_INTERVAL()
 {
-    static int64_t minMinInterval = 50;
+    static int64_t minMinInterval = 0;
     return minMinInterval;
 }
 
