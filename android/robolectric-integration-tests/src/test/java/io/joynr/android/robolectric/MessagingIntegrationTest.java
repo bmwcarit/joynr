@@ -43,15 +43,12 @@ import java.util.Properties;
 @Config(manifest = "./src/test/AndroidManifest.xml")
 public class MessagingIntegrationTest extends AbstractMessagingIntegrationTest {
 
-
-
     @Before
     public void robolectricSetup() throws Exception {
         // Uncomment to log the verbose android logs to stdout
         //ShadowLog.stream = System.out;
     }
 
-    
     @Override
     public Injector createInjector(Properties joynrConfig, Module... modules) {
 
@@ -59,7 +56,7 @@ public class MessagingIntegrationTest extends AbstractMessagingIntegrationTest {
         Module[] androidModules = new Module[modules.length + 1];
         System.arraycopy(modules, 0, androidModules, 0, modules.length);
         androidModules[modules.length] = new AndroidLongPollingMessagingModule();
-        
+
         return Guice.createInjector(Modules.override(new AndroidLongPollingMessagingModule(), new AbstractModule() {
             @Override
             protected void configure() {

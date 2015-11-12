@@ -1,5 +1,18 @@
 package io.joynr.proxy;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ScheduledExecutorService;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
+
 /*
  * #%L
  * %%
@@ -32,33 +45,21 @@ import io.joynr.dispatching.rpc.ReplyCaller;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.dispatching.rpc.RequestInterpreter;
 import io.joynr.dispatching.subscription.SubscriptionManager;
+import io.joynr.messaging.AbstractMessagingStubFactory;
 import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.channel.ChannelMessagingStubFactory;
+import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.MessageRouterImpl;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.messaging.routing.RoutingTableImpl;
-
-import java.util.List;
-import java.util.concurrent.ScheduledExecutorService;
-
 import joynr.JoynrMessage;
 import joynr.Reply;
 import joynr.Request;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
-
-import com.google.common.collect.Lists;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProxyArbitrationTest {
@@ -75,12 +76,15 @@ public class ProxyArbitrationTest {
     @Mock
     private Reply jsonReply;
 
-    ProxyInvocationHandlerImpl proxyHandler;
+    @Mock
+    private InProcessAddress libJoynrMessagingAddress;
 
+    ProxyInvocationHandlerImpl proxyHandler;
     private RoutingTable routingTable;
     private String participantId;
     private Address correctEndpointAddress;
     private MessageRouter messageRouter;
+    private Map<Class<? extends Address>, AbstractMessagingStubFactory> websocketMessagingStubFactories = new HashMap<Class<? extends Address>, AbstractMessagingStubFactory>();
 
     public static interface TestSyncInterface extends JoynrSyncInterface {
         public String demoMethod3();
@@ -102,6 +106,7 @@ public class ProxyArbitrationTest {
                                             "domainaccesscontroller_participantid",
                                             new ChannelAddress("domainaccesscontroller_channelid"));
 
+        websocketMessagingStubFactories.put(ChannelAddress.class, new ChannelMessagingStubFactory(messageSender));
         MessagingStubFactory messagingStubFactory = new MessagingStubFactory(messageSender);
         messageRouter = new MessageRouterImpl(routingTable, messagingStubFactory);
 

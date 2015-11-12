@@ -27,6 +27,31 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
+
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.google.common.collect.Maps;
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
+
 import io.joynr.accesscontrol.AccessController;
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.dispatcher.rpc.JoynrInterface;
@@ -44,40 +69,25 @@ import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
+import io.joynr.messaging.AbstractMessagingStubFactory;
 import io.joynr.messaging.MessagingModule;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.channel.ChannelMessagingStubFactory;
+import io.joynr.messaging.websocket.WebSocketClientMessagingStubFactory;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.Promise;
 import io.joynr.provider.RequestCallerFactory;
 import io.joynr.runtime.PropertyLoader;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
-
 import joynr.Reply;
 import joynr.Request;
 import joynr.exceptions.ApplicationException;
+import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.ChannelAddress;
+import joynr.system.RoutingTypes.WebSocketClientAddress;
 import joynr.types.Localisation.GpsFixEnum;
 import joynr.types.Localisation.GpsLocation;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
-
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
 
 /**
  * Simulates consumer-side call to JoynMessagingConnectorInvocationHandler, with the request being
@@ -173,6 +183,17 @@ public class RpcStubbingTest {
                                             @Override
                                             protected void configure() {
                                                 bind(AccessController.class).toInstance(accessControllerMock);
+                                            }
+
+                                            @Provides
+                                            @Singleton
+                                            Map<Class<? extends Address>, AbstractMessagingStubFactory> provideMessagingStubFactories(WebSocketClientMessagingStubFactory webSocketClientMessagingStubFactory,
+                                                                                                                                      ChannelMessagingStubFactory channelMessagingStubFactory) {
+                                                Map<Class<? extends Address>, AbstractMessagingStubFactory> factories = Maps.newHashMap();
+                                                factories.put(WebSocketClientAddress.class,
+                                                              webSocketClientMessagingStubFactory);
+                                                factories.put(ChannelAddress.class, channelMessagingStubFactory);
+                                                return factories;
                                             }
                                         });
 

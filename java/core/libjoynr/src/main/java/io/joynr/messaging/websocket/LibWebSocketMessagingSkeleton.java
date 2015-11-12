@@ -1,7 +1,4 @@
-package io.joynr.messaging;
-
-import java.util.HashMap;
-import java.util.Map;
+package io.joynr.messaging.websocket;
 
 /*
  * #%L
@@ -22,20 +19,22 @@ import java.util.Map;
  * #L%
  */
 
-import joynr.system.RoutingTypes.Address;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.Inject;
+import io.joynr.messaging.routing.MessageRouter;
 
-abstract public class AbstractMessagingStubFactory<W extends Address> {
+/**
+ * Connects to the CCWebSocket server
+ */
+public class LibWebSocketMessagingSkeleton extends WebSocketMessagingSkeleton {
 
-    private Map<W, IMessaging> stubMap = new HashMap<>();
-
-    protected abstract  IMessaging createInternal(W address);
-
-    public IMessaging create(W address) {
-        if (!stubMap.containsKey(address)) {
-            stubMap.put(address, createInternal(address));
-        }
-        return stubMap.get(address);
+    @Inject
+    public LibWebSocketMessagingSkeleton(ObjectMapper objectMapper, MessageRouter messageRouter) {
+        super(objectMapper, messageRouter);
     }
 
-    public abstract void shutdown();
+    @Override
+    public void initializeConnection() {
+        //nothing to do here
+    }
 }

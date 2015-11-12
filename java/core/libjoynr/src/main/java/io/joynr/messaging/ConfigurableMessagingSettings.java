@@ -37,6 +37,11 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
     // "joynr.messaging.channelUrlDirectoryUrl";
     // public static final String PROPERTY_BOUNCE_PROXY_URL = "joynr.messaging.bounceProxyUrl";
     public static final String PROPERTY_LIBJOYNR_MESSAGING_ADDRESS = "joynr.messaging.libjoynrmessagingaddress";
+    public static final String PROPERTY_CC_MESSAGING_ADDRESS = "joynr.messaging.cc.messagingaddress";
+    public static final String PROPERTY_CC_CONNECTION_TYPE = "joynr.messaging.cc.connectiontype";
+
+    public static final String PROPERTY_LIBJOYNR_MESSAGING_SKELETON = "joynr.messaging.libjoynrmessagingskeleton";
+
     public static final String PROPERTY_CLUSTERCONTROLER_MESSAGING_SKELETON = "joynr.messaging.clustercontrollermessagingskeleton";
     public static final String PROPERTY_ARBITRATION_MINIMUMRETRYDELAY = "joynr.arbitration.minimumretrydelay";
     public static final String PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID = "joynr.messaging.capabilitiesdirectoryparticipantid";
@@ -53,6 +58,9 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
     public static final String PROPERTY_CHANNEL_URL_DIRECTORY_CHANNEL_ID = "joynr.messaging.channelurldirectorychannelid";
     public static final String PROPERTY_CHANNEL_URL_DIRECTORY_ADDRESS = "joynr.messaging.channelurldirectoryaddress";
 
+    public static final String PROPERTY_CC_ROUTING_PROVIDER_PARTICIPANT_ID = "joynr.messaging.routingproviderparticipantid";
+    public static final String PROPERTY_CC_ROUTING_PROVIDER_ADDRESS = "joynr.messaging.routingprovideraddress";
+
     public static final String PROPERTY_CREATE_CHANNEL_RETRY_INTERVAL_MS = "joynr.messaging.createchannelretryintervalms";
     public static final String PROPERTY_DELETE_CHANNEL_RETRY_INTERVAL_MS = "joynr.messaging.deletechannelretryintervalms";
     public static final String PROPERTY_SEND_MSG_RETRY_INTERVAL_MS = "joynr.messaging.sendmsgretryintervalms";
@@ -63,7 +71,6 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
 
     public static final String PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS = "joynr.messaging.maximumparallelsends";
     public static final String PROPERTY_HOSTS_FILENAME = "joynr.messaging.hostsfilename";
-    public static final String PROPERTY_CC_CONNECTION_TYPE = "joynr.messaging.cc.connectiontype";
 
     private final BounceProxyUrl bounceProxyUrl;
     private final long createChannelRetryIntervalMs;

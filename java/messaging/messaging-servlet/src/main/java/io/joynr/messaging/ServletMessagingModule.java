@@ -19,12 +19,20 @@ package io.joynr.messaging;
  * #L%
  */
 
+import com.google.common.collect.Maps;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
 import io.joynr.dispatcher.ServletMessageReceiver;
 import io.joynr.dispatcher.ServletMessageReceiverImpl;
+import io.joynr.messaging.channel.ChannelMessagingStubFactory;
+import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.ChannelAddress;
+
+import java.util.Map;
 
 /**
  * Used in conjunction with DefaultDispatcherModule to inject the application side
- * 
+ *
  */
 public class ServletMessagingModule extends MessagingModule {
 
@@ -35,6 +43,14 @@ public class ServletMessagingModule extends MessagingModule {
         bind(MessageListeners.class).to(MessageListenersImpl.class).asEagerSingleton();
         bind(MessageReceiver.class).to(ServletMessageReceiverImpl.class);
         bind(ServletMessageReceiver.class).to(ServletMessageReceiverImpl.class);
+    }
+
+    @Provides
+    @Singleton
+    Map<Class<? extends Address>, AbstractMessagingStubFactory> provideMessagingStubFactories(ChannelMessagingStubFactory channelMessagingStubFactory) {
+        Map<Class<? extends Address>, AbstractMessagingStubFactory> factories = Maps.newHashMap();
+        factories.put(ChannelAddress.class, channelMessagingStubFactory);
+        return factories;
     }
 
 }
