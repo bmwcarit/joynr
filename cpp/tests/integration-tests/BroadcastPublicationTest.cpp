@@ -22,6 +22,7 @@
 #include <memory>
 #include "tests/utils/MockObjects.h"
 #include "joynr/LibjoynrSettings.h"
+#include "joynr/JoynrMessageSender.h"
 #include "joynr/QtOnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/tests/TestLocationUpdateSelectiveBroadcastFilterParameters.h"
 
@@ -159,6 +160,45 @@ TEST_F(BroadcastPublicationTest, sendPublication_FilterChainSuccess) {
     provider->fireLocationUpdateSelective(gpsLocation1);
 }
 
+TEST_F(BroadcastPublicationTest, sendPublication_broadcastwithSingleArrayParam) {
+
+    auto subscriptionQos =
+            std::shared_ptr<QtOnChangeSubscriptionQos>(new QtOnChangeSubscriptionQos(
+                800, // validity_ms
+                0 // minInterval_ms
+    ));
+    request.setQos(subscriptionQos);
+    request.setFilterParameters(QtBroadcastFilterParameters::createQt(filterParameters));
+
+    requestCaller->registerBroadcastListener(
+                "broadcastWithSingleArrayParameter",
+                subscriptionBroadcastListener);
+
+    std::shared_ptr<MockMessageRouter> mockMessageRouter(std::shared_ptr<MockMessageRouter>(new MockMessageRouter()));
+    JoynrMessageSender* joynrMessageSender = new JoynrMessageSender(mockMessageRouter);
+    publicationManager->add(
+                QString::fromStdString(proxyParticipantId),
+                QString::fromStdString(providerParticipantId),
+                requestCaller,
+                request,
+                joynrMessageSender);
+
+    std::vector<std::string> singleParam;
+    singleParam.push_back("1");
+    singleParam.push_back("2");
+
+    /* ensure the serialization succeeds and the first publication is sent to the proxy */
+    EXPECT_CALL(*mockMessageRouter, route(
+                     AllOf(
+                         A<JoynrMessage>(),
+                         Property(&JoynrMessage::getHeaderFrom, Eq(QString::fromStdString(providerParticipantId))),
+                         Property(&JoynrMessage::getHeaderTo, Eq(QString::fromStdString(proxyParticipantId))))
+                     ));
+
+    provider->fireBroadcastWithSingleArrayParameter(singleParam);
+
+    delete joynrMessageSender;
+}
 /**
   * Trigger:    A broadcast occurs. The filter chain has a negative result.
   * Expected:   A broadcast publication is triggered

@@ -98,6 +98,10 @@ public:
         joynr::tests::testAbstractProvider::fireLocationUpdateSelective(location);
     }
 
+    void fireBroadcastWithSingleArrayParameter(const std::vector<std::string> singleParam) {
+        joynr::tests::testAbstractProvider::fireBroadcastWithSingleArrayParameter(singleParam);
+    }
+
     MOCK_METHOD1(
             getLocation,
             void(

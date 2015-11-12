@@ -86,8 +86,20 @@ std::string «interfaceName»AbstractProvider::getInterfaceName() const {
 			«broadcast.commaSeperatedTypedConstOutputParameterList.substring(1)»
 	) {
 		QList<QVariant> broadcastValues;
-		«FOR parameter: getOutputParameters(broadcast)»
-			broadcastValues.append(QVariant::fromValue(«qtTypeUtil.fromStdTypeToQTType(parameter, parameter.name, true)»));
+		«FOR param: getOutputParameters(broadcast)»
+			«val paramRef = qtTypeUtil.fromStdTypeToQTType(param, param.joynrName, true)»
+			«IF isEnum(param.type) && isArray(param)»
+				broadcastValues.append(joynr::Util::convertListToVariantList(«paramRef»));
+			«ELSEIF isEnum(param.type)»
+				broadcastValues.append(QVariant::fromValue(«paramRef»));
+			«ELSEIF isArray(param)»
+				QList<QVariant> «param.joynrName»QVarList = joynr::Util::convertListToVariantList(«paramRef»);
+				broadcastValues.append(QVariant::fromValue(«param.joynrName»QVarList));
+			«ELSEIF isComplex(param.type)»
+				broadcastValues.append(QVariant::fromValue(«paramRef»));
+			«ELSE»
+				broadcastValues.append(QVariant(«paramRef»));
+			«ENDIF»
 		«ENDFOR»
 		fireBroadcast("«broadcastName»", broadcastValues);
 	}

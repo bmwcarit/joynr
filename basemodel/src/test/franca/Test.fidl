@@ -500,6 +500,12 @@ interface test {
 		}
 	}
 
+	broadcast broadcastWithSingleArrayParameter {
+		out {
+			String[] singleParam
+		}
+	}
+
 	enumeration ErrorEnumInterface {
 		BASE_ERROR_INTERFACE
 	}
