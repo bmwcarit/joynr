@@ -21,10 +21,10 @@ package io.joynr.dispatching.subscription;
 
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import io.joynr.dispatcher.rpc.ReflectionUtils;
+import io.joynr.dispatching.CallerDirectoryListener;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.RequestCaller;
 import io.joynr.dispatching.RequestCallerDirectory;
-import io.joynr.dispatching.CallerDirectoryListener;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -52,7 +52,6 @@ import java.util.concurrent.TimeUnit;
 import joynr.BroadcastFilterParameters;
 import joynr.BroadcastSubscriptionRequest;
 import joynr.OnChangeSubscriptionQos;
-import joynr.OnChangeWithKeepAliveSubscriptionQos;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
 
@@ -194,9 +193,9 @@ public class PublicationManagerImpl implements PublicationManager, CallerDirecto
             triggerPublication(publicationInformation, requestCaller, method);
 
             boolean hasSubscriptionHeartBeat = subscriptionQos instanceof HeartbeatSubscriptionInformation;
-            boolean isKeepAliveSubscription = subscriptionQos instanceof OnChangeWithKeepAliveSubscriptionQos;
+            boolean isOnChangeSubscription = subscriptionQos instanceof OnChangeSubscriptionQos;
 
-            if (hasSubscriptionHeartBeat || isKeepAliveSubscription) {
+            if (hasSubscriptionHeartBeat || isOnChangeSubscription) {
                 final PublicationTimer timer = new PublicationTimer(publicationInformation,
                                                                     method,
                                                                     requestCaller,
@@ -632,6 +631,7 @@ public class PublicationManagerImpl implements PublicationManager, CallerDirecto
                                                publicationInformation.proxyParticipantId,
                                                publication,
                                                messagingQos);
+        publicationInformation.getState().updateTimeOfLastPublication();
     }
 
     @Override

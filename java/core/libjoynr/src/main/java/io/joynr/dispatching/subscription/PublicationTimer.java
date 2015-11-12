@@ -35,7 +35,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.TimerTask;
 
-import joynr.OnChangeWithKeepAliveSubscriptionQos;
+import joynr.OnChangeSubscriptionQos;
 import joynr.SubscriptionPublication;
 
 import org.slf4j.Logger;
@@ -84,10 +84,10 @@ public class PublicationTimer extends PubSubTimerBase {
         this.publicationTtl = qos.getPublicationTtl();
 
         boolean hasSubscriptionHeartBeat = qos instanceof HeartbeatSubscriptionInformation;
-        boolean isKeepAliveSubscription = qos instanceof OnChangeWithKeepAliveSubscriptionQos;
+        boolean isOnChangeSubscription = qos instanceof OnChangeSubscriptionQos;
 
         this.period = hasSubscriptionHeartBeat ? ((HeartbeatSubscriptionInformation) qos).getHeartbeat() : 0;
-        this.minInterval = isKeepAliveSubscription ? ((OnChangeWithKeepAliveSubscriptionQos) qos).getMinInterval() : 0;
+        this.minInterval = isOnChangeSubscription ? ((OnChangeSubscriptionQos) qos).getMinInterval() : 0;
 
         this.requestCaller = requestCaller;
         this.attributePollInterpreter = attributePollInterpreter;
@@ -173,7 +173,6 @@ public class PublicationTimer extends PubSubTimerBase {
             } catch (IOException e) {
                 logger.error("sendPublication error: {}", e.getMessage());
             }
-            state.updateTimeOfLastPublication();
             synchronized (PublicationTimer.this) {
                 if (pendingPublication) {
                     pendingPublication = false;
