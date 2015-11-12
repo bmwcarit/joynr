@@ -19,19 +19,27 @@ package io.joynr.integration;
  * #L%
  */
 
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
+import com.google.inject.Singleton;
+import com.google.inject.util.Modules;
+import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.integration.util.ServersUtil;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 
-import io.joynr.runtime.JoynrInjectorFactory;
+import io.joynr.messaging.LongPollingMessagingModule;
+import io.joynr.messaging.MessagingSettings;
+import io.joynr.messaging.http.operation.HttpClientProvider;
+import io.joynr.messaging.http.operation.HttpDefaultRequestConfigProvider;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.jetty.server.Server;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
 import java.util.Properties;
-
-//import io.joynr.util.PreconfiguredEndpointDirectoryModule;
 
 /**
  * Tests the interaction of the dispatcher and communication manager.
@@ -57,6 +65,14 @@ public class MessagingIntegrationTestIgnored extends AbstractMessagingIntegratio
 
     @Override
     public Injector createInjector(Properties joynrConfig, Module... modules) {
-        return new JoynrInjectorFactory(joynrConfig, modules).getInjector();
+        return Guice.createInjector(Modules.override(new LongPollingMessagingModule(), new AbstractModule() {
+            @Override
+            protected void configure() {
+                bind(MessagingSettings.class).to(ConfigurableMessagingSettings.class);
+                bind(CloseableHttpClient.class).toProvider(HttpClientProvider.class).in(Singleton.class);
+                bind(RequestConfig.class).toProvider(HttpDefaultRequestConfigProvider.class).in(Singleton.class);
+            }
+        }, new JoynrPropertiesModule(joynrConfig)).with(modules));
+
     }
 }

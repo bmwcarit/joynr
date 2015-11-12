@@ -24,6 +24,7 @@ import io.joynr.capabilities.DummyDiscoveryModule;
 import io.joynr.capabilities.DummyLocalChannelUrlDirectoryClient;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.common.ExpiryDate;
+import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.dispatching.JoynrMessageFactory;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
@@ -35,7 +36,6 @@ import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.messaging.routing.RoutingTableImpl;
 import io.joynr.runtime.AbstractJoynrApplication;
-import io.joynr.runtime.JoynrBaseModule;
 import io.joynr.runtime.PropertyLoader;
 import io.joynr.util.PreconfiguredEndpointDirectoryModule;
 
@@ -91,7 +91,7 @@ public abstract class AbstractMessagingIntegrationTest {
     private LocalChannelUrlDirectoryClient localChannelUrlDirectoryClient;
     private DummyCapabilitiesDirectory localCapDir;
 
-    private String bounceProxyUrl = Guice.createInjector(new JoynrBaseModule())
+    private String bounceProxyUrl = Guice.createInjector(new JoynrPropertiesModule(new Properties()))
                                          .getInstance(Key.get(String.class,
                                                               Names.named(MessagingPropertyKeys.BOUNCE_PROXY_URL)));
 

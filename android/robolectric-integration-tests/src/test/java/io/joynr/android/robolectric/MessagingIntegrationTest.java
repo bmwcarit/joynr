@@ -19,11 +19,19 @@ package io.joynr.android.robolectric;
  * #L%
  */
 
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
+import com.google.inject.Singleton;
+import com.google.inject.util.Modules;
+import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.integration.AbstractMessagingIntegrationTest;
 import io.joynr.joynrandroidruntime.messaging.AndroidLongPollingMessagingModule;
-import io.joynr.runtime.JoynrInjectorFactory;
+import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.MessagingSettings;
+import io.joynr.messaging.http.operation.HttpClientProvider;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -35,13 +43,15 @@ import java.util.Properties;
 @Config(manifest = "./src/test/AndroidManifest.xml")
 public class MessagingIntegrationTest extends AbstractMessagingIntegrationTest {
 
+
+
     @Before
     public void robolectricSetup() throws Exception {
-
         // Uncomment to log the verbose android logs to stdout
         //ShadowLog.stream = System.out;
     }
 
+    
     @Override
     public Injector createInjector(Properties joynrConfig, Module... modules) {
 
@@ -49,7 +59,14 @@ public class MessagingIntegrationTest extends AbstractMessagingIntegrationTest {
         Module[] androidModules = new Module[modules.length + 1];
         System.arraycopy(modules, 0, androidModules, 0, modules.length);
         androidModules[modules.length] = new AndroidLongPollingMessagingModule();
-
-        return new JoynrInjectorFactory(joynrConfig, androidModules).getInjector();
+        
+        return Guice.createInjector(Modules.override(new AndroidLongPollingMessagingModule(), new AbstractModule() {
+            @Override
+            protected void configure() {
+                bind(MessagingSettings.class).to(ConfigurableMessagingSettings.class);
+                bind(CloseableHttpClient.class).toProvider(HttpClientProvider.class).in(Singleton.class);
+            }
+        }, new JoynrPropertiesModule(joynrConfig)).with(modules));
     }
+
 }

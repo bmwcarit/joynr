@@ -27,7 +27,7 @@ This project has dependencies to:
   Apache Log4j under The Apache Software License, Version 2.0
   ASM Analysis under BSD
   ASM Commons under BSD
-  ASM Core under BSD
+  ASM Core under BSD License
   ASM Tree under BSD
   ASM Util under BSD
   Backport of JSR 166 under Public Domain
@@ -45,6 +45,7 @@ This project has dependencies to:
   FindBugs-jsr305 under The Apache Software License, Version 2.0
   Google Guice - Core Library under The Apache Software License, Version 2.0
   Google Guice - Extensions - AssistedInject under The Apache Software License, Version 2.0
+  Google Guice - Extensions - Servlet under The Apache Software License, Version 2.0
   Guava: Google Core Libraries for Java under The Apache Software License, Version 2.0
   Hamcrest Core under New BSD License
   HtmlUnit under Apache License, Version 2.0
@@ -65,19 +66,36 @@ This project has dependencies to:
   io.joynr.java.messaging.bounceproxy:controlled-bounceproxy under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:single-bounceproxy under The Apache Software License, Version 2.0
   io.joynr.java.messaging:messaging-common under The Apache Software License, Version 2.0
+  io.joynr.java.messaging:servlet-common under The Apache Software License, Version 2.0
   io.joynr.java:integration-tests under The Apache Software License, Version 2.0
   io.joynr.java:javaapi under The Apache Software License, Version 2.0
   io.joynr:android under The Apache Software License, Version 2.0
   Jackson-annotations under The Apache Software License, Version 2.0
   Jackson-core under The Apache Software License, Version 2.0
   jackson-databind under The Apache Software License, Version 2.0
+  Jackson-JAXRS-base under The Apache Software License, Version 2.0
+  Jackson-JAXRS-JSON under The Apache Software License, Version 2.0
+  Jackson-module-JAXB-annotations under The Apache Software License, Version 2.0
+  Java Servlet API under CDDL + GPLv2 with classpath exception
   Javassist under MPL 1.1 or LGPL 2.1
   javax.inject under The Apache Software License, Version 2.0
+  jersey-core under CDDL 1.1 or GPL2 w/ CPE
+  jersey-guice under CDDL 1.1 or GPL2 w/ CPE
+  jersey-server under CDDL 1.1 or GPL2 w/ CPE
+  jersey-servlet under CDDL 1.1 or GPL2 w/ CPE
+  Jetty :: Http Utility under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: IO Utility under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
+  Jetty :: Security under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
+  Jetty :: Server Core under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
+  Jetty :: Servlet Handling under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Utilities under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
+  Jetty :: Webapp Application Support under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Websocket :: API under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Websocket :: Client under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Websocket :: Common under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
+  Jetty :: Websocket :: Server under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
+  Jetty :: Websocket :: Servlet Interface under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
+  Jetty :: XML utilities under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   JUnit under Common Public License Version 1.0
   Logging under The Apache Software License, Version 2.0
   Maven Ant Tasks under The Apache Software License, Version 2.0
