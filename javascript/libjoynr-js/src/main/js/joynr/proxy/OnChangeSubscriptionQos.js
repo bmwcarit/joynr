@@ -46,7 +46,7 @@ define("joynr/proxy/OnChangeSubscriptionQos", [
      * @param {Object}
      *            [settings] the settings object for the constructor call
      * @param {Number}
-     *            [settings.minInterval=50] defines how often an update may be
+     *            [settings.minInterval=0] defines how often an update may be
      *            sent<br/>
      *            It is used to prevent flooding. Publications will be sent
      *            maintaining this minimum interval provided, even if the value
@@ -126,11 +126,11 @@ define("joynr/proxy/OnChangeSubscriptionQos", [
      *
      * @name OnChangeSubscriptionQos.MIN_INTERVAL
      * @type Number
-     * @default 50
+     * @default 0
      * @static
      * @readonly
      */
-    OnChangeSubscriptionQos.MIN_INTERVAL = 50;
+    OnChangeSubscriptionQos.MIN_INTERVAL = 0;
 
     defaultSettings = {
         minInterval : OnChangeSubscriptionQos.MIN_INTERVAL

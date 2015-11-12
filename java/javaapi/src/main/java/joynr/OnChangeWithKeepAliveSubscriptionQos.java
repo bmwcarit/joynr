@@ -47,7 +47,7 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
         HeartbeatSubscriptionInformation {
     private static final Logger logger = LoggerFactory.getLogger(OnChangeWithKeepAliveSubscriptionQos.class);
 
-    private static final long MIN_MAX_INTERVAL = 50L;
+    private static final long MIN_MAX_INTERVAL = 0L;
     private static final long MAX_MAX_INTERVAL = 2592000000L; // 30 days
 
     private static final long MAX_ALERT_AFTER_INTERVAL = 2592000000L; // 30 days

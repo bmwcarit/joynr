@@ -28,7 +28,7 @@ const qint64& QtOnChangeSubscriptionQos::DEFAULT_MIN_INTERVAL()
 
 const qint64& QtOnChangeSubscriptionQos::MIN_MIN_INTERVAL()
 {
-    static qint64 minMinInterval = 50;
+    static qint64 minMinInterval = 0;
     return minMinInterval;
 }
 
