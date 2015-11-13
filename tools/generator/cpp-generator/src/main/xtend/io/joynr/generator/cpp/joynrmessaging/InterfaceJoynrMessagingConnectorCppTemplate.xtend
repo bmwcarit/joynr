@@ -341,7 +341,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 				std::string& subscriptionId
 		) {
 			joynr::SubscriptionStop subscriptionStop;
-			subscriptionStop.setSubscriptionId(QString::fromStdString(subscriptionId));
+			subscriptionStop.setSubscriptionId(subscriptionId);
 
 			subscriptionManager->unregisterSubscription(QString::fromStdString(subscriptionId));
 			joynrMessageSender->sendSubscriptionStop(
@@ -570,7 +570,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 			std::string& subscriptionId
 	) {
 		joynr::SubscriptionStop subscriptionStop;
-		subscriptionStop.setSubscriptionId(QString::fromStdString(subscriptionId));
+		subscriptionStop.setSubscriptionId(subscriptionId);
 
 		subscriptionManager->unregisterSubscription(QString::fromStdString(subscriptionId));
 		joynrMessageSender->sendSubscriptionStop(

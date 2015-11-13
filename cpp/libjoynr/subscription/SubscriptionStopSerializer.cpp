@@ -35,7 +35,7 @@ void ClassDeserializer<SubscriptionStop>::deserialize(SubscriptionStop& t, IObje
     while (o.hasNextField()) {
         IField& field = o.nextField();
         if (field.name() == "subscriptionId") {
-            t.setSubscriptionId(QString::fromStdString(field.value()));
+            t.setSubscriptionId(field.value());
         }
     }
 }
@@ -46,8 +46,7 @@ void ClassSerializer<SubscriptionStop>::serialize(const SubscriptionStop& subscr
 {
     stream << "{";
     stream << "\"_typeName\": \"" << JoynrTypeId<SubscriptionStop>::getTypeName() << "\",";
-    stream << "\"subscriptionId\": \"" << subscriptionStop.getSubscriptionId().toStdString()
-           << "\"";
+    stream << "\"subscriptionId\": \"" << subscriptionStop.getSubscriptionId() << "\"";
     stream << "}";
 }
 

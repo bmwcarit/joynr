@@ -226,7 +226,7 @@ TEST_F(JoynrMessageFactoryTest, createSubscriptionRequest){
 }
 
 TEST_F(JoynrMessageFactoryTest, createSubscriptionStop){
-    QString subscriptionId("TEST-SubscriptionId");
+    std::string subscriptionId("TEST-SubscriptionId");
     SubscriptionStop subscriptionStop;
     subscriptionStop.setSubscriptionId(subscriptionId);
     JoynrMessage joynrMessage = messageFactory.createSubscriptionStop(

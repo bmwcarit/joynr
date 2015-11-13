@@ -497,7 +497,7 @@ TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
     ASSERT_TRUE(semaphore.tryAcquire(2, 1000));
 
     SubscriptionStop subscriptionStop;
-    subscriptionStop.setSubscriptionId(subscriptionRequest.getSubscriptionId());
+    subscriptionStop.setSubscriptionId(TypeUtil::toStd(subscriptionRequest.getSubscriptionId()));
     // receive a subscription stop message
     msg = messageFactory.createSubscriptionStop(
                 QString::fromStdString(proxyParticipantId),

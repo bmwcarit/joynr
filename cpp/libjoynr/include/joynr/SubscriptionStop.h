@@ -33,7 +33,7 @@ class JOYNR_EXPORT SubscriptionStop : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString subscriptionId READ getSubscriptionId WRITE setSubscriptionId)
+    Q_PROPERTY(std::string subscriptionId READ getSubscriptionId WRITE setSubscriptionId)
 public:
     SubscriptionStop& operator=(const SubscriptionStop& other);
     bool operator==(const SubscriptionStop& other) const;
@@ -44,11 +44,11 @@ public:
     SubscriptionStop(const SubscriptionStop& other);
     SubscriptionStop();
 
-    QString getSubscriptionId() const;
-    void setSubscriptionId(QString subscriptionId);
+    std::string getSubscriptionId() const;
+    void setSubscriptionId(const std::string& subscriptionId);
 
 private:
-    QString subscriptionId;
+    std::string subscriptionId;
 };
 
 } // namespace joynr

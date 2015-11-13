@@ -369,7 +369,7 @@ void Dispatcher::handleSubscriptionStopReceived(const JoynrMessage& message)
                           .arg(QString::fromUtf8(jsonSubscriptionStop)));
         return;
     }
-    QString subscriptionId = subscriptionStop->getSubscriptionId();
+    QString subscriptionId = TypeUtil::toQt(subscriptionStop->getSubscriptionId());
     assert(publicationManager != NULL);
     publicationManager->stopPublication(subscriptionId);
 }
