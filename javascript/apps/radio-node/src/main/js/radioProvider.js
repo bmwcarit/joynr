@@ -85,6 +85,8 @@ log("domain: " + domain);
 
 var joynr = require("joynr");
 var provisioning = require("./provisioning_common.js");
+var RadioProvider = require("../generated/js/joynr/vehicle/RadioProvider.js");
+var MyRadioProvider = require("./MyRadioProvider.js");
 joynr.load(provisioning, function(error, loadedJoynr) {
     if (error) {
         throw error;
@@ -100,8 +102,6 @@ joynr.load(provisioning, function(error, loadedJoynr) {
         onChangeSubscriptions : true
     });
 
-    var RadioProvider = require("../generated/js/joynr/vehicle/RadioProvider.js");
-    var MyRadioProvider = require("./MyRadioProvider.js");
     var radioProvider = joynr.providerBuilder.build(
         RadioProvider,
         MyRadioProvider.implementation);
