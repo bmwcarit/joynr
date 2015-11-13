@@ -1,3 +1,20 @@
+#joynr 0.11.1
+
+This is a minor bug fix release.
+
+##API relevant changes
+None.
+
+##Other changes
+* **[JS]** Minimum minInterval for subscriptions is 0ms
+* **[JS]** The PublicationManager checks if the delay
+  between two subsequent broadcasts is below the minInterval of the
+  subscription. If yes, the broadcast is not communicated to the
+  subscribing entity.
+* **[JS]** Allow to load generated datatypes prior to invoking joynr.load
+  in the node environment
+* **[JS]** Smaller bug fixes in PublicationManager
+
 #joynr 0.11.0
 
 ##Notes
