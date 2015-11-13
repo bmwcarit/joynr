@@ -39,7 +39,7 @@ void ClassDeserializer<SubscriptionReply>::deserialize(SubscriptionReply& t, IOb
     while (o.hasNextField()) {
         IField& field = o.nextField();
         if (field.name() == "subscriptionId") {
-            t.setSubscriptionId(QString::fromStdString(field.value()));
+            t.setSubscriptionId(field.value());
         }
     }
 }
@@ -50,8 +50,7 @@ void ClassSerializer<SubscriptionReply>::serialize(const SubscriptionReply& subs
 {
     stream << "{";
     stream << "\"_typeName\": \"" << JoynrTypeId<SubscriptionReply>::getTypeName() << "\",";
-    stream << "\"subscriptionId\": \"" << subscriptionReply.getSubscriptionId().toStdString()
-           << "\"";
+    stream << "\"subscriptionId\": \"" << subscriptionReply.getSubscriptionId() << "\"";
     stream << "}";
 }
 
