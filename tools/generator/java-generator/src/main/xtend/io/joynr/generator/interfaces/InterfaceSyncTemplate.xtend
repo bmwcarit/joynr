@@ -133,12 +133,12 @@ public interface «syncClassName» extends «interfaceName», JoynrSyncInterface
 			public «containerName»(Object... outParameters) {
 				«var index = 0»
 				«FOR outParameter : method.outputParameters»
-					«IF isEnum(outParameter.type)»
-					this.«outParameter.name» = «outParameter.typeName».valueOf((String) outParameters[«index++»]);
-					«ELSE»
 					this.«outParameter.name» = («outParameter.typeName») outParameters[«index++»];
-					«ENDIF»
 				«ENDFOR»
+			}
+
+			public static Class<?>[] getDatatypes() {
+				return new Class<?>[] {«FOR outParameter : method.outputParameters SEPARATOR ", "»«outParameter.typeName».class«ENDFOR»};
 			}
 		}
 «ENDFOR»

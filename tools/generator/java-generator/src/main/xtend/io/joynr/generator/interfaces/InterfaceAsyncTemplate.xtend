@@ -160,6 +160,10 @@ public interface «asyncClassName» extends «interfaceName», JoynrAsyncInterfa
 				onSuccess(new «syncReturnedName»(outParameters));
 			}
 		}
+
+		public static Class<?>[] getDatatypes() {
+			return «syncReturnedName».getDatatypes();
+		}
 	}
 	«ENDFOR»
 
@@ -176,11 +180,7 @@ public interface «asyncClassName» extends «interfaceName», JoynrAsyncInterfa
 						«var index = 0»
 						onSuccess(
 							«FOR outParameter : method.outputParameters»
-								«IF isEnum(outParameter.type)»
-									«outParameter.typeName».valueOf((String) outParameters[«index++»])«IF index < method.outputParameters.length»,«ENDIF»
-								«ELSE»
-									(«outParameter.typeName») outParameters[«index++»]«IF index < method.outputParameters.length»,«ENDIF»
-								«ENDIF»
+								(«outParameter.typeName») outParameters[«index++»]«IF index < method.outputParameters.length»,«ENDIF»
 							«ENDFOR»
 					);
 				}

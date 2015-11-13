@@ -49,11 +49,13 @@ public class RpcUtils {
             if (response.length == 1) {
                 responsePayload = objectMapper.convertValue(response[0], method.getReturnType());
             } else if (response.length > 1) {
-                    final Class<?>[] constructorParameterTypes = { Object[].class };
-                    try {
+                try {
+                        convertMultioutResponseToCorrectTypes(method, response);
+
+                        final Class<?>[] constructorParameterTypes = { Object[].class };
                         responsePayload = method.getReturnType()
                                                 .getConstructor(constructorParameterTypes)
-                                                .newInstance(new Object[]{ response });
+                                                .newInstance((Object) response);
                     } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
                             | InvocationTargetException | NoSuchMethodException | SecurityException e) {
                         logger.error("error calling multi-out method: {}. Unable to recreate return object: {}. Returning NULL instead", method.getName(), e.getMessage());
@@ -90,8 +92,25 @@ public class RpcUtils {
                              e.getMessage());
             }
         } else if (response.getResponse().length > 1) {
+            convertMultioutResponseToCorrectTypes(method, response.getResponse());
             responsePayload = response.getResponse();
         }
         return responsePayload;
     }
+
+    private static void convertMultioutResponseToCorrectTypes(Method method,
+                                                              Object... response) {
+        Method getDatatypes;
+        try {
+            getDatatypes = method.getReturnType().getMethod("getDatatypes");
+            Class<?>[] responseDatatypes = (Class<?>[]) getDatatypes.invoke(null);
+            for (int i = 0; i < response.length; i++) {
+                response[i] = objectMapper.convertValue(response[i], responseDatatypes[i]);
+            }
+        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            logger.error("error calling method: {}. Unable to recreate response for callback: {}. Returning NULL instead",
+                         method.getName(),
+                         e.getMessage());
+        }
+}
 }
