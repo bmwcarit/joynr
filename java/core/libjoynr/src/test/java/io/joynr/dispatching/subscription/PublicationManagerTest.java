@@ -210,9 +210,9 @@ public class PublicationManagerTest {
 
         publicationManager.broadcastOccurred(subscriptionId, noFilters, nrIterations + 1);
         verify(dispatcher, times(2)).sendSubscriptionPublication(eq(providerId),
-                                                                                eq(proxyId),
-                                                                                any(SubscriptionPublication.class),
-                                                                                any(MessagingQos.class));
+                                                                 eq(proxyId),
+                                                                 any(SubscriptionPublication.class),
+                                                                 any(MessagingQos.class));
 
         Thread.sleep(subscriptionLength);
         verifyNoMoreInteractions(dispatcher);

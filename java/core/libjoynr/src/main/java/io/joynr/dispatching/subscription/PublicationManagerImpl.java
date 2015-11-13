@@ -484,7 +484,7 @@ public class PublicationManagerImpl implements PublicationManager, CallerDirecto
                 }
 
                 logger.debug("attribute changed for subscription id: {} sending publication if delay > minInterval.",
-                            subscriptionId);
+                             subscriptionId);
             }
 
         } else {
