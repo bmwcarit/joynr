@@ -227,7 +227,7 @@ private:
     static int getTypeId_split()
     {
         int prime = 31;
-        return prime * qMetaTypeId<T>() + prime * getTypeId<Ts...>();
+        return qMetaTypeId<T>() + prime * getTypeId<Ts...>();
     }
 
     template <typename T, typename... Ts>
