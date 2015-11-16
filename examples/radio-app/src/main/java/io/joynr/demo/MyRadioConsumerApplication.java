@@ -359,7 +359,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
             Future<Boolean> future = radioProxy.addFavoriteStation(callback, radioStation);
             try {
                 long timeoutInMilliseconds = 8000;
-                Boolean reply = future.getReply(timeoutInMilliseconds);
+                Boolean reply = future.get(timeoutInMilliseconds);
                 LOG.info(PRINT_BORDER + "ASYNC METHOD: added favorite station: " + radioStation + ": " + reply
                         + PRINT_BORDER);
             } catch (InterruptedException|JoynrRuntimeException|ApplicationException e) {
