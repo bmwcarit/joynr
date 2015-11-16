@@ -19,8 +19,11 @@
 #include "joynr/SubscriptionManager.h"
 
 #include "joynr/SubscriptionUtil.h"
-#include "joynr/DelayedSchedulerOld.h"
+#include "joynr/SingleThreadedDelayedScheduler.h"
+
 #include <QUuid>
+#include <QMutex>
+
 #include <assert.h>
 #include <chrono>
 
@@ -56,6 +59,7 @@ SubscriptionManager::~SubscriptionManager()
     // check if all missed publication runnables are deleted before
     // deleting the missed publication scheduler
 
+    missedPublicationScheduler->shutdown();
     delete missedPublicationScheduler;
     subscriptions.clear();
 }
@@ -63,12 +67,11 @@ SubscriptionManager::~SubscriptionManager()
 SubscriptionManager::SubscriptionManager()
         : subscriptions(),
           subscriptionsLock(QReadWriteLock::RecursionMode::Recursive),
-          missedPublicationScheduler(new SingleThreadedDelayedSchedulerOld(
-                  QString("SubscriptionManager-MissedPublicationScheduler")))
+          missedPublicationScheduler(new SingleThreadedDelayedScheduler("MissedPublications", 0))
 {
 }
 
-SubscriptionManager::SubscriptionManager(DelayedSchedulerOld* scheduler)
+SubscriptionManager::SubscriptionManager(DelayedScheduler* scheduler)
         : subscriptions(),
           subscriptionsLock(QReadWriteLock::RecursionMode::Recursive),
           missedPublicationScheduler(scheduler)
@@ -156,16 +159,15 @@ void SubscriptionManager::unregisterSubscription(const QString& subscriptionId)
         QMutexLocker subscriptionLocker(&(subscription->mutex));
         subscription->isStopped = true;
         if (subscription->subscriptionEndRunnableHandle !=
-            DelayedSchedulerOld::INVALID_RUNNABLE_HANDLE()) {
+            DelayedScheduler::INVALID_RUNNABLE_HANDLE) {
             missedPublicationScheduler->unschedule(subscription->subscriptionEndRunnableHandle);
-            subscription->subscriptionEndRunnableHandle =
-                    DelayedSchedulerOld::INVALID_RUNNABLE_HANDLE();
+            subscription->subscriptionEndRunnableHandle = DelayedScheduler::INVALID_RUNNABLE_HANDLE;
         }
         if (subscription->missedPublicationRunnableHandle !=
-            DelayedSchedulerOld::INVALID_RUNNABLE_HANDLE()) {
+            DelayedScheduler::INVALID_RUNNABLE_HANDLE) {
             missedPublicationScheduler->unschedule(subscription->missedPublicationRunnableHandle);
             subscription->missedPublicationRunnableHandle =
-                    DelayedSchedulerOld::INVALID_RUNNABLE_HANDLE();
+                    DelayedScheduler::INVALID_RUNNABLE_HANDLE;
         }
     } else {
         LOG_DEBUG(logger,
@@ -173,6 +175,62 @@ void SubscriptionManager::unregisterSubscription(const QString& subscriptionId)
                           subscriptionId);
     }
 }
+
+#if 0
+void SubscriptionManager::checkMissedPublication(
+    const Timer::TimerId id)
+{
+    QMutexLocker subscriptionLocker(&mutex);
+
+    if (!isExpired() && !subscription->isStopped)
+    {
+        LOG_DEBUG(
+            logger,
+            "Running MissedPublicationRunnable for subscription id= "
+                + subscriptionId);
+        qint64 delay = 0;
+        int64_t now = duration_cast<milliseconds>(
+            system_clock::now().time_since_epoch()).count();
+        qint64 timeSinceLastPublication = now
+            - subscription->timeOfLastPublication;
+        bool publicationInTime = timeSinceLastPublication < alertAfterInterval;
+        if (publicationInTime)
+        {
+            LOG_TRACE(logger, "Publication in time!");
+            delay = alertAfterInterval - timeSinceLastPublication;
+        }
+        else
+        {
+            LOG_DEBUG(logger, "Publication missed!");
+            std::shared_ptr<ISubscriptionCallback> callback =
+                subscription->subscriptionCaller;
+
+            callback->onError();
+            delay = alertAfterInterval
+                - timeSinceLastExpectedPublication(timeSinceLastPublication);
+        }
+        LOG_DEBUG(logger,
+            "Resceduling MissedPublicationRunnable with delay: "
+                + QString::number(delay));
+        subscription->missedPublicationRunnableHandle =
+            subscriptionManager.missedPublicationScheduler->schedule(
+                new MissedPublicationRunnable(decayTime,
+                    expectedIntervalMSecs,
+                    subscriptionId,
+                    subscription,
+                    subscriptionManager,
+                    alertAfterInterval),
+                delay);
+    }
+    else
+    {
+        LOG_DEBUG(
+            logger,
+            "Publication expired / interrupted. Expiring on subscription id="
+                + subscriptionId);
+    }
+}
+#endif
 
 void SubscriptionManager::touchSubscriptionState(const QString& subscriptionId)
 {
@@ -240,14 +298,18 @@ SubscriptionManager::MissedPublicationRunnable::MissedPublicationRunnable(
         std::shared_ptr<Subscription> subscription,
         SubscriptionManager& subscriptionManager,
         const qint64& alertAfterInterval)
-        : ObjectWithDecayTime(expiryDate),
+        : joynr::Runnable(true),
+          ObjectWithDecayTime(expiryDate),
           expectedIntervalMSecs(expectedIntervalMSecs),
           subscription(subscription),
           subscriptionId(subscriptionId),
           alertAfterInterval(alertAfterInterval),
           subscriptionManager(subscriptionManager)
 {
-    setAutoDelete(true);
+}
+
+void SubscriptionManager::MissedPublicationRunnable::shutdown()
+{
 }
 
 void SubscriptionManager::MissedPublicationRunnable::run()
@@ -302,9 +364,14 @@ Logger* SubscriptionManager::SubscriptionEndRunnable::logger =
 SubscriptionManager::SubscriptionEndRunnable::SubscriptionEndRunnable(
         const QString& subscriptionId,
         SubscriptionManager& subscriptionManager)
-        : subscriptionId(subscriptionId), subscriptionManager(subscriptionManager)
+        : joynr::Runnable(true),
+          subscriptionId(subscriptionId),
+          subscriptionManager(subscriptionManager)
 {
-    setAutoDelete(true);
+}
+
+void SubscriptionManager::SubscriptionEndRunnable::shutdown()
+{
 }
 
 void SubscriptionManager::SubscriptionEndRunnable::run()

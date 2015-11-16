@@ -20,20 +20,20 @@
 #include <gmock/gmock.h>
 #include "joynr/SubscriptionManager.h"
 #include "joynr/ISubscriptionCallback.h"
-#include <QRunnable>
-#include <QThreadPool>
 #include "tests/utils/MockObjects.h"
 #include "utils/TestQString.h"
 #include "utils/QThreadSleep.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/SubscriptionCallback.h"
-#include "joynr/DelayedSchedulerOld.h"
+#include "joynr/ThreadPoolDelayedScheduler.h"
+#include "joynr/SingleThreadedDelayedScheduler.h"
+#include "joynr/Runnable.h"
+#include "joynr/TimeUtils.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/Directory.h"
 #include "joynr/QtPeriodicSubscriptionQos.h"
 #include "joynr/QtOnChangeSubscriptionQos.h"
 #include "joynr/Util.h"
-#include <chrono>
 #include <stdint.h>
 
 using ::testing::A;
@@ -54,8 +54,6 @@ MATCHER_P(publicationMissedException, subscriptionId, "") {
 
 using namespace joynr;
 
-using namespace std::chrono;
-
 TEST(SubscriptionManagerTest, registerSubscription_subscriptionRequestIsCorrect) {
     SubscriptionManager subscriptionManager;
     std::shared_ptr<ISubscriptionListener<types::Localisation::QtGpsLocation> > mockGpsSubscriptionListener(
@@ -64,7 +62,7 @@ TEST(SubscriptionManagerTest, registerSubscription_subscriptionRequestIsCorrect)
     std::shared_ptr<SubscriptionCallback<types::Localisation::QtGpsLocation> > gpslocationCallback(
                 new SubscriptionCallback<types::Localisation::QtGpsLocation>(mockGpsSubscriptionListener));
     OnChangeSubscriptionQos qos{};
-    int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    int64_t now = TimeUtils::getCurrentMillisSinceEpoch();
     qos.setExpiryDate(now + 10000);
     Variant qosVariant = Variant::make<OnChangeSubscriptionQos>(qos);
     SubscriptionRequest subscriptionRequest;
@@ -207,7 +205,7 @@ TEST(SubscriptionManagerTest, registerSubscription_withoutExpiryDate) {
     );
     std::shared_ptr<SubscriptionCallback<types::Localisation::QtGpsLocation>> gpslocationCallback(
             new SubscriptionCallback<types::Localisation::QtGpsLocation>(mockGpsSubscriptionListener));
-    MockDelayedSchedulerOld* mockDelayedScheduler = new MockDelayedSchedulerOld(QString("SubscriptionManager-MockScheduler"));
+    MockDelayedScheduler* mockDelayedScheduler = new MockDelayedScheduler();
     EXPECT_CALL(*mockDelayedScheduler,
                 schedule(_,_))
             .Times(0);
@@ -222,9 +220,9 @@ TEST(SubscriptionManagerTest, registerSubscription_withoutExpiryDate) {
     );
 }
 
-quint32 internalRunnableHandle = 1;
+DelayedScheduler::RunnableHandle internalRunnableHandle = 1;
 
-quint32 runnableHandle()
+DelayedScheduler::RunnableHandle runnableHandle()
 {
     return internalRunnableHandle++;
 }
@@ -235,9 +233,9 @@ TEST(SubscriptionManagerTest, registerSubscription_withExpiryDate) {
     );
     std::shared_ptr<SubscriptionCallback<types::Localisation::QtGpsLocation>> gpslocationCallback(
             new SubscriptionCallback<types::Localisation::QtGpsLocation>(mockGpsSubscriptionListener));
-    MockDelayedSchedulerOld* mockDelayedScheduler = new MockDelayedSchedulerOld(QString("SubscriptionManager-MockScheduler"));
+    MockDelayedScheduler* mockDelayedScheduler = new MockDelayedScheduler();
     EXPECT_CALL(*mockDelayedScheduler,
-                schedule(A<QRunnable*>(),_))
+                schedule(A<Runnable*>(),_))
             .Times(1).WillRepeatedly(::testing::Return(runnableHandle()));
     SubscriptionManager subscriptionManager(mockDelayedScheduler);
     Variant qos = Variant::make<OnChangeSubscriptionQos>(OnChangeSubscriptionQos(1000, 100));
@@ -284,17 +282,22 @@ TEST(SubscriptionManagerTest, unregisterSubscription_unregisterLeadsOnNonExistan
     subscriptionManager.unregisterSubscription("superId");
 }
 
-class TestRunnable : public QRunnable {
+class TestRunnable : public Runnable {
 public:
     virtual ~TestRunnable() {
 
     }
-    TestRunnable() {
+    TestRunnable()
+        : joynr::Runnable(true)
+    {
 
+    }
+    void shutdown() {
+        LOG_TRACE(logger, "shutdown called...");
     }
     void run() {
         LOG_TRACE(logger, "run: entering...");
-        QThreadSleep::msleep(200);
+        joynr::ThreadUtil::sleepForMillis(200);
         LOG_TRACE(logger, "run: leaving...");
     }
 private:
@@ -303,16 +306,17 @@ private:
 joynr_logging::Logger* TestRunnable::logger = joynr_logging::Logging::getInstance()->getLogger("MSG", "TestRunnable");
 
 TEST(SingleThreadedDelayedSchedulerTest, schedule_deletingRunnablesCorrectly) {
-    SingleThreadedDelayedSchedulerOld scheduler(QString("SingleThreadedDelayedScheduler"));
+    SingleThreadedDelayedScheduler scheduler("SingleThread");
     TestRunnable* runnable = new TestRunnable();
     scheduler.schedule(runnable, 1);
-    QThreadSleep::msleep(100);
+    joynr::ThreadUtil::sleepForMillis(100);
+    scheduler.shutdown();
 }
 
 TEST(ThreadPoolDelayedSchedulerTest, schedule_deletingRunnablesCorrectly) {
-    QThreadPool threadPool;
-    ThreadPoolDelayedSchedulerOld scheduler(threadPool, QString("ThreadPoolDelayedScheduler"));
+    ThreadPoolDelayedScheduler scheduler(3, "ThreadPool", 0);
     TestRunnable* runnable = new TestRunnable();
     scheduler.schedule(runnable, 1);
-    QThreadSleep::msleep(100);
+    joynr::ThreadUtil::sleepForMillis(100);
+    scheduler.shutdown();
 }
