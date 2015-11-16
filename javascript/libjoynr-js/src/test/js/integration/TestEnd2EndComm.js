@@ -253,6 +253,22 @@ joynrTestRequire(
                                 spy.onReceive.reset();
                             });
                         }
+
+                        function expectMultiplePublications(spy, expectedPublications, timeout, expectationFct){
+                            waitsFor(
+                                    function() {
+                                        return (spy.onReceive.calls.length + spy.onError.calls.length >= expectedPublications);
+                                    },
+                                    expectedPublications + "publications to occur",
+                                    timeout);
+
+                            runs(function() {
+                                expect(spy.onReceive.calls.length).toBe(expectedPublications);
+                                expectationFct(spy.onReceive.calls);
+                                spy.onReceive.reset();
+                            });
+                        }
+
                         function expectPublicationError(spy){
                             waitsFor(
                                     function() {
@@ -478,10 +494,27 @@ joynrTestRequire(
 
                         it("subscribe to broadcastWithEnum", function() {
                             var spy = setupSubscriptionAndReturnSpy("broadcastWithEnum", subscriptionQosOnChange);
-                            callOperation("triggerBroadcasts", {});
+                            callOperation("triggerBroadcasts", {
+                                times: 1
+                            });
                             expectPublication(spy, function(call) {
                                expect(call.args[0].enumOutput).toEqual(Country.CANADA);
                                expect(call.args[0].enumArrayOutput).toEqual([Country.GERMANY, Country.ITALY]);
+                            });
+                        });
+
+                        it("subscribe to broadcastWithEnum and get burst", function() {
+                            subscriptionQosOnChange.minInterval = 0;
+                            var times = 100, spy = setupSubscriptionAndReturnSpy("broadcastWithEnum", subscriptionQosOnChange);
+                            callOperation("triggerBroadcasts", {
+                                times: times
+                            });
+                            expectMultiplePublications(spy, times, 5000, function(calls) {
+                               var i;
+                               for (i=0;i<times;i++) {
+                                   expect(calls[i].args[0].enumOutput).toEqual(Country.CANADA);
+                                   expect(calls[i].args[0].enumArrayOutput).toEqual([Country.GERMANY, Country.ITALY]);
+                               }
                             });
                         });
 

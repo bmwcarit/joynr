@@ -35,10 +35,10 @@ import io.joynr.pubsub.SubscriptionQos;
  */
 public class OnChangeSubscriptionQos extends SubscriptionQos {
 
-    private static final long MIN_MIN_INTERVAL = 50L;
+    private static final long MIN_MIN_INTERVAL = 0L;
     private static final long MAX_MIN_INTERVAL = 2592000000L; // 30 days;
 
-    private long minInterval;
+    private long minInterval = MIN_MIN_INTERVAL;
 
     /**
      * Default Constructor

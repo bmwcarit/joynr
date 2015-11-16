@@ -52,7 +52,7 @@ define(
                 LoggerFactory) {
 
             // TODO make MIN_PUBLICATION_INTERVAL configurable
-            var MIN_PUBLICATION_INTERVAL = 100;
+            var MIN_PUBLICATION_INTERVAL = 50;
 
             /**
              * The PublicationManager is responsible for handling subscription requests.
@@ -245,6 +245,24 @@ define(
                                         delete subscriptionInfo.onChangeDebounce;
                                     });
                         }
+                    }
+                }
+
+                /**
+                 * @name PublicationManager#prepareBroadcastPublication
+                 * @private
+                 */
+                function prepareBroadcastPublication(subscriptionInfo, value) {
+                    var timeSinceLastPublication = Date.now() - subscriptionInfo.lastPublication;
+                    if (subscriptionInfo.qos.minInterval === undefined
+                        || timeSinceLastPublication >= subscriptionInfo.qos.minInterval) {
+                        sendPublication(subscriptionInfo, value);
+                    } else {
+                        log.info("Two subsequent broadcasts of event "
+                                + subscriptionInfo.subscribedToName
+                                + " occured within minInterval of subscription with id "
+                                + subscriptionInfo.subscriptionId
+                                + ". Event will not be sent to the subscribing client.");
                     }
                 }
 
@@ -475,32 +493,28 @@ define(
                     for (subscriptionId in subscriptions) {
                         if (subscriptions.hasOwnProperty(subscriptionId)) {
                             var subscriptionInfo = subscriptions[subscriptionId];
-                            if (subscriptionInfo.qos.minInterval !== undefined
-                                && subscriptionInfo.qos.minInterval > 0) {
-                                // if any filters present, check them
-                                publish = true;
-                                if (filters && filters.length > 0) {
-                                    for (i = 0; i < filters.length; i++) {
-                                        if (subscriptionInfo.filterParameters &&
-                                            subscriptionInfo.filterParameters.filterParameters) {
-                                            publish = filters[i].filter(
-                                                value,
-                                                subscriptionInfo.filterParameters.filterParameters
-                                            );
-                                            // stop on first filter failure
-                                            if (publish === false) {
-                                                break;
-                                            }
+                            // if any filters present, check them
+                            publish = true;
+                            if (filters && filters.length > 0) {
+                                for (i = 0; i < filters.length; i++) {
+                                    if (subscriptionInfo.filterParameters &&
+                                        subscriptionInfo.filterParameters.filterParameters) {
+                                        publish = filters[i].filter(
+                                            value,
+                                            subscriptionInfo.filterParameters.filterParameters
+                                        );
+                                        // stop on first filter failure
+                                        if (publish === false) {
+                                            break;
                                         }
                                     }
                                 }
-                                if (publish) {
-                                    preparePublication(
-                                        subscriptionInfo,
-                                        value.outputParameters,
-                                        triggerPublicationTimer
-                                    );
-                                }
+                            }
+                            if (publish) {
+                                prepareBroadcastPublication(
+                                    subscriptionInfo,
+                                    value.outputParameters
+                                );
                             }
                         }
                     }
@@ -971,21 +985,6 @@ define(
                             // Set up publication interval if maxInterval is a number
                             //(not (is not a number)) ...
                             var period = getPeriod(subscriptionInfo);
-
-                            if (!isNaN(period)) {
-                                if (period < MIN_PUBLICATION_INTERVAL) {
-                                    log.error("SubscriptionRequest error: period: "
-                                        + period
-                                        + "is smaller than MIN_PUBLICATION_INTERVAL: "
-                                        + MIN_PUBLICATION_INTERVAL);
-                                    // TODO: proper error handling when maxInterval is smaller than
-                                    // MIN_PUBLICATION_INTERVAL
-                                } else {
-                                    // call the get method on the provider at the set interval
-                                    subscriptionInfo.subscriptionInterval =
-                                            triggerPublicationTimer(subscriptionInfo, period);
-                                }
-                            }
 
                             // save subscriptionInfo to subscriptionId => subscription and
                             // ProviderEvent => subscription map
