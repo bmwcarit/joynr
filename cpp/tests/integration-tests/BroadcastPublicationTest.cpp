@@ -191,8 +191,8 @@ TEST_F(BroadcastPublicationTest, sendPublication_broadcastwithSingleArrayParam) 
     EXPECT_CALL(*mockMessageRouter, route(
                      AllOf(
                          A<JoynrMessage>(),
-                         Property(&JoynrMessage::getHeaderFrom, Eq(QString::fromStdString(providerParticipantId))),
-                         Property(&JoynrMessage::getHeaderTo, Eq(QString::fromStdString(proxyParticipantId))))
+                         Property(&JoynrMessage::getHeaderFrom, Eq(providerParticipantId)),
+                         Property(&JoynrMessage::getHeaderTo, Eq(proxyParticipantId)))
                      ));
 
     provider->fireBroadcastWithSingleArrayParameter(singleParam);

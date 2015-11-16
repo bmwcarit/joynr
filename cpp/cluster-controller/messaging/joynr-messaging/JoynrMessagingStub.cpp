@@ -42,7 +42,7 @@ void JoynrMessagingStub::transmit(JoynrMessage& message)
     if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST ||
         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST ||
         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
-        message.setHeaderReplyChannelId(receiveChannelId);
+        message.setHeaderReplyChannelId(receiveChannelId.toStdString());
     }
     messageSender->sendMessage(destinationChannelId, message);
 }

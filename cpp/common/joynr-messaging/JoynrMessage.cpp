@@ -19,7 +19,7 @@
 #include "joynr/JoynrMessage.h"
 
 #include <iostream>
-#include <QString>
+#include <string>
 #include <QUuid>
 
 #include "joynr/Util.h"
@@ -31,42 +31,42 @@ using namespace joynr_logging;
 
 Logger* JoynrMessage::logger = Logging::getInstance()->getLogger("MSG", "JoynrMessage");
 
-const QString& JoynrMessage::HEADER_CONTENT_TYPE()
+const std::string& JoynrMessage::HEADER_CONTENT_TYPE()
 {
-    static const QString headerContentType("contentType");
+    static const std::string headerContentType("contentType");
     return headerContentType;
 }
 
-const QString& JoynrMessage::HEADER_MESSAGE_ID()
+const std::string& JoynrMessage::HEADER_MESSAGE_ID()
 {
-    static const QString headerMessageId("msgId");
+    static const std::string headerMessageId("msgId");
     return headerMessageId;
 }
 
-const QString& JoynrMessage::HEADER_CREATOR_USER_ID()
+const std::string& JoynrMessage::HEADER_CREATOR_USER_ID()
 {
-    static const QString headerCreatorUserId("creator");
+    static const std::string headerCreatorUserId("creator");
     return headerCreatorUserId;
 }
 
-const QString& JoynrMessage::HEADER_TO()
+const std::string& JoynrMessage::HEADER_TO()
 {
-    static const QString headerTo("to");
+    static const std::string headerTo("to");
     return headerTo;
 }
-const QString& JoynrMessage::HEADER_FROM()
+const std::string& JoynrMessage::HEADER_FROM()
 {
-    static const QString headerFrom("from");
+    static const std::string headerFrom("from");
     return headerFrom;
 }
-const QString& JoynrMessage::HEADER_EXPIRY_DATE()
+const std::string& JoynrMessage::HEADER_EXPIRY_DATE()
 {
-    static const QString headerExpiryDate("expiryDate");
+    static const std::string headerExpiryDate("expiryDate");
     return headerExpiryDate;
 }
-const QString& JoynrMessage::HEADER_REPLY_CHANNEL_ID()
+const std::string& JoynrMessage::HEADER_REPLY_CHANNEL_ID()
 {
-    static const QString headerReplyChannelId("replyChannelId");
+    static const std::string headerReplyChannelId("replyChannelId");
     return headerReplyChannelId;
 }
 
@@ -80,16 +80,16 @@ const std::string JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUES
         "broadcastSubscriptionRequest";
 const std::string JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP = "subscriptionStop";
 
-const QString JoynrMessage::VALUE_CONTENT_TYPE_TEXT_PLAIN = "text/plain";
-const QString JoynrMessage::VALUE_CONTENT_TYPE_APPLICATION_JSON = "application/json";
+const std::string JoynrMessage::VALUE_CONTENT_TYPE_TEXT_PLAIN = "text/plain";
+const std::string JoynrMessage::VALUE_CONTENT_TYPE_APPLICATION_JSON = "application/json";
 
-JoynrMessage::JoynrMessage() : type(""), header(QVariantMap()), payload()
+JoynrMessage::JoynrMessage() : type(""), headerMap(), payload()
 {
     generateAndSetMsgIdHeaderIfAbsent();
 }
 
 JoynrMessage::JoynrMessage(const JoynrMessage& message)
-        : QObject(), type(message.type), header(message.header), payload(message.payload)
+        : QObject(), type(message.type), headerMap(message.headerMap), payload(message.payload)
 {
     generateAndSetMsgIdHeaderIfAbsent();
 }
@@ -97,7 +97,7 @@ JoynrMessage::JoynrMessage(const JoynrMessage& message)
 JoynrMessage& JoynrMessage::operator=(const JoynrMessage& message)
 {
     type = message.type;
-    header = message.header;
+    headerMap = message.headerMap;
     payload = message.payload;
     generateAndSetMsgIdHeaderIfAbsent();
     return *this;
@@ -106,14 +106,15 @@ JoynrMessage& JoynrMessage::operator=(const JoynrMessage& message)
 void JoynrMessage::generateAndSetMsgIdHeaderIfAbsent()
 {
     if (!containsHeader(HEADER_MESSAGE_ID())) {
-        QString msgId = Util::createUuid();
-        setHeader<QString>(HEADER_MESSAGE_ID(), msgId);
+        std::string msgId = Util::createUuid().toStdString();
+        setHeader(HEADER_MESSAGE_ID(), msgId);
     }
 }
 
 bool JoynrMessage::operator==(const JoynrMessage& message) const
 {
-    return type == message.getType() && payload == message.payload && header == message.header;
+    return type == message.getType() && payload == message.payload &&
+           headerMap == message.headerMap;
 }
 
 std::string JoynrMessage::getType() const
@@ -126,34 +127,49 @@ void JoynrMessage::setType(const std::string& type)
     this->type = type;
 }
 
-QVariant JoynrMessage::getHeader() const
+std::map<std::string, std::string> JoynrMessage::getHeaderMap() const
 {
-    return header;
+    return headerMap;
 }
 
-bool JoynrMessage::containsHeader(const QString& key) const
+bool JoynrMessage::containsHeader(const std::string& key) const
 {
-    return header.toMap().contains(key);
-}
-
-/**
- * @brief JoynrMessage::setHeader Adds header entries to the already existing ones.
- * If a header entry was already set, its value is replaced with the new one.
- * @param header the header entries to add
- */
-void JoynrMessage::setHeader(const QVariant& header)
-{
-    QVariantMap headerMap = header.toMap();
-    QMapIterator<QString, QVariant> i(this->header.toMap());
-    while (i.hasNext()) {
-        i.next();
-        if (!headerMap.contains(i.key())) {
-            headerMap.insert(i.key(), i.value());
-            LOG_DEBUG(logger,
-                      QString("insert header: %1=%2").arg(i.key()).arg(i.value().value<QString>()));
-        }
+    std::map<std::string, std::string>::const_iterator pos = headerMap.find(key);
+    if (pos == headerMap.end()) {
+        return false;
     }
-    this->header = headerMap;
+
+    return true;
+}
+
+void JoynrMessage::setHeaderMap(const std::map<std::string, std::string>& newHeaders)
+{
+    std::map<std::string, std::string>::const_iterator i = newHeaders.begin();
+    while (i != newHeaders.end()) {
+        if (!containsHeader(i->first)) {
+            headerMap.insert(std::pair<std::string, std::string>(i->first, i->second));
+            LOG_DEBUG(logger,
+                      QString("insert header: %1=%2").arg(QString::fromStdString(i->first)).arg(
+                              QString::fromStdString(i->second)));
+        }
+        i++;
+    }
+}
+
+std::string JoynrMessage::getHeader(const std::string& key) const
+{
+    // to avoid adding default-constructed value to the map, I use find instead of operator[]
+    std::map<std::string, std::string>::const_iterator pos = headerMap.find(key);
+    if (pos == headerMap.end()) {
+        return std::string();
+    }
+    std::string value = pos->second;
+    return value;
+}
+
+void JoynrMessage::setHeader(const std::string& key, const std::string& value)
+{
+    headerMap[key] = value;
 }
 
 QByteArray JoynrMessage::getPayload() const
@@ -171,14 +187,14 @@ bool JoynrMessage::containsHeaderContentType() const
     return containsHeader(HEADER_CONTENT_TYPE());
 }
 
-QString JoynrMessage::getHeaderContentType() const
+std::string JoynrMessage::getHeaderContentType() const
 {
-    return getHeader<QString>(HEADER_CONTENT_TYPE());
+    return getHeader(HEADER_CONTENT_TYPE());
 }
 
-void JoynrMessage::setHeaderContentType(const QString& contentType)
+void JoynrMessage::setHeaderContentType(const std::string& contentType)
 {
-    setHeader<QString>(HEADER_CONTENT_TYPE(), contentType);
+    setHeader(HEADER_CONTENT_TYPE(), contentType);
 }
 
 bool JoynrMessage::containsHeaderMessageId() const
@@ -186,14 +202,14 @@ bool JoynrMessage::containsHeaderMessageId() const
     return containsHeader(HEADER_MESSAGE_ID());
 }
 
-QString JoynrMessage::getHeaderMessageId() const
+std::string JoynrMessage::getHeaderMessageId() const
 {
-    return getHeader<QString>(HEADER_MESSAGE_ID());
+    return getHeader(HEADER_MESSAGE_ID());
 }
 
-void JoynrMessage::setHeaderMessageId(const QString& msgId)
+void JoynrMessage::setHeaderMessageId(const std::string& msgId)
 {
-    setHeader<QString>(HEADER_MESSAGE_ID(), msgId);
+    setHeader(HEADER_MESSAGE_ID(), msgId);
 }
 
 bool JoynrMessage::containsHeaderCreatorUserId() const
@@ -201,14 +217,17 @@ bool JoynrMessage::containsHeaderCreatorUserId() const
     return containsHeader(HEADER_CREATOR_USER_ID());
 }
 
-QString JoynrMessage::getHeaderCreatorUserId() const
+std::string JoynrMessage::getHeaderCreatorUserId() const
 {
-    return getHeader<QString>(HEADER_CREATOR_USER_ID());
+    return getHeader(HEADER_CREATOR_USER_ID());
 }
 
-void JoynrMessage::setHeaderCreatorUserId(const QString& creatorUserId)
+void JoynrMessage::setHeaderCreatorUserId(const std::string& creatorUserId)
 {
-    setHeader<QString>(HEADER_CREATOR_USER_ID(), creatorUserId);
+    LOG_TRACE(logger,
+              QString("########## header creater user id: %1")
+                      .arg(QString::fromStdString(HEADER_CREATOR_USER_ID())));
+    setHeader(HEADER_CREATOR_USER_ID(), creatorUserId);
 }
 
 bool JoynrMessage::containsHeaderTo() const
@@ -216,14 +235,14 @@ bool JoynrMessage::containsHeaderTo() const
     return containsHeader(HEADER_TO());
 }
 
-QString JoynrMessage::getHeaderTo() const
+std::string JoynrMessage::getHeaderTo() const
 {
-    return getHeader<QString>(HEADER_TO());
+    return getHeader(HEADER_TO());
 }
 
-void JoynrMessage::setHeaderTo(const QString& to)
+void JoynrMessage::setHeaderTo(const std::string& to)
 {
-    setHeader<QString>(HEADER_TO(), to);
+    setHeader(HEADER_TO(), to);
 }
 
 bool JoynrMessage::containsHeaderFrom() const
@@ -231,14 +250,14 @@ bool JoynrMessage::containsHeaderFrom() const
     return containsHeader(HEADER_FROM());
 }
 
-QString JoynrMessage::getHeaderFrom() const
+std::string JoynrMessage::getHeaderFrom() const
 {
-    return getHeader<QString>(HEADER_FROM());
+    return getHeader(HEADER_FROM());
 }
 
-void JoynrMessage::setHeaderFrom(const QString& from)
+void JoynrMessage::setHeaderFrom(const std::string& from)
 {
-    setHeader<QString>(HEADER_FROM(), from);
+    setHeader(HEADER_FROM(), from);
 }
 
 bool JoynrMessage::containsHeaderExpiryDate() const
@@ -248,13 +267,14 @@ bool JoynrMessage::containsHeaderExpiryDate() const
 
 JoynrTimePoint JoynrMessage::getHeaderExpiryDate() const
 {
-    JoynrTimePoint expiryDate{std::chrono::milliseconds(getHeader<qint64>(HEADER_EXPIRY_DATE()))};
+    std::string expiryDateString = getHeader(HEADER_EXPIRY_DATE());
+    JoynrTimePoint expiryDate{std::chrono::milliseconds(std::stoll(expiryDateString))};
     return expiryDate;
 }
 
 void JoynrMessage::setHeaderExpiryDate(const JoynrTimePoint& expiryDate)
 {
-    setHeader<qint64>(HEADER_EXPIRY_DATE(), expiryDate.time_since_epoch().count());
+    setHeader(HEADER_EXPIRY_DATE(), std::to_string(expiryDate.time_since_epoch().count()));
 }
 
 bool JoynrMessage::containsHeaderReplyChannelId() const
@@ -262,14 +282,14 @@ bool JoynrMessage::containsHeaderReplyChannelId() const
     return containsHeader(HEADER_REPLY_CHANNEL_ID());
 }
 
-QString JoynrMessage::getHeaderReplyChannelId() const
+std::string JoynrMessage::getHeaderReplyChannelId() const
 {
-    return getHeader<QString>(HEADER_REPLY_CHANNEL_ID());
+    return getHeader(HEADER_REPLY_CHANNEL_ID());
 }
 
-void JoynrMessage::setHeaderReplyChannelId(const QString& replyChannelId)
+void JoynrMessage::setHeaderReplyChannelId(const std::string& replyChannelId)
 {
-    setHeader<QString>(HEADER_REPLY_CHANNEL_ID(), replyChannelId);
+    setHeader(HEADER_REPLY_CHANNEL_ID(), replyChannelId);
 }
 
 } // namespace joynr

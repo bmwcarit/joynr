@@ -102,7 +102,7 @@ TEST_F(MessageRouterTest, doNotAddMessageToQueue){
     EXPECT_EQ(messageQueue->getQueueLength(), 1);
 
     // the message now has a known destination and should be directly routed
-    joynrMessage.setHeaderTo(messagingSettings.getCapabilitiesDirectoryParticipantId());
+    joynrMessage.setHeaderTo(messagingSettings.getCapabilitiesDirectoryParticipantId().toStdString());
     messageRouter->route(joynrMessage);
     EXPECT_EQ(messageQueue->getQueueLength(), 1);
 }

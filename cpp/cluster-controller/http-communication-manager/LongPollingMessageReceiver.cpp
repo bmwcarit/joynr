@@ -187,17 +187,18 @@ void LongPollingMessageReceiver::processReceivedQjsonObjects(const QByteArray& j
     if (!msg->containsHeaderExpiryDate()) {
         LOG_ERROR(logger,
                   QString("received message [msgId=%1] without decay time - dropping message")
-                          .arg(msg->getHeaderMessageId()));
+                          .arg(QString::fromStdString(msg->getHeaderMessageId())));
     }
 
     if (msg->getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST ||
         msg->getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST ||
         msg->getType() == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
         // TODO ca: check if replyTo header info is available?
-        QString replyChannelId = msg->getHeaderReplyChannelId();
+        QString replyChannelId = QString::fromStdString(msg->getHeaderReplyChannelId());
         std::shared_ptr<system::RoutingTypes::QtChannelAddress> address(
                 new system::RoutingTypes::QtChannelAddress(replyChannelId));
-        messageRouter->addNextHop(msg->getHeaderFrom().toStdString(), address);
+        messageRouter->addNextHop(
+                QString::fromStdString(msg->getHeaderFrom()).toStdString(), address);
     }
 
     // messageRouter.route passes the message reference to the MessageRunnable, which copies it.

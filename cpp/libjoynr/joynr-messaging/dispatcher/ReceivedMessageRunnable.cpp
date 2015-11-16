@@ -45,7 +45,7 @@ void ReceivedMessageRunnable::run()
               QString("Running ReceivedMessageRunnable for message type: %1, msg ID: %2 and "
                       "payload: %3")
                       .arg(TypeUtil::toQt(message.getType()))
-                      .arg(message.getHeaderMessageId())
+                      .arg(TypeUtil::toQt(message.getHeaderMessageId()))
                       .arg(QString(message.getPayload())));
     if (isExpired()) {
         LOG_DEBUG(logger, "Dropping ReceivedMessageRunnable message, because it is expired: ");

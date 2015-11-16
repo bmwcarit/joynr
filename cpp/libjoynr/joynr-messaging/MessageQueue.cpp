@@ -20,6 +20,7 @@
 #include "joynr/DispatcherUtils.h"
 #include <QThread>
 #include <chrono>
+#include <QMap>
 
 namespace joynr
 {
@@ -46,7 +47,7 @@ qint64 MessageQueue::queueMessage(const JoynrMessage& message)
     MessageQueueItem* item = new MessageQueueItem(message, absTtl);
     {
         QMutexLocker locker(&queueMutex);
-        queue->insertMulti(message.getHeaderTo().toStdString(), item);
+        queue->insertMulti(message.getHeaderTo(), item);
     }
     return queue->size();
 }

@@ -149,9 +149,9 @@ void JoynrMessageFactory::initMsg(JoynrMessage& msg,
                                   const qint64 ttl,
                                   const QObject& payload)
 {
-    msg.setHeaderCreatorUserId(securityManager->getCurrentProcessUserId());
-    msg.setHeaderFrom(senderParticipantId);
-    msg.setHeaderTo(receiverParticipantId);
+    msg.setHeaderCreatorUserId(securityManager->getCurrentProcessUserId().toStdString());
+    msg.setHeaderFrom(senderParticipantId.toStdString());
+    msg.setHeaderTo(receiverParticipantId.toStdString());
 
     // calculate expiry date
     JoynrTimePoint expiryDate = DispatcherUtils::convertTtlToAbsoluteTime(ttl);
@@ -171,9 +171,9 @@ void JoynrMessageFactory::initReplyMsg(JoynrMessage& msg,
                                        const qint64 ttl,
                                        const Reply& payload)
 {
-    msg.setHeaderCreatorUserId(securityManager->getCurrentProcessUserId());
-    msg.setHeaderFrom(senderParticipantId);
-    msg.setHeaderTo(receiverParticipantId);
+    msg.setHeaderCreatorUserId(securityManager->getCurrentProcessUserId().toStdString());
+    msg.setHeaderFrom(senderParticipantId.toStdString());
+    msg.setHeaderTo(receiverParticipantId.toStdString());
 
     // calculate expiry date
     JoynrTimePoint expiryDate = DispatcherUtils::convertTtlToAbsoluteTime(ttl);
@@ -192,9 +192,9 @@ void JoynrMessageFactory::initSubscriptionPublicationMsg(JoynrMessage& msg,
                                                          const qint64 ttl,
                                                          const SubscriptionPublication& payload)
 {
-    msg.setHeaderCreatorUserId(securityManager->getCurrentProcessUserId());
-    msg.setHeaderFrom(senderParticipantId);
-    msg.setHeaderTo(receiverParticipantId);
+    msg.setHeaderCreatorUserId(securityManager->getCurrentProcessUserId().toStdString());
+    msg.setHeaderFrom(senderParticipantId.toStdString());
+    msg.setHeaderTo(receiverParticipantId.toStdString());
 
     // calculate expiry date
     JoynrTimePoint expiryDate = DispatcherUtils::convertTtlToAbsoluteTime(ttl);

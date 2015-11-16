@@ -25,7 +25,6 @@
 #include "joynr/DispatcherUtils.h"
 #include <QObject>
 #include <QString>
-#include <QVariant>
 #include <stdint.h>
 #include <QByteArray>
 
@@ -49,8 +48,10 @@ class JOYNRCOMMON_EXPORT JoynrMessage : public QObject
 {
     Q_OBJECT
 
+    using StringMap = std::map<std::string, std::string>;
+
     Q_PROPERTY(std::string type READ getType WRITE setType)
-    Q_PROPERTY(QVariant header READ getHeader WRITE setHeader)
+    Q_PROPERTY(StringMap headerMap READ getHeaderMap WRITE setHeaderMap)
     Q_PROPERTY(QByteArray payload READ getPayload WRITE setPayload)
 
 public:
@@ -61,36 +62,36 @@ public:
      * message.
      * @return the name/key for the "content type" header.
      */
-    static const QString& HEADER_CONTENT_TYPE();
+    static const std::string& HEADER_CONTENT_TYPE();
 
     /**
      * @brief HEADER_MESSAGE_ID The "message ID" header contains a unique ID of the message.
      * @return the name/key for the "message ID" header.
      */
-    static const QString& HEADER_MESSAGE_ID();
+    static const std::string& HEADER_MESSAGE_ID();
     /**
      * @brief HEADER_CREATOR_USER_ID The "creator user ID" header contains a unique user ID
      * of the message creator.
      * @return the name/key for the "creator user ID" header.
      */
-    static const QString& HEADER_CREATOR_USER_ID();
+    static const std::string& HEADER_CREATOR_USER_ID();
     /**
      * @brief HEADER_NAME_TO The "to" header stores the receiver participant ID.
      * @return the name/key for the "to" header.
      */
-    static const QString& HEADER_TO();
+    static const std::string& HEADER_TO();
     /**
      * @brief HEADER_NAME_FROM The "from" header stores the sender participant ID.
      * @return the name/key for the "from" header.
      */
-    static const QString& HEADER_FROM();
+    static const std::string& HEADER_FROM();
     /**
      * @brief HEADER_EXPIRY_DATE The "expiry date" header stores the expiry date of a message. The
      * message will be discarded by any Joynr Messaging component after this date. Make sure clocks
      * are in sync to avoid deletion of messages by mistake.
      * @return the name/key for the "expiry date" header.
      */
-    static const QString& HEADER_EXPIRY_DATE();
+    static const std::string& HEADER_EXPIRY_DATE();
     /**
      * @brief HEADER_REPLY_CHANNEL_ID The "reply channel ID" header stores the senders channel ID.
      * It
@@ -98,7 +99,7 @@ public:
      * sends the response, the reply channel ID determines the channel to send the response to.
      * @return
      */
-    static const QString& HEADER_REPLY_CHANNEL_ID();
+    static const std::string& HEADER_REPLY_CHANNEL_ID();
 
     static const std::string VALUE_MESSAGE_TYPE_ONE_WAY;
     static const std::string VALUE_MESSAGE_TYPE_REQUEST;
@@ -111,8 +112,8 @@ public:
     static const std::string VALUE_MESSAGE_TYPE_PUBLICATION;
     static const std::string VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP;
 
-    static const QString VALUE_CONTENT_TYPE_TEXT_PLAIN;
-    static const QString VALUE_CONTENT_TYPE_APPLICATION_JSON;
+    static const std::string VALUE_CONTENT_TYPE_TEXT_PLAIN;
+    static const std::string VALUE_CONTENT_TYPE_APPLICATION_JSON;
 
     JoynrMessage(const JoynrMessage& message);
     JoynrMessage& operator=(const JoynrMessage& message);
@@ -121,8 +122,13 @@ public:
 
     std::string getType() const;
     void setType(const std::string& type);
-    QVariant getHeader() const;
-    void setHeader(const QVariant& header);
+    std::map<std::string, std::string> getHeaderMap() const;
+    /**
+     * @brief JoynrMessage::setHeaderMap Adds header entries to the already existing header map.
+     * If a header entry was already set, its value is replaced with the new one.
+     * @param newHeaders the header entries to add
+     */
+    void setHeaderMap(const std::map<std::string, std::string>& newHeaders);
     QByteArray getPayload() const;
     void setPayload(const QByteArray& payload);
 
@@ -141,7 +147,7 @@ public:
      * value, otherwise.
      * @see JoynrMessage::HEADER_CONTENT_TYPE()
      */
-    QString getHeaderContentType() const;
+    std::string getHeaderContentType() const;
     /**
      * @brief setHeaderContentType Sets the content type of the message. If the header is already
      * set, its
@@ -151,7 +157,7 @@ public:
      * @param to the "content type" header to be set on the message.
      * @see JoynrMessage::HEADER_CONTENT_TYPE()
      */
-    void setHeaderContentType(const QString& contentType);
+    void setHeaderContentType(const std::string& contentType);
 
     /**
      * @brief containsHeaderMessageId Tests whether the "message ID" header of the message is set or
@@ -168,7 +174,7 @@ public:
      * value, otherwise.
      * @see JoynrMessage::HEADER_MESSAGE_ID()
      */
-    QString getHeaderMessageId() const;
+    std::string getHeaderMessageId() const;
     /**
      * @brief setHeaderMessageId Sets the ID of the message. If the header is already set, its
      * value is replaced with the new one. Use JoynrMessage::containsHeaderMessageId() to check
@@ -177,7 +183,7 @@ public:
      * @param to the "message ID" header to be set on the message.
      * @see JoynrMessage::HEADER_MESSAGE_ID()
      */
-    void setHeaderMessageId(const QString& msgId);
+    void setHeaderMessageId(const std::string& msgId);
 
     /**
      * @brief containsHeaderCreatorUserId Tests whether the "creator user ID" header of the message
@@ -192,7 +198,7 @@ public:
      * @return the "creator user ID" header of the message.
      * @see JoynrMessage::HEADER_CREATOR_USER_ID()
      */
-    QString getHeaderCreatorUserId() const;
+    std::string getHeaderCreatorUserId() const;
     /**
      * @brief setHeaderCreatorUserId Sets the ID of the message. If the header is already set, its
      * value is replaced with the new one. Use JoynrMessage::containsHeaderCreatorUserId() to check
@@ -200,7 +206,7 @@ public:
      * @param creatorUserId the "creator user ID" header to be set on the message.
      * @see JoynrMessage::HEADER_CREATOR_USER_ID()
      */
-    void setHeaderCreatorUserId(const QString& creatorUserId);
+    void setHeaderCreatorUserId(const std::string& creatorUserId);
     /**
      * @brief containsHeaderTo Tests whether the "to" header of the message is set or not.
      * @return true, if the "to" header is set; false, otherwise.
@@ -215,7 +221,7 @@ public:
      * otherwise.
      * @see JoynrMessage::HEADER_TO()
      */
-    QString getHeaderTo() const;
+    std::string getHeaderTo() const;
     /**
      * @brief setHeaderTo Sets the receiver participant ID of the message. If the header is already
      * set, its
@@ -225,7 +231,7 @@ public:
      * @param to the "to" header to be set on the message.
      * @see JoynrMessage::HEADER_TO()
      */
-    void setHeaderTo(const QString& to);
+    void setHeaderTo(const std::string& to);
 
     /**
      * @brief containsHeaderFrom Tests whether the "from" header of the message is set or not.
@@ -241,7 +247,7 @@ public:
      * otherwise.
      * @see JoynrMessage::HEADER_FROM()
      */
-    QString getHeaderFrom() const;
+    std::string getHeaderFrom() const;
     /**
      * @brief setHeaderFrom Sets the sender participant ID of the message. If the header is already
      * set, its
@@ -251,7 +257,7 @@ public:
      * @param to the "from" header to be set on the message.
      * @see JoynrMessage::HEADER_FROM()
      */
-    void setHeaderFrom(const QString& from);
+    void setHeaderFrom(const std::string& from);
 
     /**
      * @brief containsHeaderExpiryDate Tests whether the "expiry date" header of the message is set
@@ -295,7 +301,7 @@ public:
      * default-constructed value, otherwise.
      * @see JoynrMessage::HEADER_REPLY_CHANNEL_ID()
      */
-    QString getHeaderReplyChannelId() const;
+    std::string getHeaderReplyChannelId() const;
     /**
      * @brief setHeaderReplyChannelId Sets the reply channel ID of the message. If the header is
      * already set, its
@@ -305,7 +311,7 @@ public:
      * @param to the "reply channel ID" header to be set on the message.
      * @see JoynrMessage::HEADER_REPLY_CHANNEL_ID()
      */
-    void setHeaderReplyChannelId(const QString& replyChannelId);
+    void setHeaderReplyChannelId(const std::string& replyChannelId);
 
 private:
     /**
@@ -313,24 +319,14 @@ private:
      * @param key the header name key to lookup
      * @return true if the key was found in the header map
      */
-    bool containsHeader(const QString& key) const;
+    bool containsHeader(const std::string& key) const;
 
-    template <class T>
-    T getHeader(const QString& key) const
-    {
-        return header.toMap().value(key).value<T>();
-    }
+    std::string getHeader(const std::string& key) const;
 
-    template <class T>
-    void setHeader(const QString& key, const T& value)
-    {
-        QVariantMap headerMap = header.toMap();
-        headerMap.insert(key, value);
-        header = QVariant::fromValue(headerMap);
-    }
+    void setHeader(const std::string& key, const std::string& value);
 
     std::string type;
-    QVariant header;
+    std::map<std::string, std::string> headerMap;
     QByteArray payload;
     static joynr_logging::Logger* logger;
 

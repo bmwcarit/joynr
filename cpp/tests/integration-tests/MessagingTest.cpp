@@ -229,7 +229,7 @@ TEST_F(MessagingTest, routeMsgToHttpCommunicationMgr)
                 QString::fromStdString(receiverId),
                 qos,
                 request);
-    message.setHeaderReplyChannelId(senderChannelId);
+    message.setHeaderReplyChannelId(senderChannelId.toStdString());
 
     // InProcessMessagingSkeleton should not receive the message
     EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(message)))
@@ -256,7 +256,7 @@ TEST_F(MessagingTest, routeMultipleMessages)
                 QString::fromStdString(receiverId),
                 qos,
                 request);
-    message.setHeaderReplyChannelId(senderChannelId);
+    message.setHeaderReplyChannelId(senderChannelId.toStdString());
 
     std::string receiverId2("receiverId2");
     JoynrMessage message2 = messageFactory.createRequest(
@@ -264,7 +264,7 @@ TEST_F(MessagingTest, routeMultipleMessages)
                 QString::fromStdString(receiverId2),
                 qos,
                 request);
-    message2.setHeaderReplyChannelId(senderChannelId);
+    message2.setHeaderReplyChannelId(senderChannelId.toStdString());
 
     // InProcessMessagingSkeleton should receive the message2 and message3
     EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(message2)))

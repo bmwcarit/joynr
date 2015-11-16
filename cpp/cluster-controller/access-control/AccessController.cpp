@@ -102,7 +102,7 @@ void AccessController::LdacConsumerPermissionCallback::consumerPermission(
     if (hasPermission == false) {
         LOG_ERROR(logger,
                   QString("Message %1 to domain %2, interface %3 failed ACL check")
-                          .arg(message.getHeaderMessageId())
+                          .arg(QString::fromStdString(message.getHeaderMessageId()))
                           .arg(domain)
                           .arg(interfaceName));
     }
@@ -149,7 +149,7 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
     // Get the permission for given operation
     QtPermission::Enum permission =
             owningAccessController.localDomainAccessController.getConsumerPermission(
-                    message.getHeaderCreatorUserId().toStdString(),
+                    message.getHeaderCreatorUserId(),
                     domain.toStdString(),
                     interfaceName.toStdString(),
                     operation.toStdString(),
@@ -160,7 +160,7 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
     if (hasPermission == false) {
         LOG_ERROR(logger,
                   QString("Message %1 to domain %2, interface/operation %3/%4 failed ACL check")
-                          .arg(message.getHeaderMessageId())
+                          .arg(QString::fromStdString(message.getHeaderMessageId()))
                           .arg(domain)
                           .arg(interfaceName)
                           .arg(operation));
@@ -235,7 +235,7 @@ void AccessController::addParticipantToWhitelist(const QString& participantId)
 
 bool AccessController::needsPermissionCheck(const JoynrMessage& message)
 {
-    if (whitelistParticipantIds.contains(message.getHeaderTo())) {
+    if (whitelistParticipantIds.contains(QString::fromStdString(message.getHeaderTo()))) {
         return false;
     }
 
@@ -261,7 +261,7 @@ void AccessController::hasConsumerPermission(
     }
 
     // Get the domain and interface of the message destination
-    std::string participantId = message.getHeaderTo().toStdString();
+    std::string participantId = message.getHeaderTo();
     std::function<void(const types::DiscoveryEntry&)> lookupSuccessCallback =
             [this, message, callback, participantId](const types::DiscoveryEntry& discoveryEntry) {
         if (discoveryEntry.getParticipantId() != participantId) {
@@ -292,7 +292,7 @@ void AccessController::hasConsumerPermission(
 
         // Try to determine permission without expensive message deserialization
         // For now QtTrustLevel::HIGH is assumed.
-        QString msgCreatorUid = message.getHeaderCreatorUserId();
+        QString msgCreatorUid = QString::fromStdString(message.getHeaderCreatorUserId());
         localDomainAccessController.getConsumerPermission(
                 msgCreatorUid.toStdString(), domain, interfaceName, TrustLevel::HIGH, ldacCallback);
     };

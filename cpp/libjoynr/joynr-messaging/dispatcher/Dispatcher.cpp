@@ -139,8 +139,8 @@ void Dispatcher::receive(const JoynrMessage& message)
 
 void Dispatcher::handleRequestReceived(const JoynrMessage& message)
 {
-    std::string senderId = message.getHeaderFrom().toStdString();
-    std::string receiverId = message.getHeaderTo().toStdString();
+    std::string senderId = message.getHeaderFrom();
+    std::string receiverId = message.getHeaderTo();
 
     // json request
     // lookup necessary data
@@ -285,7 +285,7 @@ void Dispatcher::handleSubscriptionRequestReceived(const JoynrMessage& message)
     QMutexLocker locker(&subscriptionHandlingMutex);
     assert(publicationManager != NULL);
 
-    QString receiverId = message.getHeaderTo();
+    QString receiverId = QString::fromStdString(message.getHeaderTo());
     std::shared_ptr<RequestCaller> caller = requestCallerDirectory.lookup(receiverId.toStdString());
 
     QByteArray jsonSubscriptionRequest = message.getPayload();
@@ -304,11 +304,12 @@ void Dispatcher::handleSubscriptionRequestReceived(const JoynrMessage& message)
         // Provider not registered yet
         // Dispatcher will call publicationManger->restore when a new provider is added to activate
         // subscriptions for that provider
-        publicationManager->add(
-                message.getHeaderFrom(), message.getHeaderTo(), *subscriptionRequest);
+        publicationManager->add(QString::fromStdString(message.getHeaderFrom()),
+                                QString::fromStdString(message.getHeaderTo()),
+                                *subscriptionRequest);
     } else {
-        publicationManager->add(message.getHeaderFrom(),
-                                message.getHeaderTo(),
+        publicationManager->add(QString::fromStdString(message.getHeaderFrom()),
+                                QString::fromStdString(message.getHeaderTo()),
                                 caller,
                                 *subscriptionRequest,
                                 messageSender);
@@ -324,7 +325,7 @@ void Dispatcher::handleBroadcastSubscriptionRequestReceived(const JoynrMessage& 
     QMutexLocker locker(&subscriptionHandlingMutex);
     assert(publicationManager != NULL);
 
-    QString receiverId = message.getHeaderTo();
+    QString receiverId = QString::fromStdString(message.getHeaderTo());
     std::shared_ptr<RequestCaller> caller = requestCallerDirectory.lookup(receiverId.toStdString());
 
     QByteArray jsonSubscriptionRequest = message.getPayload();
@@ -344,11 +345,12 @@ void Dispatcher::handleBroadcastSubscriptionRequestReceived(const JoynrMessage& 
         // Provider not registered yet
         // Dispatcher will call publicationManger->restore when a new provider is added to activate
         // subscriptions for that provider
-        publicationManager->add(
-                message.getHeaderFrom(), message.getHeaderTo(), *subscriptionRequest);
+        publicationManager->add(QString::fromStdString(message.getHeaderFrom()),
+                                QString::fromStdString(message.getHeaderTo()),
+                                *subscriptionRequest);
     } else {
-        publicationManager->add(message.getHeaderFrom(),
-                                message.getHeaderTo(),
+        publicationManager->add(QString::fromStdString(message.getHeaderFrom()),
+                                QString::fromStdString(message.getHeaderTo()),
                                 caller,
                                 *subscriptionRequest,
                                 messageSender);

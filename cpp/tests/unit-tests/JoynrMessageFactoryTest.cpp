@@ -79,8 +79,8 @@ public:
     }
     void checkHeaderCreatorFromTo(const JoynrMessage& joynrMessage){
         EXPECT_TRUE(joynrMessage.containsHeaderCreatorUserId());
-        EXPECT_QSTREQ(senderID, joynrMessage.getHeaderFrom());
-        EXPECT_QSTREQ(receiverID, joynrMessage.getHeaderTo());
+        EXPECT_STREQ(senderID.toStdString().c_str(), joynrMessage.getHeaderFrom().c_str());
+        EXPECT_STREQ(receiverID.toStdString().c_str(), joynrMessage.getHeaderTo().c_str());
     }
 
     void checkRequest(const JoynrMessage& joynrMessage){
@@ -252,5 +252,5 @@ TEST_F(JoynrMessageFactoryTest, testRequestContentType){
                 qos,
                 request
     );
-    EXPECT_QSTREQ(JoynrMessage::VALUE_CONTENT_TYPE_APPLICATION_JSON, message.getHeaderContentType());
+    EXPECT_STREQ(JoynrMessage::VALUE_CONTENT_TYPE_APPLICATION_JSON.c_str(), message.getHeaderContentType().c_str());
 }

@@ -108,7 +108,7 @@ public:
                                      QString::fromStdString(toParticipantId),
                                      messagingQos,
                                      request);
-        message.setHeaderCreatorUserId(QString::fromStdString(DUMMY_USERID));
+        message.setHeaderCreatorUserId(DUMMY_USERID);
 
         ON_CALL(
                 messagingSettingsMock,

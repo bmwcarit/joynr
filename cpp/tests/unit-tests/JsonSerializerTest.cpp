@@ -160,7 +160,9 @@ TEST_F(JsonSerializerTest, serialize_JoynrMessage) {
                 "\\\"requestReplyId\\\":\\\"%4\\\"}\","
                 "\"type\":\"request\"}"
     );
-    expected = expected.arg(QString::number(testExpiryDate.time_since_epoch().count())).arg(joynrMessage.getHeaderMessageId()).arg(TypeUtil::toQt(request.getMethodName())).
+    expected = expected.arg(QString::number(testExpiryDate.time_since_epoch().count())).
+            arg(QString::fromStdString(joynrMessage.getHeaderMessageId())).
+            arg(TypeUtil::toQt(request.getMethodName())).
             arg(TypeUtil::toQt(request.getRequestReplyId()));
 
     LOG_DEBUG(logger, QString("serialize_JoynrMessage: expected: %1").arg(expected));

@@ -374,8 +374,8 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam) {
     EXPECT_CALL(*mockMessageRouter, route(
                      AllOf(
                          A<JoynrMessage>(),
-                         Property(&JoynrMessage::getHeaderFrom, Eq(QString::fromStdString(providerParticipantId))),
-                         Property(&JoynrMessage::getHeaderTo, Eq(QString::fromStdString(proxyParticipantId))))
+                         Property(&JoynrMessage::getHeaderFrom, Eq(providerParticipantId)),
+                         Property(&JoynrMessage::getHeaderTo, Eq(proxyParticipantId)))
                      ));
 
     publicationManager->add(
@@ -396,8 +396,8 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam) {
     EXPECT_CALL(*mockMessageRouter, route(
                      AllOf(
                          A<JoynrMessage>(),
-                         Property(&JoynrMessage::getHeaderFrom, Eq(QString::fromStdString(providerParticipantId))),
-                         Property(&JoynrMessage::getHeaderTo, Eq(QString::fromStdString(proxyParticipantId))))
+                         Property(&JoynrMessage::getHeaderFrom, Eq(providerParticipantId)),
+                         Property(&JoynrMessage::getHeaderTo, Eq(proxyParticipantId)))
                      ));
 
 

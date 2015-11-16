@@ -181,23 +181,24 @@ void MessageRouter::route(const JoynrMessage& message)
     if (now > message.getHeaderExpiryDate()) {
         LOG_WARN(logger,
                  QString("Received expired message. Dropping the message (ID: %1).")
-                         .arg(message.getHeaderMessageId()));
+                         .arg(QString::fromStdString(message.getHeaderMessageId())));
         return;
     }
 
     // Validate the message if possible
     if (securityManager != NULL && !securityManager->validate(message)) {
         LOG_ERROR(logger,
-                  QString("messageId %1 failed validation").arg(message.getHeaderMessageId()));
+                  QString("messageId %1 failed validation")
+                          .arg(QString::fromStdString(message.getHeaderMessageId())));
         return;
     }
 
     LOG_DEBUG(logger,
               QString("Route message with Id %1 and payload %2")
-                      .arg(message.getHeaderMessageId())
-                      .arg(QString(message.getPayload())));
+                      .arg(QString::fromStdString(message.getHeaderMessageId())
+                                   .arg(QString(message.getPayload()))));
     // search for the destination address
-    const QString destinationPartId = message.getHeaderTo();
+    const QString destinationPartId = QString::fromStdString(message.getHeaderTo());
     std::shared_ptr<joynr::system::RoutingTypes::QtAddress> destAddress(NULL);
 
     routingTableLock.lockForRead();
@@ -241,8 +242,8 @@ void MessageRouter::route(const JoynrMessage& message)
                      QString("No routing information found for destination participant ID \"%1\" "
                              "so far. Waiting for participant registration. "
                              "Queueing message (ID : %2)")
-                             .arg(message.getHeaderTo())
-                             .arg(message.getHeaderMessageId()));
+                             .arg(QString::fromStdString(message.getHeaderTo()))
+                             .arg(QString::fromStdString(message.getHeaderMessageId())));
         }
         return;
     }
@@ -513,9 +514,9 @@ void MessageRunnable::run()
     if (!isExpired()) {
         messagingStub->transmit(message);
     } else {
-        LOG_ERROR(
-                logger,
-                QString("Message with ID %1 expired: dropping!").arg(message.getHeaderMessageId()));
+        LOG_ERROR(logger,
+                  QString("Message with ID %1 expired: dropping!")
+                          .arg(QString::fromStdString(message.getHeaderMessageId())));
     }
 }
 
