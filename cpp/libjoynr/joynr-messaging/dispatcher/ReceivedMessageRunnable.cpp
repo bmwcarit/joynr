@@ -18,6 +18,7 @@
  */
 #include "libjoynr/joynr-messaging/dispatcher/ReceivedMessageRunnable.h"
 #include "joynr/Dispatcher.h"
+#include "joynr/TypeUtil.h"
 
 namespace joynr
 {
@@ -33,7 +34,9 @@ ReceivedMessageRunnable::ReceivedMessageRunnable(const JoynrMessage& message,
           message(message),
           dispatcher(dispatcher)
 {
-    LOG_DEBUG(logger, "Creating ReceivedMessageRunnable for message type: " + message.getType());
+    LOG_DEBUG(logger,
+              "Creating ReceivedMessageRunnable for message type: " +
+                      TypeUtil::toQt(message.getType()));
 }
 
 void ReceivedMessageRunnable::run()
@@ -41,7 +44,7 @@ void ReceivedMessageRunnable::run()
     LOG_DEBUG(logger,
               QString("Running ReceivedMessageRunnable for message type: %1, msg ID: %2 and "
                       "payload: %3")
-                      .arg(message.getType())
+                      .arg(TypeUtil::toQt(message.getType()))
                       .arg(message.getHeaderMessageId())
                       .arg(QString(message.getPayload())));
     if (isExpired()) {
@@ -66,7 +69,7 @@ void ReceivedMessageRunnable::run()
     } else if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP) {
         dispatcher.handleSubscriptionStopReceived(message);
     } else {
-        LOG_FATAL(logger, "unknown message type: " + message.getType());
+        LOG_FATAL(logger, "unknown message type: " + TypeUtil::toQt(message.getType()));
         assert(false);
     }
 }

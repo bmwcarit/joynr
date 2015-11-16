@@ -29,6 +29,8 @@
 #include <stdint.h>
 #include <QByteArray>
 
+#include <string>
+
 namespace joynr
 {
 
@@ -47,7 +49,7 @@ class JOYNRCOMMON_EXPORT JoynrMessage : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString type READ getType WRITE setType)
+    Q_PROPERTY(std::string type READ getType WRITE setType)
     Q_PROPERTY(QVariant header READ getHeader WRITE setHeader)
     Q_PROPERTY(QByteArray payload READ getPayload WRITE setPayload)
 
@@ -98,15 +100,16 @@ public:
      */
     static const QString& HEADER_REPLY_CHANNEL_ID();
 
-    static const QString VALUE_MESSAGE_TYPE_ONE_WAY;
-    static const QString VALUE_MESSAGE_TYPE_REQUEST;
-    static const QString VALUE_MESSAGE_TYPE_REPLY;
-    static const QString VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST;
-    static const QString VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST;
-    static const QString VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY; // reply that the subscription was
-                                                                // registered successfully
-    static const QString VALUE_MESSAGE_TYPE_PUBLICATION;
-    static const QString VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP;
+    static const std::string VALUE_MESSAGE_TYPE_ONE_WAY;
+    static const std::string VALUE_MESSAGE_TYPE_REQUEST;
+    static const std::string VALUE_MESSAGE_TYPE_REPLY;
+    static const std::string VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST;
+    static const std::string VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST;
+    static const std::string
+            VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY; // reply that the subscription was
+                                                   // registered successfully
+    static const std::string VALUE_MESSAGE_TYPE_PUBLICATION;
+    static const std::string VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP;
 
     static const QString VALUE_CONTENT_TYPE_TEXT_PLAIN;
     static const QString VALUE_CONTENT_TYPE_APPLICATION_JSON;
@@ -116,8 +119,8 @@ public:
     // deactivated to fix linker warnings. Not needed anywhere at the moment.
     bool operator==(const JoynrMessage& message) const;
 
-    QString getType() const;
-    void setType(const QString& type);
+    std::string getType() const;
+    void setType(const std::string& type);
     QVariant getHeader() const;
     void setHeader(const QVariant& header);
     QByteArray getPayload() const;
@@ -326,7 +329,7 @@ private:
         header = QVariant::fromValue(headerMap);
     }
 
-    QString type;
+    std::string type;
     QVariant header;
     QByteArray payload;
     static joynr_logging::Logger* logger;

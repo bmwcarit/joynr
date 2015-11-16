@@ -161,7 +161,7 @@ TEST_F(JoynrMessageFactoryTest, createRequest){
 
     checkHeaderCreatorFromTo(joynrMessage);
     checkRequest(joynrMessage);
-    EXPECT_QSTREQ(JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST, joynrMessage.getType());
+    EXPECT_STREQ(JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST.c_str(), joynrMessage.getType().c_str());
 }
 
 TEST_F(JoynrMessageFactoryTest, createReply){
@@ -173,7 +173,7 @@ TEST_F(JoynrMessageFactoryTest, createReply){
     );
     checkHeaderCreatorFromTo(joynrMessage);
     checkReply(joynrMessage);
-    EXPECT_QSTREQ(JoynrMessage::VALUE_MESSAGE_TYPE_REPLY, joynrMessage.getType());
+    EXPECT_STREQ(JoynrMessage::VALUE_MESSAGE_TYPE_REPLY.c_str(), joynrMessage.getType().c_str());
 }
 
 TEST_F(JoynrMessageFactoryTest, createOneWay){
@@ -185,7 +185,7 @@ TEST_F(JoynrMessageFactoryTest, createOneWay){
     );
     checkHeaderCreatorFromTo(joynrMessage);
     checkReply(joynrMessage);
-    EXPECT_QSTREQ(JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY, joynrMessage.getType());
+    EXPECT_STREQ(JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY.c_str(), joynrMessage.getType().c_str());
 }
 
 //TEST_F(JoynrMessageFactoryTest, createSubscriptionReply){
@@ -206,7 +206,7 @@ TEST_F(JoynrMessageFactoryTest, createPublication){
     );
     checkHeaderCreatorFromTo(joynrMessage);
     checkSubscriptionPublication(joynrMessage);
-    EXPECT_QSTREQ(JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION, joynrMessage.getType());
+    EXPECT_STREQ(JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION.c_str(), joynrMessage.getType().c_str());
 }
 
 TEST_F(JoynrMessageFactoryTest, createSubscriptionRequest){
@@ -222,7 +222,7 @@ TEST_F(JoynrMessageFactoryTest, createSubscriptionRequest){
                 subscriptionRequest
     );
     checkHeaderCreatorFromTo(joynrMessage);
-    EXPECT_QSTREQ(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST, joynrMessage.getType());
+    EXPECT_STREQ(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST.c_str(), joynrMessage.getType().c_str());
 }
 
 TEST_F(JoynrMessageFactoryTest, createSubscriptionStop){
@@ -236,7 +236,7 @@ TEST_F(JoynrMessageFactoryTest, createSubscriptionStop){
                 subscriptionStop
     );
     checkHeaderCreatorFromTo(joynrMessage);
-    EXPECT_QSTREQ(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP, joynrMessage.getType());
+    EXPECT_STREQ(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP.c_str(), joynrMessage.getType().c_str());
 }
 
 TEST_F(JoynrMessageFactoryTest, testRequestContentType){

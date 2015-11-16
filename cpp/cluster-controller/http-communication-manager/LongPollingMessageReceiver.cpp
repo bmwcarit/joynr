@@ -180,7 +180,7 @@ void LongPollingMessageReceiver::processReceivedQjsonObjects(const QByteArray& j
                           .arg(QString::fromUtf8(jsonObject)));
         return;
     }
-    if (msg->getType().isEmpty()) {
+    if (msg->getType().empty()) {
         LOG_ERROR(logger, "received empty message - dropping Messages");
         return;
     }

@@ -113,7 +113,7 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
 {
 
     QString operation;
-    QString messageType = message.getType();
+    std::string messageType = message.getType();
 
     // Deserialize the message to get the operation
     QByteArray jsonRequest = message.getPayload();
@@ -239,7 +239,7 @@ bool AccessController::needsPermissionCheck(const JoynrMessage& message)
         return false;
     }
 
-    QString messageType = message.getType();
+    std::string messageType = message.getType();
     if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_REPLY ||
         messageType == JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION) {
         // reply messages don't need permission check
