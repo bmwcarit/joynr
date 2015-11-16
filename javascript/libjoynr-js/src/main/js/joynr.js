@@ -20,8 +20,6 @@
  * #L%
  */
 
-var requirejsNode;
-
 function populateJoynrApi(joynr, api) {
     var key;
     for (key in api) {
@@ -90,7 +88,6 @@ var joynr = {
      * @param capabilitiesWriteable
      */
     load : function load(provisioning, callback, capabilitiesWritable) {
-        requirejs = requirejsNode || requirejs;
         requirejs([ 'libjoynr-deps'
         ], function(joynrapi) {
             var runtime;
@@ -151,8 +148,8 @@ if (typeof requireJsDefine === 'function' && requireJsDefine.amd) {
 } else if (exports !== undefined) {
     // configuring requirejs
     var requirejsConfig = require("./require.config.node.js");
-    requirejsNode = require("requirejs");
-    requirejsNode.config(requirejsConfig);
+    requirejs = require("requirejs");
+    requirejs.config(requirejsConfig);
     if ((module !== undefined) && module.exports) {
         exports.joynr = module.exports = joynr;
     } else {
