@@ -792,12 +792,10 @@ bool PublicationManager::processFilterChain(const QString& subscriptionId,
     QReadLocker subscriptionLocker(&subscriptionLock);
     std::shared_ptr<BroadcastSubscriptionRequestInformation> subscriptionRequest(
             subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId));
-    QtBroadcastFilterParameters filterParameters = subscriptionRequest->getFilterParameters();
+    BroadcastFilterParameters filterParameters = subscriptionRequest->getFilterParameters();
 
     foreach (std::shared_ptr<IBroadcastFilter> filter, filters) {
-        success = success &&
-                  filter->filter(broadcastValues,
-                                 QtBroadcastFilterParameters::createStd(filterParameters));
+        success = success && filter->filter(broadcastValues, filterParameters);
     }
 
     return success;

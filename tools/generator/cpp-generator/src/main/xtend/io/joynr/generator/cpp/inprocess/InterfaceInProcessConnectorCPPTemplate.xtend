@@ -415,7 +415,7 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 		QString broadcastName("«broadcastName»");
 		joynr::BroadcastSubscriptionRequest subscriptionRequest;
 		«IF isSelective(broadcast)»
-			subscriptionRequest.setFilterParameters(QtBroadcastFilterParameters::createQt(filterParameters));
+			subscriptionRequest.setFilterParameters(filterParameters);
 		«ENDIF»
 		return subscribeTo«broadcastName.toFirstUpper»Broadcast(
 					subscriptionListener,
@@ -438,7 +438,7 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 	) {
 		joynr::BroadcastSubscriptionRequest subscriptionRequest;
 		«IF isSelective(broadcast)»
-			subscriptionRequest.setFilterParameters(QtBroadcastFilterParameters::createQt(filterParameters));
+			subscriptionRequest.setFilterParameters(filterParameters);
 		«ENDIF»
 		subscriptionRequest.setSubscriptionId(QString::fromStdString(subscriptionId));
 		return subscribeTo«broadcastName.toFirstUpper»Broadcast(

@@ -53,8 +53,8 @@ public:
     // Method from base class is hidden. See below in private section.
     void setQos(std::shared_ptr<QtOnChangeSubscriptionQos> qos);
 
-    QtBroadcastFilterParameters getFilterParameters() const;
-    void setFilterParameters(const QtBroadcastFilterParameters& filterParameters);
+    BroadcastFilterParameters getFilterParameters() const;
+    void setFilterParameters(const BroadcastFilterParameters& filterParameters);
 
 protected:
     void setFilterParametersData(QVariant filterParameters);
@@ -64,12 +64,13 @@ private:
     // Hide method for setting all kinds of QOS derived from base class
     void setQos(std::shared_ptr<QtSubscriptionQos> qos);
 
-    QtBroadcastFilterParameters filterParameters;
+    BroadcastFilterParameters filterParameters;
 
     static joynr_logging::Logger* logger;
 };
 
 } // namespace joynr
 
+Q_DECLARE_METATYPE(joynr::BroadcastFilterParameters)
 Q_DECLARE_METATYPE(joynr::BroadcastSubscriptionRequest)
 #endif // BROADCASTSUBSCRIPTIONREQUEST_H

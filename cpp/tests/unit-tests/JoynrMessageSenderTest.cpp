@@ -203,7 +203,7 @@ TEST_F(JoynrMessageSenderTest, sendBroadcastSubscriptionRequest_normal){
     auto qos = std::shared_ptr<QtOnChangeSubscriptionQos>(new QtOnChangeSubscriptionQos(validity, minInterval));
 
     BroadcastSubscriptionRequest subscriptionRequest;
-    QtBroadcastFilterParameters filter;
+    BroadcastFilterParameters filter;
     filter.setFilterParameter("MyParameter", "MyValue");
     subscriptionRequest.setFilterParameters(filter);
     subscriptionRequest.setSubscriptionId(QString("subscriptionId"));

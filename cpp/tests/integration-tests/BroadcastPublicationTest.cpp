@@ -75,7 +75,7 @@ public:
                     80 // alertInterval_ms
         ));
         request.setQos(subscriptionQos);
-        request.setFilterParameters(QtBroadcastFilterParameters::createQt(filterParameters));
+        request.setFilterParameters(filterParameters);
 
         requestCaller->registerBroadcastListener(
                     "locationUpdateSelective",
@@ -168,7 +168,7 @@ TEST_F(BroadcastPublicationTest, sendPublication_broadcastwithSingleArrayParam) 
                 0 // minInterval_ms
     ));
     request.setQos(subscriptionQos);
-    request.setFilterParameters(QtBroadcastFilterParameters::createQt(filterParameters));
+    request.setFilterParameters(filterParameters);
 
     requestCaller->registerBroadcastListener(
                 "broadcastWithSingleArrayParameter",

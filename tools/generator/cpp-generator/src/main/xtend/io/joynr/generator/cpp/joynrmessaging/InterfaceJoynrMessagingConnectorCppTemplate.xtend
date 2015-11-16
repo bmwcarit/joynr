@@ -502,7 +502,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 	) {
 		joynr::BroadcastSubscriptionRequest subscriptionRequest;
 		«IF isSelective(broadcast)»
-			subscriptionRequest.setFilterParameters(QtBroadcastFilterParameters::createQt(filterParameters));
+			subscriptionRequest.setFilterParameters(filterParameters);
 		«ENDIF»
 		return subscribeTo«broadcastName.toFirstUpper»Broadcast(subscriptionListener, subscriptionQos, subscriptionRequest);
 	}
@@ -522,7 +522,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 	) {
 		joynr::BroadcastSubscriptionRequest subscriptionRequest;
 		«IF isSelective(broadcast)»
-			subscriptionRequest.setFilterParameters(QtBroadcastFilterParameters::createQt(filterParameters));
+			subscriptionRequest.setFilterParameters(filterParameters);
 		«ENDIF»
 		subscriptionRequest.setSubscriptionId(QString::fromStdString(subscriptionId));
 		return subscribeTo«broadcastName.toFirstUpper»Broadcast(subscriptionListener, subscriptionQos, subscriptionRequest);

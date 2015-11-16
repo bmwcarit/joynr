@@ -53,14 +53,14 @@ bool BroadcastSubscriptionRequest::operator==(
 {
 
     bool equal = getQos()->equals(*subscriptionRequest.getQos()) &&
-                 getFilterParameters().equals(subscriptionRequest.getFilterParameters());
+                 getFilterParameters() == subscriptionRequest.getFilterParameters();
     return getSubscriptionId() == subscriptionRequest.getSubscriptionId() &&
            getSubscribeToName() == subscriptionRequest.getSubscribeToName() && equal;
 }
 
 void BroadcastSubscriptionRequest::setFilterParametersData(QVariant filterParameters)
 {
-    this->filterParameters = filterParameters.value<QtBroadcastFilterParameters>();
+    this->filterParameters = filterParameters.value<BroadcastFilterParameters>();
 }
 
 QString BroadcastSubscriptionRequest::toQString() const
@@ -78,13 +78,13 @@ QVariant BroadcastSubscriptionRequest::getFilterParametersData() const
     return QVariant::fromValue(filterParameters);
 }
 
-QtBroadcastFilterParameters BroadcastSubscriptionRequest::getFilterParameters() const
+BroadcastFilterParameters BroadcastSubscriptionRequest::getFilterParameters() const
 {
     return filterParameters;
 }
 
 void BroadcastSubscriptionRequest::setFilterParameters(
-        const QtBroadcastFilterParameters& filterParameters)
+        const BroadcastFilterParameters& filterParameters)
 {
     this->filterParameters = filterParameters;
 }

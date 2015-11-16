@@ -127,7 +127,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_BroadcastSubscriptionRequest) {
     BroadcastSubscriptionRequest request;
     std::shared_ptr<QtOnChangeSubscriptionQos> subscriptionQos(new QtOnChangeSubscriptionQos(5000, 2000));
     request.setQos(subscriptionQos);
-    QtBroadcastFilterParameters filterParams;
+    BroadcastFilterParameters filterParams;
     filterParams.setFilterParameter("MyFilter", "MyFilterValue");
     request.setFilterParameters(filterParams);
     QByteArray requestJson = JsonSerializer::serializeQObject(request);
