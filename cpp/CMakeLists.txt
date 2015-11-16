@@ -122,6 +122,7 @@ message(STATUS "variable JOYNR_BINARY_DIR=" ${JOYNR_BINARY_DIR})
 if(${ENABLE_GCOV})
     list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake/code-coverage")
     include(CodeCoverage)
+    setup_target_for_coverage("UnitCoverageHtml" g_UnitTests "coverage")
     setup_target_for_coverage_cobertura("UnitCoverageTarget" g_UnitTests "coverage" "--gtest_output=xml:g_UnitTests.junit.xml" "'.*/libs/.*|.*/build/.*|.*/tests/.*|.*/generated/.*'")
     # copy the resource folder to the build folder, because some files are required for the tests
     add_custom_target(CopyResourceFolderToBuildDir
@@ -133,7 +134,8 @@ if(${ENABLE_GCOV})
     add_dependencies(UnitCoverageTarget CopyResourceFolderToBuildDir)
     #setup_target_for_coverage_cobertura("IntegrationCoverageTarget" g_IntegrationTests "integrationCoverage.xml")
     message(STATUS "setting flags to measure test coverage.")
-    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage")
     #set(LDFLAGS "{$LDFLAGS} -fprofile-arcs -ftest-coverage")
 endif(${ENABLE_GCOV})
 
