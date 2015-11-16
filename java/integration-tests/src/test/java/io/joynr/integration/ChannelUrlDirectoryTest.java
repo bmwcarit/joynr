@@ -30,6 +30,7 @@ import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilder;
+import io.joynr.runtime.InprocessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.PropertyLoader;
@@ -79,7 +80,7 @@ public class ChannelUrlDirectoryTest {
         // prints the tests name in the log so we know what we are testing
         String methodName = name.getMethodName();
         logger.info(methodName + " setup beginning...");
-        injectorConsumer = new JoynrInjectorFactory().getInjector();
+        injectorConsumer = new JoynrInjectorFactory(new InprocessRuntimeModule()).getInjector();
     }
 
     @After

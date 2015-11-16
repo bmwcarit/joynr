@@ -21,6 +21,7 @@ package io.joynr.capabilities;
 
 import static org.junit.Assert.assertEquals;
 import io.joynr.proxy.RpcStubbingTest.TestProvider;
+import io.joynr.runtime.InprocessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 
 import org.junit.Before;
@@ -38,7 +39,7 @@ public class ParticipantIdStorageTest {
 
     @Before
     public void setUp() {
-        Injector injector = new JoynrInjectorFactory().getInjector();
+        Injector injector = new JoynrInjectorFactory(new InprocessRuntimeModule()).getInjector();
         storage = injector.getInstance(ParticipantIdStorage.class);
     }
 

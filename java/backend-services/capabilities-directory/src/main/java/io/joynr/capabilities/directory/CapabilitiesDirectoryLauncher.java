@@ -20,6 +20,7 @@ package io.joynr.capabilities.directory;
  */
 
 import io.joynr.runtime.AbstractJoynrApplication;
+import io.joynr.runtime.InprocessRuntimeModule;
 import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
@@ -53,7 +54,8 @@ public class CapabilitiesDirectoryLauncher extends AbstractJoynrApplication {
         // LongPollingMessagingModule is only added in main(), since the servletMessagingModule will be used otherwise
         JoynrInjectorFactory injectorFactory = new JoynrInjectorFactory(joynrConfig,
                                                                         new JpaPersistModule("CapabilitiesDirectory"),
-                                                                        new CapabilitiesDirectoryModule());
+                                                                        new CapabilitiesDirectoryModule(),
+                                                                        new InprocessRuntimeModule());
         capabilitiesDirectoryLauncher = injectorFactory.createApplication(new JoynrApplicationModule("capabilitiesDirectoryLauncher",
                                                                                                      CapabilitiesDirectoryLauncher.class));
         capabilitiesDirectoryLauncher.run();

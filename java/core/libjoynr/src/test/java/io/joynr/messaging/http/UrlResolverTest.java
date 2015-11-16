@@ -23,6 +23,7 @@ import static org.junit.Assert.assertEquals;
 import io.joynr.messaging.LocalChannelUrlDirectoryClient;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingTestModule;
+import io.joynr.runtime.InprocessRuntimeModule;
 import io.joynr.runtime.JoynrBaseModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 
@@ -65,7 +66,8 @@ public class UrlResolverTest {
         };
 
         Injector injector = new JoynrInjectorFactory(new JoynrBaseModule(properties,
-                                                                         Modules.override(new MessagingTestModule())
+                                                                         Modules.override(new MessagingTestModule(),
+                                                                                          new InprocessRuntimeModule())
                                                                                 .with(mockModule))).getInjector();
         urlResolver = injector.getInstance(UrlResolver.class);
     }

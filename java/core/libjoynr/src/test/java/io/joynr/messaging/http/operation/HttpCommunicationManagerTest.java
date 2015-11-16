@@ -27,6 +27,7 @@ import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingTestModule;
 import io.joynr.messaging.ReceiverStatusListener;
+import io.joynr.runtime.InprocessRuntimeModule;
 import io.joynr.runtime.JoynrBaseModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 
@@ -112,7 +113,9 @@ public class HttpCommunicationManagerTest {
         properties.put(MessagingPropertyKeys.CHANNELID, testChannelId);
         properties.put(MessagingPropertyKeys.BOUNCE_PROXY_URL, bounceProxyUrlString);
 
-        Injector injector = new JoynrInjectorFactory(new JoynrBaseModule(properties, new MessagingTestModule())).getInjector();
+        Injector injector = new JoynrInjectorFactory(new JoynrBaseModule(properties,
+                                                                         new MessagingTestModule(),
+                                                                         new InprocessRuntimeModule())).getInjector();
 
         longpollingMessageReceiver = injector.getInstance(LongPollingMessageReceiver.class);
         messageSender = injector.getInstance(MessageSender.class);

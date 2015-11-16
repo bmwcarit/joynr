@@ -62,7 +62,7 @@ import io.joynr.proxy.ProxyInvocationHandlerImpl;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 
-public class DefaultRuntimeModule extends AbstractModule {
+abstract class DefaultRuntimeModule extends AbstractModule {
 
     @Override
     protected void configure() {

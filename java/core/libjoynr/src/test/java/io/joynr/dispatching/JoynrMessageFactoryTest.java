@@ -87,7 +87,7 @@ public class JoynrMessageFactoryTest {
 
         String subscriptionId = "subscription";
         String attributeName = "attribute";
-        SubscriptionQos subscriptionqos = new PeriodicSubscriptionQos(1000, System.currentTimeMillis() + 1, 1500, 1000);
+        SubscriptionQos subscriptionqos = new PeriodicSubscriptionQos(1000, System.currentTimeMillis() + 10, 1500, 1000);
         subscriptionRequest = new SubscriptionRequest(subscriptionId, attributeName, subscriptionqos);
         String response = "response";
         publication = new SubscriptionPublication(Arrays.asList(response), subscriptionId);

@@ -23,18 +23,21 @@ import java.util.Properties;
 
 import com.google.inject.Inject;
 import com.google.inject.Module;
+import com.google.inject.util.Modules;
 
 /**
  * This class is used as concrete joynr injector factory. Client code uses this class to instantiate joynr
  * applications via the createApplication method and to get injector objects for their own object instantiations.
  * This class binds JoynrBaseModule as module to be used when creating injectors and joynr applications
- *
  */
 public class JoynrInjectorFactory extends AbstractJoynrInjectorFactory {
 
+    private DefaultRuntimeModule runtimeModule;
+
     @Inject
-    public JoynrInjectorFactory() {
-        this(new Module[0]);
+    public JoynrInjectorFactory(DefaultRuntimeModule runtimeModule) {
+        this(new Module[]{ runtimeModule });
+        this.runtimeModule = runtimeModule;
     }
 
     /**
@@ -51,7 +54,7 @@ public class JoynrInjectorFactory extends AbstractJoynrInjectorFactory {
      * during object injection/creation.
      *
      * @param joynrProperties joynr configuration properties to be used by this injector factory
-     * @param joynrModules (optional parameter) for <b>joynr internal use only</b>
+     * @param joynrModules    (optional parameter) for <b>joynr internal use only</b>
      */
     public JoynrInjectorFactory(Properties joynrProperties, Module... joynrModules) {
         super(new JoynrBaseModule(joynrProperties, joynrModules));
@@ -59,7 +62,7 @@ public class JoynrInjectorFactory extends AbstractJoynrInjectorFactory {
 
     @Override
     public void updateInjectorModule(Properties customJoynProperties, Module... modules) {
-        updateModules(new JoynrBaseModule(customJoynProperties, modules));
+        updateModules(Modules.combine(new JoynrBaseModule(customJoynProperties, modules), runtimeModule));
     }
 
     @Override
@@ -69,7 +72,7 @@ public class JoynrInjectorFactory extends AbstractJoynrInjectorFactory {
     }
 
     public JoynrApplication createApplication(JoynrApplicationModule applicationModule) {
-        return super.createApplication(applicationModule, (Module[]) null);
+        return super.createApplication(applicationModule);
     }
 
     public JoynrApplication createApplication(Class<? extends JoynrApplication> applicationClass) {

@@ -20,6 +20,7 @@ package io.joynr.messaging;
  */
 
 import io.joynr.messaging.http.operation.FailureAction;
+import io.joynr.runtime.InprocessRuntimeModule;
 import io.joynr.runtime.JoynrBaseModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 
@@ -114,7 +115,8 @@ public class MessageSchedulerTest {
         };
 
         Injector injector = new JoynrInjectorFactory(new JoynrBaseModule(properties,
-                                                                         Modules.override(new MessagingTestModule())
+                                                                         Modules.override(new MessagingTestModule(),
+                                                                                          new InprocessRuntimeModule())
                                                                                 .with(mockModule))).getInjector();
         messageScheduler = injector.getInstance(MessageScheduler.class);
     }

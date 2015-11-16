@@ -40,8 +40,11 @@ public class JoynrBaseModule implements Module {
         module.configure(binder);
     }
 
+    /**
+     * default constructor with no properties set and {@link InprocessRuntimeModule} as runtime
+     */
     public JoynrBaseModule() {
-        this(new Properties());
+        this(new Properties(), new InprocessRuntimeModule());
     }
 
     public JoynrBaseModule(Properties customJoynProperties, Module... modules) {
@@ -49,7 +52,6 @@ public class JoynrBaseModule implements Module {
                                   new LongPollingMessagingModule(),
                                   new PubSubModule(),
                                   new DiscoveryClientModule(),
-                                  new InprocessRuntimeModule(),
                                   new AccessControlClientModule()).with(modules);
     }
 }

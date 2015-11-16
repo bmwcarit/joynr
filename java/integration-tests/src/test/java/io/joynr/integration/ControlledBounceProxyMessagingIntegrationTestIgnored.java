@@ -23,6 +23,7 @@ import com.google.inject.Injector;
 import com.google.inject.Module;
 import io.joynr.integration.util.ServersUtil;
 import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.runtime.InprocessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import org.eclipse.jetty.server.Server;
 import org.junit.AfterClass;
@@ -52,6 +53,9 @@ public class ControlledBounceProxyMessagingIntegrationTestIgnored extends Abstra
 
     @Override
     public Injector createInjector(Properties joynrConfig, Module... modules) {
-        return new JoynrInjectorFactory(joynrConfig, modules).getInjector();
+        Module[] modulesWithRuntime = new Module[modules.length + 1];
+        modulesWithRuntime[0] = new InprocessRuntimeModule();
+        System.arraycopy(modules, 0, modulesWithRuntime, 1, modules.length);
+        return new JoynrInjectorFactory(joynrConfig, modulesWithRuntime).getInjector();
     }
 }

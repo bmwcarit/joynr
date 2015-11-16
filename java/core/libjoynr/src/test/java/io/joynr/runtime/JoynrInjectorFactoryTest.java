@@ -45,7 +45,7 @@ public class JoynrInjectorFactoryTest {
     private String creationTestConfigEntry;
     private JoynrInjectorFactory injectorfactory;
     private Properties applicationCreationProperties;
-    private String systemTestConfigEtnry;
+    private String systemTestConfigEntry;
     private Properties originalSystemproperties;
     private static final String factoryBounceProxyUrl = "http://factory-test-value";
     private static final String systemBounceProxyUrl = "http://system-test-value";
@@ -56,13 +56,13 @@ public class JoynrInjectorFactoryTest {
 
         Properties basicProperties = new Properties();
         basicProperties.setProperty(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, "localdomain");
-        injectorfactory = new JoynrInjectorFactory(basicProperties);
+        injectorfactory = new JoynrInjectorFactory(basicProperties, new InprocessRuntimeModule());
 
         creationTestConfigEntry = "creation-test-value";
         applicationCreationProperties = new Properties();
         applicationCreationProperties.setProperty(TestJoynrApplication.PROPERTY_TEST_CONFIG_ENTRY,
                                                   creationTestConfigEntry);
-        systemTestConfigEtnry = "system-test-value";
+        systemTestConfigEntry = "system-test-value";
     }
 
     @After
@@ -78,7 +78,7 @@ public class JoynrInjectorFactoryTest {
      * Would (but should not) fail with a guice exception if the property is added at the factory level and then again at the application level
      */
     public void applicationSystemPropertiesAreNotSetInJoynFactoryProperties() {
-        System.getProperties().setProperty(TestJoynrApplication.PROPERTY_TEST_CONFIG_ENTRY, systemTestConfigEtnry);
+        System.getProperties().setProperty(TestJoynrApplication.PROPERTY_TEST_CONFIG_ENTRY, systemTestConfigEntry);
         injectorfactory.createApplication(new TestApplicationModule(applicationCreationProperties));
     }
 
@@ -111,22 +111,22 @@ public class JoynrInjectorFactoryTest {
 
     @Test
     public void applicationSystemPropertiesOverrideApplicationDefaultProperties() {
-        System.getProperties().setProperty(TestJoynrApplication.PROPERTY_TEST_CONFIG_ENTRY, systemTestConfigEtnry);
+        System.getProperties().setProperty(TestJoynrApplication.PROPERTY_TEST_CONFIG_ENTRY, systemTestConfigEntry);
 
         IApplication application = injectorfactory.createApplication(new TestApplicationModule(applicationCreationProperties));
         assertTrue(application instanceof TestJoynrApplication);
 
-        assertEquals(systemTestConfigEtnry, ((TestJoynrApplication) application).testConfigEntry);
+        assertEquals(systemTestConfigEntry, ((TestJoynrApplication) application).testConfigEntry);
     }
 
     @Test
     public void applicationSystemPropertiesOverrideApplicationCreationProperties() {
-        System.getProperties().setProperty(TestJoynrApplication.PROPERTY_TEST_CONFIG_ENTRY, systemTestConfigEtnry);
+        System.getProperties().setProperty(TestJoynrApplication.PROPERTY_TEST_CONFIG_ENTRY, systemTestConfigEntry);
 
         IApplication application = injectorfactory.createApplication(new TestApplicationModule(applicationCreationProperties));
         assertTrue(application instanceof TestJoynrApplication);
 
-        assertEquals(systemTestConfigEtnry, ((TestJoynrApplication) application).testConfigEntry);
+        assertEquals(systemTestConfigEntry, ((TestJoynrApplication) application).testConfigEntry);
     }
 
     @Ignore("Will not run in environments with MessagingPropertyKeys.BOUNCE_PROXY_URL set as environment variable (e.g. on build server).")
