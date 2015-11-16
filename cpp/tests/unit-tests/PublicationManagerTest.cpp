@@ -108,7 +108,7 @@ TEST_F(PublicationManagerTest, add_requestCallerIsCalledCorrectlyByPublisherRunn
 
     // will be deleted by the publication manager
     SubscriptionRequest subscriptionRequest;
-    subscriptionRequest.setSubscribeToName(QString::fromStdString(attributeName));
+    subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(qos);
     LOG_DEBUG(logger, "adding request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
@@ -145,7 +145,7 @@ TEST_F(PublicationManagerTest, stop_publications) {
                         alertInterval_ms));
 
     SubscriptionRequest subscriptionRequest;
-    subscriptionRequest.setSubscribeToName(QString::fromStdString(attributeName));
+    subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(qos);
 
     publicationManager.add(
@@ -156,7 +156,7 @@ TEST_F(PublicationManagerTest, stop_publications) {
                 &mockPublicationSender
     );
     QThreadSleep::msleep(80);
-    publicationManager.stopPublication(subscriptionRequest.getSubscriptionId());
+    publicationManager.stopPublication(QString::fromStdString(subscriptionRequest.getSubscriptionId()));
     QThreadSleep::msleep(300);
 }
 
@@ -189,7 +189,7 @@ TEST_F(PublicationManagerTest, remove_all_publications) {
                         alertInterval_ms));
 
     SubscriptionRequest subscriptionRequest;
-    subscriptionRequest.setSubscribeToName(QString::fromStdString(attributeName));
+    subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(qos);
 
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
@@ -231,7 +231,7 @@ TEST_F(PublicationManagerTest, restore_publications) {
 
     // will be delete by the publication manager (destructor PublicationState)
     SubscriptionRequest subscriptionRequest;
-    subscriptionRequest.setSubscribeToName(QString::fromStdString(attributeName));
+    subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(qos);
 
     publicationManager->add(senderId, receiverId,requestCaller,subscriptionRequest,&mockPublicationSender);
@@ -263,7 +263,7 @@ TEST_F(PublicationManagerTest, add_onChangeSubscription) {
     SubscriptionRequest subscriptionRequest;
 
     SubscriptionPublication expectedPublication;
-    expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId().toStdString());
+    expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     std::vector<Variant> response;
     response.push_back(attributeValue);
     expectedPublication.setResponse(response);
@@ -310,7 +310,7 @@ TEST_F(PublicationManagerTest, add_onChangeSubscription) {
                         minInterval_ms));
 
     // will be deleted by the publication manager
-    subscriptionRequest.setSubscribeToName(QString::fromStdString(attributeName));
+    subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(qos);
     LOG_DEBUG(logger, "adding request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
@@ -337,7 +337,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
     SubscriptionRequest subscriptionRequest;
 
     SubscriptionPublication expectedPublication;
-    expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId().toStdString());
+    expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     std::vector<Variant> response;
     response.push_back(attributeValue);
     expectedPublication.setResponse(response);
@@ -377,7 +377,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
                         minInterval_ms));
 
     // will be deleted by the publication manager
-    subscriptionRequest.setSubscribeToName(QString::fromStdString(attributeName));
+    subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(qos);
     LOG_DEBUG(logger, "adding request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
@@ -412,7 +412,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval) {
     SubscriptionRequest subscriptionRequest;
 
     SubscriptionPublication expectedPublication;
-    expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId().toStdString());
+    expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     std::vector<Variant> response;
     response.push_back(attributeValue);
     expectedPublication.setResponse(response);
@@ -451,7 +451,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval) {
                         validity_ms,
                         minInterval_ms));
 
-    subscriptionRequest.setSubscribeToName(QString::fromStdString(attributeName));
+    subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(qos);
     LOG_DEBUG(logger, "adding request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
@@ -493,7 +493,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
     SubscriptionRequest subscriptionRequest;
 
     SubscriptionPublication expectedPublication;
-    expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId().toStdString());
+    expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     std::vector<Variant> response;
     response.push_back(attributeValue);
     expectedPublication.setResponse(response);
@@ -549,7 +549,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
     int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
     qos->setExpiryDate(now + 5000);
 
-    subscriptionRequest.setSubscribeToName(QString::fromStdString(attributeName));
+    subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(qos);
     LOG_DEBUG(logger, "adding attribute subscription request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
@@ -619,7 +619,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
     SubscriptionRequest subscriptionRequest;
 
     SubscriptionPublication expectedPublication;
-    expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId().toStdString());
+    expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     std::vector<Variant> response;
     response.push_back(attributeValue);
     expectedPublication.setResponse(response);
@@ -659,7 +659,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
 
     qos->setExpiryDate(testAbsExpiryDate);
 
-    subscriptionRequest.setSubscribeToName(QString::fromStdString(attributeName));
+    subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(qos);
 
     LOG_DEBUG(logger, "adding attribute subscription request");
@@ -713,7 +713,7 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
     SubscriptionRequest subscriptionRequest;
 
     SubscriptionPublication expectedPublication;
-    expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId().toStdString());
+    expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     std::vector<Variant> response;
     response.push_back(attributeValue);
     expectedPublication.setResponse(response);
@@ -754,7 +754,7 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
 
     qos->setExpiryDate(testAbsExpiryDate);
 
-    subscriptionRequest.setSubscribeToName(QString::fromStdString(attributeName));
+    subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(qos);
     LOG_DEBUG(logger, "adding attribute subscription request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
@@ -814,7 +814,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     BroadcastSubscriptionRequest subscriptionRequest;
 
     SubscriptionPublication expectedPublication;
-    expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId().toStdString());
+    expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     expectedPublication.setResponse(broadcastValues);
 
     EXPECT_CALL(
@@ -868,7 +868,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
     qos->setExpiryDate(now + 5000);
 
-    subscriptionRequest.setSubscribeToName(QString::fromStdString(broadcastName));
+    subscriptionRequest.setSubscribeToName(broadcastName);
     subscriptionRequest.setQos(qos);
     LOG_DEBUG(logger, "adding broadcast subscription request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
@@ -934,7 +934,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     BroadcastSubscriptionRequest subscriptionRequest;
 
     SubscriptionPublication expectedPublication;
-    expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId().toStdString());
+    expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     expectedPublication.setResponse(broadcastValues);
 
     EXPECT_CALL(
@@ -973,7 +973,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
 
     qos->setExpiryDate(testAbsExpiryDate);
 
-    subscriptionRequest.setSubscribeToName(QString::fromStdString(broadcastName));
+    subscriptionRequest.setSubscribeToName(broadcastName);
     subscriptionRequest.setQos(qos);
     LOG_DEBUG(logger, "add broadcast subscription request");
     publicationManager.add(senderId, receiverId, requestCaller, subscriptionRequest, &mockPublicationSender);
@@ -1023,7 +1023,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     BroadcastSubscriptionRequest subscriptionRequest;
 
     SubscriptionPublication expectedPublication;
-    expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId().toStdString());
+    expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     expectedPublication.setResponse(broadcastValues);
 
     EXPECT_CALL(
@@ -1063,7 +1063,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
 
     qos->setExpiryDate(testAbsExpiryDate);
 
-    subscriptionRequest.setSubscribeToName(QString::fromStdString(broadcastName));
+    subscriptionRequest.setSubscribeToName(broadcastName);
     subscriptionRequest.setQos(qos);
     LOG_DEBUG(logger, "adding broadcast subscription request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
@@ -1139,7 +1139,7 @@ TEST_F(PublicationManagerTest, remove_onChangeSubscription) {
 
     // will be deleted by the publication manager
     SubscriptionRequest subscriptionRequest;
-    subscriptionRequest.setSubscribeToName(QString::fromStdString(attributeName));
+    subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(qos);
     LOG_DEBUG(logger, "adding request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);

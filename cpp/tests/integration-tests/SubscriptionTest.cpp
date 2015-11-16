@@ -145,14 +145,14 @@ TEST_F(SubscriptionTest, receive_subscriptionRequestAndPollAttribute) {
                     Invoke(mockRequestCaller.get(), &MockTestRequestCaller::invokeLocationOnSuccessFct),
                     ReleaseSemaphore(&semaphore)));
 
-    QString attributeName = "Location";
+    std::string attributeName = "Location";
     auto subscriptionQos = std::shared_ptr<QtSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
                 80, // validity_ms
                 100, // minInterval_ms
                 200, // maxInterval_ms
                 80 // alertInterval_ms
     ));
-    QString subscriptionId = "SubscriptionID";
+    std::string subscriptionId = "SubscriptionID";
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId(subscriptionId);
     subscriptionRequest.setSubscribeToName(attributeName);
@@ -202,7 +202,7 @@ TEST_F(SubscriptionTest, receive_publication ) {
     SubscriptionRequest subscriptionRequest;
     //construct a reply containing a QtGpsLocation
     SubscriptionPublication subscriptionPublication;
-    subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId().toStdString());
+    subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     std::vector<Variant> response;
     response.push_back(Variant::make<types::Localisation::GpsLocation>(gpsLocation1));
     subscriptionPublication.setResponse(response);
@@ -261,7 +261,7 @@ TEST_F(SubscriptionTest, receive_enumPublication ) {
     SubscriptionRequest subscriptionRequest;
     //construct a reply containing a QtGpsLocation
     SubscriptionPublication subscriptionPublication;
-    subscriptionPublication.setSubscriptionId(TypeUtil::toStd(subscriptionRequest.getSubscriptionId()));
+    subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     std::vector<Variant> response;
     response.push_back(Variant::make<joynr::tests::testTypes::TestEnum::Enum>(tests::testTypes::TestEnum::ZERO));
     subscriptionPublication.setResponse(response);
@@ -312,14 +312,14 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription) {
                     Invoke(mockRequestCaller.get(), &MockTestRequestCaller::invokeLocationOnSuccessFct),
                     ReleaseSemaphore(&semaphore)
             ));
-    QString attributeName = "Location";
+    std::string attributeName = "Location";
     auto subscriptionQos = std::shared_ptr<QtSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
                 80, // validity_ms
                 100, // minInterval_ms
                 200, // maxInterval_ms
                 80 // alertInterval_ms
     ));
-    QString subscriptionId = "SubscriptionID";
+    std::string subscriptionId = "SubscriptionID";
 
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId(subscriptionId);
@@ -342,7 +342,7 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription) {
 
 TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam) {
 
-    QString subscriptionId = "SubscriptionID";
+    std::string subscriptionId = "SubscriptionID";
     auto subscriptionQos =
             std::shared_ptr<QtOnChangeSubscriptionQos>(new QtOnChangeSubscriptionQos(
                 800, // validity_ms
@@ -425,16 +425,16 @@ TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications) {
                     ReleaseSemaphore(&semaphore)));
 
     dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
-    QString attributeName = "Location";
     auto subscriptionQos = std::shared_ptr<QtSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
                 1200, // validity_ms
                 10, // minInterval_ms
                 100, // maxInterval_ms
                 1100 // alertInterval_ms
     ));
-    QString subscriptionId = "SubscriptionID";
+    std::string subscriptionId = "SubscriptionID";
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId(subscriptionId);
+    std::string attributeName = "Location";
     subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(subscriptionQos);
 
@@ -472,14 +472,14 @@ TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
                     ReleaseSemaphore(&semaphore)));
 
     dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
-    QString attributeName = "Location";
+    std::string attributeName = "Location";
     auto subscriptionQos = std::shared_ptr<QtSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
                 1200, // validity_ms
                 10, // minInterval_ms
                 100, // maxInterval_ms
                 1100 // alertInterval_ms
     ));
-    QString subscriptionId = "SubscriptionID";
+    std::string subscriptionId = "SubscriptionID";
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId(subscriptionId);
     subscriptionRequest.setSubscribeToName(attributeName);
@@ -497,7 +497,7 @@ TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
     ASSERT_TRUE(semaphore.tryAcquire(2, 1000));
 
     SubscriptionStop subscriptionStop;
-    subscriptionStop.setSubscriptionId(TypeUtil::toStd(subscriptionRequest.getSubscriptionId()));
+    subscriptionStop.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     // receive a subscription stop message
     msg = messageFactory.createSubscriptionStop(
                 QString::fromStdString(proxyParticipantId),

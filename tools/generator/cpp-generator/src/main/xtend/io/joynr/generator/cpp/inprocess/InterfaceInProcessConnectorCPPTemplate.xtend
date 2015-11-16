@@ -234,7 +234,7 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 				std::string& subscriptionId)
 		{
 			joynr::SubscriptionRequest subscriptionRequest;
-			subscriptionRequest.setSubscriptionId(QString::fromStdString(subscriptionId));
+			subscriptionRequest.setSubscriptionId(subscriptionId);
 			return subscribeTo«attributeName.toFirstUpper»(subscriptionListener, subscriptionQos, subscriptionRequest);
 		}
 
@@ -282,7 +282,7 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 				std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
 				assert(caller);
 				std::shared_ptr<«interfaceName»RequestCaller> requestCaller = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
-				std::string subscriptionId(subscriptionRequest.getSubscriptionId().toStdString());
+				std::string subscriptionId(subscriptionRequest.getSubscriptionId());
 
 				if(!caller) {
 					assert(publicationManager != NULL);
@@ -440,7 +440,7 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 		«IF isSelective(broadcast)»
 			subscriptionRequest.setFilterParameters(filterParameters);
 		«ENDIF»
-		subscriptionRequest.setSubscriptionId(QString::fromStdString(subscriptionId));
+		subscriptionRequest.setSubscriptionId(subscriptionId);
 		return subscribeTo«broadcastName.toFirstUpper»Broadcast(
 					subscriptionListener,
 					subscriptionQos,
@@ -468,7 +468,7 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 		std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
 		assert(caller);
 		std::shared_ptr<«interfaceName»RequestCaller> requestCaller = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
-		std::string subscriptionId(subscriptionRequest.getSubscriptionId().toStdString());
+		std::string subscriptionId(subscriptionRequest.getSubscriptionId());
 
 		if(!caller) {
 			assert(publicationManager != NULL);

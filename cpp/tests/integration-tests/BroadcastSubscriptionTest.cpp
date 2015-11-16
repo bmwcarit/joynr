@@ -130,7 +130,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
     BroadcastSubscriptionRequest subscriptionRequest;
     //construct a reply containing a QtGpsLocation
     SubscriptionPublication subscriptionPublication;
-    subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId().toStdString());
+    subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     std::vector<Variant> response;
     response.push_back(Variant::make<types::Localisation::GpsLocation>(gpsLocation1));
     subscriptionPublication.setResponse(response);
@@ -185,7 +185,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters )
     BroadcastSubscriptionRequest subscriptionRequest;
     //construct a reply containing a QtGpsLocation
     SubscriptionPublication subscriptionPublication;
-    subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId().toStdString());
+    subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     std::vector<Variant> response;
     response.push_back(Variant::make<types::Localisation::GpsLocation>(gpsLocation1));
     response.push_back(Variant::make<double>(speed1));

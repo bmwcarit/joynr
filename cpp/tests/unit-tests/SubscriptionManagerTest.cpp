@@ -83,7 +83,7 @@ TEST(SubscriptionManagerTest, registerSubscription_missedPublicationRunnableWork
     );
     SubscriptionRequest subscriptionRequest;
     EXPECT_CALL(*mockGpsSubscriptionListener,
-                onError(publicationMissedException(subscriptionRequest.getSubscriptionId().toStdString())))
+                onError(publicationMissedException(subscriptionRequest.getSubscriptionId())))
             .Times(AtLeast(4));
     std::shared_ptr<SubscriptionCallback<types::Localisation::QtGpsLocation> > gpslocationCallback(
             new SubscriptionCallback<types::Localisation::QtGpsLocation>(mockGpsSubscriptionListener));
@@ -104,7 +104,7 @@ TEST(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_missedP
     );
     SubscriptionRequest subscriptionRequest;
     EXPECT_CALL(*mockGpsSubscriptionListener,
-                onError(publicationMissedException(subscriptionRequest.getSubscriptionId().toStdString())))
+                onError(publicationMissedException(subscriptionRequest.getSubscriptionId())))
             .Times(AtMost(6));
     std::shared_ptr<SubscriptionCallback<types::Localisation::QtGpsLocation> > gpslocationCallback(
             new SubscriptionCallback<types::Localisation::QtGpsLocation>(mockGpsSubscriptionListener));
@@ -144,7 +144,7 @@ TEST(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_correct
     );
     SubscriptionRequest subscriptionRequest;
     EXPECT_CALL(*mockGpsSubscriptionListener,
-                onError(publicationMissedException(subscriptionRequest.getSubscriptionId().toStdString())))
+                onError(publicationMissedException(subscriptionRequest.getSubscriptionId())))
             .Times(AtLeast(6));
     std::shared_ptr<SubscriptionCallback<types::Localisation::QtGpsLocation> > gpslocationCallback(
             new SubscriptionCallback<types::Localisation::QtGpsLocation>(mockGpsSubscriptionListener));
@@ -175,7 +175,7 @@ TEST(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_correct
     );
     SubscriptionRequest subscriptionRequest;
     EXPECT_CALL(*mockGpsSubscriptionListener,
-                onError(publicationMissedException(subscriptionRequest.getSubscriptionId().toStdString())))
+                onError(publicationMissedException(subscriptionRequest.getSubscriptionId())))
             .Times(AtMost(6));
     std::shared_ptr<SubscriptionCallback<types::Localisation::QtGpsLocation> > gpslocationCallback(
             new SubscriptionCallback<types::Localisation::QtGpsLocation>(mockGpsSubscriptionListener));
@@ -255,7 +255,7 @@ TEST(SubscriptionManagerTest, unregisterSubscription_unregisterLeadsToStoppingMi
     );
     SubscriptionRequest subscriptionRequest;
     EXPECT_CALL(*mockGpsSubscriptionListener,
-                onError(publicationMissedException(subscriptionRequest.getSubscriptionId().toStdString())))
+                onError(publicationMissedException(subscriptionRequest.getSubscriptionId())))
             .Times(Between(2,3));
     SubscriptionManager subscriptionManager;
     std::shared_ptr<SubscriptionCallback<types::Localisation::QtGpsLocation>> gpslocationCallback(
@@ -271,7 +271,7 @@ TEST(SubscriptionManagerTest, unregisterSubscription_unregisterLeadsToStoppingMi
                 qos,
                 subscriptionRequest);
      QThreadSleep::msleep(900);
-     subscriptionManager.unregisterSubscription(subscriptionRequest.getSubscriptionId());
+     subscriptionManager.unregisterSubscription(QString::fromStdString(subscriptionRequest.getSubscriptionId()));
      QThreadSleep::msleep(1100);
 }
 

@@ -212,8 +212,8 @@ TEST_F(JoynrMessageFactoryTest, createPublication){
 TEST_F(JoynrMessageFactoryTest, createSubscriptionRequest){
     auto subscriptionQos = std::shared_ptr<QtSubscriptionQos>(new QtOnChangeSubscriptionQos());
     SubscriptionRequest subscriptionRequest;
-    subscriptionRequest.setSubscriptionId(QString("subscriptionId"));
-    subscriptionRequest.setSubscribeToName(QString("attributeName"));
+    subscriptionRequest.setSubscriptionId("subscriptionId");
+    subscriptionRequest.setSubscribeToName("attributeName");
     subscriptionRequest.setQos(subscriptionQos);
     JoynrMessage joynrMessage = messageFactory.createSubscriptionRequest(
                 senderID,

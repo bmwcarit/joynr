@@ -82,7 +82,7 @@ void SubscriptionManager::registerSubscription(
         SubscriptionRequest& subscriptionRequest)
 {
     // Register the subscription
-    QString subscriptionId = subscriptionRequest.getSubscriptionId();
+    QString subscriptionId = QString::fromStdString(subscriptionRequest.getSubscriptionId());
     LOG_DEBUG(logger, "Subscription registered. ID=" + subscriptionId);
 
     // lock the access to the subscriptions data structure
@@ -139,8 +139,8 @@ void SubscriptionManager::registerSubscription(
                     new SubscriptionEndRunnable(subscriptionId, *this), qos->getExpiryDate() - now);
         }
     }
-    subscriptionRequest.setSubscriptionId(subscriptionId);
-    subscriptionRequest.setSubscribeToName(subscribeToName);
+    subscriptionRequest.setSubscriptionId(subscriptionId.toStdString());
+    subscriptionRequest.setSubscribeToName(subscribeToName.toStdString());
     subscriptionRequest.setQos(qos);
 }
 

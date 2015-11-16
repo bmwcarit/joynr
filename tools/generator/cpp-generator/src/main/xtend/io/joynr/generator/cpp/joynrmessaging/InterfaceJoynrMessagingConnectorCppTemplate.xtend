@@ -296,7 +296,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 		) {
 
 			joynr::SubscriptionRequest subscriptionRequest;
-			subscriptionRequest.setSubscriptionId(QString::fromStdString(subscriptionId));
+			subscriptionRequest.setSubscriptionId(subscriptionId);
 			return subscribeTo«attributeName.toFirstUpper»(subscriptionListener, subscriptionQos, subscriptionRequest);
 		}
 
@@ -334,7 +334,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 						clonedMessagingQos,
 						subscriptionRequest
 			);
-			return subscriptionRequest.getSubscriptionId().toStdString();
+			return subscriptionRequest.getSubscriptionId();
 		}
 
 		void «interfaceName»JoynrMessagingConnector::unsubscribeFrom«attributeName.toFirstUpper»(
@@ -524,7 +524,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 		«IF isSelective(broadcast)»
 			subscriptionRequest.setFilterParameters(filterParameters);
 		«ENDIF»
-		subscriptionRequest.setSubscriptionId(QString::fromStdString(subscriptionId));
+		subscriptionRequest.setSubscriptionId(subscriptionId);
 		return subscribeTo«broadcastName.toFirstUpper»Broadcast(subscriptionListener, subscriptionQos, subscriptionRequest);
 	}
 
@@ -563,7 +563,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 					clonedMessagingQos,
 					subscriptionRequest
 		);
-		return subscriptionRequest.getSubscriptionId().toStdString();
+		return subscriptionRequest.getSubscriptionId();
 	}
 
 	void «interfaceName»JoynrMessagingConnector::unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(

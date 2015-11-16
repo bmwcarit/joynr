@@ -65,7 +65,7 @@ public:
         publicationSender = new MockPublicationSender();
 
         request.setSubscribeToName("locationUpdateSelective");
-        request.setSubscriptionId(QString::fromStdString(subscriptionId));
+        request.setSubscriptionId(subscriptionId);
 
         auto subscriptionQos =
                 std::shared_ptr<QtOnChangeSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(

@@ -135,11 +135,11 @@ PublicationManager::~PublicationManager()
     LOG_DEBUG(logger, "Destructor: removing publications");
     foreach (std::shared_ptr<SubscriptionRequestInformation> request,
              subscriptionId2SubscriptionRequest) {
-        removeAttributePublication(request->getSubscriptionId());
+        removeAttributePublication(QString::fromStdString(request->getSubscriptionId()));
     }
     foreach (std::shared_ptr<BroadcastSubscriptionRequestInformation> request,
              subscriptionId2BroadcastSubscriptionRequest) {
-        removeBroadcastPublication(request->getSubscriptionId());
+        removeBroadcastPublication(QString::fromStdString(request->getSubscriptionId()));
     }
 
     subscriptionLocker.unlock();
@@ -233,7 +233,7 @@ void PublicationManager::handleAttributeSubscriptionRequest(
         std::shared_ptr<RequestCaller> requestCaller,
         IPublicationSender* publicationSender)
 {
-    QString subscriptionId = requestInfo->getSubscriptionId();
+    QString subscriptionId = QString::fromStdString(requestInfo->getSubscriptionId());
     std::shared_ptr<Publication> publication(new Publication(publicationSender, requestCaller));
 
     // lock the access to the subscriptions data structure
@@ -243,7 +243,8 @@ void PublicationManager::handleAttributeSubscriptionRequest(
 
     if (publicationExists(subscriptionId)) {
         LOG_DEBUG(logger,
-                  "Publication with id: " + requestInfo->getSubscriptionId() +
+                  "Publication with id: " +
+                          QString::fromStdString(requestInfo->getSubscriptionId()) +
                           " already exists. Updating...");
         removeAttributePublication(subscriptionId);
     }
@@ -305,8 +306,7 @@ void PublicationManager::addOnChangePublication(
 
         // Register the attribute listener
         std::shared_ptr<RequestCaller> requestCaller = publication->requestCaller;
-        requestCaller->registerAttributeListener(
-                request->getSubscribeToName().toStdString(), attributeListener);
+        requestCaller->registerAttributeListener(request->getSubscribeToName(), attributeListener);
 
         // Make note of the attribute listener so that it can be unregistered
         publication->attributeListener = attributeListener;
@@ -328,8 +328,7 @@ void PublicationManager::addBroadcastPublication(
 
     // Register the broadcast listener
     std::shared_ptr<RequestCaller> requestCaller = publication->requestCaller;
-    requestCaller->registerBroadcastListener(
-            request->getSubscribeToName().toStdString(), broadcastListener);
+    requestCaller->registerBroadcastListener(request->getSubscribeToName(), broadcastListener);
 
     // Make note of the attribute listener so that it can be unregistered
     publication->broadcastListener = broadcastListener;
@@ -353,7 +352,8 @@ void PublicationManager::add(const QString& proxyParticipantId,
     // we don't use a separate block for locking/unlocking, because the subscriptionList created
     // within the locked code is used after the unlock.
     QWriteLocker subscriptionLocker(&subscriptionLock);
-    subscriptionId2SubscriptionRequest.insert(requestInfo->getSubscriptionId(), requestInfo);
+    subscriptionId2SubscriptionRequest.insert(
+            QString::fromStdString(requestInfo->getSubscriptionId()), requestInfo);
     QList<QVariant> subscriptionList(subscriptionMapToListCopy(subscriptionId2SubscriptionRequest));
     subscriptionLocker.unlock();
 
@@ -380,7 +380,7 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
         IPublicationSender* publicationSender)
 {
 
-    QString subscriptionId = requestInfo->getSubscriptionId();
+    QString subscriptionId = QString::fromStdString(requestInfo->getSubscriptionId());
 
     // lock the access to the subscriptions data structure
     // we don't use a separate block for locking/unlocking, because the subscriptionList created
@@ -390,7 +390,8 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
 
     if (publicationExists(subscriptionId)) {
         LOG_DEBUG(logger,
-                  "Publication with id: " + requestInfo->getSubscriptionId() +
+                  "Publication with id: " +
+                          QString::fromStdString(requestInfo->getSubscriptionId()) +
                           " already exists. Updating...");
         removeBroadcastPublication(subscriptionId);
     }
@@ -452,7 +453,7 @@ void PublicationManager::add(const QString& proxyParticipantId,
     // within the locked code is used after the unlock.
     QWriteLocker subscriptionLocker(&subscriptionLock);
     subscriptionId2BroadcastSubscriptionRequest.insert(
-            requestInfo->getSubscriptionId(), requestInfo);
+            QString::fromStdString(requestInfo->getSubscriptionId()), requestInfo);
     QList<QVariant> subscriptionList(
             subscriptionMapToListCopy(subscriptionId2BroadcastSubscriptionRequest));
     subscriptionLocker.unlock();
@@ -473,7 +474,7 @@ void PublicationManager::removeAllSubscriptions(const QString& providerId)
 
         foreach (std::shared_ptr<SubscriptionRequestInformation> requestInfo,
                  subscriptionId2SubscriptionRequest) {
-            subscriptionId = requestInfo->getSubscriptionId();
+            subscriptionId = QString::fromStdString(requestInfo->getSubscriptionId());
 
             if (requestInfo->getProviderId() == providerId) {
                 publicationsToRemove.append(subscriptionId);
@@ -487,7 +488,7 @@ void PublicationManager::removeAllSubscriptions(const QString& providerId)
 
         foreach (std::shared_ptr<BroadcastSubscriptionRequestInformation> requestInfo,
                  subscriptionId2BroadcastSubscriptionRequest) {
-            subscriptionId = requestInfo->getSubscriptionId();
+            subscriptionId = QString::fromStdString(requestInfo->getSubscriptionId());
 
             if (requestInfo->getProviderId() == providerId) {
                 broadcastsToRemove.append(subscriptionId);
@@ -742,7 +743,7 @@ void PublicationManager::removeBroadcastPublication(const QString& subscriptionI
         // Remove listener
         std::shared_ptr<RequestCaller> requestCaller = publication->requestCaller;
         requestCaller->unregisterBroadcastListener(
-                request->getSubscribeToName().toStdString(), publication->broadcastListener);
+                request->getSubscribeToName(), publication->broadcastListener);
         publication->broadcastListener = NULL;
 
         removePublicationEndRunnable(publication);
@@ -763,7 +764,7 @@ void PublicationManager::removeOnChangePublication(
         // Unregister and delete the attribute listener
         std::shared_ptr<RequestCaller> requestCaller = publication->requestCaller;
         requestCaller->unregisterAttributeListener(
-                request->getSubscribeToName().toStdString(), publication->attributeListener);
+                request->getSubscribeToName(), publication->attributeListener);
         publication->attributeListener = NULL;
     }
     removePublicationEndRunnable(publication);
@@ -821,7 +822,7 @@ void PublicationManager::sendPublicationError(
 {
     LOG_DEBUG(logger, "sending subscription error");
     SubscriptionPublication subscriptionPublication;
-    subscriptionPublication.setSubscriptionId(request->getSubscriptionId().toStdString());
+    subscriptionPublication.setSubscriptionId(request->getSubscriptionId());
     std::shared_ptr<exceptions::JoynrRuntimeException> error;
     error.reset(dynamic_cast<exceptions::JoynrRuntimeException*>(exception.clone()));
     if (error) {
@@ -863,7 +864,8 @@ void PublicationManager::sendSubscriptionPublication(
 
     {
         QMutexLocker currentScheduledLocker(&currentScheduledPublicationsMutex);
-        currentScheduledPublications.removeAll(request->getSubscriptionId());
+        currentScheduledPublications.removeAll(
+                QString::fromStdString(request->getSubscriptionId()));
     }
     LOG_TRACE(logger, QString("sent publication @ %1").arg(now));
 }
@@ -876,7 +878,7 @@ void PublicationManager::sendPublication(
 {
     LOG_DEBUG(logger, "sending subscription reply");
     SubscriptionPublication subscriptionPublication;
-    subscriptionPublication.setSubscriptionId(request->getSubscriptionId().toStdString());
+    subscriptionPublication.setSubscriptionId(request->getSubscriptionId());
     subscriptionPublication.setResponse(value);
     sendSubscriptionPublication(
             publication, subscriptionInformation, request, subscriptionPublication);
@@ -932,8 +934,8 @@ void PublicationManager::pollSubscription(const QString& subscriptionId)
         }
 
         // Get the value of the attribute
-        QString attributeGetter(
-                Util::attributeGetterFromName(subscriptionRequest->getSubscribeToName()));
+        QString attributeGetter(Util::attributeGetterFromName(
+                QString::fromStdString(subscriptionRequest->getSubscribeToName())));
         std::shared_ptr<RequestCaller> requestCaller(publication->requestCaller);
         std::shared_ptr<IRequestInterpreter> requestInterpreter(
                 InterfaceRegistrar::instance().getRequestInterpreter(

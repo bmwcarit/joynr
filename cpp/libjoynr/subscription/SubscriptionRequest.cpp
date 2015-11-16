@@ -38,7 +38,7 @@ SubscriptionRequest::SubscriptionRequest()
           subscribedToName(),
           qos(std::shared_ptr<QtSubscriptionQos>(new QtOnChangeSubscriptionQos()))
 {
-    subscriptionId = Util::createUuid();
+    subscriptionId = Util::createUuid().toStdString();
     qRegisterMetaType<QtSubscriptionQos>("QtSubscriptionQos");
 
     qRegisterMetaType<QtOnChangeSubscriptionQos>("QtOnChangeSubscriptionQos");
@@ -57,12 +57,12 @@ SubscriptionRequest::SubscriptionRequest(const SubscriptionRequest& subscription
 {
 }
 
-QString SubscriptionRequest::getSubscriptionId() const
+std::string SubscriptionRequest::getSubscriptionId() const
 {
     return subscriptionId;
 }
 
-QString SubscriptionRequest::getSubscribeToName() const
+std::string SubscriptionRequest::getSubscribeToName() const
 {
     return subscribedToName;
 }
@@ -93,12 +93,12 @@ bool SubscriptionRequest::operator==(const SubscriptionRequest& subscriptionRequ
            subscribedToName == subscriptionRequest.getSubscribeToName() && equal;
 }
 
-void SubscriptionRequest::setSubscriptionId(const QString& id)
+void SubscriptionRequest::setSubscriptionId(const std::string& id)
 {
     this->subscriptionId = id;
 }
 
-void SubscriptionRequest::setSubscribeToName(const QString& attributeName)
+void SubscriptionRequest::setSubscribeToName(const std::string& attributeName)
 {
     this->subscribedToName = attributeName;
 }

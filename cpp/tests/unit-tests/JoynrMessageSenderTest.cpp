@@ -173,8 +173,8 @@ TEST_F(JoynrMessageSenderTest, sendSubscriptionRequest_normal){
     auto qos = std::shared_ptr<QtSubscriptionQos>(new QtPeriodicSubscriptionQos(validity, period, alert));
 
     SubscriptionRequest subscriptionRequest;
-    subscriptionRequest.setSubscriptionId(QString("subscriptionId"));
-    subscriptionRequest.setSubscribeToName(QString("attributeName"));
+    subscriptionRequest.setSubscriptionId("subscriptionId");
+    subscriptionRequest.setSubscribeToName("attributeName");
     subscriptionRequest.setQos(qos);
 
     JoynrMessage message = messageFactory.createSubscriptionRequest(
@@ -206,8 +206,8 @@ TEST_F(JoynrMessageSenderTest, sendBroadcastSubscriptionRequest_normal){
     BroadcastFilterParameters filter;
     filter.setFilterParameter("MyParameter", "MyValue");
     subscriptionRequest.setFilterParameters(filter);
-    subscriptionRequest.setSubscriptionId(QString("subscriptionId"));
-    subscriptionRequest.setSubscribeToName(QString("broadcastName"));
+    subscriptionRequest.setSubscriptionId("subscriptionId");
+    subscriptionRequest.setSubscribeToName("broadcastName");
     subscriptionRequest.setQos(qos);
 
     JoynrMessage message = messageFactory.createBroadcastSubscriptionRequest(

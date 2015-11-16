@@ -129,14 +129,14 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
         QScopedPointer<SubscriptionRequest> request(
                 JsonSerializer::deserializeQObject<SubscriptionRequest>(jsonRequest));
         if (!request.isNull()) {
-            operation = request->getSubscribeToName();
+            operation = QString::fromStdString(request->getSubscribeToName());
         }
     } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
 
         QScopedPointer<BroadcastSubscriptionRequest> request(
                 JsonSerializer::deserializeQObject<BroadcastSubscriptionRequest>(jsonRequest));
         if (!request.isNull()) {
-            operation = request->getSubscribeToName();
+            operation = QString::fromStdString(request->getSubscribeToName());
         }
     }
 

@@ -37,7 +37,7 @@ void ClassDeserializer<BroadcastSubscriptionRequest>::deserialize(BroadcastSubsc
     while (o.hasNextField()) {
         IField& field = o.nextField();
         if (field.name() == "subscriptionId") {
-            t.setSubscriptionId(QString::fromStdString(field.value()));
+            t.setSubscriptionId(field.value());
         }
     }
 }
