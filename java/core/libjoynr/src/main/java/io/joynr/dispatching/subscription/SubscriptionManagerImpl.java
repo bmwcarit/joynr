@@ -21,8 +21,8 @@ package io.joynr.dispatching.subscription;
 
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import io.joynr.dispatching.Dispatcher;
-import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
@@ -279,7 +279,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
     }
 
     @Override
-    public <T> void handleAttributePublicationError(String subscriptionId, JoynrException error) {
+    public <T> void handleAttributePublicationError(String subscriptionId, JoynrRuntimeException error) {
         touchSubscriptionState(subscriptionId);
         AttributeSubscriptionListener<T> listener = getSubscriptionListener(subscriptionId);
         if (listener == null) {

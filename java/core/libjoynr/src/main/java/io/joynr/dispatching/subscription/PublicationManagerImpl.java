@@ -54,6 +54,7 @@ import joynr.BroadcastSubscriptionRequest;
 import joynr.OnChangeSubscriptionQos;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
+import joynr.exceptions.ProviderRuntimeException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -589,7 +590,7 @@ public class PublicationManagerImpl implements PublicationManager, CallerDirecto
         }
     }
 
-    private void sendPublicationError(JoynrException error, PublicationInformation publicationInformation) {
+    private void sendPublicationError(JoynrRuntimeException error, PublicationInformation publicationInformation) {
         SubscriptionPublication publication = new SubscriptionPublication(error,
                                                                           publicationInformation.getSubscriptionId());
         sendPublication(publication, publicationInformation);
@@ -604,7 +605,13 @@ public class PublicationManagerImpl implements PublicationManager, CallerDirecto
 
                 @Override
                 public void onRejection(JoynrException error) {
-                    sendPublicationError(error, publicationInformation);
+                    if (error instanceof JoynrRuntimeException) {
+                        sendPublicationError((JoynrRuntimeException) error, publicationInformation);
+                    } else {
+                        sendPublicationError(new ProviderRuntimeException("Unexpected exception while calling getter for attribute "
+                                                     + publicationInformation.getSubscribedToName()),
+                                             publicationInformation);
+                    }
 
                 }
 
