@@ -172,12 +172,12 @@ void JoynrMessage::setHeader(const std::string& key, const std::string& value)
     headerMap[key] = value;
 }
 
-QByteArray JoynrMessage::getPayload() const
+std::string JoynrMessage::getPayload() const
 {
     return payload;
 }
 
-void JoynrMessage::setPayload(const QByteArray& payload)
+void JoynrMessage::setPayload(const std::string& payload)
 {
     this->payload = payload;
 }

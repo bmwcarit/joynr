@@ -132,7 +132,8 @@ void Dispatcher::removeReplyCaller(const std::string& requestReplyId)
 void Dispatcher::receive(const JoynrMessage& message)
 {
     LOG_DEBUG(logger,
-              QString("receive(message). Message payload: %1").arg(QString(message.getPayload())));
+              QString("receive(message). Message payload: %1")
+                      .arg(QString::fromStdString(message.getPayload())));
     ReceivedMessageRunnable* receivedMessageRunnable = new ReceivedMessageRunnable(message, *this);
     handleReceivedMessageThreadPool.start(receivedMessageRunnable);
 }
@@ -144,7 +145,7 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
 
     // json request
     // lookup necessary data
-    QByteArray jsonRequest = message.getPayload();
+    QByteArray jsonRequest = QByteArray(message.getPayload().c_str());
     std::shared_ptr<RequestCaller> caller = requestCallerDirectory.lookup(receiverId);
     if (caller == NULL) {
         LOG_ERROR(logger,
@@ -161,9 +162,9 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
     // deserialize json
     Request* request = JsonSerializer::deserializeQObject<Request>(jsonRequest);
     if (request == Q_NULLPTR) {
-        LOG_ERROR(logger,
-                  QString("Unable to deserialize request object from: %1")
-                          .arg(QString::fromUtf8(jsonRequest)));
+        LOG_ERROR(
+                logger,
+                QString("Unable to deserialize request object from: %1").arg(QString(jsonRequest)));
         return;
     }
 
@@ -238,7 +239,7 @@ void Dispatcher::handleReplyReceived(const JoynrMessage& message)
 {
     // json request
     // lookup necessary data
-    QByteArray jsonReply = message.getPayload();
+    QByteArray jsonReply = QByteArray(message.getPayload().c_str());
 
     // deserialize the jsonReply
     // TODO This is a workaround which must be replaced by the generic deserialize function after
@@ -246,8 +247,7 @@ void Dispatcher::handleReplyReceived(const JoynrMessage& message)
     Reply* reply = JsonSerializer::deserializeQObject<Reply>(jsonReply);
     if (reply == Q_NULLPTR) {
         LOG_ERROR(logger,
-                  QString("Unable to deserialize reply object from: %1")
-                          .arg(QString::fromUtf8(jsonReply)));
+                  QString("Unable to deserialize reply object from: %1").arg(QString(jsonReply)));
         return;
     }
     std::string requestReplyId = reply->getRequestReplyId();
@@ -288,7 +288,7 @@ void Dispatcher::handleSubscriptionRequestReceived(const JoynrMessage& message)
     QString receiverId = QString::fromStdString(message.getHeaderTo());
     std::shared_ptr<RequestCaller> caller = requestCallerDirectory.lookup(receiverId.toStdString());
 
-    QByteArray jsonSubscriptionRequest = message.getPayload();
+    QByteArray jsonSubscriptionRequest = QByteArray(message.getPayload().c_str());
 
     // PublicationManager is responsible for deleting SubscriptionRequests
     SubscriptionRequest* subscriptionRequest =
@@ -296,7 +296,7 @@ void Dispatcher::handleSubscriptionRequestReceived(const JoynrMessage& message)
     if (subscriptionRequest == Q_NULLPTR) {
         LOG_ERROR(logger,
                   QString("Unable to deserialize subscription request object from: %1")
-                          .arg(QString::fromUtf8(jsonSubscriptionRequest)));
+                          .arg(QString(jsonSubscriptionRequest)));
         return;
     }
 
@@ -328,7 +328,7 @@ void Dispatcher::handleBroadcastSubscriptionRequestReceived(const JoynrMessage& 
     QString receiverId = QString::fromStdString(message.getHeaderTo());
     std::shared_ptr<RequestCaller> caller = requestCallerDirectory.lookup(receiverId.toStdString());
 
-    QByteArray jsonSubscriptionRequest = message.getPayload();
+    QByteArray jsonSubscriptionRequest = QByteArray(message.getPayload().c_str());
 
     // PublicationManager is responsible for deleting SubscriptionRequests
     BroadcastSubscriptionRequest* subscriptionRequest =
@@ -337,7 +337,7 @@ void Dispatcher::handleBroadcastSubscriptionRequestReceived(const JoynrMessage& 
     if (subscriptionRequest == Q_NULLPTR) {
         LOG_ERROR(logger,
                   QString("Unable to deserialize broadcast subscription request object from: %1")
-                          .arg(QString::fromUtf8(jsonSubscriptionRequest)));
+                          .arg(QString(jsonSubscriptionRequest)));
         return;
     }
 
@@ -361,14 +361,14 @@ void Dispatcher::handleBroadcastSubscriptionRequestReceived(const JoynrMessage& 
 void Dispatcher::handleSubscriptionStopReceived(const JoynrMessage& message)
 {
     LOG_DEBUG(logger, "handleSubscriptionStopReceived");
-    QByteArray jsonSubscriptionStop = message.getPayload();
+    QByteArray jsonSubscriptionStop = QByteArray(message.getPayload().c_str());
 
     SubscriptionStop* subscriptionStop =
             JsonSerializer::deserializeQObject<SubscriptionStop>(jsonSubscriptionStop);
     if (subscriptionStop == Q_NULLPTR) {
         LOG_ERROR(logger,
                   QString("Unable to deserialize subscription stop object from: %1")
-                          .arg(QString::fromUtf8(jsonSubscriptionStop)));
+                          .arg(QString(jsonSubscriptionStop)));
         return;
     }
     QString subscriptionId = TypeUtil::toQt(subscriptionStop->getSubscriptionId());
@@ -378,7 +378,7 @@ void Dispatcher::handleSubscriptionStopReceived(const JoynrMessage& message)
 
 void Dispatcher::handlePublicationReceived(const JoynrMessage& message)
 {
-    QByteArray jsonSubscriptionPublication = message.getPayload();
+    QByteArray jsonSubscriptionPublication = QByteArray(message.getPayload().c_str());
 
     SubscriptionPublication* subscriptionPublication =
             JsonSerializer::deserializeQObject<SubscriptionPublication>(
@@ -386,7 +386,7 @@ void Dispatcher::handlePublicationReceived(const JoynrMessage& message)
     if (subscriptionPublication == Q_NULLPTR) {
         LOG_ERROR(logger,
                   QString("Unable to deserialize subscription publication object from: %1")
-                          .arg(QString::fromUtf8(jsonSubscriptionPublication)));
+                          .arg(QString(jsonSubscriptionPublication)));
         return;
     }
     QString subscriptionId = QString::fromStdString(subscriptionPublication->getSubscriptionId());

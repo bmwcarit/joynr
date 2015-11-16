@@ -196,7 +196,7 @@ void MessageRouter::route(const JoynrMessage& message)
     LOG_DEBUG(logger,
               QString("Route message with Id %1 and payload %2")
                       .arg(QString::fromStdString(message.getHeaderMessageId())
-                                   .arg(QString(message.getPayload()))));
+                                   .arg(QString::fromStdString(message.getPayload()))));
     // search for the destination address
     const QString destinationPartId = QString::fromStdString(message.getHeaderTo());
     std::shared_ptr<joynr::system::RoutingTypes::QtAddress> destAddress(NULL);
@@ -208,7 +208,8 @@ void MessageRouter::route(const JoynrMessage& message)
     if (!destAddress) {
         // save the message for later delivery
         messageQueue->queueMessage(message);
-        LOG_DEBUG(logger, QString("message queued: %1").arg(QString(message.getPayload())));
+        LOG_DEBUG(logger,
+                  QString("message queued: %1").arg(QString::fromStdString(message.getPayload())));
 
         // and try to resolve destination address via parent message router
         if (isChildMessageRouter()) {

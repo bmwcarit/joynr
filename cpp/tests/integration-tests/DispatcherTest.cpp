@@ -154,7 +154,7 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
                 reply
     );
 
-    LOG_DEBUG(logger, QString("expectedReply.payload()=%1").arg(QString(expectedReply.getPayload())));
+    LOG_DEBUG(logger, QString("expectedReply.payload()=%1").arg(QString::fromStdString(expectedReply.getPayload())));
     // setup MockMessaging to expect the response
     EXPECT_CALL(
                 *mockMessageRouter,

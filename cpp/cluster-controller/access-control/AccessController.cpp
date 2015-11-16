@@ -116,7 +116,7 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
     std::string messageType = message.getType();
 
     // Deserialize the message to get the operation
-    QByteArray jsonRequest = message.getPayload();
+    QByteArray jsonRequest = QByteArray(message.getPayload().c_str());
 
     if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST) {
 

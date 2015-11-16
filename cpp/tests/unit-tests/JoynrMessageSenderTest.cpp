@@ -232,7 +232,7 @@ TEST_F(JoynrMessageSenderTest, DISABLED_sendSubscriptionReply_normal){
 
     MockDispatcher mockDispatcher;
     std::shared_ptr<MockMessageRouter> messagingStubQsp(new MockMessageRouter());
-    QVariant payload = QVariant("subscriptionReply");
+    std::string payload("subscriptionReply");
     EXPECT_CALL(*(messagingStubQsp.get()), route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY)),
                                                   Property(&JoynrMessage::getPayload, Eq(payload)))));
 

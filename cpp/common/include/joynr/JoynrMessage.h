@@ -24,9 +24,7 @@
 #include "joynr/joynrlogging.h"
 #include "joynr/DispatcherUtils.h"
 #include <QObject>
-#include <QString>
 #include <stdint.h>
-#include <QByteArray>
 
 #include <string>
 
@@ -52,7 +50,7 @@ class JOYNRCOMMON_EXPORT JoynrMessage : public QObject
 
     Q_PROPERTY(std::string type READ getType WRITE setType)
     Q_PROPERTY(StringMap headerMap READ getHeaderMap WRITE setHeaderMap)
-    Q_PROPERTY(QByteArray payload READ getPayload WRITE setPayload)
+    Q_PROPERTY(std::string payload READ getPayload WRITE setPayload)
 
 public:
     JoynrMessage();
@@ -129,8 +127,8 @@ public:
      * @param newHeaders the header entries to add
      */
     void setHeaderMap(const std::map<std::string, std::string>& newHeaders);
-    QByteArray getPayload() const;
-    void setPayload(const QByteArray& payload);
+    std::string getPayload() const;
+    void setPayload(const std::string& payload);
 
     /**
      * @brief containsHeaderContentType Tests whether the "content type" header of the message is
@@ -327,7 +325,7 @@ private:
 
     std::string type;
     std::map<std::string, std::string> headerMap;
-    QByteArray payload;
+    std::string payload;
     static joynr_logging::Logger* logger;
 
     void generateAndSetMsgIdHeaderIfAbsent();

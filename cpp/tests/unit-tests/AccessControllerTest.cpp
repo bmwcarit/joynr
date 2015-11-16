@@ -241,10 +241,8 @@ TEST_F(AccessControllerTest, accessWithOperationLevelAccessControlAndFaultyMessa
     EXPECT_CALL(*accessControllerCallback, hasConsumerPermission(false))
             .Times(1);
 
-    QString payload("invalid serialization of Request object");
-    QByteArray buff;
-    buff.append(payload);
-    message.setPayload(buff);
+    std::string payload("invalid serialization of Request object");
+    message.setPayload(payload);
 
     accessController.hasConsumerPermission(
             message,

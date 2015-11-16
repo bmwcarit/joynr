@@ -93,7 +93,7 @@ public:
                     "\"requestReplyId\":\"%1\"}"
         );
         expectedPayload = expectedPayload.arg(TypeUtil::toQt(request.getRequestReplyId()));
-        EXPECT_EQ(expectedPayload, QString(joynrMessage.getPayload()));
+        EXPECT_EQ(expectedPayload, QString::fromStdString(joynrMessage.getPayload()));
     }
 
     void checkReply(const JoynrMessage& joynrMessage){
@@ -103,7 +103,7 @@ public:
                     "\"response\":[\"response\"]}"
         );
         expectedPayload = expectedPayload.arg(QString::fromStdString(reply.getRequestReplyId()));
-        EXPECT_EQ(expectedPayload, QString(joynrMessage.getPayload()));
+        EXPECT_EQ(expectedPayload, QString::fromStdString(joynrMessage.getPayload()));
     }
 
     void checkSubscriptionPublication(const JoynrMessage& joynrMessage){
@@ -113,7 +113,7 @@ public:
                     "\"subscriptionId\":\"%1\"}"
         );
         expectedPayload = expectedPayload.arg(QString::fromStdString(subscriptionPublication.getSubscriptionId()));
-        EXPECT_EQ(expectedPayload, QString(joynrMessage.getPayload()));
+        EXPECT_EQ(expectedPayload, QString::fromStdString(joynrMessage.getPayload()));
     }
 
 protected:
