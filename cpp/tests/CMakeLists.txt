@@ -464,3 +464,11 @@ else()
     )
 
 endif(${BUILD_CLUSTER_CONTROLLER})
+
+install(TARGETS g_UnitTests g_IntegrationTests g_SystemIntegrationTests
+        DESTINATION ${INSTALL_TEST_DIR} COMPONENT tests
+)
+
+install(DIRECTORY resources
+        DESTINATION ${INSTALL_TEST_DIR} COMPONENT tests
+)
