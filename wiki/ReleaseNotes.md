@@ -1,3 +1,43 @@
+#joynr 0.12.0
+
+##Notes
+* **[Java]** Uint types are not supported in Java: Unsigned values are thus read as
+  signed values, meaning for example that 255 is represented as -1 in a Java Byte. The
+  Java application is responsible for converting from signed to unsigned values as
+  required. Note that this is only an issue if values exceed the largest possible
+  values that can be represented by the signed Java values.
+* **[Java]** The previously mentioned issue with handling of "number" types and enums in Lists
+  has now been repaired.
+
+##API relevant changes
+* **[Java]** Java datatype java.util.List has been replaced with Array in the joynr API.
+* **[Java]** The onError callback of subscriptions now passes a JoynrRuntimeException as
+  input parameter instead of a JoynrException, as application-level exceptions cannot be defined
+  for subcription errors.
+* **[Java]** The method "getReply" of Future object was renamed to "get".
+* **[Java]** The Java Short datatype has been introduced for Franca types UInt16 and Int16, as is
+  Java Float now used for the Franca type Float.
+* **[C++]** Support of exceptions for methods/attributes. Exceptions at provider side are now
+  communicated via joynr to the consumer, informing it about unexpected application-level and
+  communication behavior. joynr providers are able to reject method calls by using error enum values
+  as modelled in the Franca model.
+* **[JS]** Method input/output parameters and broadcast parameters are now consistently
+  passed as key-value pairs.
+* **[Java,JS,C++]** Harmonized the handling of minimum interval for subscriptions with
+  OnChangeSubscriptionQos. Set the MIN value to 0 ms.
+* **[Java,JS,C++]** Harmonized the handling of subscription qos parameters for broadcast
+  subscriptions. If two subsequent broadcasts occur within the minimum interval, the
+  latter broadcast will not be sent to the subscribing entity.
+
+##Other changes
+* **[C++]** Fixed bug causing a consumer to crash when subscribing to attributes of type
+  enumeration
+* **[JS]** Support of methods with multiple output parameters
+* **[Java,C++]** Fixed bug with arrays as return parameter types of methods and
+  broadcasts and as attribute types of subscriptions
+* **[Tooling]** The joynr generator ignores invalid Franca models, and outputs a list of errors to
+  the console.
+
 #joynr 0.11.1
 
 This is a minor bug fix release.
@@ -23,7 +63,7 @@ None.
   Java application is responsible for converting from signed to unsigned values as
   required. Note that this is only an issue if values exceed the largest possible
   values that can be represented by the signed java values.
-  
+
 ##Known issues
 * **[Java]** Handling of "number" types and enums in Lists is not implemented
   correctly. Accessing these values individually can result in ClassCastExceptions
@@ -47,7 +87,7 @@ None.
 * **[JS]** The callback provided at broadcast subscription is now called with key value pairs for
   the broadcast parameters. Previously, the callback has been invoked with individual function
   arguments for each broadcast parameter.
-* **]Java,JS,C++]** Harmonised the handling of expiry dates in SubscriptionQos
+* **]Java,JS,C++]** Harmonized the handling of expiry dates in SubscriptionQos
 
 ##Other changes
 * **[C++]** Replaced QSharedPointer with std::shared_ptr
