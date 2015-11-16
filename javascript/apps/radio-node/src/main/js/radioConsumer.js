@@ -223,10 +223,11 @@ var domain = process.argv[2];
 log("domain: " + domain);
 
 var provisioning = require("./provisioning_common.js");
+RadioStation = require("../generated/js/joynr/vehicle/RadioStation");
+Country = require("../generated/js/joynr/vehicle/Country");
+require("../generated/js/joynr/vehicle/GeoPosition");
+var RadioProxy = require("../generated/js/joynr/vehicle/RadioProxy.js");
 joynr.load(provisioning, function(error, loadedJoynr) {
-    RadioStation = require("../generated/js/joynr/vehicle/RadioStation");
-    Country = require("../generated/js/joynr/vehicle/Country");
-    require("../generated/js/joynr/vehicle/GeoPosition");
     if (error) {
         throw error;
     }
@@ -240,7 +241,6 @@ joynr.load(provisioning, function(error, loadedJoynr) {
         minInterval : 50
 	});
 
-    var RadioProxy = require("../generated/js/joynr/vehicle/RadioProxy.js");
     joynr.proxyBuilder.build(RadioProxy, {
         domain : domain,
         messagingQos : messagingQos
