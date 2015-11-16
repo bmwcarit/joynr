@@ -143,11 +143,11 @@ public class Future<T> {
     }
 
     @SuppressWarnings("unchecked")
-    public void resolve(Object... response) {
-        if (response.length == 0) {
+    public void resolve(Object... outParameters) {
+        if (outParameters.length == 0) {
             onSuccess(null);
         } else {
-            onSuccess((T) response[0]);
+            onSuccess((T) outParameters[0]);
         }
     }
 }
