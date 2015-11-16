@@ -19,17 +19,16 @@
 #ifndef PUBLICATIONMANAGER_H
 #define PUBLICATIONMANAGER_H
 #include "joynr/PrivateCopyAssign.h"
-
 #include "joynr/JoynrExport.h"
 #include "joynr/SubscriptionPublication.h"
 
 #include "joynr/joynrlogging.h"
+#include "joynr/ThreadPoolDelayedScheduler.h"
 
 #include <QString>
 #include <QVariant>
 #include <QMutex>
 #include <QReadWriteLock>
-#include <QThreadPool>
 #include <memory>
 #include <vector>
 #include <map>
@@ -40,7 +39,6 @@
 namespace joynr
 {
 
-class DelayedSchedulerOld;
 class SubscriptionRequest;
 class BroadcastSubscriptionRequest;
 class BroadcastSubscriptionRequestInformation;
@@ -68,7 +66,7 @@ class JOYNR_EXPORT PublicationManager
 {
 public:
     explicit PublicationManager(int maxThreads = 2);
-    explicit PublicationManager(DelayedSchedulerOld* scheduler, int maxThreads = 2);
+    PublicationManager(DelayedScheduler* scheduler);
     virtual ~PublicationManager();
     /**
      * @brief Adds the SubscriptionRequest and starts runnable to poll attributes.
@@ -178,8 +176,7 @@ private:
 
     QMutex fileWriteLock;
     // Publications are scheduled to run on a thread pool
-    QThreadPool publishingThreadPool;
-    DelayedSchedulerOld* delayedScheduler;
+    DelayedScheduler* delayedScheduler;
 
     // Support for clean shutdowns
     QMutex shutDownMutex;

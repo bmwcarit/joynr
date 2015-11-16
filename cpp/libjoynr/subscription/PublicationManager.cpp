@@ -22,7 +22,8 @@
 #include "joynr/JsonSerializer.h"
 #include "joynr/IRequestInterpreter.h"
 #include "joynr/InterfaceRegistrar.h"
-#include "joynr/DelayedSchedulerOld.h"
+#include "joynr/DelayedScheduler.h"
+#include "joynr/Runnable.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/IPublicationSender.h"
 #include "joynr/SubscriptionRequest.h"
@@ -65,17 +66,19 @@ public:
     SubscriptionAttributeListener* attributeListener;
     SubscriptionBroadcastListener* broadcastListener;
     QMutex mutex;
-    quint32 publicationEndRunnableHandle;
+    DelayedScheduler::RunnableHandle publicationEndRunnableHandle;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(Publication);
 };
 
-class PublicationManager::PublisherRunnable : public QRunnable
+class PublicationManager::PublisherRunnable : public Runnable
 {
 public:
     virtual ~PublisherRunnable();
     PublisherRunnable(PublicationManager& publicationManager, const QString& subscriptionId);
+
+    void shutdown() override;
 
     // Calls PublicationManager::pollSubscription()
     void run();
@@ -86,11 +89,13 @@ private:
     QString subscriptionId;
 };
 
-class PublicationManager::PublicationEndRunnable : public QRunnable
+class PublicationManager::PublicationEndRunnable : public Runnable
 {
 public:
     virtual ~PublicationEndRunnable();
     PublicationEndRunnable(PublicationManager& publicationManager, const QString& subscriptionId);
+
+    void shutdown();
 
     // Calls PublicationManager::removePublication()
     void run();
@@ -125,11 +130,8 @@ PublicationManager::~PublicationManager()
 
     subscriptionLocker.unlock();
 
-    LOG_DEBUG(logger, "Destructor, waiting for thread pool ...");
-    publishingThreadPool.waitForDone();
-
-    LOG_DEBUG(logger, "Destructor, deleting scheduler ...");
-    delete delayedScheduler;
+    LOG_DEBUG(logger, "Destructor, shutting down for thread pool and scheduler ...");
+    delayedScheduler->shutdown();
 
     subscriptionLocker.relock();
 
@@ -151,13 +153,12 @@ PublicationManager::~PublicationManager()
     subscriptionLocker.unlock();
 }
 
-PublicationManager::PublicationManager(DelayedSchedulerOld* scheduler, int maxThreads)
+PublicationManager::PublicationManager(DelayedScheduler* scheduler)
         : publications(),
           subscriptionId2SubscriptionRequest(),
           subscriptionId2BroadcastSubscriptionRequest(),
           subscriptionLock(QReadWriteLock::Recursive),
           fileWriteLock(),
-          publishingThreadPool(),
           delayedScheduler(scheduler),
           shutDownMutex(),
           shuttingDown(false),
@@ -174,8 +175,6 @@ PublicationManager::PublicationManager(DelayedSchedulerOld* scheduler, int maxTh
           broadcastFilters(),
           broadcastFilterLock()
 {
-
-    publishingThreadPool.setMaxThreadCount(maxThreads);
     qRegisterMetaType<SubscriptionRequest>("SubscriptionRequest");
     qRegisterMetaType<std::shared_ptr<SubscriptionRequest>>("std::shared_ptr<SubscriptionRequest>");
     loadSavedAttributeSubscriptionRequestsMap();
@@ -188,8 +187,7 @@ PublicationManager::PublicationManager(int maxThreads)
           subscriptionId2BroadcastSubscriptionRequest(),
           subscriptionLock(QReadWriteLock::Recursive),
           fileWriteLock(),
-          publishingThreadPool(),
-          delayedScheduler(NULL),
+          delayedScheduler(new ThreadPoolDelayedScheduler(maxThreads, "PubManager", 0)),
           shutDownMutex(),
           shuttingDown(false),
           subscriptionRequestStorageFileName(QString::fromStdString(
@@ -205,10 +203,6 @@ PublicationManager::PublicationManager(int maxThreads)
           broadcastFilters(),
           broadcastFilterLock()
 {
-
-    publishingThreadPool.setMaxThreadCount(maxThreads);
-    delayedScheduler = new ThreadPoolDelayedSchedulerOld(
-            publishingThreadPool, QString("PublicationManager-PublishingThreadPool"));
     loadSavedAttributeSubscriptionRequestsMap();
     loadSavedBroadcastSubscriptionRequestsMap();
 }
@@ -836,14 +830,13 @@ void PublicationManager::removeOnChangePublication(
 // This function assumes a write lock is alrady held for the publication}
 void PublicationManager::removePublicationEndRunnable(std::shared_ptr<Publication> publication)
 {
-    if (publication->publicationEndRunnableHandle !=
-                DelayedSchedulerOld::INVALID_RUNNABLE_HANDLE() &&
+    if (publication->publicationEndRunnableHandle != DelayedScheduler::INVALID_RUNNABLE_HANDLE &&
         !isShuttingDown()) {
         LOG_DEBUG(logger,
                   QString("Unscheduling PublicationEndRunnable with handle: %1")
                           .arg(publication->publicationEndRunnableHandle));
         delayedScheduler->unschedule(publication->publicationEndRunnableHandle);
-        publication->publicationEndRunnableHandle = DelayedSchedulerOld::INVALID_RUNNABLE_HANDLE();
+        publication->publicationEndRunnableHandle = DelayedScheduler::INVALID_RUNNABLE_HANDLE;
     }
 }
 
@@ -1217,7 +1210,7 @@ PublicationManager::Publication::Publication(IPublicationSender* publicationSend
           attributeListener(NULL),
           broadcastListener(NULL),
           mutex(QMutex::RecursionMode::Recursive),
-          publicationEndRunnableHandle(DelayedSchedulerOld::INVALID_RUNNABLE_HANDLE())
+          publicationEndRunnableHandle(DelayedScheduler::INVALID_RUNNABLE_HANDLE)
 {
 }
 
@@ -1229,9 +1222,12 @@ PublicationManager::PublisherRunnable::~PublisherRunnable()
 
 PublicationManager::PublisherRunnable::PublisherRunnable(PublicationManager& publicationManager,
                                                          const QString& subscriptionId)
-        : publicationManager(publicationManager), subscriptionId(subscriptionId)
+        : Runnable(true), publicationManager(publicationManager), subscriptionId(subscriptionId)
 {
-    setAutoDelete(true);
+}
+
+void PublicationManager::PublisherRunnable::shutdown()
+{
 }
 
 void PublicationManager::PublisherRunnable::run()
@@ -1248,9 +1244,12 @@ PublicationManager::PublicationEndRunnable::~PublicationEndRunnable()
 PublicationManager::PublicationEndRunnable::PublicationEndRunnable(
         PublicationManager& publicationManager,
         const QString& subscriptionId)
-        : publicationManager(publicationManager), subscriptionId(subscriptionId)
+        : Runnable(true), publicationManager(publicationManager), subscriptionId(subscriptionId)
 {
-    setAutoDelete(true);
+}
+
+void PublicationManager::PublicationEndRunnable::shutdown()
+{
 }
 
 void PublicationManager::PublicationEndRunnable::run()
@@ -1266,7 +1265,7 @@ void PublicationManager::PublicationEndRunnable::run()
 
     {
         QMutexLocker locker(&(publication->mutex));
-        publication->publicationEndRunnableHandle = DelayedSchedulerOld::INVALID_RUNNABLE_HANDLE();
+        publication->publicationEndRunnableHandle = DelayedScheduler::INVALID_RUNNABLE_HANDLE;
     }
 }
 
