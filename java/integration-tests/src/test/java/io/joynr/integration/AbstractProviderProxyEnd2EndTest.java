@@ -207,6 +207,8 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
     public void tearDown() throws InterruptedException {
 
         if (providerRuntime != null) {
+            providerRuntime.unregisterProvider(domain, provider);
+            providerRuntime.unregisterProvider(domainAsync, provider);
             providerRuntime.shutdown(true);
         }
         if (consumerRuntime != null) {
