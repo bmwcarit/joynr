@@ -2,6 +2,7 @@ package io.joynr.runtime;
 
 import java.util.UUID;
 
+import io.joynr.messaging.websocket.WebsocketModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,16 +60,16 @@ public class LibJoynrRuntime extends JoynrRuntimeImpl {
                            Dispatcher dispatcher,
                            LocalDiscoveryAggregator localDiscoveryAggregator,
                            @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
-                           @Named(ConfigurableMessagingSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) Address libjoynrMessagingAddress,
+                           @Named(SystemServicesSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) Address libjoynrMessagingAddress,
                            @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_ADDRESS) Address capabilitiesDirectoryAddress,
                            @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_ADDRESS) Address channelUrlDirectoryAddress,
                            @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_ADDRESS) Address domainAccessControllerAddress,
-                           @Named(SystemServicesSettings.PROPERTY_CC_DISCOVERY_PROVIDER_ADDRESS) Address discoveryProviderAddress,
-                           @Named(ConfigurableMessagingSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address ccMessagingAddress,
+                           @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address discoveryProviderAddress,
+                           @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address ccMessagingAddress,
                            WebSocketMessagingStubFactory webSocketMessagingStubFactory,
                            MessageRouter messageRouter,
-                           @Named(ConfigurableMessagingSettings.PROPERTY_CC_ROUTING_PROVIDER_PARTICIPANT_ID) String parentRoutingProviderParticipantId,
-                           @Named(ConfigurableMessagingSettings.PROPERTY_LIBJOYNR_MESSAGING_SKELETON) WebSocketMessagingSkeleton webSocketMessagingSkeleton) {
+                           @Named(SystemServicesSettings.PROPERTY_CC_ROUTING_PROVIDER_PARTICIPANT_ID) String parentRoutingProviderParticipantId,
+                           @Named(WebsocketModule.PROPERTY_LIBJOYNR_MESSAGING_SKELETON) WebSocketMessagingSkeleton webSocketMessagingSkeleton) {
         super(objectMapper,
               proxyBuilderFactory,
               requestCallerDirectory,
@@ -86,7 +87,7 @@ public class LibJoynrRuntime extends JoynrRuntimeImpl {
         if (ccMessagingAddress instanceof WebSocketAddress) {
             incommingAddress = initWebsocketStub((WebSocketAddress) ccMessagingAddress, webSocketMessagingStubFactory);
         } else {
-            throw new JoynrIllegalStateException(ConfigurableMessagingSettings.PROPERTY_CC_MESSAGING_ADDRESS
+            throw new JoynrIllegalStateException(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS
                     + " has to be of type " + WebSocketAddress.class.getSimpleName());
         }
         webSocketMessagingSkeleton.initializeConnection();

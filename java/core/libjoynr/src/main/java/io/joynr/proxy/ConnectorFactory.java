@@ -3,6 +3,7 @@ package io.joynr.proxy;
 import javax.annotation.CheckForNull;
 import javax.inject.Named;
 
+import io.joynr.runtime.SystemServicesSettings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +30,6 @@ import com.google.inject.Singleton;
  */
 
 import io.joynr.arbitration.ArbitrationResult;
-import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.system.RoutingTypes.Address;
@@ -47,7 +47,7 @@ public class ConnectorFactory {
     @Inject
     public ConnectorFactory(JoynrMessagingConnectorFactory joynrMessagingConnectorFactory,
                             MessageRouter messageRouter,
-                            @Named(ConfigurableMessagingSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) Address libjoynrMessagingAddress) {
+                            @Named(SystemServicesSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) Address libjoynrMessagingAddress) {
         this.joynrMessagingConnectorFactory = joynrMessagingConnectorFactory;
         this.messageRouter = messageRouter;
         this.libjoynrMessagingAddress = libjoynrMessagingAddress;

@@ -30,12 +30,9 @@ import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.websocket.CCWebSocketMessagingSkeleton;
 import io.joynr.messaging.websocket.WebSocketClientMessagingStubFactory;
 import io.joynr.messaging.websocket.WebSocketMessagingSkeleton;
-import io.joynr.messaging.websocket.WebsocketModule;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
-import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
-import joynr.system.RoutingTypes.WebSocketProtocol;
 
 import javax.inject.Named;
 import java.util.Map;
@@ -66,25 +63,10 @@ public class CCRuntimeModule extends DefaultRuntimeModule {
     }
 
     @Provides
-    @Named(ConfigurableMessagingSettings.PROPERTY_CC_MESSAGING_ADDRESS)
-    public WebSocketAddress provideCCMessagingAddress(@Named(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST) String host,
-                                                      @Named(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL) String protocol,
-                                                      @Named(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT) int port,
-                                                      @Named(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH) String path) {
-        return new WebSocketAddress(WebSocketProtocol.valueOf(protocol.toUpperCase()), host, port, path);
-    }
-
-    @Provides
     @Singleton
-    @Named(SystemServicesSettings.PROPERTY_CC_DISCOVERY_PROVIDER_ADDRESS)
-    Address getDiscoveryProviderAddress() {
+    @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS)
+    Address getCCMessagingAddress() {
         return new InProcessAddress();
     }
 
-    @Provides
-    @Singleton
-    @Named(ConfigurableMessagingSettings.PROPERTY_CC_ROUTING_PROVIDER_ADDRESS)
-    Address getRoutingProviderAddress() {
-        return new InProcessAddress();
-    }
 }

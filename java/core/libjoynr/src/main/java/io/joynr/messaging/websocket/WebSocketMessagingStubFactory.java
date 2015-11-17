@@ -24,7 +24,6 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 import io.joynr.messaging.AbstractMessagingStubFactory;
-import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.IMessaging;
 import joynr.system.RoutingTypes.WebSocketAddress;
 
@@ -33,7 +32,7 @@ public class WebSocketMessagingStubFactory extends AbstractMessagingStubFactory<
     @Inject
     ObjectMapper objectMapper;
     @Inject
-    @Named(ConfigurableMessagingSettings.PROPERTY_LIBJOYNR_MESSAGING_SKELETON)
+    @Named(WebsocketModule.PROPERTY_LIBJOYNR_MESSAGING_SKELETON)
     WebSocketMessagingSkeleton libWebSocketMessagingSkeleton;
 
     @Override

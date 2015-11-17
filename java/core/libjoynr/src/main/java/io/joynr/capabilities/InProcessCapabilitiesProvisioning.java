@@ -39,7 +39,7 @@ public class InProcessCapabilitiesProvisioning extends DefaultCapabilitiesProvis
     @Inject
     public InProcessCapabilitiesProvisioning(@Named(SystemServicesSettings.PROPERTY_CC_DISCOVERY_PROVIDER_PARTICIPANT_ID) String discoveryProviderParticipantId,
                                              @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
-                                             @Named(SystemServicesSettings.PROPERTY_CC_DISCOVERY_PROVIDER_ADDRESS) Address discoveryProviderAddress) {
+                                             @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address discoveryProviderAddress) {
         this.discoveryProviderParticipantId = discoveryProviderParticipantId;
         this.systemServicesDomain = systemServicesDomain;
         this.discoveryProviderAddress = discoveryProviderAddress;

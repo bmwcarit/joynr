@@ -100,7 +100,7 @@ public class DispatcherTestModule extends AbstractModule {
 
     @Provides
     @Singleton
-    @Named(SystemServicesSettings.PROPERTY_CC_DISCOVERY_PROVIDER_ADDRESS)
+    @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS)
     Address getDiscoveryProviderAddress() {
         return new InProcessAddress();
     }

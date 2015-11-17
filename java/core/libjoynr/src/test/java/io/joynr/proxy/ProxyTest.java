@@ -31,6 +31,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import java.io.IOException;
 import java.util.UUID;
 
+import io.joynr.runtime.SystemServicesSettings;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -170,7 +171,7 @@ public class ProxyTest {
 
             @Provides
             @Singleton
-            @Named(ConfigurableMessagingSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS)
+            @Named(SystemServicesSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS)
             Address getLibJoynrMessagingAddress() {
                 return new InProcessAddress();
             }

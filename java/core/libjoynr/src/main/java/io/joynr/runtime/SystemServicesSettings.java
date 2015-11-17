@@ -23,7 +23,12 @@ package io.joynr.runtime;
  * Constants for system service configuration keys in properties and binding names in guice modules
  */
 public class SystemServicesSettings {
+
+    public static final String PROPERTY_LIBJOYNR_MESSAGING_ADDRESS = "joynr.messaging.libjoynrmessagingaddress";
+    public static final String PROPERTY_CC_MESSAGING_ADDRESS = "joynr.messaging.discoveryprovideraddress";
+
     public static final String PROPERTY_SYSTEM_SERVICES_DOMAIN = "joynr.messaging.systemservicesdomain";
     public static final String PROPERTY_CC_DISCOVERY_PROVIDER_PARTICIPANT_ID = "joynr.messaging.discoveryproviderparticipantid";
-    public static final String PROPERTY_CC_DISCOVERY_PROVIDER_ADDRESS = "joynr.messaging.discoveryprovideraddress";
+    public static final String PROPERTY_CC_ROUTING_PROVIDER_PARTICIPANT_ID = "joynr.messaging.routingproviderparticipantid";
+
 }

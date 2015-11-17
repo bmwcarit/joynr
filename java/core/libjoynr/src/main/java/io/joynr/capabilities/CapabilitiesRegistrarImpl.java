@@ -1,14 +1,5 @@
 package io.joynr.capabilities;
 
-import javax.annotation.CheckForNull;
-import javax.inject.Named;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-
 /*
  * #%L
  * %%
@@ -28,10 +19,16 @@ import com.google.inject.Singleton;
  * #L%
  */
 
+import javax.annotation.CheckForNull;
+import javax.inject.Named;
+import io.joynr.runtime.SystemServicesSettings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import io.joynr.dispatching.RequestCaller;
 import io.joynr.dispatching.RequestCallerDirectory;
 import io.joynr.exceptions.JoynrException;
-import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.RequestCallerFactory;
@@ -60,7 +57,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                                      MessageRouter messageRouter,
                                      RequestCallerDirectory requestCallerDirectory,
                                      ParticipantIdStorage participantIdStorage,
-                                     @Named(ConfigurableMessagingSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) Address libjoynrMessagingAddress) {
+                                     @Named(SystemServicesSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) Address libjoynrMessagingAddress) {
         super();
         this.localDiscoveryAggregator = localDiscoveryAggregator;
         this.requestCallerFactory = requestCallerFactory;

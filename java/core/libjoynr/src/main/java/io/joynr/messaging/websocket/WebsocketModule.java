@@ -28,6 +28,8 @@ import javax.inject.Named;
 
 public class WebsocketModule extends AbstractModule {
 
+    public static final String PROPERTY_LIBJOYNR_MESSAGING_SKELETON = "joynr.messaging.libjoynrmessagingskeleton";
+
     public static final String PROPERTY_WEBSOCKET_MESSAGING_URL_ADDRESS = "joynr.websockets.messagingurl";
 
     public static final String PROPERTY_WEBSOCKET_MESSAGING_HOST = "joynr.messaging.cc.host";

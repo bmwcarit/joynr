@@ -89,7 +89,7 @@ abstract class DefaultRuntimeModule extends AbstractModule {
 
     @Provides
     @Singleton
-    @Named(ConfigurableMessagingSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS)
+    @Named(SystemServicesSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS)
     Address getLibJoynrMessagingAddress() {
         return new InProcessAddress();
     }

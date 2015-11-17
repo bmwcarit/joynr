@@ -20,13 +20,13 @@ package io.joynr.proxy;
  */
 
 import io.joynr.dispatcher.rpc.JoynrInterface;
-import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.routing.MessageRouter;
 
 import javax.inject.Inject;
 
 import com.google.inject.name.Named;
 
+import io.joynr.runtime.SystemServicesSettings;
 import joynr.system.DiscoveryAsync;
 import joynr.system.RoutingTypes.Address;
 
@@ -41,7 +41,7 @@ public class ProxyBuilderFactoryImpl implements ProxyBuilderFactory {
     public ProxyBuilderFactoryImpl(DiscoveryAsync localDiscoveryAggregator,
                                    ProxyInvocationHandlerFactory proxyInvocationHandlerFactory,
                                    MessageRouter messageRouter,
-                                   @Named(ConfigurableMessagingSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) Address libjoynrMessagingAddress) {
+                                   @Named(SystemServicesSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) Address libjoynrMessagingAddress) {
         this.localDiscoveryAggregator = localDiscoveryAggregator;
         this.proxyInvocationHandlerFactory = proxyInvocationHandlerFactory;
         this.messageRouter = messageRouter;

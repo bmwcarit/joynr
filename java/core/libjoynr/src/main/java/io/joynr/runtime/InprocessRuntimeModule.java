@@ -28,7 +28,6 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 
 import io.joynr.messaging.AbstractMessagingStubFactory;
-import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.channel.ChannelMessagingStubFactory;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import joynr.system.RoutingTypes.Address;
@@ -47,20 +46,6 @@ public class InprocessRuntimeModule extends DefaultRuntimeModule {
 
     @Provides
     @Singleton
-    @Named(SystemServicesSettings.PROPERTY_CC_DISCOVERY_PROVIDER_ADDRESS)
-    Address getDiscoveryProviderAddress() {
-        return new InProcessAddress();
-    }
-
-    @Provides
-    @Singleton
-    @Named(ConfigurableMessagingSettings.PROPERTY_CC_ROUTING_PROVIDER_ADDRESS)
-    Address getRoutingProviderAddress() {
-        return new InProcessAddress();
-    }
-
-    @Provides
-    @Singleton
     Map<Class<? extends Address>, AbstractMessagingStubFactory> provideMessagingStubFactories(ChannelMessagingStubFactory channelMessagingStubFactory) {
         Map<Class<? extends Address>, AbstractMessagingStubFactory> factories = Maps.newHashMap();
         factories.put(ChannelAddress.class, channelMessagingStubFactory);
@@ -68,7 +53,8 @@ public class InprocessRuntimeModule extends DefaultRuntimeModule {
     }
 
     @Provides
-    @Named(ConfigurableMessagingSettings.PROPERTY_CC_MESSAGING_ADDRESS)
+    @Singleton
+    @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS)
     public Address provideCCMessagingAddress() {
         return new InProcessAddress();
     }
