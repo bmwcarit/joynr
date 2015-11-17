@@ -80,7 +80,7 @@ I«interfaceName»Base::I«interfaceName»Base()
 	«var replyMetatypes = getReplyMetatypes(serviceInterface)»
 	«var broadcastMetatypes = getBroadcastMetatypes(serviceInterface)»
 
-	«IF !typeObjs.isEmpty() || !replyMetatypes.empty»
+	«IF !typeObjs.isEmpty() || !replyMetatypes.empty || !broadcastMetatypes.empty»
 		joynr::MetaTypeRegistrar& registrar = joynr::MetaTypeRegistrar::instance();
 	«ENDIF»
 	«FOR typeobj : typeObjs»

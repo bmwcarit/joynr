@@ -457,7 +457,14 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 		QString broadcastName("«broadcastName»");
 
 		std::shared_ptr<joynr::SubscriptionCallback<«returnTypesQt»>> subscriptionCallback(
-					new «broadcastName.toFirstUpper»BroadcastSubscriptionCallbackWrapper(subscriptionListener));
+				«IF qtTypeUtil.needsDatatypeConversion(broadcast)»
+					new «broadcastName.toFirstUpper»BroadcastSubscriptionCallbackWrapper(
+				«ELSE»
+					new joynr::SubscriptionCallback<«returnTypesQt»>(
+				«ENDIF»
+						subscriptionListener
+				)
+		);
 		subscriptionManager->registerSubscription(
 					broadcastName,
 					subscriptionCallback,
