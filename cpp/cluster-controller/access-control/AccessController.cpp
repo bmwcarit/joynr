@@ -35,7 +35,6 @@
 #include <QByteArray>
 #include <QScopedPointer>
 
-#include <cassert>
 #include "joynr/JsonSerializer.h"
 
 namespace joynr

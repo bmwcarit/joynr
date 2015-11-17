@@ -32,6 +32,7 @@
 #include "joynr/TypeUtil.h"
 #include "joynr/Settings.h"
 #include "joynr/ThreadUtil.h"
+#include "joynr/LibjoynrSettings.h"
 
 using namespace ::testing;
 using namespace joynr;

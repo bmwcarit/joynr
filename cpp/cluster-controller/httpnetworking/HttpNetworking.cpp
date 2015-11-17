@@ -17,17 +17,10 @@
  * #L%
  */
 #include "cluster-controller/httpnetworking/HttpNetworking.h"
-
-#include "cluster-controller/httpnetworking/DefaultHttpRequest.h"
 #include "cluster-controller/httpnetworking/HttpRequestBuilder.h"
-#include "cluster-controller/httpnetworking/HttpResult.h"
-
 #include "cluster-controller/httpnetworking/CurlHandlePool.h"
 
 #include <curl/curl.h>
-#include <QString>
-#include <QByteArray>
-#include <QMultiMap>
 
 namespace joynr
 {

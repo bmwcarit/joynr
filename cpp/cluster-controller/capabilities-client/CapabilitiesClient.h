@@ -38,10 +38,7 @@
 namespace joynr
 {
 
-class MessageRouter;
-class Request;
 class Reply;
-class CapabilitiesInformationConverter;
 class MessagingQos;
 class IReplyCaller;
 

@@ -32,6 +32,7 @@
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/TypeUtil.h"
 #include "joynr/ThreadUtil.h"
+#include "joynr/LibjoynrSettings.h"
 
 using namespace ::testing;
 

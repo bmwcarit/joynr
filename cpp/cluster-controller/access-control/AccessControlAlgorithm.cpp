@@ -24,8 +24,6 @@
 #include "joynr/infrastructure/DacTypes_QtMasterAccessControlEntry.h"
 #include "joynr/infrastructure/DacTypes_QtOwnerAccessControlEntry.h"
 
-#include <cassert>
-
 namespace joynr
 {
 

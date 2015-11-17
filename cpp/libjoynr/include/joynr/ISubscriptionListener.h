@@ -22,6 +22,11 @@
 namespace joynr
 {
 
+namespace exceptions
+{
+class JoynrRuntimeException;
+} // namespace exceptions
+
 /**
  * @brief Class interface to be extended by attribute or broadcast subscription listeners
  */

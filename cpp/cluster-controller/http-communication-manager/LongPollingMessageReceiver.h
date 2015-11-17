@@ -36,14 +36,7 @@ namespace joynr
 {
 
 class ILocalChannelUrlDirectory;
-
-class IMessageReceiver;
 class MessageRouter;
-
-namespace system
-{
-class QtAddress;
-}
 
 /**
  * Structure used for configuring the long poll message receiver

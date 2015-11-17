@@ -25,16 +25,12 @@
 #include "joynr/infrastructure/DacTypes_QtTrustLevel.h"
 #include <memory>
 #include <QList>
+#include <QString>
 
 namespace joynr
 {
 class LocalCapabilitiesDirectory;
 class LocalDomainAccessController;
-
-namespace types
-{
-class QtDiscoveryEntry;
-}
 
 namespace joynr_logging
 {

@@ -22,6 +22,7 @@
 #include "cluster-controller/httpnetworking/HttpNetworking.h"
 #include "joynr/JsonSerializer.h"
 #include "cluster-controller/httpnetworking/HttpResult.h"
+#include "cluster-controller/http-communication-manager/IChannelUrlSelector.h"
 #include "cluster-controller/http-communication-manager/ChannelUrlSelector.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/RequestStatus.h"

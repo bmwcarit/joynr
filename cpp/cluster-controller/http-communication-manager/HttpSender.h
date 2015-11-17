@@ -25,7 +25,6 @@
 #include "joynr/ContentWithDecayTime.h"
 #include "joynr/BounceProxyUrl.h"
 #include "joynr/joynrlogging.h"
-#include "cluster-controller/http-communication-manager/IChannelUrlSelector.h"
 #include "joynr/ILocalChannelUrlDirectory.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/ThreadPoolDelayedScheduler.h"
@@ -42,6 +41,7 @@ namespace joynr
 class JoynrMessage;
 class MessagingSettings;
 class HttpResult;
+class IChannelUrlSelector;
 
 class HttpSender : public IMessageSender
 {

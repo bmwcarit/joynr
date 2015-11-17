@@ -23,7 +23,6 @@
 #include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/joynrlogging.h"
 #include "cluster-controller/http-communication-manager/IChannelUrlSelector.h"
-#include "joynr/ILocalChannelUrlDirectory.h"
 #include "joynr/types/QtChannelUrlInformation.h"
 #include "joynr/BounceProxyUrl.h"
 #include <QtGlobal>
@@ -38,6 +37,7 @@ class ChannelUrlSelectorTest_initFittnessTest_Test;
 namespace joynr
 {
 
+class ILocalChannelUrlDirectory;
 class ChannelUrlSelectorEntry;
 
 /**

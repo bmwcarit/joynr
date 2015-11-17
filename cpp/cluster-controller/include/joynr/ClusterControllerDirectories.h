@@ -25,10 +25,6 @@
 namespace joynr
 {
 
-namespace system
-{
-class QtAddress;
-}
 class IMessaging;
 
 typedef Directory<std::string, IMessaging> MessageStubDirectory;

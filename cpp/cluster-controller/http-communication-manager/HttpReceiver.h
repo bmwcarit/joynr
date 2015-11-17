@@ -26,7 +26,6 @@
 #include "joynr/MessagingSettings.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/ILocalChannelUrlDirectory.h"
-#include "joynr/Directory.h"
 
 #include <QString>
 #include <QSettings>
@@ -39,7 +38,6 @@ class CapabilitiesClientTest;
 namespace joynr
 {
 
-class JoynrMessage;
 class LongPollingMessageReceiver;
 class MessageRouter;
 

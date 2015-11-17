@@ -25,9 +25,6 @@
 #include "joynr/infrastructure/DacTypes_QtTrustLevel.h"
 #include "joynr/Optional.h"
 
-#include <QList>
-#include <QString>
-
 namespace joynr
 {
 namespace joynr_logging

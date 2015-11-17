@@ -36,6 +36,7 @@
 #include <QString>
 #include <string>
 #include <memory>
+#include <vector>
 #include <stdint.h>
 #include <QSharedPointer>
 #include <mutex>

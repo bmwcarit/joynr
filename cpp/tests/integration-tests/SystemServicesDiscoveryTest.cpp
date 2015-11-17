@@ -22,6 +22,7 @@
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/TypeUtil.h"
+#include "joynr/LibjoynrSettings.h"
 
 #include "joynr/system/DiscoveryProxy.h"
 #include "joynr/Settings.h"

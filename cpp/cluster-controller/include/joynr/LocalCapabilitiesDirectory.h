@@ -34,20 +34,16 @@
 
 #include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/TypedClientMultiCache.h"
-#include "joynr/Directory.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/ClusterControllerDirectories.h"
-#include "joynr/types/QtCapabilityInformation.h"
+#include "joynr/types/CapabilityInformation.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/system/DiscoveryAbstractProvider.h"
-#include "joynr/MessageRouter.h"
 #include "joynr/types/QtDiscoveryQos.h"
-#include "joynr/types/QtDiscoveryEntry.h"
 #include "joynr/Semaphore.h"
 #include <vector>
 
-#include <QCache>
 #include <memory>
 #include <QVariantMap>
 #include <mutex>
@@ -56,19 +52,11 @@
 namespace joynr
 {
 
+class MessageRouter;
 class ICapabilitiesClient;
 class CapabilityEntry;
 
 class InterfaceAddress;
-namespace system
-{
-class QtAddress;
-}
-namespace types
-{
-class QtProviderQos;
-class CapabilitiesInformation;
-}
 
 class JOYNRCLUSTERCONTROLLER_EXPORT LocalCapabilitiesDirectory
         : public joynr::system::DiscoveryAbstractProvider

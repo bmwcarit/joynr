@@ -19,22 +19,14 @@
 #ifndef IMESSAGERECEIVER_H
 #define IMESSAGERECEIVER_H
 
-#include <QString>
 #include <memory>
 
-#include "joynr/Directory.h"
+class QString;
 
 namespace joynr
 {
 
-class JoynrMessage;
-class MessageRouter;
 class ILocalChannelUrlDirectory;
-
-namespace system
-{
-class QtAddress;
-}
 
 /**
   * @class IMessageReceiver

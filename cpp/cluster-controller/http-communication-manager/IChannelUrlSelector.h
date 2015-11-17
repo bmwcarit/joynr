@@ -24,6 +24,8 @@
 #include "joynr/RequestStatus.h"
 #include <memory>
 
+class QString;
+
 namespace joynr
 {
 

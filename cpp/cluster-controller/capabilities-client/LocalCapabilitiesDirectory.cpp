@@ -24,11 +24,8 @@
 #include "joynr/CapabilityEntry.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/system/RoutingTypes_QtAddress.h"
-#include "joynr/RequestStatus.h"
-#include "joynr/RequestStatusCode.h"
-#include "joynr/types/QtCapabilityInformation.h"
+#include "joynr/MessageRouter.h"
 #include "common/InterfaceAddress.h"
-#include <algorithm>
 
 namespace joynr
 {

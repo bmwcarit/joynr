@@ -27,6 +27,7 @@
 #include "joynr/Future.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/ThreadUtil.h"
+#include "joynr/LibjoynrSettings.h"
 
 using namespace ::testing;
 

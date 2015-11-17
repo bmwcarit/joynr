@@ -24,9 +24,7 @@
 
 #include <memory>
 
-QT_BEGIN_NAMESPACE
 class QString;
-QT_END_NAMESPACE
 
 namespace joynr
 {

@@ -26,10 +26,8 @@
 #include "joynr/infrastructure/GlobalDomainAccessControllerMasterAccessControlEntryChangedBroadcastFilterParameters.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerOwnerAccessControlEntryChangedBroadcastFilterParameters.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerMediatorAccessControlEntryChangedBroadcastFilterParameters.h"
-#include "joynr/SubscriptionListener.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/OnChangeSubscriptionQos.h"
-#include <vector>
 #include "joynr/joynrlogging.h"
 #include "joynr/TypeUtil.h"
 

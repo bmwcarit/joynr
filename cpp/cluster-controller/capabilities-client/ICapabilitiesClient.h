@@ -21,7 +21,6 @@
 
 #include "joynr/types/CapabilityInformation.h"
 
-#include <QSharedPointer>
 #include <functional>
 #include <string>
 #include <vector>
@@ -31,7 +30,6 @@
 namespace joynr
 {
 
-class IGlobalCapabilitiesCallback;
 class RequestStatus;
 class ICapabilitiesClient
 {

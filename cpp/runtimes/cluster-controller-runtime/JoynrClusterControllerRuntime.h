@@ -25,13 +25,8 @@
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrClusterControllerRuntimeExport.h"
-#include "joynr/JoynrConfig.h"
-#include "joynr/ProxyBuilder.h"
 #include "joynr/ClientQCache.h"
-#include "joynr/MessageRouter.h"
-#include "joynr/MessagingStubFactory.h"
 #include "joynr/joynrlogging.h"
-#include "joynr/LibjoynrSettings.h"
 #include "joynr/JoynrRuntime.h"
 #include "libjoynr/websocket/WebSocketSettings.h"
 
@@ -48,33 +43,30 @@ class JoynrClusterControllerRuntimeTest;
 namespace joynr
 {
 
-class InProcessLibJoynrMessagingSkeleton;
 class InProcessClusterControllerMessagingSkeleton;
 class LocalCapabilitiesDirectory;
 class ILocalChannelUrlDirectory;
 class IMessageReceiver;
 class IMessageSender;
-class CapabilitiesClient;
 class ICapabilitiesClient;
-class PublicationManager;
 class SubscriptionManager;
 class InProcessDispatcher;
 class ConnectorFactory;
 class InProcessConnectorFactory;
 class JoynrMessagingConnectorFactory;
 class MessagingSettings;
-class Dispatcher;
+class IDispatcher;
 class InProcessPublicationSender;
 class WebSocketCcMessagingSkeleton;
+class InProcessMessagingSkeleton;
 class IPlatformSecurityManager;
 class Settings;
+class LibjoynrSettings;
 
 namespace infrastructure
 {
 class ChannelUrlDirectoryProxy;
 }
-template <typename Key, typename T>
-class Directory;
 
 class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrClusterControllerRuntime : public JoynrRuntime
 {

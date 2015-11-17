@@ -31,6 +31,7 @@
 #include "joynr/TypeUtil.h"
 #include "joynr/tests/testAbstractProvider.h"
 #include "joynr/ThreadUtil.h"
+#include "joynr/LibjoynrSettings.h"
 
 using namespace ::testing;
 using namespace joynr;
