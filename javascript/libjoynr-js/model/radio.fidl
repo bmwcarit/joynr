@@ -80,7 +80,7 @@ interface Radio {
 			String arg
 		}
 		out {
-			String return
+			String returnValue
 		}
 	}
 
@@ -101,6 +101,21 @@ interface Radio {
 		}
 		out {
 			Country[] enumOutput
+		}
+	}
+
+	method operationWithMultipleOutputParameters {
+		in {
+			Country[] enumArrayInput
+			Country enumInput
+			String stringInput
+			Boolean syncTest
+		}
+		out {
+			Country[] enumArrayOutput
+			Country enumOutput
+			String stringOutput
+			Boolean booleanOutput
 		}
 	}
 

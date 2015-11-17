@@ -19,9 +19,6 @@ package io.joynr.accesscontrol;
  * #L%
  */
 
-import java.util.Arrays;
-import java.util.List;
-
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
@@ -37,8 +34,8 @@ public class AccessControlAlgorithmTest {
     private static String UID = "testuid";
     private static String DOMAIN = "testdomain";
     private static String INTERFACE = "testinterface";
-    private static List<Permission> allPermissions = Arrays.asList(Permission.NO, Permission.ASK, Permission.YES);
-    private static List<TrustLevel> allTrustLevels = Arrays.asList(TrustLevel.LOW, TrustLevel.MID, TrustLevel.HIGH);
+    private static Permission[] allPermissions = { Permission.NO, Permission.ASK, Permission.YES };
+    private static TrustLevel[] allTrustLevels = { TrustLevel.LOW, TrustLevel.MID, TrustLevel.HIGH };
 
     private AccessControlAlgorithm accessControlAlgorithm;
     private MasterAccessControlEntry masterAce;
@@ -140,9 +137,9 @@ public class AccessControlAlgorithmTest {
 
     @Test
     public void testPermissionWithMasterAndInvalidMediatorAce() {
-        masterAce.setPossibleConsumerPermissions(Arrays.asList(Permission.NO));
+        masterAce.setPossibleConsumerPermissions(new Permission[]{ Permission.NO });
 
-        mediatorAce.setPossibleConsumerPermissions(Arrays.asList(Permission.ASK, Permission.YES));
+        mediatorAce.setPossibleConsumerPermissions(new Permission[]{ Permission.ASK, Permission.YES });
         mediatorAce.setDefaultConsumerPermission(Permission.YES);
         mediatorAce.setDefaultRequiredTrustLevel(TrustLevel.MID);
 
@@ -202,7 +199,7 @@ public class AccessControlAlgorithmTest {
 
     @Test
     public void testPermissionWithMediatorAndInvalidOwnerAce() {
-        mediatorAce.setPossibleConsumerPermissions(Arrays.asList(Permission.NO));
+        mediatorAce.setPossibleConsumerPermissions(new Permission[]{ Permission.NO });
 
         ownerAce.setConsumerPermission(Permission.ASK);
 
@@ -215,7 +212,7 @@ public class AccessControlAlgorithmTest {
 
     @Test
     public void testPermissionWithMasterAndInvalidOwnerAce() {
-        masterAce.setPossibleConsumerPermissions(Arrays.asList(Permission.NO));
+        masterAce.setPossibleConsumerPermissions(new Permission[]{ Permission.NO });
 
         ownerAce.setConsumerPermission(Permission.ASK);
 

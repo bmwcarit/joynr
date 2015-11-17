@@ -19,15 +19,12 @@ package io.joynr.dispatcher.rpc;
  * #L%
  */
 
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcReturn;
-
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-
-import javax.annotation.CheckForNull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,12 +35,20 @@ import org.slf4j.LoggerFactory;
 public class ReflectionUtils {
     /**
      * Utility function to find a method in a class by name.
-     * 
+     *
      * @param parameterTypes
-     * 
+     *
      * @return any method in the class that has the specified method name
      */
     private static final Logger logger = LoggerFactory.getLogger(ReflectionUtils.class);
+    private static final String BYTE = "Byte";
+    private static final String SHORT = "Short";
+    private static final String INTEGER = "Integer";
+    private static final String LONG = "Long";
+    private static final String FLOAT = "Float";
+    private static final String DOUBLE = "Double";
+    private static final String STRING = "String";
+    private static final String BOOLEAN = "Boolean";
 
     // TODO findMethod looks for the method name only. =>Overloading is not supported. ParameterTypes should be checked
     // too. Workaround for sync/async methods with same name: only sync interface is used.
@@ -108,56 +113,19 @@ public class ReflectionUtils {
             throw new IllegalArgumentException(msg);
         }
 
-        Class<?>[] currentMethodParamTypes = method.getParameterTypes();
+        String[] currentMethodParamTypes = toDatatypeNames(method.getParameterTypes());
         if (paramTypeNames.size() != currentMethodParamTypes.length) {
             return false;
 
         }
         for (int i = 0; i < currentMethodParamTypes.length; i++) {
-            String currentParamName = currentMethodParamTypes[i].getName();
+            String currentParamName = currentMethodParamTypes[i];
             String matchingParamName = paramTypeNames.get(i);
             if (!currentParamName.equals(matchingParamName)) {
                 return false;
             }
         }
         return true;
-    }
-
-    @CheckForNull
-    public static JoynrRpcReturn findReturnAnnotation(Method method) {
-        JoynrRpcReturn res = method.getAnnotation(JoynrRpcReturn.class);
-        if (res != null) {
-            return res;
-        }
-
-        for (Class<?> interfaceClass : method.getDeclaringClass().getInterfaces()) {
-            try {
-                if (JoynrSyncInterface.class.isAssignableFrom(interfaceClass)) {
-
-                    res = findReturnAnnotation(findMethodByParamTypes(interfaceClass,
-                                                                      method.getName(),
-                                                                      method.getParameterTypes()));
-                    if (res != null) {
-                        return res;
-                    }
-                }
-            } catch (NoSuchMethodException e) {
-            }
-        }
-
-        if (method.getDeclaringClass().getSuperclass() != null) {
-            try {
-                res = findReturnAnnotation(findMethodByParamTypes(method.getDeclaringClass().getSuperclass(),
-                                                                  method.getName(),
-                                                                  method.getParameterTypes()));
-                if (res != null) {
-                    return res;
-                }
-            } catch (NoSuchMethodException e) {
-            }
-        }
-
-        return null;
     }
 
     /**
@@ -216,5 +184,77 @@ public class ReflectionUtils {
         }
 
         return true;
+    }
+
+    public static String[] toDatatypeNames(Class<?>... types) {
+        if (types == null) {
+            return null;
+        }
+
+        String[] strings = new String[types.length];
+        for (int i = 0; i < types.length; i++) {
+            Class<?> type = types[i];
+            if (type == null) {
+                continue;
+            } else {
+                strings[i] = type.getCanonicalName().replace("java.lang.", "");
+            }
+        }
+        return strings;
+    }
+
+    public static Class<?>[] toJavaClasses(String... typeNames) {
+        if (typeNames == null) {
+            return null;
+        }
+
+        Class<?>[] classes = new Class[typeNames.length];
+        for (int i = 0; i < typeNames.length; i++) {
+            String[] nameTokens = typeNames[i].split("\\[");
+            Class<?> clazz;
+            switch (nameTokens[0]) {
+            case BOOLEAN:
+                clazz = Boolean.class;
+                break;
+            case BYTE:
+                clazz = Byte.class;
+                break;
+            case SHORT:
+                clazz = Short.class;
+                break;
+            case INTEGER:
+                clazz = Integer.class;
+                break;
+            case LONG:
+                clazz = Long.class;
+                break;
+            case FLOAT:
+                clazz = Float.class;
+                break;
+            case DOUBLE:
+                clazz = Double.class;
+                break;
+            case STRING:
+                clazz = String.class;
+                break;
+            default:
+                try {
+                    clazz = Class.forName(nameTokens[0]);
+                } catch (ClassNotFoundException e) {
+                    clazz = Object.class;
+                }
+                break;
+            }
+            clazz = processArrayTokens(clazz, nameTokens.length - 1);
+            classes[i] = clazz;
+        }
+        return classes;
+    }
+
+    private static Class<?> processArrayTokens(Class<?> clazz, int i) {
+        if (i == 0) {
+            return clazz;
+        }
+        return processArrayTokens(Array.newInstance(clazz, 0).getClass(), --i);
     }
 }

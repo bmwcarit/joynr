@@ -80,6 +80,7 @@ class InterfaceHTemplate implements InterfaceTemplate{
 
 #include <memory>
 #include <functional>
+#include "joynr/exceptions/JoynrException.h"
 
 namespace joynr {
 	class RequestStatus;

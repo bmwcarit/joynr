@@ -210,22 +210,8 @@ class JoynrJavaGeneratorExtensions extends io.joynr.generator.templates.util.Joy
 		return "/* Generated Code */  "
 	}
 
-	// Returns true if a class or superclass has array members
-	def boolean hasArrayMembers(FCompoundType datatype){
-		for (member : datatype.members) {
-			if (isArray(member)){
-				return true
-			}
-		}
-		// Check any super classes
-		if (hasExtendsDeclaration(datatype)) {
-			return hasArrayMembers(datatype.extendedType)
-		}
-		return false
-	}
-
 	// Returns true if a class has to create lists in its constructor
-	def boolean hasListsInConstructor(FCompoundType datatype){
+	def boolean hasArrayMembers(FCompoundType datatype){
 		for (member : datatype.members) {
 			if (isArray(member)){
 				return true

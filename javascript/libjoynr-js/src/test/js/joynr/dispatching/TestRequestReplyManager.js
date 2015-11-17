@@ -159,7 +159,7 @@ joynrTestRequire(
                                         ]
                                     },
                                     {
-                                        paramDatatype : [ TypesEnum.LIST
+                                        paramDatatype : [ "Integer[]"
                                         ],
                                         params : [ [
                                             1,
@@ -171,7 +171,7 @@ joynrTestRequire(
                                         ]
                                     },
                                     {
-                                        paramDatatype : [ TypesEnum.LIST
+                                        paramDatatype : [ "joynr.vehicle.radiotypes.RadioStation[]"
                                         ],
                                         params : [ [
                                             fm4,
@@ -210,6 +210,8 @@ joynrTestRequire(
                                     callOperation : jasmine.createSpy("operationSpy")
                                 }
                             };
+
+                            provider.testFunction.callOperation.andReturn([]);
 
                             var request = new Request({
                                 methodName : "testFunction",
@@ -386,9 +388,16 @@ joynrTestRequire(
                                 }
 
                             };
-                            provider.attributeName.get.andReturn(testParam);
-                            provider.operationName.callOperation.andReturn(testParam);
-                            provider.getOperationStartingWithGet.callOperation.andReturn(testParam);
+                            provider.attributeName.get.andReturn([ testParam
+                            ]);
+                            provider.attributeName.set.andReturn([]);
+                            provider.operationName.callOperation.andReturn([ testParam
+                            ]);
+                            provider.getOperationStartingWithGet.callOperation
+                                    .andReturn([ testParam
+                                    ]);
+                            provider.getOperationHasPriority.callOperation.andReturn([ testParam
+                            ]);
 
                             var callbackDispatcher = jasmine.createSpy("callbackDispatcher");
 
@@ -496,8 +505,7 @@ joynrTestRequire(
 
                                 expect(test.callbackDispatcher).toHaveBeenCalled();
                                 expect(test.callbackDispatcher).toHaveBeenCalledWith(new Reply({
-                                    response : [ undefined
-                                    ],
+                                    response : [],
                                     requestReplyId : test.request.requestReplyId
                                 }));
                             });

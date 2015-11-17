@@ -23,6 +23,7 @@ import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
+import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FBasicTypeId
@@ -30,20 +31,12 @@ import org.franca.core.franca.FInterface
 
 class DefaultInterfaceProviderCppTemplate implements InterfaceTemplate{
 
-	@Inject
-	private extension TemplateBase
-
-	@Inject
-	private extension CppStdTypeUtil
-
-	@Inject
-	private extension NamingUtil
-
-	@Inject
-	private extension MethodUtil
-
-	@Inject
-	private extension AttributeUtil
+	@Inject private extension TemplateBase
+	@Inject private extension CppStdTypeUtil
+	@Inject private extension NamingUtil
+	@Inject private extension MethodUtil
+	@Inject private extension InterfaceUtil
+	@Inject private extension AttributeUtil
 
 	@Inject
 	private extension JoynrCppGeneratorExtensions
@@ -95,8 +88,10 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider()
 		void Default«interfaceName»Provider::get«attributeName.toFirstUpper»(
 				std::function<void(
 						const «attribute.typeName»&
-				)> onSuccess
+				)> onSuccess,
+				std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
 		) {
+			(void) onError;
 			onSuccess(«attributeName»);
 		}
 
@@ -104,8 +99,10 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider()
 	«IF attribute.writable»
 		void Default«interfaceName»Provider::set«attributeName.toFirstUpper»(
 				const «attribute.typeName»& «attributeName»,
-				std::function<void()> onSuccess
+				std::function<void()> onSuccess,
+				std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
 		) {
+			(void) onError;
 			this->«attributeName» = «attributeName»;
 			«attributeName»Changed(«attributeName»);
 			onSuccess();
@@ -113,6 +110,7 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider()
 
 	«ENDIF»
 «ENDFOR»
+«val methodToErrorEnumName = serviceInterface.methodToErrorEnumName»
 «IF !serviceInterface.methods.empty»
 	// methods
 «ENDIF»
@@ -126,13 +124,24 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider()
 				«inputTypedParamList.substring(1)»,
 			«ENDIF»
 			«IF method.outputParameters.empty»
-				std::function<void()> onSuccess
+				std::function<void()> onSuccess,
 			«ELSE»
 				std::function<void(
 						«outputTypedParamList.substring(1)»
-				)> onSuccess
+				)> onSuccess,
+			«ENDIF»
+			«IF method.hasErrorEnum»
+				«IF method.errors != null»
+					«val packagePath = getPackagePathWithJoynrPrefix(method.errors, "::")»
+					std::function<void (const «packagePath»::«methodToErrorEnumName.get(method)»::«nestedEnumName»& errorEnum)> onError
+				«ELSE»
+					std::function<void (const «method.errorEnum.typeName»& errorEnum)> onError
+				«ENDIF»
+			«ELSE»
+			std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
 			«ENDIF»
 	) {
+		(void) onError;
 		«FOR inputParameter: getInputParameters(method)»
 			Q_UNUSED(«inputParameter.joynrName»);
 		«ENDFOR»

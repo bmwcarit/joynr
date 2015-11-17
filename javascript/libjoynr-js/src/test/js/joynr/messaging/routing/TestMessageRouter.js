@@ -593,7 +593,9 @@ joynrTestRequire(
                                         "addNextHop",
                                         "resolveNextHop"
                                     ]);
-                                    routingProxySpy.resolveNextHop.andReturn(Promise.resolve(true));
+                                    routingProxySpy.resolveNextHop.andReturn(Promise.resolve({
+                                        resolved:true
+                                    }));
 
                                     runs(function() {
                                         messageRouter.resolveNextHop(joynrMessage.to).then(

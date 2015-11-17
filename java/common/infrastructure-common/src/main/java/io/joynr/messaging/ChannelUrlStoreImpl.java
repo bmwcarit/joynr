@@ -19,6 +19,8 @@ package io.joynr.messaging;
  * #L%
  */
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -29,7 +31,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * The ChannelUrlStore stores a list of channelIds mapped to their ChannelUrls.
- * 
+ *
  */
 
 public class ChannelUrlStoreImpl implements ChannelUrlStore {
@@ -99,9 +101,11 @@ public class ChannelUrlStoreImpl implements ChannelUrlStore {
         }
 
         synchronized (channelUrlInformation) {
-            List<String> urls = channelUrlInformation.getUrls();
-            urls.add(channelUrl);
-            channelUrlInformation.setUrls(urls);
+            String[] existingUrls = channelUrlInformation.getUrls();
+            List<String> urls = new ArrayList(existingUrls.length + 1);
+            Collections.addAll(urls, existingUrls);
+            Collections.addAll(urls, channelUrl);
+            channelUrlInformation.setUrls(urls.toArray(new String[0]));
         }
     }
 }

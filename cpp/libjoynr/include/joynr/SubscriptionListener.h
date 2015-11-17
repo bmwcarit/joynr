@@ -56,7 +56,7 @@ public:
     /**
      * @brief Method to be called on missing a publication
      */
-    virtual void onError()
+    virtual void onError(const exceptions::JoynrRuntimeException& error)
     {
     }
 };

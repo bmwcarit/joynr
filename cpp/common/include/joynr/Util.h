@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@
 #include <tuple>
 #include <type_traits>
 #include <utility>
+#include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
 {
@@ -173,6 +174,8 @@ public:
                                      const QString& explanation,
                                      const QString& message);
 
+    static void throwJoynrException(const exceptions::JoynrException& error);
+
     template <typename... Ts>
     static int getTypeId();
 
@@ -227,7 +230,7 @@ private:
     static int getTypeId_split()
     {
         int prime = 31;
-        return prime * qMetaTypeId<T>() + prime * getTypeId<Ts...>();
+        return qMetaTypeId<T>() + prime * getTypeId<Ts...>();
     }
 
     template <typename T, typename... Ts>

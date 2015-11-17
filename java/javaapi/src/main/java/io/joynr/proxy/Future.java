@@ -34,29 +34,32 @@ import joynr.exceptions.ApplicationException;
 
 public class Future<T> {
 
-    private T reply;
+    private T value;
     private volatile JoynrException exception = null;
     RequestStatus status = new RequestStatus(RequestStatusCode.IN_PROGRESS);
     private Lock statusLock = new ReentrantLock();
     private Condition statusLockChangedCondition = statusLock.newCondition();
 
     /**
+     * This is a blocking call which waits until the request finishes/an error
+     * occurs/or times out. If the request finishes successfully, it retrieves the return
+     * value for the request if one exists, otherwise a JoynrException is thrown.
      *
-     * @param timeout_ms
-     *            time to wait until throwing a JoynWaitExpiredException
-     * @return the result of the method call
+     * @param timeout_ms 
+     *            The maximum number of milliseconds to wait before this request times out
+     * @return the result of the request
      * @throws InterruptedException if the thread is interrupted.
      * @throws JoynrWaitExpiredException
      *             if timeout_ms expires
-     * @throws ApplicationException if the reply contains a ApplicationException
-     * @throws JoynrRuntimeException if the reply contains a JoynrRuntimeException
+     * @throws ApplicationException if the request failed with a ApplicationException
+     * @throws JoynrRuntimeException if the request failed with a JoynrRuntimeException
      */
-    public T getReply(long timeout_ms) throws InterruptedException, JoynrWaitExpiredException, ApplicationException,
-                                      JoynrRuntimeException {
+    public T get(long timeout_ms) throws InterruptedException, JoynrWaitExpiredException, ApplicationException,
+                                 JoynrRuntimeException {
         try {
             statusLock.lock();
             if (this.status.getCode() == RequestStatusCode.OK) {
-                return reply;
+                return value;
             }
 
             if (exception != null) {
@@ -81,24 +84,26 @@ public class Future<T> {
                 throw new JoynrWaitExpiredException();
             }
 
-            return reply;
+            return value;
         } finally {
             statusLock.unlock();
         }
     }
 
     /**
+     * This is a blocking call which waits until the request finishes/an error
+     * occurs. If the request finishes successfully, it retrieves the return
+     * value for the request if one exists, otherwise a JoynrException is thrown.
      *
-     * @return the result of the method call
-     * @throws InterruptedException
-     *             - if the current thread is interrupted (and interruption of thread suspension is supported)
-     * @throws JoynrWaitExpiredException if the timeout set to Long.MAX_VALUE expires
-     * @throws ApplicationException if the reply contains a ApplicationException
-     * @throws JoynrRuntimeException if the reply contains a JoynrRuntimeException
+     * @return the result of the request
+     * @throws InterruptedException if the thread is interrupted.
+     * @throws JoynrWaitExpiredException
+     *             if timeout_ms expires
+     * @throws ApplicationException if the request failed with a ApplicationException
+     * @throws JoynrRuntimeException if the request failed with a JoynrRuntimeException
      */
-    public T getReply() throws InterruptedException, JoynrWaitExpiredException, ApplicationException,
-                       JoynrRuntimeException {
-        return this.getReply(Long.MAX_VALUE);
+    public T get() throws InterruptedException, JoynrWaitExpiredException, ApplicationException, JoynrRuntimeException {
+        return this.get(Long.MAX_VALUE);
     }
 
     public RequestStatus getStatus() {
@@ -114,7 +119,7 @@ public class Future<T> {
     public void onSuccess(T result) {
         try {
             statusLock.lock();
-            reply = result;
+            value = result;
             status = new RequestStatus(RequestStatusCode.OK);
             statusLockChangedCondition.signalAll();
         } catch (Throwable e) {
@@ -143,11 +148,11 @@ public class Future<T> {
     }
 
     @SuppressWarnings("unchecked")
-    public void resolve(Object... response) {
-        if (response.length == 0) {
+    public void resolve(Object... outParameters) {
+        if (outParameters.length == 0) {
             onSuccess(null);
         } else {
-            onSuccess((T) response[0]);
+            onSuccess((T) outParameters[0]);
         }
     }
 }

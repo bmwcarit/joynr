@@ -19,12 +19,9 @@ package io.joynr.capabilities.directory;
  * #L%
  */
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertArrayEquals;
 import io.joynr.provider.PromiseKeeper;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -40,7 +37,7 @@ import org.junit.Test;
 
 public class CapabilitiesDirectoryTest {
 
-    private static final List<CustomParameter> CUSTOM_PARAMETERS = new ArrayList<CustomParameter>();
+    private static final CustomParameter[] CUSTOM_PARAMETERS = {};
 
     private static CapabilitiesDirectoryImpl capabilitiesDirectory;
 
@@ -86,33 +83,31 @@ public class CapabilitiesDirectoryTest {
     }
 
     @Test
-    public void registerMultipleCapabilitiesAsList() throws InterruptedException {
+    public void registerMultipleCapabilitiesAsArray() throws InterruptedException {
 
-        List<CapabilityInformation> interfaces2And3 = Arrays.asList(capInfo2, capInfo3);
+        CapabilityInformation[] interfaces2And3 = { capInfo2, capInfo3 };
         capabilitiesDirectory.add(interfaces2And3);
 
-        List<CapabilityInformation> expectedCapInfo2 = Arrays.asList(capInfo2);
         PromiseKeeper lookupCapInfo2 = new PromiseKeeper();
         capabilitiesDirectory.lookup(domain, interface2).then(lookupCapInfo2);
-        assertEquals(expectedCapInfo2, lookupCapInfo2.getValues()[0]);
+        assertArrayEquals(new CapabilityInformation[]{ capInfo2 },
+                          (CapabilityInformation[]) lookupCapInfo2.getValues()[0]);
 
-        List<CapabilityInformation> expectedCapInfo3 = Arrays.asList(capInfo3);
         PromiseKeeper lookupCapInfo3 = new PromiseKeeper();
         capabilitiesDirectory.lookup(domain, interface3).then(lookupCapInfo3);
-        assertEquals(expectedCapInfo3, lookupCapInfo3.getValues()[0]);
+        assertArrayEquals(new CapabilityInformation[]{ capInfo3 },
+                          (CapabilityInformation[]) lookupCapInfo3.getValues()[0]);
     }
 
     @Test
     public void registerProviderAndRequestChannels() throws Exception {
-
-        List<CapabilityInformation> expectedCapInfo1 = Arrays.asList(capInfo1);
-
         capabilitiesDirectory.add(capInfo1);
 
         PromiseKeeper lookupCapInfo1 = new PromiseKeeper();
         capabilitiesDirectory.lookup(domain, interface1).then(lookupCapInfo1);
         lookupCapInfo1.waitForSettlement();
-        assertEquals(expectedCapInfo1, lookupCapInfo1.getValues()[0]);
+        assertArrayEquals(new CapabilityInformation[]{ capInfo1 },
+                          (CapabilityInformation[]) lookupCapInfo1.getValues()[0]);
 
     }
 }

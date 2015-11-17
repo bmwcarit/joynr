@@ -19,21 +19,19 @@ package io.joynr.dispatching.rpc;
  * #L%
  */
 
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcReturn;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import javax.annotation.CheckForNull;
-
-import joynr.MethodMetaInformation;
-import joynr.Reply;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
+
+import joynr.MethodMetaInformation;
+import joynr.Reply;
 
 public class RpcUtils {
     private static final Logger logger = LoggerFactory.getLogger(RpcUtils.class);
@@ -49,23 +47,15 @@ public class RpcUtils {
         Object responsePayload = null;
 
             if (response.length == 1) {
-                JoynrRpcReturn annotation = methodMetaInformation.getReturnAnnotation();
-                if (annotation == null) {
-                    responsePayload = objectMapper.convertValue(response[0], method.getReturnType());
-                } else {
-                    try {
-                        responsePayload = objectMapper.convertValue(response[0], annotation.deserializationType().newInstance());
-                    } catch (IllegalArgumentException | InstantiationException | IllegalAccessException e) {
-                        logger.error("error calling method: {}. Unable to recreate return object: {}. Returning NULL instead", method.getName(), e.getMessage());
-
-                    }
-                }
+                responsePayload = objectMapper.convertValue(response[0], method.getReturnType());
             } else if (response.length > 1) {
-                    final Class<?>[] constructorParameterTypes = { Object[].class };
-                    try {
+                try {
+                        convertMultioutResponseToCorrectTypes(method, response);
+
+                        final Class<?>[] constructorParameterTypes = { Object[].class };
                         responsePayload = method.getReturnType()
                                                 .getConstructor(constructorParameterTypes)
-                                                .newInstance(new Object[]{ response });
+                                                .newInstance((Object) response);
                     } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
                             | InvocationTargetException | NoSuchMethodException | SecurityException e) {
                         logger.error("error calling multi-out method: {}. Unable to recreate return object: {}. Returning NULL instead", method.getName(), e.getMessage());
@@ -85,8 +75,7 @@ public class RpcUtils {
             throw new IllegalStateException("Received a reply to a rpc method call without callback annotation including deserializationType");
         }
 
-
-        int responseParameterCount = response.getResponse().size();
+        int responseParameterCount = response.getResponse().length;
         Object[] responsePayload = null;
 
         if (responseParameterCount == 0) {
@@ -94,16 +83,34 @@ public class RpcUtils {
         } else if (responseParameterCount == 1) {
             responsePayload = new Object[1];
             try {
-                responsePayload[0] = objectMapper.convertValue(response.getResponse().get(0),
+                responsePayload[0] = objectMapper.convertValue(response.getResponse()[0],
                                                                methodMetaInformation.getCallbackAnnotation()
-                                                                                    .deserializationType()
-                                                                                    .newInstance());
-            } catch (IllegalArgumentException | InstantiationException | IllegalAccessException e) {
-                logger.error("error calling method: {}. Unable to recreate response for callback: {}. Returning NULL instead", method.getName(), e.getMessage());
+                                                                                    .deserializationType());
+            } catch (IllegalArgumentException e) {
+                logger.error("error calling method: {}. Unable to recreate response for callback: {}. Returning NULL instead",
+                             method.getName(),
+                             e.getMessage());
             }
-        } else if (response.getResponse().size() > 1) {
-            responsePayload = response.getResponse().toArray();
+        } else if (response.getResponse().length > 1) {
+            convertMultioutResponseToCorrectTypes(method, response.getResponse());
+            responsePayload = response.getResponse();
         }
         return responsePayload;
     }
+
+    private static void convertMultioutResponseToCorrectTypes(Method method,
+                                                              Object... response) {
+        Method getDatatypes;
+        try {
+            getDatatypes = method.getReturnType().getMethod("getDatatypes");
+            Class<?>[] responseDatatypes = (Class<?>[]) getDatatypes.invoke(null);
+            for (int i = 0; i < response.length; i++) {
+                response[i] = objectMapper.convertValue(response[i], responseDatatypes[i]);
+            }
+        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            logger.error("error calling method: {}. Unable to recreate response for callback: {}. Returning NULL instead",
+                         method.getName(),
+                         e.getMessage());
+        }
+}
 }

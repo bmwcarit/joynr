@@ -448,6 +448,8 @@ define(
                                             domain : domain,
                                             interfaceName : interfaceName,
                                             discoveryQos : discoveryQos
+                                        }).then(function(opArgs){
+                                            return opArgs.result;
                                         });
                                     });
                                 },

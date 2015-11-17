@@ -24,8 +24,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-
 /**
  * This annotation should be used on parameters of methods that will be invoked using JSON RPC, to specify their names.
  * This is necessary because this information is not stored in release builds.
@@ -44,7 +42,7 @@ public @interface JoynrRpcParam {
      * This is needed to correctly deserialize collection types because their type information is erased after compilation in Java
      * @return The deserialization type
      */
-    Class<? extends TypeReference<?>> deserializationType() default DefaultTypeReference.class;
+    Class<?> deserializationType() default Object.class;
 
     /** Returns the default value for the parameter.
      * It is used if a parameter is missing in the function call. This one can only be used for simple types.

@@ -1,9 +1,7 @@
-package io.joynr.dispatcher.rpc.annotation;
-
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +17,22 @@ package io.joynr.dispatcher.rpc.annotation;
  * #L%
  */
 
-import com.fasterxml.jackson.core.type.TypeReference;
+package com.bmwgroup.appgateway.vehicledata
 
-public final class DefaultTypeReference extends TypeReference<String> {
+interface VehicleDataCommon {
+
+	version {
+		major 0
+		minor 1
+	}
+
+	attribute String vin readonly
+
+	<**
+        @see: Vehicle data manager for 2018 head units
+    **>
+	attribute Double actualSpeedKmh readonly
+
+
+	attribute String language
 }

@@ -22,8 +22,6 @@ package io.joynr.accesscontrol;
 import static org.junit.Assert.assertEquals;
 import io.joynr.common.JoynrPropertiesModule;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Properties;
 
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
@@ -61,7 +59,7 @@ public class ProvisionedDomainAccessControlStoreTest {
 
         ObjectMapper objectMapper = new ObjectMapper();
         // instantiate some template objects
-        expectedUserDomainRoleEntry = new DomainRoleEntry(UID1, Collections.<String> emptyList(), Role.OWNER);
+        expectedUserDomainRoleEntry = new DomainRoleEntry(UID1, new String[0], Role.OWNER);
         DomainRoleEntry[] provisionedDomainRoles = { expectedUserDomainRoleEntry };
         domainRoleEntryString = objectMapper.writeValueAsString(provisionedDomainRoles);
 
@@ -69,12 +67,14 @@ public class ProvisionedDomainAccessControlStoreTest {
                                                                         DOMAIN1,
                                                                         INTERFACE1,
                                                                         TrustLevel.LOW,
-                                                                        Arrays.asList(TrustLevel.MID, TrustLevel.LOW),
+                                                                        new TrustLevel[]{ TrustLevel.MID,
+                                                                                TrustLevel.LOW },
                                                                         TrustLevel.LOW,
-                                                                        Arrays.asList(TrustLevel.MID, TrustLevel.LOW),
+                                                                        new TrustLevel[]{ TrustLevel.MID,
+                                                                                TrustLevel.LOW },
                                                                         OPERATION1,
                                                                         Permission.NO,
-                                                                        Arrays.asList(Permission.ASK, Permission.NO));
+                                                                        new Permission[]{ Permission.ASK, Permission.NO });
         MasterAccessControlEntry[] provisionedMasterAccessControlEntries = { expectedMasterAccessControlEntry };
         masterAccessControlEntryString = objectMapper.writeValueAsString(provisionedMasterAccessControlEntries);
     }

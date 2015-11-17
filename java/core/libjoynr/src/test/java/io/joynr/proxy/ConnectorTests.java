@@ -26,8 +26,8 @@ import io.joynr.dispatcher.rpc.JoynrSyncInterface;
 import io.joynr.dispatching.RequestReplyManager;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.dispatching.subscription.SubscriptionManager;
-import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrIllegalStateException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
@@ -36,10 +36,8 @@ import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 
 import joynr.PeriodicSubscriptionQos;
-import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.types.Localisation.GpsPosition;
 import joynr.vehicle.LocalisationSubscriptionInterface;
@@ -128,7 +126,7 @@ public class ConnectorTests {
                 }
 
                 @Override
-                public void onError(JoynrException error) {
+                public void onError(JoynrRuntimeException error) {
                 }
             };
             Object[] args = new Object[]{ listener, subscriptionQos, subscriptionId };

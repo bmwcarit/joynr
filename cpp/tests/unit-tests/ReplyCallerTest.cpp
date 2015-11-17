@@ -28,6 +28,10 @@ using ::testing::NotNull;
 using ::testing::_;
 using namespace ::testing;
 
+MATCHER(timeoutException, "") {
+    return arg->getTypeName() == joynr::exceptions::JoynrTimeOutException::TYPE_NAME
+            && arg->getMessage() == "timeout waiting for the response";
+}
 
 using namespace joynr;
 
@@ -40,10 +44,10 @@ public:
     ReplyCallerTest()
         : intCallback(new MockCallback<int>()),
           intFixture(std::bind(&MockCallback<int>::onSuccess, intCallback, std::placeholders::_2),
-                     std::bind(&MockCallback<int>::onError, intCallback, std::placeholders::_1)),
+                     std::bind(&MockCallback<int>::onError, intCallback, std::placeholders::_1, std::placeholders::_2)),
           voidCallback(new MockCallback<void>()),
           voidFixture(std::bind(&MockCallback<void>::onSuccess, voidCallback),
-                      std::bind(&MockCallback<void>::onError, voidCallback, std::placeholders::_1)) {}
+                      std::bind(&MockCallback<void>::onError, voidCallback, std::placeholders::_1, std::placeholders::_2)) {}
 
     std::shared_ptr<MockCallback<int>> intCallback;
     ReplyCaller<int> intFixture;
@@ -63,7 +67,7 @@ TEST_F(ReplyCallerTest, getTypeQInt64) {
                 [callback](const RequestStatus& status, const qint64& value) {
                     callback->onSuccess(value);
                 },
-                [](const RequestStatus& status){
+                [](const RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error){
                 });
     ASSERT_EQ(Util::getTypeId<qint64>(), qint64ReplyCaller.getTypeId());
 }
@@ -74,7 +78,7 @@ TEST_F(ReplyCallerTest, getTypeQInt8) {
                 [callback](const RequestStatus& status, const qint8& value) {
                     callback->onSuccess(value);
                 },
-                [](const RequestStatus& status){
+                [](const RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error){
                 });
     ASSERT_EQ(Util::getTypeId<qint8>(), qint8ReplyCaller.getTypeId());
 }
@@ -87,13 +91,13 @@ TEST_F(ReplyCallerTest, getTypeForVoid) {
 
 TEST_F(ReplyCallerTest, timeOut) {
     EXPECT_CALL(*intCallback, onError(
-                    Property(&RequestStatus::getCode, RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE)));
+                    Property(&RequestStatus::getCode, RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE),timeoutException()));
     intFixture.timeOut();
 }
 
 TEST_F(ReplyCallerTest, timeOutForVoid) {
     EXPECT_CALL(*voidCallback, onError(
-                    Property(&RequestStatus::getCode, RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE)));
+                    Property(&RequestStatus::getCode, RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE),timeoutException()));
     voidFixture.timeOut();
 }
 

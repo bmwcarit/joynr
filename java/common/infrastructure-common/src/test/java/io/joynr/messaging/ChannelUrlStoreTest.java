@@ -43,7 +43,7 @@ public class ChannelUrlStoreTest {
         }
 
         ChannelUrlInformation channelEntry = store.findChannelEntry(channelId);
-        Assert.assertEquals("entry contains all urls", numberChannelUrls, channelEntry.getUrls().size());
+        Assert.assertEquals("entry contains all urls", numberChannelUrls, channelEntry.getUrls().length);
 
     }
 }

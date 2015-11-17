@@ -23,6 +23,7 @@ define(
         "joynr/provider/ProviderOperation",
         [
             "joynr/util/Typing",
+            "joynr/util/MethodUtil",
             "joynr/TypesEnum",
             "joynr/types/TypeRegistrySingleton",
             "joynr/exceptions/ApplicationException",
@@ -31,6 +32,7 @@ define(
         ],
         function(
             Typing,
+            MethodUtil,
             TypesEnum,
             TypeRegistrySingleton,
             ApplicationException,
@@ -70,7 +72,7 @@ define(
              */
             function getNamedArguments(unnamedArguments, argumentDatatypes, operationSignature) {
                 var i, argument, argumentName, namedArguments = {}, inputParameter =
-                        operationSignature.inputParameter, filteredArgumentType;
+                        operationSignature.inputParameter;
 
                 // check if number of given argument types (argumentDatatypes.length) matches number
                 // of parameters in op signature (keys.length)
@@ -81,17 +83,9 @@ define(
                 // cycle over all arguments
                 for (i = 0; i < inputParameter.length; ++i) {
                     argument = inputParameter[i];
-                    /*
-                     * this filtering can be removed, once the paramDatatypes of arrays
-                     * not "List" anymore, but the real typename of the array entries + "[]"
-                     */
-                    filteredArgumentType =
-                            (argument.type.substr(argument.type.length - 2, 2) === "[]")
-                                    ? TypesEnum.LIST
-                                    : argument.type;
                     argumentName = argument.name;
                     // check if argument type matches parameter's type from operation signature
-                    if (argumentDatatypes[i] !== filteredArgumentType) {
+                    if (argumentDatatypes[i] !== argument.type) {
                         return undefined;
                     }
 
@@ -102,6 +96,15 @@ define(
                 return namedArguments;
             }
 
+            function returnValueToResponseArray(returnValue, outputParameter) {
+                if (outputParameter.length === 0) {
+                    return [];
+                }
+                /*
+                 * In case of multiple output parameters, we expect that the provider returns a key-value-pair
+                 */
+                return MethodUtil.transformParameterMapToArray(returnValue || {}, outputParameter).params;
+            }
             /**
              * Constructor of ProviderAttribute object that is used in the generation of provider
              * objects
@@ -219,7 +222,9 @@ define(
                                     result = privateOperationFunc(namedArguments);
                                     if (Util.isPromise(result)) {
                                         // return promise
-                                        return result.catch(function(exceptionOrErrorEnumValue) {
+                                        return result.then(function(returnValue) {
+                                            return returnValueToResponseArray(returnValue, signature.outputParameter || []);
+                                        }).catch(function(exceptionOrErrorEnumValue) {
                                             if (exceptionOrErrorEnumValue instanceof ProviderRuntimeException) {
                                                 exception = exceptionOrErrorEnumValue;
                                             } else {
@@ -239,7 +244,7 @@ define(
                                     }
 
                                     // return direct result
-                                    return result;
+                                    return returnValueToResponseArray(result, signature.outputParameter || []);
                                 } catch(exceptionOrErrorEnumValue) {
                                     /*
                                      * If the method was implemented synchronously, we can get an

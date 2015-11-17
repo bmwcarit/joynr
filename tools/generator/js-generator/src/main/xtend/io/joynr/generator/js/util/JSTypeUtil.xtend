@@ -105,11 +105,13 @@ class JSTypeUtil extends AbstractTypeUtil {
 	}
 
 	override getTypeNameForList(FBasicTypeId datatype) {
-		"TypesEnum.LIST";
+		// unused
+		"";
 	}
 
 	override getTypeNameForList(FType datatype) {
-		"TypesEnum.LIST";
+		// unused
+		"";
 	}
 
 

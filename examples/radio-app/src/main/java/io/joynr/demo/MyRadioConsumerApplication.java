@@ -40,10 +40,10 @@ import java.io.IOException;
 import java.util.Properties;
 
 import jline.console.ConsoleReader;
-import joynr.exceptions.ApplicationException;
-import joynr.exceptions.ProviderRuntimeException;
 import joynr.OnChangeSubscriptionQos;
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
+import joynr.exceptions.ApplicationException;
+import joynr.exceptions.ProviderRuntimeException;
 import joynr.vehicle.Country;
 import joynr.vehicle.GeoPosition;
 import joynr.vehicle.RadioBroadcastInterface;
@@ -235,7 +235,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
                                                                                     }
 
                                                                                     @Override
-                                                                                    public void onError(JoynrException error) {
+                                                                                    public void onError(JoynrRuntimeException error) {
                                                                                         LOG.info(PRINT_BORDER
                                                                                                 + "ATTRIBUTE SUBSCRIPTION: " + error
                                                                                                 + PRINT_BORDER);
@@ -359,7 +359,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
             Future<Boolean> future = radioProxy.addFavoriteStation(callback, radioStation);
             try {
                 long timeoutInMilliseconds = 8000;
-                Boolean reply = future.getReply(timeoutInMilliseconds);
+                Boolean reply = future.get(timeoutInMilliseconds);
                 LOG.info(PRINT_BORDER + "ASYNC METHOD: added favorite station: " + radioStation + ": " + reply
                         + PRINT_BORDER);
             } catch (InterruptedException|JoynrRuntimeException|ApplicationException e) {

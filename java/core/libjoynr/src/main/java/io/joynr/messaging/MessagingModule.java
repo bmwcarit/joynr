@@ -1,5 +1,22 @@
 package io.joynr.messaging;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.Version;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
+import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.type.SimpleType;
+import com.google.inject.AbstractModule;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
+
+import io.joynr.messaging.serialize.JoynrArraySerializer;
+
 /*
  * #%L
  * %%
@@ -23,23 +40,10 @@ import io.joynr.messaging.serialize.JoynrEnumSerializer;
 import io.joynr.messaging.serialize.JoynrListSerializer;
 import io.joynr.messaging.serialize.JoynrUntypedObjectDeserializer;
 import io.joynr.messaging.serialize.NumberSerializer;
+import io.joynr.messaging.serialize.RequestDeserializer;
 import io.joynr.security.DummyPlatformSecurityManager;
 import io.joynr.security.PlatformSecurityManager;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.Version;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
-import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.type.SimpleType;
-import com.google.inject.AbstractModule;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
+import joynr.Request;
 
 public class MessagingModule extends AbstractModule {
     // private static final Logger logger = LoggerFactory.getLogger(MessagingModule.class);
@@ -56,6 +60,7 @@ public class MessagingModule extends AbstractModule {
         objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
+        objectMapper.configure(DeserializationFeature.USE_JAVA_ARRAY_FOR_JSON_ARRAY, true);
         // objectMapper.configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true);
         objectMapper.configure(SerializationFeature.WRITE_NULL_MAP_VALUES, true);
         objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
@@ -69,12 +74,15 @@ public class MessagingModule extends AbstractModule {
         module.addSerializer(Number.class, new NumberSerializer());
         module.addSerializer(new JoynrEnumSerializer());
         module.addSerializer(new JoynrListSerializer());
+        module.addSerializer(new JoynrArraySerializer());
 
         TypeDeserializer typeDeserializer = joynrTypeResolverBuilder.buildTypeDeserializer(objectMapper.getDeserializationConfig(),
                                                                                            SimpleType.construct(Object.class),
                                                                                            null);
 
+        module.addDeserializer(Request.class, new RequestDeserializer(objectMapper));
         module.addDeserializer(Object.class, new JoynrUntypedObjectDeserializer(typeDeserializer));
+
         module.setMixInAnnotation(Throwable.class, ThrowableMixIn.class);
         objectMapper.registerModule(module);
 

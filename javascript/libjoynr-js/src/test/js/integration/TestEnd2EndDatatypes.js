@@ -142,7 +142,9 @@ joynrTestRequire("integration/TestEnd2EndDatatypes", [
 
                 runs(function() {
                     expect(onFulfilledSpy).toHaveBeenCalled();
-                    expect(onFulfilledSpy).toHaveBeenCalledWith(expectedReturnValue);
+                    expect(onFulfilledSpy).toHaveBeenCalledWith({
+                        javascriptType : expectedReturnValue
+                    });
                 });
             }
 
@@ -171,8 +173,10 @@ joynrTestRequire("integration/TestEnd2EndDatatypes", [
 
                 runs(function() {
                     expect(onFulfilledSpy).toHaveBeenCalled();
-                    expect(onFulfilledSpy).toHaveBeenCalledWith(arg);
-                    IntegrationUtils.checkValueAndType(onFulfilledSpy.calls[0].args[0], arg);
+                    expect(onFulfilledSpy).toHaveBeenCalledWith({
+                        returnValue : arg
+                    });
+                    IntegrationUtils.checkValueAndType(onFulfilledSpy.calls[0].args[0].returnValue, arg);
                 });
             }
 
@@ -200,7 +204,9 @@ joynrTestRequire("integration/TestEnd2EndDatatypes", [
 
                 runs(function() {
                     expect(onFulfilledSpy).toHaveBeenCalled();
-                    expect(onFulfilledSpy).toHaveBeenCalledWith(JSON.stringify(opArgs));
+                    expect(onFulfilledSpy).toHaveBeenCalledWith({
+                        serialized : JSON.stringify(opArgs)
+                    });
                 });
             }
 

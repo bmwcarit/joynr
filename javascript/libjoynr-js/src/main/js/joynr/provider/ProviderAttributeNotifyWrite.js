@@ -82,7 +82,7 @@ define("joynr/provider/ProviderAttributeNotifyWrite", [ "joynr/provider/Provider
          * @see ProviderAttributeNotifyWrite#registerSetter
          */
         this.set = function set(value) {
-            providerAttribute.set(value);
+            return providerAttribute.set(value);
         };
 
         /**

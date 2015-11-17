@@ -83,7 +83,7 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
                                                                   8l,
                                                                   9l,
                                                                   23);
-    private static Double expectedSpeed = 100.0;
+    private static Float expectedSpeed = 100.0f;
 
     private JoynrRuntime providerRuntime;
     private JoynrRuntime consumerRuntime;
@@ -187,7 +187,7 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
         proxy.subscribeToLocationUpdateWithSpeedBroadcast(new testBroadcastInterface.LocationUpdateWithSpeedBroadcastAdapter() {
 
                                                               @Override
-                                                              public void onReceive(GpsLocation location, Double speed) {
+                                                              public void onReceive(GpsLocation location, Float speed) {
                                                                   assertEquals(expectedLocation, location);
                                                                   assertEquals(expectedSpeed, speed);
                                                                   broadcastReceived.release();
@@ -243,7 +243,7 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
 
                                                                                       @Override
                                                                                       public void onReceive(GpsLocation location,
-                                                                                                            Double speed) {
+                                                                                                            Float speed) {
                                                                                           assertEquals(expectedLocation,
                                                                                                        location);
                                                                                           assertEquals(expectedSpeed,

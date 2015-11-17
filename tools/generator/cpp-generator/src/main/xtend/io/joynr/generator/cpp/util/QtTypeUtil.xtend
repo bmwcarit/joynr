@@ -256,9 +256,12 @@ class QtTypeUtil extends CppTypeUtil {
 		}
 	}
 
-	def getTypeNameOfContainingClass (FType datatype) {
-		val packagepath = buildPackagePath(datatype, "::", true);
-		return  packagepath + datatype.joynrNameQt
+	override getGenerationTypeName(FType datatype) {
+		datatype.joynrNameQt
+	}
+
+	def joynrNameQt(FType type){
+		return "Qt" + type.joynrName
 	}
 
 	def registerMetatypeStatement(String qtTypeName) {

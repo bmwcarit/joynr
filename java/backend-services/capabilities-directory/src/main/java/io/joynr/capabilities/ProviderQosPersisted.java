@@ -20,14 +20,11 @@ package io.joynr.capabilities;
  */
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
+import javax.persistence.Lob;
 import javax.persistence.Table;
 
 import joynr.types.CustomParameter;
@@ -48,15 +45,14 @@ public class ProviderQosPersisted extends ProviderQos implements Serializable {
     private String participantId;
 
     public ProviderQosPersisted(final String participantId, ProviderQos providerQos) {
-        super(new ArrayList<CustomParameter>(Collections2.transform(providerQos.getCustomParameters(),
-                                                                    new Function<CustomParameter, CustomParameterPersisted>() {
-                                                                        @Override
-                                                                        public CustomParameterPersisted apply(CustomParameter input) {
-                                                                            return new CustomParameterPersisted(participantId,
-                                                                                                                input);
-                                                                        }
+        super(Collections2.transform(Arrays.asList(providerQos.getCustomParameters()),
+                                     new Function<CustomParameter, CustomParameterPersisted>() {
+                                         @Override
+                                         public CustomParameterPersisted apply(CustomParameter input) {
+                                             return new CustomParameterPersisted(participantId, input);
+                                         }
 
-                                                                    })),
+                                     }).toArray(new CustomParameter[providerQos.getCustomParameters().length]),
               providerQos.getProviderVersion(),
               providerQos.getPriority(),
               providerQos.getScope(),
@@ -74,14 +70,13 @@ public class ProviderQosPersisted extends ProviderQos implements Serializable {
     }
 
     @Override
-    @OneToMany(cascade = CascadeType.ALL, targetEntity = CustomParameterPersisted.class)
-    @JoinColumn(name = "participantId", referencedColumnName = "participantId")
-    public List<CustomParameter> getCustomParameters() {
+    @Lob
+    public CustomParameter[] getCustomParameters() {
         return super.getCustomParameters();
     }
 
     @Override
-    public void setCustomParameters(List<CustomParameter> customParameters) {
+    public void setCustomParameters(CustomParameter[] customParameters) {
         super.setCustomParameters(customParameters);
     }
 

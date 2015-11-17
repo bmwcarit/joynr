@@ -45,7 +45,7 @@ class InterfaceRequestInterpreterHTemplate implements InterfaceTemplate{
 #include "joynr/IRequestInterpreter.h"
 
 #include "joynr/joynrlogging.h"
-#include "joynr/exceptions.h"
+#include "joynr/exceptions/JoynrException.h"
 
 #include <QVariant>
 #include <memory>
@@ -77,7 +77,7 @@ public:
 					 const QList<QVariant>& paramValues,
 					 const QList<QVariant>& paramTypes,
 					 std::function<void (const QList<QVariant>& outParams)> onSuccess,
-					 std::function<void (const JoynrException& exception)> onError);
+					 std::function<void (const exceptions::JoynrException& exception)> onError);
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(«interfaceName»RequestInterpreter);

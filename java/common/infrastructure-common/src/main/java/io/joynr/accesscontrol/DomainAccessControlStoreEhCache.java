@@ -1,5 +1,16 @@
 package io.joynr.accesscontrol;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import javax.annotation.Nonnull;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.inject.Inject;
+
 /*
  * #%L
  * %%
@@ -21,13 +32,6 @@ package io.joynr.accesscontrol;
 
 import io.joynr.accesscontrol.primarykey.UserDomainInterfaceOperationKey;
 import io.joynr.accesscontrol.primarykey.UserRoleKey;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import javax.annotation.Nonnull;
-
 import joynr.infrastructure.DacTypes.ControlEntry;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
@@ -45,11 +49,6 @@ import net.sf.ehcache.search.Direction;
 import net.sf.ehcache.search.Query;
 import net.sf.ehcache.search.Result;
 import net.sf.ehcache.search.Results;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.inject.Inject;
 
 /**
  * Uses EhCache to implement a GlobalDomainAccessStore.
@@ -447,14 +446,14 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
         // find out first on which domains uid has specified role
         Cache drtCache = getCache(CacheId.DOMAIN_ROLES);
         UserRoleKey dreKey = new UserRoleKey(uid, role);
-        List<String> uidDomains = null;
+        String[] uidDomains = null;
         // read domains from DRE
         if (drtCache.isKeyInCache(dreKey)) {
             DomainRoleEntry dre = DomainAccessControlStoreEhCache.<DomainRoleEntry> getElementValue(drtCache.get(dreKey));
             uidDomains = dre.getDomains();
         }
         // if uid has no domains with specified role return empty list
-        if (uidDomains == null || uidDomains.isEmpty()) {
+        if (uidDomains == null || uidDomains.length == 0) {
             return aces;
         }
 

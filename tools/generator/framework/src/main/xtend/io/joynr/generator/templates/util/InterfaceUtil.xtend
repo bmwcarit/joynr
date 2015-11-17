@@ -66,35 +66,6 @@ public class InterfaceUtil {
 		return result;
 	}
 
-	def boolean needsListImport (FInterface serviceInterface) {
-		needsListImport(serviceInterface, true, true);
-	}
-
-	def boolean needsListImport(FInterface fInterface, boolean includeMethods, boolean includeAttributes) {
-		if (includeMethods){
-			//need to Import the dependencies to Lists if either input or output parameters of one of the methods are a list.
-			for (method : getMethods(fInterface)) {
-				for (output : getOutputParameters(method)) {
-					if (output != null && isArray(output)) return true;
-				}
-
-				for (input : getInputParameters(method)) {
-					if (input != null && isArray(input)) return true;
-				}
-			}
-		}
-
-		if (includeAttributes){
-					//need to Import the dependencies to Lists if one of the attributes is a list.
-			for (attribute : getAttributes(fInterface)) {
-				if (attribute != null && isArray(attribute)) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
 	def getMethods(FInterface fInterface) {
 		fInterface.methods
 	}
@@ -194,8 +165,9 @@ public class InterfaceUtil {
 	) {
 		val typeList = new HashSet<Object>();
 		if (methods){
+			val methodToErrorEnumName = fInterface.methodToErrorEnumName
 			for (method : fInterface.methods) {
-				typeList.addAll(getAllRequiredTypes(method, errorTypes))
+				typeList.addAll(getAllRequiredTypes(method, methodToErrorEnumName.get(method), errorTypes))
 			}
 		}
 
@@ -340,6 +312,15 @@ public class InterfaceUtil {
 			}
 		}
 		return hasMethodWithImplicitErrorEnum(interfaceType);
+	}
+
+	def boolean hasMethodWithEnumInputParameter(FInterface interfaceType) {
+		for (method : interfaceType.methods) {
+			if (method.hasEnumInputParameter) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	def boolean hasMethodWithArguments(FInterface interfaceType){

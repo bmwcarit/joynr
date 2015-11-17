@@ -26,12 +26,14 @@ import io.joynr.generator.util.FrancaIDLFrameworkStandaloneSetup;
 import io.joynr.generator.util.InvocationArguments;
 import io.joynr.generator.util.TemplatesLoader;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.resource.Resource.Diagnostic;
 import org.eclipse.xtext.generator.IFileSystemAccess;
 import org.eclipse.xtext.generator.IGenerator;
 
@@ -121,7 +123,16 @@ public class Executor {
         ModelLoader modelLoader = prepareGeneratorEnvironment(generator);
         for (URI foundUri : modelLoader.getURIs()) {
             final Resource r = modelLoader.getResource(foundUri);
-            generator.doGenerate(r, outputFileSystem);
+            if (r.getErrors().size() > 0) {
+                StringBuilder errorMsg = new StringBuilder();
+                errorMsg.append("Error loading model " + foundUri.toString() + ". The following errors occured: \n");
+                for (Diagnostic error : r.getErrors()) {
+                    errorMsg.append(error.getMessage());
+                }
+                logger.log(Level.SEVERE, errorMsg.toString());
+            } else {
+                generator.doGenerate(r, outputFileSystem);
+            }
         }
     }
 }

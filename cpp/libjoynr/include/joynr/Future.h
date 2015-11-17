@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@
 #include <joynr/Util.h>
 #include <stdint.h>
 #include "joynr/TypeUtil.h"
+#include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
 {
@@ -107,7 +108,8 @@ public:
     /**
      * @brief Constructor
      */
-    Future<Ts...>() : status(RequestStatusCode::IN_PROGRESS), results(), resultReceived(0)
+    Future<Ts...>()
+            : error(NULL), status(RequestStatusCode::IN_PROGRESS), results(), resultReceived(0)
     {
         LOG_INFO(logger,
                  QString("resultReceived.available():") +
@@ -155,31 +157,41 @@ public:
     };
 
     /**
-     * @brief Retrieves the return value for the request if one exists.
-     *
-     * To retrieve the value successfully, one must first call: waitForFinish()
-     * and/or getStatus(), to check if the status is OK, before calling this method.
-     * An assertion error will be thrown if waitForFinish() or getStatus()
-     * has not been called first.
-     *
-     * This method returns immediately.
+     * @brief This is a blocking call which waits until the request finishes/an error
+     * occurs/or times out. If the request finishes successfully, it retrieves the return value for
+     *the request if one exists, otherwise a JoynrException is thrown.
      *
      * @param values The typed return values from the request.
+     * @throws JoynrException if the request is not successful
      */
-    void getValues(Ts&... values)
+    void get(Ts&... values)
     {
-        if (!resultReceived.tryAcquire(1)) {
-            LOG_FATAL(logger, "The request is not yet finished when calling getValue()");
-            assert(false);
-        }
-        resultReceived.release(1);
+        wait();
 
         RequestStatusCode code = getStatus().getCode();
         if (code != RequestStatusCode::OK) {
-            LOG_FATAL(logger,
-                      "The request status code was not OK when calling getValue(), it was: " +
-                              QString::fromStdString(code.toString()));
-            assert(false);
+            Util::throwJoynrException(*error);
+        }
+
+        ResultCopier<std::tuple<Ts...>, Ts...>::copy(results, values...);
+    }
+
+    /**
+     * @brief This is a blocking call which waits until the request finishes/an error
+     * occurs/or times out. If the request finishes successfully, it retrieves the return value for
+     *the request if one exists, otherwise a JoynrException is thrown.
+     *
+     * @param timeOut The maximum number of milliseconds to wait before this request times out
+     * @param values The typed return values from the request.
+     * @throws JoynrException if the request is not successful
+     */
+    void get(uint16_t timeOut, Ts&... values)
+    {
+        wait(timeOut);
+
+        RequestStatusCode code = getStatus().getCode();
+        if (code != RequestStatusCode::OK) {
+            Util::throwJoynrException(*error);
         }
 
         ResultCopier<std::tuple<Ts...>, Ts...>::copy(results, values...);
@@ -201,30 +213,29 @@ public:
      *
      * @param timeOut The maximum number of milliseconds to wait before this request times out
      * if no response is received.
-     * @return Returns the RequestStatus for the completed request.
+     * @throws JoynrTimeOutException if the request does not finish in the
+     * expected time.
      */
-    RequestStatus waitForFinished(uint16_t timeOut)
+    void wait(uint16_t timeOut)
     {
         if (resultReceived.tryAcquire(1, TypeUtil::toQt(timeOut))) {
             resultReceived.release(1);
+        } else {
+            throw exceptions::JoynrTimeOutException("Request did not finish in time");
         }
-        return status;
     }
 
     /**
      * @brief This is a blocking call which waits until the request finishes/an error
      * occurs.
-     *
-     * @return Returns the RequestStatus for the completed request.
      */
-    RequestStatus waitForFinished()
+    void wait()
     {
         LOG_INFO(logger,
                  QString("resultReceived.available():") +
                          QString::number(resultReceived.available()));
         resultReceived.acquire(1);
         resultReceived.release(1);
-        return status;
     }
 
     /**
@@ -253,15 +264,18 @@ public:
     /**
      * @brief Callback which indicates the operation has finished and has failed.
      * @param status The failure status
+     * @param error The JoynrException describing the failure
      */
-    void onError(const RequestStatus& status)
+    void onError(const RequestStatus& status, const exceptions::JoynrException& error)
     {
-        LOG_INFO(logger, "onFailure has been invoked");
+        LOG_INFO(logger, "onError has been invoked");
+        this->error.reset(error.clone());
         this->status = RequestStatus(status);
         resultReceived.release();
     }
 
 private:
+    std::shared_ptr<exceptions::JoynrException> error;
     RequestStatus status;
     std::tuple<Ts...> results;
     QSemaphore resultReceived;
@@ -281,8 +295,42 @@ class Future<void>
 {
 
 public:
-    Future<void>() : status(RequestStatusCode::IN_PROGRESS), resultReceived(0)
+    Future<void>() : error(NULL), status(RequestStatusCode::IN_PROGRESS), resultReceived(0)
     {
+    }
+
+    /**
+     * @brief This is a blocking call which waits until the request finishes/an error
+     * occurs/or times out. If an error occurs, a JoynrException is thrown.
+     *
+     * @throws JoynrException if the request is not successful
+     */
+    void get()
+    {
+        wait();
+
+        RequestStatusCode code = getStatus().getCode();
+        if (code != RequestStatusCode::OK) {
+            Util::throwJoynrException(*error);
+        }
+    }
+
+    /**
+     * @brief This is a blocking call which waits until the request finishes/an error
+     * occurs/or times out. If the request finishes successfully, it retrieves the return value for
+     *the request if one exists, otherwise a JoynrException is thrown.
+     *
+     * @param timeOut The maximum number of milliseconds to wait before this request times out
+     * @throws JoynrException if the request is not successful
+     */
+    void get(uint16_t timeOut)
+    {
+        wait(timeOut);
+
+        RequestStatusCode code = getStatus().getCode();
+        if (code != RequestStatusCode::OK) {
+            Util::throwJoynrException(*error);
+        }
     }
 
     /**
@@ -301,14 +349,16 @@ public:
      *
      * @param timeOut The maximum number of milliseconds to wait before this request times out
      * if no response is received.
-     * @return RequestStatus Returns the RequestStatus for the completed request.
+     * @throws JoynrTimeOutException if the request does not finish in the
+     * expected time.
      */
-    RequestStatus waitForFinished(uint16_t timeOut)
+    void wait(uint16_t timeOut)
     {
         if (resultReceived.tryAcquire(1, TypeUtil::toQt(timeOut))) {
             resultReceived.release(1);
+        } else {
+            throw exceptions::JoynrTimeOutException("Request did not finish in time");
         }
-        return status;
     }
 
     /**
@@ -317,11 +367,10 @@ public:
      *
      * @return RequestStatus Returns the RequestStatus for the completed request.
      */
-    RequestStatus waitForFinished()
+    void wait()
     {
         resultReceived.acquire(1);
         resultReceived.release(1);
-        return status;
     }
 
     /**
@@ -346,14 +395,17 @@ public:
     /**
      * @brief Callback which indicates the operation has finished and has failed.
      * @param status The failure status
+     * @param error The JoynrException describing the failure
      */
-    void onError(const RequestStatus& status)
+    void onError(const RequestStatus& status, const exceptions::JoynrException& error)
     {
+        this->error.reset(error.clone());
         this->status = RequestStatus(status);
         resultReceived.release(1);
     }
 
 private:
+    std::shared_ptr<exceptions::JoynrException> error;
     RequestStatus status;
     QSemaphore resultReceived;
 };

@@ -30,8 +30,6 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.capabilities.CapabilitiesCallback;
-import io.joynr.capabilities.CapabilityEntry;
-import io.joynr.capabilities.CapabilityEntryImpl;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.common.ExpiryDate;
 import io.joynr.dispatcher.rpc.JoynrAsyncInterface;
@@ -60,14 +58,12 @@ import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.UUID;
 
 import joynr.OnChangeSubscriptionQos;
 import joynr.Reply;
 import joynr.Request;
 import joynr.exceptions.ApplicationException;
-import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.types.CommunicationMiddleware;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
@@ -139,9 +135,9 @@ public class ProxyTest {
     }
 
     public interface AsyncTestInterface extends JoynrAsyncInterface {
-        Future<String> asyncMethod(@JoynrRpcCallback(deserializationType = StringTypeRef.class) Callback<String> callback);
+        Future<String> asyncMethod(@JoynrRpcCallback(deserializationType = String.class) Callback<String> callback);
 
-        Future<String> asyncMethodWithApplicationError(@JoynrRpcCallback(deserializationType = StringTypeRef.class) Callback<String> callback);
+        Future<String> asyncMethodWithApplicationError(@JoynrRpcCallback(deserializationType = String.class) Callback<String> callback);
     }
 
     public interface TestInterface extends SyncTestInterface, AsyncTestInterface {
@@ -184,16 +180,18 @@ public class ProxyTest {
                                                                    TestInterface.INTERFACE_NAME,
                                                                    toParticipantId,
                                                                    new ProviderQos(),
-                                                                   Arrays.asList(CommunicationMiddleware.JOYNR));
+                                                                   new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR });
 
                 fakeCapabilitiesResult.add(discoveryEntry);
                 ((CapabilitiesCallback) args[3]).processCapabilitiesReceived(fakeCapabilitiesResult);
                 return null;
             }
-        }).when(capabilitiesClient).lookup(Mockito.<String> any(),
-                                           Mockito.<String> any(),
-                                           Mockito.<DiscoveryQos> any(),
-                                           Mockito.<CapabilitiesCallback> any());
+        })
+               .when(capabilitiesClient)
+               .lookup(Mockito.<String> any(),
+                       Mockito.<String> any(),
+                       Mockito.<DiscoveryQos> any(),
+                       Mockito.<CapabilitiesCallback> any());
 
         Mockito.doAnswer(new Answer<Object>() {
             @Override
@@ -303,7 +301,7 @@ public class ProxyTest {
         final Future<String> future = proxy.asyncMethod(callback);
 
         // the test usually takes only 200 ms, so if we wait 1 sec, something has gone wrong
-        String reply = future.getReply(1000);
+        String reply = future.get(1000);
 
         verify(callback).resolve(asyncReplyText);
         Assert.assertEquals(RequestStatusCode.OK, future.getStatus().getCode());
@@ -342,7 +340,7 @@ public class ProxyTest {
 
         // the test usually takes only 200 ms, so if we wait 1 sec, something has gone wrong
         try {
-            future.getReply(1000);
+            future.get(1000);
             Assert.fail("Should throw ApplicationException");
         } catch (ApplicationException e) {
             Assert.assertEquals(expected, e);
@@ -388,11 +386,11 @@ public class ProxyTest {
         final Future<String> future = proxy.asyncMethod(callback);
         try {
             // the test usually takes only 200 ms, so if we wait 1 sec, something has gone wrong
-            reply = future.getReply(1000);
+            reply = future.get(1000);
         } catch (JoynrCommunicationException e) {
             exceptionThrown = true;
         }
-        Assert.assertTrue("exception must be thrown from getReply", exceptionThrown);
+        Assert.assertTrue("exception must be thrown from get", exceptionThrown);
         verify(callback).onFailure(expectedException);
         verifyNoMoreInteractions(callback);
         Assert.assertEquals(RequestStatusCode.ERROR, future.getStatus().getCode());

@@ -107,8 +107,8 @@ protected:
 					void onReceive(const «returnTypeQT»& receivedValue) {
 						wrappedListener->onReceive(«fromQTTypeToStdType(attribute, "receivedValue")»);
 					}
-					void onError() {
-						wrappedListener->onError();
+					void onError(const exceptions::JoynrRuntimeException& error) {
+						wrappedListener->onError(error);
 					}
 
 				private:
@@ -132,11 +132,11 @@ protected:
 								«attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper>(listener);
 					wrapper->onReceive(receivedValue);
 				}
-				virtual void onError() {
+				virtual void onError(const exceptions::JoynrRuntimeException& error) {
 					std::shared_ptr<«attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper> wrapper =
 						std::dynamic_pointer_cast<
 								«attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper>(listener);
-					wrapper->onError();
+					wrapper->onError(error);
 				}
 			};
 		«ENDIF»
@@ -159,8 +159,8 @@ protected:
 					) {
 						wrappedListener->onReceive(«qtTypeUtil.getCommaSeperatedUntypedOutputParameterList(broadcast, DatatypeSystemTransformation.FROM_QT_TO_STANDARD)»);
 					}
-					void onError() {
-						wrappedListener->onError();
+					void onError(const exceptions::JoynrRuntimeException& error) {
+						wrappedListener->onError(error);
 					}
 
 				private:
@@ -191,12 +191,12 @@ protected:
 					wrapper->onReceive(«cppStdTypeUtil.getCommaSeperatedUntypedParameterList(broadcast.outputParameters)»
 					);
 				}
-				virtual void onError()
+				virtual void onError(const exceptions::JoynrRuntimeException& error)
 				{
 					std::shared_ptr<«broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper> wrapper =
 						std::dynamic_pointer_cast<
 									«broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper>(listener);
-					wrapper->onError();
+					wrapper->onError(error);
 				}
 			};
 

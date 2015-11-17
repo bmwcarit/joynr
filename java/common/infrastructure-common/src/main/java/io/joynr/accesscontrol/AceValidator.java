@@ -19,8 +19,13 @@ package io.joynr.accesscontrol;
  * #L%
  */
 
+import java.util.Arrays;
+import java.util.List;
+
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
+import joynr.infrastructure.DacTypes.Permission;
+import joynr.infrastructure.DacTypes.TrustLevel;
 
 public class AceValidator {
 
@@ -59,9 +64,11 @@ public class AceValidator {
         }
 
         boolean isValid = true;
-        if (!targetMasterAce.getPossibleConsumerPermissions().contains(ownerAce.getConsumerPermission())) {
+        List<Permission> masterAcePossibleConsumerPermissions = Arrays.asList(targetMasterAce.getPossibleConsumerPermissions());
+        List<TrustLevel> masterAcePossibleRequiredTrustLevels = Arrays.asList(targetMasterAce.getPossibleRequiredTrustLevels());
+        if (!masterAcePossibleConsumerPermissions.contains(ownerAce.getConsumerPermission())) {
             isValid = false;
-        } else if (!targetMasterAce.getPossibleRequiredTrustLevels().contains(ownerAce.getRequiredTrustLevel())) {
+        } else if (!masterAcePossibleRequiredTrustLevels.contains(ownerAce.getRequiredTrustLevel())) {
             isValid = false;
         }
 
@@ -79,15 +86,18 @@ public class AceValidator {
         }
 
         boolean isMediatorValid = true;
-        if (!masterAce.getPossibleConsumerPermissions().contains(mediatorAce.getDefaultConsumerPermission())) {
+        List<Permission> masterAcePossibleConsumerPermissions = Arrays.asList(masterAce.getPossibleConsumerPermissions());
+        List<Permission> mediatorAcePossibleConsumerPermissions = Arrays.asList(mediatorAce.getPossibleConsumerPermissions());
+        List<TrustLevel> masterAcePossibleRequiredTrustLevels = Arrays.asList(masterAce.getPossibleRequiredTrustLevels());
+        List<TrustLevel> mediatorAcePossibleRequiredTrustLevels = Arrays.asList(mediatorAce.getPossibleRequiredTrustLevels());
+
+        if (!masterAcePossibleConsumerPermissions.contains(mediatorAce.getDefaultConsumerPermission())) {
             isMediatorValid = false;
-        } else if (!masterAce.getPossibleConsumerPermissions()
-                             .containsAll(mediatorAce.getPossibleConsumerPermissions())) {
+        } else if (!masterAcePossibleConsumerPermissions.containsAll(mediatorAcePossibleConsumerPermissions)) {
             isMediatorValid = false;
-        } else if (!masterAce.getPossibleRequiredTrustLevels().contains(mediatorAce.getDefaultRequiredTrustLevel())) {
+        } else if (!masterAcePossibleRequiredTrustLevels.contains(mediatorAce.getDefaultRequiredTrustLevel())) {
             isMediatorValid = false;
-        } else if (!masterAce.getPossibleRequiredTrustLevels()
-                             .containsAll(mediatorAce.getPossibleRequiredTrustLevels())) {
+        } else if (!masterAcePossibleRequiredTrustLevels.containsAll(mediatorAcePossibleRequiredTrustLevels)) {
             isMediatorValid = false;
         }
 

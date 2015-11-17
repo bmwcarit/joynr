@@ -50,7 +50,7 @@ class InterfaceRequestCallerHTemplate implements InterfaceTemplate{
 #include "joynr/PrivateCopyAssign.h"
 «getDllExportIncludeStatement()»
 #include "joynr/RequestCaller.h"
-#include "joynr/exceptions.h"
+#include "joynr/exceptions/JoynrException.h"
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName».h"
 #include <memory>
 
@@ -91,7 +91,7 @@ public:
 							const «attribute.typeName»&
 					)> onSuccess,
 					std::function<void(
-							const JoynrException&
+							const exceptions::ProviderRuntimeException&
 					)> onError
 			);
 		«ENDIF»
@@ -107,7 +107,7 @@ public:
 					const «attribute.typeName»& «attributeName»,
 					std::function<void()> onSuccess,
 					std::function<void(
-							const JoynrException&
+							const exceptions::ProviderRuntimeException&
 					)> onError
 			);
 		«ENDIF»
@@ -142,7 +142,7 @@ public:
 					)> onSuccess,
 				«ENDIF»
 				std::function<void(
-						const JoynrException&
+						const exceptions::JoynrException&
 				)> onError
 		);
 

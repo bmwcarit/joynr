@@ -24,13 +24,14 @@ define(
         [
             "global/Promise",
             "joynr/util/UtilInternal",
+            "joynr/util/JSONSerializer",
             "joynr/util/Typing",
-            "joynr/TypesEnum",
+            "joynr/util/MethodUtil",
             "joynr/types/TypeRegistrySingleton",
             "joynr/dispatching/types/Request",
             "joynr/messaging/MessagingQos"
         ],
-        function(Promise, Util, Typing, TypesEnum, TypeRegistrySingleton, Request, MessagingQos) {
+        function(Promise, Util, JSONSerializer, Typing, MethodUtil, TypeRegistrySingleton, Request, MessagingQos) {
             var typeRegistry = TypeRegistrySingleton.getInstance();
             /**
              * Checks if the given operationSignature is valid to be called for the given operation
@@ -68,99 +69,16 @@ define(
                 // if for all operationArguments there is a matching (name and type) parameter found
                 // in the operationSignature, this object will hold name, type and value and is
                 // qualified to be used for serialization and will be returned
-                var argument, argumentId, argumentName, operationParameter, argumentValue;
-                var inputParameter = operationSignature.inputParameter;
-                var outputParameter = operationSignature.outputParameter;
-                var inputParamDatatypes = [];
-                var outputParamDatatypes = [];
-                var params = [];
                 var result = {};
 
-                // check if number of parameters in signature matches number of arguments
-                if (Object.keys(inputParameter).length !== Object.keys(operationArguments).length) {
-                    // signature does not match
-                    result.errorMessage = "signature does not match: wrong number of arguments";
-                    return result;
+                try {
+                    result.signature = {
+                        inputParameter : MethodUtil.transformParameterMapToArray(operationArguments, operationSignature.inputParameter),
+                        outputParameter : operationSignature.outputParameter || []
+                    };
+                } catch (error) {
+                    result.errorMessage = error.message;
                 }
-
-                for (argumentId in inputParameter) {
-                    if (inputParameter.hasOwnProperty(argumentId)) {
-                        // check if there's a parameter with the given name
-                        argument = inputParameter[argumentId];
-
-                        argumentName = argument.name;
-                        operationParameter =
-                                (argument.type.substr(argument.type.length - 2, 2) === "[]")
-                                        ? TypesEnum.LIST
-                                        : argument.type;
-
-                        // if there's no parameter with the given name
-                        if (!operationParameter) {
-                            // signature does not match
-                            result.errorMessage =
-                                    "signature does not match: type for argument \""
-                                        + argumentName
-                                        + "\" missing";
-                            return result;
-                        }
-
-                        // retrieve the argument value
-                        argumentValue = operationArguments[argumentName];
-
-                        // if argument value is not given by the application
-                        if (argumentValue === undefined || argumentValue === null) {
-                            result.errorMessage =
-                                    "Cannot call operation with nullable value \""
-                                        + argumentValue
-                                        + "\" of argument \""
-                                        + argumentName
-                                        + "\"";
-                            return result;
-                        }
-
-                        // check if the parameter type matches the type of the argument value
-                        /*jslint nomen: true */// allow dangling _ in variable once
-                        var objectType =
-                                argumentValue._typeName || Typing.getObjectType(argumentValue);
-                        /*jslint nomen: false */
-                        if (Typing.translateJoynrTypeToJavascriptType(operationParameter) !== objectType) {
-                            // signature does not match
-                            result.errorMessage =
-                                    "Signature does not match: type \""
-                                        + objectType
-                                        + "\" of argument \""
-                                        + argumentName
-                                        + "\" does not match with expected type \""
-                                        + Typing
-                                                .translateJoynrTypeToJavascriptType(operationParameter)
-                                        + "\"";
-                            return result;
-                        }
-
-                        // we found a matching parameter/argument-pair that has the same name and
-                        // type, let's add it to our qualified operation
-                        // argument object for later use in serialization
-                        inputParamDatatypes.push(operationParameter);
-                        params.push(argumentValue);
-                    }
-                }
-
-                // TODO: check for default arguments!
-
-                for (argumentId in outputParameter) {
-                    if (outputParameter.hasOwnProperty(argumentId)) {
-                        outputParamDatatypes.push(outputParameter[argumentId].type);
-                    }
-                }
-                result.signature = {
-                    inputParameter : {
-                        paramDatatypes : inputParamDatatypes,
-                        params : params
-                    },
-                    outputParameter : {
-                        paramDatatypes : outputParamDatatypes
-                    }
-                };
                 return result;
             }
 
@@ -348,19 +266,24 @@ define(
                             })
                             .then(
                                     function(response) {
-                                        var responseKey;
+                                        var responseKey, argumentValue = {};
                                         for (responseKey in response) {
                                             if (response.hasOwnProperty(responseKey)) {
-                                                response[responseKey] =
-                                                    Typing
-                                                    .augmentTypes(
-                                                            response[responseKey],
-                                                            typeRegistry,
-                                                            foundValidOperationSignature.outputParameter.paramDatatypes[responseKey]);
+                                                if (foundValidOperationSignature.outputParameter[responseKey] !== undefined) {
+                                                    argumentValue[foundValidOperationSignature.outputParameter[responseKey].name] =
+                                                        Typing
+                                                        .augmentTypes(
+                                                                response[responseKey],
+                                                                typeRegistry,
+                                                                foundValidOperationSignature.outputParameter[responseKey].type);
+                                                } else {
+                                                    return Promise
+                                                    .reject(new Error("Unexpected response: " + JSONSerializer.stringify(response[responseKey])));
+                                                }
                                             }
                                         }
-                                        
-                                        return response[0];
+
+                                        return argumentValue;
                                     })
                                     .catch(
                                             function(error) {

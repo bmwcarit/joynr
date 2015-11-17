@@ -149,15 +149,15 @@ define(
                                     // if missing or stale, lookup from global
                                     if ((channelUrls === undefined || isStale(channelUrls.lastUpdated, freshness_ms))) {
                                         promiseLookups[channelId] = channelUrlDirectoryProxy.getUrlsForChannel(operationArguments).then(
-                                            function(channelUrls) {
-                                                if (channelUrls === undefined) {
+                                            function(opArgs) {
+                                                if (opArgs.result === undefined) {
                                                     delete promiseLookups[channelId];
                                                     throw new Error("Could not retrieve URLs for channel "
                                                                 + operationArguments.channelId
                                                                 + ": resolved channelUrls are not defined.");
                                                 } else {
                                                     var channelUrlWithDate =
-                                                            Util.extend(channelUrls,
+                                                            Util.extend(opArgs.result,
                                                                         {
                                                                             lastUpdated : Date.now()
                                                                         });

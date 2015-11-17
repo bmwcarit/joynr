@@ -188,7 +188,9 @@ function initializeTest(provisioningSuffix, providedDomain) {
                                 reject(new joynr.exceptions.ProviderRuntimeException({ detailMessage: "example message async" }));
                             }
                         } else {
-                            resolve(name.match(/true/));
+                            resolve({
+                                returnValue: !!name.match(/true/)
+                            });
                         }
                     });
                 }
@@ -200,7 +202,9 @@ function initializeTest(provisioningSuffix, providedDomain) {
                         throw new joynr.exceptions.ProviderRuntimeException({ detailMessage: "example message sync" });
                     }
                 }
-                return !!name.match(/true/);
+                return {
+                    returnValue: !!name.match(/true/)
+                };
             });
 
             var isCountryEnum = function(parameter) {
@@ -231,7 +235,25 @@ function initializeTest(provisioningSuffix, providedDomain) {
                 if (opArgs.enumArrayInput.length !== 0) {
                     returnValue = opArgs.enumArrayInput[0];
                 }
-                return returnValue;
+                return {
+                    enumOutput: returnValue
+                };
+            });
+
+            // register operation function "operationWithMultipleOutputParameters"
+            radioProvider.operationWithMultipleOutputParameters.registerOperation(function(opArgs) {
+                var returnValue = {
+                    enumArrayOutput: opArgs.enumArrayInput,
+                    enumOutput: opArgs.enumInput,
+                    stringOutput: opArgs.stringInput,
+                    booleanOutput: opArgs.syncTest,
+                };
+                if (opArgs.syncTest) {
+                    return returnValue;
+                }
+                return new Promise(function(resolve, reject){
+                    resolve(returnValue);
+                });
             });
 
             // register operation function "operationWithEnumsAsInputAndEnumArrayAsOutput"
@@ -244,11 +266,15 @@ function initializeTest(provisioningSuffix, providedDomain) {
                 if (opArgs.enumInput !== undefined) {
                     returnValue.push(opArgs.enumInput);
                 }
-                return returnValue;
+                return {
+                    enumOutput: returnValue
+                };
             });
 
             radioProvider.methodProvidedImpl.registerOperation(function(opArgs) {
-                return opArgs.arg;
+                return {
+                    returnValue : opArgs.arg
+                };
             });
 
             radioProvider.triggerBroadcasts.registerOperation(function(opArgs) {

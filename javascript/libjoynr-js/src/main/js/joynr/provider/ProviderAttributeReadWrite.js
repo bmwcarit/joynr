@@ -109,7 +109,7 @@ define("joynr/provider/ProviderAttributeReadWrite", [ "joynr/provider/ProviderAt
          * @see ProviderAttributeReadWrite#registerSetter
          */
         this.set = function set(value) {
-            providerAttribute.set(value);
+            return providerAttribute.set(value);
         };
 
         return Object.freeze(this);

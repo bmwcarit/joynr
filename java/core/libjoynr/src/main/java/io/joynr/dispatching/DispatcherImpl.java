@@ -303,7 +303,7 @@ public class DispatcherImpl implements Dispatcher {
                 }
                 subscriptionManager.handleBroadcastPublication(subscriptionId, broadcastValues);
             } else {
-                JoynrException error = publication.getError();
+                JoynrRuntimeException error = publication.getError();
                 if (error != null) {
                     subscriptionManager.handleAttributePublicationError(subscriptionId, error);
                 } else {

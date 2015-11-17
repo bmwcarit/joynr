@@ -50,12 +50,12 @@ public class JoynrEnd2EndTest {
                                                                                             domain,
                                                                                             interfaceName,
                                                                                             TrustLevel.LOW,
-                                                                                            Arrays.asList(TrustLevel.LOW),
+                                                                                            new TrustLevel[]{ TrustLevel.LOW },
                                                                                             TrustLevel.LOW,
-                                                                                            Arrays.asList(TrustLevel.LOW),
+                                                                                            new TrustLevel[]{ TrustLevel.LOW },
                                                                                             "*",
                                                                                             Permission.YES,
-                                                                                            Arrays.asList(Permission.YES));
+                                                                                            new Permission[]{ Permission.YES });
 
         provisionedAccessControlEntries.add(newMasterAccessControlEntry);
         String provisionedAccessControlEntriesAsJson = objectMapper.writeValueAsString(provisionedAccessControlEntries.toArray());

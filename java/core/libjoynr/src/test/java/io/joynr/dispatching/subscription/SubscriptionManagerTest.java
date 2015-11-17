@@ -26,8 +26,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import io.joynr.dispatching.Dispatcher;
-import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
@@ -115,7 +115,7 @@ public class SubscriptionManagerTest {
         attributeName = "testAttribute";
         attributeSubscriptionCallback = new AttributeSubscriptionListener<Integer>() {
             @Override
-            public void onError(JoynrException error) {
+            public void onError(JoynrRuntimeException error) {
                 // TODO Auto-generated method stub
             }
 

@@ -96,19 +96,19 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                                                                                     GlobalCapabilitiesDirectory.INTERFACE_NAME,
                                                                                                     capabilitiesDirectoryParticipantId,
                                                                                                     new ProviderQos(),
-                                                                                                    Arrays.asList(CommunicationMiddleware.JOYNR)),
+                                                                                                    new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR }),
                                                                                  capabiltitiesDirectoryChannelId));
         this.globalCapabilitiesCache.add(CapabilityUtils.discoveryEntry2CapEntry(new DiscoveryEntry(discoveryDirectoriesDomain,
                                                                                                     ChannelUrlDirectory.INTERFACE_NAME,
                                                                                                     channelUrlDirectoryParticipantId,
                                                                                                     new ProviderQos(),
-                                                                                                    Arrays.asList(CommunicationMiddleware.JOYNR)),
+                                                                                                    new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR }),
                                                                                  channelUrlDirectoryChannelId));
         this.globalCapabilitiesCache.add(CapabilityUtils.discoveryEntry2CapEntry(new DiscoveryEntry(discoveryDirectoriesDomain,
                                                                                                     GlobalDomainAccessController.INTERFACE_NAME,
                                                                                                     domainAccessControllerParticipantId,
                                                                                                     new ProviderQos(),
-                                                                                                    Arrays.asList(CommunicationMiddleware.JOYNR)),
+                                                                                                    new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR }),
                                                                                  domainAccessControllerChannelId));
 
         globalCapabilitiesClient = new GlobalCapabilitiesDirectoryClient(proxyBuilderFactory,
@@ -323,7 +323,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         DiscoveryEntry retrievedCapabilitiyEntry = null;
 
         try {
-            retrievedCapabilitiyEntry = lookupFuture.getReply();
+            retrievedCapabilitiyEntry = lookupFuture.get();
         } catch (InterruptedException e1) {
             logger.error("interrupted while retrieving capability entry by participant ID", e1);
         } catch (ApplicationException e1) {

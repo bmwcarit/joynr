@@ -41,7 +41,6 @@ import io.joynr.util.PreconfiguredEndpointDirectoryModule;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
@@ -144,7 +143,7 @@ public abstract class AbstractMessagingIntegrationTest {
                                                          new ChannelAddress("domainaccesscontroller_channelid"));
 
         ChannelUrlInformation channelUrlInformation = new ChannelUrlInformation();
-        channelUrlInformation.setUrls(Arrays.asList(getChannelUrl(channelId)));
+        channelUrlInformation.setUrls(new String[]{ getChannelUrl(channelId) });
         localChannelUrlDirectoryClient.registerChannelUrls(channelId, channelUrlInformation);
 
         Properties joynrConfig = PropertyLoader.loadProperties("testMessaging.properties");
@@ -348,7 +347,7 @@ public abstract class AbstractMessagingIntegrationTest {
         listener1.assertReceivedPayloadsContains(messageC);
     }
 
-    /* this test has been disabled, as it sporadically stops with receiving messages. It does not look like a timing issue, but 
+    /* this test has been disabled, as it sporadically stops with receiving messages. It does not look like a timing issue, but
      * a resource issue with sudden message loss
      */
     @Test

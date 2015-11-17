@@ -19,11 +19,34 @@ package io.joynr.serialize;
  * #L%
  */
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Properties;
+import java.util.UUID;
+import java.util.concurrent.RejectedExecutionException;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+
 import io.joynr.common.ExpiryDate;
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.dispatcher.rpc.JoynrInterface;
+import io.joynr.dispatcher.rpc.ReflectionUtils;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrChannelMissingException;
 import io.joynr.exceptions.JoynrChannelNotAssignableException;
@@ -40,15 +63,6 @@ import io.joynr.exceptions.JoynrWaitExpiredException;
 import io.joynr.messaging.MessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.pubsub.SubscriptionQos;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
-import java.util.UUID;
-import java.util.concurrent.RejectedExecutionException;
-
 import joynr.BroadcastSubscriptionRequest;
 import joynr.JoynrMessage;
 import joynr.OnChangeSubscriptionQos;
@@ -64,26 +78,13 @@ import joynr.exceptions.IllegalAccessException;
 import joynr.exceptions.MethodInvocationException;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.tests.testBroadcastInterface;
+import joynr.tests.testTypes.ComplexTestType2;
 import joynr.tests.testTypes.TestEnum;
 import joynr.types.CapabilityInformation;
 import joynr.types.ProviderQos;
 import joynr.types.Localisation.GpsFixEnum;
 import joynr.types.Localisation.GpsLocation;
 import joynr.types.Localisation.GpsPosition;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
 
 /**
  * This test sends two messages in each direction, containing different TTL values. One with a very high TTL value to
@@ -164,29 +165,27 @@ public class SerializationTest {
     public void serializeAndDeserializeRequestWithVariousTypesTest() throws Exception {
 
         String methodName = "methodName";
-        // System.err.println(objectMapper.writeValueAsString(params));
 
-        // GpsLocation GpsLocation = new GpsLocation(1.0, 2.0, new GpsLocation(4.0, 3.0, new String("hello")));
         GpsLocation gpsLocation = new GpsLocation(1.0d, 2.0d, 0d, GpsFixEnum.MODE2D, 0d, 0d, 0d, 0d, 0l, 0l, 0);
-        List<GpsLocation> gpsLocations = new ArrayList<GpsLocation>();
-        gpsLocations.add(gpsLocation);
-        gpsLocations.add(gpsLocation);
-        gpsLocations.add(gpsLocation);
+        GpsLocation[] gpsLocations = { new GpsLocation(1.0d, 2.0d, 0d, GpsFixEnum.MODE2D, 0d, 0d, 0d, 0d, 0l, 0l, 0),
+                new GpsLocation(1.0d, 2.0d, 0d, GpsFixEnum.MODE2D, 0d, 0d, 0d, 0d, 0l, 0l, 0),
+                new GpsLocation(1.0d, 2.0d, 0d, GpsFixEnum.MODE2D, 0d, 0d, 0d, 0d, 0l, 0l, 0) };
 
         TestClass testObject = new TestClass();
         testObject.setMyByte((byte) 4);
         testObject.setObjects(new Object[]{ gpsLocation, "hello" });
 
-        String[] strings = new String[]{ "test1", "test2", "test3" };
-        List<String> stringList = Arrays.asList(strings);
-        List<Boolean> booleanArray = Arrays.asList(new Boolean[]{ true, false });
-        List<Boolean> emptyArray = new ArrayList<Boolean>();
-        List<Object> mixedArray = Arrays.asList(new Object[]{ "one", gpsLocation, stringList });
+        String[][] stringArray = new String[][]{ { "test1", "test2", "test3" }, { "test4", "test5", "test6" } };
+        Boolean[] booleanArray = { true, false };
+        Boolean[] emptyArray = {};
+        Object[] mixedArray = new Object[]{ "one", gpsLocation, stringArray };
 
         Object[] params = new Object[]{ true, Integer.MAX_VALUE, Long.MAX_VALUE, Double.MAX_VALUE, gpsLocation,
-                "param1", gpsLocations, stringList, booleanArray, emptyArray, mixedArray };
-        String[] paramDatatypes = new String[]{ "Boolean", "Integer", "Long", "Double", "joynr.vehicle.GPSPosition",
-                "String", "List", "List", "List", "List", "List" };
+                "param1", gpsLocations, stringArray, booleanArray, emptyArray, mixedArray };
+        String[] paramDatatypes = new String[params.length];
+        for (int i = 0; i < params.length; i++) {
+            paramDatatypes[i] = ReflectionUtils.toDatatypeNames(params[i].getClass())[0];
+        }
         Request request = new Request(methodName, params, paramDatatypes, null);
 
         String valueAsString = objectMapper.writeValueAsString(request);
@@ -226,13 +225,11 @@ public class SerializationTest {
     @Test
     public void serializeAndDeserializeJsonReplyTest() throws Exception {
 
-        GpsLocation GpsLocation = new GpsLocation(1.0d, 2.0d, 0d, GpsFixEnum.MODE2D, 0d, 0d, 0d, 0d, 0l, 0l, 0);
-        List<GpsLocation> GpsLocations = new ArrayList<GpsLocation>();
-        GpsLocations.add(GpsLocation);
-        GpsLocations.add(GpsLocation);
-        GpsLocations.add(GpsLocation);
+        GpsLocation[] GpsLocations = { new GpsLocation(1.0d, 2.0d, 0d, GpsFixEnum.MODE2D, 0d, 0d, 0d, 0d, 0l, 0l, 0),
+                new GpsLocation(3.0d, 4.0d, 0d, GpsFixEnum.MODE2D, 0d, 0d, 0d, 0d, 0l, 0l, 0),
+                new GpsLocation(5.0d, 6.0d, 0d, GpsFixEnum.MODE2D, 0d, 0d, 0d, 0d, 0l, 0l, 0) };
 
-        Reply reply = new Reply(UUID.randomUUID().toString(), GpsLocations);
+        Reply reply = new Reply(UUID.randomUUID().toString(), (Object) GpsLocations);
 
         String valueAsString = objectMapper.writeValueAsString(reply);
 
@@ -261,22 +258,20 @@ public class SerializationTest {
     @Test
     public void serializeAndDeserializeCapabilityInformationTest() throws Exception {
         ProviderQos qos = new ProviderQos();
-        final List<CapabilityInformation> capInfoList = new ArrayList<CapabilityInformation>();
-
-        capInfoList.add(new CapabilityInformation("domain", "interface", qos, "channelId", "participantId"));
-        capInfoList.add(new CapabilityInformation("domain", "interface", qos, "channelId", "participantId"));
-        capInfoList.add(new CapabilityInformation("domain", "interface", qos, "channelId", "participantId"));
+        final CapabilityInformation[] capInfos = { new CapabilityInformation("domain",
+                                                                             "interface",
+                                                                             qos,
+                                                                             "channelId",
+                                                                             "participantId") };
 
         String writeValueAsString = null;
 
-        writeValueAsString = objectMapper.writeValueAsString(capInfoList.toArray());
+        writeValueAsString = objectMapper.writeValueAsString(capInfos);
         System.err.println(writeValueAsString);
         assertTrue(writeValueAsString.startsWith("[{\"_typeName\":\"joynr.types.CapabilityInformation\""));
 
-        List<CapabilityInformation> readValue = objectMapper.readValue(writeValueAsString,
-                                                                       new TypeReference<List<CapabilityInformation>>() {
-                                                                       });
-        assertEquals(capInfoList, readValue);
+        CapabilityInformation[] readValue = objectMapper.readValue(writeValueAsString, CapabilityInformation[].class);
+        assertArrayEquals(capInfos, readValue);
 
         CapabilityInformation capabilityInformation = new CapabilityInformation("domain",
                                                                                 "interface",
@@ -472,13 +467,13 @@ public class SerializationTest {
     @Test
     public void serializeRequest() throws JsonGenerationException, JsonMappingException, IOException {
 
-        Object parameter = new GpsPosition(49.0065, 11.65);
+        GpsPosition[] parameter = { new GpsPosition(49.0065, 11.65) };
         Object[] parameters = { parameter };
-        Class<?>[] parameterTypes = { GpsPosition.class };
+        Class<?>[] parameterTypes = { GpsPosition[].class };
         Request request = new Request("updateRoute", parameters, parameterTypes);
 
         String writeValueAsString = objectMapper.writeValueAsString(request);
-        System.out.println(writeValueAsString);
+        System.err.println(writeValueAsString);
 
         JoynrMessage message = new JoynrMessage();
         String type = JoynrMessage.MESSAGE_TYPE_REQUEST;
@@ -491,8 +486,8 @@ public class SerializationTest {
         System.out.println(messageAsString);
 
         JoynrMessage receivedMessage = objectMapper.readValue(messageAsString, JoynrMessage.class);
-        Request receivedReply = objectMapper.readValue(receivedMessage.getPayload(), Request.class);
-        Assert.assertEquals(request, receivedReply);
+        Request receivedRequest = objectMapper.readValue(receivedMessage.getPayload(), Request.class);
+        Assert.assertEquals(request, receivedRequest);
 
     }
 
@@ -518,6 +513,46 @@ public class SerializationTest {
         JoynrMessage receivedMessage = objectMapper.readValue(messageAsString, JoynrMessage.class);
         Reply receivedReply = objectMapper.readValue(receivedMessage.getPayload(), Reply.class);
         Assert.assertEquals(reply, receivedReply);
+
+    }
+
+    @Test
+    public void serializeReplyWithCapabilityInfoArray() throws JsonGenerationException, JsonMappingException,
+                                                       IOException {
+
+        Object response = new CapabilityInformation[]{ new CapabilityInformation("domain",
+                                                                                 "interface",
+                                                                                 new ProviderQos(),
+                                                                                 "channelId",
+                                                                                 "participantId") };
+        Reply reply = new Reply(UUID.randomUUID().toString(), response);
+
+        String writeValueAsString = objectMapper.writeValueAsString(reply);
+
+        JoynrMessage message = new JoynrMessage();
+        String type = JoynrMessage.MESSAGE_TYPE_REPLY;
+        message.setFrom(UUID.randomUUID().toString());
+        message.setTo(UUID.randomUUID().toString());
+        message.setType(type);
+        message.setExpirationDate(ExpiryDate.fromRelativeTtl(60000));
+        message.setPayload(writeValueAsString);
+        String messageAsString = objectMapper.writeValueAsString(message);
+
+        JoynrMessage receivedMessage = objectMapper.readValue(messageAsString, JoynrMessage.class);
+        Reply receivedReply = objectMapper.readValue(receivedMessage.getPayload(), Reply.class);
+        CapabilityInformation[] convertValue = objectMapper.convertValue(receivedReply.getResponse()[0],
+                                                                         CapabilityInformation[].class);
+
+        Assert.assertArrayEquals((CapabilityInformation[]) reply.getResponse()[0], convertValue);
+
+        ComplexTestType2[] complexTestType2Array = { new ComplexTestType2(3, 4), new ComplexTestType2(5, 6) };
+        ArrayList<ComplexTestType2> customListParam2List = new ArrayList();
+        customListParam2List.add(new ComplexTestType2(3, 4));
+        customListParam2List.add(new ComplexTestType2(5, 6));
+
+        ComplexTestType2[] convertValue2 = objectMapper.convertValue(customListParam2List, ComplexTestType2[].class);
+
+        Assert.assertArrayEquals(complexTestType2Array, convertValue2);
 
     }
 

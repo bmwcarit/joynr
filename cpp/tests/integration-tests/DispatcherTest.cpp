@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ public:
                 [this] (const joynr::RequestStatus& status, const joynr::types::Localisation::QtGpsLocation& location) {
                     mockCallback->onSuccess(types::Localisation::QtGpsLocation::createStd(location));
                 },
-                [] (const joynr::RequestStatus& status) {
+                [] (const joynr::RequestStatus& status, std::shared_ptr<exceptions::JoynrException> exception) {
                 })),
         mockSubscriptionListener(new MockSubscriptionListenerOneType<types::Localisation::GpsLocation>()),
         gpsLocation1(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444),
@@ -79,7 +79,8 @@ public:
 
     void invokeOnSuccessWithGpsLocation(
             std::function<void(const joynr::types::Localisation::GpsLocation& location)> onSuccess,
-            std::function<void(const joynr::JoynrException& exception)> onError) {
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) {
+        (void) onError;
         onSuccess(gpsLocation1);
     }
 
@@ -117,7 +118,7 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
                 *mockRequestCaller,
                 getLocation(
                     A<std::function<void(const joynr::types::Localisation::GpsLocation&)>>(),
-                    A<std::function<void(const joynr::JoynrException&)>>()
+                    A<std::function<void(const joynr::exceptions::ProviderRuntimeException&)>>()
                 )
     ).WillOnce(Invoke(this, &DispatcherTest::invokeOnSuccessWithGpsLocation));
 

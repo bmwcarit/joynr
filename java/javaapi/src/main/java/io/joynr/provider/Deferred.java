@@ -21,6 +21,7 @@ package io.joynr.provider;
 
 public class Deferred<T> extends AbstractDeferred {
     public synchronized boolean resolve(T value) {
-        return super.resolve(value);
+        // cast required to prevent varargs confusion with array values
+        return super.resolve((Object) value);
     }
 }

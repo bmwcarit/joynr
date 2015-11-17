@@ -53,7 +53,7 @@ class StdEnumHTemplate implements EnumTemplate {
 #include <string>
 
 «IF type.hasExtendsDeclaration»
-	#include "«type.extendedType.includeOfStd»"
+	#include "«type.extendedType.includeOf»"
 
 «ENDIF»
 «getNamespaceStarter(type, true)»
@@ -100,11 +100,24 @@ struct «getDllExportMacro()»«typeName» {
 	static std::string getLiteral(«typeName»::«getNestedEnumName()» «typeName.toFirstLower»Value);
 
 	/**
+	 * @brief Get the matching enum for a string
+	 * @param «typeName.toFirstLower»String The string representing the enum value
+	 * @return The enum value representing the string
+	 */
+	static «typeName»::«getNestedEnumName()» getEnum(std::string «typeName.toFirstLower»String);
+
+	/**
 	 * @brief Get the matching ordinal number for an enum
 	 * @param «typeName.toFirstLower»Value The enum
 	 * @return The ordinal number representing the enum
 	 */
 	static uint32_t getOrdinal(«typeName»::«getNestedEnumName()» «typeName.toFirstLower»Value);
+
+	/**
+	 * @brief Get the typeName of the enumeration type
+	 * @return The typeName of the enumeration type
+	 */
+	static std::string getTypeName();
 };
 
 // Printing «typeName» with google-test and google-mock.

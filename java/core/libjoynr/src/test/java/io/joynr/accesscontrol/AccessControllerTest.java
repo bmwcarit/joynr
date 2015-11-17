@@ -49,8 +49,6 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
-import java.util.Arrays;
-
 /**
  * Test the AccessController
  */
@@ -107,7 +105,7 @@ public class AccessControllerTest {
                                                            testInterface,
                                                            toParticipantId,
                                                            new ProviderQos(),
-                                                           Arrays.asList(CommunicationMiddleware.JOYNR));
+                                                           new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR });
         when(localCapabilitiesDirectory.lookup(eq(toParticipantId), any(DiscoveryQos.class))).thenReturn(discoveryEntry);
     }
 

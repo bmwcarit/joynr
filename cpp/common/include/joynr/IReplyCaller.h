@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,11 @@
 #ifndef IREPLYCALLER_H
 #define IREPLYCALLER_H
 
+#include "joynr/exceptions/JoynrException.h"
 #include "joynr/ITimeoutListener.h"
 #include <QString>
 #include <cassert>
+#include <memory>
 
 namespace joynr
 {
@@ -47,6 +49,8 @@ public:
       * Every Replycaller should have a returnValue<T> method.
       * This method is not part of the interface, to allow the interface to be untemplated
       **/
+
+    virtual void returnError(std::shared_ptr<exceptions::JoynrException> error) = 0;
 
     /**
      * @brief This method will be called by the directory when

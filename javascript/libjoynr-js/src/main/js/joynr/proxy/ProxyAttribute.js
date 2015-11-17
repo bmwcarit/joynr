@@ -220,29 +220,20 @@ define(
                      *            settings.value the attribute value to set
                      * @returns {Object} returns an A+ promise
                      */
-                    this.set =
-                            function set(settings) {
-                                /*
-                                 * this filtering can be removed, once the paramDatatypes of arrays
-                                 * not "List" anymore, but the real typename of the array entries + "[]"
-                                 */
-                                var filteredAttributeType =
-                                        (attributeType.substr(attributeType.length - 2, 2) === "[]")
-                                                ? TypesEnum.LIST
-                                                : attributeType;
-                                // ensure settings variable holds a valid object and initialize deferred
-                                // object
-                                settings = settings || {};
+                    this.set = function set(settings) {
+                        // ensure settings variable holds a valid object and initialize deferred
+                        // object
+                        settings = settings || {};
 
-                                var request = new Request({
-                                    methodName : "set" + Util.firstUpper(attributeName),
-                                    paramDatatypes : [ filteredAttributeType
-                                    ],
-                                    params : [ settings.value
-                                    ]
-                                });
-                                return executeRequest(request, settings);
-                            };
+                        var request = new Request({
+                            methodName : "set" + Util.firstUpper(attributeName),
+                            paramDatatypes : [ attributeType
+                            ],
+                            params : [ settings.value
+                            ]
+                        });
+                        return executeRequest(request, settings);
+                    };
                 }
                 if (attributeCaps.match(/NOTIFY/)) {
                     /**

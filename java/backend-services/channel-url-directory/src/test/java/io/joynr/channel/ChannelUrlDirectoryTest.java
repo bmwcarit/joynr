@@ -23,8 +23,6 @@ import io.joynr.exceptions.JoynrException;
 import io.joynr.provider.Promise;
 import io.joynr.provider.PromiseListener;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
 
 import joynr.infrastructure.ChannelUrlDirectoryProvider.GetUrlsForChannelDeferred;
@@ -56,7 +54,7 @@ public class ChannelUrlDirectoryTest {
         final String testChannelId = "testDelayedCleanup" + UUID.randomUUID().toString();
         final String[] urls = { "http://testurl.com/" + testChannelId + "/" };
         ChannelUrlInformation channelUrlInformation = new ChannelUrlInformation();
-        channelUrlInformation.setUrls(Arrays.asList(urls));
+        channelUrlInformation.setUrls(urls);
 
         fixture.registerChannelUrls(testChannelId, channelUrlInformation);
 
@@ -66,8 +64,8 @@ public class ChannelUrlDirectoryTest {
             @Override
             public void onFulfillment(Object... values) {
 
-                List<String> urlsFromServer = ((ChannelUrlInformation) values[0]).getUrls();
-                Assert.assertArrayEquals(urls, urlsFromServer.toArray(new String[urlsFromServer.size()]));
+                String[] urlsFromServer = ((ChannelUrlInformation) values[0]).getUrls();
+                Assert.assertArrayEquals(urls, urlsFromServer);
                 fixture.unregisterChannelUrls(testChannelId);
                 /* after deletion, url shall still be a valid channelurl, as the unregistration shall only affect after
                  * fixture.channelurInactiveTimeInMS
@@ -78,8 +76,8 @@ public class ChannelUrlDirectoryTest {
 
                     @Override
                     public void onFulfillment(Object... values) {
-                        List<String> urlsFromServer = ((ChannelUrlInformation) values[0]).getUrls();
-                        Assert.assertArrayEquals(urls, urlsFromServer.toArray(new String[urlsFromServer.size()]));
+                        String[] urlsFromServer = ((ChannelUrlInformation) values[0]).getUrls();
+                        Assert.assertArrayEquals(urls, urlsFromServer);
 
                         synchronized (this) {
                             try {
@@ -94,7 +92,7 @@ public class ChannelUrlDirectoryTest {
 
                             @Override
                             public void onFulfillment(Object... values) {
-                                Assert.assertTrue(((ChannelUrlInformation) values[0]).getUrls().isEmpty());
+                                Assert.assertTrue(((ChannelUrlInformation) values[0]).getUrls().length == 0);
                             }
                         });
                     }
@@ -109,7 +107,7 @@ public class ChannelUrlDirectoryTest {
         final String testChannelId = "testDelayedCleanupWithReactivate" + UUID.randomUUID().toString();
         final String[] urls = { "http://testurl.com/" + testChannelId + "/" };
         final ChannelUrlInformation channelUrlInformation = new ChannelUrlInformation();
-        channelUrlInformation.setUrls(Arrays.asList(urls));
+        channelUrlInformation.setUrls(urls);
 
         fixture.registerChannelUrls(testChannelId, channelUrlInformation);
 
@@ -120,8 +118,8 @@ public class ChannelUrlDirectoryTest {
 
             @Override
             public void onFulfillment(Object... values) {
-                List<String> urlsFromServer = ((ChannelUrlInformation) values[0]).getUrls();
-                Assert.assertArrayEquals(urls, urlsFromServer.toArray(new String[urlsFromServer.size()]));
+                String[] urlsFromServer = ((ChannelUrlInformation) values[0]).getUrls();
+                Assert.assertArrayEquals(urls, urlsFromServer);
                 Assert.assertEquals(1, fixture.inactiveChannelIds.size());
                 Assert.assertNotNull(fixture.inactiveChannelIds.get(testChannelId));
                 fixture.registerChannelUrls(testChannelId, channelUrlInformation);
@@ -138,8 +136,8 @@ public class ChannelUrlDirectoryTest {
 
                     @Override
                     public void onFulfillment(Object... values) {
-                        List<String> urlsFromServer = ((ChannelUrlInformation) values[0]).getUrls();
-                        Assert.assertArrayEquals(urls, urlsFromServer.toArray(new String[urlsFromServer.size()]));
+                        String[] urlsFromServer = ((ChannelUrlInformation) values[0]).getUrls();
+                        Assert.assertArrayEquals(urls, urlsFromServer);
                     }
                 });
             }

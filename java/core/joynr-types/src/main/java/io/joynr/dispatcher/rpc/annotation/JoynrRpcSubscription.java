@@ -24,8 +24,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface JoynrRpcSubscription {
@@ -33,5 +31,5 @@ public @interface JoynrRpcSubscription {
     // name of the attribute to subscribe to
     String attributeName();
 
-    Class<? extends TypeReference<?>> attributeType() default DefaultTypeReference.class;
+    Class<?> attributeType();
 }

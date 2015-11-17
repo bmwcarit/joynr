@@ -210,7 +210,7 @@ public class RpcStubbingTest {
                     }
                 };
                 requestInterpreter.execute(callback, requestCaller, request);
-                return future.getReply();
+                return future.get();
             }
         });
 

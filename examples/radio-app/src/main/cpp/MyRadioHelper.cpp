@@ -46,6 +46,12 @@ int MyRadioHelper::getch()
     return ch;
 }
 
+const std::string& MyRadioHelper::MISSING_NAME()
+{
+    static const std::string missingName("MISSING_NAME");
+    return missingName;
+}
+
 void MyRadioHelper::pressQToContinue()
 {
     LOG_INFO(logger, "*****************************************************");

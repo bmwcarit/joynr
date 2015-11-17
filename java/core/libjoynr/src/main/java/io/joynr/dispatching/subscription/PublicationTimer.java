@@ -35,8 +35,9 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.TimerTask;
 
-import joynr.OnChangeWithKeepAliveSubscriptionQos;
+import joynr.OnChangeSubscriptionQos;
 import joynr.SubscriptionPublication;
+import joynr.exceptions.ProviderRuntimeException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,10 +85,10 @@ public class PublicationTimer extends PubSubTimerBase {
         this.publicationTtl = qos.getPublicationTtl();
 
         boolean hasSubscriptionHeartBeat = qos instanceof HeartbeatSubscriptionInformation;
-        boolean isKeepAliveSubscription = qos instanceof OnChangeWithKeepAliveSubscriptionQos;
+        boolean isOnChangeSubscription = qos instanceof OnChangeSubscriptionQos;
 
         this.period = hasSubscriptionHeartBeat ? ((HeartbeatSubscriptionInformation) qos).getHeartbeat() : 0;
-        this.minInterval = isKeepAliveSubscription ? ((OnChangeWithKeepAliveSubscriptionQos) qos).getMinInterval() : 0;
+        this.minInterval = isOnChangeSubscription ? ((OnChangeSubscriptionQos) qos).getMinInterval() : 0;
 
         this.requestCaller = requestCaller;
         this.attributePollInterpreter = attributePollInterpreter;
@@ -119,7 +120,12 @@ public class PublicationTimer extends PubSubTimerBase {
 
                             @Override
                             public void onRejection(JoynrException error) {
-                                sendPublicationError(error);
+                                if (error instanceof JoynrRuntimeException) {
+                                    sendPublicationError((JoynrRuntimeException) error);
+                                } else {
+                                    sendPublicationError(new ProviderRuntimeException("Unexpected exception while calling getter for attribute "
+                                            + publicationInformation.getSubscribedToName()));
+                                }
                             }
 
                             @Override
@@ -147,7 +153,7 @@ public class PublicationTimer extends PubSubTimerBase {
         }
     }
 
-    private void sendPublicationError(JoynrException error) {
+    private void sendPublicationError(JoynrRuntimeException error) {
         SubscriptionPublication publication = new SubscriptionPublication(error,
                                                                           publicationInformation.getSubscriptionId());
         sendPublication(publication);
@@ -173,7 +179,6 @@ public class PublicationTimer extends PubSubTimerBase {
             } catch (IOException e) {
                 logger.error("sendPublication error: {}", e.getMessage());
             }
-            state.updateTimeOfLastPublication();
             synchronized (PublicationTimer.this) {
                 if (pendingPublication) {
                     pendingPublication = false;

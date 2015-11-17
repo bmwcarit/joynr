@@ -416,6 +416,8 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
                                         domain : domain,
                                         interfaceName : interfaceName,
                                         discoveryQos : discoveryQos
+                                    }).then(function(opArgs){
+                                        return opArgs.result;
                                     });
                                 },
                                 add : function add(discoveryEntry) {

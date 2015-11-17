@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@
 #include "tests/utils/MockLocalCapabilitiesDirectoryCallback.h"
 #include "cluster-controller/capabilities-client/IGlobalCapabilitiesCallback.h"
 #include "utils/QThreadSleep.h"
-#include "joynr/exceptions.h"
+#include "joynr/exceptions/JoynrException.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/CapabilityEntry.h"
 using namespace ::testing;
@@ -96,7 +96,7 @@ public:
             const std::string& domain,
             const std::string& interfaceName,
             std::function<void(const std::vector<types::CapabilityInformation>& capabilities)> onSuccess,
-            std::function<void(const RequestStatus& status)> onError){
+            std::function<void(const exceptions::JoynrException& error)> onError){
         Q_UNUSED(domain);
         Q_UNUSED(interfaceName);
         std::vector<types::CapabilityInformation> result;
@@ -106,7 +106,7 @@ public:
     void fakeLookupZeroResults(
             const std::string& participantId,
             std::function<void(const std::vector<types::CapabilityInformation>& capabilities)> onSuccess,
-            std::function<void(const RequestStatus& status)> onError){
+            std::function<void(const exceptions::JoynrException& error)> onError){
         Q_UNUSED(participantId);
         std::vector<types::CapabilityInformation> result;
         onSuccess(result);
@@ -116,7 +116,7 @@ public:
             const std::string& domain,
             const std::string& interfaceName,
             std::function<void(const std::vector<types::CapabilityInformation>& capabilities)> onSuccess,
-            std::function<void(const RequestStatus& status)> onError){
+            std::function<void(const exceptions::JoynrException& error)> onError){
         Q_UNUSED(domain);
         Q_UNUSED(interfaceName);
         types::ProviderQos qos;
@@ -139,7 +139,7 @@ public:
     void fakeLookupWithTwoResults(
             const std::string& participantId,
             std::function<void(const std::vector<types::CapabilityInformation>& capabilities)> onSuccess,
-            std::function<void(const RequestStatus& status)> onError){
+            std::function<void(const exceptions::JoynrException& error)> onError){
         types::ProviderQos qos;
         std::vector<types::CapabilityInformation> capInfoList;
         capInfoList.push_back(types::CapabilityInformation(
@@ -160,7 +160,7 @@ public:
     void fakeLookupWithThreeResults(
             const std::string& participantId,
             std::function<void(const std::vector<types::CapabilityInformation>& capabilities)> onSuccess,
-            std::function<void(const RequestStatus& status)> onError){
+            std::function<void(const exceptions::JoynrException& error)> onError){
         Q_UNUSED(participantId);
         types::ProviderQos qos;
         std::vector<types::CapabilityInformation> capInfoList;
@@ -186,7 +186,7 @@ public:
     }
 
     void simulateTimeout(){
-        throw JoynrTimeOutException("Simulating timeout");
+        throw exceptions::JoynrTimeOutException("Simulating timeout");
     }
 
 protected:
@@ -247,8 +247,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addAddsToCache) {
                     dummyParticipantId1,
                     A<std::function<void(
                         const std::vector<joynr::types::CapabilityInformation>& capabilities)>>(),
-                    A<std::function<void(
-                        const joynr::RequestStatus& status)>>()))
+                    A<std::function<void(const exceptions::JoynrException& error)>>()))
             .Times(0);
     EXPECT_CALL(*capabilitiesClient, add(_)).Times(1);
     joynr::types::DiscoveryEntry entry(
@@ -268,7 +267,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addLocallyDoesNotCallCapabilitiesClient) 
     EXPECT_CALL(*capabilitiesClient, lookup(
                     _,
                     A<std::function<void(const std::vector<joynr::types::CapabilityInformation>& capabilities)>>(),
-                    A<std::function<void(const RequestStatus& status)>>()))
+                    A<std::function<void(const exceptions::JoynrException& error)>>()))
             .Times(0);
     EXPECT_CALL(*capabilitiesClient, add(_)).Times(0);
     types::ProviderQos providerQos;
@@ -311,7 +310,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeRemovesFromCache) {
     EXPECT_CALL(*capabilitiesClient, lookup(
                     _,
                     A<std::function<void(const std::vector<joynr::types::CapabilityInformation>& capabilities)>>(),
-                    A<std::function<void(const RequestStatus& status)>>()))
+                    A<std::function<void(const exceptions::JoynrException& error)>>()))
             .Times(1)
             .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupZeroResults));
 
@@ -361,7 +360,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForInterfaceAddressReturnsCachedVal
                     _,
                     _,
                     A<std::function<void(const std::vector<joynr::types::CapabilityInformation>& capabilities)>>(),
-                    A<std::function<void(const RequestStatus& status)>>()))
+                    A<std::function<void(const exceptions::JoynrException& error)>>()))
             .Times(0);
     localCapabilitiesDirectory->lookup(DOMAIN_1_NAME ,INTERFACE_1_NAME, callback, discoveryQos);
     EXPECT_EQ(2, callback->getResults(TIMEOUT).size());
@@ -407,7 +406,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdReturnsCachedValues
     EXPECT_CALL(*capabilitiesClient, lookup(
                     _,
                     A<std::function<void(const std::vector<types::CapabilityInformation>& capabilities)>>(),
-                    A<std::function<void(const RequestStatus& status)>>()))
+                    A<std::function<void(const exceptions::JoynrException& error)>>()))
             .Times(1)
             .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithTwoResults));
 
@@ -416,7 +415,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdReturnsCachedValues
     EXPECT_CALL(*capabilitiesClient, lookup(
                     _,
                     A<std::function<void(const std::vector<types::CapabilityInformation>& capabilities)>>(),
-                    A<std::function<void(const RequestStatus& status)>>()))
+                    A<std::function<void(const exceptions::JoynrException& error)>>()))
             .Times(0);
     localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
     std::vector<CapabilityEntry> capabilities = callback->getResults(TIMEOUT);
@@ -429,7 +428,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdDelegatesToCapabili
     EXPECT_CALL(*capabilitiesClient, lookup(
                     dummyParticipantId1,
                     A<std::function<void(const std::vector<types::CapabilityInformation>& capabilities)>>(),
-                    A<std::function<void(const RequestStatus& status)>>()))
+                    A<std::function<void(const exceptions::JoynrException& error)>>()))
             .Times(1)
             .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithThreeResults));
 
@@ -458,7 +457,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, cleanCacheRemovesOldEntries) {
     EXPECT_CALL(*capabilitiesClient, lookup(
                     _,
                     A<std::function<void(const std::vector<types::CapabilityInformation>& capabilities)>>(),
-                    A<std::function<void(const RequestStatus& status)>>()))
+                    A<std::function<void(const exceptions::JoynrException& error)>>()))
             .Times(1)
             .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithTwoResults));
 
@@ -471,7 +470,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, cleanCacheRemovesOldEntries) {
     EXPECT_CALL(*capabilitiesClient, lookup(
                     _,
                     A<std::function<void(const std::vector<types::CapabilityInformation>& capabilities)>>(),
-                    A<std::function<void(const RequestStatus& status)>>()))
+                    A<std::function<void(const exceptions::JoynrException& error)>>()))
             .Times(1);
     localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
 
@@ -537,7 +536,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRegisterCapabilitiesMultipleTimesDoes
                 connections
             );
             localCapabilitiesDirectory->add(entry);
-        } catch (JoynrException& e){
+        } catch (exceptions::JoynrException& e){
             exceptionCounter++;
         }
     }
@@ -552,7 +551,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeLocalCapabilityByParticipantId){
     EXPECT_CALL(*capabilitiesClient, lookup(
                     _,
                     A<std::function<void(const std::vector<types::CapabilityInformation>& capabilities)>>(),
-                    A<std::function<void(const RequestStatus& status)>>()))
+                    A<std::function<void(const exceptions::JoynrException& error)>>()))
             .Times(0);
 
     joynr::types::DiscoveryEntry entry(
@@ -572,12 +571,12 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeLocalCapabilityByParticipantId){
     EXPECT_CALL(*capabilitiesClient, lookup(
                     _,
                     A<std::function<void(const std::vector<types::CapabilityInformation>& capabilities)>>(),
-                    A<std::function<void(const RequestStatus& status)>>()))
+                    A<std::function<void(const exceptions::JoynrException& error)>>()))
             .Times(1)
             .WillOnce(InvokeWithoutArgs(this, &LocalCapabilitiesDirectoryTest::simulateTimeout));
     //JoynrTimeOutException timeoutException;
     EXPECT_THROW(localCapabilitiesDirectory->lookup(dummyParticipantId1, callback),
-                 JoynrTimeOutException);
+                 exceptions::JoynrTimeOutException);
     EXPECT_EQ(0, callback->getResults(10).size());
 }
 
@@ -650,7 +649,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalThenGl
             .Times(1)
             .WillOnce(InvokeWithoutArgs(this, &LocalCapabilitiesDirectoryTest::simulateTimeout));
     EXPECT_THROW(localCapabilitiesDirectory->lookup(DOMAIN_1_NAME, INTERFACE_1_NAME, callback, discoveryQos),
-                 JoynrTimeOutException);
+                 exceptions::JoynrTimeOutException);
     EXPECT_EQ(0, callback->getResults(10).size());
     callback->clearResults();
 }
@@ -731,7 +730,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupGlobalOnly)
             .WillOnce(InvokeWithoutArgs(this, &LocalCapabilitiesDirectoryTest::simulateTimeout));
     //JoynrTimeOutException timeoutException;
     EXPECT_THROW(localCapabilitiesDirectory->lookup(DOMAIN_1_NAME, INTERFACE_1_NAME, callback, discoveryQos),
-                 JoynrTimeOutException);
+                 exceptions::JoynrTimeOutException);
     EXPECT_EQ(0, callback->getResults(10).size());
     callback->clearResults();
 
@@ -752,7 +751,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupGlobalOnly)
             .Times(1)
             .WillOnce(InvokeWithoutArgs(this, &LocalCapabilitiesDirectoryTest::simulateTimeout));
     EXPECT_THROW(localCapabilitiesDirectory->lookup(DOMAIN_1_NAME, INTERFACE_1_NAME, callback, discoveryQos),
-                 JoynrTimeOutException);
+                 exceptions::JoynrTimeOutException);
     EXPECT_EQ(0, callback->getResults(10).size());
     callback->clearResults();
 }
@@ -826,7 +825,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocalThenG
             .Times(1)
             .WillOnce(InvokeWithoutArgs(this, &LocalCapabilitiesDirectoryTest::simulateTimeout));
     EXPECT_THROW(localCapabilitiesDirectory->lookup(DOMAIN_1_NAME, INTERFACE_1_NAME, callback, discoveryQos),
-                 JoynrTimeOutException);
+                 exceptions::JoynrTimeOutException);
 
     EXPECT_EQ(0, callback->getResults(10).size());
 }

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,10 +23,12 @@
 #include "joynr/vehicle/QtRadioStation.h"
 #include "joynr/vehicle/QtCountry.h"
 #include "joynr/joynrlogging.h"
+#include "joynr/exceptions/JoynrException.h"
 #include <QList>
 #include <QMap>
 #include <QMutex>
 
+using namespace joynr;
 /**
   * A Radio Provider with a circular list of radio stations
   */
@@ -40,24 +42,35 @@ public:
       * Get the current radio station
       */
     void getCurrentStation(
-            std::function<void(const joynr::vehicle::RadioStation& result)> onSuccess);
+            std::function<void(const joynr::vehicle::RadioStation&)> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
+                    onError);
 
     /**
       * Get the next radio station in a circular list of stations
       */
-    void shuffleStations(std::function<void()> onSuccess);
+    void shuffleStations(
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
+                    onError);
 
     /**
       * Add a favorite radio station
       */
-    void addFavoriteStation(const joynr::vehicle::RadioStation& radioStation,
-                            std::function<void(const bool& returnValue)> onSuccess);
+    void addFavoriteStation(
+            const joynr::vehicle::RadioStation& newFavoriteStation,
+            std::function<void(const bool& success)> onSuccess,
+            std::function<void(const joynr::vehicle::Radio::AddFavoriteStationErrorEnum::Enum&
+                                       errorEnum)> onError);
+
+    void getLocationOfCurrentStation(
+            std::function<void(const joynr::vehicle::Country::Enum& country,
+                               const joynr::vehicle::GeoPosition& location)> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
+                    onError);
 
     void fireWeakSignalBroadcast();
     void fireNewStationDiscoveredBroadcast();
-    void getLocationOfCurrentStation(
-            std::function<void(const joynr::vehicle::Country::Enum& country,
-                               const joynr::vehicle::GeoPosition& location)> onSuccess);
 
 private:
     // Disallow copy and assign

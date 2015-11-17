@@ -94,14 +94,8 @@ class InterfaceSyncTemplate implements InterfaceTemplate{
 
 package «packagePath»;
 
-«IF needsListImport(serviceInterface)»
-	import java.util.List;
-«ENDIF»
-
 import io.joynr.dispatcher.rpc.JoynrSyncInterface;
-«IF hasReadAttribute(serviceInterface) || hasMethodWithReturnValue»
-	import io.joynr.dispatcher.rpc.annotation.JoynrRpcReturn;
-«ENDIF»
+
 «IF hasWriteAttribute || hasMethodWithArguments»
 	import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
 «ENDIF»
@@ -123,11 +117,10 @@ public interface «syncClassName» extends «interfaceName», JoynrSyncInterface
 	«var getAttribute = "get" + attributeName.toFirstUpper»
 	«var setAttribute = "set" + attributeName.toFirstUpper»
 		«IF isReadable(attribute)»
-			@JoynrRpcReturn(deserializationType = «getTokenTypeForArrayType(attributeType)»Token.class)
 			public «attributeType» «getAttribute»() throws JoynrRuntimeException;
 		«ENDIF»
 		«IF isWritable(attribute)»
-			void «setAttribute»(@JoynrRpcParam(value="«attributeName»", deserializationType = «getTokenTypeForArrayType(attributeType)»Token.class) «attributeType» «attributeName») throws JoynrRuntimeException;
+			void «setAttribute»(«attributeType» «attributeName») throws JoynrRuntimeException;
 		«ENDIF»
 «ENDFOR»
 
@@ -140,12 +133,12 @@ public interface «syncClassName» extends «interfaceName», JoynrSyncInterface
 			public «containerName»(Object... outParameters) {
 				«var index = 0»
 				«FOR outParameter : method.outputParameters»
-					«IF isEnum(outParameter.type)»
-					this.«outParameter.name» = «outParameter.typeName».valueOf((String) outParameters[«index++»]);
-					«ELSE»
 					this.«outParameter.name» = («outParameter.typeName») outParameters[«index++»];
-					«ENDIF»
 				«ENDFOR»
+			}
+
+			public static Class<?>[] getDatatypes() {
+				return new Class<?>[] {«FOR outParameter : method.outputParameters SEPARATOR ", "»«outParameter.typeName».class«ENDFOR»};
 			}
 		}
 «ENDFOR»
@@ -164,7 +157,6 @@ public interface «syncClassName» extends «interfaceName», JoynrSyncInterface
 				public «methodToReturnTypeName.get(method)» «methodName»(
 						«getTypedParameterListJavaRpc(method)»
 			«ELSE»
-				@JoynrRpcReturn(deserializationType = «getTokenTypeForArrayType(method.typeNamesForOutputParameter.iterator.next)»Token.class)
 				public «methodToReturnTypeName.get(method)» «methodName»(
 						«getTypedParameterListJavaRpc(method)»
 			«ENDIF»

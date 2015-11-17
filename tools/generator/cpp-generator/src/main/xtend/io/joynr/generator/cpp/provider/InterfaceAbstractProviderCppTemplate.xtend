@@ -73,9 +73,23 @@ std::string «interfaceName»AbstractProvider::getInterfaceName() const {
 	void «interfaceName»AbstractProvider::«attributeName»Changed(
 			const «attributeType»& «attributeName»
 	) {
+		«val paramRef = qtTypeUtil.fromStdTypeToQTType(attribute, attributeName, true)»
+		«IF !isEnum(attribute.type) && isArray(attribute)»
+			QList<QVariant> «attributeName»QVarList = joynr::Util::convertListToVariantList(«paramRef»);
+		«ENDIF»
 		onAttributeValueChanged(
 				"«attributeName»",
-				QVariant::fromValue(«qtTypeUtil.fromStdTypeToQTType(attribute, attributeName, true)»)
+				«IF isEnum(attribute.type) && isArray(attribute)»
+					joynr::Util::convertListToVariantList(«paramRef»)
+				«ELSEIF isEnum(attribute.type)»
+					QVariant::fromValue(«paramRef»)
+				«ELSEIF isArray(attribute)»
+					QVariant::fromValue(«attributeName»QVarList)
+				«ELSEIF isComplex(attribute.type)»
+					QVariant::fromValue(«paramRef»)
+				«ELSE»
+					QVariant(«paramRef»)
+				«ENDIF»
 		);
 	}
 «ENDFOR»
@@ -86,8 +100,20 @@ std::string «interfaceName»AbstractProvider::getInterfaceName() const {
 			«broadcast.commaSeperatedTypedConstOutputParameterList.substring(1)»
 	) {
 		QList<QVariant> broadcastValues;
-		«FOR parameter: getOutputParameters(broadcast)»
-			broadcastValues.append(QVariant::fromValue(«qtTypeUtil.fromStdTypeToQTType(parameter, parameter.name, true)»));
+		«FOR param: getOutputParameters(broadcast)»
+			«val paramRef = qtTypeUtil.fromStdTypeToQTType(param, param.joynrName, true)»
+			«IF isEnum(param.type) && isArray(param)»
+				broadcastValues.append(joynr::Util::convertListToVariantList(«paramRef»));
+			«ELSEIF isEnum(param.type)»
+				broadcastValues.append(QVariant::fromValue(«paramRef»));
+			«ELSEIF isArray(param)»
+				QList<QVariant> «param.joynrName»QVarList = joynr::Util::convertListToVariantList(«paramRef»);
+				broadcastValues.append(QVariant::fromValue(«param.joynrName»QVarList));
+			«ELSEIF isComplex(param.type)»
+				broadcastValues.append(QVariant::fromValue(«paramRef»));
+			«ELSE»
+				broadcastValues.append(QVariant(«paramRef»));
+			«ENDIF»
 		«ENDFOR»
 		fireBroadcast("«broadcastName»", broadcastValues);
 	}

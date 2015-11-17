@@ -89,9 +89,6 @@ class InterfaceProviderTemplate implements InterfaceTemplate{
 «warning()»
 package «packagePath»;
 
-«IF needsListImport(serviceInterface)»
-	import java.util.List;
-«ENDIF»
 «IF getMethods(serviceInterface).size > 0 || hasReadAttribute(serviceInterface)»
 	import io.joynr.provider.Promise;
 «ENDIF»
@@ -154,6 +151,12 @@ public interface «className» extends JoynrProvider {
 				public synchronized boolean resolve() {
 					Object[] values = new Object[] {};
 					return super.resolve(values);
+				}
+			««« In the case of single output param that is an array, the varargs resolve gets confused
+			««« and assumes the array is multi-out. Cast to object to prevent this from happening. 				
+			«ELSEIF method.outputParameters.length == 1 && method.outputParameters.get(0).isArray»
+				public synchronized boolean resolve(«method.commaSeperatedTypedOutputParameterList») {
+					return super.resolve((Object)«method.commaSeperatedUntypedOutputParameterList»);
 				}
 			«ELSE»
 				public synchronized boolean resolve(«method.commaSeperatedTypedOutputParameterList») {

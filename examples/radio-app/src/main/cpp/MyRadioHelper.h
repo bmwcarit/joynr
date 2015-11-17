@@ -37,6 +37,7 @@ public:
 
     static int getch();
 
+    static const std::string& MISSING_NAME();
     /**
      * Output a prominent log message at level INFO
      */

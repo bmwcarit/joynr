@@ -26,7 +26,6 @@ import io.joynr.messaging.util.Utilities;
 import io.joynr.runtime.PropertyLoader;
 
 import java.net.URL;
-import java.util.List;
 import java.util.Properties;
 
 import javax.annotation.Nullable;
@@ -111,11 +110,11 @@ public class UrlResolver {
         ChannelUrlInformation channelUrlInfo = channelUrlClient.getUrlsForChannel(channelId);
         String url = null;
 
-        List<String> urls = channelUrlInfo.getUrls();
-        if (!urls.isEmpty()) {
+        String[] urls = channelUrlInfo.getUrls();
+        if (urls.length > 0) {
             // in case sessions are used and the session is encoded in the URL,
             // we need to strip that from the URL and append session ID at the end
-            String encodedChannelUrl = urls.get(0); // TODO handle trying multiple channelUrls
+            String encodedChannelUrl = urls[0]; // TODO handle trying multiple channelUrls
             url = encodeSendUrl(encodedChannelUrl);
 
             try {

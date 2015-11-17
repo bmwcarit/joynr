@@ -712,13 +712,17 @@ joynrTestRequire(
                                             {
                                                 radioStation : "truelyContainingTheString\"True\""
                                             },
-                                            true);
+                                            {
+                                                returnValue : true
+                                            });
                                     callOperation(
                                             "addFavoriteStation",
                                             {
                                                 radioStation : "This is false!"
                                             },
-                                            false);
+                                            {
+                                                returnValue : false
+                                            });
                                     callOperation(
                                             "addFavoriteStation",
                                             {
@@ -727,7 +731,9 @@ joynrTestRequire(
                                                             name : "truelyContainingTheRadioStationString\"True\""
                                                         })
                                             },
-                                            true);
+                                            {
+                                                returnValue : true
+                                            });
                                     callOperation(
                                             "addFavoriteStation",
                                             {
@@ -735,7 +741,9 @@ joynrTestRequire(
                                                     name : "This is a false RadioStation!"
                                                 })
                                             },
-                                            false);
+                                            {
+                                                returnValue : false
+                                            });
                                 });
 
                         it(
@@ -747,38 +755,78 @@ joynrTestRequire(
                                                 enumInput : Country.GERMANY,
                                                 enumArrayInput : []
                                             },
-                                            Country.GERMANY);
+                                            {
+                                                enumOutput : Country.GERMANY
+                                            });
                                     callOperation(
                                             "operationWithEnumsAsInputAndOutput",
                                             {
                                                 enumInput : Country.GERMANY,
                                                 enumArrayInput : [Country.AUSTRIA]
                                             },
-                                            Country.AUSTRIA);
+                                            {
+                                                enumOutput : Country.AUSTRIA
+                                            });
                                     callOperation(
                                             "operationWithEnumsAsInputAndOutput",
                                             {
                                                 enumInput : Country.GERMANY,
                                                 enumArrayInput : [Country.AUSTRIA, Country.GERMANY, Country.AUSTRALIA]
                                             },
-                                            Country.AUSTRIA);
+                                            {
+                                                enumOutput : Country.AUSTRIA
+                                            });
                                     callOperation(
                                             "operationWithEnumsAsInputAndOutput",
                                             {
                                                 enumInput : Country.GERMANY,
                                                 enumArrayInput : [Country.CANADA, Country.AUSTRIA, Country.ITALY]
                                             },
-                                            Country.CANADA);
-                                    /* Check if comparison with string is possible as well
-                                    callOperation(
-                                            "operationWithEnumsAsInputAndOutput",
                                             {
-                                                enumInput : Country.GERMANY,
-                                                enumArrayInput : []
-                                            },
-                                            Country.GERMANY.name);
-                                    */
+                                                enumOutput : Country.CANADA
+                                            });
                                });
+
+                        it(
+                                "can call an operation with multiple return values and async provider",
+                                function() {
+                                    var inputData = {
+                                        enumInput : Country.GERMANY,
+                                        enumArrayInput : [Country.GERMANY, Country.ITALY],
+                                        stringInput : "StringTest",
+                                        syncTest : false
+                                    };
+                                    callOperation(
+                                            "operationWithMultipleOutputParameters",
+                                            inputData,
+                                            {
+                                                enumArrayOutput : inputData.enumArrayInput,
+                                                enumOutput : inputData.enumInput,
+                                                stringOutput : inputData.stringInput,
+                                                booleanOutput : inputData.syncTest
+                                            });
+
+                        });
+
+                        it(
+                                "can call an operation with multiple return values and sync provider",
+                                function() {
+                                    var inputData = {
+                                        enumInput : Country.GERMANY,
+                                        enumArrayInput : [Country.GERMANY, Country.ITALY],
+                                        stringInput : "StringTest",
+                                        syncTest : true
+                                    };
+                                    callOperation(
+                                            "operationWithMultipleOutputParameters",
+                                            inputData,
+                                            {
+                                                enumArrayOutput : inputData.enumArrayInput,
+                                                enumOutput : inputData.enumInput,
+                                                stringOutput : inputData.stringInput,
+                                                booleanOutput : inputData.syncTest
+                                            });
+                        });
 
                         it(
                                 "can call an operation with enum arguments and enum array as return type",
@@ -789,28 +837,36 @@ joynrTestRequire(
                                                 enumInput : Country.GERMANY,
                                                 enumArrayInput : []
                                             },
-                                            [Country.GERMANY]);
+                                            {
+                                                enumOutput : [Country.GERMANY]
+                                            });
                                     callOperation(
                                             "operationWithEnumsAsInputAndEnumArrayAsOutput",
                                             {
                                                 enumInput : Country.GERMANY,
                                                 enumArrayInput : [Country.AUSTRIA]
                                             },
-                                            [Country.AUSTRIA, Country.GERMANY]);
+                                            {
+                                                enumOutput : [Country.AUSTRIA, Country.GERMANY]
+                                            });
                                     callOperation(
                                             "operationWithEnumsAsInputAndEnumArrayAsOutput",
                                             {
                                                 enumInput : Country.GERMANY,
                                                 enumArrayInput : [Country.AUSTRIA, Country.GERMANY, Country.AUSTRALIA]
                                             },
-                                            [Country.AUSTRIA, Country.GERMANY, Country.AUSTRALIA, Country.GERMANY]);
+                                            {
+                                                enumOutput : [Country.AUSTRIA, Country.GERMANY, Country.AUSTRALIA, Country.GERMANY]
+                                            });
                                     callOperation(
                                             "operationWithEnumsAsInputAndEnumArrayAsOutput",
                                             {
                                                 enumInput : Country.GERMANY,
                                                 enumArrayInput : [Country.CANADA, Country.AUSTRIA, Country.ITALY]
                                             },
-                                            [Country.CANADA, Country.AUSTRIA, Country.ITALY, Country.GERMANY]);
+                                            {
+                                                enumOutput : [Country.CANADA, Country.AUSTRIA, Country.ITALY, Country.GERMANY]
+                                            });
                                });
 
                         it("can start a subscription and provides a subscription id", function() {
@@ -1196,7 +1252,9 @@ joynrTestRequire(
                                             {
                                                 arg : testArgument
                                             },
-                                            testArgument);
+                                            {
+                                                returnValue : testArgument
+                                            });
                                 });
 
                         afterEach(function() {

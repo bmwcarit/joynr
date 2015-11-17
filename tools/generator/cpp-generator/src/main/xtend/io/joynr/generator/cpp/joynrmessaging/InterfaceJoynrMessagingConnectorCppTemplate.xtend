@@ -32,6 +32,7 @@ import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FMethod
 import org.franca.core.franca.FType
+import java.io.File
 
 class InterfaceJoynrMessagingConnectorCppTemplate implements InterfaceTemplate{
 
@@ -69,6 +70,7 @@ internalRequestObject.setMethodName(QString("«method.joynrName»"));
 	override generate(FInterface serviceInterface)
 '''
 «val interfaceName = serviceInterface.joynrName»
+«val methodToErrorEnumName = serviceInterface.methodToErrorEnumName()»
 «warning()»
 
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»JoynrMessagingConnector.h"
@@ -86,6 +88,17 @@ internalRequestObject.setMethodName(QString("«method.joynrName»"));
 #include "joynr/RequestStatusCode.h"
 #include <chrono>
 #include <stdint.h>
+«FOR method : getMethods(serviceInterface)»
+	«IF method.hasErrorEnum»
+		«var enumType = method.errors»
+		«IF enumType != null»
+			«enumType.name = methodToErrorEnumName.get(method)»
+		«ELSE»
+			«{enumType = method.errorEnum; ""}»
+		«ENDIF»
+		#include "«enumType.getPackagePathWithJoynrPrefix(File::separator, true) + File::separator + enumType.joynrName».h"
+	«ENDIF»
+«ENDFOR»
 
 «FOR datatype: getAllComplexAndEnumTypes(serviceInterface)»
 «IF datatype instanceof FType»
@@ -121,7 +134,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 	«val returnTypeQT = qtTypeUtil.getTypeName(attribute)»
 	«val attributeName = attribute.joynrName»
 	«IF attribute.readable»
-		joynr::RequestStatus «interfaceName»JoynrMessagingConnector::get«attributeName.toFirstUpper»(
+		void «interfaceName»JoynrMessagingConnector::get«attributeName.toFirstUpper»(
 				«returnTypeStd»& «attributeName»
 		) {
 			std::shared_ptr<joynr::Future<«returnTypeStd»> > future(new joynr::Future<«returnTypeStd»>());
@@ -131,29 +144,25 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 						if (status.getCode() == joynr::RequestStatusCode::OK) {
 							future->onSuccess(«qtTypeUtil.fromQTTypeToStdType(attribute, attribute.joynrName)»);
 						} else {
-							future->onError(status);
+							future->onError(status, exceptions::JoynrRuntimeException(status.toString()));
 						}
 					};
 
-			std::function<void(const joynr::RequestStatus& status)> onError =
-					[future] (const joynr::RequestStatus& status) {
-						future->onError(status);
+			std::function<void(const joynr::RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error)> onError =
+					[future] (const joynr::RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error) {
+						future->onError(status, *error);
 					};
 
 			std::shared_ptr<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«returnTypeQT»>(
 					onSuccess,
 					onError));
 			attributeRequest<«returnTypeQT»>(QString("get«attributeName.toFirstUpper»"), replyCaller);
-			joynr::RequestStatus status(future->waitForFinished());
-			if (status.successful()) {
-				future->getValues(«attributeName»);
-			}
-			return status;
+			future->get(«attributeName»);
 		}
 
 		std::shared_ptr<joynr::Future<«returnTypeStd»>> «interfaceName»JoynrMessagingConnector::get«attributeName.toFirstUpper»Async(
 				std::function<void(const «returnTypeStd»& «attributeName»)> onSuccess,
-				std::function<void(const joynr::RequestStatus& status)> onError
+				std::function<void(const exceptions::JoynrException& error)> onError
 		) {
 			std::shared_ptr<joynr::Future<«returnTypeStd»> > future(new joynr::Future<«returnTypeStd»>());
 
@@ -165,18 +174,19 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 								onSuccess(«qtTypeUtil.fromQTTypeToStdType(attribute, attribute.joynrName)»);
 							}
 						} else {
-							future->onError(status);
+							exceptions::JoynrRuntimeException error = exceptions::JoynrRuntimeException(status.toString());
+							future->onError(status, error);
 							if (onError){
-								onError(status);
+								onError(error);
 							}
 						}
 					};
 
-			std::function<void(const joynr::RequestStatus& status)> onErrorWrapper =
-					[future, onError] (const joynr::RequestStatus& status) {
-						future->onError(status);
+			std::function<void(const joynr::RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error)> onErrorWrapper =
+					[future, onError] (const joynr::RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error) {
+						future->onError(status, *error);
 						if (onError){
-							onError(status);
+							onError(*error);
 						}
 					};
 
@@ -193,7 +203,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 		std::shared_ptr<joynr::Future<void>> «interfaceName»JoynrMessagingConnector::set«attributeName.toFirstUpper»Async(
 				«returnTypeStd» «attributeName»,
 				std::function<void(void)> onSuccess,
-				std::function<void(const joynr::RequestStatus& status)> onError
+				std::function<void(const exceptions::JoynrException& error)> onError
 		) {
 			joynr::Request internalRequestObject;
 			internalRequestObject.setMethodName(QString("set«attributeName.toFirstUpper»"));
@@ -214,18 +224,19 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 								onSuccess();
 							}
 						} else {
-							future->onError(status);
-							if (onError){
-								onError(status);
+							exceptions::JoynrRuntimeException error = exceptions::JoynrRuntimeException(status.toString());
+							future->onError(status, error);
+						if (onError){
+								onError(error);
 							}
 						}
 					};
 
-			std::function<void(const joynr::RequestStatus& status)> onErrorWrapper =
-				[future, onError] (const joynr::RequestStatus& status) {
-					future->onError(status);
+			std::function<void(const joynr::RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error)> onErrorWrapper =
+				[future, onError] (const joynr::RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error) {
+					future->onError(status, *error);
 					if (onError) {
-						onError(status);
+						onError(*error);
 					}
 				};
 
@@ -236,7 +247,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 			return future;
 		}
 
-		joynr::RequestStatus «interfaceName»JoynrMessagingConnector::set«attributeName.toFirstUpper»(
+		void «interfaceName»JoynrMessagingConnector::set«attributeName.toFirstUpper»(
 				const «returnTypeStd»& «attributeName»
 		) {
 			joynr::Request internalRequestObject;
@@ -255,15 +266,21 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 						if (status.getCode() == joynr::RequestStatusCode::OK) {
 							future->onSuccess();
 						} else {
-							future->onError(status);
+							exceptions::JoynrRuntimeException error = exceptions::JoynrRuntimeException(status.toString());
+							future->onError(status, error);
 						}
+					};
+
+			std::function<void(const joynr::RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error)> onError =
+					[future] (const joynr::RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error) {
+						future->onError(status, *error);
 					};
 
 			std::shared_ptr<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<void>(
 					onSuccess,
-					std::bind(&joynr::Future<void>::onError, future, std::placeholders::_1)));
+					onError));
 			operationRequest(replyCaller, internalRequestObject);
-			return future->waitForFinished();
+			future->get();
 		}
 
 	«ENDIF»
@@ -351,7 +368,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 	«var outputUntypedParamList = qtTypeUtil.getCommaSeperatedUntypedOutputParameterList(method, DatatypeSystemTransformation::FROM_QT_TO_STANDARD)»
 	«val inputTypedParamListStd = cppStdTypeUtil.getCommaSeperatedTypedConstInputParameterList(method)»
 	«val methodName = method.joynrName»
-	joynr::RequestStatus «interfaceName»JoynrMessagingConnector::«methodName»(
+	void «interfaceName»JoynrMessagingConnector::«methodName»(
 		«outputTypedParamListStd»«IF method.outputParameters.size > 0 && method.inputParameters.size > 0», «ENDIF»«inputTypedParamListStd»
 	) {
 		«produceParameterSetters(method)»
@@ -363,34 +380,51 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 					if (status.getCode() == joynr::RequestStatusCode::OK) {
 						future->onSuccess(«outputUntypedParamList»);
 					} else {
-						future->onError(status);
+						exceptions::JoynrRuntimeException error = exceptions::JoynrRuntimeException(status.toString());
+						future->onError(status, error);
 					}
 				};
 
-		std::function<void(const joynr::RequestStatus& status)> onError =
-			[future] (const joynr::RequestStatus& status) {
-				future->onError(status);
+		std::function<void(const joynr::RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error)> onError =
+			[future] (const joynr::RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error) {
+				«IF method.hasErrorEnum»
+					«var enumType = method.errors»
+					«IF enumType == null»
+						«{enumType = method.errorEnum; ""}»
+					«ENDIF»
+					// reconstruct original ApplicationException with correct error enumeration
+					if (error->getTypeName() == exceptions::ApplicationException::TYPE_NAME) {
+						std::shared_ptr<exceptions::ApplicationException> applicationException =
+							std::dynamic_pointer_cast<exceptions::ApplicationException>(error);
+						«val expectedTypeName = enumType.buildPackagePath(".", true) + enumType.joynrName»
+						if (applicationException->getErrorTypeName() != "«expectedTypeName»") {
+							future->onError(status, exceptions::JoynrRuntimeException(
+								"Received ApplicationException does not contain an error enumeration of the expected type «expectedTypeName»"));
+							return;
+						}
+						try {
+							applicationException->setError(«enumType.buildPackagePath("::", true) + enumType.joynrName»::getEnum(applicationException->getName()));
+						} catch (const char* e) {
+							future->onError(status, exceptions::JoynrRuntimeException(
+								"Received ApplicationException does not contain a valid error enumeration."));
+							return;
+						}
+					}
+				«ENDIF»
+				future->onError(status, *error);
 			};
 
 		std::shared_ptr<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«outputParametersQT»>(
 				onSuccess,
 				onError));
 		operationRequest(replyCaller, internalRequestObject);
-		«IF method.outputParameters.empty»
-			return future->waitForFinished();
-		«ELSE»
-			joynr::RequestStatus status = future->waitForFinished();
-			if (status.successful()) {
-				future->getValues(«cppStdTypeUtil.getCommaSeperatedUntypedOutputParameterList(method)»);
-			}
-			return status;
-		«ENDIF»
+		future->get(«cppStdTypeUtil.getCommaSeperatedUntypedOutputParameterList(method)»);
 	}
 
 	std::shared_ptr<joynr::Future<«outputParametersStd»> > «interfaceName»JoynrMessagingConnector::«methodName»Async(
 			«cppStdTypeUtil.getCommaSeperatedTypedConstInputParameterList(method)»«IF !method.inputParameters.empty»,«ENDIF»
 			std::function<void(«outputTypedConstParamListStd»)> onSuccess,
-			std::function<void(const joynr::RequestStatus& status)> onError
+			std::function<void(const exceptions::JoynrException& error)> onError
 	)
 	{
 		«produceParameterSetters(method)»
@@ -406,20 +440,45 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 							onSuccess(«outputUntypedParamList»);
 						}
 					} else {
-						future->onError(status);
+						exceptions::JoynrRuntimeException error = exceptions::JoynrRuntimeException(status.toString());
+						future->onError(status, error);
 						if (onError){
-							onError(status);
+							onError(error);
 						}
 					}
 				};
 
-		std::function<void(const joynr::RequestStatus& status)> onErrorWrapper =
-				[future, onError] (const joynr::RequestStatus& status) {
-					future->onError(status);
-					if (onError) {
-						onError(status);
+		std::function<void(const joynr::RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error)> onErrorWrapper =
+				[future, onError] (const joynr::RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error) {
+				«IF method.hasErrorEnum»
+					«var enumType = method.errors»
+					«IF enumType == null»
+						«{enumType = method.errorEnum; ""}»
+					«ENDIF»
+					// reconstruct original ApplicationException with correct error enumeration
+					if (error->getTypeName() == exceptions::ApplicationException::TYPE_NAME) {
+						std::shared_ptr<exceptions::ApplicationException> applicationException =
+							std::dynamic_pointer_cast<exceptions::ApplicationException>(error);
+						«val expectedTypeName = enumType.buildPackagePath(".", true) + enumType.joynrName»
+						if (applicationException->getErrorTypeName() != "«expectedTypeName»") {
+							future->onError(status, exceptions::JoynrRuntimeException(
+								"Received ApplicationException does not contain an error enumeration of the expected type «expectedTypeName»"));
+							return;
+						}
+						try {
+							applicationException->setError(«enumType.buildPackagePath("::", true) + enumType.joynrName»::getEnum(applicationException->getName()));
+						} catch (const char* e) {
+							future->onError(status, exceptions::JoynrRuntimeException(
+								"Received ApplicationException does not contain a valid error enumeration."));
+							return;
+						}
 					}
-				};
+				«ENDIF»
+				future->onError(status, *error);
+				if (onError) {
+					onError(*error);
+				}
+			};
 
 		std::shared_ptr<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«outputParametersQT»>(
 				onSuccessWrapper,

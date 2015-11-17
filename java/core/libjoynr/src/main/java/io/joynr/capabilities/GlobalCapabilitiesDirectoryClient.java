@@ -2,11 +2,14 @@ package io.joynr.capabilities;
 
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
+import io.joynr.exceptions.JoynrException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderFactory;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import joynr.infrastructure.GlobalCapabilitiesDirectoryProxy;
@@ -60,15 +63,37 @@ public class GlobalCapabilitiesDirectoryClient {
 
     }
 
-    public void remove(Callback<Void> callback, List<String> newArrayList) {
-        getProxy(TTL_30_DAYS_IN_MS).remove(callback, newArrayList);
+    public void remove(Callback<Void> callback, List<String> participantIds) {
+        getProxy(TTL_30_DAYS_IN_MS).remove(callback, participantIds.toArray(new String[participantIds.size()]));
+
     }
 
     public void lookup(Callback<CapabilityInformation> callback, String participantId, long timeout) {
         getProxy(timeout).lookup(callback, participantId);
     }
 
-    public void lookup(Callback<List<CapabilityInformation>> callback, String domain, String interfaceName, long timeout) {
-        getProxy(timeout).lookup(callback, domain, interfaceName);
+    public void lookup(final Callback<List<CapabilityInformation>> callback,
+                       String domain,
+                       String interfaceName,
+                       long timeout) {
+        getProxy(timeout).lookup(new Callback<CapabilityInformation[]>() {
+            @Override
+            public void onFailure(JoynrException error) {
+                callback.onFailure(error);
+            }
+
+            @Override
+            public void onSuccess(CapabilityInformation[] result) {
+                List<CapabilityInformation> capabilityInformationList;
+
+                if (result == null) {
+                    capabilityInformationList = new ArrayList<CapabilityInformation>();
+                } else {
+                    capabilityInformationList = Arrays.asList(result);
+                }
+                callback.onSuccess(capabilityInformationList);
+            }
+        }, domain, interfaceName);
+
     }
 }

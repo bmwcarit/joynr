@@ -20,6 +20,7 @@
 #define SUBSCRIPTIONPUBLICATION_H
 
 #include "joynr/JoynrExport.h"
+#include "joynr/exceptions/JoynrException.h"
 
 #include <QObject>
 #include <QString>
@@ -53,9 +54,13 @@ public:
     QList<QVariant> getResponse() const;
     void setResponse(QList<QVariant> response);
 
+    std::shared_ptr<exceptions::JoynrRuntimeException> getError() const;
+    void setError(std::shared_ptr<exceptions::JoynrRuntimeException> error);
+
 private:
     QString subscriptionId;
     QList<QVariant> response;
+    std::shared_ptr<exceptions::JoynrRuntimeException> error;
 };
 
 } // namespace joynr

@@ -201,8 +201,8 @@ define(
                         return globalCapabilitiesDirectoryProxy.lookup({
                             domain : domain,
                             interfaceName : interfaceName
-                        }).then(function(globalCapabilities) {
-                            var i, messageRouterPromises = [];
+                        }).then(function(opArgs) {
+                            var i, messageRouterPromises = [], globalCapabilities = opArgs.result;
                             for (i = globalCapabilities.length - 1; i >= 0; i--) {
                                 var capabilityInformation = globalCapabilities[i];
                                 if (capabilityInformation.channelId === localChannelId) {

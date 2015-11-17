@@ -21,9 +21,6 @@ package io.joynr.accesscontrol;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-
-import java.util.Arrays;
-
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
@@ -44,37 +41,37 @@ public class AceValidatorTest {
                                                  null,
                                                  null,
                                                  TrustLevel.LOW,
-                                                 Arrays.asList(TrustLevel.MID, TrustLevel.LOW),
+                                                 new TrustLevel[]{ TrustLevel.MID, TrustLevel.LOW },
                                                  TrustLevel.LOW,
-                                                 Arrays.asList(TrustLevel.MID, TrustLevel.HIGH),
+                                                 new TrustLevel[]{ TrustLevel.MID, TrustLevel.HIGH },
                                                  null,
                                                  Permission.NO,
-                                                 Arrays.asList(Permission.ASK, Permission.NO));
+                                                 new Permission[]{ Permission.ASK, Permission.NO });
 
         mediatorAce = new MasterAccessControlEntry(null,
                                                    null,
                                                    null,
                                                    TrustLevel.LOW,
-                                                   Arrays.asList(TrustLevel.MID, TrustLevel.LOW),
+                                                   new TrustLevel[]{ TrustLevel.MID, TrustLevel.LOW },
                                                    TrustLevel.LOW,
-                                                   Arrays.asList(TrustLevel.MID, TrustLevel.HIGH),
+                                                   new TrustLevel[]{ TrustLevel.MID, TrustLevel.HIGH },
                                                    null,
                                                    Permission.NO,
-                                                   Arrays.asList(Permission.ASK, Permission.NO));
+                                                   new Permission[]{ Permission.ASK, Permission.NO });
 
         ownerAce = new OwnerAccessControlEntry(null, null, null, TrustLevel.MID, TrustLevel.HIGH, null, Permission.ASK);
     }
 
     @Test
     public void testMediatorInvalidPossiblePermissions() {
-        mediatorAce.setPossibleConsumerPermissions(Arrays.asList(Permission.YES, Permission.ASK));
+        mediatorAce.setPossibleConsumerPermissions(new Permission[]{ Permission.YES, Permission.ASK });
         AceValidator validator = new AceValidator(masterAce, mediatorAce, ownerAce);
         assertFalse("modified mediator is not valid", validator.isMediatorValid());
     }
 
     @Test
     public void testMediatorInvalidPossibleTrusLevels() {
-        mediatorAce.setPossibleRequiredTrustLevels(Arrays.asList(TrustLevel.HIGH, TrustLevel.MID));
+        mediatorAce.setPossibleRequiredTrustLevels(new TrustLevel[]{ TrustLevel.HIGH, TrustLevel.MID });
         AceValidator validator = new AceValidator(masterAce, mediatorAce, ownerAce);
         assertFalse("modified mediator is not valid", validator.isMediatorValid());
     }

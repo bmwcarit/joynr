@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,9 +45,16 @@ public:
         std::shared_ptr<ReplyCaller<Ts...>> typedCallerQsp =
                 std::dynamic_pointer_cast<ReplyCaller<Ts...>>(caller);
 
+        std::shared_ptr<exceptions::JoynrException> error = reply.getError();
+        if (error) {
+            caller->returnError(error);
+            return;
+        }
+
         if ((reply.getResponse()).isEmpty()) {
-            LOG_ERROR(logger, QString("reply object has no response, discarding message"));
-            typedCallerQsp->timeOut();
+            LOG_ERROR(logger, QString("Unexpected empty reply object. Calling error callback"));
+            caller->returnError(std::make_shared<exceptions::JoynrRuntimeException>(
+                    "Reply object had no response."));
             return;
         }
 
@@ -77,8 +84,13 @@ public:
     void execute(std::shared_ptr<IReplyCaller> caller, const Reply& reply)
     {
         assert(caller);
-        Q_UNUSED(reply); // the reply should be empty, and is just passed in to match the common
-                         // interface
+
+        std::shared_ptr<exceptions::JoynrException> error = reply.getError();
+        if (error) {
+            caller->returnError(error);
+            return;
+        }
+
         std::shared_ptr<ReplyCaller<void>> typedCallerQsp =
                 std::dynamic_pointer_cast<ReplyCaller<void>>(caller);
         typedCallerQsp->returnValue();

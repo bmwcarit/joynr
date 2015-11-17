@@ -374,7 +374,7 @@ class TypeUtil {
 	}
 
 	def getComplexAndEnumMembers(FCompoundType datatype) {
-		datatype.elements.filter(element | isComplex(element.type) || isEnum(element.type) || isArray(element));
+		datatype.elements.filter(element | isComplex(element.type) || isEnum(element.type) || element.array);
 	}
 
 	def filterComplexAndEnum(Iterable<Object> iterable) {
@@ -444,16 +444,16 @@ class TypeUtil {
 			case FBasicTypeId::BOOLEAN.getName: type = "Boolean"
 			case FBasicTypeId::INT8.getName: type = "Byte"
 			case FBasicTypeId::UINT8.getName: type = "Byte"
-			case FBasicTypeId::INT16.getName: type = "Integer"
-			case FBasicTypeId::UINT16.getName: type = "Integer"
+			case FBasicTypeId::INT16.getName: type = "Short"
+			case FBasicTypeId::UINT16.getName: type = "Short"
 			case FBasicTypeId::INT32.getName: type = "Integer"
 			case FBasicTypeId::UINT32.getName: type = "Integer"
 			case FBasicTypeId::INT64.getName: type = "Long"
 			case FBasicTypeId::UINT64.getName: type = "Long"
-			case FBasicTypeId::FLOAT.getName: type = "Double"
+			case FBasicTypeId::FLOAT.getName: type = "Float"
 			case FBasicTypeId::DOUBLE.getName: type = "Double"
 			case FBasicTypeId::STRING.getName: type = "String"
-			case FBasicTypeId::BYTE_BUFFER.getName: type = "byte[]"
+			case FBasicTypeId::BYTE_BUFFER.getName: type = "Byte[]"
 			case "void": type = "Void"
 			default :  type = plainType
 		}

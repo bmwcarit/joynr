@@ -103,13 +103,13 @@ public class LocalChannelUrlDirectoryClientImpl implements LocalChannelUrlDirect
 
         // retrieve from cache
         ChannelUrlInformation channelUrlInformation = channelUrlStore.findChannelEntry(channelId);
-        if (channelUrlInformation.getUrls().isEmpty()) {
+        if (channelUrlInformation.getUrls().length == 0) {
             // retrieve from remote store
             synchronized (channelUrlInformation) {
-                if (channelUrlInformation.getUrls().isEmpty()) {
+                if (channelUrlInformation.getUrls().length == 0) {
                     ChannelUrlInformation remoteChannelUrlInformation = channelUrlDirectoryClient.getUrlsForChannel(channelId);
                     if (remoteChannelUrlInformation == null || remoteChannelUrlInformation.getUrls() == null
-                            || remoteChannelUrlInformation.getUrls().isEmpty()) {
+                            || remoteChannelUrlInformation.getUrls().length == 0) {
                         logger.error("No channelurls found for channel {}", channelId);
                     } else {
                         channelUrlInformation.setUrls(remoteChannelUrlInformation.getUrls());

@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.net.HttpURLConnection;
 import java.net.URI;
-import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutorService;
@@ -342,7 +341,7 @@ public class LongPollingChannelLifecycle {
 
     /**
      * Create a new channel for the given cluster controller id. If a channel already exists, it is returned instead.
-     * 
+     *
      * @return whether channel was created
      */
     private synchronized boolean createChannel() {
@@ -408,7 +407,7 @@ public class LongPollingChannelLifecycle {
         }
 
         final ChannelUrlInformation channelUrlInformation = new ChannelUrlInformation();
-        channelUrlInformation.setUrls(Arrays.asList(channelUrl));
+        channelUrlInformation.setUrls(new String[]{ channelUrl });
 
         while (true) {
             try {
@@ -527,7 +526,7 @@ public class LongPollingChannelLifecycle {
 
     /**
      * true if the channel has been created on the bounceproxy
-     * 
+     *
      * @return boolean value, true if the channel has been created on the bounceproxy
      */
     public boolean isChannelCreated() {

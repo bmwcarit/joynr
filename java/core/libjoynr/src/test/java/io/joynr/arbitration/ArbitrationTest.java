@@ -25,23 +25,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import io.joynr.capabilities.CapabilitiesCallback;
-import io.joynr.capabilities.LocalCapabilitiesDirectory;
-import io.joynr.dispatcher.rpc.JoynrInterface;
-import io.joynr.exceptions.DiscoveryException;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
-
-import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.ChannelAddress;
-import joynr.types.CommunicationMiddleware;
-import joynr.types.CustomParameter;
-import joynr.types.DiscoveryEntry;
-import joynr.types.ProviderQos;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -52,7 +39,16 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import com.google.common.collect.Lists;
+import io.joynr.capabilities.CapabilitiesCallback;
+import io.joynr.capabilities.LocalCapabilitiesDirectory;
+import io.joynr.dispatcher.rpc.JoynrInterface;
+import io.joynr.exceptions.DiscoveryException;
+import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.ChannelAddress;
+import joynr.types.CommunicationMiddleware;
+import joynr.types.CustomParameter;
+import joynr.types.DiscoveryEntry;
+import joynr.types.ProviderQos;
 
 public class ArbitrationTest {
 
@@ -100,26 +96,23 @@ public class ArbitrationTest {
     @Test
     public void keywordArbitratorTest() {
         ProviderQos providerQos = new ProviderQos();
-        List<CustomParameter> qosParamterList = Lists.newArrayList();
-        qosParamterList.add(new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, testKeyword));
-        providerQos.setCustomParameters(qosParamterList);
+        CustomParameter[] qosParameters = { new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, testKeyword) };
+        providerQos.setCustomParameters(qosParameters);
         expectedEndpointAddress = new ChannelAddress("testChannelId");
         capabilitiesList.add(new DiscoveryEntry(domain,
                                                 TestInterface.INTERFACE_NAME,
                                                 expectedParticipantId,
                                                 providerQos,
-                                                Arrays.asList(CommunicationMiddleware.JOYNR)));
+                                                new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR }));
         ProviderQos providerQos2 = new ProviderQos();
-        List<CustomParameter> qosParamterList2 = Lists.newArrayList();
-        qosParamterList2.add(new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, "otherKeyword"));
-        providerQos2.setCustomParameters(qosParamterList2);
+        CustomParameter[] qosParameters2 = { new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, "otherKeyword") };
+        providerQos2.setCustomParameters(qosParameters2);
 
-        Address otherEndpointAddress = new ChannelAddress("otherChannelId");
         capabilitiesList.add(new DiscoveryEntry(domain,
                                                 TestInterface.INTERFACE_NAME,
                                                 "wrongParticipantId",
                                                 providerQos2,
-                                                Arrays.asList(CommunicationMiddleware.JOYNR)));
+                                                new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR }));
 
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.Keyword, Long.MAX_VALUE);
         discoveryQos.addCustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, testKeyword);
@@ -142,27 +135,24 @@ public class ArbitrationTest {
     public void keyWordArbitratorMissingKeywordTest() {
 
         ProviderQos providerQos = new ProviderQos();
-        List<CustomParameter> qosParamterList = Lists.newArrayList();
-        qosParamterList.add(new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, "wrongkeyword"));
-        providerQos.setCustomParameters(qosParamterList);
+        CustomParameter[] qosParameters = { new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, "wrongkeyword") };
+        providerQos.setCustomParameters(qosParameters);
 
         expectedEndpointAddress = new ChannelAddress("testChannelId");
         capabilitiesList.add(new DiscoveryEntry(domain,
                                                 TestInterface.INTERFACE_NAME,
                                                 expectedParticipantId,
                                                 providerQos,
-                                                Arrays.asList(CommunicationMiddleware.JOYNR)));
+                                                new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR }));
         ProviderQos providerQos2 = new ProviderQos();
-        List<CustomParameter> qosParamterList2 = Lists.newArrayList();
-        qosParamterList2.add(new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, "otherKeyword"));
-        providerQos2.setCustomParameters(qosParamterList2);
+        CustomParameter[] qosParameters2 = { new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, "otherKeyword") };
+        providerQos2.setCustomParameters(qosParameters2);
 
-        Address otherEndpointAddress = new ChannelAddress("otherChannelId");
         capabilitiesList.add(new DiscoveryEntry(domain,
                                                 TestInterface.INTERFACE_NAME,
                                                 "wrongParticipantId",
                                                 providerQos2,
-                                                Arrays.asList(CommunicationMiddleware.JOYNR)));
+                                                new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR }));
 
         int discoveryTimeout = 0; // use minimal timeout to prevent restarting arbitration
         discoveryQos = new DiscoveryQos(discoveryTimeout, ArbitrationStrategy.Keyword, Long.MAX_VALUE);
@@ -190,24 +180,21 @@ public class ArbitrationTest {
     @Test
     public void keywordArbitratorOnChangeSubscriptionsTest() {
         ProviderQos providerQos = new ProviderQos();
-        List<CustomParameter> qosParamterList = Lists.newArrayList();
-        qosParamterList.add(new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, testKeyword));
+        CustomParameter[] qosParameters = { new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, testKeyword) };
 
         // Create a capability entry for a provider with the correct keyword but that does not support onChange subscriptions
-        providerQos.setCustomParameters(qosParamterList);
+        providerQos.setCustomParameters(qosParameters);
         providerQos.setSupportsOnChangeSubscriptions(false);
-        Address otherEndpointAddress = new ChannelAddress("otherChannelId");
         capabilitiesList.add(new DiscoveryEntry(domain,
                                                 TestInterface.INTERFACE_NAME,
                                                 "wrongParticipantId",
                                                 providerQos,
-                                                Arrays.asList(CommunicationMiddleware.JOYNR)));
+                                                new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR }));
 
         // Create a capability entry for a provider with the correct keyword and that also supports onChange subscriptions
         ProviderQos providerQos2 = new ProviderQos();
-        List<CustomParameter> qosParamterList2 = Lists.newArrayList();
-        qosParamterList2.add(new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, testKeyword));
-        providerQos2.setCustomParameters(qosParamterList2);
+        CustomParameter[] qosParameters2 = { new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, testKeyword) };
+        providerQos2.setCustomParameters(qosParameters2);
         providerQos2.setSupportsOnChangeSubscriptions(true);
 
         expectedEndpointAddress = new ChannelAddress("testChannelId");
@@ -215,7 +202,7 @@ public class ArbitrationTest {
                                                 TestInterface.INTERFACE_NAME,
                                                 "expectedParticipantId",
                                                 providerQos2,
-                                                Arrays.asList(CommunicationMiddleware.JOYNR)));
+                                                new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR }));
 
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.Keyword, Long.MAX_VALUE);
         discoveryQos.addCustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, testKeyword);
@@ -245,17 +232,16 @@ public class ArbitrationTest {
                                                 TestInterface.INTERFACE_NAME,
                                                 expectedParticipantId,
                                                 providerQos,
-                                                Arrays.asList(CommunicationMiddleware.JOYNR)));
+                                                new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR }));
         long lessPrior = 1;
         ProviderQos providerQos2 = new ProviderQos();
         providerQos2.setPriority(lessPrior);
 
-        Address otherEndpointAddress = new ChannelAddress("otherChannelId");
         capabilitiesList.add(new DiscoveryEntry(domain,
                                                 TestInterface.INTERFACE_NAME,
                                                 "wrongParticipantId",
                                                 providerQos2,
-                                                Arrays.asList(CommunicationMiddleware.JOYNR)));
+                                                new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR }));
         long negativePriority = -10;
         ProviderQos providerQos3 = new ProviderQos();
         providerQos3.setPriority(negativePriority);
@@ -267,7 +253,7 @@ public class ArbitrationTest {
                                                 TestInterface.INTERFACE_NAME,
                                                 "thirdParticipantId",
                                                 providerQos3,
-                                                Arrays.asList(CommunicationMiddleware.JOYNR)));
+                                                new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR }));
 
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
 
@@ -298,26 +284,24 @@ public class ArbitrationTest {
                                                 TestInterface.INTERFACE_NAME,
                                                 expectedParticipantId,
                                                 providerQos,
-                                                Arrays.asList(CommunicationMiddleware.JOYNR)));
+                                                new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR }));
         ProviderQos providerQos2 = new ProviderQos();
         providerQos2.setPriority(Long.MIN_VALUE);
 
-        Address otherEndpointAddress = new ChannelAddress("otherChannelId");
         capabilitiesList.add(new DiscoveryEntry(domain,
                                                 TestInterface.INTERFACE_NAME,
                                                 "wrongParticipantId",
                                                 providerQos2,
-                                                Arrays.asList(CommunicationMiddleware.JOYNR)));
+                                                new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR }));
         long negativePriority = Long.MIN_VALUE;
         ProviderQos providerQos3 = new ProviderQos();
         providerQos3.setPriority(negativePriority);
 
-        Address thirdEndpointAddress = new ChannelAddress("thirdChannelId");
         capabilitiesList.add(new DiscoveryEntry(domain,
                                                 TestInterface.INTERFACE_NAME,
                                                 "thirdParticipantId",
                                                 providerQos3,
-                                                Arrays.asList(CommunicationMiddleware.JOYNR)));
+                                                new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR }));
 
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
 
@@ -350,7 +334,7 @@ public class ArbitrationTest {
                                                 TestInterface.INTERFACE_NAME,
                                                 expectedParticipantId,
                                                 providerQos,
-                                                Arrays.asList(CommunicationMiddleware.JOYNR)));
+                                                new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR }));
 
         // A provider with a higher priority that does not support onChangeSubscriptions
         ProviderQos providerQos2 = new ProviderQos();
@@ -364,7 +348,7 @@ public class ArbitrationTest {
                                                 TestInterface.INTERFACE_NAME,
                                                 "wrongParticipantId",
                                                 providerQos2,
-                                                Arrays.asList(CommunicationMiddleware.JOYNR)));
+                                                new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR }));
 
         // A provider with a higher priority that does not support onChangeSubscriptions
         ProviderQos providerQos3 = new ProviderQos();
@@ -378,7 +362,7 @@ public class ArbitrationTest {
                                                 TestInterface.INTERFACE_NAME,
                                                 "thirdParticipantId",
                                                 providerQos3,
-                                                Arrays.asList(CommunicationMiddleware.JOYNR)));
+                                                new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR }));
 
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
         discoveryQos.setProviderMustSupportOnChange(true);
@@ -408,7 +392,7 @@ public class ArbitrationTest {
                                                            TestInterface.INTERFACE_NAME,
                                                            expectedParticipantId,
                                                            providerQos,
-                                                           Arrays.asList(CommunicationMiddleware.JOYNR));
+                                                           new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR });
         capabilitiesList.add(discoveryEntry);
 
         ArbitrationStrategyFunction arbitrationStrategyFunction = mock(ArbitrationStrategyFunction.class);

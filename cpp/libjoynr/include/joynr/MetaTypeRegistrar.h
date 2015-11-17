@@ -138,8 +138,8 @@ void MetaTypeRegistrar::registerEnumMetaType()
 {
     {
         QMutexLocker locker(&publicationInterpretersMutex);
-        addEnumPublicationInterpreter<T>(qMetaTypeId<typename T::Enum>());
-        addEnumPublicationInterpreter<QList<T>>(qMetaTypeId<QList<typename T::Enum>>());
+        addEnumPublicationInterpreter<T>(Util::getTypeId<typename T::Enum>());
+        addEnumPublicationInterpreter<QList<T>>(Util::getTypeId<QList<typename T::Enum>>());
     }
 }
 

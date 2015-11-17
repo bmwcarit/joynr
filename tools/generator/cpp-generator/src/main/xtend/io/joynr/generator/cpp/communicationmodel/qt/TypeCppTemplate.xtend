@@ -1,4 +1,4 @@
-package io.joynr.generator.cpp.communicationmodel
+package io.joynr.generator.cpp.communicationmodel.qt
 /*
  * !!!
  *

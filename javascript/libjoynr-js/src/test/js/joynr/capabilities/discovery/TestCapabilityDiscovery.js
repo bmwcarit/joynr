@@ -423,7 +423,9 @@ joynrTestRequire(
                             var globalCapDirSpy =
                                     getSpiedLookupObjWithReturnValue(
                                             "globalCapDirSpy" + descriptor,
-                                            Promise.resolve(globalCapabilityInfos));
+                                            Promise.resolve({
+                                                result : globalCapabilityInfos
+                                            }));
 
                             var proxyBuilderSpy = jasmine.createSpyObj("proxyBuilderSpy", [
                                    "build"

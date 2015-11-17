@@ -5,10 +5,10 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(joynr-0.11.1)
+project(joynr-0.12.0)
 set(JOYNR_MAJOR_VERSION 0)
-set(JOYNR_MINOR_VERSION 11)
-set(JOYNR_PATCH_VERSION 1)
+set(JOYNR_MINOR_VERSION 12)
+set(JOYNR_PATCH_VERSION 0)
 set(
     JOYNR_VERSION
     ${JOYNR_MAJOR_VERSION}.${JOYNR_MINOR_VERSION}.${JOYNR_PATCH_VERSION}
@@ -261,9 +261,18 @@ include(ExternalProject)
 set_directory_properties(PROPERTIES EP_PREFIX ${CMAKE_BINARY_DIR}/ThirdParty)
 
 ### Add spdlog ###########################################################
+set(SPDLOG_SOURCE_URL "https://github.com/gabime/spdlog")
+set(SPDLOG_SOURCE_TYPE "GIT_REPOSITORY")
+if(SPDLOG_ROOT)
+    set(SPDLOG_SOURCE_URL "${SPDLOG_ROOT}")
+    set(SPDLOG_SOURCE_TYPE "URL")
+endif(SPDLOG_ROOT)
+message(STATUS "Using source for spdlog: ${SPDLOG_SOURCE_URL}")
+
+
 ExternalProject_Add(
     spdlog
-    GIT_REPOSITORY https://github.com/gabime/spdlog
+    ${SPDLOG_SOURCE_TYPE} "${SPDLOG_SOURCE_URL}"
     TIMEOUT 10
     # Disable svn update
     UPDATE_COMMAND ""
@@ -592,4 +601,3 @@ install(
 
 ######### Documentation settings ########
 #configure_file(${CMAKE_CURRENT_SOURCE_DIR}/doxygen.cfg.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
-

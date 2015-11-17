@@ -146,6 +146,8 @@ joynrTestRequire(
                                                 .createSpy("methodProvidedImpl"),
                                         operationWithEnumsAsInputAndOutput : jasmine
                                                 .createSpy("operationWithEnumsAsInputAndOutput"),
+                                        operationWithMultipleOutputParameters : jasmine
+                                                .createSpy("operationWithMultipleOutputParameters"),
                                         operationWithEnumsAsInputAndEnumArrayAsOutput : jasmine
                                                 .createSpy("operationWithEnumsAsInputAndEnumArrayAsOutput"),
                                         broadcastWithEnum : jasmine.createSpy("broadcastWithEnum")

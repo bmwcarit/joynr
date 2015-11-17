@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@
 #include "joynr/JsonSerializer.h"
 #include "joynr/IRequestInterpreter.h"
 #include "joynr/InterfaceRegistrar.h"
-#include "joynr/SubscriptionPublication.h"
 #include "joynr/DelayedScheduler.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/IPublicationSender.h"
@@ -38,7 +37,6 @@
 #include "joynr/LibjoynrSettings.h"
 
 #include "joynr/SubscriptionUtil.h"
-#include "joynr/exceptions.h"
 
 #include <QFile>
 #include <cassert>
@@ -821,24 +819,32 @@ void PublicationManager::sendPublicationError(
         std::shared_ptr<Publication> publication,
         std::shared_ptr<SubscriptionInformation> subscriptionInformation,
         std::shared_ptr<SubscriptionRequest> request,
-        const JoynrException& exception)
+        const exceptions::JoynrException& exception)
 {
-    /*
-     * TODO implement sendPublicationError
-     */
-    (void)publication;
-    (void)subscriptionInformation;
-    (void)request;
-    (void)exception;
+    LOG_DEBUG(logger, "sending subscription error");
+    SubscriptionPublication subscriptionPublication;
+    subscriptionPublication.setSubscriptionId(request->getSubscriptionId());
+    std::shared_ptr<exceptions::JoynrRuntimeException> error;
+    error.reset(dynamic_cast<exceptions::JoynrRuntimeException*>(exception.clone()));
+    if (error) {
+        subscriptionPublication.setError(error);
+    } else {
+        std::string errorMsg =
+                "Got unexpected exception from pollSubscription: " + exception.getMessage();
+        error.reset(new exceptions::JoynrRuntimeException(errorMsg));
+    }
+    sendSubscriptionPublication(
+            publication, subscriptionInformation, request, subscriptionPublication);
+    LOG_DEBUG(logger, "sent subscription error");
 }
 
-void PublicationManager::sendPublication(
+void PublicationManager::sendSubscriptionPublication(
         std::shared_ptr<Publication> publication,
         std::shared_ptr<SubscriptionInformation> subscriptionInformation,
         std::shared_ptr<SubscriptionRequest> request,
-        const QList<QVariant>& value)
+        SubscriptionPublication& subscriptionPublication)
 {
-    LOG_DEBUG(logger, "sending subscriptionreply");
+
     MessagingQos mQos;
 
     QMutexLocker publicationLocker(&(publication->mutex));
@@ -847,9 +853,6 @@ void PublicationManager::sendPublication(
 
     IPublicationSender* publicationSender = publication->sender;
 
-    SubscriptionPublication subscriptionPublication;
-    subscriptionPublication.setSubscriptionId(request->getSubscriptionId());
-    subscriptionPublication.setResponse(value);
     publicationSender->sendSubscriptionPublication(
             subscriptionInformation->getProviderId().toStdString(),
             subscriptionInformation->getProxyId().toStdString(),
@@ -864,7 +867,22 @@ void PublicationManager::sendPublication(
         QMutexLocker currentScheduledLocker(&currentScheduledPublicationsMutex);
         currentScheduledPublications.removeAll(request->getSubscriptionId());
     }
-    LOG_TRACE(logger, QString("sent subscriptionreply @ %1").arg(now));
+    LOG_TRACE(logger, QString("sent publication @ %1").arg(now));
+}
+
+void PublicationManager::sendPublication(
+        std::shared_ptr<Publication> publication,
+        std::shared_ptr<SubscriptionInformation> subscriptionInformation,
+        std::shared_ptr<SubscriptionRequest> request,
+        const QList<QVariant>& value)
+{
+    LOG_DEBUG(logger, "sending subscription reply");
+    SubscriptionPublication subscriptionPublication;
+    subscriptionPublication.setSubscriptionId(request->getSubscriptionId());
+    subscriptionPublication.setResponse(value);
+    sendSubscriptionPublication(
+            publication, subscriptionInformation, request, subscriptionPublication);
+    LOG_TRACE(logger, QString("sent subscription reply"));
 }
 
 void PublicationManager::pollSubscription(const QString& subscriptionId)
@@ -937,9 +955,9 @@ void PublicationManager::pollSubscription(const QString& subscriptionId)
             }
         };
 
-        std::function<void(const JoynrException&)> onError =
+        std::function<void(const exceptions::JoynrException&)> onError =
                 [publication, publicationInterval, qos, subscriptionRequest, this, subscriptionId](
-                        const JoynrException& exception) {
+                        const exceptions::JoynrException& exception) {
 
             sendPublicationError(publication, subscriptionRequest, subscriptionRequest, exception);
 
@@ -953,12 +971,26 @@ void PublicationManager::pollSubscription(const QString& subscriptionId)
         };
 
         LOG_DEBUG(logger, QString("run: executing requestInterpreter= %1").arg(attributeGetter));
-        requestInterpreter->execute(requestCaller,
-                                    attributeGetter,
-                                    QList<QVariant>(),
-                                    QList<QVariant>(),
-                                    onSuccess,
-                                    onError);
+        try {
+            requestInterpreter->execute(requestCaller,
+                                        attributeGetter,
+                                        QList<QVariant>(),
+                                        QList<QVariant>(),
+                                        onSuccess,
+                                        onError);
+            // ApplicationException is not possible for attributes in Franca
+        } catch (exceptions::ProviderRuntimeException& e) {
+            std::string message = "Could not perform pollSubscription, caught exception: " +
+                                  e.getTypeName() + ":" + e.getMessage();
+            LOG_ERROR(logger, message.c_str());
+            onError(e);
+        } catch (exceptions::JoynrRuntimeException& e) {
+            std::string message = "Could not perform an pollSubscription, caught exception: " +
+                                  e.getTypeName() + ":" + e.getMessage();
+            LOG_ERROR(logger, message.c_str());
+            onError(exceptions::ProviderRuntimeException("caught exception: " + e.getTypeName() +
+                                                         ":" + e.getMessage()));
+        }
     }
 }
 

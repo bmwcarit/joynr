@@ -1,5 +1,12 @@
 package joynr;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.fasterxml.jackson.databind.JsonMappingException;
+
 /*
  * #%L
  * %%
@@ -22,16 +29,6 @@ package joynr;
 import io.joynr.dispatcher.rpc.ReflectionUtils;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcReturn;
-
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.CheckForNull;
-
-import com.fasterxml.jackson.databind.JsonMappingException;
 
 /**
  * Value class representing a java method, that will later be called using reflection. Offers methods to access the
@@ -40,7 +37,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 public class MethodMetaInformation {
     private final Method method;
     private final List<JoynrRpcParam> joynrAnnotations;
-    private final JoynrRpcReturn returnAnnotation;
     private JoynrRpcCallback callbackAnnotation;
     private int callbackIndex = -1;
 
@@ -56,17 +52,12 @@ public class MethodMetaInformation {
 
                 if (findCallbackAnnotation(parameterAnnotation)) {
                     callbackIndex = i;
-                } else {
-                    joynrAnnotations.add(findJoynrRpcParam(parameterAnnotation));
                 }
-
             }
 
         } else {
             joynrAnnotations = null;
         }
-
-        returnAnnotation = ReflectionUtils.findReturnAnnotation(method);
     }
 
     private boolean findCallbackAnnotation(List<Annotation> parameterAnnotation) {
@@ -79,15 +70,6 @@ public class MethodMetaInformation {
             }
         }
         return false;
-    }
-
-    private JoynrRpcParam findJoynrRpcParam(List<Annotation> parameterAnnotation) throws JsonMappingException {
-        for (Annotation annotation : parameterAnnotation) {
-            if (annotation instanceof JoynrRpcParam) {
-                return ((JoynrRpcParam) annotation);
-            }
-        }
-        throw new JsonMappingException("all parameters of methods that are invoked using joynr RPC need to be annotated");
     }
 
     public Method getMethod() {
@@ -115,11 +97,6 @@ public class MethodMetaInformation {
             return true;
         }
         return false;
-    }
-
-    @CheckForNull
-    public JoynrRpcReturn getReturnAnnotation() {
-        return returnAnnotation;
     }
 
     public JoynrRpcCallback getCallbackAnnotation() {

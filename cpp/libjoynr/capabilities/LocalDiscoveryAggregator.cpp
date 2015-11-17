@@ -81,16 +81,15 @@ void LocalDiscoveryAggregator::setDiscoveryProxy(joynr::system::IDiscoverySync* 
 }
 
 // inherited from joynr::system::IDiscoverySync
-joynr::RequestStatus LocalDiscoveryAggregator::add(
-        const joynr::types::DiscoveryEntry& discoveryEntry)
+void LocalDiscoveryAggregator::add(const joynr::types::DiscoveryEntry& discoveryEntry)
 {
     if (discoveryProxy == NULL) {
-        return RequestStatus(RequestStatusCode::ERROR,
-                             "LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
-                             "local capabilitites directory.");
+        throw exceptions::JoynrRuntimeException(
+                "LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
+                "local capabilitites directory.");
     }
 
-    return discoveryProxy->add(discoveryEntry);
+    discoveryProxy->add(discoveryEntry);
 }
 
 void LocalDiscoveryAggregator::checkForLocalAvailabilityAndAddInProcessConnection(
@@ -106,56 +105,50 @@ void LocalDiscoveryAggregator::checkForLocalAvailabilityAndAddInProcessConnectio
 }
 
 // inherited from joynr::system::IDiscoverySync
-joynr::RequestStatus LocalDiscoveryAggregator::lookup(
-        std::vector<joynr::types::DiscoveryEntry>& result,
-        const std::string& domain,
-        const std::string& interfaceName,
-        const joynr::types::DiscoveryQos& discoveryQos)
+void LocalDiscoveryAggregator::lookup(std::vector<joynr::types::DiscoveryEntry>& result,
+                                      const std::string& domain,
+                                      const std::string& interfaceName,
+                                      const joynr::types::DiscoveryQos& discoveryQos)
 {
     if (discoveryProxy == NULL) {
-        return RequestStatus(RequestStatusCode::ERROR,
-                             "LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
-                             "local capabilitites directory.");
+        throw exceptions::JoynrRuntimeException(
+                "LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
+                "local capabilitites directory.");
     }
-    joynr::RequestStatus status(
-            discoveryProxy->lookup(result, domain, interfaceName, discoveryQos));
+    discoveryProxy->lookup(result, domain, interfaceName, discoveryQos);
 
     for (joynr::types::DiscoveryEntry& discoveryEntry : result) {
         checkForLocalAvailabilityAndAddInProcessConnection(discoveryEntry);
     }
-
-    return status;
 }
 
 // inherited from joynr::system::IDiscoverySync
-joynr::RequestStatus LocalDiscoveryAggregator::lookup(joynr::types::DiscoveryEntry& result,
-                                                      const std::string& participantId)
+void LocalDiscoveryAggregator::lookup(joynr::types::DiscoveryEntry& result,
+                                      const std::string& participantId)
 {
-    joynr::RequestStatus status(RequestStatusCode::OK);
     if (provisionedDiscoveryEntries.contains(participantId)) {
         result = joynr::types::QtDiscoveryEntry::createStd(
                 provisionedDiscoveryEntries.value(participantId));
     } else {
         if (discoveryProxy == NULL) {
-            return RequestStatus(RequestStatusCode::ERROR,
-                                 "LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
-                                 "local capabilitites directory.");
+            throw exceptions::JoynrRuntimeException(
+                    "LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
+                    "local capabilitites directory.");
         }
-        status = discoveryProxy->lookup(result, participantId);
+        discoveryProxy->lookup(result, participantId);
     }
     checkForLocalAvailabilityAndAddInProcessConnection(result);
-    return status;
 }
 
 // inherited from joynr::system::IDiscoverySync
-joynr::RequestStatus LocalDiscoveryAggregator::remove(const std::string& participantId)
+void LocalDiscoveryAggregator::remove(const std::string& participantId)
 {
     if (discoveryProxy == NULL) {
-        return RequestStatus(RequestStatusCode::ERROR,
-                             "LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
-                             "local capabilitites directory.");
+        throw exceptions::JoynrRuntimeException(
+                "LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
+                "local capabilitites directory.");
     }
-    return discoveryProxy->remove(participantId);
+    discoveryProxy->remove(participantId);
 }
 
 } // namespace joynr

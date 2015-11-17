@@ -24,7 +24,6 @@ import io.joynr.runtime.JoynrBaseModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 
 import java.io.IOException;
-import java.util.LinkedList;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -137,8 +136,7 @@ public class MessageSchedulerTest {
         sendMessageId = "msgId-" + UUID.randomUUID().toString();
 
         ChannelUrlInformation channelUrlInfo = new ChannelUrlInformation();
-        LinkedList<String> urls = new LinkedList<String>();
-        urls.add(bounceProxyUrl + "channels/" + channelId + "/");
+        String[] urls = { bounceProxyUrl + "channels/" + channelId + "/" };
         channelUrlInfo.setUrls(urls);
         Mockito.when(mockChannelUrlDir.getUrlsForChannel(channelId)).thenReturn(channelUrlInfo);
 

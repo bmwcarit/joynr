@@ -21,10 +21,6 @@ package io.joynr.accesscontrol;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-
-import java.util.Arrays;
-import java.util.Collections;
-
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
@@ -64,17 +60,19 @@ public class DomainAccessControlStoreTest {
     @Before
     public void setup() {
         // instantiate some template objects
-        expectedUserDomainRoleEntry = new DomainRoleEntry(UID1, Collections.<String> emptyList(), Role.OWNER);
+        expectedUserDomainRoleEntry = new DomainRoleEntry(UID1, new String[0], Role.OWNER);
         expectedMasterAccessControlEntry = new MasterAccessControlEntry(UID1,
                                                                         DOMAIN1,
                                                                         INTERFACE1,
                                                                         TrustLevel.LOW,
-                                                                        Arrays.asList(TrustLevel.MID, TrustLevel.LOW),
+                                                                        new TrustLevel[]{ TrustLevel.MID,
+                                                                                TrustLevel.LOW },
                                                                         TrustLevel.LOW,
-                                                                        Arrays.asList(TrustLevel.MID, TrustLevel.LOW),
+                                                                        new TrustLevel[]{ TrustLevel.MID,
+                                                                                TrustLevel.LOW },
                                                                         OPERATION1,
                                                                         Permission.NO,
-                                                                        Arrays.asList(Permission.ASK, Permission.NO));
+                                                                        new Permission[]{ Permission.ASK, Permission.NO });
         expectedOwnerAccessControlEntry = new OwnerAccessControlEntry(UID1,
                                                                       DOMAIN1,
                                                                       INTERFACE1,
@@ -163,7 +161,7 @@ public class DomainAccessControlStoreTest {
 
     @Test
     public void testGetEditableMasterAcl() throws Exception {
-        expectedUserDomainRoleEntry.setDomains(Arrays.asList(DOMAIN1));
+        expectedUserDomainRoleEntry.setDomains(new String[]{ DOMAIN1 });
         expectedUserDomainRoleEntry.setRole(Role.MASTER);
         store.updateDomainRole(expectedUserDomainRoleEntry);
         store.updateMasterAccessControlEntry(expectedMasterAccessControlEntry);
@@ -235,7 +233,7 @@ public class DomainAccessControlStoreTest {
 
     @Test
     public void testEditableOwnerAccessControlEntry() throws Exception {
-        expectedUserDomainRoleEntry.setDomains(Arrays.asList(DOMAIN1));
+        expectedUserDomainRoleEntry.setDomains(new String[]{ DOMAIN1 });
         store.updateDomainRole(expectedUserDomainRoleEntry);
         store.updateOwnerAccessControlEntry(expectedOwnerAccessControlEntry);
 

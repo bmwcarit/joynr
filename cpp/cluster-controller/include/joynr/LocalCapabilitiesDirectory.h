@@ -133,19 +133,27 @@ public:
     virtual void registerReceivedCapabilities(QMap<std::string, CapabilityEntry> capabilityEntries);
 
     // inherited method from joynr::system::DiscoveryProvider
-    virtual void add(const joynr::types::DiscoveryEntry& discoveryEntry,
-                     std::function<void()> onSuccess);
+    virtual void add(
+            const joynr::types::DiscoveryEntry& discoveryEntry,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError);
     // inherited method from joynr::system::DiscoveryProvider
     virtual void lookup(
             const std::string& domain,
             const std::string& interfaceName,
             const joynr::types::DiscoveryQos& discoveryQos,
-            std::function<void(const std::vector<joynr::types::DiscoveryEntry>& result)> onSuccess);
+            std::function<void(const std::vector<joynr::types::DiscoveryEntry>& result)> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError);
     // inherited method from joynr::system::DiscoveryProvider
-    virtual void lookup(const std::string& participantId,
-                        std::function<void(const joynr::types::DiscoveryEntry& result)> onSuccess);
+    virtual void lookup(
+            const std::string& participantId,
+            std::function<void(const joynr::types::DiscoveryEntry& result)> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError);
     // inherited method from joynr::system::DiscoveryProvider
-    virtual void remove(const std::string& participantId, std::function<void()> onSuccess);
+    virtual void remove(
+            const std::string& participantId,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError);
 
     /*
      * Objects that wish to receive provider register/unregister events can attach

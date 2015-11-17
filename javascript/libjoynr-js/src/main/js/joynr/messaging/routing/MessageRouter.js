@@ -244,8 +244,8 @@ define(
                     if (address === undefined && routingProxy !== undefined) {
                         return routingProxy.resolveNextHop({
                                 participantId : participantId
-                            }).then(function(success) {
-                                if (success) {
+                            }).then(function(opArgs) {
+                                if (opArgs.resolved) {
                                     return parentMessageRouterAddress;
                                 }
                                 throw new Error("nextHop cannot be resolved, as participant with id "

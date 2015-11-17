@@ -630,7 +630,11 @@ define(
                                                     return capabilityDiscovery.lookup(
                                                             opArgs.domain,
                                                             opArgs.interfaceName,
-                                                            opArgs.discoveryQos);
+                                                            opArgs.discoveryQos).then(function(caps){
+                                                                return {
+                                                                    result : caps
+                                                                };
+                                                            });
                                                 },
                                                 remove : function(opArgs) {
                                                     return capabilityDiscovery
@@ -669,7 +673,9 @@ define(
                                             return messageRouter.resolveNextHop(opArgs.participantId)
                                                     .then(function(address) {
                                                         var isResolved = address !== undefined;
-                                                        return isResolved;
+                                                        return {
+                                                            resolved: isResolved
+                                                        };
                                                     }).catch(function(error) {
                                                         return false;
                                                     });

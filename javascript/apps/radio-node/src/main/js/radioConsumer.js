@@ -118,30 +118,26 @@ var runInteractiveConsole =
                         rl.close();
                         break;
                     case MODES.ADD_FAVORITE_STATION.value:
-                        if (!input[1]) {
-                            log("please define a name");
-                        } else {
-                            var newFavoriteStation = new RadioStation({
-                                name : input[1],
-                                trafficService : true,
-                                country : Country.GERMANY
-                            });
+                        var newFavoriteStation = new RadioStation({
+                            name : input[1] || "",
+                            trafficService : true,
+                            country : Country.GERMANY
+                        });
 
-                            radioProxy.addFavoriteStation({newFavoriteStation: newFavoriteStation})
-                                .then(
-                                    function(returnValue) {
-                                        prettyLog("RPC: radioProxy.addFavoriteStation("
-                                            + JSON.stringify(newFavoriteStation)
-                                            + ") returned: "
-                                            + JSON.stringify(returnValue));
-                                    }).catch(
-                                    function(error) {
-                                        prettyLog("RPC: radioProxy.addFavoriteStation("
-                                            + JSON.stringify(newFavoriteStation)
-                                            + ") failed."
-                                            + error);
-                                    });
-                        }
+                        radioProxy.addFavoriteStation({newFavoriteStation: newFavoriteStation})
+                            .then(
+                                function(returnValue) {
+                                    prettyLog("RPC: radioProxy.addFavoriteStation("
+                                        + JSON.stringify(newFavoriteStation)
+                                        + ") returned: "
+                                        + JSON.stringify(returnValue));
+                                }).catch(
+                                function(error) {
+                                    prettyLog("RPC: radioProxy.addFavoriteStation("
+                                        + JSON.stringify(newFavoriteStation)
+                                        + ") failed."
+                                        + error);
+                                });
                         break;
                     case MODES.SHUFFLE_STATIONS.value:
                         radioProxy.shuffleStations().then(function() {
@@ -226,6 +222,7 @@ var provisioning = require("./provisioning_common.js");
 RadioStation = require("../generated/js/joynr/vehicle/RadioStation");
 Country = require("../generated/js/joynr/vehicle/Country");
 require("../generated/js/joynr/vehicle/GeoPosition");
+var AddFavoriteStationErrorEnum = require("../generated/js/joynr/vehicle/Radio/AddFavoriteStationErrorEnum");
 var RadioProxy = require("../generated/js/joynr/vehicle/RadioProxy.js");
 joynr.load(provisioning, function(error, loadedJoynr) {
     if (error) {

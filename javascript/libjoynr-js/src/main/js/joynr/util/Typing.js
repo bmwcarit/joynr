@@ -32,7 +32,6 @@ define("joynr/util/Typing", [
     translateJoynrTypeToJavascriptTypeTable[TypesEnum.FLOAT] = "Number";
     translateJoynrTypeToJavascriptTypeTable[TypesEnum.DOUBLE] = "Number";
     translateJoynrTypeToJavascriptTypeTable[TypesEnum.STRING] = "String";
-    translateJoynrTypeToJavascriptTypeTable[TypesEnum.LIST] = "Array";
 
     /**
      * @name Typing
@@ -68,6 +67,9 @@ define("joynr/util/Typing", [
             throw new Error("cannot determine javascript type of \"" + joynrType + "\"");
         }
 
+        if (joynrType.charAt(joynrType.length - 1) === ']') {
+            return "Array";
+        }
         return translateJoynrTypeToJavascriptTypeTable[joynrType] || joynrType;
     };
 

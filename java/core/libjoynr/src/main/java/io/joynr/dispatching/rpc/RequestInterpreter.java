@@ -1,5 +1,15 @@
 package io.joynr.dispatching.rpc;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.inject.Inject;
+
 /*
  * #%L
  * %%
@@ -27,31 +37,16 @@ import io.joynr.provider.Promise;
 import io.joynr.provider.PromiseListener;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.MethodSignature;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
 import joynr.Reply;
 import joynr.Request;
 import joynr.exceptions.MethodInvocationException;
 import joynr.exceptions.ProviderRuntimeException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.inject.Inject;
-
 public class RequestInterpreter {
     private static final Logger logger = LoggerFactory.getLogger(RequestInterpreter.class);
-    private ObjectMapper objectMapper;
 
     @Inject
-    public RequestInterpreter(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-
+    public RequestInterpreter() {
     }
 
     // use for caching because creation of MethodMetaInformation is expensive
@@ -95,24 +90,18 @@ public class RequestInterpreter {
         // A method is identified by its defining request caller, its name and the types of its arguments
         MethodSignature methodSignature = new MethodSignature(requestCaller,
                                                               request.getMethodName(),
-                                                              request.getFullyQualifiedParamDatatypes());
+                                                              request.getParamDatatypes());
 
         ensureMethodMetaInformationPresent(request, methodSignature);
 
         Method method = methodSignatureToMethodMap.get(methodSignature);
 
         Object[] params = null;
-
-        if (method.getParameterTypes().length > 0) {
-            // method with parameters
-            params = request.getParams();
-            Class<?>[] parameterTypes = method.getParameterTypes();
-            for (int i = 0; i < params.length; i++) {
-                params[i] = objectMapper.convertValue(params[i], parameterTypes[i]);
-            }
-        }
-
         try {
+            if (method.getParameterTypes().length > 0) {
+                // method with parameters
+                params = request.getParams();
+            }
             return method.invoke(requestCaller, params);
         } catch (IllegalAccessException e) {
             logger.error("RequestInterpreter: Received an RPC invocation for a non public method {}", request);
@@ -131,7 +120,7 @@ public class RequestInterpreter {
                 Method method;
                 method = ReflectionUtils.findMethodByParamTypeNames(methodSignature.getRequestCaller().getClass(),
                                                                     methodSignature.getMethodName(),
-                                                                    methodSignature.getFullyQualifiedParameterTypeNames());
+                                                                    methodSignature.getParameterTypeNames());
                 methodSignatureToMethodMap.putIfAbsent(methodSignature, method);
             }
         } catch (NoSuchMethodException e) {

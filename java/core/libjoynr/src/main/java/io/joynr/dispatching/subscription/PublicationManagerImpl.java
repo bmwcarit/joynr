@@ -21,10 +21,10 @@ package io.joynr.dispatching.subscription;
 
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import io.joynr.dispatcher.rpc.ReflectionUtils;
+import io.joynr.dispatching.CallerDirectoryListener;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.RequestCaller;
 import io.joynr.dispatching.RequestCallerDirectory;
-import io.joynr.dispatching.CallerDirectoryListener;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -52,9 +52,9 @@ import java.util.concurrent.TimeUnit;
 import joynr.BroadcastFilterParameters;
 import joynr.BroadcastSubscriptionRequest;
 import joynr.OnChangeSubscriptionQos;
-import joynr.OnChangeWithKeepAliveSubscriptionQos;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
+import joynr.exceptions.ProviderRuntimeException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -194,9 +194,9 @@ public class PublicationManagerImpl implements PublicationManager, CallerDirecto
             triggerPublication(publicationInformation, requestCaller, method);
 
             boolean hasSubscriptionHeartBeat = subscriptionQos instanceof HeartbeatSubscriptionInformation;
-            boolean isKeepAliveSubscription = subscriptionQos instanceof OnChangeWithKeepAliveSubscriptionQos;
+            boolean isOnChangeSubscription = subscriptionQos instanceof OnChangeSubscriptionQos;
 
-            if (hasSubscriptionHeartBeat || isKeepAliveSubscription) {
+            if (hasSubscriptionHeartBeat || isOnChangeSubscription) {
                 final PublicationTimer timer = new PublicationTimer(publicationInformation,
                                                                     method,
                                                                     requestCaller,
@@ -235,7 +235,8 @@ public class PublicationManagerImpl implements PublicationManager, CallerDirecto
                                                     String providerParticipantId,
                                                     BroadcastSubscriptionRequest subscriptionRequest,
                                                     RequestCaller requestCaller) {
-        logger.info("adding broadcast publication: " + subscriptionRequest.toString());
+        logger.debug("adding broadcast publication: " + subscriptionRequest.toString());
+
         BroadcastListener broadcastListener = new BroadcastListenerImpl(subscriptionRequest.getSubscriptionId(), this);
         String broadcastName = subscriptionRequest.getSubscribedToName();
         requestCaller.registerBroadcastListener(broadcastName, broadcastListener);
@@ -268,10 +269,10 @@ public class PublicationManagerImpl implements PublicationManager, CallerDirecto
             // See if the publications for this subscription are already handled
             final String subscriptionId = subscriptionRequest.getSubscriptionId();
             if (publicationExists(subscriptionId)) {
-                logger.info("updating publication: " + subscriptionRequest.toString());
+                logger.debug("updating publication: " + subscriptionRequest.toString());
                 removePublication(subscriptionId);
             } else {
-                logger.info("adding publication: " + subscriptionRequest.toString());
+                logger.debug("adding publication: " + subscriptionRequest.toString());
             }
 
             subscriptionId2PublicationInformation.put(subscriptionId, publicationInformation);
@@ -291,14 +292,14 @@ public class PublicationManagerImpl implements PublicationManager, CallerDirecto
 
                     @Override
                     public void run() {
-                        logger.info("Publication with Id " + subscriptionId + " expired...");
+                        logger.debug("Publication with Id " + subscriptionId + " expired...");
                         removePublication(subscriptionId);
                     }
 
                 }, subscriptionEndDelay, TimeUnit.MILLISECONDS);
                 subscriptionEndFutures.put(subscriptionId, subscriptionEndFuture);
             }
-            logger.info("publication added: " + subscriptionRequest.toString());
+            logger.debug("publication added: " + subscriptionRequest.toString());
         } catch (Exception e) {
             JoynrRuntimeException error = new JoynrRuntimeException("Error processing subscription request ("
                     + subscriptionRequest + "): " + e);
@@ -325,7 +326,7 @@ public class PublicationManagerImpl implements PublicationManager, CallerDirecto
                                    subscriptionRequest,
                                    requestCallerDirectory.getCaller(providerParticipantId));
         } else {
-            logger.info("Adding subscription request for non existing provider to queue.");
+            logger.debug("Adding subscription request for non existing provider to queue.");
             PublicationInformation publicationInformation = new PublicationInformation(providerParticipantId,
                                                                                        proxyParticipantId,
                                                                                        subscriptionRequest);
@@ -483,8 +484,8 @@ public class PublicationManagerImpl implements PublicationManager, CallerDirecto
                     sendPublication(publication, publicationInformation);
                 }
 
-                logger.info("attribute changed for subscription id: {} sending publication if delay > minInterval.",
-                            subscriptionId);
+                logger.debug("attribute changed for subscription id: {} sending publication if delay > minInterval.",
+                             subscriptionId);
             }
 
         } else {
@@ -500,9 +501,18 @@ public class PublicationManagerImpl implements PublicationManager, CallerDirecto
             PublicationInformation publicationInformation = subscriptionId2PublicationInformation.get(subscriptionId);
 
             if (processFilterChain(publicationInformation, filters, values)) {
-                sendPublication(prepareBroadcastPublication(Arrays.asList(values), subscriptionId),
-                                publicationInformation);
-                logger.info("event occured changed for subscription id: {} sending publication: ", subscriptionId);
+                long minInterval = ((OnChangeSubscriptionQos) publicationInformation.getQos()).getMinInterval();
+                if (minInterval <= System.currentTimeMillis()
+                        - publicationInformation.getState().getTimeOfLastPublication()) {
+                    sendPublication(prepareBroadcastPublication(Arrays.asList(values), subscriptionId),
+                                    publicationInformation);
+                    logger.debug("event occured changed for subscription id: {} sending publication: ", subscriptionId);
+                } else {
+                    logger.debug("Two subsequent broadcasts of event " + publicationInformation.getSubscribedToName()
+                            + " occured within minInterval of subscription with id "
+                            + publicationInformation.getSubscriptionId()
+                            + ". Event will not be sent to the subscribing client.");
+                }
             }
 
         } else {
@@ -580,7 +590,7 @@ public class PublicationManagerImpl implements PublicationManager, CallerDirecto
         }
     }
 
-    private void sendPublicationError(JoynrException error, PublicationInformation publicationInformation) {
+    private void sendPublicationError(JoynrRuntimeException error, PublicationInformation publicationInformation) {
         SubscriptionPublication publication = new SubscriptionPublication(error,
                                                                           publicationInformation.getSubscriptionId());
         sendPublication(publication, publicationInformation);
@@ -595,7 +605,13 @@ public class PublicationManagerImpl implements PublicationManager, CallerDirecto
 
                 @Override
                 public void onRejection(JoynrException error) {
-                    sendPublicationError(error, publicationInformation);
+                    if (error instanceof JoynrRuntimeException) {
+                        sendPublicationError((JoynrRuntimeException) error, publicationInformation);
+                    } else {
+                        sendPublicationError(new ProviderRuntimeException("Unexpected exception while calling getter for attribute "
+                                                     + publicationInformation.getSubscribedToName()),
+                                             publicationInformation);
+                    }
 
                 }
 
@@ -632,6 +648,7 @@ public class PublicationManagerImpl implements PublicationManager, CallerDirecto
                                                publicationInformation.proxyParticipantId,
                                                publication,
                                                messagingQos);
+        publicationInformation.getState().updateTimeOfLastPublication();
     }
 
     @Override

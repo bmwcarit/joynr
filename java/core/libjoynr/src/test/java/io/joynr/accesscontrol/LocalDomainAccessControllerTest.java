@@ -39,7 +39,6 @@ import io.joynr.proxy.ProxyInvocationHandler;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
 
 import joynr.OnChangeSubscriptionQos;
 import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.DomainRoleEntryChangedBroadcastFilterParameters;
@@ -107,17 +106,17 @@ public class LocalDomainAccessControllerTest {
                                                                                                       libjoynrMessagingAddress));
 
         // instantiate some template objects
-        userDre = new DomainRoleEntry(UID1, Arrays.asList(DOMAIN1), Role.OWNER);
+        userDre = new DomainRoleEntry(UID1, new String[]{ DOMAIN1 }, Role.OWNER);
         masterAce = new MasterAccessControlEntry(UID1,
                                                  DOMAIN1,
                                                  INTERFACE1,
                                                  TrustLevel.LOW,
-                                                 Arrays.asList(TrustLevel.MID, TrustLevel.LOW),
+                                                 new TrustLevel[]{ TrustLevel.MID, TrustLevel.LOW },
                                                  TrustLevel.LOW,
-                                                 Arrays.asList(TrustLevel.MID, TrustLevel.LOW),
+                                                 new TrustLevel[]{ TrustLevel.MID, TrustLevel.LOW },
                                                  OPEARATION1,
                                                  Permission.NO,
-                                                 Arrays.asList(Permission.ASK, Permission.NO));
+                                                 new Permission[]{ Permission.ASK, Permission.NO });
         ownerAce = new OwnerAccessControlEntry(UID1,
                                                DOMAIN1,
                                                INTERFACE1,
