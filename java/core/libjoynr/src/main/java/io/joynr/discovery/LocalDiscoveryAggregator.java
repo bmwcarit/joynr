@@ -22,6 +22,7 @@ package io.joynr.discovery;
 import java.util.HashMap;
 
 import io.joynr.runtime.SystemServicesSettings;
+import joynr.system.Routing;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,13 +52,23 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
     @Inject
     public LocalDiscoveryAggregator(@Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
                                     @Named(SystemServicesSettings.PROPERTY_CC_DISCOVERY_PROVIDER_PARTICIPANT_ID) String discoveryProviderParticipantId,
+                                    @Named(SystemServicesSettings.PROPERTY_CC_ROUTING_PROVIDER_PARTICIPANT_ID) String routingProviderParticipantId,
                                     @Named(ConfigurableMessagingSettings.PROPERTY_CC_CONNECTION_TYPE) CommunicationMiddleware clusterControllerConnection) {
         provisionedDiscoveryEntries.put(systemServicesDomain + DiscoveryProvider.INTERFACE_NAME,
                                         new DiscoveryEntry(systemServicesDomain,
                                                            DiscoveryProvider.INTERFACE_NAME,
                                                            discoveryProviderParticipantId,
                                                            new ProviderQos(),
-                                                           new CommunicationMiddleware[] {clusterControllerConnection}));
+                                                           new CommunicationMiddleware[]{
+                                                                   clusterControllerConnection }));
+        //provision routing provider to prevent lookup via discovery proxy during startup.
+        provisionedDiscoveryEntries.put(systemServicesDomain + Routing.INTERFACE_NAME,
+                                        new DiscoveryEntry(systemServicesDomain,
+                                                           Routing.INTERFACE_NAME,
+                                                           routingProviderParticipantId,
+                                                           new ProviderQos(),
+                                                           new CommunicationMiddleware[]{
+                                                                   clusterControllerConnection }));
     }
 
     public void setDiscoveryProxy(DiscoveryProxy discoveryProxy) {
@@ -68,19 +79,11 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
     @Override
     public Future<Void> add(Callback<Void> callback,
                             DiscoveryEntry discoveryEntry) {
-        if (provisionedDiscoveryEntries.containsKey(discoveryEntry.getDomain() + discoveryEntry.getInterfaceName())) {
-            logger.debug("Skipping registration of provisioned provider: " + discoveryEntry);
-            Future<Void> future = new Future<>();
-            future.resolve();
-            callback.resolve();
-            return future;
-        } else {
             if (discoveryProxy == null) {
                 throw new JoynrRuntimeException("LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
                         + "local capabilitites directory.");
             }
             return discoveryProxy.add(callback, discoveryEntry);
-        }
     }
 
     @Override

@@ -62,6 +62,7 @@ public class LocalDiscoveryAggregatorTest {
         clusterControllerConnection = CommunicationMiddleware.NONE;
         localDiscoveryAggregator = new LocalDiscoveryAggregator(systemServicesDomain,
                                                                 discoveryProviderParticipantId,
+                                                                "routingProviderParticipantId",
                                                                 clusterControllerConnection);
         localDiscoveryAggregator.setDiscoveryProxy(discoveryProxyMock);
         discoveryProviderEntry = new DiscoveryEntry(systemServicesDomain,
@@ -70,14 +71,6 @@ public class LocalDiscoveryAggregatorTest {
                                                     new ProviderQos(),
                                                     new CommunicationMiddleware[]{ clusterControllerConnection });
 
-    }
-
-    @Test
-    public void doesNotPassProvisionedEntry() {
-        localDiscoveryAggregator.add(addCallback, discoveryProviderEntry);
-        Mockito.verify(discoveryProxyMock, Mockito.never()).add(Mockito.any(Callback.class),
-                                                                Mockito.any(DiscoveryEntry.class));
-        Mockito.verify(addCallback).resolve();
     }
 
     @Test

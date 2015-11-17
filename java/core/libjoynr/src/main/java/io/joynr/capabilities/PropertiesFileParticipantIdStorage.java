@@ -36,6 +36,7 @@ import joynr.infrastructure.GlobalCapabilitiesDirectoryProvider;
 import joynr.infrastructure.GlobalDomainAccessControllerProvider;
 
 import joynr.system.DiscoveryProvider;
+import joynr.system.RoutingProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +53,8 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
     private String channelUrlDirectoryParticipantId;
     private String capabilitiesDirectoryParticipantId;
     private String domainAccessControllerParticipantId;
-    private String discoveryProviderParticipantId;;
+    private String discoveryProviderParticipantId;
+    private String routingProviderParticipantId;;
 
     @Inject
     public PropertiesFileParticipantIdStorage(@Named(MessagingPropertyKeys.JOYNR_PROPERTIES) Properties joynrProperties,
@@ -60,13 +62,15 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
                                               @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_PARTICIPANT_ID) String channelUrlDirectoryParticipantId,
                                               @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID) String capabilitiesDirectoryParticipantId,
                                               @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID) String domainAccessControllerParticipantId,
-                                              @Named(SystemServicesSettings.PROPERTY_CC_DISCOVERY_PROVIDER_PARTICIPANT_ID) String discoveryProviderParticipantId) {
+                                              @Named(SystemServicesSettings.PROPERTY_CC_DISCOVERY_PROVIDER_PARTICIPANT_ID) String discoveryProviderParticipantId,
+                                              @Named(SystemServicesSettings.PROPERTY_CC_ROUTING_PROVIDER_PARTICIPANT_ID) String routingProviderParticipantId) {
         this.joynrProperties = joynrProperties;
         this.persistenceFileName = persistenceFileName;
         this.channelUrlDirectoryParticipantId = channelUrlDirectoryParticipantId;
         this.capabilitiesDirectoryParticipantId = capabilitiesDirectoryParticipantId;
         this.domainAccessControllerParticipantId = domainAccessControllerParticipantId;
         this.discoveryProviderParticipantId = discoveryProviderParticipantId;
+        this.routingProviderParticipantId = routingProviderParticipantId;
         File persistenceFile = new File(persistenceFileName);
         persistedParticipantIds = new LowerCaseProperties(PropertyLoader.loadProperties(persistenceFile));
     }
@@ -100,6 +104,8 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
             participantId = domainAccessControllerParticipantId;
         } else if (DiscoveryProvider.class.isAssignableFrom(providedInterface)) {
             participantId = discoveryProviderParticipantId;
+        } else if (RoutingProvider.class.isAssignableFrom(providedInterface)) {
+            participantId = routingProviderParticipantId;
         } else {
 
             participantId = UUID.randomUUID().toString();
