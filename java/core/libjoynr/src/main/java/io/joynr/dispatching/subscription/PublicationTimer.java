@@ -37,6 +37,7 @@ import java.util.TimerTask;
 
 import joynr.OnChangeSubscriptionQos;
 import joynr.SubscriptionPublication;
+import joynr.exceptions.ProviderRuntimeException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -119,7 +120,12 @@ public class PublicationTimer extends PubSubTimerBase {
 
                             @Override
                             public void onRejection(JoynrException error) {
-                                sendPublicationError(error);
+                                if (error instanceof JoynrRuntimeException) {
+                                    sendPublicationError((JoynrRuntimeException) error);
+                                } else {
+                                    sendPublicationError(new ProviderRuntimeException("Unexpected exception while calling getter for attribute "
+                                            + publicationInformation.getSubscribedToName()));
+                                }
                             }
 
                             @Override
@@ -147,7 +153,7 @@ public class PublicationTimer extends PubSubTimerBase {
         }
     }
 
-    private void sendPublicationError(JoynrException error) {
+    private void sendPublicationError(JoynrRuntimeException error) {
         SubscriptionPublication publication = new SubscriptionPublication(error,
                                                                           publicationInformation.getSubscriptionId());
         sendPublication(publication);

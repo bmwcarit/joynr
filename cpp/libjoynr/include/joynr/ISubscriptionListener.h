@@ -54,7 +54,7 @@ public:
      * Since the onError callback is called by a communication middleware thread, it should not
      * be blocked, wait for user interaction, or do larger computation.
      */
-    virtual void onError() = 0;
+    virtual void onError(const exceptions::JoynrRuntimeException& error) = 0;
 };
 
 } // namespace joynr

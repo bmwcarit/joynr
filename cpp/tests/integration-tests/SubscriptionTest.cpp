@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,7 +65,7 @@ public:
                 [this](const RequestStatus& status, const types::Localisation::QtGpsLocation& location) {
                     mockCallback->onSuccess(location);
                 },
-                [] (const RequestStatus status){
+                [] (const RequestStatus status, std::shared_ptr<exceptions::JoynrException> error){
                 })),
         mockGpsLocationListener(new MockSubscriptionListenerOneType<types::Localisation::QtGpsLocation>()),
         mockTestEnumSubscriptionListener(new MockSubscriptionListenerOneType<tests::testTypes::QtTestEnum::Enum>()),
@@ -306,7 +306,7 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription) {
     EXPECT_CALL(
             *mockRequestCaller,
             getLocation(A<std::function<void(const types::Localisation::GpsLocation&)>>(),
-                        A<std::function<void(const joynr::JoynrException&)>>())
+                        A<std::function<void(const joynr::exceptions::ProviderRuntimeException&)>>())
     )
             .WillOnce(DoAll(
                     Invoke(mockRequestCaller.get(), &MockTestRequestCaller::invokeLocationOnSuccessFct),
@@ -359,7 +359,8 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam) {
 
     EXPECT_CALL(
             *provider,
-            getListOfStrings(A<std::function<void(const std::vector<std::string> &)>>())
+            getListOfStrings(A<std::function<void(const std::vector<std::string> &)>>(),
+                    A<std::function<void(const joynr::exceptions::ProviderRuntimeException&)>>())
     )
             .WillOnce(DoAll(
                     Invoke(provider.get(), &MockTestProvider::invokeListOfStringsOnSuccess),

@@ -63,9 +63,18 @@ public:
                                          .arg(QString::fromStdString(value.toString())));
     }
 
-    void onError()
+    void onError(const exceptions::JoynrRuntimeException& error)
     {
-        MyRadioHelper::prettyLog(logger, QString("ATTRIBUTE SUBSCRIPTION Publication Missed"));
+        if (error.getTypeName() == exceptions::PublicationMissedException::TYPE_NAME) {
+            MyRadioHelper::prettyLog(
+                    logger,
+                    QString("ATTRIBUTE SUBSCRIPTION Publication Missed, subscriptionId: %1")
+                            .arg(QString::fromStdString(error.getMessage())));
+        } else {
+            MyRadioHelper::prettyLog(logger,
+                                     QString("ATTRIBUTE SUBSCRIPTION error: %1")
+                                             .arg(QString::fromStdString(error.getMessage())));
+        }
     }
 
 private:
@@ -195,8 +204,11 @@ int main(int argc, char* argv[])
                                          ->build();
 
     vehicle::RadioStation currentStation;
-    RequestStatus status(proxy->getCurrentStation(currentStation));
-    assert(status.successful());
+    try {
+        proxy->getCurrentStation(currentStation);
+    } catch (exceptions::JoynrException& e) {
+        assert(false);
+    }
     MyRadioHelper::prettyLog(
             logger,
             QString("ATTRIBUTE GET: %1").arg(QString::fromStdString(currentStation.toString())));
@@ -284,10 +296,45 @@ int main(int argc, char* argv[])
     // add favorite radio station
     vehicle::RadioStation favoriteStation("99.3 The Fox Rocks", false, vehicle::Country::CANADA);
     bool success;
-    proxy->addFavoriteStation(success, favoriteStation);
-    MyRadioHelper::prettyLog(logger,
-                             QString("METHOD: added favorite station: %1")
-                                     .arg(QString::fromStdString(favoriteStation.toString())));
+    try {
+        proxy->addFavoriteStation(success, favoriteStation);
+        MyRadioHelper::prettyLog(logger,
+                                 QString("METHOD: added favorite station: %1")
+                                         .arg(QString::fromStdString(favoriteStation.toString())));
+        proxy->addFavoriteStation(success, favoriteStation);
+    } catch (exceptions::ApplicationException& e) {
+        if (e.getError() ==
+            joynr::vehicle::Radio::AddFavoriteStationErrorEnum::DUPLICATE_RADIOSTATION) {
+            MyRadioHelper::prettyLog(
+                    logger,
+                    QString("METHOD: add favorite station a second time failed with the following "
+                            "expected exception: %1").arg(QString::fromStdString(e.getName())));
+        } else {
+            MyRadioHelper::prettyLog(
+                    logger,
+                    QString("METHOD: add favorite station a second time failed with the following "
+                            "UNEXPECTED exception: %1").arg(QString::fromStdString(e.getName())));
+        }
+    }
+
+    try {
+        favoriteStation.setName("");
+        proxy->addFavoriteStation(success, favoriteStation);
+    } catch (exceptions::ProviderRuntimeException& e) {
+        if (e.getMessage() == MyRadioHelper::MISSING_NAME()) {
+            MyRadioHelper::prettyLog(
+                    logger,
+                    QString("METHOD: add favorite station with empty name failed with the "
+                            "following "
+                            "expected exception: %1").arg(QString::fromStdString(e.getMessage())));
+        } else {
+            MyRadioHelper::prettyLog(logger,
+                                     QString("METHOD: add favorite station with empty name failed "
+                                             "with the following "
+                                             "UNEXPECTED exception: %1")
+                                             .arg(QString::fromStdString(e.getMessage())));
+        }
+    }
 
     // shuffle the stations
     MyRadioHelper::prettyLog(logger, QString("METHOD: calling shuffle stations"));

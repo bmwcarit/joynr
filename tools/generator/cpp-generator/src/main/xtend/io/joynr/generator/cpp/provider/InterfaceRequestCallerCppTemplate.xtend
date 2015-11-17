@@ -23,6 +23,7 @@ import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
+import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
@@ -34,6 +35,7 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 	@Inject private extension JoynrCppGeneratorExtensions
 	@Inject private extension NamingUtil
 	@Inject private extension AttributeUtil
+	@Inject private extension InterfaceUtil
 	@Inject private extension MethodUtil
 
 	override generate(FInterface serviceInterface)
@@ -71,14 +73,10 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 						const «returnType»& «attributeName.toFirstLower»
 				)> onSuccess,
 				std::function<void(
-						const JoynrException&
+						const exceptions::ProviderRuntimeException&
 				)> onError
 		) {
-			/*
-			 * TODO: forward the onError callback to the provider. This code comes with subsequent patches
-			 */
-			(void) onError;
-			provider->get«attributeName.toFirstUpper»(onSuccess);
+			provider->get«attributeName.toFirstUpper»(onSuccess, onError);
 		}
 	«ENDIF»
 	«IF attribute.writable»
@@ -86,18 +84,15 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 				const «returnType»& «attributeName.toFirstLower»,
 				std::function<void()> onSuccess,
 				std::function<void(
-						const JoynrException&
+						const exceptions::ProviderRuntimeException&
 				)> onError
 		) {
-			/*
-			 * TODO: forward the onError callback to the provider. This code comes with subsequent patches
-			 */
-			(void) onError;
-			provider->set«attributeName.toFirstUpper»(«attributeName.toFirstLower», onSuccess);
+			provider->set«attributeName.toFirstUpper»(«attributeName.toFirstLower», onSuccess, onError);
 		}
 	«ENDIF»
 
 «ENDFOR»
+«val methodToErrorEnumName = serviceInterface.methodToErrorEnumName»
 «IF !serviceInterface.methods.empty»
 	// methods
 «ENDIF»
@@ -116,16 +111,37 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 				)> onSuccess,
 			«ENDIF»
 			std::function<void(
-					const JoynrException&
+					const exceptions::JoynrException&
 			)> onError
 	) {
-		/*
-		 * TODO: forward the onError callback to the provider. This code comes with subsequent patches
-		 */
-		(void) onError;
+		«IF method.hasErrorEnum»
+			«IF method.errors != null»
+				«val packagePath = getPackagePathWithJoynrPrefix(method.errors, "::")»
+				«val errorTypeName = packagePath + "::" + methodToErrorEnumName.get(method)»
+				std::function<void (const «errorTypeName»::«nestedEnumName»&)> onErrorWrapper =
+						[onError] (const «errorTypeName»::«nestedEnumName»& errorEnum) {
+							std::string typeName = «errorTypeName»::getTypeName();
+							std::string name = «errorTypeName»::getLiteral(errorEnum);
+			«ELSE»
+				«val errorTypeName = buildPackagePath(method.errorEnum, "::", true) + method.errorEnum.joynrName»
+				std::function<void (const «errorTypeName»::«nestedEnumName»&)> onErrorWrapper =
+						[onError] (const «errorTypeName»::«nestedEnumName»& errorEnum) {
+							std::string typeName = «errorTypeName»::getTypeName();
+							std::string name = «errorTypeName»::getLiteral(errorEnum);
+			«ENDIF»
+						onError(exceptions::ApplicationException(name, errorEnum, name, typeName));
+					};
+		«ELSE»
+		std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onErrorWrapper =
+				[onError] (const joynr::exceptions::ProviderRuntimeException& error) {
+					onError(error);
+				};
+		«ENDIF»
+		
 		provider->«methodName»(
 				«IF !method.inputParameters.empty»«inputUntypedParamList»,«ENDIF»
-				onSuccess
+				onSuccess,
+				onErrorWrapper
 		);
 	}
 

@@ -20,6 +20,7 @@
 #define REPLY_H
 
 #include "joynr/JoynrCommonExport.h"
+#include "joynr/exceptions/JoynrException.h"
 
 #include <QObject>
 #include <QString>
@@ -52,9 +53,13 @@ public:
     QList<QVariant> getResponse() const;
     void setResponse(QList<QVariant> response);
 
+    std::shared_ptr<exceptions::JoynrException> getError() const;
+    void setError(std::shared_ptr<exceptions::JoynrException> error);
+
 private:
     QString requestReplyId;
     QList<QVariant> response;
+    std::shared_ptr<exceptions::JoynrException> error;
 };
 
 } // namespace joynr

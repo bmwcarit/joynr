@@ -22,20 +22,20 @@ set -e
 (
 	log "INSTALL BASE MODEL"
 	cd basemodel
-	mvn clean install -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests -o
+	mvn clean install -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests
 )
 
 (
 	log "INSTALL FRANCA"
 	cd tools/generator
-	mvn clean install -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests -o
+	mvn clean install -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests
 )
 
 
 (
 	log "INSTALL GENERATOR AND GENERATE CPP SOURCES, ALSO FOR USE OF LATER BUILD STEPS"
 	cd cpp
-	mvn clean install -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests -o
+	mvn clean install -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests
 )
 
 END=$(date +%s)

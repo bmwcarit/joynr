@@ -77,23 +77,24 @@ public:
                 joynr::types::CommunicationMiddleware::JOYNR};
         joynr::types::DiscoveryEntry entry(
                 domain, interfaceName, participantId, provider->getProviderQos(), connections);
-        joynr::RequestStatus status(discoveryProxy.add(entry));
-        if (!status.successful()) {
+        try {
+            discoveryProxy.add(entry);
+        } catch (exceptions::JoynrException& e) {
             LOG_ERROR(logger,
                       QString("Unable to add provider (participant ID: %1, domain: %2, interface: "
                               "%3) "
-                              "to discovery. Status code: %4.")
+                              "to discovery. Error: %4.")
                               .arg(QString::fromStdString(participantId))
                               .arg(QString::fromStdString(domain))
                               .arg(QString::fromStdString(interfaceName))
-                              .arg(QString::fromStdString(status.getCode().toString())));
+                              .arg(QString::fromStdString(e.getMessage())));
         }
 
         // add next hop to dispatcher
         std::shared_ptr<joynr::Future<void>> future(new Future<void>());
         auto onSuccess = [future]() { future->onSuccess(); };
         messageRouter->addNextHop(participantId, dispatcherAddress, onSuccess);
-        future->waitForFinished();
+        future->wait();
 
         return participantId;
     }
@@ -119,8 +120,9 @@ public:
             currentDispatcher->removeRequestCaller(participantId);
         }
 
-        joynr::RequestStatus status(discoveryProxy.remove(participantId));
-        if (!status.successful()) {
+        try {
+            discoveryProxy.remove(participantId);
+        } catch (exceptions::JoynrException& e) {
             LOG_ERROR(logger,
                       QString("Unable to remove provider (participant ID: %1, domain: %2, "
                               "interface: %3) "
@@ -128,13 +130,13 @@ public:
                               .arg(QString::fromStdString(participantId))
                               .arg(QString::fromStdString(domain))
                               .arg(QString::fromStdString(interfaceName))
-                              .arg(QString::fromStdString(status.getCode().toString())));
+                              .arg(QString::fromStdString(e.getMessage())));
         }
 
         std::shared_ptr<joynr::Future<void>> future(new Future<void>());
         auto callbackFct = [future]() { future->onSuccess(); };
         messageRouter->removeNextHop(participantId, callbackFct);
-        future->waitForFinished();
+        future->wait();
 
         if (!future->getStatus().successful()) {
             LOG_ERROR(logger,

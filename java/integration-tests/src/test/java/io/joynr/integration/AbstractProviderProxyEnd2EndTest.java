@@ -460,7 +460,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
         Future<String> future = proxy.sayHello(callback);
-        String answer = future.getReply(30000);
+        String answer = future.get(30000);
         Assert.assertEquals(RequestStatusCode.OK, future.getStatus().getCode());
         String expected = "Hello";
         Assert.assertEquals(expected, answer);
@@ -471,7 +471,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         // needed on jenkins
         Callback<String> callback2 = mock(Callback.class);
         Future<String> future2 = proxy.toLowerCase(callback2, "Argument");
-        String answer2 = future2.getReply(30000);
+        String answer2 = future2.get(30000);
         Assert.assertEquals(RequestStatusCode.OK, future2.getStatus().getCode());
         String expected2 = "argument";
 
@@ -550,7 +550,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
             }
         });
 
-        MethodWithMultipleOutputParametersReturned reply = future.getReply();
+        MethodWithMultipleOutputParametersReturned reply = future.get();
         Assert.assertEquals(TEST_INTEGER, reply.aNumber);
         Assert.assertEquals(TEST_STRING, reply.aString);
         Assert.assertEquals(TEST_COMPLEXTYPE, reply.aComplexDataType);
@@ -577,7 +577,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         // replying, thereby forcing a ttl exception
         Future<String> waitTooLongFuture = proxyShortTll.waitTooLong(callback, ttl * 2);
         try {
-            waitTooLongFuture.getReply(10 * ttl); // should never have to wait
+            waitTooLongFuture.get(10 * ttl); // should never have to wait
             // this long
             // the JoynWaitExpiredException should not be thrown.
         } catch (JoynrWaitExpiredException e) {
@@ -625,7 +625,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
             }
 
         });
-        Boolean reply = future.getReply(8000);
+        Boolean reply = future.get(8000);
 
         assertTrue(reply);
     }
@@ -728,7 +728,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
         Future<String> future = proxy.toLowerCase(callback, "Argument");
-        String answer = future.getReply(21000);
+        String answer = future.get(21000);
 
         Assert.assertEquals(RequestStatusCode.OK, future.getStatus().getCode());
         String expected = "argument";
@@ -746,7 +746,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
         Future<Integer> future = proxy.addNumbers(callbackInteger, 1, 2, 3);
-        Integer reply = future.getReply(30000);
+        Integer reply = future.get(30000);
 
         Assert.assertEquals(RequestStatusCode.OK, future.getStatus().getCode());
         Integer expected = 6;
@@ -764,7 +764,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
         Future<Integer> future = proxy.methodWithEnumParameter(callbackInteger, TestEnum.TWO);
-        Integer reply = future.getReply(40000);
+        Integer reply = future.get(40000);
 
         Integer expected = 2;
         Assert.assertEquals(RequestStatusCode.OK, future.getStatus().getCode());
@@ -810,7 +810,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         ApplicationException expected = new ApplicationException(ErrorEnumBase.BASE_ERROR_TYPECOLLECTION);
         Future<Void> future = proxy.methodWithErrorEnum(callbackVoid);
         try {
-            future.getReply();
+            future.get();
             Assert.fail("Should throw ApplicationException");
         } catch (JoynrRuntimeException|InterruptedException e) {
             Assert.fail(e.toString());
@@ -844,7 +844,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         ApplicationException expected = new ApplicationException(MethodWithErrorEnumExtendedErrorEnum.IMPLICIT_ERROR_TYPECOLLECTION);
         Future<Void> future = proxy.methodWithErrorEnumExtended(callbackVoid);
         try {
-            future.getReply();
+            future.get();
             Assert.fail("Should throw ApplicationException");
         } catch (JoynrRuntimeException|InterruptedException e) {
             Assert.fail(e.toString());
@@ -878,7 +878,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         ApplicationException expected = new ApplicationException(MethodWithImplicitErrorEnumErrorEnum.IMPLICIT_ERROR);
         Future<Void> future = proxy.methodWithImplicitErrorEnum(callbackVoid);
         try {
-            future.getReply();
+            future.get();
             Assert.fail("Should throw ApplicationException");
         } catch (JoynrRuntimeException|InterruptedException e) {
             Assert.fail(e.toString());
@@ -921,7 +921,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         ProviderRuntimeException expected = new ProviderRuntimeException("ProviderRuntimeException");
         Future<Void> future = proxy.methodWithProviderRuntimeException(callbackVoid);
         try {
-            future.getReply();
+            future.get();
             Assert.fail("Should throw ProviderRuntimeException");
         } catch (ProviderRuntimeException e) {
             Assert.assertEquals(expected, e);
@@ -955,7 +955,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         ProviderRuntimeException expected = new ProviderRuntimeException(new IllegalArgumentException("thrownException").toString());
         Future<Void> future = proxy.methodWithThrownException(callbackVoid);
         try {
-            future.getReply();
+            future.get();
             Assert.fail("Should throw ProviderRuntimeException");
         } catch (ProviderRuntimeException e) {
             Assert.assertEquals(expected, e);
@@ -989,7 +989,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         ProviderRuntimeException expected = new ProviderRuntimeException("ProviderRuntimeException");
         Future<Integer> future = proxy.getAttributeWithProviderRuntimeException(callbackInteger);
         try {
-            future.getReply();
+            future.get();
             Assert.fail("Should throw ProviderRuntimeException");
         } catch (ProviderRuntimeException e) {
             Assert.assertEquals(expected, e);
@@ -1023,7 +1023,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         ProviderRuntimeException expected = new ProviderRuntimeException(new IllegalArgumentException("thrownException").toString());
         Future<Void> future = proxy.setAttributeWithProviderRuntimeException(callbackVoid, 42);
         try {
-            future.getReply();
+            future.get();
             Assert.fail("Should throw ProviderRuntimeException");
         } catch (ProviderRuntimeException e) {
             Assert.assertEquals(expected, e);

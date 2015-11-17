@@ -165,8 +165,9 @@ public class InterfaceUtil {
 	) {
 		val typeList = new HashSet<Object>();
 		if (methods){
+			val methodToErrorEnumName = fInterface.methodToErrorEnumName
 			for (method : fInterface.methods) {
-				typeList.addAll(getAllRequiredTypes(method, errorTypes))
+				typeList.addAll(getAllRequiredTypes(method, methodToErrorEnumName.get(method), errorTypes))
 			}
 		}
 

@@ -261,9 +261,18 @@ include(ExternalProject)
 set_directory_properties(PROPERTIES EP_PREFIX ${CMAKE_BINARY_DIR}/ThirdParty)
 
 ### Add spdlog ###########################################################
+set(SPDLOG_SOURCE_URL "https://github.com/gabime/spdlog")
+set(SPDLOG_SOURCE_TYPE "GIT_REPOSITORY")
+if(SPDLOG_ROOT)
+    set(SPDLOG_SOURCE_URL "${SPDLOG_ROOT}")
+    set(SPDLOG_SOURCE_TYPE "URL")
+endif(SPDLOG_ROOT)
+message(STATUS "Using source for spdlog: ${SPDLOG_SOURCE_URL}")
+
+
 ExternalProject_Add(
     spdlog
-    GIT_REPOSITORY https://github.com/gabime/spdlog
+    ${SPDLOG_SOURCE_TYPE} "${SPDLOG_SOURCE_URL}"
     TIMEOUT 10
     # Disable svn update
     UPDATE_COMMAND ""
@@ -592,4 +601,3 @@ install(
 
 ######### Documentation settings ########
 #configure_file(${CMAKE_CURRENT_SOURCE_DIR}/doxygen.cfg.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
-

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@
 #include <vector>
 
 #include "joynr/ProviderArbitrator.h"
-#include "joynr/exceptions.h"
+#include "joynr/exceptions/JoynrException.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/system/IDiscovery.h"
 
@@ -130,9 +130,10 @@ joynr::types::CommunicationMiddleware::Enum ProviderArbitrator::
 std::string ProviderArbitrator::getParticipantId()
 {
     if (participantId.empty()) {
-        throw JoynrArbitrationException("ParticipantId is empty: Called getParticipantId() before "
-                                        "arbitration has finished / Arbitrator did not set "
-                                        "participantId.");
+        throw exceptions::DiscoveryException(
+                "ParticipantId is empty: Called getParticipantId() before "
+                "arbitration has finished / Arbitrator did not set "
+                "participantId.");
     }
     return participantId;
 }
@@ -150,9 +151,9 @@ void ProviderArbitrator::setParticipantId(std::string participantId)
 joynr::types::CommunicationMiddleware::Enum ProviderArbitrator::getConnection()
 {
     if (connection == joynr::types::CommunicationMiddleware::NONE) {
-        throw JoynrArbitrationException("Connection is NULL: Called getConnection() before "
-                                        "arbitration has finished / Arbitrator did not set "
-                                        "connection.");
+        throw exceptions::DiscoveryException("Connection is NULL: Called getConnection() before "
+                                             "arbitration has finished / Arbitrator did not set "
+                                             "connection.");
     }
     return connection;
 }
@@ -186,10 +187,10 @@ void ProviderArbitrator::setArbitrationStatus(
         try {
             assert(listener != NULL);
             listener->setArbitrationStatus(arbitrationStatus);
-        } catch (std::exception& e) { // TODO replace by expected exception type
+        } catch (exceptions::DiscoveryException& e) {
             LOG_ERROR(logger,
                       "Exception while setting arbitration status: " +
-                              QString::fromStdString(e.what()));
+                              QString::fromStdString(e.getMessage()));
             listenerSemaphore.release(1);
             throw;
         }

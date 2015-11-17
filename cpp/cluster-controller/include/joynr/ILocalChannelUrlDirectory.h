@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@
 #include <functional>
 #include <string>
 #include <QtGlobal>
+#include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
 {
@@ -58,7 +59,7 @@ public:
             const std::string& channelId,
             types::ChannelUrlInformation channelUrlInformation,
             std::function<void(void)> onSuccess = nullptr,
-            std::function<void(const joynr::RequestStatus&)> onError = nullptr) = 0;
+            std::function<void(const exceptions::JoynrException&)> onError = nullptr) = 0;
 
     /**
      * @brief Unregister ALL Url's registered for this channelId
@@ -70,7 +71,7 @@ public:
     virtual std::shared_ptr<joynr::Future<void>> unregisterChannelUrlsAsync(
             const std::string& channelId,
             std::function<void(void)> onSuccess = nullptr,
-            std::function<void(const joynr::RequestStatus&)> onError = nullptr) = 0;
+            std::function<void(const exceptions::JoynrException&)> onError = nullptr) = 0;
 
     /**
      * @brief Get ALL Url's registered in the remoteChannelUrlDirectory. Uses caching, i.e. once an
@@ -86,7 +87,7 @@ public:
             const std::string& channelId,
             const qint64& timeout_ms,
             std::function<void(const types::ChannelUrlInformation&)> onSuccess = nullptr,
-            std::function<void(const joynr::RequestStatus&)> onError = nullptr) = 0;
+            std::function<void(const exceptions::JoynrException&)> onError = nullptr) = 0;
 };
 
 } // namespace joynr

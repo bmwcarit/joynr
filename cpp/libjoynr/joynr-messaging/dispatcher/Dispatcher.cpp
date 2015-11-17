@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@
 #include "joynr/InterfaceRegistrar.h"
 #include "joynr/MetaTypeRegistrar.h"
 #include "joynr/Request.h"
-#include "joynr/exceptions.h"
+#include "joynr/exceptions/JoynrException.h"
 
 #include <QUuid>
 #include <chrono>
@@ -139,7 +139,6 @@ void Dispatcher::receive(const JoynrMessage& message)
 
 void Dispatcher::handleRequestReceived(const JoynrMessage& message)
 {
-
     std::string senderId = message.getHeaderFrom().toStdString();
     std::string receiverId = message.getHeaderTo().toStdString();
 
@@ -191,16 +190,16 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
                                  reply);
     };
 
-    std::function<void(const JoynrException&)> onError =
+    std::function<void(const exceptions::JoynrException&)> onError =
             [requestReplyId, requestExpiryDate, this, senderId, receiverId](
-                    const JoynrException& exception) {
+                    const exceptions::JoynrException& exception) {
         Reply reply;
         reply.setRequestReplyId(requestReplyId);
-        /*
-         * TODO: add error to the reply object
-         * reply.setError(exception);
-         */
-        (void)exception;
+        std::shared_ptr<exceptions::JoynrException> error;
+        // TODO This clone is a workaround which must be removed after the new serializer has been
+        // introduced and the reply object has been refactored
+        error.reset(exception.clone());
+        reply.setError(error);
         LOG_DEBUG(logger,
                   QString("Got error reply from RequestInterpreter for requestReplyId %1")
                           .arg(requestReplyId));
@@ -212,12 +211,25 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
                                  reply);
     };
     // execute request
-    requestInterpreter->execute(caller,
-                                request->getMethodName(),
-                                request->getParams(),
-                                request->getParamDatatypes(),
-                                onSuccess,
-                                onError);
+    try {
+        requestInterpreter->execute(caller,
+                                    request->getMethodName(),
+                                    request->getParams(),
+                                    request->getParamDatatypes(),
+                                    onSuccess,
+                                    onError);
+    } catch (exceptions::ProviderRuntimeException& e) {
+        std::string message = "Could not perform an RPC invocation, caught exception: " +
+                              e.getTypeName() + ":" + e.getMessage();
+        LOG_ERROR(logger, message.c_str());
+        onError(e);
+    } catch (exceptions::JoynrException& e) {
+        std::string message = "Could not perform an RPC invocation, caught exception: " +
+                              e.getTypeName() + ":" + e.getMessage();
+        LOG_ERROR(logger, message.c_str());
+        onError(exceptions::ProviderRuntimeException("caught exception: " + e.getTypeName() + ":" +
+                                                     e.getMessage()));
+    }
 
     delete request;
 }
@@ -229,7 +241,9 @@ void Dispatcher::handleReplyReceived(const JoynrMessage& message)
     QByteArray jsonReply = message.getPayload();
 
     // deserialize the jsonReply
-    Reply* reply = JsonSerializer::deserialize<Reply>(jsonReply);
+    // TODO This is a workaround which must be replaced by the generic deserialize function after
+    // the new serializer is introduced
+    Reply* reply = JsonSerializer::deserializeReply(jsonReply);
     if (reply == Q_NULLPTR) {
         LOG_ERROR(logger,
                   QString("Unable to deserialize reply object from: %1")
@@ -364,7 +378,7 @@ void Dispatcher::handlePublicationReceived(const JoynrMessage& message)
     QByteArray jsonSubscriptionPublication = message.getPayload();
 
     SubscriptionPublication* subscriptionPublication =
-            JsonSerializer::deserialize<SubscriptionPublication>(jsonSubscriptionPublication);
+            JsonSerializer::deserializeSubscriptionPublication(jsonSubscriptionPublication);
     if (subscriptionPublication == Q_NULLPTR) {
         LOG_ERROR(logger,
                   QString("Unable to deserialize subscription publication object from: %1")

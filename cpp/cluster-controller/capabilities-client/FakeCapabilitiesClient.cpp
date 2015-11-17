@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
  */
 
 #include "cluster-controller/capabilities-client/FakeCapabilitiesClient.h"
-#include "joynr/exceptions.h"
+#include "joynr/exceptions/JoynrException.h"
 #include "cluster-controller/capabilities-client/IGlobalCapabilitiesCallback.h"
 
 #include <QUuid>
@@ -67,9 +67,10 @@ void FakeCapabilitiesClient::add(
 {
     Q_UNUSED(capabilitiesInformationList)
     if (localChannelId.empty()) {
-        throw JoynrException("Exception in CapabilitiesClient: Local channelId is empty. Tried to "
-                             "register capabilities before messaging was started(no queueing "
-                             "implemented yet)");
+        throw exceptions::JoynrRuntimeException(
+                "Exception in CapabilitiesClient: Local channelId is empty. Tried to "
+                "register capabilities before messaging was started(no queueing "
+                "implemented yet)");
     } else {
     }
 }

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -103,6 +103,37 @@ QString Util::removeNamespace(const QString& className)
 
     int namespaceEnd = className.indexOf(doubleColon);
     return (namespaceEnd == -1) ? className : className.mid(namespaceEnd + 2);
+}
+
+void Util::throwJoynrException(const exceptions::JoynrException& error)
+{
+    std::string typeName = error.getTypeName();
+    if (typeName == exceptions::JoynrRuntimeException::TYPE_NAME) {
+        throw dynamic_cast<exceptions::JoynrRuntimeException&>(
+                const_cast<exceptions::JoynrException&>(error));
+    } else if (typeName == exceptions::JoynrTimeOutException::TYPE_NAME) {
+        throw dynamic_cast<exceptions::JoynrTimeOutException&>(
+                const_cast<exceptions::JoynrException&>(error));
+    } else if (typeName == exceptions::DiscoveryException::TYPE_NAME) {
+        throw dynamic_cast<exceptions::DiscoveryException&>(
+                const_cast<exceptions::JoynrException&>(error));
+    } else if (typeName == exceptions::MethodInvocationException::TYPE_NAME) {
+        throw dynamic_cast<exceptions::MethodInvocationException&>(
+                const_cast<exceptions::JoynrException&>(error));
+    } else if (typeName == exceptions::ProviderRuntimeException::TYPE_NAME) {
+        throw dynamic_cast<exceptions::ProviderRuntimeException&>(
+                const_cast<exceptions::JoynrException&>(error));
+    } else if (typeName == exceptions::PublicationMissedException::TYPE_NAME) {
+        throw dynamic_cast<exceptions::PublicationMissedException&>(
+                const_cast<exceptions::JoynrException&>(error));
+    } else if (typeName == exceptions::ApplicationException::TYPE_NAME) {
+        throw dynamic_cast<exceptions::ApplicationException&>(
+                const_cast<exceptions::JoynrException&>(error));
+    } else {
+        std::string message = error.getMessage();
+        throw exceptions::JoynrRuntimeException("Unknown exception: " + error.getTypeName() + ": " +
+                                                message);
+    }
 }
 
 } // namespace joynr

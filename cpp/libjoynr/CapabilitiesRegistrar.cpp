@@ -47,19 +47,20 @@ void CapabilitiesRegistrar::remove(const std::string& participantId)
     foreach (IDispatcher* currentDispatcher, dispatcherList) {
         currentDispatcher->removeRequestCaller(participantId);
     }
-    joynr::RequestStatus status(discoveryProxy.remove(participantId));
-    if (!status.successful()) {
+    try {
+        discoveryProxy.remove(participantId);
+    } catch (exceptions::JoynrException& e) {
         LOG_ERROR(logger,
                   QString("Unable to remove provider (participant ID: %1) "
-                          "to discovery. Status code: %2.")
+                          "to discovery. Error: %2.")
                           .arg(QString::fromStdString(participantId))
-                          .arg(QString::fromStdString(status.getCode().toString())));
+                          .arg(QString::fromStdString(e.getMessage())));
     }
 
     std::shared_ptr<joynr::Future<void>> future(new Future<void>());
     auto onSuccess = [future]() { future->onSuccess(); };
     messageRouter->removeNextHop(participantId, onSuccess);
-    future->waitForFinished();
+    future->wait();
 
     if (!future->getStatus().successful()) {
         LOG_ERROR(logger,

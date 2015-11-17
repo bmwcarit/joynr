@@ -125,8 +125,11 @@ TEST_F(SystemServicesDiscoveryTest, lookupUnknowParticipantReturnsEmptyResult)
                 false                                      // provider must support on change subscriptions
     );
 
-    RequestStatus status(discoveryProxy->lookup(result, domain, interfaceName, discoveryQos));
-    EXPECT_EQ(RequestStatusCode::OK, status.getCode());
+    try {
+        discoveryProxy->lookup(result, domain, interfaceName, discoveryQos);
+    } catch (exceptions::JoynrException& e) {
+        ADD_FAILURE()<< "lookup was not successful";
+    }
     EXPECT_TRUE(result.empty());
 }
 
@@ -139,7 +142,6 @@ TEST_F(SystemServicesDiscoveryTest, add)
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
-    RequestStatus status;
     std::vector<joynr::types::DiscoveryEntry> result;
     std::string domain("SystemServicesDiscoveryTest.Domain.A");
     std::string interfaceName("SystemServicesDiscoveryTest.InterfaceName.A");
@@ -170,15 +172,24 @@ TEST_F(SystemServicesDiscoveryTest, add)
     expectedResult.push_back(discoveryEntry);
 
 
-    status = discoveryProxy->lookup(result, domain, interfaceName, discoveryQos);
-    EXPECT_EQ(RequestStatusCode::OK, status.getCode());
+    try {
+        discoveryProxy->lookup(result, domain, interfaceName, discoveryQos);
+    } catch (exceptions::JoynrException& e) {
+        ADD_FAILURE()<< "lookup was not successful";
+    }
     EXPECT_TRUE(result.empty());
 
-    status = discoveryProxy->add(discoveryEntry);
-    EXPECT_EQ(RequestStatusCode::OK, status.getCode());
+    try {
+        discoveryProxy->add(discoveryEntry);
+    } catch (exceptions::JoynrException& e) {
+        ADD_FAILURE()<< "add was not successful";
+    }
 
-    status = discoveryProxy->lookup(result, domain, interfaceName, discoveryQos);
-    EXPECT_EQ(RequestStatusCode::OK, status.getCode());
+    try {
+        discoveryProxy->lookup(result, domain, interfaceName, discoveryQos);
+    } catch (exceptions::JoynrException& e) {
+        ADD_FAILURE()<< "lookup was not successful";
+    }
     EXPECT_EQ(expectedResult, result);
 }
 
@@ -218,19 +229,31 @@ TEST_F(SystemServicesDiscoveryTest, remove)
     );
     expectedResult.push_back(discoveryEntry);
 
-    RequestStatus status(discoveryProxy->add(discoveryEntry));
-    EXPECT_EQ(RequestStatusCode::OK, status.getCode());
+    try {
+        discoveryProxy->add(discoveryEntry);
+    } catch (exceptions::JoynrException& e) {
+        ADD_FAILURE()<< "add was not successful";
+    }
 
     std::vector<joynr::types::DiscoveryEntry> result;
-    status = discoveryProxy->lookup(result, domain, interfaceName, discoveryQos);
-    EXPECT_EQ(RequestStatusCode::OK, status.getCode());
+    try {
+        discoveryProxy->lookup(result, domain, interfaceName, discoveryQos);
+    } catch (exceptions::JoynrException& e) {
+        ADD_FAILURE()<< "lookup was not successful";
+    }
     EXPECT_EQ(expectedResult, result);
 
-    status = discoveryProxy->remove(participantId);
-    EXPECT_EQ(RequestStatusCode::OK, status.getCode());
+    try {
+        discoveryProxy->remove(participantId);
+    } catch (exceptions::JoynrException& e) {
+        ADD_FAILURE()<< "remove was not successful";
+    }
 
     result.clear();
-    status = discoveryProxy->lookup(result, domain, interfaceName, discoveryQos);
-    EXPECT_EQ(RequestStatusCode::OK, status.getCode());
+    try {
+        discoveryProxy->lookup(result, domain, interfaceName, discoveryQos);
+    } catch (exceptions::JoynrException& e) {
+        ADD_FAILURE()<< "lookup was not successful";
+    }
     EXPECT_TRUE(result.empty());
 }

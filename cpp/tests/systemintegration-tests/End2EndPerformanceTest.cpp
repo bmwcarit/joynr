@@ -134,12 +134,12 @@ TEST_F(End2EndPerformanceTest, sendManyRequests) {
     }
 
     for (int i=0; i<numberOfMessages; i++){
-        testFutureList.at(i)->waitForFinished();
+        testFutureList.at(i)->wait();
         int expectedValue = 2+4+8+i;
         if (testFutureList.at(i)->getStatus().successful()) {
             successFullMessages++;
             int actualValue;
-            testFutureList.at(i)->getValues(actualValue);
+            testFutureList.at(i)->get(actualValue);
             EXPECT_EQ(expectedValue, actualValue);
         }
     }

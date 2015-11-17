@@ -53,20 +53,20 @@ template <typename T>
 class MockSubscriptionListenerOneType : public joynr::ISubscriptionListener<T> {
 public:
      MOCK_METHOD1_T(onReceive, void( const T& value));
-     MOCK_METHOD0(onError, void());
+     MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException&));
 };
 
 template <typename T1, typename T2, typename... Ts>
 class MockSubscriptionListenerTwoTypes : public joynr::ISubscriptionListener<T1, T2, Ts...> {
 public:
      MOCK_METHOD2_T(onReceive, void( const T1& value1, const T2& value2, const Ts&... values));
-     MOCK_METHOD0(onError, void());
+     MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException&));
 };
 
 class MockGpsSubscriptionListener : public joynr::ISubscriptionListener<joynr::types::Localisation::GpsLocation> {
 public:
     MOCK_METHOD1(onReceive, void(const joynr::types::Localisation::GpsLocation& value));
-    MOCK_METHOD0(onError, void());
+    MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException&));
 };
 
 class MockTestProvider : public joynr::tests::DefaulttestProvider
@@ -76,30 +76,32 @@ public:
         listOfStrings(),
         joynr::tests::DefaulttestProvider()
     {
-        EXPECT_CALL(*this, getLocation(_))
+        EXPECT_CALL(*this, getLocation(_,_))
                 .WillRepeatedly(testing::Invoke(this, &MockTestProvider::invokeLocationOnSuccess));
-        EXPECT_CALL(*this, getListOfStrings(_))
+        EXPECT_CALL(*this, getListOfStrings(_,_))
                 .WillRepeatedly(testing::Invoke(this, &MockTestProvider::invokeListOfStringsOnSuccess));
     }
     MockTestProvider(joynr::types::ProviderQos qos) :
         DefaulttestProvider()
     {
         providerQos = qos;
-        EXPECT_CALL(*this, getLocation(_))
+        EXPECT_CALL(*this, getLocation(_,_))
                 .WillRepeatedly(testing::Invoke(this, &MockTestProvider::invokeLocationOnSuccess));
-        EXPECT_CALL(*this, getListOfStrings(_))
+        EXPECT_CALL(*this, getListOfStrings(_,_))
                 .WillRepeatedly(testing::Invoke(this, &MockTestProvider::invokeListOfStringsOnSuccess));
     }
     ~MockTestProvider()
     {
     };
 
-    void invokeLocationOnSuccess(std::function<void(const joynr::types::Localisation::GpsLocation&)> onSuccess) {
+    void invokeLocationOnSuccess(std::function<void(const joynr::types::Localisation::GpsLocation&)> onSuccess,
+                         std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError) {
         joynr::types::Localisation::GpsLocation location;
         onSuccess(location);
     }
 
-    void invokeListOfStringsOnSuccess(std::function<void(const std::vector<std::string>&)> onSuccess) {
+    void invokeListOfStringsOnSuccess(std::function<void(const std::vector<std::string>&)> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError) {
         onSuccess(listOfStrings);
     }
 
@@ -115,29 +117,33 @@ public:
         joynr::tests::testAbstractProvider::listOfStringsChanged(listOfStrings);
     }
 
-    MOCK_METHOD1(
+    MOCK_METHOD2(
             getLocation,
             void(
-                    std::function<void(const joynr::types::Localisation::GpsLocation& result)> onSuccess
-            )
-    );
-    MOCK_METHOD1(
-            getListOfStrings,
-            void(
-                    std::function<void(const std::vector<std::string>& result)> onSuccess
+                    std::function<void(const joynr::types::Localisation::GpsLocation& result)> onSuccess,
+                    std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError
             )
     );
     MOCK_METHOD2(
+            getListOfStrings,
+            void(
+                    std::function<void(const std::vector<std::string>& result)> onSuccess,
+                    std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError
+            )
+    );
+    MOCK_METHOD3(
             setLocation,
             void(
                     const joynr::types::Localisation::GpsLocation& gpsLocation,
-                    std::function<void()> onSuccess
+                    std::function<void()> onSuccess,
+                    std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError
             )
     );
 
     void sumInts(
             const std::vector<int32_t>& ints,
-            std::function<void(const int32_t& result)> onSuccess)
+            std::function<void(const int32_t& result)> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError)
     {
         int32_t result = 0;
         int32_t j;
@@ -149,7 +155,8 @@ public:
     void returnPrimeNumbers(
             const int32_t &upperBound,
             std::function<void(
-                const std::vector<int32_t>& result)> onSuccess)
+                const std::vector<int32_t>& result)> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError)
     {
         std::vector<int32_t> result;
         assert(upperBound<7);
@@ -162,14 +169,16 @@ public:
     void optimizeTrip(
             const joynr::types::Localisation::Trip& input,
             std::function<void(
-                const joynr::types::Localisation::Trip& result)> onSuccess)
+                const joynr::types::Localisation::Trip& result)> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError)
     {
          onSuccess(input);
     }
     void optimizeLocationList(
             const std::vector<joynr::types::Localisation::GpsLocation>& inputList,
             std::function<void(
-                const std::vector<joynr::types::Localisation::GpsLocation>& result)> onSuccess)
+                const std::vector<joynr::types::Localisation::GpsLocation>& result)> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError)
 
     {
          onSuccess(inputList);
@@ -178,7 +187,8 @@ public:
     void overloadedOperation(
             const joynr::tests::testTypes::DerivedStruct& input,
             std::function<void(
-                const std::string& result)> onSuccess)
+                const std::string& result)> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError)
     {
         std::string result("QtDerivedStruct");
         onSuccess(result);
@@ -187,7 +197,8 @@ public:
     void overloadedOperation(
             const joynr::tests::testTypes::AnotherDerivedStruct& input,
             std::function<void(
-                const std::string& result)> onSuccess)
+                const std::string& result)> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError)
     {
         std::string result("QtAnotherDerivedStruct");
         onSuccess(result);
@@ -195,7 +206,8 @@ public:
 
     void setListOfStrings(
          const std::vector<std::string> & listOfStrings,
-         std::function<void()> onSuccess
+         std::function<void()> onSuccess,
+         std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError
     ) {
         this->listOfStrings = listOfStrings;
         listOfStringsChanged(listOfStrings);

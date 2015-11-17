@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,21 @@ public:
     {
         assert(callback);
 
+        std::shared_ptr<exceptions::JoynrRuntimeException> error =
+                subscriptionPublication.getError();
+        if (error) {
+            callback->onError(*error);
+            return;
+        }
+
         QList<QVariant> response = subscriptionPublication.getResponse();
+        if (response.isEmpty()) {
+            LOG_ERROR(logger, QString("Publication object has no response, discarding message"));
+            exceptions::JoynrRuntimeException error(
+                    "Publication object had no response, discarded message");
+            callback->onError(error);
+            return;
+        }
 
         std::shared_ptr<SubscriptionCallback<Ts...>> typedCallbackQsp =
                 std::dynamic_pointer_cast<SubscriptionCallback<Ts...>>(callback);
@@ -60,6 +74,10 @@ public:
 private:
     static joynr_logging::Logger* logger;
 };
+
+template <class... Ts>
+joynr_logging::Logger* PublicationInterpreter<Ts...>::logger =
+        joynr_logging::Logging::getInstance()->getLogger("MSG", "PublicationInterpreter");
 
 /**
   * Class that handles conversion of enum publications
@@ -77,6 +95,21 @@ public:
     {
         assert(callback);
 
+        std::shared_ptr<exceptions::JoynrRuntimeException> error =
+                subscriptionPublication.getError();
+        if (error) {
+            callback->onError(*error);
+            return;
+        }
+
+        if (subscriptionPublication.getResponse().isEmpty()) {
+            LOG_ERROR(logger, QString("Publication object has no response, discarding message"));
+            exceptions::JoynrRuntimeException error(
+                    "Publication object had no response, discarded message");
+            callback->onError(error);
+            return;
+        }
+
         typename T::Enum value =
                 Util::convertVariantToEnum<T>(subscriptionPublication.getResponse().first());
 
@@ -93,6 +126,10 @@ private:
 };
 
 template <class T>
+joynr_logging::Logger* EnumPublicationInterpreter<T>::logger =
+        joynr_logging::Logging::getInstance()->getLogger("MSG", "EnumPublicationInterpreter");
+
+template <class T>
 class EnumPublicationInterpreter<QList<T>> : public IPublicationInterpreter
 {
 public:
@@ -105,7 +142,22 @@ public:
     {
         assert(callback);
 
+        std::shared_ptr<exceptions::JoynrRuntimeException> error =
+                subscriptionPublication.getError();
+        if (error) {
+            callback->onError(*error);
+            return;
+        }
+
         QList<QVariant> qvList = subscriptionPublication.getResponse();
+        if (qvList.isEmpty()) {
+            LOG_ERROR(logger, QString("Publication object has no response, discarding message"));
+            exceptions::JoynrRuntimeException error(
+                    "Publication object had no response, discarded message");
+            callback->onError(error);
+            return;
+        }
+
         std::shared_ptr<SubscriptionCallback<QList<typename T::Enum>>> typedCallbackQsp =
                 std::dynamic_pointer_cast<SubscriptionCallback<QList<typename T::Enum>>>(callback);
         QList<typename T::Enum> valueList = Util::convertVariantListToEnumList<T>(qvList);
@@ -115,7 +167,13 @@ public:
     }
 
 private:
+    static joynr_logging::Logger* logger;
 };
+
+template <class T>
+joynr_logging::Logger* EnumPublicationInterpreter<QList<T>>::logger =
+        joynr_logging::Logging::getInstance()->getLogger("MSG",
+                                                         "EnumPublicationInterpreter<QList>");
 
 } // namespace joynr
 #endif // PUBLICATIONINTERPRETER_H

@@ -54,7 +54,7 @@ public class MethodUtil {
 	}
 
 
-	def getAllRequiredTypes(FMethod method, boolean errorTypes) {
+	def getAllRequiredTypes(FMethod method, String methodErrorEnumName, boolean errorTypes) {
 		var Object datatype = null
 		var typeList = new HashSet<Object>();
 		for(returnParameter : getOutputParameters(method).filterNull){
@@ -66,6 +66,7 @@ public class MethodUtil {
 		if (errorTypes) {
 			if (method.errors !== null) {
 				datatype = getDatatype(method.errors);
+				method.errors.name = methodErrorEnumName
 				if (datatype != null) {
 					typeList.add(datatype)
 				}

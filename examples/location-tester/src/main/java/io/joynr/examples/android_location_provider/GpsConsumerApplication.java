@@ -21,7 +21,7 @@ package io.joynr.examples.android_location_provider;
 
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilder;
@@ -219,7 +219,7 @@ public class GpsConsumerApplication extends AbstractJoynrApplication {
             }
 
             @Override
-            public void onError(JoynrException error) {
+            public void onError(JoynrRuntimeException error) {
                 LOG.info(PRINT_BORDER + "SUBSCRIPTION: location, publication missed " + PRINT_BORDER);
             }
         }, subscriptionQos);

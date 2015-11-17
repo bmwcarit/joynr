@@ -19,8 +19,8 @@ package io.joynr.dispatching.subscription;
  * #L%
  */
 
-import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
@@ -79,6 +79,6 @@ public interface SubscriptionManager {
 
     <T> void handleAttributePublication(String subscriptionId, T attributeValue);
 
-    <T> void handleAttributePublicationError(String subscriptionId, JoynrException error);
+    <T> void handleAttributePublicationError(String subscriptionId, JoynrRuntimeException error);
 
 }

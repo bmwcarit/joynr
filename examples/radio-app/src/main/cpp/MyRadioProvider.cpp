@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,20 +60,25 @@ MyRadioProvider::~MyRadioProvider()
 {
 }
 
-void MyRadioProvider::getCurrentStation(std::function<void(const vehicle::RadioStation&)> onSuccess)
+void MyRadioProvider::getCurrentStation(
+        std::function<void(const vehicle::RadioStation&)> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     QMutexLocker locker(&mutex);
-
+    (void)onError;
     MyRadioHelper::prettyLog(logger,
                              QString("getCurrentStation -> %1")
                                      .arg(QString::fromStdString(currentStation.toString())));
     onSuccess(currentStation);
 }
 
-void MyRadioProvider::shuffleStations(std::function<void()> onSuccess)
+void MyRadioProvider::shuffleStations(
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     QMutexLocker locker(&mutex);
 
+    (void)onError;
     vehicle::RadioStation oldStation = currentStation;
     ++currentStationIndex;
     currentStationIndex %= stationsList.size();
@@ -86,22 +91,41 @@ void MyRadioProvider::shuffleStations(std::function<void()> onSuccess)
     onSuccess();
 }
 
-void MyRadioProvider::addFavoriteStation(const vehicle::RadioStation& radioStation,
-                                         std::function<void(const bool& returnValue)> onSuccess)
+void MyRadioProvider::addFavoriteStation(
+        const vehicle::RadioStation& radioStation,
+        std::function<void(const bool& returnValue)> onSuccess,
+        std::function<void(const joynr::vehicle::Radio::AddFavoriteStationErrorEnum::Enum&)>
+                onError)
 {
     QMutexLocker locker(&mutex);
 
-    MyRadioHelper::prettyLog(
-            logger,
-            QString("addFavoriteStation(%1)").arg(QString::fromStdString(radioStation.toString())));
-    stationsList.append(radioStation);
-    onSuccess(true);
+    if (radioStation.getName().empty()) {
+        throw joynr::exceptions::ProviderRuntimeException(MyRadioHelper::MISSING_NAME());
+    }
+
+    bool duplicateFound = false;
+    for (joynr::vehicle::RadioStation station : stationsList) {
+        if (!duplicateFound && station.getName() == radioStation.getName()) {
+            duplicateFound = true;
+            onError(joynr::vehicle::Radio::AddFavoriteStationErrorEnum::DUPLICATE_RADIOSTATION);
+            break;
+        }
+    }
+    if (!duplicateFound) {
+        MyRadioHelper::prettyLog(logger,
+                                 QString("addFavoriteStation(%1)")
+                                         .arg(QString::fromStdString(radioStation.toString())));
+        stationsList.append(radioStation);
+        onSuccess(true);
+    }
 }
 
 void MyRadioProvider::getLocationOfCurrentStation(
         std::function<void(const joynr::vehicle::Country::Enum& country,
-                           const joynr::vehicle::GeoPosition& location)> onSuccess)
+                           const joynr::vehicle::GeoPosition& location)> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
+    (void)onError;
     joynr::vehicle::Country::Enum country(currentStation.getCountry());
     joynr::vehicle::GeoPosition location(countryGeoPositionMap.value(country));
     MyRadioHelper::prettyLog(
@@ -116,7 +140,7 @@ void MyRadioProvider::getLocationOfCurrentStation(
 void MyRadioProvider::fireWeakSignalBroadcast()
 {
     MyRadioHelper::prettyLog(logger,
-                             QString("fire weakSignalBroadacst: %1")
+                             QString("fire weakSignalBroadcast: %1")
                                      .arg(QString::fromStdString(currentStation.toString())));
     fireWeakSignal(currentStation);
 }

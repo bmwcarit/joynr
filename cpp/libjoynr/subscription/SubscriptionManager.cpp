@@ -263,11 +263,12 @@ void SubscriptionManager::MissedPublicationRunnable::run()
             LOG_DEBUG(logger, "Publication missed!");
             std::shared_ptr<ISubscriptionCallback> callback = subscription->subscriptionCaller;
 
-            callback->onError();
+            exceptions::PublicationMissedException error(subscriptionId.toStdString());
+            callback->onError(error);
             delay = alertAfterInterval - timeSinceLastExpectedPublication(timeSinceLastPublication);
         }
         LOG_DEBUG(logger,
-                  "Resceduling MissedPublicationRunnable with delay: " + QString::number(delay));
+                  "Rescheduling MissedPublicationRunnable with delay: " + QString::number(delay));
         subscription->missedPublicationRunnableHandle =
                 subscriptionManager.missedPublicationScheduler->schedule(
                         new MissedPublicationRunnable(decayTime,

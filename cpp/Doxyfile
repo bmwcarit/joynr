@@ -906,7 +906,6 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          common/include/joynr/DelayedScheduler.h \
                          common/include/joynr/Directory.h \
                          common/include/joynr/DispatcherUtils.h \
-                         common/include/joynr/exceptions.h \
                          common/include/joynr/IClientCache.h \
                          common/include/joynr/IDbusSkeletonWrapper.h \
                          common/include/joynr/IMessaging.h \

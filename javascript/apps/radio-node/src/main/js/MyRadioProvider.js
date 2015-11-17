@@ -24,28 +24,43 @@ var error = require("./logging.js").error;
 
 var currentStationIndex = 0;
 
+var joynr = require("joynr");
 var RadioStation = require("../generated/js/joynr/vehicle/RadioStation");
+var Country = require("../generated/js/joynr/vehicle/Country");
+var GeoPosition = require("../generated/js/joynr/vehicle/GeoPosition");
+var AddFavoriteStationErrorEnum = require("../generated/js/joynr/vehicle/Radio/AddFavoriteStationErrorEnum");
+
+var countryGeoPositionMap = {
+    // Melbourne
+    "AUSTRALIA": new GeoPosition({ latitude: -37.8141070, longitude: 144.9632800 }),
+    // Bolzano
+    "ITALY": new GeoPosition({ latitude: 46.4982950, longitude: 11.3547580 }),
+    // Edmonton
+    "CANADA": new GeoPosition({ latitude: 53.5443890, longitude: -113.4909270 }),
+    // Munich
+    "GERMANY": new GeoPosition({ latitude: 48.1351250, longitude: 11.5819810 })
+};
 
 var stationsList = [
                 new RadioStation({
                     name : "ABC Trible J",
                     trafficService : false,
-                    country : "AUSTRALIA"
+                    country : Country.AUSTRALIA
                 }),
                 new RadioStation({
                     name : "Radio Popolare",
                     trafficService : true,
-                    country : "ITALY"
+                    country : Country.ITALY
                 }),
                 new RadioStation({
                     name : "JAZZ.FM91",
                     trafficService : false,
-                    country : "CANADA"
+                    country : Country.CANADA
                 }),
                 new RadioStation({
                     name : "Bayern 3",
                     trafficService : true,
-                    country : "GERMANY"
+                    country : Country.GERMANY
                 })
             ];
 
@@ -70,12 +85,36 @@ exports.implementation = {
 
         if (opArgs === undefined) {
             prettyLog("operation arguments is undefined!");
+            return {
+                success : false
+            };
         }
         if (opArgs.newFavoriteStation === undefined) {
             prettyLog("operation argument \"newFavoriteStation\" is undefined!");
+            return {
+                success : false
+            };
         }
+        if (opArgs.newFavoriteStation.name === "") {
+            throw new joynr.exceptions.ProviderRuntimeException({
+               detailMessage: "MISSING_NAME"
+            });
+        }
+
+        var i;
+        // copy over and type each single member
+        for (i in stationsList) {
+            if (stationsList.hasOwnProperty(i)) {
+                if (stationsList[i].name === opArgs.newFavoriteStation.name) {
+                    throw AddFavoriteStationErrorEnum.DUPLICATE_RADIOSTATION;
+                }
+            }
+        }
+
         stationsList.push(opArgs.newFavoriteStation);
-        return false;
+        return {
+            success : true
+        };
     },
     addFavoriteStationList : function(opArgs) {
         prettyLog("radioProvider.addFavoriteStationList(" + JSON.stringify(opArgs)
@@ -93,7 +132,10 @@ exports.implementation = {
     getLocationOfCurrentStation : function() {
         prettyLog("radioProvider.getLocationOfCurrentStation",
                   "called");
-        return stationsList[currentStationIndex].country;
+        return {
+            country : stationsList[currentStationIndex].country,
+            location : countryGeoPositionMap[stationsList[currentStationIndex].country.name]
+        };
     }
 
 };

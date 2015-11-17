@@ -20,6 +20,7 @@
 #define ISUBSCRIPTIONCALLBACK_H
 
 #include <QString>
+#include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
 {
@@ -32,7 +33,7 @@ namespace joynr
 class ISubscriptionCallback
 {
 public:
-    virtual void onError() = 0;
+    virtual void onError(const exceptions::JoynrRuntimeException& error) = 0;
     virtual ~ISubscriptionCallback()
     {
     }

@@ -12,16 +12,14 @@ components (listed by subfolder) are built and installed into the local Maven re
 * `tools`
   * build resources needed during build
   * dependency libraries needed during build not available in Maven Central
-  * generator framework and a corresponding Maven Plugin
+  * code generators and a corresponding Maven Plugin
 * `basemodel`
   * Franca files describing communication interfaces to infrastructure services
 * `java`
-  * Java code generator
   * joynr Java API
   * generated Java source code (needed to access infrastructure services and tests)
   * infrastructure services (bounceproxy and discovery directories)
 * `cpp`
-  * C++ code generator
   * generated C++ source code (needed to access infrastructure services and tests)
 * `examples`
   * Radio app example (including code generation for Java and C++)

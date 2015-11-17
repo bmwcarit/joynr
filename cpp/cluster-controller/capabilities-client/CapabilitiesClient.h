@@ -97,13 +97,13 @@ public:
             const std::string& interfaceName,
             std::function<void(const std::vector<joynr::types::CapabilityInformation>& result)>
                     onSuccess,
-            std::function<void(const RequestStatus& status)> onError = nullptr);
+            std::function<void(const exceptions::JoynrException& error)> onError = nullptr);
 
     virtual void lookup(
             const std::string& participantId,
             std::function<void(const std::vector<joynr::types::CapabilityInformation>& result)>
                     onSuccess,
-            std::function<void(const RequestStatus& status)> onError = nullptr);
+            std::function<void(const exceptions::JoynrException& error)> onError = nullptr);
 
     virtual ~CapabilitiesClient();
 

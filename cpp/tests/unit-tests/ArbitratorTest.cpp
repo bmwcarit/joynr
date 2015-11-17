@@ -190,7 +190,6 @@ TEST_F(ArbitratorTest, getKeywordProvider) {
 
 TEST_F(ArbitratorTest, retryFiveTimes) {
     std::vector<joynr::types::DiscoveryEntry> result;
-    joynr::RequestStatus status(joynr::RequestStatusCode::OK);
     EXPECT_CALL(
                 mockDiscovery,
                 lookup(
@@ -204,7 +203,7 @@ TEST_F(ArbitratorTest, retryFiveTimes) {
             .WillRepeatedly(
                 testing::DoAll(
                     testing::SetArgReferee<0>(result),
-                    testing::Return(status)
+                    testing::Return()
                 )
             );
 

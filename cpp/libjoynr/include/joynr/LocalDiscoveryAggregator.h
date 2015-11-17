@@ -64,20 +64,19 @@ public:
     void setDiscoveryProxy(joynr::system::IDiscoverySync* discoveryProxy);
 
     // inherited from joynr::system::IDiscoverySync
-    virtual joynr::RequestStatus add(const joynr::types::DiscoveryEntry& entry);
+    virtual void add(const joynr::types::DiscoveryEntry& entry);
 
     // inherited from joynr::system::IDiscoverySync
-    virtual joynr::RequestStatus lookup(std::vector<joynr::types::DiscoveryEntry>& result,
-                                        const std::string& domain,
-                                        const std::string& interfaceName,
-                                        const joynr::types::DiscoveryQos& discoveryQos);
+    virtual void lookup(std::vector<joynr::types::DiscoveryEntry>& result,
+                        const std::string& domain,
+                        const std::string& interfaceName,
+                        const joynr::types::DiscoveryQos& discoveryQos);
 
     // inherited from joynr::system::IDiscoverySync
-    virtual joynr::RequestStatus lookup(joynr::types::DiscoveryEntry& result,
-                                        const std::string& participantId);
+    virtual void lookup(joynr::types::DiscoveryEntry& result, const std::string& participantId);
 
     // inherited from joynr::system::IDiscoverySync
-    virtual joynr::RequestStatus remove(const std::string& participantId);
+    virtual void remove(const std::string& participantId);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalDiscoveryAggregator);

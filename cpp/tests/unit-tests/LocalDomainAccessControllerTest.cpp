@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,7 +75,7 @@ private:
 // Test class
 class LocalDomainAccessControllerTest : public ::testing::Test {
 public:
-    LocalDomainAccessControllerTest()
+    LocalDomainAccessControllerTest() : localDomainAccessStore(NULL), localDomainAccessController(NULL), mockGdacProxy(NULL)
     {
     }
 
@@ -337,8 +337,6 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionCommunicationFailure) 
     std::vector<OwnerAccessControlEntry> ownerAcesFromGlobalDac;
     ownerAcesFromGlobalDac.push_back(ownerAce);
 
-    RequestStatus getMediatorAceCommunicationError(RequestStatusCode::ERROR);
-    getMediatorAceCommunicationError.addDescription("Simulated communication failure");
 
     // Setup the mock GDAC proxy
     EXPECT_CALL(*mockGdacProxy, getDomainRolesAsync(_,_,_))
@@ -356,7 +354,7 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionCommunicationFailure) 
     EXPECT_CALL(*mockGdacProxy, getMediatorAccessControlEntriesAsync(_,_,_,_))
             .Times(1)
             .WillOnce(DoAll(
-                    InvokeArgument<3>(getMediatorAceCommunicationError),
+                    InvokeArgument<3>(exceptions::JoynrRuntimeException("simulated communication failure")),
                     Return(std::shared_ptr<Future<std::vector<MasterAccessControlEntry>>>()) // null pointer
             ));
     EXPECT_CALL(*mockGdacProxy, getOwnerAccessControlEntriesAsync(_,_,_,_))

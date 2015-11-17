@@ -1,6 +1,6 @@
 package joynr;
 
-import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
 
 import java.util.List;
 
@@ -29,7 +29,7 @@ public class SubscriptionPublication implements JoynrMessageType {
 
     private String subscriptionId;
     private List<? extends Object> response;
-    private JoynrException error;
+    private JoynrRuntimeException error;
 
     public SubscriptionPublication() {
     }
@@ -40,7 +40,7 @@ public class SubscriptionPublication implements JoynrMessageType {
         this.subscriptionId = subscriptionId;
     }
 
-    public SubscriptionPublication(JoynrException error, String subscriptionId) {
+    public SubscriptionPublication(JoynrRuntimeException error, String subscriptionId) {
         this.error = error;
         this.response = null;
         this.subscriptionId = subscriptionId;
@@ -58,7 +58,7 @@ public class SubscriptionPublication implements JoynrMessageType {
         return response;
     }
 
-    public JoynrException getError() {
+    public JoynrRuntimeException getError() {
         return error;
     }
 

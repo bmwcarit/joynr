@@ -59,7 +59,7 @@ public:
             const std::string& channelId,
             types::ChannelUrlInformation channelUrlInformation,
             std::function<void(void)> onSuccess = nullptr,
-            std::function<void(const RequestStatus& status)> onError = nullptr);
+            std::function<void(const exceptions::JoynrException&)> onError = nullptr);
 
     /**
      * @brief Unregister ALL Url's registered for this channelId
@@ -71,7 +71,7 @@ public:
     virtual std::shared_ptr<joynr::Future<void>> unregisterChannelUrlsAsync(
             const std::string& channelId,
             std::function<void(void)> onSuccess = nullptr,
-            std::function<void(const RequestStatus& status)> onError = nullptr);
+            std::function<void(const exceptions::JoynrException&)> onError = nullptr);
 
     /**
      * @brief Get ALL Url's registered in the remoteChannelUrlDirectory. Uses caching, i.e. once an
@@ -84,11 +84,12 @@ public:
      * @param onError
      */
     virtual std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>>
-    getUrlsForChannelAsync(const std::string& channelId,
-                           const qint64& timeout_ms,
-                           std::function<void(const types::ChannelUrlInformation& channelUrls)>
-                                   onSuccess = nullptr,
-                           std::function<void(const RequestStatus& status)> onError = nullptr);
+    getUrlsForChannelAsync(
+            const std::string& channelId,
+            const qint64& timeout_ms,
+            std::function<void(const types::ChannelUrlInformation& channelUrls)>
+                    onSuccess = nullptr,
+            std::function<void(const exceptions::JoynrException& error)> onError = nullptr);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalChannelUrlDirectory);

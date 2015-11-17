@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,11 +24,14 @@ namespace joynr
 
 const Reply Reply::NULL_RESPONSE = Reply();
 
-Reply::Reply() : requestReplyId(), response()
+Reply::Reply() : requestReplyId(), response(), error(NULL)
 {
 }
 Reply::Reply(const Reply& other)
-        : QObject(), requestReplyId(other.getRequestReplyId()), response(other.response)
+        : QObject(),
+          requestReplyId(other.getRequestReplyId()),
+          response(other.response),
+          error(other.error)
 {
 }
 
@@ -36,6 +39,7 @@ Reply& Reply::operator=(const Reply& other)
 {
     this->requestReplyId = other.getRequestReplyId();
     this->response = other.response;
+    this->error = other.error;
     return *this;
 }
 
@@ -59,9 +63,20 @@ void Reply::setResponse(QList<QVariant> response)
     this->response = response;
 }
 
+std::shared_ptr<exceptions::JoynrException> Reply::getError() const
+{
+    return this->error;
+}
+
+void Reply::setError(std::shared_ptr<exceptions::JoynrException> error)
+{
+    this->error = error;
+}
+
 bool Reply::operator==(const Reply& other) const
 {
-    return requestReplyId == other.getRequestReplyId() && response == other.getResponse();
+    return requestReplyId == other.getRequestReplyId() && response == other.getResponse() &&
+           error == other.getError();
 }
 
 bool Reply::operator!=(const Reply& other) const

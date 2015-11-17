@@ -68,7 +68,7 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller) {
             [callback](const RequestStatus& status, const types::Localisation::QtGpsLocation& location) {
                 callback->onSuccess(location);
             },
-            [](const RequestStatus& status){
+            [](const RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error){
             }));
 
     // Create a reply

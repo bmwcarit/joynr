@@ -71,7 +71,7 @@ JoynrMessage JoynrMessageFactory::createReply(const QString& senderId,
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_REPLY);
-    initMsg(msg, senderId, receiverId, qos.getTtl(), payload);
+    initReplyMsg(msg, senderId, receiverId, qos.getTtl(), payload);
     return msg;
 }
 
@@ -94,7 +94,7 @@ JoynrMessage JoynrMessageFactory::createSubscriptionPublication(
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION);
-    initMsg(msg, senderId, receiverId, qos.getTtl(), payload);
+    initSubscriptionPublicationMsg(msg, senderId, receiverId, qos.getTtl(), payload);
     return msg;
 }
 
@@ -162,6 +162,49 @@ void JoynrMessageFactory::initMsg(JoynrMessage& msg,
 
     // set payload
     msg.setPayload(JsonSerializer::serialize(payload));
+}
+
+// TODO This is a workaround which must be removed after the new serializer is introduced
+void JoynrMessageFactory::initReplyMsg(JoynrMessage& msg,
+                                       const QString& senderParticipantId,
+                                       const QString& receiverParticipantId,
+                                       const qint64 ttl,
+                                       const Reply& payload)
+{
+    msg.setHeaderCreatorUserId(securityManager->getCurrentProcessUserId());
+    msg.setHeaderFrom(senderParticipantId);
+    msg.setHeaderTo(receiverParticipantId);
+
+    // calculate expiry date
+    JoynrTimePoint expiryDate = DispatcherUtils::convertTtlToAbsoluteTime(ttl);
+    msg.setHeaderExpiryDate(expiryDate);
+
+    // add content type and class
+    msg.setHeaderContentType(JoynrMessage::VALUE_CONTENT_TYPE_APPLICATION_JSON);
+
+    // set payload
+    msg.setPayload(JsonSerializer::serializeReply(payload));
+}
+
+void JoynrMessageFactory::initSubscriptionPublicationMsg(JoynrMessage& msg,
+                                                         const QString& senderParticipantId,
+                                                         const QString& receiverParticipantId,
+                                                         const qint64 ttl,
+                                                         const SubscriptionPublication& payload)
+{
+    msg.setHeaderCreatorUserId(securityManager->getCurrentProcessUserId());
+    msg.setHeaderFrom(senderParticipantId);
+    msg.setHeaderTo(receiverParticipantId);
+
+    // calculate expiry date
+    JoynrTimePoint expiryDate = DispatcherUtils::convertTtlToAbsoluteTime(ttl);
+    msg.setHeaderExpiryDate(expiryDate);
+
+    // add content type and class
+    msg.setHeaderContentType(JoynrMessage::VALUE_CONTENT_TYPE_APPLICATION_JSON);
+
+    // set payload
+    msg.setPayload(JsonSerializer::serializeSubscriptionPublication(payload));
 }
 
 } // namespace joynr

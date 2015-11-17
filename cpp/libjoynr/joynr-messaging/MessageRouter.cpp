@@ -301,16 +301,18 @@ void MessageRouter::addNextHop(
 }
 
 // inherited from joynr::system::RoutingProvider
-void MessageRouter::addNextHop(const std::string& participantId,
-                               const system::RoutingTypes::ChannelAddress& channelAddress,
-                               std::function<void()> onSuccess)
+void MessageRouter::addNextHop(
+        const std::string& participantId,
+        const system::RoutingTypes::ChannelAddress& channelAddress,
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::shared_ptr<joynr::system::RoutingTypes::QtChannelAddress> address(
             new joynr::system::RoutingTypes::QtChannelAddress(
                     joynr::system::RoutingTypes::QtChannelAddress::createQt(channelAddress)));
     addToRoutingTable(participantId, address);
 
-    addNextHopToParent(participantId, onSuccess);
+    addNextHopToParent(participantId, onSuccess, onError);
 
     sendMessages(participantId, address);
 }
@@ -319,7 +321,8 @@ void MessageRouter::addNextHop(const std::string& participantId,
 void MessageRouter::addNextHop(
         const std::string& participantId,
         const system::RoutingTypes::CommonApiDbusAddress& commonApiDbusAddress,
-        std::function<void()> onSuccess)
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::shared_ptr<joynr::system::RoutingTypes::QtCommonApiDbusAddress> address(
             new joynr::system::RoutingTypes::QtCommonApiDbusAddress(
@@ -327,37 +330,41 @@ void MessageRouter::addNextHop(
                             commonApiDbusAddress)));
     addToRoutingTable(participantId, address);
 
-    addNextHopToParent(participantId, onSuccess);
+    addNextHopToParent(participantId, onSuccess, onError);
 
     sendMessages(participantId, address);
 }
 
 // inherited from joynr::system::RoutingProvider
-void MessageRouter::addNextHop(const std::string& participantId,
-                               const system::RoutingTypes::BrowserAddress& browserAddress,
-                               std::function<void()> onSuccess)
+void MessageRouter::addNextHop(
+        const std::string& participantId,
+        const system::RoutingTypes::BrowserAddress& browserAddress,
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::shared_ptr<joynr::system::RoutingTypes::QtBrowserAddress> address(
             new joynr::system::RoutingTypes::QtBrowserAddress(
                     joynr::system::RoutingTypes::QtBrowserAddress::createQt(browserAddress)));
     addToRoutingTable(participantId, address);
 
-    addNextHopToParent(participantId, onSuccess);
+    addNextHopToParent(participantId, onSuccess, onError);
 
     sendMessages(participantId, address);
 }
 
 // inherited from joynr::system::RoutingProvider
-void MessageRouter::addNextHop(const std::string& participantId,
-                               const system::RoutingTypes::WebSocketAddress& webSocketAddress,
-                               std::function<void()> onSuccess)
+void MessageRouter::addNextHop(
+        const std::string& participantId,
+        const system::RoutingTypes::WebSocketAddress& webSocketAddress,
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::shared_ptr<joynr::system::RoutingTypes::QtWebSocketAddress> address(
             new joynr::system::RoutingTypes::QtWebSocketAddress(
                     joynr::system::RoutingTypes::QtWebSocketAddress::createQt(webSocketAddress)));
     addToRoutingTable(participantId, address);
 
-    addNextHopToParent(participantId, onSuccess);
+    addNextHopToParent(participantId, onSuccess, onError);
 
     sendMessages(participantId, address);
 }
@@ -366,7 +373,8 @@ void MessageRouter::addNextHop(const std::string& participantId,
 void MessageRouter::addNextHop(
         const std::string& participantId,
         const system::RoutingTypes::WebSocketClientAddress& webSocketClientAddress,
-        std::function<void()> onSuccess)
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::shared_ptr<joynr::system::RoutingTypes::QtWebSocketClientAddress> address(
             new joynr::system::RoutingTypes::QtWebSocketClientAddress(
@@ -374,14 +382,21 @@ void MessageRouter::addNextHop(
                             webSocketClientAddress)));
     addToRoutingTable(participantId, address);
 
-    addNextHopToParent(participantId, onSuccess);
+    addNextHopToParent(participantId, onSuccess, onError);
 
     sendMessages(participantId, address);
 }
 
-void MessageRouter::addNextHopToParent(std::string participantId,
-                                       std::function<void(void)> onSuccess)
+void MessageRouter::addNextHopToParent(
+        std::string participantId,
+        std::function<void(void)> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
+    std::function<void(const exceptions::JoynrException&)> onErrorWrapper =
+            [onError](const exceptions::JoynrException& error) {
+        onError(joynr::exceptions::ProviderRuntimeException(error.getMessage()));
+    };
+
     // add to parent router
     if (isChildMessageRouter()) {
         if (incomingAddress->inherits("joynr::system::RoutingTypes::QtChannelAddress")) {
@@ -390,7 +405,8 @@ void MessageRouter::addNextHopToParent(std::string participantId,
                     joynr::system::RoutingTypes::QtChannelAddress::createStd(
                             *dynamic_cast<joynr::system::RoutingTypes::QtChannelAddress*>(
                                     incomingAddress.get())),
-                    onSuccess);
+                    onSuccess,
+                    onErrorWrapper);
         }
         if (incomingAddress->inherits("joynr::system::RoutingTypes::QtCommonApiDbusAddress")) {
             parentRouter->addNextHopAsync(
@@ -398,7 +414,8 @@ void MessageRouter::addNextHopToParent(std::string participantId,
                     joynr::system::RoutingTypes::QtCommonApiDbusAddress::createStd(
                             *dynamic_cast<joynr::system::RoutingTypes::QtCommonApiDbusAddress*>(
                                     incomingAddress.get())),
-                    onSuccess);
+                    onSuccess,
+                    onErrorWrapper);
         }
         if (incomingAddress->inherits("joynr::system::RoutingTypes::QtBrowserAddress")) {
             parentRouter->addNextHopAsync(
@@ -406,7 +423,8 @@ void MessageRouter::addNextHopToParent(std::string participantId,
                     joynr::system::RoutingTypes::QtBrowserAddress::createStd(
                             *dynamic_cast<joynr::system::RoutingTypes::QtBrowserAddress*>(
                                     incomingAddress.get())),
-                    onSuccess);
+                    onSuccess,
+                    onErrorWrapper);
         }
         if (incomingAddress->inherits("joynr::system::RoutingTypes::QtWebSocketAddress")) {
             parentRouter->addNextHopAsync(
@@ -414,7 +432,8 @@ void MessageRouter::addNextHopToParent(std::string participantId,
                     joynr::system::RoutingTypes::QtWebSocketAddress::createStd(
                             *dynamic_cast<joynr::system::RoutingTypes::QtWebSocketAddress*>(
                                     incomingAddress.get())),
-                    onSuccess);
+                    onSuccess,
+                    onErrorWrapper);
         }
         if (incomingAddress->inherits("joynr::system::RoutingTypes::QtWebSocketClientAddress")) {
             parentRouter->addNextHopAsync(
@@ -422,7 +441,8 @@ void MessageRouter::addNextHopToParent(std::string participantId,
                     joynr::system::RoutingTypes::QtWebSocketClientAddress::createStd(
                             *dynamic_cast<joynr::system::RoutingTypes::QtWebSocketClientAddress*>(
                                     incomingAddress.get())),
-                    onSuccess);
+                    onSuccess,
+                    onErrorWrapper);
         }
     } else if (onSuccess) {
         onSuccess();
@@ -439,24 +459,35 @@ void MessageRouter::addToRoutingTable(
 }
 
 // inherited from joynr::system::RoutingProvider
-void MessageRouter::removeNextHop(const std::string& participantId, std::function<void()> onSuccess)
+void MessageRouter::removeNextHop(
+        const std::string& participantId,
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     routingTableLock.lockForWrite();
     routingTable.remove(participantId);
     routingTableLock.unlock();
 
+    std::function<void(const exceptions::JoynrException&)> onErrorWrapper =
+            [onError](const exceptions::JoynrException& error) {
+        onError(joynr::exceptions::ProviderRuntimeException(error.getMessage()));
+    };
+
     // remove from parent router
     if (isChildMessageRouter()) {
-        parentRouter->removeNextHopAsync(participantId, onSuccess);
+        parentRouter->removeNextHopAsync(participantId, onSuccess, onErrorWrapper);
     } else if (onSuccess) {
         onSuccess();
     }
 }
 
 // inherited from joynr::system::RoutingProvider
-void MessageRouter::resolveNextHop(const std::string& participantId,
-                                   std::function<void(const bool& resolved)> onSuccess)
+void MessageRouter::resolveNextHop(
+        const std::string& participantId,
+        std::function<void(const bool& resolved)> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
+    (void)onError;
     routingTableLock.lockForRead();
     bool resolved = routingTable.contains(participantId);
     routingTableLock.unlock();

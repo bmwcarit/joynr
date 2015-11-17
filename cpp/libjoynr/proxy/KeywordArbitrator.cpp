@@ -42,17 +42,16 @@ KeywordArbitrator::KeywordArbitrator(const std::string& domain,
 void KeywordArbitrator::attemptArbitration()
 {
     std::vector<joynr::types::DiscoveryEntry> result;
-    joynr::RequestStatus status(
-            discoveryProxy.lookup(result, domain, interfaceName, systemDiscoveryQos));
-    if (status.successful()) {
+    try {
+        discoveryProxy.lookup(result, domain, interfaceName, systemDiscoveryQos);
         receiveCapabilitiesLookupResults(result);
-    } else {
+    } catch (exceptions::JoynrException& e) {
         LOG_ERROR(logger,
                   QString("Unable to lookup provider (domain: %1, interface: %2) "
-                          "from discovery. Status code: %3.")
+                          "from discovery. Error: %3.")
                           .arg(QString::fromStdString(domain))
                           .arg(QString::fromStdString(interfaceName))
-                          .arg(QString::fromStdString(status.getCode().toString())));
+                          .arg(QString::fromStdString(e.getMessage())));
     }
 }
 

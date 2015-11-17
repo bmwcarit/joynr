@@ -82,7 +82,7 @@ public:
     DomainRoleEntryChangedBroadcastListener(LocalDomainAccessController& parent);
     void onReceive(const infrastructure::DacTypes::ChangeType::Enum& changeType,
                    const infrastructure::DacTypes::DomainRoleEntry& changedDre);
-    void onError();
+    void onError(const exceptions::JoynrRuntimeException& error);
 
 private:
     LocalDomainAccessController& parent;
@@ -96,7 +96,7 @@ public:
     MasterAccessControlEntryChangedBroadcastListener(LocalDomainAccessController& parent);
     void onReceive(const infrastructure::DacTypes::ChangeType::Enum& changeType,
                    const infrastructure::DacTypes::MasterAccessControlEntry& changedMasterAce);
-    void onError();
+    void onError(const exceptions::JoynrRuntimeException& error);
 
 private:
     LocalDomainAccessController& parent;
@@ -110,7 +110,7 @@ public:
     MediatorAccessControlEntryChangedBroadcastListener(LocalDomainAccessController& parent);
     void onReceive(const infrastructure::DacTypes::ChangeType::Enum& changeType,
                    const infrastructure::DacTypes::MasterAccessControlEntry& changedMediatorAce);
-    void onError();
+    void onError(const exceptions::JoynrRuntimeException& error);
 
 private:
     LocalDomainAccessController& parent;
@@ -124,7 +124,7 @@ public:
     OwnerAccessControlEntryChangedBroadcastListener(LocalDomainAccessController& parent);
     void onReceive(const infrastructure::DacTypes::ChangeType::Enum& changeType,
                    const infrastructure::DacTypes::OwnerAccessControlEntry& changedOwnerAce);
-    void onError();
+    void onError(const exceptions::JoynrRuntimeException& error);
 
 private:
     LocalDomainAccessController& parent;
@@ -595,11 +595,11 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
         initialiser->update();
     };
 
-    std::function<void(const RequestStatus& status)> domainRoleOnError =
-            [this, initialiser](const RequestStatus& status) {
+    std::function<void(const exceptions::JoynrException&)> domainRoleOnError =
+            [this, initialiser](const exceptions::JoynrException& error) {
         LOG_ERROR(logger,
                   QString("Aborting ACL initialisation due to communication error:\n%1")
-                          .arg(QString::fromStdString(status.toString())));
+                          .arg(QString::fromStdString(error.getMessage())));
 
         // Abort the initialisation
         initialiser->abort();
@@ -619,11 +619,11 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
         initialiser->update();
     };
 
-    std::function<void(const RequestStatus& status)> masterAceOnError =
-            [this, initialiser](const RequestStatus& status) {
+    std::function<void(const exceptions::JoynrException& error)> masterAceOnError =
+            [this, initialiser](const exceptions::JoynrException& error) {
         LOG_ERROR(logger,
                   QString("Aborting ACL initialisation due to communication error:\n%1")
-                          .arg(QString::fromStdString(status.toString())));
+                          .arg(QString::fromStdString(error.getMessage())));
 
         // Abort the initialisation
         initialiser->abort();
@@ -644,11 +644,11 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
         initialiser->update();
     };
 
-    std::function<void(const RequestStatus& status)> mediatorAceOnError =
-            [this, initialiser](const RequestStatus& status) {
+    std::function<void(const exceptions::JoynrException& error)> mediatorAceOnError =
+            [this, initialiser](const exceptions::JoynrException& error) {
         LOG_ERROR(logger,
                   QString("Aborting ACL initialisation due to communication error:\n%1")
-                          .arg(QString::fromStdString(status.toString())));
+                          .arg(QString::fromStdString(error.getMessage())));
 
         // Abort the initialisation
         initialiser->abort();
@@ -668,11 +668,11 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
         initialiser->update();
     };
 
-    std::function<void(const RequestStatus& status)> ownerAceOnError =
-            [this, initialiser](const RequestStatus& status) {
+    std::function<void(const exceptions::JoynrException& error)> ownerAceOnError =
+            [this, initialiser](const exceptions::JoynrException& error) {
         LOG_ERROR(logger,
                   QString("Aborting ACL initialisation due to communication error:\n%1")
-                          .arg(QString::fromStdString(status.toString())));
+                          .arg(QString::fromStdString(error.getMessage())));
 
         // Abort the initialisation
         initialiser->abort();
@@ -900,8 +900,10 @@ void LocalDomainAccessController::DomainRoleEntryChangedBroadcastListener::onRec
               QString("Changed DRE: %1").arg(QString::fromStdString(changedDre.toString())));
 }
 
-void LocalDomainAccessController::DomainRoleEntryChangedBroadcastListener::onError()
+void LocalDomainAccessController::DomainRoleEntryChangedBroadcastListener::onError(
+        const exceptions::JoynrRuntimeException& error)
 {
+    (void)error;
     LOG_ERROR(parent.logger, QString("Change of DRE failed!"));
 }
 
@@ -933,8 +935,10 @@ void LocalDomainAccessController::MasterAccessControlEntryChangedBroadcastListen
     }
 }
 
-void LocalDomainAccessController::MasterAccessControlEntryChangedBroadcastListener::onError()
+void LocalDomainAccessController::MasterAccessControlEntryChangedBroadcastListener::onError(
+        const exceptions::JoynrRuntimeException& error)
 {
+    (void)error;
     LOG_ERROR(parent.logger, QString("Change of MasterAce failed!"));
 }
 
@@ -963,8 +967,10 @@ void LocalDomainAccessController::MediatorAccessControlEntryChangedBroadcastList
                       .arg(QString::fromStdString(changedMediatorAce.toString())));
 }
 
-void LocalDomainAccessController::MediatorAccessControlEntryChangedBroadcastListener::onError()
+void LocalDomainAccessController::MediatorAccessControlEntryChangedBroadcastListener::onError(
+        const exceptions::JoynrRuntimeException& error)
 {
+    (void)error;
     LOG_ERROR(parent.logger, QString("Change of MediatorAce failed!"));
 }
 
@@ -993,8 +999,10 @@ void LocalDomainAccessController::OwnerAccessControlEntryChangedBroadcastListene
                       .arg(QString::fromStdString(changedOwnerAce.toString())));
 }
 
-void LocalDomainAccessController::OwnerAccessControlEntryChangedBroadcastListener::onError()
+void LocalDomainAccessController::OwnerAccessControlEntryChangedBroadcastListener::onError(
+        const exceptions::JoynrRuntimeException& error)
 {
+    (void)error;
     LOG_ERROR(parent.logger, QString("Change of OwnerAce failed!"));
 }
 
