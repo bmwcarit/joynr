@@ -23,7 +23,6 @@
 #include <string>
 #include "joynr/MessagingSettings.h"
 #include "joynr/LocalChannelUrlDirectory.h"
-#include "utils/QThreadSleep.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/Future.h"
 

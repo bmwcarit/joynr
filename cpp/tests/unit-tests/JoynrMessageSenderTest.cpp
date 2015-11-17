@@ -22,7 +22,6 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 #include "utils/TestQString.h"
-#include "utils/QThreadSleep.h"
 #include <string>
 #include <vector>
 

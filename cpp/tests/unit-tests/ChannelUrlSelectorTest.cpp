@@ -20,9 +20,9 @@
 #include <gmock/gmock.h>
 #include "cluster-controller/http-communication-manager/ChannelUrlSelector.h"
 #include "joynr/BounceProxyUrl.h"
-#include "utils/QThreadSleep.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/Future.h"
+#include "joynr/ThreadUtil.h"
 #include <string>
 #include <memory>
 
@@ -191,7 +191,7 @@ TEST(ChannelUrlSelectorTest, obtainUrlRetriesUrlOfHigherPriority) {
     url = urlCache->obtainUrl(channelId,*status, 20000);
     EXPECT_EQ("secondUrl/message/", url);
 
-    QThreadSleep::msleep(timeForOneRecouperation + 100);
+    ThreadUtil::sleepForMillis(timeForOneRecouperation + 100);
     url = urlCache->obtainUrl(channelId,*status, 20000);
     EXPECT_EQ("firstUrl/message/", url);
 
@@ -282,28 +282,28 @@ TEST(ChannelUrlSelectorTest, updateTest) {
     EXPECT_EQ(2 - punishmentFactor,fitness.at(1));
     EXPECT_EQ(1 - punishmentFactor - punishmentFactor,fitness.at(2));
 
-    QThreadSleep::msleep(timeForOneRecouperation /3);
+    ThreadUtil::sleepForMillis(timeForOneRecouperation /3);
     entry->updateFitness();
     fitness = entry->getFitness();
     EXPECT_EQ(3 - punishmentFactor,fitness.at(0));
     EXPECT_EQ(2 - punishmentFactor,fitness.at(1));
     EXPECT_EQ(1 - punishmentFactor - punishmentFactor, fitness.at(2));
 
-    QThreadSleep::msleep(timeForOneRecouperation );
+    ThreadUtil::sleepForMillis(timeForOneRecouperation );
     entry->updateFitness();
     fitness = entry->getFitness();
     EXPECT_EQ(3,fitness.at(0));
     EXPECT_EQ(2,fitness.at(1));
     EXPECT_EQ(1 - punishmentFactor,fitness.at(2));
 
-    QThreadSleep::msleep(timeForOneRecouperation);
+    ThreadUtil::sleepForMillis(timeForOneRecouperation);
     entry->updateFitness();
     fitness = entry->getFitness();
     EXPECT_EQ(3,fitness.at(0));
     EXPECT_EQ(2,fitness.at(1));
     EXPECT_EQ(1,fitness.at(2));
 
-    QThreadSleep::msleep(timeForOneRecouperation );
+    ThreadUtil::sleepForMillis(timeForOneRecouperation );
     entry->updateFitness();
     fitness = entry->getFitness();
     EXPECT_EQ(3,fitness.at(0));
@@ -316,7 +316,7 @@ TEST(ChannelUrlSelectorTest, updateTest) {
     entry->punish("thirdUrl");
     entry->punish("thirdUrl");
 
-    QThreadSleep::msleep( 2 * timeForOneRecouperation + 10 );
+    ThreadUtil::sleepForMillis( 2 * timeForOneRecouperation + 10 );
     entry->updateFitness();
     fitness = entry->getFitness();
     EXPECT_EQ(3,fitness.at(0));
@@ -351,9 +351,9 @@ TEST(ChannelUrlSelectorTest, bestTest) {
     EXPECT_EQ("firstUrl", entry->best());
     entry->punish("firstUrl");
     EXPECT_EQ("secondUrl", entry->best());
-    QThreadSleep::msleep(timeForOneRecouperation + 100);
+    ThreadUtil::sleepForMillis(timeForOneRecouperation + 100);
     EXPECT_EQ("secondUrl", entry->best());
-    QThreadSleep::msleep(timeForOneRecouperation + 100);
+    ThreadUtil::sleepForMillis(timeForOneRecouperation + 100);
     EXPECT_EQ("firstUrl", entry->best());
 
     delete entry;

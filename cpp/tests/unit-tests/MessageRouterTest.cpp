@@ -25,6 +25,7 @@
 #include "joynr/system/RoutingTypes_QtChannelAddress.h"
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/MessageQueue.h"
+#include "joynr/ThreadUtil.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include <chrono>
 #include <stdint.h>
@@ -126,6 +127,6 @@ TEST_F(MessageRouterTest, outdatedMessagesAreRemoved){
     EXPECT_EQ(messageQueue->getQueueLength(), 1);
 
     // we wait for the time out (500ms) and the thread sleep (1000ms)
-    QThread::msleep(1200);
+    ThreadUtil::sleepForMillis(1200);
     EXPECT_EQ(messageQueue->getQueueLength(), 0);
 }

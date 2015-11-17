@@ -26,11 +26,12 @@
 #include "joynr/vehicle/GpsProxy.h"
 #include "joynr/tests/testProxy.h"
 #include "joynr/CapabilitiesRegistrar.h"
-#include "utils/QThreadSleep.h"
 #include "PrettyPrint.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/Future.h"
 #include "joynr/DispatcherUtils.h"
+#include "joynr/ThreadUtil.h"
+
 using namespace ::testing;
 
 using namespace joynr;
@@ -106,7 +107,7 @@ TEST_F(End2EndPerformanceTest, sendManyRequests) {
 
     runtime1->registerProvider<tests::testProvider>(domain, testProvider);
 
-    QThreadSleep::msleep(2000);
+    ThreadUtil::sleepForMillis(2000);
 
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domain);

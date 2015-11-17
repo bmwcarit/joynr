@@ -22,12 +22,12 @@
 #include "joynr/ISubscriptionCallback.h"
 #include "tests/utils/MockObjects.h"
 #include "utils/TestQString.h"
-#include "utils/QThreadSleep.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/SubscriptionCallback.h"
 #include "joynr/ThreadPoolDelayedScheduler.h"
 #include "joynr/SingleThreadedDelayedScheduler.h"
 #include "joynr/Runnable.h"
+#include "joynr/ThreadUtil.h"
 #include "joynr/TimeUtils.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/Directory.h"
@@ -94,7 +94,7 @@ TEST(SubscriptionManagerTest, registerSubscription_missedPublicationRunnableWork
                 qos,
                 subscriptionRequest
     );
-    QThreadSleep::msleep(1200);
+    ThreadUtil::sleepForMillis(1200);
 }
 
 TEST(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_missedPublicationRunnableWorks) {
@@ -115,7 +115,7 @@ TEST(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_missedP
                 qos,
                 subscriptionRequest
     );
-    QThreadSleep::msleep(300);
+    ThreadUtil::sleepForMillis(300);
 
     std::shared_ptr<MockSubscriptionListenerOneType<types::Localisation::QtGpsLocation> > mockGpsSubscriptionListener2(
             new MockSubscriptionListenerOneType<types::Localisation::QtGpsLocation>()
@@ -134,7 +134,7 @@ TEST(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_missedP
     );
 
     // now, no new publicationMissed callbacks are expected for the first subscriptionRequest
-    QThreadSleep::msleep(900);
+    ThreadUtil::sleepForMillis(900);
 }
 
 TEST(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_correctDealingWithEnlargedExpiryDate) {
@@ -165,7 +165,7 @@ TEST(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_correct
     );
 
     // now, no new publicationMissed callbacks are expected for the first subscriptionRequest
-    QThreadSleep::msleep(1000);
+    ThreadUtil::sleepForMillis(1000);
 }
 
 TEST(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_correctDealingWithReducedExpiryDate) {
@@ -196,7 +196,7 @@ TEST(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_correct
     );
 
     // now, no new publicationMissed callbacks are expected for the first subscriptionRequest
-    QThreadSleep::msleep(1000);
+    ThreadUtil::sleepForMillis(1000);
 }
 
 TEST(SubscriptionManagerTest, registerSubscription_withoutExpiryDate) {
@@ -269,9 +269,9 @@ TEST(SubscriptionManagerTest, unregisterSubscription_unregisterLeadsToStoppingMi
                 gpslocationCallback,
                 qos,
                 subscriptionRequest);
-     QThreadSleep::msleep(900);
+     ThreadUtil::sleepForMillis(900);
      subscriptionManager.unregisterSubscription(QString::fromStdString(subscriptionRequest.getSubscriptionId()));
-     QThreadSleep::msleep(1100);
+     ThreadUtil::sleepForMillis(1100);
 }
 
 TEST(SubscriptionManagerTest, unregisterSubscription_unregisterLeadsOnNonExistantSubscription) {

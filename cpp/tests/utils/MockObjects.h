@@ -36,7 +36,6 @@
 #include "utils/TestQString.h"
 #include <string>
 #include <vector>
-#include "utils/QThreadSleep.h"
 #include "joynr/DelayedScheduler.h"
 #include "joynr/Runnable.h"
 #include "joynr/vehicle/GpsRequestCaller.h"

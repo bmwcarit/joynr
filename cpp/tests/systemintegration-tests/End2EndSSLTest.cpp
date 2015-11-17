@@ -33,6 +33,7 @@
 #include "joynr/Util.h"
 #include "joynr/TypeUtil.h"
 #include "joynr/Settings.h"
+#include "joynr/ThreadUtil.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -68,7 +69,7 @@ public:
 
         // Remove participant id persistence file
         QFile::remove(TypeUtil::toQt(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME()));
-        QThreadSleep::msleep(550);
+        ThreadUtil::sleepForMillis(550);
     }
 
     ~End2EndSSLTest(){
@@ -85,7 +86,7 @@ TEST_F(End2EndSSLTest, call_rpc_method_and_get_expected_result)
     // Create a provider
     std::shared_ptr<MockGpsProvider> mockProvider(new MockGpsProvider());
     runtime->registerProvider<vehicle::GpsProvider>(domain, mockProvider);
-    QThreadSleep::msleep(550);
+    ThreadUtil::sleepForMillis(550);
 
     // Build a proxy
     ProxyBuilder<vehicle::GpsProxy>* gpsProxyBuilder = runtime->createProxyBuilder<vehicle::GpsProxy>(domain);

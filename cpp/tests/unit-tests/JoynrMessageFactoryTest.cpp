@@ -19,7 +19,6 @@
 #include "gtest/gtest.h"
 #include "joynr/JoynrMessageFactory.h"
 #include "utils/TestQString.h"
-#include "utils/QThreadSleep.h"
 #include "joynr/Request.h"
 #include "joynr/DeclareMetatypeUtil.h"
 #include "common/rpc/RpcMetaTypes.h"

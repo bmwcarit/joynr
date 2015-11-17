@@ -225,7 +225,6 @@ set(
     "PrettyPrint.h"
     "utils/MockObjects.h"
     "utils/TestQString.h"
-    "utils/QThreadSleep.h"
     "utils/MockLocalCapabilitiesDirectoryCallback.h"
     ${JoynrTest_GENHEADERS}
 )
@@ -261,7 +260,6 @@ set(
     "PrettyPrint.h"
     "utils/LibJoynrMockObjects.h"
     "utils/TestQString.h"
-    "utils/QThreadSleep.h"
     ${JoynrTest_GENHEADERS}
 )
 

@@ -37,12 +37,12 @@
 #include "joynr/types/QtProviderQos.h"
 #include "joynr/types/QtCapabilityInformation.h"
 #include "joynr/CapabilitiesRegistrar.h"
-#include "utils/QThreadSleep.h"
 #include "PrettyPrint.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/Future.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/ThreadUtil.h"
 
 
 using namespace ::testing;
@@ -142,11 +142,11 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
     providerQos.setPriority(2);
     std::shared_ptr<tests::testProvider> testProvider(new MockTestProvider(providerQos));
 
-    QThreadSleep::msleep(1000);
+    ThreadUtil::sleepForMillis(1000);
 
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
-    QThreadSleep::msleep(1000);
+    ThreadUtil::sleepForMillis(1000);
 
     //consumer for testinterface
     // Testing Lists
@@ -462,7 +462,7 @@ TEST_F(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply) {
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
-    QThreadSleep::msleep(5000);
+    ThreadUtil::sleepForMillis(5000);
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder
             = runtime2->createProxyBuilder<tests::testProxy>(domainName);
@@ -518,7 +518,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToOnChange) {
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
-    QThreadSleep::msleep(5000);
+    ThreadUtil::sleepForMillis(5000);
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder
             = runtime2->createProxyBuilder<tests::testProxy>(domainName);
@@ -547,7 +547,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToOnChange) {
 
     //This wait is necessary, because subcriptions are async, and an attribute could be changed before
     // before the subscription has started.
-    QThreadSleep::msleep(5000);
+    ThreadUtil::sleepForMillis(5000);
 
     // Change the location once
     testProxy->setLocation(types::Localisation::GpsLocation(9.0, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 1));
@@ -557,9 +557,9 @@ TEST_F(CombinedEnd2EndTest, subscribeToOnChange) {
 
     // Change the location 3 times
     testProxy->setLocation(types::Localisation::GpsLocation(9.0, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 2));
-    QThreadSleep::msleep(minInterval_ms + 50);
+    ThreadUtil::sleepForMillis(minInterval_ms + 50);
     testProxy->setLocation(types::Localisation::GpsLocation(9.0, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 3));
-    QThreadSleep::msleep(minInterval_ms + 50);
+    ThreadUtil::sleepForMillis(minInterval_ms + 50);
     testProxy->setLocation(types::Localisation::GpsLocation(9.0, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4));
 
     // Wait for 3 subscription messages to arrive
@@ -597,7 +597,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToListAttribute) {
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
-    QThreadSleep::msleep(5000);
+    ThreadUtil::sleepForMillis(5000);
 
     ProxyBuilder<tests::testProxy>* proxyBuilder
             = runtime2->createProxyBuilder<tests::testProxy>(domainName);
@@ -702,7 +702,7 @@ TEST_F(CombinedEnd2EndTest, unsubscribeViaHttpReceiver) {
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished. See Joynr 805 for details
-    QThreadSleep::msleep(5000);
+    ThreadUtil::sleepForMillis(5000);
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
@@ -743,7 +743,7 @@ TEST_F(CombinedEnd2EndTest, deleteChannelViaReceiver) {
     //MockGpsProvider* gpsProvider = new MockGpsProvider();
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
-    QThreadSleep::msleep(1000); //This wait is necessary, because registerProvider is async, and a lookup could occour before the register has finished.
+    ThreadUtil::sleepForMillis(1000); //This wait is necessary, because registerProvider is async, and a lookup could occour before the register has finished.
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
@@ -758,7 +758,7 @@ TEST_F(CombinedEnd2EndTest, deleteChannelViaReceiver) {
                                                ->setCached(false)
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
-    QThreadSleep::msleep(150);
+    ThreadUtil::sleepForMillis(150);
     std::shared_ptr<Future<int> > testFuture(testProxy->addNumbersAsync(1, 2, 3));
     testFuture->wait();
 
@@ -834,7 +834,7 @@ TEST_F(CombinedEnd2EndTest, subscribeInBackgroundThread) {
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
-    QThreadSleep::msleep(5000);
+    ThreadUtil::sleepForMillis(5000);
 
     tests::testProxy* testProxy = createTestProxy(runtime2, domainName);
     // Subscribe in a background thread
@@ -853,11 +853,11 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation) {
     providerQos.setPriority(2);
     std::shared_ptr<tests::testProvider> testProvider(new MockTestProvider(providerQos));
 
-    QThreadSleep::msleep(100);
+    ThreadUtil::sleepForMillis(100);
 
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
-    QThreadSleep::msleep(100);
+    ThreadUtil::sleepForMillis(100);
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
@@ -897,14 +897,14 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation_failure) {
     providerQos.setPriority(2);
     std::shared_ptr<tests::testProvider> testProvider(new MockTestProvider(providerQos));
 
-    QThreadSleep::msleep(2550);
+    ThreadUtil::sleepForMillis(2550);
 
     std::string testProviderParticipantId = runtime1->registerProvider<tests::testProvider>(
             domainName,
             testProvider
     );
 
-    QThreadSleep::msleep(2550);
+    ThreadUtil::sleepForMillis(2550);
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
@@ -923,7 +923,7 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation_failure) {
     // Shut down the provider
     //runtime1->stopMessaging();
     runtime1->unregisterProvider(domainName, testProvider);
-    QThreadSleep::msleep(5000);
+    ThreadUtil::sleepForMillis(5000);
 
     // Setup an onError callback function
     std::function<void(const exceptions::JoynrException&)> onError =

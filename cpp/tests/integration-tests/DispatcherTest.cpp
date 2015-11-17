@@ -35,6 +35,7 @@
 #include "tests/utils/MockObjects.h"
 #include "joynr/InterfaceRegistrar.h"
 #include "joynr/joynrlogging.h"
+#include "joynr/ThreadUtil.h"
 
 #include "joynr/tests/Itest.h"
 #include "joynr/tests/testRequestInterpreter.h"
@@ -170,7 +171,7 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
     dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
 
     dispatcher.receive(msg);
-    QThreadSleep::msleep(250);
+    ThreadUtil::sleepForMillis(250);
 }
 
 TEST_F(DispatcherTest, receive_interpreteReplyAndCallReplyCaller) {
@@ -203,7 +204,7 @@ TEST_F(DispatcherTest, receive_interpreteReplyAndCallReplyCaller) {
     dispatcher.addReplyCaller(requestReplyId, mockReplyCaller, qos);
     dispatcher.receive(msg);
 
-    QThreadSleep::msleep(250);
+    ThreadUtil::sleepForMillis(250);
 }
 
 

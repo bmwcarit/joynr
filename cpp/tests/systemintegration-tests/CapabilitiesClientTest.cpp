@@ -27,7 +27,6 @@
 #include "joynr/types/Localisation_QtTrip.h"
 #include "joynr/types/Localisation_QtGpsLocation.h"
 #include "joynr/CapabilitiesRegistrar.h"
-#include "utils/QThreadSleep.h"
 #include "PrettyPrint.h"
 #include "cluster-controller/capabilities-client/CapabilitiesClient.h"
 #include "joynr/infrastructure/IGlobalCapabilitiesDirectory.h"
