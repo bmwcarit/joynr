@@ -52,15 +52,10 @@ bool BroadcastSubscriptionRequest::operator==(
         const BroadcastSubscriptionRequest& subscriptionRequest) const
 {
 
-    bool equal = getQos()->equals(*subscriptionRequest.getQos()) &&
+    bool equal = getQos() == subscriptionRequest.getQos() &&
                  getFilterParameters() == subscriptionRequest.getFilterParameters();
     return getSubscriptionId() == subscriptionRequest.getSubscriptionId() &&
            getSubscribeToName() == subscriptionRequest.getSubscribeToName() && equal;
-}
-
-void BroadcastSubscriptionRequest::setFilterParametersData(QVariant filterParameters)
-{
-    this->filterParameters = filterParameters.value<BroadcastFilterParameters>();
 }
 
 QString BroadcastSubscriptionRequest::toQString() const
@@ -68,14 +63,10 @@ QString BroadcastSubscriptionRequest::toQString() const
     return JsonSerializer::serializeQObject(*this);
 }
 
-void BroadcastSubscriptionRequest::setQos(std::shared_ptr<QtOnChangeSubscriptionQos> qos)
+void BroadcastSubscriptionRequest::setQos(OnChangeSubscriptionQos qos)
 {
-    SubscriptionRequest::setQos(qos);
-}
-
-QVariant BroadcastSubscriptionRequest::getFilterParametersData() const
-{
-    return QVariant::fromValue(filterParameters);
+    Variant qosVariant = Variant::make<OnChangeSubscriptionQos>(qos);
+    SubscriptionRequest::setQos(qosVariant);
 }
 
 BroadcastFilterParameters BroadcastSubscriptionRequest::getFilterParameters() const

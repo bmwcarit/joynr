@@ -70,6 +70,7 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 #include "joynr/TypeUtil.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/RequestStatusCode.h"
+#include "joynr/SubscriptionUtil.h"
 
 «getNamespaceStarter(serviceInterface)»
 
@@ -275,7 +276,7 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 				subscriptionManager->registerSubscription(
 						attributeName,
 						subscriptionCallback,
-						std::shared_ptr<QtSubscriptionQos>(QtSubscriptionQos::createQt(subscriptionQos)),
+						SubscriptionUtil::getVariant(subscriptionQos),
 						subscriptionRequest);
 				LOG_DEBUG(logger, "Registered subscription: " + subscriptionRequest.toQString());
 				assert(address);
@@ -461,7 +462,7 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 		subscriptionManager->registerSubscription(
 					broadcastName,
 					subscriptionCallback,
-					std::shared_ptr<QtOnChangeSubscriptionQos>(QtSubscriptionQos::createQt(subscriptionQos)),
+					Variant::make<OnChangeSubscriptionQos>(subscriptionQos),
 					subscriptionRequest);
 		LOG_DEBUG(logger, "Registered broadcast subscription: " + subscriptionRequest.toQString());
 		assert(address);

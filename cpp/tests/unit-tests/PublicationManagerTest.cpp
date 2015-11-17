@@ -101,7 +101,7 @@ TEST_F(PublicationManagerTest, add_requestCallerIsCalledCorrectlyByPublisherRunn
     qint64 period_ms = 100;
     qint64 validity_ms = 500;
     qint64 alertInterval_ms = 2000;
-    std::shared_ptr<QtSubscriptionQos> qos(new QtPeriodicSubscriptionQos(
+    Variant qos = Variant::make<PeriodicSubscriptionQos>(PeriodicSubscriptionQos(
                         validity_ms,
                         period_ms,
                         alertInterval_ms));
@@ -139,7 +139,7 @@ TEST_F(PublicationManagerTest, stop_publications) {
     qint64 period_ms = 100;
     qint64 validity_ms = 10000;
     qint64 alertInterval_ms = 1000;
-    std::shared_ptr<QtSubscriptionQos> qos(new QtPeriodicSubscriptionQos(
+    Variant qos = Variant::make<PeriodicSubscriptionQos>(PeriodicSubscriptionQos(
                         validity_ms,
                         period_ms,
                         alertInterval_ms));
@@ -183,7 +183,7 @@ TEST_F(PublicationManagerTest, remove_all_publications) {
     qint64 period_ms = 100;
     qint64 validity_ms = 10000;
     qint64 alertInterval_ms = 1000;
-    std::shared_ptr<QtSubscriptionQos> qos(new QtPeriodicSubscriptionQos(
+    Variant qos = Variant::make<PeriodicSubscriptionQos>(PeriodicSubscriptionQos(
                         validity_ms,
                         period_ms,
                         alertInterval_ms));
@@ -224,7 +224,7 @@ TEST_F(PublicationManagerTest, restore_publications) {
     qint64 period_ms = 100;
     qint64 validity_ms = 1000;
     qint64 alertInterval_ms = 1000;
-    std::shared_ptr<QtSubscriptionQos> qos(new QtPeriodicSubscriptionQos(
+    Variant qos = Variant::make<PeriodicSubscriptionQos>(PeriodicSubscriptionQos(
                         validity_ms,
                         period_ms,
                         alertInterval_ms));
@@ -305,7 +305,7 @@ TEST_F(PublicationManagerTest, add_onChangeSubscription) {
     //QtSubscriptionQos
     qint64 minInterval_ms = 50;
     qint64 validity_ms = 500;
-    std::shared_ptr<QtSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
+    Variant qos = Variant::make<OnChangeSubscriptionQos>(OnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
 
@@ -372,7 +372,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
     //QtSubscriptionQos
     qint64 minInterval_ms = 500;
     qint64 validity_ms = -1; //no expiry date -> infinite subscription
-    std::shared_ptr<QtSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
+    Variant qos = Variant::make<OnChangeSubscriptionQos>(OnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
 
@@ -447,7 +447,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval) {
     //QtSubscriptionQos
     qint64 minInterval_ms = 500;
     qint64 validity_ms = 600;
-    std::shared_ptr<QtSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
+    Variant qos = Variant::make<OnChangeSubscriptionQos>(OnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
 
@@ -542,15 +542,14 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
     //QtSubscriptionQos
     qint64 minInterval_ms = 100;
     qint64 validity_ms = 600;
-    std::shared_ptr<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
-                        validity_ms,
-                        minInterval_ms));
+    OnChangeSubscriptionQos qos{validity_ms,minInterval_ms};
 
     int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-    qos->setExpiryDate(now + 5000);
+    qos.setExpiryDate(now + 5000);
 
+    Variant qosVariant = Variant::make<OnChangeSubscriptionQos>(qos);
     subscriptionRequest.setSubscribeToName(attributeName);
-    subscriptionRequest.setQos(qos);
+    subscriptionRequest.setQos(qosVariant);
     LOG_DEBUG(logger, "adding attribute subscription request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
@@ -574,8 +573,9 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
     //now, let's update the subscription and check if the provided data is correctly processed by the PublicationManager
     // will be deleted by the publication manager
 
-    qos->setMinInterval(minInterval_ms + 500);
-    subscriptionRequest.setQos(qos);
+    qos.setMinInterval(minInterval_ms + 500);
+    qosVariant = Variant::make<OnChangeSubscriptionQos>(qos);
+    subscriptionRequest.setQos(qosVariant);
     LOG_DEBUG(logger, "update attribute subscription request");
     publicationManager.add(senderId, receiverId, requestCaller2,subscriptionRequest,&mockPublicationSender2);
 
@@ -653,14 +653,13 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
     qint64 testRelExpiryDate = 500;
     int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
     int64_t testAbsExpiryDate = now + testRelExpiryDate;
-    std::shared_ptr<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
-                        validity_ms,
-                        minInterval_ms));
+    OnChangeSubscriptionQos qos{validity_ms,minInterval_ms};
 
-    qos->setExpiryDate(testAbsExpiryDate);
+    qos.setExpiryDate(testAbsExpiryDate);
 
+    Variant qosVariant = Variant::make<OnChangeSubscriptionQos>(qos);
     subscriptionRequest.setSubscribeToName(attributeName);
-    subscriptionRequest.setQos(qos);
+    subscriptionRequest.setQos(qosVariant);
 
     LOG_DEBUG(logger, "adding attribute subscription request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
@@ -672,8 +671,9 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
 
     // now, let's update the subscription and check if the provided data is correctly processed by the PublicationManager
     // extend the expiry date
-    qos->setExpiryDate(testAbsExpiryDate + 1000);
-    subscriptionRequest.setQos(qos);
+    qos.setExpiryDate(testAbsExpiryDate + 1000);
+    qosVariant = Variant::make<OnChangeSubscriptionQos>(qos);
+    subscriptionRequest.setQos(qosVariant);
     LOG_DEBUG(logger, "adding request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
@@ -748,14 +748,13 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
     qint64 testRelExpiryDate = 500 + testExpiryDate_shift;
     int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
     int64_t testAbsExpiryDate = now + testRelExpiryDate;
-    std::shared_ptr<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
-                        validity_ms,
-                        minInterval_ms));
+    OnChangeSubscriptionQos qos{validity_ms,minInterval_ms};
 
-    qos->setExpiryDate(testAbsExpiryDate);
+    qos.setExpiryDate(testAbsExpiryDate);
 
+    Variant qosVariant = Variant::make<OnChangeSubscriptionQos>(qos);
     subscriptionRequest.setSubscribeToName(attributeName);
-    subscriptionRequest.setQos(qos);
+    subscriptionRequest.setQos(qosVariant);
     LOG_DEBUG(logger, "adding attribute subscription request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
@@ -769,8 +768,9 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
 
     // now, let's update the subscription and check if the provided data is correctly processed by the PublicationManager
     // reduce the expiry date
-    qos->setExpiryDate(testAbsExpiryDate - testExpiryDate_shift);
-    subscriptionRequest.setQos(qos);
+    qos.setExpiryDate(testAbsExpiryDate - testExpiryDate_shift);
+    qosVariant = Variant::make<OnChangeSubscriptionQos>(qos);
+    subscriptionRequest.setQos(qosVariant);
     LOG_DEBUG(logger, "update attribute subscription request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
@@ -862,11 +862,10 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     //QtSubscriptionQos
     qint64 minInterval_ms = 100;
     qint64 validity_ms = 600;
-    std::shared_ptr<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
-                        validity_ms,
-                        minInterval_ms));
+    OnChangeSubscriptionQos qos{validity_ms,minInterval_ms};
+
     int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-    qos->setExpiryDate(now + 5000);
+    qos.setExpiryDate(now + 5000);
 
     subscriptionRequest.setSubscribeToName(broadcastName);
     subscriptionRequest.setQos(qos);
@@ -890,7 +889,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
 
     //now, let's update the subscription an check if the provided data is correctly processed by the PublicationManager
 
-    qos->setMinInterval(newMinInterval);
+    qos.setMinInterval(newMinInterval);
     subscriptionRequest.setQos(qos);
     LOG_DEBUG(logger, "update broadcast subscription request");
     publicationManager.add(senderId, receiverId, requestCaller2,subscriptionRequest,&mockPublicationSender2);
@@ -967,11 +966,9 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     qint64 testRelExpiryDate = 500;
     int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
     int64_t testAbsExpiryDate = now + testRelExpiryDate;
-    std::shared_ptr<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
-                        validity_ms,
-                        minInterval_ms));
+    OnChangeSubscriptionQos qos{validity_ms,minInterval_ms};
 
-    qos->setExpiryDate(testAbsExpiryDate);
+    qos.setExpiryDate(testAbsExpiryDate);
 
     subscriptionRequest.setSubscribeToName(broadcastName);
     subscriptionRequest.setQos(qos);
@@ -986,7 +983,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
 
     // now, let's update the subscription and check if the provided data is correctly processed by the PublicationManager
     // extend the expiry date
-    qos->setExpiryDate(testAbsExpiryDate + 1000);
+    qos.setExpiryDate(testAbsExpiryDate + 1000);
     subscriptionRequest.setQos(qos);
     LOG_DEBUG(logger, "update broadcast subscription request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
@@ -1057,11 +1054,9 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     qint64 testRelExpiryDate = 500 + testExpiryDate_shift;
     int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
     int64_t testAbsExpiryDate = now + testRelExpiryDate;
-    std::shared_ptr<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
-                        validity_ms,
-                        minInterval_ms));
+    OnChangeSubscriptionQos qos{validity_ms,minInterval_ms};
 
-    qos->setExpiryDate(testAbsExpiryDate);
+    qos.setExpiryDate(testAbsExpiryDate);
 
     subscriptionRequest.setSubscribeToName(broadcastName);
     subscriptionRequest.setQos(qos);
@@ -1075,7 +1070,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
 
     // now, let's update the subscription and check if the provided data is correctly processed by the PublicationManager
     // reduce the expiry date
-    qos->setExpiryDate(testAbsExpiryDate - testExpiryDate_shift);
+    qos.setExpiryDate(testAbsExpiryDate - testExpiryDate_shift);
     subscriptionRequest.setQos(qos);
     LOG_DEBUG(logger, "update broadcast subscription request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
@@ -1133,7 +1128,7 @@ TEST_F(PublicationManagerTest, remove_onChangeSubscription) {
     //QtSubscriptionQos
     qint64 minInterval_ms = 1;
     qint64 validity_ms = 100;
-    std::shared_ptr<QtSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
+    Variant qos = Variant::make<OnChangeSubscriptionQos>(OnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
 

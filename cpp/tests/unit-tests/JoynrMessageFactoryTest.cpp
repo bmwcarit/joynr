@@ -210,7 +210,7 @@ TEST_F(JoynrMessageFactoryTest, createPublication){
 }
 
 TEST_F(JoynrMessageFactoryTest, createSubscriptionRequest){
-    auto subscriptionQos = std::shared_ptr<QtSubscriptionQos>(new QtOnChangeSubscriptionQos());
+    Variant subscriptionQos = Variant::make<OnChangeSubscriptionQos>(OnChangeSubscriptionQos());
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId("subscriptionId");
     subscriptionRequest.setSubscribeToName("attributeName");

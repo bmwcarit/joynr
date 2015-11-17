@@ -78,7 +78,7 @@ SubscriptionManager::SubscriptionManager(DelayedScheduler* scheduler)
 void SubscriptionManager::registerSubscription(
         const QString& subscribeToName,
         std::shared_ptr<ISubscriptionCallback> subscriptionCaller,
-        std::shared_ptr<QtSubscriptionQos> qos,
+        Variant qosVariant,
         SubscriptionRequest& subscriptionRequest)
 {
     // Register the subscription
@@ -96,6 +96,8 @@ void SubscriptionManager::registerSubscription(
     }
 
     int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    subscriptionRequest.setQos(qosVariant);
+    const SubscriptionQos* qos = subscriptionRequest.getSubscriptionQosPtr();
     if (qos->getExpiryDate() != joynr::QtSubscriptionQos::NO_EXPIRY_DATE() &&
         qos->getExpiryDate() < now) {
         LOG_DEBUG(logger, "Expiry date is in the past: no subscription created");
@@ -110,18 +112,17 @@ void SubscriptionManager::registerSubscription(
 
     {
         QMutexLocker subscriptionLocker(&(subscription->mutex));
-        if (SubscriptionUtil::getAlertInterval(qos.get()) > 0 &&
-            SubscriptionUtil::getPeriodicPublicationInterval(qos.get()) > 0) {
+        if (SubscriptionUtil::getAlertInterval(qosVariant) > 0 &&
+            SubscriptionUtil::getPeriodicPublicationInterval(qosVariant) > 0) {
             LOG_DEBUG(logger, "Will notify if updates are missed.");
-            qint64 alertAfterInterval = SubscriptionUtil::getAlertInterval(qos.get());
+            int64_t alertAfterInterval = SubscriptionUtil::getAlertInterval(qosVariant);
             JoynrTimePoint expiryDate{milliseconds(qos->getExpiryDate())};
-            qint64 periodicPublicationInterval =
-                    SubscriptionUtil::getPeriodicPublicationInterval(qos.get());
+            int64_t periodicPublicationInterval =
+                    SubscriptionUtil::getPeriodicPublicationInterval(qosVariant);
 
-            if (expiryDate.time_since_epoch().count() ==
-                joynr::QtSubscriptionQos::NO_EXPIRY_DATE()) {
-                expiryDate = JoynrTimePoint{
-                        milliseconds(joynr::QtSubscriptionQos::NO_EXPIRY_DATE_TTL())};
+            if (expiryDate.time_since_epoch().count() == joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
+                expiryDate =
+                        JoynrTimePoint{milliseconds(joynr::SubscriptionQos::NO_EXPIRY_DATE_TTL())};
             }
 
             subscription->missedPublicationRunnableHandle = missedPublicationScheduler->schedule(
@@ -132,7 +133,7 @@ void SubscriptionManager::registerSubscription(
                                                   *this,
                                                   alertAfterInterval),
                     alertAfterInterval);
-        } else if (qos->getExpiryDate() != joynr::QtSubscriptionQos::NO_EXPIRY_DATE()) {
+        } else if (qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
             int64_t now =
                     duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
             subscription->subscriptionEndRunnableHandle = missedPublicationScheduler->schedule(
@@ -141,7 +142,6 @@ void SubscriptionManager::registerSubscription(
     }
     subscriptionRequest.setSubscriptionId(subscriptionId.toStdString());
     subscriptionRequest.setSubscribeToName(subscribeToName.toStdString());
-    subscriptionRequest.setQos(qos);
 }
 
 void SubscriptionManager::unregisterSubscription(const QString& subscriptionId)

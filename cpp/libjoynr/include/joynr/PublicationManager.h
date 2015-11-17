@@ -54,6 +54,7 @@ namespace exceptions
 {
 class JoynrException;
 }
+class SubscriptionQos;
 
 /**
   * \class PublicationManager
@@ -246,8 +247,7 @@ private:
      *          amount of ms to wait, if interval was too short;
      *          -1 on error
      */
-    qint64 getTimeUntilNextPublication(std::shared_ptr<Publication> publication,
-                                       std::shared_ptr<QtSubscriptionQos> qos);
+    int64_t getTimeUntilNextPublication(std::shared_ptr<Publication> publication, Variant qos);
 
     void saveSubscriptionRequestsMap(const QList<QVariant>& subscriptionList,
                                      const QString& storageFilename);

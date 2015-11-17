@@ -146,7 +146,7 @@ TEST_F(SubscriptionTest, receive_subscriptionRequestAndPollAttribute) {
                     ReleaseSemaphore(&semaphore)));
 
     std::string attributeName = "Location";
-    auto subscriptionQos = std::shared_ptr<QtSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
+    Variant subscriptionQos = Variant::make<OnChangeWithKeepAliveSubscriptionQos>(OnChangeWithKeepAliveSubscriptionQos(
                 80, // validity_ms
                 100, // minInterval_ms
                 200, // maxInterval_ms
@@ -192,7 +192,7 @@ TEST_F(SubscriptionTest, receive_publication ) {
 
     //register the subscription on the consumer side
     QString attributeName = "Location";
-    auto subscriptionQos = std::shared_ptr<QtSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
+    Variant subscriptionQos = Variant::make<OnChangeWithKeepAliveSubscriptionQos>(OnChangeWithKeepAliveSubscriptionQos(
                 80, // validity_ms
                 100, // minInterval_ms
                 200, // maxInterval_ms
@@ -251,7 +251,7 @@ TEST_F(SubscriptionTest, receive_enumPublication ) {
 
     //register the subscription on the consumer side
     QString attributeName = "testEnum";
-    auto subscriptionQos = std::shared_ptr<QtSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
+    Variant subscriptionQos = Variant::make<OnChangeWithKeepAliveSubscriptionQos>(OnChangeWithKeepAliveSubscriptionQos(
                 80, // validity_ms
                 100, // minInterval_ms
                 200, // maxInterval_ms
@@ -313,7 +313,7 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription) {
                     ReleaseSemaphore(&semaphore)
             ));
     std::string attributeName = "Location";
-    auto subscriptionQos = std::shared_ptr<QtSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
+    Variant subscriptionQos = Variant::make<OnChangeWithKeepAliveSubscriptionQos>(OnChangeWithKeepAliveSubscriptionQos(
                 80, // validity_ms
                 100, // minInterval_ms
                 200, // maxInterval_ms
@@ -343,8 +343,8 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription) {
 TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam) {
 
     std::string subscriptionId = "SubscriptionID";
-    auto subscriptionQos =
-            std::shared_ptr<QtOnChangeSubscriptionQos>(new QtOnChangeSubscriptionQos(
+    Variant subscriptionQos =
+            Variant::make<OnChangeSubscriptionQos>(OnChangeSubscriptionQos(
                 800, // validity_ms
                 0 // minInterval_ms
     ));
@@ -425,7 +425,7 @@ TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications) {
                     ReleaseSemaphore(&semaphore)));
 
     dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
-    auto subscriptionQos = std::shared_ptr<QtSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
+    Variant subscriptionQos = Variant::make<OnChangeWithKeepAliveSubscriptionQos>(OnChangeWithKeepAliveSubscriptionQos(
                 1200, // validity_ms
                 10, // minInterval_ms
                 100, // maxInterval_ms
@@ -473,7 +473,7 @@ TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
 
     dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
     std::string attributeName = "Location";
-    auto subscriptionQos = std::shared_ptr<QtSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
+    Variant subscriptionQos = Variant::make<OnChangeWithKeepAliveSubscriptionQos>(OnChangeWithKeepAliveSubscriptionQos(
                 1200, // validity_ms
                 10, // minInterval_ms
                 100, // maxInterval_ms

@@ -70,7 +70,7 @@ public:
      */
     void registerSubscription(const QString& subscribeToName,
                               std::shared_ptr<ISubscriptionCallback> subscriptionCaller,
-                              std::shared_ptr<QtSubscriptionQos> qos,
+                              Variant qosVariant,
                               SubscriptionRequest& subscriptionRequest);
 
     /**

@@ -19,9 +19,9 @@
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/JsonSerializer.h"
 #include "joynr/Util.h"
-#include "joynr/QtOnChangeSubscriptionQos.h"
-#include "joynr/QtOnChangeWithKeepAliveSubscriptionQos.h"
-#include "joynr/QtPeriodicSubscriptionQos.h"
+#include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/PeriodicSubscriptionQos.h"
 
 #include <cassert>
 
@@ -36,17 +36,9 @@ SubscriptionRequest::SubscriptionRequest()
         : QObject(),
           subscriptionId(),
           subscribedToName(),
-          qos(std::shared_ptr<QtSubscriptionQos>(new QtOnChangeSubscriptionQos()))
+          qos(Variant::make<OnChangeSubscriptionQos>(OnChangeSubscriptionQos()))
 {
     subscriptionId = Util::createUuid().toStdString();
-    qRegisterMetaType<QtSubscriptionQos>("QtSubscriptionQos");
-
-    qRegisterMetaType<QtOnChangeSubscriptionQos>("QtOnChangeSubscriptionQos");
-
-    qRegisterMetaType<QtOnChangeWithKeepAliveSubscriptionQos>(
-            "QtOnChangeWithKeepAliveSubscriptionQos");
-
-    qRegisterMetaType<QtPeriodicSubscriptionQos>("QtPeriodicSubscriptionQos");
 }
 
 SubscriptionRequest::SubscriptionRequest(const SubscriptionRequest& subscriptionRequest)
@@ -67,15 +59,25 @@ std::string SubscriptionRequest::getSubscribeToName() const
     return subscribedToName;
 }
 
-std::shared_ptr<QtSubscriptionQos> SubscriptionRequest::getQos() const
+const Variant& SubscriptionRequest::getQos() const
 {
     return qos;
 }
 
-QVariant SubscriptionRequest::getQosData() const
+const SubscriptionQos* SubscriptionRequest::getSubscriptionQosPtr()
 {
-    int typeId = QMetaType::type(qos->metaObject()->className());
-    return QVariant(typeId, qos.get());
+    if (qos.is<OnChangeWithKeepAliveSubscriptionQos>()) {
+        return &qos.get<OnChangeWithKeepAliveSubscriptionQos>();
+    }
+    if (qos.is<PeriodicSubscriptionQos>()) {
+        return &qos.get<PeriodicSubscriptionQos>();
+    }
+    if (qos.is<OnChangeSubscriptionQos>()) {
+        return &qos.get<OnChangeSubscriptionQos>();
+    }
+    if (qos.is<SubscriptionQos>()) {
+        return &qos.get<SubscriptionQos>();
+    }
 }
 
 SubscriptionRequest& SubscriptionRequest::operator=(const SubscriptionRequest& subscriptionRequest)
@@ -88,7 +90,7 @@ SubscriptionRequest& SubscriptionRequest::operator=(const SubscriptionRequest& s
 
 bool SubscriptionRequest::operator==(const SubscriptionRequest& subscriptionRequest) const
 {
-    bool equal = getQos()->equals(*subscriptionRequest.getQos());
+    bool equal = getQos() == subscriptionRequest.getQos();
     return subscriptionId == subscriptionRequest.getSubscriptionId() &&
            subscribedToName == subscriptionRequest.getSubscribeToName() && equal;
 }
@@ -103,17 +105,9 @@ void SubscriptionRequest::setSubscribeToName(const std::string& attributeName)
     this->subscribedToName = attributeName;
 }
 
-void SubscriptionRequest::setQos(std::shared_ptr<QtSubscriptionQos> qos)
+void SubscriptionRequest::setQos(const Variant& qos)
 {
     this->qos = qos;
-}
-
-void SubscriptionRequest::setQosData(QVariant qos)
-{
-    // copy the object
-    QMetaType type(qos.userType());
-    auto newQos = static_cast<QtSubscriptionQos*>(type.create(qos.constData()));
-    this->qos = std::shared_ptr<QtSubscriptionQos>(newQos);
 }
 
 QString SubscriptionRequest::toQString() const

@@ -120,7 +120,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
 
     //register the subscription on the consumer side
     QString subscribeToName = "locationUpdate";
-    auto subscriptionQos = std::shared_ptr<QtOnChangeSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
+    Variant subscriptionQos = Variant::make<OnChangeWithKeepAliveSubscriptionQos>(OnChangeWithKeepAliveSubscriptionQos(
                 80, // validity_ms
                 100, // minInterval_ms
                 200, // maxInterval_ms
@@ -175,7 +175,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters )
 
     //register the subscription on the consumer side
     QString subscribeToName = "locationUpdateWithSpeed";
-    auto subscriptionQos = std::shared_ptr<QtOnChangeSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
+    Variant subscriptionQos = Variant::make<OnChangeWithKeepAliveSubscriptionQos>(OnChangeWithKeepAliveSubscriptionQos(
                 80, // validity_ms
                 100, // minInterval_ms
                 200, // maxInterval_ms

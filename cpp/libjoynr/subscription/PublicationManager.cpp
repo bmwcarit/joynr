@@ -209,10 +209,10 @@ PublicationManager::PublicationManager(int maxThreads)
     loadSavedBroadcastSubscriptionRequestsMap();
 }
 
-bool isSubscriptionExpired(std::shared_ptr<QtSubscriptionQos> qos, int offset = 0)
+bool isSubscriptionExpired(const SubscriptionQos* qos, int offset = 0)
 {
     int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-    return qos->getExpiryDate() != joynr::QtSubscriptionQos::NO_EXPIRY_DATE() &&
+    return qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE() &&
            qos->getExpiryDate() < (now + offset);
 }
 
@@ -266,7 +266,7 @@ void PublicationManager::handleAttributeSubscriptionRequest(
         addOnChangePublication(subscriptionId, requestInfo, publication);
 
         // Schedule a runnable to remove the publication when it finishes
-        std::shared_ptr<QtSubscriptionQos> qos = requestInfo->getQos();
+        const SubscriptionQos* qos = requestInfo->getSubscriptionQosPtr();
         int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
         int64_t publicationEndDelay = qos->getExpiryDate() - now;
 
@@ -297,7 +297,7 @@ void PublicationManager::addOnChangePublication(
         std::shared_ptr<Publication> publication)
 {
     QMutexLocker publicationLocker(&(publication->mutex));
-    if (SubscriptionUtil::isOnChangeSubscription(request->getQos().get())) {
+    if (SubscriptionUtil::isOnChangeSubscription(request->getQos())) {
         LOG_TRACE(logger, QString("adding onChange subscription: %1").arg(subscriptionId));
 
         // Create an attribute listener to listen for onChange events
@@ -414,7 +414,7 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
         addBroadcastPublication(subscriptionId, requestInfo, publication);
 
         // Schedule a runnable to remove the publication when it finishes
-        std::shared_ptr<QtSubscriptionQos> qos = requestInfo->getQos();
+        const SubscriptionQos* qos = requestInfo->getSubscriptionQosPtr();
         int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
         int64_t publicationEndDelay = qos->getExpiryDate() - now;
 
@@ -537,7 +537,7 @@ void PublicationManager::restore(const QString& providerId,
         while (queuedSubscriptionRequests.contains(providerId)) {
             std::shared_ptr<SubscriptionRequestInformation> requestInfo(
                     queuedSubscriptionRequests.take(providerId));
-            if (!isSubscriptionExpired(requestInfo->getQos())) {
+            if (!isSubscriptionExpired(requestInfo->getSubscriptionQosPtr())) {
                 LOG_DEBUG(logger,
                           QString("Restoring subscription for provider: %1 %2").arg(providerId).arg(
                                   requestInfo->toQString()));
@@ -551,7 +551,7 @@ void PublicationManager::restore(const QString& providerId,
         while (queuedBroadcastSubscriptionRequests.contains(providerId)) {
             std::shared_ptr<BroadcastSubscriptionRequestInformation> requestInfo(
                     queuedBroadcastSubscriptionRequests.take(providerId));
-            if (!isSubscriptionExpired(requestInfo->getQos())) {
+            if (!isSubscriptionExpired(requestInfo->getSubscriptionQosPtr())) {
                 LOG_DEBUG(logger,
                           QString("Restoring subscription for provider: %1 %2").arg(providerId).arg(
                                   requestInfo->toQString()));
@@ -606,7 +606,7 @@ QList<QVariant> PublicationManager::subscriptionMapToListCopy(
     QList<QVariant> subscriptionList;
     {
         foreach (std::shared_ptr<RequestInformationType> requestInfo, map) {
-            if (!isSubscriptionExpired(requestInfo->getQos())) {
+            if (!isSubscriptionExpired(requestInfo->getSubscriptionQosPtr())) {
                 subscriptionList.append(QVariant::fromValue(*requestInfo));
             }
         }
@@ -673,7 +673,7 @@ void PublicationManager::loadSavedSubscriptionRequestsMap(
         std::shared_ptr<RequestInformationType> requestInfo(subscriptionList.takeFirst());
 
         // Add the subscription if it is still valid
-        if (!isSubscriptionExpired(requestInfo->getQos())) {
+        if (!isSubscriptionExpired(requestInfo->getSubscriptionQosPtr())) {
             QString providerId = requestInfo->getProviderId();
             queuedSubscriptions.insertMulti(providerId, requestInfo);
             LOG_DEBUG(logger,
@@ -758,7 +758,7 @@ void PublicationManager::removeOnChangePublication(
         std::shared_ptr<Publication> publication)
 {
     QMutexLocker publicationLocker(&(publication->mutex));
-    if (SubscriptionUtil::isOnChangeSubscription(request->getQos().get())) {
+    if (SubscriptionUtil::isOnChangeSubscription(request->getQos())) {
         LOG_DEBUG(logger, QString("Removing onChange publication for id = %1").arg(subscriptionId));
 
         // Unregister and delete the attribute listener
@@ -811,7 +811,8 @@ bool PublicationManager::isShuttingDown()
 qint64 PublicationManager::getPublicationTtl(
         std::shared_ptr<SubscriptionRequest> subscriptionRequest) const
 {
-    return subscriptionRequest->getQos()->getPublicationTtl();
+    const SubscriptionQos* qosPtr = subscriptionRequest->getSubscriptionQosPtr();
+    return qosPtr->getPublicationTtl();
 }
 
 void PublicationManager::sendPublicationError(
@@ -910,9 +911,10 @@ void PublicationManager::pollSubscription(const QString& subscriptionId)
     {
         QMutexLocker publicationLocker(&(publication->mutex));
         // See if the publication is needed
-        std::shared_ptr<QtSubscriptionQos> qos(subscriptionRequest->getQos());
+        const SubscriptionQos* qos = subscriptionRequest->getSubscriptionQosPtr();
         int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-        int64_t publicationInterval = SubscriptionUtil::getPeriodicPublicationInterval(qos.get());
+        int64_t publicationInterval =
+                SubscriptionUtil::getPeriodicPublicationInterval(subscriptionRequest->getQos());
 
         // check if the subscription qos needs a periodic publication
         if (publicationInterval > 0) {
@@ -1104,13 +1106,13 @@ bool PublicationManager::isPublicationAlreadyScheduled(const QString& subscripti
     return currentScheduledPublications.contains(subscriptionId);
 }
 
-qint64 PublicationManager::getTimeUntilNextPublication(std::shared_ptr<Publication> publication,
-                                                       std::shared_ptr<QtSubscriptionQos> qos)
+int64_t PublicationManager::getTimeUntilNextPublication(std::shared_ptr<Publication> publication,
+                                                        Variant qos)
 {
     QMutexLocker publicationLocker(&(publication->mutex));
     // Check the last publication time against the min interval
     int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-    int64_t minInterval = SubscriptionUtil::getMinInterval(qos.get());
+    int64_t minInterval = SubscriptionUtil::getMinInterval(qos);
 
     qint64 timeSinceLast = now - publication->timeOfLastPublication;
 

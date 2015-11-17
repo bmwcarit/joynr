@@ -26,8 +26,11 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/ISubscriptionCallback.h"
+#include "joynr/QtSubscriptionQos.h"
 #include <QString>
 #include <memory>
+
+#include "joynr/Variant.h"
 
 namespace joynr
 {
@@ -62,7 +65,7 @@ public:
      */
     virtual void registerSubscription(const QString& subscribeToName,
                                       std::shared_ptr<ISubscriptionCallback> subscriptionCaller,
-                                      std::shared_ptr<QtSubscriptionQos> qos,
+                                      Variant qos,
                                       SubscriptionRequest& subscriptionRequest) = 0;
 
     /**

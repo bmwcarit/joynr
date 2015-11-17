@@ -67,14 +67,13 @@ public:
         request.setSubscribeToName("locationUpdateSelective");
         request.setSubscriptionId(subscriptionId);
 
-        auto subscriptionQos =
-                std::shared_ptr<QtOnChangeSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
+        OnChangeWithKeepAliveSubscriptionQos qos{
                     80, // validity_ms
                     100, // minInterval_ms
                     200, // maxInterval_ms
                     80 // alertInterval_ms
-        ));
-        request.setQos(subscriptionQos);
+        };
+        request.setQos(qos);
         request.setFilterParameters(filterParameters);
 
         requestCaller->registerBroadcastListener(
@@ -162,12 +161,11 @@ TEST_F(BroadcastPublicationTest, sendPublication_FilterChainSuccess) {
 
 TEST_F(BroadcastPublicationTest, sendPublication_broadcastwithSingleArrayParam) {
 
-    auto subscriptionQos =
-            std::shared_ptr<QtOnChangeSubscriptionQos>(new QtOnChangeSubscriptionQos(
+    OnChangeSubscriptionQos qos{
                 800, // validity_ms
                 0 // minInterval_ms
-    ));
-    request.setQos(subscriptionQos);
+    };
+    request.setQos(qos);
     request.setFilterParameters(filterParameters);
 
     requestCaller->registerBroadcastListener(

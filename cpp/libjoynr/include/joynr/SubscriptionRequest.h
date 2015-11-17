@@ -22,9 +22,12 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/MessagingQos.h"
-#include "joynr/QtSubscriptionQos.h"
+#include "joynr/SubscriptionQos.h"
+#include <QObject>
 
 #include <memory>
+
+#include "joynr/Variant.h"
 
 namespace joynr
 {
@@ -41,7 +44,7 @@ class JOYNR_EXPORT SubscriptionRequest : public QObject
 
     Q_PROPERTY(std::string subscriptionId READ getSubscriptionId WRITE setSubscriptionId)
     Q_PROPERTY(std::string subscribedToName READ getSubscribeToName WRITE setSubscribeToName)
-    Q_PROPERTY(QVariant qos READ getQosData WRITE setQosData)
+    Q_PROPERTY(Variant qos READ getQos WRITE setQos)
 
 public:
     SubscriptionRequest();
@@ -58,14 +61,12 @@ public:
     std::string getSubscribeToName() const;
     void setSubscribeToName(const std::string& subscribedToName);
 
-    void setQos(std::shared_ptr<QtSubscriptionQos> qos);
-    std::shared_ptr<QtSubscriptionQos> getQos() const;
+    void setQos(const Variant& qos);
+    const Variant& getQos() const;
+
+    const SubscriptionQos* getSubscriptionQosPtr();
 
     QString toQString() const;
-
-protected:
-    void setQosData(QVariant qos);
-    QVariant getQosData() const;
 
 private:
     /*
@@ -77,7 +78,7 @@ private:
       */
     std::string subscriptionId;
     std::string subscribedToName;
-    std::shared_ptr<QtSubscriptionQos> qos;
+    Variant qos;
 
     static joynr_logging::Logger* logger;
 };
@@ -85,5 +86,4 @@ private:
 } // namespace joynr
 
 Q_DECLARE_METATYPE(joynr::SubscriptionRequest)
-Q_DECLARE_SMART_POINTER_METATYPE(std::shared_ptr)
 #endif // SUBSCRIPTIONREQUEST_H

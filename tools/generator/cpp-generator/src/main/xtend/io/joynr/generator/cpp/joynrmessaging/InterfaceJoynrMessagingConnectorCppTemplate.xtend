@@ -86,6 +86,7 @@ internalRequestObject.setMethodName("«method.joynrName»");
 #include "joynr/RequestStatusCode.h"
 #include <chrono>
 #include <stdint.h>
+#include "joynr/SubscriptionUtil.h"
 «FOR method : getMethods(serviceInterface)»
 	«IF method.hasErrorEnum»
 		«var enumType = method.errors»
@@ -325,7 +326,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 			subscriptionManager->registerSubscription(
 						attributeName,
 						subscriptionCallback,
-						std::shared_ptr<QtSubscriptionQos>(QtSubscriptionQos::createQt(subscriptionQos)),
+						SubscriptionUtil::getVariant(subscriptionQos),
 						subscriptionRequest);
 			LOG_DEBUG(logger, subscriptionRequest.toQString());
 			joynrMessageSender->sendSubscriptionRequest(
@@ -554,7 +555,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 		subscriptionManager->registerSubscription(
 					broadcastName,
 					subscriptionCallback,
-					std::shared_ptr<QtOnChangeSubscriptionQos>(QtSubscriptionQos::createQt(subscriptionQos)),
+					Variant::make<OnChangeSubscriptionQos>(subscriptionQos),
 					subscriptionRequest);
 		LOG_DEBUG(logger, subscriptionRequest.toQString());
 		joynrMessageSender->sendBroadcastSubscriptionRequest(

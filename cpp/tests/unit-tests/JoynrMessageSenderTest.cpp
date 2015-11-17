@@ -170,7 +170,7 @@ TEST_F(JoynrMessageSenderTest, sendSubscriptionRequest_normal){
     qint64 period = 2000;
     qint64 validity = 100000;
     qint64 alert = 4000;
-    auto qos = std::shared_ptr<QtSubscriptionQos>(new QtPeriodicSubscriptionQos(validity, period, alert));
+    Variant qos = Variant::make<PeriodicSubscriptionQos>(PeriodicSubscriptionQos(validity, period, alert));
 
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId("subscriptionId");
@@ -200,7 +200,7 @@ TEST_F(JoynrMessageSenderTest, sendBroadcastSubscriptionRequest_normal){
 
     qint64 minInterval = 2000;
     qint64 validity = 100000;
-    auto qos = std::shared_ptr<QtOnChangeSubscriptionQos>(new QtOnChangeSubscriptionQos(validity, minInterval));
+    OnChangeSubscriptionQos qos{validity, minInterval};
 
     BroadcastSubscriptionRequest subscriptionRequest;
     BroadcastFilterParameters filter;
