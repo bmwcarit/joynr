@@ -63,7 +63,7 @@ define("joynr/dispatching/types/Reply", [
         if (!settings.response && !settings.error) {
             throw new Error("Reply object does neither contain response nor error");
         }
-        if (settings.response && settings.error) {
+        if (settings.error && Util.isArray(settings.response) && settings.response.length > 0) {
             throw new Error("Reply object contains both response and error");
         }
 
