@@ -296,11 +296,11 @@ int main(int argc, char* argv[])
     // add favorite radio station
     vehicle::RadioStation favoriteStation("99.3 The Fox Rocks", false, vehicle::Country::CANADA);
     bool success;
-    proxy->addFavoriteStation(success, favoriteStation);
-    MyRadioHelper::prettyLog(logger,
-                             QString("METHOD: added favorite station: %1")
-                                     .arg(QString::fromStdString(favoriteStation.toString())));
     try {
+        proxy->addFavoriteStation(success, favoriteStation);
+        MyRadioHelper::prettyLog(logger,
+                                 QString("METHOD: added favorite station: %1")
+                                         .arg(QString::fromStdString(favoriteStation.toString())));
         proxy->addFavoriteStation(success, favoriteStation);
     } catch (exceptions::ApplicationException& e) {
         if (e.getError() ==
@@ -314,6 +314,25 @@ int main(int argc, char* argv[])
                     logger,
                     QString("METHOD: add favorite station a second time failed with the following "
                             "UNEXPECTED exception: %1").arg(QString::fromStdString(e.getName())));
+        }
+    }
+
+    try {
+        favoriteStation.setName("");
+        proxy->addFavoriteStation(success, favoriteStation);
+    } catch (exceptions::ProviderRuntimeException& e) {
+        if (e.getMessage() == MyRadioHelper::MISSING_NAME()) {
+            MyRadioHelper::prettyLog(
+                    logger,
+                    QString("METHOD: add favorite station with empty name failed with the "
+                            "following "
+                            "expected exception: %1").arg(QString::fromStdString(e.getMessage())));
+        } else {
+            MyRadioHelper::prettyLog(logger,
+                                     QString("METHOD: add favorite station with empty name failed "
+                                             "with the following "
+                                             "UNEXPECTED exception: %1")
+                                             .arg(QString::fromStdString(e.getMessage())));
         }
     }
 

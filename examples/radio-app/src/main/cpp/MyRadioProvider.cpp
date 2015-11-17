@@ -99,6 +99,10 @@ void MyRadioProvider::addFavoriteStation(
 {
     QMutexLocker locker(&mutex);
 
+    if (radioStation.getName().empty()) {
+        throw joynr::exceptions::ProviderRuntimeException(MyRadioHelper::MISSING_NAME());
+    }
+
     bool duplicateFound = false;
     for (joynr::vehicle::RadioStation station : stationsList) {
         if (!duplicateFound && station.getName() == radioStation.getName()) {
@@ -136,7 +140,7 @@ void MyRadioProvider::getLocationOfCurrentStation(
 void MyRadioProvider::fireWeakSignalBroadcast()
 {
     MyRadioHelper::prettyLog(logger,
-                             QString("fire weakSignalBroadacst: %1")
+                             QString("fire weakSignalBroadcast: %1")
                                      .arg(QString::fromStdString(currentStation.toString())));
     fireWeakSignal(currentStation);
 }
