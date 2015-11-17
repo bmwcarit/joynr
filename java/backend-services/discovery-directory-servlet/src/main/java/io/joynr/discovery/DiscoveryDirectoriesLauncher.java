@@ -44,8 +44,8 @@ public class DiscoveryDirectoriesLauncher extends AbstractJoynrApplication {
 
     @Override
     public void run() {
-        runtime.registerProvider(localDomain, channelUrlDirectoryProvider);
         runtime.registerProvider(localDomain, capabilitiesDirectoryProvider);
+        runtime.registerProvider(localDomain, channelUrlDirectoryProvider);
     }
 
     @Override
