@@ -37,4 +37,9 @@ public class LibWebSocketMessagingSkeleton extends WebSocketMessagingSkeleton {
     public void initializeConnection() {
         //nothing to do here
     }
+
+    @Override
+    public void shutdown() {
+        //nothing to do here
+    }
 }

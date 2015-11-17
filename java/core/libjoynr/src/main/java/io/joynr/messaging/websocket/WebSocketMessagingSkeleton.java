@@ -50,6 +50,8 @@ public abstract class WebSocketMessagingSkeleton extends MessagingSocket impleme
 
     abstract public void initializeConnection();
 
+    abstract public void shutdown();
+
     @Override
     public void onWebSocketText(String json) {
         super.onWebSocketText(json);

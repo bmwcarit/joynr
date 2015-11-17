@@ -19,6 +19,7 @@ package io.joynr.messaging.websocket;
  * #L%
  */
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.joynr.common.ExpiryDate;
 import io.joynr.dispatching.JoynrMessageFactory;
@@ -26,7 +27,11 @@ import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.security.DummyPlatformSecurityManager;
 import joynr.JoynrMessage;
 import joynr.system.RoutingTypes.WebSocketAddress;
+import joynr.system.RoutingTypes.WebSocketClientAddress;
 import joynr.system.RoutingTypes.WebSocketProtocol;
+import org.eclipse.jetty.websocket.api.Session;
+import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,15 +42,18 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 
 @RunWith(MockitoJUnitRunner.class)
 public class WebsocketTest {
     private static Logger logger = LoggerFactory.getLogger(WebsocketTest.class);
     private WebSocketMessagingStub webSocketMessagingStub;
     private CCWebSocketMessagingSkeleton ccWebSocketMessagingSkeleton;
-    private WebSocketAddress serverAddress = new WebSocketAddress(WebSocketProtocol.WS, "localhost", 9080, "/test");
+    private WebSocketAddress serverAddress = new WebSocketAddress(WebSocketProtocol.WS, "localhost", 8080, "/test");
+    private WebSocketClientAddress clientAddress = new WebSocketClientAddress(UUID.randomUUID().toString().replace("-",
+                                                                                                                   ""));
 
     private JoynrMessageFactory joynrMessageFactory;
     @Mock
@@ -71,23 +79,62 @@ public class WebsocketTest {
                                                                         messageRouterMock,
                                                                         webSocketMessagingStubFactory);
         joynrMessageFactory = new JoynrMessageFactory(new ObjectMapper(), new DummyPlatformSecurityManager());
+        ccWebSocketMessagingSkeleton.initializeConnection();
+    }
+
+    @After
+    public void stop() throws Exception {
+        Thread.sleep(1000); // wait a short time to let the server finish
+        logger.debug("Stopping server...");
+        ccWebSocketMessagingSkeleton.shutdown();
+        logger.debug("Server stopped");
     }
 
     @Test
-    public void test1() {
-        logger.debug("TEST");
-        ccWebSocketMessagingSkeleton.initializeConnection();
-        webSocketMessagingStub = new WebSocketMessagingStub(serverAddress,
-                                                            new ObjectMapper(),
-                                                            libWebSocketMessagingSkeleton);
+    public void testSendMessage() {
+        JoynrMessage msg = joynrMessageFactory.createOneWay("fromID",
+                "toID",
+                "Test Payload",
+                ExpiryDate.fromRelativeTtl(100000));
         try {
-            JoynrMessage msg = joynrMessageFactory.createOneWay("fromID",
-                                                                "toID",
-                                                                "Test Payload",
-                                                                ExpiryDate.fromRelativeTtl(100000));
+            webSocketMessagingStub = new WebSocketMessagingStub(serverAddress,
+                    new ObjectMapper(),
+                    libWebSocketMessagingSkeleton);
             webSocketMessagingStub.transmit(msg);
+            Mockito.verify(messageRouterMock, Mockito.timeout(1000)).route(msg);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error: ", e);
+            Assert.fail(e.getMessage());
+        } finally {
+            try {
+                webSocketMessagingStub.shutdown();
+            } catch (InterruptedException | ExecutionException e) {
+                logger.error("Error: ", e);
+            }
         }
+    }
+
+    @Test
+    public void testStubCreatedOnInit() throws JsonProcessingException {
+        try {
+            webSocketMessagingStub = new WebSocketMessagingStub(serverAddress,
+                    new ObjectMapper(),
+                    libWebSocketMessagingSkeleton);
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            String serializedAddress = objectMapper.writeValueAsString(clientAddress);
+
+            webSocketMessagingStub.sendString(serializedAddress, 30000);
+            // check if the server created a new
+            Mockito.verify(webSocketMessagingStubFactory, Mockito.timeout(1000).times(1)).addSession(Mockito.eq(clientAddress), Mockito.any(Session.class));
+
+        } finally {
+            try {
+                webSocketMessagingStub.shutdown();
+            } catch (ExecutionException | InterruptedException e) {
+                logger.error("Error: ", e);
+            }
+        }
+
     }
 }

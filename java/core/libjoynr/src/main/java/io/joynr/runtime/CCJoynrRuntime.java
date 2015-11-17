@@ -22,7 +22,6 @@ package io.joynr.runtime;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-
 import io.joynr.capabilities.CapabilitiesRegistrar;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.discovery.LocalDiscoveryAggregator;
@@ -37,6 +36,9 @@ import io.joynr.proxy.ProxyBuilderFactory;
 import joynr.system.RoutingTypes.Address;
 
 public class CCJoynrRuntime extends InProcessRuntime {
+
+    private final WebSocketMessagingSkeleton clusterControllerMessagingSkeleton;
+
     // CHECKSTYLE:OFF
     @Inject
     public CCJoynrRuntime(ObjectMapper objectMapper,
@@ -72,8 +74,16 @@ public class CCJoynrRuntime extends InProcessRuntime {
               capabilitiesRegistrar,
               localCapabilitiesDirectory,
               messageReceiver);
-        clusterControllerMessagingSkeleton.initializeConnection();
+        this.clusterControllerMessagingSkeleton = clusterControllerMessagingSkeleton;
+        this.clusterControllerMessagingSkeleton.initializeConnection();
         capabilitiesRegistrar.registerProvider(systemServicesDomain, messageRouter);
     }
+
     // CHECKSTYLE:ON
+
+    @Override
+    public void shutdown(boolean clear) {
+        super.shutdown(clear);
+        clusterControllerMessagingSkeleton.shutdown();
+    }
 }

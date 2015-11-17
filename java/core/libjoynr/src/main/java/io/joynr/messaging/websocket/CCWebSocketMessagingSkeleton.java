@@ -56,6 +56,7 @@ public class CCWebSocketMessagingSkeleton extends WebSocketMessagingSkeleton {
     private static final Logger logger = LoggerFactory.getLogger(CCWebSocketMessagingSkeleton.class);
     private WebSocketAddress address;
     private WebSocketClientMessagingStubFactory webSocketMessagingStubFactory;
+    private Server server;
 
     @Inject
     public CCWebSocketMessagingSkeleton(@Named(ConfigurableMessagingSettings.PROPERTY_CC_MESSAGING_ADDRESS) WebSocketAddress address,
@@ -92,7 +93,10 @@ public class CCWebSocketMessagingSkeleton extends WebSocketMessagingSkeleton {
 
     @Override
     public void initializeConnection() {
-        Server server = new Server();
+        if (server != null) {
+            throw new IllegalStateException("Server was already started!");
+        }
+        server = new Server();
         ServerConnector connector;
 
         if (address.getProtocol().equals(WebSocketProtocol.WSS)) {
@@ -129,6 +133,16 @@ public class CCWebSocketMessagingSkeleton extends WebSocketMessagingSkeleton {
             server.start();
         } catch (Throwable t) {
             logger.error("Error while starting websocket server: ", t);
+        }
+    }
+
+    public void shutdown() {
+        try {
+            if (server != null) {
+                server.stop();
+            }
+        } catch (Exception e) {
+            logger.error("Error while stopping websocket server: ", e);
         }
     }
 }
