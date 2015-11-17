@@ -20,15 +20,16 @@
 #define DIRECTORY_H
 #include "joynr/PrivateCopyAssign.h"
 
-#include "joynr/DelayedSchedulerOld.h"
+#include "joynr/SingleThreadedDelayedScheduler.h"
+#include "joynr/Runnable.h"
 #include "joynr/ITimeoutListener.h"
 #include "joynr/joynrlogging.h"
-#include <typeinfo>
 #include "joynr/IReplyCaller.h"
 
-#include <QString>
 #include <string>
 #include <functional>
+
+#include <QString>
 #include <QtGlobal>
 #include <QMutex>
 #include <QHash>
@@ -96,15 +97,16 @@ private:
     DISALLOW_COPY_AND_ASSIGN(Directory);
     QHash<Key, std::shared_ptr<T>> callbackMap;
     QMutex mutex;
-    SingleThreadedDelayedSchedulerOld callBackRemoverScheduler;
+    SingleThreadedDelayedScheduler callBackRemoverScheduler;
     static joynr_logging::Logger* logger;
 };
 
 template <typename Key, typename T>
-class RemoverRunnable : public QRunnable
+class RemoverRunnable : public Runnable
 {
 public:
     RemoverRunnable(const Key& keyId, Directory<Key, T>* directory);
+    void shutdown();
     void run();
 
 private:
@@ -125,16 +127,14 @@ joynr_logging::Logger* Directory<Key, T>::logger =
 template <typename Key, typename T>
 Directory<Key, T>::~Directory()
 {
+    callBackRemoverScheduler.shutdown();
     LOG_TRACE(logger,
               QString("destructor: number of entries = ") + QString::number(callbackMap.size()));
 }
 
 template <typename Key, typename T>
-Directory<Key, T>::Directory(const std::string& directoryName)
-        : callbackMap(),
-          mutex(),
-          callBackRemoverScheduler(QString::fromStdString(directoryName) +
-                                   QString("-CleanUpScheduler"))
+Directory<Key, T>::Directory(const std::string& /*directoryName*/)
+        : callbackMap(), mutex(), callBackRemoverScheduler("DirRemover")
 {
 }
 
@@ -198,7 +198,12 @@ void Directory<Key, T>::remove(const Key& keyId)
 
 template <typename Key, typename T>
 RemoverRunnable<Key, T>::RemoverRunnable(const Key& keyId, Directory<Key, T>* directory)
-        : keyId(keyId), directory(directory)
+        : Runnable(true), keyId(keyId), directory(directory)
+{
+}
+
+template <typename Key, typename T>
+void RemoverRunnable<Key, T>::shutdown()
 {
 }
 
@@ -220,10 +225,11 @@ void RemoverRunnable<Key, T>::run()
  */
 
 template <typename Key>
-class RemoverRunnable<Key, IReplyCaller> : public QRunnable
+class RemoverRunnable<Key, IReplyCaller> : public Runnable
 {
 public:
     RemoverRunnable(const Key& keyId, Directory<Key, IReplyCaller>* directory);
+    void shutdown();
     void run();
 
 private:
@@ -232,6 +238,11 @@ private:
     Directory<Key, IReplyCaller>* directory;
     static joynr_logging::Logger* logger;
 };
+
+template <typename Key>
+void RemoverRunnable<Key, IReplyCaller>::shutdown()
+{
+}
 
 template <typename Key>
 void RemoverRunnable<Key, IReplyCaller>::run()
@@ -246,7 +257,7 @@ void RemoverRunnable<Key, IReplyCaller>::run()
 template <typename Key>
 RemoverRunnable<Key, IReplyCaller>::RemoverRunnable(const Key& keyId,
                                                     Directory<Key, IReplyCaller>* directory)
-        : keyId(keyId), directory(directory)
+        : Runnable(true), keyId(keyId), directory(directory)
 {
 }
 
