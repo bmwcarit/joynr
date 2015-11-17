@@ -103,6 +103,7 @@ void «interfaceName»RequestInterpreter::execute(
 		«IF attribute.writable»
 			if (methodName == "set«attributeName.toFirstUpper»" && paramTypes.size() == 1){
 				Variant «attributeName»Var(paramValues.at(0));
+				try {
 				«IF isEnum(attribute.type) && isArray(attribute)»
 					«val attributeRef = joynrGenerationPrefix + "::Util::convertVariantVectorToEnumVector<" + getTypeNameOfContainingClass(attribute.type.derived) + ">(" + attributeName + "Var.get<std::vector<Variant>>())"»
 					assert(«attributeName»Var.is<std::vector<Variant>>());
@@ -114,7 +115,7 @@ void «interfaceName»RequestInterpreter::execute(
 				«ELSEIF isArray(attribute)»
 					«val attributeRef = joynrGenerationPrefix + "::Util::convertVariantVectorToVector<" + getTypeName(attribute.type) + ">(paramList)"»
 					if (!«attributeName»Var.is<std::vector<Variant>>()) {
-						onError(exceptions::MethodInvocationException("Illegal argument for attribute setter set«attributeName.toFirstUpper»"));
+						onError(exceptions::MethodInvocationException("Illegal argument for attribute setter set«attributeName.toFirstUpper» («getJoynrTypeName(attribute)»)"));
 						return;
 					}
 					std::vector<Variant> paramList = «attributeName»Var.get<std::vector<Variant>>();
@@ -129,7 +130,7 @@ void «interfaceName»RequestInterpreter::execute(
 					«ELSE»
 						if (!«attributeName»Var.is<«getTypeName(attribute)»>()) {
 					«ENDIF»
-						onError(exceptions::MethodInvocationException("Illegal argument for attribute setter set«attributeName.toFirstUpper»"));
+						onError(exceptions::MethodInvocationException("Illegal argument for attribute setter set«attributeName.toFirstUpper» («getJoynrTypeName(attribute)»)"));
 						return;
 					}
 					«getTypeName(attribute)» typedInput«attributeName.toFirstUpper» =
@@ -141,6 +142,9 @@ void «interfaceName»RequestInterpreter::execute(
 							onSuccess(std::move(outParams));
 						};
 				«requestCallerName»->set«attributeName.toFirstUpper»(typedInput«attributeName.toFirstUpper», requestCallerOnSuccess, onError);
+			    } catch (std::invalid_argument exception) {
+					onError(exceptions::MethodInvocationException("Illegal argument for attribute setter set«attributeName.toFirstUpper» («getJoynrTypeName(attribute)»)"));
+			    }
 				return;
 			}
 		«ENDIF»
@@ -175,6 +179,7 @@ void «interfaceName»RequestInterpreter::execute(
 
 
 				«var iterator2 = -1»
+				try {
 				«FOR input : inputParams»
 					«val inputName = input.joynrName»
 					Variant «inputName»Var(paramValues.at(«iterator2=iterator2+1»));
@@ -208,18 +213,20 @@ void «interfaceName»RequestInterpreter::execute(
 						«getTypeName(input)» «inputName» = «inputName»Var.get<«getTypeName(input)»>();
 					«ENDIF»
 				«ENDFOR»
-
 				«requestCallerName»->«methodName»(
 						«IF !method.inputParameters.empty»«inputUntypedParamList»,«ENDIF»
 						requestCallerOnSuccess,
 						onError);
+				} catch (std::invalid_argument exception) {
+					onError(exceptions::MethodInvocationException(exception.what()));
+				}
+
 				return;
 			}
 		«ENDFOR»
 	«ENDIF»
 
-	LOG_FATAL(logger, FormatString("unknown method name for interface «interfaceName»: %1").arg(methodName).str());
-	assert(false);
+	LOG_WARN(logger, FormatString("unknown method name for interface «interfaceName»: %1").arg(methodName).str());
 	onError(exceptions::MethodInvocationException("unknown method name for interface «interfaceName»: " + methodName));
 }
 

@@ -85,6 +85,8 @@ interface test {
 
 	attribute testTypes.TestEnum enumAttributeReadOnly readonly
 
+	attribute testTypes.TestEnum[] listOfEnumsAttribute
+
 	attribute GpsLocation location
 	attribute Trip mytrip readonly
 	attribute GpsLocation yourLocation readonly
