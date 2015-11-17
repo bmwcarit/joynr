@@ -21,46 +21,37 @@ package io.joynr.messaging.routing;
 
 import com.google.inject.Inject;
 import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.messaging.AbstractMessagingStubFactory;
 import io.joynr.messaging.IMessaging;
-import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessMessagingStub;
-import io.joynr.messaging.websocket.WebSocketMessagingStubFactory;
-import joynr.JoynrMessage;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.WebSocketAddress;
+import joynr.system.RoutingTypes.WebSocketClientAddress;
 
-import java.io.IOException;
+import java.util.Map;
 
 public class MessagingStubFactory {
 
-    private final WebSocketMessagingStubFactory webSocketMessagingStubFactory;
-    private MessageSender messageSender;
+    private Map<Class<? extends Address>, AbstractMessagingStubFactory> messagingStubFactories;
 
     @Inject
-    public MessagingStubFactory(MessageSender messageSender) {
-        this.messageSender = messageSender;
-        //TODO create a injected map of factories
-        webSocketMessagingStubFactory = new WebSocketMessagingStubFactory();
+    public MessagingStubFactory(Map<Class<? extends Address>, AbstractMessagingStubFactory> messagingStubFactories) {
+        this.messagingStubFactories = messagingStubFactories;
     }
 
     public IMessaging create(Address address) {
         IMessaging messagingStub;
 
-        //TODO move creation to {Middleware}MessagingStubFactory.java and inject a list of Factories
         if (address instanceof ChannelAddress) {
-            final String destinationChannelId = ((ChannelAddress) address).getChannelId();
-            messagingStub = new IMessaging() {
-                @Override
-                public void transmit(JoynrMessage message) throws IOException {
-                    messageSender.sendMessage(destinationChannelId, message);
-                }
-            };
+            messagingStub = messagingStubFactories.get(ChannelAddress.class).create(address);
         } else if (address instanceof InProcessAddress) {
             messagingStub = new InProcessMessagingStub(((InProcessAddress) address).getSkeleton());
         } else if (address instanceof WebSocketAddress) {
-            messagingStub = webSocketMessagingStubFactory.create((WebSocketAddress) address);
+            messagingStub = messagingStubFactories.get(WebSocketAddress.class).create(address);
+        } else if (address instanceof WebSocketClientAddress) {
+            messagingStub = messagingStubFactories.get(WebSocketClientAddress.class).create(address);
         } else {
             throw new JoynrMessageNotSentException("Failed to send Request: Address type not supported");
         }
@@ -68,6 +59,8 @@ public class MessagingStubFactory {
     }
 
     public void shutdown() {
-        messageSender.shutdown();
+        for (AbstractMessagingStubFactory messagingStubFactory : messagingStubFactories.values()) {
+            messagingStubFactory.shutdown();
+        }
     }
 }

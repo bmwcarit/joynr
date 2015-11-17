@@ -111,7 +111,7 @@ public class ProxyArbitrationTest {
                                             new ChannelAddress("discovery_channelid"));
         websocketMessagingStubFactories = Maps.newHashMap();
         websocketMessagingStubFactories.put(ChannelAddress.class, new ChannelMessagingStubFactory(messageSender));
-        MessagingStubFactory messagingStubFactory = new MessagingStubFactory(messageSender);
+        MessagingStubFactory messagingStubFactory = new MessagingStubFactory(websocketMessagingStubFactories);
         messageRouter = new MessageRouterImpl(routingTable, messagingStubFactory);
 
         participantId = "testParticipant";
