@@ -23,11 +23,15 @@
 #include "qjson/parser.h"
 #include "qjson/serializer.h"
 #include "joynr/joynrlogging.h"
-#include <QString>
-#include <QVariantMap>
-#include <QVariant>
-#include <QMetaType>
 #include <QByteArray>
+#include <QObject>
+#include <vector>
+#include <sstream>
+#include "joynr/Variant.h"
+#include "joynr/SerializerRegistry.h"
+#include "jsonserializer/JsonTokenizer.h"
+#include <QList>
+#include <QVariant>
 
 namespace joynr
 {
@@ -41,9 +45,17 @@ public:
     /**
      * @brief Serializes a QObject into JSON format.
      *
-     * @param object the object to serialize.
-     * @return QByteArray the serialized byte array in JSON format, UTF-8 encoding.
+     * @param variant the object to serialize.
+     * @return std::string the serialized variant in JSON format, UTF-8 encoding.
      */
+    static std::string serialize(const Variant& variant)
+    {
+        std::stringstream stream;
+        auto serializer = SerializerRegistry::getSerializer(variant.getTypeName());
+        serializer->serializeVariant(variant, stream);
+        return stream.str();
+    }
+
     static QByteArray serializeQObject(const QObject& object)
     {
         QJson::Serializer serializer;
@@ -52,10 +64,10 @@ public:
     }
 
     /**
-     * @brief Serializes a variant into JSON format.
+     * @brief Serializes a object into JSON format.
      *
-     * @param variant the variant to serialize.
-     * @return QString the serialized string in JSON format.
+     * @param object to serialize.
+     * @return std::string the string in JSON format.
      */
     static QByteArray serializeQObject(const QVariant& variant)
     {
@@ -63,7 +75,21 @@ public:
         return serializer.serialize(variant);
     }
 
-    template <class T>
+    /**
+     * @brief Serializes a object into JSON format.
+     *
+     * @param object to serialize.
+     * @return std::string the string in JSON format.
+     */
+    template <typename T>
+    static std::string serialize(const T& object)
+    {
+        std::stringstream stream;
+        auto serializer = ClassSerializer<T>{};
+        serializer.serialize(object, stream);
+        return stream.str();
+    }
+
     /**
      * @brief Deserializes a string in JSON list format to a list of the given
      * template type T.
@@ -74,6 +100,7 @@ public:
      * @param json The JSON representation of template type T.
      * @return The deserialized list
      */
+    template <class T>
     static QList<T*> deserializeList(const QByteArray& json)
     {
 
@@ -127,6 +154,28 @@ public:
         QJson::QObjectHelper::qvariant2qobject(jsonQVarValue, object);
 
         return (T*)object;
+    }
+
+    template <class T>
+    /**
+     * @brief Deserializes a QByteArray in JSON format to the given template type T.
+     *
+     * Template type T must inherit from QObject. The QByteArray must be a
+     * valid JSON representation of the template type T.
+     *
+     * @param json The JSON representation of template type T.
+     * @return The deserialized object, or NULL in case of deserialization error
+     */
+    static T* deserialize(const std::string& json)
+    {
+        JsonTokenizer tokenizer(json);
+
+        T* object = new T();
+        if (tokenizer.hasNextObject()) {
+            ClassDeserializer<T>::deserialize(*object, tokenizer.nextObject());
+        }
+
+        return object;
     }
 
 private:
