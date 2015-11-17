@@ -366,7 +366,20 @@ link_directories(
 # JOYNR_MAX_LOG_LEVEL_DEBUG
 # JOYNR_MAX_LOG_LEVEL_TRACE
 
-add_definitions(-DJOYNR_MAX_LOG_LEVEL_TRACE)
+set(JOYNR_MAX_LOG_LEVEL "ERROR" CACHE STRING "joynr max log level")
+set_property(
+             CACHE
+             JOYNR_MAX_LOG_LEVEL
+             PROPERTY STRINGS
+             FATAL
+             ERROR
+             WARN
+             INFO
+             DEBUG
+             TRACE
+)
+
+add_definitions("-DJOYNR_MAX_LOG_LEVEL_${JOYNR_MAX_LOG_LEVEL}")
 
 ######## DEFAULT COMPILER FLAGS #############
 
