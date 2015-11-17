@@ -89,7 +89,7 @@ TCP, Sockets, etc. depending on the needs of the messaging implementation.
 Per default, joynr ships with a REST-based messaging middleware that addresses requirements such as reliability, stability, performance, memory footprint, CPU usage, and operating system independence required of distributed applications running on embedded devices over unreliable networks.
 
 ## Releases
-joynr is currently at released version 0.9.0. See the [release notes](ReleaseNotes.md).
+See the [release notes](ReleaseNotes.md).
 
 ## Further Reading
 

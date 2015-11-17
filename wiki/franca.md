@@ -97,15 +97,13 @@ RPC supports optional input- and output parameters as well as an optional enumer
 
 For Java and C++, the consumer may make synchronous or asynchronous calls to a proxy.
 
-TODO: Multiple Out Parameters: **Note that joynr is currently restricted to only one output parameter**; it is however possible to use a struct as a wrapper for multiple output parameters. This feature will be implemented in 2015.
-
 ```
 method <Method> {
     in {
         ... collection of "<Type> <inputVariable>" pairs ...
     }
     out {
-        <returnType> <outputVariable>
+        ... collection of "<returnType> <outputVariable>" pairs ...
     }
     error <enumerationType>
 }

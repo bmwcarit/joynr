@@ -259,7 +259,7 @@ public void run() {
     try {
         <ReturnType> retval;
         retval = <interface>Proxy.<method>([inputVal1, ..., inputValN]);
-    } catch (DiscoveryException) {
+    } catch (JoynrRuntimeException e) {
         // error handling
     }
 }
@@ -283,11 +283,15 @@ public void run() {
         //   retval.<returnParameter1>
         //   ...
         //   retval.<returnParameterN>
-    } catch (DiscoveryException) {
+    } catch (JoynrRuntimeException e) {
         // error handling
     }
 }
 ```
+
+For methods which are modelled with error enumerations, additionally, ApplicationExceptions have to be caught.
+The ApplicationException serves as container for the actual error enumeration which can be retrieved by calling e.getError().
+
 
 ## Asynchronous Remote Procedure calls
 Using asynchronous method calls allows the current thread to continue its work. For this purpose a callback has to be provided for the API call in order to receive the result and error respectively. Note the current thread will still be blocked until the Joynr message is internally set up and serialized. It will then be enqueued and handled by a Joynr Middleware thread.
@@ -323,7 +327,7 @@ public void run() {
     try {
         long timeoutInMilliseconds;
         // set timeout value here
-        <ReturnType> result = future.getReply(timeOutInMilliseconds);
+        <ReturnType> result = future.get(timeOutInMilliseconds);
     } catch (InterruptedException|JoynrRuntimeException e) {
         // handle error
     }
@@ -360,7 +364,7 @@ public void run() {
     try {
         long timeoutInMilliseconds;
         // set timeout value here
-        <Method>Returned result = future.getReply(timeOutInMilliseconds);
+        <Method>Returned result = future.get(timeOutInMilliseconds);
         // handle return parameters
         //   result.<returnParameter1>
         //   ...
@@ -392,7 +396,7 @@ This class can be used for subscriptions to attributes.
 
 Note that updates will be send only based on the specified interval and not based on changes of the attribute.
 
-### OnchangeSubscriptionQos
+### OnChangeSubscriptionQos
 
 The class ```OnChangeSubscriptionQos``` inherits from ```SubscriptionQos``` and has the following additional members:
 
@@ -443,15 +447,13 @@ public void run() {
                 }
 
                 @Override
-                public void onError() {
-                    // handle subscription error, e.g. missed info
+                public void onError(JoynrRuntimeException e) {
+                    // handle subscription error, e.g. missed publication
                 }
             },
             qos
-        );
-    } catch (DiscoveryException e) {
-        // handle error
-    } catch (JoynrCommunicationExceptin e) {
+            );
+    } catch (JoynrRuntimeException e) {
         // handle error
     }
 }
@@ -462,6 +464,7 @@ public void run() {
 The subscribeTo method can also be used to update an existing subscription, when the **subscriptionId** is given as additional parameter as follows:
 
 ```java
+    try {
         subscriptionId = <interface>Proxy.subscribeTo<Attribute>(
             new AttributeSubscriptionAdapter<AttributeType>() {
                 @Override
@@ -470,13 +473,16 @@ The subscribeTo method can also be used to update an existing subscription, when
                 }
 
                 @Override
-                public void onError() {
-                    // handle subscription error, e.g. missed info
+                public void onError(JoynrRuntimeException e) {
+                    // handle subscription error, e.g. missed publication
                 }
             },
             qos,
             subscriptionId
         );
+    } catch (JoynrRuntimeException e) {
+        // handle error
+    }
 ```
 
 ## Unsubscribing from an attribute
@@ -495,9 +501,7 @@ public void run() {
         // subscriptionId must have been assigned by previous call
         ...
         <interface>Proxy.unsubscribeFrom<Attribute>(subscriptionId);
-    } catch (DiscoveryException e) {
-        // handle error
-    } catch (JoynrCommunicationExceptin e) {
+    } catch (JoynrRuntimeException e) {
         // handle error
     }
 }
@@ -952,6 +956,8 @@ public Promise<Deferred<<AttributeType>>> get<Attribute>() {
     // once the value is available, resolve the Promise
     // may be run from background thread, if required
     deferred.resolve(value);
+    // if an error occurs, the Deferred can be rejected with a ProviderRuntimeException
+    deferred.reject(new ProviderRuntimeException(<errorMessage>));
     ...
     // from current thread
     return new Promise<Deferred<<AttributeType>>>(deferred);
@@ -974,6 +980,8 @@ public Promise<DeferredVoid> set<Attribute>(<AttributeType> <attribute>) {
     // once the value is set, resolve the Promise
     // may be run from background thread, if required
     deferred.resolve();
+    // if an error occurs, the Deferred can be rejected with a ProviderRuntimeException
+    deferred.reject(new ProviderRuntimeException(<errorMessage>));
     ...
     // from current thread
     return new Promise<DeferredVoid>(deferred);
@@ -997,6 +1005,14 @@ public Promise<Deferred<<ReturnType>>> <method>(... parameters ...) {
     // once the task is finished, resolve the Promise providing
     // the returnValue, if any (see following line).
     deferred.resolve(returnValue);
+
+    // For methods which are modelled with error enumerations, the Promise can be rejected with such
+    // an error enumeration. It is then wrapped in an ApplicationException which serves as container
+    // for the actual error enumeration.
+    deferred.reject(<ErrorEnum>.<VALUE>);
+
+    // If no errors are modelled, the Deferred can be rejected with a ProviderRuntimeException
+    deferred.reject(new ProviderRuntimeException(<errorMessage>));
     ...
     // from current thread
     return new Promise<Deferred<<ReturnType>>>(deferred);

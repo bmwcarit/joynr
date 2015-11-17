@@ -71,7 +71,6 @@ The following base includes are required for a C++ Consumer application:
 
 ```cpp
 #include "joynr/JoynrRuntime.h"
-#include "joynr/RequestStatus.h"
 #include "joynr/ISubscriptionListener.h"
 #include "joynr/SubscriptionListener.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
@@ -132,7 +131,7 @@ Whenever global entries are involved, they are first searched in the local cache
 
 The enumeration ```ArbitrationStrategy``` defines special options to select a Provider:
 
-* **NOT_SET** (not allowed in the app, otherwise arbitration will throw JoynrArbitrationException???TODO!)
+* **NOT_SET** (not allowed in the app, otherwise arbitration will throw DiscoveryException)
 * **FIXED_PARTICIPANT** (also see FixedParticipantArbitrator)
 * **LOCAL_ONLY** (also see FixedParticipantArbitrator)
 * **KEYWORD** Only entries that have a matching keyword will be considered
@@ -182,8 +181,7 @@ The consumer application instance must create one **proxy** per used Franca inte
 * **subscribe** or **unsubscribe** to its **attributes** or **update** a subscription
 * **subscribe** or **unsubscribe** to its **broadcasts** or **update** a subscription
 
-In case no suitable provider can be found during discovery, a ```JoynrArbitrationException``` is thrown.
-In case of communication errors, a ```JoynrCommunicationException ????``` is thrown.
+In case no suitable provider can be found during discovery, a ```DiscoveryException``` is thrown.
 
 ```cpp
     DiscoveryQos discoveryQos;
@@ -202,7 +200,7 @@ In case of communication errors, a ```JoynrCommunicationException ????``` is thr
 
         // call methods, subscribe to broadcasts etc.
         // enter some event loop
-    } catch(std::exception e) {
+    } catch(joynr::exceptions::DiscoveryException& e) {
         // error handling
     }
 ```
@@ -219,11 +217,14 @@ Note that the message order on Joynr RPCs will not be preserved.
         <ReturnType1> retval1;
         ...
         <ReturnTypeN> retvalN;
-        joynr::RequestStatus requestStatus;
 
-        requestStatus = <interface>Proxy-><method>([retval1, ..., retvalN,][inputVal1, ..., inputValN);
-    } catch (std::exception e) {
+        <interface>Proxy-><method>([retval1, ..., retvalN,][inputVal1, ..., inputValN);
+    } catch (joynr::exceptions::JoynrRuntimeException& e) {
         // error handling
+    } catch (joynr::exceptions::ApplicationException& e) {
+        // If error enumerations are defined for the called method, ApplicationExceptions must also
+        // be caught. The ApplicationException serves as container for the actual error enumeration
+        // which can be retrieved by calling e.getError().
     }
 ```
 
@@ -237,7 +238,6 @@ If no return type exists, the term ```Void``` is used instead.
 
 std::shared_ptr<joynr::Future<<ReturnType1> [, ..., <ReturnTypeN>]> >
     future(new joynr::Future<<ReturnType1> [, ..., <ReturnTypeN>]>());
-joynr::RequestStatus status;
 <ReturnType1> retval1;
 ...
 <ReturnTypeN> retvalN;
@@ -247,15 +247,20 @@ std::function<void(const <ReturnType1> retval1 [, ..., const <ReturnTypeN> retva
     [] (const <ReturnType1> retval1 [, ..., const <ReturnTypeN> retvalN]) {
         // special handling
     };
-std::function<void(const joynr::RequestStatus& status)> onError =
-    [] (const joynr::RequestStatus& status) {
-        // special handling
+std::function<void(const joynr::exceptions::JoynrException&)> onError =
+    [] (const joynr::exceptions::JoynrException& error) {
+        // error handling
     };
 
 future = <interface>Proxy-><method>(... arguments ..., [onSuccess [, onError]]);
-status = future->waitForFinished();
-if (status.successful()) {
-    future->getValue(retval1 [, ..., retvalN ]);
+try {
+    future->get(retval1 [, ..., retvalN ]);
+} catch (joynr::exceptions::JoynrRuntimeException& e) {
+    // error handling
+} catch (joynr::exceptions::ApplicationException& e) {
+    // If error enumerations are defined for the called method, ApplicationExceptions must also
+    // be caught. The ApplicationException serves as container for the actual error enumeration
+    // which can be retrieved by calling e.getError().
 }
 ```
 
@@ -326,7 +331,7 @@ class <AttributeType>Listener : public SubscriptionListener<<AttributeType>>
             // handle publication
         }
 
-        void onError()
+        void onError(const joynr::exceptions::JoynrRuntimeException& error)
         {
             // handle error
         }
@@ -339,14 +344,7 @@ std::shared_ptr<ISubscriptionListener<AttributeType>> listener(
 <QosClass> qos;
 // define details of qos by calling its setters here
 
-std::string subscriptionId;
-
-try {
-    subscriptionId =
-        proxy->subscribeTo<Attribute>(listener, qos);
-} catch (std::exception e) {
-    // handle exception
-}
+std::string subscriptionId = proxy->subscribeTo<Attribute>(listener, qos);
 ```
 
 ## Updating an attribute subscription
@@ -354,12 +352,7 @@ try {
 The ```subscribeTo``` method can also be used to update an existing subscription, when the **subscriptionId** is given as additional parameter as follows:
 
 ```cpp
-try {
-    subscriptionId =
-        proxy->subscribeTo<Attribute>(listener, qos, subscriptionId);
-} catch (std::exception e) {
-    // handle exception
-}
+subscriptionId = proxy->subscribeTo<Attribute>(listener, qos, subscriptionId);
 ```
 
 ## Unsubscribing from an attribute
@@ -367,12 +360,7 @@ try {
 Unsubscribing from an attribute subscription also requires the **subscriptionId** returned by the earlier subscribeTo call.
 
 ```cpp
-try {
-    proxy->unSubscribeFrom<Attribute>(subscriptionId);
-} catch (std::exception e) {
-    // handle exception
-}
-
+proxy->unsubscribeFrom<Attribute>(subscriptionId);
 ```
 
 ## Subscribing to a broadcast unconditionally
@@ -411,12 +399,7 @@ OnChangeSubscriptionQos qos;
 
 std::string subscriptionId;
 
-try {
-    subscriptionId =
-        proxy->subscribeTo<Broadcast>Broadcast(listener, qos);
-} catch (std::exception e) {
-    // handle exception
-}
+subscriptionId = proxy->subscribeTo<Broadcast>Broadcast(listener, qos);
 ```
 
 ## Updating an unconditional broadcast subscription
@@ -457,21 +440,17 @@ OnChangeSubscriptionQos qos;
 
 std::string subscriptionId;
 
-try {
-    // create filterparams instance on stack
-    <Package>::<Interface><Broadcast>BroadcastFilterParams <broadcast>BroadcastFilterParams;
-    // set filter attributes by calling setters on the
-    // filter parameter instance
+// create filterparams instance on stack
+<Package>::<Interface><Broadcast>BroadcastFilterParams <broadcast>BroadcastFilterParams;
+// set filter attributes by calling setters on the
+// filter parameter instance
 
-    subscriptionId =
-        proxy->subscribeTo<Broadcast>Broadcast(
-            <broadcast>BroadcastFilterParams,
-            listener,
-            qos
-        );
-} catch (std::exception e) {
-    // handle exception
-}
+subscriptionId =
+    proxy->subscribeTo<Broadcast>Broadcast(
+        <broadcast>BroadcastFilterParams,
+        listener,
+        qos
+    );
 ```
 
 ## Updating a broadcast subscription with filter parameters
@@ -492,11 +471,7 @@ subscriptionId = <interface>Proxy.subscribeTo<Broadcast>Broadcast(
 Unsubscribing from a broadcast subscription requires the **subscriptionId** returned by the earlier subscribe call.
 
 ```cpp
-try {
-    proxy->unSubscribeFrom<Broadcast>Broadcast(subscriptionId);
-} catch (std::exception e) {
-    // handle exception
-}
+proxy->unsubscribeFrom<Broadcast>Broadcast(subscriptionId);
 ```
 
 ## Shutting down
@@ -630,7 +605,6 @@ The provider class must extend the generated class ```joynr::<Package>::Default<
 
 ```cpp
 #include "My<Interface>Provider.h"
-#include "joynr/RequestStatus.h"
 
 using namespace joynr;
 
@@ -661,7 +635,8 @@ The getter methods return the current value of an attribute. Since the current t
 #include "joynr/<Package>/<TypeCollection>/<Type>.h"
 ...
 void My<Interface>Provider::get<Attribute>(
-    std::function<void(const <AttributeType>&)> onSuccess
+    std::function<void(const <AttributeType>&)> onSuccess,
+    std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
 )
 {
     onSuccess(<AttributeValue>);
@@ -669,7 +644,8 @@ void My<Interface>Provider::get<Attribute>(
 
 void My<Interface>Provider::set<Attribute>(
     const <AttributeType>& <Attribute>,
-    std::function<void()> onSuccess
+    std::function<void()> onSuccess,
+    std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
 )
 {
     // handle and store the new Value
@@ -694,13 +670,18 @@ void My<Interface>Provider::<method>(
         const <ReturnType1>& returnValue1
         ...
         const <ReturnTypeN>& returnValueN
-    )> onSuccess
+    )> onSuccess,
+    std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
 )
 {
     // handle request
     ...
     onSuccess(returnValue1, ..., returnValueN);
 }
+```
+If errors are modelled in Franca for the method, the onError function is replaced by:
+```cpp
+std::function<void (const joynr::<Package>::<Interface>::<Error>::Enum& errorEnum)> onError
 ```
 
 ### Firing a broadcast
@@ -770,12 +751,14 @@ public:
 
     // for each attribute
     void get<Attribute>(
-        std::function<void(const <AttributeType>& result)> onSuccess);
+        std::function<void(const <AttributeType>& result)> onSuccess,
+        std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError);
 
     // for each attribute which are NOT readonly
     void set<Attribute>(
         const <AttributeType>& <attribute>,
-        std::function<void()> onSuccess);
+        std::function<void()> onSuccess,
+        std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError);
 
     // for each method
     void <method>(
@@ -784,7 +767,8 @@ public:
             const <ReturnType1>& returnValue1
             ...
             const <ReturnTypeN>& returnValueN
-        )> onSuccess
+        )> onSuccess,
+        std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
     );
 
     // for each broadcast
@@ -795,4 +779,8 @@ private:
     void operator=(const My<Interface>Provider&);
 }
 #endif
+```
+For methods which are modelled with error enumerations, the onError function is replaced by:
+```cpp
+std::function<void (const joynr::<Package>::<Interface>::<Error>::Enum& errorEnum)> onError
 ```
