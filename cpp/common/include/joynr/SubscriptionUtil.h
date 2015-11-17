@@ -29,9 +29,14 @@ class JOYNRCOMMON_EXPORT SubscriptionUtil
 {
 public:
     static bool isOnChangeSubscription(QtSubscriptionQos* qos);
+    static bool isOnChangeSubscription(const Variant& qos);
     static qint64 getAlertInterval(QtSubscriptionQos* qos);
+    static int64_t getAlertInterval(const Variant& qos);
     static qint64 getMinInterval(QtSubscriptionQos* qos);
+    static int64_t getMinInterval(const Variant& qos);
     static qint64 getPeriodicPublicationInterval(QtSubscriptionQos* qos);
+    static int64_t getPeriodicPublicationInterval(const Variant& qos);
+    static Variant getVariant(const SubscriptionQos& qos);
 };
 }
 #endif // SUBSCRIPTIONUTIL_H

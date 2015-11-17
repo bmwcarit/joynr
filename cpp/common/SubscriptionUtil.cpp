@@ -21,6 +21,7 @@
 #include "joynr/QtOnChangeSubscriptionQos.h"
 #include "joynr/QtOnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/QtPeriodicSubscriptionQos.h"
+#include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
 {
@@ -31,6 +32,11 @@ bool SubscriptionUtil::isOnChangeSubscription(QtSubscriptionQos* qos)
            qos->inherits(QtOnChangeWithKeepAliveSubscriptionQos::staticMetaObject.className());
 }
 
+bool SubscriptionUtil::isOnChangeSubscription(const Variant& qos)
+{
+    return qos.is<OnChangeWithKeepAliveSubscriptionQos>() || qos.is<OnChangeSubscriptionQos>();
+}
+
 qint64 SubscriptionUtil::getAlertInterval(QtSubscriptionQos* qos)
 {
     if (qos->inherits(QtPeriodicSubscriptionQos::staticMetaObject.className())) {
@@ -39,6 +45,20 @@ qint64 SubscriptionUtil::getAlertInterval(QtSubscriptionQos* qos)
     if (qos->inherits(QtOnChangeWithKeepAliveSubscriptionQos::staticMetaObject.className())) {
         return (qobject_cast<QtOnChangeWithKeepAliveSubscriptionQos*>(qos))
                 ->getAlertAfterInterval();
+    }
+    return -1;
+}
+
+int64_t SubscriptionUtil::getAlertInterval(const Variant& qos)
+{
+    if (qos.is<OnChangeWithKeepAliveSubscriptionQos>()) {
+        const OnChangeWithKeepAliveSubscriptionQos* subscriptionQosPtr =
+                &qos.get<OnChangeWithKeepAliveSubscriptionQos>();
+        return subscriptionQosPtr->getAlertAfterInterval();
+    }
+    if (qos.is<PeriodicSubscriptionQos>()) {
+        const PeriodicSubscriptionQos* subscriptionQosPtr = &qos.get<PeriodicSubscriptionQos>();
+        return subscriptionQosPtr->getAlertAfterInterval();
     }
     return -1;
 }
@@ -54,6 +74,20 @@ qint64 SubscriptionUtil::getMinInterval(QtSubscriptionQos* qos)
     return -1;
 }
 
+int64_t SubscriptionUtil::getMinInterval(const Variant& qos)
+{
+    if (qos.is<OnChangeWithKeepAliveSubscriptionQos>()) {
+        const OnChangeWithKeepAliveSubscriptionQos* subscriptionQosPtr =
+                &qos.get<OnChangeWithKeepAliveSubscriptionQos>();
+        return subscriptionQosPtr->getMinInterval();
+    }
+    if (qos.is<OnChangeSubscriptionQos>()) {
+        const OnChangeSubscriptionQos* subscriptionQosPtr = &qos.get<OnChangeSubscriptionQos>();
+        return subscriptionQosPtr->getMinInterval();
+    }
+    return -1;
+}
+
 qint64 SubscriptionUtil::getPeriodicPublicationInterval(QtSubscriptionQos* qos)
 {
     if (qos->inherits(QtOnChangeWithKeepAliveSubscriptionQos::staticMetaObject.className())) {
@@ -63,5 +97,38 @@ qint64 SubscriptionUtil::getPeriodicPublicationInterval(QtSubscriptionQos* qos)
         return (qobject_cast<QtPeriodicSubscriptionQos*>(qos))->getPeriod();
     }
     return -1;
+}
+
+int64_t SubscriptionUtil::getPeriodicPublicationInterval(const Variant& qos)
+{
+    if (qos.is<OnChangeWithKeepAliveSubscriptionQos>()) {
+        const OnChangeWithKeepAliveSubscriptionQos* subscriptionQosPtr =
+                &qos.get<OnChangeWithKeepAliveSubscriptionQos>();
+        return subscriptionQosPtr->getMaxInterval();
+    }
+    if (qos.is<PeriodicSubscriptionQos>()) {
+        const PeriodicSubscriptionQos* subscriptionQosPtr = &qos.get<PeriodicSubscriptionQos>();
+        return subscriptionQosPtr->getPeriod();
+    }
+    return -1;
+}
+
+Variant SubscriptionUtil::getVariant(const SubscriptionQos& qos)
+{
+    if (std::is_base_of<SubscriptionQos, OnChangeSubscriptionQos>::value) {
+        return Variant::make<OnChangeSubscriptionQos>(
+                OnChangeSubscriptionQos((OnChangeSubscriptionQos&)qos));
+    }
+    if (std::is_base_of<SubscriptionQos, OnChangeWithKeepAliveSubscriptionQos>::value) {
+        return Variant::make<OnChangeWithKeepAliveSubscriptionQos>(
+                OnChangeWithKeepAliveSubscriptionQos((OnChangeWithKeepAliveSubscriptionQos&)qos));
+    }
+    if (std::is_base_of<SubscriptionQos, PeriodicSubscriptionQos>::value) {
+        return Variant::make<PeriodicSubscriptionQos>(
+                PeriodicSubscriptionQos((PeriodicSubscriptionQos&)qos));
+    }
+    assert(false);
+    throw exceptions::JoynrRuntimeException(
+            "Exception in SubscriptionUtil: reference to unknown SubscriptionQos has been sent");
 }
 }
