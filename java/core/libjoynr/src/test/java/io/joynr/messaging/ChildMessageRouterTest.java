@@ -19,8 +19,7 @@ package io.joynr.messaging;
  * #L%
  */
 
-import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.messaging.routing.MessageRouterImpl;
+import io.joynr.messaging.routing.ChildMessageRouter;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.proxy.Callback;
@@ -40,7 +39,7 @@ import java.io.IOException;
 import java.util.UUID;
 
 @RunWith(MockitoJUnitRunner.class)
-public class MessageRouterImplTest {
+public class ChildMessageRouterTest {
 
     @Mock
     private MessagingStubFactory messagingStubFactory;
@@ -59,14 +58,14 @@ public class MessageRouterImplTest {
     @Mock
     private WebSocketAddress incommingAddress;
 
-    private MessageRouter messageRouter;
+    private ChildMessageRouter messageRouter;
     private String unknownParticipantId = "unknownParticipantId";
 
     @Before
     public void setUp() {
         Mockito.when(messagingStubFactory.create(Mockito.any(Address.class))).thenReturn(messagingStub);
-        messageRouter = new MessageRouterImpl(routingTable, messagingStubFactory);
-        messageRouter.setIncommingAddress(incommingAddress);
+        messageRouter = new ChildMessageRouter(routingTable, messagingStubFactory);
+        messageRouter.setIncomingAddress(incommingAddress);
         messageRouter.setParentRouter(messageRouterParent, parentAddress, "parentParticipantId", "proxyParticipantId");
 
         Mockito.when(message.getTo()).thenReturn(unknownParticipantId);

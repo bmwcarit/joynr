@@ -1,15 +1,5 @@
 package io.joynr.proxy;
 
-import javax.annotation.CheckForNull;
-import javax.inject.Named;
-
-import io.joynr.runtime.SystemServicesSettings;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-
 /*
  * #%L
  * %%
@@ -33,6 +23,13 @@ import io.joynr.arbitration.ArbitrationResult;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.system.RoutingTypes.Address;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import javax.annotation.CheckForNull;
+import javax.inject.Named;
+import io.joynr.runtime.SystemServicesSettings;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 @Singleton
 public class ConnectorFactory {

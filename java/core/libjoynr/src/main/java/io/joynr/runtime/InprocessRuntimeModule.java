@@ -30,6 +30,8 @@ import com.google.inject.Singleton;
 import io.joynr.messaging.AbstractMessagingStubFactory;
 import io.joynr.messaging.channel.ChannelMessagingStubFactory;
 import io.joynr.messaging.inprocess.InProcessAddress;
+import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.routing.MessageRouterImpl;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 
@@ -42,6 +44,7 @@ public class InprocessRuntimeModule extends DefaultRuntimeModule {
     protected void configure() {
         super.configure();
         bind(JoynrRuntime.class).to(InProcessRuntime.class).in(Singleton.class);
+        bind(MessageRouter.class).to(MessageRouterImpl.class).in(Singleton.class);
     }
 
     @Provides

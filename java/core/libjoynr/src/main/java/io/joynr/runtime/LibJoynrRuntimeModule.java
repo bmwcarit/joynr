@@ -28,6 +28,8 @@ import io.joynr.accesscontrol.AccessController;
 import io.joynr.accesscontrol.AccessControllerDummy;
 import io.joynr.messaging.AbstractMessagingStubFactory;
 import io.joynr.messaging.websocket.LibWebSocketMessagingSkeleton;
+import io.joynr.messaging.routing.ChildMessageRouter;
+import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.websocket.WebSocketMessagingSkeleton;
 import io.joynr.messaging.websocket.WebSocketMessagingStubFactory;
 import io.joynr.messaging.websocket.WebsocketModule;
@@ -50,6 +52,8 @@ public class LibJoynrRuntimeModule extends DefaultRuntimeModule {
                                               .to(LibWebSocketMessagingSkeleton.class)
                                               .in(Singleton.class);
         bind(WebSocketMessagingStubFactory.class).in(Singleton.class);
+        bind(ChildMessageRouter.class).in(Singleton.class);
+        bind(MessageRouter.class).to(ChildMessageRouter.class);
     }
 
     @Provides

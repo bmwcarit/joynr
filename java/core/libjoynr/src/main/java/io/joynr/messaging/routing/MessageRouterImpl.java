@@ -19,7 +19,6 @@ package io.joynr.messaging.routing;
  * #L%
  */
 
-import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.IMessaging;
@@ -32,11 +31,8 @@ import javax.annotation.CheckForNull;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import io.joynr.proxy.Callback;
 import joynr.JoynrMessage;
-import joynr.exceptions.ProviderRuntimeException;
 import joynr.system.RoutingAbstractProvider;
-import joynr.system.RoutingProxy;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.BrowserAddress;
 import joynr.system.RoutingTypes.ChannelAddress;
@@ -52,9 +48,6 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
     private final RoutingTable routingTable;
     private MessagingStubFactory messagingStubFactory;
     private static final int UUID_TAIL = 32;
-    private RoutingProxy parentRouter;
-    private Address parentRouterMessagingAddress;
-    private Address incommingAddress;
 
     @Inject
     @Singleton
@@ -63,44 +56,11 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
         this.messagingStubFactory = messagingStubFactory;
     }
 
-    private Promise<DeferredVoid> addNextHopInternal(String participantId, Address address) {
+    protected Promise<DeferredVoid> addNextHopInternal(String participantId, Address address) {
         routingTable.put(participantId, address);
         final DeferredVoid deferred = new DeferredVoid();
-        if (parentRouter != null) {
-            addNextHopToParent(participantId, deferred);
-        } else {
-            deferred.resolve();
-        }
-
+        deferred.resolve();
         return new Promise<DeferredVoid>(deferred);
-    }
-
-    private void addNextHopToParent(String participantId, final DeferredVoid deferred) {
-        Callback<Void> callback = new Callback<Void>() {
-            @Override
-            public void onSuccess(@CheckForNull Void result) {
-                deferred.resolve();
-            }
-
-            @Override
-            public void onFailure(JoynrException error) {
-                deferred.reject(new ProviderRuntimeException("Failed to add next hop to parent: " + error));
-            }
-        };
-        if (incommingAddress instanceof ChannelAddress) {
-            parentRouter.addNextHop(callback, participantId, (ChannelAddress) incommingAddress);
-        } else if (incommingAddress instanceof CommonApiDbusAddress) {
-            parentRouter.addNextHop(callback, participantId, (CommonApiDbusAddress) incommingAddress);
-        } else if (incommingAddress instanceof BrowserAddress) {
-            parentRouter.addNextHop(callback, participantId, (BrowserAddress) incommingAddress);
-        } else if (incommingAddress instanceof WebSocketAddress) {
-            parentRouter.addNextHop(callback, participantId, (WebSocketAddress) incommingAddress);
-        } else if (incommingAddress instanceof WebSocketClientAddress) {
-            parentRouter.addNextHop(callback, participantId, (WebSocketClientAddress) incommingAddress);
-        } else {
-            deferred.reject(new ProviderRuntimeException("Failed to add next hop to parent: unknown address type"
-                    + incommingAddress.getClass().getSimpleName()));
-        }
     }
 
     @Override
@@ -143,19 +103,22 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
         return new Promise<ResolveNextHopDeferred>(deferred);
     }
 
+    @CheckForNull
+    protected Address getAddress(String toParticipantId) {
+        Address address = null;
+        if (toParticipantId != null && routingTable.containsKey(toParticipantId)) {
+            address = routingTable.get(toParticipantId);
+        }
+        return address;
+    }
+
     @Override
     public void route(JoynrMessage message) throws JoynrSendBufferFullException, JoynrMessageNotSentException,
                                            IOException {
         String toParticipantId = message.getTo();
-        if (toParticipantId != null && routingTable.containsKey(toParticipantId)) {
-            Address address = routingTable.get(toParticipantId);
+        Address address = getAddress(toParticipantId);
+        if (address != null) {
             routeMessageByAddress(message, address);
-        } else if (parentRouter != null) {
-            Boolean parentHasNextHop = parentRouter.resolveNextHop(toParticipantId);
-            if (parentHasNextHop) {
-                routingTable.put(toParticipantId, parentRouterMessagingAddress);
-                routeMessageByAddress(message, parentRouterMessagingAddress);
-            }
         } else {
             throw new JoynrMessageNotSentException("Failed to send Request: No route for given participantId: "
                     + toParticipantId);
@@ -184,19 +147,4 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
         messagingStubFactory.shutdown();
     }
 
-    @Override
-    public void setParentRouter(RoutingProxy parentRouter,
-                                Address parentRouterMessagingAddress,
-                                String parentRoutingProviderParticipantId,
-                                String proxyParticipantId) {
-        this.parentRouter = parentRouter;
-        this.parentRouterMessagingAddress = parentRouterMessagingAddress;
-        routingTable.put(parentRoutingProviderParticipantId, parentRouterMessagingAddress);
-        addNextHopToParent(proxyParticipantId, new DeferredVoid());
-    }
-
-    @Override
-    public void setIncommingAddress(Address incommingAddress) {
-        this.incommingAddress = incommingAddress;
-    }
 }
