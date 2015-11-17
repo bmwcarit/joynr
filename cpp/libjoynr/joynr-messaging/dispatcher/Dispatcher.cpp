@@ -219,6 +219,10 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
                                     request->getParamDatatypes(),
                                     onSuccess,
                                     onError);
+        // ApplicationExceptions should not be created by the application itself to ensure
+        // serializability. They are treated as JoynrExceptions. They can only be handled correctly
+        // if the constructor is used properly (with the appropriate literal of the reported error
+        // enumeration).
     } catch (exceptions::ProviderRuntimeException& e) {
         std::string message = "Could not perform an RPC invocation, caught exception: " +
                               e.getTypeName() + ":" + e.getMessage();
