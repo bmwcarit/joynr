@@ -21,7 +21,9 @@
 #include "joynr/JsonTokenizer.h"
 #include "ExampleTypes.h"
 #include "joynr/Request.h"
+#include "joynr/Reply.h"
 #include "jsonserializer/RequestSerializer.h"
+#include "jsonserializer/ReplySerializer.h"
 #include "joynr/joynrlogging.h"
 
 #include "gtest/gtest.h"
@@ -235,6 +237,62 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrRequest)
         Variant boolParam = params[4];
         EXPECT_TRUE(boolParam.is<bool>());
         EXPECT_EQ(expectedBool, boolParam.get<bool>());
+    }
+}
+
+TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrReply)
+{
+    // Create a Reply
+    Reply expectedReply;
+    std::string someString{"Hello World"};
+    std::vector<Variant> expectedResponse;
+    expectedResponse.push_back(Variant::make<std::string>(someString));
+    const int32_t expectedInt = 101;
+    expectedResponse.push_back(Variant::make<int>(expectedInt));
+    SomeOtherType expectedSomeOtherType(2);
+    expectedResponse.push_back(Variant::make<SomeOtherType>(expectedSomeOtherType));
+    const float expectedFloat = 9.99f;
+    expectedResponse.push_back(Variant::make<float>(expectedFloat));
+    bool expectedBool = true;
+    expectedResponse.push_back(Variant::make<bool>(expectedBool));
+
+    expectedReply.setResponse(expectedResponse);
+    expectedReply.setRequestReplyId("000-10000-01100");
+
+    // Serialize into JSON
+    std::stringstream stream;
+    auto serializer = ClassSerializer<Reply>{};
+    serializer.serialize(expectedReply, stream);
+    std::string json{ stream.str() };
+    LOG_TRACE(logger, QString("Reply JSON: %1").arg(QString::fromStdString(json)));
+
+    // Deserialize from JSON
+    JsonTokenizer tokenizer(json);
+
+    if (tokenizer.hasNextObject()) {
+        Reply reply;
+        ClassDeserializer<Reply>::deserialize(reply, tokenizer.nextObject());
+        std::vector<Variant> response = reply.getResponse();
+        EXPECT_EQ(expectedReply.getResponse().size(), response.size());
+        Variant first = response[0];
+        EXPECT_TRUE(first.is<std::string>());
+        EXPECT_EQ(someString, first.get<std::string>());
+        Variant intParam = response[1];
+        EXPECT_TRUE(intParam.is<uint64_t>());
+        EXPECT_FALSE(intParam.is<int32_t>());
+        EXPECT_EQ(expectedInt, static_cast<int32_t>(intParam.get<uint64_t>()));
+        Variant someOtherTypeParam = response[2];
+        EXPECT_TRUE(someOtherTypeParam.is<SomeOtherType>());
+        EXPECT_EQ(expectedSomeOtherType.getA(), someOtherTypeParam.get<SomeOtherType>().getA());
+        std::cout << "Deserialized value is " << someOtherTypeParam.get<SomeOtherType>().getA() << std::endl;
+        Variant floatParam = response[3];
+        EXPECT_TRUE(floatParam.is<double>());
+        EXPECT_FALSE(floatParam.is<float>());
+        EXPECT_EQ(expectedFloat, static_cast<float>(floatParam.get<double>()));
+        Variant boolParam = response[4];
+        EXPECT_TRUE(boolParam.is<bool>());
+        EXPECT_EQ(expectedBool, boolParam.get<bool>());
+        EXPECT_EQ(expectedReply.getRequestReplyId(), reply.getRequestReplyId());
     }
 }
 
