@@ -60,7 +60,7 @@ bool BroadcastSubscriptionRequest::operator==(
 
 QString BroadcastSubscriptionRequest::toQString() const
 {
-    return JsonSerializer::serializeQObject(*this);
+    return QString::fromStdString(JsonSerializer::serialize(*this));
 }
 
 void BroadcastSubscriptionRequest::setQos(OnChangeSubscriptionQos qos)

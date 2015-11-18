@@ -94,7 +94,7 @@ private:
                  const QString& senderParticipantId,
                  const QString& receiverParticipantId,
                  const qint64 ttl,
-                 const QObject& payload);
+                 const std::string& payload);
 
     void initReplyMsg(JoynrMessage& msg,
                       const QString& senderParticipantId,
