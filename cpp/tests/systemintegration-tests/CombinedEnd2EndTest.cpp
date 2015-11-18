@@ -43,7 +43,7 @@
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/ThreadUtil.h"
-
+#include "joynr/joynrlogging.h"
 
 using namespace ::testing;
 using namespace joynr;

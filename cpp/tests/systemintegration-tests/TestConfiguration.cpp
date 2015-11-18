@@ -19,8 +19,6 @@
 
 #include "systemintegration-tests/TestConfiguration.h"
 
-#include <QString>
-
 using namespace joynr::tests;
 
 Configuration &Configuration::getInstance()

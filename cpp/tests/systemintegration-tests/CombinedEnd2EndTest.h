@@ -24,8 +24,6 @@
 #include <gmock/gmock.h>
 #include <string>
 
-#include <QFile>
-
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrRuntime.h"
 #include "joynr/types/QtProviderQos.h"

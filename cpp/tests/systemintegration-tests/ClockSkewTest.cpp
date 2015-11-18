@@ -17,13 +17,14 @@
  * #L%
  */
 #include "joynr/PrivateCopyAssign.h"
-#include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
-#include "joynr/CapabilitiesRegistrar.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/BounceProxyUrl.h"
-#include "PrettyPrint.h"
+#include "joynr/TypeUtil.h"
+#include "joynr/DispatcherUtils.h"
 #include "joynr/joynrlogging.h"
+#include "joynr/Settings.h"
 
+#include <chrono>
 #include <gtest/gtest.h>
 #include <QString>
 #include <curl/curl.h>

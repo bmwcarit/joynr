@@ -23,11 +23,7 @@
 #include <string>
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
-#include "joynr/vehicle/GpsProxy.h"
 #include "joynr/tests/testProxy.h"
-#include "joynr/CapabilitiesRegistrar.h"
-#include "PrettyPrint.h"
-#include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/Future.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/ThreadUtil.h"

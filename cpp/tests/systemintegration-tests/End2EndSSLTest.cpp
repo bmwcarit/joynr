@@ -24,10 +24,8 @@
 #include "tests/utils/MockObjects.h"
 
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
-#include "joynr/MessagingSettings.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/vehicle/GpsProxy.h"
-#include "joynr/types/QtProviderQos.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/Future.h"
 #include "joynr/Util.h"

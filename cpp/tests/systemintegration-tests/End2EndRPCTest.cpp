@@ -21,16 +21,13 @@
 #include <gmock/gmock.h>
 #include <memory>
 #include <string>
-#include "tests/utils/MockObjects.h"
 
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
-#include "joynr/MessagingSettings.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/tests/testProvider.h"
 #include "joynr/tests/testProxy.h"
 #include "joynr/vehicle/GpsProxy.h"
 #include "joynr/types/QtProviderQos.h"
-#include "joynr/RequestStatus.h"
 #include "joynr/Future.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/TypeUtil.h"

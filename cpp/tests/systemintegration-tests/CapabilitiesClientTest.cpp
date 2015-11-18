@@ -22,17 +22,9 @@
 #include <string>
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
-#include "joynr/vehicle/GpsProxy.h"
-#include "joynr/tests/testProxy.h"
-#include "joynr/types/Localisation_QtTrip.h"
-#include "joynr/types/Localisation_QtGpsLocation.h"
-#include "joynr/CapabilitiesRegistrar.h"
-#include "PrettyPrint.h"
 #include "cluster-controller/capabilities-client/CapabilitiesClient.h"
 #include "joynr/infrastructure/IGlobalCapabilitiesDirectory.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
-#include "cluster-controller/capabilities-client/IGlobalCapabilitiesCallback.h"
-#include "joynr/joynrlogging.h"
 #include "cluster-controller/messaging/MessagingPropertiesPersistence.h"
 #include "joynr/TypeUtil.h"
 
