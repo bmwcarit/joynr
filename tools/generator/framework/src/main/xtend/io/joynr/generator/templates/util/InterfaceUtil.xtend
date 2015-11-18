@@ -262,12 +262,12 @@ public class InterfaceUtil {
 			filterComplexAndEnum
 	}
 
-	def private getAllReferredDatatypes(HashSet<Object> list, HashSet<Object> cache) {
+	def private getAllReferredDatatypes(Iterable<Object> list, HashSet<Object> cache) {
 		for(element : list){
 			if (!cache.contains(element)){
 				cache.add(element)
 				if (element instanceof FCompoundType){
-
+					getAllReferredDatatypes(element.members.map[e | e.type.datatype], cache)
 				}
 			}
 		}

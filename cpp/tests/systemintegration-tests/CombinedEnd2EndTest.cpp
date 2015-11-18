@@ -341,6 +341,31 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         delete testProxyBuilder;
     }
 
+    // TESTING Attribute getter of an array of a nested struct
+    {
+        ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domainName);
+        DiscoveryQos discoveryQos;
+        discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
+        discoveryQos.setDiscoveryTimeout(1000);
+
+        qlonglong qosRoundTripTTL = 40000;
+
+        // Send a message and expect to get a result
+        std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
+                                                   ->setMessagingQos(MessagingQos(qosRoundTripTTL))
+                                                   ->setCached(false)
+                                                   ->setDiscoveryQos(discoveryQos)
+                                                   ->build());
+        std::vector<joynr::tests::testTypes::HavingComplexArrayMemberStruct> setValue;
+        std::vector<joynr::tests::testTypes::NeverUsedAsAttributeTypeOrMethodParameterStruct> arrayMember;
+        arrayMember.push_back(joynr::tests::testTypes::NeverUsedAsAttributeTypeOrMethodParameterStruct("neverUsed"));
+        setValue.push_back(joynr::tests::testTypes::HavingComplexArrayMemberStruct(arrayMember));
+        testProxy->setAttributeArrayOfNestedStructs(setValue);
+
+        std::vector<joynr::tests::testTypes::HavingComplexArrayMemberStruct> result;
+        testProxy->getAttributeArrayOfNestedStructs(result);
+        ASSERT_EQ(result, setValue);
+    }
     // Operation overloading is not currently supported
 #if 0
     // Testing operation overloading

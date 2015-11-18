@@ -62,6 +62,14 @@ typeCollection testTypes {
 		DerivedStruct d
 	}
 
+	struct NeverUsedAsAttributeTypeOrMethodParameterStruct {
+		String name
+	}
+
+	struct HavingComplexArrayMemberStruct {
+		NeverUsedAsAttributeTypeOrMethodParameterStruct[] arrayMember
+	}
+
 	enumeration ErrorEnumBase {
 		BASE_ERROR_TYPECOLLECTION
 	}
@@ -109,6 +117,8 @@ interface test {
 	attribute Int32 attributeWithProviderRuntimeException
 
 	attribute Int32 attributeWithThrownException
+
+	attribute testTypes.HavingComplexArrayMemberStruct[] attributeArrayOfNestedStructs
 
 	method addNumbers {
 		in {
