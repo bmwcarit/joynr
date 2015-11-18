@@ -114,6 +114,8 @@ endif(${CMAKE_GENERATOR} MATCHES "Visual Studio")
 
 ### set up stuff common for all test targets ##################################
 
+include(AddTest.cmake)
+
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(jsonserializer_PUBLIC_INCLUDE_DIRECTORY jsonserializer PUBLIC_INCLUDE_DIRECTORY)
@@ -298,7 +300,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
         )
     endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
-    add_executable(
+    add_test(
         g_UnitTests
         ${cluster_controller_test_HEADERS}
         ${cluster_controller_test_SOURCES}
@@ -307,20 +309,10 @@ if(${BUILD_CLUSTER_CONTROLLER})
         ${g_UnitTests_SOURCES}
     )
 
-    add_dependencies(g_UnitTests googletest)
-    add_dependencies(g_UnitTests googlemock)
-    add_dependencies(g_UnitTests jsmn)
-
     target_link_libraries(
         g_UnitTests
         Qt5::Test
         ${cluster_controller_test_TARGET_LIBRARIES}
-    )
-
-    set_target_properties(
-        g_UnitTests
-        PROPERTIES
-        COMPILE_FLAGS "-Wno-effc++ -Wno-unused-parameter"
     )
 
     target_include_directories(
@@ -348,23 +340,14 @@ if(${BUILD_CLUSTER_CONTROLLER})
        )
     endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
-    add_executable(
+    add_test(
        g_IntegrationTests
        ${cluster_controller_test_HEADERS}
        ${cluster_controller_test_SOURCES}
        ${g_IntegrationTests_SOURCES}
     )
-    add_dependencies(g_IntegrationTests googletest)
-    add_dependencies(g_IntegrationTests googlemock)
-    add_dependencies(g_IntegrationTests jsmn)
 
     target_link_libraries(g_IntegrationTests ${cluster_controller_test_TARGET_LIBRARIES})
-
-    set_target_properties(
-       g_IntegrationTests
-       PROPERTIES
-       COMPILE_FLAGS "-Wno-effc++ -Wno-unused-parameter"
-    )
 
     target_include_directories(
         g_IntegrationTests
@@ -390,16 +373,12 @@ if(${BUILD_CLUSTER_CONTROLLER})
        )
     endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
-    add_executable(
+    add_test(
        g_SystemIntegrationTests
        ${cluster_controller_test_HEADERS}
        ${cluster_controller_test_SOURCES}
        ${g_SystemIntegrationTests_SOURCES}
     )
-
-    add_dependencies(g_SystemIntegrationTests googletest)
-    add_dependencies(g_SystemIntegrationTests googlemock)
-    add_dependencies(g_SystemIntegrationTests jsmn)
 
     target_link_libraries(g_SystemIntegrationTests ${cluster_controller_test_TARGET_LIBRARIES})
 
@@ -429,27 +408,17 @@ else()
         "unit-tests/JsonSerializerTest.cpp"
     )
 
-    add_executable(
+    add_test(
         g_UnitTests
         ${libjoynr_test_HEADERS}
         ${libjoynr_test_SOURCES}
         ${g_UnitTests_SOURCES}
     )
 
-    add_dependencies(g_UnitTests googletest)
-    add_dependencies(g_UnitTests googlemock)
-    add_dependencies(g_UnitTests jsmn)
-
     target_link_libraries(
         g_UnitTests
         Qt5::Test
         ${libjoynr_test_TARGET_LIBRARIES}
-    )
-
-    set_target_properties(
-        g_UnitTests
-        PROPERTIES
-        COMPILE_FLAGS "-Wno-effc++ -Wno-unused-parameter"
     )
 
     target_include_directories(
@@ -471,24 +440,14 @@ else()
        "systemintegration-tests/CombinedEnd2EndTest.cpp"
     )
 
-    add_executable(
+    add_test(
        g_SystemIntegrationTests
        ${libjoynr_test_HEADERS}
        ${libjoynr_test_SOURCES}
        ${g_SystemIntegrationTests_SOURCES}
     )
 
-    add_dependencies(g_SystemIntegrationTests googletest)
-    add_dependencies(g_SystemIntegrationTests googlemock)
-    add_dependencies(g_SystemIntegrationTests jsmn)
-
     target_link_libraries(g_SystemIntegrationTests ${libjoynr_test_TARGET_LIBRARIES})
-
-    set_target_properties(
-       g_SystemIntegrationTests
-       PROPERTIES
-       COMPILE_FLAGS "-Wno-effc++ -Wno-unused-parameter"
-    )
 
     target_include_directories(
         g_SystemIntegrationTests
