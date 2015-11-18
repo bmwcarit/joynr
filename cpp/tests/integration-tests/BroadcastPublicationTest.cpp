@@ -26,7 +26,6 @@
 #include "joynr/QtOnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/tests/TestLocationUpdateSelectiveBroadcastFilterParameters.h"
 
-#include "joynr/types/Localisation_QtGpsLocation.h"
 #include "libjoynr/subscription/SubscriptionBroadcastListener.h"
 
 using namespace ::testing;

@@ -21,11 +21,11 @@
 #include <gmock/gmock.h>
 #include "joynr/MessageRouter.h"
 #include "joynr/JoynrMessage.h"
+#include "joynr/JoynrMessageSender.h"
+#include "joynr/JoynrMessageFactory.h"
 #include "joynr/Dispatcher.h"
 #include "joynr/SubscriptionCallback.h"
 #include "joynr/SubscriptionPublication.h"
-#include "joynr/SubscriptionStop.h"
-#include "joynr/JoynrMessageFactory.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 #include "joynr/InterfaceRegistrar.h"

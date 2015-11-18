@@ -18,11 +18,9 @@
  */
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include "PrettyPrint.h"
-#include "common/in-process/InProcessMessagingSkeleton.h"
+#include <string>
+#include <QString>
 #include "joynr/MessageRouter.h"
-#include "joynr/MessagingStubFactory.h"
-#include "joynr/ClusterControllerDirectories.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/Dispatcher.h"
 #include "joynr/SubscriptionCallback.h"
@@ -30,17 +28,18 @@
 #include <string>
 #include <vector>
 #include "joynr/JoynrMessageFactory.h"
+#include "joynr/JoynrMessageSender.h"
+#include "joynr/Dispatcher.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/InterfaceRegistrar.h"
-#include "joynr/joynrlogging.h"
-#include "joynr/ThreadUtil.h"
 
 #include "joynr/tests/Itest.h"
 #include "joynr/tests/testRequestInterpreter.h"
 #include "joynr/types/Localisation_QtGpsLocation.h"
 #include "joynr/MetaTypeRegistrar.h"
+#include "joynr/ThreadUtil.h"
 
 using namespace ::testing;
 using namespace joynr;

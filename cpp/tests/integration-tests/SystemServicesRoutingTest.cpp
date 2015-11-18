@@ -16,7 +16,6 @@
  * limitations under the License.
  * #L%
  */
-#include "PrettyPrint.h"
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <string>
