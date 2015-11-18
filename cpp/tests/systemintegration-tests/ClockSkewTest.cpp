@@ -122,7 +122,7 @@ TEST_F(ClockSkewTest, DISABLED_checkClockSkew) {
 
     // Compare the time with the local time
     uint64_t now        = DispatcherUtils::nowInMilliseconds();
-    uint64_t remoteTime = duration_cast<milliseconds>(std::chrono::system_clock::from_time_t(epochsecs).time_since_epoch()).count();
+    uint64_t remoteTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::from_time_t(epochsecs).time_since_epoch()).count();
 
     LOG_INFO(logger, QString("Time difference is %1 msecs").arg(QString::number(TypeUtil::toQt(now))));
     EXPECT_TRUE(abs(now - remoteTime) < 2000) << "Time difference between local and remote is over 2 seconds";

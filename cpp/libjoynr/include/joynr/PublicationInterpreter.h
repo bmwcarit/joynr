@@ -33,8 +33,6 @@
 namespace joynr
 {
 
-using namespace joynr_logging;
-
 template <class... Ts>
 class PublicationInterpreter : public IPublicationInterpreter
 {

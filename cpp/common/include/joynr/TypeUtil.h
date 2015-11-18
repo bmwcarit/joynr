@@ -627,17 +627,18 @@ public:
     /**
       * Converts a std::chrono::system_clock::time_point to milliseconds
       */
-    static uint64_t toMilliseconds(const system_clock::time_point& timePoint)
+    static uint64_t toMilliseconds(const std::chrono::system_clock::time_point& timePoint)
     {
+        using namespace std::chrono;
         return duration_cast<milliseconds>(timePoint.time_since_epoch()).count();
     }
 
     /**
       * Converts a std::chrono::system_clock::time_point to a printable string
       */
-    static std::string toDateString(const system_clock::time_point& timePoint)
+    static std::string toDateString(const std::chrono::system_clock::time_point& timePoint)
     {
-        std::time_t time = system_clock::to_time_t(timePoint);
+        std::time_t time = std::chrono::system_clock::to_time_t(timePoint);
         return std::ctime(&time);
     }
 
