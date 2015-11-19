@@ -18,7 +18,7 @@
  */
 #include "JoynrMessageSerializer.h"
 
-#include "joynr/ArraySerializer.h"
+#include "joynr/MapSerializer.h"
 #include "joynr/SerializerRegistry.h"
 #include "joynr/Variant.h"
 #include "joynr/JoynrTypeId.h"
@@ -65,14 +65,16 @@ void ClassDeserializer<JoynrMessage>::deserialize(JoynrMessage& t, IObject& o)
 }
 
 template <>
-void ClassSerializer<JoynrMessage>::serialize(const JoynrMessage& request, std::ostream& stream)
+void ClassSerializer<JoynrMessage>::serialize(const JoynrMessage& msg, std::ostream& stream)
 {
-    stream << "{";
-    stream << "\"_typeName\": \"" << JoynrTypeId<JoynrMessage>::getTypeName() << "\",";
-    stream << "\"headerMap\": ";
-    // ArraySerializer::serialize<Variant>(request.getParams(), stream);
-    // ArraySerializer::serializeStrings(xxx, stream);
-    // ClassSerializer<SomeObject>::serialize(object, stream);
+    stream << R"({)";
+    stream << R"("_typeName": ")" << JoynrTypeId<JoynrMessage>::getTypeName() << R"(",)";
+    stream << R"("headerMap": )";
+    MapSerializer::serialize<std::string>(msg.getHeaderMap(), stream);
+    stream << R"(,"payload": )";
+    ClassSerializer<std::string> stringSerializer{};
+    stringSerializer.serialize(msg.getPayload(), stream);
+    stream << R"(,"type": ")" << msg.getType() << R"(")";
     stream << "}";
 }
 
