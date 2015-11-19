@@ -24,7 +24,6 @@
 #include "joynr/ProxyBuilder.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "joynr/vehicle/GpsProxy.h"
-#include "joynr/vehicle/GpsProxy.h"
 #include "joynr/InProcessConnectorFactory.h"
 #include "joynr/ConnectorFactory.h"
 #include "joynr/SubscriptionPublication.h"
