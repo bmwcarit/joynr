@@ -17,9 +17,6 @@
  * #L%
  */
 #include <gtest/gtest.h>
-
-#include "PrettyPrint.h"
-#include "joynr/joynrlogging.h"
 #include <string>
 
 #include "joynr/types/TestTypes_QtTStructExtended.h"

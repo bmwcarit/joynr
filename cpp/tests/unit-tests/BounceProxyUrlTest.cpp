@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#include "gtest/gtest.h"
-#include "gmock/gmock.h"
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 #include "utils/TestQString.h"
 #include "joynr/BounceProxyUrl.h"
 

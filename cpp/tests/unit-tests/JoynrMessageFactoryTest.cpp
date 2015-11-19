@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include "joynr/JoynrMessageFactory.h"
 #include "utils/TestQString.h"
 #include "joynr/Request.h"
@@ -28,7 +28,6 @@
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/SubscriptionStop.h"
 #include "joynr/QtOnChangeSubscriptionQos.h"
-#include "joynr/joynrlogging.h"
 #include "joynr/DispatcherUtils.h"
 #include <chrono>
 #include <stdint.h>

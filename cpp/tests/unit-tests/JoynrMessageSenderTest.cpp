@@ -18,16 +18,11 @@
  */
 #include <QUuid>
 
-
-#include "gtest/gtest.h"
-#include "gmock/gmock.h"
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 #include "utils/TestQString.h"
 #include <string>
 #include <vector>
-
-
-#include "joynr/IDispatcher.h"
-#include "joynr/IMessaging.h"
 
 #include "joynr/MessagingQos.h"
 #include "joynr/JoynrMessage.h"

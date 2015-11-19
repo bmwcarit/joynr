@@ -20,7 +20,6 @@
 #include <gmock/gmock.h>
 #include "tests/utils/MockObjects.h"
 #include "joynr/InterfaceRegistrar.h"
-#include "joynr/vehicle/GpsRequestInterpreter.h"
 #include "joynr/tests/testRequestInterpreter.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/IAttributeListener.h"

@@ -18,7 +18,6 @@
  */
 #include "AbstractSyncAsyncTest.cpp"
 #include "joynr/tests/testJoynrMessagingConnector.h"
-#include "joynr/tests/ItestConnector.h"
 #include "joynr/IReplyCaller.h"
 #include <string>
 #include "utils/MockObjects.h"

@@ -17,12 +17,15 @@
  * #L%
  */
 #include <QUuid>
+#include <QVariant>
+#include <QVariantList>
+#include <QString>
+#include <QList>
 
 
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 #include "utils/TestQString.h"
-#include "QVariant"
 #include "joynr/Request.h"
 
 using ::testing::A;

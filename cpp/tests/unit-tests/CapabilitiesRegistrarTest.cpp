@@ -17,16 +17,13 @@
  * #L%
  */
 #include <memory>
+#include <string>
 
 #include "joynr/PrivateCopyAssign.h"
-#include "PrettyPrint.h"
-#include "gtest/gtest.h"
-#include "gmock/gmock.h"
-#include <string>
-#include "utils/TestQString.h"
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 #include "joynr/CapabilitiesRegistrar.h"
 #include "tests/utils/MockObjects.h"
-#include "joynr/types/QtProviderQos.h"
 
 using namespace ::testing;
 using namespace joynr;

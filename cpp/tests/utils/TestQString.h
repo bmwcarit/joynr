@@ -19,7 +19,7 @@
 #ifndef TESTQSTRING_H
 #define TESTQSTRING_H
 #include "QtCore/QString"
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 #define ASSERT_QSTREQ(s1, s2) ASSERT_STREQ(s1.toLatin1(), s2.toLatin1())
 #define EXPECT_QSTREQ(s1, s2) EXPECT_STREQ(s1.toLatin1(), s2.toLatin1())

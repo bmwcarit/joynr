@@ -16,14 +16,13 @@
  * limitations under the License.
  * #L%
  */
-#include "gtest/gtest.h"
-#include "gmock/gmock.h"
+#include <chrono>
+#include <stdint.h>
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 #include "joynr/ContentWithDecayTime.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/ThreadUtil.h"
-
-#include <chrono>
-#include <stdint.h>
 
 using namespace joynr;
 using namespace std::chrono;

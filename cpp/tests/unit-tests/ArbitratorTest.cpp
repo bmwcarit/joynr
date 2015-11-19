@@ -16,15 +16,12 @@
  * limitations under the License.
  * #L%
  */
-#include "gtest/gtest.h"
-#include "gmock/gmock.h"
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 #include <string>
-#include "utils/TestQString.h"
-#include "joynr/types/QtProviderQos.h"
 #include "joynr/QosArbitrator.h"
 #include "joynr/KeywordArbitrator.h"
 #include "joynr/DefaultArbitrator.h"
-#include "joynr/system/RoutingTypes_QtChannelAddress.h"
 
 #include "tests/utils/MockObjects.h"
 

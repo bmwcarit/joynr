@@ -34,6 +34,7 @@
 #include "joynr/QtPeriodicSubscriptionQos.h"
 #include "joynr/QtOnChangeSubscriptionQos.h"
 #include "joynr/Util.h"
+#include <chrono>
 #include <stdint.h>
 
 using ::testing::A;

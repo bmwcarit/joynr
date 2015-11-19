@@ -19,7 +19,7 @@
 
 #include "joynr/PrivateCopyAssign.h"
 #include "tests/utils/MockObjects.h"
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include "cluster-controller/access-control/AccessController.h"
 #include "cluster-controller/access-control/LocalDomainAccessStore.h"
 #include "joynr/types/QtDiscoveryEntry.h"

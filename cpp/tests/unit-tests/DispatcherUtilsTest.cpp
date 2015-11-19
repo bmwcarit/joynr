@@ -16,9 +16,7 @@
  * limitations under the License.
  * #L%
  */
-#include "gtest/gtest.h"
-
-#include "joynr/joynrlogging.h"
+#include <gtest/gtest.h>
 #include "joynr/DispatcherUtils.h"
 #include <chrono>
 #include <stdint.h>

@@ -17,7 +17,7 @@
  * #L%
  */
 #include "joynr/PrivateCopyAssign.h"
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include "joynr/Directory.h"
 #include "joynr/TrackableObject.h"
 #include "joynr/ThreadUtil.h"

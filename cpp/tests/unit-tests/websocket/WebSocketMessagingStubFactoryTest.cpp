@@ -18,8 +18,6 @@
  */
 #include <gtest/gtest.h>
 
-#include "PrettyPrint.h"
-
 #include <QtTest/QSignalSpy>
 #include <QtCore/QTimer>
 #include <QtWebSockets/QWebSocket>

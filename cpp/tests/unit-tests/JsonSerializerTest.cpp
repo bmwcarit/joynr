@@ -32,7 +32,6 @@
 #include "joynr/Reply.h"
 #include "joynr/Request.h"
 #include "joynr/JoynrMessage.h"
-#include "joynr/JoynrMessageFactory.h"
 #include "joynr/JsonSerializer.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/DeclareMetatypeUtil.h"
@@ -45,7 +44,6 @@
 #include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/QtOnChangeSubscriptionQos.h"
 #include "joynr/QtOnChangeWithKeepAliveSubscriptionQos.h"
-#include "joynr/QtPeriodicSubscriptionQos.h"
 
 #include "joynr/infrastructure/DacTypes_QtMasterAccessControlEntry.h"
 #include "QTime"

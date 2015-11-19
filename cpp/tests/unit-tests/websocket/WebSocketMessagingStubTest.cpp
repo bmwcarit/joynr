@@ -17,7 +17,6 @@
  * #L%
  */
 #include <gtest/gtest.h>
-#include "PrettyPrint.h"
 
 #include <QtTest/QtTest>
 #include <QtCore/QObject>
@@ -25,9 +24,7 @@
 #include <QtWebSockets/QWebSocket>
 #include <QtWebSockets/QWebSocketServer>
 
-#include "joynr/joynrlogging.h"
 #include "joynr/JoynrMessage.h"
-#include "joynr/MessagingQos.h"
 #include "joynr/JsonSerializer.h"
 #include "joynr/system/RoutingTypes_QtWebSocketAddress.h"
 #include "libjoynr/websocket/WebSocketMessagingStub.h"

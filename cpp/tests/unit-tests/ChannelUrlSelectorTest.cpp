@@ -18,13 +18,13 @@
  */
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <string>
+#include <memory>
 #include "cluster-controller/http-communication-manager/ChannelUrlSelector.h"
 #include "joynr/BounceProxyUrl.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/Future.h"
 #include "joynr/ThreadUtil.h"
-#include <string>
-#include <memory>
 
 using ::testing::A;
 using ::testing::_;

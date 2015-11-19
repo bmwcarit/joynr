@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 using namespace ::testing;
 #include "joynr/types/Localisation_QtTrip.h"
 #include "joynr/types/Localisation_QtGpsLocation.h"

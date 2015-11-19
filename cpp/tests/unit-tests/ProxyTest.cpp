@@ -17,8 +17,11 @@
  * #L%
  */
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/JoynrMessagingConnectorFactory.h"
+#include "joynr/ConnectorFactory.h"
+#include "joynr/tests/testProxy.h"
 #include "AbstractSyncAsyncTest.cpp"
-#include "vector"
+
 using ::testing::A;
 using ::testing::_;
 using ::testing::Return;

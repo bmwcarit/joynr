@@ -17,7 +17,7 @@
  * #L%
  */
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include "joynr/ParticipantIdStorage.h"
 #include <string>
 

@@ -19,15 +19,8 @@
 #include "joynr/InterfaceRegistrar.h"
 #include "joynr/vehicle/IGps.h"
 #include "joynr/vehicle/GpsRequestInterpreter.h"
-#include "joynr/vehicle/GpsRequestCaller.h"
 #include "joynr/tests/testRequestInterpreter.h"
 #include "joynr/IRequestInterpreter.h"
-#include "joynr/JoynrMessageSender.h"
-#include "joynr/MessagingQos.h"
-#include "joynr/JoynrMessage.h"
-#include "joynr/JoynrMessageFactory.h"
-#include "joynr/Dispatcher.h"
-#include "joynr/Request.h"
 #include "tests/utils/MockObjects.h"
 
 #include <gtest/gtest.h>

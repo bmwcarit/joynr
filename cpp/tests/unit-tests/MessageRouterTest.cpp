@@ -17,9 +17,9 @@
  * #L%
  */
 #include "joynr/PrivateCopyAssign.h"
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include <QFile>
-#include "gmock/gmock.h"
+#include <gmock/gmock.h>
 #include "joynr/MessageRouter.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/system/RoutingTypes_QtChannelAddress.h"

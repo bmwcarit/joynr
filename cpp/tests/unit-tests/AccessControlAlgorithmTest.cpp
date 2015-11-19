@@ -18,7 +18,7 @@
  */
 
 #include "joynr/PrivateCopyAssign.h"
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include "cluster-controller/access-control/AccessControlAlgorithm.h"
 
 #include "joynr/infrastructure/DacTypes_QtMasterAccessControlEntry.h"

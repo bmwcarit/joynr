@@ -24,16 +24,8 @@
 #include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/types/Localisation/Trip.h"
 #include "joynr/IReplyCaller.h"
-//#needed:?
-#include "joynr/JoynrMessageSender.h"
-#include "joynr/MessagingQos.h"
-#include "joynr/JoynrMessage.h"
-#include "joynr/JoynrMessageFactory.h"
-#include "joynr/Dispatcher.h"
-#include "joynr/vehicle/IGps.h"
-#include "joynr/Request.h"
+#include "joynr/RequestStatus.h"
 #include "tests/utils/MockObjects.h"
-#include "joynr/JsonSerializer.h"
 
 using ::testing::A;
 using ::testing::_;
