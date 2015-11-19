@@ -88,10 +88,52 @@ void ClassSerializer<bool>::serialize(const bool& i, std::ostream& stream)
     stream << i;
 }
 
+/**
+ * @brief addEscapeForSpecialCharacters Escapes special characters in a string
+ * @param str
+ * @return
+ */
+static std::string addEscapeForSpecialCharacters(const std::string& str) {
+    std::string escapedString;
+    for(char c : str) {
+        switch(c) {
+        case '\b' :
+            escapedString.push_back('\\');
+            escapedString.push_back('b');
+            break;
+        case '\f' :
+            escapedString.push_back('\\');
+            escapedString.push_back('f');
+            break;
+        case '\n' :
+            escapedString.push_back('\\');
+            escapedString.push_back('n');
+            break;
+        case '\r' :
+            escapedString.push_back('\\');
+            escapedString.push_back('r');
+            break;
+        case '\t' :
+            escapedString.push_back('\\');
+            escapedString.push_back('t');
+            break;
+        case '\\' :
+        case '\"' :
+            escapedString.push_back('\\');
+            escapedString.push_back(c);
+            break;
+        default:
+            escapedString.push_back(c);
+        }
+    }
+
+    return escapedString;
+}
+
 template <>
 void ClassSerializer<std::string>::serialize(const std::string& s, std::ostream& stream)
 {
-    stream << '"' << s << '"';
+    stream << '"' << addEscapeForSpecialCharacters(s) << '"';
 }
 
 template <>

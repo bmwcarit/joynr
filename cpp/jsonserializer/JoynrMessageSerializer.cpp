@@ -33,19 +33,33 @@ namespace joynr
 static const bool isRequestRegistered =
         SerializerRegistry::registerType<JoynrMessage>("joynr.JoynrMessage");
 
+static std::string  removeEscapeFromSpecialChars(const std::string& inputStr){
+    const std::string escapedQuote = R"(\")";
+    const std::string normalQuote = R"(")";
+
+    std::string unescapedString{inputStr};
+    std::string::size_type n = 0;
+    while ( ( n = unescapedString.find( escapedQuote, n ) ) != std::string::npos )
+    {
+        unescapedString.replace( n, escapedQuote.size(), normalQuote );
+        n += normalQuote.size();
+    }
+
+    return unescapedString;
+}
+
 template <>
 void ClassDeserializer<JoynrMessage>::deserialize(JoynrMessage& t, IObject& o)
 {
     while (o.hasNextField()) {
         IField& field = o.nextField();
         if (field.name() == "type") {
-            //t.setType(field.value());
-
+            t.setType(field.value());
         } else if (field.name() == "headerMap") {
-            auto&& converted = convertMap<Variant>(field.value(), convertVariant);
-            //t.setHeader(std::forward<std::map<std::string, Variant>>(converted));
+            auto&& converted = convertMap<std::string>(field.value(), convertString);
+            t.setHeaderMap(converted);
         } else if (field.name() == "payload") {
-            //t.setPayload(field.value());
+            t.setPayload( removeEscapeFromSpecialChars(field.value()));
         }
     }
 }
