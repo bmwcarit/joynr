@@ -76,7 +76,7 @@ class InterfaceCppTemplate implements InterfaceTemplate{
 
 I«interfaceName»Base::I«interfaceName»Base()
 {
-	«val typeObjs = getAllComplexAndEnumTypes(serviceInterface)»
+	«val typeObjs = getAllComplexAndEnumTypes(serviceInterface, true)»
 	«var replyMetatypes = getReplyMetatypes(serviceInterface)»
 	«var broadcastMetatypes = getBroadcastMetatypes(serviceInterface)»
 
