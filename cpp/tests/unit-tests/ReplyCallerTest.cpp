@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,11 @@ using namespace ::testing;
 MATCHER(timeoutException, "") {
     return (dynamic_cast<const joynr::exceptions::JoynrTimeOutException*>(&arg) != nullptr)
             && arg.getMessage() == "timeout waiting for the response";
+}
+
+MATCHER_P(providerRuntimeException, msg, "") {
+    return arg.getTypeName() == joynr::exceptions::ProviderRuntimeException::TYPE_NAME
+            && arg.getMessage() == msg;
 }
 
 using namespace joynr;
@@ -90,24 +95,44 @@ TEST_F(ReplyCallerTest, getTypeForVoid) {
 
 
 TEST_F(ReplyCallerTest, timeOut) {
+    EXPECT_CALL(*intCallback, onSuccess(_)).Times(0);
     EXPECT_CALL(*intCallback, onError(
-                    Property(&RequestStatus::getCode, RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE),timeoutException()));
+                    Property(&RequestStatus::getCode, RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE),timeoutException())).Times(1);
     intFixture.timeOut();
 }
 
 TEST_F(ReplyCallerTest, timeOutForVoid) {
+    EXPECT_CALL(*intCallback, onSuccess(_)).Times(0);
     EXPECT_CALL(*voidCallback, onError(
-                    Property(&RequestStatus::getCode, RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE),timeoutException()));
+                    Property(&RequestStatus::getCode, RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE),timeoutException())).Times(1);
     voidFixture.timeOut();
+}
+
+TEST_F(ReplyCallerTest, errorReceived) {
+    std::string errorMsg = "errorMsgFromProvider";
+    EXPECT_CALL(*intCallback, onError(
+                    Property(&RequestStatus::getCode, RequestStatusCode::ERROR),providerRuntimeException(errorMsg))).Times(1);
+    EXPECT_CALL(*intCallback, onSuccess(_)).Times(0);
+    intFixture.returnError(exceptions::ProviderRuntimeException(errorMsg));
+}
+
+TEST_F(ReplyCallerTest, errorReceivedForVoid) {
+    std::string errorMsg = "errorMsgFromProvider";
+    EXPECT_CALL(*voidCallback, onError(
+                    Property(&RequestStatus::getCode, RequestStatusCode::ERROR),providerRuntimeException(errorMsg))).Times(1);
+    EXPECT_CALL(*voidCallback, onSuccess()).Times(0);
+    voidFixture.returnError(exceptions::ProviderRuntimeException(errorMsg));
 }
 
 TEST_F(ReplyCallerTest, resultReceived) {
     EXPECT_CALL(*intCallback, onSuccess(7));
+    EXPECT_CALL(*intCallback, onError(_,_)).Times(0);
     intFixture.returnValue(7);
 }
 
 TEST_F(ReplyCallerTest, resultReceivedForVoid) {
     EXPECT_CALL(*voidCallback, onSuccess());
+    EXPECT_CALL(*voidCallback, onError(_,_)).Times(0);
     voidFixture.returnValue();
 }
 
