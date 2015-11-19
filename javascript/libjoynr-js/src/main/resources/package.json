@@ -1,6 +1,6 @@
 {
   "name": "joynr",
-  "version": "0.12.1-SNAPSHOT",
+  "version": "0.12.1",
   "description": "Web-based communication framework for applications wanting to interact with other applications, no matter whether they're deployed on consumer devices, vehicles, or backend infrastructure",
   "main": "joynr.js",
   "private": true,
