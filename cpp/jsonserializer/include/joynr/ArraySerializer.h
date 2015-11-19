@@ -21,6 +21,8 @@
 
 #include <ostream>
 #include <vector>
+#include "joynr/Variant.h"
+#include "joynr/ClassSerializer.h"
 
 namespace joynr
 {
@@ -37,6 +39,10 @@ public:
     template <typename T>
     static void serialize(const std::vector<T>& array, std::ostream& stream);
 };
+
+
+template <>
+void ArraySerializer::serialize(const std::vector<Variant>& array, std::ostream& stream);
 
 template <typename T>
 void ArraySerializer::serialize(const std::vector<T>& array,
