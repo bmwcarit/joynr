@@ -1,3 +1,14 @@
+#joynr 0.11.2
+
+This is a minor bug fix release.
+
+##API relevant changes
+None.
+
+##Other changes
+* **[C++]** Fixed bug during deserialization of joynr messages caused by
+  incorrect meta type registration of nested structs.
+
 #joynr 0.11.1
 
 This is a minor bug fix release.
