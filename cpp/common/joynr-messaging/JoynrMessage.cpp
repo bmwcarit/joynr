@@ -31,6 +31,8 @@ using namespace joynr_logging;
 
 Logger* JoynrMessage::logger = Logging::getInstance()->getLogger("MSG", "JoynrMessage");
 
+static bool isJoynrMessageRegistered = Variant::registerType<JoynrMessage>("joynr.JoynrMessage");
+
 const std::string& JoynrMessage::HEADER_CONTENT_TYPE()
 {
     static const std::string headerContentType("contentType");

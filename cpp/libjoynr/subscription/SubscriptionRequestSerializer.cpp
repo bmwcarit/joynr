@@ -30,15 +30,20 @@ static const bool isSubscriptionRequestRegistered =
         SerializerRegistry::registerType<SubscriptionRequest>("joynr.SubscriptionRequest");
 
 template <>
-void ClassDeserializer<SubscriptionRequest>::deserialize(SubscriptionRequest& t, IObject& o)
+void ClassDeserializer<SubscriptionRequest>::deserialize(SubscriptionRequest& subscriptionRequest,
+                                                         IObject& o)
 {
     while (o.hasNextField()) {
         IField& field = o.nextField();
         if (field.name() == "subscriptionId") {
-            t.setSubscriptionId(field.value());
+            subscriptionRequest.setSubscriptionId(field.value());
         }
         if (field.name() == "subscribedToName") {
-            t.setSubscribeToName(field.value());
+            subscriptionRequest.setSubscribeToName(field.value());
+        }
+        if (field.name() == "qos") {
+            Variant qos = convertVariant(field.value());
+            subscriptionRequest.setQos(qos);
         }
     }
 }
@@ -47,10 +52,12 @@ template <>
 void ClassSerializer<SubscriptionRequest>::serialize(const SubscriptionRequest& subscriptionRequest,
                                                      std::ostream& stream)
 {
-    stream << "{";
-    stream << "\"_typeName\": \"" << JoynrTypeId<SubscriptionRequest>::getTypeName() << "\",";
-    stream << "\"subscriptionId\": \"" << subscriptionRequest.getSubscriptionId() << "\",";
-    stream << "\"subscribedToName\": \"" << subscriptionRequest.getSubscribeToName() << "\"";
+    stream << R"({)";
+    stream << R"("_typeName": ")" << JoynrTypeId<SubscriptionRequest>::getTypeName() << R"(",)";
+    stream << R"("subscriptionId": ")" << subscriptionRequest.getSubscriptionId() << R"(",)";
+    stream << R"("subscribedToName": ")" << subscriptionRequest.getSubscribeToName() << R"(",)";
+    ClassSerializer<Variant> variantSerializer{};
+    variantSerializer.serialize(subscriptionRequest.getQos(), stream);
     stream << "}";
 }
 

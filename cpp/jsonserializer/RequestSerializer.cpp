@@ -58,12 +58,12 @@ void ClassSerializer<Request>::serialize(const Request& request, std::ostream& s
 {
     stream << R"({)";
     stream << R"("_typeName": ")" << JoynrTypeId<Request>::getTypeName() << R"(",)";
-    stream << R"("requestReplyId": ")" << request.getRequestReplyId() << R"(",)";
     stream << R"("methodName": ")" << request.getMethodName() << R"(",)";
     stream << R"("paramDatatypes": )";
     ArraySerializer::serialize<std::string>(request.getParamDatatypes(), stream);
-    stream << R"(, "params": )";
+    stream << R"(,"params": )";
     ArraySerializer::serialize<Variant>(request.getParams(), stream);
+    stream << R"(,"requestReplyId": ")" << request.getRequestReplyId() << R"(")";
     stream << R"(})";
 }
 
