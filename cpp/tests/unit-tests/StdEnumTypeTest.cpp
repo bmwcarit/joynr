@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -98,6 +98,17 @@ TEST_F(StdEnumTypeTest, lessThanOperator) {
 TEST_F(StdEnumTypeTest, lessEqualOperator) {
     EXPECT_LE(testEnumZero, testEnumOne);
     EXPECT_LE(testEnumOne, testEnumOne);
+}
+
+TEST_F(StdEnumTypeTest, getEnum) {
+    std::string literal = TestEnum::getLiteral(TestEnum::ZERO);
+    EXPECT_EQ(TestEnum::ZERO, TestEnum::getEnum(literal));
+    uint32_t ordinal = TestEnum::getOrdinal(TestEnum::ZERO);
+    EXPECT_EQ(ordinal, TestEnum::getEnum(literal));
+}
+
+TEST_F(StdEnumTypeTest, getTypeName) {
+    EXPECT_EQ("joynr.tests.testTypes.TestEnum", TestEnum::getTypeName());
 }
 
 TEST_F(StdEnumTypeTest, baseAndExtendedOrdinalsAreEqual) {
