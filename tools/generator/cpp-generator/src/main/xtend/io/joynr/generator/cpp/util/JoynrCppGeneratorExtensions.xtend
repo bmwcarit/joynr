@@ -182,7 +182,8 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 		case isEnum(datatypeRef)  : buildPackagePath(datatype, ".", true) +
 									datatype.joynrName
 		case isString(predefined) : "String"
-		case isInt(predefined)    : "Integer"
+		case isShort(predefined)  : "Short"
+		case isInteger(predefined): "Integer"
 		case isLong(predefined)   : "Long"
 		case isDouble(predefined) : "Double"
 		case isFloat(predefined)  : "Double"

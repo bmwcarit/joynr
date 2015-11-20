@@ -136,9 +136,12 @@ class TypeUtil {
 		return type == FBasicTypeId::BOOLEAN;
 	}
 
-	def boolean isInt(FBasicTypeId type) {
-		return type == FBasicTypeId::INT16 || type == FBasicTypeId::INT32
-			|| type == FBasicTypeId::UINT16 || type == FBasicTypeId::UINT32;
+	def boolean isShort(FBasicTypeId type) {
+		return type == FBasicTypeId::INT16 || type == FBasicTypeId::UINT16;
+	}
+
+	def boolean isInteger(FBasicTypeId type) {
+		return type == FBasicTypeId::INT32 || type == FBasicTypeId::UINT32;
 	}
 
 	def boolean isString(FBasicTypeId type) {
