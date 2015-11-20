@@ -20,6 +20,9 @@
 #define DESERIALIZER
 
 #include <string>
+#include <iostream>
+
+#include "joynr/Variant.h"
 
 namespace joynr
 {
@@ -78,16 +81,6 @@ public:
      */
     virtual bool isObject() const = 0;
 
-    /**
-     * @brief Is this value a string?
-     */
-    virtual bool isString() const = 0;
-
-    /**
-     * @brief Is this value a number?
-     */
-    virtual bool isNumber() const = 0;
-
     template<typename T>
     T getIntType()
     {
@@ -106,7 +99,18 @@ public:
         return static_cast<T>(getUInt64());
     }
 
+    /**
+     * @brief Get the value as a boolean
+     * @return Boolean value
+     */
     virtual bool getBool() const = 0;
+
+    /**
+     * @brief Get the value as a variant
+     * @return Variant value
+     */
+    virtual Variant getVariant() const = 0;
+
 protected:
 
     /**

@@ -19,7 +19,7 @@
 #include "joynr/ClassDeserializer.h"
 #include "joynr/SerializerRegistry.h"
 #include "IDeserializer.h"
-
+#include <iostream>
 namespace joynr
 {
 
@@ -53,14 +53,11 @@ Variant convertVariant(IValue &value)
     } else if (value.isArray()) {
         return Variant::make<std::vector<Variant>>(
                 convertArray<Variant>(value, convertVariant));
-
-    } else if (value.isString()) {
+    } else {
         // This covers all non-object values
         // i.e values without a _typename entry
-        return Variant::make<std::string>(std::string(value));
+        return value.getVariant();
     }
-
-    return Variant{};
 }
 
 std::string convertString(IValue &value)

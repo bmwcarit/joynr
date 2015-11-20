@@ -265,16 +265,13 @@ public:
      * @return
      */
     bool isObject() const;
+
     /**
-     * @brief isString
-     * @return
+     * @brief Get the value as a variant
+     * @return The variant
      */
-    bool isString() const;
-    /**
-     * @brief isNumber
-     * @return
-     */
-    bool isNumber() const;
+    Variant getVariant() const;
+
 protected:
     /**
      * @brief conversion to int64_t, doesn't allow conversion of boolean to int
@@ -291,6 +288,9 @@ protected:
     uint64_t getUInt64() const;
 private:
    Variant value;
+
+   // Parse a variant from a token string
+   static Variant parseJsonPrimitive(const std::string& tokenString);
 };
 
 } /* namespace joynr */

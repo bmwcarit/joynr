@@ -151,7 +151,8 @@ JsonValue::JsonValue(JsonTokenizer &tokenizer) :
         value = std::move(Variant::make<JsonObject>(tokenizer));
         break;
     case JSMN_PRIMITIVE:
-        // TODO: check and store numbers in a different type
+        value = parseJsonPrimitive(tokenizer.currentToken().asString());
+        break;
     case JSMN_STRING:
         value = std::move(Variant::make<std::string>(tokenizer.currentToken().asString()));
         break;
@@ -183,29 +184,84 @@ JsonValue::operator const std::string&() const
 
 int64_t JsonValue::getInt64() const
 {
-    if (!value.is<std::string>()) {
-        throw std::invalid_argument("Extracting int64_t from non-string JsonValue");
+    if (value.is<int64_t>()) {
+        return value.get<int64_t>();
+    } else if (value.is<uint64_t>()) {
+        return static_cast<int64_t>(value.get<std::uint64_t>());
+    } else {
+        throw std::invalid_argument("Extracting int64_t from non-int JsonValue");
     }
-    std::string valueStr{value.get<std::string>()};
-    return std::strtol(valueStr.c_str(), nullptr, 10);
 }
 
 double JsonValue::getDouble() const
 {
-    if (!value.is<std::string>()) {
-        throw std::invalid_argument("Extracting int from non-string JsonValue");
+
+    if (value.is<double>()) {
+        return value.get<double>();
+    } else if (value.is<int64_t>()) {
+        return static_cast<double>(value.get<int64_t>());
+    } else if (value.is<uint64_t>()) {
+        return static_cast<double>(value.get<uint64_t>());
     }
-    std::string valueStr{value.get<std::string>()};
-    return std::strtod(valueStr.c_str(), nullptr);
+    throw std::invalid_argument("Extracting double from non-double JsonValue");
 }
 
 uint64_t JsonValue::getUInt64() const
 {
-    if (!value.is<std::string>()) {
-        throw std::invalid_argument("Extracting int64_t from non-string JsonValue");
+    if (!value.is<uint64_t>()) {
+        throw std::invalid_argument("Extracting uint from non-uint JsonValue");
     }
-    std::string valueStr{value.get<std::string>()};
-    return std::strtoull(valueStr.c_str(), nullptr, 10);
+    return value.get<uint64_t>();
+}
+
+Variant JsonValue::parseJsonPrimitive(const std::string &tokenString)
+{
+    // Is this true or false?
+    if (tokenString == "true") {
+        return Variant::make<bool>(true);
+    } else if (tokenString == "false") {
+        return Variant::make<bool>(false);
+    }
+
+    // Should the number be treated as an int or a float?
+    // Assume a uint and see if any characters contradict this
+    enum class NumberType { UINT, INT, FLOAT };
+    NumberType numberType = NumberType::UINT;
+
+    bool isFirstChar = true;
+
+    for (char ch : tokenString) {
+        // The first character can be a digit or a minus
+        if (isFirstChar) {
+            isFirstChar = false;
+            if (ch == '-') {
+                numberType = NumberType::INT;
+            } else if (!std::isdigit(ch)) {
+                // This is not a number - return an empty variant
+                return Variant{};
+            }
+        } else if (!std::isdigit(ch))  {
+            // Any non-digits imply floating point
+            if (ch == '.' || ch == 'e') {
+                numberType = NumberType::FLOAT;
+            } else {
+                // This is not a number - return an empty variant
+                return Variant{};
+            }
+        }
+    }
+
+    // Convert based on the type of number
+    if (numberType == NumberType::INT) {
+        int64_t number = std::stoll(tokenString);
+        return Variant::make<int64_t>(number);
+    } else if (numberType == NumberType::UINT){
+        uint64_t number = std::stoull(tokenString);
+        return Variant::make<uint64_t>(number);
+    } else {
+        double number = std::stod(tokenString);
+        return Variant::make<double>(number);
+    }
 }
 
 JsonValue::operator IArray&()
@@ -234,20 +290,9 @@ bool JsonValue::isObject() const
     return value.is<JsonObject>();
 }
 
-bool JsonValue::isString() const
+Variant JsonValue::getVariant() const
 {
-    return value.is<std::string>();
-}
-
-bool JsonValue::isNumber() const
-{
-    if (!value.is<std::string>() ) {
-        return false;
-    }
-
-    // TODO: have a better check for numeric
-    std::string s = value.get<std::string>();
-    return ((!s.empty() ) && isdigit(s[0]));
+    return value;
 }
 
 //--------- JsonField ---------------------------------------------------------
