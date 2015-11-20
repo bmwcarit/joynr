@@ -463,6 +463,14 @@ joynrTestRequire(
                             getAttribute("enumAttribute", Country.AUSTRALIA);
                         });
 
+                        it("sets the byteBufferAttribute", function() {
+                            var testByteBuffer = [1,2,3,4];
+                            setAttribute("byteBufferAttribute", testByteBuffer);
+                            getAttribute("byteBufferAttribute", testByteBuffer);
+                            setAttribute("byteBufferAttribute", testByteBuffer);
+                            getAttribute("byteBufferAttribute", testByteBuffer);
+                        });
+
                         it("subscribe to failingSyncAttribute", function() {
                             var spy = setupSubscriptionAndReturnSpy("failingSyncAttribute", subscriptionQosInterval);
                             expectPublicationError(spy);

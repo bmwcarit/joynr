@@ -24,6 +24,7 @@ import datatypes.exampleTypes.* from  "datatypes.fidl"
 typeCollection radiotypes {
 	struct RadioStation {
 		String name
+		ByteBuffer byteBuffer
 	}
 	enumeration ErrorList {
 		EXAMPLE_ERROR_1
@@ -55,6 +56,8 @@ interface Radio {
 	attribute Country enumAttribute
 
 	attribute Country[] enumArrayAttribute
+
+	attribute ByteBuffer byteBufferAttribute
 
 	attribute Int32 failingSyncAttribute readonly
 
@@ -154,6 +157,7 @@ interface Radio {
 	broadcast weakSignal {
 		out {
 		  String radioStation
+		  ByteBuffer byteBuffer
 		}
 	}
 }

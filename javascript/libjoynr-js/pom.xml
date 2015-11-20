@@ -253,6 +253,17 @@
 						</configuration>
 					</execution>
 					<execution>
+						<id>testTypes</id>
+						<phase>generate-test-sources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<model>TestTypes.fidl</model>
+							<outputPath>${basedir}/src/test/generated</outputPath>
+						</configuration>
+					</execution>
+					<execution>
 						<id>generate-franca-name-test-model</id>
 						<phase>generate-test-sources</phase>
 						<goals>

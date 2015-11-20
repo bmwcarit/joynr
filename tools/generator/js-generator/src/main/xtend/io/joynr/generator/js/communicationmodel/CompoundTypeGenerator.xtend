@@ -55,7 +55,7 @@ class CompoundTypeGenerator {
 	'''
 
 	def checkPropertyTypeName(FField field) {
-		if (isArray(field)) {
+		if (isArray(field) || field.type.byteBuffer) {
 			return "\"Array\""
 		}
 		if (field.type.isPrimitive) {

@@ -297,6 +297,7 @@ joynrTestRequire(
                                     var isOn = true;
                                     var enumAttribute = Country.GERMANY;
                                     var enumArrayAttribute = [Country.GERMANY];
+                                    var byteBufferAttribute = null;
                                     var attrProvidedImpl;
                                     var mixedSubscriptions = null;
                                     var numberOfStations = 0;
@@ -373,6 +374,14 @@ joynrTestRequire(
 
                                     radioProvider.enumArrayAttribute.registerSetter(function(value) {
                                         enumArrayAttribute = value;
+                                    });
+
+                                    radioProvider.byteBufferAttribute.registerSetter(function(value) {
+                                        byteBufferAttribute = value;
+                                    });
+
+                                    radioProvider.byteBufferAttribute.registerGetter(function(value) {
+                                        return byteBufferAttribute;
                                     });
 
                                     radioProvider.failingSyncAttribute.registerGetter(function() {

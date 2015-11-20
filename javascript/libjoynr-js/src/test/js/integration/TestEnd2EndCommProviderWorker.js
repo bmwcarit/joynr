@@ -44,6 +44,7 @@ var enumArrayAttribute = [Country.GERMANY];
 var attrProvidedImpl;
 var numberOfStations = -1;
 var mixedSubscriptions = null;
+var byteBufferAttribute = null;
 
 var providerDomain;
 var libjoynrAsync;
@@ -163,6 +164,14 @@ function initializeTest(provisioningSuffix, providedDomain) {
 
             radioProvider.enumArrayAttribute.registerSetter(function(value) {
                 enumArrayAttribute = value;
+            });
+
+            radioProvider.byteBufferAttribute.registerSetter(function(value) {
+                byteBufferAttribute = value;
+            });
+
+            radioProvider.byteBufferAttribute.registerGetter(function(value) {
+                return byteBufferAttribute;
             });
 
             // register operation functions

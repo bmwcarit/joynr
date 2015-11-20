@@ -80,15 +80,9 @@ class JSTypeUtil extends AbstractTypeUtil {
 			case FBasicTypeId::BOOLEAN: return "Boolean"
 			case FBasicTypeId::FLOAT: return "Number"
 			case FBasicTypeId::DOUBLE: return "Number"
-			case FBasicTypeId::BYTE_BUFFER:
-				throw new UnsupportedOperationException("basicType" +
-					datatype.joynrName + " could not be mapped to a primitive type name")
-			case FBasicTypeId::UNDEFINED:
-				throw new UnsupportedOperationException("basicType" +
-					datatype.joynrName + " could not be mapped to a primitive type name")
-		}
-		throw new UnsupportedOperationException("basicType" +
-			datatype.joynrName + " could not be mapped to a primitive type name")
+			case FBasicTypeId::BYTE_BUFFER:return "Array.<Number>"
+			default: throw new UnsupportedOperationException("Unsupported basic type: " + datatype.joynrName)
+			}
 	}
 
 	override getTypeName(FType datatype) {
@@ -106,15 +100,12 @@ class JSTypeUtil extends AbstractTypeUtil {
 	}
 
 	override getTypeNameForList(FBasicTypeId datatype) {
-		// unused
-		"";
+		toTypesEnum(datatype) + " + \"" + typeNameExtensionForArrays + "\""
 	}
 
 	override getTypeNameForList(FType datatype) {
-		// unused
-		"";
+		"\"" + toTypesEnum(datatype) + typeNameExtensionForArrays + "\""
 	}
-
 
 	def String getJsdocTypeName (FTypedElement typedElement) {
 		var result =
@@ -192,7 +183,7 @@ class JSTypeUtil extends AbstractTypeUtil {
 		«ENDFOR»
 		«IF operation.outputParameters.size==1»
 			«val returnParam = operation.outputParameters.iterator.next»
-			«prefix»@returns {«returnParam.typeName»} «returnParam.joynrName» -
+			«prefix»@returns {«returnParam.jsdocTypeName»} «returnParam.joynrName» -
 			«IF returnParam.comment!=null»
 			«prefix»«FOR comment: returnParam.comment.elements»«comment.comment.replaceAll("\n\\s*", "\n" + prefix)»«ENDFOR»
 			«ENDIF»
@@ -275,6 +266,7 @@ class JSTypeUtil extends AbstractTypeUtil {
 		case FBasicTypeId::STRING: return "TypesEnum.STRING"
 		case FBasicTypeId::INT8: return "TypesEnum.BYTE"
 		case FBasicTypeId::UINT8: return "TypesEnum.BYTE"
+		case FBasicTypeId::BYTE_BUFFER: return "TypesEnum.BYTE"
 		case FBasicTypeId::INT16: return "TypesEnum.SHORT"
 		case FBasicTypeId::UINT16: return "TypesEnum.SHORT"
 		case FBasicTypeId::INT32: return "TypesEnum.INT"
@@ -284,9 +276,7 @@ class JSTypeUtil extends AbstractTypeUtil {
 		case FBasicTypeId::BOOLEAN: return "TypesEnum.BOOL"
 		case FBasicTypeId::FLOAT: return "TypesEnum.FLOAT"
 		case FBasicTypeId::DOUBLE: return "TypesEnum.DOUBLE"
-		case FBasicTypeId::BYTE_BUFFER: return "TypesEnum.BYTE\"" + typeNameExtensionForArrays + "\""
-		case FBasicTypeId::UNDEFINED:
-			throw new UnsupportedOperationException("basicType" + basicType.joynrName +
+		default: throw new UnsupportedOperationException("basicType" + basicType.joynrName +
 				" could not be mapped to a primitive type name")
 		}
 	}
@@ -296,32 +286,27 @@ class JSTypeUtil extends AbstractTypeUtil {
 	}
 
 	private def getTypeNameForParameter(FType datatype, boolean array) {
-		val mappedDatatype = toTypesEnum(datatype);
-		var result = mappedDatatype;
-
 		if (array) {
-			result+=typeNameExtensionForArrays;
+			getTypeNameForList(datatype)
+		} else {
+			"\"" + toTypesEnum(datatype) + "\""
 		}
-
-		return "\"" + result +  "\"";
 	}
 
 	private def getTypeNameForParameter(FBasicTypeId datatype, boolean array) {
-		val mappedDatatype = toTypesEnum(datatype);
-		// special case: ByteBuffer => byte-array, arrays => Lists,
-		if (array || (datatype == FBasicTypeId::BYTE_BUFFER)) {
-			return mappedDatatype + " + \"" + typeNameExtensionForArrays + "\"";
+		if (array) {
+			return getTypeNameForList(datatype);
 		} else {
-			return mappedDatatype;
+			return toTypesEnum(datatype);
 		}
 	}
 
 	def String getTypeNameForParameter(FTypedElement typedElement){
 		if (isPrimitive(typedElement.type)){
-			getTypeNameForParameter(getPrimitive(typedElement.type), isArray(typedElement))
+			getTypeNameForParameter(getPrimitive(typedElement.type), isArray(typedElement) ||  isByteBuffer(getPrimitive(typedElement.type)))
 		}
 		else{
-			getTypeNameForParameter(typedElement.type.derived, isArray(typedElement))
+			getTypeNameForParameter(typedElement.type.derived, isArray(typedElement)  || isByteBuffer(getPrimitive(typedElement.type)))
 		}
 	}
 
