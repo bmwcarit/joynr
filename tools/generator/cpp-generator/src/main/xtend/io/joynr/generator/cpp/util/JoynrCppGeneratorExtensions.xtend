@@ -186,7 +186,7 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 		case isInteger(predefined): "Integer"
 		case isLong(predefined)   : "Long"
 		case isDouble(predefined) : "Double"
-		case isFloat(predefined)  : "Double"
+		case isFloat(predefined)  : "Float"
 		case isBool(predefined)   : "Boolean"
 		case isByte(predefined)   : "Byte"
 		case datatype != null     : buildPackagePath(datatype, ".", true) +
