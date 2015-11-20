@@ -111,18 +111,18 @@ protected:
     joynr_logging::Logger* logger;
 };
 
-//TEST_F(JsonSerializerTest, serialize_deserialize_SubscriptionRequest) {
-//    SubscriptionRequest request;
-//    Variant subscriptionQos = Variant::make<SubscriptionQos>(SubscriptionQos(5000));
-//    request.setQos(subscriptionQos);
-//    std::string result = JsonSerializer::serialize<SubscriptionRequest>(request);
-//    LOG_DEBUG(logger, QString("result: %1").arg(QString::fromStdString(result)));
-//    SubscriptionRequest* desRequest = JsonSerializer::deserialize<SubscriptionRequest>(result);
-//    EXPECT_TRUE(request == *desRequest);
+TEST_F(JsonSerializerTest, serialize_deserialize_SubscriptionRequest) {
+    SubscriptionRequest request;
+    Variant subscriptionQos = Variant::make<SubscriptionQos>(SubscriptionQos(5000));
+    request.setQos(subscriptionQos);
+    std::string result = JsonSerializer::serialize<SubscriptionRequest>(request);
+    LOG_DEBUG(logger, QString("result: %1").arg(QString::fromStdString(result)));
+    SubscriptionRequest* desRequest = JsonSerializer::deserialize<SubscriptionRequest>(result);
+    EXPECT_TRUE(request == *desRequest);
 
-//    // Clean up
-//    delete desRequest;
-//}
+    // Clean up
+    delete desRequest;
+}
 
 //TEST_F(JsonSerializerTest, serialize_deserialize_BroadcastSubscriptionRequest) {
 //    qRegisterMetaType<joynr::BroadcastSubscriptionRequest>();

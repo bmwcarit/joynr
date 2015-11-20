@@ -21,9 +21,13 @@
 #include <limits>
 #include <chrono>
 #include <stdexcept>
+#include "joynr/Variant.h"
 
 namespace joynr
 {
+
+static const bool isSubscriptionQosRegistered =
+        Variant::registerType<SubscriptionQos>("joynr.SubscriptionQos");
 
 using namespace std::chrono;
 

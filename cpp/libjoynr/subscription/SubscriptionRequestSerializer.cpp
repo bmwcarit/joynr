@@ -26,7 +26,7 @@ namespace joynr
 {
 
 // Register the SubscriptionRequest type id and serializer/deserializer
-static const bool isSubscriptionRequestRegistered =
+static const bool isSubscriptionRequestSerializerRegistered =
         SerializerRegistry::registerType<SubscriptionRequest>("joynr.SubscriptionRequest");
 
 template <>

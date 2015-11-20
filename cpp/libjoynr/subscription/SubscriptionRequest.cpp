@@ -32,6 +32,9 @@ using namespace joynr_logging;
 Logger* SubscriptionRequest::logger =
         Logging::getInstance()->getLogger("MSG", "SubscriptionRequest");
 
+static const bool isSubscriptionRequestRegistered =
+        Variant::registerType<SubscriptionRequest>("joynr.SubscriptionRequest");
+
 SubscriptionRequest::SubscriptionRequest()
         : QObject(),
           subscriptionId(),
