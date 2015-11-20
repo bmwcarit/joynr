@@ -19,7 +19,7 @@ package io.joyn.generator.util
  */
 
 typeCollection TestTypes {
-	struct TopLevelStruct {
+	struct TopLevelStruct polymorphic {
 		
 	}
 	
