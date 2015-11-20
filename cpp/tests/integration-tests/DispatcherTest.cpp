@@ -47,7 +47,7 @@ public:
     DispatcherTest() :
         logger(joynr_logging::Logging::getInstance()->getLogger("TST", "DispatcherTest")),
         mockMessageRouter(new MockMessageRouter()),
-        mockCallback(new MockCallback<types::Localisation::GpsLocation>()),
+        mockCallback(new MockCallbackWithOnErrorHavingRequestStatus<types::Localisation::GpsLocation>()),
         mockRequestCaller(new MockTestRequestCaller()),
         mockReplyCaller(new MockReplyCaller<types::Localisation::GpsLocation>(
                 [this] (const joynr::RequestStatus& status, const joynr::types::Localisation::GpsLocation& location) {
@@ -85,7 +85,7 @@ public:
 protected:
     joynr_logging::Logger* logger;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
-    std::shared_ptr<MockCallback<types::Localisation::GpsLocation> > mockCallback;
+    std::shared_ptr<MockCallbackWithOnErrorHavingRequestStatus<types::Localisation::GpsLocation> > mockCallback;
 
     std::shared_ptr<MockTestRequestCaller> mockRequestCaller;
     std::shared_ptr<MockReplyCaller<types::Localisation::GpsLocation> > mockReplyCaller;

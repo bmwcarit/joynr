@@ -47,16 +47,16 @@ using namespace joynr;
 class ReplyCallerTest : public ::testing::Test {
 public:
     ReplyCallerTest()
-        : intCallback(new MockCallback<int>()),
-          intFixture(std::bind(&MockCallback<int>::onSuccess, intCallback, std::placeholders::_2),
-                     std::bind(&MockCallback<int>::onError, intCallback, std::placeholders::_1, std::placeholders::_2)),
-          voidCallback(new MockCallback<void>()),
-          voidFixture(std::bind(&MockCallback<void>::onSuccess, voidCallback),
-                      std::bind(&MockCallback<void>::onError, voidCallback, std::placeholders::_1, std::placeholders::_2)) {}
+        : intCallback(new MockCallbackWithOnErrorHavingRequestStatus<int>()),
+          intFixture(std::bind(&MockCallbackWithOnErrorHavingRequestStatus<int>::onSuccess, intCallback, std::placeholders::_2),
+                     std::bind(&MockCallbackWithOnErrorHavingRequestStatus<int>::onError, intCallback, std::placeholders::_1, std::placeholders::_2)),
+          voidCallback(new MockCallbackWithOnErrorHavingRequestStatus<void>()),
+          voidFixture(std::bind(&MockCallbackWithOnErrorHavingRequestStatus<void>::onSuccess, voidCallback),
+                      std::bind(&MockCallbackWithOnErrorHavingRequestStatus<void>::onError, voidCallback, std::placeholders::_1, std::placeholders::_2)) {}
 
-    std::shared_ptr<MockCallback<int>> intCallback;
+    std::shared_ptr<MockCallbackWithOnErrorHavingRequestStatus<int>> intCallback;
     ReplyCaller<int> intFixture;
-    std::shared_ptr<MockCallback<void>> voidCallback;
+    std::shared_ptr<MockCallbackWithOnErrorHavingRequestStatus<void>> voidCallback;
     ReplyCaller<void> voidFixture;
 };
 
@@ -67,7 +67,7 @@ TEST_F(ReplyCallerTest, getType) {
 }
 
 TEST_F(ReplyCallerTest, getTypeInt64_t) {
-    std::shared_ptr<MockCallback<int64_t>> callback(new MockCallback<int64_t>());
+    std::shared_ptr<MockCallbackWithOnErrorHavingRequestStatus<int64_t>> callback(new MockCallbackWithOnErrorHavingRequestStatus<int64_t>());
     ReplyCaller<int64_t> int64_tReplyCaller(
                 [callback](const RequestStatus& status, const int64_t& value) {
                     callback->onSuccess(value);
@@ -78,7 +78,7 @@ TEST_F(ReplyCallerTest, getTypeInt64_t) {
 }
 
 TEST_F(ReplyCallerTest, getTypeInt8_t) {
-    std::shared_ptr<MockCallback<int8_t>> callback(new MockCallback<int8_t>());
+    std::shared_ptr<MockCallbackWithOnErrorHavingRequestStatus<int8_t>> callback(new MockCallbackWithOnErrorHavingRequestStatus<int8_t>());
     ReplyCaller<int8_t> int8_tReplyCaller(
                 [callback](const RequestStatus& status, const int8_t& value) {
                     callback->onSuccess(value);

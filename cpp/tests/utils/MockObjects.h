@@ -512,12 +512,27 @@ template <typename ... Ts>
 class MockCallback{
 public:
     MOCK_METHOD1_T(onSuccess, void(const Ts&... result));
+    MOCK_METHOD1_T(onError, void(const joynr::exceptions::JoynrException& error));
+};
+
+template<>
+class MockCallback<void> {
+
+public:
+    MOCK_METHOD0(onSuccess, void(void));
+    MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrException& error));
+};
+
+template <typename ... Ts>
+class MockCallbackWithOnErrorHavingRequestStatus{
+public:
+    MOCK_METHOD1_T(onSuccess, void(const Ts&... result));
     MOCK_METHOD2_T(onError, void(const joynr::RequestStatus& status,
                 const joynr::exceptions::JoynrException& error));
 };
 
 template<>
-class MockCallback<void> {
+class MockCallbackWithOnErrorHavingRequestStatus<void> {
 
 public:
     MOCK_METHOD0(onSuccess, void(void));
@@ -578,26 +593,45 @@ public:
     }
 
     void invokeListOfStringsOnSuccessFct(std::function<void(const std::vector<std::string>&)> onSuccess,
-                            std::function<void(const joynr::exceptions::JoynrException&)> onError) {
+                            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) {
         std::vector<std::string> listOfStrings;
         listOfStrings.push_back("firstString");
         onSuccess(listOfStrings);
     }
 
+    void invokeGetterOnErrorFunctionWithProviderRuntimeException(std::function<void(const int32_t&)> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) {
+        onError(joynr::exceptions::ProviderRuntimeException(providerRuntimeExceptionTestMsg));
+    }
+
+    void invokeMethodOnErrorFunctionWithProviderRuntimeException(std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::JoynrException&)> onError) {
+        onError(joynr::exceptions::ProviderRuntimeException(providerRuntimeExceptionTestMsg));
+    }
+
     MockTestRequestCaller() :
             joynr::tests::testRequestCaller(std::make_shared<MockTestProvider>())
     {
-        EXPECT_CALL(
+        ON_CALL(
                 *this,
                 getLocation(_,_)
         )
-                .WillRepeatedly(testing::Invoke(this, &MockTestRequestCaller::invokeLocationOnSuccessFct));
-        EXPECT_CALL(
+                .WillByDefault(testing::Invoke(this, &MockTestRequestCaller::invokeLocationOnSuccessFct));
+        ON_CALL(
                 *this,
                 getListOfStrings(_,_)
         )
-                .WillRepeatedly(testing::Invoke(this, &MockTestRequestCaller::invokeListOfStringsOnSuccessFct));
-
+                .WillByDefault(testing::Invoke(this, &MockTestRequestCaller::invokeListOfStringsOnSuccessFct));
+        ON_CALL(
+                *this,
+                getAttributeWithProviderRuntimeException(_,_)
+        )
+                .WillByDefault(testing::Invoke(this, &MockTestRequestCaller::invokeGetterOnErrorFunctionWithProviderRuntimeException));
+        ON_CALL(
+                *this,
+                methodWithProviderRuntimeException(_,_)
+        )
+                .WillByDefault(testing::Invoke(this, &MockTestRequestCaller::invokeMethodOnErrorFunctionWithProviderRuntimeException));
     }
     MockTestRequestCaller(testing::Cardinality getLocationCardinality) :
             joynr::tests::testRequestCaller(std::make_shared<MockTestProvider>())
@@ -621,11 +655,18 @@ public:
     MOCK_METHOD2(getListOfStrings,
                  void(std::function<void(const std::vector<std::string>& listOfStrings)>,
                       std::function<void(const joynr::exceptions::JoynrException& exception)>));
+    MOCK_METHOD2(getAttributeWithProviderRuntimeException,
+                 void(std::function<void(const int32_t&)>,
+                      std::function<void(const joynr::exceptions::ProviderRuntimeException&)>));
+    MOCK_METHOD2(methodWithProviderRuntimeException,
+                 void(std::function<void()>,
+                      std::function<void(const joynr::exceptions::JoynrException&)>));
     MOCK_METHOD2(registerAttributeListener, void(const std::string& attributeName, joynr::IAttributeListener* attributeListener));
     MOCK_METHOD2(registerBroadcastListener, void(const std::string& broadcastName, joynr::IBroadcastListener* broadcastListener));
     MOCK_METHOD2(unregisterAttributeListener, void(const std::string& attributeName, joynr::IAttributeListener* attributeListener));
     MOCK_METHOD2(unregisterBroadcastListener, void(const std::string& broadcastName, joynr::IBroadcastListener* broadcastListener));
 
+    std::string providerRuntimeExceptionTestMsg = "ProviderRuntimeExceptionTestMessage";
 };
 
 class MockGpsRequestCaller : public joynr::vehicle::GpsRequestCaller {

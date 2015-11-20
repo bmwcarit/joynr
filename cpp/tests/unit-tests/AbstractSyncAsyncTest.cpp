@@ -140,7 +140,7 @@ public:
     void testAsync_getAttributeNotCached() {
         asyncTestFixture = createFixture(false);
 
-        MockCallback<joynr::types::Localisation::GpsLocation>* callback = new MockCallback<joynr::types::Localisation::GpsLocation>();
+        MockCallbackWithOnErrorHavingRequestStatus<joynr::types::Localisation::GpsLocation>* callback = new MockCallbackWithOnErrorHavingRequestStatus<joynr::types::Localisation::GpsLocation>();
 
         setExpectationsForSendRequestCall(Util::getTypeId<joynr::types::Localisation::GpsLocation>(), "getLocation");
         asyncTestFixture->getLocationAsync(
@@ -192,7 +192,7 @@ public:
     void testAsync_getAttributeCached() {
         asyncTestFixture = createFixture(true);
 
-        MockCallback<joynr::types::Localisation::GpsLocation>* callback = new MockCallback<joynr::types::Localisation::GpsLocation>();
+        MockCallbackWithOnErrorHavingRequestStatus<joynr::types::Localisation::GpsLocation>* callback = new MockCallbackWithOnErrorHavingRequestStatus<joynr::types::Localisation::GpsLocation>();
 
         setExpectationsForSendRequestCall(Util::getTypeId<joynr::types::Localisation::GpsLocation>(), "getLocation").Times(0);
 
@@ -227,7 +227,7 @@ public:
     void testAsync_OperationWithNoArguments() {
         asyncTestFixture = createFixture(false);
 
-        MockCallback<int>* callback = new MockCallback<int>();
+        MockCallbackWithOnErrorHavingRequestStatus<int>* callback = new MockCallbackWithOnErrorHavingRequestStatus<int>();
 
         setExpectationsForSendRequestCall(Util::getTypeId<int>(), "methodWithNoInputParameters");
 

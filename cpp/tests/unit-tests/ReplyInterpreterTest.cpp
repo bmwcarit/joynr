@@ -48,7 +48,7 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller) {
     registrar.registerReplyMetaType<types::Localisation::GpsLocation>();
 
     // Create a mock callback
-    std::shared_ptr<MockCallback<joynr::types::Localisation::GpsLocation>> callback(new MockCallback<joynr::types::Localisation::GpsLocation>());
+    std::shared_ptr<MockCallbackWithOnErrorHavingRequestStatus<joynr::types::Localisation::GpsLocation>> callback(new MockCallbackWithOnErrorHavingRequestStatus<joynr::types::Localisation::GpsLocation>());
     int myAltitude = 13;
     EXPECT_CALL(*callback, onSuccess(Property(&types::Localisation::GpsLocation::getAltitude, myAltitude)))
                 .Times(1);
