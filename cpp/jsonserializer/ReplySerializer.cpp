@@ -38,8 +38,8 @@ void ClassDeserializer<Reply>::deserialize(Reply& reply, IObject& o)
             reply.setRequestReplyId(field.value());
         } else if (field.name() == "response") {
             IArray& array = field.value();
-            auto&& converted = convertArray<Variant>(array, convertVariant);
-            reply.setResponse(std::forward<std::vector<Variant>>(converted));
+            auto converted = convertArray<Variant>(array, convertVariant);
+            reply.setResponse(converted);
         }
     }
 }
