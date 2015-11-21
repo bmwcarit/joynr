@@ -358,40 +358,44 @@ TEST_F(JsonSerializerTest, deserialize_operation_with_enum) {
     delete(request);
 }
 
-//TEST_F(JsonSerializerTest, deserializeTypeWithEnumList) {
+TEST_F(JsonSerializerTest, deserializeTypeWithEnumList) {
 
-//    using namespace infrastructure::DacTypes;
+    using namespace infrastructure::DacTypes;
 
-//    // Deserialize a type containing multiple enum lists
-//    std::string serializedContent(R"({"_typeName": "joynr.infrastructure.DacTypes.MasterAccessControlEntry","
-//                                 "\"defaultConsumerPermission\":\"NO\","
-//                                 "\"defaultRequiredControlEntryChangeTrustLevel\":\"LOW\","
-//                                 "\"defaultRequiredTrustLevel\":\"LOW\","
-//                                 "\"domain\":\"unittest\","
-//                                 "\"interfaceName\":\"vehicle/radio\","
-//                                 "\"operation\":\"*\","
-//                                 "\"possibleConsumerPermissions\":[\"YES\",\"NO\"],"
-//                                 "\"possibleRequiredControlEntryChangeTrustLevels\":[\"HIGH\",\"MID\",\"LOW\"],"
-//                                 "\"possibleRequiredTrustLevels\":[\"HIGH\",\"MID\",\"LOW\"],"
-//                                 "\"uid\":\"*\"}");
+    // Deserialize a type containing multiple enum lists
+    std::string serializedContent(
+                R"({"_typeName": "joynr.infrastructure.DacTypes.MasterAccessControlEntry",)"
+                R"("defaultConsumerPermission": "NO",)"
+                R"("defaultRequiredControlEntryChangeTrustLevel": "LOW",)"
+                R"("defaultRequiredTrustLevel": "LOW",)"
+                R"("domain": "unittest",)"
+                R"("interfaceName": "vehicle/radio",)"
+                R"("operation": "*",)"
+                R"("possibleConsumerPermissions": ["YES","NO"],)"
+                R"("possibleRequiredControlEntryChangeTrustLevels": ["HIGH","MID","LOW"],)"
+                R"("possibleRequiredTrustLevels": ["HIGH","MID","LOW"],)"
+                R"("uid": "*"})");
 
-//    infrastructure::DacTypes::QtMasterAccessControlEntry *mac = JsonSerializer::deserializeQObject<infrastructure::DacTypes::QtMasterAccessControlEntry>(serializedContent);
+    infrastructure::DacTypes::MasterAccessControlEntry *mac = JsonSerializer::deserialize<infrastructure::DacTypes::MasterAccessControlEntry>(serializedContent);
 
-//    // Check scalar enums
-//    EXPECT_EQ(QtPermission::NO, mac->getDefaultConsumerPermission());
-//    EXPECT_EQ(QtTrustLevel::LOW, mac->getDefaultRequiredTrustLevel());
+    // Check scalar enums
+    EXPECT_EQ(Permission::NO, mac->getDefaultConsumerPermission());
+    EXPECT_EQ(TrustLevel::LOW, mac->getDefaultRequiredTrustLevel());
 
-//    // Check enum lists
-//    QList<QtPermission::Enum> possibleRequiredPermissions;
-//    possibleRequiredPermissions << QtPermission::YES << QtPermission::NO;
-//    EXPECT_EQ(possibleRequiredPermissions, mac->getPossibleConsumerPermissions());
+    // Check enum lists
+    std::vector<Permission::Enum> possibleRequiredPermissions;
+    possibleRequiredPermissions.push_back(Permission::YES);
+    possibleRequiredPermissions.push_back(Permission::NO);
+    EXPECT_EQ(possibleRequiredPermissions, mac->getPossibleConsumerPermissions());
 
-//    QList<QtTrustLevel::Enum> possibleRequiredTrustLevels;
-//    possibleRequiredTrustLevels << QtTrustLevel::HIGH << QtTrustLevel::MID << QtTrustLevel::LOW;
-//    EXPECT_EQ(possibleRequiredTrustLevels, mac->getPossibleRequiredTrustLevels());
+    std::vector<TrustLevel::Enum> possibleRequiredTrustLevels;
+    possibleRequiredTrustLevels.push_back(TrustLevel::HIGH);
+    possibleRequiredTrustLevels.push_back(TrustLevel::MID);
+    possibleRequiredTrustLevels.push_back(TrustLevel::LOW);
+    EXPECT_EQ(possibleRequiredTrustLevels, mac->getPossibleRequiredTrustLevels());
 
-//    delete(mac);
-//}
+    delete(mac);
+}
 
 //TEST_F(JsonSerializerTest, serializeDeserializeTypeWithEnumList) {
 
