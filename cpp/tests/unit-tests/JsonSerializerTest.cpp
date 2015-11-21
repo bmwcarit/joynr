@@ -397,43 +397,41 @@ TEST_F(JsonSerializerTest, deserializeTypeWithEnumList) {
     delete(mac);
 }
 
-//TEST_F(JsonSerializerTest, serializeDeserializeTypeWithEnumList) {
+TEST_F(JsonSerializerTest, serializeDeserializeTypeWithEnumList) {
 
-//    using namespace infrastructure::DacTypes;
+    using namespace infrastructure::DacTypes;
 
-//    qRegisterMetaType<QtPermission>();
-//    qRegisterMetaType<QtPermission::Enum>("joynr::infrastructure::DacTypes::QtPermission::Enum");
-//    qRegisterMetaType<QtTrustLevel>();
-//    qRegisterMetaType<QtTrustLevel::Enum>("joynr::infrastructure::DacTypes::QtTrustLevel::Enum");
-//    qRegisterMetaType<QtMasterAccessControlEntry>("joynr::infrastructure::DacTypes::QtMasterAccessControlEntry");
+    std::vector<TrustLevel::Enum> possibleTrustLevels;
+    possibleTrustLevels.push_back(TrustLevel::LOW);
+    possibleTrustLevels.push_back(TrustLevel::MID);
+    possibleTrustLevels.push_back(TrustLevel::HIGH);
+    std::vector<Permission::Enum> possiblePermissions;
+    possiblePermissions.push_back(Permission::NO);
+    possiblePermissions.push_back(Permission::ASK);
+    possiblePermissions.push_back(Permission::YES);
 
-//    QList<QtTrustLevel::Enum> possibleTrustLevels;
-//    possibleTrustLevels << QtTrustLevel::LOW << QtTrustLevel::MID << QtTrustLevel::HIGH;
-//    QList<QtPermission::Enum> possiblePermissions;
-//    possiblePermissions << QtPermission::NO << QtPermission::ASK << QtPermission::YES;
+    infrastructure::DacTypes::MasterAccessControlEntry expectedMac(R"(*)",
+                                                                     R"(unittest)",
+                                                                     R"(vehicle/radio)",
+                                                                     TrustLevel::LOW,
+                                                                     possibleTrustLevels,
+                                                                     TrustLevel::HIGH,
+                                                                     possibleTrustLevels,
+                                                                     R"(*)",
+                                                                     Permission::YES,
+                                                                     possiblePermissions);
 
-//    infrastructure::DacTypes::QtMasterAccessControlEntry expectedMac(QStringLiteral("*"),
-//                                                                     QStringLiteral("unittest"),
-//                                                                     QStringLiteral("vehicle/radio"),
-//                                                                     QtTrustLevel::LOW,
-//                                                                     possibleTrustLevels,
-//                                                                     QtTrustLevel::HIGH,
-//                                                                     possibleTrustLevels,
-//                                                                     QStringLiteral("*"),
-//                                                                     QtPermission::YES,
-//                                                                     possiblePermissions);
+    // Serialize
+    std::string serializedContent = JsonSerializer::serialize<infrastructure::DacTypes::MasterAccessControlEntry>(expectedMac);
 
-//    // Serialize
-//    QByteArray serializedContent = JsonSerializer::serializeQObject(expectedMac);
+    // Deserialize the result
+    infrastructure::DacTypes::MasterAccessControlEntry *mac = JsonSerializer::deserialize<infrastructure::DacTypes::MasterAccessControlEntry>(serializedContent);
 
-//    // Deserialize the result
-//    infrastructure::DacTypes::QtMasterAccessControlEntry *mac = JsonSerializer::deserializeQObject<infrastructure::DacTypes::QtMasterAccessControlEntry>(serializedContent);
+    // Check that the object serialized/deserialized correctly
+    EXPECT_EQ(expectedMac, *mac);
 
-//    // Check that the object serialized/deserialized correctly
-//    EXPECT_EQ(expectedMac, *mac);
-
-//    delete(mac);
-//}
+    delete(mac);
+}
 
 TEST_F(JsonSerializerTest, serialize_operation_with_multiple_params2) {
 
