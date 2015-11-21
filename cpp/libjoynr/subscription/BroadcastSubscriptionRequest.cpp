@@ -28,6 +28,10 @@ using namespace joynr_logging;
 Logger* BroadcastSubscriptionRequest::logger =
         Logging::getInstance()->getLogger("MSG", "BroadcastSubscriptionRequest");
 
+// Register the BroadcastSubscriptionRequest type id
+static const bool isBroadcastSubscriptionRequestRegistered =
+        Variant::registerType<BroadcastSubscriptionRequest>("joynr.BroadcastSubscriptionRequest");
+
 BroadcastSubscriptionRequest::BroadcastSubscriptionRequest() : filterParameters()
 {
     qRegisterMetaType<QtBroadcastFilterParameters>("QtBroadcastFilterParameters");

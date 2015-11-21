@@ -124,19 +124,18 @@ TEST_F(JsonSerializerTest, serialize_deserialize_SubscriptionRequest) {
     delete desRequest;
 }
 
-//TEST_F(JsonSerializerTest, serialize_deserialize_BroadcastSubscriptionRequest) {
-//    qRegisterMetaType<joynr::BroadcastSubscriptionRequest>();
-//    BroadcastSubscriptionRequest request;
-//    OnChangeSubscriptionQos qos{5000, 2000};
-//    request.setQos(qos);
-//    BroadcastFilterParameters filterParams;
-//    filterParams.setFilterParameter("MyFilter", "MyFilterValue");
-//    request.setFilterParameters(Variant::make<BroadcastFilterParameters>(filterParams));
-//    QByteArray requestJson = JsonSerializer::serializeQObject(request);
-//    LOG_DEBUG(logger, QString(requestJson));
-//    BroadcastSubscriptionRequest* desRequest = JsonSerializer::deserializeQObject<BroadcastSubscriptionRequest>(requestJson);
-//    EXPECT_TRUE(request == *desRequest);
-//}
+TEST_F(JsonSerializerTest, serialize_deserialize_BroadcastSubscriptionRequest) {
+    BroadcastSubscriptionRequest request;
+    OnChangeSubscriptionQos qos{5000, 2000};
+    request.setQos(qos);
+    BroadcastFilterParameters filterParams;
+    filterParams.setFilterParameter("MyFilter", "MyFilterValue");
+    request.setFilterParameters(Variant::make<BroadcastFilterParameters>(filterParams));
+    std::string requestJson = JsonSerializer::serialize<BroadcastSubscriptionRequest>(request);
+    LOG_DEBUG(logger, QString::fromStdString(requestJson));
+    BroadcastSubscriptionRequest* desRequest = JsonSerializer::deserialize<BroadcastSubscriptionRequest>(requestJson);
+    EXPECT_TRUE(request == *desRequest);
+}
 
 TEST_F(JsonSerializerTest, serialize_deserialize_JoynrMessage) {
 

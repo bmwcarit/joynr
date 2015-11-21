@@ -17,9 +17,14 @@
  * #L%
  */
 #include "joynr/BroadcastFilterParameters.h"
+#include "joynr/Variant.h"
 
 namespace joynr
 {
+
+// Register the BroadcastFilterParameters type id
+static const bool isBroadcastFilterParametersRegistered =
+        Variant::registerType<BroadcastFilterParameters>("joynr.BroadcastFilterParameters");
 
 BroadcastFilterParameters::BroadcastFilterParameters()
         : filterParameters(std::map<std::string, std::string>())
