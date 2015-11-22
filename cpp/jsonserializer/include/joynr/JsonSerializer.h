@@ -32,6 +32,7 @@
 #include "jsonserializer/JsonTokenizer.h"
 #include <QList>
 #include <QVariant>
+#include <iomanip>
 
 namespace joynr
 {
@@ -85,6 +86,7 @@ public:
     static std::string serialize(const T& object)
     {
         std::stringstream stream;
+        stream << std::setprecision(9);
         auto serializer = ClassSerializer<T>{};
         serializer.serialize(object, stream);
         return stream.str();

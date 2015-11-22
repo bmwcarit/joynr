@@ -451,7 +451,7 @@ TEST_F(JsonSerializerTest, serialize_operation_with_multiple_params2) {
     expectedStringStream << R"({"_typeName": "joynr.Request",)";
     expectedStringStream << R"("methodName": "methodStringDoubleParameters",)";
     expectedStringStream << R"("paramDatatypes": ["String","Double","Float"],)";
-    expectedStringStream << R"("params": ["testStringParam",3.33,1.25e-09],)";
+    expectedStringStream << R"("params": ["testStringParam",3.33,1.24999999e-09],)";
     expectedStringStream << R"("requestReplyId": ")" << request.getRequestReplyId() << R"(")";
     expectedStringStream << R"(})";
 
@@ -467,67 +467,63 @@ TEST_F(JsonSerializerTest, serialize_operation_with_multiple_params2) {
 }
 
 
-//TEST_F(JsonSerializerTest, serialize_deserialize_TStruct) {
-//    qRegisterMetaType<joynr::types::TestTypes::QtTStruct>("joynr::types::TestTypes::QtTStruct");
-//    qRegisterMetaType<joynr__types__TestTypes__QtTStruct>("joynr__types__TestTypes__TStruct");
+TEST_F(JsonSerializerTest, serialize_deserialize_TStruct) {
 
-//    types::TestTypes::QtTStruct tStruct;
-//    tStruct.setTDouble(0.123456789);
-//    tStruct.setTInt64(64);
-//    tStruct.setTString("myTestString");
+    types::TestTypes::TStruct tStruct;
+    tStruct.setTDouble(0.123456789);
+    tStruct.setTInt64(64);
+    tStruct.setTString("myTestString");
 
-//    QByteArray expectedTStruct(
-//                "{"
-//                "\"_typeName\":\"joynr.types.TestTypes.TStruct\","
-//                "\"tDouble\":0.123456789,"
-//                "\"tInt64\":64,"
-//                "\"tString\":\"myTestString\""
-//                "}"
-//                );
+    std::string expectedTStruct(
+                R"({)"
+                R"("_typeName": "joynr.types.TestTypes.TStruct",)"
+                R"("tDouble": 0.123456789,)"
+                R"("tInt64": 64,)"
+                R"("tString": "myTestString")"
+                R"(})"
+                );
 
-//    QByteArray serializedContent = JsonSerializer::serializeQObject(QVariant::fromValue(tStruct));
-//    LOG_DEBUG(logger, QString(serializedContent));
-//    EXPECT_EQ(expectedTStruct, serializedContent);
+    std::string serializedContent = JsonSerializer::serialize<types::TestTypes::TStruct>(tStruct);
+    LOG_DEBUG(logger, QString::fromStdString(serializedContent));
+    EXPECT_EQ(expectedTStruct, serializedContent);
 
-//    types::TestTypes::QtTStruct* tStructDeserialized = JsonSerializer::deserializeQObject<types::TestTypes::QtTStruct>(serializedContent);
+    types::TestTypes::TStruct* tStructDeserialized = JsonSerializer::deserialize<types::TestTypes::TStruct>(serializedContent);
 
-//    EXPECT_EQ(tStruct, *tStructDeserialized);
+    EXPECT_EQ(tStruct, *tStructDeserialized);
 
-//    delete tStructDeserialized;
-//}
+    delete tStructDeserialized;
+}
 
-//TEST_F(JsonSerializerTest, serialize_deserialize_TStructExtended) {
-//    qRegisterMetaType<joynr::types::TestTypes::QtTStructExtended>("joynr::types::TestTypes::QtTStructExtended");
-//    qRegisterMetaType<joynr__types__TestTypes__QtTStructExtended>("joynr__types__TestTypes__TStructExtended");
+TEST_F(JsonSerializerTest, serialize_deserialize_TStructExtended) {
 
-//    types::TestTypes::QtTStructExtended tStructExt;
-//    tStructExt.setTDouble(0.123456789);
-//    tStructExt.setTInt64(64);
-//    tStructExt.setTString("myTestString");
-//    tStructExt.setTEnum(types::TestTypes::QtTEnum::TLITERALA);
-//    tStructExt.setTInt32(32);
+    types::TestTypes::TStructExtended tStructExt;
+    tStructExt.setTDouble(0.123456789);
+    tStructExt.setTInt64(64);
+    tStructExt.setTString("myTestString");
+    tStructExt.setTEnum(types::TestTypes::TEnum::TLITERALA);
+    tStructExt.setTInt32(32);
 
-//    QByteArray expectedTStructExt(
-//                "{"
-//                "\"_typeName\":\"joynr.types.TestTypes.TStructExtended\","
-//                "\"tDouble\":0.123456789,"
-//                "\"tEnum\":\"TLITERALA\","
-//                "\"tInt32\":32,"
-//                "\"tInt64\":64,"
-//                "\"tString\":\"myTestString\""
-//                "}"
-//                );
+    std::string expectedTStructExt(
+                R"({)"
+                R"("_typeName": "joynr.types.TestTypes.TStructExtended",)"
+                R"("tDouble": 0.123456789,)"
+                R"("tInt64": 64,)"
+                R"("tString": "myTestString",)"
+                R"("tEnum": "TLITERALA",)"
+                R"("tInt32": 32)"
+                R"(})"
+                );
 
-//    QByteArray serializedTStructExt = JsonSerializer::serializeQObject(QVariant::fromValue(tStructExt));
-//    LOG_DEBUG(logger, QString(serializedTStructExt));
+    std::string serializedTStructExt = JsonSerializer::serialize<types::TestTypes::TStructExtended>(tStructExt);
+    LOG_DEBUG(logger, QString::fromStdString(serializedTStructExt));
 
-//    EXPECT_EQ(expectedTStructExt, serializedTStructExt);
-//    types::TestTypes::QtTStructExtended* deserializedTStructExt = JsonSerializer::deserializeQObject<types::TestTypes::QtTStructExtended>(serializedTStructExt);
+    EXPECT_EQ(expectedTStructExt, serializedTStructExt);
+    types::TestTypes::TStructExtended* deserializedTStructExt = JsonSerializer::deserialize<types::TestTypes::TStructExtended>(serializedTStructExt);
 
-//    EXPECT_EQ(tStructExt, *deserializedTStructExt);
+    EXPECT_EQ(tStructExt, *deserializedTStructExt);
 
-//    delete deserializedTStructExt;
-//}
+    delete deserializedTStructExt;
+}
 
 TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocation) {
     types::Localisation::GpsLocation gps1(1.1, 1.2, 1.3, types::Localisation::GpsFixEnum::MODE3D, 1.4, 1.5, 1.6, 1.7, 18, 19, 110);
