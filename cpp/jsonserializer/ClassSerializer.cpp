@@ -18,6 +18,8 @@
  */
 #include "joynr/ClassSerializer.h"
 #include "joynr/SerializerRegistry.h"
+#include <iomanip>
+#include <sstream>
 
 namespace joynr
 {
@@ -73,13 +75,27 @@ void ClassSerializer<uint64_t>::serialize(const uint64_t& i, std::ostream& strea
 template <>
 void ClassSerializer<double>::serialize(const double& i, std::ostream& stream)
 {
-    stream << i;
+    std::stringstream buffer;
+    buffer << std::setprecision(std::numeric_limits<double>::digits10) << i;
+    std::string doubleStr = buffer.str();
+    buffer.flush();
+    stream << doubleStr;
+    if (doubleStr.find('.') == std::string::npos && doubleStr.find('e') == std::string::npos) {
+        stream << ".0";
+    }
 }
 
 template <>
 void ClassSerializer<float>::serialize(const float& i, std::ostream& stream)
 {
-    stream << i;
+    std::stringstream buffer;
+    buffer << std::setprecision(std::numeric_limits<float>::digits10) << i;
+    std::string floatStr = buffer.str();
+    buffer.flush();
+    stream << floatStr;
+    if (floatStr.find('.') == std::string::npos && floatStr.find('e') == std::string::npos) {
+        stream << ".0";
+    }
 }
 
 template <>

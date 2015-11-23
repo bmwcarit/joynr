@@ -100,6 +100,8 @@ void ClassDeserializer<«joynrName»>::deserialize(«joynrName» &«joynrName.to
 template <>
 void ClassSerializer<«joynrName»>::serialize(const «joynrName» &«joynrName.toFirstLower»Var, std::ostream& stream)
 {
+	ClassSerializer<double> doubleSerializer;
+	ClassSerializer<float> floatSerializer;
 	stream << "{";
 	stream << "\"_typeName\": \"" << JoynrTypeId<«joynrName»>::getTypeName() << "\",";
 	«FOR member: type.membersRecursive SEPARATOR "\nstream << \",\";"»
@@ -197,9 +199,13 @@ def serializePrimitiveValue(FBasicTypeId basicType, String memberName, String va
 		case UINT64: return '''
 			stream << "\"«memberName»\": " << std::to_string(«varName».get«memberName.toFirstUpper»());
 		'''
-		case DOUBLE,
+		case DOUBLE: return '''
+			stream << "\"«memberName»\": ";
+			doubleSerializer.serialize(«varName».get«memberName.toFirstUpper»(), stream);
+		'''
 		case FLOAT: return '''
-			stream << "\"«memberName»\": " << «varName».get«memberName.toFirstUpper»();
+			stream << "\"«memberName»\": ";
+			floatSerializer.serialize(«varName».get«memberName.toFirstUpper»(), stream);
 		'''
 		case STRING: return '''
 			stream << "\"«memberName»\": \"" << «varName».get«memberName.toFirstUpper»() << "\"";

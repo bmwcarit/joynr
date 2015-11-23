@@ -451,7 +451,7 @@ TEST_F(JsonSerializerTest, serialize_operation_with_multiple_params2) {
     expectedStringStream << R"({"_typeName": "joynr.Request",)";
     expectedStringStream << R"("methodName": "methodStringDoubleParameters",)";
     expectedStringStream << R"("paramDatatypes": ["String","Double","Float"],)";
-    expectedStringStream << R"("params": ["testStringParam",3.33,1.24999999e-09],)";
+    expectedStringStream << R"("params": ["testStringParam",3.33,1.25e-09],)";
     expectedStringStream << R"("requestReplyId": ")" << request.getRequestReplyId() << R"(")";
     expectedStringStream << R"(})";
 
@@ -683,69 +683,66 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocationList) {
     delete receivedReply;
 }
 
-//TEST_F(JsonSerializerTest, serialize_deserialize_trip) {
-//    qRegisterMetaType<joynr::types::Localisation::QtGpsLocation>("joynr::types::Localisation::QtGpsLocation");
-//    qRegisterMetaType<joynr__types__Localisation__QtGpsLocation>("joynr__types__Localisation__GpsLocation");
+TEST_F(JsonSerializerTest, serialize_deserialize_trip) {
+    std::vector<types::Localisation::GpsLocation> locations;
+    locations.push_back(types::Localisation::GpsLocation(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0,17));
+    locations.push_back(types::Localisation::GpsLocation(4.4, 5.5, 6.6, types::Localisation::GpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0,317));
+    locations.push_back(types::Localisation::GpsLocation(7.7, 8.8, 9.9, types::Localisation::GpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0,3317));
 
-//    qRegisterMetaType<joynr::types::Localisation::QtTrip>("joynr::types::Localisation::QtTrip");
+    std::string expected(
+                        R"({"_typeName": "joynr.types.Localisation.Trip",)"
+                        R"("locations": [{"_typeName": "joynr.types.Localisation.GpsLocation",)"
+                        R"("longitude": 1.1,)"
+                        R"("latitude": 2.2,)"
+                        R"("altitude": 3.3,)"
+                        R"("gpsFix": "MODE3D",)"
+                        R"("heading": 0.0,)"
+                        R"("quality": 0.0,)"
+                        R"("elevation": 0.0,)"
+                        R"("bearing": 0.0,)"
+                        R"("gpsTime": 0,)"
+                        R"("deviceTime": 0,)"
+                        R"("time": 17},)"
+                        R"({"_typeName": "joynr.types.Localisation.GpsLocation",)"
+                        R"("longitude": 4.4,)"
+                        R"("latitude": 5.5,)"
+                        R"("altitude": 6.6,)"
+                        R"("gpsFix": "MODE3D",)"
+                        R"("heading": 0.0,)"
+                        R"("quality": 0.0,)"
+                        R"("elevation": 0.0,)"
+                        R"("bearing": 0.0,)"
+                        R"("gpsTime": 0,)"
+                        R"("deviceTime": 0,)"
+                        R"("time": 317},)"
+                        R"({"_typeName": "joynr.types.Localisation.GpsLocation",)"
+                        R"("longitude": 7.7,)"
+                        R"("latitude": 8.8,)"
+                        R"("altitude": 9.9,)"
+                        R"("gpsFix": "MODE3D",)"
+                        R"("heading": 0.0,)"
+                        R"("quality": 0.0,)"
+                        R"("elevation": 0.0,)"
+                        R"("bearing": 0.0,)"
+                        R"("gpsTime": 0,)"
+                        R"("deviceTime": 0,)"
+                        R"("time": 3317}],)"
+                        R"("tripTitle": "trip1_name"})"
+                );
 
-//    QList<types::Localisation::QtGpsLocation> locations;
-//    locations.push_back(types::Localisation::QtGpsLocation(1.1, 2.2, 3.3, types::Localisation::QtGpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0,17));
-//    locations.push_back(types::Localisation::QtGpsLocation(4.4, 5.5, 6.6, types::Localisation::QtGpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0,317));
-//    locations.push_back(types::Localisation::QtGpsLocation(7.7, 8.8, 9.9, types::Localisation::QtGpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0,3317));
+    // Expected literal is:
+    types::Localisation::Trip trip1(locations, "trip1_name");
 
-//    QByteArray expected("{\"_typeName\":\"joynr.types.Localisation.Trip\","
-//                        "\"locations\":[{\"_typeName\":\"joynr.types.Localisation.GpsLocation\","
-//                        "\"altitude\":3.3,"
-//                        "\"bearing\":0.0,"
-//                        "\"deviceTime\":0,"
-//                        "\"elevation\":0.0,"
-//                        "\"gpsFix\":\"MODE3D\","
-//                        "\"gpsTime\":0,"
-//                        "\"heading\":0.0,"
-//                        "\"latitude\":2.2,"
-//                        "\"longitude\":1.1,"
-//                        "\"quality\":0.0,"
-//                        "\"time\":17},"
-//                        "{\"_typeName\":\"joynr.types.Localisation.GpsLocation\","
-//                        "\"altitude\":6.6,"
-//                        "\"bearing\":0.0,"
-//                        "\"deviceTime\":0,"
-//                        "\"elevation\":0.0,"
-//                        "\"gpsFix\":\"MODE3D\","
-//                        "\"gpsTime\":0,"
-//                        "\"heading\":0.0,"
-//                        "\"latitude\":5.5,"
-//                        "\"longitude\":4.4,"
-//                        "\"quality\":0.0,"
-//                        "\"time\":317},"
-//                        "{\"_typeName\":\"joynr.types.Localisation.GpsLocation\","
-//                        "\"altitude\":9.9,"
-//                        "\"bearing\":0.0,"
-//                        "\"deviceTime\":0,"
-//                        "\"elevation\":0.0,"
-//                        "\"gpsFix\":\"MODE3D\","
-//                        "\"gpsTime\":0,"
-//                        "\"heading\":0.0,"
-//                        "\"latitude\":8.8,"
-//                        "\"longitude\":7.7,"
-//                        "\"quality\":0.0,"
-//                        "\"time\":3317}],"
-//                        "\"tripTitle\":\"trip1_name\"}");
+    std::string serializedContent = JsonSerializer::serialize(Variant::make<types::Localisation::Trip>(trip1));
+    EXPECT_EQ(expected, serializedContent);
 
-//    // Expected literal is:
-//    types::Localisation::QtTrip trip1(locations, QString("trip1_name"));
+    types::Localisation::Trip* trip2 = JsonSerializer::deserialize<types::Localisation::Trip>(serializedContent);
+    EXPECT_EQ(trip1, *trip2) << "trips \n trip1: " << trip1.toString().c_str()
+                             << " and \n trip2: " << trip2->toString().c_str()
+                             << "\n are not the same";;
 
-//    QByteArray serializedContent = JsonSerializer::serializeQObject(QVariant::fromValue(trip1));
-//    EXPECT_EQ(expected, serializedContent);
-
-//    types::Localisation::QtTrip* trip2 = JsonSerializer::deserializeQObject<types::Localisation::QtTrip>(serializedContent);
-//    EXPECT_EQ(trip1, *trip2) << "trips \n trip1: " << trip1.toString().toLatin1().data()
-//                             << " and \n trip2: " << trip2->toString().toLatin1().data()
-//                             << "\n are not the same";;
-
-//    delete trip2;
-//}
+    delete trip2;
+}
 
 
 TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequest) {
@@ -786,363 +783,355 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequest) {
     delete request2;
 }
 
-//TEST_F(JsonSerializerTest, serialize_deserialize_Reply_with_Array_as_Response) {
-//    std::vector<types::CapabilityInformation> capabilityInformations;
-//    types::CapabilityInformation cap1(types::CapabilityInformation("domain1", "interface1", types::ProviderQos(), "channel1", "participant1"));
-//    capabilityInformations.push_back(cap1);
-//    capabilityInformations.push_back(types::CapabilityInformation("domain2", "interface2", types::ProviderQos(), "channel2", "participant2"));
+TEST_F(JsonSerializerTest, serialize_deserialize_Reply_with_Array_as_Response) {
+    std::vector<types::CapabilityInformation> capabilityInformations;
+    types::CapabilityInformation cap1(types::CapabilityInformation("domain1", "interface1", types::ProviderQos(), "channel1", "participant1"));
+    capabilityInformations.push_back(cap1);
+    capabilityInformations.push_back(types::CapabilityInformation("domain2", "interface2", types::ProviderQos(), "channel2", "participant2"));
 
-//    Reply reply;
+    Reply reply;
 
-//    std::vector<Variant> response;
-//    reply.setRequestReplyId("serialize_deserialize_Reply_with_Array_as_Response");
-//    //this is the magic code: do not call "append" for lists, because this will append all list elements to the outer list
-//    response.push_back(joynr::TypeUtil::toVariant(capabilityInformations));
-//    reply.setResponse(response);
-//    QByteArray serializedContent = JsonSerializer::serializeQObject(reply);
-//    LOG_DEBUG(logger, QString(serializedContent));
+    std::vector<Variant> response;
+    reply.setRequestReplyId("serialize_deserialize_Reply_with_Array_as_Response");
+    response.push_back(joynr::TypeUtil::toVariant(capabilityInformations));
+    reply.setResponse(response);
+    std::string serializedContent = JsonSerializer::serialize<Reply>(reply);
+    LOG_DEBUG(logger, QString::fromStdString(serializedContent));
 
-//    Reply* deserializedReply = JsonSerializer::deserializeQObject<Reply>(serializedContent);
+    Reply* deserializedReply = JsonSerializer::deserialize<Reply>(serializedContent);
 
-//    response = deserializedReply->getResponse();
+    response = deserializedReply->getResponse();
 
-//    std::vector<Variant> receivedCaps = response.at(0).get<std::vector<Variant>>();
-//    types::CapabilityInformation receivedCap1 = receivedCaps.at(0).get<types::CapabilityInformation>();
-//    EXPECT_EQ(receivedCap1, cap1);
-//    EXPECT_EQ(deserializedReply->getRequestReplyId(), "serialize_deserialize_Reply_with_Array_as_Response");
+    std::vector<Variant> receivedCaps = response.at(0).get<std::vector<Variant>>();
+    types::CapabilityInformation receivedCap1 = receivedCaps.at(0).get<types::CapabilityInformation>();
+    EXPECT_EQ(receivedCap1, cap1);
+    EXPECT_EQ(deserializedReply->getRequestReplyId(), "serialize_deserialize_Reply_with_Array_as_Response");
 
-//    delete deserializedReply;
-//}
+    delete deserializedReply;
+}
 
-//TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequestWithLists) {
+TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequestWithLists) {
 
-//    //creating Request
-//    std::vector<types::Localisation::GpsLocation> inputLocationList;
-//    inputLocationList.push_back(types::Localisation::GpsLocation(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0,17));
-//    inputLocationList.push_back(types::Localisation::GpsLocation(4.4, 5.5, 6.6, types::Localisation::GpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0,317));
-//    inputLocationList.push_back(types::Localisation::GpsLocation(7.7, 8.8, 9.9, types::Localisation::GpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0,3317));
+    //creating Request
+    std::vector<types::Localisation::GpsLocation> inputLocationList;
+    inputLocationList.push_back(types::Localisation::GpsLocation(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0,17));
+    inputLocationList.push_back(types::Localisation::GpsLocation(4.4, 5.5, 6.6, types::Localisation::GpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0,317));
+    inputLocationList.push_back(types::Localisation::GpsLocation(7.7, 8.8, 9.9, types::Localisation::GpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0,3317));
 
-//    QString expectedString(
-//                "{\"_typeName\":\"joynr.Request\","
-//                "\"methodName\":\"serialize_deserialize_JsonRequestTest_method\","
-//                "\"paramDatatypes\":[\"List\"],"
-//                "\"params\":[[{\"_typeName\":\"joynr.types.Localisation.GpsLocation\","
-//                "\"altitude\":3.3,"
-//                "\"bearing\":0.0,"
-//                "\"deviceTime\":0,"
-//                "\"elevation\":0.0,"
-//                "\"gpsFix\":\"MODE3D\","
-//                "\"gpsTime\":0,"
-//                "\"heading\":0.0,"
-//                "\"latitude\":2.2,"
-//                "\"longitude\":1.1,"
-//                "\"quality\":0.0,"
-//                "\"time\":17},"
-//                "{\"_typeName\":\"joynr.types.Localisation.GpsLocation\","
-//                "\"altitude\":6.6,"
-//                "\"bearing\":0.0,"
-//                "\"deviceTime\":0,"
-//                "\"elevation\":0.0,"
-//                "\"gpsFix\":\"MODE3D\","
-//                "\"gpsTime\":0,"
-//                "\"heading\":0.0,"
-//                "\"latitude\":5.5,"
-//                "\"longitude\":4.4,"
-//                "\"quality\":0.0,"
-//                "\"time\":317},"
-//                "{\"_typeName\":\"joynr.types.Localisation.GpsLocation\","
-//                "\"altitude\":9.9,"
-//                "\"bearing\":0.0,"
-//                "\"deviceTime\":0,"
-//                "\"elevation\":0.0,"
-//                "\"gpsFix\":\"MODE3D\","
-//                "\"gpsTime\":0,"
-//                "\"heading\":0.0,"
-//                "\"latitude\":8.8,"
-//                "\"longitude\":7.7,"
-//                "\"quality\":0.0,"
-//                "\"time\":3317}]],"
-//                "\"requestReplyId\":\"%1\"}"
-//                );
+    Request request1;
+    request1.setMethodName("serialize_deserialize_JsonRequestTest_method");
+    std::vector<Variant> inputvl = TypeUtil::toVectorOfVariants(inputLocationList);
+    request1.addParam(Variant::make<std::vector<Variant>>(inputvl), "List");
 
-//    Request request1;
-//    request1.setMethodName("serialize_deserialize_JsonRequestTest_method");
-//    std::vector<Variant> inputvl = TypeUtil::toVectorOfVariants(inputLocationList);
-//    request1.addParam(Variant::make<std::vector<Variant>>(inputvl), "List");
+    std::stringstream expectedStringStream;
+                expectedStringStream << R"({"_typeName": "joynr.Request",)";
+                expectedStringStream << R"("methodName": "serialize_deserialize_JsonRequestTest_method",)";
+                expectedStringStream << R"("paramDatatypes": ["List"],)";
+                expectedStringStream << R"("params": [[{"_typeName": "joynr.types.Localisation.GpsLocation",)";
+                expectedStringStream << R"("longitude": 1.1,)";
+                expectedStringStream << R"("latitude": 2.2,)";
+                expectedStringStream << R"("altitude": 3.3,)";
+                expectedStringStream << R"("gpsFix": "MODE3D",)";
+                expectedStringStream << R"("heading": 0.0,)";
+                expectedStringStream << R"("quality": 0.0,)";
+                expectedStringStream << R"("elevation": 0.0,)";
+                expectedStringStream << R"("bearing": 0.0,)";
+                expectedStringStream << R"("gpsTime": 0,)";
+                expectedStringStream << R"("deviceTime": 0,)";
+                expectedStringStream << R"("time": 17},)";
+                expectedStringStream << R"({"_typeName": "joynr.types.Localisation.GpsLocation",)";
+                expectedStringStream << R"("longitude": 4.4,)";
+                expectedStringStream << R"("latitude": 5.5,)";
+                expectedStringStream << R"("altitude": 6.6,)";
+                expectedStringStream << R"("gpsFix": "MODE3D",)";
+                expectedStringStream << R"("heading": 0.0,)";
+                expectedStringStream << R"("quality": 0.0,)";
+                expectedStringStream << R"("elevation": 0.0,)";
+                expectedStringStream << R"("bearing": 0.0,)";
+                expectedStringStream << R"("gpsTime": 0,)";
+                expectedStringStream << R"("deviceTime": 0,)";
+                expectedStringStream << R"("time": 317},)";
+                expectedStringStream << R"({"_typeName": "joynr.types.Localisation.GpsLocation",)";
+                expectedStringStream << R"("longitude": 7.7,)";
+                expectedStringStream << R"("latitude": 8.8,)";
+                expectedStringStream << R"("altitude": 9.9,)";
+                expectedStringStream << R"("gpsFix": "MODE3D",)";
+                expectedStringStream << R"("heading": 0.0,)";
+                expectedStringStream << R"("quality": 0.0,)";
+                expectedStringStream << R"("elevation": 0.0,)";
+                expectedStringStream << R"("bearing": 0.0,)";
+                expectedStringStream << R"("gpsTime": 0,)";
+                expectedStringStream << R"("deviceTime": 0,)";
+                expectedStringStream << R"("time": 3317}]],)";
+                expectedStringStream << R"("requestReplyId": ")" << request1.getRequestReplyId() << R"("})";
 
-//    expectedString = expectedString.arg(TypeUtil::toQt(request1.getRequestReplyId()));
-//    QByteArray expected = expectedString.toUtf8();
+    std::string expected = expectedStringStream.str();
 
-//    //serializing Request
-//    QByteArray serializedContent = JsonSerializer::serializeQObject(request1);
-//    EXPECT_EQ(expected, serializedContent);
+    //serializing Request
+    std::string serializedContent = JsonSerializer::serialize<Request>(request1);
+    EXPECT_EQ(expected, serializedContent);
 
-//    //deserializing Request
-//    Request* request2 = JsonSerializer::deserializeQObject<Request>(serializedContent);
-//    std::vector<Variant> paramsReceived = request2->getParams();
+    //deserializing Request
+    Request* request2 = JsonSerializer::deserialize<Request>(serializedContent);
+    std::vector<Variant> paramsReceived = request2->getParams();
 
-//    LOG_DEBUG(logger, QString("x1%1").arg(TypeUtil::toQt(paramsReceived.at(0).getTypeName())));
-//    ASSERT_TRUE(paramsReceived.at(0).is<std::vector<Variant>>()) << "Cannot convert the field of the Param Map to a std::vector<Variant>";
-//    std::vector<Variant> returnvl = paramsReceived.at(0).get<std::vector<Variant>>();
-//    ASSERT_TRUE(returnvl.size() == 3) << "list size size != 3";
-//    LOG_DEBUG(logger, QString("%1").arg(TypeUtil::toQt(returnvl.at(0).getTypeName())));
+    LOG_DEBUG(logger, QString("x1%1").arg(TypeUtil::toQt(paramsReceived.at(0).getTypeName())));
+    ASSERT_TRUE(paramsReceived.at(0).is<std::vector<Variant>>()) << "Cannot convert the field of the Param Map to a std::vector<Variant>";
+    std::vector<Variant> returnvl = paramsReceived.at(0).get<std::vector<Variant>>();
+    ASSERT_TRUE(returnvl.size() == 3) << "list size size != 3";
+    LOG_DEBUG(logger, QString("%1").arg(TypeUtil::toQt(returnvl.at(0).getTypeName())));
 
-//    ASSERT_TRUE(returnvl.at(0).is<types::Localisation::GpsLocation>()) << "Cannot convert the first entry of the return List to QtGpsLocation";
+    ASSERT_TRUE(returnvl.at(0).is<types::Localisation::GpsLocation>()) << "Cannot convert the first entry of the return List to QtGpsLocation";
 
-//    std::vector<types::Localisation::GpsLocation> resultLocationList = Util::convertVariantVectorToVector<types::Localisation::GpsLocation>(returnvl);
-//    EXPECT_EQ(resultLocationList.at(1), types::Localisation::GpsLocation(4.4, 5.5, 6.6, types::Localisation::GpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0, 317));
+    std::vector<types::Localisation::GpsLocation> resultLocationList = Util::convertVariantVectorToVector<types::Localisation::GpsLocation>(returnvl);
+    EXPECT_EQ(resultLocationList.at(1), types::Localisation::GpsLocation(4.4, 5.5, 6.6, types::Localisation::GpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0, 317));
 
-//    delete request2;
-//}
+    delete request2;
+}
 
 //// Test to investigate whether long lists cause a problem with during deserialization
-//TEST_F(JsonSerializerTest, serialize_deserialize_ListComplexity) {
+TEST_F(JsonSerializerTest, serialize_deserialize_ListComplexity) {
 
-//    //creating Request
-//    std::vector<types::Localisation::GpsLocation> inputLocationList;
+    //creating Request
+    std::vector<types::Localisation::GpsLocation> inputLocationList;
 
-//    // Create a JSON list
-//    int firstListSize = 10000;
-//    for (int i = 0; i < firstListSize; i++) {
-//        inputLocationList.push_back(types::Localisation::GpsLocation(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0, 17));
-//    }
+    // Create a JSON list
+    int firstListSize = 10000;
+    for (int i = 0; i < firstListSize; i++) {
+        inputLocationList.push_back(types::Localisation::GpsLocation(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0, 17));
+    }
 
-//    // Create a request that uses this list
-//    Request request1;
-//    request1.setMethodName("serialize_deserialize_JsonRequestTest_method");
-//    std::vector<Variant> params1;
-//    std::vector<Variant> inputvl = TypeUtil::toVectorOfVariants(inputLocationList);
-//    params1.push_back(Variant::make<std::vector<Variant>>(inputvl));
-//    request1.setParams(params1);
+    // Create a request that uses this list
+    Request request1;
+    request1.setMethodName("serialize_deserialize_JsonRequestTest_method");
+    std::vector<Variant> params1;
+    std::vector<Variant> inputvl = TypeUtil::toVectorOfVariants(inputLocationList);
+    params1.push_back(Variant::make<std::vector<Variant>>(inputvl));
+    request1.setParams(params1);
 
-//    //Time request serialization
-//    QTime serializationTime;
-//    serializationTime.start();
-//    QByteArray serializedContent = JsonSerializer::serializeQObject(request1);
-//    int serializationElapsed1 = serializationTime.elapsed();
+    //Time request serialization
+    JoynrTimePoint start = time_point_cast<milliseconds>(system_clock::now());
+    std::string newSerializedContent = JsonSerializer::serialize<Request>(request1);
+    JoynrTimePoint end = time_point_cast<milliseconds>(system_clock::now());
+    int serializationElapsed1 = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
-//    // Time request deserialization
-//    QTime deserializationTime;
-//    deserializationTime.start();
-//    Request* deserialized1 = JsonSerializer::deserializeQObject<Request>(serializedContent);
-//    int deserializationElapsed1 = deserializationTime.elapsed();
+    // Time request deserialization
+    start = time_point_cast<milliseconds>(system_clock::now());
+    Request* deserialized1 = JsonSerializer::deserialize<Request>(newSerializedContent);
+    end = time_point_cast<milliseconds>(system_clock::now());
+    int deserializationElapsed1 = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
-//    // Double the size of the JSON list
-//    for (int i = 0; i < firstListSize; i++) {
-//        inputLocationList.push_back(types::Localisation::GpsLocation(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE3D, 0.0, 0,0,0,0,0,17));
-//    }
+    // Double the size of the JSON list
+    for (int i = 0; i < firstListSize; i++) {
+        inputLocationList.push_back(types::Localisation::GpsLocation(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE3D, 0.0, 0,0,0,0,0,17));
+    }
 
-//    // Create a request that uses this bigger list
-//    Request request2;
-//    request2.setMethodName("serialize_deserialize_JsonRequestTest_method");
-//    std::vector<Variant> params2;
-//    std::vector<Variant> inputv2 = TypeUtil::toVectorOfVariants(inputLocationList);
-//    params2.push_back(Variant::make<std::vector<Variant>>(inputv2));
-//    request2.setParams(params2);
+    // Create a request that uses this bigger list
+    Request request2;
+    request2.setMethodName("serialize_deserialize_JsonRequestTest_method");
+    std::vector<Variant> params2;
+    start = time_point_cast<milliseconds>(system_clock::now());
+    std::vector<Variant> inputv2 = TypeUtil::toVectorOfVariants(inputLocationList);
+    end = time_point_cast<milliseconds>(system_clock::now());
+    int convertedElapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+    LOG_DEBUG(logger, QString("converted to vector<Variant> %1 in %2 milliseconds").arg(firstListSize).arg(convertedElapsed));
+    params2.push_back(Variant::make<std::vector<Variant>>(inputv2));
+    request2.setParams(params2);
 
-//    // Time request serialization
-//    serializationTime.restart();
-//    serializedContent = JsonSerializer::serializeQObject(request2);
-//    int serializationElapsed2 = serializationTime.elapsed();
+    //Time request serialization with new serializer
+    start = time_point_cast<milliseconds>(system_clock::now());
+    newSerializedContent = JsonSerializer::serialize<Request>(request2);
+    end = time_point_cast<milliseconds>(system_clock::now());
+    int serializationElapsed2 = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
-//    // Time request deserialization
-//    deserializationTime.restart();
-//    Request* deserialized2 = JsonSerializer::deserializeQObject<Request>(serializedContent);
-//    int deserializationElapsed2 = deserializationTime.elapsed();
+    // Time request deserialization with new serializer
+    start = time_point_cast<milliseconds>(system_clock::now());
+    Request* deserialized2 = JsonSerializer::deserialize<Request>(newSerializedContent);
+    end = time_point_cast<milliseconds>(system_clock::now());
+    int deserializationElapsed2 = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
-//    LOG_DEBUG(logger, QString("%1 Objects serialized in %2 milliseconds").arg(firstListSize).arg(serializationElapsed1));
-//    LOG_DEBUG(logger, QString("%1 Objects serialized in %2 milliseconds").arg(firstListSize * 2).arg(serializationElapsed2));
-//    LOG_DEBUG(logger, QString("%1 Objects deserialized in %2 milliseconds").arg(firstListSize).arg(deserializationElapsed1));
-//    LOG_DEBUG(logger, QString("%1 Objects deserialized in %2 milliseconds").arg(firstListSize * 2).arg(deserializationElapsed2));
+    LOG_DEBUG(logger, QString("%1 Objects serialized in %2 milliseconds").arg(firstListSize).arg(serializationElapsed1));
+    LOG_DEBUG(logger, QString("%1 Objects serialized in %2 milliseconds").arg(firstListSize * 2).arg(serializationElapsed2));
+    LOG_DEBUG(logger, QString("%1 Objects deserialized in %2 milliseconds").arg(firstListSize).arg(deserializationElapsed1));
+    LOG_DEBUG(logger, QString("%1 Objects deserialized in %2 milliseconds").arg(firstListSize * 2).arg(deserializationElapsed2));
 
-//    // Assert O(N) complexity
-//    ASSERT_TRUE(serializationElapsed2 < serializationElapsed1 * serializationElapsed1);
-//    ASSERT_TRUE(deserializationElapsed2 < deserializationElapsed1 * deserializationElapsed1);
+    // Assert O(N) complexity
+    ASSERT_TRUE(serializationElapsed2 < serializationElapsed1 * serializationElapsed1);
+    ASSERT_TRUE(deserializationElapsed2 < deserializationElapsed1 * deserializationElapsed1);
 
-//    delete deserialized1;
-//    delete deserialized2;
-//}
+    delete deserialized1;
+    delete deserialized2;
+}
 
-//TEST_F(JsonSerializerTest, serialize_deserialize_EndpointAddress) {
-//    qRegisterMetaType<joynr::system::RoutingTypes::QtChannelAddress>("joynr::system::RoutingTypes::QtChannelAddress");
-//    qRegisterMetaType<joynr::system::RoutingTypes::QtCommonApiDbusAddress>("joynr::system::RoutingTypes::QtCommonApiDbusAddress");
+TEST_F(JsonSerializerTest, serialize_deserialize_EndpointAddress) {
+    joynr::system::RoutingTypes::ChannelAddress joynr("TEST_channelId");
+    joynr::system::RoutingTypes::CommonApiDbusAddress dbus("domain", "interfacename", "id");
+    joynr::system::RoutingTypes::WebSocketAddress wsServer(
+                joynr::system::RoutingTypes::WebSocketProtocol::WS,
+                "localhost",
+                42,
+                "some/path"
+                );
+    joynr::system::RoutingTypes::WebSocketClientAddress wsClient("TEST_clientId");
 
-//    joynr::system::RoutingTypes::QtChannelAddress joynr("TEST_channelId");
-//    joynr::system::RoutingTypes::QtCommonApiDbusAddress dbus("domain", "interfacename", "id");
-//    joynr::system::RoutingTypes::QtWebSocketAddress wsServer(
-//                joynr::system::RoutingTypes::QtWebSocketProtocol::WS,
-//                "localhost",
-//                42,
-//                "some/path"
-//                );
-//    joynr::system::RoutingTypes::QtWebSocketClientAddress wsClient("TEST_clientId");
+    // serialize
+    std::string joynrSerialized = JsonSerializer::serialize<joynr::system::RoutingTypes::ChannelAddress>(joynr);
+    std::string dbusSerialized = JsonSerializer::serialize<joynr::system::RoutingTypes::CommonApiDbusAddress>(dbus);
+    std::string wsServerSerialized = JsonSerializer::serialize<joynr::system::RoutingTypes::WebSocketAddress>(wsServer);
+    std::string wsClientSerialized = JsonSerializer::serialize<joynr::system::RoutingTypes::WebSocketClientAddress>(wsClient);
 
-//    // serialize
-//    QByteArray joynrSerialized = JsonSerializer::serializeQObject(joynr);
-//    QByteArray dbusSerialized = JsonSerializer::serializeQObject(dbus);
-//    QByteArray wsServerSerialized = JsonSerializer::serializeQObject(wsServer);
-//    QByteArray wsClientSerialized = JsonSerializer::serializeQObject(wsClient);
+    LOG_DEBUG(logger, "serialized Joynr address: "+ QString::fromStdString(joynrSerialized));
+    LOG_DEBUG(logger, "serialized Dbus address: "+ QString::fromStdString(dbusSerialized));
+    LOG_DEBUG(logger, QString("serialized WS server address: %0").arg(QString::fromStdString(wsServerSerialized)));
+    LOG_DEBUG(logger, QString("serialized WS client address: %0").arg(QString::fromStdString(wsClientSerialized)));
 
-//    LOG_DEBUG(logger, "serialized Joynr address: "+ QString(joynrSerialized));
-//    LOG_DEBUG(logger, "serialized Dbus address: "+ QString(dbusSerialized));
-//    LOG_DEBUG(logger, QString("serialized WS server address: %0").arg(QString(wsServerSerialized)));
-//    LOG_DEBUG(logger, QString("serialized WS client address: %0").arg(QString(wsClientSerialized)));
+    // deserialize
+    joynr::system::RoutingTypes::ChannelAddress* joynrDeserialized = JsonSerializer::deserialize<joynr::system::RoutingTypes::ChannelAddress>(joynrSerialized);
+    joynr::system::RoutingTypes::CommonApiDbusAddress* dbusDeserialized = JsonSerializer::deserialize<joynr::system::RoutingTypes::CommonApiDbusAddress>(dbusSerialized);
+    joynr::system::RoutingTypes::WebSocketAddress* wsServerDeserialized = JsonSerializer::deserialize<joynr::system::RoutingTypes::WebSocketAddress>(wsServerSerialized);
+    joynr::system::RoutingTypes::WebSocketClientAddress* wsClientDeserialized = JsonSerializer::deserialize<joynr::system::RoutingTypes::WebSocketClientAddress>(wsClientSerialized);
 
-//    // deserialize
-//    joynr::system::RoutingTypes::QtChannelAddress* joynrDeserialized = JsonSerializer::deserializeQObject<joynr::system::RoutingTypes::QtChannelAddress>(joynrSerialized);
-//    joynr::system::RoutingTypes::QtCommonApiDbusAddress* dbusDeserialized = JsonSerializer::deserializeQObject<joynr::system::RoutingTypes::QtCommonApiDbusAddress>(dbusSerialized);
-//    joynr::system::RoutingTypes::QtWebSocketAddress* wsServerDeserialized = JsonSerializer::deserializeQObject<joynr::system::RoutingTypes::QtWebSocketAddress>(wsServerSerialized);
-//    joynr::system::RoutingTypes::QtWebSocketClientAddress* wsClientDeserialized = JsonSerializer::deserializeQObject<joynr::system::RoutingTypes::QtWebSocketClientAddress>(wsClientSerialized);
+    EXPECT_EQ(joynr, *joynrDeserialized);
+    EXPECT_EQ(dbus, *dbusDeserialized);
+    EXPECT_EQ(wsServer, *wsServerDeserialized);
+    EXPECT_EQ(wsClient, *wsClientDeserialized);
 
-//    EXPECT_EQ(joynr, *joynrDeserialized);
-//    EXPECT_EQ(dbus, *dbusDeserialized);
-//    EXPECT_EQ(wsServer, *wsServerDeserialized);
-//    EXPECT_EQ(wsClient, *wsClientDeserialized);
+    delete joynrDeserialized;
+    delete dbusDeserialized;
+    delete wsServerDeserialized;
+    delete wsClientDeserialized;
+}
 
-//    delete joynrDeserialized;
-//    delete dbusDeserialized;
-//    delete wsServerDeserialized;
-//    delete wsClientDeserialized;
-//}
+TEST_F(JsonSerializerTest, serialize_deserialize_CapabilityInformation) {
 
-//TEST_F(JsonSerializerTest, serialize_deserialize_CapabilityInformation) {
+    std::string expected(
+                R"({"_typeName": "joynr.types.CapabilityInformation",)"
+                R"("domain": "domain",)"
+                R"("interfaceName": "",)"
+                R"("providerQos": {)"
+                R"("_typeName": "joynr.types.ProviderQos",)"
+                R"("customParameters": [],)"
+                R"("providerVersion": 4,)"
+                R"("priority": 2,)"
+                R"("scope": "GLOBAL",)"
+                R"("supportsOnChangeSubscriptions": false},)"
+                R"("channelId": "channeldId",)"
+                R"("participantId": ""})"
+                );
 
-//    QByteArray expected("{\"_typeName\":\"joynr.types.CapabilityInformation\","
-//                        "\"channelId\":\"channeldId\","
-//                        "\"domain\":\"domain\","
-//                        "\"interfaceName\":\"\","
-//                        "\"participantId\":\"\","
-//                        "\"providerQos\":{"
-//                        "\"_typeName\":\"joynr.types.ProviderQos\","
-//                        "\"customParameters\":[],"
-//                        "\"priority\":2,"
-//                        "\"providerVersion\":4,"
-//                        "\"scope\":\"GLOBAL\","
-//                        "\"supportsOnChangeSubscriptions\":false}}");
+    // Expected literal is:
+    // { "_typeName" : "joynr.types.CapabilityInformation", "channelId" : "channeldId", "domain" : "domain", "interfaceName" : "", "participantId" : "", "providerQos" : { "_typeName" : "joynr.types.ProviderQos", "isLocalOnly" : false, "onChangeSubscriptions" : false, "priority" : 2, "qos" : [  ], "Version" : 4 }
 
-//    // Expected literal is:
-//    // { "_typeName" : "joynr.types.CapabilityInformation", "channelId" : "channeldId", "domain" : "domain", "interfaceName" : "", "participantId" : "", "providerQos" : { "_typeName" : "joynr.types.ProviderQos", "isLocalOnly" : false, "onChangeSubscriptions" : false, "priority" : 2, "qos" : [  ], "Version" : 4 }
+    types::ProviderQos qos;
+    qos.setPriority(2);
+    qos.setProviderVersion(4);
+    types::CapabilityInformation capabilityInformation;
+    capabilityInformation.setChannelId("channeldId");
+    capabilityInformation.setDomain("domain");
+    capabilityInformation.setProviderQos(qos);
+    LOG_DEBUG(logger,"capabilityInformation" + QString::fromStdString(capabilityInformation.toString()));
 
-//    //TODO: also remove the variables qRegisterMetaTypeQos
-//    qRegisterMetaType<joynr::types::QtProviderQos>("joynr::types::QtProviderQos");
-//    qRegisterMetaType<joynr__types__QtProviderQos>("joynr__types__ProviderQos");
-//    qRegisterMetaType<joynr::types::QtCapabilityInformation>("joynr::types::QtCapabilityInformation");
-//    qRegisterMetaType<joynr__types__QtCapabilityInformation>("joynr__types__CapabilityInformation");
+    std::string serialized = JsonSerializer::serialize<types::CapabilityInformation>(capabilityInformation);
+    EXPECT_EQ(expected, serialized);
+    // deserialize
+    LOG_DEBUG(logger,"serialized capabilityInformation" + QString::fromStdString(serialized));
 
-//    types::QtProviderQos qos;
-//    qos.setPriority(2);
-//    qos.setProviderVersion(4);
-//    types::QtCapabilityInformation capabilityInformation;
-//    capabilityInformation.setChannelId("channeldId");
-//    capabilityInformation.setDomain("domain");
-//    capabilityInformation.setProviderQos(qos);
-//    LOG_DEBUG(logger,"capabilityInformation" + capabilityInformation.toString());
+    types::CapabilityInformation* deserializedCI = JsonSerializer::deserialize<types::CapabilityInformation>(serialized);
 
-//    QByteArray serialized = JsonSerializer::serializeQObject(QVariant::fromValue(capabilityInformation));
-//    EXPECT_EQ(expected, serialized);
-//    // deserialize
-//    LOG_DEBUG(logger,"serialized capabilityInformation" + QString(serialized));
+    EXPECT_EQ(capabilityInformation, *deserializedCI);
+    LOG_DEBUG(logger,"deserialized capabilityInformation" + QString::fromStdString(deserializedCI->toString()));
+}
 
-//    types::QtCapabilityInformation* deserializedCI = JsonSerializer::deserializeQObject<types::QtCapabilityInformation>(serialized);
+//// Test of ChannelURLInformation which is of type std::Vector<std::string>.
+TEST_F(JsonSerializerTest, serialize_deserialize_ChannelURLInformation) {
+    std::vector<std::string> urls;
+    urls.push_back("http://example1.com/");
+    urls.push_back("http://example2.com/");
+    types::ChannelUrlInformation urlInformation(urls);
 
-//    EXPECT_EQ(capabilityInformation, *deserializedCI);
-//    LOG_DEBUG(logger,"deserialized capabilityInformation" + deserializedCI->toString());
-//}
+    // Serialize the URL Information
+    std::string serialized = JsonSerializer::serialize(Variant::make<types::ChannelUrlInformation>(urlInformation));
+    LOG_DEBUG(logger,"serialized QtChannelUrlInformation" + QString::fromStdString(serialized));
 
-//// Test of ChannelURLInformation which is of type QList<QString>.
-//// QList<QString> is a special case in some places (for an example see Request.h)
-//TEST_F(JsonSerializerTest, serialize_deserialize_ChannelURLInformation) {
-//    qRegisterMetaType<joynr::types::QtChannelUrlInformation>("joynr::types::QtChannelUrlInformation");
-//    qRegisterMetaType<joynr__types__QtChannelUrlInformation>("joynr__types__ChannelUrlInformation");
+    // Expected JSON : { "_typeName" : "joynr.types.ChannelUrlInformation", "urls" : [ "http://example1.com/", "http://example2.com/" ] }
+    std::string expected("{\"_typeName\": \"joynr.types.ChannelUrlInformation\",\"urls\": [\"http://example1.com/\",\"http://example2.com/\"]}");
 
-//    QList<QString> urls;
-//    urls.append("http://example1.com/");
-//    urls.append("http://example2.com/");
-//    types::QtChannelUrlInformation urlInformation(urls);
+    EXPECT_EQ(expected, serialized);
 
-//    // Serialize the URL Information
-//    QByteArray serialized = JsonSerializer::serializeQObject(QVariant::fromValue(urlInformation));
-//    LOG_DEBUG(logger,"serialized QtChannelUrlInformation" + QString(serialized));
+    // Deserialize
+    types::ChannelUrlInformation* deserializedInfo = JsonSerializer::deserialize<types::ChannelUrlInformation>(serialized);
 
-//    // Expected JSON : { "_typeName" : "joynr.types.ChannelUrlInformation", "urls" : [ "http://example1.com/", "http://example2.com/" ] }
-//    QByteArray expected("{\"_typeName\":\"joynr.types.ChannelUrlInformation\",\"urls\":[\"http://example1.com/\",\"http://example2.com/\"]}");
+    // Check the structure
+    std::vector<std::string> deserializedUrls = deserializedInfo->getUrls();
+    EXPECT_EQ(urls, deserializedUrls);
+}
 
-//    EXPECT_EQ(expected, serialized);
+TEST_F(JsonSerializerTest, deserialize_ProviderQos) {
+    joynr::types::ProviderQos qos;
 
-//    // Deserialize
-//    types::QtChannelUrlInformation* deserializedInfo = JsonSerializer::deserializeQObject<types::QtChannelUrlInformation>(serialized);
+    std::string jsonProviderQos("{\"_typeName\":\"joynr.types.ProviderQos\",\"customParameters\":[],\"priority\":5,\"providerVersion\":3,\"scope\":\"LOCAL\",\"supportsOnChangeSubscriptions\":false}");
 
-//    // Check the structure
-//    QList<QString> deserializedUrls = deserializedInfo->getUrls();
-//    EXPECT_EQ(urls, deserializedUrls);
-//}
+    joynr::types::ProviderQos* providerQos = JsonSerializer::deserialize<joynr::types::ProviderQos>(jsonProviderQos);
 
-//TEST_F(JsonSerializerTest, deserialize_ProviderQos) {
-//    joynr::types::QtProviderQos qos;
+    EXPECT_EQ(providerQos->getScope(), joynr::types::ProviderScope::LOCAL);
+    EXPECT_EQ(providerQos->getProviderVersion(), 3);
+    EXPECT_EQ(providerQos->getPriority(), 5);
 
-//    QByteArray jsonProviderQos("{\"_typeName\":\"joynr.types.ProviderQos\",\"customParameters\":[],\"priority\":5,\"providerVersion\":3,\"scope\":\"LOCAL\",\"supportsOnChangeSubscriptions\":false}");
+    delete providerQos;
+}
 
-//    joynr::types::QtProviderQos* providerQos = JsonSerializer::deserializeQObject<joynr::types::QtProviderQos>(jsonProviderQos);
+TEST_F(JsonSerializerTest, serialize_ProviderQos) {
+    joynr::types::ProviderQos qos;
+    qos.setScope(joynr::types::ProviderScope::LOCAL);
+    qos.setPriority(5);
+    qos.setProviderVersion(-1);
 
-//    EXPECT_EQ(providerQos->getScope(), joynr::types::QtProviderScope::LOCAL);
-//    EXPECT_EQ(providerQos->getProviderVersion(), 3);
-//    EXPECT_EQ(providerQos->getPriority(), 5);
+    std::string jsonProviderQos("{\"_typeName\": \"joynr.types.ProviderQos\",\"customParameters\": [],\"providerVersion\": -1,\"priority\": 5,\"scope\": \"LOCAL\",\"supportsOnChangeSubscriptions\": false}");
 
-//    delete providerQos;
-//}
+    std::string result = JsonSerializer::serialize<joynr::types::ProviderQos>(qos);
 
-//TEST_F(JsonSerializerTest, serialize_ProviderQos) {
-//    joynr::types::QtProviderQos qos;
-//    qos.setScope(joynr::types::QtProviderScope::LOCAL);
-//    qos.setPriority(5);
-//    qos.setProviderVersion(-1);
-
-//    QByteArray jsonProviderQos("{\"_typeName\":\"joynr.types.ProviderQos\",\"customParameters\":[],\"priority\":5,\"providerVersion\":-1,\"scope\":\"LOCAL\",\"supportsOnChangeSubscriptions\":false}");
-
-//    QByteArray result = JsonSerializer::serializeQObject(qos);
-
-//    EXPECT_EQ(jsonProviderQos, result);
-//}
+    EXPECT_EQ(jsonProviderQos, result);
+}
 
 
-//TEST_F(JsonSerializerTest, deserialize_GPSLocation) {
-//    qRegisterMetaType<joynr::types::Localisation::QtGpsLocation>("joynr::types::Localisation::QtGpsLocation");
-//    qRegisterMetaType<types::Localisation::QtGpsFixEnum>();
-//    qRegisterMetaType<types::Localisation::QtGpsFixEnum::Enum>("types::Localisation::QtGpsFixEnum");
+TEST_F(JsonSerializerTest, deserialize_GPSLocation) {
 
-//    QByteArray jsonGPS(
-//                "{\"_typeName\":\"joynr.types.Localisation.GpsLocation\","
-//                "\"accuracy\":0.0,"
-//                "\"altitude\":3.3,"
-//                "\"bearing\":0.0,"
-//                "\"deviceTime\":0,"
-//                "\"elevation\":0.0,"
-//                "\"gpsFix\":1,"
-//                "\"gpsTime\":0,"
-//                "\"latitude\":2.2,"
-//                "\"longitude\":1.1,"
-//                "\"time\":17}"
-//                );
-//    joynr::types::Localisation::QtGpsLocation* receivedReply = JsonSerializer::deserializeQObject<joynr::types::Localisation::QtGpsLocation>(jsonGPS);
-//    // Clean up
-//    delete receivedReply;
-//}
+    std::string jsonGPS(
+                R"({"_typeName":"joynr.types.Localisation.GpsLocation",)"
+                R"("longitude": 1.1,)"
+                R"("latitude": 2.2,)"
+                R"("altitude": 3.3,)"
+                R"("gpsFix": "MODE3D",)"
+                R"("heading": 0.0,)"
+                R"("quality": 0.0,)"
+                R"("elevation": 0.0,)"
+                R"("bearing": 0.0,)"
+                R"("gpsTime": 0,)"
+                R"("deviceTime": 0,)"
+                R"("time": 17})"
+                );
 
-//TEST_F(JsonSerializerTest, serialize_OnchangeWithKeepAliveSubscription) {
+    joynr::types::Localisation::GpsLocation* receivedGps = JsonSerializer::deserialize<joynr::types::Localisation::GpsLocation>(jsonGPS);
+    EXPECT_EQ(receivedGps->getAltitude(), 3.3);
+    // Clean up
+    delete receivedGps;
+}
 
-//    joynr::QtOnChangeWithKeepAliveSubscriptionQos qos(750, 100, 900, 1050);
+TEST_F(JsonSerializerTest, serialize_OnchangeWithKeepAliveSubscription) {
 
-//    QByteArray jsonQos = JsonSerializer::serializeQObject(qos);
-//    LOG_DEBUG(logger,"serialized QtOnChangeWithKeepAliveSubscriptionQos" + QString(jsonQos));
+    joynr::OnChangeWithKeepAliveSubscriptionQos qos(750, 100, 900, 1050);
 
-//    joynr::QtOnChangeWithKeepAliveSubscriptionQos* desQos = JsonSerializer::deserializeQObject<joynr::QtOnChangeWithKeepAliveSubscriptionQos>(jsonQos);
+    std::string jsonQos = JsonSerializer::serialize<joynr::OnChangeWithKeepAliveSubscriptionQos>(qos);
+    LOG_DEBUG(logger,"serialized OnChangeWithKeepAliveSubscriptionQos" + QString::fromStdString(jsonQos));
 
-//    jsonQos = JsonSerializer::serializeQObject(*desQos);
-//    LOG_DEBUG(logger,"serialized QtOnChangeWithKeepAliveSubscriptionQos" + QString(jsonQos));
+    joynr::OnChangeWithKeepAliveSubscriptionQos* desQos = JsonSerializer::deserialize<joynr::OnChangeWithKeepAliveSubscriptionQos>(jsonQos);
+
+    jsonQos = JsonSerializer::serialize<joynr::OnChangeWithKeepAliveSubscriptionQos>(*desQos);
+    LOG_DEBUG(logger,"serialized QtOnChangeWithKeepAliveSubscriptionQos" + QString::fromStdString(jsonQos));
 
 
-//    EXPECT_EQ(qos, *desQos);
+    EXPECT_EQ(qos, *desQos);
 
-//    // Clean up
-//    delete desQos;
-//}
+    // Clean up
+    delete desQos;
+}
