@@ -38,7 +38,7 @@ import joynr.system.RoutingTypes.ChannelAddress;
 /**
  *  Use this module if you want to run libjoynr and cluster controller in one process
  */
-public class InprocessRuntimeModule extends DefaultRuntimeModule {
+public class InprocessRuntimeModule extends AbstractRuntimeModule {
 
     @Override
     protected void configure() {

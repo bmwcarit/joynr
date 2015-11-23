@@ -32,10 +32,10 @@ import com.google.inject.util.Modules;
  */
 public class JoynrInjectorFactory extends AbstractJoynrInjectorFactory {
 
-    private DefaultRuntimeModule runtimeModule;
+    private AbstractRuntimeModule runtimeModule;
 
     @Inject
-    public JoynrInjectorFactory(DefaultRuntimeModule runtimeModule) {
+    public JoynrInjectorFactory(AbstractRuntimeModule runtimeModule) {
         this(new Module[]{ runtimeModule });
         this.runtimeModule = runtimeModule;
     }

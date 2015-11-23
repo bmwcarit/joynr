@@ -42,7 +42,7 @@ import java.util.Map;
 /**
  *
  */
-public class CCRuntimeModule extends DefaultRuntimeModule {
+public class CCRuntimeModule extends AbstractRuntimeModule {
     @Override
     protected void configure() {
         super.configure();

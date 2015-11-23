@@ -41,7 +41,7 @@ import java.util.Map;
 /**
  *  Use this module if you want to start a lib joynr instance which connects to a cluster controller by websockets
  */
-public class LibJoynrRuntimeModule extends DefaultRuntimeModule {
+public class LibJoynrRuntimeModule extends AbstractRuntimeModule {
 
     @Override
     protected void configure() {
