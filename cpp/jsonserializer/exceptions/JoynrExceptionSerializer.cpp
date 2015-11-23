@@ -43,6 +43,9 @@ static const bool isJoynrTimeOutExceptionRegistered =
 // Register the PublicationMissedException type id and serializer/deserializer
 static const bool isPublicationMissedExceptionRegistered =
         SerializerRegistry::registerType<exceptions::PublicationMissedException>("joynr.exceptions.PublicationMissedException");
+// Register the MethodInvocationException type id and serializer/deserializer
+static const bool isMethodInvocationExceptionRegistered =
+        SerializerRegistry::registerType<exceptions::MethodInvocationException>("joynr.exceptions.MethodInvocationException");
 
 template <>
 void ClassDeserializer<exceptions::ApplicationException>::deserialize(exceptions::ApplicationException& t, IObject& o)
@@ -87,6 +90,11 @@ void ClassDeserializer<exceptions::DiscoveryException>::deserialize(exceptions::
 }
 template <>
 void ClassDeserializer<exceptions::JoynrTimeOutException>::deserialize(exceptions::JoynrTimeOutException& t, IObject& o)
+{
+    ClassDeserializer<exceptions::JoynrRuntimeException>::deserialize(t, o);
+}
+template <>
+void ClassDeserializer<exceptions::MethodInvocationException>::deserialize(exceptions::MethodInvocationException& t, IObject& o)
 {
     ClassDeserializer<exceptions::JoynrRuntimeException>::deserialize(t, o);
 }
@@ -145,6 +153,11 @@ template <>
 void ClassSerializer<exceptions::JoynrTimeOutException>::serialize(const exceptions::JoynrTimeOutException& exception, std::ostream& stream)
 {
     serializeExceptionWithDetailMessage(JoynrTypeId<exceptions::JoynrTimeOutException>::getTypeName(), exception, stream);
+}
+template <>
+void ClassSerializer<exceptions::MethodInvocationException>::serialize(const exceptions::MethodInvocationException& exception, std::ostream& stream)
+{
+    serializeExceptionWithDetailMessage(JoynrTypeId<exceptions::MethodInvocationException>::getTypeName(), exception, stream);
 }
 template <>
 void ClassSerializer<exceptions::PublicationMissedException>::serialize(const exceptions::PublicationMissedException& exception, std::ostream& stream)

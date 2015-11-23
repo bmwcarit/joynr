@@ -184,6 +184,10 @@ class JOYNRCOMMON_EXPORT MethodInvocationException : public JoynrRuntimeExceptio
 {
 public:
     /**
+     * @brief Constructor for a MethodInvocationException without detail message.
+     */
+    MethodInvocationException() noexcept = default;
+    /**
      * @brief Constructor for a MethodInvocationException with detail message.
      *
      * @param message Further description of the reported invocation error

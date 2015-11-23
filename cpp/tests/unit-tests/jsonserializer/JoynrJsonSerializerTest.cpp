@@ -319,6 +319,29 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerDiscoveryException)
     }
 }
 
+TEST_F(JoynrJsonSerializerTest, exampleDeserializerMethodInvocationException)
+{
+    // Create a MethodInvocationException
+    exceptions::MethodInvocationException exception;
+    std::string detailMessage{"Message of MethodInvocationException"};
+    exception.setMessage(detailMessage);
+
+    // Serialize into JSON
+    std::stringstream stream;
+    auto serializer = ClassSerializer<exceptions::MethodInvocationException>{};
+    serializer.serialize(exception, stream);
+    std::string json{ stream.str() };
+    LOG_TRACE(logger, QString("exceptions::MethodInvocationException JSON: %1").arg(QString::fromStdString(json)));
+
+    // Deserialize from JSON
+    JsonTokenizer tokenizer(json);
+
+    if (tokenizer.hasNextObject()) {
+        exceptions::MethodInvocationException t;
+        ClassDeserializer<exceptions::MethodInvocationException>::deserialize(t, tokenizer.nextObject());
+        ASSERT_EQ(t.getMessage(), detailMessage);
+    }
+}
 TEST_F(JoynrJsonSerializerTest, exampleDeserializerPublicationMissedException)
 {
     // Create a PublicationMissedException

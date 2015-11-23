@@ -75,5 +75,11 @@ void ClassSerializer<exceptions::ProviderRuntimeException>::serialize(const exce
 template <>
 void ClassDeserializer<exceptions::ProviderRuntimeException>::deserialize(exceptions::ProviderRuntimeException& t, IObject& o);
 
+// Serializes a MethodInvocationException
+template <>
+void ClassSerializer<exceptions::MethodInvocationException>::serialize(const exceptions::MethodInvocationException& exception, std::ostream& o);
+// Deserializes a MethodInvocationException
+template <>
+void ClassDeserializer<exceptions::MethodInvocationException>::deserialize(exceptions::MethodInvocationException& t, IObject& o);
 } /* namespace joynr */
 #endif // JOYNREXCEPTIONSERIALIZER_H
