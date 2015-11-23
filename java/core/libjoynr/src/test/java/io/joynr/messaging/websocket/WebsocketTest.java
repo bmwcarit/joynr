@@ -19,7 +19,6 @@ package io.joynr.messaging.websocket;
  * #L%
  */
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.joynr.common.ExpiryDate;
 import io.joynr.dispatching.JoynrMessageFactory;
@@ -97,7 +96,7 @@ public class WebsocketTest {
                 "Test Payload",
                 ExpiryDate.fromRelativeTtl(100000));
         try {
-            webSocketMessagingStub = new WebSocketMessagingStub(serverAddress,
+            webSocketMessagingStub = new LibWebSocketMessagingStub(serverAddress,
                     new ObjectMapper(),
                     libWebSocketMessagingSkeleton);
             webSocketMessagingStub.transmit(msg);
@@ -115,9 +114,9 @@ public class WebsocketTest {
     }
 
     @Test
-    public void testStubCreatedOnInit() throws JsonProcessingException {
+    public void testStubCreatedOnInit() throws IOException {
         try {
-            webSocketMessagingStub = new WebSocketMessagingStub(serverAddress,
+            webSocketMessagingStub = new LibWebSocketMessagingStub(serverAddress,
                     new ObjectMapper(),
                     libWebSocketMessagingSkeleton);
 

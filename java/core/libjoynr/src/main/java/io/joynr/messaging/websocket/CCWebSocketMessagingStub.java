@@ -20,29 +20,23 @@ package io.joynr.messaging.websocket;
  */
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
+import org.eclipse.jetty.util.FuturePromise;
+import org.eclipse.jetty.websocket.api.Session;
 
-import io.joynr.messaging.AbstractMessagingStubFactory;
-import io.joynr.messaging.IMessaging;
-import joynr.system.RoutingTypes.WebSocketAddress;
+/**
+ *
+ * Messaging stub used on ClusterController side. It gets an already initialized session from the CCWebSocketMessagingSkeleton
+ *
+ */
+public class CCWebSocketMessagingStub extends WebSocketMessagingStub {
 
-public class WebSocketMessagingStubFactory extends AbstractMessagingStubFactory<WebSocketAddress> {
-
-    @Inject
-    ObjectMapper objectMapper;
-    @Inject
-    @Named(WebsocketModule.PROPERTY_LIBJOYNR_MESSAGING_SKELETON)
-    WebSocketMessagingSkeleton libWebSocketMessagingSkeleton;
-
-    @Override
-    protected IMessaging createInternal(WebSocketAddress address) {
-        return new LibWebSocketMessagingStub(address, objectMapper, libWebSocketMessagingSkeleton);
+    public CCWebSocketMessagingStub(Session session, ObjectMapper objectMapper) {
+        super(objectMapper);
+        sessionFuture = new FuturePromise<>(session);
     }
 
     @Override
-    public void shutdown() {
-        //do nothing
+    protected void initConnection() {
+        //nothing to do here, connection is already initialized by CCWebSocketMessagingSkeleton
     }
-
 }

@@ -23,61 +23,27 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.messaging.IMessaging;
 import joynr.JoynrMessage;
-import joynr.system.RoutingTypes.WebSocketAddress;
-import org.eclipse.jetty.util.FuturePromise;
 import org.eclipse.jetty.websocket.api.Session;
-import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
-import java.net.URI;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
-public class WebSocketMessagingStub implements IMessaging {
+public abstract class WebSocketMessagingStub implements IMessaging {
     private static final Logger logger = LoggerFactory.getLogger(WebSocketMessagingStub.class);
-    private WebSocketAddress address;
+
     private ObjectMapper objectMapper;
-    private WebSocketMessagingSkeleton libWebSocketMessagingSkeleton;
-    private Future<Session> sessionFuture = null;
 
-    /*
-     *	Constructor used to create a messaging stub on LibJoynr side
-     */
-    public WebSocketMessagingStub(WebSocketAddress address,
-                                  ObjectMapper objectMapper,
-                                  WebSocketMessagingSkeleton libWebSocketMessagingSkeleton) {
-        this.address = address;
+    protected Future<Session> sessionFuture = null;
+
+    public WebSocketMessagingStub(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
-
-        this.libWebSocketMessagingSkeleton = libWebSocketMessagingSkeleton;
     }
 
-    private void initConnection() {
-        logger.debug("Starting WebSocketMessagingStub with address " + address);
-
-        URI uri = URI.create(address.getProtocol() + "://" + address.getHost() + ":" + address.getPort() + ""
-                + address.getPath());
-
-        WebSocketClient client = new WebSocketClient();
-        try {
-            client.start();
-            // Attempt Connect
-            sessionFuture = client.connect(libWebSocketMessagingSkeleton, uri);
-        } catch (Throwable t) {
-            logger.error("Failed to create websocket connection: ", t);
-        }
-    }
-
-    /*
-     *	Constructor used to create a messaging stub on ClusterController side
-     */
-    public WebSocketMessagingStub(Session session, ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-        sessionFuture = new FuturePromise<>(session);
-	}
+    protected abstract void initConnection();
 
     @Override
     public void transmit(JoynrMessage message) throws IOException {
@@ -86,7 +52,7 @@ public class WebSocketMessagingStub implements IMessaging {
         sendString(objectMapper.writeValueAsString(message), timeout);
     }
 
-    public void sendString(String string, long timeout) {
+    protected void sendString(String string, long timeout) throws IOException {
         Session session = null;
         if (sessionFuture == null) {
             initConnection();
@@ -94,11 +60,9 @@ public class WebSocketMessagingStub implements IMessaging {
         try {
             session = sessionFuture.get(timeout, TimeUnit.MILLISECONDS);
             session.getRemote().sendString(string);
-            return;
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
             throw new JoynrMessageNotSentException("Websocket transmit error: " + e);
         }
-
     }
 
     public void shutdown() throws ExecutionException, InterruptedException {

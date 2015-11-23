@@ -35,7 +35,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *
+ * Factory for messaging stubs used on cluster controller side to create a connection to registered clients
  */
 public class WebSocketClientMessagingStubFactory extends AbstractMessagingStubFactory<WebSocketClientAddress> {
 
@@ -48,7 +48,7 @@ public class WebSocketClientMessagingStubFactory extends AbstractMessagingStubFa
     @Override
     protected IMessaging createInternal(WebSocketClientAddress address) {
         if (sessionMap.containsKey(address.getId())) {
-            return new WebSocketMessagingStub(sessionMap.get(address.getId()), objectMapper);
+            return new CCWebSocketMessagingStub(sessionMap.get(address.getId()), objectMapper);
         } else {
             throw new JoynrIllegalStateException("No session available for WebSocketClientAddress: " + address);
         }

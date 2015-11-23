@@ -1,8 +1,10 @@
 package io.joynr.runtime;
 
+import java.io.IOException;
 import java.util.UUID;
 
 import io.joynr.messaging.routing.ChildMessageRouter;
+import io.joynr.messaging.websocket.LibWebSocketMessagingStub;
 import io.joynr.messaging.websocket.WebsocketModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +40,6 @@ import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.websocket.WebSocketMessagingSkeleton;
-import io.joynr.messaging.websocket.WebSocketMessagingStub;
 import io.joynr.messaging.websocket.WebSocketMessagingStubFactory;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderFactory;
@@ -110,10 +111,12 @@ public class LibJoynrRuntime extends JoynrRuntimeImpl {
         try {
 
             String serializedAddress = objectMapper.writeValueAsString(webSocketClientAddress);
-            WebSocketMessagingStub ccMessagingSocket = (WebSocketMessagingStub) webSocketMessagingStubFactory.create(ccMessagingAddress);
+            LibWebSocketMessagingStub ccMessagingSocket = (LibWebSocketMessagingStub) webSocketMessagingStubFactory.create(ccMessagingAddress);
             ccMessagingSocket.sendString(serializedAddress, 30000);
         } catch (JsonProcessingException e) {
             logger.error("Error while serializing WebSocketClientAddress: ", e);
+        } catch (IOException e) {
+            logger.error("Error while sending websocket init message: ", e);
         }
         return webSocketClientAddress;
     }
