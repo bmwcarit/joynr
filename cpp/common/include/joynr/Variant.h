@@ -158,8 +158,8 @@ public:
     }
 
     /**
-     * @brief getTypeId Get the TypeId of the object held in the Variant
-     * @return int unique type identifier
+     * @brief getTypeName Get the TypeName of the object held in the Variant
+     * @return type name of object
      */
     std::string getTypeName() const
     {

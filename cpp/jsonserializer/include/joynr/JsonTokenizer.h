@@ -185,7 +185,7 @@ private:
 
 //------- JsonValue ------------------------------------------------------------
 /**
- * @brief The JsonValue class hold acctual JsonField value.
+ * @brief The JsonValue class hold actual JsonField value.
  * It can be another JsonObject, JsonArray, or concrete value.
  */
 class JsonValue : public IValue

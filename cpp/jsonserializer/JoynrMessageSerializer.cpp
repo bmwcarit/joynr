@@ -29,8 +29,8 @@
 namespace joynr
 {
 
-// Register the Request type id and serializer/deserializer
-static const bool isRequestRegistered =
+// Register the JoynrMessage type id and serializer/deserializer
+static const bool isJoynrMessageRegistered =
         SerializerRegistry::registerType<JoynrMessage>("joynr.JoynrMessage");
 
 static std::string  removeEscapeFromSpecialChars(const std::string& inputStr){
