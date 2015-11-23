@@ -24,7 +24,7 @@ import io.joynr.integration.util.DummyJoynrApplication;
 import io.joynr.integration.util.ServersUtil;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.runtime.InprocessRuntimeModule;
+import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
 import org.eclipse.jetty.server.Server;
@@ -59,7 +59,7 @@ public class SubscriptionEnd2EndTest extends AbstractSubscriptionEnd2EndTest {
     @Override
     protected JoynrRuntime getRuntime(Properties joynrConfig, Module... modules) {
         Module[] modulesWithRuntime = new Module[modules.length+1];
-        modulesWithRuntime[0] = new InprocessRuntimeModule();
+        modulesWithRuntime[0] = new CCInProcessRuntimeModule();
         System.arraycopy(modules, 0, modulesWithRuntime, 1, modules.length);
         DummyJoynrApplication application = (DummyJoynrApplication)
                 new JoynrInjectorFactory(joynrConfig, modulesWithRuntime)

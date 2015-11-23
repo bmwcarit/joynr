@@ -206,7 +206,7 @@ public class MessagingServletConfig extends GuiceServletContextListener {
         Injector injector = Guice.createInjector(new AbstractModule() {
             @Override
             protected void configure() {
-                bind(AbstractRuntimeModule.class).to(InprocessRuntimeModule.class);
+                bind(AbstractRuntimeModule.class).to(CCInProcessRuntimeModule.class);
             }
         });
         AbstractJoynrInjectorFactory injectorFactory = injector.getInstance(joynrInjectorFactoryClasses.iterator()

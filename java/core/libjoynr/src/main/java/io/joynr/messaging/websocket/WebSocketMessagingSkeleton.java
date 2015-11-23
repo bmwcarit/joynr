@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import io.joynr.messaging.IMessagingSkeleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,14 +29,13 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.JoynrMessage;
 
 /**
  *
  */
-public abstract class WebSocketMessagingSkeleton extends MessagingSocket implements IMessaging {
+public abstract class WebSocketMessagingSkeleton extends MessagingSocket implements IMessagingSkeleton {
 
     private static final Logger logger = LoggerFactory.getLogger(WebSocketMessagingSkeleton.class);
     private ExecutorService executorThreadPool = Executors.newCachedThreadPool();
@@ -47,10 +47,6 @@ public abstract class WebSocketMessagingSkeleton extends MessagingSocket impleme
         this.objectMapper = objectMapper;
         this.messageRouter = messageRouter;
     }
-
-    abstract public void initializeConnection();
-
-    abstract public void shutdown();
 
     @Override
     public void onWebSocketText(String json) {

@@ -1,4 +1,4 @@
-package io.joynr.messaging.websocket;
+package io.joynr.messaging;
 
 /*
  * #%L
@@ -19,27 +19,12 @@ package io.joynr.messaging.websocket;
  * #L%
  */
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.inject.Inject;
-import io.joynr.messaging.routing.MessageRouter;
-
 /**
- * Connects to the CCWebSocket server
+ *
  */
-public class LibWebSocketMessagingSkeleton extends WebSocketMessagingSkeleton {
+public interface IMessagingSkeleton extends IMessaging {
 
-    @Inject
-    public LibWebSocketMessagingSkeleton(ObjectMapper objectMapper, MessageRouter messageRouter) {
-        super(objectMapper, messageRouter);
-    }
+    void init();
 
-    @Override
-    public void init() {
-        //nothing to do here
-    }
-
-    @Override
-    public void shutdown() {
-        //nothing to do here
-    }
+    void shutdown();
 }

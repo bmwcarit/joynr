@@ -1,5 +1,9 @@
 package io.joynr.runtime;
 
+import java.util.Map;
+
+import javax.inject.Named;
+
 /*
  * #%L
  * %%
@@ -22,45 +26,38 @@ package io.joynr.runtime;
 import com.google.common.collect.Maps;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+
 import com.google.inject.name.Names;
 import io.joynr.messaging.AbstractMessagingStubFactory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.channel.ChannelMessagingSkeleton;
 import io.joynr.messaging.channel.ChannelMessagingStubFactory;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.MessageRouterImpl;
-import io.joynr.messaging.websocket.CCWebSocketMessagingSkeleton;
-import io.joynr.messaging.websocket.WebSocketClientMessagingStubFactory;
-import io.joynr.messaging.websocket.WebSocketMessagingSkeleton;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
-import joynr.system.RoutingTypes.WebSocketClientAddress;
-
-import javax.inject.Named;
-import java.util.Map;
 
 /**
- *
+ *  Use this module if you want to run libjoynr and cluster controller in one process
  */
-public class CCRuntimeModule extends AbstractRuntimeModule {
+public class CCInProcessRuntimeModule extends AbstractRuntimeModule {
+
     @Override
     protected void configure() {
         super.configure();
-        bind(CCJoynrRuntime.class).in(Singleton.class);
-        bind(JoynrRuntime.class).to(CCJoynrRuntime.class);
-        bind(WebSocketMessagingSkeleton.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_CLUSTERCONTROLER_MESSAGING_SKELETON))
-                                              .to(CCWebSocketMessagingSkeleton.class)
-                                              .in(Singleton.class);
-        bind(WebSocketClientMessagingStubFactory.class).in(Singleton.class);
+        bind(JoynrRuntime.class).to(ClusterControllerRuntime.class).in(Singleton.class);
         bind(MessageRouter.class).to(MessageRouterImpl.class).in(Singleton.class);
+        bind(IMessagingSkeleton.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_CLUSTERCONTROLER_MESSAGING_SKELETON))
+                                      .to(ChannelMessagingSkeleton.class)
+                                      .in(Singleton.class);
     }
 
     @Provides
     @Singleton
-    Map<Class<? extends Address>, AbstractMessagingStubFactory> provideMessagingStubFactories(WebSocketClientMessagingStubFactory webSocketClientMessagingStubFactory,
-                                                                                              ChannelMessagingStubFactory channelMessagingStubFactory) {
+    Map<Class<? extends Address>, AbstractMessagingStubFactory> provideMessagingStubFactories(ChannelMessagingStubFactory channelMessagingStubFactory) {
         Map<Class<? extends Address>, AbstractMessagingStubFactory> factories = Maps.newHashMap();
-        factories.put(WebSocketClientAddress.class, webSocketClientMessagingStubFactory);
         factories.put(ChannelAddress.class, channelMessagingStubFactory);
         return factories;
     }
@@ -68,7 +65,7 @@ public class CCRuntimeModule extends AbstractRuntimeModule {
     @Provides
     @Singleton
     @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS)
-    Address getCCMessagingAddress() {
+    public Address provideCCMessagingAddress() {
         return new InProcessAddress();
     }
 

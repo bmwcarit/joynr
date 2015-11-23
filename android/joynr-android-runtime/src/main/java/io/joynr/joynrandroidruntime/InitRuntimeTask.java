@@ -28,8 +28,8 @@ import com.google.inject.util.Modules;
 import io.joynr.joynrandroidruntime.messaging.AndroidLongPollingMessagingModule;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.runtime.InProcessRuntime;
-import io.joynr.runtime.InprocessRuntimeModule;
+import io.joynr.runtime.ClusterControllerRuntime;
+import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.JoynrRuntimeImpl;
@@ -95,12 +95,12 @@ public class InitRuntimeTask extends AsyncTask<Object, String, JoynrRuntime> {
 
             joynrConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT, "120000");
 
-            // Create an injector with all the required custom modules. 
-            // InprocessRuntimeModule is used by default but can be overwritten by custom modules
-            Module combinedModules = Modules.override(new InprocessRuntimeModule()).with(modules);
+            // Create an injector with all the required custom modules.
+            // CCInProcessRuntimeModule is used by default but can be overwritten by custom modules
+            Module combinedModules = Modules.override(new CCInProcessRuntimeModule()).with(modules);
             Injector injectorA = new JoynrInjectorFactory(joynrConfig, combinedModules).createChildInjector();
 
-            JoynrRuntimeImpl runtime = injectorA.getInstance(InProcessRuntime.class);
+            JoynrRuntimeImpl runtime = injectorA.getInstance(ClusterControllerRuntime.class);
             if (runtime != null) {
                 Log.d("JAS", "joynr runtime started");
             } else {

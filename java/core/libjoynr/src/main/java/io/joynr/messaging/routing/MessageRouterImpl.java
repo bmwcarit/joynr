@@ -39,6 +39,8 @@ import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.CommonApiDbusAddress;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
+import joynr.types.ProviderQos;
+import joynr.types.ProviderScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -147,4 +149,11 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
         messagingStubFactory.shutdown();
     }
 
+    @Override
+    public ProviderQos getProviderQos() {
+        //set provider qos to local to prevent global registration of the routing provider
+        ProviderQos providerQos = super.getProviderQos();
+        providerQos.setScope(ProviderScope.LOCAL);
+        return providerQos;
+    }
 }

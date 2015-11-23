@@ -1,14 +1,5 @@
 package io.joynr.runtime;
 
-import java.io.IOException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
-
 /*
  * #%L
  * %%
@@ -28,6 +19,14 @@ import com.google.inject.name.Named;
  * #L%
  */
 
+import java.io.IOException;
+import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.routing.MessageRouter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import io.joynr.capabilities.CapabilitiesRegistrar;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.discovery.LocalDiscoveryAggregator;
@@ -39,7 +38,6 @@ import io.joynr.dispatching.rpc.ReplyCaller;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.MessageArrivedListener;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.ReceiverStatusListener;
@@ -47,14 +45,14 @@ import io.joynr.proxy.ProxyBuilderFactory;
 import joynr.JoynrMessage;
 import joynr.system.RoutingTypes.Address;
 
-public class InProcessRuntime extends JoynrRuntimeImpl {
+public class ClusterControllerRuntime extends JoynrRuntimeImpl {
 
-    public static final Logger logger = LoggerFactory.getLogger(InProcessRuntime.class);
+    public static final Logger logger = LoggerFactory.getLogger(ClusterControllerRuntime.class);
     private final MessageReceiver messageReceiver;
     private boolean shutdown = false;
     private boolean registering = false;
 
-    private IMessaging clusterControllerMessagingSkeleton;
+    private IMessagingSkeleton clusterControllerMessagingSkeleton;
 
     private CallerDirectoryListener<RequestCaller> requestCallerDirectoryListener;
     private CallerDirectoryListener<ReplyCaller> replyCallerDirectoryListener;
@@ -73,22 +71,23 @@ public class InProcessRuntime extends JoynrRuntimeImpl {
 
     // CHECKSTYLE:OFF
     @Inject
-    public InProcessRuntime(ObjectMapper objectMapper,
-                            ProxyBuilderFactory proxyBuilderFactory,
-                            RequestCallerDirectory requestCallerDirectory,
-                            ReplyCallerDirectory replyCallerDirectory,
-                            Dispatcher dispatcher,
-                            LocalDiscoveryAggregator localDiscoveryAggregator,
-                            @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
-                            @Named(SystemServicesSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) Address libjoynrMessagingAddress,
-                            @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_ADDRESS) Address capabilitiesDirectoryAddress,
-                            @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_ADDRESS) Address channelUrlDirectoryAddress,
-                            @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_ADDRESS) Address domainAccessControllerAddress,
-                            @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address discoveryProviderAddress,
-                            @Named(ConfigurableMessagingSettings.PROPERTY_CLUSTERCONTROLER_MESSAGING_SKELETON) IMessaging clusterControllerMessagingSkeleton,
-                            CapabilitiesRegistrar capabilitiesRegistrar,
-                            LocalCapabilitiesDirectory localCapabilitiesDirectory,
-                            MessageReceiver messageReceiver) {
+    public ClusterControllerRuntime(ObjectMapper objectMapper,
+                                    ProxyBuilderFactory proxyBuilderFactory,
+                                    RequestCallerDirectory requestCallerDirectory,
+                                    ReplyCallerDirectory replyCallerDirectory,
+                                    Dispatcher dispatcher,
+                                    LocalDiscoveryAggregator localDiscoveryAggregator,
+                                    @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
+                                    @Named(SystemServicesSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) Address libjoynrMessagingAddress,
+                                    @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_ADDRESS) Address capabilitiesDirectoryAddress,
+                                    @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_ADDRESS) Address channelUrlDirectoryAddress,
+                                    @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_ADDRESS) Address domainAccessControllerAddress,
+                                    @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address discoveryProviderAddress,
+                                    @Named(ConfigurableMessagingSettings.PROPERTY_CLUSTERCONTROLER_MESSAGING_SKELETON) IMessagingSkeleton clusterControllerMessagingSkeleton,
+                                    CapabilitiesRegistrar capabilitiesRegistrar,
+                                    LocalCapabilitiesDirectory localCapabilitiesDirectory,
+                                    MessageReceiver messageReceiver,
+                                    MessageRouter messageRouter) {
         super(objectMapper,
               proxyBuilderFactory,
               requestCallerDirectory,
@@ -111,12 +110,16 @@ public class InProcessRuntime extends JoynrRuntimeImpl {
 
         capabilitiesRegistrar.registerProvider(systemServicesDomain, localCapabilitiesDirectory);
         this.clusterControllerMessagingSkeleton = clusterControllerMessagingSkeleton;
+
+        this.clusterControllerMessagingSkeleton.init();
+        capabilitiesRegistrar.registerProvider(systemServicesDomain, messageRouter);
     }
 
     @Override
     public void shutdown(boolean clear) {
         super.shutdown(clear);
         shutdown = true;
+        clusterControllerMessagingSkeleton.shutdown();
         try {
             requestCallerDirectory.removeListener(requestCallerDirectoryListener);
             replyCallerDirectory.removeListener(replyCallerDirectoryListener);

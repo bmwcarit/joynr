@@ -30,8 +30,8 @@ import io.joynr.dispatching.subscription.PubSubModule;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.LongPollingMessagingModule;
 import io.joynr.messaging.websocket.WebsocketModule;
-import io.joynr.runtime.CCJoynrRuntime;
-import io.joynr.runtime.CCRuntimeModule;
+import io.joynr.runtime.CCWebSocketRuntimeModule;
+import io.joynr.runtime.ClusterControllerRuntime;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.LibJoynrRuntime;
@@ -47,7 +47,7 @@ import java.util.Properties;
  */
 public class WebSocketProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
 
-    private CCJoynrRuntime ccJoynrRuntime;
+    private ClusterControllerRuntime ccJoynrRuntime;
     private Properties webSocketConfig;
 
     @Before
@@ -70,12 +70,12 @@ public class WebSocketProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest 
         ccJoynrRuntime.shutdown(false);
     }
 
-    private CCJoynrRuntime createClusterController(Properties webSocketConfig) {
+    private ClusterControllerRuntime createClusterController(Properties webSocketConfig) {
         Properties ccConfig = new Properties();
         ccConfig.putAll(webSocketConfig);
         ccConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_CC_CONNECTION_TYPE, "WEBSOCKET");
         Injector injectorCC = new JoynrInjectorFactory(new ClusterControllerModule(ccConfig), new WebsocketModule()).getInjector();
-        return (CCJoynrRuntime) injectorCC.getInstance(JoynrRuntime.class);
+        return (ClusterControllerRuntime) injectorCC.getInstance(JoynrRuntime.class);
     }
 
     @Override
@@ -105,7 +105,7 @@ public class WebSocketProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest 
                                       new LongPollingMessagingModule(),
                                       new PubSubModule(),
                                       new DiscoveryClientModule(),
-                                      new CCRuntimeModule(),
+                                      new CCWebSocketRuntimeModule(),
                                       new AccessControlClientModule()).with();
             module.configure(binder);
         }

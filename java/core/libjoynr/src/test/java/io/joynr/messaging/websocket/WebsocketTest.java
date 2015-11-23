@@ -78,7 +78,7 @@ public class WebsocketTest {
                                                                         messageRouterMock,
                                                                         webSocketMessagingStubFactory);
         joynrMessageFactory = new JoynrMessageFactory(new ObjectMapper(), new DummyPlatformSecurityManager());
-        ccWebSocketMessagingSkeleton.initializeConnection();
+        ccWebSocketMessagingSkeleton.init();
     }
 
     @After

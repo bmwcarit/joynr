@@ -19,10 +19,11 @@ package io.joynr.messaging.channel;
  * #L%
  */
 
+import com.google.inject.Inject;
 import io.joynr.dispatching.DispatcherImpl;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
-import io.joynr.messaging.IMessaging;
+import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.routing.MessageRouter;
 
 import java.io.IOException;
@@ -33,11 +34,12 @@ import joynr.system.RoutingTypes.ChannelAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ChannelMessagingSkeleton implements IMessaging {
+public class ChannelMessagingSkeleton implements IMessagingSkeleton {
     private final MessageRouter messageRouter;
 
     private static final Logger logger = LoggerFactory.getLogger(DispatcherImpl.class);
 
+    @Inject
     public ChannelMessagingSkeleton(MessageRouter messageRouter) {
         this.messageRouter = messageRouter;
     }
@@ -65,4 +67,13 @@ public class ChannelMessagingSkeleton implements IMessaging {
         }
     }
 
+    @Override
+    public void init() {
+        //do nothing
+    }
+
+    @Override
+    public void shutdown() {
+        //do nothing
+    }
 }

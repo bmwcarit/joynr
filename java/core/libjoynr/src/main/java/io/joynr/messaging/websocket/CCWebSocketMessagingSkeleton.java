@@ -89,7 +89,7 @@ public class CCWebSocketMessagingSkeleton extends WebSocketMessagingSkeleton {
     }
 
     @Override
-    public void initializeConnection() {
+    public void init() {
         if (server != null) {
             throw new IllegalStateException("Server was already started!");
         }

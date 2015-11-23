@@ -56,7 +56,7 @@ public class JoynrInjectorFactoryTest {
 
         Properties basicProperties = new Properties();
         basicProperties.setProperty(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, "localdomain");
-        injectorfactory = new JoynrInjectorFactory(basicProperties, new InprocessRuntimeModule());
+        injectorfactory = new JoynrInjectorFactory(basicProperties, new CCInProcessRuntimeModule());
 
         creationTestConfigEntry = "creation-test-value";
         applicationCreationProperties = new Properties();

@@ -27,7 +27,7 @@ import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingTestModule;
 import io.joynr.messaging.ReceiverStatusListener;
-import io.joynr.runtime.InprocessRuntimeModule;
+import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrBaseModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 
@@ -115,7 +115,7 @@ public class HttpCommunicationManagerTest {
 
         Injector injector = new JoynrInjectorFactory(new JoynrBaseModule(properties,
                                                                          new MessagingTestModule(),
-                                                                         new InprocessRuntimeModule())).getInjector();
+                                                                         new CCInProcessRuntimeModule())).getInjector();
 
         longpollingMessageReceiver = injector.getInstance(LongPollingMessageReceiver.class);
         messageSender = injector.getInstance(MessageSender.class);

@@ -41,10 +41,10 @@ public class JoynrBaseModule implements Module {
     }
 
     /**
-     * default constructor with no properties set and {@link InprocessRuntimeModule} as runtime
+     * default constructor with no properties set and {@link CCInProcessRuntimeModule} as runtime
      */
     public JoynrBaseModule() {
-        this(new Properties(), new InprocessRuntimeModule());
+        this(new Properties(), new CCInProcessRuntimeModule());
     }
 
     public JoynrBaseModule(Properties customJoynProperties, Module... modules) {

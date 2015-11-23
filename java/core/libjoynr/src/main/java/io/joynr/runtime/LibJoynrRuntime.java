@@ -91,7 +91,7 @@ public class LibJoynrRuntime extends JoynrRuntimeImpl {
             throw new JoynrIllegalStateException(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS
                     + " has to be of type " + WebSocketAddress.class.getSimpleName());
         }
-        webSocketMessagingSkeleton.initializeConnection();
+        webSocketMessagingSkeleton.init();
         ProxyBuilder<RoutingProxy> proxyBuilder = getProxyBuilder(systemServicesDomain, RoutingProxy.class);
         RoutingProxy routingProxy = proxyBuilder.build();
         messageRouter.setIncomingAddress(incomingAddress);

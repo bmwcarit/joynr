@@ -31,7 +31,7 @@ import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.AbstractJoynrApplication;
-import io.joynr.runtime.InprocessRuntimeModule;
+import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 
 import java.util.Properties;
@@ -66,7 +66,7 @@ public class ShutdownTest {
 
         MockitoAnnotations.initMocks(this);
         dummyApplication = (DummyJoynrApplication) new JoynrInjectorFactory(factoryPropertiesProvider,
-                                                                            new InprocessRuntimeModule(),
+                                                                            new CCInProcessRuntimeModule(),
                                                                             new AbstractModule() {
 
                                                                                 @Override

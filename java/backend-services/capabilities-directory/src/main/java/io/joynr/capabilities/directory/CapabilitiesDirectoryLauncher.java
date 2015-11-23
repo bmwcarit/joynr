@@ -20,7 +20,7 @@ package io.joynr.capabilities.directory;
  */
 
 import io.joynr.runtime.AbstractJoynrApplication;
-import io.joynr.runtime.InprocessRuntimeModule;
+import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
@@ -55,7 +55,7 @@ public class CapabilitiesDirectoryLauncher extends AbstractJoynrApplication {
         JoynrInjectorFactory injectorFactory = new JoynrInjectorFactory(joynrConfig,
                                                                         new JpaPersistModule("CapabilitiesDirectory"),
                                                                         new CapabilitiesDirectoryModule(),
-                                                                        new InprocessRuntimeModule());
+                                                                        new CCInProcessRuntimeModule());
         capabilitiesDirectoryLauncher = injectorFactory.createApplication(new JoynrApplicationModule("capabilitiesDirectoryLauncher",
                                                                                                      CapabilitiesDirectoryLauncher.class));
         capabilitiesDirectoryLauncher.run();

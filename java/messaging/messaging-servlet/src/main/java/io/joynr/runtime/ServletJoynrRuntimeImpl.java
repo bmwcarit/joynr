@@ -27,8 +27,9 @@ import io.joynr.dispatching.RequestCallerDirectory;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.IMessaging;
+import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.MessageReceiver;
+import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.ProxyBuilderFactory;
 
@@ -39,7 +40,7 @@ import joynr.system.RoutingTypes.Address;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 
-public class ServletJoynrRuntimeImpl extends InProcessRuntime {
+public class ServletJoynrRuntimeImpl extends ClusterControllerRuntime {
 
     // CHECKSTYLE:OFF
     @Inject
@@ -55,10 +56,11 @@ public class ServletJoynrRuntimeImpl extends InProcessRuntime {
                                    @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_ADDRESS) Address capabilitiesDirectoryAddress,
                                    @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_ADDRESS) Address channelUrlDirectoryAddress,
                                    @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_ADDRESS) Address domainAccessControllerAddress,
-                                   @Named(ConfigurableMessagingSettings.PROPERTY_CLUSTERCONTROLER_MESSAGING_SKELETON) IMessaging clusterControllerMessagingSkeleton,
+                                   @Named(ConfigurableMessagingSettings.PROPERTY_CLUSTERCONTROLER_MESSAGING_SKELETON) IMessagingSkeleton clusterControllerMessagingSkeleton,
                                    @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
                                    CapabilitiesRegistrar capabilitiesRegistrar,
-                                   @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address discoveryProviderAddress) {
+                                   @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address discoveryProviderAddress,
+                                   MessageRouter messageRouter) {
         // CHECKSTYLE:ON
         super(objectMapper,
               builderFactory,
@@ -75,7 +77,8 @@ public class ServletJoynrRuntimeImpl extends InProcessRuntime {
               clusterControllerMessagingSkeleton,
               capabilitiesRegistrar,
               localCapabilitiesDirectory,
-              messageReceiver);
+              messageReceiver,
+              messageRouter);
         // CHECKSTYLE:ON
     }
 
