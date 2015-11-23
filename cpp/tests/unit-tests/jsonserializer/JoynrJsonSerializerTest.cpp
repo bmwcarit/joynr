@@ -264,6 +264,31 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerDiscoveryException)
     }
 }
 
+TEST_F(JoynrJsonSerializerTest, exampleDeserializerPublicationMissedException)
+{
+    // Create a PublicationMissedException
+    exceptions::PublicationMissedException exception;
+    std::string subscriptionId{"SubscriptionId of PublicationMissedException"};
+    exception.setSubscriptionId(subscriptionId);
+
+    // Serialize into JSON
+    std::stringstream stream;
+    auto serializer = ClassSerializer<exceptions::PublicationMissedException>{};
+    serializer.serialize(exception, stream);
+    std::string json{ stream.str() };
+    LOG_TRACE(logger, QString("exceptions::PublicationMissedException JSON: %1").arg(QString::fromStdString(json)));
+
+    // Deserialize from JSON
+    JsonTokenizer tokenizer(json);
+
+    if (tokenizer.hasNextObject()) {
+        exceptions::PublicationMissedException t;
+        ClassDeserializer<exceptions::PublicationMissedException>::deserialize(t, tokenizer.nextObject());
+        ASSERT_EQ(t.getSubscriptionId(), subscriptionId);
+        ASSERT_EQ(t.getMessage(), subscriptionId);
+    }
+}
+
 TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrTimeOutException)
 {
     // Create a JoynrTimeOutException

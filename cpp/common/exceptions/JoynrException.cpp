@@ -48,6 +48,9 @@ static const bool isJoynrTimeOutExceptionRegistered =
 static const bool isDiscoveryExceptionRegistered =
         Variant::registerType<joynr::exceptions::DiscoveryException>(
                 "joynr.exceptions.DiscoveryException");
+static const bool isPublicationMissedExceptionRegistered =
+        Variant::registerType<joynr::exceptions::PublicationMissedException>(
+                "joynr.exceptions.PublicationMissedException");
 
 JoynrException::JoynrException() noexcept : message("")
 {
@@ -170,6 +173,12 @@ ProviderRuntimeException* ProviderRuntimeException::clone() const
     return new ProviderRuntimeException(static_cast<ProviderRuntimeException>(*this));
 }
 
+PublicationMissedException::PublicationMissedException() noexcept
+        : JoynrRuntimeException(std::string()),
+          subscriptionId()
+{
+}
+
 PublicationMissedException::PublicationMissedException(const std::string& subscriptionId) noexcept
         : JoynrRuntimeException(subscriptionId),
           subscriptionId(subscriptionId)
@@ -191,6 +200,12 @@ std::string PublicationMissedException::getSubscriptionId() const noexcept
 const std::string PublicationMissedException::getTypeName() const
 {
     return PublicationMissedException::TYPE_NAME;
+}
+
+void PublicationMissedException::setSubscriptionId(const std::string& newValue) noexcept
+{
+    subscriptionId = newValue;
+    setMessage(newValue);
 }
 
 PublicationMissedException* PublicationMissedException::clone() const

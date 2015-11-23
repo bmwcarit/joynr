@@ -226,6 +226,10 @@ class JOYNRCOMMON_EXPORT PublicationMissedException : public JoynrRuntimeExcepti
 {
 public:
     /**
+     * @brief Constructor for a PublicationMissedException without subscription ID.
+     */
+    PublicationMissedException() noexcept;
+    /**
      * @brief Copy Constructor
      *
      * @param other The PublicationMissedException to copy from.
@@ -243,6 +247,13 @@ public:
      * belongs to.
      */
     std::string getSubscriptionId() const noexcept;
+    /**
+     * @brief Set the subscriptionId of the exception.
+     *
+     * @param subscriptionId The subscription ID of the subscription the missed
+     * publication belongs to.
+     */
+    virtual void setSubscriptionId(const std::string& subscriptionId) noexcept;
     virtual const std::string getTypeName() const;
     virtual PublicationMissedException* clone() const;
     /**

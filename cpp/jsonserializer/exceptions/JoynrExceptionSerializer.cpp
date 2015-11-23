@@ -34,6 +34,9 @@ static const bool isDiscoveryExceptionRegistered =
 // Register the JoynrTimeOutException type id and serializer/deserializer
 static const bool isJoynrTimeOutExceptionRegistered =
         SerializerRegistry::registerType<exceptions::JoynrTimeOutException>("joynr.exceptions.JoynrTimeOutException");
+// Register the PublicationMissedException type id and serializer/deserializer
+static const bool isPublicationMissedExceptionRegistered =
+        SerializerRegistry::registerType<exceptions::PublicationMissedException>("joynr.exceptions.PublicationMissedException");
 
 template <>
 void ClassDeserializer<exceptions::JoynrRuntimeException>::deserialize(exceptions::JoynrRuntimeException& t, IObject& o)
@@ -45,7 +48,6 @@ void ClassDeserializer<exceptions::JoynrRuntimeException>::deserialize(exception
         }
     }
 }
-
 template <>
 void ClassDeserializer<exceptions::DiscoveryException>::deserialize(exceptions::DiscoveryException& t, IObject& o)
 {
@@ -55,6 +57,16 @@ template <>
 void ClassDeserializer<exceptions::JoynrTimeOutException>::deserialize(exceptions::JoynrTimeOutException& t, IObject& o)
 {
     ClassDeserializer<exceptions::JoynrRuntimeException>::deserialize(t, o);
+}
+template <>
+void ClassDeserializer<exceptions::PublicationMissedException>::deserialize(exceptions::PublicationMissedException& t, IObject& o)
+{
+    while (o.hasNextField()) {
+        IField& field = o.nextField();
+        if (field.name() == "subscriptionId") {
+            t.setSubscriptionId(field.value());
+        }
+    }
 }
 
 void initSerialization (const std::string& typeName, std::ostream& stream) {
@@ -84,4 +96,12 @@ void ClassSerializer<exceptions::JoynrTimeOutException>::serialize(const excepti
 {
     serializeExceptionWithDetailMessage(JoynrTypeId<exceptions::JoynrTimeOutException>::getTypeName(), exception, stream);
 }
+template <>
+void ClassSerializer<exceptions::PublicationMissedException>::serialize(const exceptions::PublicationMissedException& exception, std::ostream& stream)
+{
+    initSerialization(JoynrTypeId<exceptions::PublicationMissedException>::getTypeName(), stream);
+    stream << R"("subscriptionId": ")" << exception.getSubscriptionId() << R"(")";
+    stream << "}";
+}
+
 } /* namespace joynr */

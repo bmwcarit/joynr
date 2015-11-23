@@ -52,5 +52,13 @@ void ClassSerializer<exceptions::DiscoveryException>::serialize(const exceptions
 template <>
 void ClassDeserializer<exceptions::DiscoveryException>::deserialize(exceptions::DiscoveryException& t, IObject& o);
 
+// Serializes a PublicationMissedException
+template <>
+void ClassSerializer<exceptions::PublicationMissedException>::serialize(const exceptions::PublicationMissedException& exception, std::ostream& o);
+
+// Deserializes a PublicationMissedException
+template <>
+void ClassDeserializer<exceptions::PublicationMissedException>::deserialize(exceptions::PublicationMissedException& t, IObject& o);
+
 } /* namespace joynr */
 #endif // JOYNREXCEPTIONSERIALIZER_H
