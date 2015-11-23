@@ -76,6 +76,7 @@ file(
     GLOB jsonserializer_PRIVATE_HEADERS
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     "*.h"
+    "exceptions/*.h"
 )
 
 set(
@@ -85,7 +86,7 @@ set(
 )
 
 file(
-    GLOB jsonserializer_SOURCES
+    GLOB_RECURSE jsonserializer_SOURCES
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     "*.cpp"
 )
