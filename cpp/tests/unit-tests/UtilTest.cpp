@@ -191,7 +191,10 @@ TEST_F(UtilTest, toValueTuple){
 TEST_F(UtilTest, valueOfFloatVector){
     std::vector<float> expectedFloatVector = {1.1f, 1.2f, 1.3f};
 
-    std::vector<Variant> variantVector(expectedFloatVector.size());
+    std::vector<Variant> variantVector;
+    for(std::size_t i = 0; i<expectedFloatVector.size(); i++){
+        variantVector.push_back(Variant::NULL_VARIANT());
+    }
     std::transform(
                 expectedFloatVector.cbegin(),
                 expectedFloatVector.cend(),

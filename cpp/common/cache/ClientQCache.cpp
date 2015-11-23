@@ -37,7 +37,7 @@ Variant ClientQCache::lookUp(const std::string& attributeId)
 {
     QMutexLocker locker(&mutex);
     if (!cache.contains(attributeId)) {
-        return Variant();
+        return Variant::NULL_VARIANT();
     }
     CachedValue<Variant>* entry = cache.object(attributeId);
     return entry->getValue();

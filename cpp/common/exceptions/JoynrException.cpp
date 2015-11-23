@@ -230,7 +230,10 @@ ApplicationException::ApplicationException(const ApplicationException& other) no
 {
 }
 
-ApplicationException::ApplicationException() noexcept : JoynrException(), value(), name(), typeName()
+ApplicationException::ApplicationException() noexcept : JoynrException(),
+                                                        value(),
+                                                        name(),
+                                                        typeName()
 {
 }
 

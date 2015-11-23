@@ -75,9 +75,7 @@ public:
 class Variant
 {
 public:
-    Variant() : pointer()
-    {
-    }
+    static const Variant& NULL_VARIANT();
 
     /**
      * @brief Create a variant out of registered Type instance.
@@ -95,7 +93,7 @@ public:
     /**
      * @brief Variant is copiable type
      */
-    Variant(const Variant& other) : pointer((other.pointer) ? other.pointer->clone() : nullptr)
+    Variant(const Variant& other) : pointer((other.isEmpty()) ? nullptr : other.pointer->clone())
     {
     }
 
@@ -117,7 +115,7 @@ public:
      */
     Variant& operator=(const Variant& other)
     {
-        std::unique_ptr<IVariantHolder> copy(other.pointer->clone());
+        std::unique_ptr<IVariantHolder> copy((other.isEmpty()) ? nullptr : other.pointer->clone());
         std::swap(pointer, copy);
         return *this;
     }
@@ -188,6 +186,10 @@ public:
     void serialize(std::ostream& stream);
 
 private:
+    Variant() : pointer()
+    {
+    }
+
     /**
      * @brief Variant Constructor that allows transfer of wrapped object to another Variant
      * instance.

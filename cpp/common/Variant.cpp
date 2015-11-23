@@ -46,4 +46,10 @@ static const bool isStringRegistered = Variant::registerType<std::string>("Strin
 
 static const bool isVectorVariantRegistered =
         Variant::registerType<std::vector<Variant>>("VectorVariant");
+
+const Variant& Variant::NULL_VARIANT()
+{
+    static const Variant value;
+    return value;
+}
 } // end namespace joynr

@@ -114,7 +114,7 @@ IValue &JsonArray::nextValue()
 //--------- JsonValue ---------------------------------------------------------
 
 JsonValue::JsonValue(JsonTokenizer &tokenizer) :
-    value(),
+    value(Variant::NULL_VARIANT()),
     tokenizer(tokenizer)
 {
     jsmntype_t tokenType = tokenizer.currentToken().getType();
@@ -211,7 +211,7 @@ Variant JsonValue::parseJsonPrimitive(const std::string &tokenString)
                 numberType = NumberType::INT;
             } else if (!std::isdigit(ch)) {
                 // This is not a number - return an empty variant
-                return Variant{};
+                return Variant::NULL_VARIANT();
             }
         } else if (!std::isdigit(ch))  {
             // Any non-digits imply floating point
@@ -219,7 +219,7 @@ Variant JsonValue::parseJsonPrimitive(const std::string &tokenString)
                 numberType = NumberType::FLOAT;
             } else {
                 // This is not a number - return an empty variant
-                return Variant{};
+                return Variant::NULL_VARIANT();
             }
         }
     }
