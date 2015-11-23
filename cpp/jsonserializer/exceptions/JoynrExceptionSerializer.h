@@ -60,6 +60,14 @@ void ClassSerializer<exceptions::PublicationMissedException>::serialize(const ex
 template <>
 void ClassDeserializer<exceptions::PublicationMissedException>::deserialize(exceptions::PublicationMissedException& t, IObject& o);
 
+// Serializes a ApplicationException
+template <>
+void ClassSerializer<exceptions::ApplicationException>::serialize(const exceptions::ApplicationException& exception, std::ostream& o);
+
+// Deserializes a ApplicationException
+template <>
+void ClassDeserializer<exceptions::ApplicationException>::deserialize(exceptions::ApplicationException& t, IObject& o);
+
 // Serializes a ProviderRuntimeException
 template <>
 void ClassSerializer<exceptions::ProviderRuntimeException>::serialize(const exceptions::ProviderRuntimeException& exception, std::ostream& o);

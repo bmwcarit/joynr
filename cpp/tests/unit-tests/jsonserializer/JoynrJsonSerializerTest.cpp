@@ -39,6 +39,7 @@
 #include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
 #include "joynr/types/TestTypes/TEverythingStruct.h"
 #include "joynr/JsonSerializer.h"
+#include "joynr/tests/test/MethodWithErrorEnumExtendedErrorEnum.h"
 
 #include <QString>
 
@@ -237,6 +238,36 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrRequest)
         Variant boolParam = params[4];
         EXPECT_TRUE(boolParam.is<bool>());
         EXPECT_EQ(expectedBool, boolParam.get<bool>());
+    }
+}
+
+TEST_F(JoynrJsonSerializerTest, exampleDeserializerAplicationException)
+{
+    using joynr::tests::test::MethodWithErrorEnumExtendedErrorEnum;
+    // Create a ApplicationException
+    exceptions::ApplicationException exception(
+                static_cast<uint32_t>(MethodWithErrorEnumExtendedErrorEnum::BASE_ERROR_TYPECOLLECTION),
+                MethodWithErrorEnumExtendedErrorEnum::getLiteral(
+                    MethodWithErrorEnumExtendedErrorEnum::BASE_ERROR_TYPECOLLECTION),
+                MethodWithErrorEnumExtendedErrorEnum::getTypeName());
+
+    // Serialize into JSON
+    std::stringstream stream;
+    auto serializer = ClassSerializer<exceptions::ApplicationException>{};
+    serializer.serialize(exception, stream);
+    std::string json{ stream.str() };
+    LOG_TRACE(logger, QString("exceptions::ApplicationException JSON: %1").arg(QString::fromStdString(json)));
+
+    // Deserialize from JSON
+    JsonTokenizer tokenizer(json);
+
+    if (tokenizer.hasNextObject()) {
+        exceptions::ApplicationException t;
+        ClassDeserializer<exceptions::ApplicationException>::deserialize(t, tokenizer.nextObject());
+        ASSERT_EQ(t.getError(), exception.getError());
+        ASSERT_EQ(t.getMessage(), exception.getMessage());
+        ASSERT_EQ(t.getErrorTypeName(), exception.getErrorTypeName());
+        ASSERT_EQ(t.getName(), exception.getName());
     }
 }
 

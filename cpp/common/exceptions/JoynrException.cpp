@@ -54,6 +54,9 @@ static const bool isProviderRuntimeExceptionRegistered =
 static const bool isPublicationMissedExceptionRegistered =
         Variant::registerType<joynr::exceptions::PublicationMissedException>(
                 "joynr.exceptions.PublicationMissedException");
+static const bool isApplicationExceptionRegistered =
+        Variant::registerType<joynr::exceptions::ApplicationException>(
+                "joynr.exceptions.ApplicationException");
 
 JoynrException::JoynrException() noexcept : message("")
 {
@@ -224,6 +227,10 @@ ApplicationException::ApplicationException(const ApplicationException& other) no
 {
 }
 
+ApplicationException::ApplicationException() noexcept : JoynrException(), value(), name(), typeName()
+{
+}
+
 ApplicationException::ApplicationException(const uint32_t& value,
                                            const std::string& name,
                                            const std::string& typeName) noexcept
@@ -260,9 +267,19 @@ std::string ApplicationException::getName() const noexcept
     return name;
 }
 
+void ApplicationException::setName(const std::string& value) noexcept
+{
+    this->name = value;
+}
+
 std::string ApplicationException::getErrorTypeName() const noexcept
 {
     return typeName;
+}
+
+void ApplicationException::setErrorTypeName(const std::string& value) noexcept
+{
+    this->typeName = value;
 }
 
 const std::string ApplicationException::getTypeName() const

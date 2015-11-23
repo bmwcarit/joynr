@@ -277,6 +277,11 @@ class JOYNRCOMMON_EXPORT ApplicationException : public JoynrException
 {
 public:
     /**
+     * @brief Constructor for an ApplicationException without detail message.
+     */
+    ApplicationException() noexcept;
+
+    /**
      * @brief Copy Constructor
      *
      * @param other The ApplicationException to copy from.
@@ -319,10 +324,23 @@ public:
      */
     std::string getName() const noexcept;
     /**
+     * @brief Set the error Enum literal.
+     *
+     * @param name the error Enum lital.
+     */
+    void setName(const std::string& name) noexcept;
+    /**
      * @return The type name of the error enumeration.
      */
     std::string getErrorTypeName() const noexcept;
-    virtual const std::string getTypeName() const;
+
+    /**
+     * @brief Set the type name of the error enumeration.
+     *
+     * @param type name the type name of the error enumeration.
+     */
+    void setErrorTypeName(const std::string& typeName) noexcept;
+    const std::string getTypeName() const;
     virtual ApplicationException* clone() const;
     /**
      * @brief The typeName of the exception used for serialization.

@@ -34,6 +34,9 @@ static const bool isProviderRuntimeExceptionRegistered =
 // Register the DiscoveryException type id and serializer/deserializer
 static const bool isDiscoveryExceptionRegistered =
         SerializerRegistry::registerType<exceptions::DiscoveryException>("joynr.exceptions.DiscoveryException");
+// Register the ApplicationException type id and serializer/deserializer
+static const bool isApplicationExceptionRegistered =
+        SerializerRegistry::registerType<exceptions::ApplicationException>("joynr.exceptions.ApplicationException");
 // Register the JoynrTimeOutException type id and serializer/deserializer
 static const bool isJoynrTimeOutExceptionRegistered =
         SerializerRegistry::registerType<exceptions::JoynrTimeOutException>("joynr.exceptions.JoynrTimeOutException");
@@ -41,6 +44,27 @@ static const bool isJoynrTimeOutExceptionRegistered =
 static const bool isPublicationMissedExceptionRegistered =
         SerializerRegistry::registerType<exceptions::PublicationMissedException>("joynr.exceptions.PublicationMissedException");
 
+template <>
+void ClassDeserializer<exceptions::ApplicationException>::deserialize(exceptions::ApplicationException& t, IObject& o)
+{
+    while (o.hasNextField()) {
+        IField& field = o.nextField();
+        if (field.name() == "detailMessage") {
+            t.setMessage(field.value());
+        } else if (field.name() == "error") {
+            IObject& error = field.value();
+            while(error.hasNextField()){
+                IField& errorField = error.nextField();
+                if (errorField.name() == "_typeName") {
+                    t.setErrorTypeName(errorField.value());
+                } else if (errorField.name() == "name") {
+                    t.setName(errorField.value());
+                }
+            }
+        }
+
+    }
+}
 template <>
 void ClassDeserializer<exceptions::JoynrRuntimeException>::deserialize(exceptions::JoynrRuntimeException& t, IObject& o)
 {
@@ -88,6 +112,19 @@ void serializeExceptionWithDetailMessage(const std::string& typeName, const exce
     stream << "}";
 }
 
+template <>
+void ClassSerializer<exceptions::ApplicationException>::serialize(const exceptions::ApplicationException& exception, std::ostream& stream)
+{
+    initSerialization(JoynrTypeId<exceptions::ApplicationException>::getTypeName(), stream);
+    if (!exception.getMessage().empty()) {
+        stream << R"("detailMessage": ")" << exception.getMessage() << R"(",)";
+    }
+    stream << R"("error": {)";
+    stream << R"("_typeName": ")" << exception.getErrorTypeName() << R"(",)";
+    stream << R"("name": ")" << exception.getName() << R"(")";
+    stream << "}"; //error
+    stream << "}"; //exception
+}
 
 template <>
 void ClassSerializer<exceptions::JoynrRuntimeException>::serialize(const exceptions::JoynrRuntimeException& exception, std::ostream& stream)
