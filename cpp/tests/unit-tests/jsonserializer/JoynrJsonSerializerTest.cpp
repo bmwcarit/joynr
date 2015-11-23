@@ -36,6 +36,7 @@
 
 #include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
 #include "joynr/types/TestTypes/TEverythingStruct.h"
+#include "joynr/JsonSerializer.h"
 
 #include <QString>
 
@@ -124,6 +125,28 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerUnknownType)
     }
 }
 
+TEST_F(JoynrJsonSerializerTest, exampleDeserializerValue)
+{
+    std::string json(R"([{"_typeName": "joynr.SomeOtherType","a": 123},{"_typeName": "joynr.SomeOtherType","a": 456}])"); // raw string literal
+    LOG_TRACE(logger, QString("json: %1").arg(QString::fromStdString(json)));
+    std::vector<SomeOtherType*> vector = JsonSerializer::deserializeVector<SomeOtherType>(json);
+    EXPECT_EQ(vector.size(), 2);
+    EXPECT_EQ(vector.at(0)->getA(), 123);
+    EXPECT_EQ(vector.at(1)->getA(), 456);
+
+    std::vector<Variant> variantVector;
+    variantVector.push_back(Variant::make<SomeOtherType>(*vector.at(0)));
+    variantVector.push_back(Variant::make<SomeOtherType>(*vector.at(1)));
+    std::string variantVectorStr = JsonSerializer::serializeVector(variantVector);
+    LOG_TRACE(logger, QString("variantVector: %1").arg(QString::fromStdString(variantVectorStr)));
+    EXPECT_EQ(json, variantVectorStr);
+
+    // Clean up
+    for (SomeOtherType* p : vector) {
+        delete p;
+    }
+}
+
 std::string convertPermission(ExamplePermission::Enum e)
 {
     switch (e) {
@@ -208,12 +231,11 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrRequest)
         std::cout << "Deserialized value is " << third.get<SomeOtherType>().getA() << std::endl;
         const auto& fourth = params[3];
         assert(fourth.is<std::string>());
-        float receivedFloat = strtof(fourth.get<std::string>().c_str(), nullptr);
+        float receivedFloat = fourth.get<float>();
         assert(receivedFloat == expectedFloat);
         const auto& fifth = params[4];
         assert(fifth.is<std::string>());
-        std::string boolStr{fifth.get<std::string>()};
-        bool receivedBool = boolStr == "1" ? true : false;
+        bool receivedBool = fifth.get<bool>();
         assert(receivedBool == expectedBool);
     }
 }
@@ -343,12 +365,9 @@ TEST_F(JoynrJsonSerializerTest, serializeDeserializeTEverythingStruct)
     LOG_TRACE(logger, QString("TEverythingStruct JSON: %1").arg(QString::fromStdString(json)));
 
     // Deserialize
-    TEverythingStruct everythingStruct;
-    JsonTokenizer tokenizer(json);
-    if (tokenizer.hasNextObject()) {
-        ClassDeserializer<TEverythingStruct>::deserialize(everythingStruct, tokenizer.nextObject());
-    }
+    TEverythingStruct* everythingStruct = JsonSerializer::deserialize<TEverythingStruct>(json);
 
     // Check that the object serialized/deserialized correctly
-    EXPECT_EQ(expectedEverythingStruct, everythingStruct);
+    EXPECT_EQ(expectedEverythingStruct, *everythingStruct);
+    delete everythingStruct;
 }

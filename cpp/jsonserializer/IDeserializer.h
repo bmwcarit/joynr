@@ -202,6 +202,15 @@ public:
      * @return A reference that is valid until nextObject() is called again
      */
     virtual IObject& nextObject() = 0;
+    /**
+    * @brief Are there values available for deserialization
+    */
+    virtual bool hasNextValue() const = 0;
+    /**
+    * @brief Deserialize the next value
+    * @return A reference that is valid until nextObject() is called again
+    */
+    virtual IValue& nextValue() = 0;
 };
 
 } /* namespace joynr */

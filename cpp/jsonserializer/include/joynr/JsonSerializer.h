@@ -32,6 +32,7 @@
 #include "jsonserializer/JsonTokenizer.h"
 #include <QList>
 #include <QVariant>
+#include "joynr/ArraySerializer.h"
 #include <iomanip>
 
 namespace joynr
@@ -89,6 +90,13 @@ public:
         stream << std::setprecision(9);
         auto serializer = ClassSerializer<T>{};
         serializer.serialize(object, stream);
+        return stream.str();
+    }
+
+    static std::string serializeVector(const std::vector<Variant> vector)
+    {
+        std::stringstream stream;
+        ArraySerializer::serialize<Variant>(vector, stream);
         return stream.str();
     }
 
@@ -178,6 +186,27 @@ public:
         }
 
         return object;
+    }
+
+    template <class T>
+    static std::vector<T*> deserializeVector(const std::string& json)
+    {
+        JsonTokenizer tokenizer(json);
+
+        std::vector<T*> resultVector;
+        if (tokenizer.hasNextValue()) {
+            IValue& value = tokenizer.nextValue();
+            if (value.isArray()) {
+                IArray& array = value;
+                auto&& converted = convertArray<Variant>(array, convertVariant);
+                for (Variant v : converted) {
+                    T* pointer = new T(v.get<T>());
+                    resultVector.push_back(pointer);
+                }
+            }
+        }
+
+        return resultVector;
     }
 
 private:

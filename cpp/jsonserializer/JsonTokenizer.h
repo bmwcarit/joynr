@@ -170,59 +170,6 @@ private:
     std::unique_ptr<IValue> currentValue;
 };
 
-/**
- * @brief A tokenizer for JSON based on jsmn
- */
-class JsonTokenizer : IDeserializer
-{
-public:
-    /**
-     * @brief Create a tokenizer
-     * @param json The JSON to parse. Must remain valid for the lifetime
-     *             of the object.
-     */
-    JsonTokenizer(const std::string& json);
-
-    ~JsonTokenizer();
-
-    /**
-     * @brief Returns the current token
-     */
-    JsonToken currentToken();
-
-    /**
-     * @brief Moves to the next token
-     * @return the new current token
-     */
-    JsonToken nextToken();
-
-    /**
-     * @brief isValid
-     * @return
-     */
-    bool isValid() const;
-    /**
-     * @brief hasNextObject
-     * @return
-     */
-    bool hasNextObject() const;
-    /**
-     * @brief nextObject
-     * @return
-     */
-    IObject& nextObject();
-
-private:
-    const std::string& source;
-    std::vector<jsmntok_t> tokens;
-    size_t currentIndex;
-    jsmn_parser parser;
-    bool valid;
-    std::unique_ptr<JsonObject> currentObject;
-
-    static std::atomic_size_t maxTokens;
-};
-
 //------- JsonValue ------------------------------------------------------------
 /**
  * @brief The JsonValue class hold acctual JsonField value.
@@ -291,6 +238,70 @@ private:
 
    // Parse a variant from a token string
    static Variant parseJsonPrimitive(const std::string& tokenString);
+};
+
+/**
+ * @brief A tokenizer for JSON based on jsmn
+ */
+class JsonTokenizer : IDeserializer
+{
+public:
+    /**
+     * @brief Create a tokenizer
+     * @param json The JSON to parse. Must remain valid for the lifetime
+     *             of the object.
+     */
+    JsonTokenizer(const std::string& json);
+
+    ~JsonTokenizer();
+
+    /**
+     * @brief Returns the current token
+     */
+    JsonToken currentToken();
+
+    /**
+     * @brief Moves to the next token
+     * @return the new current token
+     */
+    JsonToken nextToken();
+
+    /**
+     * @brief isValid
+     * @return
+     */
+    bool isValid() const;
+    /**
+     * @brief hasNextObject
+     * @return
+     */
+    bool hasNextObject() const;
+    /**
+     * @brief nextObject
+     * @return
+     */
+    IObject& nextObject();
+    /**
+     * @brief hasNextValue sometimes json can contain only value, or array of values
+     * @return
+     */
+    bool hasNextValue() const;
+    /**
+     * @brief nextValue sometimes json can contain only value, or array of values
+     * @return
+     */
+    IValue &nextValue();
+
+private:
+    const std::string& source;
+    std::vector<jsmntok_t> tokens;
+    size_t currentIndex;
+    jsmn_parser parser;
+    bool valid;
+    std::unique_ptr<JsonObject> currentObject;
+    std::unique_ptr<JsonValue> currentValue;
+
+    static std::atomic_size_t maxTokens;
 };
 
 } /* namespace joynr */

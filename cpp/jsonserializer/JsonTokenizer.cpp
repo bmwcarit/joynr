@@ -330,7 +330,8 @@ JsonTokenizer::JsonTokenizer(const std::string &json) :
     currentIndex(0),
     parser(),
     valid(false),
-    currentObject()
+    currentObject(),
+    currentValue()
 {
     jsmn_init(&parser);
 
@@ -380,6 +381,20 @@ IObject &JsonTokenizer::nextObject()
     assert(hasNextObject());
     currentObject = makeUnique<JsonObject>(*this);
     return *currentObject;
+}
+
+bool JsonTokenizer::hasNextValue() const
+{
+    // TODO: check the JSON and see how jsmn handles
+    //       multiple objects
+    return true;
+}
+
+IValue &JsonTokenizer::nextValue()
+{
+    assert(hasNextValue());
+    currentValue = makeUnique<JsonValue>(*this);
+    return *currentValue;
 }
 
 // TODO: optimise this so the token is not recreated every time
