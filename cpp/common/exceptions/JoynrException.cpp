@@ -17,6 +17,7 @@
  * #L%
  */
 #include "joynr/exceptions/JoynrException.h"
+#include "joynr/Variant.h"
 
 namespace joynr
 {
@@ -36,6 +37,11 @@ const std::string PublicationMissedException::TYPE_NAME =
         "joynr.exceptions.PublicationMissedException";
 const std::string ApplicationException::TYPE_NAME = "joynr.exceptions.ApplicationException";
 
+static const bool isJoynrExceptionRegistered =
+        Variant::registerType<joynr::exceptions::JoynrException>("joynr.exceptions.JoynrException");
+static const bool isJoynrRuntimeExceptionRegistered =
+        Variant::registerType<joynr::exceptions::JoynrRuntimeException>(
+                "joynr.exceptions.JoynrRuntimeException");
 JoynrException::JoynrException() throw() : message("")
 {
 }
@@ -62,7 +68,7 @@ const std::string JoynrException::getMessage() const throw()
     return message;
 }
 
-void JoynrException::setMessage(std::string message)
+void JoynrException::setMessage(const std::string& message)
 {
     this->message = message;
 }

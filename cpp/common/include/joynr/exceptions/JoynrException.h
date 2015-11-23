@@ -65,6 +65,12 @@ public:
      * @brief The typeName of the exception used for serialization.
      */
     static const std::string TYPE_NAME;
+    /**
+     * @brief Set the detail message of the exception.
+     *
+     * @param message Further description of the reported error (detail message).
+     */
+    virtual void setMessage(const std::string& message);
 
 protected:
     /**
@@ -81,12 +87,6 @@ protected:
      * @param message Further description of the reported error (detail message).
      */
     JoynrException(const std::string& message) throw();
-    /**
-     * @brief Set the detail message of the exception.
-     *
-     * @param message Further description of the reported error (detail message).
-     */
-    virtual void setMessage(std::string message);
 };
 
 /**
@@ -95,6 +95,11 @@ protected:
 class JOYNRCOMMON_EXPORT JoynrRuntimeException : public JoynrException
 {
 public:
+    /**
+     * @brief Constructor for a JoynrRuntimeException without detail message.
+     */
+    JoynrRuntimeException() noexcept = default;
+
     /**
      * @brief Constructor for a JoynrRuntimeException with detail message.
      *

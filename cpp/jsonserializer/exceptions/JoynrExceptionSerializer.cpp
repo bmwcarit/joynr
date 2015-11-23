@@ -25,6 +25,35 @@
 namespace joynr
 {
 
+// Register the JoynrRuntimeException type id and serializer/deserializer
+static const bool isJoynrRuntimeExceptionRegistered =
+        SerializerRegistry::registerType<exceptions::JoynrRuntimeException>("joynr.exceptions.JoynrRuntimeException");
+
+template <>
+void ClassDeserializer<exceptions::JoynrRuntimeException>::deserialize(exceptions::JoynrRuntimeException& t, IObject& o)
+{
+    while (o.hasNextField()) {
+        IField& field = o.nextField();
+        if (field.name() == "detailMessage") {
+            t.setMessage(field.value());
+        }
+    }
+}
+void initSerialization (const std::string& typeName, std::ostream& stream) {
+    stream << R"({)";
+    stream << R"("_typeName": ")" << typeName << R"(",)";
+}
+
+void serializeExceptionWithDetailMessage(const std::string& typeName, const exceptions::JoynrException& exception, std::ostream& stream) {
+    initSerialization(typeName, stream);
+    stream << R"("detailMessage": ")" << exception.getMessage() << R"(")";
+    stream << "}";
+}
 
 
+template <>
+void ClassSerializer<exceptions::JoynrRuntimeException>::serialize(const exceptions::JoynrRuntimeException& exception, std::ostream& stream)
+{
+    serializeExceptionWithDetailMessage(JoynrTypeId<exceptions::JoynrRuntimeException>::getTypeName(), exception, stream);
+}
 } /* namespace joynr */

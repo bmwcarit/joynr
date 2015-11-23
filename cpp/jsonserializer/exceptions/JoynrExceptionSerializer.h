@@ -28,7 +28,13 @@
 
 namespace joynr
 {
+// Serializes a JoynrRuntimeException
+template <>
+void ClassSerializer<exceptions::JoynrRuntimeException>::serialize(const exceptions::JoynrRuntimeException& exception, std::ostream& o);
 
+// Deserializes a JoynrRuntimeException
+template <>
+void ClassDeserializer<exceptions::JoynrRuntimeException>::deserialize(exceptions::JoynrRuntimeException& t, IObject& o);
 
 } /* namespace joynr */
 #endif // JOYNREXCEPTIONSERIALIZER_H
