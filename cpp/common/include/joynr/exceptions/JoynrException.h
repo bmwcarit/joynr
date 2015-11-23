@@ -159,6 +159,10 @@ class JOYNRCOMMON_EXPORT DiscoveryException : public JoynrRuntimeException
 {
 public:
     /**
+     * @brief Constructor for a DiscoveryException without detail message.
+     */
+    DiscoveryException() noexcept = default;
+    /**
      * @brief Constructor for a DiscoveryException with detail message.
      *
      * @param message Further description of the reported discovery error

@@ -45,6 +45,9 @@ static const bool isJoynrRuntimeExceptionRegistered =
 static const bool isJoynrTimeOutExceptionRegistered =
         Variant::registerType<joynr::exceptions::JoynrTimeOutException>(
                 "joynr.exceptions.JoynrTimeOutException");
+static const bool isDiscoveryExceptionRegistered =
+        Variant::registerType<joynr::exceptions::DiscoveryException>(
+                "joynr.exceptions.DiscoveryException");
 
 JoynrException::JoynrException() noexcept : message("")
 {
