@@ -121,6 +121,10 @@ class JOYNRCOMMON_EXPORT JoynrTimeOutException : public JoynrRuntimeException
 {
 public:
     /**
+     * @brief Constructor for a JoynrTimeOutException without detail message.
+     */
+    JoynrTimeOutException() noexcept = default;
+    /**
      * @brief Constructor for a JoynrTimeOutException with detail message.
      *
      * @param message Further description of the reported timeout

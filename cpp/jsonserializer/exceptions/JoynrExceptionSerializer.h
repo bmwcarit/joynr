@@ -36,5 +36,13 @@ void ClassSerializer<exceptions::JoynrRuntimeException>::serialize(const excepti
 template <>
 void ClassDeserializer<exceptions::JoynrRuntimeException>::deserialize(exceptions::JoynrRuntimeException& t, IObject& o);
 
+// Serializes a JoynrTimeOutException
+template <>
+void ClassSerializer<exceptions::JoynrTimeOutException>::serialize(const exceptions::JoynrTimeOutException& exception, std::ostream& o);
+
+// Deserializes a JoynrTimeOutException
+template <>
+void ClassDeserializer<exceptions::JoynrTimeOutException>::deserialize(exceptions::JoynrTimeOutException& t, IObject& o);
+
 } /* namespace joynr */
 #endif // JOYNREXCEPTIONSERIALIZER_H

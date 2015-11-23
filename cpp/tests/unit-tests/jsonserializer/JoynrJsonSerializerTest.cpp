@@ -240,6 +240,30 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrRequest)
     }
 }
 
+TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrTimeOutException)
+{
+    // Create a JoynrTimeOutException
+    exceptions::JoynrTimeOutException exception;
+    std::string detailMessage{"Message of JoynrTimeOutException"};
+    exception.setMessage(detailMessage);
+
+    // Serialize into JSON
+    std::stringstream stream;
+    auto serializer = ClassSerializer<exceptions::JoynrTimeOutException>{};
+    serializer.serialize(exception, stream);
+    std::string json{ stream.str() };
+    LOG_TRACE(logger, QString("exceptions::JoynrTimeOutException JSON: %1").arg(QString::fromStdString(json)));
+
+    // Deserialize from JSON
+    JsonTokenizer tokenizer(json);
+
+    if (tokenizer.hasNextObject()) {
+        exceptions::JoynrTimeOutException t;
+        ClassDeserializer<exceptions::JoynrTimeOutException>::deserialize(t, tokenizer.nextObject());
+        ASSERT_EQ(t.getMessage(), detailMessage);
+    }
+}
+
 TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrReply)
 {
     // Create a Reply
