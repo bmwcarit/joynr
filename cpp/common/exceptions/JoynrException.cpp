@@ -48,6 +48,9 @@ static const bool isJoynrTimeOutExceptionRegistered =
 static const bool isDiscoveryExceptionRegistered =
         Variant::registerType<joynr::exceptions::DiscoveryException>(
                 "joynr.exceptions.DiscoveryException");
+static const bool isProviderRuntimeExceptionRegistered =
+        Variant::registerType<joynr::exceptions::ProviderRuntimeException>(
+                "joynr.exceptions.ProviderRuntimeException");
 static const bool isPublicationMissedExceptionRegistered =
         Variant::registerType<joynr::exceptions::PublicationMissedException>(
                 "joynr.exceptions.PublicationMissedException");

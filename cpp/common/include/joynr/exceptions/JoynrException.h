@@ -206,6 +206,10 @@ class JOYNRCOMMON_EXPORT ProviderRuntimeException : public JoynrRuntimeException
 {
 public:
     /**
+     * @brief Constructor for a ProviderRuntimeException without detail message.
+     */
+    ProviderRuntimeException() noexcept = default;
+    /**
      * @brief Constructor for a ProviderRuntimeException with detail message.
      *
      * @param message Further description of the reported error

@@ -240,6 +240,30 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrRequest)
     }
 }
 
+TEST_F(JoynrJsonSerializerTest, exampleDeserializerProviderRuntimeException)
+{
+    // Create a ProviderRuntimeException
+    exceptions::ProviderRuntimeException exception;
+    std::string detailMessage{"Message of ProviderRuntimeException"};
+    exception.setMessage(detailMessage);
+
+    // Serialize into JSON
+    std::stringstream stream;
+    auto serializer = ClassSerializer<exceptions::ProviderRuntimeException>{};
+    serializer.serialize(exception, stream);
+    std::string json{ stream.str() };
+    LOG_TRACE(logger, QString("exceptions::ProviderRuntimeException JSON: %1").arg(QString::fromStdString(json)));
+
+    // Deserialize from JSON
+    JsonTokenizer tokenizer(json);
+
+    if (tokenizer.hasNextObject()) {
+        exceptions::ProviderRuntimeException t;
+        ClassDeserializer<exceptions::ProviderRuntimeException>::deserialize(t, tokenizer.nextObject());
+        ASSERT_EQ(t.getMessage(), detailMessage);
+    }
+}
+
 TEST_F(JoynrJsonSerializerTest, exampleDeserializerDiscoveryException)
 {
     // Create a DiscoveryException

@@ -28,6 +28,9 @@ namespace joynr
 // Register the JoynrRuntimeException type id and serializer/deserializer
 static const bool isJoynrRuntimeExceptionRegistered =
         SerializerRegistry::registerType<exceptions::JoynrRuntimeException>("joynr.exceptions.JoynrRuntimeException");
+// Register the ProviderRuntimeException type id and serializer/deserializer
+static const bool isProviderRuntimeExceptionRegistered =
+        SerializerRegistry::registerType<exceptions::ProviderRuntimeException>("joynr.exceptions.ProviderRuntimeException");
 // Register the DiscoveryException type id and serializer/deserializer
 static const bool isDiscoveryExceptionRegistered =
         SerializerRegistry::registerType<exceptions::DiscoveryException>("joynr.exceptions.DiscoveryException");
@@ -47,6 +50,11 @@ void ClassDeserializer<exceptions::JoynrRuntimeException>::deserialize(exception
             t.setMessage(field.value());
         }
     }
+}
+template <>
+void ClassDeserializer<exceptions::ProviderRuntimeException>::deserialize(exceptions::ProviderRuntimeException& t, IObject& o)
+{
+    ClassDeserializer<exceptions::JoynrRuntimeException>::deserialize(t, o);
 }
 template <>
 void ClassDeserializer<exceptions::DiscoveryException>::deserialize(exceptions::DiscoveryException& t, IObject& o)
@@ -85,6 +93,11 @@ template <>
 void ClassSerializer<exceptions::JoynrRuntimeException>::serialize(const exceptions::JoynrRuntimeException& exception, std::ostream& stream)
 {
     serializeExceptionWithDetailMessage(JoynrTypeId<exceptions::JoynrRuntimeException>::getTypeName(), exception, stream);
+}
+template <>
+void ClassSerializer<exceptions::ProviderRuntimeException>::serialize(const exceptions::ProviderRuntimeException& exception, std::ostream& stream)
+{
+    serializeExceptionWithDetailMessage(JoynrTypeId<exceptions::ProviderRuntimeException>::getTypeName(), exception, stream);
 }
 template <>
 void ClassSerializer<exceptions::DiscoveryException>::serialize(const exceptions::DiscoveryException& exception, std::ostream& stream)
