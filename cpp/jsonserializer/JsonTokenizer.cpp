@@ -139,7 +139,8 @@ IValue &JsonArray::nextValue()
 //--------- JsonValue ---------------------------------------------------------
 
 JsonValue::JsonValue(JsonTokenizer &tokenizer) :
-    value()
+    value(),
+    tokenizer(tokenizer)
 {
     jsmntype_t tokenType = tokenizer.currentToken().getType();
 
@@ -259,8 +260,7 @@ Variant JsonValue::parseJsonPrimitive(const std::string &tokenString)
         uint64_t number = std::stoull(tokenString);
         return Variant::make<uint64_t>(number);
     } else {
-        double number = std::stod(tokenString);
-        return Variant::make<double>(number);
+        return Variant::make<double>(tokenizer.stringToDoubleLocaleIndependent(tokenString));
     }
 }
 
@@ -331,7 +331,8 @@ JsonTokenizer::JsonTokenizer(const std::string &json) :
     parser(),
     valid(false),
     currentObject(),
-    currentValue()
+    currentValue(),
+    classicLocaleStream()
 {
     jsmn_init(&parser);
 
@@ -395,6 +396,15 @@ IValue &JsonTokenizer::nextValue()
     assert(hasNextValue());
     currentValue = makeUnique<JsonValue>(*this);
     return *currentValue;
+}
+
+double JsonTokenizer::stringToDoubleLocaleIndependent(std::string doubleStr)
+{
+    classicLocaleStream << doubleStr;
+    double doubleValue;
+    classicLocaleStream >> doubleValue;
+    classicLocaleStream.clear();
+    return doubleValue;
 }
 
 // TODO: optimise this so the token is not recreated every time

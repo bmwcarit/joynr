@@ -1112,7 +1112,7 @@ TEST_F(JsonSerializerTest, deserialize_GPSLocation) {
                 );
 
     joynr::types::Localisation::GpsLocation* receivedGps = JsonSerializer::deserialize<joynr::types::Localisation::GpsLocation>(jsonGPS);
-    EXPECT_EQ(receivedGps->getAltitude(), 3.3);
+    EXPECT_EQ(3.3, receivedGps->getAltitude());
     // Clean up
     delete receivedGps;
 }

@@ -27,6 +27,7 @@
 #include <memory>
 #include <vector>
 #include <atomic>
+#include <sstream>
 
 namespace joynr
 {
@@ -235,9 +236,10 @@ protected:
     uint64_t getUInt64() const;
 private:
    Variant value;
+   JsonTokenizer& tokenizer;
 
    // Parse a variant from a token string
-   static Variant parseJsonPrimitive(const std::string& tokenString);
+   Variant parseJsonPrimitive(const std::string& tokenString);
 };
 
 /**
@@ -292,6 +294,8 @@ public:
      */
     IValue &nextValue();
 
+    double stringToDoubleLocaleIndependent(std::string doubleStr);
+
 private:
     const std::string& source;
     std::vector<jsmntok_t> tokens;
@@ -300,6 +304,7 @@ private:
     bool valid;
     std::unique_ptr<JsonObject> currentObject;
     std::unique_ptr<JsonValue> currentValue;
+    std::stringstream classicLocaleStream;
 
     static std::atomic_size_t maxTokens;
 };
