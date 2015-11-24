@@ -231,24 +231,14 @@ ApplicationException::ApplicationException(const ApplicationException& other) no
 }
 
 ApplicationException::ApplicationException() noexcept : JoynrException(),
-                                                        value(),
+                                                        value(Variant::NULL_VARIANT()),
                                                         name(),
                                                         typeName()
 {
 }
 
-ApplicationException::ApplicationException(const uint32_t& value,
-                                           const std::string& name,
-                                           const std::string& typeName) noexcept
-        : JoynrException(),
-          value(value),
-          name(name),
-          typeName(typeName)
-{
-}
-
 ApplicationException::ApplicationException(const std::string& message,
-                                           const uint32_t& value,
+                                           const Variant& value,
                                            const std::string& name,
                                            const std::string& typeName) noexcept
         : JoynrException(message),
@@ -258,12 +248,7 @@ ApplicationException::ApplicationException(const std::string& message,
 {
 }
 
-uint32_t ApplicationException::getError() const noexcept
-{
-    return value;
-}
-
-void ApplicationException::setError(const uint32_t& value)
+void ApplicationException::setError(const Variant& value) noexcept
 {
     this->value = value;
 }

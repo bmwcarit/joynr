@@ -25,6 +25,7 @@
 #include <QString>
 #include <string>
 #include <memory>
+#include "joynr/Variant.h"
 
 namespace joynr
 {
@@ -291,16 +292,7 @@ public:
      * @param other The ApplicationException to copy from.
      */
     ApplicationException(const ApplicationException& other) noexcept;
-    /**
-     * @brief Constructor for an ApplicationException without detail message.
-     *
-     * @param value The error Enum value
-     * @param name The error Enum literal
-     * @param typeName the typeName of the error enumeration type (used for serialization)
-     */
-    ApplicationException(const uint32_t& value,
-                         const std::string& name,
-                         const std::string& typeName) noexcept;
+
     /**
      * @brief Constructor for an ApplicationException with detail message.
      *
@@ -310,19 +302,20 @@ public:
      * @param typeName the type name of the error enumeration type (used for serialization)
      */
     ApplicationException(const std::string& message,
-                         const uint32_t& value,
+                         const Variant& value,
                          const std::string& name,
                          const std::string& typeName) noexcept;
     /**
      * @return The reported error Enum value.
      */
-    uint32_t getError() const noexcept;
+    template <class T>
+    const T& getError() const;
     /**
      * @brief Set the error Enum value.
      *
      * @param value The error Enum value.
      */
-    void setError(const uint32_t& value);
+    void setError(const Variant& value) noexcept;
     /**
      * @return The error Enum literal.
      */
@@ -352,10 +345,16 @@ public:
     static const std::string TYPE_NAME;
 
 private:
-    uint32_t value;
+    Variant value;
     std::string name;
     std::string typeName;
 };
+
+template <class T>
+const T& ApplicationException::getError() const
+{
+    return value.get<T>();
+}
 
 } // namespace exceptions
 

@@ -56,12 +56,20 @@ void ClassDeserializer<exceptions::ApplicationException>::deserialize(exceptions
             t.setMessage(field.value());
         } else if (field.name() == "error") {
             IObject& error = field.value();
+            std::shared_ptr<IEnumDeserializer> deserializer;
             while(error.hasNextField()){
                 IField& errorField = error.nextField();
                 if (errorField.name() == "_typeName") {
                     t.setErrorTypeName(errorField.value());
+                    deserializer = SerializerRegistry::getEnumDeserializer(t.getErrorTypeName());
                 } else if (errorField.name() == "name") {
                     t.setName(errorField.value());
+                    //we assume that the _typeName is contained before the name field in the json
+                    if (deserializer.get() != nullptr) {
+                        t.setError(deserializer->deserializeVariant(errorField.value()));
+                    } else {
+                        throw joynr::exceptions::JoynrRuntimeException("Received ApplicationException does not contain a valid error enumeration.");
+                    }
                 }
             }
         }

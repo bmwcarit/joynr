@@ -272,7 +272,7 @@ private:
             // This has to be done in the generated code of the calling MessagingConnector before
             // returning the exception to the consumer.
             error.reset(new exceptions::ApplicationException(
-                    detailMessage, 0, errorEnumName, errorEnumType));
+                    detailMessage, Variant::make<uint32_t>(0), errorEnumName, errorEnumType));
         } else {
             LOG_ERROR(logger,
                       QString("unknown _typeName for exception in serialized: %1")

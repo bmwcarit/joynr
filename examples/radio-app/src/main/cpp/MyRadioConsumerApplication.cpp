@@ -144,6 +144,7 @@ private:
 
 int main(int argc, char* argv[])
 {
+    using joynr::vehicle::Radio::AddFavoriteStationErrorEnum;
     // Get a logger
     Logger* logger = Logging::getInstance()->getLogger("DEMO", "MyRadioConsumerApplication");
 
@@ -302,8 +303,8 @@ int main(int argc, char* argv[])
                                          .arg(QString::fromStdString(favoriteStation.toString())));
         proxy->addFavoriteStation(success, favoriteStation);
     } catch (exceptions::ApplicationException& e) {
-        if (e.getError() ==
-            joynr::vehicle::Radio::AddFavoriteStationErrorEnum::DUPLICATE_RADIOSTATION) {
+        if (e.getError<AddFavoriteStationErrorEnum::Enum>() ==
+            AddFavoriteStationErrorEnum::DUPLICATE_RADIOSTATION) {
             MyRadioHelper::prettyLog(
                     logger,
                     QString("METHOD: add favorite station a second time failed with the following "

@@ -243,13 +243,15 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrRequest)
 
 TEST_F(JoynrJsonSerializerTest, exampleDeserializerAplicationException)
 {
-    using joynr::tests::test::MethodWithErrorEnumExtendedErrorEnum;
+    using namespace joynr::tests;
+    std::string literal = test::MethodWithErrorEnumExtendedErrorEnum::getLiteral(
+                test::MethodWithErrorEnumExtendedErrorEnum::BASE_ERROR_TYPECOLLECTION);
     // Create a ApplicationException
     exceptions::ApplicationException exception(
-                static_cast<uint32_t>(MethodWithErrorEnumExtendedErrorEnum::BASE_ERROR_TYPECOLLECTION),
-                MethodWithErrorEnumExtendedErrorEnum::getLiteral(
-                    MethodWithErrorEnumExtendedErrorEnum::BASE_ERROR_TYPECOLLECTION),
-                MethodWithErrorEnumExtendedErrorEnum::getTypeName());
+                literal,
+                Variant::make<test::MethodWithErrorEnumExtendedErrorEnum::Enum>(test::MethodWithErrorEnumExtendedErrorEnum::BASE_ERROR_TYPECOLLECTION),
+                literal,
+                test::MethodWithErrorEnumExtendedErrorEnum::getTypeName());
 
     // Serialize into JSON
     std::stringstream stream;
@@ -264,7 +266,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerAplicationException)
     if (tokenizer.hasNextObject()) {
         exceptions::ApplicationException t;
         ClassDeserializer<exceptions::ApplicationException>::deserialize(t, tokenizer.nextObject());
-        ASSERT_EQ(t.getError(), exception.getError());
+        ASSERT_EQ(t.getError<test::MethodWithErrorEnumExtendedErrorEnum::Enum>(), exception.getError<test::MethodWithErrorEnumExtendedErrorEnum::Enum>());
         ASSERT_EQ(t.getMessage(), exception.getMessage());
         ASSERT_EQ(t.getErrorTypeName(), exception.getErrorTypeName());
         ASSERT_EQ(t.getName(), exception.getName());
