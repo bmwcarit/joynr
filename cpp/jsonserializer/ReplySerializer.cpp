@@ -22,6 +22,7 @@
 #include "joynr/Variant.h"
 #include "joynr/JoynrTypeId.h"
 #include "joynr/ArraySerializer.h"
+#include "exceptions/JoynrExceptionSerializer.h"
 
 namespace joynr
 {
@@ -39,6 +40,8 @@ void ClassDeserializer<Reply>::deserialize(Reply& reply, IObject& o)
         } else if (field.name() == "response") {
             IArray& array = field.value();
             reply.setResponse(convertArray<Variant>(array, convertVariant));
+        } else if (field.name() == "error") {
+            reply.setError(convertVariant(field.value()));
         }
     }
 }
@@ -49,8 +52,14 @@ void ClassSerializer<Reply>::serialize(const Reply& reply, std::ostream& stream)
     stream << R"({)";
     stream << R"("_typeName": ")" << JoynrTypeId<Reply>::getTypeName() << R"(",)";
     stream << R"("requestReplyId": ")" << reply.getRequestReplyId() << R"(",)";
-    stream << R"("response": )";
-    ArraySerializer::serialize<Variant>(reply.getResponse(), stream);
+    if (!reply.getError().isEmpty()) {
+        stream << R"("error": )";
+        ClassSerializer<Variant> variantSerializer;
+        variantSerializer.serializeVariant(reply.getError(), stream);
+    } else {
+        stream << R"("response": )";
+        ArraySerializer::serialize<Variant>(reply.getResponse(), stream);
+    }
     stream << R"(})";
 }
 

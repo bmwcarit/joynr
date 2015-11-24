@@ -40,7 +40,9 @@
 #include "joynr/types/TestTypes/TEverythingStruct.h"
 #include "joynr/JsonSerializer.h"
 #include "joynr/tests/test/MethodWithErrorEnumExtendedErrorEnum.h"
-
+#include "joynr/tests/test/MethodWithErrorEnumExtendedErrorEnumSerializer.h"
+#include "joynr/exceptions/JoynrException.h"
+#include "joynr/exceptions/JoynrExceptionUtil.h"
 #include <QString>
 
 using namespace ::testing;
@@ -390,6 +392,69 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrTimeOutException)
         exceptions::JoynrTimeOutException t;
         ClassDeserializer<exceptions::JoynrTimeOutException>::deserialize(t, tokenizer.nextObject());
         ASSERT_EQ(t.getMessage(), detailMessage);
+    }
+}
+
+TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrReplyWithProviderRuntimeException)
+{
+    // Create a Reply
+    Reply reply;
+    exceptions::ProviderRuntimeException error("Message of ProviderRuntimeException");
+    reply.setError(joynr::exceptions::JoynrExceptionUtil::createVariant(error));
+
+    // Serialize into JSON
+    std::stringstream stream;
+    auto serializer = ClassSerializer<Reply>{};
+    serializer.serialize(reply, stream);
+    std::string json{ stream.str() };
+    LOG_TRACE(logger, QString("Reply JSON: %1").arg(QString::fromStdString(json)));
+
+    // Deserialize from JSON
+    JsonTokenizer tokenizer(json);
+
+    if (tokenizer.hasNextObject()) {
+        Reply t;
+        ClassDeserializer<Reply>::deserialize(t, tokenizer.nextObject());
+        assert(!t.getError().isEmpty());
+        const joynr::exceptions::ProviderRuntimeException& deserializedError(t.getError().get<joynr::exceptions::ProviderRuntimeException>());
+        ASSERT_EQ(deserializedError.getMessage(), error.getMessage());
+    }
+}
+
+TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrReplyWithApplicationException)
+{
+    // Create a Reply
+    Reply reply;
+    using namespace joynr::tests;
+    std::string literal = test::MethodWithErrorEnumExtendedErrorEnum::getLiteral(
+                MethodWithErrorEnumExtendedErrorEnum::BASE_ERROR_TYPECOLLECTION);
+    // Create a ApplicationException
+    exceptions::ApplicationException error(
+                literal,
+                Variant::make<test::MethodWithErrorEnumExtendedErrorEnum::Enum>(MethodWithErrorEnumExtendedErrorEnum::BASE_ERROR_TYPECOLLECTION),
+                literal,
+                test::MethodWithErrorEnumExtendedErrorEnum::getTypeName());
+    reply.setError(joynr::exceptions::JoynrExceptionUtil::createVariant(error));
+
+    // Serialize into JSON
+    std::stringstream stream;
+    auto serializer = ClassSerializer<Reply>{};
+    serializer.serialize(reply, stream);
+    std::string json{ stream.str() };
+    LOG_TRACE(logger, QString("Reply JSON: %1").arg(QString::fromStdString(json)));
+
+    // Deserialize from JSON
+    JsonTokenizer tokenizer(json);
+
+    if (tokenizer.hasNextObject()) {
+        Reply t;
+        ClassDeserializer<Reply>::deserialize(t, tokenizer.nextObject());
+        assert(!t.getError().isEmpty());
+        const joynr::exceptions::ApplicationException& deserializedError(t.getError().get<joynr::exceptions::ApplicationException>());
+        ASSERT_EQ(deserializedError.getMessage(), error.getMessage());
+        ASSERT_EQ(deserializedError.getError<test::MethodWithErrorEnumExtendedErrorEnum::Enum>(), error.getError<test::MethodWithErrorEnumExtendedErrorEnum::Enum>());
+        ASSERT_EQ(deserializedError.getErrorTypeName(), error.getErrorTypeName());
+        ASSERT_EQ(deserializedError.getName(), error.getName());
     }
 }
 
