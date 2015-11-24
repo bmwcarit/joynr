@@ -27,6 +27,8 @@ import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
+import org.franca.core.franca.FMethod
+import java.util.Map
 
 class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 
@@ -115,22 +117,13 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 			)> onError
 	) {
 		«IF method.hasErrorEnum»
-			«IF method.errors != null»
-				«val packagePath = getPackagePathWithJoynrPrefix(method.errors, "::")»
-				«val errorTypeName = packagePath + "::" + methodToErrorEnumName.get(method)»
-				std::function<void (const «errorTypeName»::«nestedEnumName»&)> onErrorWrapper =
-						[onError] (const «errorTypeName»::«nestedEnumName»& errorEnum) {
-							std::string typeName = «errorTypeName»::getTypeName();
-							std::string name = «errorTypeName»::getLiteral(errorEnum);
-			«ELSE»
-				«val errorTypeName = buildPackagePath(method.errorEnum, "::", true) + method.errorEnum.joynrName»
-				std::function<void (const «errorTypeName»::«nestedEnumName»&)> onErrorWrapper =
-						[onError] (const «errorTypeName»::«nestedEnumName»& errorEnum) {
-							std::string typeName = «errorTypeName»::getTypeName();
-							std::string name = «errorTypeName»::getLiteral(errorEnum);
-			«ENDIF»
+			«val errorTypeName = getErrorTypeName(method, methodToErrorEnumName)»
+			std::function<void (const «errorTypeName»::«nestedEnumName»&)> onErrorWrapper =
+					[onError] (const «errorTypeName»::«nestedEnumName»& errorEnum) {
+						std::string typeName = «errorTypeName»::getTypeName();
+						std::string name = «errorTypeName»::getLiteral(errorEnum);
 						onError(exceptions::ApplicationException(name, errorEnum, name, typeName));
-					};
+				};
 		«ELSE»
 		std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onErrorWrapper =
 				[onError] (const joynr::exceptions::ProviderRuntimeException& error) {
@@ -169,4 +162,13 @@ void «interfaceName»RequestCaller::unregisterBroadcastListener(const std::stri
 
 «getNamespaceEnder(serviceInterface)»
 '''
+	
+def getErrorTypeName(FMethod method, Map<FMethod, String> methodToErrorEnumName) {
+	if (method.errors != null) {
+		val packagePath = getPackagePathWithJoynrPrefix(method.errors, "::")
+		packagePath + "::" + methodToErrorEnumName.get(method)
+	} else{
+		buildPackagePath(method.errorEnum, "::", true) + method.errorEnum.joynrName
+	}
+}
 }
