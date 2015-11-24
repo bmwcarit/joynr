@@ -32,7 +32,7 @@
 #include "joynr/system/IDiscovery.h"
 #include "Future.h"
 #include <QCoreApplication>
-#include <QSemaphore>
+#include "joynr/Semaphore.h"
 #include <QList>
 #include <string>
 #include <stdint.h>
@@ -186,7 +186,7 @@ private:
     ProxyFactory* proxyFactory;
     joynr::system::IDiscoverySync& discoveryProxy;
     ProviderArbitrator* arbitrator;
-    QSemaphore arbitrationSemaphore;
+    joynr::Semaphore arbitrationSemaphore;
     std::string participantId;
     joynr::types::CommunicationMiddleware::Enum connection;
     ArbitrationStatus::ArbitrationStatusType arbitrationStatus;
@@ -292,7 +292,7 @@ ProxyBuilder<T>* ProxyBuilder<T>::setDiscoveryQos(const DiscoveryQos& discoveryQ
     discoveryTimeout = discoveryQos.getDiscoveryTimeout();
     arbitrator = ProviderArbitratorFactory::createArbitrator(
             domain, T::INTERFACE_NAME(), discoveryProxy, discoveryQos);
-    arbitrationSemaphore.acquire();
+    arbitrationSemaphore.wait();
     arbitrator->setArbitrationListener(this);
     arbitrator->startArbitration();
     hasArbitrationStarted = true;
@@ -306,7 +306,7 @@ void ProxyBuilder<T>::setArbitrationStatus(
     this->arbitrationStatus = arbitrationStatus;
     if (arbitrationStatus == ArbitrationStatus::ArbitrationSuccessful) {
         if (!participantId.empty() && connection != joynr::types::CommunicationMiddleware::NONE) {
-            arbitrationSemaphore.release();
+            arbitrationSemaphore.notify();
         } else {
             throw exceptions::DiscoveryException("Arbitration was set to successfull by "
                                                  "arbitrator, but either ParticipantId or "
@@ -361,10 +361,10 @@ void ProxyBuilder<T>::waitForArbitration()
 template <class T>
 void ProxyBuilder<T>::waitForArbitration(uint16_t timeout)
 {
-    if (!arbitrationSemaphore.tryAcquire(1, TypeUtil::toQt(timeout))) {
+    if (!arbitrationSemaphore.waitFor(std::chrono::milliseconds(timeout))) {
         throw exceptions::DiscoveryException("Arbitration could not be finished in time.");
     }
-    arbitrationSemaphore.release();
+    arbitrationSemaphore.notify();
 }
 
 } // namespace joynr

@@ -44,7 +44,7 @@ using namespace joynr;
 
 ACTION_P(ReleaseSemaphore,semaphore)
 {
-    semaphore->release(1);
+    semaphore->notify();
 }
 
 /**
@@ -114,7 +114,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
     qRegisterMetaType<SubscriptionPublication>("SubscriptionPublication");
 
     // Use a semaphore to count and wait on calls to the mockSubscriptionListener
-    QSemaphore semaphore(0);
+    joynr::Semaphore semaphore(0);
     EXPECT_CALL(*mockSubscriptionListenerOne, onReceive(A<const types::Localisation::GpsLocation&>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
@@ -155,8 +155,8 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
     dispatcher.receive(msg);
 
     // Assert that only one subscription message is received by the subscription listener
-    ASSERT_TRUE(semaphore.tryAcquire(1, 1000));
-    ASSERT_FALSE(semaphore.tryAcquire(1, 250));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
+    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(250)));
 }
 
 /**
@@ -167,7 +167,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
 TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters ) {
 
     // Use a semaphore to count and wait on calls to the mockSubscriptionListener
-    QSemaphore semaphore(0);
+    joynr::Semaphore semaphore(0);
     EXPECT_CALL(*mockSubscriptionListenerTwo, onReceive(A<const types::Localisation::GpsLocation&>(), A<const double&>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
@@ -208,6 +208,6 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters )
     dispatcher.receive(msg);
 
     // Assert that only one subscription message is received by the subscription listener
-    ASSERT_TRUE(semaphore.tryAcquire(1, 1000));
-    ASSERT_FALSE(semaphore.tryAcquire(1, 250));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
+    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(250)));
 }

@@ -636,13 +636,13 @@ LocalCapabilitiesFuture::LocalCapabilitiesFuture() : futureSemaphore(0), capabil
 void LocalCapabilitiesFuture::capabilitiesReceived(std::vector<CapabilityEntry> capabilities)
 {
     this->capabilities = capabilities;
-    futureSemaphore.release(1);
+    futureSemaphore.notify();
 }
 
 std::vector<CapabilityEntry> LocalCapabilitiesFuture::get()
 {
-    futureSemaphore.acquire(1);
-    futureSemaphore.release(1);
+    futureSemaphore.wait();
+    futureSemaphore.notify();
     return capabilities;
 }
 
@@ -656,8 +656,8 @@ std::vector<CapabilityEntry> LocalCapabilitiesFuture::get(const qint64& timeout)
         timeout_int = maxint;
     }
 
-    if (futureSemaphore.tryAcquire(1, timeout_int)) {
-        futureSemaphore.release(1);
+    if (futureSemaphore.waitFor(std::chrono::milliseconds(timeout_int))) {
+        futureSemaphore.notify();
     }
     return capabilities;
 }

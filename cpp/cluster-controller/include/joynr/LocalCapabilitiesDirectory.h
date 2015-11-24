@@ -44,6 +44,7 @@
 #include "joynr/MessageRouter.h"
 #include "joynr/types/QtDiscoveryQos.h"
 #include "joynr/types/QtDiscoveryEntry.h"
+#include "joynr/Semaphore.h"
 #include <vector>
 
 #include <QCache>
@@ -247,7 +248,7 @@ public:
     }
 
 private:
-    QSemaphore futureSemaphore;
+    joynr::Semaphore futureSemaphore;
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesFuture);
     std::vector<CapabilityEntry> capabilities;
 };

@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,13 +22,13 @@
 #include "joynr/RequestStatus.h"
 #include "joynr/joynrlogging.h"
 
-#include <QSemaphore>
 #include <cassert>
 #include <functional>
 #include <joynr/Util.h>
 #include <stdint.h>
 #include "joynr/TypeUtil.h"
 #include "joynr/exceptions/JoynrException.h"
+#include "joynr/Semaphore.h"
 
 namespace joynr
 {
@@ -112,8 +112,8 @@ public:
             : error(NULL), status(RequestStatusCode::IN_PROGRESS), results(), resultReceived(0)
     {
         LOG_INFO(logger,
-                 QString("resultReceived.available():") +
-                         QString::number(resultReceived.available()));
+                 QString("resultReceived.getStatus():") +
+                         QString::number(resultReceived.getStatus()));
     }
 
     /** @brief ResultCopier helper to copy tuple entries to function arguments */
@@ -218,8 +218,8 @@ public:
      */
     void wait(uint16_t timeOut)
     {
-        if (resultReceived.tryAcquire(1, TypeUtil::toQt(timeOut))) {
-            resultReceived.release(1);
+        if (resultReceived.waitFor(std::chrono::milliseconds(timeOut))) {
+            resultReceived.notify();
         } else {
             throw exceptions::JoynrTimeOutException("Request did not finish in time");
         }
@@ -232,10 +232,10 @@ public:
     void wait()
     {
         LOG_INFO(logger,
-                 QString("resultReceived.available():") +
-                         QString::number(resultReceived.available()));
-        resultReceived.acquire(1);
-        resultReceived.release(1);
+                 QString("resultReceived.getStatus():") +
+                         QString::number(resultReceived.getStatus()));
+        resultReceived.wait();
+        resultReceived.notify();
     }
 
     /**
@@ -258,7 +258,7 @@ public:
         status.setCode(RequestStatusCode::OK);
         // transform variadic templates into a std::tuple
         this->results = std::make_tuple(results...);
-        resultReceived.release();
+        resultReceived.notify();
     }
 
     /**
@@ -271,14 +271,14 @@ public:
         LOG_INFO(logger, "onError has been invoked");
         this->error.reset(error.clone());
         this->status = RequestStatus(status);
-        resultReceived.release();
+        resultReceived.notify();
     }
 
 private:
     std::shared_ptr<exceptions::JoynrException> error;
     RequestStatus status;
     std::tuple<Ts...> results;
-    QSemaphore resultReceived;
+    Semaphore resultReceived;
 
     static joynr_logging::Logger* logger;
 };
@@ -354,8 +354,8 @@ public:
      */
     void wait(uint16_t timeOut)
     {
-        if (resultReceived.tryAcquire(1, TypeUtil::toQt(timeOut))) {
-            resultReceived.release(1);
+        if (resultReceived.waitFor(std::chrono::milliseconds(timeOut))) {
+            resultReceived.notify();
         } else {
             throw exceptions::JoynrTimeOutException("Request did not finish in time");
         }
@@ -369,8 +369,8 @@ public:
      */
     void wait()
     {
-        resultReceived.acquire(1);
-        resultReceived.release(1);
+        resultReceived.wait();
+        resultReceived.notify();
     }
 
     /**
@@ -389,7 +389,7 @@ public:
     void onSuccess()
     {
         status.setCode(RequestStatusCode::OK);
-        resultReceived.release(1);
+        resultReceived.notify();
     }
 
     /**
@@ -401,13 +401,13 @@ public:
     {
         this->error.reset(error.clone());
         this->status = RequestStatus(status);
-        resultReceived.release(1);
+        resultReceived.notify();
     }
 
 private:
     std::shared_ptr<exceptions::JoynrException> error;
     RequestStatus status;
-    QSemaphore resultReceived;
+    joynr::Semaphore resultReceived;
 };
 
 } // namespace joynr

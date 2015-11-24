@@ -28,7 +28,7 @@
 #include "joynr/DiscoveryQos.h"
 #include "joynr/types/DiscoveryQos.h"
 
-#include <QSemaphore>
+#include "joynr/Semaphore.h"
 #include <string>
 
 namespace joynr
@@ -117,7 +117,7 @@ private:
     joynr::types::CommunicationMiddleware::Enum connection;
     ArbitrationStatus::ArbitrationStatusType arbitrationStatus;
     IArbitrationListener* listener;
-    QSemaphore listenerSemaphore;
+    joynr::Semaphore listenerSemaphore;
     static joynr_logging::Logger* logger;
 };
 

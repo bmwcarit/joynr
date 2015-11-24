@@ -26,20 +26,20 @@ MockLocalCapabilitiesDirectoryCallback::MockLocalCapabilitiesDirectoryCallback()
     : ILocalCapabilitiesCallback(),
       results(),
       semaphore(1) {
-    semaphore.acquire();
+    semaphore.wait();
 }
 
 void MockLocalCapabilitiesDirectoryCallback::capabilitiesReceived(std::vector<CapabilityEntry> capabilities) {
     this->results = capabilities;
-    semaphore.release();
+    semaphore.notify();
 }
 
 std::vector<CapabilityEntry> MockLocalCapabilitiesDirectoryCallback::getResults(int timeout) {
     const int waitInterval = 20;
     for (int i = 0; i < timeout; i += waitInterval) {
         ThreadUtil::sleepForMillis(waitInterval);
-        if (semaphore.tryAcquire()) {
-            semaphore.release();
+        if (semaphore.waitFor()) {
+            semaphore.notify();
             return results;
         }
     }
@@ -49,7 +49,7 @@ std::vector<CapabilityEntry> MockLocalCapabilitiesDirectoryCallback::getResults(
 
 void MockLocalCapabilitiesDirectoryCallback::clearResults(){
     results.clear();
-    semaphore.tryAcquire(1);
+    semaphore.waitFor();
 }
 
 MockLocalCapabilitiesDirectoryCallback::~MockLocalCapabilitiesDirectoryCallback() {

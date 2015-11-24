@@ -22,11 +22,11 @@
 
 #include <QtCore/QObject>
 #include <QtCore/QThread>
-#include <QtCore/QSemaphore>
 #include <QtCore/QCoreApplication>
 #include <QtConcurrent/QtConcurrent>
 
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/Semaphore.h"
 
 namespace joynr
 {
@@ -44,7 +44,7 @@ class JoynrRuntimeExecutor : public QObject
 protected:
     Settings* settings;
     LibJoynrRuntime* runtime;
-    QSemaphore runtimeSemaphore;
+    joynr::Semaphore runtimeSemaphore;
 
 public:
     JoynrRuntimeExecutor(Settings* settings);

@@ -32,7 +32,7 @@ JoynrWebSocketRuntimeExecutor::JoynrWebSocketRuntimeExecutor(Settings* settings)
 void JoynrWebSocketRuntimeExecutor::createRuntime()
 {
     runtime = new LibJoynrWebSocketRuntime(settings);
-    runtimeSemaphore.release();
+    runtimeSemaphore.notify();
 }
 
 } // namespace joynr

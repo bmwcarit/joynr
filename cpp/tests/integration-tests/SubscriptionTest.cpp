@@ -49,7 +49,7 @@ using namespace joynr;
 
 ACTION_P(ReleaseSemaphore,semaphore)
 {
-    semaphore->release(1);
+    semaphore->notify();
 }
 
 /**
@@ -136,7 +136,7 @@ private:
 TEST_F(SubscriptionTest, receive_subscriptionRequestAndPollAttribute) {
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
-    QSemaphore semaphore(0);
+    Semaphore semaphore(0);
     EXPECT_CALL(*mockRequestCaller, getLocation(_,_))
             .WillRepeatedly(
                 DoAll(
@@ -166,7 +166,7 @@ TEST_F(SubscriptionTest, receive_subscriptionRequestAndPollAttribute) {
     dispatcher.receive(msg);
 
     // Wait for a call to be made to the mockRequestCaller
-    ASSERT_TRUE(semaphore.tryAcquire(1,1000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
 
 
@@ -182,7 +182,7 @@ TEST_F(SubscriptionTest, receive_publication ) {
     ON_CALL(*mockReplyCaller, getType()).WillByDefault(Return(QString("GpsLocation")));
 
     // Use a semaphore to count and wait on calls to the mockGpsLocationListener
-    QSemaphore semaphore(0);
+    joynr::Semaphore semaphore(0);
     EXPECT_CALL(*mockGpsLocationListener, onReceive(A<const types::Localisation::GpsLocation&>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
@@ -223,8 +223,8 @@ TEST_F(SubscriptionTest, receive_publication ) {
     dispatcher.receive(msg);
 
     // Assert that only one subscription message is received by the subscription listener
-    ASSERT_TRUE(semaphore.tryAcquire(1, 1000));
-    ASSERT_FALSE(semaphore.tryAcquire(1, 250));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
+    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
 
 /**
@@ -239,7 +239,7 @@ TEST_F(SubscriptionTest, receive_enumPublication ) {
     ON_CALL(*mockReplyCaller, getType()).WillByDefault(Return(QString("QtTestEnum")));
 
     // Use a semaphore to count and wait on calls to the mockTestEnumSubscriptionListener
-    QSemaphore semaphore(0);
+    joynr::Semaphore semaphore(0);
     EXPECT_CALL(*mockTestEnumSubscriptionListener, onReceive(A<const joynr::tests::testTypes::TestEnum::Enum&>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
@@ -280,8 +280,8 @@ TEST_F(SubscriptionTest, receive_enumPublication ) {
     dispatcher.receive(msg);
 
     // Assert that only one subscription message is received by the subscription listener
-    ASSERT_TRUE(semaphore.tryAcquire(1, 1000));
-    ASSERT_FALSE(semaphore.tryAcquire(1, 250));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
+    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
 
 /**
@@ -293,7 +293,7 @@ TEST_F(SubscriptionTest, receive_enumPublication ) {
 TEST_F(SubscriptionTest, receive_RestoresSubscription) {
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
-    QSemaphore semaphore(0);
+    joynr::Semaphore semaphore(0);
     EXPECT_CALL(
             *mockRequestCaller,
             getLocation(A<std::function<void(const types::Localisation::GpsLocation&)>>(),
@@ -326,7 +326,7 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription) {
 
     dispatcher.receive(msg);
     dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
-    ASSERT_TRUE(semaphore.tryAcquire(1,15000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(15000)));
     //Try to acquire a semaphore for up to 5 seconds. Acquireing the semaphore will only work, if the mockRequestCaller has been called
     //and will be much faster than waiting for 500ms to make sure it has been called
 }
@@ -341,7 +341,7 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam) {
     ));
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
-    QSemaphore semaphore(0);
+    joynr::Semaphore semaphore(0);
 
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId(subscriptionId);
@@ -376,7 +376,7 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam) {
                 subscriptionRequest,
                 joynrMessageSender);
 
-    ASSERT_TRUE(semaphore.tryAcquire(1,15000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(15000)));
 
     std::vector<std::string> listOfStrings;
     listOfStrings.push_back("1");
@@ -405,7 +405,7 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam) {
 TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications) {
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
-    QSemaphore semaphore(0);
+    joynr::Semaphore semaphore(0);
     EXPECT_CALL(*mockRequestCaller, getLocation(_,_))
             .WillRepeatedly(
                 DoAll(
@@ -434,11 +434,13 @@ TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications) {
     // first received message with subscription request
     dispatcher.receive(msg);
     // wait for two requests from the subscription
-    ASSERT_TRUE(semaphore.tryAcquire(2, 1000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
     // remove the request caller
     dispatcher.removeRequestCaller(providerParticipantId);
     // assert that less than 2 requests happen in the next 300 milliseconds
-    ASSERT_FALSE(semaphore.tryAcquire(2, 300));
+    semaphore.waitFor(std::chrono::milliseconds(300));
+    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(300)));
 }
 
 /**
@@ -449,7 +451,7 @@ TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications) {
 TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
-    QSemaphore semaphore(0);
+    joynr::Semaphore semaphore(0);
     EXPECT_CALL(*mockRequestCaller, getLocation(_,_))
             .WillRepeatedly(
                 DoAll(
@@ -479,7 +481,8 @@ TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
     dispatcher.receive(msg);
 
     // wait for two requests from the subscription
-    ASSERT_TRUE(semaphore.tryAcquire(2, 1000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
 
     SubscriptionStop subscriptionStop;
     subscriptionStop.setSubscriptionId(subscriptionRequest.getSubscriptionId());
@@ -492,7 +495,8 @@ TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
     dispatcher.receive(msg);
 
     // assert that less than 2 requests happen in the next 300 milliseconds
-    ASSERT_FALSE(semaphore.tryAcquire(2, 300));
+    semaphore.waitFor(std::chrono::milliseconds(300));
+    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(300)));
 }
 
 

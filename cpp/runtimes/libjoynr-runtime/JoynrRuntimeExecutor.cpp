@@ -60,7 +60,7 @@ JoynrRuntimeExecutor::~JoynrRuntimeExecutor()
 
 LibJoynrRuntime* JoynrRuntimeExecutor::getRuntime()
 {
-    runtimeSemaphore.acquire();
+    runtimeSemaphore.wait();
     LibJoynrRuntime* runtimeTmp = runtime;
     runtime = Q_NULLPTR;
     return runtimeTmp;

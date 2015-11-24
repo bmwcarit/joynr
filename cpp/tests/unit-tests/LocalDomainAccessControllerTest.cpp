@@ -24,7 +24,7 @@
 #include "cluster-controller/access-control/LocalDomainAccessStore.h"
 #include "cluster-controller/access-control/AccessControlAlgorithm.h"
 
-#include <QSemaphore>
+#include "joynr/Semaphore.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -46,11 +46,11 @@ public:
     void consumerPermission(Permission::Enum permission) {
         this->permission = permission;
         isValid = true;
-        sem.release(1);
+        sem.notify();
     }
 
     void operationNeeded() {
-        sem.release(1); // isValid stays false
+        sem.notify(); // isValid stays false
     }
 
     bool isPermissionAvailable() const {
@@ -63,13 +63,13 @@ public:
 
     // Returns true if the callback was made
     bool expectCallback(int millisecs) {
-        return sem.tryAcquire(1, millisecs);
+        return sem.waitFor(std::chrono::milliseconds(millisecs));
     }
 
 private:
     bool isValid;
     Permission::Enum permission;
-    QSemaphore sem;
+    joynr::Semaphore sem;
 };
 
 // Test class

@@ -26,6 +26,7 @@
 
 #include "joynr/TypeUtil.h"
 #include "joynr/types/QtDiscoveryScope.h"
+#include "joynr/Semaphore.h"
 
 #include <cassert>
 
@@ -61,7 +62,7 @@ ProviderArbitrator::~ProviderArbitrator()
 void ProviderArbitrator::startArbitration()
 {
     QTime timer;
-    QSemaphore semaphore;
+    joynr::Semaphore semaphore;
 
     // Arbitrate until successful or timed out
     while (true) {
@@ -81,7 +82,7 @@ void ProviderArbitrator::startArbitration()
             break;
 
         // If there are no suitable providers, wait for a second before trying again
-        semaphore.tryAcquire(1, discoveryQos.getRetryInterval());
+        semaphore.waitFor(std::chrono::milliseconds(discoveryQos.getRetryInterval()));
 
         // Reduce the timeout again
         discoveryQos.setDiscoveryTimeout(discoveryQos.getDiscoveryTimeout() - timer.elapsed());
@@ -141,10 +142,10 @@ std::string ProviderArbitrator::getParticipantId()
 void ProviderArbitrator::setParticipantId(std::string participantId)
 {
     this->participantId = participantId;
-    if (listenerSemaphore.tryAcquire(1)) {
+    if (listenerSemaphore.waitFor()) {
         assert(listener != NULL);
         listener->setParticipantId(participantId);
-        listenerSemaphore.release(1);
+        listenerSemaphore.notify();
     }
 }
 
@@ -162,10 +163,10 @@ void ProviderArbitrator::setConnection(
         const joynr::types::CommunicationMiddleware::Enum& connection)
 {
     this->connection = connection;
-    if (listenerSemaphore.tryAcquire(1)) {
+    if (listenerSemaphore.waitFor()) {
         assert(listener != NULL);
         listener->setConnection(connection);
-        listenerSemaphore.release(1);
+        listenerSemaphore.notify();
     }
 }
 
@@ -183,7 +184,7 @@ void ProviderArbitrator::setArbitrationStatus(
         ArbitrationStatus::ArbitrationStatusType arbitrationStatus)
 {
     this->arbitrationStatus = arbitrationStatus;
-    if (listenerSemaphore.tryAcquire(1)) {
+    if (listenerSemaphore.waitFor()) {
         try {
             assert(listener != NULL);
             listener->setArbitrationStatus(arbitrationStatus);
@@ -191,10 +192,10 @@ void ProviderArbitrator::setArbitrationStatus(
             LOG_ERROR(logger,
                       "Exception while setting arbitration status: " +
                               QString::fromStdString(e.getMessage()));
-            listenerSemaphore.release(1);
+            listenerSemaphore.notify();
             throw;
         }
-        listenerSemaphore.release(1);
+        listenerSemaphore.notify();
     }
 }
 
@@ -202,14 +203,14 @@ void ProviderArbitrator::removeArbitationListener()
 {
     if (listener != NULL) {
         this->listener = NULL;
-        listenerSemaphore.acquire(1);
+        listenerSemaphore.wait();
     }
 }
 
 void ProviderArbitrator::setArbitrationListener(IArbitrationListener* listener)
 {
     this->listener = listener;
-    listenerSemaphore.release(1);
+    listenerSemaphore.notify();
     if (arbitrationStatus == ArbitrationStatus::ArbitrationSuccessful) {
         listener->setParticipantId(participantId);
         listener->setConnection(connection);
