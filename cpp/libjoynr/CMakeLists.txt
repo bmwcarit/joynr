@@ -144,7 +144,10 @@ generate_export_header(
     EXPORT_FILE_NAME "${CMAKE_CURRENT_SOURCE_DIR}/${JoynrLib_EXPORT_HEADER}"
 )
 
-target_link_libraries(Joynr ${JoynrLib_TARGET_LIBRARIES})
+target_link_libraries(Joynr
+    ${JoynrLib_TARGET_LIBRARIES}
+    ${Boost_LIBRARIES}
+)
 
 install(
     TARGETS Joynr
