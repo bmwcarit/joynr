@@ -31,6 +31,9 @@ done
 
 log "CPP CLEAN BUILD DBUS: $DBUS GCOV: $GCOV JOBS: $JOBS"
 
+log "Enable core dumps"
+ulimit -c unlimited
+
 START=$(date +%s)
 
 
