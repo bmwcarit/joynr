@@ -24,6 +24,7 @@
 #include "joynr/SubscriptionCallback.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/Util.h"
+#include "joynr/exceptions/JoynrExceptionUtil.h"
 #include <functional>
 
 #include <cassert>
@@ -46,10 +47,10 @@ public:
     {
         assert(callback);
 
-        std::shared_ptr<exceptions::JoynrRuntimeException> error =
-                subscriptionPublication.getError();
-        if (error) {
-            callback->onError(*error);
+        const Variant& error = subscriptionPublication.getError();
+        if (!error.isEmpty()) {
+            callback->onError(
+                    joynr::exceptions::JoynrExceptionUtil::extractJoynrRuntimeException(error));
             return;
         }
 
@@ -95,10 +96,10 @@ public:
     {
         assert(callback);
 
-        std::shared_ptr<exceptions::JoynrRuntimeException> error =
-                subscriptionPublication.getError();
-        if (error) {
-            callback->onError(*error);
+        const Variant& error = subscriptionPublication.getError();
+        if (!error.isEmpty()) {
+            callback->onError(
+                    joynr::exceptions::JoynrExceptionUtil::extractJoynrRuntimeException(error));
             return;
         }
 
@@ -142,10 +143,10 @@ public:
     {
         assert(callback);
 
-        std::shared_ptr<exceptions::JoynrRuntimeException> error =
-                subscriptionPublication.getError();
-        if (error) {
-            callback->onError(*error);
+        const Variant& error = subscriptionPublication.getError();
+        if (!error.isEmpty()) {
+            callback->onError(
+                    joynr::exceptions::JoynrExceptionUtil::extractJoynrRuntimeException(error));
             return;
         }
 

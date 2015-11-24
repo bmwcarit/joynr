@@ -26,7 +26,7 @@ bool isReplyRegistered = Variant::registerType<Reply>("joynr.Reply");
 
 const Reply Reply::NULL_RESPONSE = Reply();
 
-Reply::Reply() : requestReplyId(), response(), error(NULL)
+Reply::Reply() : requestReplyId(), response(), error(Variant::NULL_VARIANT())
 {
 }
 Reply::Reply(const Reply& other)
@@ -65,12 +65,12 @@ void Reply::setResponse(std::vector<Variant> response)
     this->response = std::move(response);
 }
 
-std::shared_ptr<exceptions::JoynrException> Reply::getError() const
+const Variant& Reply::getError() const
 {
     return this->error;
 }
 
-void Reply::setError(std::shared_ptr<exceptions::JoynrException> error)
+void Reply::setError(const Variant& error)
 {
     this->error = error;
 }

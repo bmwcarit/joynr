@@ -35,6 +35,8 @@
 #include "libjoynr/subscription/SubscriptionAttributeListener.h"
 #include "libjoynr/subscription/SubscriptionBroadcastListener.h"
 #include "joynr/LibjoynrSettings.h"
+#include "joynr/exceptions/JoynrException.h"
+#include "joynr/exceptions/JoynrExceptionUtil.h"
 
 #include "joynr/SubscriptionUtil.h"
 
@@ -845,15 +847,8 @@ void PublicationManager::sendPublicationError(
     LOG_DEBUG(logger, "sending subscription error");
     SubscriptionPublication subscriptionPublication;
     subscriptionPublication.setSubscriptionId(request->getSubscriptionId());
-    std::shared_ptr<exceptions::JoynrRuntimeException> error;
-    error.reset(dynamic_cast<exceptions::JoynrRuntimeException*>(exception.clone()));
-    if (error) {
-        subscriptionPublication.setError(error);
-    } else {
-        std::string errorMsg =
-                "Got unexpected exception from pollSubscription: " + exception.getMessage();
-        error.reset(new exceptions::JoynrRuntimeException(errorMsg));
-    }
+    subscriptionPublication.setError(
+            joynr::exceptions::JoynrExceptionUtil::createVariant(exception));
     sendSubscriptionPublication(
             publication, subscriptionInformation, request, subscriptionPublication);
     LOG_DEBUG(logger, "sent subscription error");

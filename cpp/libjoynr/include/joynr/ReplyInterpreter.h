@@ -44,9 +44,9 @@ public:
         std::shared_ptr<ReplyCaller<Ts...>> typedCallerQsp =
                 std::dynamic_pointer_cast<ReplyCaller<Ts...>>(caller);
 
-        std::shared_ptr<exceptions::JoynrException> error = reply.getError();
-        if (error) {
-            caller->returnError(*error);
+        const Variant& error = reply.getError();
+        if (!error.isEmpty()) {
+            caller->returnError(error.get<exceptions::JoynrException>());
             return;
         }
 
@@ -83,9 +83,9 @@ public:
     {
         assert(caller);
 
-        std::shared_ptr<exceptions::JoynrException> error = reply.getError();
-        if (error) {
-            caller->returnError(*error);
+        const Variant& error = reply.getError();
+        if (!error.isEmpty()) {
+            caller->returnError(error.get<exceptions::JoynrException>());
             return;
         }
 

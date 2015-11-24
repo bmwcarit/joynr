@@ -55,13 +55,13 @@ public:
     std::vector<Variant> getResponse() const;
     void setResponse(const std::vector<Variant>& response);
 
-    std::shared_ptr<exceptions::JoynrRuntimeException> getError() const;
-    void setError(std::shared_ptr<exceptions::JoynrRuntimeException> error);
+    const Variant& getError() const;
+    void setError(const Variant& error);
 
 private:
     std::string subscriptionId;
     std::vector<Variant> response;
-    std::shared_ptr<exceptions::JoynrRuntimeException> error;
+    Variant error;
 };
 
 } // namespace joynr

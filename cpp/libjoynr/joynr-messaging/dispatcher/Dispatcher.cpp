@@ -43,6 +43,7 @@
 #include "joynr/MetaTypeRegistrar.h"
 #include "joynr/Request.h"
 #include "joynr/exceptions/JoynrException.h"
+#include "joynr/exceptions/JoynrExceptionUtil.h"
 
 #include <QUuid>
 #include <chrono>
@@ -199,11 +200,7 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
                     const exceptions::JoynrException& exception) {
         Reply reply;
         reply.setRequestReplyId(requestReplyId);
-        std::shared_ptr<exceptions::JoynrException> error;
-        // TODO This clone is a workaround which must be removed after the new serializer has been
-        // introduced and the reply object has been refactored
-        error.reset(exception.clone());
-        reply.setError(error);
+        reply.setError(joynr::exceptions::JoynrExceptionUtil::createVariant(exception));
         LOG_DEBUG(logger,
                   QString("Got error reply from RequestInterpreter for requestReplyId %1")
                           .arg(TypeUtil::toQt(requestReplyId)));

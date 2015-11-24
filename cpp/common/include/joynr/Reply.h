@@ -54,13 +54,13 @@ public:
     std::vector<Variant> getResponse() const;
     void setResponse(std::vector<Variant> response);
 
-    std::shared_ptr<exceptions::JoynrException> getError() const;
-    void setError(std::shared_ptr<exceptions::JoynrException> error);
+    const Variant& getError() const;
+    void setError(const Variant& error);
 
 private:
     std::string requestReplyId;
     std::vector<Variant> response;
-    std::shared_ptr<exceptions::JoynrException> error;
+    Variant error;
 };
 
 } // namespace joynr

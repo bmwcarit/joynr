@@ -27,7 +27,8 @@ static bool isSubscriptionPublicationRegistered =
 
 const SubscriptionPublication SubscriptionPublication::NULL_RESPONSE = SubscriptionPublication();
 
-SubscriptionPublication::SubscriptionPublication() : subscriptionId(), response(), error(NULL)
+SubscriptionPublication::SubscriptionPublication()
+        : subscriptionId(), response(), error(Variant::NULL_VARIANT())
 {
 }
 SubscriptionPublication::SubscriptionPublication(const SubscriptionPublication& other)
@@ -66,19 +67,19 @@ void SubscriptionPublication::setResponse(const std::vector<Variant>& response)
     this->response = response;
 }
 
-std::shared_ptr<exceptions::JoynrRuntimeException> SubscriptionPublication::getError() const
+const Variant& SubscriptionPublication::getError() const
 {
     return this->error;
 }
 
-void SubscriptionPublication::setError(std::shared_ptr<exceptions::JoynrRuntimeException> error)
+void SubscriptionPublication::setError(const Variant& error)
 {
     this->error = error;
 }
 
 bool SubscriptionPublication::operator==(const SubscriptionPublication& other) const
 {
-    return subscriptionId == other.getSubscriptionId() && error == other.error;
+    return subscriptionId == other.getSubscriptionId();
 }
 
 bool SubscriptionPublication::operator!=(const SubscriptionPublication& other) const
