@@ -24,8 +24,8 @@
 #include "joynr/IJoynrProvider.h"
 #include "joynr/types/ProviderQos.h"
 #include "joynr/IBroadcastFilter.h"
+#include "joynr/ReadWriteLock.h"
 
-#include <QReadWriteLock>
 #include <QList>
 #include <QVariant>
 #include <string>
@@ -123,7 +123,7 @@ protected:
 private:
     DISALLOW_COPY_AND_ASSIGN(AbstractJoynrProvider);
 
-    QReadWriteLock lock;
+    joynr::ReadWriteLock lock;
     std::map<std::string, QList<IAttributeListener*>> attributeListeners;
     std::map<std::string, QList<IBroadcastListener*>> broadcastListeners;
     std::map<std::string, QList<std::shared_ptr<IBroadcastFilter>>> broadcastFilters;

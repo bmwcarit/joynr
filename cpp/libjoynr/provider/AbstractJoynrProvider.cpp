@@ -22,8 +22,6 @@
 #include "joynr/IBroadcastListener.h"
 
 #include <QVariant>
-#include <QWriteLocker>
-#include <QReadLocker>
 
 namespace joynr
 {
@@ -52,14 +50,14 @@ types::ProviderQos AbstractJoynrProvider::getProviderQos() const
 void AbstractJoynrProvider::registerAttributeListener(const std::string& attributeName,
                                                       IAttributeListener* attributeListener)
 {
-    QWriteLocker locker(&lock);
+    joynr::WriteLocker locker(lock);
     attributeListeners[attributeName].append(attributeListener);
 }
 
 void AbstractJoynrProvider::unregisterAttributeListener(const std::string& attributeName,
                                                         IAttributeListener* attributeListener)
 {
-    QWriteLocker locker(&lock);
+    joynr::WriteLocker locker(lock);
     QList<IAttributeListener*>& listeners = attributeListeners[attributeName];
 
     // Find and delete the attribute listener
@@ -75,7 +73,7 @@ void AbstractJoynrProvider::unregisterAttributeListener(const std::string& attri
 void AbstractJoynrProvider::onAttributeValueChanged(const std::string& attributeName,
                                                     const Variant& value)
 {
-    QReadLocker locker(&lock);
+    joynr::ReadLocker locker(lock);
 
     const QList<IAttributeListener*>& listeners = attributeListeners[attributeName];
 
@@ -88,14 +86,14 @@ void AbstractJoynrProvider::onAttributeValueChanged(const std::string& attribute
 void AbstractJoynrProvider::registerBroadcastListener(const std::string& broadcastName,
                                                       IBroadcastListener* broadcastListener)
 {
-    QWriteLocker locker(&lock);
+    joynr::WriteLocker locker(lock);
     broadcastListeners[broadcastName].append(broadcastListener);
 }
 
 void AbstractJoynrProvider::unregisterBroadcastListener(const std::string& broadcastName,
                                                         IBroadcastListener* broadcastListener)
 {
-    QWriteLocker locker(&lock);
+    joynr::WriteLocker locker(lock);
     QList<IBroadcastListener*>& listeners = broadcastListeners[broadcastName];
 
     int listenerIndex = listeners.indexOf(broadcastListener);
@@ -105,7 +103,7 @@ void AbstractJoynrProvider::unregisterBroadcastListener(const std::string& broad
 void AbstractJoynrProvider::fireBroadcast(const std::string& broadcastName,
                                           const std::vector<Variant>& values)
 {
-    QReadLocker locker(&lock);
+    joynr::ReadLocker locker(lock);
 
     const QList<IBroadcastListener*>& listeners = broadcastListeners[broadcastName];
 
