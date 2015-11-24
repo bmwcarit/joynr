@@ -28,7 +28,6 @@
 #include "cluster-controller/access-control/IAccessController.h"
 #include "joynr/IPlatformSecurityManager.h"
 
-#include <QMutexLocker>
 #include <chrono>
 
 #include <cassert>
@@ -217,7 +216,7 @@ void MessageRouter::route(const JoynrMessage& message)
 
         // and try to resolve destination address via parent message router
         if (isChildMessageRouter()) {
-            QMutexLocker locker(&parentResolveMutex);
+            std::lock_guard<std::mutex> lock(parentResolveMutex);
             if (runningParentResolves->find(destinationPartId.toStdString()) ==
                 runningParentResolves->end()) {
                 runningParentResolves->insert(destinationPartId.toStdString());
@@ -269,7 +268,7 @@ void MessageRouter::route(const JoynrMessage& message)
 
 void MessageRouter::removeRunningParentResolvers(const QString& destinationPartId)
 {
-    QMutexLocker locker(&parentResolveMutex);
+    std::lock_guard<std::mutex> lock(parentResolveMutex);
     if (runningParentResolves->find(destinationPartId.toStdString()) !=
         runningParentResolves->end()) {
         runningParentResolves->erase(destinationPartId.toStdString());

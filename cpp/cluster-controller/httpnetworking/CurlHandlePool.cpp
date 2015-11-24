@@ -65,7 +65,7 @@ PerThreadCurlHandlePool::PerThreadCurlHandlePool()
 
 void* PerThreadCurlHandlePool::getHandle(const QString& url)
 {
-    QMutexLocker lock(&mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     std::shared_ptr<PooledCurlHandle> pooledHandle;
     QString host = extractHost(url);
     pooledHandle = takeOrCreateHandle(QThread::currentThreadId(), host);
@@ -76,7 +76,7 @@ void* PerThreadCurlHandlePool::getHandle(const QString& url)
 
 void PerThreadCurlHandlePool::returnHandle(void* handle)
 {
-    QMutexLocker lock(&mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     std::shared_ptr<PooledCurlHandle> pooledHandle = outHandleMap.take(handle);
     pooledHandle->clearHandle();
     idleHandleMap.insert(QThread::currentThreadId(), pooledHandle);
@@ -98,7 +98,7 @@ void PerThreadCurlHandlePool::returnHandle(void* handle)
 
 void PerThreadCurlHandlePool::deleteHandle(void* handle)
 {
-    QMutexLocker lock(&mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     std::shared_ptr<PooledCurlHandle> pooledHandle = outHandleMap.take(handle);
     if (pooledHandle) {
         handleOrderList.removeAll(pooledHandle);
@@ -108,7 +108,7 @@ void PerThreadCurlHandlePool::deleteHandle(void* handle)
 
 void PerThreadCurlHandlePool::reset()
 {
-    QMutexLocker lock(&mutex);
+    std::lock_guard<std::mutex> lock(mutex);
 
     // Remove all idle handles
     handleOrderList.clear();
@@ -200,7 +200,7 @@ const int SingleThreadCurlHandlePool::POOL_SIZE = 10;
 void* SingleThreadCurlHandlePool::getHandle(const QString& url)
 {
     QString host(extractHost(url));
-    QMutexLocker lock(&mutex);
+    std::lock_guard<std::mutex> lock(mutex);
 
     std::shared_ptr<PooledCurlHandle> pooledHandle = takeOrCreateHandle(host);
     pooledHandle->setActiveHost(host);
@@ -210,7 +210,7 @@ void* SingleThreadCurlHandlePool::getHandle(const QString& url)
 
 void SingleThreadCurlHandlePool::returnHandle(void* handle)
 {
-    QMutexLocker lock(&mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     std::shared_ptr<PooledCurlHandle> pooledHandle = outHandleMap.take(handle);
     pooledHandle->clearHandle();
     handleList.removeAll(pooledHandle);
@@ -222,7 +222,7 @@ void SingleThreadCurlHandlePool::returnHandle(void* handle)
 
 void SingleThreadCurlHandlePool::deleteHandle(void* handle)
 {
-    QMutexLocker lock(&mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     std::shared_ptr<PooledCurlHandle> pooledHandle = outHandleMap.take(handle);
     if (pooledHandle) {
         handleList.removeAll(pooledHandle);
@@ -231,7 +231,7 @@ void SingleThreadCurlHandlePool::deleteHandle(void* handle)
 
 void SingleThreadCurlHandlePool::reset()
 {
-    QMutexLocker lock(&mutex);
+    std::lock_guard<std::mutex> lock(mutex);
 
     // Remove all idle handles
     handleList.clear();

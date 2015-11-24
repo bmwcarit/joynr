@@ -50,7 +50,7 @@
 #include <QCache>
 #include <memory>
 #include <QVariantMap>
-#include <QMutex>
+#include <mutex>
 #include <string>
 
 namespace joynr
@@ -217,7 +217,7 @@ private:
 
     static joynr_logging::Logger* logger;
     ICapabilitiesClient* capabilitiesClient;
-    QMutex* cacheLock;
+    std::mutex cacheLock;
 
     TypedClientMultiCache<InterfaceAddress, CapabilityEntry> interfaceAddress2GlobalCapabilities;
     TypedClientMultiCache<QString, CapabilityEntry> participantId2GlobalCapabilities;

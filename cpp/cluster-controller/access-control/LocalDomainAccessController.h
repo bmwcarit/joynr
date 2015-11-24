@@ -38,7 +38,7 @@
 #include <memory>
 #include <stdint.h>
 #include <QSharedPointer>
-#include <QMutex>
+#include <mutex>
 
 namespace joynr
 {
@@ -498,7 +498,7 @@ private:
     // of data for a domain/interface
     // - aceSubscriptions
     // - consumerPermissionRequests
-    QMutex initStateMutex;
+    std::mutex initStateMutex;
 
     // Class that keeps track of initialisation for a domain/interface
     class Initialiser;

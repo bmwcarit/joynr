@@ -19,7 +19,7 @@
 #ifndef DBUSMESSAGINGSTUBFACTORY_H
 #define DBUSMESSAGINGSTUBFACTORY_H
 
-#include <QMutex>
+#include <mutex>
 
 #include "joynr/IMiddlewareMessagingStubFactory.h"
 
@@ -40,7 +40,7 @@ public:
 
 private:
     std::map<std::string, std::shared_ptr<IMessaging>> stubMap;
-    QMutex mutex;
+    std::mutex mutex;
 };
 
 } // namespace joynr

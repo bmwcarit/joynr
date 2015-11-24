@@ -22,7 +22,7 @@
 #include "common/cache/IClientMultiCache.h"
 
 #include <QCache>
-#include <QMutex>
+#include <mutex>
 #include <QString>
 #include <QVariant>
 #include <QList>
@@ -68,7 +68,7 @@ private:
     qint64 elapsed(qint64 entryTime);
     QCache<QString, QList<CachedValue<QVariant>>> cache;
     static const int MAX_CUMMULATIVE_CACHE_COST;
-    QMutex mutex;
+    std::mutex mutex;
 };
 
 } // namespace joynr

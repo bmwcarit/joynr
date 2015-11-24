@@ -46,7 +46,7 @@ std::size_t MessageQueue::queueMessage(const JoynrMessage& message)
     JoynrTimePoint absTtl = message.getHeaderExpiryDate();
     MessageQueueItem* item = new MessageQueueItem(message, absTtl);
     {
-        QMutexLocker locker(&queueMutex);
+        std::lock_guard<std::mutex> lock(queueMutex);
         queue->insert(std::make_pair(message.getHeaderTo(), item));
     }
     return queue->size();
@@ -54,7 +54,7 @@ std::size_t MessageQueue::queueMessage(const JoynrMessage& message)
 
 MessageQueueItem* MessageQueue::getNextMessageForParticipant(const std::string destinationPartId)
 {
-    QMutexLocker locker(&queueMutex);
+    std::lock_guard<std::mutex> lock(queueMutex);
     auto queueElement = queue->find(destinationPartId);
     if (queueElement != queue->end()) {
         MessageQueueItem* item = queueElement->second;
@@ -73,7 +73,7 @@ int64_t MessageQueue::removeOutdatedMessages()
 
     JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
     {
-        QMutexLocker locker(&queueMutex);
+        std::lock_guard<std::mutex> lock(queueMutex);
         for (auto queueIterator = queue->begin(); queueIterator != queue->end();) {
             MessageQueueItem* value = queueIterator->second;
             if (value->getDecayTime() < now) {

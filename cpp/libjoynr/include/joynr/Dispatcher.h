@@ -90,7 +90,7 @@ private:
     ISubscriptionManager* subscriptionManager;
     ThreadPool handleReceivedMessageThreadPool;
     static joynr_logging::Logger* logger;
-    QMutex subscriptionHandlingMutex;
+    std::mutex subscriptionHandlingMutex;
 
     friend class ReceivedMessageRunnable;
 };

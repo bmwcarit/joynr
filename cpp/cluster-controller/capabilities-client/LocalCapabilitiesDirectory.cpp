@@ -30,8 +30,6 @@
 #include "common/InterfaceAddress.h"
 #include <algorithm>
 
-#include <QMutexLocker>
-
 namespace joynr
 {
 
@@ -58,7 +56,7 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(MessagingSettings& messag
         : joynr::system::DiscoveryAbstractProvider(),
           messagingSettings(messagingSettings),
           capabilitiesClient(capabilitiesClientPtr),
-          cacheLock(new QMutex),
+          cacheLock(),
           interfaceAddress2GlobalCapabilities(),
           participantId2GlobalCapabilities(),
           interfaceAddress2LocalCapabilities(),
@@ -107,7 +105,6 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(MessagingSettings& messag
 LocalCapabilitiesDirectory::~LocalCapabilitiesDirectory()
 {
     // cleanup
-    delete cacheLock;
     interfaceAddress2GlobalCapabilities.cleanup(0);
     participantId2GlobalCapabilities.cleanup(0);
 
@@ -147,7 +144,7 @@ void LocalCapabilitiesDirectory::remove(const std::string& domain,
 {
     // TODO does it make sense to remove any capability for a domain/interfaceName
     // without knowing which provider registered the capability
-    QMutexLocker locker(cacheLock);
+    std::lock_guard<std::mutex> lock(cacheLock);
     QList<CapabilityEntry> entries = interfaceAddress2GlobalCapabilities.lookUpAll(InterfaceAddress(
             QString::fromStdString(domain), QString::fromStdString(interfaceName)));
     std::vector<std::string> participantIdsToRemove;
@@ -190,7 +187,7 @@ void LocalCapabilitiesDirectory::remove(const std::string& domain,
 
 void LocalCapabilitiesDirectory::remove(const std::string& participantId)
 {
-    QMutexLocker lock(cacheLock);
+    std::lock_guard<std::mutex> lock(cacheLock);
     CapabilityEntry entry =
             participantId2LocalCapability.take(QString::fromStdString(participantId));
     interfaceAddress2LocalCapabilities.remove(
@@ -387,9 +384,7 @@ std::vector<CapabilityEntry> LocalCapabilitiesDirectory::getCachedLocalCapabilit
 
 void LocalCapabilitiesDirectory::cleanCache(qint64 maxAge_ms)
 {
-    // QMutexLocker locks the mutex, and when the locker variable is destroyed (when
-    // it leaves this method) it will unlock the mutex
-    QMutexLocker locker(cacheLock);
+    std::lock_guard<std::mutex> lock(cacheLock);
     interfaceAddress2GlobalCapabilities.cleanup(maxAge_ms);
     participantId2GlobalCapabilities.cleanup(maxAge_ms);
     interfaceAddress2LocalCapabilities.cleanup(maxAge_ms);
@@ -494,7 +489,7 @@ void LocalCapabilitiesDirectory::insertInCache(const CapabilityEntry& entry,
                                                bool localCache,
                                                bool globalCache)
 {
-    QMutexLocker lock(cacheLock);
+    std::lock_guard<std::mutex> lock(cacheLock);
     InterfaceAddress addr(entry.getDomain(), entry.getInterfaceName());
 
     // add entry to local cache
@@ -545,7 +540,7 @@ std::vector<CapabilityEntry> LocalCapabilitiesDirectory::searchCache(
         const qint64& maxCacheAge,
         bool localEntries)
 {
-    QMutexLocker locker(cacheLock);
+    std::lock_guard<std::mutex> lock(cacheLock);
 
     // search in local
     if (localEntries) {
@@ -562,7 +557,7 @@ std::vector<CapabilityEntry> LocalCapabilitiesDirectory::searchCache(
         const qint64& maxCacheAge,
         bool localEntries)
 {
-    QMutexLocker locker(cacheLock);
+    std::lock_guard<std::mutex> lock(cacheLock);
 
     // search in local
     if (localEntries) {

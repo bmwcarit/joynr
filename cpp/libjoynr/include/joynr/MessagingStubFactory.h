@@ -27,6 +27,7 @@
 #include "joynr/system/RoutingTypes_QtAddress.h"
 #include <string>
 #include <memory>
+#include <mutex>
 
 namespace joynr
 {
@@ -66,7 +67,7 @@ private:
 
     Directory<joynr::system::RoutingTypes::QtAddress, IMessaging> address2MessagingStubDirectory;
     QList<IMiddlewareMessagingStubFactory*> factoryList;
-    QMutex mutex;
+    std::mutex mutex;
 };
 
 } // namespace joynr

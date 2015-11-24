@@ -45,6 +45,7 @@
 #include <cassert>
 #include <chrono>
 #include <stdint.h>
+#include <mutex>
 
 namespace joynr
 {
@@ -65,7 +66,7 @@ public:
     std::shared_ptr<RequestCaller> requestCaller;
     SubscriptionAttributeListener* attributeListener;
     SubscriptionBroadcastListener* broadcastListener;
-    QMutex mutex;
+    std::recursive_mutex mutex;
     DelayedScheduler::RunnableHandle publicationEndRunnableHandle;
 
 private:
@@ -124,7 +125,7 @@ PublicationManager::~PublicationManager()
     // saveSubscriptionRequestsMap will not store to file, as soon as shuttingDown is true, so we
     // call it first then set shuttingDown to true
     {
-        QMutexLocker shutDownLocker(&shutDownMutex);
+        std::lock_guard<std::mutex> shutDownLocker(shutDownMutex);
         shuttingDown = true;
     }
 
@@ -261,7 +262,7 @@ void PublicationManager::handleAttributeSubscriptionRequest(
     LOG_DEBUG(logger, QString("added subscription: %1").arg(requestInfo->toQString()));
 
     {
-        QMutexLocker publicationLocker(&(publication->mutex));
+        std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
         // Add an onChange publication if needed
         addOnChangePublication(subscriptionId, requestInfo, publication);
 
@@ -279,7 +280,8 @@ void PublicationManager::handleAttributeSubscriptionRequest(
                         logger, QString("publication will end in %1 ms").arg(publicationEndDelay));
             }
             {
-                QMutexLocker currentScheduledLocker(&currentScheduledPublicationsMutex);
+                std::lock_guard<std::mutex> currentScheduledLocker(
+                        currentScheduledPublicationsMutex);
                 currentScheduledPublications.append(subscriptionId);
             }
             // sent at least once the current value
@@ -296,7 +298,7 @@ void PublicationManager::addOnChangePublication(
         std::shared_ptr<SubscriptionRequestInformation> request,
         std::shared_ptr<Publication> publication)
 {
-    QMutexLocker publicationLocker(&(publication->mutex));
+    std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
     if (SubscriptionUtil::isOnChangeSubscription(request->getQos())) {
         LOG_TRACE(logger, QString("adding onChange subscription: %1").arg(subscriptionId));
 
@@ -320,7 +322,7 @@ void PublicationManager::addBroadcastPublication(
 {
     LOG_TRACE(logger, QString("adding broadcast subscription: %1").arg(subscriptionId));
 
-    QMutexLocker publicationLocker(&(publication->mutex));
+    std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
 
     // Create a broadcast listener to listen for broadcast events
     SubscriptionBroadcastListener* broadcastListener =
@@ -344,7 +346,7 @@ void PublicationManager::add(const QString& proxyParticipantId,
     std::shared_ptr<SubscriptionRequestInformation> requestInfo(new SubscriptionRequestInformation(
             proxyParticipantId, providerParticipantId, subscriptionRequest));
     {
-        QMutexLocker queueLocker(&queuedSubscriptionRequestsMutex);
+        std::lock_guard<std::mutex> queueLocker(queuedSubscriptionRequestsMutex);
         queuedSubscriptionRequests.insert(
                 std::make_pair(requestInfo->getProviderId().toStdString(), requestInfo));
     }
@@ -412,7 +414,7 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
     subscriptionLocker.unlock();
 
     {
-        QMutexLocker publicationLocker(&(publication->mutex));
+        std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
         // Add an onChange publication if needed
         addBroadcastPublication(subscriptionId, requestInfo, publication);
 
@@ -447,7 +449,7 @@ void PublicationManager::add(const QString& proxyParticipantId,
             new BroadcastSubscriptionRequestInformation(
                     proxyParticipantId, providerParticipantId, subscriptionRequest));
     {
-        QMutexLocker queueLocker(&queuedBroadcastSubscriptionRequestsMutex);
+        std::lock_guard<std::mutex> queueLocker(queuedBroadcastSubscriptionRequestsMutex);
         queuedBroadcastSubscriptionRequests.insert(
                 std::make_pair(requestInfo->getProviderId().toStdString(), requestInfo));
     }
@@ -535,7 +537,7 @@ void PublicationManager::restore(const QString& providerId,
     LOG_DEBUG(logger, "restore: entering ...");
 
     {
-        QMutexLocker queueLocker(&queuedSubscriptionRequestsMutex);
+        std::lock_guard<std::mutex> queueLocker(queuedSubscriptionRequestsMutex);
         std::multimap<std::string, std::shared_ptr<SubscriptionRequestInformation>>::iterator
                 queuedSubscriptionRequestsIterator =
                         queuedSubscriptionRequests.find(providerId.toStdString());
@@ -555,7 +557,7 @@ void PublicationManager::restore(const QString& providerId,
     }
 
     {
-        QMutexLocker queueLocker(&queuedBroadcastSubscriptionRequestsMutex);
+        std::lock_guard<std::mutex> queueLocker(queuedBroadcastSubscriptionRequestsMutex);
         std::multimap<std::string,
                       std::shared_ptr<BroadcastSubscriptionRequestInformation>>::iterator
                 queuedBroadcastSubscriptionRequestsIterator =
@@ -657,7 +659,7 @@ void PublicationManager::saveSubscriptionRequestsMap(const std::vector<Variant>&
     }
 
     {
-        QMutexLocker fileWritelocker(&fileWriteLock);
+        std::lock_guard<std::mutex> fileWritelocker(fileWriteLock);
         QFile file(storageFilename);
         if (!file.open(QIODevice::WriteOnly)) {
             LOG_ERROR(logger,
@@ -677,7 +679,7 @@ void PublicationManager::saveSubscriptionRequestsMap(const std::vector<Variant>&
 template <class RequestInformationType>
 void PublicationManager::loadSavedSubscriptionRequestsMap(
         const QString& storageFilename,
-        QMutex& queueMutex,
+        std::mutex& queueMutex,
         std::multimap<std::string, std::shared_ptr<RequestInformationType>>& queuedSubscriptions)
 {
 
@@ -703,7 +705,7 @@ void PublicationManager::loadSavedSubscriptionRequestsMap(
                     QString::fromUtf8(jsonBytes).toStdString());
 
     // Loop through the saved subscriptions
-    QMutexLocker queueLocker(&queueMutex);
+    std::lock_guard<std::mutex> queueLocker(queueMutex);
 
     while (!subscriptionVector.empty()) {
         std::shared_ptr<RequestInformationType> requestInfo(*(subscriptionVector.begin()));
@@ -718,8 +720,6 @@ void PublicationManager::loadSavedSubscriptionRequestsMap(
                               requestInfo->toQString()));
         }
     }
-
-    queueLocker.unlock();
 }
 
 void PublicationManager::removeAttributePublication(const QString& subscriptionId)
@@ -752,7 +752,7 @@ void PublicationManager::removeAttributePublication(const QString& subscriptionI
     subscriptionLocker.unlock();
 
     {
-        QMutexLocker publicationLocker(&(publication->mutex));
+        std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
         // Delete the onChange publication if needed
         removeOnChangePublication(subscriptionId, request, publication);
     }
@@ -796,7 +796,7 @@ void PublicationManager::removeBroadcastPublication(const QString& subscriptionI
     subscriptionLocker.unlock();
 
     if (publication != nullptr && request != nullptr) {
-        QMutexLocker publicationLocker(&(publication->mutex));
+        std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
         // Remove listener
         std::shared_ptr<RequestCaller> requestCaller = publication->requestCaller;
         requestCaller->unregisterBroadcastListener(
@@ -814,7 +814,7 @@ void PublicationManager::removeOnChangePublication(
         std::shared_ptr<SubscriptionRequestInformation> request,
         std::shared_ptr<Publication> publication)
 {
-    QMutexLocker publicationLocker(&(publication->mutex));
+    std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
     if (SubscriptionUtil::isOnChangeSubscription(request->getQos())) {
         LOG_DEBUG(logger, QString("Removing onChange publication for id = %1").arg(subscriptionId));
 
@@ -860,7 +860,7 @@ bool PublicationManager::processFilterChain(const QString& subscriptionId,
 
 bool PublicationManager::isShuttingDown()
 {
-    QMutexLocker shuwDownLocker(&shutDownMutex);
+    std::lock_guard<std::mutex> shuwDownLocker(shutDownMutex);
     return shuttingDown;
 }
 
@@ -895,7 +895,7 @@ void PublicationManager::sendSubscriptionPublication(
 
     MessagingQos mQos;
 
-    QMutexLocker publicationLocker(&(publication->mutex));
+    std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
     // Set the TTL
     mQos.setTtl(getPublicationTtl(request));
 
@@ -912,7 +912,7 @@ void PublicationManager::sendSubscriptionPublication(
     publication->timeOfLastPublication = now;
 
     {
-        QMutexLocker currentScheduledLocker(&currentScheduledPublicationsMutex);
+        std::lock_guard<std::mutex> currentScheduledLocker(currentScheduledPublicationsMutex);
         currentScheduledPublications.removeAll(
                 QString::fromStdString(request->getSubscriptionId()));
     }
@@ -961,7 +961,7 @@ void PublicationManager::pollSubscription(const QString& subscriptionId)
     subscriptionLocker.unlock();
 
     {
-        QMutexLocker publicationLocker(&(publication->mutex));
+        std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
         // See if the publication is needed
         const SubscriptionQos* qos = subscriptionRequest->getSubscriptionQosPtr();
         int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
@@ -1086,7 +1086,7 @@ void PublicationManager::attributeValueChanged(const QString& subscriptionId, co
     subscriptionLocker.unlock();
 
     {
-        QMutexLocker publicationLocker(&(publication->mutex));
+        std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
         if (!isPublicationAlreadyScheduled(subscriptionId)) {
             qint64 timeUntilNextPublication =
                     getTimeUntilNextPublication(publication, subscriptionRequest->getQos());
@@ -1132,7 +1132,7 @@ void PublicationManager::broadcastOccurred(const QString& subscriptionId,
     subscriptionLocker.unlock();
 
     {
-        QMutexLocker publicationLocker(&(publication->mutex));
+        std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
         // Only proceed if publication can immediately be sent
         qint64 timeUntilNextPublication =
                 getTimeUntilNextPublication(publication, subscriptionRequest->getQos());
@@ -1158,14 +1158,14 @@ void PublicationManager::broadcastOccurred(const QString& subscriptionId,
 
 bool PublicationManager::isPublicationAlreadyScheduled(const QString& subscriptionId)
 {
-    QMutexLocker currentScheduledLocker(&currentScheduledPublicationsMutex);
+    std::lock_guard<std::mutex> currentScheduledLocker(currentScheduledPublicationsMutex);
     return currentScheduledPublications.contains(subscriptionId);
 }
 
 int64_t PublicationManager::getTimeUntilNextPublication(std::shared_ptr<Publication> publication,
                                                         Variant qos)
 {
-    QMutexLocker publicationLocker(&(publication->mutex));
+    std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
     // Check the last publication time against the min interval
     int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
     int64_t minInterval = SubscriptionUtil::getMinInterval(qos);
@@ -1183,7 +1183,7 @@ void PublicationManager::reschedulePublication(const QString& subscriptionId,
                                                qint64 nextPublication)
 {
     if (nextPublication > 0) {
-        QMutexLocker currentScheduledLocker(&currentScheduledPublicationsMutex);
+        std::lock_guard<std::mutex> currentScheduledLocker(currentScheduledPublicationsMutex);
 
         // Schedule a publication so that the change is not forgotten
         if (!currentScheduledPublications.contains(subscriptionId)) {
@@ -1209,7 +1209,7 @@ PublicationManager::Publication::Publication(IPublicationSender* publicationSend
           requestCaller(requestCaller),
           attributeListener(NULL),
           broadcastListener(NULL),
-          mutex(QMutex::RecursionMode::Recursive),
+          mutex(),
           publicationEndRunnableHandle(DelayedScheduler::INVALID_RUNNABLE_HANDLE)
 {
 }
@@ -1264,7 +1264,7 @@ void PublicationManager::PublicationEndRunnable::run()
     subscriptionsLocker.unlock();
 
     {
-        QMutexLocker locker(&(publication->mutex));
+        std::lock_guard<std::recursive_mutex> lock((publication->mutex));
         publication->publicationEndRunnableHandle = DelayedScheduler::INVALID_RUNNABLE_HANDLE;
     }
 }

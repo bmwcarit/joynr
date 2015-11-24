@@ -21,7 +21,6 @@
 #include "joynr/IMessaging.h"
 
 #include <cassert>
-#include <QMutexLocker>
 
 namespace joynr
 {
@@ -44,7 +43,7 @@ std::shared_ptr<IMessaging> MessagingStubFactory::create(
         const joynr::system::RoutingTypes::QtAddress& destinationAddress)
 {
     {
-        QMutexLocker locker(&this->mutex);
+        std::lock_guard<std::mutex> lock(this->mutex);
 
         if (!address2MessagingStubDirectory.contains(destinationAddress)) {
             // search for the corresponding factory

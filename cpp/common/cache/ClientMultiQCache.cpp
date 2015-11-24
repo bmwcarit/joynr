@@ -37,7 +37,7 @@ ClientMultiQCache::ClientMultiQCache() : cache(), mutex()
 
 QList<QVariant> ClientMultiQCache::lookUp(const QString& attributeId, qint64 maxAcceptedAgeInMs)
 {
-    QMutexLocker locker(&mutex);
+    std::unique_lock<std::mutex> lock(mutex);
     if (!cache.contains(attributeId)) {
         return QList<QVariant>();
     }
@@ -56,7 +56,7 @@ QList<QVariant> ClientMultiQCache::lookUp(const QString& attributeId, qint64 max
 
 void ClientMultiQCache::insert(QString attributeId, QVariant value)
 {
-    QMutexLocker locker(&mutex);
+    std::unique_lock<std::mutex> lock(mutex);
     int64_t timeNow = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
     CachedValue<QVariant> cachedValue = CachedValue<QVariant>(value, timeNow);
     if (cache.contains(attributeId)) {

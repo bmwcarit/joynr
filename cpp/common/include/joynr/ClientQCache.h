@@ -24,10 +24,10 @@
 #include "joynr/IClientCache.h"
 #include "joynr/CachedValue.h"
 
-#include <QMutex>
 #include "joynr/Cache.h"
 
 #include <string>
+#include <mutex>
 #include "joynr/Variant.h"
 
 namespace joynr
@@ -65,7 +65,7 @@ private:
       */
     int64_t elapsed(int64_t entryTime);
     Cache<std::string, CachedValue<Variant>> cache;
-    QMutex mutex;
+    std::mutex mutex;
 };
 
 } // namespace joynr

@@ -18,7 +18,6 @@
  */
 #include "WebSocketMessagingStubFactory.h"
 
-#include <QtCore/QMutexLocker>
 #include <QtCore/QDebug>
 #include <QtCore/QEventLoop>
 #include <QtWebSockets/QWebSocket>
@@ -59,7 +58,7 @@ std::shared_ptr<IMessaging> WebSocketMessagingStubFactory::create(
                 qobject_cast<const system::RoutingTypes::QtWebSocketClientAddress*>(&destAddress);
         // lookup address
         {
-            QMutexLocker locker(&mutex);
+            std::lock_guard<std::mutex> lock(mutex);
             if (!clientStubMap.contains(*webSocketClientAddress)) {
                 LOG_ERROR(logger,
                           QString("No websocket found for address %0")
@@ -75,7 +74,7 @@ std::shared_ptr<IMessaging> WebSocketMessagingStubFactory::create(
                 qobject_cast<const system::RoutingTypes::QtWebSocketAddress*>(&destAddress);
         // lookup address
         {
-            QMutexLocker locker(&mutex);
+            std::lock_guard<std::mutex> lock(mutex);
             if (!serverStubMap.contains(*webSocketServerAddress)) {
                 LOG_ERROR(logger,
                           QString("No websocket found for address %0")

@@ -27,7 +27,7 @@
 
 #include <QString>
 #include <QVariant>
-#include <QMutex>
+#include <mutex>
 #include <QReadWriteLock>
 #include <memory>
 #include <vector>
@@ -174,12 +174,12 @@ private:
     // .. and protected with a read/write lock
     mutable QReadWriteLock subscriptionLock;
 
-    QMutex fileWriteLock;
+    std::mutex fileWriteLock;
     // Publications are scheduled to run on a thread pool
     DelayedScheduler* delayedScheduler;
 
     // Support for clean shutdowns
-    QMutex shutDownMutex;
+    std::mutex shutDownMutex;
     bool shuttingDown;
 
     // Subscription persistence
@@ -191,21 +191,21 @@ private:
     // the corresponding provider is added
     std::multimap<std::string, std::shared_ptr<SubscriptionRequestInformation>>
             queuedSubscriptionRequests;
-    QMutex queuedSubscriptionRequestsMutex;
+    std::mutex queuedSubscriptionRequestsMutex;
 
     // Queues all broadcast subscription requests that are either received by the
     // dispatcher or restored from the subscription storage file before
     // the corresponding provider is added
     std::multimap<std::string, std::shared_ptr<BroadcastSubscriptionRequestInformation>>
             queuedBroadcastSubscriptionRequests;
-    QMutex queuedBroadcastSubscriptionRequestsMutex;
+    std::mutex queuedBroadcastSubscriptionRequestsMutex;
 
     // Logging
     static joynr_logging::Logger* logger;
 
     // List of subscriptionId's of runnables scheduled with delay <= qos.getMinInterval_ms()
     QList<QString> currentScheduledPublications;
-    QMutex currentScheduledPublicationsMutex;
+    std::mutex currentScheduledPublicationsMutex;
 
     // Filters registered for broadcasts. Keyed by broadcast name.
     std::map<std::string, QList<std::shared_ptr<IBroadcastFilter>>> broadcastFilters;
@@ -254,7 +254,7 @@ private:
     template <class RequestInformationType>
     void loadSavedSubscriptionRequestsMap(
             const QString& storageFilename,
-            QMutex& mutex,
+            std::mutex& mutex,
             std::multimap<std::string, std::shared_ptr<RequestInformationType>>&
                     queuedSubscriptions);
 

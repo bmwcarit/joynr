@@ -23,8 +23,7 @@
 
 #include "joynr/PublicationInterpreter.h"
 #include "joynr/ReplyInterpreter.h"
-#include <QMutex>
-#include <QMutexLocker>
+#include <mutex>
 #include <unordered_map>
 #include <QMetaType>
 
@@ -118,11 +117,11 @@ private:
 
     // A threadsafe hash holding PublicationInterpreters
     std::unordered_map<int, IPublicationInterpreter*> publicationInterpreters;
-    QMutex publicationInterpretersMutex;
+    std::mutex publicationInterpretersMutex;
 
     // A threadsafe hash holding ReplyInterpreters
     std::unordered_map<int, IReplyInterpreter*> replyInterpreters;
-    QMutex replyInterpretersMutex;
+    std::mutex replyInterpretersMutex;
 };
 
 template <class T>
@@ -139,7 +138,7 @@ template <class T>
 void MetaTypeRegistrar::registerEnumMetaType()
 {
     {
-        QMutexLocker locker(&publicationInterpretersMutex);
+        std::lock_guard<std::mutex> lock(publicationInterpretersMutex);
         addEnumPublicationInterpreter<T>(Util::getTypeId<typename T::Enum>());
         addEnumPublicationInterpreter<QList<T>>(Util::getTypeId<QList<typename T::Enum>>());
     }
@@ -149,7 +148,7 @@ template <class T>
 void MetaTypeRegistrar::registerMetaType()
 {
     {
-        QMutexLocker locker(&publicationInterpretersMutex);
+        std::lock_guard<std::mutex> lock(publicationInterpretersMutex);
         addPublicationInterpreter<T>();
         addPublicationInterpreter<std::vector<T>>();
     }
@@ -159,7 +158,7 @@ template <class T1, class T2, class... Ts>
 void MetaTypeRegistrar::registerMetaType()
 {
     {
-        QMutexLocker locker(&publicationInterpretersMutex);
+        std::lock_guard<std::mutex> lock(publicationInterpretersMutex);
         addPublicationInterpreter<T1, T2, Ts...>();
     }
 }
@@ -178,7 +177,7 @@ template <class... Ts>
 void MetaTypeRegistrar::registerReplyMetaType()
 {
     {
-        QMutexLocker locker(&replyInterpretersMutex);
+        std::lock_guard<std::mutex> lock(replyInterpretersMutex);
         int typeId = Util::getTypeId<Ts...>();
 
         if (replyInterpreters.find(typeId) == replyInterpreters.end()) {

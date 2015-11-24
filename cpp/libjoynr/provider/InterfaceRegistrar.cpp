@@ -32,12 +32,12 @@ InterfaceRegistrar::InterfaceRegistrar()
 
 InterfaceRegistrar& InterfaceRegistrar::instance()
 {
-    static QMutex mutex;
+    static std::mutex mutex;
 
     // Use double-checked locking so that, under normal use, a
     // mutex lock is not required.
     if (!registrarInstance) {
-        QMutexLocker locker(&mutex);
+        std::lock_guard<std::mutex> lock(mutex);
         if (!registrarInstance) {
             registrarInstance = new InterfaceRegistrar();
         }
@@ -48,7 +48,7 @@ InterfaceRegistrar& InterfaceRegistrar::instance()
 
 void InterfaceRegistrar::unregisterRequestInterpreter(const std::string& interfaceName)
 {
-    QMutexLocker locker(&requestInterpretersMutex);
+    std::lock_guard<std::mutex> lock(requestInterpretersMutex);
 
     // It is a programming error if the request interpreter does not exist
     assert(requestInterpreters.find(interfaceName) != requestInterpreters.end());
@@ -70,7 +70,7 @@ void InterfaceRegistrar::unregisterRequestInterpreter(const std::string& interfa
 std::shared_ptr<IRequestInterpreter> InterfaceRegistrar::getRequestInterpreter(
         const std::string& interfaceName)
 {
-    QMutexLocker locker(&requestInterpretersMutex);
+    std::lock_guard<std::mutex> lock(requestInterpretersMutex);
 
     assert(requestInterpreters.find(interfaceName) != requestInterpreters.end());
     return requestInterpreters[interfaceName];
@@ -78,7 +78,7 @@ std::shared_ptr<IRequestInterpreter> InterfaceRegistrar::getRequestInterpreter(
 
 void InterfaceRegistrar::reset()
 {
-    QMutexLocker locker(&requestInterpretersMutex);
+    std::lock_guard<std::mutex> lock(requestInterpretersMutex);
     requestInterpreters.clear();
     requestInterpreterCounts.clear();
 }

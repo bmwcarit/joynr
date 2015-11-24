@@ -21,9 +21,9 @@
 
 #include <QtCore/QObject>
 #include <QtCore/QHash>
-#include <QtCore/QMutex>
 #include <QtCore/QUrl>
 #include <memory>
+#include <mutex>
 
 #include "joynr/joynrlogging.h"
 #include "joynr/IMiddlewareMessagingStubFactory.h"
@@ -69,7 +69,7 @@ private:
             serverStubMap;
     QHash<joynr::system::RoutingTypes::QtWebSocketClientAddress, std::shared_ptr<IMessaging>>
             clientStubMap;
-    QMutex mutex;
+    std::mutex mutex;
 
     static joynr_logging::Logger* logger;
 };

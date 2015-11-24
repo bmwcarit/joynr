@@ -20,7 +20,6 @@
 #include "joynr/system/RoutingTypes_QtCommonApiDbusAddress.h"
 #include "common/dbus/DbusMessagingStubAdapter.h"
 
-#include <QMutexLocker>
 #include "joynr/TypeUtil.h"
 
 namespace joynr
@@ -46,7 +45,7 @@ std::shared_ptr<IMessaging> DbusMessagingStubFactory::create(
     std::shared_ptr<IMessaging> stub = nullptr;
     // lookup address
     {
-        QMutexLocker locker(&mutex);
+        std::lock_guard<std::mutex> lock(mutex);
         auto entry = stubMap.find(address.toStdString());
         if (entry == stubMap.end()) {
             // create new stub

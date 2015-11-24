@@ -31,7 +31,7 @@
 
 #include <QString>
 #include <QtGlobal>
-#include <QMutex>
+#include <mutex>
 #include <QHash>
 
 #include <memory>
@@ -96,7 +96,7 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(Directory);
     QHash<Key, std::shared_ptr<T>> callbackMap;
-    QMutex mutex;
+    std::mutex mutex;
     SingleThreadedDelayedScheduler callBackRemoverScheduler;
     static joynr_logging::Logger* logger;
 };
@@ -141,14 +141,14 @@ Directory<Key, T>::Directory(const std::string& /*directoryName*/)
 template <typename Key, typename T>
 std::shared_ptr<T> Directory<Key, T>::lookup(const Key& keyId)
 {
-    QMutexLocker locker(&mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     return callbackMap.value(keyId);
 }
 
 template <typename Key, typename T>
 bool Directory<Key, T>::contains(const Key& keyId)
 {
-    QMutexLocker locker(&mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     return callbackMap.contains(keyId);
 }
 
@@ -163,7 +163,7 @@ void Directory<Key, T>::add(const Key& keyId, T* value)
 template <typename Key, typename T>
 void Directory<Key, T>::add(const Key& keyId, std::shared_ptr<T> value)
 {
-    QMutexLocker locker(&mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     callbackMap.insert(keyId, value);
 }
 
@@ -180,7 +180,7 @@ void Directory<Key, T>::add(const Key& keyId, std::shared_ptr<T> value, qint64 t
 {
     // Insert the value
     {
-        QMutexLocker locker(&mutex);
+        std::lock_guard<std::mutex> lock(mutex);
         callbackMap.insert(keyId, value);
     }
 
@@ -192,7 +192,7 @@ void Directory<Key, T>::add(const Key& keyId, std::shared_ptr<T> value, qint64 t
 template <typename Key, typename T>
 void Directory<Key, T>::remove(const Key& keyId)
 {
-    QMutexLocker locker(&mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     callbackMap.remove(keyId);
 }
 

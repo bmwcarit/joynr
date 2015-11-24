@@ -88,7 +88,7 @@ Dispatcher::~Dispatcher()
 void Dispatcher::addRequestCaller(const std::string& participantId,
                                   std::shared_ptr<RequestCaller> requestCaller)
 {
-    QMutexLocker locker(&subscriptionHandlingMutex);
+    std::lock_guard<std::mutex> lock(subscriptionHandlingMutex);
     LOG_DEBUG(logger, "addRequestCaller id= " + QString::fromStdString(participantId));
     requestCallerDirectory.add(participantId, requestCaller);
 
@@ -104,7 +104,7 @@ void Dispatcher::addRequestCaller(const std::string& participantId,
 
 void Dispatcher::removeRequestCaller(const std::string& participantId)
 {
-    QMutexLocker locker(&subscriptionHandlingMutex);
+    std::lock_guard<std::mutex> lock(subscriptionHandlingMutex);
     LOG_DEBUG(logger, "removeRequestCaller id= " + QString::fromStdString(participantId));
     // TODO if a provider is removed, all publication runnables are stopped
     // the subscription request is deleted,
@@ -283,7 +283,7 @@ void Dispatcher::handleSubscriptionRequestReceived(const JoynrMessage& message)
     LOG_TRACE(logger, "Starting handleSubscriptionReceived");
     // Make sure that noone is registering a Caller at the moment, because a racing condition could
     // occour.
-    QMutexLocker locker(&subscriptionHandlingMutex);
+    std::lock_guard<std::mutex> lock(subscriptionHandlingMutex);
     assert(publicationManager != NULL);
 
     QString receiverId = QString::fromStdString(message.getHeaderTo());
@@ -323,7 +323,7 @@ void Dispatcher::handleBroadcastSubscriptionRequestReceived(const JoynrMessage& 
     LOG_TRACE(logger, "Starting handleBroadcastSubscriptionRequestReceived");
     // Make sure that noone is registering a Caller at the moment, because a racing condition could
     // occour.
-    QMutexLocker locker(&subscriptionHandlingMutex);
+    std::lock_guard<std::mutex> lock(subscriptionHandlingMutex);
     assert(publicationManager != NULL);
 
     QString receiverId = QString::fromStdString(message.getHeaderTo());

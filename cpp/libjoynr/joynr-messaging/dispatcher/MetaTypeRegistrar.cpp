@@ -45,18 +45,18 @@ MetaTypeRegistrar::MetaTypeRegistrar()
     registerMetaType<uint64_t>();
 
     // Register a reply interpreter for void type
-    QMutexLocker locker(&replyInterpretersMutex);
+    std::lock_guard<std::mutex> lock(replyInterpretersMutex);
     replyInterpreters.insert({Util::getTypeId<void>(), new ReplyInterpreter<void>()});
 }
 
 MetaTypeRegistrar& MetaTypeRegistrar::instance()
 {
-    static QMutex mutex;
+    static std::mutex mutex;
 
     // Use double-checked locking so that, under normal use, a
     // mutex lock is not required.
     if (!registrarInstance) {
-        QMutexLocker locker(&mutex);
+        std::lock_guard<std::mutex> lock(mutex);
         if (!registrarInstance) {
             registrarInstance = new MetaTypeRegistrar();
         }
@@ -67,7 +67,7 @@ MetaTypeRegistrar& MetaTypeRegistrar::instance()
 
 IPublicationInterpreter& MetaTypeRegistrar::getPublicationInterpreter(int typeId)
 {
-    QMutexLocker locker(&publicationInterpretersMutex);
+    std::lock_guard<std::mutex> lock(publicationInterpretersMutex);
 
     IPublicationInterpreter* ret;
     auto search = publicationInterpreters.find(typeId);
@@ -82,7 +82,7 @@ IPublicationInterpreter& MetaTypeRegistrar::getPublicationInterpreter(int typeId
 
 IReplyInterpreter& MetaTypeRegistrar::getReplyInterpreter(int typeId)
 {
-    QMutexLocker locker(&replyInterpretersMutex);
+    std::lock_guard<std::mutex> lock(replyInterpretersMutex);
 
     IReplyInterpreter* ret;
     auto search = replyInterpreters.find(typeId);

@@ -25,7 +25,7 @@
 
 #include <QString>
 #include <unordered_map>
-#include <QMutex>
+#include <mutex>
 
 namespace joynr
 {
@@ -63,7 +63,7 @@ private:
     typedef std::unordered_map<std::string, joynr_logging::Logger*> LoggerHash;
     LoggerHash loggers;
 
-    QMutex loggerMutex;
+    std::mutex loggerMutex;
 };
 
 /**
@@ -109,7 +109,7 @@ joynr_logging::Logger* SpdlogLogging::getLogger(const QString contextId, const Q
 {
     std::string prefix = contextId.toStdString() + "-" + className.toStdString();
     if (loggers.find(prefix) == loggers.end()) {
-        QMutexLocker lock(&loggerMutex);
+        std::lock_guard<std::mutex> lock(loggerMutex);
         if (loggers.find(prefix) == loggers.end()) {
             loggers.insert({prefix, new SpdlogLogger(QString::fromStdString(prefix))});
         }
@@ -121,7 +121,7 @@ joynr_logging::Logger* SpdlogLogging::getLogger(const QString contextId, const Q
 void SpdlogLogging::destroyLogger(const QString contextId, const QString className)
 {
     std::string prefix = contextId.toStdString() + " - " + className.toStdString();
-    QMutexLocker lock(&loggerMutex);
+    std::lock_guard<std::mutex> lock(loggerMutex);
     if (loggers.find(prefix) == loggers.end()) {
         return;
     }

@@ -25,7 +25,7 @@
 #include "joynr/JoynrMessage.h"
 #include "joynr/ContentWithDecayTime.h"
 
-#include <QMutex>
+#include <mutex>
 #include <QRunnable>
 #include <string>
 #include <map>
@@ -55,7 +55,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(MessageQueue);
 
     std::multimap<std::string, MessageQueueItem*>* queue;
-    mutable QMutex queueMutex;
+    mutable std::mutex queueMutex;
 };
 }
 

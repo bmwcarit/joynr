@@ -23,7 +23,7 @@
 
 #include <QCache>
 #include <QList>
-#include <QMutex>
+#include <mutex>
 #include <chrono>
 #include <stdint.h>
 
@@ -98,7 +98,7 @@ private:
      */
     qint64 elapsed(qint64 entryTime);
     QCache<Key, QList<CachedValue<T>>> cache;
-    QMutex mutex;
+    std::mutex mutex;
 };
 
 template <class Key, class T>
@@ -114,7 +114,7 @@ QList<T> TypedClientMultiCache<Key, T>::lookUp(const Key& key, qint64 maxAccepte
     if (maxAcceptedAgeInMs == -1) {
         return lookUpAll(key);
     }
-    QMutexLocker locker(&mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     if (!cache.contains(key)) {
         return QList<T>();
     }
@@ -134,7 +134,7 @@ QList<T> TypedClientMultiCache<Key, T>::lookUp(const Key& key, qint64 maxAccepte
 template <class Key, class T>
 QList<T> TypedClientMultiCache<Key, T>::lookUpAll(const Key& key)
 {
-    QMutexLocker locker(&mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     if (!cache.contains(key)) {
         return QList<T>();
     }
@@ -150,7 +150,7 @@ QList<T> TypedClientMultiCache<Key, T>::lookUpAll(const Key& key)
 template <class Key, class T>
 void TypedClientMultiCache<Key, T>::insert(const Key& key, T object)
 {
-    QMutexLocker locker(&mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
     CachedValue<T> cachedValue = CachedValue<T>(object, now);
     if (cache.contains(key)) {
@@ -166,7 +166,7 @@ void TypedClientMultiCache<Key, T>::insert(const Key& key, T object)
 template <class Key, class T>
 void TypedClientMultiCache<Key, T>::remove(const Key& key, T object)
 {
-    QMutexLocker locker(&mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     if (!cache.contains(key)) {
         return;
     }
@@ -185,7 +185,7 @@ void TypedClientMultiCache<Key, T>::remove(const Key& key, T object)
 template <class Key, class T>
 void TypedClientMultiCache<Key, T>::removeAll(const Key& key)
 {
-    QMutexLocker locker(&mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     if (!cache.contains(key)) {
         return;
     }
@@ -195,7 +195,7 @@ void TypedClientMultiCache<Key, T>::removeAll(const Key& key)
 template <class Key, class T>
 void TypedClientMultiCache<Key, T>::cleanup(qint64 maxAcceptedAgeInMs)
 {
-    QMutexLocker locker(&mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     QList<Key> keyset = cache.keys();
     QList<CachedValue<T>>* entries;
     CachedValue<T> avalue;

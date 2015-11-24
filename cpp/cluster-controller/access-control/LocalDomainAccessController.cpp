@@ -200,7 +200,7 @@ void LocalDomainAccessController::getConsumerPermission(
     std::string compoundKey = createCompoundKey(domain, interfaceName);
     bool needsInit = false;
     {
-        QMutexLocker lock(&initStateMutex);
+        std::lock_guard<std::mutex> lock(initStateMutex);
         if (!aceSubscriptions.contains(QString::fromStdString(compoundKey))) {
             // Queue the request
             ConsumerPermissionRequest request = {
@@ -555,7 +555,7 @@ void LocalDomainAccessController::unregisterProvider(const std::string& domain,
     std::string compoundKey = createCompoundKey(domain, interfaceName);
     AceSubscription subscriptionIds;
     {
-        QMutexLocker lock(&initStateMutex);
+        std::lock_guard<std::mutex> lock(initStateMutex);
         if (!aceSubscriptions.contains(QString::fromStdString(compoundKey))) {
             return;
         }
@@ -690,7 +690,7 @@ void LocalDomainAccessController::initialised(const std::string& domain,
     QList<ConsumerPermissionRequest> requests;
 
     {
-        QMutexLocker lock(&initStateMutex);
+        std::lock_guard<std::mutex> lock(initStateMutex);
 
         // Subscribe to ACL broadcasts about this domain/interface
         aceSubscriptions.insert(QString::fromStdString(compoundKey),
@@ -717,7 +717,7 @@ void LocalDomainAccessController::abortInitialisation(const std::string& domain,
     QList<ConsumerPermissionRequest> requests;
 
     {
-        QMutexLocker lock(&initStateMutex);
+        std::lock_guard<std::mutex> lock(initStateMutex);
 
         // Remove requests that cannot be processed
         requests = consumerPermissionRequests.take(QString::fromStdString(compoundKey));

@@ -22,7 +22,7 @@
 #include "joynr/SingleThreadedDelayedScheduler.h"
 
 #include <QUuid>
-#include <QMutex>
+#include <mutex>
 
 #include <assert.h>
 #include <chrono>
@@ -40,7 +40,7 @@ public:
 
     qint64 timeOfLastPublication;
     std::shared_ptr<ISubscriptionCallback> subscriptionCaller;
-    QMutex mutex;
+    std::recursive_mutex mutex;
     bool isStopped;
     quint32 subscriptionEndRunnableHandle;
     quint32 missedPublicationRunnableHandle;
@@ -115,7 +115,7 @@ void SubscriptionManager::registerSubscription(
     subscriptionsLocker.unlock();
 
     {
-        QMutexLocker subscriptionLocker(&(subscription->mutex));
+        std::lock_guard<std::recursive_mutex> subscriptionLocker(subscription->mutex);
         if (SubscriptionUtil::getAlertInterval(qosVariant) > 0 &&
             SubscriptionUtil::getPeriodicPublicationInterval(qosVariant) > 0) {
             LOG_DEBUG(logger, "Will notify if updates are missed.");
@@ -156,7 +156,7 @@ void SubscriptionManager::unregisterSubscription(const QString& subscriptionId)
         std::shared_ptr<Subscription> subscription = subscriptionsIterator->second;
         subscriptions.erase(subscriptionsIterator);
         LOG_DEBUG(logger, "Called unregister / unsubscribe on subscription id= " + subscriptionId);
-        QMutexLocker subscriptionLocker(&(subscription->mutex));
+        std::lock_guard<std::recursive_mutex> subscriptionLocker(subscription->mutex);
         subscription->isStopped = true;
         if (subscription->subscriptionEndRunnableHandle !=
             DelayedScheduler::INVALID_RUNNABLE_HANDLE) {
@@ -180,7 +180,7 @@ void SubscriptionManager::unregisterSubscription(const QString& subscriptionId)
 void SubscriptionManager::checkMissedPublication(
     const Timer::TimerId id)
 {
-    QMutexLocker subscriptionLocker(&mutex);
+    std::lock_guard<std::recursive_mutex> subscriptionLocker(&mutex);
 
     if (!isExpired() && !subscription->isStopped)
     {
@@ -243,7 +243,7 @@ void SubscriptionManager::touchSubscriptionState(const QString& subscriptionId)
     std::shared_ptr<Subscription> subscription = subscriptionElement->second;
     {
         int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-        QMutexLocker subscriptionLocker(&(subscription->mutex));
+        std::lock_guard<std::recursive_mutex> subscriptionLocker(subscription->mutex);
         subscription->timeOfLastPublication = now;
     }
 }
@@ -263,7 +263,7 @@ std::shared_ptr<ISubscriptionCallback> SubscriptionManager::getSubscriptionCallb
     std::shared_ptr<Subscription> subscription(subscriptionElement->second);
 
     {
-        QMutexLocker subscriptionLockers(&(subscription->mutex));
+        std::lock_guard<std::recursive_mutex> subscriptionLockers(subscription->mutex);
         return subscription->subscriptionCaller;
     }
 }
@@ -278,7 +278,7 @@ SubscriptionManager::Subscription::Subscription(
         std::shared_ptr<ISubscriptionCallback> subscriptionCaller)
         : timeOfLastPublication(0),
           subscriptionCaller(subscriptionCaller),
-          mutex(QMutex::RecursionMode::Recursive),
+          mutex(),
           isStopped(false),
           subscriptionEndRunnableHandle(),
           missedPublicationRunnableHandle()
@@ -314,7 +314,7 @@ void SubscriptionManager::MissedPublicationRunnable::shutdown()
 
 void SubscriptionManager::MissedPublicationRunnable::run()
 {
-    QMutexLocker subscriptionLocker(&(subscription->mutex));
+    std::lock_guard<std::recursive_mutex> subscriptionLocker(subscription->mutex);
 
     if (!isExpired() && !subscription->isStopped) {
         LOG_DEBUG(

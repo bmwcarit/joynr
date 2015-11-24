@@ -35,7 +35,7 @@ ClientQCache::ClientQCache() : cache(), mutex()
 
 Variant ClientQCache::lookUp(const std::string& attributeId)
 {
-    QMutexLocker locker(&mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     if (!cache.contains(attributeId)) {
         return Variant::NULL_VARIANT();
     }
@@ -45,7 +45,7 @@ Variant ClientQCache::lookUp(const std::string& attributeId)
 
 void ClientQCache::insert(std::string attributeId, Variant value)
 {
-    QMutexLocker locker(&mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
     CachedValue<Variant>* cachedValue = new CachedValue<Variant>(value, now);
     cache.insert(attributeId, cachedValue);

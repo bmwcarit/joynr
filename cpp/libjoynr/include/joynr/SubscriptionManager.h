@@ -132,7 +132,7 @@ private:
          *interrupted.
          *
          */
-        void run();
+        void run() override;
 
     private:
         DISALLOW_COPY_AND_ASSIGN(MissedPublicationRunnable);
@@ -159,7 +159,7 @@ private:
          * @brief removes subscription once running.
          *
          */
-        void run();
+        void run() override;
 
     private:
         DISALLOW_COPY_AND_ASSIGN(SubscriptionEndRunnable);

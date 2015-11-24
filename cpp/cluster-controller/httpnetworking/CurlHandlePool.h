@@ -24,7 +24,7 @@
 #include "cluster-controller/httpnetworking/HttpNetworking.h"
 
 #include <QLinkedList>
-#include <QMutex>
+#include <mutex>
 #include <QMap>
 
 #include <memory>
@@ -147,7 +147,7 @@ private:
       */
     static const int POOL_SIZE;
 
-    QMutex mutex;
+    std::mutex mutex;
 };
 
 /**
@@ -209,7 +209,7 @@ private:
     QMap<void*, std::shared_ptr<PooledCurlHandle>> outHandleMap;
 
     static const int POOL_SIZE;
-    QMutex mutex;
+    std::mutex mutex;
 };
 
 } // namespace joynr

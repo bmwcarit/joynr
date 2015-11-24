@@ -60,7 +60,6 @@
 #include "joynr/system/DiscoveryInProcessConnector.h"
 #include <QCoreApplication>
 #include <QThread>
-#include <QMutex>
 #include <cassert>
 
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION

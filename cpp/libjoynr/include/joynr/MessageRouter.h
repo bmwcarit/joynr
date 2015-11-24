@@ -37,7 +37,7 @@
 
 #include <QPair>
 #include <unordered_set>
-#include <QMutex>
+#include <mutex>
 #include <string>
 #include <memory>
 #include <QReadWriteLock>
@@ -163,7 +163,7 @@ private:
     std::unordered_set<std::string>* runningParentResolves;
     std::shared_ptr<IAccessController> accessController;
     IPlatformSecurityManager* securityManager;
-    mutable QMutex parentResolveMutex;
+    mutable std::mutex parentResolveMutex;
 
     void addNextHopToParent(std::string participantId,
                             std::function<void(void)> callbackFct = nullptr,
