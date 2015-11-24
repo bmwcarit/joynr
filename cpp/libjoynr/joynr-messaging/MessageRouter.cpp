@@ -204,9 +204,10 @@ void MessageRouter::route(const JoynrMessage& message)
     const QString destinationPartId = QString::fromStdString(message.getHeaderTo());
     std::shared_ptr<joynr::system::RoutingTypes::QtAddress> destAddress(NULL);
 
-    routingTableLock.lockForRead();
-    destAddress = routingTable.lookup(destinationPartId.toStdString());
-    routingTableLock.unlock();
+    {
+        joynr::ReadLocker lock(routingTableLock);
+        destAddress = routingTable.lookup(destinationPartId.toStdString());
+    }
     // if destination address is not known
     if (!destAddress) {
         // save the message for later delivery
@@ -462,9 +463,8 @@ void MessageRouter::addToRoutingTable(
         std::string participantId,
         std::shared_ptr<joynr::system::RoutingTypes::QtAddress> address)
 {
-    routingTableLock.lockForWrite();
+    joynr::WriteLocker lock(routingTableLock);
     routingTable.add(participantId, address);
-    routingTableLock.unlock();
 }
 
 // inherited from joynr::system::RoutingProvider
@@ -473,9 +473,10 @@ void MessageRouter::removeNextHop(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    routingTableLock.lockForWrite();
-    routingTable.remove(participantId);
-    routingTableLock.unlock();
+    {
+        joynr::WriteLocker lock(routingTableLock);
+        routingTable.remove(participantId);
+    }
 
     std::function<void(const exceptions::JoynrException&)> onErrorWrapper =
             [onError](const exceptions::JoynrException& error) {
@@ -494,12 +495,10 @@ void MessageRouter::removeNextHop(
 void MessageRouter::resolveNextHop(
         const std::string& participantId,
         std::function<void(const bool& resolved)> onSuccess,
-        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> /*onError*/)
 {
-    (void)onError;
-    routingTableLock.lockForRead();
+    joynr::ReadLocker lock(routingTableLock);
     bool resolved = routingTable.contains(participantId);
-    routingTableLock.unlock();
     onSuccess(resolved);
 }
 

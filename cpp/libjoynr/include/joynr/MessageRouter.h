@@ -40,7 +40,6 @@
 #include <mutex>
 #include <string>
 #include <memory>
-#include <QReadWriteLock>
 
 namespace joynr
 {
@@ -151,7 +150,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(MessageRouter);
     IMessagingStubFactory* messagingStubFactory;
     Directory<std::string, joynr::system::RoutingTypes::QtAddress> routingTable;
-    QReadWriteLock routingTableLock;
+    joynr::ReadWriteLock routingTableLock;
     ThreadPool threadPool;
     joynr::system::RoutingProxy* parentRouter;
     std::shared_ptr<joynr::system::RoutingTypes::QtAddress> parentAddress;
