@@ -150,6 +150,8 @@ joynrTestRequire(
                                                 .createSpy("operationWithMultipleOutputParameters"),
                                         operationWithEnumsAsInputAndEnumArrayAsOutput : jasmine
                                                 .createSpy("operationWithEnumsAsInputAndEnumArrayAsOutput"),
+                                        methodWithSingleArrayParameters : jasmine
+                                                .createSpy("methodWithSingleArrayParameters"),
                                         broadcastWithEnum : jasmine.createSpy("broadcastWithEnum")
                                     };
                         });

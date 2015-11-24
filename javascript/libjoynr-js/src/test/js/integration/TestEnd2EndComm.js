@@ -869,6 +869,19 @@ joynrTestRequire(
                                             });
                                });
 
+                        it(
+                                "can call an operation with double array as argument and string array as return type",
+                                function() {
+                                    callOperation(
+                                            "methodWithSingleArrayParameters",
+                                            {
+                                                doubleArrayArg : [0.01,1.1,2.2,3.3]
+                                            },
+                                            {
+                                                stringArrayOut : ["0.01", "1.1", "2.2", "3.3"]
+                                            });
+                               });
+
                         it("can start a subscription and provides a subscription id", function() {
                             var spy;
 

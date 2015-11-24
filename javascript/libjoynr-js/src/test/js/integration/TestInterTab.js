@@ -437,6 +437,24 @@ joynrTestRequire(
                                         };
                                     });
 
+                                    // register operation function "methodWithSingleArrayParameters"
+                                    radioProvider.methodWithSingleArrayParameters.registerOperation(function(opArgs) {
+                                        /* the dummy implementation transforms the incoming double values into
+                                         * strings.
+                                         */
+                                        var stringArrayOut = [], element;
+                                        if (opArgs.doubleArrayArg !== undefined) {
+                                            for (element in opArgs.doubleArrayArg) {
+                                                if (opArgs.doubleArrayArg.hasOwnProperty(element)) {
+                                                    stringArrayOut.push(opArgs.doubleArrayArg[element].toString());
+                                                }
+                                            }
+                                        }
+                                        return {
+                                            stringArrayOut: stringArrayOut
+                                        };
+                                    });
+
                                     radioProvider.methodProvidedImpl.registerOperation(function(
                                             opArgs) {
                                         return {

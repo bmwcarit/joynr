@@ -132,6 +132,14 @@ interface Radio {
 		}
 	}
 
+	method methodWithSingleArrayParameters {
+		in {
+			Double[] doubleArrayArg
+		}
+		out {
+			String[] stringArrayOut
+		}
+	}
 	/**
 	 * When this event is triggered, details about the radio
 	 * station will be included.

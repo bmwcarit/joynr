@@ -269,7 +269,7 @@ class JSTypeUtil extends AbstractTypeUtil {
 		}
 	}
 
-	def toTypesEnum(FBasicTypeId basicType) {
+	private def toTypesEnum(FBasicTypeId basicType) {
 		switch (basicType){
 		case FBasicTypeId::STRING: return "TypesEnum.STRING"
 		case FBasicTypeId::INT8: return "TypesEnum.BYTE"
@@ -283,50 +283,44 @@ class JSTypeUtil extends AbstractTypeUtil {
 		case FBasicTypeId::BOOLEAN: return "TypesEnum.BOOL"
 		case FBasicTypeId::FLOAT: return "TypesEnum.FLOAT"
 		case FBasicTypeId::DOUBLE: return "TypesEnum.DOUBLE"
-		case FBasicTypeId::BYTE_BUFFER:
-			throw new UnsupportedOperationException("basicType" + basicType.joynrName +
-				" could not be mapped to a primitive type name")
+		case FBasicTypeId::BYTE_BUFFER: return "TypesEnum.BYTE\"" + typeNameExtensionForArrays + "\""
 		case FBasicTypeId::UNDEFINED:
 			throw new UnsupportedOperationException("basicType" + basicType.joynrName +
 				" could not be mapped to a primitive type name")
 		}
-		throw new UnsupportedOperationException("basicType" + basicType.joynrName +
-			" could not be mapped to a primitive type name")
 	}
 
-	private def getTypeNameForListParameter(String typeName) {
-		"\"" + typeName + "[]\""
+	private def getTypeNameExtensionForArrays() {
+		"[]"
 	}
 
-	def getTypeNameForParameter(FType datatype, boolean array) {
+	private def getTypeNameForParameter(FType datatype, boolean array) {
 		val mappedDatatype = toTypesEnum(datatype);
 		var result = mappedDatatype;
 
-		// special cases: ByteBuffer => byte-array, arrays => Lists,
-		if (array || (getPrimitive(datatype) == FBasicTypeId::BYTE_BUFFER)) {
-			return getTypeNameForListParameter(result);
+		if (array) {
+			result+=typeNameExtensionForArrays;
 		}
 
-		if (!isPrimitive(datatype)) {
-			return "\"" + result +  "\"";
-		}
+		return "\"" + result +  "\"";
 	}
 
-	def getTypeNameForParameter(FBasicTypeId datatype, boolean array) {
+	private def getTypeNameForParameter(FBasicTypeId datatype, boolean array) {
 		val mappedDatatype = toTypesEnum(datatype);
-		if (array) {
-			return getTypeNameForListParameter(mappedDatatype);
+		// special case: ByteBuffer => byte-array, arrays => Lists,
+		if (array || (datatype == FBasicTypeId::BYTE_BUFFER)) {
+			return mappedDatatype + " + \"" + typeNameExtensionForArrays + "\"";
 		} else {
 			return mappedDatatype;
 		}
 	}
 
 	def String getTypeNameForParameter(FTypedElement typedElement){
-		if (typedElement.type.derived != null){
-			getTypeNameForParameter(typedElement.type.derived, isArray(typedElement))
+		if (isPrimitive(typedElement.type)){
+			getTypeNameForParameter(getPrimitive(typedElement.type), isArray(typedElement))
 		}
 		else{
-			getTypeNameForParameter(typedElement.type.predefined, isArray(typedElement))
+			getTypeNameForParameter(typedElement.type.derived, isArray(typedElement))
 		}
 	}
 
