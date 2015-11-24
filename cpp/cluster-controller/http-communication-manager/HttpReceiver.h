@@ -30,7 +30,7 @@
 
 #include <QString>
 #include <QSettings>
-#include <QSemaphore>
+#include "joynr/Semaphore.h"
 #include <memory>
 
 class DispatcherIntegrationTest;
@@ -106,7 +106,7 @@ private:
        On Channel deletion, the semaphore tries to acquire a resource again, so that the next cycle
        of
        createChannel and waitForReceiveQueueStarted works as well. */
-    QSemaphore* channelCreatedSemaphore;
+    Semaphore* channelCreatedSemaphore;
     QString channelId; // currently channelid is used to construct the channelUrl or
                        // channelLocation.
     // Receiver ID is used to uniquely identify a message receiver (X-Atmosphere-tracking-id).

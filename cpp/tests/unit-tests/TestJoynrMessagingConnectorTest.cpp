@@ -39,7 +39,7 @@ using namespace joynr;
 
 ACTION_P(ReleaseSemaphore,semaphore)
 {
-    semaphore->release(1);
+    semaphore->notify();
 }
 
 /**
@@ -98,7 +98,7 @@ public:
     MockSubscriptionManager* mockSubscriptionManager;
     joynr::types::Localisation::GpsLocation gpsLocation;
     float floatValue;
-    QSemaphore semaphore;
+    joynr::Semaphore semaphore;
 
     tests::testJoynrMessagingConnector* createConnector(bool cacheEnabled) {
         return new tests::testJoynrMessagingConnector(
@@ -193,5 +193,5 @@ TEST_F(TestJoynrMessagingConnectorTest, testBroadcastListenerWrapper) {
     connector->subscribeToLocationUpdateWithSpeedBroadcast(mockListener, qos);
 
     // Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(1, 2000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(2000)));
 }

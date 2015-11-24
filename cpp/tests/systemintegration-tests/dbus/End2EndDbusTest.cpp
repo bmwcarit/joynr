@@ -54,7 +54,7 @@ public:
     tests::testProxy* testProxy;
 
     std::string domain;
-    QSemaphore semaphore;
+    joynr::Semaphore semaphore;
 
     End2EndDbusTest() :
         messageSettingsFilename("test-resources/SystemIntegrationTest1.settings"),
@@ -134,7 +134,7 @@ private:
 
 ACTION_P(ReleaseSemaphore,semaphore)
 {
-    semaphore->release(1);
+    semaphore->unlock();
 }
 
 TEST_F(End2EndDbusTest, instantiate_Runtimes)
@@ -246,7 +246,8 @@ TEST_F(End2EndDbusTest, subscriptionlistener)
     testProxy->subscribeToTestAttribute(subscriptionListener, subscriptionQos);
 
     // Wait for 2 subscription messages to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(3, 20000));
+    ASSERT_TRUE(semaphore.tryLock(20000));
+    ASSERT_TRUE(semaphore.tryLock(20000));
 }
 
 TEST_F(End2EndDbusTest, performance_sendManyRequests) {

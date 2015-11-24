@@ -51,7 +51,7 @@ using namespace joynr_logging;
 
 ACTION_P(ReleaseSemaphore,semaphore)
 {
-    semaphore->release(1);
+    semaphore->wait();
 }
 
 static const std::string messagingPropertiesPersistenceFileName1("CombinedEnd2EndTest-runtime1-joynr.settings");
@@ -490,7 +490,8 @@ TEST_F(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply) {
     std::string subscriptionId = testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
 
     // Wait for 2 subscription messages to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(2, 20000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
 
     delete testProxyBuilder;
 }
@@ -553,7 +554,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToOnChange) {
     testProxy->setLocation(types::Localisation::GpsLocation(9.0, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 1));
 
     // Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(1, 20000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
 
     // Change the location 3 times
     testProxy->setLocation(types::Localisation::GpsLocation(9.0, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 2));
@@ -563,7 +564,9 @@ TEST_F(CombinedEnd2EndTest, subscribeToOnChange) {
     testProxy->setLocation(types::Localisation::GpsLocation(9.0, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4));
 
     // Wait for 3 subscription messages to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(3, 20000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
 
     delete testProxyBuilder;
 }
@@ -622,7 +625,8 @@ TEST_F(CombinedEnd2EndTest, subscribeToListAttribute) {
     std::string subscriptionId = testProxy->subscribeToListOfInts(subscriptionListener, subscriptionQos);
 
     // Wait for 2 subscription messages to arrive
-    EXPECT_TRUE(semaphore.tryAcquire(2, 20000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
 
     testProxy->unsubscribeFromListOfInts(subscriptionId);
     runtime1->unregisterProvider(providerParticipantId);
@@ -725,12 +729,16 @@ TEST_F(CombinedEnd2EndTest, unsubscribeViaHttpReceiver) {
     std::string subscriptionId = gpsProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
 
     // Wait for 2 subscription messages to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(2, 20000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
 
     gpsProxy->unsubscribeFromLocation(subscriptionId);
 
     // Check that the unsubscribe is eventually successful
-    ASSERT_FALSE(semaphore.tryAcquire(4, 10000));
+    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(10000)));
+    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(10000)));
+    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(10000)));
+    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(10000)));
 
     delete testProxyBuilder;
 }
@@ -819,7 +827,7 @@ TEST_F(CombinedEnd2EndTest, subscribeInBackgroundThread) {
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    // QSemaphore semaphore(0);
+    // joynr::Semaphore semaphore(0);
     EXPECT_CALL(*mockListener, onReceive(A<const types::Localisation::GpsLocation&>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
@@ -841,7 +849,8 @@ TEST_F(CombinedEnd2EndTest, subscribeInBackgroundThread) {
     QtConcurrent::run(subscribeToLocation, subscriptionListener, testProxy, this);
 
     // Wait for 2 subscription messages to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(2, 20000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
 
     unsubscribeFromLocation(testProxy, registeredSubscriptionId);
 

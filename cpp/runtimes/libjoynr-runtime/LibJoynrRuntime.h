@@ -20,7 +20,6 @@
 #ifndef LIBJOYNRRUNTIME_H
 #define LIBJOYNRRUNTIME_H
 
-#include <QtCore/QSemaphore>
 #include <string>
 #include <memory>
 
@@ -36,6 +35,7 @@
 #include "joynr/CapabilitiesRegistrar.h"
 #include "runtimes/libjoynr-runtime/JoynrRuntimeExecutor.h"
 #include "joynr/SubscriptionManager.h"
+#include "joynr/Semaphore.h"
 
 namespace joynr
 {

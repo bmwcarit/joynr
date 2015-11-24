@@ -29,7 +29,7 @@
 #include <mutex>
 #include <condition_variable>
 
-#include <QSemaphore>
+#include "joynr/Semaphore.h"
 #include <memory>
 
 namespace joynr
@@ -66,7 +66,7 @@ public:
                                const QString& channelId,
                                const QString& receiverId,
                                const LongPollingMessageReceiverSettings& settings,
-                               QSemaphore* channelCreatedSemaphore,
+                               joynr::Semaphore* channelCreatedSemaphore,
                                std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
                                std::shared_ptr<MessageRouter> messageRouter);
     void stop();
@@ -92,7 +92,7 @@ private:
     std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory;
 
     static joynr_logging::Logger* logger;
-    QSemaphore* channelCreatedSemaphore;
+    joynr::Semaphore* channelCreatedSemaphore;
     std::shared_ptr<MessageRouter> messageRouter;
 };
 

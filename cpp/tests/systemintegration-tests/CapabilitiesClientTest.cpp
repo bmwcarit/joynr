@@ -41,7 +41,7 @@ using namespace joynr;
 
 ACTION_P(ReleaseSemaphore,semaphore)
 {
-    semaphore->release(1);
+    semaphore->notify();
 }
 
 static const std::string messagingPropertiesPersistenceFileName("CapabilitiesClientTest-joynr.settings");
@@ -124,7 +124,7 @@ TEST_F(CapabilitiesClientTest, registerAndRetrieveCapability) {
     std::shared_ptr<GlobalCapabilitiesMock> callback(new GlobalCapabilitiesMock());
 
     // use a semaphore to wait for capabilities to be received
-    QSemaphore semaphore(0);
+    joynr::Semaphore semaphore(0);
     EXPECT_CALL(*callback, capabilitiesReceived(A<const std::vector<types::CapabilityInformation>&>()))
            .WillRepeatedly(
                 DoAll(
@@ -138,7 +138,7 @@ TEST_F(CapabilitiesClientTest, registerAndRetrieveCapability) {
 
     LOG_DEBUG(logger,"get capabilities");
     capabilitiesClient->lookup(capDomain, capInterface, onSuccess);
-    semaphore.tryAcquire(1,10000);
+    semaphore.waitFor(std::chrono::milliseconds(10000));
     LOG_DEBUG(logger,"finished get capabilities");
 
     delete capabilitiesProxyBuilder;

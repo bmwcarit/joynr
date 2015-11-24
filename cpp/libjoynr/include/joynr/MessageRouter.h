@@ -33,8 +33,8 @@
 #include "joynr/ThreadPool.h"
 #include "joynr/Timer.h"
 #include "joynr/Runnable.h"
+#include "joynr/Semaphore.h"
 
-#include <QSemaphore>
 #include <QPair>
 #include <unordered_set>
 #include <QMutex>

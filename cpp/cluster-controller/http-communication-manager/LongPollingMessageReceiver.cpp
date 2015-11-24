@@ -50,7 +50,7 @@ LongPollingMessageReceiver::LongPollingMessageReceiver(
         const QString& channelId,
         const QString& receiverId,
         const LongPollingMessageReceiverSettings& settings,
-        QSemaphore* channelCreatedSemaphore,
+        joynr::Semaphore* channelCreatedSemaphore,
         std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
         std::shared_ptr<MessageRouter> messageRouter)
         : joynr::Thread("LongPollRecv"),
@@ -104,7 +104,7 @@ void LongPollingMessageReceiver::run()
         if (createChannelResult.getStatusCode() == 201) {
             channelUrl = *createChannelResult.getHeaders().find("Location");
             LOG_INFO(logger, "channel creation successfull; channel url:" + channelUrl);
-            channelCreatedSemaphore->release(1);
+            channelCreatedSemaphore->notify();
         } else {
             LOG_INFO(logger,
                      "channel creation failed; status code:" +

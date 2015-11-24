@@ -33,7 +33,7 @@ JoynrDbusRuntimeExecutor::JoynrDbusRuntimeExecutor(Settings* settings)
 void JoynrDbusRuntimeExecutor::createRuntime()
 {
     runtime = new LibJoynrDbusRuntime(settings);
-    runtimeSemaphore.release();
+    runtimeSemaphore.notify();
 }
 
 } // namespace joynr

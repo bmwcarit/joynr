@@ -44,7 +44,7 @@ using namespace joynr_logging;
 
 ACTION_P(ReleaseSemaphore,semaphore)
 {
-    semaphore->release(1);
+    semaphore->notify();
 }
 
 static const std::string messagingPropertiesPersistenceFileName1(
@@ -97,8 +97,8 @@ public:
     std::string baseUuid;
     std::string uuid;
     std::string domainName;
-    QSemaphore semaphore;
-    QSemaphore altSemaphore;
+    joynr::Semaphore semaphore;
+    joynr::Semaphore altSemaphore;
     joynr::tests::TestLocationUpdateSelectiveBroadcastFilterParameters filterParameters;
     std::shared_ptr<MockLocationUpdatedSelectiveFilter> filter;
     unsigned long registerProviderWait;
@@ -300,7 +300,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithEnumOutput) {
     testProvider->fireBroadcastWithEnumOutput(expectedTestEnum);
 
     // Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(3000)));
 
     delete testProxyBuilder;
     delete testProxy;
@@ -366,7 +366,7 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
                 gpsLocation2);
 
 //     Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(3000)));
 
     // Waiting between   occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
@@ -375,7 +375,7 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
     testProvider->fireLocationUpdate(gpsLocation2);
 
 //     Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(3000)));
 
     // update subscription, much longer minInterval_ms
     subscriptionQos.setMinInterval(5000);
@@ -384,7 +384,7 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
     ThreadUtil::sleepForMillis(subscribeToBroadcastWait);
     testProvider->fireLocationUpdate(gpsLocation2);
 //     Wait for a subscription message to arrive
-    ASSERT_TRUE(altSemaphore.tryAcquire(1, 3000));
+    ASSERT_TRUE(altSemaphore.waitFor(std::chrono::milliseconds(3000)));
 
     // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
@@ -394,9 +394,9 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
     testProvider->fireLocationUpdate(gpsLocation2);
 
 //     Wait for a subscription message to arrive
-    ASSERT_FALSE(altSemaphore.tryAcquire(1, 1000));
+    ASSERT_FALSE(altSemaphore.waitFor(std::chrono::milliseconds(1000)));
     //the "old" semaphore shall not be touced, as listener has been replaced with listener2 as callback
-    ASSERT_FALSE(semaphore.tryAcquire(1, 1000));
+    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(1000)));
 
     delete testProxyBuilder;
 }
@@ -452,7 +452,7 @@ TEST_F(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
     testProvider->fireLocationUpdate(gpsLocation2);
 
 //     Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(3000)));
 
     // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
@@ -463,7 +463,7 @@ TEST_F(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
 
     testProvider->fireLocationUpdate(gpsLocation3);
 //     Wait for a subscription message to arrive
-    ASSERT_FALSE(semaphore.tryAcquire(1, 2000));
+    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(2000)));
 }
 
 TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
@@ -518,7 +518,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
     testProvider->fireLocationUpdate(gpsLocation2);
 
 //     Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(3000)));
 
     // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
@@ -526,7 +526,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
 
     testProvider->fireLocationUpdate(gpsLocation3);
 //     Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(3000)));
 
     // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
@@ -534,7 +534,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
 
     testProvider->fireLocationUpdate(gpsLocation4);
 //     Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(3000)));
 
     delete testProxyBuilder;
 }
@@ -593,7 +593,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
     testProvider->fireLocationUpdateWithSpeed(gpsLocation2, 100);
 
 //     Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(3000)));
 
     // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
@@ -601,7 +601,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
 
     testProvider->fireLocationUpdateWithSpeed(gpsLocation3, 200);
 //     Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(3000)));
 
     // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
@@ -609,7 +609,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
 
     testProvider->fireLocationUpdateWithSpeed(gpsLocation4, 300);
 //     Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(3000)));
 
     delete testProxyBuilder;
 }
@@ -674,7 +674,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
     testProvider->fireLocationUpdateSelective(gpsLocation2);
 
     // Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(3000)));
 
     // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
@@ -683,7 +683,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
     testProvider->fireLocationUpdateSelective(gpsLocation3);
 
     // Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(3000)));
 
     // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
@@ -692,7 +692,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
     testProvider->fireLocationUpdateSelective(gpsLocation4);
 
     // Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(3000)));
 
     delete testProxyBuilder;
 }
@@ -751,7 +751,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
     testProvider->fireLocationUpdate(gpsLocation2);
 
     // Wait for a subscription message to arrive
-    ASSERT_FALSE(semaphore.tryAcquire(1, 500));
+    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(500)));
 
     // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
@@ -760,7 +760,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
     testProvider->fireLocationUpdateSelective(gpsLocation3);
 
     // Wait for a subscription message to arrive
-    ASSERT_FALSE(semaphore.tryAcquire(1, 500));
+    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(500)));
 
     // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
@@ -769,7 +769,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
     testProvider->fireLocationUpdateSelective(gpsLocation4);
 
     // Wait for a subscription message to arrive
-    ASSERT_FALSE(semaphore.tryAcquire(1, 500));
+    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(500)));
 
     delete testProxyBuilder;
 }
@@ -837,7 +837,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
     waitForBroadcastSubscriptionArrivedAtProvider(testProvider, "location");
 
     // Initial attribute publication
-    ASSERT_TRUE(semaphore.tryAcquire(1, 500));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(500)));
 
     ThreadUtil::sleepForMillis(minInterval_ms); //ensure to wait for the minInterval_ms before changing location
 
@@ -845,13 +845,13 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
     testProvider->locationChanged(gpsLocation2);
 
     // Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(1, 500));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(500)));
 
     // Emit broadcast
     testProvider->fireLocation(gpsLocation3);
 
     // Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(1, 500));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(500)));
 
     delete testProxyBuilder;
 }

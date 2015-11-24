@@ -22,7 +22,7 @@
 
 #include <QFuture>
 #include <QString>
-#include <QSemaphore>
+#include "joynr/Semaphore.h"
 
 namespace joynr
 {
@@ -49,7 +49,7 @@ private:
     void executeDbusMainLoop();
 
     bool processDbus;
-    QSemaphore dbusMainLoopStarted;
+    joynr::Semaphore dbusMainLoopStarted;
     QString dbusBusName;
     QFuture<void> dbusFuture;
 };

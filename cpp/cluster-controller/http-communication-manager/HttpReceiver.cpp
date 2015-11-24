@@ -40,7 +40,7 @@ Logger* HttpReceiver::logger = Logging::getInstance()->getLogger("MSG", "HttpRec
 
 HttpReceiver::HttpReceiver(const MessagingSettings& settings,
                            std::shared_ptr<MessageRouter> messageRouter)
-        : channelCreatedSemaphore(new QSemaphore(0)),
+        : channelCreatedSemaphore(new joynr::Semaphore(0)),
           channelId(),
           receiverId(),
           settings(settings),
@@ -132,8 +132,8 @@ void HttpReceiver::startReceiveQueue()
 void HttpReceiver::waitForReceiveQueueStarted()
 {
     LOG_TRACE(logger, "waiting for ReceiveQueue to be started.");
-    channelCreatedSemaphore->acquire(1);
-    channelCreatedSemaphore->release(1);
+    channelCreatedSemaphore->wait();
+    channelCreatedSemaphore->notify();
 }
 
 void HttpReceiver::stopReceiveQueue()
@@ -169,7 +169,8 @@ bool HttpReceiver::tryToDeleteChannel()
     HttpResult deleteChannelResult = deleteChannelRequest->execute();
     long statusCode = deleteChannelResult.getStatusCode();
     if (statusCode == 200) {
-        channelCreatedSemaphore->tryAcquire(1, 5000); // Reset the channel created Semaphore.
+        channelCreatedSemaphore->waitFor(
+                std::chrono::milliseconds(5000)); // Reset the channel created Semaphore.
         LOG_INFO(logger, "channel deletion successfull");
         channelUrlDirectory->unregisterChannelUrlsAsync(channelId.toStdString());
         LOG_INFO(logger, "Sendeing unregister request to ChannelUrlDirectory ...");
