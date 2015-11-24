@@ -89,7 +89,7 @@ public class InterfaceUtil {
 	def hasArray (FInterface fInterface) {
 		for (method : fInterface.methods) {
 			for (args : Iterables::concat(method.inputParameters, method.outputParameters)) {
-				if (args.isArray) {
+				if (isArray(args)) {
 					return true
 				}
 			}
@@ -97,14 +97,14 @@ public class InterfaceUtil {
 
 		for (broadcast : fInterface.broadcasts) {
 			for (args : broadcast.outputParameters) {
-				if (args.isArray) {
+				if (isArray(args)) {
 					return true
 				}
 			}
 		}
 
 		for (attribute : getAttributes(fInterface)) {
-			if (attribute.isArray) {
+			if (isArray(attribute)) {
 				return true
 			}
 		}

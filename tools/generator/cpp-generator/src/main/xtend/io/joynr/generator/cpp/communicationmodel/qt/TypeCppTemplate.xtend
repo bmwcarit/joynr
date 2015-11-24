@@ -244,7 +244,7 @@ uint «typeName»::hashCode() const {
 	int prime = 31;
 	«ENDIF»
 	«FOR member: getMembers(type)»
-		«IF member.isArray»
+		«IF isArray(member)»
 			for («member.type.typeName» listEntry : m_«member.joynrName») {
 			«
 		ENDIF
@@ -255,13 +255,13 @@ uint «typeName»::hashCode() const {
 			»«buildPackagePath(member.type.derived, "::", true)»«
 		ENDIF
 		»qHash(«
-		IF member.isArray
+		IF isArray(member)
 			»listEntry«
 		ELSE
 			»m_«member.joynrName»«
 		ENDIF
 		»);
-		«IF member.isArray»
+		«IF isArray(member)»
 			}
 		«ENDIF»
 	«ENDFOR»

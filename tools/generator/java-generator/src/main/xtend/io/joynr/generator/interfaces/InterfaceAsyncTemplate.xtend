@@ -142,7 +142,7 @@ public interface «asyncClassName» extends «interfaceName», JoynrAsyncInterfa
 		«var getAttribute = "get" + attributeName.toFirstUpper»
 		«var setAttribute = "set" + attributeName.toFirstUpper»
 		«IF isReadable(attribute)»
-			public Future<«attributeType»> «getAttribute»(@JoynrRpcCallback(deserializationType = «attributeType»«IF attribute.array»[]«ENDIF».class) Callback<«attributeType»> callback);
+			public Future<«attributeType»> «getAttribute»(@JoynrRpcCallback(deserializationType = «attributeType»«IF isArray(attribute)»[]«ENDIF».class) Callback<«attributeType»> callback);
 		«ENDIF»
 		«IF isWritable(attribute)»
 			Future<Void> «setAttribute»(@JoynrRpcCallback(deserializationType = Void.class) Callback<Void> callback, @JoynrRpcParam(value="«attributeName»", deserializationType = «attributeType».class) «attributeType» «attributeName») throws DiscoveryException;

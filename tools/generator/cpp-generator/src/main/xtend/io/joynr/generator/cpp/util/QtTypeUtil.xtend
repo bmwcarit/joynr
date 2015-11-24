@@ -63,7 +63,7 @@ class QtTypeUtil extends CppTypeUtil {
 
 	def fromStdTypeToQTType(FTypedElement typedElement, String objectName, boolean convertComplexTypes) {
 		if (typedElement.type.predefined != null && typedElement.type.predefined != FBasicTypeId.UNDEFINED) {
-			if (typedElement.isArray) {
+			if (isArray(typedElement)) {
 				return '''TypeUtil::toQt(«objectName»)'''
 			}
 			else {
@@ -85,7 +85,7 @@ class QtTypeUtil extends CppTypeUtil {
 				}
 			}
 		}
-		else if (typedElement.isArray) {
+		else if (isArray(typedElement)) {
 			if (!convertComplexTypes) {
 				return '''TypeUtil::toQt<«typedElement.type.typeName»>(«objectName»)'''
 			}
@@ -114,7 +114,7 @@ class QtTypeUtil extends CppTypeUtil {
 			typedElement.type.predefined != FBasicTypeId.UNDEFINED
 		) {
 			switch (typedElement.type.predefined) {
-				case FBasicTypeId.BOOLEAN: 	if (typedElement.isArray)
+				case FBasicTypeId.BOOLEAN: 	if (isArray(typedElement))
 												return '''TypeUtil::toStd(«objectName»)'''
 											else
 												return objectName
@@ -127,19 +127,19 @@ class QtTypeUtil extends CppTypeUtil {
 				case FBasicTypeId.INT64: return '''TypeUtil::toStdInt64(«objectName»)'''
 				case FBasicTypeId.UINT64: return '''TypeUtil::toStdUInt64(«objectName»)'''
 				case FBasicTypeId.FLOAT: return '''TypeUtil::toStdFloat(«objectName»)'''
-				case FBasicTypeId.DOUBLE: 	if (typedElement.isArray)
+				case FBasicTypeId.DOUBLE: 	if (isArray(typedElement))
 												return '''TypeUtil::toStd(«objectName»)'''
 											else
 												return objectName
 				case FBasicTypeId.STRING: return '''TypeUtil::toStd(«objectName»)'''
 				case FBasicTypeId.BYTE_BUFFER: return '''TypeUtil::toStd(«objectName»)'''
-				default: 	if (typedElement.isArray)
+				default: 	if (isArray(typedElement))
 								return '''TypeUtil::toStd(«objectName»)'''
 							else
 								return objectName
 			}
 		}
-		else if (typedElement.isArray) {
+		else if (isArray(typedElement)) {
 			if (!convertComplexTypes) {
 				return '''TypeUtil::toStd<«typedElement.type.typeName»>(«objectName»)'''
 			}
@@ -208,7 +208,7 @@ class QtTypeUtil extends CppTypeUtil {
 	}
 
 	def needsDatatypeConversion(FTypedElement typedElement) {
-		typedElement.isArray || 
+		isArray(typedElement) || 
 		needsDatatypeConversion(typedElement.type.predefined) ||
 		typedElement.type.isEnum ||
 		typedElement.type.isComplex

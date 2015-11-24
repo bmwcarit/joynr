@@ -78,7 +78,7 @@ public abstract class «className» extends AbstractJoynrProvider implements «p
 		«var broadcastName = broadcast.joynrName»
 		@Override
 		public void fire«broadcastName.toFirstUpper»(«broadcast.commaSeperatedTypedOutputParameterList») {
-			«IF broadcast.outArgs.length == 1 && broadcast.outArgs.get(0).array»
+			«IF broadcast.outArgs.length == 1 && isArray(broadcast.outArgs.get(0))»
 				// passing array to varargs will cause array elements to be understood as multiple parameters.
 				// Cast to Object prevents this.
 				fireBroadcast("«broadcastName»", broadcastFilters.get("«broadcastName»"), (Object) «broadcast.commaSeperatedUntypedOutputParameterList»);

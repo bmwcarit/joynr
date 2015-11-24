@@ -147,7 +147,7 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider()
 		«ENDFOR»
 		«FOR argument : method.outputParameters»
 			«val outputParamType = argument.typeName»
-			«IF !argument.isArray && argument.type.predefined != null»
+			«IF !isArray(argument) && argument.type.predefined != null»
 				«val type = argument.type.predefined»
 				«IF type==FBasicTypeId.STRING»
 					«outputParamType» «argument.joynrName» = "Hello World";

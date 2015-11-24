@@ -377,7 +377,7 @@ class TypeUtil {
 	}
 
 	def getComplexAndEnumMembers(FCompoundType datatype) {
-		datatype.elements.filter(element | isComplex(element.type) || isEnum(element.type) || element.array);
+		datatype.elements.filter(element | isComplex(element.type) || isEnum(element.type) || isArray(element));
 	}
 
 	def filterComplexAndEnum(Iterable<Object> iterable) {

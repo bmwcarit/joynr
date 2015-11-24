@@ -117,7 +117,7 @@ class JSTypeUtil extends AbstractTypeUtil {
 
 	def String getJsdocTypeName (FTypedElement typedElement) {
 		var result =
-				if (typedElement.isArray())
+				if (isArray(typedElement))
 					typedElement.type.jsdocTypeNameForList
 				else
 					typedElement.type.jsdocTypeName
@@ -261,11 +261,6 @@ class JSTypeUtil extends AbstractTypeUtil {
 		return buffer.toString;
 	}
 
-	/**
-	 * This method is used for assembling the list of parameter types for the attribute and
-	 * operations, the types are mapped to ones that are understood by the joynr framework
-	 * when sending requests.
-	 */
 	def toTypesEnum(FType datatype) {
 		if (isPrimitive(datatype)) {
 			return toTypesEnum(getPrimitive(datatype))
@@ -328,10 +323,10 @@ class JSTypeUtil extends AbstractTypeUtil {
 
 	def String getTypeNameForParameter(FTypedElement typedElement){
 		if (typedElement.type.derived != null){
-			getTypeNameForParameter(typedElement.type.derived, typedElement.isArray())
+			getTypeNameForParameter(typedElement.type.derived, isArray(typedElement))
 		}
 		else{
-			getTypeNameForParameter(typedElement.type.predefined, typedElement.isArray())
+			getTypeNameForParameter(typedElement.type.predefined, isArray(typedElement))
 		}
 	}
 

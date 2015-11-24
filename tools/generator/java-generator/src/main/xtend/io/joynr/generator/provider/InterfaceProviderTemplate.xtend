@@ -154,7 +154,7 @@ public interface «className» extends JoynrProvider {
 				}
 			««« In the case of single output param that is an array, the varargs resolve gets confused
 			««« and assumes the array is multi-out. Cast to object to prevent this from happening. 				
-			«ELSEIF method.outputParameters.length == 1 && method.outputParameters.get(0).isArray»
+			«ELSEIF method.outputParameters.length == 1 && isArray(method.outputParameters.get(0))»
 				public synchronized boolean resolve(«method.commaSeperatedTypedOutputParameterList») {
 					return super.resolve((Object)«method.commaSeperatedUntypedOutputParameterList»);
 				}

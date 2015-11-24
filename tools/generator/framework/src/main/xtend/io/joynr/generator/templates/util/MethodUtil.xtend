@@ -135,7 +135,7 @@ public class MethodUtil {
 		for (FArgument argument : arguments) {
 			nameStringBuilder.append(argument.name.toFirstUpper);
 			var typeName = argument.type.joynrName;
-			if (argument.array) {
+			if (isArray(argument)) {
 				typeName = "List"+typeName
 			}
 			nameStringBuilder.append(typeName.objectDataTypeForPlainType);
