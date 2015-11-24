@@ -107,6 +107,35 @@ class JSTypeUtil extends AbstractTypeUtil {
 		"\"" + toTypesEnum(datatype) + typeNameExtensionForArrays + "\""
 	}
 
+	def checkPropertyTypeName(FTypedElement element) {
+		checkPropertyTypeName(element.type, isArray(element))
+	}
+
+	def checkPropertyTypeName(FTypeRef type, boolean isArray) {
+		if (isArray || type.byteBuffer) {
+			return "\"Array\""
+		}
+		if (type.isPrimitive) {
+			if (type.getPrimitive.bool) {
+				return "\"Boolean\""
+			}
+			if (type.getPrimitive.string) {
+				return "\"String\""
+			}
+			return "\"Number\""
+		} else {
+			if (type.complex) {
+				return "\"" + type.derived.joynrName + "\""
+			}
+			else {
+				/* TODO in the final version, enumerations must always be represented as object.
+				 * Thus, String must be removed here once enums are fully supported
+				 */
+				return  "[\"String\", \"Object\", \"" + type.derived.joynrName + "\"]" 
+			}
+		}
+	}
+
 	def String getJsdocTypeName (FTypedElement typedElement) {
 		var result =
 				if (isArray(typedElement))
