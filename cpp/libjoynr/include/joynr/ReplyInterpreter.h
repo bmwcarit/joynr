@@ -46,14 +46,13 @@ public:
 
         std::shared_ptr<exceptions::JoynrException> error = reply.getError();
         if (error) {
-            caller->returnError(error);
+            caller->returnError(*error);
             return;
         }
 
         if ((reply.getResponse()).empty()) {
             LOG_ERROR(logger, QString("Unexpected empty reply object. Calling error callback"));
-            caller->returnError(std::make_shared<exceptions::JoynrRuntimeException>(
-                    "Reply object had no response."));
+            caller->returnError(exceptions::JoynrRuntimeException("Reply object had no response."));
             return;
         }
 
@@ -86,7 +85,7 @@ public:
 
         std::shared_ptr<exceptions::JoynrException> error = reply.getError();
         if (error) {
-            caller->returnError(error);
+            caller->returnError(*error);
             return;
         }
 

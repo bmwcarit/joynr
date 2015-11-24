@@ -65,7 +65,7 @@ public:
                 [this](const RequestStatus& status, const types::Localisation::GpsLocation& location) {
                     mockCallback->onSuccess(location);
                 },
-                [] (const RequestStatus status, std::shared_ptr<exceptions::JoynrException> error){
+                [] (const RequestStatus status, const exceptions::JoynrException& error){
                 })),
         mockGpsLocationListener(new MockSubscriptionListenerOneType<types::Localisation::GpsLocation>()),
         mockTestEnumSubscriptionListener(new MockSubscriptionListenerOneType<tests::testTypes::TestEnum::Enum>()),

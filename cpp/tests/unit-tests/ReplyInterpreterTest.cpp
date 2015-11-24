@@ -69,7 +69,7 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller) {
             [callback](const RequestStatus& status, const types::Localisation::GpsLocation& location) {
                 callback->onSuccess(location);
             },
-            [](const RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error){
+            [](const RequestStatus& status, const exceptions::JoynrException& error){
             }));
 
     // Create a reply

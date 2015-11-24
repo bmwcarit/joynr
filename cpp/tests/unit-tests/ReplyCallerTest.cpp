@@ -29,8 +29,8 @@ using ::testing::_;
 using namespace ::testing;
 
 MATCHER(timeoutException, "") {
-    return arg->getTypeName() == joynr::exceptions::JoynrTimeOutException::TYPE_NAME
-            && arg->getMessage() == "timeout waiting for the response";
+    return (dynamic_cast<const joynr::exceptions::JoynrTimeOutException*>(&arg) != nullptr)
+            && arg.getMessage() == "timeout waiting for the response";
 }
 
 using namespace joynr;
@@ -67,7 +67,7 @@ TEST_F(ReplyCallerTest, getTypeQInt64) {
                 [callback](const RequestStatus& status, const qint64& value) {
                     callback->onSuccess(value);
                 },
-                [](const RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error){
+                [](const RequestStatus& status, const exceptions::JoynrException& error){
                 });
     ASSERT_EQ(Util::getTypeId<qint64>(), qint64ReplyCaller.getTypeId());
 }
@@ -78,7 +78,7 @@ TEST_F(ReplyCallerTest, getTypeQInt8) {
                 [callback](const RequestStatus& status, const qint8& value) {
                     callback->onSuccess(value);
                 },
-                [](const RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error){
+                [](const RequestStatus& status, const exceptions::JoynrException& error){
                 });
     ASSERT_EQ(Util::getTypeId<qint8>(), qint8ReplyCaller.getTypeId());
 }

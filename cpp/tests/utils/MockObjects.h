@@ -279,7 +279,7 @@ template <typename T>
 class MockReplyCaller : public joynr::ReplyCaller<T> {
 public:
     MockReplyCaller(std::function<void(const joynr::RequestStatus& status, const T& returnValue)> callbackFct,
-                    std::function<void(const joynr::RequestStatus& status, std::shared_ptr<joynr::exceptions::JoynrException> error)> errorFct) : joynr::ReplyCaller<T>(callbackFct, errorFct) {}
+                    std::function<void(const joynr::RequestStatus& status, const joynr::exceptions::JoynrException& error)> errorFct) : joynr::ReplyCaller<T>(callbackFct, errorFct) {}
     MOCK_METHOD1_T(returnValue, void(const T& payload));
     MOCK_METHOD0_T(timeOut, void());
     MOCK_CONST_METHOD0_T(getType, QString());
@@ -434,7 +434,7 @@ class MockCallback{
 public:
     MOCK_METHOD1_T(onSuccess, void(const Ts&... result));
     MOCK_METHOD2_T(onError, void(const joynr::RequestStatus& status,
-                std::shared_ptr<joynr::exceptions::JoynrException> error));
+                const joynr::exceptions::JoynrException& error));
 };
 
 template<>
@@ -443,7 +443,7 @@ class MockCallback<void> {
 public:
     MOCK_METHOD0(onSuccess, void(void));
     MOCK_METHOD2(onError, void(const joynr::RequestStatus& status,
-            std::shared_ptr<joynr::exceptions::JoynrException> error));
+            const joynr::exceptions::JoynrException& error));
 };
 
 class MockMessagingStubFactory : public joynr::IMessagingStubFactory {

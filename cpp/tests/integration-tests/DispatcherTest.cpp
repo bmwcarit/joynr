@@ -56,7 +56,7 @@ public:
                 [this] (const joynr::RequestStatus& status, const joynr::types::Localisation::GpsLocation& location) {
                     mockCallback->onSuccess(location);
                 },
-                [] (const joynr::RequestStatus& status, std::shared_ptr<exceptions::JoynrException> exception) {
+                [] (const joynr::RequestStatus& status, const exceptions::JoynrException& exception) {
                 })),
         mockSubscriptionListener(new MockSubscriptionListenerOneType<types::Localisation::GpsLocation>()),
         gpsLocation1(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444),

@@ -143,9 +143,9 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 						}
 					};
 
-			std::function<void(const joynr::RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error)> onError =
-					[future] (const joynr::RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error) {
-						future->onError(status, *error);
+			std::function<void(const joynr::RequestStatus& status, const exceptions::JoynrException& error)> onError =
+					[future] (const joynr::RequestStatus& status, const exceptions::JoynrException& error) {
+						future->onError(status, error);
 					};
 
 			std::shared_ptr<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«returnType»>(
@@ -177,11 +177,11 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 						}
 					};
 
-			std::function<void(const joynr::RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error)> onErrorWrapper =
-					[future, onError] (const joynr::RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error) {
-						future->onError(status, *error);
+			std::function<void(const joynr::RequestStatus& status, const exceptions::JoynrException& error)> onErrorWrapper =
+					[future, onError] (const joynr::RequestStatus& status, const exceptions::JoynrException& error) {
+						future->onError(status, error);
 						if (onError){
-							onError(*error);
+							onError(error);
 						}
 					};
 
@@ -226,11 +226,11 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 						}
 					};
 
-			std::function<void(const joynr::RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error)> onErrorWrapper =
-				[future, onError] (const joynr::RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error) {
-					future->onError(status, *error);
+			std::function<void(const joynr::RequestStatus& status, const exceptions::JoynrException& error)> onErrorWrapper =
+				[future, onError] (const joynr::RequestStatus& status, const exceptions::JoynrException& error) {
+					future->onError(status, error);
 					if (onError) {
-						onError(*error);
+						onError(error);
 					}
 				};
 
@@ -264,9 +264,9 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 						}
 					};
 
-			std::function<void(const joynr::RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error)> onError =
-					[future] (const joynr::RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error) {
-						future->onError(status, *error);
+			std::function<void(const joynr::RequestStatus& status, const exceptions::JoynrException& error)> onError =
+					[future] (const joynr::RequestStatus& status, const exceptions::JoynrException& error) {
+						future->onError(status, error);
 					};
 
 			std::shared_ptr<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<void>(
@@ -371,33 +371,9 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 					}
 				};
 
-		std::function<void(const joynr::RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error)> onError =
-			[future] (const joynr::RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error) {
-				«IF method.hasErrorEnum»
-					«var enumType = method.errors»
-					«IF enumType == null»
-						«{enumType = method.errorEnum; ""}»
-					«ENDIF»
-					// reconstruct original ApplicationException with correct error enumeration
-					if (error->getTypeName() == exceptions::ApplicationException::TYPE_NAME) {
-						std::shared_ptr<exceptions::ApplicationException> applicationException =
-							std::dynamic_pointer_cast<exceptions::ApplicationException>(error);
-						«val expectedTypeName = enumType.buildPackagePath(".", true) + enumType.joynrName»
-						if (applicationException->getErrorTypeName() != "«expectedTypeName»") {
-							future->onError(status, exceptions::JoynrRuntimeException(
-								"Received ApplicationException does not contain an error enumeration of the expected type «expectedTypeName»"));
-							return;
-						}
-						try {
-							applicationException->setError(«enumType.buildPackagePath("::", true) + enumType.joynrName»::getEnum(applicationException->getName()));
-						} catch (const char* e) {
-							future->onError(status, exceptions::JoynrRuntimeException(
-								"Received ApplicationException does not contain a valid error enumeration."));
-							return;
-						}
-					}
-				«ENDIF»
-				future->onError(status, *error);
+		std::function<void(const joynr::RequestStatus& status, const exceptions::JoynrException& error)> onError =
+			[future] (const joynr::RequestStatus& status, const exceptions::JoynrException& error) {
+				future->onError(status, error);
 			};
 
 		std::shared_ptr<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«outputParameters»>(
@@ -434,35 +410,11 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 					}
 				};
 
-		std::function<void(const joynr::RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error)> onErrorWrapper =
-				[future, onError] (const joynr::RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error) {
-				«IF method.hasErrorEnum»
-					«var enumType = method.errors»
-					«IF enumType == null»
-						«{enumType = method.errorEnum; ""}»
-					«ENDIF»
-					// reconstruct original ApplicationException with correct error enumeration
-					if (error->getTypeName() == exceptions::ApplicationException::TYPE_NAME) {
-						std::shared_ptr<exceptions::ApplicationException> applicationException =
-							std::dynamic_pointer_cast<exceptions::ApplicationException>(error);
-						«val expectedTypeName = enumType.buildPackagePath(".", true) + enumType.joynrName»
-						if (applicationException->getErrorTypeName() != "«expectedTypeName»") {
-							future->onError(status, exceptions::JoynrRuntimeException(
-								"Received ApplicationException does not contain an error enumeration of the expected type «expectedTypeName»"));
-							return;
-						}
-						try {
-							applicationException->setError(«enumType.buildPackagePath("::", true) + enumType.joynrName»::getEnum(applicationException->getName()));
-						} catch (const char* e) {
-							future->onError(status, exceptions::JoynrRuntimeException(
-								"Received ApplicationException does not contain a valid error enumeration."));
-							return;
-						}
-					}
-				«ENDIF»
-				future->onError(status, *error);
+		std::function<void(const joynr::RequestStatus& status, const exceptions::JoynrException& error)> onErrorWrapper =
+				[future, onError] (const joynr::RequestStatus& status, const exceptions::JoynrException& error) {
+				future->onError(status, error);
 				if (onError) {
-					onError(*error);
+					onError(error);
 				}
 			};
 
