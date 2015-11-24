@@ -26,6 +26,8 @@
 #include "jsonserializer/ReplySerializer.h"
 #include "joynr/joynrlogging.h"
 
+#include "joynr/SubscriptionPublication.h"
+
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
@@ -511,6 +513,61 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrReply)
         EXPECT_TRUE(boolParam.is<bool>());
         EXPECT_EQ(expectedBool, boolParam.get<bool>());
         EXPECT_EQ(expectedReply.getRequestReplyId(), reply.getRequestReplyId());
+    }
+}
+
+TEST_F(JoynrJsonSerializerTest, exampleDeserializerSubscriptionPublication)
+{
+    // Create a publication
+    joynr::SubscriptionPublication expectedPublication;
+    std::string someString{"Hello World"};
+    std::vector<Variant> expectedResponse;
+    expectedResponse.push_back(Variant::make<std::string>(someString));
+    const int32_t expectedInt = 101;
+    expectedResponse.push_back(Variant::make<int>(expectedInt));
+    SomeOtherType expectedSomeOtherType(2);
+    expectedResponse.push_back(Variant::make<SomeOtherType>(expectedSomeOtherType));
+    const float expectedFloat = 9.99f;
+    expectedResponse.push_back(Variant::make<float>(expectedFloat));
+    bool expectedBool = true;
+    expectedResponse.push_back(Variant::make<bool>(expectedBool));
+
+    expectedPublication.setResponse(expectedResponse);
+    expectedPublication.setSubscriptionId("000-10000-01101");
+
+    // Serialize into JSON
+    std::stringstream stream;
+    auto serializer = ClassSerializer<joynr::SubscriptionPublication>();
+    serializer.serialize(expectedPublication, stream);
+    std::string json{ stream.str() };
+    LOG_TRACE(logger, QString("SubscriptionPublication JSON: %1").arg(QString::fromStdString(json)));
+
+    // Deserialize from JSON
+    JsonTokenizer tokenizer(json);
+
+    if (tokenizer.hasNextObject()) {
+        SubscriptionPublication publication;
+        ClassDeserializer<SubscriptionPublication>::deserialize(publication, tokenizer.nextObject());
+        std::vector<Variant> response = publication.getResponse();
+        EXPECT_EQ(expectedPublication.getResponse().size(), response.size());
+        Variant first = response[0];
+        EXPECT_TRUE(first.is<std::string>());
+        EXPECT_EQ(someString, first.get<std::string>());
+        Variant intParam = response[1];
+        EXPECT_TRUE(intParam.is<uint64_t>());
+        EXPECT_FALSE(intParam.is<int32_t>());
+        EXPECT_EQ(expectedInt, static_cast<int32_t>(intParam.get<uint64_t>()));
+        Variant someOtherTypeParam = response[2];
+        EXPECT_TRUE(someOtherTypeParam.is<SomeOtherType>());
+        EXPECT_EQ(expectedSomeOtherType.getA(), someOtherTypeParam.get<SomeOtherType>().getA());
+        Variant floatParam = response[3];
+        EXPECT_TRUE(floatParam.is<double>());
+        EXPECT_FALSE(floatParam.is<float>());
+        EXPECT_EQ(expectedFloat, static_cast<float>(floatParam.get<double>()));
+        Variant boolParam = response[4];
+        EXPECT_TRUE(boolParam.is<bool>());
+        EXPECT_EQ(expectedBool, boolParam.get<bool>());
+        EXPECT_EQ(expectedPublication.getSubscriptionId(), publication.getSubscriptionId());
     }
 }
 
