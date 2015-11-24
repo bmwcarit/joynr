@@ -23,10 +23,14 @@ import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.websocket.WebsocketModule;
 import io.joynr.runtime.AbstractJoynrApplication;
+import io.joynr.runtime.CCInProcessRuntimeModule;
+import io.joynr.runtime.CCWebSocketRuntimeModule;
 import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
+import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -42,6 +46,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
 import com.google.inject.Inject;
+import com.google.inject.Module;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -57,18 +62,22 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
         // run application from cmd line using Maven:
         // mvn exec:java -Dexec.mainClass="io.joynr.demo.MyRadioProviderApplication" -Dexec.args="<local-domain>"
         // Get the provider domain from the command line
-        if (args.length != 1) {
-            LOG.error("\n\nUSAGE: java {} <local-domain>\n\n NOTE: Providers are registered on the local domain.",
+        if (args.length != 1 && args.length != 2) {
+            LOG.error("\n\nUSAGE: java {} <local-domain> [websocket | websocketCC]\n\n NOTE: Providers are registered on the local domain.",
                       MyRadioProviderApplication.class.getName());
             return;
         }
         String localDomain = args[0];
+
+        Properties joynrConfig = new Properties();
+        Module runtimeModule = getRuntimeModule(args, joynrConfig);
+
+        LOG.debug("Using the following runtime module: " + runtimeModule.getClass().getSimpleName());
         LOG.debug("Registering provider on domain \"{}\"", localDomain);
 
         // joynr config properties are used to set joynr configuration at
         // compile time. They are set on the
         // JoynrInjectorFactory.
-        Properties joynrConfig = new Properties();
         // Set a custom static persistence file (default is joynr.properties in
         // the working dir) to store
         // joynr configuration. It allows for changing the joynr configuration
@@ -131,11 +140,33 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
         // Use injected static provisioning of access control entries to allow access to anyone to this interface
         provisionAccessControl(joynrConfig, localDomain);
         JoynrApplication joynrApplication = new JoynrInjectorFactory(joynrConfig,
+                                                                     runtimeModule,
                                                                      new StaticDomainAccessControlProvisioningModule()).createApplication(new JoynrApplicationModule(MyRadioProviderApplication.class,
                                                                                                                                                                      appConfig));
         joynrApplication.run();
 
         joynrApplication.shutdown();
+    }
+
+    private static Module getRuntimeModule(String[] args, Properties joynrConfig) {
+        if (args.length == 2) {
+            if (args[1].equalsIgnoreCase("websocket")) {
+                configureWebSocket(joynrConfig);
+                return new LibjoynrWebSocketRuntimeModule();
+            } else if (args[1].equalsIgnoreCase("websocketcc")) {
+                configureWebSocket(joynrConfig);
+                return new CCWebSocketRuntimeModule();
+            }
+        }
+        //by default:
+        return new CCInProcessRuntimeModule();
+    }
+
+    private static void configureWebSocket(Properties joynrConfig) {
+        joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST, "localhost");
+        joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT, "4242");
+        joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL, "ws");
+        joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "");
     }
 
     @Override

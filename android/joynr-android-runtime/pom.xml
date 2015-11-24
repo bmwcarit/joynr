@@ -75,6 +75,18 @@
 					<groupId>org.eclipse.jetty</groupId>
 					<artifactId>jetty-server</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>org.eclipse.jetty.websocket</groupId>
+					<artifactId>websocket-server</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.eclipse.jetty.websocket</groupId>
+					<artifactId>websocket-client</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.eclipse.jetty</groupId>
+					<artifactId>jetty-servlet</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>

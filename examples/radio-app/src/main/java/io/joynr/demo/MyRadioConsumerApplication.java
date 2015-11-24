@@ -27,14 +27,17 @@ import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.websocket.WebsocketModule;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.pubsub.subscription.AttributeSubscriptionAdapter;
 import io.joynr.runtime.AbstractJoynrApplication;
+import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
+import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -59,6 +62,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
+import com.google.inject.Module;
 import com.google.inject.name.Named;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
@@ -87,16 +91,29 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
     public static void main(String[] args) throws IOException {
         // run application from cmd line using Maven:
         // mvn exec:java -Dexec.mainClass="io.joynr.demo.MyRadioConsumerApplication" -Dexec.args="<provider-domain>"
-        if (args.length != 1) {
-            LOG.error("USAGE: java {} <provider-domain>", MyRadioConsumerApplication.class.getName());
+        if (args.length != 1 && args.length != 2) {
+            LOG.error("USAGE: java {} <provider-domain> [websocket]", MyRadioConsumerApplication.class.getName());
             return;
         }
         String providerDomain = args[0];
-        LOG.debug("Searching for providers on domain \"{}\"", providerDomain);
 
         // joynr config properties are used to set joynr configuration at compile time. They are set on the
         // JoynInjectorFactory.
         Properties joynrConfig = new Properties();
+        Module runtimeModule = null;
+        if (args.length == 2 && args[1].equalsIgnoreCase("websocket")) {
+            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST, "localhost");
+            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT, "4242");
+            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL, "ws");
+            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "");
+            runtimeModule = new LibjoynrWebSocketRuntimeModule();
+        } else {
+            runtimeModule = new CCInProcessRuntimeModule();
+        }
+
+        LOG.debug("Using the following runtime module: " + runtimeModule.getClass().getSimpleName());
+        LOG.debug("Searching for providers on domain \"{}\"", providerDomain);
+
         // Set a custom static persistence file (default is joynr.properties in the working dir) to store
         // joynr configuration. It allows for changing the joynr configuration at runtime. Custom persistence
         // files support running the consumer and provider applications from within the same directory.
@@ -137,8 +154,8 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
         Properties appConfig = new Properties();
         appConfig.setProperty(APP_CONFIG_PROVIDER_DOMAIN, providerDomain);
 
-        JoynrApplication myRadioConsumerApp = new JoynrInjectorFactory(joynrConfig).createApplication(new JoynrApplicationModule(MyRadioConsumerApplication.class,
-                                                                                                                                 appConfig));
+        JoynrApplication myRadioConsumerApp = new JoynrInjectorFactory(joynrConfig, runtimeModule).createApplication(new JoynrApplicationModule(MyRadioConsumerApplication.class,
+                                                                                                                                                appConfig));
         myRadioConsumerApp.run();
 
         myRadioConsumerApp.shutdown();

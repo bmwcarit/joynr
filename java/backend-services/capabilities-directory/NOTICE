@@ -59,11 +59,14 @@ This project has dependencies to:
   JBoss Logging 3 under Apache License, version 2.0
   Jetty :: Http Utility under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: IO Utility under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
+  Jetty :: Security under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Server Core under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
+  Jetty :: Servlet Handling under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Utilities under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Websocket :: API under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Websocket :: Client under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Websocket :: Common under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
+  Jetty :: Websocket :: Server under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Websocket :: Servlet Interface under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   JUnit under Common Public License Version 1.0
   Logging under The Apache Software License, Version 2.0
