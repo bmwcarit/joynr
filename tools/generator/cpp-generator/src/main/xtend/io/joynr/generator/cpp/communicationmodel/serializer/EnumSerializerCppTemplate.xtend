@@ -57,7 +57,7 @@ namespace joynr
 
 // Register the «typeName» type id (_typeName value) and serializer/deserializer
 static const bool is«joynrName»SerializerRegistered =
-		SerializerRegistry::registerEnum<«typeName»>("«type.typeName.replace("::", ".")»");
+		SerializerRegistry::registerEnum<«joynrName»>("«type.typeNameOfContainingClass.replace("::", ".")»");
 
 // Deserializes a «joynrName»
 template <>
