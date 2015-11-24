@@ -42,6 +42,8 @@ void ClassDeserializer<SubscriptionPublication>::deserialize(SubscriptionPublica
             IArray& array = field.value();
             auto&& converted = convertArray<Variant>(array, convertVariant);
             subscription.setResponse(std::forward<std::vector<Variant>>(converted));
+        } else if (field.name() == "error") {
+            subscription.setError(convertVariant(field.value()));
         }
     }
 }
@@ -54,8 +56,14 @@ void ClassSerializer<SubscriptionPublication>::serialize(
     stream << R"({)";
     stream << R"("_typeName": ")" << JoynrTypeId<SubscriptionPublication>::getTypeName() << R"(",)";
     stream << R"("subscriptionId": ")" << subscriptionPublication.getSubscriptionId() << R"(",)";
-    stream << R"("response": )";
-    ArraySerializer::serialize<Variant>(subscriptionPublication.getResponse(), stream);
+    if (!subscriptionPublication.getError().isEmpty()) {
+        stream << R"("error": )";
+        ClassSerializer<Variant> variantSerializer;
+        variantSerializer.serializeVariant(subscriptionPublication.getError(), stream);
+    } else {
+        stream << R"("response": )";
+        ArraySerializer::serialize<Variant>(subscriptionPublication.getResponse(), stream);
+    }
     stream << R"(})";
 }
 
