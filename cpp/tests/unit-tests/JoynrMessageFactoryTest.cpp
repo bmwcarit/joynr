@@ -85,35 +85,32 @@ public:
 
     void checkRequest(const JoynrMessage& joynrMessage){
         //TODO create expected string from params and methodName
-        QString expectedPayload = QString(
-                    "{\"_typeName\":\"joynr.Request\","
-                    "\"methodName\":\"methodName\","
-                    "\"paramDatatypes\":[\"java.lang.Integer\",\"java.lang.String\"],"
-                    "\"params\":[42,\"value\"],"
-                    "\"requestReplyId\":\"%1\"}"
-        );
-        expectedPayload = expectedPayload.arg(TypeUtil::toQt(request.getRequestReplyId()));
-        EXPECT_EQ(expectedPayload, QString::fromStdString(joynrMessage.getPayload()));
+        std::stringstream expectedPayloadStream;
+        expectedPayloadStream << R"({"_typeName": "joynr.Request",)";
+        expectedPayloadStream << R"("methodName": "methodName",)";
+        expectedPayloadStream << R"("paramDatatypes": ["java.lang.Integer","java.lang.String"],)";
+        expectedPayloadStream << R"("params": [42,"value"],)";
+        expectedPayloadStream << R"("requestReplyId": ")" << request.getRequestReplyId() << R"("})";
+        std::string expectedPayload = expectedPayloadStream.str();
+        EXPECT_EQ(expectedPayload, joynrMessage.getPayload());
     }
 
     void checkReply(const JoynrMessage& joynrMessage){
-        QString expectedPayload = QString(
-                    "{\"_typeName\":\"joynr.Reply\","
-                    "\"requestReplyId\":\"%1\","
-                    "\"response\":[\"response\"]}"
-        );
-        expectedPayload = expectedPayload.arg(QString::fromStdString(reply.getRequestReplyId()));
-        EXPECT_EQ(expectedPayload, QString::fromStdString(joynrMessage.getPayload()));
+        std::stringstream expectedPayloadStream;
+        expectedPayloadStream << R"({"_typeName": "joynr.Reply",)";
+        expectedPayloadStream << R"("requestReplyId": ")" << reply.getRequestReplyId() << R"(",)";
+        expectedPayloadStream << R"("response": ["response"]})";
+        std::string expectedPayload = expectedPayloadStream.str();
+        EXPECT_EQ(expectedPayload, joynrMessage.getPayload());
     }
 
     void checkSubscriptionPublication(const JoynrMessage& joynrMessage){
-        QString expectedPayload = QString(
-                    "{\"_typeName\":\"joynr.SubscriptionPublication\","
-                    "\"response\":[\"publication\"],"
-                    "\"subscriptionId\":\"%1\"}"
-        );
-        expectedPayload = expectedPayload.arg(QString::fromStdString(subscriptionPublication.getSubscriptionId()));
-        EXPECT_EQ(expectedPayload, QString::fromStdString(joynrMessage.getPayload()));
+        std::stringstream expectedPayloadStream;
+        expectedPayloadStream << R"({"_typeName": "joynr.SubscriptionPublication",)";
+        expectedPayloadStream << R"("subscriptionId": ")" << subscriptionPublication.getSubscriptionId() << R"(",)";
+        expectedPayloadStream << R"("response": ["publication"]})";
+        std::string expectedPayload = expectedPayloadStream.str();
+        EXPECT_EQ(expectedPayload, joynrMessage.getPayload());
     }
 
 protected:
@@ -161,7 +158,7 @@ TEST_F(JoynrMessageFactoryTest, createRequest){
 
     checkHeaderCreatorFromTo(joynrMessage);
     checkRequest(joynrMessage);
-    EXPECT_STREQ(JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST.c_str(), joynrMessage.getType().c_str());
+    EXPECT_EQ(JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST, joynrMessage.getType());
 }
 
 TEST_F(JoynrMessageFactoryTest, createReply){
@@ -173,7 +170,7 @@ TEST_F(JoynrMessageFactoryTest, createReply){
     );
     checkHeaderCreatorFromTo(joynrMessage);
     checkReply(joynrMessage);
-    EXPECT_STREQ(JoynrMessage::VALUE_MESSAGE_TYPE_REPLY.c_str(), joynrMessage.getType().c_str());
+    EXPECT_EQ(JoynrMessage::VALUE_MESSAGE_TYPE_REPLY, joynrMessage.getType());
 }
 
 TEST_F(JoynrMessageFactoryTest, createOneWay){
@@ -185,7 +182,7 @@ TEST_F(JoynrMessageFactoryTest, createOneWay){
     );
     checkHeaderCreatorFromTo(joynrMessage);
     checkReply(joynrMessage);
-    EXPECT_STREQ(JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY.c_str(), joynrMessage.getType().c_str());
+    EXPECT_EQ(JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY, joynrMessage.getType());
 }
 
 //TEST_F(JoynrMessageFactoryTest, createSubscriptionReply){
@@ -206,7 +203,7 @@ TEST_F(JoynrMessageFactoryTest, createPublication){
     );
     checkHeaderCreatorFromTo(joynrMessage);
     checkSubscriptionPublication(joynrMessage);
-    EXPECT_STREQ(JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION.c_str(), joynrMessage.getType().c_str());
+    EXPECT_EQ(JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION, joynrMessage.getType());
 }
 
 TEST_F(JoynrMessageFactoryTest, createSubscriptionRequest){
@@ -222,7 +219,7 @@ TEST_F(JoynrMessageFactoryTest, createSubscriptionRequest){
                 subscriptionRequest
     );
     checkHeaderCreatorFromTo(joynrMessage);
-    EXPECT_STREQ(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST.c_str(), joynrMessage.getType().c_str());
+    EXPECT_EQ(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST, joynrMessage.getType());
 }
 
 TEST_F(JoynrMessageFactoryTest, createSubscriptionStop){
@@ -236,7 +233,7 @@ TEST_F(JoynrMessageFactoryTest, createSubscriptionStop){
                 subscriptionStop
     );
     checkHeaderCreatorFromTo(joynrMessage);
-    EXPECT_STREQ(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP.c_str(), joynrMessage.getType().c_str());
+    EXPECT_EQ(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP, joynrMessage.getType());
 }
 
 TEST_F(JoynrMessageFactoryTest, testRequestContentType){
@@ -252,5 +249,5 @@ TEST_F(JoynrMessageFactoryTest, testRequestContentType){
                 qos,
                 request
     );
-    EXPECT_STREQ(JoynrMessage::VALUE_CONTENT_TYPE_APPLICATION_JSON.c_str(), message.getHeaderContentType().c_str());
+    EXPECT_EQ(JoynrMessage::VALUE_CONTENT_TYPE_APPLICATION_JSON, message.getHeaderContentType());
 }

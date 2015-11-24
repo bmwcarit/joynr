@@ -22,6 +22,9 @@
 namespace joynr
 {
 
+static bool isSubscriptionPublicationRegistered =
+        Variant::registerType<SubscriptionPublication>("joynr.SubscriptionPublication");
+
 const SubscriptionPublication SubscriptionPublication::NULL_RESPONSE = SubscriptionPublication();
 
 SubscriptionPublication::SubscriptionPublication() : subscriptionId(), response(), error(NULL)

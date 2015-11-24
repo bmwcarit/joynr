@@ -21,6 +21,7 @@
 #include "joynr/SerializerRegistry.h"
 #include "joynr/Variant.h"
 #include "joynr/JoynrTypeId.h"
+#include "joynr/ArraySerializer.h"
 
 namespace joynr
 {
@@ -30,12 +31,17 @@ static const bool isSubscriptionPublicationRegistered =
         SerializerRegistry::registerType<SubscriptionPublication>("joynr.SubscriptionPublication");
 
 template <>
-void ClassDeserializer<SubscriptionPublication>::deserialize(SubscriptionPublication& t, IObject& o)
+void ClassDeserializer<SubscriptionPublication>::deserialize(SubscriptionPublication& subscription,
+                                                             IObject& o)
 {
     while (o.hasNextField()) {
         IField& field = o.nextField();
         if (field.name() == "subscriptionId") {
-            // t.setSubscriptionId(QString::fromStdString(field.value()));
+            subscription.setSubscriptionId(field.value());
+        } else if (field.name() == "response") {
+            IArray& array = field.value();
+            auto&& converted = convertArray<Variant>(array, convertVariant);
+            subscription.setResponse(std::forward<std::vector<Variant>>(converted));
         }
     }
 }
@@ -45,12 +51,12 @@ void ClassSerializer<SubscriptionPublication>::serialize(
         const SubscriptionPublication& subscriptionPublication,
         std::ostream& stream)
 {
-    stream << "{";
-    stream << "\"_typeName\": \"" << JoynrTypeId<SubscriptionPublication>::getTypeName() << "\",";
-    // stream << "\"subscriptionId\": \"" <<
-    // subscriptionPublication.getSubscriptionId().toStdString()
-    stream << "\"";
-    stream << "}";
+    stream << R"({)";
+    stream << R"("_typeName": ")" << JoynrTypeId<SubscriptionPublication>::getTypeName() << R"(",)";
+    stream << R"("subscriptionId": ")" << subscriptionPublication.getSubscriptionId() << R"(",)";
+    stream << R"("response": )";
+    ArraySerializer::serialize<Variant>(subscriptionPublication.getResponse(), stream);
+    stream << R"(})";
 }
 
 } /* namespace joynr */
