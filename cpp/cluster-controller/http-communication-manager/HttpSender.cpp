@@ -106,7 +106,9 @@ void HttpSender::sendMessage(const QString& channelId, const JoynrMessage& messa
      * occur
       */
     DelayedScheduler* scheduler;
-    if (channelId == MessagingSettings::SETTING_CHANNEL_URL_DIRECTORY_CHANNELID()) {
+    QString channelUrlDirChannelId =
+            TypeUtil::toQt(MessagingSettings::SETTING_CHANNEL_URL_DIRECTORY_CHANNELID());
+    if (channelId == channelUrlDirChannelId) {
         scheduler = channelUrlContactorDelayedScheduler;
     } else {
         scheduler = delayedScheduler;

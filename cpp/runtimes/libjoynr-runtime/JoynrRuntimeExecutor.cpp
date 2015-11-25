@@ -22,11 +22,12 @@
 
 #include "LibJoynrRuntime.h"
 #include "runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
+#include "joynr/Settings.h"
 
 namespace joynr
 {
 
-JoynrRuntimeExecutor::JoynrRuntimeExecutor(QSettings* settings)
+JoynrRuntimeExecutor::JoynrRuntimeExecutor(Settings* settings)
         : QObject(),
           coreApplication(Q_NULLPTR),
           runtimeThread(new QThread()),

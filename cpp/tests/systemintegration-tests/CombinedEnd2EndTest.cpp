@@ -54,8 +54,8 @@ ACTION_P(ReleaseSemaphore,semaphore)
     semaphore->release(1);
 }
 
-static const QString messagingPropertiesPersistenceFileName1("CombinedEnd2EndTest-runtime1-joynr.settings");
-static const QString messagingPropertiesPersistenceFileName2("CombinedEnd2EndTest-runtime2-joynr.settings");
+static const std::string messagingPropertiesPersistenceFileName1("CombinedEnd2EndTest-runtime1-joynr.settings");
+static const std::string messagingPropertiesPersistenceFileName2("CombinedEnd2EndTest-runtime2-joynr.settings");
 
 joynr_logging::Logger* CombinedEnd2EndTest::logger =
         joynr_logging::Logging::getInstance()->getLogger("MSG", "CombinedEnd2EndTest");
@@ -65,8 +65,8 @@ CombinedEnd2EndTest::CombinedEnd2EndTest() :
         qRegisterMetaTypeCi(),
         runtime1(NULL),
         runtime2(NULL),
-        settings1("test-resources/SystemIntegrationTest1.settings", QSettings::IniFormat),
-        settings2("test-resources/SystemIntegrationTest2.settings", QSettings::IniFormat),
+        settings1("test-resources/SystemIntegrationTest1.settings"),
+        settings2("test-resources/SystemIntegrationTest2.settings"),
         messagingSettings1(settings1),
         messagingSettings2(settings2),
         baseUuid(TypeUtil::toStd(QUuid::createUuid().toString())),
@@ -118,7 +118,7 @@ void CombinedEnd2EndTest::TearDown()
     delete runtime2;
 
     // Delete the persisted participant ids so that each test uses different participant ids
-    QFile::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME());
+    QFile::remove(TypeUtil::toQt(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME()));
 }
 
 CombinedEnd2EndTest::~CombinedEnd2EndTest()

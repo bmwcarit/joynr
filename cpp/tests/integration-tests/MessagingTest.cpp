@@ -39,6 +39,7 @@
 #include "cluster-controller/messaging/joynr-messaging/JoynrMessagingStubFactory.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include "joynr/Future.h"
+#include "joynr/Settings.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -47,8 +48,8 @@ using namespace joynr;
 
 class MessagingTest : public ::testing::Test {
 public:
-    QString settingsFileName;
-    QSettings settings;
+    std::string settingsFileName;
+    Settings settings;
     MessagingSettings messagingSettings;
     joynr_logging::Logger* logger;
     std::string senderId;
@@ -67,7 +68,7 @@ public:
     std::shared_ptr<MessageRouter> messageRouter;
     MessagingTest() :
         settingsFileName("MessagingTest.settings"),
-        settings(settingsFileName, QSettings::IniFormat),
+        settings(settingsFileName),
         messagingSettings(settings),
         logger(joynr_logging::Logging::getInstance()->getLogger("TEST", "MessagingTest")),
         senderId("senderParticipantId"),
@@ -86,21 +87,23 @@ public:
     {
         // provision global capabilities directory
         std::shared_ptr<joynr::system::RoutingTypes::QtAddress> addressCapabilitiesDirectory(
-            new system::RoutingTypes::QtChannelAddress(messagingSettings.getCapabilitiesDirectoryChannelId())
+            new system::RoutingTypes::QtChannelAddress(
+                        TypeUtil::toQt(messagingSettings.getCapabilitiesDirectoryChannelId()))
         );
-        messageRouter->addProvisionedNextHop(messagingSettings.getCapabilitiesDirectoryParticipantId().toStdString(), addressCapabilitiesDirectory);
+        messageRouter->addProvisionedNextHop(messagingSettings.getCapabilitiesDirectoryParticipantId(), addressCapabilitiesDirectory);
         // provision channel url directory
         std::shared_ptr<joynr::system::RoutingTypes::QtAddress> addressChannelUrlDirectory(
-            new system::RoutingTypes::QtChannelAddress(messagingSettings.getChannelUrlDirectoryChannelId())
+            new system::RoutingTypes::QtChannelAddress(
+                        TypeUtil::toQt(messagingSettings.getChannelUrlDirectoryChannelId()))
         );
-        messageRouter->addProvisionedNextHop(messagingSettings.getChannelUrlDirectoryParticipantId().toStdString(), addressChannelUrlDirectory);
+        messageRouter->addProvisionedNextHop(messagingSettings.getChannelUrlDirectoryParticipantId(), addressChannelUrlDirectory);
         messagingStubFactory->registerStubFactory(new JoynrMessagingStubFactory(mockMessageSender, senderChannelId));
         messagingStubFactory->registerStubFactory(new InProcessMessagingStubFactory());
 
         qos.setTtl(10000);
     }
     ~MessagingTest(){
-        QFile::remove(settingsFileName);
+        QFile::remove(TypeUtil::toQt(settingsFileName));
     }
 private:
     DISALLOW_COPY_AND_ASSIGN(MessagingTest);

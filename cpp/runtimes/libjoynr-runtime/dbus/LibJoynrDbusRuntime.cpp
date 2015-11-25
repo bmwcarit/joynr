@@ -29,7 +29,7 @@
 namespace joynr
 {
 
-LibJoynrDbusRuntime::LibJoynrDbusRuntime(QSettings* settings)
+LibJoynrDbusRuntime::LibJoynrDbusRuntime(Settings* settings)
         : LibJoynrRuntime(settings),
           dbusMessageRouterAdapter(Q_NULLPTR),
           dbusSettings(new DbusSettings(*settings)),
@@ -51,9 +51,9 @@ LibJoynrDbusRuntime::LibJoynrDbusRuntime(QSettings* settings)
     // create connection to parent routing service
     std::shared_ptr<joynr::system::RoutingTypes::QtAddress> ccMessagingAddress(
             new system::RoutingTypes::QtCommonApiDbusAddress(
-                    dbusSettings->getClusterControllerMessagingDomain(),
-                    dbusSettings->getClusterControllerMessagingServiceName(),
-                    dbusSettings->getClusterControllerMessagingParticipantId()));
+                    TypeUtil::toQt(dbusSettings->getClusterControllerMessagingDomain()),
+                    TypeUtil::toQt(dbusSettings->getClusterControllerMessagingServiceName()),
+                    TypeUtil::toQt(dbusSettings->getClusterControllerMessagingParticipantId())));
 
     LibJoynrRuntime::init(
             new DbusMessagingStubFactory(), libjoynrMessagingAddress, ccMessagingAddress);

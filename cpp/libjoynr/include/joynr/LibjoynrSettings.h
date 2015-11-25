@@ -22,36 +22,35 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/joynrlogging.h"
 
-#include <QObject>
-#include <QSettings>
+#include <string>
 
 namespace joynr
 {
 
-class JOYNR_EXPORT LibjoynrSettings : public QObject
+class Settings;
+
+class JOYNR_EXPORT LibjoynrSettings
 {
-    Q_OBJECT
-
 public:
-    static const QString& SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME();
-    static const QString& DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME();
-    static const QString& DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME();
-    static const QString& DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME();
+    static const std::string& SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME();
+    static const std::string& DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME();
+    static const std::string& DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME();
+    static const std::string& DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME();
 
-    explicit LibjoynrSettings(QSettings& settings, QObject* parent = 0);
+    explicit LibjoynrSettings(Settings& settings);
     LibjoynrSettings(const LibjoynrSettings& other);
 
     ~LibjoynrSettings();
 
-    QString getParticipantIdsPersistenceFilename() const;
-    void setParticipantIdsPersistenceFilename(const QString& persistenceFilename);
+    std::string getParticipantIdsPersistenceFilename() const;
+    void setParticipantIdsPersistenceFilename(const std::string& persistenceFilename);
 
     void printSettings() const;
 
 private:
     void operator=(const LibjoynrSettings& other);
 
-    QSettings& settings;
+    Settings& settings;
     static joynr_logging::Logger* logger;
     void checkSettings() const;
 };

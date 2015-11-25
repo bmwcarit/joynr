@@ -149,7 +149,7 @@ protected:
      * @brief Constructs a JoynrRuntime instance
      * @param settings The system service settings
      */
-    JoynrRuntime(QSettings& settings)
+    JoynrRuntime(Settings& settings)
             : proxyFactory(NULL),
               participantIdStorage(NULL),
               capabilitiesRegistrar(NULL),

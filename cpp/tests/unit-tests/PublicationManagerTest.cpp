@@ -53,8 +53,8 @@ public:
         logger(joynr_logging::Logging::getInstance()->getLogger("TST", "PublicationManagerTest"))
     {}
     void TearDown(){
-        QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
-        QFile::remove(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored broadcastsubscriptions
+        QFile::remove(TypeUtil::toQt(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME())); //remove stored subscriptions
+        QFile::remove(TypeUtil::toQt(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME())); //remove stored broadcastsubscriptions
     }
 protected:
     joynr_logging::Logger* logger;
@@ -681,8 +681,6 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
 }
 
 TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_withLowerExpiryDate) {
-    LOG_DEBUG(logger, QString("DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME: %1").arg(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()));
-
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 

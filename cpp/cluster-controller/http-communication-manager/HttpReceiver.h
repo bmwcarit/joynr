@@ -111,7 +111,7 @@ private:
                        // channelLocation.
     // Receiver ID is used to uniquely identify a message receiver (X-Atmosphere-tracking-id).
     // Allows for registering multiple receivers for a single channel.
-    QString receiverId;
+    std::string receiverId;
 
     MessagingSettings settings;
     LongPollingMessageReceiver* messageReceiver;

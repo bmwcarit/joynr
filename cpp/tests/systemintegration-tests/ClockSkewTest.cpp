@@ -38,11 +38,11 @@ static char datestr[80];
 
 class ClockSkewTest : public Test {
 public:
-    QSettings settings;
+    Settings settings;
     MessagingSettings* messagingSettings;
 
     ClockSkewTest() :
-        settings("test-resources/SystemIntegrationTest1.settings", QSettings::IniFormat),
+        settings("test-resources/SystemIntegrationTest1.settings"),
         messagingSettings(new MessagingSettings(settings))
     {
     }

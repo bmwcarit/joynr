@@ -157,10 +157,10 @@ PublicationManager::PublicationManager(DelayedScheduler* scheduler, int maxThrea
           delayedScheduler(scheduler),
           shutDownMutex(),
           shuttingDown(false),
-          subscriptionRequestStorageFileName(
-                  LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()),
-          broadcastSubscriptionRequestStorageFileName(
-                  LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME()),
+          subscriptionRequestStorageFileName(QString::fromStdString(
+                  LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME())),
+          broadcastSubscriptionRequestStorageFileName(QString::fromStdString(
+                  LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME())),
           queuedSubscriptionRequests(),
           queuedSubscriptionRequestsMutex(),
           queuedBroadcastSubscriptionRequests(),
@@ -188,10 +188,10 @@ PublicationManager::PublicationManager(int maxThreads)
           delayedScheduler(NULL),
           shutDownMutex(),
           shuttingDown(false),
-          subscriptionRequestStorageFileName(
-                  LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()),
-          broadcastSubscriptionRequestStorageFileName(
-                  LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME()),
+          subscriptionRequestStorageFileName(QString::fromStdString(
+                  LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME())),
+          broadcastSubscriptionRequestStorageFileName(QString::fromStdString(
+                  LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME())),
           queuedSubscriptionRequests(),
           queuedSubscriptionRequestsMutex(),
           queuedBroadcastSubscriptionRequests(),

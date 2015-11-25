@@ -67,6 +67,7 @@ class Dispatcher;
 class InProcessPublicationSender;
 class WebSocketCcMessagingSkeleton;
 class IPlatformSecurityManager;
+class Settings;
 
 namespace infrastructure
 {
@@ -79,11 +80,11 @@ class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrClusterControllerRuntime : publi
 {
 public:
     JoynrClusterControllerRuntime(QCoreApplication* app,
-                                  QSettings* settings,
+                                  Settings* settings,
                                   IMessageReceiver* messageReceiver = NULL,
                                   IMessageSender* = NULL);
 
-    static JoynrClusterControllerRuntime* create(QSettings* settings);
+    static JoynrClusterControllerRuntime* create(Settings* settings);
 
     virtual ~JoynrClusterControllerRuntime();
 
@@ -139,7 +140,7 @@ protected:
     JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory;
     ConnectorFactory* connectorFactory;
     // take ownership, so a pointer is used
-    QSettings* settings;
+    Settings* settings;
     // use pointer for settings object to check the configuration before initialization
     MessagingSettings* messagingSettings;
     LibjoynrSettings* libjoynrSettings;

@@ -25,7 +25,6 @@
 
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "joynr/MessagingSettings.h"
-#include "joynr/SettingsMerger.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/vehicle/GpsProxy.h"
 #include "joynr/types/QtProviderQos.h"
@@ -33,6 +32,7 @@
 #include "joynr/Future.h"
 #include "joynr/Util.h"
 #include "joynr/TypeUtil.h"
+#include "joynr/Settings.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -46,9 +46,11 @@ public:
         domain(),
         runtime(NULL)
     {
-        QSettings* settings = SettingsMerger::mergeSettings(QString("test-resources/integrationtest.settings"));
-        SettingsMerger::mergeSettings(QString("test-resources/sslintegrationtest.settings"), settings);
-        SettingsMerger::mergeSettings(QString("test-resources/libjoynrintegrationtest.settings"), settings);
+        Settings* settings = new Settings("test-resources/integrationtest.settings");
+        Settings sslSettings{"test-resources/sslintegrationtest.settings"};
+        Settings integrationTestSettings{"test-resources/libjoynrintegrationtest.settings"};
+        Settings::merge(sslSettings, *settings, false);
+        Settings::merge(integrationTestSettings, *settings, false);
         runtime = new JoynrClusterControllerRuntime(NULL, settings);
         std::string uuid = TypeUtil::toStd(Util::createUuid());
         domain = "cppEnd2EndSSLTest_Domain_" + uuid;
@@ -65,7 +67,7 @@ public:
         runtime->stop(deleteChannel);
 
         // Remove participant id persistence file
-        QFile::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME());
+        QFile::remove(TypeUtil::toQt(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME()));
         QThreadSleep::msleep(550);
     }
 

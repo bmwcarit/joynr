@@ -30,6 +30,7 @@
 #include "joynr/Future.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/TypeUtil.h"
+#include "joynr/Settings.h"
 
 #include "joynr/tests/Itest.h"
 #include "joynr/tests/testProvider.h"
@@ -46,7 +47,7 @@ using testing::AtLeast;
 
 class JoynrClusterControllerRuntimeTest : public ::testing::Test {
 public:
-    QString settingsFilename;
+    std::string settingsFilename;
     JoynrClusterControllerRuntime* runtime;
     joynr::types::Localisation::GpsLocation gpsLocation;
     MockMessageReceiver* mockMessageReceiver; // will be deleted when runtime is deleted.
@@ -80,7 +81,7 @@ public:
 
         runtime = new JoynrClusterControllerRuntime(
                     NULL,
-                    new QSettings(settingsFilename, QSettings::IniFormat),
+                    new Settings(settingsFilename),
                     mockMessageReceiver,
                     mockMessageSender
         );
@@ -108,8 +109,10 @@ void SetUp(){
 }
 
 void TearDown(){
-    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME());
-    QFile::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME());
+    QFile::remove(
+                TypeUtil::toQt(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()));
+    QFile::remove(
+                TypeUtil::toQt(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME()));
 }
 
 TEST_F(JoynrClusterControllerRuntimeTest, instantiateRuntime)
@@ -224,7 +227,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
 }
 
 TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
-    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME());
+    QFile::remove(TypeUtil::toQt(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()));
     std::string domain("JoynrClusterControllerRuntimeTest.Domain.A");
     std::shared_ptr<MockTestProvider> mockTestProvider(new MockTestProvider());
 
@@ -281,7 +284,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
 
 
 TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
-    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME());
+    QFile::remove(TypeUtil::toQt(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()));
     std::string domain("JoynrClusterControllerRuntimeTest.Domain.A");
     std::shared_ptr<MockTestProvider> mockTestProvider(new MockTestProvider());
 

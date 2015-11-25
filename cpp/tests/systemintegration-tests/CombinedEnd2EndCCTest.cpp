@@ -29,7 +29,7 @@ using namespace joynr_logging;
 TEST_F(CombinedEnd2EndTest, channelUrlProxyGetsNoUrlOnNonRegisteredChannel) {
     ProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>* channelUrlDirectoryProxyBuilder =
             runtime1->createProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>(
-                TypeUtil::toStd(messagingSettings1.getDiscoveryDirectoriesDomain())
+                messagingSettings1.getDiscoveryDirectoriesDomain()
             );
 
     DiscoveryQos discoveryQos;
@@ -49,7 +49,7 @@ TEST_F(CombinedEnd2EndTest, channelUrlProxyGetsNoUrlOnNonRegisteredChannel) {
 TEST_F(CombinedEnd2EndTest, channelUrlProxyRegistersUrlsCorrectly) {
     ProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>* channelUrlDirectoryProxyBuilder =
             runtime1->createProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>(
-                TypeUtil::toStd(messagingSettings1.getDiscoveryDirectoriesDomain())
+                messagingSettings1.getDiscoveryDirectoriesDomain()
             );
 
     DiscoveryQos discoveryQos;
@@ -94,7 +94,7 @@ TEST_F(CombinedEnd2EndTest, channelUrlProxyRegistersUrlsCorrectly) {
 TEST_F(CombinedEnd2EndTest, DISABLED_channelUrlProxyUnRegistersUrlsCorrectly) {
     ProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>* channelUrlDirectoryProxyBuilder =
             runtime1->createProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>(
-                TypeUtil::toStd(messagingSettings1.getDiscoveryDirectoriesDomain())
+                messagingSettings1.getDiscoveryDirectoriesDomain()
             );
 
     DiscoveryQos discoveryQos;

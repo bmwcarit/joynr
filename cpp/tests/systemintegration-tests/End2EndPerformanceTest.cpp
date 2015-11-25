@@ -30,7 +30,6 @@
 #include "PrettyPrint.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/Future.h"
-#include "joynr/SettingsMerger.h"
 #include "joynr/DispatcherUtils.h"
 using namespace ::testing;
 
@@ -48,8 +47,8 @@ class End2EndPerformanceTest : public Test {
 public:
     JoynrClusterControllerRuntime* runtime1;
     JoynrClusterControllerRuntime* runtime2;
-    QSettings settings1;
-    QSettings settings2;
+    Settings settings1;
+    Settings settings2;
     std::string baseUuid;
     std::string uuid;
     std::string domain;
@@ -57,17 +56,20 @@ public:
     End2EndPerformanceTest() :
         runtime1(NULL),
         runtime2(NULL),
-        settings1("test-resources/SystemIntegrationTest1.settings", QSettings::IniFormat),
-        settings2("test-resources/SystemIntegrationTest2.settings", QSettings::IniFormat),
+        settings1("test-resources/SystemIntegrationTest1.settings"),
+        settings2("test-resources/SystemIntegrationTest2.settings"),
         baseUuid(TypeUtil::toStd(QUuid::createUuid().toString())),
         uuid( "_" + baseUuid.substr(1, baseUuid.length()-2)),
         domain("cppEnd2EndPerformancesTestDomain" + uuid)
     {
-        QSettings* settings_1 = SettingsMerger::mergeSettings(QString("test-resources/SystemIntegrationTest1.settings"));
-        SettingsMerger::mergeSettings(QString("test-resources/libjoynrSystemIntegration1.settings"), settings_1);
+
+        Settings* settings_1 = new Settings("test-resources/SystemIntegrationTest1.settings");
+        Settings integration1Settings{"test-resources/libjoynrSystemIntegration1.settings"};
+        Settings::merge(integration1Settings, *settings_1, false);
         runtime1 = new JoynrClusterControllerRuntime(NULL, settings_1);
-        QSettings* settings_2 = SettingsMerger::mergeSettings(QString("test-resources/SystemIntegrationTest2.settings"));
-        SettingsMerger::mergeSettings(QString("test-resources/libjoynrSystemIntegration2.settings"), settings_2);
+        Settings* settings_2 = new Settings("test-resources/SystemIntegrationTest2.settings");
+        Settings integration2Settings{"test-resources/libjoynrSystemIntegration2.settings"};
+        Settings::merge(integration2Settings, *settings_2, false);
         runtime2 = new JoynrClusterControllerRuntime(NULL, settings_2);
     }
 
@@ -82,7 +84,7 @@ public:
         runtime2->stop(deleteChannel);
 
         // Remove participant id persistence file
-        QFile::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME());
+        QFile::remove(TypeUtil::toQt(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME()));
     }
 
     ~End2EndPerformanceTest(){

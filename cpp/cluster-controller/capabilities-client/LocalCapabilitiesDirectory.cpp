@@ -78,16 +78,15 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(MessagingSettings& messag
             joynr::types::CommunicationMiddleware::JOYNR};
     types::ProviderQos providerQos;
     providerQos.setPriority(1);
-    this->insertInCache(
-            joynr::types::DiscoveryEntry(
-                    messagingSettings.getDiscoveryDirectoriesDomain().toStdString(),
-                    infrastructure::IGlobalCapabilitiesDirectory::INTERFACE_NAME(),
-                    messagingSettings.getCapabilitiesDirectoryParticipantId().toStdString(),
-                    providerQos,
-                    middlewareConnections),
-            false,
-            true,
-            false);
+    this->insertInCache(joynr::types::DiscoveryEntry(
+                                messagingSettings.getDiscoveryDirectoriesDomain(),
+                                infrastructure::IGlobalCapabilitiesDirectory::INTERFACE_NAME(),
+                                messagingSettings.getCapabilitiesDirectoryParticipantId(),
+                                providerQos,
+                                middlewareConnections),
+                        false,
+                        true,
+                        false);
 
     // setting up the provisioned values for the ChannelUrlDirectory (domain, interface,
     // participantId...)
@@ -95,12 +94,11 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(MessagingSettings& messag
     types::ProviderQos channelUrlDirProviderQos;
     channelUrlDirProviderQos.setPriority(1);
     this->insertInCache(
-            joynr::types::DiscoveryEntry(
-                    messagingSettings.getDiscoveryDirectoriesDomain().toStdString(),
-                    infrastructure::IChannelUrlDirectory::INTERFACE_NAME(),
-                    messagingSettings.getChannelUrlDirectoryParticipantId().toStdString(),
-                    channelUrlDirProviderQos,
-                    middlewareConnections),
+            joynr::types::DiscoveryEntry(messagingSettings.getDiscoveryDirectoriesDomain(),
+                                         infrastructure::IChannelUrlDirectory::INTERFACE_NAME(),
+                                         messagingSettings.getChannelUrlDirectoryParticipantId(),
+                                         channelUrlDirProviderQos,
+                                         middlewareConnections),
             false,
             true,
             false);

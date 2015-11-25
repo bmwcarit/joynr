@@ -24,6 +24,7 @@
 #include "joynr/system/RoutingTypes_QtWebSocketClientAddress.h"
 #include "libjoynr/websocket/WebSocketLibJoynrMessagingSkeleton.h"
 #include "joynr/Util.h"
+#include "joynr/TypeUtil.h"
 #include "joynr/JsonSerializer.h"
 
 namespace joynr
@@ -32,7 +33,7 @@ namespace joynr
 joynr_logging::Logger* LibJoynrWebSocketRuntime::logger =
         joynr_logging::Logging::getInstance()->getLogger("MSG", "LibJoynrWebSocketRuntime");
 
-LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(QSettings* settings)
+LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(Settings* settings)
         : LibJoynrRuntime(settings),
           wsSettings(*settings),
           websocket(Q_NULLPTR),
@@ -44,9 +45,11 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(QSettings* settings)
             new system::RoutingTypes::QtWebSocketClientAddress(libjoynrMessagingId));
 
     // create connection to parent routing service
+    system::RoutingTypes::QtWebSocketAddress qtWsAddress =
+            system::RoutingTypes::QtWebSocketAddress::createQt(
+                    wsSettings.createClusterControllerMessagingAddress());
     std::shared_ptr<joynr::system::RoutingTypes::QtWebSocketAddress> ccMessagingAddress(
-            new joynr::system::RoutingTypes::QtWebSocketAddress(
-                    wsSettings.createClusterControllerMessagingAddress()));
+            new joynr::system::RoutingTypes::QtWebSocketAddress(qtWsAddress));
 
     websocket = new QWebSocket();
 

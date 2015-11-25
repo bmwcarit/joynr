@@ -68,7 +68,7 @@ TEST(ChannelUrlSelectorTest, DISABLED_usesBounceProxyUrlIfNotProvidedWithChannel
 
 TEST(ChannelUrlSelectorTest, obtainUrlUsesLocalDirectory) {
     const QString bounceProxyBaseUrl = "http://www.UrlTest.org/pseudoBp";
-    const QString settingsFileName ("test-resources/ChannelUrlSelectorTest.settings");
+    const std::string settingsFileName ("test-resources/ChannelUrlSelectorTest.settings");
 
     BounceProxyUrl bounceProxyUrl(bounceProxyBaseUrl);
     ChannelUrlSelector* urlCache = new ChannelUrlSelector(
@@ -78,8 +78,8 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesLocalDirectory) {
 
     MockLocalChannelUrlDirectory* mockDir = new MockLocalChannelUrlDirectory();
     std::shared_ptr<MockLocalChannelUrlDirectory>  mockDirectory(mockDir);
-    QSettings *qsettings = new QSettings(settingsFileName, QSettings::IniFormat);
-    MessagingSettings *settings = new MessagingSettings(*qsettings);
+    Settings *baseSettings = new Settings(settingsFileName);
+    MessagingSettings *settings = new MessagingSettings(*baseSettings);
     urlCache->init(
                 mockDirectory,
                 *settings);
@@ -99,17 +99,14 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesLocalDirectory) {
 
     delete status;
     delete urlCache;
-    // MessageSettings requires a message loop to delete qsettings.
-    // QSettings must still exist when the destructor of MessageSettings is called.
-    // When unittesting we have to delete manually because there is no message loop.
     delete settings;
-    delete qsettings;
+    delete baseSettings;
 }
 
 
 TEST(ChannelUrlSelectorTest, obtainUrlUsesFeedbackToChangeProviderUrl) {
     const QString bounceProxyBaseUrl = "http://www.UrlTest.org/pseudoBp";
-    const QString settingsFileName("test-resources/ChannelUrlSelectorTest.settings");
+    const std::string settingsFileName("test-resources/ChannelUrlSelectorTest.settings");
 
     BounceProxyUrl bounceProxyUrl(bounceProxyBaseUrl);
     ChannelUrlSelector* urlCache = new ChannelUrlSelector(
@@ -119,8 +116,8 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesFeedbackToChangeProviderUrl) {
 
     MockLocalChannelUrlDirectory* mockDir = new MockLocalChannelUrlDirectory();
     std::shared_ptr<ILocalChannelUrlDirectory> mockDirectory(mockDir);
-    QSettings *qsettings = new QSettings(settingsFileName, QSettings::IniFormat);
-    MessagingSettings *settings = new MessagingSettings(*qsettings);
+    Settings *baseSettings = new Settings(settingsFileName);
+    MessagingSettings *settings = new MessagingSettings(*baseSettings);
     urlCache->init(
                 mockDirectory,
                 *settings);
@@ -152,17 +149,14 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesFeedbackToChangeProviderUrl) {
 
     delete status;
     delete urlCache;
-    // MessageSettings requires a message loop to delete qsettings.
-    // QSettings must still exist when the destructor of MessageSettings is called.
-    // When unittesting we have to delete manually because there is no message loop.
     delete settings;
-    delete qsettings;
+    delete baseSettings;
 }
 
 
 TEST(ChannelUrlSelectorTest, obtainUrlRetriesUrlOfHigherPriority) {
     const QString bounceProxyBaseUrl = "http://www.UrlTest.org/pseudoBp";
-    const QString settingsFileName("test-resources/ChannelUrlSelectorTest.settings");
+    const std::string settingsFileName("test-resources/ChannelUrlSelectorTest.settings");
     qint64 timeForOneRecouperation = 1000; //half a minute
     double punishmentFactor = 0.4;//three punishments will lead to a try of the second Url
     BounceProxyUrl bounceProxyUrl(bounceProxyBaseUrl);
@@ -174,8 +168,8 @@ TEST(ChannelUrlSelectorTest, obtainUrlRetriesUrlOfHigherPriority) {
 
     MockLocalChannelUrlDirectory* mockDir = new MockLocalChannelUrlDirectory();
     std::shared_ptr<ILocalChannelUrlDirectory>  mockDirectory(mockDir);
-    QSettings* qsettings = new QSettings(settingsFileName, QSettings::IniFormat);
-    MessagingSettings *settings = new MessagingSettings(*qsettings);
+    Settings* baseSettings = new Settings(settingsFileName);
+    MessagingSettings *settings = new MessagingSettings(*baseSettings);
     urlCache->init(
                 mockDirectory,
                 *settings);
@@ -203,11 +197,8 @@ TEST(ChannelUrlSelectorTest, obtainUrlRetriesUrlOfHigherPriority) {
 
     delete status;
     delete urlCache;
-    // MessageSettings requires a message loop to delete qsettings.
-    // QSettings must still exist when the destructor of MessageSettings is called.
-    // When unittesting we have to delete manually because there is no message loop.
     delete settings;
-    delete qsettings;
+    delete baseSettings;
 }
 
 

@@ -22,7 +22,6 @@
 
 #include <QtCore/QObject>
 #include <QtCore/QThread>
-#include <QtCore/QSettings>
 #include <QtCore/QSemaphore>
 #include <QtCore/QCoreApplication>
 #include <QtConcurrent/QtConcurrent>
@@ -33,6 +32,7 @@ namespace joynr
 {
 
 class LibJoynrRuntime;
+class Settings;
 
 class JoynrRuntimeExecutor : public QObject
 {
@@ -42,12 +42,12 @@ class JoynrRuntimeExecutor : public QObject
     QThread* runtimeThread;
 
 protected:
-    QSettings* settings;
+    Settings* settings;
     LibJoynrRuntime* runtime;
     QSemaphore runtimeSemaphore;
 
 public:
-    JoynrRuntimeExecutor(QSettings* settings);
+    JoynrRuntimeExecutor(Settings* settings);
     virtual ~JoynrRuntimeExecutor();
 
     LibJoynrRuntime* getRuntime();

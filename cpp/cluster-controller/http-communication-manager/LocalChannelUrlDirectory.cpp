@@ -18,6 +18,7 @@
  */
 #include "joynr/LocalChannelUrlDirectory.h"
 #include "joynr/Future.h"
+#include "joynr/TypeUtil.h"
 
 namespace joynr
 {
@@ -47,11 +48,11 @@ void LocalChannelUrlDirectory::init()
     // provisioning of Global Channel URL Directory URL
     types::QtChannelUrlInformation channelUrlDirectoryUrlInformation;
     QList<QString> channelUrlDirectoryUrls;
-    QString channelUrlDirectoryUrl = messagingSettings.getChannelUrlDirectoryUrl();
+    QString channelUrlDirectoryUrl = TypeUtil::toQt(messagingSettings.getChannelUrlDirectoryUrl());
     channelUrlDirectoryUrls << channelUrlDirectoryUrl;
     channelUrlDirectoryUrlInformation.setUrls(channelUrlDirectoryUrls);
-    localCache.insert(
-            messagingSettings.getChannelUrlDirectoryChannelId(), channelUrlDirectoryUrlInformation);
+    localCache.insert(TypeUtil::toQt(messagingSettings.getChannelUrlDirectoryChannelId()),
+                      channelUrlDirectoryUrlInformation);
     LOG_TRACE(logger,
               QString("Provisioned Global Channel URL Directory URL (%1) into Local "
                       "Channel URL Directory").arg(channelUrlDirectoryUrl));
@@ -59,10 +60,11 @@ void LocalChannelUrlDirectory::init()
     // provisioning of Global Capabilities Directory URL
     types::QtChannelUrlInformation capabilitiesDirectoryUrlInformation;
     QList<QString> capabilitiesDirectoryUrls;
-    QString capabilitiesDirectoryUrl = messagingSettings.getCapabilitiesDirectoryUrl();
+    QString capabilitiesDirectoryUrl =
+            TypeUtil::toQt(messagingSettings.getCapabilitiesDirectoryUrl());
     capabilitiesDirectoryUrls << capabilitiesDirectoryUrl;
     capabilitiesDirectoryUrlInformation.setUrls(capabilitiesDirectoryUrls);
-    localCache.insert(messagingSettings.getCapabilitiesDirectoryChannelId(),
+    localCache.insert(TypeUtil::toQt(messagingSettings.getCapabilitiesDirectoryChannelId()),
                       capabilitiesDirectoryUrlInformation);
     LOG_TRACE(logger,
               QString("Provisioned Global Capabilities Directory URL (%1) into Local "

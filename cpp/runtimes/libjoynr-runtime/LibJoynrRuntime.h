@@ -21,7 +21,6 @@
 #define LIBJOYNRRUNTIME_H
 
 #include <QtCore/QSemaphore>
-#include <QtCore/QSettings>
 #include <string>
 #include <memory>
 
@@ -46,12 +45,13 @@ class JoynrMessageSender;
 class MessageRouter;
 class InProcessMessagingSkeleton;
 class IMiddlewareMessagingStubFactory;
+class Settings;
 
 class LibJoynrRuntime : public JoynrRuntime
 {
 
 public:
-    LibJoynrRuntime(QSettings* settings);
+    LibJoynrRuntime(Settings* settings);
     virtual ~LibJoynrRuntime();
 
     static LibJoynrRuntime* create(JoynrRuntimeExecutor* runtimeExecutor);
@@ -69,7 +69,7 @@ protected:
     IDispatcher* inProcessDispatcher;
 
     // take ownership, so a pointer is used
-    QSettings* settings;
+    Settings* settings;
     // use pointer for settings object to check the configuration before initialization
     LibjoynrSettings* libjoynrSettings;
 

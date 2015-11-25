@@ -38,6 +38,7 @@
 #include "tests/utils/MockObjects.h"
 #include "joynr/system/RoutingProxy.h"
 #include "joynr/Future.h"
+#include "joynr/Settings.h"
 #include "joynr/TypeUtil.h"
 #include <memory>
 
@@ -52,9 +53,9 @@ using namespace joynr;
 class LibJoynrRuntimeTest : public testing::Test {
 
 public:
-    QString settingsFilename;
-    QString temporarylibjoynrSettingsFilename;
-    QSettings settings;
+    std::string settingsFilename;
+    std::string temporarylibjoynrSettingsFilename;
+    Settings settings;
 
     MockMessageReceiver* mockMessageReceiver; // will be deleted when runtime is deleted.
     MockMessageSender* mockMessageSender;
@@ -70,7 +71,7 @@ public:
     LibJoynrRuntimeTest() :
             settingsFilename("test-resources/integrationtest.settings"),
             temporarylibjoynrSettingsFilename("test-resouces/LibJoynrRuntimeTest.libjoynr.settings"),
-            settings(settingsFilename, QSettings::IniFormat),
+            settings(settingsFilename),
             mockMessageReceiver(new MockMessageReceiver()),
             mockMessageSender(new MockMessageSender()),
             ccRuntime(NULL),
@@ -97,7 +98,7 @@ public:
 
         ccRuntime = new JoynrClusterControllerRuntime(
                     NULL,
-                    new QSettings(settingsFilename, QSettings::IniFormat),
+                    new Settings(settingsFilename),
                     mockMessageReceiver,
                     mockMessageSender
         );
@@ -116,16 +117,15 @@ public:
     void SetUp() {
         // start libjoynr runtime
         runtime = new LibJoynrDbusRuntime(
-                    new QSettings(temporarylibjoynrSettingsFilename, QSettings::IniFormat)
+                    new Settings(temporarylibjoynrSettingsFilename)
         );
 
         SystemServicesSettings systemSettings(settings);
         systemSettings.printSettings();
-        std::string systemServicesDomain(TypeUtil::toStd(systemSettings.getDomain()));
+        std::string systemServicesDomain(systemSettings.getDomain());
 
         // setup routing proxy
-        std::string routingProviderParticipantId(systemSettings.getCcRoutingProviderParticipantId()
-        	.toStdString());
+        std::string routingProviderParticipantId(systemSettings.getCcRoutingProviderParticipantId());
         routingProxyBuilder = runtime
                 ->createProxyBuilder<joynr::system::RoutingProxy>(systemServicesDomain);
         DiscoveryQos discoveryQos;
@@ -141,8 +141,7 @@ public:
         EXPECT_TRUE(routingProxy != NULL);
 
         // setup discovery proxy
-        std::string discoveryProviderParticipantId(systemSettings.getCcDiscoveryProviderParticipantId()
-        	.toStdString());
+        std::string discoveryProviderParticipantId(systemSettings.getCcDiscoveryProviderParticipantId());
         discoveryProxyBuilder = runtime
                 ->createProxyBuilder<joynr::system::DiscoveryProxy>(systemServicesDomain);
         discoveryQos = DiscoveryQos();
@@ -166,9 +165,9 @@ public:
         delete discoveryProxyBuilder;
         delete discoveryProxy;
         delete runtime;
-        QFile::remove(temporarylibjoynrSettingsFilename);
-        QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME());
-        QFile::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME());
+        QFile::remove(TypeUtil::toQt(temporarylibjoynrSettingsFilename));
+        QFile::remove(TypeUtil::toQt(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()));
+        QFile::remove(TypeUtil::toQt(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME()));
     }
 };
 

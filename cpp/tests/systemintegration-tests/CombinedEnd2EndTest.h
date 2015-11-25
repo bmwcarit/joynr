@@ -52,8 +52,8 @@ public:
     joynr::JoynrRuntime* runtime1;
     joynr::JoynrRuntime* runtime2;
     std::string registeredSubscriptionId;
-    QSettings settings1;
-    QSettings settings2;
+    joynr::Settings settings1;
+    joynr::Settings settings2;
     joynr::MessagingSettings messagingSettings1;
     joynr::MessagingSettings messagingSettings2;
     std::string baseUuid;

@@ -36,7 +36,6 @@
 #include "tests/utils/MockObjects.h"
 
 #include "joynr/Future.h"
-#include <memory>
 #include "joynr/TypeUtil.h"
 
 using namespace ::testing;
@@ -46,7 +45,7 @@ using namespace joynr;
 class End2EndDbusTest : public Test {
 
 public:
-    QString messageSettingsFilename;
+    std::string messageSettingsFilename;
 
     JoynrClusterControllerRuntime* clusterControllerRuntime;
     LibJoynrDbusRuntime* runtime1;
@@ -69,14 +68,14 @@ public:
         // create the cluster controller runtime
         clusterControllerRuntime = new JoynrClusterControllerRuntime(
                     NULL,
-                    new QSettings(messageSettingsFilename, QSettings::IniFormat)
+                    new Settings(messageSettingsFilename)
         );
         clusterControllerRuntime->registerRoutingProvider();
         clusterControllerRuntime->registerDiscoveryProvider();
 
         // create lib joynr runtimes
-        runtime1 = new LibJoynrDbusRuntime(new QSettings(messageSettingsFilename, QSettings::IniFormat));
-        runtime2 = new LibJoynrDbusRuntime(new QSettings(messageSettingsFilename, QSettings::IniFormat));
+        runtime1 = new LibJoynrDbusRuntime(new Settings(messageSettingsFilename));
+        runtime2 = new LibJoynrDbusRuntime(new Settings(messageSettingsFilename));
     }
 
     void SetUp() {

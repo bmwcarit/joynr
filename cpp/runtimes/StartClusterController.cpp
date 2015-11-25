@@ -20,7 +20,6 @@
 #include <QSettings>
 #include "cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "joynr/joynrlogging.h"
-#include "joynr/SettingsMerger.h"
 #include "joynr/Util.h"
 
 using namespace joynr;
@@ -38,21 +37,28 @@ int main(int argc, char* argv[])
         LOG_INFO(logger, QString("USAGE: %1 <file.settings>...").arg(programName));
     }
 
-    QString organization("io.joynr");
-    QString application = QString("cluster-controller-%1").arg(joynr::Util::createUuid());
-    // TODO we should not use QSettings for non-persistent memory-based settings
-    // consider using QMap<QString, QVariant> (cf. QSettings documentation)
-    QSettings settings(QSettings::IniFormat, QSettings::UserScope, organization, application);
+    // Object that holds all the settings
+    Settings settings;
+
+    // Merge all the settings files into the settings object
     for (int i = 1; i < argc; i++) {
-        QString settingsFileName(argv[i]);
-        QFile settingsFile(settingsFileName);
-        if (!settingsFile.exists()) {
-            LOG_FATAL(logger, QString("Settings file \"%1\" doesn't exist.").arg(settingsFileName));
+
+        std::string settingsFileName(argv[i]);
+
+        // Read the settings file
+        LOG_INFO(logger, QString("Loading settings file: %1").arg(settingsFileName.c_str()));
+        Settings currentSettings(settingsFileName);
+
+        // Check for errors
+        if (!currentSettings.isLoaded()) {
+            LOG_FATAL(logger,
+                      QString("Settings file \"%1\" doesn't exist or cannot be read.")
+                              .arg(settingsFileName.c_str()));
             return 1;
         }
-        LOG_INFO(logger, QString("Loading settings file: %1").arg(settingsFileName));
-        QSettings currentSettings(settingsFileName, QSettings::IniFormat);
-        SettingsMerger::mergeSettings(currentSettings, settings, true);
+
+        // Merge
+        Settings::merge(currentSettings, settings, true);
     }
 
     // create the cluster controller runtime

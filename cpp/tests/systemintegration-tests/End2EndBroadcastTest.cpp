@@ -31,7 +31,6 @@
 #include "utils/QThreadSleep.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/MessagingSettings.h"
-#include "joynr/SettingsMerger.h"
 #include "joynr/QtOnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/LocalChannelUrlDirectory.h"
@@ -48,9 +47,9 @@ ACTION_P(ReleaseSemaphore,semaphore)
     semaphore->release(1);
 }
 
-static const QString messagingPropertiesPersistenceFileName1(
+static const std::string messagingPropertiesPersistenceFileName1(
         "End2EndBroadcastTest-runtime1-joynr.settings");
-static const QString messagingPropertiesPersistenceFileName2(
+static const std::string messagingPropertiesPersistenceFileName2(
         "End2EndBroadcastTest-runtime2-joynr.settings");
 
 namespace joynr {
@@ -91,8 +90,8 @@ public:
 //    types::QtCapabilityInformation qRegisterMetaTypeCi;
     JoynrClusterControllerRuntime* runtime1;
     JoynrClusterControllerRuntime* runtime2;
-    QSettings settings1;
-    QSettings settings2;
+    Settings settings1;
+    Settings settings2;
     MessagingSettings messagingSettings1;
     MessagingSettings messagingSettings2;
     std::string baseUuid;
@@ -115,8 +114,8 @@ public:
 //        qRegisterMetaTypeCi(),
         runtime1(NULL),
         runtime2(NULL),
-        settings1("test-resources/SystemIntegrationTest1.settings", QSettings::IniFormat),
-        settings2("test-resources/SystemIntegrationTest2.settings", QSettings::IniFormat),
+        settings1("test-resources/SystemIntegrationTest1.settings"),
+        settings2("test-resources/SystemIntegrationTest2.settings"),
         messagingSettings1(settings1),
         messagingSettings2(settings2),
         baseUuid(TypeUtil::toStd(QUuid::createUuid().toString())),
@@ -172,17 +171,16 @@ public:
         messagingSettings2.setMessagingPropertiesPersistenceFilename(
                     messagingPropertiesPersistenceFileName2);
 
-        QSettings* settings_1 = SettingsMerger::mergeSettings(
-                    QString("test-resources/SystemIntegrationTest1.settings"));
-        SettingsMerger::mergeSettings(
-                    QString("test-resources/libjoynrSystemIntegration1.settings"),
-                    settings_1);
+        Settings* settings_1 = new Settings("test-resources/SystemIntegrationTest1.settings");
+        Settings integration1Settings{"test-resources/libjoynrSystemIntegration1.settings"};
+        Settings::merge(integration1Settings, *settings_1, false);
+
         runtime1 = new JoynrClusterControllerRuntime(NULL, settings_1);
-        QSettings* settings_2 = SettingsMerger::mergeSettings(
-                    QString("test-resources/SystemIntegrationTest2.settings"));
-        SettingsMerger::mergeSettings(
-                    QString("test-resources/libjoynrSystemIntegration2.settings"),
-                    settings_2);
+
+        Settings* settings_2 = new Settings("test-resources/SystemIntegrationTest2.settings");
+        Settings integration2Settings{"test-resources/libjoynrSystemIntegration2.settings"};
+        Settings::merge(integration2Settings, *settings_2, false);
+
         runtime2 = new JoynrClusterControllerRuntime(NULL, settings_2);
 
         filterParameters.setCountry("Germany");
@@ -200,7 +198,7 @@ public:
         runtime2->stop(deleteChannel);
 
         // Delete the persisted participant ids so that each test uses different participant ids
-        QFile::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME());
+        QFile::remove(TypeUtil::toQt(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME()));
     }
 
     /*

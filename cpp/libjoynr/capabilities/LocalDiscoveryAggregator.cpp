@@ -48,18 +48,18 @@ LocalDiscoveryAggregator::LocalDiscoveryAggregator(
     QList<joynr::types::QtCommunicationMiddleware::Enum> connections;
     connections << joynr::types::QtCommunicationMiddleware::JOYNR;
     joynr::types::QtDiscoveryEntry routingProviderDiscoveryEntry(
-            systemServicesSettings.getDomain(),
+            TypeUtil::toQt(systemServicesSettings.getDomain()),
             TypeUtil::toQt(joynr::system::IRouting::INTERFACE_NAME()),
-            systemServicesSettings.getCcRoutingProviderParticipantId(),
+            TypeUtil::toQt(systemServicesSettings.getCcRoutingProviderParticipantId()),
             joynr::types::QtProviderQos(),
             connections);
     provisionedDiscoveryEntries.insert(
             routingProviderDiscoveryEntry.getParticipantId().toStdString(),
             routingProviderDiscoveryEntry);
     joynr::types::QtDiscoveryEntry discoveryProviderDiscoveryEntry(
-            systemServicesSettings.getDomain(),
+            TypeUtil::toQt(systemServicesSettings.getDomain()),
             TypeUtil::toQt(joynr::system::IDiscovery::INTERFACE_NAME()),
-            systemServicesSettings.getCcDiscoveryProviderParticipantId(),
+            TypeUtil::toQt(systemServicesSettings.getCcDiscoveryProviderParticipantId()),
             joynr::types::QtProviderQos(),
             connections);
     provisionedDiscoveryEntries.insert(

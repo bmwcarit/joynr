@@ -24,7 +24,7 @@
 namespace joynr
 {
 
-JoynrWebSocketRuntimeExecutor::JoynrWebSocketRuntimeExecutor(QSettings* settings)
+JoynrWebSocketRuntimeExecutor::JoynrWebSocketRuntimeExecutor(Settings* settings)
         : JoynrRuntimeExecutor(settings)
 {
 }

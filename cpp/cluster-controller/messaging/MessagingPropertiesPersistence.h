@@ -35,31 +35,31 @@ public:
     /**
      * Persist message properties to the default persistence file
      */
-    MessagingPropertiesPersistence(const QString& filename);
+    MessagingPropertiesPersistence(const std::string& filename);
 
     /**
      * Get, and create if needed, the channel Id
      */
-    QString getChannelId();
+    std::string getChannelId();
 
     /**
      * Get, and create if needed, the receiver Id
      */
-    QString getReceiverId();
+    std::string getReceiverId();
 
     /**
      * Get the key in the settings file that identifies the channel id
      */
-    static const QString& CHANNEL_ID_KEY();
+    static const std::string& CHANNEL_ID_KEY();
 
     /**
      * Get the key in the settings file that identifies the receiver id
      */
-    static const QString& RECEIVER_ID_KEY();
+    static const std::string& RECEIVER_ID_KEY();
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MessagingPropertiesPersistence);
-    QString filename;
+    std::string filename;
 };
 
 } // namespace joynr

@@ -41,7 +41,7 @@ class LocalCapabilitiesDirectoryTest : public ::testing::Test {
 public:
     LocalCapabilitiesDirectoryTest() :
         settingsFileName("LocalCapabilitiesDirectoryTest.settings"),
-        settings(settingsFileName, QSettings::IniFormat),
+        settings(settingsFileName),
         messagingSettings(settings),
         capabilitiesClient(new MockCapabilitiesClient()),
         mockMessageRouter(),
@@ -56,7 +56,7 @@ public:
     }
 
     ~LocalCapabilitiesDirectoryTest() {
-        QFile::remove(settingsFileName);
+        QFile::remove(TypeUtil::toQt(settingsFileName));
     }
 
     void SetUp(){
@@ -190,8 +190,8 @@ public:
     }
 
 protected:
-    QString settingsFileName;
-    QSettings settings;
+    std::string settingsFileName;
+    Settings settings;
     MessagingSettings messagingSettings;
     MockCapabilitiesClient* capabilitiesClient;
     MockMessageRouter mockMessageRouter;

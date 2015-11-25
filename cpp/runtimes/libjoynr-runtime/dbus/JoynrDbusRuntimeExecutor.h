@@ -20,8 +20,6 @@
 #ifndef JOYNRDBUSRUNTIMEEXECUTOR_H
 #define JOYNRDBUSRUNTIMEEXECUTOR_H
 
-#include <QtCore/QSettings>
-
 #include "joynr/PrivateCopyAssign.h"
 #include "runtimes/libjoynr-runtime/JoynrRuntimeExecutor.h"
 
@@ -29,13 +27,14 @@ namespace joynr
 {
 
 class LibJoynrRuntime;
+class Settings;
 
 class JoynrDbusRuntimeExecutor : public JoynrRuntimeExecutor
 {
     Q_OBJECT
 
 public:
-    JoynrDbusRuntimeExecutor(QSettings* settings);
+    JoynrDbusRuntimeExecutor(Settings* settings);
     ~JoynrDbusRuntimeExecutor()
     {
     }

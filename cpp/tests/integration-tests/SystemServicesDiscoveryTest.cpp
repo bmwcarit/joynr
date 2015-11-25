@@ -25,15 +25,16 @@
 #include "joynr/TypeUtil.h"
 
 #include "joynr/system/DiscoveryProxy.h"
+#include "joynr/Settings.h"
 
 using namespace joynr;
 
 class SystemServicesDiscoveryTest : public ::testing::Test {
 public:
-    QString settingsFilename;
-    QSettings* settings;
+    std::string settingsFilename;
+    Settings* settings;
     std::string discoveryDomain;
-    QString discoveryProviderParticipantId;
+    std::string discoveryProviderParticipantId;
     JoynrClusterControllerRuntime* runtime;
     IMessageReceiver* mockMessageReceiver;
     DiscoveryQos discoveryQos;
@@ -42,7 +43,7 @@ public:
 
     SystemServicesDiscoveryTest() :
         settingsFilename("test-resources/SystemServicesDiscoveryTest.settings"),
-        settings(new QSettings(settingsFilename, QSettings::IniFormat)),
+        settings(new Settings(settingsFilename)),
         discoveryDomain(),
         discoveryProviderParticipantId(),
         runtime(NULL),
@@ -53,12 +54,12 @@ public:
     {
         SystemServicesSettings systemSettings(*settings);
         systemSettings.printSettings();
-        discoveryDomain = TypeUtil::toStd(systemSettings.getDomain());
+        discoveryDomain = systemSettings.getDomain();
         discoveryProviderParticipantId = systemSettings.getCcDiscoveryProviderParticipantId();
 
         discoveryQos.setCacheMaxAge(1000);
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
-        discoveryQos.addCustomParameter("fixedParticipantId", TypeUtil::toStd(discoveryProviderParticipantId));
+        discoveryQos.addCustomParameter("fixedParticipantId", discoveryProviderParticipantId);
         discoveryQos.setDiscoveryTimeout(50);
 
         QString channelId("SystemServicesDiscoveryTest.ChannelId");
@@ -76,8 +77,7 @@ public:
         runtime->deleteChannel();
         runtime->stopMessaging();
         delete runtime;
-        delete settings;
-        QFile::remove(settingsFilename);
+        QFile::remove(TypeUtil::toQt(settingsFilename));
     }
 
     void SetUp(){
@@ -86,8 +86,10 @@ public:
     }
 
     void TearDown(){
-        QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME());
-        QFile::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME());
+        QFile::remove(
+                    TypeUtil::toQt(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()));
+        QFile::remove(
+                    TypeUtil::toQt(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME()));
         delete discoveryProxy;
         delete discoveryProxyBuilder;
     }

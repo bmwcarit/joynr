@@ -40,7 +40,7 @@
 namespace joynr
 {
 
-LibJoynrRuntime::LibJoynrRuntime(QSettings* settings)
+LibJoynrRuntime::LibJoynrRuntime(Settings* settings)
         : JoynrRuntime(*settings),
           connectorFactory(NULL),
           subscriptionManager(NULL),
@@ -68,8 +68,7 @@ LibJoynrRuntime::~LibJoynrRuntime()
     delete joynrDispatcher;
     delete libjoynrSettings;
     libjoynrSettings = Q_NULLPTR;
-    settings->clear();
-    settings->deleteLater();
+    delete settings;
     if (runtimeExecutor != Q_NULLPTR) {
         runtimeExecutor->stop();
         runtimeExecutor->deleteLater();
@@ -122,9 +121,9 @@ void LibJoynrRuntime::init(
     proxyFactory = new ProxyFactory(libjoynrMessagingAddress, connectorFactory, NULL);
 
     // Set up the persistence file for storing provider participant ids
-    QString persistenceFilename = libjoynrSettings->getParticipantIdsPersistenceFilename();
-    participantIdStorage = std::shared_ptr<ParticipantIdStorage>(
-            new ParticipantIdStorage(persistenceFilename.toStdString()));
+    std::string persistenceFilename = libjoynrSettings->getParticipantIdsPersistenceFilename();
+    participantIdStorage =
+            std::shared_ptr<ParticipantIdStorage>(new ParticipantIdStorage(persistenceFilename));
 
     // initialize the dispatchers
     QList<IDispatcher*> dispatcherList;
@@ -136,9 +135,9 @@ void LibJoynrRuntime::init(
 
     discoveryProxy = new LocalDiscoveryAggregator(
             *dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher), systemServicesSettings);
-    std::string systemServicesDomain = TypeUtil::toStd(systemServicesSettings.getDomain());
+    std::string systemServicesDomain = systemServicesSettings.getDomain();
     QString routingProviderParticipantId =
-            systemServicesSettings.getCcRoutingProviderParticipantId();
+            TypeUtil::toQt(systemServicesSettings.getCcRoutingProviderParticipantId());
 
     DiscoveryQos routingProviderDiscoveryQos;
     routingProviderDiscoveryQos.setCacheMaxAge(1000);
@@ -160,7 +159,7 @@ void LibJoynrRuntime::init(
 
     // setup discovery
     QString discoveryProviderParticipantId =
-            systemServicesSettings.getCcDiscoveryProviderParticipantId();
+            TypeUtil::toQt(systemServicesSettings.getCcDiscoveryProviderParticipantId());
     DiscoveryQos discoveryProviderDiscoveryQos;
     discoveryProviderDiscoveryQos.setCacheMaxAge(1000);
     discoveryProviderDiscoveryQos.setArbitrationStrategy(

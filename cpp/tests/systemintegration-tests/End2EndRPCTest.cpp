@@ -52,7 +52,7 @@ public:
     {
         runtime = new JoynrClusterControllerRuntime(
                     NULL,
-                    new QSettings(QString("test-resources/integrationtest.settings"), QSettings::IniFormat)
+                    new Settings("test-resources/integrationtest.settings")
         );
         //This is a workaround to register the Metatypes for providerQos.
         //Normally a new datatype is registered in all datatypes that use the new datatype.
@@ -76,7 +76,7 @@ public:
         runtime->stop(deleteChannel);
 
         // Remove participant id persistence file
-        QFile::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME());
+        QFile::remove(TypeUtil::toQt(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME()));
 
         QThreadSleep::msleep(550);
     }

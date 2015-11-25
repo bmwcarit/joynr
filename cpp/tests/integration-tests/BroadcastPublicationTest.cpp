@@ -58,7 +58,7 @@ public:
 
     void SetUp(){
         //remove stored subscriptions
-        QFile::remove(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME());
+        QFile::remove(TypeUtil::toQt(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME()));
         publicationManager = new PublicationManager();
         subscriptionBroadcastListener =
                 new SubscriptionBroadcastListener(QString::fromStdString(subscriptionId), *publicationManager);

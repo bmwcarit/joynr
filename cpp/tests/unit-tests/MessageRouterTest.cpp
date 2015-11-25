@@ -36,7 +36,7 @@ class MessageRouterTest : public ::testing::Test {
 public:
     MessageRouterTest() :
         settingsFileName("MessageRouterTest.settings"),
-        settings(settingsFileName, QSettings::IniFormat),
+        settings(settingsFileName),
         messagingSettings(settings),
         messagingStubFactory(new MockMessagingStubFactory()),
         messageQueue(new MessageQueue()),
@@ -45,20 +45,22 @@ public:
     {
         // provision global capabilities directory
         std::shared_ptr<joynr::system::RoutingTypes::QtAddress> addressCapabilitiesDirectory(
-            new system::RoutingTypes::QtChannelAddress(messagingSettings.getCapabilitiesDirectoryChannelId())
+            new system::RoutingTypes::QtChannelAddress(
+                        TypeUtil::toQt(messagingSettings.getCapabilitiesDirectoryChannelId()))
         );
-        messageRouter->addProvisionedNextHop(messagingSettings.getCapabilitiesDirectoryParticipantId().toStdString(), addressCapabilitiesDirectory);
+        messageRouter->addProvisionedNextHop(messagingSettings.getCapabilitiesDirectoryParticipantId(), addressCapabilitiesDirectory);
         // provision channel url directory
         std::shared_ptr<joynr::system::RoutingTypes::QtAddress> addressChannelUrlDirectory(
-            new system::RoutingTypes::QtChannelAddress(messagingSettings.getChannelUrlDirectoryChannelId())
+            new system::RoutingTypes::QtChannelAddress(
+                        TypeUtil::toQt(messagingSettings.getChannelUrlDirectoryChannelId()))
         );
-        messageRouter->addProvisionedNextHop(messagingSettings.getChannelUrlDirectoryParticipantId().toStdString(), addressChannelUrlDirectory);
+        messageRouter->addProvisionedNextHop(messagingSettings.getChannelUrlDirectoryParticipantId(), addressChannelUrlDirectory);
         JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
         joynrMessage.setHeaderExpiryDate(now + milliseconds(100));
     }
 
     ~MessageRouterTest() {
-        QFile::remove(settingsFileName);
+        QFile::remove(TypeUtil::toQt(settingsFileName));
     }
 
     void SetUp(){
@@ -67,8 +69,8 @@ public:
     void TearDown(){
     }
 protected:
-    QString settingsFileName;
-    QSettings settings;
+    std::string settingsFileName;
+    Settings settings;
     MessagingSettings messagingSettings;
     MockMessagingStubFactory* messagingStubFactory;
     MessageQueue* messageQueue;
@@ -102,7 +104,7 @@ TEST_F(MessageRouterTest, doNotAddMessageToQueue){
     EXPECT_EQ(messageQueue->getQueueLength(), 1);
 
     // the message now has a known destination and should be directly routed
-    joynrMessage.setHeaderTo(messagingSettings.getCapabilitiesDirectoryParticipantId().toStdString());
+    joynrMessage.setHeaderTo(messagingSettings.getCapabilitiesDirectoryParticipantId());
     messageRouter->route(joynrMessage);
     EXPECT_EQ(messageQueue->getQueueLength(), 1);
 }

@@ -35,7 +35,6 @@
 #include "cluster-controller/capabilities-client/IGlobalCapabilitiesCallback.h"
 #include "joynr/joynrlogging.h"
 #include "cluster-controller/messaging/MessagingPropertiesPersistence.h"
-#include "joynr/SettingsMerger.h"
 #include "joynr/TypeUtil.h"
 
 using namespace ::testing;
@@ -46,29 +45,31 @@ ACTION_P(ReleaseSemaphore,semaphore)
     semaphore->release(1);
 }
 
-static const QString messagingPropertiesPersistenceFileName("CapabilitiesClientTest-joynr.settings");
-static const QString settingsFilename("test-resources/SystemIntegrationTest1.settings");
-static const QString libJoynrSettingsFilename("test-resources/libjoynrSystemIntegration1.settings");
+static const std::string messagingPropertiesPersistenceFileName("CapabilitiesClientTest-joynr.settings");
+static const std::string settingsFilename("test-resources/SystemIntegrationTest1.settings");
+static const std::string libJoynrSettingsFilename("test-resources/libjoynrSystemIntegration1.settings");
 
 class CapabilitiesClientTest : public Test {
 public:
     joynr_logging::Logger* logger;
     JoynrClusterControllerRuntime* runtime;
-    QSettings settings;
+    Settings settings;
     MessagingSettings messagingSettings;
     std::string channelId;
 
     CapabilitiesClientTest() :
         logger(joynr_logging::Logging::getInstance()->getLogger("TEST", "CapabilitiesClientTest")),
         runtime(NULL),
-        settings(settingsFilename, QSettings::IniFormat),
+        settings(settingsFilename),
         messagingSettings(settings)
     {
         messagingSettings.setMessagingPropertiesPersistenceFilename(messagingPropertiesPersistenceFileName);
         MessagingPropertiesPersistence storage(messagingSettings.getMessagingPropertiesPersistenceFilename());
-        channelId = storage.getChannelId().toStdString();
-        QSettings* settings = SettingsMerger::mergeSettings(settingsFilename);
-        SettingsMerger::mergeSettings(libJoynrSettingsFilename, settings);
+        channelId = storage.getChannelId();
+        Settings* settings = new Settings(settingsFilename);
+        Settings libjoynrSettings{libJoynrSettingsFilename};
+        Settings::merge(libjoynrSettings, *settings, false);
+
         runtime = new JoynrClusterControllerRuntime(NULL, settings);
     }
 
@@ -94,7 +95,7 @@ TEST_F(CapabilitiesClientTest, registerAndRetrieveCapability) {
     CapabilitiesClient* capabilitiesClient = new CapabilitiesClient(channelId);// ownership of this is not transferred
     ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>* capabilitiesProxyBuilder =
             runtime->createProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(
-                TypeUtil::toStd(messagingSettings.getDiscoveryDirectoriesDomain())
+                messagingSettings.getDiscoveryDirectoriesDomain()
             );
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY); //actually only one provider should be available

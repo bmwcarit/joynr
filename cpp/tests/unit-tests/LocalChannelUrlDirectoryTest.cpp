@@ -59,12 +59,12 @@ class LocalChannelUrlDirectoryTest : public ::testing::Test {
 public:
     LocalChannelUrlDirectoryTest() :
         settingsFileName("LocalChannelUrlDirectoryTest.settings"),
-        settings(settingsFileName, QSettings::IniFormat),
+        settings(settingsFileName),
         messagingSettings(settings)
     {}
 
     ~LocalChannelUrlDirectoryTest() {
-        QFile::remove(settingsFileName);
+        QFile::remove(TypeUtil::toQt(settingsFileName));
     }
 
     void SetUp(){
@@ -76,8 +76,8 @@ public:
     }
 
 protected:
-    QString settingsFileName;
-    QSettings settings;
+    std::string settingsFileName;
+    Settings settings;
     MessagingSettings messagingSettings;
 };
 

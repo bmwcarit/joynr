@@ -18,16 +18,17 @@
  */
 #include "joynr/JoynrRuntime.h"
 #include "JoynrClusterControllerRuntime.h"
-#include "joynr/SettingsMerger.h"
+#include "joynr/Settings.h"
 
 namespace joynr
 {
 JoynrRuntime* JoynrRuntime::createRuntime(const std::string& pathToLibjoynrSettings,
                                           const std::string& pathToMessagingSettings)
 {
-    QSettings* settings =
-            SettingsMerger::mergeSettings(QString::fromStdString(pathToLibjoynrSettings));
-    SettingsMerger::mergeSettings(QString::fromStdString(pathToMessagingSettings), settings);
+    Settings* settings = new Settings(pathToLibjoynrSettings);
+    Settings messagingSettings{pathToMessagingSettings};
+    Settings::merge(messagingSettings, *settings, false);
+
     return JoynrClusterControllerRuntime::create(settings);
 }
 

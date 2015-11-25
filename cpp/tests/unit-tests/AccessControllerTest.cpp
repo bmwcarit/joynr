@@ -144,7 +144,7 @@ public:
 protected:
     MockLocalDomainAccessController localDomainAccessControllerMock;
     std::shared_ptr<MockConsumerPermissionCallback> accessControllerCallback;
-    QSettings settings;
+    Settings settings;
     MockMessagingSettings messagingSettingsMock;
     MockLocalCapabilitiesDirectory localCapabilitiesDirectoryMock;
     AccessController accessController;

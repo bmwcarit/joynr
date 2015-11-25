@@ -28,9 +28,11 @@
 
 #include "tests/utils/MockObjects.h"
 #include "joynr/IMessaging.h"
+#include "joynr/Settings.h"
 
 #include <thread>
 #include <chrono>
+#include <string>
 
 using namespace joynr;
 
@@ -38,14 +40,14 @@ class LibJoynrDbusCommunicationTests : public testing::Test {
 
 public:
 
-    QString settingsFilename;
-    QSettings settings;
+    std::string settingsFilename;
+    Settings settings;
     MessagingSettings* messagingSettings;
     Logger* logger;
 
     LibJoynrDbusCommunicationTests():
         settingsFilename("test-resources/integrationtest.settings"),
-        settings(settingsFilename, QSettings::IniFormat),
+        settings(settingsFilename),
         messagingSettings(new MessagingSettings(settings))
     {
         logger = Logging::getInstance()->getLogger("TST", "LibJoynrDbusCommunicationTests");

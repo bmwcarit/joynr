@@ -23,6 +23,7 @@
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/TypeUtil.h"
+#include "joynr/Settings.h"
 
 #include "joynr/system/RoutingProxy.h"
 
@@ -30,10 +31,10 @@ using namespace joynr;
 
 class SystemServicesRoutingTest : public ::testing::Test {
 public:
-    QString settingsFilename;
-    QSettings* settings;
+    std::string settingsFilename;
+    Settings* settings;
     std::string routingDomain;
-    QString routingProviderParticipantId;
+    std::string routingProviderParticipantId;
     JoynrClusterControllerRuntime* runtime;
     IMessageReceiver* mockMessageReceiver;
     MockMessageSender* mockMessageSender;
@@ -43,7 +44,7 @@ public:
 
     SystemServicesRoutingTest() :
             settingsFilename("test-resources/SystemServicesRoutingTest.settings"),
-            settings(new QSettings(settingsFilename, QSettings::IniFormat)),
+            settings(new Settings(settingsFilename)),
             routingDomain(),
             routingProviderParticipantId(),
             runtime(NULL),
@@ -55,12 +56,12 @@ public:
     {
         SystemServicesSettings systemSettings(*settings);
         systemSettings.printSettings();
-        routingDomain = TypeUtil::toStd(systemSettings.getDomain());
+        routingDomain = systemSettings.getDomain();
         routingProviderParticipantId = systemSettings.getCcRoutingProviderParticipantId();
         
         discoveryQos.setCacheMaxAge(1000);
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
-        discoveryQos.addCustomParameter("fixedParticipantId", TypeUtil::toStd(routingProviderParticipantId));
+        discoveryQos.addCustomParameter("fixedParticipantId", routingProviderParticipantId);
         discoveryQos.setDiscoveryTimeout(50);
 
         QString channelId("SystemServicesRoutingTest.ChannelId");
@@ -78,8 +79,7 @@ public:
         runtime->deleteChannel();
         runtime->stopMessaging();
         delete runtime;
-        delete settings;
-        QFile::remove(settingsFilename);
+        QFile::remove(TypeUtil::toQt(settingsFilename));
     }
 
     void SetUp(){
@@ -88,8 +88,8 @@ public:
     }
 
     void TearDown(){
-        QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME());
-        QFile::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME());
+        QFile::remove(TypeUtil::toQt(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()));
+        QFile::remove(TypeUtil::toQt(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME()));
         delete routingProxy;
         delete routingProxyBuilder;
     }

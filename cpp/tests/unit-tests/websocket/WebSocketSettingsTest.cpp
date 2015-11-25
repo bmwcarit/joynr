@@ -22,6 +22,8 @@
 #include "PrettyPrint.h"
 #include "libjoynr/websocket/WebSocketSettings.h"
 #include "joynr/system/RoutingTypes_QtWebSocketAddress.h"
+#include "joynr/TypeUtil.h"
+#include "joynr/Settings.h"
 
 using namespace joynr;
 
@@ -34,42 +36,44 @@ public:
     }
 
     virtual void TearDown() {
-        QFile::remove(testSettingsFileName);
+        QFile::remove(TypeUtil::toQt(testSettingsFileName));
     }
 
 protected:
     joynr_logging::Logger* logger;
-    QString testSettingsFileName;
+    std::string testSettingsFileName;
 };
 
 TEST_F(WebSocketSettingsTest, intializedWithDefaultSettings) {
-    QSettings testSettings(testSettingsFileName, QSettings::IniFormat);
+    Settings testSettings(testSettingsFileName);
     WebSocketSettings wsSettings(testSettings);
 
     EXPECT_TRUE(wsSettings.contains(WebSocketSettings::SETTING_CC_MESSAGING_URL()));
 }
 
 TEST_F(WebSocketSettingsTest, overrideDefaultSettings) {
-    QString expectedMessagingUrl("ws://test-host:42/test-path");
-    QSettings testSettings(testSettingsFileName, QSettings::IniFormat);
-    testSettings.setValue(WebSocketSettings::SETTING_CC_MESSAGING_URL(), expectedMessagingUrl);
+    std::string expectedMessagingUrl("ws://test-host:42/test-path");
+    Settings testSettings(testSettingsFileName);
+    testSettings.set(WebSocketSettings::SETTING_CC_MESSAGING_URL(), expectedMessagingUrl);
     WebSocketSettings wsSettings(testSettings);
 
-    QString messagingUrl = wsSettings.value(WebSocketSettings::SETTING_CC_MESSAGING_URL()).toString();
-    EXPECT_EQ_QSTRING(expectedMessagingUrl, messagingUrl);
+    std::string messagingUrl = wsSettings.getClusterControllerMessagingUrl();
+    EXPECT_EQ(expectedMessagingUrl, messagingUrl);
 }
 
 TEST_F(WebSocketSettingsTest, createsWebSocketAddress) {
-    QString expectedMessagingUrl("ws://test-host:42/test-path");
+    std::string expectedMessagingUrl("ws://test-host:42/test-path");
     joynr::system::RoutingTypes::QtWebSocketAddress expectedMessagingAddress(
                 joynr::system::RoutingTypes::QtWebSocketProtocol::WS,
                 "test-host",
                 42,
                 "/test-path"
     );
-    QSettings testSettings(testSettingsFileName, QSettings::IniFormat);
-    testSettings.setValue(WebSocketSettings::SETTING_CC_MESSAGING_URL(), expectedMessagingUrl);
+    Settings testSettings(testSettingsFileName);
+    testSettings.set(WebSocketSettings::SETTING_CC_MESSAGING_URL(), expectedMessagingUrl);
     WebSocketSettings wsSettings(testSettings);
 
-    EXPECT_EQ(expectedMessagingAddress, wsSettings.createClusterControllerMessagingAddress());
+    system::RoutingTypes::QtWebSocketAddress wsAddress =
+            system::RoutingTypes::QtWebSocketAddress::createQt(wsSettings.createClusterControllerMessagingAddress());
+    EXPECT_EQ(expectedMessagingAddress, wsAddress);
 }

@@ -20,6 +20,7 @@
 #include "joynr/MessagingSettings.h"
 #include "joynr/Future.h"
 #include "joynr/DispatcherUtils.h"
+#include "joynr/TypeUtil.h"
 
 #include <cmath>
 #include <memory>
@@ -74,7 +75,7 @@ void ChannelUrlSelector::init(std::shared_ptr<ILocalChannelUrlDirectory> channel
 {
 
     this->channelUrlDirectory = channelUrlDirectory;
-    channelUrlDirectoryUrl = settings.getChannelUrlDirectoryUrl();
+    channelUrlDirectoryUrl = TypeUtil::toQt(settings.getChannelUrlDirectoryUrl());
 }
 
 QString ChannelUrlSelector::obtainUrl(const QString& channelId,

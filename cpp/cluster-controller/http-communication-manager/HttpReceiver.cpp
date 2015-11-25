@@ -27,6 +27,7 @@
 #include "cluster-controller/httpnetworking/HttpResult.h"
 #include "cluster-controller/messaging/MessagingPropertiesPersistence.h"
 #include "joynr/Future.h"
+#include "joynr/TypeUtil.h"
 
 #include <QtCore>
 
@@ -48,7 +49,7 @@ HttpReceiver::HttpReceiver(const MessagingSettings& settings,
           messageRouter(messageRouter)
 {
     MessagingPropertiesPersistence persist(settings.getMessagingPropertiesPersistenceFilename());
-    channelId = persist.getChannelId();
+    channelId = TypeUtil::toQt(persist.getChannelId());
     receiverId = persist.getReceiverId();
     init();
 
@@ -72,11 +73,12 @@ void HttpReceiver::init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDir
 void HttpReceiver::updateSettings()
 {
     // Setup the proxy to use
-    if (settings.getLocalProxyHost().isEmpty()) {
+    if (settings.getLocalProxyHost().empty()) {
         HttpNetworking::getInstance()->setGlobalProxy(QString());
     } else {
-        HttpNetworking::getInstance()->setGlobalProxy(settings.getLocalProxyHost() + ":" +
-                                                      settings.getLocalProxyPort());
+        HttpNetworking::getInstance()->setGlobalProxy(TypeUtil::toQt(settings.getLocalProxyHost()) +
+                                                      ":" +
+                                                      TypeUtil::toQt(settings.getLocalProxyPort()));
     }
 
     // Turn on HTTP debug
@@ -88,10 +90,12 @@ void HttpReceiver::updateSettings()
     HttpNetworking::getInstance()->setConnectTimeout_ms(settings.getHttpConnectTimeout());
 
     // HTTPS settings
-    HttpNetworking::getInstance()->setCertificateAuthority(settings.getCertificateAuthority());
-    HttpNetworking::getInstance()->setClientCertificate(settings.getClientCertificate());
+    HttpNetworking::getInstance()->setCertificateAuthority(
+            TypeUtil::toQt(settings.getCertificateAuthority()));
+    HttpNetworking::getInstance()->setClientCertificate(
+            TypeUtil::toQt(settings.getClientCertificate()));
     HttpNetworking::getInstance()->setClientCertificatePassword(
-            settings.getClientCertificatePassword());
+            TypeUtil::toQt(settings.getClientCertificatePassword()));
 }
 
 HttpReceiver::~HttpReceiver()
@@ -117,7 +121,7 @@ void HttpReceiver::startReceiveQueue()
     LOG_DEBUG(logger, "startReceiveQueue");
     messageReceiver = new LongPollingMessageReceiver(settings.getBounceProxyUrl(),
                                                      channelId,
-                                                     receiverId,
+                                                     TypeUtil::toQt(receiverId),
                                                      longPollSettings,
                                                      channelCreatedSemaphore,
                                                      channelUrlDirectory,

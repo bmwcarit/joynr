@@ -17,8 +17,11 @@
  * #L%
  */
 #include "DbusSettings.h"
-#include <assert.h>
-#include "joynr/SettingsMerger.h"
+#include "joynr/Settings.h"
+#include "joynr/TypeUtil.h"
+
+#include <cassert>
+#include <QString> // for logging
 
 namespace joynr
 {
@@ -27,16 +30,14 @@ using namespace joynr_logging;
 
 Logger* DbusSettings::logger = Logging::getInstance()->getLogger("MSG", "DbusSettings");
 
-DbusSettings::DbusSettings(QSettings& settings, QObject* parent)
-        : QObject(parent), settings(settings)
+DbusSettings::DbusSettings(Settings& settings) : settings(settings)
 {
-    QSettings defaultDbusSettings(DEFAULT_DBUS_SETTINGS_FILENAME(), QSettings::IniFormat);
-    SettingsMerger::mergeSettings(defaultDbusSettings, this->settings, false);
+    Settings defaultDbusSettings{DEFAULT_DBUS_SETTINGS_FILENAME()};
+    Settings::merge(defaultDbusSettings, this->settings, false);
     checkSettings();
 }
 
-DbusSettings::DbusSettings(const DbusSettings& other)
-        : QObject(other.parent()), settings(other.settings)
+DbusSettings::DbusSettings(const DbusSettings& other) : settings(other.settings)
 {
 }
 
@@ -51,89 +52,84 @@ void DbusSettings::checkSettings() const
     assert(settings.contains(SETTING_CC_MESSAGING_PARTICIPANTID()));
 }
 
-const QString& DbusSettings::SETTING_CC_MESSAGING_DOMAIN()
+const std::string& DbusSettings::SETTING_CC_MESSAGING_DOMAIN()
 {
-    static const QString value("dbus/cluster-controller-messaging-domain");
+    static const std::string value("dbus/cluster-controller-messaging-domain");
     return value;
 }
 
-const QString& DbusSettings::SETTING_CC_MESSAGING_SERVICENAME()
+const std::string& DbusSettings::SETTING_CC_MESSAGING_SERVICENAME()
 {
-    static const QString value("dbus/cluster-controller-messaging-servicename");
+    static const std::string value("dbus/cluster-controller-messaging-servicename");
     return value;
 }
 
-const QString& DbusSettings::SETTING_CC_MESSAGING_PARTICIPANTID()
+const std::string& DbusSettings::SETTING_CC_MESSAGING_PARTICIPANTID()
 {
-    static const QString value("dbus/cluster-controller-messaging-participantid");
+    static const std::string value("dbus/cluster-controller-messaging-participantid");
     return value;
 }
 
-const QString& DbusSettings::DEFAULT_DBUS_SETTINGS_FILENAME()
+const std::string& DbusSettings::DEFAULT_DBUS_SETTINGS_FILENAME()
 {
-    static const QString value("resources/default-dbus.settings");
+    static const std::string value("resources/default-dbus.settings");
     return value;
 }
 
-QString DbusSettings::getClusterControllerMessagingDomain() const
+std::string DbusSettings::getClusterControllerMessagingDomain() const
 {
-    return settings.value(DbusSettings::SETTING_CC_MESSAGING_DOMAIN()).toString();
+    return settings.get<std::string>(DbusSettings::SETTING_CC_MESSAGING_DOMAIN());
 }
 
-void DbusSettings::setClusterControllerMessagingDomain(const QString& domain)
+void DbusSettings::setClusterControllerMessagingDomain(const std::string& domain)
 {
-    settings.setValue(DbusSettings::SETTING_CC_MESSAGING_DOMAIN(), domain);
+    settings.set(DbusSettings::SETTING_CC_MESSAGING_DOMAIN(), domain);
 }
 
-QString DbusSettings::getClusterControllerMessagingServiceName() const
+std::string DbusSettings::getClusterControllerMessagingServiceName() const
 {
-    return settings.value(DbusSettings::SETTING_CC_MESSAGING_SERVICENAME()).toString();
+    return settings.get<std::string>(DbusSettings::SETTING_CC_MESSAGING_SERVICENAME());
 }
 
-void DbusSettings::setClusterControllerMessagingServiceName(const QString& serviceName)
+void DbusSettings::setClusterControllerMessagingServiceName(const std::string& serviceName)
 {
-    settings.setValue(DbusSettings::SETTING_CC_MESSAGING_SERVICENAME(), serviceName);
+    settings.set(DbusSettings::SETTING_CC_MESSAGING_SERVICENAME(), serviceName);
 }
 
-QString DbusSettings::getClusterControllerMessagingParticipantId() const
+std::string DbusSettings::getClusterControllerMessagingParticipantId() const
 {
-    return settings.value(DbusSettings::SETTING_CC_MESSAGING_PARTICIPANTID()).toString();
+    return settings.get<std::string>(DbusSettings::SETTING_CC_MESSAGING_PARTICIPANTID());
 }
 
-void DbusSettings::setClusterControllerMessagingParticipantId(const QString& participantId)
+void DbusSettings::setClusterControllerMessagingParticipantId(const std::string& participantId)
 {
-    settings.setValue(DbusSettings::SETTING_CC_MESSAGING_PARTICIPANTID(), participantId);
+    settings.set(DbusSettings::SETTING_CC_MESSAGING_PARTICIPANTID(), participantId);
 }
 
-QString DbusSettings::createClusterControllerMessagingAddressString() const
+std::string DbusSettings::createClusterControllerMessagingAddressString() const
 {
-    return QString("%1:%2:%3")
-            .arg(getClusterControllerMessagingDomain())
-            .arg(getClusterControllerMessagingServiceName())
-            .arg(getClusterControllerMessagingParticipantId());
-}
-
-bool DbusSettings::contains(const QString& key) const
-{
-    return settings.contains(key);
-}
-
-QVariant DbusSettings::value(const QString& key) const
-{
-    return settings.value(key);
+    std::string address;
+    address.append(getClusterControllerMessagingDomain());
+    address += ':';
+    address.append(getClusterControllerMessagingServiceName());
+    address += ':';
+    address.append(getClusterControllerMessagingParticipantId());
+    return address;
 }
 
 void DbusSettings::printSettings() const
 {
     LOG_DEBUG(logger,
-              "SETTING: " + SETTING_CC_MESSAGING_DOMAIN() + " = " +
-                      settings.value(SETTING_CC_MESSAGING_DOMAIN()).toString());
+              "SETTING: " + TypeUtil::toQt(SETTING_CC_MESSAGING_DOMAIN()) + " = " +
+                      TypeUtil::toQt(settings.get<std::string>(SETTING_CC_MESSAGING_DOMAIN())));
+    LOG_DEBUG(
+            logger,
+            "SETTING: " + TypeUtil::toQt(SETTING_CC_MESSAGING_SERVICENAME()) + " = " +
+                    TypeUtil::toQt(settings.get<std::string>(SETTING_CC_MESSAGING_SERVICENAME())));
     LOG_DEBUG(logger,
-              "SETTING: " + SETTING_CC_MESSAGING_SERVICENAME() + " = " +
-                      settings.value(SETTING_CC_MESSAGING_SERVICENAME()).toString());
-    LOG_DEBUG(logger,
-              "SETTING: " + SETTING_CC_MESSAGING_PARTICIPANTID() + " = " +
-                      settings.value(SETTING_CC_MESSAGING_PARTICIPANTID()).toString());
+              "SETTING: " + TypeUtil::toQt(SETTING_CC_MESSAGING_PARTICIPANTID()) + " = " +
+                      TypeUtil::toQt(
+                              settings.get<std::string>(SETTING_CC_MESSAGING_PARTICIPANTID())));
 }
 
 } // namespace joynr

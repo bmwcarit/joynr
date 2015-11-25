@@ -17,10 +17,11 @@
  * #L%
  */
 #include "WebSocketSettings.h"
-#include <assert.h>
-#include <QtCore/QUrl>
-#include <QtCore/QMetaEnum>
-#include "joynr/SettingsMerger.h"
+#include "joynr/Settings.h"
+#include "joynr/Url.h"
+#include "joynr/TypeUtil.h"
+
+#include <cassert>
 
 namespace joynr
 {
@@ -29,20 +30,18 @@ using namespace joynr_logging;
 
 Logger* WebSocketSettings::logger = Logging::getInstance()->getLogger("MSG", "WebSocketSettings");
 
-WebSocketSettings::WebSocketSettings(QSettings& settings, QObject* parent)
-        : QObject(parent), settings(settings)
+WebSocketSettings::WebSocketSettings(Settings& settings) : settings(settings)
 {
     qRegisterMetaType<joynr::system::RoutingTypes::QtWebSocketAddress>(
             "joynr::system::RoutingTypes::QtWebSocketAddress");
     qRegisterMetaType<joynr::system::RoutingTypes::QtWebSocketProtocol>();
     qRegisterMetaType<joynr::system::RoutingTypes::QtWebSocketProtocol::Enum>();
-    QSettings defaultWebSocketSettings(DEFAULT_WEBSOCKET_SETTINGS_FILENAME(), QSettings::IniFormat);
-    SettingsMerger::mergeSettings(defaultWebSocketSettings, this->settings, false);
+    Settings defaultWebSocketSettings(DEFAULT_WEBSOCKET_SETTINGS_FILENAME());
+    Settings::merge(defaultWebSocketSettings, this->settings, false);
     checkSettings();
 }
 
-WebSocketSettings::WebSocketSettings(const WebSocketSettings& other)
-        : QObject(other.parent()), settings(other.settings)
+WebSocketSettings::WebSocketSettings(const WebSocketSettings& other) : settings(other.settings)
 {
 }
 
@@ -55,56 +54,58 @@ void WebSocketSettings::checkSettings() const
     assert(settings.contains(SETTING_CC_MESSAGING_URL()));
 }
 
-const QString& WebSocketSettings::SETTING_CC_MESSAGING_URL()
+const std::string& WebSocketSettings::SETTING_CC_MESSAGING_URL()
 {
-    static const QString value("websocket/cluster-controller-messaging-url");
+    static const std::string value("websocket/cluster-controller-messaging-url");
     return value;
 }
 
-const QString& WebSocketSettings::DEFAULT_WEBSOCKET_SETTINGS_FILENAME()
+const std::string& WebSocketSettings::DEFAULT_WEBSOCKET_SETTINGS_FILENAME()
 {
-    static const QString value("resources/default-websocket.settings");
+    static const std::string value("resources/default-websocket.settings");
     return value;
 }
 
-QString WebSocketSettings::getClusterControllerMessagingUrl() const
+std::string WebSocketSettings::getClusterControllerMessagingUrl() const
 {
-    return settings.value(WebSocketSettings::SETTING_CC_MESSAGING_URL()).toString();
+    return settings.get<std::string>(WebSocketSettings::SETTING_CC_MESSAGING_URL());
 }
 
-void WebSocketSettings::setClusterControllerMessagingUrl(const QString& url)
+void WebSocketSettings::setClusterControllerMessagingUrl(const std::string& url)
 {
-    settings.setValue(WebSocketSettings::SETTING_CC_MESSAGING_URL(), url);
+    settings.set(WebSocketSettings::SETTING_CC_MESSAGING_URL(), url);
 }
 
-joynr::system::RoutingTypes::QtWebSocketAddress WebSocketSettings::
+joynr::system::RoutingTypes::WebSocketAddress WebSocketSettings::
         createClusterControllerMessagingAddress() const
 {
-    QUrl url(getClusterControllerMessagingUrl());
-    QMetaEnum metaEnum =
-            joynr::system::RoutingTypes::QtWebSocketProtocol::staticMetaObject.enumerator(0);
-    joynr::system::RoutingTypes::QtWebSocketProtocol::Enum protocol =
-            (joynr::system::RoutingTypes::QtWebSocketProtocol::Enum)metaEnum.keyToValue(
-                    url.scheme().toUpper().toStdString().c_str());
+    using joynr::system::RoutingTypes::WebSocketProtocol;
 
-    return system::RoutingTypes::QtWebSocketAddress(protocol, url.host(), url.port(), url.path());
+    std::string ccMessagingUrl = getClusterControllerMessagingUrl();
+    Url url(ccMessagingUrl);
+
+    if (!url.isValid()) {
+        LOG_ERROR(logger, "Could not parse URL: " + TypeUtil::toQt(ccMessagingUrl));
+        return system::RoutingTypes::WebSocketAddress{};
+    }
+
+    WebSocketProtocol::Enum protocol = (url.getProtocol() == "wss") ? WebSocketProtocol::Enum::WSS
+                                                                    : WebSocketProtocol::Enum::WS;
+
+    return system::RoutingTypes::WebSocketAddress(
+            protocol, url.getHost(), url.getPort(), url.getPath());
 }
 
-bool WebSocketSettings::contains(const QString& key) const
+bool WebSocketSettings::contains(const std::string& key) const
 {
     return settings.contains(key);
-}
-
-QVariant WebSocketSettings::value(const QString& key) const
-{
-    return settings.value(key);
 }
 
 void WebSocketSettings::printSettings() const
 {
     LOG_DEBUG(logger,
-              "SETTING: " + SETTING_CC_MESSAGING_URL() + " = " +
-                      settings.value(SETTING_CC_MESSAGING_URL()).toString());
+              "SETTING: " + TypeUtil::toQt(SETTING_CC_MESSAGING_URL()) + " = " +
+                      TypeUtil::toQt(settings.get<std::string>(SETTING_CC_MESSAGING_URL())));
 }
 
 } // namespace joynr

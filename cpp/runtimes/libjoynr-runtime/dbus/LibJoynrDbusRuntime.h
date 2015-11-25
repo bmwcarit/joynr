@@ -20,8 +20,6 @@
 #ifndef LIBJOYNRDBUSRUNTIME_H
 #define LIBJOYNRDBUSRUNTIME_H
 
-#include <QtCore/QSettings>
-
 #include "joynr/PrivateCopyAssign.h"
 #include "runtimes/libjoynr-runtime/LibJoynrRuntime.h"
 
@@ -30,11 +28,12 @@ namespace joynr
 
 class DBusMessageRouterAdapter;
 class DbusSettings;
+class Settings;
 
 class LibJoynrDbusRuntime : public LibJoynrRuntime
 {
 public:
-    LibJoynrDbusRuntime(QSettings* settings);
+    LibJoynrDbusRuntime(Settings* settings);
     virtual ~LibJoynrDbusRuntime();
 
 protected:

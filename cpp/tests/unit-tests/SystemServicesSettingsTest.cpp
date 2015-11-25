@@ -21,6 +21,7 @@
 #include <QFile>
 #include "PrettyPrint.h"
 #include "joynr/SystemServicesSettings.h"
+#include "joynr/TypeUtil.h"
 
 using namespace joynr;
 
@@ -33,16 +34,16 @@ public:
     }
 
     virtual void TearDown() {
-        QFile::remove(testSettingsFileName);
+        QFile::remove(TypeUtil::toQt(testSettingsFileName));
     }
 
 protected:
     joynr_logging::Logger* logger;
-    QString testSettingsFileName;
+    std::string testSettingsFileName;
 };
 
 TEST_F(SystemServicesSettingsTest, intializedWithDefaultSettings) {
-    QSettings testSettings(testSettingsFileName, QSettings::IniFormat);
+    Settings testSettings(testSettingsFileName);
     SystemServicesSettings systemSettings(testSettings);
 
     EXPECT_TRUE(systemSettings.contains(SystemServicesSettings::SETTING_DOMAIN()));
@@ -53,11 +54,11 @@ TEST_F(SystemServicesSettingsTest, intializedWithDefaultSettings) {
 }
 
 TEST_F(SystemServicesSettingsTest, overrideDefaultSettings) {
-    QString expectedDomain("overridenDomain");
-    QSettings testSettings(testSettingsFileName, QSettings::IniFormat);
-    testSettings.setValue(SystemServicesSettings::SETTING_DOMAIN(), expectedDomain);
+    std::string expectedDomain("overridenDomain");
+    Settings testSettings(testSettingsFileName);
+    testSettings.set(SystemServicesSettings::SETTING_DOMAIN(), expectedDomain);
     SystemServicesSettings systemSettings(testSettings);
 
-    QString domain = systemSettings.value(SystemServicesSettings::SETTING_DOMAIN()).toString();
-    EXPECT_EQ_QSTRING(expectedDomain, domain);
+    std::string domain = systemSettings.getDomain();
+    EXPECT_EQ(expectedDomain, domain);
 }

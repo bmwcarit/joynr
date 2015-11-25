@@ -94,6 +94,7 @@
 #include "joynr/Directory.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/Variant.h"
+#include "joynr/Settings.h"
 
 using ::testing::A;
 using ::testing::_;
@@ -833,7 +834,7 @@ public:
 
 class MockMessagingSettings : public joynr::MessagingSettings {
 public:
-    MockMessagingSettings(QSettings& settings):
+    MockMessagingSettings(joynr::Settings& settings):
         MessagingSettings(settings){}
     MOCK_METHOD0(
             getDiscoveryDirectoriesDomain,

@@ -17,9 +17,11 @@
  * #L%
  */
 #include "joynr/MessagingSettings.h"
-#include <assert.h>
 #include "joynr/BounceProxyUrl.h"
-#include "joynr/SettingsMerger.h"
+#include "joynr/TypeUtil.h"
+#include "joynr/Settings.h"
+
+#include <cassert>
 
 namespace joynr
 {
@@ -28,16 +30,14 @@ using namespace joynr_logging;
 
 Logger* MessagingSettings::logger = Logging::getInstance()->getLogger("MSG", "MessagingSettings");
 
-MessagingSettings::MessagingSettings(QSettings& settings, QObject* parent)
-        : QObject(parent), settings(settings)
+MessagingSettings::MessagingSettings(Settings& settings) : settings(settings)
 {
-    QSettings defaultMessagingSettings(DEFAULT_MESSAGING_SETTINGS_FILENAME(), QSettings::IniFormat);
-    SettingsMerger::mergeSettings(defaultMessagingSettings, this->settings, false);
+    Settings defaultMessagingSettings{DEFAULT_MESSAGING_SETTINGS_FILENAME()};
+    Settings::merge(defaultMessagingSettings, this->settings, false);
     checkSettings();
 }
 
-MessagingSettings::MessagingSettings(const MessagingSettings& other)
-        : QObject(other.parent()), settings(other.settings)
+MessagingSettings::MessagingSettings(const MessagingSettings& other) : settings(other.settings)
 {
 }
 
@@ -45,531 +45,542 @@ MessagingSettings::~MessagingSettings()
 {
 }
 
-const QString& MessagingSettings::SETTING_BOUNCE_PROXY_URL()
+const std::string& MessagingSettings::SETTING_BOUNCE_PROXY_URL()
 {
-    static const QString value("messaging/bounce-proxy-url");
+    static const std::string value("messaging/bounce-proxy-url");
     return value;
 }
 
-const QString& MessagingSettings::SETTING_DISCOVERY_DIRECTORIES_DOMAIN()
+const std::string& MessagingSettings::SETTING_DISCOVERY_DIRECTORIES_DOMAIN()
 {
-    static const QString value("messaging/discovery-directories-domain");
+    static const std::string value("messaging/discovery-directories-domain");
     return value;
 }
 
-const QString& MessagingSettings::SETTING_CHANNEL_URL_DIRECTORY_URL()
+const std::string& MessagingSettings::SETTING_CHANNEL_URL_DIRECTORY_URL()
 {
-    static const QString value("messaging/channel-url-directory-url");
+    static const std::string value("messaging/channel-url-directory-url");
     return value;
 }
 
-const QString& MessagingSettings::SETTING_CHANNEL_URL_DIRECTORY_CHANNELID()
+const std::string& MessagingSettings::SETTING_CHANNEL_URL_DIRECTORY_CHANNELID()
 {
-    static const QString value("messaging/channel-url-directory-channelid");
+    static const std::string value("messaging/channel-url-directory-channelid");
     return value;
 }
 
-const QString& MessagingSettings::SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID()
+const std::string& MessagingSettings::SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID()
 {
-    static const QString value("messaging/channel-url-directory-participantid");
+    static const std::string value("messaging/channel-url-directory-participantid");
     return value;
 }
 
-const QString& MessagingSettings::SETTING_CAPABILITIES_DIRECTORY_URL()
+const std::string& MessagingSettings::SETTING_CAPABILITIES_DIRECTORY_URL()
 {
-    static const QString value("messaging/capabilities-directory-url");
+    static const std::string value("messaging/capabilities-directory-url");
     return value;
 }
 
-const QString& MessagingSettings::SETTING_CAPABILITIES_DIRECTORY_CHANNELID()
+const std::string& MessagingSettings::SETTING_CAPABILITIES_DIRECTORY_CHANNELID()
 {
-    static const QString value("messaging/capabilities-directory-channelid");
+    static const std::string value("messaging/capabilities-directory-channelid");
     return value;
 }
 
-const QString& MessagingSettings::SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID()
+const std::string& MessagingSettings::SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID()
 {
-    static const QString value("messaging/capabilities-directory-participantid");
+    static const std::string value("messaging/capabilities-directory-participantid");
     return value;
 }
 
-const QString& MessagingSettings::SETTING_CERTIFICATE_AUTHORITY()
+const std::string& MessagingSettings::SETTING_CERTIFICATE_AUTHORITY()
 {
-    static const QString value("messaging/certificate-authority");
+    static const std::string value("messaging/certificate-authority");
     return value;
 }
 
-const QString& MessagingSettings::SETTING_CLIENT_CERTIFICATE()
+const std::string& MessagingSettings::SETTING_CLIENT_CERTIFICATE()
 {
-    static const QString value("messaging/client-certificate");
+    static const std::string value("messaging/client-certificate");
     return value;
 }
 
-const QString& MessagingSettings::SETTING_CLIENT_CERTIFICATE_PASSWORD()
+const std::string& MessagingSettings::SETTING_CLIENT_CERTIFICATE_PASSWORD()
 {
-    static const QString value("messaging/client-certificate-password");
+    static const std::string value("messaging/client-certificate-password");
     return value;
 }
 
-const QString& MessagingSettings::SETTING_INDEX()
+const std::string& MessagingSettings::SETTING_INDEX()
 {
-    static const QString value("messaging/index");
+    static const std::string value("messaging/index");
     return value;
 }
 
-const QString& MessagingSettings::SETTING_CREATE_CHANNEL_RETRY_INTERVAL()
+const std::string& MessagingSettings::SETTING_CREATE_CHANNEL_RETRY_INTERVAL()
 {
-    static const QString value("messaging/create-channel-retry-interval");
+    static const std::string value("messaging/create-channel-retry-interval");
     return value;
 }
 
-const QString& MessagingSettings::SETTING_DELETE_CHANNEL_RETRY_INTERVAL()
+const std::string& MessagingSettings::SETTING_DELETE_CHANNEL_RETRY_INTERVAL()
 {
-    static const QString value("messaging/delete-channel-retry-interval");
+    static const std::string value("messaging/delete-channel-retry-interval");
     return value;
 }
 
-const QString& MessagingSettings::SETTING_SEND_MSG_RETRY_INTERVAL()
+const std::string& MessagingSettings::SETTING_SEND_MSG_RETRY_INTERVAL()
 {
-    static const QString value("messaging/send-msg-retry-interval");
+    static const std::string value("messaging/send-msg-retry-interval");
     return value;
 }
 
-const QString& MessagingSettings::SETTING_LONGPOLL_RETRY_INTERVAL()
+const std::string& MessagingSettings::SETTING_LONGPOLL_RETRY_INTERVAL()
 {
-    static const QString value("messaging/longpoll-retry-interval");
+    static const std::string value("messaging/longpoll-retry-interval");
     return value;
 }
 
-const QString& MessagingSettings::SETTING_LOCAL_PROXY_HOST()
+const std::string& MessagingSettings::SETTING_LOCAL_PROXY_HOST()
 {
-    static const QString value("messaging/local-proxy-host");
+    static const std::string value("messaging/local-proxy-host");
     return value;
 }
 
-const QString& MessagingSettings::SETTING_HTTP_DEBUG()
+const std::string& MessagingSettings::SETTING_HTTP_DEBUG()
 {
-    static const QString value("messaging/http-debug");
+    static const std::string value("messaging/http-debug");
     return value;
 }
 
-const QString& MessagingSettings::SETTING_LOCAL_PROXY_PORT()
+const std::string& MessagingSettings::SETTING_LOCAL_PROXY_PORT()
 {
-    static const QString value("messaging/local-proxy-port");
+    static const std::string value("messaging/local-proxy-port");
     return value;
 }
 
-const QString& MessagingSettings::SETTING_PERSISTENCE_FILENAME()
+const std::string& MessagingSettings::SETTING_PERSISTENCE_FILENAME()
 {
-    static const QString value("messaging/persistence-file");
+    static const std::string value("messaging/persistence-file");
     return value;
 }
 
-QString MessagingSettings::getCertificateAuthority() const
+std::string MessagingSettings::getCertificateAuthority() const
 {
-    return settings.value(SETTING_CERTIFICATE_AUTHORITY()).toString();
+    return settings.get<std::string>(SETTING_CERTIFICATE_AUTHORITY());
 }
 
-void MessagingSettings::setCertificateAuthority(const QString& certificateAuthority)
+void MessagingSettings::setCertificateAuthority(const std::string& certificateAuthority)
 {
-    settings.setValue(SETTING_CERTIFICATE_AUTHORITY(), certificateAuthority);
+    settings.set(SETTING_CERTIFICATE_AUTHORITY(), certificateAuthority);
 }
 
-QString MessagingSettings::getClientCertificate() const
+std::string MessagingSettings::getClientCertificate() const
 {
-    return settings.value(SETTING_CLIENT_CERTIFICATE()).toString();
+    return settings.get<std::string>(SETTING_CLIENT_CERTIFICATE());
 }
 
-void MessagingSettings::setClientCertificate(const QString& clientCertificate)
+void MessagingSettings::setClientCertificate(const std::string& clientCertificate)
 {
-    settings.setValue(SETTING_CLIENT_CERTIFICATE(), clientCertificate);
+    settings.set(SETTING_CLIENT_CERTIFICATE(), clientCertificate);
 }
 
-QString MessagingSettings::getClientCertificatePassword() const
+std::string MessagingSettings::getClientCertificatePassword() const
 {
-    return settings.value(SETTING_CLIENT_CERTIFICATE_PASSWORD()).toString();
+    return settings.get<std::string>(SETTING_CLIENT_CERTIFICATE_PASSWORD());
 }
 
-void MessagingSettings::setClientCertificatePassword(const QString& clientCertificatePassword)
+void MessagingSettings::setClientCertificatePassword(const std::string& clientCertificatePassword)
 {
-    settings.setValue(SETTING_CLIENT_CERTIFICATE_PASSWORD(), clientCertificatePassword);
+    settings.set(SETTING_CLIENT_CERTIFICATE_PASSWORD(), clientCertificatePassword);
 }
 
-const QString& MessagingSettings::DEFAULT_MESSAGING_SETTINGS_FILENAME()
+const std::string& MessagingSettings::DEFAULT_MESSAGING_SETTINGS_FILENAME()
 {
-    static const QString value("resources/default-messaging.settings");
+    static const std::string value("resources/default-messaging.settings");
     return value;
 }
 
-const QString& MessagingSettings::DEFAULT_PERSISTENCE_FILENAME()
+const std::string& MessagingSettings::DEFAULT_PERSISTENCE_FILENAME()
 {
-    static const QString value("joynr.settings");
+    static const std::string value("joynr.settings");
     return value;
 }
 
-const QString& MessagingSettings::SETTING_LONGPOLL_TIMEOUT_MS()
+const std::string& MessagingSettings::SETTING_LONGPOLL_TIMEOUT_MS()
 {
-    static const QString value("messaging/long-poll-timeout");
+    static const std::string value("messaging/long-poll-timeout");
     return value;
 }
 
-qint64 MessagingSettings::DEFAULT_LONGPOLL_TIMEOUT_MS()
+int64_t MessagingSettings::DEFAULT_LONGPOLL_TIMEOUT_MS()
 {
-    static const qint64 value(10 * 60 * 1000); // 10 minutes
+    static const int64_t value(10 * 60 * 1000); // 10 minutes
     return value;
 }
 
-const QString& MessagingSettings::SETTING_HTTP_CONNECT_TIMEOUT_MS()
+const std::string& MessagingSettings::SETTING_HTTP_CONNECT_TIMEOUT_MS()
 {
-    static const QString value("messaging/http-connect-timeout");
+    static const std::string value("messaging/http-connect-timeout");
     return value;
 }
 
-qint64 MessagingSettings::DEFAULT_HTTP_CONNECT_TIMEOUT_MS()
+int64_t MessagingSettings::DEFAULT_HTTP_CONNECT_TIMEOUT_MS()
 {
-    static const qint64 value(1 * 60 * 1000); // 1 minute
+    static const int64_t value(1 * 60 * 1000); // 1 minute
     return value;
 }
 
-const QString& MessagingSettings::SETTING_BOUNCEPROXY_TIMEOUT_MS()
+const std::string& MessagingSettings::SETTING_BOUNCEPROXY_TIMEOUT_MS()
 {
-    static const QString value("messaging/bounce-proxy-timeout");
+    static const std::string value("messaging/bounce-proxy-timeout");
     return value;
 }
 
-qint64 MessagingSettings::DEFAULT_BOUNCEPROXY_TIMEOUT_MS()
+int64_t MessagingSettings::DEFAULT_BOUNCEPROXY_TIMEOUT_MS()
 {
-    static const qint64 value(20 * 1000); // 20 seconds
+    static const int64_t value(20 * 1000); // 20 seconds
     return value;
 }
 
-const QString& MessagingSettings::SETTING_DISCOVERY_MESSAGES_TTL_MS()
+const std::string& MessagingSettings::SETTING_DISCOVERY_MESSAGES_TTL_MS()
 {
-    static const QString value("messaging/discovery-messages-ttl");
+    static const std::string value("messaging/discovery-messages-ttl");
     return value;
 }
 
-qint64 MessagingSettings::DEFAULT_DISCOVERY_REQUEST_TIMEOUT_MS()
+int64_t MessagingSettings::DEFAULT_DISCOVERY_REQUEST_TIMEOUT_MS()
 {
-    static const qint64 value(40 * 1000); // 40 seconds
+    static const int64_t value(40 * 1000); // 40 seconds
     return value;
 }
 
-const QString& MessagingSettings::SETTING_SEND_MESSAGE_MAX_TTL()
+const std::string& MessagingSettings::SETTING_SEND_MESSAGE_MAX_TTL()
 {
-    static const QString value("messaging/max-send-ttl");
+    static const std::string value("messaging/max-send-ttl");
     return value;
 }
 
-qint64 MessagingSettings::DEFAULT_SEND_MESSAGE_MAX_TTL()
+int64_t MessagingSettings::DEFAULT_SEND_MESSAGE_MAX_TTL()
 {
-    static const qint64 value(10 * 60 * 1000); // 10 minutes
+    static const int64_t value(10 * 60 * 1000); // 10 minutes
     return value;
 }
 
 BounceProxyUrl MessagingSettings::getBounceProxyUrl() const
 {
-    return BounceProxyUrl(settings.value(SETTING_BOUNCE_PROXY_URL()).toString());
+    return BounceProxyUrl(TypeUtil::toQt(settings.get<std::string>(SETTING_BOUNCE_PROXY_URL())));
+}
+
+std::string MessagingSettings::getBounceProxyUrlString() const
+{
+    return settings.get<std::string>(SETTING_BOUNCE_PROXY_URL());
 }
 
 void MessagingSettings::setBounceProxyUrl(const BounceProxyUrl& bounceProxyUrl)
 {
-    settings.setValue(SETTING_BOUNCE_PROXY_URL(), bounceProxyUrl.getBounceProxyBaseUrl());
+    std::string url = bounceProxyUrl.getBounceProxyBaseUrl().toString().toStdString();
+    settings.set(SETTING_BOUNCE_PROXY_URL(), url);
 }
 
-QString MessagingSettings::getDiscoveryDirectoriesDomain() const
+std::string MessagingSettings::getDiscoveryDirectoriesDomain() const
 {
-    return settings.value(SETTING_DISCOVERY_DIRECTORIES_DOMAIN()).toString();
+    return settings.get<std::string>(SETTING_DISCOVERY_DIRECTORIES_DOMAIN());
 }
 
-QString MessagingSettings::getChannelUrlDirectoryUrl() const
+std::string MessagingSettings::getChannelUrlDirectoryUrl() const
 {
-    return settings.value(SETTING_CHANNEL_URL_DIRECTORY_URL()).toString();
+    return settings.get<std::string>(SETTING_CHANNEL_URL_DIRECTORY_URL());
 }
 
-QString MessagingSettings::getChannelUrlDirectoryChannelId() const
+std::string MessagingSettings::getChannelUrlDirectoryChannelId() const
 {
-    return settings.value(SETTING_CHANNEL_URL_DIRECTORY_CHANNELID()).toString();
+    return settings.get<std::string>(SETTING_CHANNEL_URL_DIRECTORY_CHANNELID());
 }
 
-QString MessagingSettings::getChannelUrlDirectoryParticipantId() const
+std::string MessagingSettings::getChannelUrlDirectoryParticipantId() const
 {
-    return settings.value(SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID()).toString();
+    return settings.get<std::string>(SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID());
 }
 
-QString MessagingSettings::getCapabilitiesDirectoryUrl() const
+std::string MessagingSettings::getCapabilitiesDirectoryUrl() const
 {
-    return settings.value(SETTING_CAPABILITIES_DIRECTORY_URL()).toString();
+    return settings.get<std::string>(SETTING_CAPABILITIES_DIRECTORY_URL());
 }
 
-QString MessagingSettings::getCapabilitiesDirectoryChannelId() const
+std::string MessagingSettings::getCapabilitiesDirectoryChannelId() const
 {
-    return settings.value(SETTING_CAPABILITIES_DIRECTORY_CHANNELID()).toString();
+    return settings.get<std::string>(SETTING_CAPABILITIES_DIRECTORY_CHANNELID());
 }
 
-QString MessagingSettings::getCapabilitiesDirectoryParticipantId() const
+std::string MessagingSettings::getCapabilitiesDirectoryParticipantId() const
 {
-    return settings.value(SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID()).toString();
+    return settings.get<std::string>(SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID());
 }
 
-qint64 MessagingSettings::getIndex() const
+int64_t MessagingSettings::getIndex() const
 {
-    return settings.value(SETTING_INDEX()).toLongLong();
+    return settings.get<int64_t>(SETTING_INDEX());
 }
 
-void MessagingSettings::setIndex(qint64 index)
+void MessagingSettings::setIndex(int64_t index)
 {
-    settings.setValue(SETTING_INDEX(), index);
+    settings.set(SETTING_INDEX(), index);
 }
 
 int MessagingSettings::getCreateChannelRetryInterval() const
 {
-    return settings.value(SETTING_CREATE_CHANNEL_RETRY_INTERVAL()).toInt();
+    return settings.get<int>(SETTING_CREATE_CHANNEL_RETRY_INTERVAL());
 }
 
 void MessagingSettings::setCreateChannelRetryInterval(const int& retryInterval)
 {
-    settings.setValue(SETTING_CREATE_CHANNEL_RETRY_INTERVAL(), retryInterval);
+    settings.set(SETTING_CREATE_CHANNEL_RETRY_INTERVAL(), retryInterval);
 }
 
 int MessagingSettings::getDeleteChannelRetryInterval() const
 {
-    return settings.value(SETTING_DELETE_CHANNEL_RETRY_INTERVAL()).toInt();
+    return settings.get<int>(SETTING_DELETE_CHANNEL_RETRY_INTERVAL());
 }
 
 void MessagingSettings::setDeleteChannelRetryInterval(const int& retryInterval)
 {
-    settings.setValue(SETTING_DELETE_CHANNEL_RETRY_INTERVAL(), retryInterval);
+    settings.set(SETTING_DELETE_CHANNEL_RETRY_INTERVAL(), retryInterval);
 }
 
 int MessagingSettings::getSendMsgRetryInterval() const
 {
-    return settings.value(SETTING_SEND_MSG_RETRY_INTERVAL()).toInt();
+    return settings.get<int>(SETTING_SEND_MSG_RETRY_INTERVAL());
 }
 
 void MessagingSettings::setSendMsgRetryInterval(const int& retryInterval)
 {
-    settings.setValue(SETTING_SEND_MSG_RETRY_INTERVAL(), retryInterval);
+    settings.set(SETTING_SEND_MSG_RETRY_INTERVAL(), retryInterval);
 }
 
 int MessagingSettings::getLongPollRetryInterval() const
 {
-    return settings.value(SETTING_LONGPOLL_RETRY_INTERVAL()).toInt();
+    return settings.get<int>(SETTING_LONGPOLL_RETRY_INTERVAL());
 }
 
 void MessagingSettings::setLongPollRetryInterval(const int& retryInterval)
 {
-    settings.setValue(SETTING_LONGPOLL_RETRY_INTERVAL(), retryInterval);
+    settings.set(SETTING_LONGPOLL_RETRY_INTERVAL(), retryInterval);
 }
 
-QString MessagingSettings::getLocalProxyPort() const
+std::string MessagingSettings::getLocalProxyPort() const
 {
-    return settings.value(SETTING_LOCAL_PROXY_PORT()).toString();
+    return settings.get<std::string>(SETTING_LOCAL_PROXY_PORT());
 }
 
 void MessagingSettings::setLocalProxyPort(const int& localProxyPort)
 {
-    settings.setValue(SETTING_LOCAL_PROXY_PORT(), localProxyPort);
+    settings.set(SETTING_LOCAL_PROXY_PORT(), localProxyPort);
 }
 
-QString MessagingSettings::getLocalProxyHost() const
+std::string MessagingSettings::getLocalProxyHost() const
 {
-    return settings.value(SETTING_LOCAL_PROXY_HOST()).toString();
+    return settings.get<std::string>(SETTING_LOCAL_PROXY_HOST());
 }
 
-void MessagingSettings::setLocalProxyHost(const QString& localProxyHost)
+void MessagingSettings::setLocalProxyHost(const std::string& localProxyHost)
 {
-    settings.setValue(SETTING_LOCAL_PROXY_HOST(), localProxyHost);
+    settings.set(SETTING_LOCAL_PROXY_HOST(), localProxyHost);
 }
 
 bool MessagingSettings::getHttpDebug() const
 {
-    return settings.value(SETTING_HTTP_DEBUG()).toBool();
+    return settings.get<bool>(SETTING_HTTP_DEBUG());
 }
 
 void MessagingSettings::setHttpDebug(const bool& httpDebug)
 {
-    settings.setValue(SETTING_HTTP_DEBUG(), httpDebug);
+    settings.set(SETTING_HTTP_DEBUG(), httpDebug);
 }
 
-QString MessagingSettings::getMessagingPropertiesPersistenceFilename() const
+std::string MessagingSettings::getMessagingPropertiesPersistenceFilename() const
 {
-    return settings.value(SETTING_PERSISTENCE_FILENAME()).toString();
+    return settings.get<std::string>(SETTING_PERSISTENCE_FILENAME());
 }
 
-void MessagingSettings::setMessagingPropertiesPersistenceFilename(const QString& filename)
+void MessagingSettings::setMessagingPropertiesPersistenceFilename(const std::string& filename)
 {
-    settings.setValue(SETTING_PERSISTENCE_FILENAME(), filename);
+    settings.set(SETTING_PERSISTENCE_FILENAME(), filename);
 }
 
-qint64 MessagingSettings::getLongPollTimeout() const
+int64_t MessagingSettings::getLongPollTimeout() const
 {
-    return settings.value(SETTING_LONGPOLL_TIMEOUT_MS()).toLongLong();
+    return settings.get<int64_t>(SETTING_LONGPOLL_TIMEOUT_MS());
 }
 
-void MessagingSettings::setLongPollTimeout(qint64 timeout_ms)
+void MessagingSettings::setLongPollTimeout(int64_t timeout_ms)
 {
-    settings.setValue(SETTING_LONGPOLL_TIMEOUT_MS(), timeout_ms);
+    settings.set(SETTING_LONGPOLL_TIMEOUT_MS(), timeout_ms);
 }
 
-qint64 MessagingSettings::getHttpConnectTimeout() const
+int64_t MessagingSettings::getHttpConnectTimeout() const
 {
-    return settings.value(SETTING_HTTP_CONNECT_TIMEOUT_MS()).toLongLong();
+    return settings.get<int64_t>(SETTING_HTTP_CONNECT_TIMEOUT_MS());
 }
 
-void MessagingSettings::setHttpConnectTimeout(qint64 timeout_ms)
+void MessagingSettings::setHttpConnectTimeout(int64_t timeout_ms)
 {
-    settings.setValue(SETTING_HTTP_CONNECT_TIMEOUT_MS(), timeout_ms);
+    settings.set(SETTING_HTTP_CONNECT_TIMEOUT_MS(), timeout_ms);
 }
 
-qint64 MessagingSettings::getBounceProxyTimeout() const
+int64_t MessagingSettings::getBounceProxyTimeout() const
 {
-    return settings.value(SETTING_BOUNCEPROXY_TIMEOUT_MS()).toLongLong();
+    return settings.get<int64_t>(SETTING_BOUNCEPROXY_TIMEOUT_MS());
 }
 
-void MessagingSettings::setBounceProxyTimeout(qint64 timeout_ms)
+void MessagingSettings::setBounceProxyTimeout(int64_t timeout_ms)
 {
-    settings.setValue(SETTING_BOUNCEPROXY_TIMEOUT_MS(), timeout_ms);
+    settings.set(SETTING_BOUNCEPROXY_TIMEOUT_MS(), timeout_ms);
 }
 
-qint64 MessagingSettings::getDiscoveryMessagesTtl() const
+int64_t MessagingSettings::getDiscoveryMessagesTtl() const
 {
-    return settings.value(SETTING_DISCOVERY_MESSAGES_TTL_MS()).toLongLong();
+    return settings.get<int64_t>(SETTING_DISCOVERY_MESSAGES_TTL_MS());
 }
 
-void MessagingSettings::setDiscoveryMessagesTtl(qint64 ttl_ms)
+void MessagingSettings::setDiscoveryMessagesTtl(int64_t ttl_ms)
 {
-    settings.setValue(SETTING_DISCOVERY_MESSAGES_TTL_MS(), ttl_ms);
+    settings.set(SETTING_DISCOVERY_MESSAGES_TTL_MS(), ttl_ms);
 }
 
-qint64 MessagingSettings::getSendMsgMaxTtl() const
+int64_t MessagingSettings::getSendMsgMaxTtl() const
 {
-    return settings.value(SETTING_SEND_MESSAGE_MAX_TTL()).toLongLong();
+    return settings.get<int64_t>(SETTING_SEND_MESSAGE_MAX_TTL());
 }
 
-void MessagingSettings::setSendMsgMaxTtl(qint64 ttl_ms)
+void MessagingSettings::setSendMsgMaxTtl(int64_t ttl_ms)
 {
-    settings.setValue(SETTING_SEND_MESSAGE_MAX_TTL(), ttl_ms);
+    settings.set(SETTING_SEND_MESSAGE_MAX_TTL(), ttl_ms);
 }
 
-bool MessagingSettings::contains(const QString& key) const
+bool MessagingSettings::contains(const std::string& key) const
 {
     return settings.contains(key);
-}
-
-QVariant MessagingSettings::value(const QString& key) const
-{
-    return settings.value(key);
 }
 
 // Checks messaging settings and sets defaults
 void MessagingSettings::checkSettings() const
 {
     assert(settings.contains(SETTING_BOUNCE_PROXY_URL()));
-    QString bounceProxyUrl = settings.value(SETTING_BOUNCE_PROXY_URL()).toString();
-    if (!bounceProxyUrl.endsWith("/")) {
+    std::string bounceProxyUrl = settings.get<std::string>(SETTING_BOUNCE_PROXY_URL());
+    if (bounceProxyUrl.back() != '/') {
         bounceProxyUrl.append("/");
-        settings.setValue(SETTING_BOUNCE_PROXY_URL(), bounceProxyUrl);
+        settings.set(SETTING_BOUNCE_PROXY_URL(), bounceProxyUrl);
     }
 
     assert(settings.contains(SETTING_DISCOVERY_DIRECTORIES_DOMAIN()));
 
     assert(settings.contains(SETTING_CHANNEL_URL_DIRECTORY_URL()));
-    QString channelUrlDirectoryUrl = settings.value(SETTING_CHANNEL_URL_DIRECTORY_URL()).toString();
-    if (!channelUrlDirectoryUrl.endsWith("/")) {
+    std::string channelUrlDirectoryUrl =
+            settings.get<std::string>(SETTING_CHANNEL_URL_DIRECTORY_URL());
+    if (channelUrlDirectoryUrl.back() != '/') {
         channelUrlDirectoryUrl.append("/");
-        settings.setValue(SETTING_CHANNEL_URL_DIRECTORY_URL(), channelUrlDirectoryUrl);
+        settings.set(SETTING_CHANNEL_URL_DIRECTORY_URL(), channelUrlDirectoryUrl);
     }
     assert(settings.contains(SETTING_CHANNEL_URL_DIRECTORY_CHANNELID()));
     assert(settings.contains(SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID()));
 
     assert(settings.contains(SETTING_CAPABILITIES_DIRECTORY_URL()));
-    QString capabilitiesDirectoryUrl =
-            settings.value(SETTING_CAPABILITIES_DIRECTORY_URL()).toString();
-    if (!capabilitiesDirectoryUrl.endsWith("/")) {
+    std::string capabilitiesDirectoryUrl =
+            settings.get<std::string>(SETTING_CAPABILITIES_DIRECTORY_URL());
+    if (capabilitiesDirectoryUrl.back() != '/') {
         capabilitiesDirectoryUrl.append("/");
-        settings.setValue(SETTING_CAPABILITIES_DIRECTORY_URL(), capabilitiesDirectoryUrl);
+        settings.set(SETTING_CAPABILITIES_DIRECTORY_URL(), capabilitiesDirectoryUrl);
     }
     assert(settings.contains(SETTING_CAPABILITIES_DIRECTORY_CHANNELID()));
     assert(settings.contains(SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID()));
 
     if (!settings.contains(SETTING_INDEX())) {
-        settings.setValue(SETTING_INDEX(), 0);
+        settings.set(SETTING_INDEX(), 0);
     }
     if (!settings.contains(SETTING_CREATE_CHANNEL_RETRY_INTERVAL())) {
-        settings.setValue(SETTING_CREATE_CHANNEL_RETRY_INTERVAL(), 5000);
+        settings.set(SETTING_CREATE_CHANNEL_RETRY_INTERVAL(), 5000);
     }
     if (!settings.contains(SETTING_DELETE_CHANNEL_RETRY_INTERVAL())) {
-        settings.setValue(SETTING_DELETE_CHANNEL_RETRY_INTERVAL(), 5000);
+        settings.set(SETTING_DELETE_CHANNEL_RETRY_INTERVAL(), 5000);
     }
     if (!settings.contains(SETTING_SEND_MSG_RETRY_INTERVAL())) {
-        settings.setValue(SETTING_SEND_MSG_RETRY_INTERVAL(), 5000);
+        settings.set(SETTING_SEND_MSG_RETRY_INTERVAL(), 5000);
     }
     if (!settings.contains(SETTING_LONGPOLL_RETRY_INTERVAL())) {
-        settings.setValue(SETTING_LONGPOLL_RETRY_INTERVAL(), 5000);
+        settings.set(SETTING_LONGPOLL_RETRY_INTERVAL(), 5000);
     }
     if (!settings.contains(SETTING_PERSISTENCE_FILENAME())) {
-        settings.setValue(SETTING_PERSISTENCE_FILENAME(), DEFAULT_PERSISTENCE_FILENAME());
+        settings.set(SETTING_PERSISTENCE_FILENAME(), DEFAULT_PERSISTENCE_FILENAME());
     }
     if (!settings.contains(SETTING_DISCOVERY_MESSAGES_TTL_MS())) {
-        settings.setValue(
-                SETTING_DISCOVERY_MESSAGES_TTL_MS(), DEFAULT_DISCOVERY_REQUEST_TIMEOUT_MS());
+        settings.set(SETTING_DISCOVERY_MESSAGES_TTL_MS(), DEFAULT_DISCOVERY_REQUEST_TIMEOUT_MS());
     }
 }
 
 void MessagingSettings::printSettings() const
 {
     LOG_DEBUG(logger,
-              "SETTING: " + SETTING_BOUNCE_PROXY_URL() + " = " +
-                      settings.value(SETTING_BOUNCE_PROXY_URL()).toString());
+              "SETTING: " + TypeUtil::toQt(SETTING_BOUNCE_PROXY_URL()) + " = " +
+                      TypeUtil::toQt(settings.get<std::string>(SETTING_BOUNCE_PROXY_URL())));
     LOG_DEBUG(logger,
-              "SETTING: " + SETTING_DISCOVERY_DIRECTORIES_DOMAIN() + " = " +
-                      settings.value(SETTING_DISCOVERY_DIRECTORIES_DOMAIN()).toString());
+              "SETTING: " + TypeUtil::toQt(SETTING_DISCOVERY_DIRECTORIES_DOMAIN()) + " = " +
+                      TypeUtil::toQt(
+                              settings.get<std::string>(SETTING_DISCOVERY_DIRECTORIES_DOMAIN())));
+    LOG_DEBUG(
+            logger,
+            "SETTING: " + TypeUtil::toQt(SETTING_CHANNEL_URL_DIRECTORY_URL()) + " = " +
+                    TypeUtil::toQt(settings.get<std::string>(SETTING_CHANNEL_URL_DIRECTORY_URL())));
     LOG_DEBUG(logger,
-              "SETTING: " + SETTING_CHANNEL_URL_DIRECTORY_URL() + " = " +
-                      settings.value(SETTING_CHANNEL_URL_DIRECTORY_URL()).toString());
+              "SETTING: " + TypeUtil::toQt(SETTING_CHANNEL_URL_DIRECTORY_CHANNELID()) + " = " +
+                      TypeUtil::toQt(settings.get<std::string>(
+                              SETTING_CHANNEL_URL_DIRECTORY_CHANNELID())));
     LOG_DEBUG(logger,
-              "SETTING: " + SETTING_CHANNEL_URL_DIRECTORY_CHANNELID() + " = " +
-                      settings.value(SETTING_CHANNEL_URL_DIRECTORY_CHANNELID()).toString());
+              "SETTING: " + TypeUtil::toQt(SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID()) + " = " +
+                      TypeUtil::toQt(settings.get<std::string>(
+                              SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID())));
     LOG_DEBUG(logger,
-              "SETTING: " + SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID() + " = " +
-                      settings.value(SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID()).toString());
+              "SETTING: " + TypeUtil::toQt(SETTING_CAPABILITIES_DIRECTORY_URL()) + " = " +
+                      TypeUtil::toQt(
+                              settings.get<std::string>(SETTING_CAPABILITIES_DIRECTORY_URL())));
     LOG_DEBUG(logger,
-              "SETTING: " + SETTING_CAPABILITIES_DIRECTORY_URL() + " = " +
-                      settings.value(SETTING_CAPABILITIES_DIRECTORY_URL()).toString());
+              "SETTING: " + TypeUtil::toQt(SETTING_CAPABILITIES_DIRECTORY_CHANNELID()) + " = " +
+                      TypeUtil::toQt(settings.get<std::string>(
+                              SETTING_CAPABILITIES_DIRECTORY_CHANNELID())));
     LOG_DEBUG(logger,
-              "SETTING: " + SETTING_CAPABILITIES_DIRECTORY_CHANNELID() + " = " +
-                      settings.value(SETTING_CAPABILITIES_DIRECTORY_CHANNELID()).toString());
+              "SETTING: " + TypeUtil::toQt(SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID()) + " = " +
+                      TypeUtil::toQt(settings.get<std::string>(
+                              SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID())));
     LOG_DEBUG(logger,
-              "SETTING: " + SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID() + " = " +
-                      settings.value(SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID()).toString());
+              "SETTING: " + TypeUtil::toQt(SETTING_INDEX()) + " = " +
+                      TypeUtil::toQt(settings.get<std::string>(SETTING_INDEX())));
     LOG_DEBUG(logger,
-              "SETTING: " + SETTING_INDEX() + " = " + settings.value(SETTING_INDEX()).toString());
+              "SETTING: " + TypeUtil::toQt(SETTING_CREATE_CHANNEL_RETRY_INTERVAL()) + " = " +
+                      TypeUtil::toQt(
+                              settings.get<std::string>(SETTING_CREATE_CHANNEL_RETRY_INTERVAL())));
     LOG_DEBUG(logger,
-              "SETTING: " + SETTING_CREATE_CHANNEL_RETRY_INTERVAL() + " = " +
-                      settings.value(SETTING_CREATE_CHANNEL_RETRY_INTERVAL()).toString());
+              "SETTING: " + TypeUtil::toQt(SETTING_DELETE_CHANNEL_RETRY_INTERVAL()) + " = " +
+                      TypeUtil::toQt(
+                              settings.get<std::string>(SETTING_DELETE_CHANNEL_RETRY_INTERVAL())));
     LOG_DEBUG(logger,
-              "SETTING: " + SETTING_DELETE_CHANNEL_RETRY_INTERVAL() + " = " +
-                      settings.value(SETTING_DELETE_CHANNEL_RETRY_INTERVAL()).toString());
+              "SETTING: " + TypeUtil::toQt(SETTING_SEND_MSG_RETRY_INTERVAL()) + " = " +
+                      TypeUtil::toQt(settings.get<std::string>(SETTING_SEND_MSG_RETRY_INTERVAL())));
     LOG_DEBUG(logger,
-              "SETTING: " + SETTING_SEND_MSG_RETRY_INTERVAL() + " = " +
-                      settings.value(SETTING_SEND_MSG_RETRY_INTERVAL()).toString());
+              "SETTING: " + TypeUtil::toQt(SETTING_LONGPOLL_RETRY_INTERVAL()) + " = " +
+                      TypeUtil::toQt(settings.get<std::string>(SETTING_LONGPOLL_RETRY_INTERVAL())));
     LOG_DEBUG(logger,
-              "SETTING: " + SETTING_LONGPOLL_RETRY_INTERVAL() + " = " +
-                      settings.value(SETTING_LONGPOLL_RETRY_INTERVAL()).toString());
+              "SETTING: " + TypeUtil::toQt(SETTING_LOCAL_PROXY_HOST()) + " = " +
+                      TypeUtil::toQt(settings.get<std::string>(SETTING_LOCAL_PROXY_HOST())));
     LOG_DEBUG(logger,
-              "SETTING: " + SETTING_LOCAL_PROXY_HOST() + " = " +
-                      settings.value(SETTING_LOCAL_PROXY_HOST()).toString());
+              "SETTING: " + TypeUtil::toQt(SETTING_LOCAL_PROXY_PORT()) + " = " +
+                      TypeUtil::toQt(settings.get<std::string>(SETTING_LOCAL_PROXY_PORT())));
     LOG_DEBUG(logger,
-              "SETTING: " + SETTING_LOCAL_PROXY_PORT() + " = " +
-                      settings.value(SETTING_LOCAL_PROXY_PORT()).toString());
-    LOG_DEBUG(logger,
-              "SETTING: " + SETTING_PERSISTENCE_FILENAME() + " = " +
-                      settings.value(SETTING_PERSISTENCE_FILENAME()).toString());
-
-    LOG_DEBUG(logger,
-              "SETTING: " + SETTING_DISCOVERY_MESSAGES_TTL_MS() + " = " +
-                      settings.value(SETTING_DISCOVERY_MESSAGES_TTL_MS()).toString());
+              "SETTING: " + TypeUtil::toQt(SETTING_PERSISTENCE_FILENAME()) + " = " +
+                      TypeUtil::toQt(settings.get<std::string>(SETTING_PERSISTENCE_FILENAME())));
+    LOG_DEBUG(
+            logger,
+            "SETTING: " + TypeUtil::toQt(SETTING_DISCOVERY_MESSAGES_TTL_MS()) + " = " +
+                    TypeUtil::toQt(settings.get<std::string>(SETTING_DISCOVERY_MESSAGES_TTL_MS())));
 }
 
 } // namespace joynr

@@ -20,52 +20,49 @@
 #define SYSTEMSERVICESSETTINGS_H
 
 #include "joynr/JoynrCommonExport.h"
+#include "joynr/Settings.h"
 #include "joynr/joynrlogging.h"
-#include <QObject>
-#include <QSettings>
+
+#include <string>
 
 namespace joynr
 {
 
-class JOYNRCOMMON_EXPORT SystemServicesSettings : public QObject
+class JOYNRCOMMON_EXPORT SystemServicesSettings
 {
-    Q_OBJECT
-
 public:
-    explicit SystemServicesSettings(QSettings& settings, QObject* parent = 0);
+    explicit SystemServicesSettings(Settings& settings);
     SystemServicesSettings(const SystemServicesSettings& other);
 
     ~SystemServicesSettings();
 
-    static const QString& SETTING_DOMAIN();
-    static const QString& SETTING_CC_ROUTINGPROVIDER_AUTHENTICATIONTOKEN();
-    static const QString& SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID();
-    static const QString& SETTING_CC_DISCOVERYPROVIDER_AUTHENTICATIONTOKEN();
-    static const QString& SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID();
+    static const std::string& SETTING_DOMAIN();
+    static const std::string& SETTING_CC_ROUTINGPROVIDER_AUTHENTICATIONTOKEN();
+    static const std::string& SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID();
+    static const std::string& SETTING_CC_DISCOVERYPROVIDER_AUTHENTICATIONTOKEN();
+    static const std::string& SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID();
 
-    static const QString& DEFAULT_SYSTEM_SERVICES_SETTINGS_FILENAME();
+    static const std::string& DEFAULT_SYSTEM_SERVICES_SETTINGS_FILENAME();
 
-    QString getDomain() const;
-    void setJoynrSystemServicesDomain(const QString& systemServicesDomain);
-    QString getCcRoutingProviderAuthenticationToken() const;
-    void setCcRoutingProviderAuthenticationToken(const QString& authenticationToken);
-    QString getCcRoutingProviderParticipantId() const;
-    void setCcRoutingProviderParticipantId(const QString& participantId);
-    QString getCcDiscoveryProviderAuthenticationToken() const;
-    void setCcDiscoveryProviderAuthenticationToken(const QString& authenticationToken);
-    QString getCcDiscoveryProviderParticipantId() const;
-    void setCcDiscoveryProviderParticipantId(const QString& participantId);
+    std::string getDomain() const;
+    void setJoynrSystemServicesDomain(const std::string& systemServicesDomain);
+    std::string getCcRoutingProviderAuthenticationToken() const;
+    void setCcRoutingProviderAuthenticationToken(const std::string& authenticationToken);
+    std::string getCcRoutingProviderParticipantId() const;
+    void setCcRoutingProviderParticipantId(const std::string& participantId);
+    std::string getCcDiscoveryProviderAuthenticationToken() const;
+    void setCcDiscoveryProviderAuthenticationToken(const std::string& authenticationToken);
+    std::string getCcDiscoveryProviderParticipantId() const;
+    void setCcDiscoveryProviderParticipantId(const std::string& participantId);
 
-    bool contains(const QString& key) const;
-    QVariant value(const QString& key) const;
+    bool contains(const std::string& key) const;
 
-public slots:
     void printSettings() const;
 
 private:
     void operator=(const SystemServicesSettings& other);
 
-    QSettings& settings;
+    Settings& settings;
     static joynr_logging::Logger* logger;
     void checkSettings() const;
 };
