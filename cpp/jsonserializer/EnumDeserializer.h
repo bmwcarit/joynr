@@ -43,7 +43,7 @@ public:
     virtual ~IEnumDeserializer() {}
     /**
      * @brief deserializeVariant Every deserializer has be able to deserailize to Variant
-     * @param object
+     * @param value
      * @return Deserialized object enclosed in Variant.
      * If given object is not a Variant, returns empty Variant
      * (IVariantHolder* is nullptr)
@@ -65,7 +65,7 @@ public:
      * to support deserialization to a type T this method has to be implemented
      * (e.g. generated code)
      * @param typeReference Reference to instance of given type
-     * @param object Reference to object produced by Serializer Engine
+     * @param value Reference to object produced by Serializer Engine
      */
     static void deserialize(T& typeReference, IValue& value);
     /**

@@ -34,13 +34,21 @@ class ArraySerializer
 {
 public:
     /**
-     * @brief Serialize array to stream
+     * @brief serializes a vector
+     * @param array the vector to serialize
+     * @param stream the stream to write to
+     * @tparam T the type of the vector elements
      */
     template <typename T>
     static void serialize(const std::vector<T>& array, std::ostream& stream);
 };
 
 
+/**
+ * @brief serializes a vector of variants
+ * @param array the vector to serialize
+ * @param stream the stream to write to
+ */
 template <>
 void ArraySerializer::serialize(const std::vector<Variant>& array, std::ostream& stream);
 

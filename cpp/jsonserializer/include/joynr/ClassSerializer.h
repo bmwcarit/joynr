@@ -38,6 +38,7 @@ public:
 
 /**
  * @brief Template for classes that serialize other classes
+ * @tparam T the type to serialize
  */
 template <class T>
 class ClassSerializer : public IClassSerializer
