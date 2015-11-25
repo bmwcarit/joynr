@@ -144,7 +144,7 @@ TEST_F(JoynrMessageFactoryTest, createRequest){
     );
     //warning if prepareRequest needs to long this assert will fail as it compares absolute timestamps
     JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
-    JoynrTimePoint expectedExpiryDate = now + milliseconds(qos.getTtl());
+    JoynrTimePoint expectedExpiryDate = now + duration<long long>(qos.getTtl());
     JoynrTimePoint expiryDate = joynrMessage.getHeaderExpiryDate();
     EXPECT_NEAR(expectedExpiryDate.time_since_epoch().count(), expiryDate.time_since_epoch().count(), 100.);
     LOG_DEBUG(logger,
