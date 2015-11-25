@@ -19,8 +19,8 @@
 #ifndef THREADSAFEMAP_H
 #define THREADSAFEMAP_H
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/ReadWriteLock.h"
 
-#include <QReadWriteLock>
 #include <map>
 
 namespace joynr
@@ -45,7 +45,7 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(ThreadSafeMap);
     std::map<Key, T> map;
-    QReadWriteLock lock;
+    joynr::ReadWriteLock lock;
 };
 
 template <class Key, class T>
@@ -57,26 +57,23 @@ ThreadSafeMap<Key, T>::ThreadSafeMap()
 template <class Key, class T>
 void ThreadSafeMap<Key, T>::insert(const Key& key, const T& value)
 {
-    lock.lockForWrite();
+    joynr::WriteLocker locker(lock);
     map.insert(std::make_pair(key, value));
-    lock.unlock();
 }
 
 template <class Key, class T>
 void ThreadSafeMap<Key, T>::remove(const Key& key)
 {
-    lock.lockForWrite();
+    joynr::WriteLocker locker(lock);
     map.erase(map.find(key));
-    lock.unlock();
 }
 
 template <class Key, class T>
 T ThreadSafeMap<Key, T>::value(const Key& key)
 {
     T aValue;
-    lock.lockForRead();
+    joynr::ReadLocker locker(lock);
     aValue = map.find(key)->second;
-    lock.unlock();
     return aValue;
 }
 
@@ -84,13 +81,12 @@ template <class Key, class T>
 T ThreadSafeMap<Key, T>::take(const Key& key)
 {
     T aValue;
-    lock.lockForWrite();
+    joynr::WriteLocker locker(lock);
     auto mapElement = map.find(key);
     if (mapElement != map.end()) {
         aValue = mapElement->second;
         map.erase(mapElement);
     }
-    lock.unlock();
     return aValue;
 }
 
@@ -98,22 +94,20 @@ template <class Key, class T>
 bool ThreadSafeMap<Key, T>::contains(const Key& key)
 {
     bool aValue;
-    lock.lockForRead();
+    joynr::ReadLocker locker(lock);
     aValue = map.find(key) != map.end();
-    lock.unlock();
     return aValue;
 }
 
 template <class Key, class T>
 void ThreadSafeMap<Key, T>::deleteAll()
 {
-    lock.lockForWrite();
+    joynr::WriteLocker locker(lock);
     for (const Key& str : map.keys()) {
         T value = map.take(str);
         delete value;
         value = NULL;
     }
-    lock.unlock();
 }
 
 template <class Key, class T>
