@@ -21,7 +21,8 @@
 #include "joynr/ReplyInterpreter.h"
 #include "joynr/MetaTypeRegistrar.h"
 
-#include "joynr/types/Localisation_QtGpsLocation.h"
+#include "joynr/types/Localisation/GpsLocation.h"
+#include "joynr/types/Localisation/Trip.h"
 #include "joynr/IReplyCaller.h"
 //#needed:?
 #include "joynr/JoynrMessageSender.h"
@@ -52,20 +53,20 @@ protected:
 
 TEST_F(ReplyInterpreterTest, execute_calls_caller) {
     // Register metatypes
-    qRegisterMetaType<Reply>();
-    qRegisterMetaType<types::Localisation::QtGpsLocation>();
+    //qRegisterMetaType<Reply>();
+    //qRegisterMetaType<types::Localisation::GpsLocation>();
     MetaTypeRegistrar& registrar = MetaTypeRegistrar::instance();
-    registrar.registerReplyMetaType<types::Localisation::QtGpsLocation>();
+    registrar.registerReplyMetaType<types::Localisation::GpsLocation>();
 
     // Create a mock callback
-    std::shared_ptr<MockCallback<joynr::types::Localisation::QtGpsLocation>> callback(new MockCallback<joynr::types::Localisation::QtGpsLocation>());
+    std::shared_ptr<MockCallback<joynr::types::Localisation::GpsLocation>> callback(new MockCallback<joynr::types::Localisation::GpsLocation>());
     int myAltitude = 13;
-    EXPECT_CALL(*callback, onSuccess(Property(&types::Localisation::QtGpsLocation::getAltitude, myAltitude)))
+    EXPECT_CALL(*callback, onSuccess(Property(&types::Localisation::GpsLocation::getAltitude, myAltitude)))
                 .Times(1);
 
     // Create a reply caller
-    std::shared_ptr<IReplyCaller> icaller(new ReplyCaller<types::Localisation::QtGpsLocation>(
-            [callback](const RequestStatus& status, const types::Localisation::QtGpsLocation& location) {
+    std::shared_ptr<IReplyCaller> icaller(new ReplyCaller<types::Localisation::GpsLocation>(
+            [callback](const RequestStatus& status, const types::Localisation::GpsLocation& location) {
                 callback->onSuccess(location);
             },
             [](const RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error){
@@ -80,23 +81,20 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller) {
     reply.setResponse(response);
 
     // Interpret the reply
-    IReplyInterpreter& interpreter = registrar.getReplyInterpreter(Util::getTypeId<types::Localisation::QtGpsLocation>());
+    IReplyInterpreter& interpreter = registrar.getReplyInterpreter(Util::getTypeId<types::Localisation::GpsLocation>());
     interpreter.execute(icaller, reply);
 }
 
 TEST_F(ReplyInterpreterTest, create_createsGpsInterpreterOnlyOnce) {
 
-    // Register metatypes
-    qRegisterMetaType<types::Localisation::QtGpsLocation>();
-    qRegisterMetaType<types::Localisation::QtTrip>();
     MetaTypeRegistrar& registrar = MetaTypeRegistrar::instance();
 
-    registrar.registerReplyMetaType<types::Localisation::QtGpsLocation>();
-    registrar.registerReplyMetaType<types::Localisation::QtTrip>();
+    registrar.registerReplyMetaType<types::Localisation::GpsLocation>();
+    registrar.registerReplyMetaType<types::Localisation::Trip>();
 
-    IReplyInterpreter& interpreter1 = registrar.getReplyInterpreter(Util::getTypeId<types::Localisation::QtGpsLocation>());
-    IReplyInterpreter& interpreter2 = registrar.getReplyInterpreter(Util::getTypeId<types::Localisation::QtGpsLocation>());
-    IReplyInterpreter& interpreter3 = registrar.getReplyInterpreter(Util::getTypeId<types::Localisation::QtTrip>());
+    IReplyInterpreter& interpreter1 = registrar.getReplyInterpreter(Util::getTypeId<types::Localisation::GpsLocation>());
+    IReplyInterpreter& interpreter2 = registrar.getReplyInterpreter(Util::getTypeId<types::Localisation::GpsLocation>());
+    IReplyInterpreter& interpreter3 = registrar.getReplyInterpreter(Util::getTypeId<types::Localisation::Trip>());
 
     EXPECT_TRUE(&interpreter1 == &interpreter2);
     EXPECT_TRUE(&interpreter2 != &interpreter3);
