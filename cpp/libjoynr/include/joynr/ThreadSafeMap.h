@@ -29,6 +29,10 @@ namespace joynr
 template <class Key, class T>
 using mapIterator = typename std::map<Key, T>::const_iterator;
 
+/**
+ * Thread-safe map. It has been used at the moment to store shared_ptr as values.
+ * NOTICE: DO NOT STORE RAW POINTERS IN THIS MAP!!!
+ */
 template <class Key, class T>
 class ThreadSafeMap
 {
@@ -108,11 +112,7 @@ template <class Key, class T>
 void ThreadSafeMap<Key, T>::deleteAll()
 {
     joynr::WriteLocker locker(lock);
-    for (const Key& str : map.keys()) {
-        T value = map.take(str);
-        delete value;
-        value = NULL;
-    }
+    map.clear();
 }
 
 template <class Key, class T>

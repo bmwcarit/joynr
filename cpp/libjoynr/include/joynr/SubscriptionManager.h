@@ -30,8 +30,9 @@
 #include "joynr/ObjectWithDecayTime.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/Runnable.h"
+#include "joynr/ReadWriteLock.h"
+#include "joynr/ThreadSafeMap.h"
 
-#include <QReadWriteLock>
 #include <QString>
 #include <memory>
 #include <stdint.h>
@@ -105,9 +106,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(SubscriptionManager);
     class Subscription;
 
-    std::map<QString, std::shared_ptr<Subscription>> subscriptions;
-
-    QReadWriteLock subscriptionsLock;
+    ThreadSafeMap<QString, std::shared_ptr<Subscription>> subscriptions;
 
     DelayedScheduler* missedPublicationScheduler;
     static joynr_logging::Logger* logger;

@@ -61,20 +61,17 @@ SubscriptionManager::~SubscriptionManager()
 
     missedPublicationScheduler->shutdown();
     delete missedPublicationScheduler;
-    subscriptions.clear();
+    subscriptions.deleteAll();
 }
 
 SubscriptionManager::SubscriptionManager()
         : subscriptions(),
-          subscriptionsLock(QReadWriteLock::RecursionMode::Recursive),
           missedPublicationScheduler(new SingleThreadedDelayedScheduler("MissedPublications", 0))
 {
 }
 
 SubscriptionManager::SubscriptionManager(DelayedScheduler* scheduler)
-        : subscriptions(),
-          subscriptionsLock(QReadWriteLock::RecursionMode::Recursive),
-          missedPublicationScheduler(scheduler)
+        : subscriptions(), missedPublicationScheduler(scheduler)
 {
 }
 
@@ -88,12 +85,7 @@ void SubscriptionManager::registerSubscription(
     QString subscriptionId = QString::fromStdString(subscriptionRequest.getSubscriptionId());
     LOG_DEBUG(logger, "Subscription registered. ID=" + subscriptionId);
 
-    // lock the access to the subscriptions data structure
-    // we don't use a separate block for locking/unlocking, because the subscription object is
-    // required after the subscription unlock
-    QWriteLocker subscriptionsLocker(&subscriptionsLock);
-
-    if (subscriptions.find(subscriptionId) != subscriptions.end()) {
+    if (subscriptions.contains(subscriptionId)) {
         // pre-existing subscription: remove it first from the internal data structure
         unregisterSubscription(subscriptionId);
     }
@@ -110,9 +102,7 @@ void SubscriptionManager::registerSubscription(
 
     std::shared_ptr<Subscription> subscription(new Subscription(subscriptionCaller));
 
-    subscriptions.insert(std::make_pair(subscriptionId, subscription));
-
-    subscriptionsLocker.unlock();
+    subscriptions.insert(subscriptionId, subscription);
 
     {
         std::lock_guard<std::recursive_mutex> subscriptionLocker(subscription->mutex);
@@ -150,11 +140,8 @@ void SubscriptionManager::registerSubscription(
 
 void SubscriptionManager::unregisterSubscription(const QString& subscriptionId)
 {
-    QWriteLocker subscriptionsLocker(&subscriptionsLock);
-    auto subscriptionsIterator = subscriptions.find(subscriptionId);
-    if (subscriptionsIterator != subscriptions.end()) {
-        std::shared_ptr<Subscription> subscription = subscriptionsIterator->second;
-        subscriptions.erase(subscriptionsIterator);
+    if (subscriptions.contains(subscriptionId)) {
+        std::shared_ptr<Subscription> subscription(subscriptions.take(subscriptionId));
         LOG_DEBUG(logger, "Called unregister / unsubscribe on subscription id= " + subscriptionId);
         std::lock_guard<std::recursive_mutex> subscriptionLocker(subscription->mutex);
         subscription->isStopped = true;
@@ -234,13 +221,11 @@ void SubscriptionManager::checkMissedPublication(
 
 void SubscriptionManager::touchSubscriptionState(const QString& subscriptionId)
 {
-    QReadLocker subscriptionsLocker(&subscriptionsLock);
     LOG_DEBUG(logger, "Touching subscription state for id=" + subscriptionId);
-    auto subscriptionElement = subscriptions.find(subscriptionId);
-    if (subscriptionElement == subscriptions.end()) {
+    if (!subscriptions.contains(subscriptionId)) {
         return;
     }
-    std::shared_ptr<Subscription> subscription = subscriptionElement->second;
+    std::shared_ptr<Subscription> subscription(subscriptions.value(subscriptionId));
     {
         int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
         std::lock_guard<std::recursive_mutex> subscriptionLocker(subscription->mutex);
@@ -251,16 +236,14 @@ void SubscriptionManager::touchSubscriptionState(const QString& subscriptionId)
 std::shared_ptr<ISubscriptionCallback> SubscriptionManager::getSubscriptionCallback(
         const QString& subscriptionId)
 {
-    QReadLocker subscriptionsLocker(&subscriptionsLock);
     LOG_DEBUG(logger, "Getting subscription callback for subscription id=" + subscriptionId);
-    auto subscriptionElement = subscriptions.find(subscriptionId);
-    if (subscriptionElement == subscriptions.end()) {
+    if (!subscriptions.contains(subscriptionId)) {
         LOG_DEBUG(logger,
                   "Trying to acces a non existing subscription callback for id=" + subscriptionId);
         return std::shared_ptr<ISubscriptionCallback>();
     }
 
-    std::shared_ptr<Subscription> subscription(subscriptionElement->second);
+    std::shared_ptr<Subscription> subscription(subscriptions.value(subscriptionId));
 
     {
         std::lock_guard<std::recursive_mutex> subscriptionLockers(subscription->mutex);
