@@ -35,7 +35,7 @@ import io.joynr.runtime.ClusterControllerRuntime;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.LibJoynrRuntime;
-import io.joynr.runtime.LibJoynrRuntimeModule;
+import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
 import io.joynr.servlet.ServletUtil;
 import org.junit.After;
 import org.junit.Before;
@@ -131,7 +131,8 @@ public class WebSocketProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest 
                                       new LongPollingMessagingModule(),
                                       //override AccessController with dummy implementation
                                       Modules.override(new AccessControlClientModule())
-                                             .with(new WebsocketModule(), new LibJoynrRuntimeModule())).with(modules);
+                                             .with(new WebsocketModule(), new LibjoynrWebSocketRuntimeModule()))
+                            .with(modules);
             module.configure(binder);
         }
     }
