@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ using ::testing::AllOf;
 using ::testing::Property;
 using ::testing::Invoke;
 using ::testing::Unused;
+using ::testing::Pointee;
 using namespace joynr;
 
 /**
@@ -107,7 +108,8 @@ public:
         providerParticipantId(),
         mockClientCache(),
         endPointAddress(),
-        asyncTestFixture(NULL)
+        asyncTestFixture(NULL),
+        error(NULL)
     {}
     virtual ~AbstractSyncAsyncTest(){}
     void SetUp(){
@@ -134,6 +136,46 @@ public:
             const Request&,
             std::shared_ptr<IReplyCaller>
     )>& setExpectationsForSendRequestCall(int expectedTypeId, std::string methodName) = 0;
+
+    // sets the exception which shall be returned by the ReplyCaller
+    virtual testing::internal::TypedExpectation<void(
+            const std::string&,
+            const std::string&,
+            const MessagingQos&,
+            const Request&,
+            std::shared_ptr<IReplyCaller>
+    )>& setExpectedExceptionForSendRequestCall(const exceptions::JoynrException& error) {
+        this->error.reset(error.clone());
+        return EXPECT_CALL(
+                *mockJoynrMessageSender,
+                sendRequest(
+                        _, // sender participant ID
+                        Eq(providerParticipantId), // receiver participant ID
+                        _, // messaging QoS
+                        _, // request object to send
+                        Pointee(_) // reply caller to notify when reply is received A<IReplyCaller>()
+                        )
+                ).Times(1).WillRepeatedly(Invoke(this, &AbstractSyncAsyncTest::returnError));
+    }
+
+    void returnError(const std::string& senderParticipantId,
+            const std::string& receiverParticipantId,
+            const MessagingQos& qos,
+            const Request& request,
+            std::shared_ptr<IReplyCaller> callback) {
+        callback->returnError(*error);
+    }
+
+    template <typename T>
+    static void checkApplicationException(
+            const exceptions::ApplicationException& expected,
+            const exceptions::ApplicationException& actual, T expectedEnum) {
+        EXPECT_EQ(expected.getTypeName(), actual.getTypeName());
+        EXPECT_EQ(expected.getMessage(), actual.getMessage());
+        EXPECT_EQ(expected.getErrorTypeName(), actual.getErrorTypeName());
+        EXPECT_EQ(expected.getName(), actual.getName());
+        EXPECT_EQ(expectedEnum, actual.getError<T>());
+    }
 
     virtual tests::Itest* createFixture(bool cacheEnabled)=0;
 
@@ -224,6 +266,446 @@ public:
         delete testFixture;
     }
 
+    void testAsync_getterCallReturnsProviderRuntimeException() {
+        asyncTestFixture = createFixture(false);
+
+        MockCallback<int32_t>* callback = new MockCallback<int32_t>();
+
+        exceptions::ProviderRuntimeException expected("getterCallReturnsProviderRuntimeExceptionAsyncError");
+        setExpectedExceptionForSendRequestCall(expected);
+
+        EXPECT_CALL(*callback, onSuccess(_)).Times(0);
+        EXPECT_CALL(*callback, onError(_)).Times(1);
+
+        asyncTestFixture->getAttributeWithProviderRuntimeExceptionAsync(
+                [callback] (const int32_t& value) {
+                    callback->onSuccess(value);
+                }, [callback, expected] (const exceptions::JoynrException& error) {
+                    EXPECT_EQ(expected.getTypeName(), error.getTypeName());
+                    EXPECT_EQ(expected.getMessage(), error.getMessage());
+                    callback->onError(error);
+                });
+
+        delete callback;
+    }
+
+    void testSync_getterCallReturnsProviderRuntimeException() {
+        tests::Itest* testFixture = createFixture(false);
+
+        exceptions::ProviderRuntimeException expected("getterCallReturnsProviderRuntimeExceptionError");
+        setExpectedExceptionForSendRequestCall(expected);
+
+        int32_t result;
+        try {
+            testFixture->getAttributeWithProviderRuntimeException(result);
+            ADD_FAILURE()<< "getterCallReturnsProviderRuntimeException was not successful (expected ProviderRuntimeException)";
+        } catch (exceptions::ProviderRuntimeException& e) {
+            EXPECT_EQ(expected.getTypeName(), e.getTypeName());
+            EXPECT_EQ(expected.getMessage(), e.getMessage());
+        } catch (exceptions::JoynrException& e) {
+            ADD_FAILURE()<< "getterCallReturnsProviderRuntimeException was not successful (unexpected exception)";
+        }
+
+        delete testFixture;
+    }
+
+    void testAsync_getterCallReturnsMethodInvocationException() {
+        asyncTestFixture = createFixture(false);
+
+        MockCallback<int32_t>* callback = new MockCallback<int32_t>();
+
+        exceptions::MethodInvocationException expected("getterCallReturnsMethodInvocationExceptionAsyncError");
+        setExpectedExceptionForSendRequestCall(expected);
+
+        EXPECT_CALL(*callback, onSuccess(_)).Times(0);
+        EXPECT_CALL(*callback, onError(_)).Times(1);
+
+        asyncTestFixture->getAttributeWithProviderRuntimeExceptionAsync(
+                [callback] (const int32_t& value) {
+                    callback->onSuccess(value);
+                }, [callback, expected] (const exceptions::JoynrException& error) {
+                    EXPECT_EQ(expected.getTypeName(), error.getTypeName());
+                    EXPECT_EQ(expected.getMessage(), error.getMessage());
+                    callback->onError(error);
+                });
+
+        delete callback;
+    }
+
+    void testSync_getterCallReturnsMethodInvocationException() {
+        tests::Itest* testFixture = createFixture(false);
+
+        exceptions::MethodInvocationException expected("getterCallReturnsMethodInvocationExceptionError");
+        setExpectedExceptionForSendRequestCall(expected);
+
+        int32_t result;
+        try {
+            testFixture->getAttributeWithProviderRuntimeException(result);
+            ADD_FAILURE()<< "getterCallReturnsMethodInvocationException was not successful (expected MethodInvocationException)";
+        } catch (exceptions::MethodInvocationException& e) {
+            EXPECT_EQ(expected.getTypeName(), e.getTypeName());
+            EXPECT_EQ(expected.getMessage(), e.getMessage());
+        } catch (exceptions::JoynrException& e) {
+            ADD_FAILURE()<< "getterCallReturnsMethodInvocationException was not successful (unexpected exception)";
+        }
+
+        delete testFixture;
+    }
+
+    void testAsync_setterCallReturnsProviderRuntimeException() {
+        asyncTestFixture = createFixture(false);
+
+        MockCallback<void>* callback = new MockCallback<void>();
+
+        exceptions::ProviderRuntimeException expected("setterCallReturnsProviderRuntimeExceptionAsyncError");
+        setExpectedExceptionForSendRequestCall(expected);
+
+        EXPECT_CALL(*callback, onSuccess()).Times(0);
+        EXPECT_CALL(*callback, onError(_)).Times(1);
+
+        int32_t value = 0;
+        asyncTestFixture->setAttributeWithProviderRuntimeExceptionAsync(
+                value,
+                [callback] () {
+                    callback->onSuccess();
+                }, [callback, expected] (const exceptions::JoynrException& error) {
+                    EXPECT_EQ(expected.getTypeName(), error.getTypeName());
+                    EXPECT_EQ(expected.getMessage(), error.getMessage());
+                    callback->onError(error);
+                });
+
+        delete callback;
+    }
+
+    void testSync_setterCallReturnsProviderRuntimeException() {
+        tests::Itest* testFixture = createFixture(false);
+
+        exceptions::ProviderRuntimeException expected("setterCallReturnsProviderRuntimeExceptionError");
+        setExpectedExceptionForSendRequestCall(expected);
+
+        int32_t value;
+        try {
+            testFixture->setAttributeWithProviderRuntimeException(value);
+            ADD_FAILURE()<< "setterCallReturnsProviderRuntimeException was not successful (expected ProviderRuntimeException)";
+        } catch (exceptions::ProviderRuntimeException& e) {
+            EXPECT_EQ(expected.getTypeName(), e.getTypeName());
+            EXPECT_EQ(expected.getMessage(), e.getMessage());
+        } catch (exceptions::JoynrException& e) {
+            ADD_FAILURE()<< "setterCallReturnsProviderRuntimeException was not successful (unexpected exception)";
+        }
+
+        delete testFixture;
+    }
+
+    void testAsync_setterCallReturnsMethodInvocationException() {
+        asyncTestFixture = createFixture(false);
+
+        MockCallback<void>* callback = new MockCallback<void>();
+
+        exceptions::MethodInvocationException expected ("setterCallReturnsMethodInvocationExceptionAsyncError");
+        setExpectedExceptionForSendRequestCall(expected);
+
+        EXPECT_CALL(*callback, onSuccess()).Times(0);
+        EXPECT_CALL(*callback, onError(_)).Times(1);
+
+        int32_t value = 0;
+        asyncTestFixture->setAttributeWithProviderRuntimeExceptionAsync(
+                value,
+                [callback] () {
+                    callback->onSuccess();
+                }, [callback, expected] (const exceptions::JoynrException& error) {
+                    EXPECT_EQ(expected.getTypeName(), error.getTypeName());
+                    EXPECT_EQ(expected.getMessage(), error.getMessage());
+                    callback->onError(error);
+                });
+
+        delete callback;    }
+
+    void testSync_setterCallReturnsMethodInvocationException() {
+        tests::Itest* testFixture = createFixture(false);
+
+        exceptions::MethodInvocationException expected("setterCallReturnsMethodInvocationExceptionError");
+        setExpectedExceptionForSendRequestCall(expected);
+
+        int32_t value;
+        try {
+            testFixture->setAttributeWithProviderRuntimeException(value);
+            ADD_FAILURE()<< "setterCallReturnsMethodInvocationException was not successful (expected MethodInvocationException)";
+        } catch (exceptions::MethodInvocationException& e) {
+            EXPECT_EQ(expected.getTypeName(), e.getTypeName());
+            EXPECT_EQ(expected.getMessage(), e.getMessage());
+        } catch (exceptions::JoynrException& e) {
+            ADD_FAILURE()<< "setterCallReturnsMethodInvocationException was not successful (unexpected exception)";
+        }
+
+        delete testFixture;
+    }
+
+    void testAsync_methodCallReturnsProviderRuntimeException() {
+        asyncTestFixture = createFixture(false);
+
+        MockCallback<void>* callback = new MockCallback<void>();
+
+        exceptions::ProviderRuntimeException expected ("testAsync_methodCallReturnsProviderRuntimeException-ERROR");
+        setExpectedExceptionForSendRequestCall(expected);
+
+        EXPECT_CALL(*callback, onSuccess()).Times(0);
+        EXPECT_CALL(*callback, onError(_)).Times(1);
+
+        asyncTestFixture->methodWithProviderRuntimeExceptionAsync(
+                [callback] () {
+                    callback->onSuccess();
+                }, [callback, expected] (const exceptions::JoynrException& error) {
+                    EXPECT_EQ(expected.getTypeName(), error.getTypeName());
+                    EXPECT_EQ(expected.getMessage(), error.getMessage());
+                    callback->onError(error);
+                });
+
+        delete callback;
+    }
+
+    void testSync_methodCallReturnsProviderRuntimeException() {
+        tests::Itest* testFixture = createFixture(false);
+
+        exceptions::ProviderRuntimeException expected("testSync_methodCallReturnsProviderRuntimeException-ERROR");
+        setExpectedExceptionForSendRequestCall(expected);
+
+        try {
+            testFixture->methodWithProviderRuntimeException();
+            ADD_FAILURE()<< "testSync_methodCallReturnsProviderRuntimeException was not successful (expected ProviderRuntimeException)";
+        } catch (exceptions::ProviderRuntimeException& e) {
+            EXPECT_EQ(expected.getTypeName(), e.getTypeName());
+            EXPECT_EQ(expected.getMessage(), e.getMessage());
+        } catch (exceptions::JoynrException& e) {
+            ADD_FAILURE()<< "testSync_methodCallReturnsProviderRuntimeException was not successful (unexpected exception)";
+        }
+        delete testFixture;
+    }
+
+    void testAsync_methodCallReturnsMethodInvocationException() {
+        asyncTestFixture = createFixture(false);
+
+        MockCallback<void>* callback = new MockCallback<void>();
+
+        exceptions::MethodInvocationException expected("testAsync_methodCallReturnsMethodInvocationException-ERROR");
+        setExpectedExceptionForSendRequestCall(expected);
+
+        EXPECT_CALL(*callback, onSuccess()).Times(0);
+        EXPECT_CALL(*callback, onError(_)).Times(1);
+
+        asyncTestFixture->methodWithProviderRuntimeExceptionAsync(
+                [callback] () {
+                    callback->onSuccess();
+                }, [callback, expected] (const exceptions::JoynrException& error) {
+                    EXPECT_EQ(expected.getTypeName(), error.getTypeName());
+                    EXPECT_EQ(expected.getMessage(), error.getMessage());
+                    callback->onError(error);
+                });
+
+        delete callback;
+    }
+
+    void testSync_methodCallReturnsMethodInvocationException() {
+        tests::Itest* testFixture = createFixture(false);
+
+        exceptions::MethodInvocationException expected("testSync_methodCallReturnsMethodInvocationException-ERROR");
+        setExpectedExceptionForSendRequestCall(expected);
+
+        try {
+            testFixture->methodWithProviderRuntimeException();
+            ADD_FAILURE()<< "testSync_methodCallReturnsMethodInvocationException was not successful (expected MethodInvocationException)";
+        } catch (exceptions::MethodInvocationException& e) {
+            EXPECT_EQ(expected.getTypeName(), e.getTypeName());
+            EXPECT_EQ(expected.getMessage(), e.getMessage());
+        } catch (exceptions::JoynrException& e) {
+            ADD_FAILURE()<< "testSync_methodCallReturnsMethodInvocationException was not successful (unexpected exception)";
+        }
+
+        delete testFixture;
+    }
+
+    void testAsync_methodCallReturnsErrorEnum() {
+        asyncTestFixture = createFixture(false);
+
+        using tests::testTypes::ErrorEnumBase;
+        MockCallback<void>* callback = new MockCallback<void>();
+
+        ErrorEnumBase::Enum error = ErrorEnumBase::BASE_ERROR_TYPECOLLECTION;
+        std::string literal = ErrorEnumBase::getLiteral(error);
+        std::string typeName = ErrorEnumBase::getTypeName();
+        // TODO remove workaround after the new serializer has been introduced: until then, the correct error enumeration has to be reconstructed by the connector
+        exceptions::ApplicationException expected (typeName + "::" + literal,
+                                                   Variant::make<ErrorEnumBase::Enum>(error),
+                                                   literal,
+                                                   typeName);
+        setExpectedExceptionForSendRequestCall(expected);
+
+        EXPECT_CALL(*callback, onSuccess()).Times(0);
+        EXPECT_CALL(*callback, onError(_)).Times(1);
+
+        asyncTestFixture->methodWithErrorEnumAsync(
+                [callback] () {
+                    callback->onSuccess();
+                }, [callback, expected, error] (const exceptions::JoynrException& exception) {
+                    ASSERT_EQ(expected.getTypeName(), exception.getTypeName());
+                    exceptions::ApplicationException e =
+                            dynamic_cast<exceptions::ApplicationException&>(
+                                    const_cast<exceptions::JoynrException&>(exception));
+                    checkApplicationException(expected, e, error);
+                    callback->onError(exception);
+                });
+
+        delete callback;
+    }
+
+    void testSync_methodCallReturnsErrorEnum() {
+        tests::Itest* testFixture = createFixture(false);
+
+        using tests::testTypes::ErrorEnumBase;
+
+        ErrorEnumBase::Enum error = ErrorEnumBase::BASE_ERROR_TYPECOLLECTION;
+        std::string literal = ErrorEnumBase::getLiteral(error);
+        std::string typeName = ErrorEnumBase::getTypeName();
+        // TODO remove workaround after the new serializer has been introduced: until then, the correct error enumeration has to be reconstructed by the connector
+        exceptions::ApplicationException expected(typeName + "::" + literal,
+                                                  Variant::make<ErrorEnumBase::Enum>(error),
+                                                  literal,
+                                                  typeName);
+        setExpectedExceptionForSendRequestCall(expected);
+
+        try {
+            testFixture->methodWithErrorEnum();
+            ADD_FAILURE()<< "testSync_methodCallReturnsErrorEnum was not successful (expected MethodInvocationException)";
+        } catch (exceptions::ApplicationException& e) {
+            checkApplicationException(expected, e, error);
+        } catch (exceptions::JoynrException& e) {
+            ADD_FAILURE()<< "testSync_methodCallReturnsErrorEnum was not successful (unexpected exception)";
+        }
+
+        delete testFixture;
+    }
+
+    void testAsync_methodCallReturnsExtendedErrorEnum() {
+        asyncTestFixture = createFixture(false);
+        using tests::test::MethodWithErrorEnumExtendedErrorEnum;
+
+        MockCallback<void>* callback = new MockCallback<void>();
+
+        MethodWithErrorEnumExtendedErrorEnum::Enum error = MethodWithErrorEnumExtendedErrorEnum::IMPLICIT_ERROR_TYPECOLLECTION;
+        std::string literal = MethodWithErrorEnumExtendedErrorEnum::getLiteral(error);
+        std::string typeName = MethodWithErrorEnumExtendedErrorEnum::getTypeName();
+        // TODO remove workaround after the new serializer has been introduced: until then, the correct error enumeration has to be reconstructed by the connector
+        exceptions::ApplicationException expected(typeName + "::" + literal,
+                                                  Variant::make<MethodWithErrorEnumExtendedErrorEnum::Enum>(error),
+                                                  literal,
+                                                  typeName);
+        setExpectedExceptionForSendRequestCall(expected);
+
+        EXPECT_CALL(*callback, onSuccess()).Times(0);
+        EXPECT_CALL(*callback, onError(_)).Times(1);
+
+        asyncTestFixture->methodWithErrorEnumExtendedAsync(
+                [callback] () {
+                    callback->onSuccess();
+                }, [callback, expected, error] (const exceptions::JoynrException& exception) {
+                    ASSERT_EQ(expected.getTypeName(), exception.getTypeName());
+                    exceptions::ApplicationException e =
+                            dynamic_cast<exceptions::ApplicationException&>(
+                                    const_cast<exceptions::JoynrException&>(exception));
+                    checkApplicationException(expected, e, error);
+                    callback->onError(exception);
+                });
+
+        delete callback;
+    }
+
+    void testSync_methodCallReturnsExtendedErrorEnum() {
+        tests::Itest* testFixture = createFixture(false);
+
+        using tests::test::MethodWithErrorEnumExtendedErrorEnum;
+        MethodWithErrorEnumExtendedErrorEnum::Enum error = MethodWithErrorEnumExtendedErrorEnum::IMPLICIT_ERROR_TYPECOLLECTION;
+        std::string literal = MethodWithErrorEnumExtendedErrorEnum::getLiteral(error);
+        std::string typeName = MethodWithErrorEnumExtendedErrorEnum::getTypeName();
+        // TODO remove workaround after the new serializer has been introduced: until then, the correct error enumeration has to be reconstructed by the connector
+        exceptions::ApplicationException expected(typeName + "::" + literal,
+                                                  Variant::make<MethodWithErrorEnumExtendedErrorEnum::Enum>(error),
+                                                  literal,
+                                                  typeName);
+        setExpectedExceptionForSendRequestCall(expected);
+
+        try {
+            testFixture->methodWithErrorEnumExtended();
+            ADD_FAILURE()<< "testSync_methodCallReturnsExtendedErrorEnum was not successful (expected MethodInvocationException)";
+        } catch (exceptions::ApplicationException& e) {
+            checkApplicationException(expected, e, error);
+        } catch (exceptions::JoynrException& e) {
+            ADD_FAILURE()<< "testSync_methodCallReturnsExtendedErrorEnum was not successful (unexpected exception)";
+        }
+
+        delete testFixture;
+    }
+
+    void testAsync_methodCallReturnsInlineErrorEnum() {
+        asyncTestFixture = createFixture(false);
+
+        using tests::test::MethodWithImplicitErrorEnumErrorEnum;
+
+        MockCallback<void>* callback = new MockCallback<void>();
+
+        MethodWithImplicitErrorEnumErrorEnum::Enum error = MethodWithImplicitErrorEnumErrorEnum::IMPLICIT_ERROR;
+        std::string literal = MethodWithImplicitErrorEnumErrorEnum::getLiteral(error);
+        std::string typeName = MethodWithImplicitErrorEnumErrorEnum::getTypeName();
+        // TODO remove workaround after the new serializer has been introduced: until then, the correct error enumeration has to be reconstructed by the connector
+        exceptions::ApplicationException expected(typeName + "::" + literal,
+                                                  Variant::make<MethodWithImplicitErrorEnumErrorEnum::Enum>(error),
+                                                  literal,
+                                                  typeName);
+        setExpectedExceptionForSendRequestCall(expected);
+
+        EXPECT_CALL(*callback, onSuccess()).Times(0);
+        EXPECT_CALL(*callback, onError(_)).Times(1);
+
+        asyncTestFixture->methodWithImplicitErrorEnumAsync(
+                [callback] () {
+                    callback->onSuccess();
+                }, [callback, expected, error] (const exceptions::JoynrException& exception) {
+                    ASSERT_EQ(expected.getTypeName(), exception.getTypeName());
+                    exceptions::ApplicationException* e = dynamic_cast<exceptions::ApplicationException*>(exception.clone());
+                    checkApplicationException(expected, *e, error);
+                    delete e;
+                    callback->onError(exception);
+                });
+
+        delete callback;
+    }
+
+    void testSync_methodCallReturnsInlineErrorEnum() {
+        tests::Itest* testFixture = createFixture(false);
+
+        using tests::test::MethodWithImplicitErrorEnumErrorEnum;
+
+        MethodWithImplicitErrorEnumErrorEnum::Enum error = MethodWithImplicitErrorEnumErrorEnum::IMPLICIT_ERROR;
+        std::string literal = MethodWithImplicitErrorEnumErrorEnum::getLiteral(error);
+        std::string typeName = MethodWithImplicitErrorEnumErrorEnum::getTypeName();
+        // TODO remove workaround after the new serializer has been introduced: until then, the correct error enumeration has to be reconstructed by the connector
+        exceptions::ApplicationException expected(typeName + "::" + literal,
+                                                  Variant::make<MethodWithImplicitErrorEnumErrorEnum::Enum>(error),
+                                                  literal,
+                                                  typeName);
+        setExpectedExceptionForSendRequestCall(expected);
+
+        try {
+            testFixture->methodWithImplicitErrorEnum();
+            ADD_FAILURE()<< "testSync_methodCallReturnsInlineErrorEnum was not successful (expected MethodInvocationException)";
+        } catch (exceptions::ApplicationException& e) {
+            checkApplicationException(expected, e, error);
+        } catch (exceptions::JoynrException& e) {
+            ADD_FAILURE()<< "testSync_methodCallReturnsInlineErrorEnum was not successful (unexpected exception)";
+        }
+
+        delete testFixture;
+    }
+
     void testAsync_OperationWithNoArguments() {
         asyncTestFixture = createFixture(false);
 
@@ -279,6 +761,7 @@ protected:
     MockClientCache mockClientCache;
     std::shared_ptr<system::RoutingTypes::Address> endPointAddress;
     tests::Itest* asyncTestFixture;
+    std::shared_ptr<exceptions::JoynrException> error;
 private:
     DISALLOW_COPY_AND_ASSIGN(AbstractSyncAsyncTest);
 };

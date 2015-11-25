@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ using namespace joynr;
  */
 
 /**
- * @brief Fixutre.
+ * @brief Fixture.
  */
 class ProxyTest : public AbstractSyncAsyncTest {
 public:
@@ -125,6 +125,78 @@ TEST_F(ProxyTest, async_getAttributeCached) {
 
 TEST_F(ProxyTest, sync_getAttributeCached) {
     testSync_getAttributeCached();
+}
+
+TEST_F(ProxyTest, async_getterCallReturnsProviderRuntimeException) {
+    testAsync_getterCallReturnsProviderRuntimeException();
+}
+
+TEST_F(ProxyTest, sync_getterCallReturnsProviderRuntimeException) {
+    testSync_getterCallReturnsProviderRuntimeException();
+}
+
+TEST_F(ProxyTest, async_getterCallReturnsMethodInvocationException) {
+    testAsync_getterCallReturnsMethodInvocationException();
+}
+
+TEST_F(ProxyTest, sync_getterCallReturnsMethodInvocationException) {
+    testSync_getterCallReturnsMethodInvocationException();
+}
+
+TEST_F(ProxyTest, async_setterCallReturnsProviderRuntimeException) {
+    testAsync_setterCallReturnsProviderRuntimeException();
+}
+
+TEST_F(ProxyTest, sync_setterCallReturnsProviderRuntimeException) {
+    testSync_setterCallReturnsProviderRuntimeException();
+}
+
+TEST_F(ProxyTest, async_setterCallReturnsMethodInvocationException) {
+    testAsync_setterCallReturnsMethodInvocationException();
+}
+
+TEST_F(ProxyTest, sync_setterCallReturnsMethodInvocationException) {
+    testSync_setterCallReturnsMethodInvocationException();
+}
+
+TEST_F(ProxyTest, async_methodCallReturnsProviderRuntimeException) {
+    testAsync_methodCallReturnsProviderRuntimeException();
+}
+
+TEST_F(ProxyTest, sync_methodCallReturnsProviderRuntimeException) {
+    testSync_methodCallReturnsProviderRuntimeException();
+}
+
+TEST_F(ProxyTest, async_methodCallReturnsMethodInvocationException) {
+    testAsync_methodCallReturnsMethodInvocationException();
+}
+
+TEST_F(ProxyTest, sync_methodCallReturnsMethodInvocationException) {
+    testSync_methodCallReturnsMethodInvocationException();
+}
+
+TEST_F(ProxyTest, async_methodCallReturnsErrorEnum) {
+    testAsync_methodCallReturnsErrorEnum();
+}
+
+TEST_F(ProxyTest, sync_methodCallReturnsErrorEnum) {
+    testSync_methodCallReturnsErrorEnum();
+}
+
+TEST_F(ProxyTest, async_methodCallReturnsExtendedErrorEnum) {
+    testAsync_methodCallReturnsExtendedErrorEnum();
+}
+
+TEST_F(ProxyTest, sync_methodCallReturnsExtendedErrorEnum) {
+    testSync_methodCallReturnsExtendedErrorEnum();
+}
+
+TEST_F(ProxyTest, async_methodCallReturnsInlineErrorEnum) {
+    testAsync_methodCallReturnsInlineErrorEnum();
+}
+
+TEST_F(ProxyTest, sync_methodCallReturnsInlineErrorEnum) {
+    testSync_methodCallReturnsInlineErrorEnum();
 }
 
 TEST_F(ProxyTest, async_OperationWithNoArguments) {

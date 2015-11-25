@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -155,6 +155,78 @@ TEST_F(TestJoynrMessagingConnectorTest, async_getAttributeCached) {
 
 TEST_F(TestJoynrMessagingConnectorTest, sync_getAttributeCached) {
     testSync_getAttributeCached();
+}
+
+TEST_F(TestJoynrMessagingConnectorTest, async_getterCallReturnsProviderRuntimeException) {
+    testAsync_getterCallReturnsProviderRuntimeException();
+}
+
+TEST_F(TestJoynrMessagingConnectorTest, sync_getterCallReturnsProviderRuntimeException) {
+    testSync_getterCallReturnsProviderRuntimeException();
+}
+
+TEST_F(TestJoynrMessagingConnectorTest, async_getterCallReturnsMethodInvocationException) {
+    testAsync_getterCallReturnsMethodInvocationException();
+}
+
+TEST_F(TestJoynrMessagingConnectorTest, sync_getterCallReturnsMethodInvocationException) {
+    testSync_getterCallReturnsMethodInvocationException();
+}
+
+TEST_F(TestJoynrMessagingConnectorTest, async_setterCallReturnsProviderRuntimeException) {
+    testAsync_setterCallReturnsProviderRuntimeException();
+}
+
+TEST_F(TestJoynrMessagingConnectorTest, sync_setterCallReturnsProviderRuntimeException) {
+    testSync_setterCallReturnsProviderRuntimeException();
+}
+
+TEST_F(TestJoynrMessagingConnectorTest, async_setterCallReturnsMethodInvocationException) {
+    testAsync_setterCallReturnsMethodInvocationException();
+}
+
+TEST_F(TestJoynrMessagingConnectorTest, sync_setterCallReturnsMethodInvocationException) {
+    testSync_setterCallReturnsMethodInvocationException();
+}
+
+TEST_F(TestJoynrMessagingConnectorTest, async_methodCallReturnsProviderRuntimeException) {
+    testAsync_methodCallReturnsProviderRuntimeException();
+}
+
+TEST_F(TestJoynrMessagingConnectorTest, sync_methodCallReturnsProviderRuntimeException) {
+    testSync_methodCallReturnsProviderRuntimeException();
+}
+
+TEST_F(TestJoynrMessagingConnectorTest, async_methodCallReturnsMethodInvocationException) {
+    testAsync_methodCallReturnsMethodInvocationException();
+}
+
+TEST_F(TestJoynrMessagingConnectorTest, sync_methodCallReturnsMethodInvocationException) {
+    testSync_methodCallReturnsMethodInvocationException();
+}
+
+TEST_F(TestJoynrMessagingConnectorTest, async_methodCallReturnsErrorEnum) {
+    testAsync_methodCallReturnsErrorEnum();
+}
+
+TEST_F(TestJoynrMessagingConnectorTest, sync_methodCallReturnsErrorEnum) {
+    testSync_methodCallReturnsErrorEnum();
+}
+
+TEST_F(TestJoynrMessagingConnectorTest, async_methodCallReturnsExtendedErrorEnum) {
+    testAsync_methodCallReturnsExtendedErrorEnum();
+}
+
+TEST_F(TestJoynrMessagingConnectorTest, sync_methodCallReturnsExtendedErrorEnum) {
+    testSync_methodCallReturnsExtendedErrorEnum();
+}
+
+TEST_F(TestJoynrMessagingConnectorTest, async_methodCallReturnsInlineErrorEnum) {
+    testAsync_methodCallReturnsInlineErrorEnum();
+}
+
+TEST_F(TestJoynrMessagingConnectorTest, sync_methodCallReturnsInlineErrorEnum) {
+    testSync_methodCallReturnsInlineErrorEnum();
 }
 
 TEST_F(TestJoynrMessagingConnectorTest, async_OperationWithNoArguments) {
