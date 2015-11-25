@@ -205,7 +205,7 @@ public class DispatcherImpl implements Dispatcher {
                     handle(publication);
                 }
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             logger.error("Error parsing payload. msgId: {}. from: {} to: {}. Reason: {}. Discarding joynr message.",
                          new String[]{ message.getFrom(), message.getFrom(), message.getId(), e.getMessage() });
             return;

@@ -19,7 +19,6 @@ package io.joynr.messaging.channel;
  * #L%
  */
 
-import com.google.inject.Inject;
 import io.joynr.dispatching.DispatcherImpl;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
@@ -33,6 +32,8 @@ import joynr.system.RoutingTypes.ChannelAddress;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.inject.Inject;
 
 public class ChannelMessagingSkeleton implements IMessagingSkeleton {
     private final MessageRouter messageRouter;
