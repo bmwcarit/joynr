@@ -25,6 +25,7 @@
 #include <QList>
 #include <tuple>
 #include <functional>
+#include <string>
 
 using namespace joynr;
 
@@ -143,15 +144,15 @@ TEST_F(UtilTest, convertListToQVariantList){
 }
 
 TEST_F(UtilTest, typeIdSingleType){
-    EXPECT_GT(Util::getTypeId<QString>(), 0);
-    EXPECT_NE(Util::getTypeId<QString>(), Util::getTypeId<int>());
+    EXPECT_GT(Util::getTypeId<std::string>(), 0);
+    EXPECT_NE(Util::getTypeId<std::string>(), Util::getTypeId<int32_t>());
 }
 
 TEST_F(UtilTest, typeIdCompositeType){
-    int typeId1 = Util::getTypeId<QString, int, float>();
+    int typeId1 = Util::getTypeId<std::string, int32_t, float>();
     EXPECT_GT(typeId1, 0);
 
-    int typeId2 = Util::getTypeId<int, QString, float>();
+    int typeId2 = Util::getTypeId<int32_t, std::string, float>();
     EXPECT_NE(typeId1, typeId2);
 }
 
