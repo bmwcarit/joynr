@@ -600,7 +600,7 @@ public:
     MOCK_METHOD1(getSubscriptionCallback,std::shared_ptr<joynr::ISubscriptionCallback>(const QString& subscriptionId));
     MOCK_METHOD4(registerSubscription,void(const QString& subscribeToName,
                                                     std::shared_ptr<joynr::ISubscriptionCallback> subscriptionCaller, // SubMgr gets ownership of ptr
-                                                    std::shared_ptr<joynr::QtSubscriptionQos> qos,
+                                                    joynr::Variant qosVariant,
                                                     joynr::SubscriptionRequest& subscriptionRequest));
     MOCK_METHOD1(unregisterSubscription, void(const QString& subscriptionId));
     MOCK_METHOD1(touchSubscriptionState,void(const QString& subscriptionId));

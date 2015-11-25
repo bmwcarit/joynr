@@ -118,10 +118,10 @@ public:
 
     void invokeSubscriptionCallback(const QString& subscribeToName,
                                       std::shared_ptr<ISubscriptionCallback> callback,
-                                      std::shared_ptr<QtSubscriptionQos> qos,
+                                      const Variant& qosVariant,
                                       SubscriptionRequest& subscriptionRequest) {
         std::ignore = subscribeToName;
-        std::ignore = qos;
+        std::ignore = qosVariant;
         std::ignore = subscriptionRequest;
 
         std::shared_ptr<SubscriptionCallback<joynr::types::Localisation::QtGpsLocation, double>> typedCallbackQsp =
@@ -182,7 +182,7 @@ TEST_F(TestJoynrMessagingConnectorTest, testBroadcastListenerWrapper) {
                             _,
                             _, // messaging QoS
                             _
-                        )).WillRepeatedly(testing::Invoke(this, &TestJoynrMessagingConnectorTest::invokeSubscriptionCallback));
+                        )).WillOnce(testing::Invoke(this, &TestJoynrMessagingConnectorTest::invokeSubscriptionCallback));
     //   joynr::tests::LocationUpdateWithSpeedSelectiveBroadcastSubscriptionListenerWrapper
 
     // Use a semaphore to count and wait on calls to the mock listener
