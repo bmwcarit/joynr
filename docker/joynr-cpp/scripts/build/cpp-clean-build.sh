@@ -62,7 +62,8 @@ fi
 log "BUILD C++ JOYNR"
 make -j $JOBS
 log "BUILD C++ JOYNR DOXYGEN DOCUMENTATION"
-make doxygen
+log "doxygen is disabled"
+#make doxygen
 
 END=$(date +%s)
 DIFF=$(( $END - $START ))
