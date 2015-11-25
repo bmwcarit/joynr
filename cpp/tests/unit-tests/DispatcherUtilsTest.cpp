@@ -70,7 +70,7 @@ TEST_F(DispatcherUtilsTest, convertTtlToAbsoluteTimeReturnsValidDateTime) {
 }
 
 TEST_F(DispatcherUtilsTest, convertTtlToAbsoluteTimeDetectsPositiveOverflow) {
-    JoynrTimePoint ttlMaxInt64(DispatcherUtils::convertTtlToAbsoluteTime(std::numeric_limits<int64_t>::max()));
+    JoynrTimePoint ttlMaxInt64(DispatcherUtils::getMaxAbsoluteTime());
     LOG_DEBUG(
                 logger,
                 QString("ttlMaxInt64: %1 [%2]")
@@ -82,7 +82,7 @@ TEST_F(DispatcherUtilsTest, convertTtlToAbsoluteTimeDetectsPositiveOverflow) {
 }
 
 TEST_F(DispatcherUtilsTest, convertTtlToAbsoluteTimeDetectsNegativeOverflow) {
-    JoynrTimePoint ttlMinInt64(DispatcherUtils::convertTtlToAbsoluteTime(std::numeric_limits<int64_t>::min()));
+    JoynrTimePoint ttlMinInt64(DispatcherUtils::getMinAbsoluteTime());
     LOG_DEBUG(
                 logger,
                 QString("ttlMinInt64: %1 [%2]")

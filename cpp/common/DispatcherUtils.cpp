@@ -42,7 +42,7 @@ DispatcherUtils::DispatcherUtils()
 JoynrTimePoint DispatcherUtils::convertTtlToAbsoluteTime(int64_t ttl_ms)
 {
     JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
-    JoynrTimePoint expiryDate = now + milliseconds(ttl_ms);
+    JoynrTimePoint expiryDate = now + duration<long long>(ttl_ms);
 
     // check for overflow
     if (ttl_ms > 0) {
@@ -63,6 +63,12 @@ JoynrTimePoint DispatcherUtils::convertTtlToAbsoluteTime(int64_t ttl_ms)
 JoynrTimePoint DispatcherUtils::getMaxAbsoluteTime()
 {
     JoynrTimePoint maxTimePoint = time_point_cast<milliseconds>(system_clock::time_point::max());
+    return maxTimePoint;
+}
+
+JoynrTimePoint DispatcherUtils::getMinAbsoluteTime()
+{
+    JoynrTimePoint maxTimePoint = time_point_cast<milliseconds>(system_clock::time_point::min());
     return maxTimePoint;
 }
 

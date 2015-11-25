@@ -60,6 +60,11 @@ public:
      */
     static JoynrTimePoint getMaxAbsoluteTime();
     /**
+     * @brief getMinAbsoluteTime
+     * @return
+     */
+    static JoynrTimePoint getMinAbsoluteTime();
+    /**
      * @brief convertAbsoluteTimeToTtl converts given UTC time to ttl
      * @param date UTC time
      * @return ttl in miliseconds
