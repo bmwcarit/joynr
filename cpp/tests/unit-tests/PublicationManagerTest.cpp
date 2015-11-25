@@ -52,7 +52,10 @@ public:
     PublicationManagerTest() :
         logger(joynr_logging::Logging::getInstance()->getLogger("TST", "PublicationManagerTest"))
     {}
-
+    void TearDown(){
+        QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
+        QFile::remove(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored broadcastsubscriptions
+    }
 protected:
     joynr_logging::Logger* logger;
 };
@@ -75,8 +78,6 @@ inline Matcher<const SubscriptionPublication&> SubscriptionPublicationMatcher(Su
 }
 
 TEST_F(PublicationManagerTest, add_requestCallerIsCalledCorrectlyByPublisherRunnables) {
-    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
-
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<joynr::tests::testRequestInterpreter>(joynr::tests::testProvider::INTERFACE_NAME());
 
@@ -98,9 +99,9 @@ TEST_F(PublicationManagerTest, add_requestCallerIsCalledCorrectlyByPublisherRunn
     QString receiverId = "ReceiverId";
     std::string attributeName("Location");
     // SUbscriptionQos
-    qint64 period_ms = 100;
-    qint64 validity_ms = 500;
-    qint64 alertInterval_ms = 2000;
+    int64_t period_ms = 100;
+    int64_t validity_ms = 500;
+    int64_t alertInterval_ms = 2000;
     Variant qos = Variant::make<PeriodicSubscriptionQos>(PeriodicSubscriptionQos(
                         validity_ms,
                         period_ms,
@@ -117,7 +118,6 @@ TEST_F(PublicationManagerTest, add_requestCallerIsCalledCorrectlyByPublisherRunn
 
 
 TEST_F(PublicationManagerTest, stop_publications) {
-    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
     MockPublicationSender mockPublicationSender;
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller(AtMost(2));
 
@@ -136,9 +136,9 @@ TEST_F(PublicationManagerTest, stop_publications) {
     QString receiverId = "ReceiverId";
     std::string attributeName("Location");
     //QtSubscriptionQos
-    qint64 period_ms = 100;
-    qint64 validity_ms = 10000;
-    qint64 alertInterval_ms = 1000;
+    int64_t period_ms = 100;
+    int64_t validity_ms = 10000;
+    int64_t alertInterval_ms = 1000;
     Variant qos = Variant::make<PeriodicSubscriptionQos>(PeriodicSubscriptionQos(
                         validity_ms,
                         period_ms,
@@ -161,7 +161,6 @@ TEST_F(PublicationManagerTest, stop_publications) {
 }
 
 TEST_F(PublicationManagerTest, remove_all_publications) {
-    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
     MockPublicationSender mockPublicationSender;
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller(AtMost(2));
 
@@ -180,9 +179,9 @@ TEST_F(PublicationManagerTest, remove_all_publications) {
     QString receiverId = "ReceiverId";
     std::string attributeName("Location");
     //QtSubscriptionQos
-    qint64 period_ms = 100;
-    qint64 validity_ms = 10000;
-    qint64 alertInterval_ms = 1000;
+    int64_t period_ms = 100;
+    int64_t validity_ms = 10000;
+    int64_t alertInterval_ms = 1000;
     Variant qos = Variant::make<PeriodicSubscriptionQos>(PeriodicSubscriptionQos(
                         validity_ms,
                         period_ms,
@@ -199,8 +198,6 @@ TEST_F(PublicationManagerTest, remove_all_publications) {
 }
 
 TEST_F(PublicationManagerTest, restore_publications) {
-    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME());
-    qRegisterMetaType<QtPeriodicSubscriptionQos>("QtPeriodicSubscriptionQos");
     MockPublicationSender mockPublicationSender;
 
     //the first publicationManager will get this requestCaller:
@@ -212,7 +209,7 @@ TEST_F(PublicationManagerTest, restore_publications) {
 
     //the second publicationManager will get this requestCaller
     //if restoring works, this caller will be called as well.
-    std::shared_ptr<MockTestRequestCaller> requestCaller2(new MockTestRequestCaller(AtLeast(2)));
+    std::shared_ptr<MockTestRequestCaller> requestCaller2(new MockTestRequestCaller(AtLeast(1)));
 
     PublicationManager* publicationManager = new PublicationManager() ;
 
@@ -221,9 +218,9 @@ TEST_F(PublicationManagerTest, restore_publications) {
     QString receiverId = "ReceiverId";
     std::string attributeName("Location");
     //QtSubscriptionQos
-    qint64 period_ms = 100;
-    qint64 validity_ms = 1000;
-    qint64 alertInterval_ms = 1000;
+    int64_t period_ms = 100;
+    int64_t validity_ms = 1000;
+    int64_t alertInterval_ms = 1000;
     Variant qos = Variant::make<PeriodicSubscriptionQos>(PeriodicSubscriptionQos(
                         validity_ms,
                         period_ms,
@@ -248,8 +245,6 @@ TEST_F(PublicationManagerTest, restore_publications) {
 }
 
 TEST_F(PublicationManagerTest, add_onChangeSubscription) {
-    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
-
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
@@ -303,8 +298,8 @@ TEST_F(PublicationManagerTest, add_onChangeSubscription) {
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
     //QtSubscriptionQos
-    qint64 minInterval_ms = 50;
-    qint64 validity_ms = 500;
+    int64_t minInterval_ms = 50;
+    int64_t validity_ms = 500;
     Variant qos = Variant::make<OnChangeSubscriptionQos>(OnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
@@ -322,8 +317,6 @@ TEST_F(PublicationManagerTest, add_onChangeSubscription) {
 }
 
 TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
-    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
-
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
@@ -370,8 +363,8 @@ TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
     //QtSubscriptionQos
-    qint64 minInterval_ms = 500;
-    qint64 validity_ms = -1; //no expiry date -> infinite subscription
+    int64_t minInterval_ms = 500;
+    int64_t validity_ms = -1; //no expiry date -> infinite subscription
     Variant qos = Variant::make<OnChangeSubscriptionQos>(OnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
@@ -397,8 +390,6 @@ TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
 
 
 TEST_F(PublicationManagerTest, add_onChangeWithMinInterval) {
-    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
-
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
@@ -445,8 +436,8 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval) {
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
     //QtSubscriptionQos
-    qint64 minInterval_ms = 500;
-    qint64 validity_ms = 600;
+    int64_t minInterval_ms = 500;
+    int64_t validity_ms = 600;
     Variant qos = Variant::make<OnChangeSubscriptionQos>(OnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
@@ -470,8 +461,6 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval) {
 }
 
 TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
-    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
-
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
@@ -540,8 +529,8 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
     //QtSubscriptionQos
-    qint64 minInterval_ms = 100;
-    qint64 validity_ms = 600;
+    int64_t minInterval_ms = 100;
+    int64_t validity_ms = 600;
     OnChangeSubscriptionQos qos{validity_ms,minInterval_ms};
 
     int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
@@ -600,8 +589,6 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
 }
 
 TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_withGreaterExpiryDate) {
-    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
-
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
@@ -648,9 +635,9 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
     //QtSubscriptionQos
-    qint64 minInterval_ms = 50;
-    qint64 validity_ms = 600;
-    qint64 testRelExpiryDate = 500;
+    int64_t minInterval_ms = 50;
+    int64_t validity_ms = 600;
+    int64_t testRelExpiryDate = 500;
     int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
     int64_t testAbsExpiryDate = now + testRelExpiryDate;
     OnChangeSubscriptionQos qos{validity_ms,minInterval_ms};
@@ -694,7 +681,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
 }
 
 TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_withLowerExpiryDate) {
-    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
+    LOG_DEBUG(logger, QString("DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME: %1").arg(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()));
 
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
@@ -742,10 +729,10 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
     //QtSubscriptionQos
-    qint64 minInterval_ms = 50;
-    qint64 validity_ms = 600;
-    qint64 testExpiryDate_shift = 2500;
-    qint64 testRelExpiryDate = 500 + testExpiryDate_shift;
+    int64_t minInterval_ms = 50;
+    int64_t validity_ms = 600;
+    int64_t testExpiryDate_shift = 2500;
+    int64_t testRelExpiryDate = 500 + testExpiryDate_shift;
     int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
     int64_t testAbsExpiryDate = now + testRelExpiryDate;
     OnChangeSubscriptionQos qos{validity_ms,minInterval_ms};
@@ -789,8 +776,6 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
 }
 
 TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
-    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
-
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
@@ -812,6 +797,8 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     IBroadcastListener* broadcastListener;
 
     BroadcastSubscriptionRequest subscriptionRequest;
+    BroadcastFilterParameters filterParameters;
+    subscriptionRequest.setFilterParameters(filterParameters);
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
@@ -860,8 +847,8 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
     //QtSubscriptionQos
-    qint64 minInterval_ms = 100;
-    qint64 validity_ms = 600;
+    int64_t minInterval_ms = 100;
+    int64_t validity_ms = 600;
     OnChangeSubscriptionQos qos{validity_ms,minInterval_ms};
 
     int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
@@ -883,7 +870,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     // Fake broadcast
     broadcastListener->broadcastOccurred(broadcastValues, filters);
 
-    qint64 newMinInterval = minInterval_ms + 500;
+    int64_t newMinInterval = minInterval_ms + 500;
     QThreadSleep::msleep(50 + newMinInterval);
     // now, we assume that two publications have been occured
 
@@ -911,8 +898,6 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
 }
 
 TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_withGreaterExpiryDate) {
-    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
-
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
@@ -961,9 +946,9 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
     //QtSubscriptionQos
-    qint64 minInterval_ms = 50;
-    qint64 validity_ms = 600;
-    qint64 testRelExpiryDate = 500;
+    int64_t minInterval_ms = 50;
+    int64_t validity_ms = 600;
+    int64_t testRelExpiryDate = 500;
     int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
     int64_t testAbsExpiryDate = now + testRelExpiryDate;
     OnChangeSubscriptionQos qos{validity_ms,minInterval_ms};
@@ -998,8 +983,6 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
 }
 
 TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_withLowerExpiryDate) {
-    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
-
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
@@ -1048,10 +1031,10 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
     //QtSubscriptionQos
-    qint64 minInterval_ms = 50;
-    qint64 validity_ms = 600;
-    qint64 testExpiryDate_shift = 2500;
-    qint64 testRelExpiryDate = 500 + testExpiryDate_shift;
+    int64_t minInterval_ms = 50;
+    int64_t validity_ms = 600;
+    int64_t testExpiryDate_shift = 2500;
+    int64_t testRelExpiryDate = 500 + testExpiryDate_shift;
     int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
     int64_t testAbsExpiryDate = now + testRelExpiryDate;
     OnChangeSubscriptionQos qos{validity_ms,minInterval_ms};
@@ -1089,8 +1072,6 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
 }
 
 TEST_F(PublicationManagerTest, remove_onChangeSubscription) {
-    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
-
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
@@ -1126,8 +1107,8 @@ TEST_F(PublicationManagerTest, remove_onChangeSubscription) {
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
     //QtSubscriptionQos
-    qint64 minInterval_ms = 1;
-    qint64 validity_ms = 100;
+    int64_t minInterval_ms = 1;
+    int64_t validity_ms = 100;
     Variant qos = Variant::make<OnChangeSubscriptionQos>(OnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));

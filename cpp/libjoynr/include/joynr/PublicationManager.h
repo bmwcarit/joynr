@@ -229,9 +229,9 @@ private:
     // Helper functions
     bool publicationExists(const QString& subscriptionId) const;
     void createPublishRunnable(const QString& subscriptionId);
-    void saveAttributeSubscriptionRequestsMap(const QList<QVariant>& subscriptionList);
+    void saveAttributeSubscriptionRequestsMap(const std::vector<Variant>& subscriptionList);
     void loadSavedAttributeSubscriptionRequestsMap();
-    void saveBroadcastSubscriptionRequestsMap(const QList<QVariant>& subscriptionList);
+    void saveBroadcastSubscriptionRequestsMap(const std::vector<Variant>& subscriptionList);
     void loadSavedBroadcastSubscriptionRequestsMap();
 
     void reschedulePublication(const QString& subscriptionId, qint64 nextPublication);
@@ -249,7 +249,7 @@ private:
      */
     int64_t getTimeUntilNextPublication(std::shared_ptr<Publication> publication, Variant qos);
 
-    void saveSubscriptionRequestsMap(const QList<QVariant>& subscriptionList,
+    void saveSubscriptionRequestsMap(const std::vector<Variant>& subscriptionList,
                                      const QString& storageFilename);
 
     template <class RequestInformationType>
@@ -260,6 +260,10 @@ private:
 
     template <class RequestInformationType>
     QList<QVariant> subscriptionMapToListCopy(
+            const QMap<QString, std::shared_ptr<RequestInformationType>>& map);
+
+    template <class RequestInformationType>
+    std::vector<Variant> subscriptionMapToVectorCopy(
             const QMap<QString, std::shared_ptr<RequestInformationType>>& map);
 
     bool isShuttingDown();

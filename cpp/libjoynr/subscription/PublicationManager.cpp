@@ -110,9 +110,9 @@ PublicationManager::~PublicationManager()
     QWriteLocker subscriptionLocker(&subscriptionLock);
 
     saveAttributeSubscriptionRequestsMap(
-            subscriptionMapToListCopy(subscriptionId2SubscriptionRequest));
+            subscriptionMapToVectorCopy(subscriptionId2SubscriptionRequest));
     saveBroadcastSubscriptionRequestsMap(
-            subscriptionMapToListCopy(subscriptionId2BroadcastSubscriptionRequest));
+            subscriptionMapToVectorCopy(subscriptionId2BroadcastSubscriptionRequest));
 
     // saveSubscriptionRequestsMap will not store to file, as soon as shuttingDown is true, so we
     // call it first then set shuttingDown to true
@@ -203,8 +203,6 @@ PublicationManager::PublicationManager(int maxThreads)
     publishingThreadPool.setMaxThreadCount(maxThreads);
     delayedScheduler = new ThreadPoolDelayedScheduler(
             publishingThreadPool, QString("PublicationManager-PublishingThreadPool"));
-    qRegisterMetaType<SubscriptionRequest>("SubscriptionRequest");
-    qRegisterMetaType<std::shared_ptr<SubscriptionRequest>>("std::shared_ptr<SubscriptionRequest>");
     loadSavedAttributeSubscriptionRequestsMap();
     loadSavedBroadcastSubscriptionRequestsMap();
 }
@@ -253,7 +251,8 @@ void PublicationManager::handleAttributeSubscriptionRequest(
     // Make note of the publication
     publications.insert(subscriptionId, publication);
 
-    QList<QVariant> subscriptionList(subscriptionMapToListCopy(subscriptionId2SubscriptionRequest));
+    std::vector<Variant> subscriptionVector(
+            subscriptionMapToVectorCopy(subscriptionId2SubscriptionRequest));
 
     // writing to subscriptions data structure done
     subscriptionLocker.unlock();
@@ -288,7 +287,7 @@ void PublicationManager::handleAttributeSubscriptionRequest(
             LOG_WARN(logger, QString("publication end is in the past"));
         }
     }
-    saveAttributeSubscriptionRequestsMap(subscriptionList);
+    saveAttributeSubscriptionRequestsMap(subscriptionVector);
 }
 
 void PublicationManager::addOnChangePublication(
@@ -354,7 +353,8 @@ void PublicationManager::add(const QString& proxyParticipantId,
     QWriteLocker subscriptionLocker(&subscriptionLock);
     subscriptionId2SubscriptionRequest.insert(
             QString::fromStdString(requestInfo->getSubscriptionId()), requestInfo);
-    QList<QVariant> subscriptionList(subscriptionMapToListCopy(subscriptionId2SubscriptionRequest));
+    std::vector<Variant> subscriptionList(
+            subscriptionMapToVectorCopy(subscriptionId2SubscriptionRequest));
     subscriptionLocker.unlock();
 
     saveAttributeSubscriptionRequestsMap(subscriptionList);
@@ -402,8 +402,8 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
     publications.insert(subscriptionId, publication);
     LOG_DEBUG(logger, QString("added subscription: %1").arg(requestInfo->toQString()));
 
-    QList<QVariant> subscriptionList(
-            subscriptionMapToListCopy(subscriptionId2BroadcastSubscriptionRequest));
+    std::vector<Variant> subscriptionList(
+            subscriptionMapToVectorCopy(subscriptionId2BroadcastSubscriptionRequest));
 
     // writing to subscriptions data structure done
     subscriptionLocker.unlock();
@@ -454,8 +454,8 @@ void PublicationManager::add(const QString& proxyParticipantId,
     QWriteLocker subscriptionLocker(&subscriptionLock);
     subscriptionId2BroadcastSubscriptionRequest.insert(
             QString::fromStdString(requestInfo->getSubscriptionId()), requestInfo);
-    QList<QVariant> subscriptionList(
-            subscriptionMapToListCopy(subscriptionId2BroadcastSubscriptionRequest));
+    std::vector<Variant> subscriptionList(
+            subscriptionMapToVectorCopy(subscriptionId2BroadcastSubscriptionRequest));
     subscriptionLocker.unlock();
 
     saveBroadcastSubscriptionRequestsMap(subscriptionList);
@@ -563,11 +563,11 @@ void PublicationManager::restore(const QString& providerId,
 
 // This function assumes that subscriptionList is a copy that is exclusively used by this function
 void PublicationManager::saveAttributeSubscriptionRequestsMap(
-        const QList<QVariant>& subscriptionList)
+        const std::vector<Variant>& subscriptionVector)
 {
     LOG_DEBUG(logger, "Saving active attribute subscriptionRequests to file.");
 
-    saveSubscriptionRequestsMap(subscriptionList, subscriptionRequestStorageFileName);
+    saveSubscriptionRequestsMap(subscriptionVector, subscriptionRequestStorageFileName);
 }
 
 void PublicationManager::loadSavedAttributeSubscriptionRequestsMap()
@@ -581,11 +581,11 @@ void PublicationManager::loadSavedAttributeSubscriptionRequestsMap()
 
 // This function assumes that subscriptionList is a copy that is exclusively used by this function
 void PublicationManager::saveBroadcastSubscriptionRequestsMap(
-        const QList<QVariant>& subscriptionList)
+        const std::vector<Variant>& subscriptionVector)
 {
     LOG_DEBUG(logger, "Saving active broadcastSubscriptionRequests to file.");
 
-    saveSubscriptionRequestsMap(subscriptionList, broadcastSubscriptionRequestStorageFileName);
+    saveSubscriptionRequestsMap(subscriptionVector, broadcastSubscriptionRequestStorageFileName);
 }
 
 void PublicationManager::loadSavedBroadcastSubscriptionRequestsMap()
@@ -614,8 +614,23 @@ QList<QVariant> PublicationManager::subscriptionMapToListCopy(
     return subscriptionList;
 }
 
-// This function assumes that subscriptionList is a copy that is exclusively used by this function
-void PublicationManager::saveSubscriptionRequestsMap(const QList<QVariant>& subscriptionList,
+template <class RequestInformationType>
+std::vector<Variant> PublicationManager::subscriptionMapToVectorCopy(
+        const QMap<QString, std::shared_ptr<RequestInformationType>>& map)
+{
+    std::vector<Variant> subscriptionVector;
+    {
+        foreach (std::shared_ptr<RequestInformationType> requestInfo, map) {
+            if (!isSubscriptionExpired(requestInfo->getSubscriptionQosPtr())) {
+                subscriptionVector.push_back(Variant::make<RequestInformationType>(*requestInfo));
+            }
+        }
+    }
+    return subscriptionVector;
+}
+
+// This function assumes that subscriptionVector is a copy that is exclusively used by this function
+void PublicationManager::saveSubscriptionRequestsMap(const std::vector<Variant>& subscriptionVector,
                                                      const QString& storageFilename)
 {
 
@@ -637,8 +652,8 @@ void PublicationManager::saveSubscriptionRequestsMap(const QList<QVariant>& subs
         // Write the subscription information as a json list
         file.resize(0);
 
-        QString json = JsonSerializer::serializeQObject(subscriptionList);
-        file.write(json.toUtf8().constData());
+        std::string json = JsonSerializer::serializeVector(subscriptionVector);
+        file.write(json.c_str());
     }
 }
 
@@ -655,22 +670,27 @@ void PublicationManager::loadSavedSubscriptionRequestsMap(
 
     QFile file(storageFilename);
     if (!file.open(QIODevice::ReadOnly)) {
-        LOG_ERROR(logger, QString("Unable to read file: %1").arg(file.errorString()));
+        LOG_ERROR(logger,
+                  QString("Unable to read file: %1, reson: %2").arg(storageFilename).arg(
+                          file.errorString()));
         return;
     }
 
     // Read the Json into memory
     QByteArray jsonBytes = file.readAll();
+    LOG_DEBUG(logger, QString("jsonBytes: %1").arg(QString::fromUtf8(jsonBytes)));
 
     // Deserialize the JSON into a list of subscription requests
-    QList<RequestInformationType*> subscriptionList =
-            JsonSerializer::deserializeList<RequestInformationType>(jsonBytes);
+    std::vector<RequestInformationType*> subscriptionVector =
+            JsonSerializer::deserializeVector<RequestInformationType>(
+                    QString::fromUtf8(jsonBytes).toStdString());
 
     // Loop through the saved subscriptions
     QMutexLocker queueLocker(&queueMutex);
 
-    while (!subscriptionList.isEmpty()) {
-        std::shared_ptr<RequestInformationType> requestInfo(subscriptionList.takeFirst());
+    while (!subscriptionVector.empty()) {
+        std::shared_ptr<RequestInformationType> requestInfo(*(subscriptionVector.begin()));
+        subscriptionVector.erase(subscriptionVector.begin());
 
         // Add the subscription if it is still valid
         if (!isSubscriptionExpired(requestInfo->getSubscriptionQosPtr())) {
@@ -704,7 +724,8 @@ void PublicationManager::removeAttributePublication(const QString& subscriptionI
     std::shared_ptr<SubscriptionRequestInformation> request(
             subscriptionId2SubscriptionRequest.take(subscriptionId));
 
-    QList<QVariant> subscriptionList(subscriptionMapToListCopy(subscriptionId2SubscriptionRequest));
+    std::vector<Variant> subscriptionList(
+            subscriptionMapToVectorCopy(subscriptionId2SubscriptionRequest));
     subscriptionLocker.unlock();
 
     {
@@ -735,7 +756,8 @@ void PublicationManager::removeBroadcastPublication(const QString& subscriptionI
     std::shared_ptr<BroadcastSubscriptionRequestInformation> request(
             subscriptionId2BroadcastSubscriptionRequest.take(subscriptionId));
 
-    QList<QVariant> subscriptionList(subscriptionMapToListCopy(subscriptionId2SubscriptionRequest));
+    std::vector<Variant> subscriptionList(
+            subscriptionMapToVectorCopy(subscriptionId2SubscriptionRequest));
     subscriptionLocker.unlock();
 
     {
@@ -798,7 +820,6 @@ bool PublicationManager::processFilterChain(const QString& subscriptionId,
     foreach (std::shared_ptr<IBroadcastFilter> filter, filters) {
         success = success && filter->filter(broadcastValues, filterParameters);
     }
-
     return success;
 }
 
