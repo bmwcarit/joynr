@@ -270,7 +270,7 @@ bool JoynrMessage::containsHeaderExpiryDate() const
 JoynrTimePoint JoynrMessage::getHeaderExpiryDate() const
 {
     std::string expiryDateString = getHeader(HEADER_EXPIRY_DATE());
-    JoynrTimePoint expiryDate{std::chrono::milliseconds(std::stoll(expiryDateString))};
+    JoynrTimePoint expiryDate(std::chrono::milliseconds(std::stoll(expiryDateString)));
     return expiryDate;
 }
 

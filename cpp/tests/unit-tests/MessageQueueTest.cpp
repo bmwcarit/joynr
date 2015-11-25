@@ -35,7 +35,8 @@ public:
     MessageQueueTest():
         messageQueue(new MessageQueue()),
         threadPool(),
-        cleanerRunnable(new MessageQueueCleanerRunnable(*messageQueue, 50))
+        cleanerRunnable(new MessageQueueCleanerRunnable(*messageQueue, 50)),
+        expiryDate(time_point_cast<milliseconds>(system_clock::now()) + milliseconds(100))
     {
         threadPool.setMaxThreadCount(1);
         threadPool.start(cleanerRunnable);
@@ -51,6 +52,7 @@ protected:
     MessageQueue* messageQueue;
     QThreadPool threadPool;
     MessageQueueCleanerRunnable* cleanerRunnable;
+    JoynrTimePoint expiryDate;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MessageQueueTest);
@@ -61,20 +63,30 @@ TEST_F(MessageQueueTest, initialQueueIsEmpty) {
 }
 
 TEST_F(MessageQueueTest, addMultipleMessages) {
-    EXPECT_EQ(messageQueue->queueMessage(JoynrMessage()), 1);
-    EXPECT_EQ(messageQueue->queueMessage(JoynrMessage()), 2);
-    EXPECT_EQ(messageQueue->queueMessage(JoynrMessage()), 3);
-    EXPECT_EQ(messageQueue->queueMessage(JoynrMessage()), 4);
+    JoynrMessage msg1;
+    msg1.setHeaderExpiryDate(expiryDate);
+    EXPECT_EQ(messageQueue->queueMessage(msg1), 1);
+    JoynrMessage msg2;
+    msg2.setHeaderExpiryDate(expiryDate);
+    EXPECT_EQ(messageQueue->queueMessage(msg2), 2);
+    JoynrMessage msg3;
+    msg3.setHeaderExpiryDate(expiryDate);
+    EXPECT_EQ(messageQueue->queueMessage(msg3), 3);
+    JoynrMessage msg4;
+    msg4.setHeaderExpiryDate(expiryDate);
+    EXPECT_EQ(messageQueue->queueMessage(msg4), 4);
 }
 
 TEST_F(MessageQueueTest, queueDequeueMessages) {
     // add messages to the queue
     JoynrMessage msg1;
     msg1.setHeaderTo("TEST1");
+    msg1.setHeaderExpiryDate(expiryDate);
     messageQueue->queueMessage(msg1);
 
     JoynrMessage msg2;
     msg2.setHeaderTo("TEST2");
+    msg2.setHeaderExpiryDate(expiryDate);
     messageQueue->queueMessage(msg2);
     EXPECT_EQ(messageQueue->getQueueLength(), 2);
 
@@ -92,6 +104,7 @@ TEST_F(MessageQueueTest, queueDequeueMultipleMessagesForOneParticipant) {
     // add messages to the queue
     JoynrMessage msg;
     msg.setHeaderTo("TEST");
+    msg.setHeaderExpiryDate(expiryDate);
     messageQueue->queueMessage(msg);
     messageQueue->queueMessage(msg);
     EXPECT_EQ(messageQueue->getQueueLength(), 2);
