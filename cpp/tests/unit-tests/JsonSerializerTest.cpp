@@ -100,9 +100,17 @@ protected:
         EXPECT_EQ(expectedReplyString, jsonReply);
 
         Reply* receivedReply = JsonSerializer::deserialize<Reply>(jsonReply);
-        LOG_DEBUG(logger, QString("receivedReply->getResponse().at(0).get<std::string>()  : %1").arg(QString::number(receivedReply->getResponse().at(0).get<T>())));
+        Variant responseVariant = receivedReply->getResponse().at(0);
 
-        EXPECT_EQ(value, receivedReply->getResponse().at(0).get<T>());
+        T responseValue;
+        if (responseVariant.is<int64_t>()) {
+            responseValue = static_cast<T>(responseVariant.get<int64_t>());
+        } else if(responseVariant.is<uint64_t>()) {
+            responseValue = static_cast<T>(responseVariant.get<uint64_t>());
+        } else {
+            responseValue = responseVariant.get<T>();
+        }
+        EXPECT_EQ(value, responseValue);
 
         // clean up
         delete receivedReply;
@@ -177,58 +185,55 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JoynrMessage) {
 TEST_F(JsonSerializerTest, serialize_deserialize_byte_array) {
 
     // Build a list to test with
-    std::vector<int8_t> list;//{0x01, 0x02, 0x03, 0xff, 0xfe, 0xfd};
-    list.push_back(0x01);
-    list.push_back(0x02);
-    list.push_back(0x03);
-    list.push_back(0xff);
-    list.push_back(0xfe);
-    list.push_back(0xfd);
+    std::vector<uint8_t> expectedUint8Vector;//{0x01, 0x02, 0x03, 0xff, 0xfe, 0xfd};
+    expectedUint8Vector.push_back(1);
+    expectedUint8Vector.push_back(2);
+    expectedUint8Vector.push_back(3);
+    expectedUint8Vector.push_back(255);
+    expectedUint8Vector.push_back(254);
+    expectedUint8Vector.push_back(253);
 
     // Set the request method name
     Request request;
     request.setMethodName("serialize_deserialize_byte_array");
 
     // Set the request parameters
-    std::vector<Variant> variantVector = TypeUtil::toVectorOfVariants(list);
-    request.addParam(Variant::make<std::vector<Variant>>(variantVector), "List");
+    std::vector<Variant> expectedVariantVectorParam = TypeUtil::toVectorOfVariants(expectedUint8Vector);
+    request.addParam(Variant::make<std::vector<Variant>>(expectedVariantVectorParam), "List");
 
     // Serialize the request
-    std::string serializedContent = JsonSerializer::serialize<Request>(request);
+    std::string serializedRequestJson = JsonSerializer::serialize<Request>(request);
 
-    std::stringstream expectedStringStream;
-    expectedStringStream << R"({"_typeName": "joynr.Request",)" <<
+    std::stringstream jsonStringStream;
+    jsonStringStream << R"({"_typeName": "joynr.Request",)" <<
                 R"("methodName": "serialize_deserialize_byte_array",)" <<
                 R"("paramDatatypes": ["List"],)" <<
-                R"("params": [[1,2,3,-1,-2,-3]],)" <<
+                R"("params": [[1,2,3,255,254,253]],)" <<
                 R"("requestReplyId": ")" << request.getRequestReplyId() << R"("})";
-    std::string expected = expectedStringStream.str();
+    std::string expectedRequestJson = jsonStringStream.str();
 
-    LOG_DEBUG(logger, QString("expected: %1").arg(QString::fromStdString(expected)));
-    EXPECT_EQ(expected, serializedContent);
+    LOG_DEBUG(logger, QString("expected: %1").arg(QString::fromStdString(expectedRequestJson)));
+    LOG_DEBUG(logger, QString("serialized: %1").arg(QString::fromStdString(serializedRequestJson)));
+    EXPECT_EQ(expectedRequestJson, serializedRequestJson);
 
     // Deserialize the request
-    Request* deserializedRequest = JsonSerializer::deserialize<Request>(serializedContent);
-    std::vector<Variant> paramsReceived = deserializedRequest->getParams();
-    std::vector<Variant> deserializedVariantList = paramsReceived.at(0).get<std::vector<Variant>>();
+    Request* deserializedRequest = JsonSerializer::deserialize<Request>(serializedRequestJson);
+    std::vector<Variant> deserializedParams = deserializedRequest->getParams();
+    std::vector<Variant> deserializedVariantVectorParam = deserializedParams.at(0).get<std::vector<Variant>>();
 
-    EXPECT_EQ(variantVector, deserializedVariantList);
+    EXPECT_EQ(expectedVariantVectorParam, deserializedVariantVectorParam);
 
-    std::vector<Variant>::const_iterator i(variantVector.begin());
-    int j = 0;
-    while (i != variantVector.end()) {
-        LOG_DEBUG(logger, QString("expected variant list [%1]=%2").arg(QString::number(j)).arg(QString::number(i->get<uint8_t>())));
-        i++;
-        j++;
+    std::vector<Variant>::const_iterator expectedIt(expectedVariantVectorParam.begin());
+    std::vector<Variant>::const_iterator deserializedIt(deserializedVariantVectorParam.begin());
+    while (expectedIt != expectedVariantVectorParam.end() && deserializedIt != deserializedVariantVectorParam.end()) {
+        EXPECT_EQ("UInt64", deserializedIt->getTypeName());
+        EXPECT_EQ(expectedIt->get<uint8_t>(), static_cast<uint8_t>(deserializedIt->get<uint64_t>()));
+        expectedIt++;
+        deserializedIt++;
     }
 
-    i = deserializedVariantList.begin();
-    j = 0;
-    while (i != deserializedVariantList.end()) {
-        LOG_DEBUG(logger, QString("deserialized variant list [%1]=%2").arg(QString::number(j)).arg(QString::number(i->get<uint8_t>())));
-        i++;
-        j++;
-    }
+    EXPECT_EQ(expectedVariantVectorParam.end(), expectedIt);
+    EXPECT_EQ(deserializedVariantVectorParam.end(), deserializedIt);
 
     delete deserializedRequest;
 }
