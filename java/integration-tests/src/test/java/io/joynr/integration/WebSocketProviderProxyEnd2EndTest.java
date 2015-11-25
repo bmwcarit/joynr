@@ -19,16 +19,10 @@ package io.joynr.integration;
  * #L%
  */
 
-import com.google.inject.Binder;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
-import io.joynr.accesscontrol.AccessControlClientModule;
-import io.joynr.common.JoynrPropertiesModule;
-import io.joynr.discovery.DiscoveryClientModule;
-import io.joynr.dispatching.subscription.PubSubModule;
 import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.LongPollingMessagingModule;
 import io.joynr.messaging.websocket.WebsocketModule;
 import io.joynr.runtime.CCWebSocketRuntimeModule;
 import io.joynr.runtime.ClusterControllerRuntime;
@@ -74,7 +68,7 @@ public class WebSocketProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest 
         Properties ccConfig = new Properties();
         ccConfig.putAll(webSocketConfig);
         ccConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_CC_CONNECTION_TYPE, "WEBSOCKET");
-        Injector injectorCC = new JoynrInjectorFactory(new ClusterControllerModule(ccConfig), new WebsocketModule()).getInjector();
+        Injector injectorCC = new JoynrInjectorFactory(ccConfig, new CCWebSocketRuntimeModule()).getInjector();
         return (ClusterControllerRuntime) injectorCC.getInstance(JoynrRuntime.class);
     }
 
@@ -85,56 +79,8 @@ public class WebSocketProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest 
         }
         joynrConfig.putAll(webSocketConfig);
         joynrConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_CC_CONNECTION_TYPE, "WEBSOCKET");
-        Injector injectorLib = new JoynrInjectorFactory(new LibJoynrModule(joynrConfig, modules)).getInjector();
+        Injector injectorLib = new JoynrInjectorFactory(joynrConfig, Modules.override(modules)
+                                                                            .with(new LibjoynrWebSocketRuntimeModule())).getInjector();
         return injectorLib.getInstance(LibJoynrRuntime.class);
     }
-
-    private static class ClusterControllerModule implements Module {
-
-        private Module module = null;
-        private Properties ccConfig;
-
-        private ClusterControllerModule(Properties ccConfig) {
-            this.ccConfig = ccConfig;
-        }
-
-        @Override
-        public void configure(Binder binder) {
-
-            module = Modules.override(new JoynrPropertiesModule(ccConfig),
-                                      new LongPollingMessagingModule(),
-                                      new PubSubModule(),
-                                      new DiscoveryClientModule(),
-                                      new CCWebSocketRuntimeModule(),
-                                      new AccessControlClientModule()).with();
-            module.configure(binder);
-        }
-    }
-
-    private static class LibJoynrModule implements Module {
-
-        private final Properties joynrConfig;
-        private final Module[] modules;
-        private Module module;
-
-        public LibJoynrModule(Properties joynrConfig, Module... modules) {
-            this.joynrConfig = joynrConfig;
-            this.modules = modules;
-            module = null;
-        }
-
-        @Override
-        public void configure(Binder binder) {
-            module = Modules.override(new JoynrPropertiesModule(joynrConfig),
-                                      new PubSubModule(),
-                                      new DiscoveryClientModule(),
-                                      new LongPollingMessagingModule(),
-                                      //override AccessController with dummy implementation
-                                      Modules.override(new AccessControlClientModule())
-                                             .with(new WebsocketModule(), new LibjoynrWebSocketRuntimeModule()))
-                            .with(modules);
-            module.configure(binder);
-        }
-    }
-
 }

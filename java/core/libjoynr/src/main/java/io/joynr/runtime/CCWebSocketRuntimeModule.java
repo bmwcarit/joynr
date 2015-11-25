@@ -32,6 +32,7 @@ import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.MessageRouterImpl;
 import io.joynr.messaging.websocket.CCWebSocketMessagingSkeleton;
 import io.joynr.messaging.websocket.WebSocketClientMessagingStubFactory;
+import io.joynr.messaging.websocket.WebsocketModule;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
@@ -46,6 +47,7 @@ public class CCWebSocketRuntimeModule extends AbstractRuntimeModule {
     @Override
     protected void configure() {
         super.configure();
+        install(new WebsocketModule());
         bind(ClusterControllerRuntime.class).in(Singleton.class);
         bind(JoynrRuntime.class).to(ClusterControllerRuntime.class);
         bind(IMessagingSkeleton.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_CLUSTERCONTROLER_MESSAGING_SKELETON))

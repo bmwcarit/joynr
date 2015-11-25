@@ -46,6 +46,7 @@ public class LibjoynrWebSocketRuntimeModule extends AbstractRuntimeModule {
     @Override
     protected void configure() {
         super.configure();
+        install(new WebsocketModule());
         bind(AccessController.class).to(AccessControllerDummy.class).in(Singleton.class);
         bind(JoynrRuntime.class).to(LibJoynrRuntime.class).in(Singleton.class);
         bind(WebSocketMessagingSkeleton.class).annotatedWith(Names.named(WebsocketModule.PROPERTY_LIBJOYNR_MESSAGING_SKELETON))
