@@ -31,6 +31,8 @@
 #include <QtCore/QMetaEnum>
 #include <QtCore/QMutex>
 #include <iostream>
+#include <exception>
+
 using namespace QJson;
 
 QMutex* Serializer::enumIdsMutex = new QMutex();
@@ -276,6 +278,11 @@ QByteArray Serializer::serialize( const QVariant &v )
         // Convert the enum value to a key
         const int *pvalue = static_cast<const int *>(v.constData());
         QString key = QLatin1String(metaEnum.valueToKey(*pvalue));
+        if (key.isEmpty()) {
+            throw std::invalid_argument("Exception while serializing enum with typeId " +
+                                        std::to_string(typeId) + " and value " +
+                                        std::to_string(*pvalue));
+        }
         str = sanitizeString(key);
     } else {
         // QObject

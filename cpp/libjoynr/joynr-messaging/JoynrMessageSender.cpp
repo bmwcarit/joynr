@@ -54,14 +54,18 @@ void JoynrMessageSender::sendRequest(const std::string& senderParticipantId,
 {
     assert(dispatcher != NULL);
 
-    dispatcher->addReplyCaller(request.getRequestReplyId().toStdString(), callback, qos);
-    JoynrMessage message =
-            messageFactory.createRequest(QString::fromStdString(senderParticipantId),
-                                         QString::fromStdString(receiverParticipantId),
-                                         qos,
-                                         request);
-    assert(messageRouter);
-    messageRouter->route(message);
+    try {
+        dispatcher->addReplyCaller(request.getRequestReplyId().toStdString(), callback, qos);
+        JoynrMessage message =
+                messageFactory.createRequest(QString::fromStdString(senderParticipantId),
+                                             QString::fromStdString(receiverParticipantId),
+                                             qos,
+                                             request);
+        assert(messageRouter);
+        messageRouter->route(message);
+    } catch (std::invalid_argument exception) {
+        throw joynr::exceptions::MethodInvocationException(exception.what());
+    }
 }
 
 void JoynrMessageSender::sendReply(const std::string& senderParticipantId,
@@ -69,12 +73,17 @@ void JoynrMessageSender::sendReply(const std::string& senderParticipantId,
                                    const MessagingQos& qos,
                                    const Reply& reply)
 {
-    JoynrMessage message = messageFactory.createReply(QString::fromStdString(senderParticipantId),
-                                                      QString::fromStdString(receiverParticipantId),
-                                                      qos,
-                                                      reply);
-    assert(messageRouter);
-    messageRouter->route(message);
+    try {
+        JoynrMessage message =
+                messageFactory.createReply(QString::fromStdString(senderParticipantId),
+                                           QString::fromStdString(receiverParticipantId),
+                                           qos,
+                                           reply);
+        assert(messageRouter);
+        messageRouter->route(message);
+    } catch (std::invalid_argument exception) {
+        throw joynr::exceptions::MethodInvocationException(exception.what());
+    }
 }
 
 void JoynrMessageSender::sendSubscriptionRequest(const std::string& senderParticipantId,
@@ -82,13 +91,17 @@ void JoynrMessageSender::sendSubscriptionRequest(const std::string& senderPartic
                                                  const MessagingQos& qos,
                                                  const SubscriptionRequest& subscriptionRequest)
 {
-    JoynrMessage message =
-            messageFactory.createSubscriptionRequest(QString::fromStdString(senderParticipantId),
-                                                     QString::fromStdString(receiverParticipantId),
-                                                     qos,
-                                                     subscriptionRequest);
-    assert(messageRouter);
-    messageRouter->route(message);
+    try {
+        JoynrMessage message = messageFactory.createSubscriptionRequest(
+                QString::fromStdString(senderParticipantId),
+                QString::fromStdString(receiverParticipantId),
+                qos,
+                subscriptionRequest);
+        assert(messageRouter);
+        messageRouter->route(message);
+    } catch (std::invalid_argument exception) {
+        throw joynr::exceptions::MethodInvocationException(exception.what());
+    }
 }
 
 void JoynrMessageSender::sendBroadcastSubscriptionRequest(
@@ -97,13 +110,17 @@ void JoynrMessageSender::sendBroadcastSubscriptionRequest(
         const MessagingQos& qos,
         const BroadcastSubscriptionRequest& subscriptionRequest)
 {
-    JoynrMessage message = messageFactory.createBroadcastSubscriptionRequest(
-            QString::fromStdString(senderParticipantId),
-            QString::fromStdString(receiverParticipantId),
-            qos,
-            subscriptionRequest);
-    assert(messageRouter);
-    messageRouter->route(message);
+    try {
+        JoynrMessage message = messageFactory.createBroadcastSubscriptionRequest(
+                QString::fromStdString(senderParticipantId),
+                QString::fromStdString(receiverParticipantId),
+                qos,
+                subscriptionRequest);
+        assert(messageRouter);
+        messageRouter->route(message);
+    } catch (std::invalid_argument exception) {
+        throw joynr::exceptions::MethodInvocationException(exception.what());
+    }
 }
 
 void JoynrMessageSender::sendSubscriptionReply(const std::string& senderParticipantId,
@@ -111,13 +128,17 @@ void JoynrMessageSender::sendSubscriptionReply(const std::string& senderParticip
                                                const MessagingQos& qos,
                                                const SubscriptionReply& subscriptionReply)
 {
-    JoynrMessage message =
-            messageFactory.createSubscriptionReply(QString::fromStdString(senderParticipantId),
-                                                   QString::fromStdString(receiverParticipantId),
-                                                   qos,
-                                                   subscriptionReply);
-    assert(messageRouter);
-    messageRouter->route(message);
+    try {
+        JoynrMessage message = messageFactory.createSubscriptionReply(
+                QString::fromStdString(senderParticipantId),
+                QString::fromStdString(receiverParticipantId),
+                qos,
+                subscriptionReply);
+        assert(messageRouter);
+        messageRouter->route(message);
+    } catch (std::invalid_argument exception) {
+        throw joynr::exceptions::MethodInvocationException(exception.what());
+    }
 }
 
 void JoynrMessageSender::sendSubscriptionStop(const std::string& senderParticipantId,
@@ -125,13 +146,17 @@ void JoynrMessageSender::sendSubscriptionStop(const std::string& senderParticipa
                                               const MessagingQos& qos,
                                               const SubscriptionStop& subscriptionStop)
 {
-    JoynrMessage message =
-            messageFactory.createSubscriptionStop(QString::fromStdString(senderParticipantId),
-                                                  QString::fromStdString(receiverParticipantId),
-                                                  qos,
-                                                  subscriptionStop);
-    assert(messageRouter);
-    messageRouter->route(message);
+    try {
+        JoynrMessage message =
+                messageFactory.createSubscriptionStop(QString::fromStdString(senderParticipantId),
+                                                      QString::fromStdString(receiverParticipantId),
+                                                      qos,
+                                                      subscriptionStop);
+        assert(messageRouter);
+        messageRouter->route(message);
+    } catch (std::invalid_argument exception) {
+        throw joynr::exceptions::MethodInvocationException(exception.what());
+    }
 }
 
 void JoynrMessageSender::sendSubscriptionPublication(
@@ -140,13 +165,17 @@ void JoynrMessageSender::sendSubscriptionPublication(
         const MessagingQos& qos,
         const SubscriptionPublication& subscriptionPublication)
 {
-    JoynrMessage message = messageFactory.createSubscriptionPublication(
-            QString::fromStdString(senderParticipantId),
-            QString::fromStdString(receiverParticipantId),
-            qos,
-            subscriptionPublication);
-    assert(messageRouter);
-    messageRouter->route(message);
+    try {
+        JoynrMessage message = messageFactory.createSubscriptionPublication(
+                QString::fromStdString(senderParticipantId),
+                QString::fromStdString(receiverParticipantId),
+                qos,
+                subscriptionPublication);
+        assert(messageRouter);
+        messageRouter->route(message);
+    } catch (std::invalid_argument exception) {
+        throw joynr::exceptions::MethodInvocationException(exception.what());
+    }
 }
 
 } // namespace joynr
