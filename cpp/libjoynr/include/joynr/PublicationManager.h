@@ -24,11 +24,12 @@
 
 #include "joynr/joynrlogging.h"
 #include "joynr/ThreadPoolDelayedScheduler.h"
+#include "joynr/ReadWriteLock.h"
+#include "joynr/ThreadSafeMap.h"
 
 #include <QString>
 #include <QVariant>
 #include <mutex>
-#include <QReadWriteLock>
 #include <memory>
 #include <vector>
 #include <map>
@@ -165,14 +166,11 @@ private:
     class Publication;
 
     // Information for each publication is keyed by subcriptionId
-    std::map<std::string, std::shared_ptr<Publication>> publications;
-    std::map<std::string, std::shared_ptr<SubscriptionRequestInformation>>
+    ThreadSafeMap<std::string, std::shared_ptr<Publication>> publications;
+    ThreadSafeMap<std::string, std::shared_ptr<SubscriptionRequestInformation>>
             subscriptionId2SubscriptionRequest;
-    std::map<std::string, std::shared_ptr<BroadcastSubscriptionRequestInformation>>
+    ThreadSafeMap<std::string, std::shared_ptr<BroadcastSubscriptionRequestInformation>>
             subscriptionId2BroadcastSubscriptionRequest;
-
-    // .. and protected with a read/write lock
-    mutable QReadWriteLock subscriptionLock;
 
     std::mutex fileWriteLock;
     // Publications are scheduled to run on a thread pool
@@ -211,7 +209,7 @@ private:
     std::map<std::string, QList<std::shared_ptr<IBroadcastFilter>>> broadcastFilters;
 
     // Read/write lock for broadcast filters
-    mutable QReadWriteLock broadcastFilterLock;
+    mutable ReadWriteLock broadcastFilterLock;
 
     // PublisherRunnables are used to send publications via a ThreadPool
     class PublisherRunnable;
@@ -226,7 +224,7 @@ private:
     void removeBroadcastPublication(const QString& subscriptionId);
 
     // Helper functions
-    bool publicationExists(const QString& subscriptionId) const;
+    bool publicationExists(const QString& subscriptionId);
     void createPublishRunnable(const QString& subscriptionId);
     void saveAttributeSubscriptionRequestsMap(const std::vector<Variant>& subscriptionList);
     void loadSavedAttributeSubscriptionRequestsMap();
@@ -264,7 +262,7 @@ private:
 
     template <class RequestInformationType>
     std::vector<Variant> subscriptionMapToVectorCopy(
-            const std::map<std::string, std::shared_ptr<RequestInformationType>>& map);
+            const ThreadSafeMap<std::string, std::shared_ptr<RequestInformationType>>& map);
 
     bool isShuttingDown();
     int64_t getPublicationTtl(std::shared_ptr<SubscriptionRequest> subscriptionRequest) const;

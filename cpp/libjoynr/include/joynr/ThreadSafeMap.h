@@ -27,6 +27,9 @@ namespace joynr
 {
 
 template <class Key, class T>
+using mapIterator = typename std::map<Key, T>::const_iterator;
+
+template <class Key, class T>
 class ThreadSafeMap
 {
 public:
@@ -41,6 +44,8 @@ public:
     bool contains(const Key& key);
     void deleteAll();
     int size();
+    mapIterator<Key, T> begin() const;
+    mapIterator<Key, T> end() const;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ThreadSafeMap);
@@ -116,6 +121,17 @@ int ThreadSafeMap<Key, T>::size()
     return map.size();
 }
 
+template <class Key, class T>
+mapIterator<Key, T> ThreadSafeMap<Key, T>::begin() const
+{
+    return map.begin();
+}
+
+template <class Key, class T>
+mapIterator<Key, T> ThreadSafeMap<Key, T>::end() const
+{
+    return map.end();
+}
 } // namespace joynr
 
 #endif // THREADSAFEMAP_H
