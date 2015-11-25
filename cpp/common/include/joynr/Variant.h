@@ -90,7 +90,7 @@ public:
     /**
      * @brief Variant is copiable type
      */
-    Variant(const Variant& other) : pointer(other.pointer->clone())
+    Variant(const Variant& other) : pointer((other.pointer) ? other.pointer->clone() : nullptr)
     {
     }
 
@@ -124,6 +124,15 @@ public:
     }
 
     ~Variant() = default;
+
+    /**
+     * @brief isEmpty
+     * @return
+     */
+    bool isEmpty() const
+    {
+        return pointer == nullptr;
+    }
 
     /**
      * @brief is() checks if wrapped object in this Variant have the given type?

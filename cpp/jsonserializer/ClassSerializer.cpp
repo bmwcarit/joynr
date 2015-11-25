@@ -162,6 +162,10 @@ template <>
 void ClassSerializer<Variant>::serialize(const Variant &variant,
                                              std::ostream &stream)
 {
+    if (variant.isEmpty()) {
+        return;
+    }
+
     std::string typeName = variant.getTypeName();
     auto serializer = SerializerRegistry::getSerializer(typeName);
 
