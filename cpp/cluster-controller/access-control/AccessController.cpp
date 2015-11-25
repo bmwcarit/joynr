@@ -112,35 +112,33 @@ void AccessController::LdacConsumerPermissionCallback::consumerPermission(
 void AccessController::LdacConsumerPermissionCallback::operationNeeded()
 {
 
-    QString operation;
+    std::string operation;
     std::string messageType = message.getType();
-
-    // Deserialize the message to get the operation
-    QByteArray jsonRequest = QByteArray(message.getPayload().c_str());
 
     if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST) {
 
-        QScopedPointer<Request> request(JsonSerializer::deserializeQObject<Request>(jsonRequest));
-        if (!request.isNull()) {
-            operation = TypeUtil::toQt(request->getMethodName());
+        std::unique_ptr<Request> request(
+                JsonSerializer::deserialize<Request>(message.getPayload()));
+        if (request) {
+            operation = request->getMethodName();
         }
     } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST) {
 
-        QScopedPointer<SubscriptionRequest> request(
-                JsonSerializer::deserializeQObject<SubscriptionRequest>(jsonRequest));
-        if (!request.isNull()) {
-            operation = QString::fromStdString(request->getSubscribeToName());
+        std::unique_ptr<SubscriptionRequest> request(
+                JsonSerializer::deserialize<SubscriptionRequest>(message.getPayload()));
+        if (request) {
+            operation = request->getSubscribeToName();
         }
     } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
 
-        QScopedPointer<BroadcastSubscriptionRequest> request(
-                JsonSerializer::deserializeQObject<BroadcastSubscriptionRequest>(jsonRequest));
-        if (!request.isNull()) {
-            operation = QString::fromStdString(request->getSubscribeToName());
+        std::unique_ptr<BroadcastSubscriptionRequest> request(
+                JsonSerializer::deserialize<BroadcastSubscriptionRequest>(message.getPayload()));
+        if (request) {
+            operation = request->getSubscribeToName();
         }
     }
 
-    if (operation.isEmpty()) {
+    if (operation.empty()) {
         LOG_ERROR(logger, "Could not deserialize request");
         callback->hasConsumerPermission(false);
         return;
@@ -152,7 +150,7 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
                     message.getHeaderCreatorUserId(),
                     domain.toStdString(),
                     interfaceName.toStdString(),
-                    operation.toStdString(),
+                    operation,
                     QtTrustLevel::createStd(trustlevel));
 
     bool hasPermission = convertToBool(permission);
@@ -163,7 +161,7 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
                           .arg(QString::fromStdString(message.getHeaderMessageId()))
                           .arg(domain)
                           .arg(interfaceName)
-                          .arg(operation));
+                          .arg(QString::fromStdString(operation)));
     }
 
     callback->hasConsumerPermission(hasPermission);
