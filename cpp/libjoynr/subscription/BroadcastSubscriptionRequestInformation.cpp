@@ -23,11 +23,16 @@
 namespace joynr
 {
 
+static bool isBroadcastSubscriptionRequestInformationRegistered =
+        Variant::registerType<BroadcastSubscriptionRequestInformation>(
+                "joynr.BroadcastSubscriptionRequestInformation");
+
 using namespace joynr_logging;
 Logger* BroadcastSubscriptionRequestInformation::logger =
         Logging::getInstance()->getLogger("MSG", "BroadcastSubscriptionRequestInformation");
 
 BroadcastSubscriptionRequestInformation::BroadcastSubscriptionRequestInformation()
+        : BroadcastSubscriptionRequest(), SubscriptionInformation()
 {
 }
 

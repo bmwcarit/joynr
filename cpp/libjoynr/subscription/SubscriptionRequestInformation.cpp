@@ -23,6 +23,10 @@
 namespace joynr
 {
 
+static bool isSubscriptionRequestInformationRegistered =
+        Variant::registerType<SubscriptionRequestInformation>(
+                "joynr.SubscriptionRequestInformation");
+
 using namespace joynr_logging;
 Logger* SubscriptionRequestInformation::logger =
         Logging::getInstance()->getLogger("MSG", "SubscriptionRequestInformation");
@@ -65,7 +69,8 @@ bool SubscriptionRequestInformation::operator==(
 
 QString SubscriptionRequestInformation::toQString() const
 {
-    return JsonSerializer::serializeQObject(*this);
+    std::string json = JsonSerializer::serialize<SubscriptionRequestInformation>(*this);
+    return QString::fromStdString(json);
 }
 
 } // namespace joynr

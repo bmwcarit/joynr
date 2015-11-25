@@ -17,8 +17,12 @@
  * #L%
  */
 #include "joynr/PeriodicSubscriptionQos.h"
+#include "joynr/Variant.h"
 
 using namespace joynr;
+
+static bool isPeriodicSubscriptionQosRegistered =
+        Variant::registerType<PeriodicSubscriptionQos>("joynr.PeriodicSubscriptionQos");
 
 const int64_t& PeriodicSubscriptionQos::MIN_PERIOD()
 {

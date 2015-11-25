@@ -35,7 +35,28 @@ void ClassDeserializer<BroadcastSubscriptionRequestInformation>::deserialize(
         BroadcastSubscriptionRequestInformation& info,
         IObject& o)
 {
-    // TODO: has to be implemented
+    while (o.hasNextField()) {
+        IField& field = o.nextField();
+        if (field.name() == "subscriptionId") {
+            info.setSubscriptionId(field.value());
+        } else if (field.name() == "subscribeToName") {
+            info.setSubscribeToName(field.value());
+        } else if (field.name() == "qos") {
+            Variant qos = convertVariant(field.value());
+            info.setQos(qos.get<OnChangeSubscriptionQos>());
+        } else if (field.name() == "filterParameters") {
+            BroadcastFilterParameters filterParameters;
+            ClassDeserializer<BroadcastFilterParameters> filterParametersDeserializer;
+            filterParametersDeserializer.deserialize(filterParameters, field.value());
+            info.setFilterParameters(filterParameters);
+        } else if (field.name() == "proxyId") {
+            std::string proxyId = field.value();
+            info.setProxyId(QString::fromStdString(proxyId));
+        } else if (field.name() == "providerId") {
+            std::string providerId = field.value();
+            info.setProviderId(QString::fromStdString(providerId));
+        }
+    }
 }
 
 template <>
@@ -46,7 +67,20 @@ void ClassSerializer<BroadcastSubscriptionRequestInformation>::serialize(
     stream << R"({)";
     stream << R"("_typeName": ")"
            << JoynrTypeId<BroadcastSubscriptionRequestInformation>::getTypeName() << R"(",)";
-
-    stream << R"(})";
+    stream << R"("subscriptionId": ")" << info.getSubscriptionId() << R"(",)";
+    stream << R"("subscribeToName": ")" << info.getSubscribeToName() << R"(",)";
+    stream << R"("qos": )";
+    ClassSerializer<Variant> variantSerializer;
+    variantSerializer.serialize(info.getQos(), stream);
+    stream << R"(,"filterParameters": )";
+    if (info.getFilterParameters().getFilterParameters().empty()) {
+        stream << R"({})";
+    } else {
+        ClassSerializer<BroadcastFilterParameters> filterParametersSerializer;
+        filterParametersSerializer.serialize(info.getFilterParameters(), stream);
+    }
+    stream << R"(,"proxyId": ")" << info.getProxyId().toStdString() << R"(",)";
+    stream << R"("providerId": ")" << info.getProviderId().toStdString();
+    stream << R"("})";
 }
 } /* namespace joynr */

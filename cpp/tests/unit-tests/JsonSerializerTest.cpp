@@ -130,7 +130,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_BroadcastSubscriptionRequest) {
     request.setQos(qos);
     BroadcastFilterParameters filterParams;
     filterParams.setFilterParameter("MyFilter", "MyFilterValue");
-    request.setFilterParameters(Variant::make<BroadcastFilterParameters>(filterParams));
+    request.setFilterParameters(filterParams);
     std::string requestJson = JsonSerializer::serialize<BroadcastSubscriptionRequest>(request);
     LOG_DEBUG(logger, QString::fromStdString(requestJson));
     BroadcastSubscriptionRequest* desRequest = JsonSerializer::deserialize<BroadcastSubscriptionRequest>(requestJson);
