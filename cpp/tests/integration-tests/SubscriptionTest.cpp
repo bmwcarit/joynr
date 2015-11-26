@@ -35,13 +35,13 @@
 #include "joynr/MetaTypeRegistrar.h"
 #include "joynr/tests/testRequestInterpreter.h"
 #include "tests/utils/MockObjects.h"
-#include "joynr/QtOnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include <QString>
 #include <string>
 #include "joynr/LibjoynrSettings.h"
-#include "joynr/tests/testTypes_QtTestEnum.h"
+#include "joynr/tests/testTypes/TestEnum.h"
 #include "joynr/tests/testRequestCaller.h"
-#include "joynr/types/Localisation_QtGpsLocation.h"
+#include "joynr/types/Localisation/GpsLocation.h"
 
 using namespace ::testing;
 
@@ -59,15 +59,15 @@ class SubscriptionTest : public ::testing::Test {
 public:
     SubscriptionTest() :
         mockMessageRouter(new MockMessageRouter()),
-        mockCallback(new MockCallback<types::Localisation::QtGpsLocation>()),
+        mockCallback(new MockCallback<types::Localisation::GpsLocation>()),
         mockRequestCaller(new MockTestRequestCaller()),
-        mockReplyCaller(new MockReplyCaller<types::Localisation::QtGpsLocation>(
-                [this](const RequestStatus& status, const types::Localisation::QtGpsLocation& location) {
+        mockReplyCaller(new MockReplyCaller<types::Localisation::GpsLocation>(
+                [this](const RequestStatus& status, const types::Localisation::GpsLocation& location) {
                     mockCallback->onSuccess(location);
                 },
                 [] (const RequestStatus status, std::shared_ptr<exceptions::JoynrException> error){
                 })),
-        mockGpsLocationListener(new MockSubscriptionListenerOneType<types::Localisation::QtGpsLocation>()),
+        mockGpsLocationListener(new MockSubscriptionListenerOneType<types::Localisation::GpsLocation>()),
         mockTestEnumSubscriptionListener(new MockSubscriptionListenerOneType<tests::testTypes::TestEnum::Enum>()),
         gpsLocation1(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444),
         qos(2000),
@@ -91,7 +91,7 @@ public:
         dispatcher.registerPublicationManager(publicationManager);
         dispatcher.registerSubscriptionManager(subscriptionManager);
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
-        MetaTypeRegistrar::instance().registerMetaType<types::Localisation::QtGpsLocation>();
+        MetaTypeRegistrar::instance().registerMetaType<types::Localisation::GpsLocation>();
         MetaTypeRegistrar::instance().registerEnumMetaType<joynr::tests::testTypes::TestEnum>();
     }
 
@@ -101,11 +101,11 @@ public:
 
 protected:
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
-    std::shared_ptr<MockCallback<types::Localisation::QtGpsLocation> > mockCallback;
+    std::shared_ptr<MockCallback<types::Localisation::GpsLocation> > mockCallback;
 
     std::shared_ptr<MockTestRequestCaller> mockRequestCaller;
-    std::shared_ptr<MockReplyCaller<types::Localisation::QtGpsLocation> > mockReplyCaller;
-    std::shared_ptr<MockSubscriptionListenerOneType<types::Localisation::QtGpsLocation> > mockGpsLocationListener;
+    std::shared_ptr<MockReplyCaller<types::Localisation::GpsLocation> > mockReplyCaller;
+    std::shared_ptr<MockSubscriptionListenerOneType<types::Localisation::GpsLocation> > mockGpsLocationListener;
     std::shared_ptr<MockSubscriptionListenerOneType<tests::testTypes::TestEnum::Enum> > mockTestEnumSubscriptionListener;
 
     types::Localisation::GpsLocation gpsLocation1;
@@ -134,8 +134,6 @@ private:
   *             the MockCaller for the attribute.
   */
 TEST_F(SubscriptionTest, receive_subscriptionRequestAndPollAttribute) {
-    qRegisterMetaType<QtOnChangeWithKeepAliveSubscriptionQos>("QtOnChangeWithKeepAliveSubscriptionQos");
-    qRegisterMetaType<SubscriptionRequest>("SubscriptionRequest");
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
     QSemaphore semaphore(0);
@@ -179,15 +177,13 @@ TEST_F(SubscriptionTest, receive_subscriptionRequestAndPollAttribute) {
   */
 TEST_F(SubscriptionTest, receive_publication ) {
 
-    qRegisterMetaType<SubscriptionPublication>("SubscriptionPublication");
-
     // getType is used by the ReplyInterpreterFactory to create an interpreter for the reply
     // so this has to match with the type being passed to the dispatcher in the reply
-    ON_CALL(*mockReplyCaller, getType()).WillByDefault(Return(QString("QtGpsLocation")));
+    ON_CALL(*mockReplyCaller, getType()).WillByDefault(Return(QString("GpsLocation")));
 
     // Use a semaphore to count and wait on calls to the mockGpsLocationListener
     QSemaphore semaphore(0);
-    EXPECT_CALL(*mockGpsLocationListener, onReceive(A<const types::Localisation::QtGpsLocation&>()))
+    EXPECT_CALL(*mockGpsLocationListener, onReceive(A<const types::Localisation::GpsLocation&>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     //register the subscription on the consumer side
@@ -200,15 +196,15 @@ TEST_F(SubscriptionTest, receive_publication ) {
     ));
 
     SubscriptionRequest subscriptionRequest;
-    //construct a reply containing a QtGpsLocation
+    //construct a reply containing a GpsLocation
     SubscriptionPublication subscriptionPublication;
     subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     std::vector<Variant> response;
     response.push_back(Variant::make<types::Localisation::GpsLocation>(gpsLocation1));
     subscriptionPublication.setResponse(response);
 
-    std::shared_ptr<SubscriptionCallback<types::Localisation::QtGpsLocation>> subscriptionCallback(
-            new SubscriptionCallback<types::Localisation::QtGpsLocation>(mockGpsLocationListener));
+    std::shared_ptr<SubscriptionCallback<types::Localisation::GpsLocation>> subscriptionCallback(
+            new SubscriptionCallback<types::Localisation::GpsLocation>(mockGpsLocationListener));
 
 
     // subscriptionRequest is an out param
@@ -238,8 +234,6 @@ TEST_F(SubscriptionTest, receive_publication ) {
   */
 TEST_F(SubscriptionTest, receive_enumPublication ) {
 
-    qRegisterMetaType<SubscriptionPublication>("SubscriptionPublication");
-
     // getType is used by the ReplyInterpreterFactory to create an interpreter for the reply
     // so this has to match with the type being passed to the dispatcher in the reply
     ON_CALL(*mockReplyCaller, getType()).WillByDefault(Return(QString("QtTestEnum")));
@@ -259,7 +253,7 @@ TEST_F(SubscriptionTest, receive_enumPublication ) {
     ));
 
     SubscriptionRequest subscriptionRequest;
-    //construct a reply containing a QtGpsLocation
+    //construct a reply containing a GpsLocation
     SubscriptionPublication subscriptionPublication;
     subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     std::vector<Variant> response;
@@ -297,9 +291,6 @@ TEST_F(SubscriptionTest, receive_enumPublication ) {
   *             to restore waiting Subscriptions
   */
 TEST_F(SubscriptionTest, receive_RestoresSubscription) {
-
-    qRegisterMetaType<QtOnChangeWithKeepAliveSubscriptionQos>("QtOnChangeWithKeepAliveSubscriptionQos");
-    qRegisterMetaType<SubscriptionRequest>("SubscriptionRequest");
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
     QSemaphore semaphore(0);
@@ -412,9 +403,6 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam) {
   * Expected:   The PublicationManager stops all subscriptions for this provider
   */
 TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications) {
-    qRegisterMetaType<QtOnChangeWithKeepAliveSubscriptionQos>("QtOnChangeWithKeepAliveSubscriptionQos");
-    qRegisterMetaType<SubscriptionRequest>("SubscriptionRequest");
-    qRegisterMetaType<SubscriptionStop>("SubscriptionStop");
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
     QSemaphore semaphore(0);
@@ -459,9 +447,6 @@ TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications) {
   * Expected:   The PublicationManager stops the publications for this provider
   */
 TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
-
-    qRegisterMetaType<QtOnChangeWithKeepAliveSubscriptionQos>("QtOnChangeWithKeepAliveSubscriptionQos");
-    qRegisterMetaType<SubscriptionRequest>("SubscriptionRequest");
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
     QSemaphore semaphore(0);

@@ -56,6 +56,7 @@ void ClassSerializer<SubscriptionRequest>::serialize(const SubscriptionRequest& 
     stream << R"("_typeName": ")" << JoynrTypeId<SubscriptionRequest>::getTypeName() << R"(",)";
     stream << R"("subscriptionId": ")" << subscriptionRequest.getSubscriptionId() << R"(",)";
     stream << R"("subscribedToName": ")" << subscriptionRequest.getSubscribeToName() << R"(",)";
+    stream << R"("qos": )";
     ClassSerializer<Variant> variantSerializer{};
     variantSerializer.serialize(subscriptionRequest.getQos(), stream);
     stream << "}";
