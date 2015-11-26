@@ -184,33 +184,31 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrType)
 TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrRequest)
 {
     // Create a Request
-    Request request;
-    request.setMethodName("realMethod");
-    request.setRequestReplyId("000-10000-01011");
+    Request expectedRequest;
+    expectedRequest.setMethodName("realMethod");
+    expectedRequest.setRequestReplyId("000-10000-01011");
 
     // Create a vector of variants to use as parameters
-    std::vector<Variant> params;
     std::string someString{"Hello World"};
     Variant param1 = Variant::make<std::string>(someString);
-    //params.emplace_back(param);
-    request.addParam(param1, "String");
+    expectedRequest.addParam(param1, "String");
     const int32_t expectedInt = 101;
     Variant param2 = Variant::make<int>(expectedInt);
-    request.addParam(param2, "Integer");
-    const int aValue = 2;
-    Variant param3 = Variant::make<SomeOtherType>(aValue);
-    request.addParam(param3, "SomeOtherType");
+    expectedRequest.addParam(param2, "Integer");
+    SomeOtherType expectedSomeOtherType(2);
+    Variant param3 = Variant::make<SomeOtherType>(expectedSomeOtherType);
+    expectedRequest.addParam(param3, "SomeOtherType");
     const float expectedFloat = 9.99f;
     Variant param4 = Variant::make<float>(expectedFloat);
-    request.addParam(param4, "Float");
+    expectedRequest.addParam(param4, "Float");
     bool expectedBool = true;
     Variant param5 = Variant::make<bool>(expectedBool);
-    request.addParam(param5, "Bool");
+    expectedRequest.addParam(param5, "Bool");
 
     // Serialize into JSON
     std::stringstream stream;
-    auto serializer = ClassSerializer<Request>{};
-    serializer.serialize(request, stream);
+    auto serializer = ClassSerializer<Request>();
+    serializer.serialize(expectedRequest, stream);
     std::string json{ stream.str() };
     LOG_TRACE(logger, QString("Request JSON: %1").arg(QString::fromStdString(json)));
 
@@ -218,25 +216,25 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrRequest)
     JsonTokenizer tokenizer(json);
 
     if (tokenizer.hasNextObject()) {
-        Request t;
-        ClassDeserializer<Request>::deserialize(t, tokenizer.nextObject());
-        const auto& params = t.getParams();
-        assert(params.size() == 5);
-        const auto& second = params[1];
-        assert(second.is<std::string>());
-        assert(second.get<std::string>() == std::to_string(expectedInt));
-        const auto& third = params[2];
-        assert(third.is<SomeOtherType>());
-        assert(third.get<SomeOtherType>().getA() == aValue);
-        std::cout << "Deserialized value is " << third.get<SomeOtherType>().getA() << std::endl;
-        const auto& fourth = params[3];
-        assert(fourth.is<std::string>());
-        float receivedFloat = fourth.get<float>();
-        assert(receivedFloat == expectedFloat);
-        const auto& fifth = params[4];
-        assert(fifth.is<std::string>());
-        bool receivedBool = fifth.get<bool>();
-        assert(receivedBool == expectedBool);
+        Request request;
+        ClassDeserializer<Request>::deserialize(request, tokenizer.nextObject());
+        std::vector<Variant> params = request.getParams();
+        EXPECT_EQ(expectedRequest.getParams().size(), params.size());
+        Variant intParam = params[1];
+        EXPECT_TRUE(intParam.is<uint64_t>());
+        EXPECT_FALSE(intParam.is<int32_t>());
+        EXPECT_EQ(expectedInt, static_cast<int32_t>(intParam.get<uint64_t>()));
+        Variant someOtherTypeParam = params[2];
+        EXPECT_TRUE(someOtherTypeParam.is<SomeOtherType>());
+        EXPECT_EQ(expectedSomeOtherType.getA(), someOtherTypeParam.get<SomeOtherType>().getA());
+        std::cout << "Deserialized value is " << someOtherTypeParam.get<SomeOtherType>().getA() << std::endl;
+        Variant floatParam = params[3];
+        EXPECT_TRUE(floatParam.is<double>());
+        EXPECT_FALSE(floatParam.is<float>());
+        EXPECT_EQ(expectedFloat, static_cast<float>(floatParam.get<double>()));
+        Variant boolParam = params[4];
+        EXPECT_TRUE(boolParam.is<bool>());
+        EXPECT_EQ(expectedBool, boolParam.get<bool>());
     }
 }
 

@@ -101,7 +101,7 @@ void ClassSerializer<float>::serialize(const float& i, std::ostream& stream)
 template <>
 void ClassSerializer<bool>::serialize(const bool& i, std::ostream& stream)
 {
-    stream << i;
+    stream << std::boolalpha << i;
 }
 
 /**
