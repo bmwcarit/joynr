@@ -93,7 +93,7 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
                             Dispatcher dispatcher,
                             LocalDiscoveryAggregator localDiscoveryAggregator,
                             @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
-                            @Named(SystemServicesSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) Address libjoynrMessagingAddress,
+                            @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
                             @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_ADDRESS) Address capabilitiesDirectoryAddress,
                             @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_ADDRESS) Address channelUrlDirectoryAddress,
                             @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_ADDRESS) Address domainAccessControllerAddress,
@@ -112,8 +112,8 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
                 SubscriptionStop.class, SubscriptionPublication.class, BroadcastSubscriptionRequest.class };
         objectMapper.registerSubtypes(messageTypes);
         this.proxyBuilderFactory = proxyBuilderFactory;
-        if (libjoynrMessagingAddress instanceof InProcessAddress) {
-            ((InProcessAddress) libjoynrMessagingAddress).setSkeleton(new InProcessLibjoynrMessagingSkeleton(dispatcher));
+        if (dispatcherAddress instanceof InProcessAddress) {
+            ((InProcessAddress) dispatcherAddress).setSkeleton(new InProcessLibjoynrMessagingSkeleton(dispatcher));
         }
         if (channelUrlDirectoryAddress instanceof InProcessAddress) {
             ((InProcessAddress) channelUrlDirectoryAddress).setSkeleton(new InProcessLibjoynrMessagingSkeleton(dispatcher));

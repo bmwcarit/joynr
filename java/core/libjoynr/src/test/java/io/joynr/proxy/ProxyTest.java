@@ -71,7 +71,6 @@ import io.joynr.dispatching.rpc.RpcUtils;
 import io.joynr.dispatching.rpc.SynchronizedReplyCaller;
 import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.exceptions.JoynrCommunicationException;
-import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.inprocess.InProcessAddress;
@@ -171,8 +170,8 @@ public class ProxyTest {
 
             @Provides
             @Singleton
-            @Named(SystemServicesSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS)
-            Address getLibJoynrMessagingAddress() {
+            @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS)
+            Address getDispatcherAddress() {
                 return new InProcessAddress();
             }
 

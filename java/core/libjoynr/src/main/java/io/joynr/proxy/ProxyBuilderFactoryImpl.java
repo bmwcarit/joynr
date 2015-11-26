@@ -41,7 +41,7 @@ public class ProxyBuilderFactoryImpl implements ProxyBuilderFactory {
     public ProxyBuilderFactoryImpl(DiscoveryAsync localDiscoveryAggregator,
                                    ProxyInvocationHandlerFactory proxyInvocationHandlerFactory,
                                    MessageRouter messageRouter,
-                                   @Named(SystemServicesSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) Address libjoynrMessagingAddress) {
+                                   @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address libjoynrMessagingAddress) {
         this.localDiscoveryAggregator = localDiscoveryAggregator;
         this.proxyInvocationHandlerFactory = proxyInvocationHandlerFactory;
         this.messageRouter = messageRouter;

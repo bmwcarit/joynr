@@ -87,8 +87,8 @@ abstract class AbstractRuntimeModule extends AbstractModule {
 
     @Provides
     @Singleton
-    @Named(SystemServicesSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS)
-    Address getLibJoynrMessagingAddress() {
+    @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS)
+    Address getDispatcherAddress() {
         return new InProcessAddress();
     }
 

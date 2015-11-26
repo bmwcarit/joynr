@@ -23,8 +23,6 @@ import io.joynr.arbitration.ArbitrationResult;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.system.RoutingTypes.Address;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import javax.annotation.CheckForNull;
 import javax.inject.Named;
 import io.joynr.runtime.SystemServicesSettings;
@@ -36,18 +34,16 @@ public class ConnectorFactory {
 
     JoynrMessagingConnectorFactory joynrMessagingConnectorFactory;
 
-    private static final Logger logger = LoggerFactory.getLogger(ConnectorFactory.class);
-
     private MessageRouter messageRouter;
     private Address libjoynrMessagingAddress;
 
     @Inject
     public ConnectorFactory(JoynrMessagingConnectorFactory joynrMessagingConnectorFactory,
                             MessageRouter messageRouter,
-                            @Named(SystemServicesSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) Address libjoynrMessagingAddress) {
+                            @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress) {
         this.joynrMessagingConnectorFactory = joynrMessagingConnectorFactory;
         this.messageRouter = messageRouter;
-        this.libjoynrMessagingAddress = libjoynrMessagingAddress;
+        this.libjoynrMessagingAddress = dispatcherAddress;
     }
 
     /**

@@ -57,14 +57,14 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                                      MessageRouter messageRouter,
                                      RequestCallerDirectory requestCallerDirectory,
                                      ParticipantIdStorage participantIdStorage,
-                                     @Named(SystemServicesSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) Address libjoynrMessagingAddress) {
+                                     @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress) {
         super();
         this.localDiscoveryAggregator = localDiscoveryAggregator;
         this.requestCallerFactory = requestCallerFactory;
         this.messageRouter = messageRouter;
         this.requestCallerDirectory = requestCallerDirectory;
         this.participantIdStorage = participantIdStorage;
-        this.libjoynrMessagingAddress = libjoynrMessagingAddress;
+        this.libjoynrMessagingAddress = dispatcherAddress;
     }
 
     /*

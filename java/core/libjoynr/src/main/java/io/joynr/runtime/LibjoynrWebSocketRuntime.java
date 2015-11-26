@@ -61,7 +61,7 @@ public class LibjoynrWebSocketRuntime extends JoynrRuntimeImpl {
                                     Dispatcher dispatcher,
                                     LocalDiscoveryAggregator localDiscoveryAggregator,
                                     @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
-                                    @Named(SystemServicesSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) Address libjoynrMessagingAddress,
+                                    @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
                                     @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_ADDRESS) Address capabilitiesDirectoryAddress,
                                     @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_ADDRESS) Address channelUrlDirectoryAddress,
                                     @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_ADDRESS) Address domainAccessControllerAddress,
@@ -78,7 +78,7 @@ public class LibjoynrWebSocketRuntime extends JoynrRuntimeImpl {
               dispatcher,
               localDiscoveryAggregator,
               systemServicesDomain,
-              libjoynrMessagingAddress,
+              dispatcherAddress,
               capabilitiesDirectoryAddress,
               channelUrlDirectoryAddress,
               domainAccessControllerAddress,
@@ -99,7 +99,7 @@ public class LibjoynrWebSocketRuntime extends JoynrRuntimeImpl {
                                       ccMessagingAddress,
                                       parentRoutingProviderParticipantId,
                                       proxyBuilder.getParticipantId());
-        messageRouter.addNextHop(discoveryProxyParticipantId, libjoynrMessagingAddress);
+        messageRouter.addNextHop(discoveryProxyParticipantId, dispatcherAddress);
 
     }
 
