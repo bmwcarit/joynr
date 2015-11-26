@@ -10,3 +10,5 @@ src/main/generated*
 /joynr_participantIds.properties
 /java-provider.persistence_file
 /java-consumer.persistence_file
+CMakeLists.txt.user
+/build
