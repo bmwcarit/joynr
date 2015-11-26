@@ -191,6 +191,13 @@ message(STATUS "variable Qt5Sql LOCATION=${Qt5Sql_LOCATION}")
 message(STATUS "variable Qt5Sql_LIBRARIES=${Qt5Sql_LIBRARIES}")
 message(STATUS "variable Qt5Sql_DEFINITIONS=${Qt5Sql_DEFINITIONS}")
 
+
+######## Add Boost ########
+
+find_package(Boost 1.56.0 REQUIRED)
+include_directories(${Boost_INCLUDE_DIRS})
+
+
 message(STATUS "############ Import: cURL ############")
 if(${WIN32})
     if(NOT CURL_HOME)
@@ -428,6 +435,7 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
     link_directories(${DBUS1_LIBRARY_DIRS} ${COMMONAPI_LIBRARY_DIRS} ${COMMONAPI_DBUS_LIBRARY_DIRS})
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
+
 
 ######## Add submodules ########
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
