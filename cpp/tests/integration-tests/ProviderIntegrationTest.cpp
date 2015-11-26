@@ -71,23 +71,19 @@ private:
 
 TEST_F(ProviderIntegrationTest, deserializeStructHavingMemberStruct)
 {
-    qRegisterMetaType<joynr::Request>();
-    /* Ensure, that all complex datatypes are known to the meta type registry, allowing
-     * the JsonSerializer to deserialize tge incoming request correctly.
-     * It is the task of the I<InterfaceName>.cpp to register all required datatypes in the
-     * constructor. This constructor is implicitely invoked when instantiating the respective
-     * provider, as it is done in the constructor of this test class.
+    /* Ensure, that all datatypes are registered with Variant::registerType and
+     * SeralizerRegistry::registerType to allow JsonSerializer to deserialize the incoming request correctly.
+     * It is the task of the type itself and its corresponding serializer to register themselves.
      * Prior to this test, the NeverUsedAsAttributeTypeOrMethodParameterStruct
      * has not been registered, thus the deserialization of the joynr.Request failed.
      */
-    QByteArray serializedContent("{\"_typeName\":\"joynr.Request\","
-                                 "\"methodName\":\"setAttributeArrayOfNestedStructs\","
-                                 "\"paramDatatypes\":[\"List\"],"
-                                 "\"params\":["
-                                 "[{\"_typeName\":\"joynr.tests.testTypes.HavingComplexArrayMemberStruct\","
-                                 "\"arrayMember\":["
-                                 "{\"_typeName\":\"joynr.tests.testTypes.NeverUsedAsAttributeTypeOrMethodParameterStruct\","
-                                 "\"name\":\"neverUsed\"}]}]],"
-                                 "\"requestReplyId\":\"570b7626-4140-4714-922a-a7c49c52c54c\"}");
-    JsonSerializer::deserializeQObject<Request>(serializedContent);
+    std::string serializedContent(
+                R"({"_typeName": "joynr.Request",)"
+                R"("methodName": "setAttributeArrayOfNestedStructs",)"
+                R"("paramDatatypes": ["List"],)"
+                R"("params": [[{"_typeName":"joynr.tests.testTypes.HavingComplexArrayMemberStruct",)"
+                R"("arrayMember": [{"_typeName":"joynr.tests.testTypes.NeverUsedAsAttributeTypeOrMethodParameterStruct",)"
+                R"("name": "neverUsed"}]}]],)"
+                R"("requestReplyId": "570b7626-4140-4714-922a-a7c49c52c54c"})");
+    JsonSerializer::deserialize<Request>(serializedContent);
 }
