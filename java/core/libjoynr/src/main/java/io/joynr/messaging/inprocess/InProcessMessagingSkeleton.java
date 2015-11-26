@@ -19,7 +19,7 @@ package io.joynr.messaging.inprocess;
  * #L%
  */
 
-import io.joynr.messaging.IMessaging;
+import io.joynr.messaging.IMessagingSkeleton;
 
-public interface InProcessMessagingSkeleton extends IMessaging {
+public interface InProcessMessagingSkeleton extends IMessagingSkeleton {
 }
