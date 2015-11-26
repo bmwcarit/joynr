@@ -48,29 +48,29 @@ import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
 
-public class LibJoynrRuntime extends JoynrRuntimeImpl {
+public class LibjoynrWebSocketRuntime extends JoynrRuntimeImpl {
 
-    public static final Logger logger = LoggerFactory.getLogger(LibJoynrRuntime.class);
+    public static final Logger logger = LoggerFactory.getLogger(LibjoynrWebSocketRuntime.class);
 
     // CHECKSTYLE:OFF
     @Inject
-    public LibJoynrRuntime(ObjectMapper objectMapper,
-                           ProxyBuilderFactory proxyBuilderFactory,
-                           RequestCallerDirectory requestCallerDirectory,
-                           ReplyCallerDirectory replyCallerDirectory,
-                           Dispatcher dispatcher,
-                           LocalDiscoveryAggregator localDiscoveryAggregator,
-                           @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
-                           @Named(SystemServicesSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) Address libjoynrMessagingAddress,
-                           @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_ADDRESS) Address capabilitiesDirectoryAddress,
-                           @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_ADDRESS) Address channelUrlDirectoryAddress,
-                           @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_ADDRESS) Address domainAccessControllerAddress,
-                           @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address discoveryProviderAddress,
-                           @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address ccMessagingAddress,
-                           WebSocketMessagingStubFactory webSocketMessagingStubFactory,
-                           ChildMessageRouter messageRouter,
-                           @Named(SystemServicesSettings.PROPERTY_CC_ROUTING_PROVIDER_PARTICIPANT_ID) String parentRoutingProviderParticipantId,
-                           @Named(WebsocketModule.PROPERTY_LIBJOYNR_MESSAGING_SKELETON) WebSocketMessagingSkeleton webSocketMessagingSkeleton) {
+    public LibjoynrWebSocketRuntime(ObjectMapper objectMapper,
+                                    ProxyBuilderFactory proxyBuilderFactory,
+                                    RequestCallerDirectory requestCallerDirectory,
+                                    ReplyCallerDirectory replyCallerDirectory,
+                                    Dispatcher dispatcher,
+                                    LocalDiscoveryAggregator localDiscoveryAggregator,
+                                    @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
+                                    @Named(SystemServicesSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) Address libjoynrMessagingAddress,
+                                    @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_ADDRESS) Address capabilitiesDirectoryAddress,
+                                    @Named(ConfigurableMessagingSettings.PROPERTY_CHANNEL_URL_DIRECTORY_ADDRESS) Address channelUrlDirectoryAddress,
+                                    @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_ADDRESS) Address domainAccessControllerAddress,
+                                    @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address discoveryProviderAddress,
+                                    @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address ccMessagingAddress,
+                                    WebSocketMessagingStubFactory webSocketMessagingStubFactory,
+                                    ChildMessageRouter messageRouter,
+                                    @Named(SystemServicesSettings.PROPERTY_CC_ROUTING_PROVIDER_PARTICIPANT_ID) String parentRoutingProviderParticipantId,
+                                    @Named(WebsocketModule.PROPERTY_LIBJOYNR_MESSAGING_SKELETON) WebSocketMessagingSkeleton webSocketMessagingSkeleton) {
         super(objectMapper,
               proxyBuilderFactory,
               requestCallerDirectory,

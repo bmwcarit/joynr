@@ -19,22 +19,23 @@ package io.joynr.integration;
  * #L%
  */
 
-import com.google.inject.Injector;
-import com.google.inject.Module;
-import com.google.inject.util.Modules;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.websocket.WebsocketModule;
 import io.joynr.runtime.CCWebSocketRuntimeModule;
 import io.joynr.runtime.ClusterControllerRuntime;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
-import io.joynr.runtime.LibJoynrRuntime;
 import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
 import io.joynr.servlet.ServletUtil;
+
+import java.util.Properties;
+
 import org.junit.After;
 import org.junit.Before;
 
-import java.util.Properties;
+import com.google.inject.Injector;
+import com.google.inject.Module;
+import com.google.inject.util.Modules;
 
 /**
  *
@@ -81,6 +82,6 @@ public class WebSocketProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest 
         joynrConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_CC_CONNECTION_TYPE, "WEBSOCKET");
         Injector injectorLib = new JoynrInjectorFactory(joynrConfig, Modules.override(modules)
                                                                             .with(new LibjoynrWebSocketRuntimeModule())).getInjector();
-        return injectorLib.getInstance(LibJoynrRuntime.class);
+        return injectorLib.getInstance(JoynrRuntime.class);
     }
 }
