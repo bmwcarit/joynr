@@ -43,16 +43,16 @@ public:
      *
      * @param other The JoynrException to be copied from.
      */
-    JoynrException(const JoynrException& other) throw();
-    virtual ~JoynrException() throw();
+    JoynrException(const JoynrException& other) noexcept;
+    virtual ~JoynrException() noexcept;
     /**
      * @return The detail message string of the exception.
      */
-    virtual const char* what() const throw();
+    virtual const char* what() const noexcept;
     /**
      * @return The detail message string of the exception.
      */
-    virtual const std::string getMessage() const throw();
+    virtual const std::string getMessage() const noexcept;
     /**
      * return The typeName of the exception used for serialization.
      */
@@ -80,13 +80,13 @@ protected:
     /**
      * @brief Constructor for a JoynrException without detail message.
      */
-    JoynrException() throw();
+    JoynrException() noexcept;
     /**
      * @brief Constructor for a JoynrException with detail message.
      *
      * @param message Further description of the reported error (detail message).
      */
-    JoynrException(const std::string& message) throw();
+    JoynrException(const std::string& message) noexcept;
 };
 
 /**
@@ -105,7 +105,7 @@ public:
      *
      * @param message Further description of the reported runtime error
      */
-    JoynrRuntimeException(const std::string& message) throw();
+    JoynrRuntimeException(const std::string& message) noexcept;
     virtual const std::string getTypeName() const;
     virtual JoynrRuntimeException* clone() const;
     /**
@@ -125,7 +125,7 @@ public:
      *
      * @param message Further description of the reported timeout
      */
-    JoynrTimeOutException(const std::string& message) throw();
+    JoynrTimeOutException(const std::string& message) noexcept;
     virtual const std::string getTypeName() const;
     virtual JoynrTimeOutException* clone() const;
     /**
@@ -145,7 +145,7 @@ public:
      *
      * @param message Further description of the reported parse error
      */
-    JoynrParseError(const std::string& message) throw();
+    JoynrParseError(const std::string& message) noexcept;
 };
 
 /**
@@ -159,7 +159,7 @@ public:
      *
      * @param message Further description of the reported discovery error
      */
-    DiscoveryException(const std::string& message) throw();
+    DiscoveryException(const std::string& message) noexcept;
     virtual const std::string getTypeName() const;
     virtual DiscoveryException* clone() const;
     /**
@@ -180,7 +180,7 @@ public:
      *
      * @param message Further description of the reported invocation error
      */
-    MethodInvocationException(const std::string& message) throw();
+    MethodInvocationException(const std::string& message) noexcept;
     virtual const std::string getTypeName() const;
     virtual MethodInvocationException* clone() const;
     /**
@@ -202,7 +202,7 @@ public:
      *
      * @param message Further description of the reported error
      */
-    ProviderRuntimeException(const std::string& message) throw();
+    ProviderRuntimeException(const std::string& message) noexcept;
     virtual const std::string getTypeName() const;
     virtual ProviderRuntimeException* clone() const;
     /**
@@ -222,19 +222,19 @@ public:
      *
      * @param other The PublicationMissedException to copy from.
      */
-    PublicationMissedException(const PublicationMissedException& other) throw();
+    PublicationMissedException(const PublicationMissedException& other) noexcept;
     /**
      * @brief Constructor for a PublicationMissedException with subscription ID.
      *
      * @param subscriptionId The subscription ID of the subscription the missed
      * publication belongs to.
      */
-    PublicationMissedException(const std::string& subscriptionId) throw();
+    PublicationMissedException(const std::string& subscriptionId) noexcept;
     /**
      * @return The subscription ID of the subscription the missed publication
      * belongs to.
      */
-    std::string getSubscriptionId() const throw();
+    std::string getSubscriptionId() const noexcept;
     virtual const std::string getTypeName() const;
     virtual PublicationMissedException* clone() const;
     /**
@@ -258,7 +258,7 @@ public:
      *
      * @param other The ApplicationException to copy from.
      */
-    ApplicationException(const ApplicationException& other) throw();
+    ApplicationException(const ApplicationException& other) noexcept;
     /**
      * @brief Constructor for an ApplicationException without detail message.
      *
@@ -268,7 +268,7 @@ public:
      */
     ApplicationException(const uint32_t& value,
                          const std::string& name,
-                         const std::string& typeName) throw();
+                         const std::string& typeName) noexcept;
     /**
      * @brief Constructor for an ApplicationException with detail message.
      *
@@ -280,11 +280,11 @@ public:
     ApplicationException(const std::string& message,
                          const uint32_t& value,
                          const std::string& name,
-                         const std::string& typeName) throw();
+                         const std::string& typeName) noexcept;
     /**
      * @return The reported error Enum value.
      */
-    uint32_t getError() const throw();
+    uint32_t getError() const noexcept;
     /**
      * @brief Set the error Enum value.
      *
@@ -294,11 +294,11 @@ public:
     /**
      * @return The error Enum literal.
      */
-    std::string getName() const throw();
+    std::string getName() const noexcept;
     /**
      * @return The type name of the error enumeration.
      */
-    std::string getErrorTypeName() const throw();
+    std::string getErrorTypeName() const noexcept;
     virtual const std::string getTypeName() const;
     virtual ApplicationException* clone() const;
     /**
