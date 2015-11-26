@@ -1,11 +1,24 @@
 package io.joynr.runtime;
 
-import java.io.IOException;
-import java.util.UUID;
-
+import io.joynr.discovery.LocalDiscoveryAggregator;
+import io.joynr.dispatching.Dispatcher;
+import io.joynr.dispatching.RequestCallerDirectory;
+import io.joynr.dispatching.rpc.ReplyCallerDirectory;
+import io.joynr.exceptions.JoynrIllegalStateException;
+import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.routing.ChildMessageRouter;
+import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.websocket.LibWebSocketMessagingStub;
+import io.joynr.messaging.websocket.WebSocketMessagingSkeleton;
 import io.joynr.messaging.websocket.WebsocketModule;
+import io.joynr.proxy.ProxyBuilderFactory;
+
+import java.io.IOException;
+
+import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.WebSocketClientAddress;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,28 +40,12 @@ import org.slf4j.LoggerFactory;
  * limitations under the License.
  * #L%
  */
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
-import io.joynr.discovery.LocalDiscoveryAggregator;
-import io.joynr.dispatching.Dispatcher;
-import io.joynr.dispatching.RequestCallerDirectory;
-import io.joynr.dispatching.rpc.ReplyCallerDirectory;
-import io.joynr.exceptions.JoynrIllegalStateException;
-import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.websocket.WebSocketMessagingSkeleton;
-import io.joynr.messaging.websocket.WebSocketMessagingStubFactory;
-import io.joynr.proxy.ProxyBuilder;
-import io.joynr.proxy.ProxyBuilderFactory;
-import joynr.system.RoutingProxy;
-import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.WebSocketAddress;
-import joynr.system.RoutingTypes.WebSocketClientAddress;
-
-public class LibjoynrWebSocketRuntime extends JoynrRuntimeImpl {
+public class LibjoynrWebSocketRuntime extends LibjoynrRuntime<WebSocketClientAddress> {
 
     public static final Logger logger = LoggerFactory.getLogger(LibjoynrWebSocketRuntime.class);
 
@@ -67,10 +64,11 @@ public class LibjoynrWebSocketRuntime extends JoynrRuntimeImpl {
                                     @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_ADDRESS) Address domainAccessControllerAddress,
                                     @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address discoveryProviderAddress,
                                     @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address ccMessagingAddress,
-                                    WebSocketMessagingStubFactory webSocketMessagingStubFactory,
+                                    @Named(SystemServicesSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) WebSocketClientAddress libjoynrMessagingAddress,
+                                    MessagingStubFactory messagingStubFactory,
                                     ChildMessageRouter messageRouter,
                                     @Named(SystemServicesSettings.PROPERTY_CC_ROUTING_PROVIDER_PARTICIPANT_ID) String parentRoutingProviderParticipantId,
-                                    @Named(WebsocketModule.PROPERTY_LIBJOYNR_MESSAGING_SKELETON) WebSocketMessagingSkeleton webSocketMessagingSkeleton) {
+                                    @Named(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_SKELETON) WebSocketMessagingSkeleton webSocketMessagingSkeleton) {
         super(objectMapper,
               proxyBuilderFactory,
               requestCallerDirectory,
@@ -82,43 +80,37 @@ public class LibjoynrWebSocketRuntime extends JoynrRuntimeImpl {
               capabilitiesDirectoryAddress,
               channelUrlDirectoryAddress,
               domainAccessControllerAddress,
-              discoveryProviderAddress);
+              discoveryProviderAddress,
+              ccMessagingAddress,
+              libjoynrMessagingAddress,
+              messageRouter,
+              parentRoutingProviderParticipantId,
+              webSocketMessagingSkeleton,
+              messagingStubFactory);
         // CHECKSTYLE:ON
-        WebSocketClientAddress incomingAddress = null;
-        if (ccMessagingAddress instanceof WebSocketAddress) {
-            incomingAddress = initWebsocketStub((WebSocketAddress) ccMessagingAddress, webSocketMessagingStubFactory);
-        } else {
-            throw new JoynrIllegalStateException(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS
-                    + " has to be of type " + WebSocketAddress.class.getSimpleName());
-        }
-        webSocketMessagingSkeleton.init();
-        ProxyBuilder<RoutingProxy> proxyBuilder = getProxyBuilder(systemServicesDomain, RoutingProxy.class);
-        RoutingProxy routingProxy = proxyBuilder.build();
-        messageRouter.setIncomingAddress(incomingAddress);
-        messageRouter.setParentRouter(routingProxy,
-                                      ccMessagingAddress,
-                                      parentRoutingProviderParticipantId,
-                                      proxyBuilder.getParticipantId());
-        messageRouter.addNextHop(discoveryProxyParticipantId, dispatcherAddress);
-
     }
 
-    private WebSocketClientAddress initWebsocketStub(WebSocketAddress ccMessagingAddress,
-                                                     WebSocketMessagingStubFactory webSocketMessagingStubFactory) {
-        String messagingUUID = UUID.randomUUID().toString().replace("-", "");
-        WebSocketClientAddress webSocketClientAddress = new WebSocketClientAddress("libjoynr.messaging.participantid_"
-                + messagingUUID);
+    @Override
+    protected void initMessagingStub(WebSocketClientAddress libjoynrMessagingAddress, IMessaging messagingStub) {
+        if (messagingStub instanceof LibWebSocketMessagingStub) {
+            initWebsocketStub(libjoynrMessagingAddress, (LibWebSocketMessagingStub) messagingStub);
+        } else {
+            throw new JoynrIllegalStateException("The messaging stub in the LibjoynrWebSockekRuntime has to be"
+                    + " has to be of type " + LibWebSocketMessagingStub.class.getSimpleName());
+        }
+    }
+
+    private void initWebsocketStub(WebSocketClientAddress libjoynrMessagingAddress,
+                                   LibWebSocketMessagingStub messagingStub) {
         try {
 
-            String serializedAddress = objectMapper.writeValueAsString(webSocketClientAddress);
-            LibWebSocketMessagingStub ccMessagingSocket = (LibWebSocketMessagingStub) webSocketMessagingStubFactory.create(ccMessagingAddress);
-            ccMessagingSocket.sendString(serializedAddress, 30000);
+            String serializedAddress = objectMapper.writeValueAsString(libjoynrMessagingAddress);
+            messagingStub.sendString(serializedAddress, 30000);
         } catch (JsonProcessingException e) {
             logger.error("Error while serializing WebSocketClientAddress: ", e);
         } catch (IOException e) {
             logger.error("Error while sending websocket init message: ", e);
         }
-        return webSocketClientAddress;
     }
 
     @Override

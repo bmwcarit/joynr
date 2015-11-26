@@ -19,24 +19,29 @@ package io.joynr.runtime;
  * #L%
  */
 
+import io.joynr.accesscontrol.AccessController;
+import io.joynr.accesscontrol.AccessControllerDummy;
+import io.joynr.messaging.AbstractMessagingStubFactory;
+import io.joynr.messaging.routing.ChildMessageRouter;
+import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.websocket.LibWebSocketMessagingSkeleton;
+import io.joynr.messaging.websocket.WebSocketMessagingSkeleton;
+import io.joynr.messaging.websocket.WebSocketMessagingStubFactory;
+import io.joynr.messaging.websocket.WebsocketModule;
+
+import java.util.Map;
+import java.util.UUID;
+
+import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.WebSocketAddress;
+import joynr.system.RoutingTypes.WebSocketClientAddress;
+import joynr.system.RoutingTypes.WebSocketProtocol;
+
 import com.google.common.collect.Maps;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
-import io.joynr.accesscontrol.AccessController;
-import io.joynr.accesscontrol.AccessControllerDummy;
-import io.joynr.messaging.AbstractMessagingStubFactory;
-import io.joynr.messaging.websocket.LibWebSocketMessagingSkeleton;
-import io.joynr.messaging.routing.ChildMessageRouter;
-import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.messaging.websocket.WebSocketMessagingSkeleton;
-import io.joynr.messaging.websocket.WebSocketMessagingStubFactory;
-import io.joynr.messaging.websocket.WebsocketModule;
-import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.WebSocketAddress;
-import joynr.system.RoutingTypes.WebSocketProtocol;
-import java.util.Map;
 
 /**
  *  Use this module if you want to start a lib joynr instance which connects to a cluster controller by websockets
@@ -49,7 +54,7 @@ public class LibjoynrWebSocketRuntimeModule extends AbstractRuntimeModule {
         install(new WebsocketModule());
         bind(AccessController.class).to(AccessControllerDummy.class).in(Singleton.class);
         bind(JoynrRuntime.class).to(LibjoynrWebSocketRuntime.class).in(Singleton.class);
-        bind(WebSocketMessagingSkeleton.class).annotatedWith(Names.named(WebsocketModule.PROPERTY_LIBJOYNR_MESSAGING_SKELETON))
+        bind(WebSocketMessagingSkeleton.class).annotatedWith(Names.named(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_SKELETON))
                                               .to(LibWebSocketMessagingSkeleton.class)
                                               .in(Singleton.class);
         bind(WebSocketMessagingStubFactory.class).in(Singleton.class);
@@ -73,5 +78,13 @@ public class LibjoynrWebSocketRuntimeModule extends AbstractRuntimeModule {
                                              @Named(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT) int port,
                                              @Named(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH) String path) {
         return new WebSocketAddress(WebSocketProtocol.valueOf(protocol.toUpperCase()), host, port, path);
+    }
+
+    @Provides
+    @Singleton
+    @Named(SystemServicesSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS)
+    WebSocketClientAddress getLibjoynrMessagingAddress() {
+        String messagingUUID = UUID.randomUUID().toString().replace("-", "");
+        return new WebSocketClientAddress("libjoynr.messaging.participantid_" + messagingUUID);
     }
 }

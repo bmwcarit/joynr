@@ -28,7 +28,7 @@ import javax.inject.Named;
 
 public class WebsocketModule extends AbstractModule {
 
-    public static final String PROPERTY_LIBJOYNR_MESSAGING_SKELETON = "joynr.messaging.libjoynrmessagingskeleton";
+    public static final String PROPERTY_WEBSOCKET_MESSAGING_SKELETON = "joynr.websockets.messaging_skeleton";
 
     public static final String PROPERTY_WEBSOCKET_MESSAGING_URL_ADDRESS = "joynr.websockets.messagingurl";
 

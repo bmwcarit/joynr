@@ -32,12 +32,12 @@ public class WebSocketMessagingStubFactory extends AbstractMessagingStubFactory<
     @Inject
     ObjectMapper objectMapper;
     @Inject
-    @Named(WebsocketModule.PROPERTY_LIBJOYNR_MESSAGING_SKELETON)
-    WebSocketMessagingSkeleton libWebSocketMessagingSkeleton;
+    @Named(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_SKELETON)
+    WebSocketMessagingSkeleton webSocketMessagingSkeleton;
 
     @Override
     protected IMessaging createInternal(WebSocketAddress address) {
-        return new LibWebSocketMessagingStub(address, objectMapper, libWebSocketMessagingSkeleton);
+        return new LibWebSocketMessagingStub(address, objectMapper, webSocketMessagingSkeleton);
     }
 
     @Override
