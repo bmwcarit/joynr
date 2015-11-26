@@ -1,7 +1,7 @@
 FROM fedora:21
 
 # set this date to cause all images to be updated
-ENV REFRESHED_AT 2015-04-10
+ENV REFRESHED_AT 2015-26-11
 
 ###################################################
 # set timezone
