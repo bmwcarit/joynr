@@ -24,6 +24,7 @@
 #include "common/dbus/DbusSettings.h"
 #include "libjoynr/dbus/DbusMessagingStubFactory.h"
 #include "joynr/Util.h"
+#include "joynr/TypeUtil.h"
 
 namespace joynr
 {
@@ -69,8 +70,8 @@ LibJoynrDbusRuntime::~LibJoynrDbusRuntime()
 void LibJoynrDbusRuntime::startLibJoynrMessagingSkeleton(MessageRouter& messageRouter)
 {
     // create messaging skeleton using uuid
-    dbusMessageRouterAdapter =
-            new DBusMessageRouterAdapter(messageRouter, libjoynrMessagingServiceUrl);
+    dbusMessageRouterAdapter = new DBusMessageRouterAdapter(
+            messageRouter, TypeUtil::toStd(libjoynrMessagingServiceUrl));
 }
 
 } // namespace joynr

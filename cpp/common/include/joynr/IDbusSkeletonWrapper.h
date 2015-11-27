@@ -26,6 +26,7 @@
 #include <CommonAPI/CommonAPI.h>
 
 #include "joynr/JoynrCommonExport.h"
+#include "joynr/TypeUtil.h"
 
 namespace joynr
 {
@@ -36,12 +37,12 @@ template <class _SkeletonClass, class _CallBackClass>
 class JOYNRCOMMON_EXPORT IDbusSkeletonWrapper
 {
 public:
-    IDbusSkeletonWrapper(_CallBackClass& callBack, QString serviceAddress)
+    IDbusSkeletonWrapper(_CallBackClass& callBack, std::string serviceAddress)
             : // factory(NULL),
               serviceAddress(serviceAddress),
               logger(Logging::getInstance()->getLogger("MSG", "DbusSkeletonWrapper"))
     {
-        LOG_INFO(logger, "Registering dbus skeleton on address: " + serviceAddress);
+        LOG_INFO(logger, "Registering dbus skeleton on address: " + TypeUtil::toQt(serviceAddress));
 
         // create the skeleton
         std::shared_ptr<_SkeletonClass> skeleton = std::make_shared<_SkeletonClass>(callBack);
@@ -49,42 +50,50 @@ public:
         // register skeleton
         auto runtime = CommonAPI::Runtime::load("DBus");
         bool success = runtime->getServicePublisher()->registerService(
-                skeleton, serviceAddress.toStdString(), runtime->createFactory());
+                skeleton, serviceAddress, runtime->createFactory());
         // wait some time so that the service is registered and ready to use on dbus level
         std::this_thread::sleep_for(std::chrono::milliseconds(25));
 
         if (success) {
-            LOG_INFO(logger, QString("registering service %1: SUCCESS").arg(serviceAddress));
+            LOG_INFO(
+                    logger,
+                    QString("registering service %1: SUCCESS").arg(TypeUtil::toQt(serviceAddress)));
         } else {
-            LOG_FATAL(logger, QString("registering service %1: ERROR").arg(serviceAddress));
+            LOG_FATAL(logger,
+                      QString("registering service %1: ERROR").arg(TypeUtil::toQt(serviceAddress)));
         }
     }
 
     ~IDbusSkeletonWrapper()
     {
-        LOG_INFO(logger, "Unregistering dbus skeleton from address: " + serviceAddress);
+        LOG_INFO(logger,
+                 "Unregistering dbus skeleton from address: " + TypeUtil::toQt(serviceAddress));
 
         auto runtime = CommonAPI::Runtime::load("DBus");
-        bool success =
-                runtime->getServicePublisher()->unregisterService(serviceAddress.toStdString());
+        bool success = runtime->getServicePublisher()->unregisterService(serviceAddress);
         // wait some time so that the service is unregistered on dbus level
         std::this_thread::sleep_for(std::chrono::milliseconds(25));
 
         if (success) {
-            LOG_INFO(logger, QString("unregistering service %1: SUCCESS").arg(serviceAddress));
+            LOG_INFO(logger,
+                     QString("unregistering service %1: SUCCESS")
+                             .arg(TypeUtil::toQt(serviceAddress)));
         } else {
-            LOG_FATAL(logger, QString("unregistering service %1: ERROR").arg(serviceAddress));
+            LOG_FATAL(
+                    logger,
+                    QString("unregistering service %1: ERROR").arg(TypeUtil::toQt(serviceAddress)));
         }
     }
 
     void logMethodCall(const QString& method, const QString& adapter)
     {
-        LOG_INFO(logger, "Call method " + adapter + ":" + serviceAddress + "-> " + method);
+        LOG_INFO(logger,
+                 "Call method " + adapter + ":" + TypeUtil::toQt(serviceAddress) + "-> " + method);
     }
 
 private:
     DISALLOW_COPY_AND_ASSIGN(IDbusSkeletonWrapper);
-    QString serviceAddress;
+    std::string serviceAddress;
     joynr_logging::Logger* logger;
 };
 

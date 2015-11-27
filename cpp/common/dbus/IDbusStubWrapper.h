@@ -26,6 +26,7 @@
 #include <CommonAPI/CommonAPI.h>
 
 #include "joynr/joynrlogging.h"
+#include "joynr/TypeUtil.h"
 
 #include <QString>
 #include <thread>
@@ -38,7 +39,7 @@ template <template <class...> class _ProxyClass>
 class JOYNRCOMMON_EXPORT IDbusStubWrapper
 {
 public:
-    IDbusStubWrapper(QString serviceAddress)
+    IDbusStubWrapper(std::string serviceAddress)
             : serviceAddress(serviceAddress),
               proxy(NULL),
               logger(NULL),
@@ -98,16 +99,18 @@ private:
 
     void logCallStatus(const QString method, const QString status)
     {
-        LOG_INFO(logger, "Call status " + serviceAddress + "->" + method + ": " + status);
+        LOG_INFO(logger,
+                 "Call status " + TypeUtil::toQt(serviceAddress) + "->" + method + ": " + status);
     }
 
     void logAvailabilityStatus(const QString status)
     {
-        LOG_INFO(logger, "Status dbus proxy on address " + serviceAddress + ": " + status);
+        LOG_INFO(logger,
+                 "Status dbus proxy on address " + TypeUtil::toQt(serviceAddress) + ": " + status);
     }
 
 protected:
-    QString serviceAddress;
+    std::string serviceAddress;
     std::shared_ptr<_ProxyClass<>> proxy;
     joynr_logging::Logger* logger;
 
@@ -119,7 +122,7 @@ protected:
     {
         // get proxy
         auto factory = CommonAPI::Runtime::load("DBus")->createFactory();
-        proxy = factory->buildProxy<_ProxyClass>(serviceAddress.toStdString());
+        proxy = factory->buildProxy<_ProxyClass>(serviceAddress);
 
         auto callBack =
                 std::bind(&IDbusStubWrapper::proxyEventListener, this, std::placeholders::_1);
@@ -147,7 +150,7 @@ protected:
 
     void logMethodCall(const QString& method)
     {
-        LOG_INFO(logger, "Call method " + serviceAddress + "-> " + method);
+        LOG_INFO(logger, "Call method " + TypeUtil::toQt(serviceAddress) + "-> " + method);
     }
 };
 

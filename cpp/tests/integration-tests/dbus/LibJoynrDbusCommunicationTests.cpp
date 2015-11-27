@@ -63,7 +63,7 @@ public:
 };
 
 TEST_F(LibJoynrDbusCommunicationTests, dbus_commonapi_runtime_feature_check) {
-    QString ccMessagingAddress("local:cc.messaging:cc.messaging8");
+    std::string ccMessagingAddress("local:cc.messaging:cc.messaging8");
 
     // create the skeleton
     MockMessaging* msgMock = new MockMessaging();
@@ -74,14 +74,14 @@ TEST_F(LibJoynrDbusCommunicationTests, dbus_commonapi_runtime_feature_check) {
     auto runtime = CommonAPI::Runtime::load("DBus");
     auto factory = runtime->createFactory();
 
-    bool success = runtime->getServicePublisher()->registerService(provider, ccMessagingAddress.toStdString(), factory);
+    bool success = runtime->getServicePublisher()->registerService(provider, ccMessagingAddress, factory);
     ASSERT_TRUE(success);
     printResult(logger, "registerService", success);
 
     // get proxy
     auto runtime2 = CommonAPI::Runtime::load("DBus");
     auto factory2 = runtime2->createFactory();
-    auto proxy = factory2->buildProxy<joynr::messaging::IMessagingProxy>(ccMessagingAddress.toStdString());
+    auto proxy = factory2->buildProxy<joynr::messaging::IMessagingProxy>(ccMessagingAddress);
     // wait some time so that the proxy is ready to use on dbus level
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
@@ -96,7 +96,7 @@ TEST_F(LibJoynrDbusCommunicationTests, dbus_commonapi_runtime_feature_check) {
     ASSERT_TRUE(status == CommonAPI::CallStatus::SUCCESS);
 
     // unregister service
-    success = runtime->getServicePublisher()->unregisterService(ccMessagingAddress.toStdString());
+    success = runtime->getServicePublisher()->unregisterService(ccMessagingAddress);
     printResult(logger, "unregisterService", success);
     ASSERT_TRUE(success);
 
@@ -108,7 +108,7 @@ TEST_F(LibJoynrDbusCommunicationTests, dbus_commonapi_runtime_feature_check) {
     printResult(logger, "proxy available:", proxy->isAvailable());
 
     // register service
-    success = runtime->getServicePublisher()->registerService(provider, ccMessagingAddress.toStdString(), factory);
+    success = runtime->getServicePublisher()->registerService(provider, ccMessagingAddress, factory);
     printResult(logger, "registerService", success);
     ASSERT_TRUE(success);
     // wait some time so that the service is registered on dbus level
@@ -120,7 +120,7 @@ TEST_F(LibJoynrDbusCommunicationTests, dbus_commonapi_runtime_feature_check) {
     ASSERT_TRUE(status == CommonAPI::CallStatus::SUCCESS);
 
     // unregister service
-    success = runtime->getServicePublisher()->unregisterService(ccMessagingAddress.toStdString());
+    success = runtime->getServicePublisher()->unregisterService(ccMessagingAddress);
     printResult(logger, "unregisterService", success);
     ASSERT_TRUE(success);
 
@@ -128,7 +128,7 @@ TEST_F(LibJoynrDbusCommunicationTests, dbus_commonapi_runtime_feature_check) {
 }
 
 TEST_F(LibJoynrDbusCommunicationTests, dbus_skeletonwrapper_register_unregister) {
-    QString ccMessagingAddress("local:cc.messaging:cc.messaging8");
+    std::string ccMessagingAddress("local:cc.messaging:cc.messaging8");
 
     // craete mock and expect 2 calls
     MockMessaging* msgMock = new MockMessaging();
@@ -141,7 +141,7 @@ TEST_F(LibJoynrDbusCommunicationTests, dbus_skeletonwrapper_register_unregister)
     // create message
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY);
-    msg.setHeaderTo(QString("local"));
+    msg.setHeaderTo("local");
     msg.setPayload("This is a test");
 
     // get stub
@@ -174,7 +174,7 @@ TEST_F(LibJoynrDbusCommunicationTests, dbus_skeletonwrapper_register_unregister)
 }
 
 TEST_F(LibJoynrDbusCommunicationTests, DISABLED_connection_test) {
-    QString ccMessagingAddress("local:cc.messaging:cc.messaging7");
+    std::string ccMessagingAddress = "local:cc.messaging:cc.messaging7";
 
     // register skeletons
     MockMessaging* msgMock = new MockMessaging();
@@ -192,7 +192,7 @@ TEST_F(LibJoynrDbusCommunicationTests, DISABLED_connection_test) {
 }
 
 TEST_F(LibJoynrDbusCommunicationTests, transmit_message) {
-    QString ccMessagingAddress("local:joynr.messaging:cc.message6");
+    std::string ccMessagingAddress("local:joynr.messaging:cc.message6");
 
     // register skeletons
     MockMessaging* msgMock = new MockMessaging();
@@ -206,7 +206,7 @@ TEST_F(LibJoynrDbusCommunicationTests, transmit_message) {
     // create message
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY);
-    msg.setHeaderTo(QString("local"));
+    msg.setHeaderTo("local");
     msg.setPayload("This is a test");
 
     // create messaging qos

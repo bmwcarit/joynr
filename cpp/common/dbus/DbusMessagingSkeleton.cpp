@@ -21,6 +21,7 @@
 
 #include "joynr/JoynrMessage.h"
 #include "common/dbus/DbusMessagingUtil.h"
+#include "joynr/TypeUtil.h"
 
 namespace joynr
 {
@@ -41,7 +42,8 @@ void DbusMessagingSkeleton::transmit(joynr::messaging::IMessaging::JoynrMessage 
     DbusMessagingUtil::copyDbusMsgToJoynrMsg(message, joynrMessage);
     // callback
     LOG_INFO(logger,
-             QString("transmit incoming message: %1").arg(joynrMessage.getHeaderMessageId()));
+             QString("transmit incoming message: %1")
+                     .arg(TypeUtil::toQt(joynrMessage.getHeaderMessageId())));
     callBack.transmit(joynrMessage);
 }
 

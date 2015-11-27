@@ -21,6 +21,7 @@
 #include "common/dbus/DbusMessagingStubAdapter.h"
 
 #include <QMutexLocker>
+#include "joynr/TypeUtil.h"
 
 namespace joynr
 {
@@ -47,7 +48,8 @@ std::shared_ptr<IMessaging> DbusMessagingStubFactory::create(
         QMutexLocker locker(&mutex);
         if (!stubMap.contains(address)) {
             // create new stub
-            auto stub = std::shared_ptr<IMessaging>(new DbusMessagingStubAdapter(address));
+            auto stub = std::shared_ptr<IMessaging>(
+                    new DbusMessagingStubAdapter(TypeUtil::toStd(address)));
             stubMap.insert(address, stub);
         }
     }

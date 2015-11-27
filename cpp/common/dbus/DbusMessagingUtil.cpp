@@ -31,34 +31,30 @@ void DbusMessagingUtil::copyDbusMsgToJoynrMsg(
         JoynrMessage& joynrMsg)
 {
     // type
-    joynrMsg.setType(QString::fromStdString(dbusMsg.type));
-    QVariantMap headerMap;
+    joynrMsg.setType(dbusMsg.type);
+    std::map<std::string, std::string> headerMap;
 
     // header
     for (auto it = dbusMsg.header.begin(); it != dbusMsg.header.end(); it++) {
-        headerMap.insert(QString::fromStdString(it->first), QString::fromStdString(it->second));
+        headerMap.insert(std::pair<std::string, std::string>(it->first, it->second));
     }
     joynrMsg.setHeader(headerMap);
     // payload
-    QByteArray byteArray;
-    byteArray.append(QString::fromStdString(dbusMsg.payload));
-    joynrMsg.setPayload(byteArray);
+    joynrMsg.setPayload(dbusMsg.payload);
 }
 
 void DbusMessagingUtil::copyJoynrMsgToDbusMsg(const JoynrMessage& joynrMsg,
                                               joynr::messaging::IMessaging::JoynrMessage& dbusMsg)
 {
     // type
-    dbusMsg.type = joynrMsg.getType().toStdString();
+    dbusMsg.type = joynrMsg.getType();
     // header
-    QVariantMap headerMap = joynrMsg.getHeader().toMap();
+    std::map<std::string, std::string> headerMap = joynrMsg.getHeader();
     for (auto it = headerMap.begin(); it != headerMap.end(); it++) {
-        dbusMsg.header.insert(std::make_pair<std::string, std::string>(
-                it.key().toStdString(), it.value().toString().toStdString()));
+        dbusMsg.header.insert(std::pair<std::string, std::string>(it->first, it->second));
     }
     // payload
-    QString payLoad(joynrMsg.getPayload());
-    dbusMsg.payload = payLoad.toStdString();
+    dbusMsg.payload = joynrMsg.getPayload();
 }
 
 } // namespace joynr

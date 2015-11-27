@@ -20,18 +20,19 @@
 #include "common/dbus/DbusMessagingUtil.h"
 #include "joynr/JoynrMessage.h"
 #include <CommonAPI/CommonAPI.h>
+#include "joynr/TypeUtil.h"
 
 namespace joynr
 {
 
 using namespace joynr_logging;
 
-DbusMessagingStubAdapter::DbusMessagingStubAdapter(QString serviceAddress)
+DbusMessagingStubAdapter::DbusMessagingStubAdapter(std::string serviceAddress)
         : IDbusStubWrapper(serviceAddress)
 {
     // init logger
     logger = Logging::getInstance()->getLogger("MSG", "DbusMessagingStubAdapter");
-    LOG_INFO(logger, "Get dbus proxy on address: " + serviceAddress);
+    LOG_INFO(logger, "Get dbus proxy on address: " + TypeUtil::toQt(serviceAddress));
 
     // init the stub
     init();
@@ -40,8 +41,8 @@ DbusMessagingStubAdapter::DbusMessagingStubAdapter(QString serviceAddress)
 void DbusMessagingStubAdapter::transmit(JoynrMessage& message)
 {
     logMethodCall(QString("transmit message with ID: %1 and payload: %2")
-                          .arg(message.getHeaderMessageId())
-                          .arg(QString(message.getPayload())));
+                          .arg(TypeUtil::toQt(message.getHeaderMessageId()))
+                          .arg(TypeUtil::toQt(message.getPayload())));
     // copy joynr message
     joynr::messaging::IMessaging::JoynrMessage dbusMsg;
     DbusMessagingUtil::copyJoynrMsgToDbusMsg(message, dbusMsg);

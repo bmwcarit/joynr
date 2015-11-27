@@ -34,7 +34,7 @@ namespace joynr
 class JOYNR_EXPORT DBusMessageRouterAdapter : public IMessaging
 {
 public:
-    DBusMessageRouterAdapter(MessageRouter& messageRouter, QString dbusAddress);
+    DBusMessageRouterAdapter(MessageRouter& messageRouter, std::string dbusAddress);
 
     ~DBusMessageRouterAdapter();
 

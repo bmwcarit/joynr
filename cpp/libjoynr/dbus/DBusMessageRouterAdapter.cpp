@@ -22,7 +22,7 @@ namespace joynr
 {
 
 DBusMessageRouterAdapter::DBusMessageRouterAdapter(MessageRouter& messageRouter,
-                                                   QString dbusAddress)
+                                                   std::string dbusAddress)
         : dbusSkeletonWrapper(
                   new IDbusSkeletonWrapper<DbusMessagingSkeleton, IMessaging>(*this, dbusAddress)),
           messageRouter(messageRouter)

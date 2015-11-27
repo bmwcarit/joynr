@@ -232,7 +232,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     dbusSettings->printSettings();
     // register dbus skeletons for capabilities and messaging interfaces
     QString ccMessagingAddress(dbusSettings->createClusterControllerMessagingAddressString());
-    ccDbusMessageRouterAdapter = new DBusMessageRouterAdapter(*messageRouter, ccMessagingAddress);
+    ccDbusMessageRouterAdapter =
+            new DBusMessageRouterAdapter(*messageRouter, TypeUtil::toStd(ccMessagingAddress));
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
 
     /**
