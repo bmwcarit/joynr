@@ -24,6 +24,7 @@
 #include <QtNetwork/QAbstractSocket>
 #include <QtWebSockets/qwebsocketprotocol.h>
 
+#include "joynr/JoynrClusterControllerRuntimeExport.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/joynrlogging.h"
 
@@ -32,15 +33,14 @@
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 
-#include "joynr/JoynrExport.h"
-
 class QWebSocketServer;
 class QWebSocket;
 
 namespace joynr
 {
 
-class JOYNR_EXPORT WebSocketCcMessagingSkeleton : public QObject, public IMessaging
+class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT WebSocketCcMessagingSkeleton : public QObject,
+                                                                          public IMessaging
 {
     Q_OBJECT
 public:

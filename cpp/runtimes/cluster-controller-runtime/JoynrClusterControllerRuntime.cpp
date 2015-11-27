@@ -41,7 +41,7 @@
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include "cluster-controller/messaging/joynr-messaging/JoynrMessagingStubFactory.h"
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
-#include "joynr/WebSocketCcMessagingSkeleton.h"
+#include "websocket/WebSocketCcMessagingSkeleton.h"
 #include "joynr/LocalDiscoveryAggregator.h"
 #include "libjoynr/joynr-messaging/DummyPlatformSecurityManager.h"
 #include "joynr/TypeUtil.h"

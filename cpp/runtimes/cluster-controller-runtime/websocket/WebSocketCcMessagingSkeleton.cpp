@@ -16,13 +16,13 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/WebSocketCcMessagingSkeleton.h"
-
-#include <QtWebSockets/QWebSocketServer>
-#include <QtWebSockets/QWebSocket>
+#include "WebSocketCcMessagingSkeleton.h"
 
 #include "joynr/JsonSerializer.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
+
+#include <QtWebSockets/QWebSocketServer>
+#include <QtWebSockets/QWebSocket>
 
 namespace joynr
 {

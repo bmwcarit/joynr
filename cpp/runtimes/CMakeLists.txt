@@ -55,6 +55,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
         RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
         "*.h"
         "cluster-controller-runtime/*.h"
+        "cluster-controller-runtime/websocket/*.h"
     )
 
     set(
@@ -68,6 +69,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
         RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
         "*.cpp"
         "cluster-controller-runtime/*.cpp"
+        "cluster-controller-runtime/websocket/*.cpp"
     )
 
     include_directories(
