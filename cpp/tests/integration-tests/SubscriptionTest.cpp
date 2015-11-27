@@ -25,6 +25,7 @@
 #include "joynr/MutableMessage.h"
 #include "joynr/ImmutableMessage.h"
 #include "joynr/MutableMessageFactory.h"
+#include "joynr/Message.h"
 #include "joynr/MessageSender.h"
 #include "joynr/Dispatcher.h"
 #include "joynr/UnicastSubscriptionCallback.h"
@@ -40,6 +41,7 @@
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/SubscriptionManager.h"
+#include "joynr/serializer/Serializer.h"
 
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockMessageRouter.h"
@@ -94,6 +96,8 @@ public:
     }
 
 protected:
+    void receive_publicationWithException(std::shared_ptr<exceptions::JoynrRuntimeException> expectedException);
+
     std::shared_ptr<SingleThreadedIOService> singleThreadedIOService;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
 
@@ -217,6 +221,69 @@ TEST_F(SubscriptionTest, receive_publication ) {
     // Assert that only one subscription message is received by the subscription listener
     ASSERT_TRUE(publicationSemaphore.waitFor(std::chrono::seconds(1)));
     ASSERT_FALSE(publicationSemaphore.waitFor(std::chrono::seconds(1)));
+}
+
+void SubscriptionTest::receive_publicationWithException(std::shared_ptr<exceptions::JoynrRuntimeException> expectedException)
+{
+    auto mockIntListener = std::make_shared<MockSubscriptionListenerOneType<std::int32_t>>();
+    EXPECT_CALL(*mockIntListener, onReceive(A<const std::int32_t&>()))
+            .Times(0);
+    EXPECT_CALL(*mockIntListener, onError(
+                    joynrException(
+                        expectedException->getTypeName(),
+                        expectedException->getMessage())))
+            .Times(1);
+
+    // register the subscription on the consumer side
+    const std::string attributeName = "attributeWithProviderRuntimeException";
+
+    auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
+                500, // validity_ms
+                1000, // publication ttl
+                1000, // minInterval_ms
+                2000, // maxInterval_ms
+                1000 // alertInterval_ms
+    );
+
+    SubscriptionRequest subscriptionRequest;
+
+    auto future = std::make_shared<Future<std::string>>();
+    auto subscriptionCallback = std::make_shared<UnicastSubscriptionCallback<std::int32_t>
+            >(subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
+
+    subscriptionManager->registerSubscription(
+                attributeName,
+                subscriptionCallback,
+                mockIntListener,
+                subscriptionQos,
+                subscriptionRequest);
+
+    // construct a subscriptionPublication containing a ProviderRuntimeException
+    SubscriptionPublication subscriptionPublication;
+    subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
+    subscriptionPublication.setError(expectedException);
+
+    // incoming publication from the provider
+    MutableMessage msg = messageFactory.createSubscriptionPublication(
+                providerParticipantId,
+                proxyParticipantId,
+                qos,
+                subscriptionPublication);
+
+    dispatcher->receive(msg.getImmutableMessage());
+}
+
+TEST_F(SubscriptionTest, receive_publicationWithProviderRuntimeException) {
+    auto expectedException = std::make_shared<exceptions::ProviderRuntimeException
+            >("TESTreceive_publicationWithProviderRuntimeExceptionERROR");
+    receive_publicationWithException(expectedException);
+}
+
+TEST_F(SubscriptionTest, receive_publicationWithMethodInvocationException) {
+    auto expectedException = std::make_shared<exceptions::MethodInvocationException
+            >("TESTreceive_publicationWithMethodInvocationExceptionERROR");
+
+    receive_publicationWithException(expectedException);
 }
 
 /**
@@ -383,6 +450,69 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam) {
                      ));
 
     provider->listOfStringsChanged(listOfStrings);
+}
+
+TEST_F(SubscriptionTest, sendPublication_attributeWithProviderRuntimeException) {
+    using ImmutableMessagePtr = std::shared_ptr<ImmutableMessage>;
+
+    joynr::Semaphore semaphore(0);
+    const std::string subscriptionId = "SubscriptionID";
+    auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
+                600, // validity_ms
+                1000, // publication ttl
+                100, // minInterval_ms
+                400, // maxInterval_ms
+                1000 // alertInterval_ms
+    );
+
+    SubscriptionRequest subscriptionRequest;
+    subscriptionRequest.setSubscriptionId(subscriptionId);
+    subscriptionRequest.setSubscribeToName("attributeWithProviderRuntimeException");
+    subscriptionRequest.setQos(subscriptionQos);
+
+    auto expectedException =std::make_shared<exceptions::ProviderRuntimeException
+            >(provider->providerRuntimeExceptionTestMsg);
+    SubscriptionPublication expectedPublication;
+    expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
+    expectedPublication.setError(expectedException);
+
+    EXPECT_CALL(*mockMessageRouter,
+                route(
+                    AllOf(
+                        A<ImmutableMessagePtr>(),
+                        MessageHasType(joynr::Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY()),
+                        MessageHasSender(providerParticipantId),
+                        MessageHasRecipient(proxyParticipantId)
+                        ),
+                    _
+                    )
+                );
+
+    EXPECT_CALL(*mockMessageRouter,
+                route(
+                    AllOf(
+                        A<ImmutableMessagePtr>(),
+                        MessageHasType(joynr::Message::VALUE_MESSAGE_TYPE_PUBLICATION()),
+                        MessageHasSender(providerParticipantId),
+                        MessageHasRecipient(proxyParticipantId),
+                        ImmutableMessageHasPayload(joynr::serializer::serializeToJson(expectedPublication))
+                        ),
+                    _
+                    )
+                )
+            .Times(2)
+            .WillRepeatedly(ReleaseSemaphore(&semaphore));
+
+    publicationManager->add(
+                proxyParticipantId,
+                providerParticipantId,
+                requestCaller,
+                subscriptionRequest,
+                messageSender);
+
+    // wait for the 2 async publications
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(10)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(10)));
 }
 
 /**
