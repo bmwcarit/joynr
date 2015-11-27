@@ -39,7 +39,6 @@ public class DiscoveryDirectoriesLauncher extends AbstractJoynrApplication {
     @Inject
     public DiscoveryDirectoriesLauncher(PersistService persistService) {
         this.persistService = persistService;
-        persistService.start();
     }
 
     @Override

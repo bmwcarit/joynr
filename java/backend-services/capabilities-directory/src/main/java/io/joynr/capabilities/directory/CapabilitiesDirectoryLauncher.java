@@ -69,7 +69,6 @@ public class CapabilitiesDirectoryLauncher extends AbstractJoynrApplication {
     @Inject
     public CapabilitiesDirectoryLauncher(PersistService persistService) {
         this.persistService = persistService;
-        persistService.start();
     }
 
     @Override

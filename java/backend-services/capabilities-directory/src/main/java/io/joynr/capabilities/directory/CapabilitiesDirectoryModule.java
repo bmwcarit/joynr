@@ -25,7 +25,6 @@ import io.joynr.capabilities.CapabilitiesStorePersisted;
 import io.joynr.capabilities.CapabilityEntry;
 import io.joynr.capabilities.CapabilityEntryPersisted;
 import io.joynr.capabilities.CustomParameterPersisted;
-import io.joynr.capabilities.InProcessCapabilitiesProvisioning;
 import io.joynr.capabilities.ProviderQosPersisted;
 import io.joynr.endpoints.AddressPersisted;
 import io.joynr.messaging.ConfigurableMessagingSettings;
@@ -51,7 +50,7 @@ public class CapabilitiesDirectoryModule extends AbstractModule {
         bind(ProviderQos.class).to(ProviderQosPersisted.class);
         bind(Address.class).to(AddressPersisted.class);
 
-        bind(CapabilitiesProvisioning.class).to(InProcessCapabilitiesProvisioning.class);
+        bind(CapabilitiesProvisioning.class).to(DirectoryCapabilitiesProvisioning.class);
     }
 
     @Provides
