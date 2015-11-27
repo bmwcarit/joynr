@@ -21,7 +21,6 @@
 
 #include <ostream>
 #include <string>
-#include <vector>
 #include <map>
 
 namespace joynr
@@ -34,7 +33,7 @@ class MapSerializer
 {
 public:
     /**
-     * @brief Serialize array to stream
+     * @brief Serialize map to stream
      */
     template <typename T>
     static void serialize(const std::map<std::string, T>& map, std::ostream& stream);
