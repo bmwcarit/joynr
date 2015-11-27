@@ -151,7 +151,7 @@ void MetaTypeRegistrar::registerMetaType()
     {
         QMutexLocker locker(&publicationInterpretersMutex);
         addPublicationInterpreter<T>();
-        addPublicationInterpreter<QList<T>>();
+        addPublicationInterpreter<std::vector<T>>();
     }
 }
 

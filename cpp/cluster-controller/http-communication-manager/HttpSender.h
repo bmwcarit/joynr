@@ -83,7 +83,7 @@ private:
         SendMessageRunnable(HttpSender* messageSender,
                             const QString& channelId,
                             const JoynrTimePoint& decayTime,
-                            const QByteArray& data,
+                            std::string&& data,
                             DelayedScheduler& delayedScheduler,
                             qint64 maxAttemptTtl_ms);
         ~SendMessageRunnable();
@@ -104,7 +104,7 @@ private:
         HttpResult buildRequestAndSend(const QString& url, qint64 curlTimeout);
         QString resolveUrlForChannelId(qint64 curlTimeout);
         QString channelId;
-        QByteArray data;
+        std::string data;
         DelayedScheduler& delayedScheduler;
         HttpSender* messageSender;
         qint64 maxAttemptTtl_ms;

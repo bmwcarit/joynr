@@ -161,7 +161,7 @@ TEST_F(WebSocketMessagingStubTest, transmitMessage) {
     // send message using messaging stub
     joynr::WebSocketMessagingStub messagingStub(serverAddress, webSocket);
     joynr::JoynrMessage joynrMsg;
-    QString expectedMessage(joynr::JsonSerializer::serializeQObject(joynrMsg));
+    std::string expectedMessage = joynr::JsonSerializer::serialize(joynrMsg);
     messagingStub.transmit(joynrMsg);
 
     // wait until message is received
@@ -172,7 +172,7 @@ TEST_F(WebSocketMessagingStubTest, transmitMessage) {
     QList<QVariant> args = textMessageReceivedSignalSpy.takeFirst();
     ASSERT_EQ(1, args.size());
     EXPECT_EQ(QVariant::String, args.first().type());
-    EXPECT_EQ(expectedMessage, args.first().toString());
+    EXPECT_EQ(expectedMessage, args.first().toString().toStdString());
 }
 
 #include "WebSocketMessagingStubTest.moc"

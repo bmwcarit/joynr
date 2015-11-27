@@ -74,7 +74,7 @@ public:
     bool isInterrupted();
 
     void processReceivedInput(const QByteArray& receivedInput);
-    void processReceivedQjsonObjects(const QByteArray& jsonObject);
+    void processReceivedJsonObjects(const std::string& jsonObject);
 
 private:
     void checkServerTime();

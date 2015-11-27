@@ -31,12 +31,18 @@ MetaTypeRegistrar::MetaTypeRegistrar()
           replyInterpretersMutex()
 {
     // Register known types
-    registerMetaType<QString>();
+    registerMetaType<std::string>();
     registerMetaType<bool>();
-    registerMetaType<int>();
+    registerMetaType<float>();
     registerMetaType<double>();
-    registerMetaType<qint64>();
-    registerMetaType<qint8>();
+    registerMetaType<int8_t>();
+    registerMetaType<uint8_t>();
+    registerMetaType<int16_t>();
+    registerMetaType<uint16_t>();
+    registerMetaType<int32_t>();
+    registerMetaType<uint32_t>();
+    registerMetaType<int64_t>();
+    registerMetaType<uint64_t>();
 
     // Register a reply interpreter for void type
     QMutexLocker locker(&replyInterpretersMutex);

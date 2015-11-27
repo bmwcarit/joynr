@@ -49,7 +49,7 @@ class JOYNRCOMMON_EXPORT JoynrMessage : public QObject
     using StringMap = std::map<std::string, std::string>;
 
     Q_PROPERTY(std::string type READ getType WRITE setType)
-    Q_PROPERTY(StringMap headerMap READ getHeaderMap WRITE setHeaderMap)
+    Q_PROPERTY(StringMap header READ getHeader WRITE setHeader)
     Q_PROPERTY(std::string payload READ getPayload WRITE setPayload)
 
 public:
@@ -120,13 +120,13 @@ public:
 
     std::string getType() const;
     void setType(const std::string& type);
-    std::map<std::string, std::string> getHeaderMap() const;
+    std::map<std::string, std::string> getHeader() const;
     /**
-     * @brief JoynrMessage::setHeaderMap Adds header entries to the already existing header map.
+     * @brief JoynrMessage::setHeader Adds header entries to the already existing header map.
      * If a header entry was already set, its value is replaced with the new one.
      * @param newHeaders the header entries to add
      */
-    void setHeaderMap(const std::map<std::string, std::string>& newHeaders);
+    void setHeader(const std::map<std::string, std::string>& newHeaders);
     std::string getPayload() const;
     void setPayload(const std::string& payload);
 
@@ -319,12 +319,12 @@ private:
      */
     bool containsHeader(const std::string& key) const;
 
-    std::string getHeader(const std::string& key) const;
+    std::string getHeaderForKey(const std::string& key) const;
 
-    void setHeader(const std::string& key, const std::string& value);
+    void setHeaderForKey(const std::string& key, const std::string& value);
 
     std::string type;
-    std::map<std::string, std::string> headerMap;
+    std::map<std::string, std::string> header;
     std::string payload;
     static joynr_logging::Logger* logger;
 

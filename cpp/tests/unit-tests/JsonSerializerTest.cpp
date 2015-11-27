@@ -159,7 +159,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JoynrMessage) {
     LOG_DEBUG(logger, QString("serialize_JoynrMessage: actual  : %1").arg(QString::fromStdString(serializedContent)));
 
     std::stringstream expectedStringStream;
-    expectedStringStream << R"({"_typeName": "joynr.JoynrMessage","headerMap": )";
+    expectedStringStream << R"({"_typeName": "joynr.JoynrMessage","header": )";
     expectedStringStream << R"({"expiryDate": ")" << testExpiryDate.time_since_epoch().count() << R"(",)";
     expectedStringStream << R"("msgId": ")" << expectedJoynrMessage.getHeaderMessageId() << R"("},)";
     expectedStringStream << R"("payload": "{\"_typeName\": \"joynr.Request\",\"methodName\": \")" << expectedRequest.getMethodName() << R"(\",)";

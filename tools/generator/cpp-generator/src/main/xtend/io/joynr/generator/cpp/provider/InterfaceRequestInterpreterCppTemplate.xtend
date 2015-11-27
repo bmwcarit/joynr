@@ -132,7 +132,13 @@ void «interfaceName»RequestInterpreter::execute(
 							«attributeRef»;
 				«ELSE»
 					«val attributeRef = attributeName + "Var.get<" + getTypeName(attribute) + ">()"»
-					if (!«attributeName»Var.is<«getTypeName(attribute)»>()) {
+					«IF getTypeName(attribute).startsWith("int")»
+						if (!(«attributeName»Var.is<uint64_t>() || «attributeName»Var.is<int64_t>())) {
+					«ELSEIF getTypeName(attribute).startsWith("uint")»
+						if (!«attributeName»Var.is<uint64_t>()) {
+					«ELSE»
+						if (!«attributeName»Var.is<«getTypeName(attribute)»>()) {
+					«ENDIF»
 						onError(exceptions::MethodInvocationException("Illegal argument for attribute setter set«attributeName.toFirstUpper»"));
 						return;
 					}
@@ -200,7 +206,13 @@ void «interfaceName»RequestInterpreter::execute(
 						std::vector<«getTypeName(input.type)»> «inputName» = «joynrGenerationPrefix»::Util::convertVariantVectorToVector<«getTypeName(input.type)»>(«inputName»VarList);
 					«ELSE»
 						//«getTypeName(input)»
-						if (!«inputName»Var.is<«getTypeName(input)»>()) {
+						«IF getTypeName(input).startsWith("int")»
+							if (!(«inputName»Var.is<uint64_t>() || «inputName»Var.is<int64_t>())) {
+						«ELSEIF getTypeName(input).startsWith("uint")»
+							if (!«inputName»Var.is<uint64_t>()) {
+						«ELSE»
+							if (!«inputName»Var.is<«getTypeName(input)»>()) {
+						«ENDIF»
 							onError(exceptions::MethodInvocationException("Illegal argument for method «methodName»: «inputName» («getJoynrTypeName(input)»)"));
 							return;
 						}

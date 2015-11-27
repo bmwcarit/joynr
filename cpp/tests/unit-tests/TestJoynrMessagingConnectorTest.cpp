@@ -50,11 +50,11 @@ public:
 
     TestJoynrMessagingConnectorTest():
         mockSubscriptionManager(new MockSubscriptionManager()),
-        gpsLocation(types::Localisation::QtGpsLocation(
+        gpsLocation(types::Localisation::GpsLocation(
                         9.0,
                         51.0,
                         508.0,
-                        types::Localisation::QtGpsFixEnum::MODE2D,
+                        types::Localisation::GpsFixEnum::MODE2D,
                         0.0,
                         0.0,
                         0.0,
@@ -96,7 +96,7 @@ public:
     }
 
     MockSubscriptionManager* mockSubscriptionManager;
-    joynr::types::Localisation::QtGpsLocation gpsLocation;
+    joynr::types::Localisation::GpsLocation gpsLocation;
     float floatValue;
     QSemaphore semaphore;
 
@@ -124,8 +124,8 @@ public:
         std::ignore = qosVariant;
         std::ignore = subscriptionRequest;
 
-        std::shared_ptr<SubscriptionCallback<joynr::types::Localisation::QtGpsLocation, double>> typedCallbackQsp =
-                std::dynamic_pointer_cast<SubscriptionCallback<joynr::types::Localisation::QtGpsLocation, double>>(callback);
+        std::shared_ptr<SubscriptionCallback<joynr::types::Localisation::GpsLocation, float>> typedCallbackQsp =
+                std::dynamic_pointer_cast<SubscriptionCallback<joynr::types::Localisation::GpsLocation, float>>(callback);
 
         typedCallbackQsp->onSuccess(gpsLocation, floatValue);
     }
@@ -188,7 +188,7 @@ TEST_F(TestJoynrMessagingConnectorTest, testBroadcastListenerWrapper) {
     //   joynr::tests::LocationUpdateWithSpeedSelectiveBroadcastSubscriptionListenerWrapper
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, onReceive(Eq(joynr::types::Localisation::QtGpsLocation::createStd(gpsLocation)), Eq(floatValue)))
+    EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation), Eq(floatValue)))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
     joynr::OnChangeSubscriptionQos qos;

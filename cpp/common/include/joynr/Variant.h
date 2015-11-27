@@ -283,10 +283,17 @@ template <typename T>
 T& Variant::get()
 {
     if (!is<T>()) {
-        LOG_TRACE(logger,
-                  QString("Getting type %1 from variant, but variant stores %2.")
-                          .arg(QString::fromStdString(JoynrTypeId<T>::getTypeName()))
-                          .arg(QString::fromStdString(getTypeName())));
+        if (JoynrTypeId<T>::getTypeId() == 0) {
+            LOG_TRACE(
+                    logger,
+                    QString("Type param T is not registered with type registry. Variant stores %1.")
+                            .arg(QString::fromStdString(getTypeName())));
+        } else {
+            LOG_TRACE(logger,
+                      QString("Getting type %1 from variant, but variant stores %2.")
+                              .arg(QString::fromStdString(JoynrTypeId<T>::getTypeName()))
+                              .arg(QString::fromStdString(getTypeName())));
+        }
     }
     VariantHolder<T>* holder = static_cast<VariantHolder<T>*>(pointer.get());
     return holder->getPayload();

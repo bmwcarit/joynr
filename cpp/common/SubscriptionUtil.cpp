@@ -115,18 +115,17 @@ int64_t SubscriptionUtil::getPeriodicPublicationInterval(const Variant& qos)
 
 Variant SubscriptionUtil::getVariant(const SubscriptionQos& qos)
 {
-    if (std::is_base_of<SubscriptionQos, OnChangeSubscriptionQos>::value) {
-        return Variant::make<OnChangeSubscriptionQos>(
-                OnChangeSubscriptionQos((OnChangeSubscriptionQos&)qos));
-    }
-    if (std::is_base_of<SubscriptionQos, OnChangeWithKeepAliveSubscriptionQos>::value) {
+    if (dynamic_cast<const OnChangeWithKeepAliveSubscriptionQos*>(&qos) != nullptr) {
         return Variant::make<OnChangeWithKeepAliveSubscriptionQos>(
-                OnChangeWithKeepAliveSubscriptionQos((OnChangeWithKeepAliveSubscriptionQos&)qos));
-    }
-    if (std::is_base_of<SubscriptionQos, PeriodicSubscriptionQos>::value) {
+                static_cast<const OnChangeWithKeepAliveSubscriptionQos&>(qos));
+    } else if (dynamic_cast<const OnChangeSubscriptionQos*>(&qos) != nullptr) {
+        return Variant::make<OnChangeSubscriptionQos>(
+                static_cast<const OnChangeSubscriptionQos&>(qos));
+    } else if (dynamic_cast<const PeriodicSubscriptionQos*>(&qos) != nullptr) {
         return Variant::make<PeriodicSubscriptionQos>(
-                PeriodicSubscriptionQos((PeriodicSubscriptionQos&)qos));
+                static_cast<const PeriodicSubscriptionQos&>(qos));
     }
+
     assert(false);
     throw exceptions::JoynrRuntimeException(
             "Exception in SubscriptionUtil: reference to unknown SubscriptionQos has been sent");

@@ -101,7 +101,7 @@ void HttpSender::sendMessage(const QString& channelId, const JoynrMessage& messa
 {
 
     LOG_TRACE(logger, "sendMessage: ...");
-    QByteArray serializedMessage = JsonSerializer::serializeQObject(message);
+    std::string&& serializedMessage = JsonSerializer::serialize(message);
     /** Potential issue: needs second threadpool to call the ChannelUrlDir so a deadlock cannot
      * occur
       */
@@ -121,7 +121,7 @@ void HttpSender::sendMessage(const QString& channelId, const JoynrMessage& messa
     scheduler->schedule(new SendMessageRunnable(this,
                                                 channelId,
                                                 message.getHeaderExpiryDate(),
-                                                serializedMessage,
+                                                std::move(serializedMessage),
                                                 *scheduler,
                                                 maxAttemptTtl_ms));
 }
@@ -137,12 +137,12 @@ int HttpSender::SendMessageRunnable::messageRunnableCounter = 0;
 HttpSender::SendMessageRunnable::SendMessageRunnable(HttpSender* messageSender,
                                                      const QString& channelId,
                                                      const JoynrTimePoint& decayTime,
-                                                     const QByteArray& data,
+                                                     std::string&& data,
                                                      DelayedScheduler& delayedScheduler,
                                                      qint64 maxAttemptTtl_ms)
         : ObjectWithDecayTime(decayTime),
           channelId(channelId),
-          data(data),
+          data(std::move(data)),
           delayedScheduler(delayedScheduler),
           messageSender(messageSender),
           maxAttemptTtl_ms(maxAttemptTtl_ms)
@@ -193,7 +193,7 @@ void HttpSender::SendMessageRunnable::run()
         delayedScheduler.schedule(new SendMessageRunnable(messageSender,
                                                           channelId,
                                                           decayTime,
-                                                          data,
+                                                          std::move(data),
                                                           delayedScheduler,
                                                           maxAttemptTtl_ms),
                                   delay);
@@ -246,11 +246,11 @@ HttpResult HttpSender::SendMessageRunnable::buildRequestAndSend(const QString& u
     std::shared_ptr<HttpRequest> sendMessageRequest(
             sendMessageRequestBuilder->withContentType("application/json")
                     ->withTimeout_ms(std::min(maxAttemptTtl_ms, curlTimeout))
-                    ->postContent(data)
+                    ->postContent(QString::fromStdString(data).toUtf8())
                     ->build());
     LOG_TRACE(logger, "builtRequest");
 
-    Util::logSerializedMessage(logger, QString("Sending Message: "), data);
+    Util::logSerializedMessage(logger, QString("Sending Message: "), TypeUtil::toQt(data));
 
     return sendMessageRequest->execute();
 }

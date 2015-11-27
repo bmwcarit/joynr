@@ -83,7 +83,8 @@ void WebSocketMessagingStub::transmit(JoynrMessage& message)
         return;
     }
 
-    QByteArray serializedMessage(JsonSerializer::serializeQObject(message));
+    QByteArray serializedMessage =
+            QString::fromStdString(JsonSerializer::serialize(message)).toUtf8();
     emit queueTextMessage(serializedMessage);
 }
 

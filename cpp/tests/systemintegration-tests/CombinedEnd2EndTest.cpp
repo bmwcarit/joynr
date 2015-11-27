@@ -562,13 +562,13 @@ TEST_F(CombinedEnd2EndTest, subscribeToListAttribute) {
     //so the datatype is not registered, and cannot be deserialized.
     qRegisterMetaType<types::QtProviderQos>("types::QtProviderQos");
 
-    MockSubscriptionListenerOneType<std::vector<int> > *mockListener = new MockSubscriptionListenerOneType<std::vector<int> >();
+    MockSubscriptionListenerOneType<std::vector<int>> *mockListener = new MockSubscriptionListenerOneType<std::vector<int>>();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, onReceive(A<const std::vector<int>& >()))
+    EXPECT_CALL(*mockListener, onReceive(A<const std::vector<int>&>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
-    std::shared_ptr<ISubscriptionListener<std::vector<int> > > subscriptionListener(mockListener);
+    std::shared_ptr<ISubscriptionListener<std::vector<int>>> subscriptionListener(mockListener);
     // Provider: (runtime1)
 
     types::ProviderQos providerQos;
@@ -606,7 +606,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToListAttribute) {
     std::string subscriptionId = testProxy->subscribeToListOfInts(subscriptionListener, subscriptionQos);
 
     // Wait for 2 subscription messages to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(2, 20000));
+    EXPECT_TRUE(semaphore.tryAcquire(2, 20000));
 
     testProxy->unsubscribeFromListOfInts(subscriptionId);
     runtime1->unregisterProvider(providerParticipantId);

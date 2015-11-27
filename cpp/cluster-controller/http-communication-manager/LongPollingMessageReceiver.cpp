@@ -167,17 +167,17 @@ void LongPollingMessageReceiver::processReceivedInput(const QByteArray& received
 {
     QList<QByteArray> jsonObjects = Util::splitIntoJsonObjects(receivedInput);
     for (int i = 0; i < jsonObjects.size(); i++) {
-        processReceivedQjsonObjects(jsonObjects.at(i));
+        processReceivedJsonObjects(QString(jsonObjects.at(i)).toStdString());
     }
 }
 
-void LongPollingMessageReceiver::processReceivedQjsonObjects(const QByteArray& jsonObject)
+void LongPollingMessageReceiver::processReceivedJsonObjects(const std::string& jsonObject)
 {
-    JoynrMessage* msg = JsonSerializer::deserializeQObject<JoynrMessage>(jsonObject);
+    JoynrMessage* msg = JsonSerializer::deserialize<JoynrMessage>(jsonObject);
     if (msg == Q_NULLPTR) {
-        LOG_ERROR(
-                logger,
-                QString("Unable to deserialize message. Raw message: %1").arg(QString(jsonObject)));
+        LOG_ERROR(logger,
+                  QString("Unable to deserialize message. Raw message: %1")
+                          .arg(QString::fromStdString(jsonObject)));
         return;
     }
     if (msg->getType().empty()) {

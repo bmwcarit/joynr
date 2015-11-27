@@ -55,9 +55,9 @@ void ClassDeserializer<JoynrMessage>::deserialize(JoynrMessage& t, IObject& o)
         IField& field = o.nextField();
         if (field.name() == "type") {
             t.setType(field.value());
-        } else if (field.name() == "headerMap") {
+        } else if (field.name() == "header") {
             auto&& converted = convertMap<std::string>(field.value(), convertString);
-            t.setHeaderMap(converted);
+            t.setHeader(converted);
         } else if (field.name() == "payload") {
             t.setPayload( removeEscapeFromSpecialChars(field.value()));
         }
@@ -69,8 +69,8 @@ void ClassSerializer<JoynrMessage>::serialize(const JoynrMessage& msg, std::ostr
 {
     stream << R"({)";
     stream << R"("_typeName": ")" << JoynrTypeId<JoynrMessage>::getTypeName() << R"(",)";
-    stream << R"("headerMap": )";
-    MapSerializer::serialize<std::string>(msg.getHeaderMap(), stream);
+    stream << R"("header": )";
+    MapSerializer::serialize<std::string>(msg.getHeader(), stream);
     stream << R"(,"payload": )";
     ClassSerializer<std::string> stringSerializer{};
     stringSerializer.serialize(msg.getPayload(), stream);
