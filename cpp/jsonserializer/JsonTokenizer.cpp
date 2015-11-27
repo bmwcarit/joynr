@@ -188,7 +188,7 @@ int64_t JsonValue::getInt64() const
     if (value.is<int64_t>()) {
         return value.get<int64_t>();
     } else if (value.is<uint64_t>()) {
-        return static_cast<int64_t>(value.get<std::uint64_t>());
+        return static_cast<int64_t>(value.get<uint64_t>());
     } else {
         throw std::invalid_argument("Extracting int64_t from non-int JsonValue");
     }

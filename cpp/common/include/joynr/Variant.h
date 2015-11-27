@@ -24,6 +24,9 @@
 #include <memory>
 #include <cassert>
 #include <iostream>
+#include <QString>
+
+#include "joynr/joynrlogging.h"
 
 namespace joynr
 {
@@ -200,6 +203,7 @@ private:
     }
 
     std::unique_ptr<IVariantHolder> pointer;
+    static joynr_logging::Logger* logger;
 };
 
 template <typename T>
@@ -276,7 +280,12 @@ private:
 template <typename T>
 T& Variant::get()
 {
-    assert(is<T>());
+    if (!is<T>()) {
+        LOG_TRACE(logger,
+                  QString("Getting type %1 from variant, but variant stores %2.")
+                          .arg(QString::fromStdString(JoynrTypeId<T>::getTypeName()))
+                          .arg(QString::fromStdString(getTypeName())));
+    }
     VariantHolder<T>* holder = static_cast<VariantHolder<T>*>(pointer.get());
     return holder->getPayload();
 }
@@ -284,7 +293,19 @@ T& Variant::get()
 template <typename T>
 const T& Variant::get() const
 {
-    assert(is<T>());
+    if (!is<T>()) {
+        if (JoynrTypeId<T>::getTypeId() == 0) {
+            LOG_TRACE(
+                    logger,
+                    QString("Type param T is not registered with type registry. Variant stores %1.")
+                            .arg(QString::fromStdString(getTypeName())));
+        } else {
+            LOG_TRACE(logger,
+                      QString("Getting type %1 from variant, but variant stores %2.")
+                              .arg(QString::fromStdString(JoynrTypeId<T>::getTypeName()))
+                              .arg(QString::fromStdString(getTypeName())));
+        }
+    }
     VariantHolder<T>* holder = static_cast<VariantHolder<T>*>(pointer.get());
     return holder->getPayload();
 }

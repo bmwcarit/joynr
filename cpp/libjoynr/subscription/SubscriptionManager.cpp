@@ -100,8 +100,9 @@ void SubscriptionManager::registerSubscription(
     const SubscriptionQos* qos = subscriptionRequest.getSubscriptionQosPtr();
     if (qos->getExpiryDate() != joynr::QtSubscriptionQos::NO_EXPIRY_DATE() &&
         qos->getExpiryDate() < now) {
-        LOG_DEBUG(logger, "Expiry date is in the past: no subscription created");
-        return;
+        throw std::invalid_argument("Subscription ExpiryDate " +
+                                    std::to_string(qos->getExpiryDate()) + " in the past. Now: " +
+                                    std::to_string(now));
     }
 
     std::shared_ptr<Subscription> subscription(new Subscription(subscriptionCaller));

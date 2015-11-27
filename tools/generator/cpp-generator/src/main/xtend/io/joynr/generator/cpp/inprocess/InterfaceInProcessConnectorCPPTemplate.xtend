@@ -264,21 +264,17 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 				LOG_DEBUG(logger, "Subscribing to «attributeName».");
 				assert(subscriptionManager != NULL);
 				QString attributeName("«attributeName»");
-				std::shared_ptr<joynr::SubscriptionCallback<«returnTypeQt»>> subscriptionCallback(
-						«IF qtTypeUtil.needsDatatypeConversion(attribute)»
-							new «attribute.joynrName.toFirstUpper»AttributeSubscriptionCallbackWrapper(
-						«ELSE»
-							new joynr::SubscriptionCallback<«returnTypeQt»>(
-						«ENDIF»
-								subscriptionListener
-						)
-				);
+				auto subscriptionCallback = std::make_shared<
+						joynr::SubscriptionCallback<«returnType»>
+				>(subscriptionListener);
 				subscriptionManager->registerSubscription(
 						attributeName,
 						subscriptionCallback,
 						SubscriptionUtil::getVariant(subscriptionQos),
 						subscriptionRequest);
-				LOG_DEBUG(logger, "Registered subscription: " + subscriptionRequest.toQString());
+				LOG_DEBUG(logger, QString("Registered subscription: %1")
+						.arg(QString::fromStdString(subscriptionRequest.toString()))
+				);
 				assert(address);
 				std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
 				assert(caller);
@@ -457,8 +453,9 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 		assert(subscriptionManager != NULL);
 		QString broadcastName("«broadcastName»");
 
-		std::shared_ptr<joynr::SubscriptionCallback<«returnTypesQt»>> subscriptionCallback(
-					new «broadcastName.toFirstUpper»BroadcastSubscriptionCallbackWrapper(subscriptionListener));
+		auto subscriptionCallback = std::make_shared<
+				joynr::SubscriptionCallback<«returnTypes»>
+		>(subscriptionListener);
 		subscriptionManager->registerSubscription(
 					broadcastName,
 					subscriptionCallback,

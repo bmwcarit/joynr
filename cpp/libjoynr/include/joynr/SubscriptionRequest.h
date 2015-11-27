@@ -67,6 +67,7 @@ public:
     const SubscriptionQos* getSubscriptionQosPtr();
 
     QString toQString() const;
+    std::string toString() const;
 
 private:
     /*

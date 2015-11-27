@@ -118,4 +118,9 @@ QString SubscriptionRequest::toQString() const
     return JsonSerializer::serializeQObject(*this);
 }
 
+std::string SubscriptionRequest::toString() const
+{
+    return JsonSerializer::serialize(*this);
+}
+
 } // namespace joynr
