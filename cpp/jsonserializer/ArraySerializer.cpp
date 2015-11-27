@@ -42,4 +42,4 @@ void ArraySerializer::serialize(const std::vector<Variant>& array, std::ostream&
     stream << "]";
 }
 
-}
+} // namespace joynr
