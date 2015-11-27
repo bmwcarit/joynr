@@ -102,6 +102,11 @@ JoynrException* JoynrException::clone() const
     return new JoynrException(static_cast<JoynrException>(*this));
 }
 
+bool JoynrException::operator==(const JoynrException& other) const
+{
+    return message == other.getMessage();
+}
+
 JoynrRuntimeException::JoynrRuntimeException(const std::string& message) noexcept
         : JoynrException(message)
 {
@@ -222,6 +227,11 @@ PublicationMissedException* PublicationMissedException::clone() const
     return new PublicationMissedException(static_cast<PublicationMissedException>(*this));
 }
 
+bool PublicationMissedException::operator==(const PublicationMissedException& other) const
+{
+    return message == other.getMessage() && subscriptionId == other.getSubscriptionId();
+}
+
 ApplicationException::ApplicationException(const ApplicationException& other) noexcept
         : JoynrException(other.message),
           value(other.value),
@@ -281,6 +291,12 @@ const std::string ApplicationException::getTypeName() const
 ApplicationException* ApplicationException::clone() const
 {
     return new ApplicationException(static_cast<ApplicationException>(*this));
+}
+
+bool ApplicationException::operator==(const ApplicationException& other) const
+{
+    return message == other.getMessage() && value == other.value && name == other.name &&
+           typeName == other.typeName;
 }
 
 } // namespace exceptions

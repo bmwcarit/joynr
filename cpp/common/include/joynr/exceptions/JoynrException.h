@@ -62,6 +62,10 @@ public:
      */
     virtual JoynrException* clone() const;
     /**
+     * Equality operator
+     */
+    virtual bool operator==(const JoynrException& other) const;
+    /**
      * @brief The typeName of the exception used for serialization.
      */
     static const std::string TYPE_NAME;
@@ -265,6 +269,10 @@ public:
     virtual const std::string getTypeName() const;
     virtual PublicationMissedException* clone() const;
     /**
+     * Equality operator
+     */
+    virtual bool operator==(const PublicationMissedException& other) const;
+    /**
      * @brief The typeName used for serialization.
      */
     static const std::string TYPE_NAME;
@@ -338,6 +346,10 @@ public:
     void setErrorTypeName(const std::string& typeName) noexcept;
     const std::string getTypeName() const;
     virtual ApplicationException* clone() const;
+    /**
+     * Equality operator
+     */
+    virtual bool operator==(const ApplicationException& other) const;
     /**
      * @brief The typeName of the exception used for serialization.
      */
