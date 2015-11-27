@@ -26,6 +26,7 @@
 #include <tuple>
 #include <functional>
 #include <string>
+#include "joynr/types/TestTypes/TEverythingStruct.h"
 
 using namespace joynr;
 
@@ -143,7 +144,8 @@ TEST_F(UtilTest, convertListToQVariantList){
 
 }
 
-TEST_F(UtilTest, typeIdSingleType){
+TEST_F(UtilTest, typeIdSingleType) {
+    EXPECT_EQ(0, Util::getTypeId<void>());
     EXPECT_GT(Util::getTypeId<std::string>(), 0);
     EXPECT_NE(Util::getTypeId<std::string>(), Util::getTypeId<int32_t>());
 }
@@ -154,6 +156,19 @@ TEST_F(UtilTest, typeIdCompositeType){
 
     int typeId2 = Util::getTypeId<int32_t, std::string, float>();
     EXPECT_NE(typeId1, typeId2);
+    int typeIdTEverythingStruct = Util::getTypeId<joynr::types::TestTypes::TEverythingStruct>();
+    EXPECT_GT(typeIdTEverythingStruct, 0);
+    EXPECT_NE(typeId1, typeIdTEverythingStruct);
+    EXPECT_NE(typeId2, typeIdTEverythingStruct);
+}
+
+TEST_F(UtilTest, typeIdVector){
+    int typeIdVectorOfInt = Util::getTypeId<std::vector<int32_t>>();
+    EXPECT_NE(typeIdVectorOfInt, 0);
+
+    int typeIdVectorOfTEverythingStruct = Util::getTypeId<std::vector<joynr::types::TestTypes::TEverythingStruct>>();
+    EXPECT_NE(typeIdVectorOfTEverythingStruct, 0);
+    EXPECT_NE(typeIdVectorOfInt, typeIdVectorOfTEverythingStruct);
 }
 
 TEST_F(UtilTest, expandTuple){

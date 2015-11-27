@@ -24,6 +24,7 @@
 #include <memory>
 #include <cassert>
 #include <iostream>
+#include <vector>
 #include <QString>
 
 #include "joynr/joynrlogging.h"
@@ -210,6 +211,7 @@ template <typename T>
 bool Variant::registerType(std::string typeName)
 {
     JoynrTypeId<T>::create(typeName);
+    JoynrTypeId<std::vector<T>>::create(typeName + "[]");
     return true;
 }
 

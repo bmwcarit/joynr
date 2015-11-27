@@ -118,7 +118,10 @@ void Dispatcher::addReplyCaller(const std::string& requestReplyId,
                                 std::shared_ptr<IReplyCaller> replyCaller,
                                 const MessagingQos& qosSettings)
 {
-    LOG_DEBUG(logger, "addReplyCaller id= " + QString::fromStdString(requestReplyId));
+    LOG_DEBUG(logger,
+              QString("addReplyCaller id=%1 typeId=%2")
+                      .arg(QString::fromStdString(requestReplyId))
+                      .arg(replyCaller->getTypeId()));
     // add the callback to the registry that is responsible for reply messages
     replyCallerDirectory.add(requestReplyId, replyCaller, qosSettings.getTtl());
 }
