@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@
 #include "joynr/PeriodicSubscriptionQos.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/TimeUtils.h"
+#include <thread>
 
 using ::testing::A;
 using ::testing::_;
@@ -1118,4 +1119,109 @@ TEST_F(PublicationManagerTest, remove_onChangeSubscription) {
 
     // Wait for the subscription to expire
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
+}
+
+TEST_F(PublicationManagerTest, forwardProviderRuntimeExceptionToPublicationSender) {
+    QFile::remove(TypeUtil::toQt(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME())); //remove stored subscriptions
+
+    // Register the request interpreter that calls the request caller
+    InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
+
+    MockPublicationSender mockPublicationSender;
+    std::shared_ptr<MockTestRequestCaller> requestCaller = std::make_shared<MockTestRequestCaller>();
+
+    // The value will be fired by the broadcast
+    Variant expected =
+            Variant::make<exceptions::ProviderRuntimeException>(requestCaller->providerRuntimeExceptionTestMsg);
+
+    //SubscriptionRequest
+    std::string senderId = "SenderId";
+    std::string receiverId = "ReceiverId";
+    std::string attributeName("attributeWithProviderRuntimeException");
+    int64_t period_ms = 100;
+    int64_t validity_ms = 1000;
+    int64_t alertInterval_ms = 1000;
+    Variant qos = Variant::make<PeriodicSubscriptionQos>(PeriodicSubscriptionQos(
+                        validity_ms,
+                        period_ms,
+                        alertInterval_ms));
+    SubscriptionRequest subscriptionRequest;
+    subscriptionRequest.setSubscribeToName(attributeName);
+    subscriptionRequest.setQos(qos);
+
+    SubscriptionPublication expectedPublication;
+    expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
+    expectedPublication.setError(expected);
+
+    EXPECT_CALL(
+                mockPublicationSender,
+                sendSubscriptionPublication(
+                    Eq(receiverId), // sender participant ID
+                    Eq(senderId), // receiver participant ID
+                    _, // messaging QoS
+                    SubscriptionPublicationMatcher(expectedPublication) // subscription publication
+                )
+    )
+            .Times(2);
+
+    PublicationManager publicationManager;
+
+    publicationManager.add(senderId, receiverId, requestCaller, subscriptionRequest, &mockPublicationSender);
+
+    // wait for the async publication
+    std::this_thread::sleep_for(std::chrono::milliseconds(150));
+    //now, two publications should be noticed, even if the original subscription is expired
+}
+
+TEST_F(PublicationManagerTest, forwardMethodInvocationExceptionToPublicationSender) {
+    QFile::remove(TypeUtil::toQt(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME())); //remove stored subscriptions
+
+    // Register the request interpreter that calls the request caller
+    InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
+
+    MockPublicationSender mockPublicationSender;
+    std::shared_ptr<MockTestRequestCaller> requestCaller = std::make_shared<MockTestRequestCaller>();
+
+    // The value will be fired by the broadcast
+    Variant expected =
+            Variant::make<exceptions::MethodInvocationException>("unknown method name for interface test: getNotExistingAttribute");
+
+    //SubscriptionRequest
+    std::string senderId = "SenderId";
+    std::string receiverId = "ReceiverId";
+    std::string attributeName("notExistingAttribute");
+    //QtSubscriptionQos
+    int64_t period_ms = 100;
+    int64_t validity_ms = 1000;
+    int64_t alertInterval_ms = 1000;
+    Variant qos = Variant::make<PeriodicSubscriptionQos>(PeriodicSubscriptionQos(
+                        validity_ms,
+                        period_ms,
+                        alertInterval_ms));
+    SubscriptionRequest subscriptionRequest;
+    subscriptionRequest.setSubscribeToName(attributeName);
+    subscriptionRequest.setQos(qos);
+
+    SubscriptionPublication expectedPublication;
+    expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
+    expectedPublication.setError(expected);
+
+    EXPECT_CALL(
+                mockPublicationSender,
+                sendSubscriptionPublication(
+                    Eq(receiverId), // sender participant ID
+                    Eq(senderId), // receiver participant ID
+                    _, // messaging QoS
+                    SubscriptionPublicationMatcher(expectedPublication) // subscription publication
+                )
+    )
+            .Times(2);
+
+    PublicationManager publicationManager;
+
+    publicationManager.add(senderId, receiverId, requestCaller, subscriptionRequest, &mockPublicationSender);
+
+    // wait for the async publication
+    std::this_thread::sleep_for(std::chrono::milliseconds(150));
+    //now, two publications should be noticed, even if the original subscription is expired
 }
