@@ -20,16 +20,19 @@ package io.joynr.capabilities;
  */
 
 import static org.junit.Assert.assertEquals;
-import io.joynr.proxy.RpcStubbingTest.TestProvider;
-import io.joynr.runtime.CCInProcessRuntimeModule;
-import io.joynr.runtime.JoynrInjectorFactory;
 
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import io.joynr.common.JoynrPropertiesModule;
+import io.joynr.proxy.RpcStubbingTest.TestProvider;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.inject.Injector;
+
+import java.util.Properties;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ParticipantIdStorageTest {
@@ -39,7 +42,12 @@ public class ParticipantIdStorageTest {
 
     @Before
     public void setUp() {
-        Injector injector = new JoynrInjectorFactory(new CCInProcessRuntimeModule()).getInjector();
+        Injector injector = Guice.createInjector(new AbstractModule() {
+            @Override
+            protected void configure() {
+                bind(ParticipantIdStorage.class).to(PropertiesFileParticipantIdStorage.class);
+            }
+        }, new JoynrPropertiesModule(new Properties()));
         storage = injector.getInstance(ParticipantIdStorage.class);
     }
 

@@ -113,7 +113,7 @@
 
 		<dependency>
 			<groupId>io.joynr.java.core</groupId>
-			<artifactId>libjoynr</artifactId>
+			<artifactId>clustercontroller-inprocess-runtime</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 

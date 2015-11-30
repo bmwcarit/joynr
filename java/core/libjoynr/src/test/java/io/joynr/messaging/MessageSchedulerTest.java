@@ -19,10 +19,11 @@ package io.joynr.messaging;
  * #L%
  */
 
+import com.google.inject.Guice;
+import com.google.inject.Singleton;
+import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.messaging.http.operation.FailureAction;
-import io.joynr.runtime.CCInProcessRuntimeModule;
-import io.joynr.runtime.JoynrBaseModule;
-import io.joynr.runtime.JoynrInjectorFactory;
+import io.joynr.messaging.http.operation.HttpDefaultRequestConfigProvider;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -34,6 +35,7 @@ import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.localserver.LocalTestServer;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpRequestHandler;
@@ -114,10 +116,16 @@ public class MessageSchedulerTest {
 
         };
 
-        Injector injector = new JoynrInjectorFactory(new JoynrBaseModule(properties,
-                                                                         Modules.override(new MessagingTestModule(),
-                                                                                          new CCInProcessRuntimeModule())
-                                                                                .with(mockModule))).getInjector();
+        Injector injector = Guice.createInjector(new JoynrPropertiesModule(properties),
+                                                 Modules.override(new MessagingTestModule()).with(mockModule),
+                                                 new AbstractModule() {
+                                                     @Override
+                                                     protected void configure() {
+                                                         bind(RequestConfig.class).toProvider(HttpDefaultRequestConfigProvider.class)
+                                                                                  .in(Singleton.class);
+                                                     }
+                                                 },
+                                                 new LongPollingMessagingModule());
         messageScheduler = injector.getInstance(MessageScheduler.class);
     }
 

@@ -24,6 +24,7 @@ import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.runtime.AbstractJoynrApplication;
+import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
@@ -138,8 +139,9 @@ public class MyGpsProviderApplication extends AbstractJoynrApplication {
         provisionAccessControl(joynrConfig, localDomain);
 
         JoynrApplication joynrApplication = new JoynrInjectorFactory(joynrConfig,
-                                                                     new StaticDomainAccessControlProvisioningModule()).createApplication(new JoynrApplicationModule(MyGpsProviderApplication.class,
-                                                                                                                                                                     appConfig));
+                                                                     new StaticDomainAccessControlProvisioningModule(),
+                                                                     new CCInProcessRuntimeModule()).createApplication(new JoynrApplicationModule(MyGpsProviderApplication.class,
+                                                                                                                                                  appConfig));
         joynrApplication.run();
 
         joynrApplication.shutdown();

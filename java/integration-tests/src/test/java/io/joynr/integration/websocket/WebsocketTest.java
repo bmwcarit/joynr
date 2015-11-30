@@ -1,4 +1,4 @@
-package io.joynr.messaging.websocket;
+package io.joynr.integration.websocket;
 
 /*
  * #%L
@@ -19,15 +19,24 @@ package io.joynr.messaging.websocket;
  * #L%
  */
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.joynr.common.ExpiryDate;
 import io.joynr.dispatching.JoynrMessageFactory;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.websocket.CCWebSocketMessagingSkeleton;
+import io.joynr.messaging.websocket.LibWebSocketMessagingSkeleton;
+import io.joynr.messaging.websocket.LibWebSocketMessagingStub;
+import io.joynr.messaging.websocket.WebSocketClientMessagingStubFactory;
 import io.joynr.security.DummyPlatformSecurityManager;
+
+import java.io.IOException;
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+
 import joynr.JoynrMessage;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
 import joynr.system.RoutingTypes.WebSocketProtocol;
+
 import org.eclipse.jetty.websocket.api.Session;
 import org.junit.After;
 import org.junit.Assert;
@@ -41,14 +50,13 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.io.IOException;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RunWith(MockitoJUnitRunner.class)
 public class WebsocketTest {
     private static Logger logger = LoggerFactory.getLogger(WebsocketTest.class);
-    private WebSocketMessagingStub webSocketMessagingStub;
+    private LibWebSocketMessagingStub webSocketMessagingStub;
     private CCWebSocketMessagingSkeleton ccWebSocketMessagingSkeleton;
     private WebSocketAddress serverAddress = new WebSocketAddress(WebSocketProtocol.WS, "localhost", 8080, "/test");
     private WebSocketClientAddress clientAddress = new WebSocketClientAddress(UUID.randomUUID().toString().replace("-",

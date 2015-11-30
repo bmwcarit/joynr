@@ -20,10 +20,10 @@ package io.joynr.messaging;
  */
 
 import com.google.inject.Singleton;
-import io.joynr.runtime.ClusterControllerRuntime;
-import io.joynr.runtime.JoynrRuntime;
+import io.joynr.messaging.http.operation.HttpClientProvider;
 import joynr.infrastructure.ChannelUrlDirectoryProxy;
 
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -41,7 +41,6 @@ public class MessagingTestModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(JoynrRuntime.class).to(ClusterControllerRuntime.class).in(Singleton.class);
         bind(MessagingSettings.class).to(ConfigurableMessagingSettings.class);
 
         // don't override like this. Override via properties passed to createJoynInjector
@@ -51,6 +50,7 @@ public class MessagingTestModule extends AbstractModule {
         // this leads to endless loops
         // bind(ChannelUrlDirectoryClient.class).to(LocalChannelUrlDirectoryClientImpl.class);
         bind(ChannelUrlDirectoryProxy.class).toInstance(mockChannelUrlClient);
+        bind(CloseableHttpClient.class).toProvider(HttpClientProvider.class).in(Singleton.class);
 
     }
 }

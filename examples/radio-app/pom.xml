@@ -54,7 +54,17 @@
 		<!-- Core joynr framework -->
 		<dependency>
 			<groupId>io.joynr.java.core</groupId>
-			<artifactId>libjoynr</artifactId>
+			<artifactId>clustercontroller-websocket-runtime</artifactId>
+			<version>${joynr.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.core</groupId>
+			<artifactId>clustercontroller-inprocess-runtime</artifactId>
+			<version>${joynr.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.core</groupId>
+			<artifactId>libjoynr-websocket-runtime</artifactId>
 			<version>${joynr.version}</version>
 		</dependency>
 

@@ -21,21 +21,27 @@ package io.joynr.messaging.http.operation;
 
 import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.containsString;
+
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Singleton;
+import io.joynr.capabilities.DummyLocalChannelUrlDirectoryClient;
 import io.joynr.common.ExpiryDate;
+import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.dispatching.Dispatcher;
+import io.joynr.messaging.LocalChannelUrlDirectoryClient;
+import io.joynr.messaging.LongPollingMessagingModule;
 import io.joynr.messaging.MessageSender;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingTestModule;
 import io.joynr.messaging.ReceiverStatusListener;
-import io.joynr.runtime.CCInProcessRuntimeModule;
-import io.joynr.runtime.JoynrBaseModule;
-import io.joynr.runtime.JoynrInjectorFactory;
 
 import java.util.Properties;
 import java.util.UUID;
 
 import joynr.JoynrMessage;
 
+import org.apache.http.client.config.RequestConfig;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -113,9 +119,17 @@ public class HttpCommunicationManagerTest {
         properties.put(MessagingPropertyKeys.CHANNELID, testChannelId);
         properties.put(MessagingPropertyKeys.BOUNCE_PROXY_URL, bounceProxyUrlString);
 
-        Injector injector = new JoynrInjectorFactory(new JoynrBaseModule(properties,
-                                                                         new MessagingTestModule(),
-                                                                         new CCInProcessRuntimeModule())).getInjector();
+        Injector injector = Guice.createInjector(new JoynrPropertiesModule(properties),
+                                                 new MessagingTestModule(),
+                                                 new LongPollingMessagingModule(),
+                                                 new AbstractModule() {
+                                                     @Override
+                                                     protected void configure() {
+                                                         bind(RequestConfig.class).toProvider(HttpDefaultRequestConfigProvider.class)
+                                                                                  .in(Singleton.class);
+                                                         bind(LocalChannelUrlDirectoryClient.class).to(DummyLocalChannelUrlDirectoryClient.class);
+                                                     }
+                                                 });
 
         longpollingMessageReceiver = injector.getInstance(LongPollingMessageReceiver.class);
         messageSender = injector.getInstance(MessageSender.class);

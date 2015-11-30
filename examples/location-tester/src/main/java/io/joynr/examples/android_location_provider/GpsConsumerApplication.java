@@ -27,6 +27,7 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.runtime.AbstractJoynrApplication;
+import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
@@ -126,8 +127,8 @@ public class GpsConsumerApplication extends AbstractJoynrApplication {
         Properties appConfig = new Properties();
         appConfig.setProperty(APP_CONFIG_PROVIDER_DOMAIN, providerDomain);
 
-        JoynrApplication gpsConsumerApp = new JoynrInjectorFactory(joynrConfig).createApplication(new JoynrApplicationModule(GpsConsumerApplication.class,
-                                                                                                                             appConfig));
+        JoynrApplication gpsConsumerApp = new JoynrInjectorFactory(joynrConfig, new CCInProcessRuntimeModule()).createApplication(new JoynrApplicationModule(GpsConsumerApplication.class,
+                                                                                                                                                             appConfig));
         gpsConsumerApp.run();
 
         pressQEnterToContinue();

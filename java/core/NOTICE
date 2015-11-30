@@ -23,6 +23,8 @@ This project has dependencies to:
   Apache Log4j under The Apache Software License, Version 2.0
   Apache Log4j API under The Apache Software License, Version 2.0
   Apache Log4j SLF4J Binding under The Apache Software License, Version 2.0
+  clustercontroller-inprocess-runtime under The Apache Software License, Version 2.0
+  clustercontroller-websocket-runtime under The Apache Software License, Version 2.0
   Commons Codec under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
   Data Mapper for Jackson under The Apache Software License, Version 2.0
@@ -71,6 +73,7 @@ This project has dependencies to:
   json-path under Apache 2.0
   JSON.simple under The Apache Software License, Version 2.0
   JUnit under Common Public License Version 1.0
+  libjoynr-websocket-runtime under The Apache Software License, Version 2.0
   Logging under The Apache Software License, Version 2.0
   Mockito under The MIT License
   Reflections under WTFPL

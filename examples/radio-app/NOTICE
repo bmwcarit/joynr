@@ -20,6 +20,8 @@ This project has dependencies to:
   Apache HttpClient under Apache License
   Apache HttpCore under Apache License
   Apache Log4j under The Apache Software License, Version 2.0
+  clustercontroller-inprocess-runtime under The Apache Software License, Version 2.0
+  clustercontroller-websocket-runtime under The Apache Software License, Version 2.0
   Commons Codec under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
   dom4j under BSD License
@@ -62,6 +64,7 @@ This project has dependencies to:
   Jetty :: Websocket :: Servlet Interface under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   JLine under The BSD License
   JUnit under Common Public License Version 1.0
+  libjoynr-websocket-runtime under The Apache Software License, Version 2.0
   Logging under The Apache Software License, Version 2.0
   Reflections under WTFPL
   routing-common under The Apache Software License, Version 2.0

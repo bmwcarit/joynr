@@ -41,7 +41,19 @@
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.core</groupId>
-			<artifactId>libjoynr</artifactId>
+			<artifactId>clustercontroller-inprocess-runtime</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.core</groupId>
+			<artifactId>clustercontroller-websocket-runtime</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.core</groupId>
+			<artifactId>libjoynr-websocket-runtime</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>

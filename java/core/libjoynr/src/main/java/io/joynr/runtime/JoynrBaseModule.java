@@ -40,13 +40,6 @@ public class JoynrBaseModule implements Module {
         module.configure(binder);
     }
 
-    /**
-     * default constructor with no properties set and {@link CCInProcessRuntimeModule} as runtime
-     */
-    public JoynrBaseModule() {
-        this(new Properties(), new CCInProcessRuntimeModule());
-    }
-
     public JoynrBaseModule(Properties customJoynProperties, Module... modules) {
         module = Modules.override(new JoynrPropertiesModule(customJoynProperties),
                                   new LongPollingMessagingModule(),

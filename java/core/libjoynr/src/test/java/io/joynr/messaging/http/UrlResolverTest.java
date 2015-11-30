@@ -20,33 +20,33 @@ package io.joynr.messaging.http;
  */
 
 import static org.junit.Assert.assertEquals;
+
+import com.google.inject.Guice;
+import com.google.inject.Singleton;
+import io.joynr.capabilities.DummyLocalChannelUrlDirectoryClient;
+import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.messaging.LocalChannelUrlDirectoryClient;
+import io.joynr.messaging.LongPollingMessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingTestModule;
-import io.joynr.runtime.CCInProcessRuntimeModule;
-import io.joynr.runtime.JoynrBaseModule;
-import io.joynr.runtime.JoynrInjectorFactory;
+import io.joynr.messaging.http.operation.HttpDefaultRequestConfigProvider;
 
 import java.util.Properties;
 import java.util.UUID;
 
+import org.apache.http.client.config.RequestConfig;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Injector;
-import com.google.inject.util.Modules;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UrlResolverTest {
 
     private String channelId = "UrlResolverTest_" + UUID.randomUUID().toString();
-
-    @Mock
-    private LocalChannelUrlDirectoryClient mockChannelUrlDir;
 
     private UrlResolver urlResolver;
 
@@ -56,19 +56,17 @@ public class UrlResolverTest {
         Properties properties = new Properties();
         properties.put(MessagingPropertyKeys.CHANNELID, channelId);
 
-        AbstractModule mockModule = new AbstractModule() {
-
-            @Override
-            protected void configure() {
-                bind(LocalChannelUrlDirectoryClient.class).toInstance(mockChannelUrlDir);
-            }
-
-        };
-
-        Injector injector = new JoynrInjectorFactory(new JoynrBaseModule(properties,
-                                                                         Modules.override(new MessagingTestModule(),
-                                                                                          new CCInProcessRuntimeModule())
-                                                                                .with(mockModule))).getInjector();
+        Injector injector = Guice.createInjector(new JoynrPropertiesModule(properties),
+                                                 new MessagingTestModule(),
+                                                 new LongPollingMessagingModule(),
+                                                 new AbstractModule() {
+                                                     @Override
+                                                     protected void configure() {
+                                                         bind(RequestConfig.class).toProvider(HttpDefaultRequestConfigProvider.class)
+                                                                                  .in(Singleton.class);
+                                                         bind(LocalChannelUrlDirectoryClient.class).to(DummyLocalChannelUrlDirectoryClient.class);
+                                                     }
+                                                 });
         urlResolver = injector.getInstance(UrlResolver.class);
     }
 

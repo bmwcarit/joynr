@@ -36,6 +36,8 @@ This project has dependencies to:
   atmosphere-runtime under CDDL or Apache License 2.0
   Bean Validation API under Apache License, Version 2.0
   CDI APIs under Apache License, Version 2.0
+  clustercontroller-inprocess-runtime under The Apache Software License, Version 2.0
+  clustercontroller-websocket-runtime under The Apache Software License, Version 2.0
   Common Annotations 1.1 API under lgpl
   Commons Codec under The Apache Software License, Version 2.0
   Commons Collections under The Apache Software License, Version 2.0
@@ -175,6 +177,7 @@ This project has dependencies to:
   JSR-181 Maintenance Release 1 under CDDL+GPLv2
   JTA 1.1 under The Apache Software License, Version 2.0
   JUnit under Common Public License Version 1.0
+  libjoynr-websocket-runtime under The Apache Software License, Version 2.0
   Logging under The Apache Software License, Version 2.0
   MIME streaming extension under Dual license consisting of the CDDL v1.1 and GPL v2
   Mockito under The MIT License
