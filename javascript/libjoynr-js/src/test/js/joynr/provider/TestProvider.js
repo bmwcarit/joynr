@@ -138,6 +138,11 @@ joynrTestRequire(
                                                 this.value = newValue;
                                             }
                                         },
+                                        attributeTestingProviderInterface : {
+                                            get : function() {
+                                                return undefined;
+                                            }
+                                        },
                                         addFavoriteStation : jasmine
                                                 .createSpy("addFavoriteStation"),
                                         weakSignal : jasmine.createSpy("weakSignal"),

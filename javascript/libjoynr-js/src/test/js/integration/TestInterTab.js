@@ -37,7 +37,6 @@ joynrTestRequire(
             "joynr/system/RoutingTypes/CommonApiDbusAddress",
             "joynr/vehicle/RadioProxy",
             "joynr/vehicle/RadioProvider",
-            "joynr/vehicle/radiotypes/RadioStation",
             "joynr/datatypes/exampleTypes/Country",
             "joynr/provisioning/provisioning_libjoynr",
             "integration/IntegrationUtils"
@@ -57,7 +56,6 @@ joynrTestRequire(
                 CommonApiDbusAddress,
                 RadioProxy,
                 RadioProvider,
-                RadioStation,
                 Country,
                 provisioning,
                 IntegrationUtils) {
@@ -345,6 +343,10 @@ joynrTestRequire(
                                         attrProvidedImpl = value;
                                     });
 
+                                    radioProvider.attributeTestingProviderInterface.registerGetter(function() {
+                                       return undefined;
+                                    });
+ 
                                     radioProvider.mixedSubscriptions.registerGetter(function() {
                                         return "interval";
                                     });

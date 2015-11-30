@@ -128,6 +128,10 @@ function initializeTest(provisioningSuffix, providedDomain) {
                 mixedSubscriptions = value;
             });
 
+            radioProvider.attributeTestingProviderInterface.registerGetter(function() {
+               return undefined;
+            });
+
             radioProvider.failingSyncAttribute.registerGetter(function() {
                 throw new joynr.exceptions.ProviderRuntimeException({
                     detailMessage: "failure in failingSyncAttribute getter"

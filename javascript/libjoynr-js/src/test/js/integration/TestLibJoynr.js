@@ -21,20 +21,10 @@
 
 joynrTestRequire("integration/TestLibJoynr", [
     "joynr",
-    "joynr/vehicle/RadioProxy",
-    "joynr/vehicle/RadioProvider",
-    "joynr/vehicle/radiotypes/RadioStation",
     "integration/IntegrationUtils",
     "joynr/provisioning/provisioning_cc",
     "integration/provisioning_end2end_common"
-], function(
-        joynr,
-        RadioProxy,
-        RadioProvider,
-        RadioStation,
-        IntegrationUtils,
-        provisioning,
-        provisioning_end2end) {
+], function(joynr, IntegrationUtils, provisioning, provisioning_end2end) {
     describe("libjoynr-js.libjoynr", function() {
         var workerId;
         var testProvisioning = null;
@@ -152,15 +142,18 @@ joynrTestRequire("integration/TestLibJoynr", [
             var radioProxy;
 
             runs(function() {
-                IntegrationUtils.initializeWebWorker(
-                        "TestEnd2EndCommProviderWorker",
-                        provisioningSuffix).then(function(newWorkerId) {
-                    workerId = newWorkerId;
-                    return IntegrationUtils.startWebWorker(workerId);
-                }).then(function() {
-                    return IntegrationUtils.buildProxy(RadioProxy);
-                }).then(function(newRadioProxy) {
-                    radioProxy = newRadioProxy;
+                require([ "joynr/vehicle/RadioProxy"
+                ], function(RadioProxy) {
+                    IntegrationUtils.initializeWebWorker(
+                            "TestEnd2EndCommProviderWorker",
+                            provisioningSuffix).then(function(newWorkerId) {
+                        workerId = newWorkerId;
+                        return IntegrationUtils.startWebWorker(workerId);
+                    }).then(function() {
+                        return IntegrationUtils.buildProxy(RadioProxy);
+                    }).then(function(newRadioProxy) {
+                        radioProxy = newRadioProxy;
+                    });
                 });
             });
 
@@ -186,8 +179,24 @@ joynrTestRequire("integration/TestLibJoynr", [
         it("provider is immutable", function() {
             var radioProvider;
 
-            radioProvider = joynr.providerBuilder.build(RadioProvider, {});
+            runs(function() {
+                require([ "joynr/vehicle/RadioProvider"
+                ], function(RadioProvider) {
+                    /* ensure all required datatypes are loaded once the RadioProvider is resolved */
+                    /*jslint nomen: true */
+                    var untypedObject = {
+                        _typeName : "joynr.vehicle.radiotypes.DatatypeForTestLibjoynr",
+                        name : "untypedObject"
+                    };
+                    /*jslint nomen: false */
+                    joynr.util.Util.ensureTypedValues(untypedObject, joynr.typeRegistry);
+                    radioProvider = joynr.providerBuilder.build(RadioProvider, {});
+                });
+            });
 
+            waitsFor(function() {
+                return radioProvider !== undefined;
+            }, "provider is resolved", 1000);
             runs(function() {
                 testMutability(radioProvider, "isOn");
                 testMutability(radioProvider.isOn, "registerGetter");

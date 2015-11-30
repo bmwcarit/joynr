@@ -68,6 +68,11 @@ joynrTestRequire("joynr/provider/TestProviderBuilder", [
                         this.value = newValue;
                     }
                 },
+                attributeTestingProviderInterface : {
+                    get : function() {
+                        return undefined;
+                    }
+                },
                 addFavoriteStation : jasmine.createSpy("addFavoriteStation"),
                 weakSignal : jasmine.createSpy("weakSignal"),
                 methodProvidedImpl : jasmine.createSpy("methodProvidedImpl")

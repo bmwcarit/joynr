@@ -29,10 +29,17 @@ typeCollection radiotypes {
 		EXAMPLE_ERROR_1
 		EXAMPLE_ERROR_2
 	}
+
+	/* only used within TestLibjoynr */
+	struct DatatypeForTestLibjoynr {
+		String name
+	}
 }
 
 <** @description : "This is a description about the radio interface" **>
 interface Radio {
+	attribute radiotypes.DatatypeForTestLibjoynr attributeTestingProviderInterface readonly
+
 	/**
 	 * This attribute is subscribe-able and a getIsOn() and setIsOn(bool on)
 	 * is generated.
