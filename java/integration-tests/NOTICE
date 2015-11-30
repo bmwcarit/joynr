@@ -55,6 +55,9 @@ This project has dependencies to:
   io.joynr.java.messaging.bounceproxy:bounceproxy-controller-nonclustered under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:controlled-bounceproxy under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:single-bounceproxy under The Apache Software License, Version 2.0
+  io.joynr.java.messaging.websocket:joynr-websocket-client under The Apache Software License, Version 2.0
+  io.joynr.java.messaging.websocket:joynr-websocket-common under The Apache Software License, Version 2.0
+  io.joynr.java.messaging.websocket:joynr-websocket-server under The Apache Software License, Version 2.0
   io.joynr.java.messaging:messaging-common under The Apache Software License, Version 2.0
   io.joynr.java.messaging:service-common under The Apache Software License, Version 2.0
   io.joynr.java.messaging:servlet-common under The Apache Software License, Version 2.0
@@ -97,6 +100,7 @@ This project has dependencies to:
   Reflections under WTFPL
   REST Assured under Apache 2.0
   rest-assured-common under Apache 2.0
+  routing-common under The Apache Software License, Version 2.0
   Simple API for CSS under The W3C Software License
   SLF4J API Module under MIT License
   SLF4J LOG4J-12 Binding under MIT License

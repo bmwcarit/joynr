@@ -128,6 +128,9 @@ This project has dependencies to:
   io.joynr.java.messaging.bounceproxy:bounceproxy-controller-persistence under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:controlled-bounceproxy under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:single-bounceproxy under The Apache Software License, Version 2.0
+  io.joynr.java.messaging.websocket:joynr-websocket-client under The Apache Software License, Version 2.0
+  io.joynr.java.messaging.websocket:joynr-websocket-common under The Apache Software License, Version 2.0
+  io.joynr.java.messaging.websocket:joynr-websocket-server under The Apache Software License, Version 2.0
   io.joynr.java.messaging:bounceproxy under The Apache Software License, Version 2.0
   io.joynr.java.messaging:bounceproxy-controller-service under The Apache Software License, Version 2.0
   io.joynr.java.messaging:channel-service under The Apache Software License, Version 2.0
@@ -136,6 +139,7 @@ This project has dependencies to:
   io.joynr.java.messaging:messaging-servlet under The Apache Software License, Version 2.0
   io.joynr.java.messaging:service-common under The Apache Software License, Version 2.0
   io.joynr.java.messaging:servlet-common under The Apache Software License, Version 2.0
+  io.joynr.java.messaging:websocket under The Apache Software License, Version 2.0
   io.joynr.java:backend-services under The Apache Software License, Version 2.0
   io.joynr.java:common under The Apache Software License, Version 2.0
   io.joynr.java:core under The Apache Software License, Version 2.0
@@ -278,6 +282,7 @@ This project has dependencies to:
   robolectric-annotations under MIT license
   robolectric-resources under MIT license
   robolectric-utils under MIT license
+  routing-common under The Apache Software License, Version 2.0
   Serp under BSD
   shadows-core under MIT license
   Simple API for CSS under The W3C Software License

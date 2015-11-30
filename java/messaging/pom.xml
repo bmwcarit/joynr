@@ -38,6 +38,8 @@
 		<module>channel-service</module>
 		<module>bounceproxy-controller-service</module>
 		<module>service-common</module>
+		<module>websocket</module>
+		<module>routing-common</module>
 	</modules>
 
 		<!-- specify dependencies here to be used in all submodules -->
