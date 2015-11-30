@@ -68,11 +68,7 @@ joynrTestRequire(
                                             provisioningSuffix);
 
                             runs(function() {
-                                joynr.load(testProvisioning, function(error, newjoynr) {
-                                    if (error) {
-                                        throw error;
-                                    }
-
+                                joynr.load(testProvisioning).then(function(newjoynr) {
                                     joynr = newjoynr;
                                     IntegrationUtils.initialize(joynr);
 
@@ -102,6 +98,8 @@ joynrTestRequire(
                                     }).then(function(newRadioProxy) {
                                         radioProxy = newRadioProxy;
                                     });
+                                }).catch(function(error){
+                                    throw error;
                                 });
                             });
                             waitsFor(function() {

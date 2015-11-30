@@ -93,11 +93,7 @@ function initializeTest(provisioningSuffix) {
 
         joynr.provisioning.persistency = "localStorage";
 
-        joynr.load(joynr.provisioning, function(error, newJoynr) {
-            if (error) {
-                throw error;
-            }
-
+        joynr.load(joynr.provisioning).then(function(newJoynr){
             joynr = newJoynr;
             providerQos = new joynr.types.ProviderQos({
                 customParameters : [],
@@ -145,6 +141,9 @@ function initializeTest(provisioningSuffix) {
                         reject(error);
                         throw new Error("error registering provider: " + error);
                     });
+            
+        }).catch(function(error){
+            throw error;
         });
     });
 }

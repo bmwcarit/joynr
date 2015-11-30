@@ -75,11 +75,7 @@ joynrTestRequire("integration/TestLibJoynr", [
             ready = false;
             testProvisioning = IntegrationUtils.getProvisioning(provisioning, provisioningSuffix);
             runs(function() {
-                joynr.load(testProvisioning, function(error, newJoynr) {
-                    if (error) {
-                        throw error;
-                    }
-
+                joynr.load(testProvisioning).then(function(newJoynr) {
                     joynr = newJoynr;
                     IntegrationUtils.initialize(joynr);
                     ready = true;

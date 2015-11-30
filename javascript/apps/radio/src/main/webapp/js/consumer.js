@@ -404,12 +404,7 @@ function registerEventHandlers(radioProxy) {
 
 $(function() { // DOM ready
     // output build signatures to log
-    joynr.load(provisioning, function(error, loadedJoynr) {
-        if (error) {
-            log("main", "error initializing joynr: " + error);
-            throw error;
-        }
-
+    joynr.load(provisioning).then(function(loadedJoynr){
         log("main", joynr.buildSignature());
         log("main", getBuildSignatureString());
 
@@ -467,5 +462,8 @@ $(function() { // DOM ready
             $("input#btnSubscribeToWeakSignal").attr("disabled", false);
             $("input#btnSubscribeToNewStationDiscoveredSignal").attr("disabled", false);
          });
+    }).catch(function(error){
+        log("main", "error initializing joynr: " + error);
+        throw error;
     });
 });

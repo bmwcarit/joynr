@@ -42,15 +42,12 @@ joynrTestRequire("integration/TestWebSocket", [
             };
 
             runs(function() {
-                joynr.load(provisioning, function(error, loadedJoynr) {
-                    if (error) {
-                        throw error;
-                    }
-
+                joynr.load(provisioning).then(function(loadedJoynr){
                     IntegrationUtils.initialize(loadedJoynr);
                     IntegrationUtils.messagingQos.ttl = provisioning.ttl = 30000;
                     libJoynrStarted = true;
-
+                }).catch(function(error){
+                    throw error;
                 });
             });
 

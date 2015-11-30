@@ -145,18 +145,14 @@ joynrTestRequire(
                                                             message: "CC web worker with ID " + libjoynrParentWindow.workerId
                                                                     + ": started"
                                                         }, "joynr.integration.TestInterTab");
-                                                        joynr.load(testProvisioning, function(error, newjoynr) {
-                                                            if (error) {
-                                                                throw error;
-                                                            }
-
+                                                        joynr.load(testProvisioning, true).then(function(newJoynr){
                                                             messagingQos = IntegrationUtils.messagingQos;
-
-                                                            joynr = newjoynr;
+                                                            joynr = newJoynr;
                                                             IntegrationUtils.initialize(joynr);
                                                             libjoynrLoaded = true;
-                                                        },
-                                                        true);
+                                                        }).catch(function(error){
+                                                            throw error;
+                                                        });
                                                     });
                                                 });
                             });

@@ -86,11 +86,7 @@ function initializeTest(provisioningSuffix, providedDomain) {
             }
         };
 
-        joynr.load(joynr.provisioning, function(error, asynclib) {
-            if (error) {
-                throw error;
-            }
-
+        joynr.load(joynr.provisioning).then(function(asynclib){
             libjoynrAsync = asynclib;
             providerQos = new libjoynrAsync.types.ProviderQos({
                 customParameters : [],
@@ -321,6 +317,8 @@ function initializeTest(provisioningSuffix, providedDomain) {
                 reject(error);
                 throw new Error("error registering provider: " + error);
             });
+        }).catch(function(error){
+            throw error;
         });
     });
 }

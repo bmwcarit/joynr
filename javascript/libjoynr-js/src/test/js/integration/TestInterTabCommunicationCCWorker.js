@@ -56,16 +56,9 @@ function initializeTest(provisioningSuffix, domain, ownWindow, parentWindow) {
         }
     };
 
-    return new Promise(function(resolve, reject) {
-        joynr.load(joynr.provisioning, function(error, newJoynr) {
-            if (error) {
-                reject(error);
-                throw error;
-            } else {
-                joynr = newJoynr;
-                resolve(joynr);
-            }
-        });
+    return joynr.load(joynr.provisioning).then(function(newJoynr) {
+        joynr = newJoynr;
+        return joynr;
     });
 }
 

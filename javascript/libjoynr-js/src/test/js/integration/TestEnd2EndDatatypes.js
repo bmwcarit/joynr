@@ -46,11 +46,7 @@ joynrTestRequire("integration/TestEnd2EndDatatypes", [
             provisioningSuffix = "-" + Date.now();
             testProvisioning = IntegrationUtils.getProvisioning(provisioning, provisioningSuffix);
             runs(function() {
-                joynr.load(testProvisioning, function(error, newJoynr) {
-                    if (error) {
-                        throw error;
-                    }
-
+                joynr.load(testProvisioning).then(function(newJoynr){
                     joynr = newJoynr;
                     IntegrationUtils.initialize(joynr);
 
@@ -66,6 +62,8 @@ joynrTestRequire("integration/TestEnd2EndDatatypes", [
                                             datatypesProxy = newDatatypesProxy;
                                         });
                             });
+                }).catch(function(error){
+                    throw error;
                 });
             });
             waitsFor(function() {
