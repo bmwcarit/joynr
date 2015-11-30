@@ -52,7 +52,7 @@ public abstract class WebSocketMessagingStub implements IMessaging {
         sendString(objectMapper.writeValueAsString(message), timeout);
     }
 
-    protected void sendString(String string, long timeout) throws IOException {
+    protected synchronized void sendString(String string, long timeout) throws IOException {
         Session session = null;
         if (sessionFuture == null) {
             initConnection();
