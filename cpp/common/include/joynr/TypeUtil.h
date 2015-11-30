@@ -648,8 +648,9 @@ public:
     static std::vector<Variant> toVectorOfVariants(const std::vector<T>& values)
     {
         std::vector<Variant> variantValues;
+        variantValues.reserve(values.size());
 
-        for (T value : values) {
+        for (const T& value : values) {
             variantValues.push_back(Variant::make<T>(value));
         }
 
@@ -663,8 +664,9 @@ public:
     static Variant toVariant(const std::vector<T>& values)
     {
         std::vector<Variant> variantValues;
+        variantValues.reserve(values.size());
 
-        for (T value : values) {
+        for (const T& value : values) {
             variantValues.push_back(Variant::make<T>(value));
         }
 

@@ -117,9 +117,10 @@ public:
 
     template <typename T>
     static std::vector<typename T::Enum> convertVariantVectorToEnumVector(
-            const std::vector<Variant> variantVector)
+            const std::vector<Variant>& variantVector)
     {
         std::vector<typename T::Enum> enumVector;
+        enumVector.reserve(variantVector.size());
         for (const Variant& variant : variantVector) {
             if (variant.is<std::string>()) {
                 std::string enumValueName = variant.get<std::string>();
@@ -131,9 +132,10 @@ public:
 
     template <typename T>
     static std::vector<Variant> convertEnumVectorToVariantVector(
-            const std::vector<typename T::Enum> enumVector)
+            const std::vector<typename T::Enum>& enumVector)
     {
         std::vector<Variant> variantVector;
+        variantVector.reserve(enumVector.size());
         for (const typename T::Enum& enumValue : enumVector) {
             variantVector.push_back(Variant::make<typename T::Enum>(enumValue));
         }
