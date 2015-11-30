@@ -52,12 +52,6 @@ class ProxyGenerator {
 		return relativePath
 	}
 
-	def getDependencyPath(FType datatype) {
-		return datatype.buildPackagePath(File.separator, true)
-					+ File.separator
-					+ datatype.joynrName
-	}
-
 	def generateProxy(FInterface fInterface, Iterable<FType> types, IFileSystemAccess fsa){
 		var containerpath = File::separator //+ "generated" + File::separator
 

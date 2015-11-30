@@ -22,6 +22,7 @@ import com.google.inject.Inject
 import io.joynr.generator.templates.util.AbstractTypeUtil
 import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
+import java.io.File
 import java.util.Collections
 import java.util.HashMap
 import java.util.Map
@@ -332,5 +333,11 @@ class JSTypeUtil extends AbstractTypeUtil {
 
 	def getTypeNameForErrorEnumType(FMethod method, FEnumerationType errorEnumType) {
 		joynrGenerationPrefix + "." + method.packageName + "." + errorEnumType.joynrName
+	}
+
+	def getDependencyPath(FType datatype) {
+		return datatype.buildPackagePath(File.separator, true)
+					+ File.separator
+					+ datatype.joynrName
 	}
 }
