@@ -57,6 +57,7 @@
 		<module>java</module>
 		<module>cpp</module>
 		<module>examples</module>
+		<module>inter-language-test</module>
 	</modules>
 
 	<profiles>
