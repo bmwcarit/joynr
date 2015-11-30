@@ -207,29 +207,12 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
                                  reply);
     };
     // execute request
-    try {
-        requestInterpreter->execute(caller,
-                                    request->getMethodName(),
-                                    request->getParams(),
-                                    request->getParamDatatypes(),
-                                    onSuccess,
-                                    onError);
-        // ApplicationExceptions should not be created by the application itself to ensure
-        // serializability. They are treated as JoynrExceptions. They can only be handled correctly
-        // if the constructor is used properly (with the appropriate literal of the reported error
-        // enumeration).
-    } catch (exceptions::ProviderRuntimeException& e) {
-        std::string message = "Could not perform an RPC invocation, caught exception: " +
-                              e.getTypeName() + ":" + e.getMessage();
-        LOG_ERROR(logger, message.c_str());
-        onError(e);
-    } catch (exceptions::JoynrException& e) {
-        std::string message = "Could not perform an RPC invocation, caught exception: " +
-                              e.getTypeName() + ":" + e.getMessage();
-        LOG_ERROR(logger, message.c_str());
-        onError(exceptions::ProviderRuntimeException("caught exception: " + e.getTypeName() + ":" +
-                                                     e.getMessage()));
-    }
+    requestInterpreter->execute(caller,
+                                request->getMethodName(),
+                                request->getParams(),
+                                request->getParamDatatypes(),
+                                onSuccess,
+                                onError);
 
     delete request;
 }

@@ -78,7 +78,18 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 						const exceptions::ProviderRuntimeException&
 				)> onError
 		) {
-			provider->get«attributeName.toFirstUpper»(onSuccess, onError);
+			try {
+				provider->get«attributeName.toFirstUpper»(onSuccess, onError);
+			} catch (exceptions::ProviderRuntimeException& e) {
+				std::string message = "Could not perform «interfaceName»RequestCaller::get«attributeName.toFirstUpper», caught exception: " +
+									e.getTypeName() + ":" + e.getMessage();
+				onError(e);
+			} catch (exceptions::JoynrException& e) {
+				std::string message = "Could not perform «interfaceName»RequestCaller::get«attributeName.toFirstUpper», caught exception: " +
+									e.getTypeName() + ":" + e.getMessage();
+				onError(exceptions::ProviderRuntimeException("caught exception: " + e.getTypeName() + ":" +
+															e.getMessage()));
+			}
 		}
 	«ENDIF»
 	«IF attribute.writable»
@@ -89,7 +100,18 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 						const exceptions::ProviderRuntimeException&
 				)> onError
 		) {
-			provider->set«attributeName.toFirstUpper»(«attributeName.toFirstLower», onSuccess, onError);
+			try {
+				provider->set«attributeName.toFirstUpper»(«attributeName.toFirstLower», onSuccess, onError);
+			} catch (exceptions::ProviderRuntimeException& e) {
+				std::string message = "Could not perform «interfaceName»RequestCaller::set«attributeName.toFirstUpper», caught exception: " +
+									e.getTypeName() + ":" + e.getMessage();
+				onError(e);
+			} catch (exceptions::JoynrException& e) {
+				std::string message = "Could not perform «interfaceName»RequestCaller::set«attributeName.toFirstUpper», caught exception: " +
+									e.getTypeName() + ":" + e.getMessage();
+				onError(exceptions::ProviderRuntimeException("caught exception: " + e.getTypeName() + ":" +
+															e.getMessage()));
+			}
 		}
 	«ENDIF»
 
@@ -130,12 +152,26 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 					onError(error);
 				};
 		«ENDIF»
-
-		provider->«methodName»(
-				«IF !method.inputParameters.empty»«inputUntypedParamList»,«ENDIF»
-				onSuccess,
-				onErrorWrapper
-		);
+		try {
+			provider->«methodName»(
+					«IF !method.inputParameters.empty»«inputUntypedParamList»,«ENDIF»
+					onSuccess,
+					onErrorWrapper
+			);
+		// ApplicationExceptions should not be created by the application itself to ensure
+		// serializability. They are treated as JoynrExceptions. They can only be handled correctly
+		// if the constructor is used properly (with the appropriate literal of the reported error
+		// enumeration).
+		} catch (exceptions::ProviderRuntimeException& e) {
+			std::string message = "Could not perform «interfaceName»RequestCaller::«methodName.toFirstUpper», caught exception: " +
+								e.getTypeName() + ":" + e.getMessage();
+			onError(e);
+		} catch (exceptions::JoynrException& e) {
+			std::string message = "Could not perform «interfaceName»RequestCaller::«methodName.toFirstUpper», caught exception: " +
+								e.getTypeName() + ":" + e.getMessage();
+			onError(exceptions::ProviderRuntimeException("caught exception: " + e.getTypeName() + ":" +
+														e.getMessage()));
+		}
 	}
 
 «ENDFOR»
