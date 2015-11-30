@@ -26,6 +26,7 @@
 #include <QObject>
 
 #include <memory>
+#include <string>
 
 #include "joynr/Variant.h"
 
