@@ -20,6 +20,7 @@
 #include "joynr/SerializerRegistry.h"
 #include <iomanip>
 #include <sstream>
+#include <regex>
 
 namespace joynr
 {
@@ -111,37 +112,8 @@ void ClassSerializer<bool>::serialize(const bool& i, std::ostream& stream)
  */
 static std::string addEscapeForSpecialCharacters(const std::string& str) {
     std::string escapedString;
-    for(char c : str) {
-        switch(c) {
-        case '\b' :
-            escapedString.push_back('\\');
-            escapedString.push_back('b');
-            break;
-        case '\f' :
-            escapedString.push_back('\\');
-            escapedString.push_back('f');
-            break;
-        case '\n' :
-            escapedString.push_back('\\');
-            escapedString.push_back('n');
-            break;
-        case '\r' :
-            escapedString.push_back('\\');
-            escapedString.push_back('r');
-            break;
-        case '\t' :
-            escapedString.push_back('\\');
-            escapedString.push_back('t');
-            break;
-        case '\\' :
-        case '\"' :
-            escapedString.push_back('\\');
-            escapedString.push_back(c);
-            break;
-        default:
-            escapedString.push_back(c);
-        }
-    }
+    std::regex expr ("(\\\\|\")");
+    std::regex_replace (std::back_inserter(escapedString), str.begin(), str.end(), expr, "\\$&");
 
     return escapedString;
 }

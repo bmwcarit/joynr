@@ -25,6 +25,7 @@
 
 #include <string>
 #include <utility>
+#include <regex>
 
 namespace joynr
 {
@@ -34,18 +35,11 @@ static const bool isRequestRegistered =
         SerializerRegistry::registerType<JoynrMessage>("joynr.JoynrMessage");
 
 static std::string  removeEscapeFromSpecialChars(const std::string& inputStr){
-    const std::string escapedQuote = R"(\")";
-    const std::string normalQuote = R"(")";
+    std::string unEscapedString;
+    std::regex expr ("(\\\\\")");
+    std::regex_replace (std::back_inserter(unEscapedString), inputStr.begin(), inputStr.end(), expr, R"(")");
 
-    std::string unescapedString{inputStr};
-    std::string::size_type n = 0;
-    while ( ( n = unescapedString.find( escapedQuote, n ) ) != std::string::npos )
-    {
-        unescapedString.replace( n, escapedQuote.size(), normalQuote );
-        n += normalQuote.size();
-    }
-
-    return unescapedString;
+    return unEscapedString;
 }
 
 template <>
