@@ -36,7 +36,6 @@ class InterfaceCppTemplate implements InterfaceTemplate{
 	@Inject
 	private extension JoynrCppGeneratorExtensions
 
-	
 	@Inject
 	private extension CppStdTypeUtil
 
