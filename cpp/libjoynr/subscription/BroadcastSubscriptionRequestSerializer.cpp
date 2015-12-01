@@ -62,7 +62,7 @@ void ClassSerializer<BroadcastSubscriptionRequest>::serialize(
            << R"(",)";
     stream << R"("subscriptionId": ")" << broadcastSubscriptionRequest.getSubscriptionId()
            << R"(",)";
-    stream << R"("subscriptionToName": ")" << broadcastSubscriptionRequest.getSubscribeToName()
+    stream << R"("subscribedToName": ")" << broadcastSubscriptionRequest.getSubscribeToName()
            << R"(",)";
     stream << R"("qos": )";
     ClassSerializer<Variant> variantSerializer;
