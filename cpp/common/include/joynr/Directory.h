@@ -256,6 +256,8 @@ joynr_logging::Logger* RemoverRunnable<Key, IReplyCaller>::logger =
 
 } // namespace joynr
 
+#ifndef STRING_QHASH
+#define STRING_QHASH
 namespace std
 {
 // using std::strings as key in a Directory requires qHash to be implemented
@@ -264,5 +266,5 @@ inline uint qHash(const std::string& key)
     return std::hash<std::string>()(key);
 }
 }
-
+#endif // STRING_QHASH
 #endif // DIRECTORY_H
