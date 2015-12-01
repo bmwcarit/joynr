@@ -23,7 +23,6 @@
 #include <utility>
 #include <cassert>
 #include <cctype>
-#include <atomic>
 
 namespace joynr
 {
@@ -291,7 +290,7 @@ IValue &JsonField::value()
 
 //--------- JsonTokenizer -----------------------------------------------------
 
-std::atomic_size_t JsonTokenizer::maxTokens{256};
+std::atomic<size_t> JsonTokenizer::maxTokens{256};
 
 JsonTokenizer::JsonTokenizer(const std::string &json) :
     source(json),
@@ -320,9 +319,10 @@ JsonTokenizer::JsonTokenizer(const std::string &json) :
         // If the token array is too small this application is parsing
         // unusually big JSON objects
         if (res == JSMN_ERROR_NOMEM) {
-            size_t newMax = maxTokens.load() * 2;
-            maxTokens.store(newMax);
-            tokens.resize(newMax);
+            std::size_t expected = tokens.size();
+            std::size_t desired = expected * 2;
+            std::atomic_compare_exchange_strong(&maxTokens, &expected, desired);
+            tokens.resize(desired);
         } else {
             // A permanent error occured
             break;

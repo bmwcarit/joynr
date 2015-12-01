@@ -325,7 +325,7 @@ private:
     std::unique_ptr<JsonValue> currentValue;
     std::stringstream classicLocaleStream;
 
-    static std::atomic_size_t maxTokens;
+    static std::atomic<std::size_t> maxTokens;
 };
 
 } /* namespace joynr */
