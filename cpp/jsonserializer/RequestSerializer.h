@@ -21,13 +21,13 @@
 
 #include "joynr/ClassDeserializer.h"
 #include "joynr/ClassSerializer.h"
-#include "joynr/Request.h"
-#include "IDeserializer.h"
 
-#include <sstream>
+#include <ostream>
 
 namespace joynr
 {
+
+class Request;
 
 // Serializes a request
 template <>

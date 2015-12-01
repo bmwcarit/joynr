@@ -46,7 +46,6 @@ class EnumSerializerCppTemplate implements EnumTemplate{
 «warning»
 #include "«type.includeOfSerializer»"
 #include "joynr/SerializerRegistry.h"
-#include "joynr/Variant.h"
 #include "joynr/JoynrTypeId.h"
 
 #include <string>

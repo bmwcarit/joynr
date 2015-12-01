@@ -24,7 +24,6 @@
 #include "joynr/JoynrTypeId.h"
 
 #include <string>
-#include <utility>
 #include <regex>
 
 namespace joynr

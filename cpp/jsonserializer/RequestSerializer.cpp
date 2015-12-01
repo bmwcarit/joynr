@@ -17,13 +17,13 @@
  * #L%
  */
 #include "RequestSerializer.h"
+#include "joynr/Request.h"
 #include "joynr/ArraySerializer.h"
 #include "joynr/SerializerRegistry.h"
 #include "joynr/Variant.h"
 #include "joynr/JoynrTypeId.h"
 
 #include <string>
-#include <utility>
 
 namespace joynr
 {

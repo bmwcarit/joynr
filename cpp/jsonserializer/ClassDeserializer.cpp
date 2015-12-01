@@ -19,7 +19,6 @@
 #include "joynr/ClassDeserializer.h"
 #include "joynr/SerializerRegistry.h"
 #include "IDeserializer.h"
-#include <iostream>
 namespace joynr
 {
 

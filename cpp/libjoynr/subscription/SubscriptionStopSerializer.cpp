@@ -19,7 +19,6 @@
 #include "SubscriptionStopSerializer.h"
 
 #include "joynr/SerializerRegistry.h"
-#include "joynr/Variant.h"
 #include "joynr/JoynrTypeId.h"
 
 namespace joynr
