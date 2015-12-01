@@ -99,7 +99,7 @@ void JoynrTypeId<T>::create(const std::string& typeName)
 
 /**
  * This might be useful if we decide to use some other sources for TypeId,
- * like RTTI, or compiler __PRETTY_FUNCTION__, for now it is turned of.
+ * like RTTI, or compiler __PRETTY_FUNCTION__, for now it is turned off.
  */
 #if 0
 // Defines a TypeId for classes that require it.
