@@ -19,7 +19,7 @@
 #include "joynr/ClientQCache.h"
 
 #include <chrono>
-#include <stdint.h>
+#include <cstdint>
 
 namespace joynr
 {
