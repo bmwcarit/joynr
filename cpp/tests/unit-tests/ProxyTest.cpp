@@ -116,13 +116,11 @@ TEST_F(ProxyTest, sync_getAttributeNotCached) {
     testSync_getAttributeNotCached();
 }
 
-// TODO: enable once cache is Qt free and enabled in AbstractJoynrMessagingConnector.h
-TEST_F(ProxyTest, DISABLED_async_getAttributeCached) {
+TEST_F(ProxyTest, async_getAttributeCached) {
     testAsync_getAttributeCached();
 }
 
-// TODO: enable once cache is Qt free and enabled in AbstractJoynrMessagingConnector.h
-TEST_F(ProxyTest, DISABLED_sync_getAttributeCached) {
+TEST_F(ProxyTest, sync_getAttributeCached) {
     testSync_getAttributeCached();
 }
 

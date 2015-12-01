@@ -71,35 +71,27 @@ public:
     template <typename T>
     void attributeRequest(const std::string& methodName, std::shared_ptr<IReplyCaller> replyCaller)
     {
-        QString attributeID = QString::fromStdString(domain) + ":" +
-                              QString::fromStdString(interfaceName) + ":" +
-                              QString::fromStdString(methodName);
+        std::string attributeID = domain + ":" + interfaceName + ":" + methodName;
 
         if (cached) {
-            /* TODO: enable again once ClientQCache is Qt free
-                        QVariant entry = cache->lookUp(attributeID);
-                        if (!entry.isValid()) {
-                            LOG_DEBUG(
-                                    logger,
-                                    QString::fromStdString("Cached value for " + methodName + " is
-               not valid"));
-                        } else if (!entry.canConvert<T>()) {
-                            LOG_DEBUG(logger,
-                                      QString::fromStdString("Cached value for " + methodName
-                                      +
-                                                             " cannot be converted to type
-                                                             T"));
-                            assert(false);
-                        } else {
-                            LOG_DEBUG(
-                                    logger,
-                                    QString::fromStdString("Returning cached value for method " +
-               methodName));
-                            std::shared_ptr<ReplyCaller<T>> typedReplyCaller =
-                                    std::dynamic_pointer_cast<ReplyCaller<T>>(replyCaller);
-                            typedReplyCaller->returnValue(entry.value<T>());
-                        }
-            */
+            Variant entry = cache->lookUp(attributeID);
+            if (entry.isEmpty()) {
+                LOG_DEBUG(
+                        logger,
+                        QString::fromStdString("Cached value for " + methodName + " is not valid"));
+            } else if (!entry.is<T>()) {
+                LOG_DEBUG(logger,
+                          QString::fromStdString("Cached value for " + methodName +
+                                                 " cannot be converted to type T"));
+                assert(false);
+            } else {
+                LOG_DEBUG(
+                        logger,
+                        QString::fromStdString("Returning cached value for method " + methodName));
+                std::shared_ptr<ReplyCaller<T>> typedReplyCaller =
+                        std::dynamic_pointer_cast<ReplyCaller<T>>(replyCaller);
+                typedReplyCaller->returnValue(entry.get<T>());
+            }
         } else {
             Request request;
             request.setMethodName(methodName);

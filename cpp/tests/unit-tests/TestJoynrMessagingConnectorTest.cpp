@@ -150,13 +150,11 @@ TEST_F(TestJoynrMessagingConnectorTest, sync_getAttributeNotCached) {
     testSync_getAttributeNotCached();
 }
 
-// TODO: enable once cache is Qt free and enabled in AbstractJoynrMessagingConnector.h
-TEST_F(TestJoynrMessagingConnectorTest, DISABLED_async_getAttributeCached) {
+TEST_F(TestJoynrMessagingConnectorTest, async_getAttributeCached) {
     testAsync_getAttributeCached();
 }
 
-// TODO: enable once cache is Qt free and enabled in AbstractJoynrMessagingConnector.h
-TEST_F(TestJoynrMessagingConnectorTest, DISABLED_sync_getAttributeCached) {
+TEST_F(TestJoynrMessagingConnectorTest, sync_getAttributeCached) {
     testSync_getAttributeCached();
 }
 
