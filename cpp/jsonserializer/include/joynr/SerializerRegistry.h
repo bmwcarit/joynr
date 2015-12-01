@@ -40,7 +40,7 @@ public:
     /**
      * @brief ~IMetaObject
      */
-    virtual ~IMetaObject() {}
+    virtual ~IMetaObject() = default;
     /**
      * @brief createDeserializer
      * @return
@@ -49,14 +49,14 @@ public:
     {
         // By default there is no deserializer for types - they are treated as string
         // for conversion to Variant
-        return std::unique_ptr<IClassDeserializer>{};
+        return nullptr;
     }
 
     virtual std::unique_ptr<IEnumDeserializer> createEnumDeserializer()
     {
         // By default there is no deserializer for types - they are treated as string
         // for conversion to Variant
-        return std::unique_ptr<IEnumDeserializer>{};
+        return nullptr;
     }
 
     /**
@@ -161,13 +161,13 @@ public:
      */
     static std::unique_ptr<IEnumDeserializer> getEnumDeserializer(const std::string& typeName);
 
+    SerializerRegistry(const SerializerRegistry&) = delete;
+    void operator=(const SerializerRegistry&) = delete;
 private:
     std::unordered_map<std::string,std::unique_ptr<IMetaObject>> metaObjects;
     std::mutex registryMutex;
 
     SerializerRegistry();
-    SerializerRegistry(const SerializerRegistry&) = delete;
-    void operator=(const SerializerRegistry&) = delete;
 
     static SerializerRegistry& getInstance();
     static IMetaObject *getMetaObject(const std::string& typeName);
