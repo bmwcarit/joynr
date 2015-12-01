@@ -62,7 +62,7 @@ private:
     /**
       * Time since activation in ms
       */
-    qint64 elapsed(qint64 entryTime);
+    int64_t elapsed(int64_t entryTime);
     QCache<QString, CachedValue<QVariant>> cache;
     QMutex mutex;
 };

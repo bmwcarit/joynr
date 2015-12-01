@@ -51,7 +51,7 @@ void ClientQCache::insert(QString attributeId, QVariant value)
     cache.insert(attributeId, cachedValue);
 }
 
-qint64 ClientQCache::elapsed(qint64 entryTime)
+int64_t ClientQCache::elapsed(int64_t entryTime)
 {
     int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
     return now - entryTime;
