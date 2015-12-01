@@ -25,6 +25,7 @@
 #include <cassert>
 #include <iostream>
 #include <tuple>
+#include <vector>
 #include <QString>
 
 #include "joynr/joynrlogging.h"
