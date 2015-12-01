@@ -82,7 +82,11 @@ public:
      * @param tokenizer
      */
     JsonField(JsonTokenizer& tokenizer);
-    ~JsonField();
+    JsonField(const JsonField& other) = default;
+    JsonField(JsonField&& other) = default;
+    JsonField& operator=(const JsonField& other) = default;
+    JsonField& operator=(JsonField&& other) = default;
+    ~JsonField() = default;
     /**
      * @brief name get fieldName
      * @return
@@ -111,13 +115,17 @@ public:
      * @param tokenizer
      */
     JsonObject(JsonTokenizer& tokenizer);
+    JsonObject(const JsonObject& other) = default;
+    JsonObject& operator=(const JsonObject& other) = default;
+    JsonObject& operator=(JsonObject&& other) = default;
+
     /**
      * @brief JsonObject
      * @param object
      */
-    JsonObject(JsonObject&& object);
+    JsonObject(JsonObject&& object) = default;
 
-    ~JsonObject();
+    ~JsonObject() = default;
 
     /**
      * @brief hasNextField
@@ -151,8 +159,11 @@ public:
      * @brief JsonArray
      * @param array
      */
-    JsonArray(JsonArray&& array);
-    ~JsonArray();
+    JsonArray(JsonArray&& array) = default;
+    JsonArray(const JsonArray& other) = default;
+    JsonArray& operator=(const JsonArray& other) = default;
+    JsonArray& operator=(JsonArray&& other) = default;
+    ~JsonArray() = default;
 
     /**
      * @brief hasNextValue
@@ -184,7 +195,11 @@ public:
      * @param tokenizer
      */
     JsonValue(JsonTokenizer& tokenizer);
-    ~JsonValue();
+    JsonValue(JsonValue&& array) = default;
+    JsonValue(const JsonValue& other) = default;
+    JsonValue& operator=(const JsonValue& other) = default;
+    JsonValue& operator=(JsonValue&& other) = default;
+    ~JsonValue() = default;
 
     /**
      * @brief operator const std::string &
@@ -235,11 +250,11 @@ protected:
      */
     uint64_t getUInt64() const;
 private:
-   Variant value;
-   JsonTokenizer& tokenizer;
+    Variant value;
+    JsonTokenizer& tokenizer;
 
-   // Parse a variant from a token string
-   Variant parseJsonPrimitive(const std::string& tokenString);
+    // Parse a variant from a token string
+    Variant parseJsonPrimitive(const std::string& tokenString);
 };
 
 /**
@@ -254,8 +269,11 @@ public:
      *             of the object.
      */
     JsonTokenizer(const std::string& json);
-
-    ~JsonTokenizer();
+    JsonTokenizer(const JsonTokenizer& other) = default;
+    JsonTokenizer(JsonTokenizer&& other) = default;
+    JsonTokenizer& operator=(const JsonTokenizer& other) = default;
+    JsonTokenizer& operator=(JsonTokenizer&& other) = default;
+    ~JsonTokenizer() = default;
 
     /**
      * @brief Returns the current token

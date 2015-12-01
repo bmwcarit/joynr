@@ -20,7 +20,6 @@
 #define DESERIALIZER
 
 #include <string>
-#include <iostream>
 
 #include "joynr/Variant.h"
 
@@ -37,7 +36,7 @@ class IObject;
 class IField
 {
 public:
-    virtual ~IField() {}
+    virtual ~IField() = default;
 
     virtual const std::string& name() const = 0;
     virtual IValue& value() = 0;
@@ -50,7 +49,7 @@ public:
 class IValue
 {
 public:
-    virtual ~IValue() {}
+    virtual ~IValue() = default;
 
     /**
      * @brief Get the value of the field as a string
@@ -144,7 +143,7 @@ public:
     /**
      * @brief ~IObject
      */
-    virtual ~IObject() {}
+    virtual ~IObject() = default;
     /**
      * @brief hasNextField
      * @return
@@ -166,7 +165,7 @@ public:
     /**
      * @brief ~IArray
      */
-    virtual ~IArray() {}
+    virtual ~IArray() = default;
     /**
      * @brief hasNextValue
      * @return
@@ -188,7 +187,7 @@ public:
     /**
      * @brief ~IDeserializer
      */
-    virtual ~IDeserializer() {}
+    virtual ~IDeserializer() = default;
     /**
      * @brief Can objects be deserialized?
      */

@@ -23,6 +23,7 @@
 #include <utility>
 #include <cassert>
 #include <cctype>
+#include <atomic>
 
 namespace joynr
 {
@@ -75,19 +76,6 @@ JsonObject::JsonObject(JsonTokenizer &tokenizer) :
 {
 }
 
-JsonObject::JsonObject(JsonObject &&object) :
-    tokenizer(object.tokenizer),
-    size(object.size),
-    iterator(object.iterator),
-    currentField(std::move(object.currentField))
-{
-
-}
-
-JsonObject::~JsonObject()
-{
-}
-
 bool JsonObject::hasNextField() const
 {
     return iterator < size;
@@ -108,18 +96,6 @@ JsonArray::JsonArray(JsonTokenizer &tokenizer) :
     size(tokenizer.currentToken().getSize()),
     iterator(0),
     currentValue()
-{
-}
-
-JsonArray::JsonArray(JsonArray&& array) :
-   tokenizer(array.tokenizer),
-   size(array.size),
-   iterator(array.iterator),
-   currentValue(std::move(array.currentValue))
-{
-}
-
-JsonArray::~JsonArray()
 {
 }
 
@@ -162,10 +138,6 @@ JsonValue::JsonValue(JsonTokenizer &tokenizer) :
         // Unknown type
         break;
     }
-}
-
-JsonValue::~JsonValue()
-{
 }
 
 bool JsonValue::getBool() const
@@ -307,10 +279,6 @@ JsonField::JsonField(JsonTokenizer &tokenizer) :
     tokenValue = makeUnique<JsonValue>(this->tokenizer);
 }
 
-JsonField::~JsonField()
-{
-}
-
 const std::string &JsonField::name() const
 {
     return fieldName;
@@ -360,10 +328,6 @@ JsonTokenizer::JsonTokenizer(const std::string &json) :
             break;
         }
     }
-}
-
-JsonTokenizer::~JsonTokenizer()
-{
 }
 
 bool JsonTokenizer::isValid() const

@@ -40,7 +40,7 @@ public:
     /**
      * @brief ~IEnumDeserializer
      */
-    virtual ~IEnumDeserializer() {}
+    virtual ~IEnumDeserializer() = default;
     /**
      * @brief deserializeVariant Every deserializer has be able to deserailize to Variant
      * @param value
@@ -58,7 +58,7 @@ template <class T>
 class EnumDeserializer : public IEnumDeserializer
 {
 public:
-    ~EnumDeserializer() {}
+    ~EnumDeserializer() = default;
 
     /**
      * @brief deserialize Implementations are generated with the classes T,
