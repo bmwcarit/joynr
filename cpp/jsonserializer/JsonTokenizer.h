@@ -28,6 +28,7 @@
 #include <vector>
 #include <atomic>
 #include <sstream>
+#include <cstddef>
 
 namespace joynr
 {
@@ -61,13 +62,13 @@ public:
      * @brief getSize
      * @return
      */
-    size_t getSize() const;
+    std::size_t getSize() const;
 
 private:
     jsmntype_t type;
     const char *start;
     const char *end;
-    size_t size;
+    std::size_t size;
 };
 
 /**
@@ -139,8 +140,8 @@ public:
     IField& nextField();
 private:
     JsonTokenizer& tokenizer;
-    size_t size;
-    size_t iterator;
+    std::size_t size;
+    std::size_t iterator;
     std::unique_ptr<JsonField> currentField;
 };
 
@@ -177,8 +178,8 @@ public:
     IValue& nextValue();
 private:
     JsonTokenizer& tokenizer;
-    size_t size;
-    size_t iterator;
+    std::size_t size;
+    std::size_t iterator;
     std::unique_ptr<IValue> currentValue;
 };
 
@@ -317,7 +318,7 @@ public:
 private:
     const std::string& source;
     std::vector<jsmntok_t> tokens;
-    size_t currentIndex;
+    std::size_t currentIndex;
     jsmn_parser parser;
     bool valid;
     std::unique_ptr<JsonObject> currentObject;
