@@ -180,10 +180,26 @@ TEST_F(UtilTest, expandTuple){
 }
 
 TEST_F(UtilTest, toValueTuple){
-    std::vector<Variant> list({Variant::make<int>(int(23)), Variant::make<float>(float(24.25)), Variant::make<std::string>(std::string("Test"))});
+    std::vector<Variant> list({Variant::make<int>(int(23)), Variant::make<double>(double(24.25)), Variant::make<std::string>(std::string("Test"))});
     std::tuple<int, float, std::string> tup = Util::toValueTuple<int, float, std::string>(list);
 
     EXPECT_EQ(int(23), std::get<0>(tup));
     EXPECT_EQ(float(24.25), std::get<1>(tup));
     EXPECT_EQ(std::string("Test"), std::get<2>(tup));
+}
+
+TEST_F(UtilTest, valueOfFloatVector){
+    std::vector<float> expectedFloatVector = {1.1f, 1.2f, 1.3f};
+
+    std::vector<Variant> variantVector(expectedFloatVector.size());
+    std::transform(
+                expectedFloatVector.cbegin(),
+                expectedFloatVector.cend(),
+                variantVector.begin(),
+                [](const float value) { return Variant::make<double>(value); }
+    );
+    std::vector<float> floatVector = Util::valueOf<std::vector<float>>(Variant::make<std::vector<Variant>>(variantVector));
+    for(int i = 0; i < expectedFloatVector.size(); i++) {
+        EXPECT_EQ(expectedFloatVector[i], floatVector[i]);
+    }
 }

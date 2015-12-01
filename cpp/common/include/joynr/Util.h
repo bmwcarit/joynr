@@ -304,6 +304,12 @@ inline T Util::valueOf(const Variant& variant)
     return variant.get<T>();
 }
 
+template <>
+inline float Util::valueOf<float>(const Variant& variant)
+{
+    return variant.get<double>();
+}
+
 // concrete specilization for lists of primitive datatypes
 template <>
 inline std::vector<int8_t> Util::valueOf<std::vector<int8_t>>(const Variant& variant)
@@ -356,7 +362,11 @@ inline std::vector<uint64_t> Util::valueOf<std::vector<uint64_t>>(const Variant&
 template <>
 inline std::vector<float> Util::valueOf<std::vector<float>>(const Variant& variant)
 {
-    return joynr::Util::convertVariantVectorToVector<float>(variant.get<std::vector<Variant>>());
+    std::vector<double> doubles =
+            joynr::Util::convertVariantVectorToVector<double>(variant.get<std::vector<Variant>>());
+    std::vector<float> floats(doubles.size());
+    std::copy(doubles.cbegin(), doubles.cend(), floats.begin());
+    return floats;
 }
 
 template <>

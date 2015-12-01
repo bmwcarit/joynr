@@ -564,8 +564,9 @@ TEST_F(CombinedEnd2EndTest, subscribeToListAttribute) {
 
     MockSubscriptionListenerOneType<std::vector<int>> *mockListener = new MockSubscriptionListenerOneType<std::vector<int>>();
 
+    std::vector<int> expectedValues = {1000, 2000, 3000};
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, onReceive(A<const std::vector<int>&>()))
+    EXPECT_CALL(*mockListener, onReceive(Eq(expectedValues)))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     std::shared_ptr<ISubscriptionListener<std::vector<int>>> subscriptionListener(mockListener);
@@ -574,6 +575,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToListAttribute) {
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
     std::shared_ptr<tests::testProvider> testProvider(new MockTestProvider(providerQos));
+    testProvider->setListOfInts(expectedValues, [](){}, [](const joynr::exceptions::JoynrRuntimeException&){});
     std::string providerParticipantId = runtime1->registerProvider<tests::testProvider>(
             domainName,
             testProvider
