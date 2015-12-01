@@ -138,7 +138,7 @@ def deserializePrimitiveArrayValue(FBasicTypeId basicType, String memberName, St
 			converterFunction = "convertString"
 			converterFunctionTemplate = ""
 		}
-		case INT8, 
+		case INT8,
 		case INT16,
 		case INT32,
 		case INT64 : converterFunction = "convertUIntType"
