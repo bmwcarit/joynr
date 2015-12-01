@@ -24,13 +24,14 @@ namespace joynr
 
 bool isRequestTypeRegistered = Variant::registerType<Request>("joynr.Request");
 
-Request::Request() : requestReplyId(), methodName(), params(), paramDatatypes()
+Request::Request() : QObject(), requestReplyId(), methodName(), params(), paramDatatypes()
 {
     this->requestReplyId = Util::createUuid().toStdString();
 }
 
 Request::Request(const Request& other)
-        : requestReplyId(other.getRequestReplyId()),
+        : QObject(),
+          requestReplyId(other.getRequestReplyId()),
           methodName(other.getMethodName()),
           params(other.getParams()),
           paramDatatypes(other.paramDatatypes)

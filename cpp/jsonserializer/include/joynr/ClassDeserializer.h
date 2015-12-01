@@ -86,13 +86,6 @@ Variant ClassDeserializer<T>::deserializeVariant(IObject& o)
 }
 
 /**
- * @brief deserialize not knowing the type
- * @param object
- * @return Variant
- */
-Variant deserialize(IObject& object);
-
-/**
  * @brief convertVariant IValue to Variant (e.g. JsonValue to Variant)
  * @param value reference to concrete IValue
  * @return Variant

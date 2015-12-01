@@ -27,6 +27,7 @@
 #include <tuple>
 #include <vector>
 #include <QString>
+#include <tuple>
 
 #include "joynr/joynrlogging.h"
 
@@ -338,6 +339,7 @@ typename std::enable_if<!std::is_copy_constructible<T>::value, VariantHolder<T>>
 copyVariantHolder(const T& value)
 {
     assert(false);
+    std::ignore = value;
     return nullptr;
 }
 

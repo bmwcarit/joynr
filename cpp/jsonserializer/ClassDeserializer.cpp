@@ -23,7 +23,11 @@
 namespace joynr
 {
 
-// Deserialize not knowing the type
+/**
+ * @brief deserialize not knowing the type
+ * @param object
+ * @return Variant
+ */
 Variant deserialize(IObject& o)
 {
     // The object must have fields

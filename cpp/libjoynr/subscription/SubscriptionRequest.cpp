@@ -81,6 +81,8 @@ const SubscriptionQos* SubscriptionRequest::getSubscriptionQosPtr()
     if (qos.is<SubscriptionQos>()) {
         return &qos.get<SubscriptionQos>();
     }
+
+    return nullptr;
 }
 
 SubscriptionRequest& SubscriptionRequest::operator=(const SubscriptionRequest& subscriptionRequest)

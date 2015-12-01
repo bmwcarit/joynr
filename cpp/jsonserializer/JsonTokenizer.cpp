@@ -157,6 +157,7 @@ JsonValue::JsonValue(JsonTokenizer &tokenizer) :
     case JSMN_STRING:
         value = std::move(Variant::make<std::string>(tokenizer.currentToken().asString()));
         break;
+    case JSMN_UNDEFINED:
     default:
         // Unknown type
         break;
@@ -302,8 +303,8 @@ JsonField::JsonField(JsonTokenizer &tokenizer) :
     fieldName(tokenizer.currentToken().asString()),
     tokenValue()
 {
-    tokenizer.nextToken();
-    tokenValue = makeUnique<JsonValue>(tokenizer);
+    this->tokenizer.nextToken();
+    tokenValue = makeUnique<JsonValue>(this->tokenizer);
 }
 
 JsonField::~JsonField()
