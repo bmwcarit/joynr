@@ -267,7 +267,7 @@ private:
             const QMap<QString, std::shared_ptr<RequestInformationType>>& map);
 
     bool isShuttingDown();
-    qint64 getPublicationTtl(std::shared_ptr<SubscriptionRequest> subscriptionRequest) const;
+    int64_t getPublicationTtl(std::shared_ptr<SubscriptionRequest> subscriptionRequest) const;
     void sendPublication(std::shared_ptr<Publication> publication,
                          std::shared_ptr<SubscriptionInformation> subscriptionInformation,
                          std::shared_ptr<SubscriptionRequest> subscriptionRequest,

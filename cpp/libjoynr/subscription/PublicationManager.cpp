@@ -829,7 +829,7 @@ bool PublicationManager::isShuttingDown()
     return shuttingDown;
 }
 
-qint64 PublicationManager::getPublicationTtl(
+int64_t PublicationManager::getPublicationTtl(
         std::shared_ptr<SubscriptionRequest> subscriptionRequest) const
 {
     const SubscriptionQos* qosPtr = subscriptionRequest->getSubscriptionQosPtr();
