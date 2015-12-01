@@ -24,7 +24,7 @@
 #include <memory>
 #include <cassert>
 #include <iostream>
-#include <vector>
+#include <tuple>
 #include <QString>
 
 #include "joynr/joynrlogging.h"
@@ -41,15 +41,15 @@ public:
     /**
      * @brief IVariantHolder
      */
-    IVariantHolder()
-    {
-    }
+    IVariantHolder() = default;
     /**
      * @brief ~IVariantHolder
      */
-    virtual ~IVariantHolder()
-    {
-    }
+    virtual ~IVariantHolder() = default;
+    /**
+     * @brief clone
+     * @return
+     */
     virtual IVariantHolder* clone() const = 0;
     /**
      * @brief getTypeId Get the type id of the variant
@@ -62,9 +62,8 @@ public:
      */
     virtual std::string getTypeName() const = 0;
 
-private:
     IVariantHolder(const IVariantHolder&) = delete;
-    void operator=(const IVariantHolder&) = delete;
+    IVariantHolder& operator=(const IVariantHolder&) = delete;
 };
 
 /**
@@ -102,20 +101,14 @@ public:
      * @brief Variant move constructor
      * @param variantRvalue
      */
-    Variant(Variant&& variantRvalue) : pointer(std::move(variantRvalue.pointer))
-    {
-    }
+    Variant(Variant&& variantRvalue) = default;
 
     /**
      * @brief operator = to support move semantics
      * @param variantRvalue
      * @return
      */
-    Variant& operator=(Variant&& variantRvalue)
-    {
-        pointer = std::move(variantRvalue.pointer);
-        return *this;
-    }
+    Variant& operator=(Variant&& variantRvalue) = default;
 
     /**
      * @brief operator = to support copy
@@ -215,9 +208,10 @@ bool Variant::registerType(std::string typeName)
     return true;
 }
 
-// TODO: check why is this here, if needed implement properly
 inline bool operator==(const Variant& lhs, const Variant& rhs)
 {
+    std::ignore = lhs;
+    std::ignore = rhs;
     return true;
 }
 
@@ -232,19 +226,23 @@ public:
      * @brief VariantHolder copy constructor
      * @param other
      */
-    VariantHolder(const T& other) : payload(other)
+    VariantHolder(const VariantHolder&) = delete;
+    /**
+     * @brief VariantHolder copy payload in VariantHolder
+     * @param other
+     */
+    explicit VariantHolder(const T& other) : payload(other)
     {
     }
     /**
-     * @brief VariantHolder move constructor
+     * @brief VariantHolder move payload in VariantHolder
      * @param otherRvalue
      */
-    VariantHolder(T&& otherRvalue) : payload(std::move(otherRvalue))
+    explicit VariantHolder(T&& otherRvalue) : payload(std::move(otherRvalue))
     {
     }
-    ~VariantHolder()
-    {
-    }
+
+    ~VariantHolder() = default;
 
     IVariantHolder* clone() const;
 
@@ -325,7 +323,7 @@ Variant Variant::make(TArgs&&... args)
     return Variant(new VariantHolder<T>(T(std::forward<TArgs>(args)...)));
 }
 
-// Copyiable
+// Copyable
 template <typename T>
 typename std::enable_if<std::is_copy_constructible<T>::value, VariantHolder<T>>::type*
 copyVariantHolder(const T& value)
@@ -333,7 +331,7 @@ copyVariantHolder(const T& value)
     return new VariantHolder<T>(T(value));
 }
 
-// Not copiable
+// Not copyable
 template <typename T>
 typename std::enable_if<!std::is_copy_constructible<T>::value, VariantHolder<T>>::type*
 copyVariantHolder(const T& value)
