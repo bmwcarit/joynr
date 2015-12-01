@@ -399,7 +399,7 @@ IValue &JsonTokenizer::nextValue()
     return *currentValue;
 }
 
-double JsonTokenizer::stringToDoubleLocaleIndependent(std::string doubleStr)
+double JsonTokenizer::stringToDoubleLocaleIndependent(const std::string& doubleStr)
 {
     classicLocaleStream << doubleStr;
     double doubleValue;

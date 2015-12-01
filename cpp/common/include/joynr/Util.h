@@ -272,7 +272,7 @@ public:
     }
 
     template <typename... Ts>
-    static std::tuple<Ts...> toValueTuple(std::vector<Variant> list);
+    static std::tuple<Ts...> toValueTuple(const std::vector<Variant>& list);
 
 private:
     static joynr_logging::Logger* logger;
@@ -284,13 +284,19 @@ private:
         return JoynrTypeId<T>::getTypeId() + prime * getTypeId<Ts...>();
     }
 
-    template <typename T, typename... Ts>
-    static std::tuple<T, Ts...> toValueTuple_split(std::vector<Variant> list)
+    template <std::size_t index, typename T, typename... Ts>
+    static std::tuple<T, Ts...> toValueTuple_split(const std::vector<Variant>& list)
     {
-        T value = valueOf<T>(list.front());
-        list.erase(list.begin());
+        T value = valueOf<T>(list[index]);
+        return std::tuple_cat(std::make_tuple(value), toValueTuple_split<index + 1, Ts...>(list));
+    }
 
-        return std::tuple_cat(std::make_tuple(value), toValueTuple<Ts...>(list));
+    template <std::size_t index>
+    static std::tuple<> toValueTuple_split(const std::vector<Variant>& list)
+    {
+        assert(list.size() == index);
+        std::ignore = list;
+        return std::make_tuple();
     }
 };
 
@@ -454,17 +460,9 @@ struct Util::ExpandTupleIntoFunctionArguments<0>
 };
 
 template <typename... Ts>
-inline std::tuple<Ts...> Util::toValueTuple(std::vector<Variant> list)
+inline std::tuple<Ts...> Util::toValueTuple(const std::vector<Variant>& list)
 {
-    return toValueTuple_split<Ts...>(list);
-}
-
-template <>
-inline std::tuple<> Util::toValueTuple<>(std::vector<Variant> list)
-{
-    assert(list.empty());
-    Q_UNUSED(list);
-    return std::make_tuple();
+    return toValueTuple_split<0, Ts...>(list);
 }
 
 } // namespace joynr

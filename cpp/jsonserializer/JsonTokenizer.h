@@ -294,7 +294,7 @@ public:
      */
     IValue &nextValue();
 
-    double stringToDoubleLocaleIndependent(std::string doubleStr);
+    double stringToDoubleLocaleIndependent(const std::string& doubleStr);
 
 private:
     const std::string& source;
