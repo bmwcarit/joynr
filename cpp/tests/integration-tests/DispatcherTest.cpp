@@ -144,7 +144,7 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
 
     value.push_back(Variant::make<types::Localisation::GpsLocation>(gpsLocation1));
     Reply reply;
-    reply.setResponse(value);
+    reply.setResponse(std::move(value));
     reply.setRequestReplyId(requestReplyId);
     JoynrMessage expectedReply = messageFactory.createReply(
                 QString::fromStdString(proxyParticipantId),
@@ -188,7 +188,7 @@ TEST_F(DispatcherTest, receive_interpreteReplyAndCallReplyCaller) {
     reply.setRequestReplyId(requestReplyId);
     std::vector<Variant> response;
     response.push_back(Variant::make<types::Localisation::GpsLocation>(gpsLocation1));
-    reply.setResponse(response);
+    reply.setResponse(std::move(response));
 
     JoynrMessage msg = messageFactory.createReply(
                 QString::fromStdString(proxyParticipantId),

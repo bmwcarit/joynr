@@ -50,7 +50,7 @@ public:
             const std::string& methodName,
             const std::vector<Variant>& paramValues,
             const std::vector<std::string>& paramTypes,
-            std::function<void(const std::vector<Variant>& outParams)> onSuccess,
+            std::function<void(std::vector<Variant>&& outParams)> onSuccess,
             std::function<void(const exceptions::JoynrException& exception)> onError) = 0;
 };
 

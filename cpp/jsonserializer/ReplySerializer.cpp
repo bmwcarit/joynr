@@ -38,8 +38,7 @@ void ClassDeserializer<Reply>::deserialize(Reply& reply, IObject& o)
             reply.setRequestReplyId(field.value());
         } else if (field.name() == "response") {
             IArray& array = field.value();
-            auto converted = convertArray<Variant>(array, convertVariant);
-            reply.setResponse(converted);
+            reply.setResponse(convertArray<Variant>(array, convertVariant));
         }
     }
 }

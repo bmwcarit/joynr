@@ -78,7 +78,7 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller) {
     std::vector<Variant> response;
     response.push_back(Variant::make<types::Localisation::GpsLocation>(location));
     Reply reply;
-    reply.setResponse(response);
+    reply.setResponse(std::move(response));
 
     // Interpret the reply
     IReplyInterpreter& interpreter = registrar.getReplyInterpreter(Util::getTypeId<types::Localisation::GpsLocation>());

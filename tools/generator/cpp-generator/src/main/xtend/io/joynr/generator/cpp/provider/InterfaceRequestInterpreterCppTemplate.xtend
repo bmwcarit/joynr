@@ -83,7 +83,7 @@ void «interfaceName»RequestInterpreter::execute(
 		const std::string& methodName,
 		const std::vector<Variant>& paramValues,
 		const std::vector<std::string>& paramTypes,
-		std::function<void (const std::vector<Variant>&)> onSuccess,
+		std::function<void (std::vector<Variant>&&)> onSuccess,
 		std::function<void (const exceptions::JoynrException& exception)> onError
 ) {
 	Q_UNUSED(paramValues);//if all methods of the interface are empty, the paramValues would not be used and give a warning.
@@ -104,7 +104,7 @@ void «interfaceName»RequestInterpreter::execute(
 							Variant singleOutParam(«IF isArray(attribute)»joynr::TypeUtil::toVariant<«getTypeName(attribute.type)»>(«attributeName»)«ELSE»Variant::make<«getTypeName(attribute.type)»>(«attributeName»)«ENDIF»);
 							std::vector<Variant> outParams;
 							outParams.push_back(singleOutParam);
-							onSuccess(outParams);
+							onSuccess(std::move(outParams));
 						};
 				«requestCallerName»->get«attributeName.toFirstUpper»(requestCallerOnSuccess, onError);
 				return;
@@ -148,7 +148,7 @@ void «interfaceName»RequestInterpreter::execute(
 				std::function<void()> requestCallerOnSuccess =
 						[onSuccess] () {
 							std::vector<Variant> outParams;
-							onSuccess(outParams);
+							onSuccess(std::move(outParams));
 						};
 				«requestCallerName»->set«attributeName.toFirstUpper»(typedInput«attributeName.toFirstUpper», requestCallerOnSuccess, onError);
 				return;
@@ -181,7 +181,7 @@ void «interfaceName»RequestInterpreter::execute(
 										«ENDIF»
 								);
 							«ENDFOR»
-							onSuccess(outParams);
+							onSuccess(std::move(outParams));
 						};
 
 

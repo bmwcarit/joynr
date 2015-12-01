@@ -83,7 +83,7 @@ protected:
         reply.setRequestReplyId("TEST-requestReplyId");
         std::vector<Variant> response;
         response.push_back(Variant::make<T>(value));
-        reply.setResponse(response);
+        reply.setResponse(std::move(response));
 
         std::stringstream expectedReplyStringStream;
         expectedReplyStringStream << R"({"_typeName": "joynr.Reply","requestReplyId": )";
@@ -539,7 +539,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocation) {
     reply.setRequestReplyId("TEST-requestReplyId");
     std::vector<Variant> response;
     response.push_back(Variant::make<types::Localisation::GpsLocation>(gps1));
-    reply.setResponse(response);
+    reply.setResponse(std::move(response));
 
     std::stringstream expectedReplyStringStream;
     expectedReplyStringStream << R"({)";
@@ -588,7 +588,7 @@ TEST_F(JsonSerializerTest, deserialize_replyWithVoid) {
     std::vector<Variant> response;
     Reply reply;
     reply.setRequestReplyId("TEST-requestReplyId");
-    reply.setResponse(response);
+    reply.setResponse(std::move(response));
 
     std::stringstream expectedStringStream;
     expectedStringStream << R"({"_typeName": "joynr.Reply",)";
@@ -620,7 +620,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocationList) {
     reply.setRequestReplyId("TEST-requestReplyId");
     std::vector<Variant> response;
     response.push_back(TypeUtil::toVariant(locList));
-    reply.setResponse(response);
+    reply.setResponse(std::move(response));
 
     EXPECT_EQ(reply.getResponse().size(), 1);
 
@@ -800,7 +800,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_Reply_with_Array_as_Response) {
     std::vector<Variant> response;
     reply.setRequestReplyId("serialize_deserialize_Reply_with_Array_as_Response");
     response.push_back(joynr::TypeUtil::toVariant(capabilityInformations));
-    reply.setResponse(response);
+    reply.setResponse(std::move(response));
     std::string serializedContent = JsonSerializer::serialize<Reply>(reply);
     LOG_DEBUG(logger, QString::fromStdString(serializedContent));
 

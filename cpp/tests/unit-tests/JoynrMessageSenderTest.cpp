@@ -147,7 +147,7 @@ TEST_F(JoynrMessageSenderTest, sendReply_normal){
     reply.setRequestReplyId(TypeUtil::toStd(QUuid::createUuid().toString()));
     std::vector<Variant> response;
     response.push_back(Variant::make<std::string>("response"));
-    reply.setResponse(response);
+    reply.setResponse(std::move(response));
 
     JoynrMessage message = messageFactory.createReply(
                 QString::fromStdString(senderID),

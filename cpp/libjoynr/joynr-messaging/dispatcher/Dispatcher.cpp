@@ -174,12 +174,12 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
     std::string requestReplyId = request->getRequestReplyId();
     JoynrTimePoint requestExpiryDate = message.getHeaderExpiryDate();
 
-    std::function<void(const std::vector<Variant>&)> onSuccess =
+    std::function<void(std::vector<Variant>)> onSuccess =
             [requestReplyId, requestExpiryDate, this, senderId, receiverId](
-                    const std::vector<Variant>& returnValueVar) {
+                    std::vector<Variant> returnValueVar) {
         Reply reply;
         reply.setRequestReplyId(requestReplyId);
-        reply.setResponse(returnValueVar);
+        reply.setResponse(std::move(returnValueVar));
         // send reply back to the original sender (ie. sender and receiver ids are reversed
         // on
         // purpose)
