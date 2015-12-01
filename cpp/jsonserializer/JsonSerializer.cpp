@@ -18,7 +18,6 @@
  */
 #include "joynr/JsonSerializer.h"
 #include "joynr/joynrlogging.h"
-#include <QString>
 
 namespace joynr
 {
