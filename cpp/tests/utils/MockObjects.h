@@ -308,8 +308,8 @@ public:
 
 class MockClientCache : public joynr::IClientCache {
 public:
-   MOCK_METHOD1(lookUp, QVariant(const std::string& attributeId));
-   MOCK_METHOD2(insert, void(std::string attributeId, QVariant value));
+   MOCK_METHOD1(lookUp, joynr::Variant(const std::string& attributeId));
+   MOCK_METHOD2(insert, void(std::string attributeId, joynr::Variant value));
 };
 
 class MockDiscovery : public joynr::system::IDiscovery {

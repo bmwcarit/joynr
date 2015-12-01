@@ -208,10 +208,9 @@ public:
 
         setExpectationsForSendRequestCall(Util::getTypeId<joynr::types::Localisation::GpsLocation>(), "getLocation").Times(0);
 
-        QVariant qvariant;
-        qvariant.setValue(types::Localisation::QtGpsLocation::createQt(expectedGpsLocation));
+        Variant variant = Variant::make<types::Localisation::GpsLocation>(expectedGpsLocation);
 
-        ON_CALL(mockClientCache, lookUp(_)).WillByDefault(Return(qvariant));
+        ON_CALL(mockClientCache, lookUp(_)).WillByDefault(Return(variant));
 
         asyncTestFixture->getLocationAsync(
                 [callback] (const types::Localisation::GpsLocation& location) {
@@ -224,9 +223,8 @@ public:
 
         setExpectationsForSendRequestCall(Util::getTypeId<joynr::types::Localisation::GpsLocation>(), "getLocation").Times(0);
 
-        QVariant qvariant;
-        qvariant.setValue(types::Localisation::QtGpsLocation::createQt(expectedGpsLocation));
-        ON_CALL(mockClientCache, lookUp(_)).WillByDefault(Return(qvariant));
+        Variant variant = Variant::make<types::Localisation::GpsLocation>(expectedGpsLocation);
+        ON_CALL(mockClientCache, lookUp(_)).WillByDefault(Return(variant));
 
         types::Localisation::GpsLocation gpsLocation;
         try {

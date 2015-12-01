@@ -33,21 +33,21 @@ ClientQCache::ClientQCache() : cache(), mutex()
     cache.setMaxCost(MAX_CUMMULATIVE_CACHE_COST);
 }
 
-QVariant ClientQCache::lookUp(const std::string& attributeId)
+Variant ClientQCache::lookUp(const std::string& attributeId)
 {
     QMutexLocker locker(&mutex);
     if (!cache.contains(attributeId)) {
-        return QVariant();
+        return Variant();
     }
-    CachedValue<QVariant>* entry = cache.object(attributeId);
+    CachedValue<Variant>* entry = cache.object(attributeId);
     return entry->getValue();
 }
 
-void ClientQCache::insert(std::string attributeId, QVariant value)
+void ClientQCache::insert(std::string attributeId, Variant value)
 {
     QMutexLocker locker(&mutex);
     int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-    CachedValue<QVariant>* cachedValue = new CachedValue<QVariant>(value, now);
+    CachedValue<Variant>* cachedValue = new CachedValue<Variant>(value, now);
     cache.insert(attributeId, cachedValue);
 }
 
