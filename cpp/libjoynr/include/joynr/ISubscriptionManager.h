@@ -65,7 +65,7 @@ public:
      */
     virtual void registerSubscription(const QString& subscribeToName,
                                       std::shared_ptr<ISubscriptionCallback> subscriptionCaller,
-                                      Variant qos,
+                                      const Variant& qos,
                                       SubscriptionRequest& subscriptionRequest) = 0;
 
     /**

@@ -67,7 +67,7 @@ QString BroadcastSubscriptionRequest::toQString() const
     return QString::fromStdString(JsonSerializer::serialize(*this));
 }
 
-void BroadcastSubscriptionRequest::setQos(OnChangeSubscriptionQos qos)
+void BroadcastSubscriptionRequest::setQos(const OnChangeSubscriptionQos& qos)
 {
     Variant qosVariant = Variant::make<OnChangeSubscriptionQos>(qos);
     SubscriptionRequest::setQos(qosVariant);

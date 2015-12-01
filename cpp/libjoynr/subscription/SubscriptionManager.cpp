@@ -78,7 +78,7 @@ SubscriptionManager::SubscriptionManager(DelayedScheduler* scheduler)
 void SubscriptionManager::registerSubscription(
         const QString& subscribeToName,
         std::shared_ptr<ISubscriptionCallback> subscriptionCaller,
-        Variant qosVariant,
+        const Variant& qosVariant,
         SubscriptionRequest& subscriptionRequest)
 {
     // Register the subscription
