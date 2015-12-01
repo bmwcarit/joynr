@@ -129,22 +129,23 @@ struct «getDllExportMacro()»«typeName» {
  * @param messagingQos The current object instance
  * @param os The output stream to send the output to
  */
-void PrintTo(const «typeName»::«getNestedEnumName()»& «typeName.toFirstLower»Value, ::std::ostream* os);
+void PrintTo(const «type.typeName»& «typeName.toFirstLower»Value, ::std::ostream* os);
 
 «getNamespaceEnder(type, true)»
 
 namespace «joynrGenerationPrefix» {
 
 template <>
-inline «type.typeName» joynr::Util::valueOf<«namespaceName+"::"+typeName»>(const Variant& variant)
+inline «type.typeName» joynr::Util::valueOf<«type.typeName»>(const Variant& variant)
 {
-  return «joynrGenerationPrefix»::Util::convertVariantToEnum<«namespaceName+"::"+typeName»>(variant);
+	return «joynrGenerationPrefix»::Util::convertVariantToEnum<«type.typeNameOfContainingClass»>(variant);
 }
 
-/**template <>
-inline QList<«typeName»> joynr::Util::valueOf<QList<«typeName»>>(const QVariant& variant){
-   return «joynrGenerationPrefix»::Util::convertVariantListToEnumList<«typeName»>(variant.value<QVariantList>());
-}**/
+template <>
+inline std::vector<«type.typeName»> joynr::Util::valueOf<std::vector<«type.typeName»>>(const Variant& variant)
+{
+	return joynr::Util::convertVariantVectorToEnumVector<«type.typeNameOfContainingClass»>(variant.get<std::vector<Variant>>());
+}
 }
 
 namespace std {

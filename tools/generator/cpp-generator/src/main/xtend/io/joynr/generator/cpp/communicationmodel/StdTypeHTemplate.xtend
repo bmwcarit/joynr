@@ -52,6 +52,8 @@ class StdTypeHTemplate implements CompoundTypeTemplate{
 #include <string>
 #include <vector>
 
+#include "joynr/Util.h"
+
 // include complex Datatype headers.
 «FOR member: getRequiredIncludesFor(type)»
 	#include "«member»"
@@ -158,6 +160,17 @@ private:
 };
 
 «getNamespaceEnder(type, true)»
+
+namespace joynr
+{
+template <>
+inline std::vector<«type.typeName»> Util::valueOf<
+		std::vector<«type.typeName»>>(const Variant& variant)
+{
+	return joynr::Util::convertVariantVectorToVector<«type.typeName»>(
+			variant.get<std::vector<Variant>>());
+}
+} /* namespace joynr */
 
 #endif // «headerGuard»
 '''
