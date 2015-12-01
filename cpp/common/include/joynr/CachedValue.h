@@ -19,7 +19,7 @@
 #ifndef CACHEDVALUE_H
 #define CACHEDVALUE_H
 
-#include <QtGlobal>
+#include <cinttypes>
 
 namespace joynr
 {
@@ -31,10 +31,10 @@ class CachedValue
 public:
     CachedValue<T>();
     CachedValue<T>(const CachedValue<T>& other);
-    CachedValue<T>(T value, qint64 timestamp);
+    CachedValue<T>(T value, int64_t timestamp);
 
     T getValue();
-    qint64 getTimestamp();
+    int64_t getTimestamp();
 
     CachedValue<T>& operator=(const CachedValue<T>& other);
     bool operator==(const CachedValue<T>& other) const;
@@ -42,7 +42,7 @@ public:
 
 private:
     T value;
-    qint64 timestamp;
+    int64_t timestamp;
 };
 
 template <class T>
@@ -58,13 +58,13 @@ CachedValue<T>::CachedValue(const CachedValue<T>& other)
 }
 
 template <class T>
-CachedValue<T>::CachedValue(T value, qint64 timestamp)
+CachedValue<T>::CachedValue(T value, int64_t timestamp)
         : value(value), timestamp(timestamp)
 {
 }
 
 template <class T>
-qint64 CachedValue<T>::getTimestamp()
+int64_t CachedValue<T>::getTimestamp()
 {
     return timestamp;
 }
