@@ -40,10 +40,9 @@ define("joynr/dispatching/types/SubscriptionPublication", [
             throw new Error(
                     "SubscriptionPublication object does neither contain response nor error");
         }
-        if (settings.response && settings.error) {
+        if (settings.error && Util.isArray(settings.response) && settings.response.length > 0) {
             throw new Error("SubscriptionPublication object contains both response and error");
         }
-
         if (settings.response) {
             settings.response = Util.ensureTypedValues(settings.response);
         }
