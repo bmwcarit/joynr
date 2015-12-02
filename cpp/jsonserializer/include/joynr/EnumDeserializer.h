@@ -20,7 +20,6 @@
 #define ENUMDESERIALIZER_H
 
 #include "joynr/Variant.h"
-#include "IDeserializer.h"
 
 #include <functional>
 #include <vector>
@@ -30,6 +29,7 @@ namespace joynr
 {
 
 class IValue;
+class IObject;
 
 /**
  * @brief The IEnumDeserializer class is base class used for deserializing classes

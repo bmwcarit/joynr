@@ -26,7 +26,7 @@
 
 #include "joynr/JoynrTypeId.h"
 #include "ClassDeserializer.h"
-#include "jsonserializer/EnumDeserializer.h"
+#include "EnumDeserializer.h"
 #include "ClassSerializer.h"
 
 namespace joynr

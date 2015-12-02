@@ -19,15 +19,16 @@
 #ifndef BROADCASTFILTERPARAMETERSSERIALIZER_H
 #define BROADCASTFILTERPARAMETERSSERIALIZER_H
 
-#include "joynr/ClassDeserializer.h"
 #include "joynr/ClassSerializer.h"
+#include "joynr/ClassDeserializer.h"
 #include "joynr/BroadcastFilterParameters.h"
-#include "jsonserializer/IDeserializer.h"
 
 #include <ostream>
 
 namespace joynr
 {
+
+class IObject;
 
 // Serializes a BroadcastFilterParameters
 template <>

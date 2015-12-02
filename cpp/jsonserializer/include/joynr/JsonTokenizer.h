@@ -20,7 +20,7 @@
 #define JSONTOKENIZER_H
 
 #include "jsmn.h"
-#include "IDeserializer.h"
+#include "joynr/IDeserializer.h"
 #include "joynr/Variant.h"
 
 #include <string>

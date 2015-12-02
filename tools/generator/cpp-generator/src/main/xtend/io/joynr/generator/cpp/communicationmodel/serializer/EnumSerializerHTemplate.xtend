@@ -47,10 +47,9 @@ class EnumSerializerHTemplate implements EnumTemplate{
 #ifndef «headerGuard»
 #define «headerGuard»
 
-#include "jsonserializer/EnumDeserializer.h"
+#include "joynr/EnumDeserializer.h"
 #include "joynr/ClassSerializer.h"
 #include "«getIncludeOf(type)»"
-#include "jsonserializer/IDeserializer.h"
 
 namespace joynr
 {

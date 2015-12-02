@@ -20,7 +20,7 @@
 #define CLASSDESERIALIZER_H
 
 #include "joynr/Variant.h"
-#include "jsonserializer/IDeserializer.h"
+#include "IDeserializer.h"
 
 #include <functional>
 #include <vector>

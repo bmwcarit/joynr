@@ -16,9 +16,9 @@
  * limitations under the License.
  * #L%
  */
-#include "EnumDeserializer.h"
+#include "joynr/EnumDeserializer.h"
 #include "joynr/SerializerRegistry.h"
-#include "IDeserializer.h"
+#include "joynr/IDeserializer.h"
 
 namespace joynr
 {

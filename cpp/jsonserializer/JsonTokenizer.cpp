@@ -17,7 +17,7 @@
  * #L%
  */
 
-#include "JsonTokenizer.h"
+#include "joynr/JsonTokenizer.h"
 #include "joynr/SerializerRegistry.h"
 
 #include <utility>

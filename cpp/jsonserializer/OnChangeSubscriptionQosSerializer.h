@@ -22,7 +22,7 @@
 #include "joynr/ClassDeserializer.h"
 #include "joynr/ClassSerializer.h"
 #include "joynr/OnChangeSubscriptionQos.h"
-#include "IDeserializer.h"
+#include "joynr/IDeserializer.h"
 
 #include <ostream>
 

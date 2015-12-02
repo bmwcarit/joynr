@@ -54,6 +54,7 @@ get_target_property(qjson_PUBLIC_INCLUDE_DIRECTORY qjson PUBLIC_INCLUDE_DIRECTOR
 set(
     jsonserializer_PUBLIC_INCLUDE_DIRECTORY
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
+    ${jsmn_SOURCE_DIR}
 )
 
 set(

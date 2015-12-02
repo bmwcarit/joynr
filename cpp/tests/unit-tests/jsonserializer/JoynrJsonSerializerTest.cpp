@@ -18,7 +18,7 @@
  */
 #include "joynr/Variant.h"
 #include "joynr/SerializerRegistry.h"
-#include "jsonserializer/JsonTokenizer.h"
+#include "joynr/JsonTokenizer.h"
 #include "ExampleTypes.h"
 #include "joynr/Request.h"
 #include "jsonserializer/RequestSerializer.h"
