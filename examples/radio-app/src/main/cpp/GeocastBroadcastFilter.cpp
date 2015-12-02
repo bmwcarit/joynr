@@ -40,14 +40,13 @@ bool GeocastBroadcastFilter::filter(
         return true;
     }
 
-    QString positionOfInterestQt(TypeUtil::toQt(filterParameters.getPositionOfInterest()));
-    joynr::vehicle::QtGeoPosition* positionOfInterest =
-            JsonSerializer::deserialize<joynr::vehicle::QtGeoPosition>(
-                    positionOfInterestQt.toLatin1());
+    joynr::vehicle::GeoPosition* positionOfInterest =
+            JsonSerializer::deserialize<joynr::vehicle::GeoPosition>(
+                    filterParameters.getPositionOfInterest());
     if (positionOfInterest == Q_NULLPTR) {
         LOG_ERROR(logger,
                   QString("Unable to deserialize geo position object from: %1")
-                          .arg(positionOfInterestQt));
+                          .arg(QString::fromStdString(filterParameters.getPositionOfInterest())));
         return true;
     }
     int radiusOfInterestArea = std::stoi(filterParameters.getRadiusOfInterestArea());

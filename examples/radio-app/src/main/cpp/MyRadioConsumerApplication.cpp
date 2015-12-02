@@ -283,10 +283,9 @@ int main(int argc, char* argv[])
     vehicle::RadioNewStationDiscoveredBroadcastFilterParameters
             newStationDiscoveredBroadcastFilterParams;
     newStationDiscoveredBroadcastFilterParams.setHasTrafficService("true");
-    vehicle::QtGeoPosition positionOfInterest(48.1351250, 11.5819810); // Munich
-    QString positionOfInterestJson(JsonSerializer::serialize(positionOfInterest));
-    newStationDiscoveredBroadcastFilterParams.setPositionOfInterest(
-            TypeUtil::toStd(positionOfInterestJson));
+    vehicle::GeoPosition positionOfInterest(48.1351250, 11.5819810); // Munich
+    std::string positionOfInterestJson(JsonSerializer::serialize(positionOfInterest));
+    newStationDiscoveredBroadcastFilterParams.setPositionOfInterest(positionOfInterestJson);
     newStationDiscoveredBroadcastFilterParams.setRadiusOfInterestArea("200000"); // 200 km
     std::string newStationDiscoveredBroadcastSubscriptionId =
             proxy->subscribeToNewStationDiscoveredBroadcast(
