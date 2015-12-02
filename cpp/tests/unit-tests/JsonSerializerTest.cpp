@@ -312,9 +312,6 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithUnsignedInt64) {
 }
 
 TEST_F(JsonSerializerTest, serialize_operation_with_multiple_params1) {
-
-    int typeId = qRegisterMetaType<tests::testTypes::QtTestEnum::Enum>("tests::testTypes::QtTestEnum::Enum");
-
     // Set the request method name
     Request request;
     request.setMethodName("methodEnumDoubleParameters");

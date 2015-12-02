@@ -199,7 +199,7 @@ TEST_F(UtilTest, valueOfFloatVector){
                 [](const float value) { return Variant::make<double>(value); }
     );
     std::vector<float> floatVector = Util::valueOf<std::vector<float>>(Variant::make<std::vector<Variant>>(variantVector));
-    for(int i = 0; i < expectedFloatVector.size(); i++) {
+    for(std::size_t i = 0; i < expectedFloatVector.size(); i++) {
         EXPECT_EQ(expectedFloatVector[i], floatVector[i]);
     }
 }

@@ -67,41 +67,53 @@ static const bool is«joynrName»SerializerRegistered =
 template <>
 void ClassDeserializer<«joynrName»>::deserialize(«joynrName» &«joynrName.toFirstLower»Var, IObject &object)
 {
-	while (object.hasNextField()) {
-		IField& field = object.nextField();
-		«FOR member: type.membersRecursive SEPARATOR " else "»
-			if (field.name() == "«member.name»") {
-			«IF member.array»
-				«IF member.type.isPrimitive»
-					«deserializePrimitiveArrayValue(member.type.predefined,member.name, joynrName.toFirstLower+"Var", "field")»
+	«IF type.membersRecursive.isEmpty»
+		std::ignore = «joynrName.toFirstLower»Var;
+		std::ignore = object;
+	«ELSE»
+		while (object.hasNextField()) {
+			IField& field = object.nextField();
+			«FOR member: type.membersRecursive SEPARATOR " else "»
+				if (field.name() == "«member.name»") {
+				«IF member.array»
+					«IF member.type.isPrimitive»
+						«deserializePrimitiveArrayValue(member.type.predefined,member.name, joynrName.toFirstLower+"Var", "field")»
+					«ELSE»
+						«val complexType = member.type.derived»
+						«val deserializerType = if (complexType.isEnum) "EnumDeserializer" else "ClassDeserializer"»
+						IArray& array = field.value();
+						auto&& converted«member.name.toFirstUpper» = convertArray<«complexType.typeName»>(array, «deserializerType»<«complexType.typeName»>::deserialize);
+						«joynrName.toFirstLower»Var.set«member.name.toFirstUpper»(std::forward<std::vector<«complexType.typeName»>>(converted«member.name.toFirstUpper»));
+					«ENDIF»
 				«ELSE»
-					«val complexType = member.type.derived»
-					«val deserializerType = if (complexType.isEnum) "EnumDeserializer" else "ClassDeserializer"»
-					IArray& array = field.value();
-					auto&& converted«member.name.toFirstUpper» = convertArray<«complexType.typeName»>(array, «deserializerType»<«complexType.typeName»>::deserialize);
-					«joynrName.toFirstLower»Var.set«member.name.toFirstUpper»(std::forward<std::vector<«complexType.typeName»>>(converted«member.name.toFirstUpper»));
+					«IF member.type.isPrimitive»
+						«deserializePrimitiveValue(member.type.predefined,member.name, joynrName.toFirstLower+"Var", "field")»
+					«ELSE»
+						«val complexType = member.type.derived»
+						«val deserializerType = if (complexType.isEnum) "EnumDeserializer" else "ClassDeserializer"»
+						«complexType.typeName» «member.name»Container;
+						«deserializerType»<«complexType.typeName»>::deserialize(«member.name»Container, field.value());
+						«joynrName.toFirstLower»Var.set«member.name.toFirstUpper»(«member.name»Container);
+					«ENDIF»
 				«ENDIF»
-			«ELSE»
-				«IF member.type.isPrimitive»
-					«deserializePrimitiveValue(member.type.predefined,member.name, joynrName.toFirstLower+"Var", "field")»
-				«ELSE»
-					«val complexType = member.type.derived»
-					«val deserializerType = if (complexType.isEnum) "EnumDeserializer" else "ClassDeserializer"»
-					«complexType.typeName» «member.name»Container;
-					«deserializerType»<«complexType.typeName»>::deserialize(«member.name»Container, field.value());
-					«joynrName.toFirstLower»Var.set«member.name.toFirstUpper»(«member.name»Container);
-				«ENDIF»
-			«ENDIF»
+				}
+			«ENDFOR»
 		}
-		«ENDFOR»
-	}
+	«ENDIF»
 }
 
 template <>
 void ClassSerializer<«joynrName»>::serialize(const «joynrName» &«joynrName.toFirstLower»Var, std::ostream& stream)
 {
-	ClassSerializer<double> doubleSerializer;
-	ClassSerializer<float> floatSerializer;
+	«IF type.membersRecursive.exists[member | member.type.typeName.equals("double")]»
+		ClassSerializer<double> doubleSerializer;
+	«ENDIF»
+	«IF type.membersRecursive.exists[member | member.type.typeName.equals("float")]»
+		ClassSerializer<float> floatSerializer;
+	«ENDIF»
+	«IF type.membersRecursive.isEmpty»
+		std::ignore = «joynrName.toFirstLower»Var;
+	«ENDIF»
 	stream << "{";
 	stream << "\"_typeName\": \"" << JoynrTypeId<«joynrName»>::getTypeName() << "\",";
 	«FOR member: type.membersRecursive SEPARATOR "\nstream << \",\";"»
