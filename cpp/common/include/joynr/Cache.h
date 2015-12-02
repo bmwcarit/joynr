@@ -37,14 +37,14 @@ public:
     /**
      * @brief Cache with default macCost is 100
      */
-    Cache() : cacheMap(), maxCost(100)
+    Cache() : cacheMap(), cacheCapacity(100)
     {
     }
     /**
-     * @brief Cache with initialy customized maxCost
-     * @param maxCost
+     * @brief Cache with initialy customized cacheCapacity
+     * @param cacheCapacity
      */
-    Cache(int maxCost) : cacheMap(), maxCost(maxCost)
+    Cache(uint32_t cacheCapacity) : cacheMap(), cacheCapacity(cacheCapacity)
     {
     }
     /**
@@ -69,17 +69,17 @@ public:
         return cacheMap.find(key)->second.get();
     }
     /**
-     * @brief setMaxCost change maxCost
-     * @param maxCost if maxCost is smaller then current Cache size,
+     * @brief setCacheCapacity change cacheCapacity
+     * @param cacheCapacity if cacheCapacity is smaller then current Cache size,
      * cache is going to be truncated by removing elements from the beginning
      * (oldest are going to be thrown away)
      */
-    void setMaxCost(int maxCost)
+    void setCacheCapacity(uint32_t cacheCapacity)
     {
-        if (maxCost < cacheMap.size()) {
-            removeElementsFromTheBeginning(cacheMap.size() - maxCost);
+        if (cacheCapacity < cacheMap.size()) {
+            removeElementsFromTheBeginning(cacheMap.size() - cacheCapacity);
         }
-        this->maxCost = maxCost;
+        this->cacheCapacity = cacheCapacity;
     }
     /**
      * @brief insert value under given key. If cache contains value with same key
@@ -90,13 +90,13 @@ public:
      */
     void insert(Key key, Value* value)
     {
-        if (cacheMap.size() == maxCost) {
+        if (cacheMap.size() == cacheCapacity) {
             removeElementsFromTheBeginning(1);
-            assert(cacheMap.size() == maxCost - 1);
+            assert(cacheMap.size() == cacheCapacity - 1);
         }
         cacheMap.insert(std::make_pair(key, std::unique_ptr<Value>(value)));
         assert(cacheMap.size() != 0);
-        assert(cacheMap.size() <= maxCost);
+        assert(cacheMap.size() <= cacheCapacity);
     }
     /**
      * @brief clear removes and destroys all values
@@ -116,7 +116,7 @@ public:
 
 private:
     std::map<Key, std::unique_ptr<Value>> cacheMap;
-    int maxCost;
+    uint32_t cacheCapacity;
 
     /**
      * @brief removeElementsFromTheBeginning removes given number of elements from the beginning

@@ -69,14 +69,14 @@ TEST_F(CacheTest, checkObject) {
 }
 
 TEST_F(CacheTest, checkInsert) {
-    cache.setMaxCost(2);
+    cache.setCacheCapacity(2);
     cache.insert("who", new std::string("World"));
     ASSERT_EQ(cache.size(), 2);
     ASSERT_EQ(*cache.object("who"), "World");
 }
 
 TEST_F(CacheTest, checkInsertOverMaxCost) {
-    cache.setMaxCost(2);
+    cache.setCacheCapacity(2);
     cache.insert("who", new std::string("World"));
     cache.insert("who1", new std::string("CarIT"));
     ASSERT_EQ(cache.size(), 2);

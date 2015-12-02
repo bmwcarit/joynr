@@ -25,7 +25,7 @@
 #include "joynr/CachedValue.h"
 
 #include <QMutex>
-#include <QCache>
+#include "joynr/Cache.h"
 
 #include <string>
 #include "joynr/Variant.h"
@@ -64,21 +64,10 @@ private:
       * Time since activation in ms
       */
     int64_t elapsed(int64_t entryTime);
-    QCache<std::string, CachedValue<Variant>> cache;
+    Cache<std::string, CachedValue<Variant>> cache;
     QMutex mutex;
 };
 
 } // namespace joynr
 
-#ifndef STRING_QHASH
-#define STRING_QHASH
-namespace std
-{
-// using std::strings as key in a ClientQCache requires qHash to be implemented
-inline uint qHash(const std::string& key)
-{
-    return std::hash<std::string>()(key);
-}
-}
-#endif // STRING_QHASH
 #endif // ClientQCache_H

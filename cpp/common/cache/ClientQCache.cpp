@@ -30,7 +30,7 @@ static const int MAX_CUMMULATIVE_CACHE_COST = 1000;
 
 ClientQCache::ClientQCache() : cache(), mutex()
 {
-    cache.setMaxCost(MAX_CUMMULATIVE_CACHE_COST);
+    cache.setCacheCapacity(MAX_CUMMULATIVE_CACHE_COST);
 }
 
 Variant ClientQCache::lookUp(const std::string& attributeId)
