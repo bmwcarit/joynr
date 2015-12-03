@@ -68,4 +68,8 @@ std::string convertString(IValue &value)
     return static_cast<std::string>(value);
 }
 
+bool convertBool(IValue &value)
+{
+    return value.getBool();
+}
 } /* namespace joynr */

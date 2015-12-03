@@ -146,6 +146,10 @@ def deserializePrimitiveArrayValue(FBasicTypeId basicType, String memberName, St
 	var converterFunction = ""
 	var converterFunctionTemplate = "<" + primitiveType + ">"
 	switch basicType {
+		case BOOLEAN: {
+			converterFunction = "convertBool"
+			converterFunctionTemplate = ""
+		}
 		case STRING : {
 			converterFunction = "convertString"
 			converterFunctionTemplate = ""

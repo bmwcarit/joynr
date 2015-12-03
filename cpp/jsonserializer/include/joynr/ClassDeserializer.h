@@ -100,6 +100,13 @@ Variant convertVariant(IValue& value);
 std::string convertString(IValue& value);
 
 /**
+ * @brief convertBool
+ * @param value
+ * @return
+ */
+bool convertBool(IValue& value);
+
+/**
  * @brief Converts an IArray into a std::vector, used for deserialization
  */
 template <typename T>
