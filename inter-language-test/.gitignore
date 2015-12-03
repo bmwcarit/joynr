@@ -12,3 +12,7 @@ src/main/generated*
 /java-consumer.persistence_file
 CMakeLists.txt.user
 /build
+localStorageStorage/
+node_modules/
+npm-debug.log
+reports
