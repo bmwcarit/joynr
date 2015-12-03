@@ -113,10 +113,12 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     link_directories(${DBUS1_LIBRARY_DIRS} ${COMMONAPI_LIBRARY_DIRS} ${COMMONAPI_DBUS_LIBRARY_DIRS})
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
-add_library(radio-app STATIC
+add_library(radio-app SHARED
     ${GENERATED_HEADERS}
     ${GENERATED_SOURCES}
 )
+
+target_link_libraries(radio-app ${JOYNR_LIBRARIES})
 
 # Compile the provider application (running in-process with cluster controller)
 add_executable(radio-app-provider-cc
