@@ -49,7 +49,7 @@ joynr::Request internalRequestObject;
 internalRequestObject.setMethodName("«method.joynrName»");
 «FOR param : getInputParameters(method)»
 	«IF isEnum(param.type) && isArray(param)»
-		internalRequestObject.addParam(joynr::TypeUtil::toVariant(Util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(param.type.derived)»>(input)), "«getJoynrTypeName(param)»");
+		internalRequestObject.addParam(joynr::TypeUtil::toVariant(Util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(param.type.derived)»>(«param.name»)), "«getJoynrTypeName(param)»");
 	«ELSEIF isEnum(param.type)»
 		internalRequestObject.addParam(Variant::make<«getTypeName(param)»>(«param.name»), "«getJoynrTypeName(param)»");
 	«ELSEIF isArray(param)»
