@@ -195,8 +195,8 @@ void MessageRouter::route(const JoynrMessage& message)
 
     LOG_DEBUG(logger,
               QString("Route message with Id %1 and payload %2")
-                      .arg(QString::fromStdString(message.getHeaderMessageId())
-                                   .arg(QString::fromStdString(message.getPayload()))));
+                      .arg(QString::fromStdString(message.getHeaderMessageId()))
+                      .arg(QString::fromStdString(message.getPayload())));
     // search for the destination address
     const QString destinationPartId = QString::fromStdString(message.getHeaderTo());
     std::shared_ptr<joynr::system::RoutingTypes::QtAddress> destAddress(NULL);
