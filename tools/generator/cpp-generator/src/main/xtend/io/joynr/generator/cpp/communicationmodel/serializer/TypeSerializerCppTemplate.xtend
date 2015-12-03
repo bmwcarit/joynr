@@ -60,7 +60,7 @@ namespace joynr
 
 using namespace «getPackagePathWithJoynrPrefix(type, "::", true)»;
 
-// Register the MasterAccessControlEntry type id (_typeName value) and serializer/deserializer
+// Register the «joynrName» type id (_typeName value) and serializer/deserializer
 static const bool is«joynrName»SerializerRegistered =
 		SerializerRegistry::registerType<«joynrName»>("«typeName.replace("::", ".")»");
 
