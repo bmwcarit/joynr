@@ -34,7 +34,7 @@
 #include <QThreadPool>
 #include <QSemaphore>
 #include <QPair>
-#include <QSet>
+#include <unordered_set>
 #include <QMutex>
 #include <string>
 #include <memory>
@@ -159,7 +159,7 @@ private:
 
     MessageQueue* messageQueue;
     MessageQueueCleanerRunnable* messageQueueCleanerRunnable;
-    QSet<QString>* runningParentResolves;
+    std::unordered_set<std::string>* runningParentResolves;
     std::shared_ptr<IAccessController> accessController;
     IPlatformSecurityManager* securityManager;
     mutable QMutex parentResolveMutex;

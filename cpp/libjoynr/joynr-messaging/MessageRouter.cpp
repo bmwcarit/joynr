@@ -87,7 +87,7 @@ MessageRouter::MessageRouter(IMessagingStubFactory* messagingStubFactory,
           incomingAddress(),
           messageQueue(messageQueue),
           messageQueueCleanerRunnable(new MessageQueueCleanerRunnable(*messageQueue)),
-          runningParentResolves(new QSet<QString>()),
+          runningParentResolves(new std::unordered_set<std::string>()),
           accessController(NULL),
           securityManager(securityManager),
           parentResolveMutex()
@@ -115,7 +115,7 @@ MessageRouter::MessageRouter(
           incomingAddress(incomingAddress),
           messageQueue(messageQueue),
           messageQueueCleanerRunnable(new MessageQueueCleanerRunnable(*messageQueue)),
-          runningParentResolves(new QSet<QString>()),
+          runningParentResolves(new std::unordered_set<std::string>()),
           accessController(NULL),
           securityManager(NULL),
           parentResolveMutex()
@@ -214,8 +214,9 @@ void MessageRouter::route(const JoynrMessage& message)
         // and try to resolve destination address via parent message router
         if (isChildMessageRouter()) {
             QMutexLocker locker(&parentResolveMutex);
-            if (!runningParentResolves->contains(destinationPartId)) {
-                runningParentResolves->insert(destinationPartId);
+            if (runningParentResolves->find(destinationPartId.toStdString()) ==
+                runningParentResolves->end()) {
+                runningParentResolves->insert(destinationPartId.toStdString());
                 std::function<void(const bool&)> onSuccess =
                         [this, destinationPartId](const bool& resolved) {
                     if (resolved) {
@@ -265,7 +266,10 @@ void MessageRouter::route(const JoynrMessage& message)
 void MessageRouter::removeRunningParentResolvers(const QString& destinationPartId)
 {
     QMutexLocker locker(&parentResolveMutex);
-    runningParentResolves->remove(destinationPartId);
+    if (runningParentResolves->find(destinationPartId.toStdString()) !=
+        runningParentResolves->end()) {
+        runningParentResolves->erase(destinationPartId.toStdString());
+    }
 }
 
 void MessageRouter::sendMessages(const std::string& destinationPartId,
