@@ -36,7 +36,7 @@ static const bool isRequestRegistered =
 static std::string  removeEscapeFromSpecialChars(const std::string& inputStr){
     std::string unEscapedString;
     std::regex expr ("(\\\\\")");
-    std::regex_replace (std::back_inserter(unEscapedString), inputStr.begin(), inputStr.end(), expr, R"(")");
+    std::regex_replace (std::back_inserter(unEscapedString), inputStr.begin(), inputStr.end(), expr, std::string(R"(")"));
 
     return unEscapedString;
 }
