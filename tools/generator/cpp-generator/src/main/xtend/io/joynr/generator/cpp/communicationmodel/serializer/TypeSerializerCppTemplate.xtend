@@ -157,11 +157,11 @@ def deserializePrimitiveArrayValue(FBasicTypeId basicType, String memberName, St
 		case INT8,
 		case INT16,
 		case INT32,
-		case INT64 : converterFunction = "convertUIntType"
+		case INT64 : converterFunction = "convertIntType"
 		case UINT8,
 		case UINT16,
 		case UINT32,
-		case UINT64: converterFunction = "convertIntType"
+		case UINT64: converterFunction = "convertUIntType"
 		case FLOAT,
 		case DOUBLE : converterFunction = "convertDoubleType"
 		default: throw new IllegalStateException("Type for member " + memberName + " could not be resolved")
