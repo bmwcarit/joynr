@@ -49,6 +49,7 @@ import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.vehicle.Country;
 import joynr.vehicle.GeoPosition;
+import joynr.vehicle.Radio.AddFavoriteStationErrorEnum;
 import joynr.vehicle.RadioBroadcastInterface;
 import joynr.vehicle.RadioBroadcastInterface.NewStationDiscoveredBroadcastFilterParameters;
 import joynr.vehicle.RadioBroadcastInterface.WeakSignalBroadcastAdapter;
@@ -336,9 +337,15 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
                          + PRINT_BORDER);
                 success = radioProxy.addFavoriteStation(favoriteStation);
             } catch (ApplicationException exception) {
-                String errorName = exception.getError().name();
-                String expectation = errorName.equals(joynr.vehicle.Radio.AddFavoriteStationErrorEnum.DUPLICATE_RADIOSTATION.name()) ? "expected" : "unexpected";
-                LOG.info(PRINT_BORDER + "METHOD: addFavoriteStation failed with the following " + expectation + " exception: " + errorName);
+                AddFavoriteStationErrorEnum error = exception.getError();
+                switch (error) {
+                case DUPLICATE_RADIOSTATION:
+                    LOG.info(PRINT_BORDER + "METHOD: addFavoriteStation failed with the following excpected error: " + error);
+                    break;
+                default:
+                    LOG.error(PRINT_BORDER + "METHOD: addFavoriteStation failed with an unexpected error: " + error);
+                    break;
+                }
             }
 
             try {
