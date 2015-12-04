@@ -22,7 +22,9 @@ import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Named;
 
@@ -44,6 +46,7 @@ import io.joynr.dispatching.rpc.RpcUtils;
 import io.joynr.logging.JoynrAppenderManagerFactory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.IMessaging;
+import io.joynr.messaging.MessageScheduler;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingSettings;
 import io.joynr.messaging.channel.ChannelMessagingSkeleton;
@@ -83,6 +86,18 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         ScheduledExecutorService cleanupExecutor = Executors.newSingleThreadScheduledExecutor(namedThreadFactory);
         bind(ScheduledExecutorService.class).annotatedWith(Names.named(JOYNR_SCHEDULER_CLEANUP))
                                             .toInstance(cleanupExecutor);
+    }
+
+    @Provides
+    @Named(MessageScheduler.SCHEDULEDTHREADPOOL)
+    ScheduledExecutorService provideMessageSchedulerThreadPoolExecutor(@Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maximumParallelSends) {
+        ThreadFactory schedulerNamedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.MessageScheduler-scheduler-%d")
+                                                                              .build();
+        ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(maximumParallelSends,
+                                                                                schedulerNamedThreadFactory);
+        scheduler.setKeepAliveTime(100, TimeUnit.SECONDS);
+        scheduler.allowCoreThreadTimeOut(true);
+        return scheduler;
     }
 
     @Provides

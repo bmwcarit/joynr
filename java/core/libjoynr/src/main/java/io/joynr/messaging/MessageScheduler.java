@@ -25,14 +25,12 @@ import io.joynr.messaging.http.HttpMessageSender;
 import io.joynr.messaging.http.operation.FailureAction;
 
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
@@ -46,21 +44,16 @@ import com.google.inject.name.Named;
 public class MessageScheduler {
     private static final int DELAY_RECEIVER_NOT_STARTED_MS = 100;
     private static final long TERMINATION_TIMEOUT = 5000;
-    private static final long SCHEDULER_KEEP_ALIVE_TIME = 100;
-    private final ScheduledThreadPoolExecutor scheduler;
     private static final Logger logger = LoggerFactory.getLogger(MessageScheduler.class);
+    public static final String SCHEDULEDTHREADPOOL = "io.joynr.messaging.messagescheduler.scheduledthreadpool";
     private final HttpMessageSender httpMessageSender;
+    private ScheduledExecutorService scheduler;
 
     @Inject
-    public MessageScheduler(@Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maximumParallelSends,
+    public MessageScheduler(@Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
                             HttpMessageSender httpMessageSender) {
         this.httpMessageSender = httpMessageSender;
-
-        ThreadFactory schedulerNamedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.MessageScheduler-scheduler-%d")
-                                                                              .build();
-        scheduler = new ScheduledThreadPoolExecutor(maximumParallelSends, schedulerNamedThreadFactory);
-        scheduler.setKeepAliveTime(SCHEDULER_KEEP_ALIVE_TIME, TimeUnit.SECONDS);
-        scheduler.allowCoreThreadTimeOut(true);
+        this.scheduler = scheduler;
     }
 
     public synchronized void scheduleMessage(final MessageContainer messageContainer,
@@ -112,7 +105,7 @@ public class MessageScheduler {
 
     /**
      * Stops the scheduler thread pool and the execution thread.
-     * 
+     *
      * @throws InterruptedException if the thread has been interrupted
      */
     public synchronized void shutdown() throws InterruptedException {
