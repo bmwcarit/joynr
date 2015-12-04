@@ -130,7 +130,7 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 					onError(error);
 				};
 		«ENDIF»
-		
+
 		provider->«methodName»(
 				«IF !method.inputParameters.empty»«inputUntypedParamList»,«ENDIF»
 				onSuccess,
@@ -162,7 +162,7 @@ void «interfaceName»RequestCaller::unregisterBroadcastListener(const std::stri
 
 «getNamespaceEnder(serviceInterface)»
 '''
-	
+
 def getErrorTypeName(FMethod method, Map<FMethod, String> methodToErrorEnumName) {
 	if (method.errors != null) {
 		val packagePath = getPackagePathWithJoynrPrefix(method.errors, "::")

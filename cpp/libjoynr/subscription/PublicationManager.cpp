@@ -847,8 +847,7 @@ void PublicationManager::sendPublicationError(
     LOG_DEBUG(logger, "sending subscription error");
     SubscriptionPublication subscriptionPublication;
     subscriptionPublication.setSubscriptionId(request->getSubscriptionId());
-    subscriptionPublication.setError(
-            joynr::exceptions::JoynrExceptionUtil::createVariant(exception));
+    subscriptionPublication.setError(exceptions::JoynrExceptionUtil::createVariant(exception));
     sendSubscriptionPublication(
             publication, subscriptionInformation, request, subscriptionPublication);
     LOG_DEBUG(logger, "sent subscription error");
