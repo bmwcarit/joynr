@@ -35,6 +35,7 @@
 #include "joynr/tests/Itest.h"
 #include "joynr/tests/testProvider.h"
 #include "joynr/tests/testProxy.h"
+#include "QSemaphore"
 
 using namespace ::testing;
 using namespace joynr;
@@ -45,6 +46,11 @@ using testing::ByRef;
 using testing::SetArgReferee;
 using testing::AtLeast;
 
+ACTION_P(ReleaseSemaphore,semaphore)
+{
+    semaphore->release(1);
+}
+
 class JoynrClusterControllerRuntimeTest : public ::testing::Test {
 public:
     std::string settingsFilename;
@@ -52,6 +58,7 @@ public:
     joynr::types::Localisation::GpsLocation gpsLocation;
     MockMessageReceiver* mockMessageReceiver; // will be deleted when runtime is deleted.
     MockMessageSender* mockMessageSender;
+    QSemaphore semaphore;
 
     JoynrClusterControllerRuntimeTest() :
             settingsFilename("test-resources/integrationtest.settings"),
@@ -70,7 +77,8 @@ public:
                 444                         // time
             ),
             mockMessageReceiver(new MockMessageReceiver()),
-            mockMessageSender(new MockMessageSender())
+            mockMessageSender(new MockMessageSender()),
+            semaphore(0)
     {
         QString channelId("JoynrClusterControllerRuntimeTest.ChannelId");
 
@@ -236,7 +244,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
             getLocation(A<std::function<void(const types::Localisation::GpsLocation&)>>(),
                         A<std::function<void(const joynr::exceptions::ProviderRuntimeException&)>>())
     )
-            .Times(Between(1, 2))
+            .Times(AtLeast(1))
             .WillRepeatedly(Invoke(
                     this,
                     &JoynrClusterControllerRuntimeTest::invokeOnSuccessWithGpsLocation
@@ -266,14 +274,14 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
                 new MockGpsSubscriptionListener()
     );
     EXPECT_CALL(*mockSubscriptionListener, onReceive(gpsLocation))
-            .Times(Between(1, 2));
+            .Times(AtLeast(1));
 
 
     OnChangeWithKeepAliveSubscriptionQos subscriptionQos(
                     480, // validity
                     200, // min interval
                     200, // max interval
-                    100  // alert after interval
+                    200  // alert after interval
                 );
     std::string subscriptionId = testProxy->subscribeToLocation(mockSubscriptionListener, subscriptionQos);
     QThreadSleep::msleep(250);
@@ -293,7 +301,6 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
             getLocation(A<std::function<void(const types::Localisation::GpsLocation&)>>(),
                         A<std::function<void(const joynr::exceptions::ProviderRuntimeException&)>>())
     )
-            .Times(Between(3, 4))
             .WillRepeatedly(Invoke(
                     this,
                     &JoynrClusterControllerRuntimeTest::invokeOnSuccessWithGpsLocation
@@ -322,19 +329,26 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
     std::shared_ptr<MockGpsSubscriptionListener> mockSubscriptionListener(
                 new MockGpsSubscriptionListener()
     );
-    EXPECT_CALL(*mockSubscriptionListener, onReceive(gpsLocation))
-            .Times(AtMost(3));
 
     OnChangeWithKeepAliveSubscriptionQos subscriptionQos(
-                    800,   // validity
-                    200,   // min interval
-                    200,   // max interval
+                    2000,   // validity
+                    100,   // min interval
+                    1000,   // max interval
                     10000  // alert after interval
                 );
+    ON_CALL(*mockSubscriptionListener, onReceive(Eq(gpsLocation)))
+            .WillByDefault(ReleaseSemaphore(&semaphore));
+
     std::string subscriptionId = testProxy->subscribeToLocation(mockSubscriptionListener, subscriptionQos);
-    QThreadSleep::msleep(500);
+
+    ASSERT_TRUE(semaphore.tryAcquire(1, 1000));
+
     testProxy->unsubscribeFromLocation(subscriptionId);
-    QThreadSleep::msleep(600);
+
+    QThreadSleep::msleep(300);
+
+    ASSERT_FALSE(semaphore.tryAcquire(1, 1000));
+
     delete testProxyBuilder;
     delete testProxy;
 }
