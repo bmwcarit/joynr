@@ -66,7 +66,10 @@ define("joynr/exceptions/ApplicationException", [
         Util.checkPropertyIfDefined(settings, "Object", "settings");
         if (settings && settings.error) {
             Util.checkProperty(settings.error.name, "String", "settings.error.name");
-            Util.checkProperty(settings.error.value, "String", "settings.error.value");
+            Util.checkProperty(settings.error.value, [
+                "String",
+                "Number"
+            ], "settings.error.value");
         }
 
         Util.extend(this, defaultSettings, settings, exception);
