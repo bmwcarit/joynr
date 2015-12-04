@@ -386,6 +386,10 @@ if(${BUILD_CLUSTER_CONTROLLER})
         PRIVATE ${cluster_controller_test_INCLUDE_DIRECTORIES}
     )
 
+    install(TARGETS g_UnitTests g_IntegrationTests g_SystemIntegrationTests
+        DESTINATION ${INSTALL_TEST_DIR} COMPONENT tests
+    )
+
 else()
     # Build tests that run on libjoynr
 
@@ -428,6 +432,7 @@ else()
        "systemintegration-tests/TestConfiguration.h"
        "systemintegration-tests/CombinedEnd2EndTest.h"
        "systemintegration-tests/CombinedEnd2EndTest.cpp"
+       "systemintegration-tests/TestConfiguration.cpp"
     )
 
     AddTest(
@@ -447,11 +452,11 @@ else()
         PRIVATE ${JoynrTest_INCLUDE_DIRECTORIES}
     )
 
-endif(${BUILD_CLUSTER_CONTROLLER})
-
-install(TARGETS g_UnitTests g_IntegrationTests g_SystemIntegrationTests
+    install(TARGETS g_UnitTests g_SystemIntegrationTests
         DESTINATION ${INSTALL_TEST_DIR} COMPONENT tests
-)
+    )
+
+endif(${BUILD_CLUSTER_CONTROLLER})
 
 install(DIRECTORY resources
         DESTINATION ${INSTALL_TEST_DIR} COMPONENT tests
