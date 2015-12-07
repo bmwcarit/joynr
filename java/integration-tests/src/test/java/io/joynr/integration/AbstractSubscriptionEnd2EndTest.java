@@ -78,9 +78,9 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
     @Rule
     public TestName name = new TestName();
 
-    private static SubscriptionTestsProviderImpl provider;
+    private SubscriptionTestsProviderImpl provider;
     private String domain;
-    private static testProxy proxy;
+    private testProxy proxy;
 
     private int period_ms = 200;
 
@@ -162,6 +162,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         long expiryDate_ms = System.currentTimeMillis() + subscriptionDuration;
         SubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(period_ms, expiryDate_ms, alertInterval_ms, 0);
         String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQos);
+        provider.waitForAttributeSubscription("testAttribute");
         Thread.sleep(subscriptionDuration);
         verify(integerListener, times(0)).onError(null);
         // TODO verify publications shipped correct data
@@ -274,8 +275,8 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
                                                                                         publicationTtl_ms);
 
         String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQosMixed);
+        provider.waitForAttributeSubscription("testAttribute");
         verify(integerListener, times(0)).onError(null);
-        Thread.sleep(expected_latency_ms);
 
         // when subscribing, we automatically get 1 publication. Expect the starting-publication
         verify(integerListener, times(1)).onReceive(anyInt());
@@ -319,8 +320,8 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
                                                                                         publicationTtl_ms);
 
         String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQosMixed);
+        provider.waitForAttributeSubscription("testAttribute");
         verify(integerListener, times(0)).onError(null);
-        Thread.sleep(expected_latency_ms);
 
         // when subscribing, we automatically get 1 publication. Expect the
         // starting-publication
@@ -357,8 +358,8 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
                                                                                         publicationTtl_ms);
 
         String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQosMixed);
+        provider.waitForAttributeSubscription("testAttribute");
         verify(integerListener, times(0)).onError(null);
-        Thread.sleep(expected_latency_ms);
 
         // when subscribing, we automatically get 1 publication. Expect the
         // starting-publication
@@ -391,7 +392,8 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         SubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms, expiryDate_ms, publicationTtl_ms);
 
         String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQos);
-        Thread.sleep(expected_latency_ms);
+        provider.waitForAttributeSubscription("testAttribute");
+
         verify(integerListener, times(0)).onError(null);
         // when subscribing, we automatically get 1 publication. This might not
         // be the case in java?
@@ -469,7 +471,8 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         SubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms, expiryDate_ms, publicationTtl_ms);
 
         String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQos);
-        Thread.sleep(expected_latency_ms);
+        provider.waitForAttributeSubscription("testAttribute");
+
         // There should have only been one call - the automatic publication when a subscription is made
         verify(integerListener, times(1)).onReceive(anyInt());
 
