@@ -116,30 +116,30 @@ TEST_F(UtilTest, splitIntoJsonObjects)
                   QString("{\"mes\\\\\"sa{ge\":{one:two}}"));
 }
 
-TEST_F(UtilTest, convertListToQVariantList){
+TEST_F(UtilTest, convertVectorToVariantVector){
 
-    QList<int> intlist;
-    QList<QVariant> qvarList;
+    std::vector<int> intVector;
+    std::vector<Variant> variantVector;
 
-    intlist.append(2);
-    intlist.append(5);
-    intlist.append(-1);
+    intVector.push_back(2);
+    intVector.push_back(5);
+    intVector.push_back(-1);
 
-    qvarList.append(QVariant(2));
-    qvarList.append(QVariant(5));
-    qvarList.append(QVariant(-1));
+    variantVector.push_back(Variant::make<int>(2));
+    variantVector.push_back(Variant::make<int>(5));
+    variantVector.push_back(Variant::make<int>(-1));
 
-    QList<QVariant> convertedQvarList = Util::convertListToVariantList<int>(intlist);
-    QList<int> convertedIntList = Util::convertVariantListToList<int>(qvarList);
+    std::vector<Variant> convertedVariantVector = Util::convertVectorToVariantVector<int>(intVector);
+    std::vector<int> convertedIntVector = Util::convertVariantVectorToVector<int>(variantVector);
 
-    EXPECT_EQ(convertedQvarList, qvarList);
-    EXPECT_EQ(convertedIntList, intlist);
+    EXPECT_EQ(convertedVariantVector, variantVector);
+    EXPECT_EQ(convertedIntVector, intVector);
 
-    QList<QVariant> reconvertedQvarList = Util::convertListToVariantList<int>(convertedIntList);
-    QList<int> reconvertedIntList = Util::convertVariantListToList<int>(convertedQvarList);
+    std::vector<Variant> reconvertedVariantVector = Util::convertVectorToVariantVector<int>(convertedIntVector);
+    std::vector<int> reconvertedIntVector = Util::convertVariantVectorToVector<int>(convertedVariantVector);
 
-    EXPECT_EQ(reconvertedQvarList, qvarList);
-    EXPECT_EQ(reconvertedIntList, intlist);
+    EXPECT_EQ(reconvertedVariantVector, variantVector);
+    EXPECT_EQ(reconvertedIntVector, intVector);
 
 
 }

@@ -154,6 +154,17 @@ public:
     }
 
     template <class T>
+    static std::vector<Variant> convertVectorToVariantVector(const std::vector<T>& inputVector)
+    {
+        std::vector<Variant> variantVector;
+        variantVector.reserve(inputVector.size());
+        for (const T& element : inputVector) {
+            variantVector.push_back(Variant::make<T>(element));
+        }
+        return variantVector;
+    }
+
+    template <class T>
     static QList<T> convertVariantListToList(const QList<QVariant>& inputList)
     {
         QList<T> ret;
