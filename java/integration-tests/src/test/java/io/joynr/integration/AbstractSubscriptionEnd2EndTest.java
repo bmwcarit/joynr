@@ -23,6 +23,7 @@ import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.atMost;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
@@ -45,6 +46,8 @@ import io.joynr.runtime.PropertyLoader;
 
 import java.util.Properties;
 import java.util.UUID;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 import joynr.OnChangeSubscriptionQos;
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
@@ -62,6 +65,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -296,6 +301,19 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
 
         proxy.unsubscribeFromTestAttribute(subscriptionId);
         provider.waitForAttributeUnsubscription("testAttribute");
+    }
+
+    @SuppressWarnings("unchecked")
+    private AttributeSubscriptionListener<Integer> prepareOnReceiveListenerMock(final Semaphore onReceiveSemaphore) {
+        AttributeSubscriptionListener<Integer> integerListener = mock(AttributeSubscriptionListener.class);
+
+        doAnswer(new Answer<Object>() {
+            public Object answer(InvocationOnMock invocation) {
+                onReceiveSemaphore.release();
+                return (Void) null;
+            }
+        }).when(integerListener).onReceive(anyInt());
+        return integerListener;
     }
 
     @SuppressWarnings("unchecked")
