@@ -102,12 +102,15 @@ void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString& message)
                 logger,
                 QString("received initialization message from websocket client: %0").arg(message));
         // register client with messaging stub factory
-        joynr::system::RoutingTypes::QtWebSocketClientAddress* clientAddress =
-                JsonSerializer::deserializeQObject<
-                        joynr::system::RoutingTypes::QtWebSocketClientAddress>(message.toUtf8());
+        joynr::system::RoutingTypes::WebSocketClientAddress* clientAddress =
+                JsonSerializer::deserialize<joynr::system::RoutingTypes::WebSocketClientAddress>(
+                        message.toStdString());
         // client address must be valid, or libjoynr and CC are deployed in different versions
         assert(clientAddress);
-        messagingStubFactory.addClient(*clientAddress, client);
+
+        joynr::system::RoutingTypes::QtWebSocketClientAddress qtClientAddress =
+                joynr::system::RoutingTypes::QtWebSocketClientAddress::createQt(*clientAddress);
+        messagingStubFactory.addClient(qtClientAddress, client);
         delete clientAddress;
 
         // cleanup
