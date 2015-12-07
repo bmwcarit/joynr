@@ -88,7 +88,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
     private String domain;
     private testProxy proxy;
 
-    private int period_ms = 200;
+    private int period_ms = 400;
 
     private JoynrRuntime providerRuntime;
     private JoynrRuntime consumerRuntime;
