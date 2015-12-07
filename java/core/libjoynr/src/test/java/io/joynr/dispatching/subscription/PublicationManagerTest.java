@@ -22,6 +22,7 @@ package io.joynr.dispatching.subscription;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -47,6 +48,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 import joynr.BroadcastFilterParameters;
 import joynr.BroadcastSubscriptionRequest;
@@ -61,6 +64,7 @@ import joynr.tests.testProvider;
 import joynr.types.Localisation.GpsFixEnum;
 import joynr.types.Localisation.GpsLocation;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -68,7 +72,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 
 import com.google.common.collect.Lists;
 
@@ -224,7 +230,7 @@ public class PublicationManagerTest {
     public void delayAttributePublicationBurstsForOnChangeSubscriptions() throws Exception {
         int subscriptionLength = 500;
         long expiryDate = System.currentTimeMillis() + subscriptionLength;
-        int minInterval = 100;
+        int minInterval = 400;
         int publicationTtl = 400;
         OnChangeSubscriptionQos qos = new OnChangeSubscriptionQos(minInterval, expiryDate, publicationTtl);
         String subscriptionId = "subscriptionId";
@@ -242,25 +248,29 @@ public class PublicationManagerTest {
         when(requestCallerDirectory.getCaller(eq(providerId))).thenReturn(requestCaller);
         when(requestCallerDirectory.containsCaller(eq(providerId))).thenReturn(true);
 
+        final Semaphore onReceiveSemaphore = new Semaphore(0);
+        doAnswer(new Answer<Object>() {
+            public Object answer(InvocationOnMock invocation) {
+                onReceiveSemaphore.release();
+                return (Void) null;
+            }
+        }).when(dispatcher).sendSubscriptionPublication(eq(providerId),
+                                                        eq(proxyId),
+                                                        any(SubscriptionPublication.class),
+                                                        any(MessagingQos.class));
+
         publicationManager.addSubscriptionRequest(proxyId, providerId, subscriptionRequest);
 
-        for (int i = 0; i < subscriptionLength / minInterval; i++) {
-            Thread.sleep(minInterval / 2);
-            publicationManager.attributeValueChanged(subscriptionId, 2 * i);
-            Thread.sleep(minInterval / 2);
-            publicationManager.attributeValueChanged(subscriptionId, 2 * i + 1);
+        /* a burst of attribute changes only leads to one publication send out */
+        for (int i = 0; i < 3; i++) {
+            publicationManager.attributeValueChanged(subscriptionId, i);
         }
 
-        Thread.sleep(minInterval);
+        Assert.assertTrue(onReceiveSemaphore.tryAcquire(2, subscriptionLength + 1000, TimeUnit.MILLISECONDS));
 
-        int publicationTimes = 1 + (subscriptionLength / minInterval);
-        verify(dispatcher, times(publicationTimes)).sendSubscriptionPublication(eq(providerId),
-                                                                                eq(proxyId),
-                                                                                any(SubscriptionPublication.class),
-                                                                                any(MessagingQos.class));
-
-        Thread.sleep(subscriptionLength);
-        verifyNoMoreInteractions(dispatcher);
+        Assert.assertFalse(onReceiveSemaphore.tryAcquire(1,
+                                                         Math.max(expiryDate - System.currentTimeMillis(), 200),
+                                                         TimeUnit.MILLISECONDS));
     }
 
     @Test(timeout = 3000)
