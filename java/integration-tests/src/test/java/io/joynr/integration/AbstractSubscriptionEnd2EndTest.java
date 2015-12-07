@@ -59,6 +59,7 @@ import joynr.tests.testTypes.TestEnum;
 import joynr.types.Localisation.GpsLocation;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -261,11 +262,11 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         provider.waitForAttributeUnsubscription("testAttribute");
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     @Ignore
     public void testOnChangeWithKeepAliveSubscriptionSendsOnChange() throws InterruptedException {
-        AttributeSubscriptionListener<Integer> integerListener = mock(AttributeSubscriptionListener.class);
+        final Semaphore onReceiveSemaphore = new Semaphore(0);
+        AttributeSubscriptionListener<Integer> integerListener = prepareOnReceiveListenerMock(onReceiveSemaphore);
 
         // NOTE: 50 is the minimum minInterval supported
         long minInterval_ms = 50;
@@ -283,17 +284,16 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
 
         String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQosMixed);
         provider.waitForAttributeSubscription("testAttribute");
-        verify(integerListener, times(0)).onError(null);
 
         // when subscribing, we automatically get 1 publication. Expect the starting-publication
-        verify(integerListener, times(1)).onReceive(anyInt());
+        verify(integerListener, times(0)).onError(null);
+        Assert.assertTrue(onReceiveSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 
         // Wait minimum time between onChanged
         Thread.sleep(minInterval_ms);
         provider.setTestAttribute(5);
-        Thread.sleep(expected_latency_ms);
         // expect the onChangeSubscription to have arrived
-        verify(integerListener, times(2)).onReceive(anyInt());
+        Assert.assertTrue(onReceiveSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 
         Thread.sleep(subscriptionDuration);
         // expect no more publications to arrive
@@ -316,11 +316,11 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         return integerListener;
     }
 
-    @SuppressWarnings("unchecked")
     @Ignore
     @Test
     public void testOnChangeWithKeepAliveSubscriptionSendsKeepAlive() throws InterruptedException {
-        AttributeSubscriptionListener<Integer> integerListener = mock(AttributeSubscriptionListener.class);
+        Semaphore onReceiveSemaphore = new Semaphore(0);
+        AttributeSubscriptionListener<Integer> integerListener = prepareOnReceiveListenerMock(onReceiveSemaphore);
 
         // NOTE: 50 is the minimum minInterval supported
         long minInterval_ms = 50;
@@ -341,27 +341,24 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
 
         String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQosMixed);
         provider.waitForAttributeSubscription("testAttribute");
-        verify(integerListener, times(0)).onError(null);
 
         // when subscribing, we automatically get 1 publication. Expect the
         // starting-publication
-        verify(integerListener, times(1)).onReceive(anyInt());
+        verify(integerListener, times(0)).onError(null);
+        Assert.assertTrue(onReceiveSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 
         for (int i = 1; i <= numberExpectedKeepAlives; i++) {
-
-            Thread.sleep(maxInterval_ms + expected_latency_ms);
-            // expect the next keep alive notification to have now arrived (plus the original one at subscription start)
-            verify(integerListener, times(i + 1)).onReceive(anyInt());
+            Assert.assertTrue(onReceiveSemaphore.tryAcquire(maxInterval_ms + expected_latency_ms, TimeUnit.MILLISECONDS));
         }
 
         proxy.unsubscribeFromTestAttribute(subscriptionId);
         provider.waitForAttributeUnsubscription("testAttribute");
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testOnChangeWithKeepAliveSubscription() throws InterruptedException {
-        AttributeSubscriptionListener<Integer> integerListener = mock(AttributeSubscriptionListener.class);
+        Semaphore onReceiveSemaphore = new Semaphore(0);
+        AttributeSubscriptionListener<Integer> integerListener = prepareOnReceiveListenerMock(onReceiveSemaphore);
 
         long minInterval_ms = 50; // NOTE: 50 is the minimum minInterval
         // supported
@@ -380,31 +377,29 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
 
         String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQosMixed);
         provider.waitForAttributeSubscription("testAttribute");
-        verify(integerListener, times(0)).onError(null);
 
         // when subscribing, we automatically get 1 publication. Expect the
         // starting-publication
-        verify(integerListener, times(1)).onReceive(anyInt());
+        verify(integerListener, times(0)).onError(null);
+        Assert.assertTrue(onReceiveSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 
         // Wait minimum time between onChanged
         Thread.sleep(minInterval_ms);
         provider.setTestAttribute(5);
-        Thread.sleep(expected_latency_ms);
         // expect the onChangeSubscription to have arrived
-        verify(integerListener, times(2)).onReceive(anyInt());
+        Assert.assertTrue(onReceiveSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 
-        Thread.sleep(maxInterval_ms + 50);
-        // expect a keep alive notification to have now arrived
-        verify(integerListener, atLeast(3)).onReceive(anyInt());
+        // expect the third publication due to exceeding the maxInterval_ms
+        Assert.assertTrue(onReceiveSemaphore.tryAcquire(maxInterval_ms + 1000, TimeUnit.MILLISECONDS));
 
         proxy.unsubscribeFromTestAttribute(subscriptionId);
         provider.waitForAttributeUnsubscription("testAttribute");
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testOnChangeSubscription() throws InterruptedException {
-        AttributeSubscriptionListener<Integer> integerListener = mock(AttributeSubscriptionListener.class);
+        Semaphore onReceiveSemaphore = new Semaphore(0);
+        AttributeSubscriptionListener<Integer> integerListener = prepareOnReceiveListenerMock(onReceiveSemaphore);
 
         long minInterval_ms = 0;
         long publicationTtl_ms = 1000;
@@ -416,14 +411,10 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         provider.waitForAttributeSubscription("testAttribute");
 
         verify(integerListener, times(0)).onError(null);
-        // when subscribing, we automatically get 1 publication. This might not
-        // be the case in java?
-        verify(integerListener, times(1)).onReceive(anyInt());
+        Assert.assertTrue(onReceiveSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 
         provider.setTestAttribute(5);
-        Thread.sleep(expected_latency_ms);
-
-        verify(integerListener, times(2)).onReceive(anyInt());
+        Assert.assertTrue(onReceiveSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 
         proxy.unsubscribeFromTestAttribute(subscriptionId);
         provider.waitForAttributeUnsubscription("testAttribute");
@@ -475,11 +466,11 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         proxy.unsubscribeFromEnumAttribute(subscriptionId);
     }
 
-    @SuppressWarnings("unchecked")
     @Ignore
     @Test
     public void testExpiredOnChangeSubscription() throws InterruptedException {
-        AttributeSubscriptionListener<Integer> integerListener = mock(AttributeSubscriptionListener.class);
+        Semaphore onReceiveSemaphore = new Semaphore(0);
+        AttributeSubscriptionListener<Integer> integerListener = prepareOnReceiveListenerMock(onReceiveSemaphore);
 
         // Only get onChange messages
         long minInterval_ms = 0;
@@ -495,13 +486,13 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         provider.waitForAttributeSubscription("testAttribute");
 
         // There should have only been one call - the automatic publication when a subscription is made
-        verify(integerListener, times(1)).onReceive(anyInt());
+        Assert.assertTrue(onReceiveSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 
+        verifyNoMoreInteractions(integerListener);
         Thread.sleep(duration + expected_latency_ms);
         // We should now have an expired onChange subscription
         provider.setTestAttribute(5);
-        Thread.sleep(100);
-        verifyNoMoreInteractions(integerListener);
+        Assert.assertFalse(onReceiveSemaphore.tryAcquire(100, TimeUnit.MILLISECONDS));
 
         proxy.unsubscribeFromTestAttribute(subscriptionId);
         provider.waitForAttributeUnsubscription("testAttribute");
@@ -522,9 +513,9 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
             proxyBuilder = consumerRuntime.getProxyBuilder(nonExistentDomain, testProxy.class);
             proxyToNonexistentDomain = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
         } catch (DiscoveryException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
         } catch (JoynrIllegalStateException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
         }
 
         // This should not cause an exception
