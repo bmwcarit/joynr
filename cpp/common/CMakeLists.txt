@@ -13,7 +13,6 @@ configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/include/joynr/RuntimeConfig.h"
 )
 
-get_target_property(qjson_PUBLIC_INCLUDE_DIRECTORY qjson PUBLIC_INCLUDE_DIRECTORY)
 
 set(
     JoynrCommon_PUBLIC_INCLUDE_DIRECTORY
@@ -24,7 +23,6 @@ set(
     JoynrCommon_INCLUDE_DIRECTORIES
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     "../"
-    ${qjson_PUBLIC_INCLUDE_DIRECTORY}
     ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
 )
 
@@ -32,7 +30,6 @@ set(
     JoynrCommon_TARGET_LIBRARIES
     Qt5::Core
     Qt5::WebSockets
-    qjson
 )
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})

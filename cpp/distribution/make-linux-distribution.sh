@@ -49,14 +49,10 @@ processor=`uname -p`
 glibc=`ldd --version | head -1 | awk '{print $NF}'`
 name="JOYnr_${version}_${os}_${processor}_glibc-${glibc}"
 
-# Clean up the qjson directory tree
-find "${joynr_cpp_root}/libs/qjson" -name '*.o' -exec rm {} \;
-
 # Create the directory structure of the distribution
 mkdir "${name}"
 cp -r joynr.cmake "${joynr_cpp_root}/bin" "${name}"
 mkdir "${name}/libs"
-cp -r "${joynr_cpp_root}/libs/qjson" "${name}/libs"
 
 # Create the tar file
 tar czf "${current_directory}/${name}.tar.gz" "${name}"

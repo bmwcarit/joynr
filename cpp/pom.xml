@@ -64,9 +64,6 @@
 						<roots>
 							<root>.</root>
 						</roots>
-						<excludes>
-							<exclude>**/qjson-0.7.1/**</exclude>
-						</excludes>
 					</configuration>
 				</plugin>
 			</plugins>

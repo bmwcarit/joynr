@@ -2,7 +2,6 @@ message(STATUS "#############################################")
 message(STATUS "Configuring runtimes...")
 message(STATUS "#############################################\n")
 
-get_target_property(qjson_PUBLIC_INCLUDE_DIRECTORY qjson PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(jsmn_PUBLIC_INCLUDE_DIRECTORY jsmn PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(jsonserializer_PUBLIC_INCLUDE_DIRECTORY jsonserializer PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
@@ -162,7 +161,6 @@ set(
 
 include_directories(
     ${JoynrRuntime_INCLUDE_DIRECTORIES}
-    ${qjson_PUBLIC_INCLUDE_DIRECTORY}
     ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
 )
 
@@ -187,7 +185,6 @@ target_link_libraries(
     JoynrWsRuntime
     JoynrCommon
     Joynr
-    qjson
     jsonserializer
 )
 

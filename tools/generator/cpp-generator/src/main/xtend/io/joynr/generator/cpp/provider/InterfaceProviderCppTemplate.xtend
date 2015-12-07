@@ -70,7 +70,6 @@ class InterfaceProviderCppTemplate implements InterfaceTemplate{
 «««			«registerMetatypeStatement(datatype.typeNameOfContainingClass)»
 «««			int id = «registerMetatypeStatement(datatype.typeName)»
 «««			registrar.registerEnumMetaType<«datatype.typeNameOfContainingClass»>();
-«««			QJson::Serializer::registerEnum(id, «datatype.typeNameOfContainingClass»::staticMetaObject.enumerator(0));
 		}
 		«ELSE»
 			«registerMetatypeStatement(datatype.typeName)»

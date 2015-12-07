@@ -78,7 +78,7 @@ std::vector<Variant> Request::getParams() const
     return params;
 }
 
-// Set the parameters - called by the QJson deserializer
+// Set the parameters - called by the json deserializer
 void Request::setParams(const std::vector<Variant>& params)
 {
     this->params = params;
@@ -95,7 +95,7 @@ std::vector<std::string> Request::getParamDatatypes() const
     return paramDatatypes;
 }
 
-// Set the parameter datatypes - called by the QJson deserializer
+// Set the parameter datatypes - called by the json deserializer
 void Request::setParamDatatypes(const std::vector<std::string>& paramDatatypes)
 {
     this->paramDatatypes = paramDatatypes;

@@ -50,7 +50,6 @@
 #include "joynr/infrastructure/DacTypes_QtMasterAccessControlEntry.h"
 #include "QTime"
 #include <chrono>
-#include "qjson/serializer.h"
 
 #include <sstream>
 

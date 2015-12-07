@@ -63,7 +63,6 @@ class InterfaceCppTemplate implements InterfaceTemplate{
 «warning()»
 
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName».h"
-#include "qjson/serializer.h"
 #include "joynr/MetaTypeRegistrar.h"
 
 «FOR parameterType: getRequiredIncludesFor(serviceInterface)»

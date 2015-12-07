@@ -387,7 +387,6 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 endif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    # libs/CMakeLists.txt overwrites CMAKE_CXX_FLAGS to deactivate warnings for 3rd-Party code.
     # common-api/CMakeLists.txt overwrites CMAKE_CXX_FLAGS to deactivate warnings for CommonAPI
     # generated code.
     # All changes to CMAKE_CXX_FLAGS that are not warnings should be added there as well.
@@ -460,7 +459,6 @@ endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     add_subdirectory(common-api)
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
-add_subdirectory(libs)
 add_subdirectory(common)
 add_subdirectory(jsonserializer)
 add_subdirectory(libjoynr)
@@ -487,7 +485,6 @@ set(
     JoynrCommon
     Joynr
     JoynrWsRuntime
-    qjson
     jsonserializer
 )
 
@@ -531,7 +528,6 @@ set(
     JoynrConfig_LIBRARIES
     JoynrCommon
     Joynr
-    qjson
     jsonserializer
 )
 
@@ -548,7 +544,6 @@ set(
     JoynrConfig_LIB_WS_LIBRARIES
     JoynrCommon
     Joynr
-    qjson
     jsonserializer
     JoynrWsRuntime
 )
@@ -558,7 +553,6 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         JoynrConfig_LIB_DBUS_LIBRARIES
         JoynrCommon
         Joynr
-        qjson
         jsonserializer
         JoynrDbusRuntime
     )
@@ -567,7 +561,6 @@ endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 # ... for the build tree
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
-get_target_property(qjson_PUBLIC_INCLUDE_DIRECTORY qjson PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(jsonserializer_PUBLIC_INCLUDE_DIRECTORY jsonserializer PUBLIC_INCLUDE_DIRECTORY)
 message(STATUS "variable jsonserializer_PUBLIC_INCLUDE_DIRECTORY=" ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY})
 
@@ -575,7 +568,6 @@ set(
     JoynrConfig_INCLUDE_DIRS
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
-    ${qjson_PUBLIC_INCLUDE_DIRECTORY}
     ${spdlog_SOURCE_DIR}/include
     ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
     ${jsmn_SOURCE_DIR}
@@ -594,7 +586,6 @@ set(
     JoynrConfig_LIB_WS_INCLUDE_DIRS
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
-    ${qjson_PUBLIC_INCLUDE_DIRECTORY}
     ${spdlog_SOURCE_DIR}/include
     ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
     ${jsmn_SOURCE_DIR}
@@ -604,7 +595,6 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         JoynrConfig_LIB_DBUS_INCLUDE_DIRS
         ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
         ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
-        ${qjson_PUBLIC_INCLUDE_DIRECTORY}
         ${spdlog_SOURCE_DIR}/include
         ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
         ${jsmn_SOURCE_DIR}

@@ -18,9 +18,6 @@
  */
 #include "joynr/Util.h"
 
-#include "qjson/parser.h"
-#include "qjson/serializer.h"
-
 #include <QtCore/QDebug>
 #include <QByteArray>
 #include <QUuid>

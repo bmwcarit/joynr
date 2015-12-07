@@ -49,7 +49,6 @@ set(CMAKE_INSTALL_NAME_DIR ${LIB_INSTALL_DIR})
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
-get_target_property(qjson_PUBLIC_INCLUDE_DIRECTORY qjson PUBLIC_INCLUDE_DIRECTORY)
 
 set(
     jsonserializer_PUBLIC_INCLUDE_DIRECTORY
@@ -63,7 +62,6 @@ set(
     "../"
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${jsmn_SOURCE_DIR}
-    ${qjson_PUBLIC_INCLUDE_DIRECTORY}
 )
 
 file(

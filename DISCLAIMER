@@ -22,22 +22,6 @@ English original version with a copyright notice, a disclaimer of warranty, and
 an exclusion of liability is included in the cpp/libs/common-api/Apache-2.txt
 document.
 
---- libQJson -------------------------------------------------------------------
-
-GNU Lesser General Public License v2.1 (LGPL-2.1)
-
-The software library QJson included in some products are free software that is
-licensed under “GNU Lesser General Public License (LGPL) v2.1“. A copy of that
-license in the English original version with a disclaimer of warranty and an
-exclusion of liability is included in the cpp/libs/qjson-0.7.1/COPYING document.
-This free software has been developed by third parties and is copyrighted. It is
-provided for free, and you are permitted to use it according to the mentioned
-license. LGPL v 2.1 supersedes other licenses. The complete source code is
-located in cpp/libs/qjson-0.7.1.
-
-NOTE: Some source files of the QJson library are licensed under GPL v2.0 with
-Bison Exception and relicensed by the QJson library under LGPL v2.1.
-
 --- code-coverage --------------------------------------------------------------
 
 Files in cpp/CMake/code-coverage are licensed under Boost Software License

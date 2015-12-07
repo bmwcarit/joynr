@@ -19,8 +19,6 @@
 #include "joynr/DeclareMetatypeUtil.h"
 #include "joynr/DispatcherUtils.h"
 
-#include "qjson/parser.h"
-#include "qjson/serializer.h"
 #include <limits>
 #include <cassert>
 #include <sstream>

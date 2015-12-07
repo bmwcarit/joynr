@@ -116,7 +116,6 @@ endif(${CMAKE_GENERATOR} MATCHES "Visual Studio")
 
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
-get_target_property(qjson_PUBLIC_INCLUDE_DIRECTORY qjson PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(jsonserializer_PUBLIC_INCLUDE_DIRECTORY jsonserializer PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(jsmn_PUBLIC_INCLUDE_DIRECTORY jsmn PUBLIC_INCLUDE_DIRECTORY)
 
@@ -145,7 +144,6 @@ set(
     "${CMAKE_CURRENT_SOURCE_DIR}/gen/include"
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
-    ${qjson_PUBLIC_INCLUDE_DIRECTORY}
     ${spdlog_SOURCE_DIR}/include
     ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
     ${jsmn_PUBLIC_INCLUDE_DIRECTORY}
@@ -156,7 +154,6 @@ set(
     test_TARGET_LIBRARIES
     JoynrCommon
     Joynr
-    qjson
     jsonserializer
 )
 

@@ -54,7 +54,6 @@ class StdTypeCppTemplate implements CompoundTypeTemplate{
 #include "joynr/Reply.h"
 #include "joynr/DeclareMetatypeUtil.h"
 #include "joynr/Util.h"
-#include "qjson/serializer.h"
 
 «getNamespaceStarter(type, true)»
 

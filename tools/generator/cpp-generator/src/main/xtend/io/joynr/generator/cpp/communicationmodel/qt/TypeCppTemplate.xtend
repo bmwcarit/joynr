@@ -52,7 +52,6 @@ class TypeCppTemplate implements CompoundTypeTemplate{
 #include "joynr/DeclareMetatypeUtil.h"
 #include "joynr/Util.h"
 #include "joynr/TypeUtil.h"
-#include "qjson/serializer.h"
 #include <QMetaEnum>
 
 #include "«stdTypeUtil.getIncludeOf(type)»"
@@ -69,8 +68,7 @@ void «typeName»::registerMetatypes() {
 	«FOR enumMember: getEnumMembers(type)»
 		{
 			«registerMetatypeStatement(enumMember.type.derived.typeNameOfContainingClass)»
-			int id = «registerMetatypeStatement(enumMember.typeName)»
-			QJson::Serializer::registerEnum(id, «enumMember.type.derived.typeNameOfContainingClass»::staticMetaObject.enumerator(0));
+			«registerMetatypeStatement(enumMember.typeName)»
 		}
 	«ENDFOR»
 }
