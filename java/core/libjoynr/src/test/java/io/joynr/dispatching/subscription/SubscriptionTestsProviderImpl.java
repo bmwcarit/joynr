@@ -95,6 +95,17 @@ public class SubscriptionTestsProviderImpl extends DefaulttestProvider {
         }
     }
 
+    public void waitForAttributeUnsubscription(String attributeName) {
+        synchronized (this) {
+            while (attributeSubscriptionArrived.contains(attributeName)) {
+                try {
+                    this.wait();
+                } catch (InterruptedException e) {
+                }
+            }
+        }
+    }
+
     @Override
     public void registerAttributeListener(String attributeName,
     		AttributeListener attributeListener) {
@@ -102,6 +113,18 @@ public class SubscriptionTestsProviderImpl extends DefaulttestProvider {
         synchronized (this) {
         	if (!attributeSubscriptionArrived.contains(attributeName)) {
         		attributeSubscriptionArrived.add(attributeName);
+        		this.notify();
+        	}
+        }
+    }
+
+    @Override
+    public void unregisterAttributeListener(String attributeName,
+    		AttributeListener attributeListener) {
+    	super.unregisterAttributeListener(attributeName, attributeListener);
+        synchronized (this) {
+        	if (attributeSubscriptionArrived.contains(attributeName)) {
+        		attributeSubscriptionArrived.remove(attributeName);
         		this.notify();
         	}
         }
