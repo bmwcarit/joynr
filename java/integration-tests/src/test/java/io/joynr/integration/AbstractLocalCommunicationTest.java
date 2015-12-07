@@ -48,7 +48,9 @@ import java.util.UUID;
 
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 /*
  * This testClass registers one consumer and one provider both on the same runtime. It can be used to test local

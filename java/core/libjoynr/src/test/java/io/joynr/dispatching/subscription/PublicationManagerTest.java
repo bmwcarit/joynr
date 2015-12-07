@@ -20,6 +20,8 @@ package io.joynr.dispatching.subscription;
  */
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -64,14 +66,12 @@ import joynr.tests.testProvider;
 import joynr.types.Localisation.GpsFixEnum;
 import joynr.types.Localisation.GpsLocation;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
@@ -145,7 +145,7 @@ public class PublicationManagerTest {
         String providerId = "providerId";
         String broadcastName = "location";
 
-        RequestCallerDirectory requestCallerDirectory = Mockito.mock(RequestCallerDirectory.class);
+        RequestCallerDirectory requestCallerDirectory = mock(RequestCallerDirectory.class);
         SubscriptionRequest subscriptionRequest = new BroadcastSubscriptionRequest(subscriptionId,
                                                                                    broadcastName,
                                                                                    new BroadcastFilterParameters(),
@@ -189,7 +189,7 @@ public class PublicationManagerTest {
         String providerId = "providerId";
         String broadcastName = "location";
 
-        RequestCallerDirectory requestCallerDirectory = Mockito.mock(RequestCallerDirectory.class);
+        RequestCallerDirectory requestCallerDirectory = mock(RequestCallerDirectory.class);
         SubscriptionRequest subscriptionRequest = new BroadcastSubscriptionRequest(subscriptionId,
                                                                                    broadcastName,
                                                                                    new BroadcastFilterParameters(),
@@ -238,7 +238,7 @@ public class PublicationManagerTest {
         String providerId = "providerId";
         String attributeName = "location";
 
-        RequestCallerDirectory requestCallerDirectory = Mockito.mock(RequestCallerDirectory.class);
+        RequestCallerDirectory requestCallerDirectory = mock(RequestCallerDirectory.class);
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(subscriptionId, attributeName, qos);
         PublicationManager publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                                            dispatcher,
@@ -266,11 +266,11 @@ public class PublicationManagerTest {
             publicationManager.attributeValueChanged(subscriptionId, i);
         }
 
-        Assert.assertTrue(onReceiveSemaphore.tryAcquire(2, subscriptionLength + 1000, TimeUnit.MILLISECONDS));
+        assertTrue(onReceiveSemaphore.tryAcquire(2, subscriptionLength + 1000, TimeUnit.MILLISECONDS));
 
-        Assert.assertFalse(onReceiveSemaphore.tryAcquire(1,
-                                                         Math.max(expiryDate - System.currentTimeMillis(), 200),
-                                                         TimeUnit.MILLISECONDS));
+        assertFalse(onReceiveSemaphore.tryAcquire(1,
+                                                  Math.max(expiryDate - System.currentTimeMillis(), 200),
+                                                  TimeUnit.MILLISECONDS));
     }
 
     @Test(timeout = 3000)

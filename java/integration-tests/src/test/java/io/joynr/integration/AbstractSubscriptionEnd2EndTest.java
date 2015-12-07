@@ -29,6 +29,8 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
@@ -60,7 +62,6 @@ import joynr.tests.testTypes.TestEnum;
 import joynr.types.Localisation.GpsLocation;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -201,7 +202,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
 
         String subscriptionId = proxy.subscribeToComplexTestAttribute(gpsListener, subscriptionQos);
 
-        Assert.assertTrue(onReceiveSemaphore.tryAcquire(periods, subscriptionDuration + 1000, TimeUnit.MILLISECONDS));
+        assertTrue(onReceiveSemaphore.tryAcquire(periods, subscriptionDuration + 1000, TimeUnit.MILLISECONDS));
         verify(gpsListener, times(0)).onError(null);
 
         proxy.unsubscribeFromComplexTestAttribute(subscriptionId);
@@ -231,7 +232,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
 
         String subscriptionId = proxy.subscribeToEnumAttribute(testEnumListener, subscriptionQos);
 
-        Assert.assertTrue(onReceiveSemaphore.tryAcquire(periods, subscriptionDuration + 1000, TimeUnit.MILLISECONDS));
+        assertTrue(onReceiveSemaphore.tryAcquire(periods, subscriptionDuration + 1000, TimeUnit.MILLISECONDS));
 
         verify(testEnumListener, times(0)).onError(null);
 
@@ -258,7 +259,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         SubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(period_ms, expiryDate_ms, 0, 0);
 
         String subscriptionId = proxy.subscribeToListOfInts(integersListener, subscriptionQos);
-        Assert.assertTrue(onReceiveSemaphore.tryAcquire(periods, subscriptionDuration + 1000, TimeUnit.MILLISECONDS));
+        assertTrue(onReceiveSemaphore.tryAcquire(periods, subscriptionDuration + 1000, TimeUnit.MILLISECONDS));
 
         verify(integersListener, times(0)).onError(null);
 
@@ -313,13 +314,13 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
 
         // when subscribing, we automatically get 1 publication. Expect the starting-publication
         verify(integerListener, times(0)).onError(null);
-        Assert.assertTrue(onReceiveSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
+        assertTrue(onReceiveSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 
         // Wait minimum time between onChanged
         Thread.sleep(minInterval_ms);
         provider.setTestAttribute(5);
         // expect the onChangeSubscription to have arrived
-        Assert.assertTrue(onReceiveSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
+        assertTrue(onReceiveSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 
         Thread.sleep(subscriptionDuration);
         // expect no more publications to arrive
@@ -385,10 +386,10 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         // when subscribing, we automatically get 1 publication. Expect the
         // starting-publication
         verify(integerListener, times(0)).onError(null);
-        Assert.assertTrue(onReceiveSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
+        assertTrue(onReceiveSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 
         for (int i = 1; i <= numberExpectedKeepAlives; i++) {
-            Assert.assertTrue(onReceiveSemaphore.tryAcquire(maxInterval_ms + expected_latency_ms, TimeUnit.MILLISECONDS));
+            assertTrue(onReceiveSemaphore.tryAcquire(maxInterval_ms + expected_latency_ms, TimeUnit.MILLISECONDS));
         }
 
         proxy.unsubscribeFromTestAttribute(subscriptionId);
@@ -421,16 +422,16 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         // when subscribing, we automatically get 1 publication. Expect the
         // starting-publication
         verify(integerListener, times(0)).onError(null);
-        Assert.assertTrue(onReceiveSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
+        assertTrue(onReceiveSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 
         // Wait minimum time between onChanged
         Thread.sleep(minInterval_ms);
         provider.setTestAttribute(5);
         // expect the onChangeSubscription to have arrived
-        Assert.assertTrue(onReceiveSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
+        assertTrue(onReceiveSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 
         // expect the third publication due to exceeding the maxInterval_ms
-        Assert.assertTrue(onReceiveSemaphore.tryAcquire(maxInterval_ms + 1000, TimeUnit.MILLISECONDS));
+        assertTrue(onReceiveSemaphore.tryAcquire(maxInterval_ms + 1000, TimeUnit.MILLISECONDS));
 
         proxy.unsubscribeFromTestAttribute(subscriptionId);
         provider.waitForAttributeUnsubscription("testAttribute");
@@ -451,10 +452,10 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         provider.waitForAttributeSubscription("testAttribute");
 
         verify(integerListener, times(0)).onError(null);
-        Assert.assertTrue(onReceiveSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
+        assertTrue(onReceiveSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 
         provider.setTestAttribute(5);
-        Assert.assertTrue(onReceiveSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
+        assertTrue(onReceiveSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 
         proxy.unsubscribeFromTestAttribute(subscriptionId);
         provider.waitForAttributeUnsubscription("testAttribute");
@@ -479,10 +480,10 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         long timeout = subscriptionDuration + expected_latency_ms;
 
         //expect at least #periods errors
-        Assert.assertTrue(onErrorSemaphore.tryAcquire(periods, timeout, TimeUnit.MILLISECONDS));
+        assertTrue(onErrorSemaphore.tryAcquire(periods, timeout, TimeUnit.MILLISECONDS));
         //expect at most #periods+1 errors
         timeout = Math.max(timeout - (System.currentTimeMillis() - timeBeforeTest), 100);
-        Assert.assertFalse(onErrorSemaphore.tryAcquire(2, timeout, TimeUnit.MILLISECONDS));
+        assertFalse(onErrorSemaphore.tryAcquire(2, timeout, TimeUnit.MILLISECONDS));
         //expect no successful subscription callback 
         verify(listener, times(0)).onReceive(anyInt());
 
@@ -508,11 +509,11 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         long timeout = subscriptionDuration + expected_latency_ms;
 
         //expect at least #periods errors
-        Assert.assertTrue(onErrorSemaphore.tryAcquire(periods, timeout, TimeUnit.MILLISECONDS));
+        assertTrue(onErrorSemaphore.tryAcquire(periods, timeout, TimeUnit.MILLISECONDS));
         //expect at most #periods+1 errors
 
         timeout = Math.max(timeout - (System.currentTimeMillis() - timeBeforeTest), 100);
-        Assert.assertFalse(onErrorSemaphore.tryAcquire(2, timeout, TimeUnit.MILLISECONDS));
+        assertFalse(onErrorSemaphore.tryAcquire(2, timeout, TimeUnit.MILLISECONDS));
         //expect no successful subscription callback 
         verify(listener, times(0)).onReceive(anyInt());
 
@@ -539,13 +540,13 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         provider.waitForAttributeSubscription("testAttribute");
 
         // There should have only been one call - the automatic publication when a subscription is made
-        Assert.assertTrue(onReceiveSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
+        assertTrue(onReceiveSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 
         verifyNoMoreInteractions(integerListener);
         Thread.sleep(duration + expected_latency_ms);
         // We should now have an expired onChange subscription
         provider.setTestAttribute(5);
-        Assert.assertFalse(onReceiveSemaphore.tryAcquire(100, TimeUnit.MILLISECONDS));
+        assertFalse(onReceiveSemaphore.tryAcquire(100, TimeUnit.MILLISECONDS));
 
         proxy.unsubscribeFromTestAttribute(subscriptionId);
         provider.waitForAttributeUnsubscription("testAttribute");
