@@ -143,17 +143,6 @@ public:
     }
 
     template <class T>
-    static QList<QVariant> convertListToVariantList(const QList<T>& inputList)
-    {
-        QList<QVariant> ret;
-        ret.reserve(inputList.length());
-        foreach (const T& q, inputList) {
-            ret.append(QVariant::fromValue(q));
-        }
-        return ret;
-    }
-
-    template <class T>
     static std::vector<Variant> convertVectorToVariantVector(const std::vector<T>& inputVector)
     {
         std::vector<Variant> variantVector;
