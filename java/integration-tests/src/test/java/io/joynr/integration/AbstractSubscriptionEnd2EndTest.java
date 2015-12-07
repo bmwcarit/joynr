@@ -22,7 +22,6 @@ package io.joynr.integration;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeast;
-import static org.mockito.Mockito.atMost;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
@@ -435,52 +434,63 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         provider.waitForAttributeUnsubscription("testAttribute");
     }
 
-    @Test
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void subscribeToAttributeWithProviderRuntimeException() throws InterruptedException {
         Semaphore onErrorSemaphore = new Semaphore(0);
         ProviderRuntimeException expectedException = new ProviderRuntimeException(SubscriptionTestsProviderImpl.MESSAGE_PROVIDERRUNTIMEEXCEPTION);
-        AttributeSubscriptionListener<Integer> providerRuntimeExceptionListener = prepareOnErrorListenerMock(onErrorSemaphore,
-                                                                                                             expectedException);
+        AttributeSubscriptionListener<Integer> listener = prepareOnErrorListenerMock(onErrorSemaphore,
+                                                                                     expectedException);
 
-        int periods = 4;
+        int periods = 2;
         int subscriptionDuration = (period_ms * periods);
-        long alertInterval_ms = 500;
+        long alertInterval_ms = 1000;
         long expiryDate_ms = System.currentTimeMillis() + subscriptionDuration;
         SubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(period_ms, expiryDate_ms, alertInterval_ms, 0);
 
-        String subscriptionId = proxy.subscribeToAttributeWithProviderRuntimeException(providerRuntimeExceptionListener,
-                                                                                       subscriptionQos);
-        Thread.sleep(subscriptionDuration);
-        // 100 2100 4100 6100
-        verify(providerRuntimeExceptionListener, atLeast(periods)).onError(expectedException);
-        verify(providerRuntimeExceptionListener, atMost(periods + 1)).onError(expectedException);
-        verify(providerRuntimeExceptionListener, times(0)).onReceive(null);
+        String subscriptionId = proxy.subscribeToAttributeWithProviderRuntimeException(listener, subscriptionQos);
 
-        proxy.unsubscribeFromEnumAttribute(subscriptionId);
+        long timeBeforeTest = System.currentTimeMillis();
+        long timeout = subscriptionDuration + expected_latency_ms;
+
+        //expect at least #periods errors
+        Assert.assertTrue(onErrorSemaphore.tryAcquire(periods, timeout, TimeUnit.MILLISECONDS));
+        //expect at most #periods+1 errors
+        timeout = Math.max(timeout - (System.currentTimeMillis() - timeBeforeTest), 100);
+        Assert.assertFalse(onErrorSemaphore.tryAcquire(2, timeout, TimeUnit.MILLISECONDS));
+        //expect no successful subscription callback 
+        verify(listener, times(0)).onReceive(anyInt());
+
+        proxy.unsubscribeFromAttributeWithProviderRuntimeException(subscriptionId);
     }
 
-    @Test
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void subscribeToAttributeWithThrownException() throws InterruptedException {
         Semaphore onErrorSemaphore = new Semaphore(0);
         ProviderRuntimeException expectedException = new ProviderRuntimeException(new IllegalArgumentException(SubscriptionTestsProviderImpl.MESSAGE_THROWN_PROVIDERRUNTIMEEXCEPTION).toString());
-        AttributeSubscriptionListener<Integer> providerRuntimeExceptionListener = prepareOnErrorListenerMock(onErrorSemaphore,
-                                                                                                             expectedException);
+        AttributeSubscriptionListener<Integer> listener = prepareOnErrorListenerMock(onErrorSemaphore,
+                                                                                     expectedException);
 
-        int periods = 4;
+        int periods = 2;
         int subscriptionDuration = (period_ms * periods);
-        long alertInterval_ms = 500;
+        long alertInterval_ms = 1000;
         long expiryDate_ms = System.currentTimeMillis() + subscriptionDuration;
         SubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(period_ms, expiryDate_ms, alertInterval_ms, 0);
 
-        String subscriptionId = proxy.subscribeToAttributeWithThrownException(providerRuntimeExceptionListener,
-                                                                              subscriptionQos);
-        Thread.sleep(subscriptionDuration);
-        // 100 2100 4100 6100
-        verify(providerRuntimeExceptionListener, atLeast(periods)).onError(expectedException);
-        verify(providerRuntimeExceptionListener, atMost(periods + 1)).onError(expectedException);
-        verify(providerRuntimeExceptionListener, times(0)).onReceive(null);
+        String subscriptionId = proxy.subscribeToAttributeWithThrownException(listener, subscriptionQos);
 
-        proxy.unsubscribeFromEnumAttribute(subscriptionId);
+        long timeBeforeTest = System.currentTimeMillis();
+        long timeout = subscriptionDuration + expected_latency_ms;
+
+        //expect at least #periods errors
+        Assert.assertTrue(onErrorSemaphore.tryAcquire(periods, timeout, TimeUnit.MILLISECONDS));
+        //expect at most #periods+1 errors
+
+        timeout = Math.max(timeout - (System.currentTimeMillis() - timeBeforeTest), 100);
+        Assert.assertFalse(onErrorSemaphore.tryAcquire(2, timeout, TimeUnit.MILLISECONDS));
+        //expect no successful subscription callback 
+        verify(listener, times(0)).onReceive(anyInt());
+
+        proxy.unsubscribeFromAttributeWithThrownException(subscriptionId);
     }
 
     @Ignore
