@@ -35,6 +35,7 @@ import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.dispatching.subscription.SubscriptionTestsProviderImpl;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrIllegalStateException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilder;
@@ -316,6 +317,20 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         return integerListener;
     }
 
+    @SuppressWarnings("unchecked")
+    private AttributeSubscriptionListener<Integer> prepareOnErrorListenerMock(final Semaphore onErrorSemaphore,
+                                                                              JoynrRuntimeException expectation) {
+        AttributeSubscriptionListener<Integer> integerListener = mock(AttributeSubscriptionListener.class);
+
+        doAnswer(new Answer<Object>() {
+            public Object answer(InvocationOnMock invocation) {
+                onErrorSemaphore.release();
+                return (Void) null;
+            }
+        }).when(integerListener).onError(expectation);
+        return integerListener;
+    }
+
     @Ignore
     @Test
     public void testOnChangeWithKeepAliveSubscriptionSendsKeepAlive() throws InterruptedException {
@@ -420,11 +435,12 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         provider.waitForAttributeUnsubscription("testAttribute");
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void subscribeToAttributeWithProviderRuntimeException() throws InterruptedException {
-        AttributeSubscriptionListener<Integer> providerRuntimeExceptionListener = mock(AttributeSubscriptionListener.class);
+        Semaphore onErrorSemaphore = new Semaphore(0);
         ProviderRuntimeException expectedException = new ProviderRuntimeException(SubscriptionTestsProviderImpl.MESSAGE_PROVIDERRUNTIMEEXCEPTION);
+        AttributeSubscriptionListener<Integer> providerRuntimeExceptionListener = prepareOnErrorListenerMock(onErrorSemaphore,
+                                                                                                             expectedException);
 
         int periods = 4;
         int subscriptionDuration = (period_ms * periods);
@@ -443,11 +459,12 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         proxy.unsubscribeFromEnumAttribute(subscriptionId);
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void subscribeToAttributeWithThrownException() throws InterruptedException {
-        AttributeSubscriptionListener<Integer> providerRuntimeExceptionListener = mock(AttributeSubscriptionListener.class);
+        Semaphore onErrorSemaphore = new Semaphore(0);
         ProviderRuntimeException expectedException = new ProviderRuntimeException(new IllegalArgumentException(SubscriptionTestsProviderImpl.MESSAGE_THROWN_PROVIDERRUNTIMEEXCEPTION).toString());
+        AttributeSubscriptionListener<Integer> providerRuntimeExceptionListener = prepareOnErrorListenerMock(onErrorSemaphore,
+                                                                                                             expectedException);
 
         int periods = 4;
         int subscriptionDuration = (period_ms * periods);
