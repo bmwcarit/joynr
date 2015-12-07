@@ -21,9 +21,12 @@ package io.joynr.dispatching.subscription;
 
 import io.joynr.provider.Deferred;
 import io.joynr.provider.Promise;
+import io.joynr.pubsub.publication.AttributeListener;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.tests.DefaulttestProvider;
@@ -79,4 +82,28 @@ public class SubscriptionTestsProviderImpl extends DefaulttestProvider {
         throw new IllegalArgumentException(MESSAGE_THROWN_PROVIDERRUNTIMEEXCEPTION);
     }
 
+    Set<String> attributeSubscriptionArrived = new HashSet<>();
+
+    public void waitForAttributeSubscription(String attributeName) {
+        synchronized (this) {
+            while (!attributeSubscriptionArrived.contains(attributeName)) {
+                try {
+                    this.wait();
+                } catch (InterruptedException e) {
+                }
+            }
+        }
+    }
+
+    @Override
+    public void registerAttributeListener(String attributeName,
+    		AttributeListener attributeListener) {
+        super.registerAttributeListener(attributeName, attributeListener);
+        synchronized (this) {
+        	if (!attributeSubscriptionArrived.contains(attributeName)) {
+        		attributeSubscriptionArrived.add(attributeName);
+        		this.notify();
+        	}
+        }
+    }
 }
