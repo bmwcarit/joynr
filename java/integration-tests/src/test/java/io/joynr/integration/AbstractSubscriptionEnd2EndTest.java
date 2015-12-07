@@ -19,6 +19,7 @@ package io.joynr.integration;
  * #L%
  */
 
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeast;
@@ -168,7 +169,6 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         long expiryDate_ms = System.currentTimeMillis() + subscriptionDuration;
         SubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(period_ms, expiryDate_ms, alertInterval_ms, 0);
         String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQos);
-        provider.waitForAttributeSubscription("testAttribute");
         Thread.sleep(subscriptionDuration);
         verify(integerListener, times(0)).onError(null);
         // TODO verify publications shipped correct data
@@ -184,17 +184,25 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
     @SuppressWarnings("unchecked")
     @Test
     public void registerSubscriptionForComplexDatatype() throws InterruptedException {
+        final Semaphore onReceiveSemaphore = new Semaphore(0);
         AttributeSubscriptionListener<GpsLocation> gpsListener = mock(AttributeSubscriptionListener.class);
-        int subscriptionDuration = (period_ms * 4);
+
+        doAnswer(new Answer<Object>() {
+            public Object answer(InvocationOnMock invocation) {
+                onReceiveSemaphore.release();
+                return (Void) null;
+            }
+        }).when(gpsListener).onReceive(eq(provider.getComplexTestAttributeSync()));
+        int periods = 2;
+        long subscriptionDuration = (period_ms * periods) + expected_latency_ms;
         long alertInterval_ms = 500;
         long expiryDate_ms = System.currentTimeMillis() + subscriptionDuration;
         SubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(period_ms, expiryDate_ms, alertInterval_ms, 0);
 
         String subscriptionId = proxy.subscribeToComplexTestAttribute(gpsListener, subscriptionQos);
-        Thread.sleep(subscriptionDuration);
-        // 100 2100 4100 6100
+
+        Assert.assertTrue(onReceiveSemaphore.tryAcquire(periods, subscriptionDuration + 1000, TimeUnit.MILLISECONDS));
         verify(gpsListener, times(0)).onError(null);
-        verify(gpsListener, atLeast(4)).onReceive(eq(provider.getComplexTestAttributeSync()));
 
         proxy.unsubscribeFromComplexTestAttribute(subscriptionId);
     }
@@ -202,20 +210,30 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
     @SuppressWarnings("unchecked")
     @Test
     public void subscribeToEnumAttribute() throws InterruptedException {
+        final Semaphore onReceiveSemaphore = new Semaphore(0);
         AttributeSubscriptionListener<TestEnum> testEnumListener = mock(AttributeSubscriptionListener.class);
+
+        doAnswer(new Answer<Object>() {
+            public Object answer(InvocationOnMock invocation) {
+                onReceiveSemaphore.release();
+                return (Void) null;
+            }
+        }).when(testEnumListener).onReceive(any(TestEnum.class));
+
         TestEnum expectedTestEnum = TestEnum.TWO;
         provider.setEnumAttribute(expectedTestEnum);
 
-        int subscriptionDuration = (period_ms * 4);
+        int periods = 2;
+        long subscriptionDuration = (period_ms * periods) + expected_latency_ms;
         long alertInterval_ms = 500;
         long expiryDate_ms = System.currentTimeMillis() + subscriptionDuration;
         SubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(period_ms, expiryDate_ms, alertInterval_ms, 0);
 
         String subscriptionId = proxy.subscribeToEnumAttribute(testEnumListener, subscriptionQos);
-        Thread.sleep(subscriptionDuration);
-        // 100 2100 4100 6100
+
+        Assert.assertTrue(onReceiveSemaphore.tryAcquire(periods, subscriptionDuration + 1000, TimeUnit.MILLISECONDS));
+
         verify(testEnumListener, times(0)).onError(null);
-        verify(testEnumListener, atLeast(4)).onReceive(eq(expectedTestEnum));
 
         proxy.unsubscribeFromEnumAttribute(subscriptionId);
     }
@@ -223,21 +241,29 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
     @SuppressWarnings("unchecked")
     @Test
     public void registerSubscriptionForListAndReceiveUpdates() throws InterruptedException {
+        final Semaphore onReceiveSemaphore = new Semaphore(0);
         AttributeSubscriptionListener<Integer[]> integersListener = mock(AttributeSubscriptionListener.class);
+        doAnswer(new Answer<Object>() {
+            public Object answer(InvocationOnMock invocation) {
+                onReceiveSemaphore.release();
+                return (Void) null;
+            }
+        }).when(integersListener).onReceive(any(Integer[].class));
+
         provider.setTestAttribute(42);
 
-        int subscriptionDuration = (period_ms * 3);
+        int periods = 2;
+        long subscriptionDuration = (period_ms * periods) + expected_latency_ms;
         long expiryDate_ms = System.currentTimeMillis() + subscriptionDuration;
         SubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(period_ms, expiryDate_ms, 0, 0);
 
         String subscriptionId = proxy.subscribeToListOfInts(integersListener, subscriptionQos);
-        Thread.sleep(subscriptionDuration);
+        Assert.assertTrue(onReceiveSemaphore.tryAcquire(periods, subscriptionDuration + 1000, TimeUnit.MILLISECONDS));
+
         verify(integersListener, times(0)).onError(null);
 
         verify(integersListener, times(1)).onReceive(eq(new Integer[]{ 42 }));
         verify(integersListener, times(1)).onReceive(eq(new Integer[]{ 42, 43 }));
-        verify(integersListener, times(1)).onReceive(eq(new Integer[]{ 42, 43, 44 }));
-        verifyNoMoreInteractions(integersListener);
 
         proxy.unsubscribeFromListOfInts(subscriptionId);
     }
