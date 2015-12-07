@@ -172,6 +172,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         verify(integerListener, times(1)).onReceive(eq(45));
 
         proxy.unsubscribeFromTestAttribute(subscriptionId);
+        provider.waitForAttributeUnsubscription("testAttribute");
     }
 
     @SuppressWarnings("unchecked")
@@ -252,6 +253,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         Thread.sleep(subscriptionDuration);
         verifyNoMoreInteractions(integerListener);
         proxy.unsubscribeFromTestAttribute(subscriptionId);
+        provider.waitForAttributeUnsubscription("testAttribute");
     }
 
     @SuppressWarnings("unchecked")
@@ -293,7 +295,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         verifyNoMoreInteractions(integerListener);
 
         proxy.unsubscribeFromTestAttribute(subscriptionId);
-
+        provider.waitForAttributeUnsubscription("testAttribute");
     }
 
     @SuppressWarnings("unchecked")
@@ -335,6 +337,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         }
 
         proxy.unsubscribeFromTestAttribute(subscriptionId);
+        provider.waitForAttributeUnsubscription("testAttribute");
     }
 
     @SuppressWarnings("unchecked")
@@ -377,7 +380,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         verify(integerListener, atLeast(3)).onReceive(anyInt());
 
         proxy.unsubscribeFromTestAttribute(subscriptionId);
-
+        provider.waitForAttributeUnsubscription("testAttribute");
     }
 
     @SuppressWarnings("unchecked")
@@ -405,7 +408,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         verify(integerListener, times(2)).onReceive(anyInt());
 
         proxy.unsubscribeFromTestAttribute(subscriptionId);
-
+        provider.waitForAttributeUnsubscription("testAttribute");
     }
 
     @SuppressWarnings("unchecked")
@@ -483,7 +486,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         verifyNoMoreInteractions(integerListener);
 
         proxy.unsubscribeFromTestAttribute(subscriptionId);
-
+        provider.waitForAttributeUnsubscription("testAttribute");
     }
 
     @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NP_NULL_ON_SOME_PATH_EXCEPTION", justification = "NPE in test would fail test")
@@ -515,5 +518,6 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         String subscriptionId = proxyToNonexistentDomain.subscribeToTestAttribute(integerListener, subscriptionQos);
         Thread.sleep(4000);
         proxyToNonexistentDomain.unsubscribeFromTestAttribute(subscriptionId);
+        provider.waitForAttributeUnsubscription("testAttribute");
     }
 }
