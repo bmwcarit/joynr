@@ -1,5 +1,3 @@
-/*global joynrTestRequire: true */
-
 /*
  * #%L
  * %%
@@ -19,8 +17,7 @@
  * #L%
  */
 
-joynrTestRequire(
-        "joynr/syste/TestLoggingManager",
+define(
         [
             "joynr/system/LoggingManager",
             "joynr/system/WebWorkerMessagingAppender",

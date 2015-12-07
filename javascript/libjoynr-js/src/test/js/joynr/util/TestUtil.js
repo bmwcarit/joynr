@@ -1,5 +1,4 @@
 /*jslint es5: true, nomen: true */
-/*global joynrTestRequire: true */
 
 /*
  * #%L
@@ -20,8 +19,7 @@
  * #L%
  */
 
-joynrTestRequire(
-        "joynr/util/TestUtil",
+define(
         [
             "global/Promise",
             "joynr/util/UtilInternal",

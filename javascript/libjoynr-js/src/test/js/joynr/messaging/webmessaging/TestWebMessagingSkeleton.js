@@ -1,5 +1,3 @@
-/*global joynrTestRequire: true */
-
 /*
  * #%L
  * %%
@@ -19,141 +17,136 @@
  * #L%
  */
 
-joynrTestRequire(
-        "joynr/messaging/webmessaging/TestWebMessagingSkeletion",
-        [ "joynr/messaging/webmessaging/WebMessagingSkeleton"
-        ],
-        function(WebMessagingSkeleton) {
+define([ "joynr/messaging/webmessaging/WebMessagingSkeleton"
+], function(WebMessagingSkeleton) {
 
-            describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingSkeleton", function() {
+    describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingSkeleton", function() {
 
-                var window, webMessagingSkeleton, listener1, listener2, data, event;
+        var window, webMessagingSkeleton, listener1, listener2, data, event;
 
-                beforeEach(function() {
-                    function Window() {}
-                    window = new Window();
-                    window.addEventListener = jasmine.createSpy("addEventListener");
-                    window.removeEventListener = jasmine.createSpy("removeEventListener");
+        beforeEach(function() {
+            function Window() {}
+            window = new Window();
+            window.addEventListener = jasmine.createSpy("addEventListener");
+            window.removeEventListener = jasmine.createSpy("removeEventListener");
 
-                    webMessagingSkeleton = new WebMessagingSkeleton({
-                        window : window
-                    });
-
-                    listener1 = jasmine.createSpy();
-                    listener2 = jasmine.createSpy();
-
-                    data = {
-                        key : "myData"
-                    };
-                    event = {
-                        data : data
-                    };
-                });
-
-                it("is of correct type and has all members", function() {
-                    expect(WebMessagingSkeleton).toBeDefined();
-                    expect(typeof WebMessagingSkeleton === "function").toBeTruthy();
-                    expect(webMessagingSkeleton).toBeDefined();
-                    expect(webMessagingSkeleton instanceof WebMessagingSkeleton).toBeTruthy();
-                    expect(webMessagingSkeleton.registerListener).toBeDefined();
-                    expect(typeof webMessagingSkeleton.registerListener === "function")
-                            .toBeTruthy();
-                    expect(webMessagingSkeleton.unregisterListener).toBeDefined();
-                    expect(typeof webMessagingSkeleton.unregisterListener === "function")
-                            .toBeTruthy();
-                });
-
-                it("throws if arguments are missing or of wrong type", function() {
-                    expect(function() {
-                        webMessagingSkeleton = new WebMessagingSkeleton({
-                            window : window
-                        });
-                    }).not.toThrow(); // correct call
-                    expect(function() {
-                        webMessagingSkeleton = new WebMessagingSkeleton({});
-                    }).toThrow(); // window is missing
-                    expect(function() {
-                        webMessagingSkeleton = new WebMessagingSkeleton({
-                            window : ""
-                        });
-                    }).toThrow(); // window is of wrong type
-
-                    expect(function() {
-                        webMessagingSkeleton = new WebMessagingSkeleton({
-                            window : {}
-                        });
-                    }).toThrow(); // window does not provide the expected functions
-
-                    expect(function() {
-                        webMessagingSkeleton = new WebMessagingSkeleton({
-                            window : {
-                                addEventListener : function() {}
-                            }
-                        });
-                    }).toThrow(); // window does not provide the expected functions
-
-                    expect(function() {
-                        webMessagingSkeleton = new WebMessagingSkeleton({
-                            window : {
-                                addEventListener : function() {},
-                                removeEventListener : function() {}
-                            }
-                        });
-                    }).not.toThrow(); // window does not provide the expected functions
-
-                    expect(function() {
-                        webMessagingSkeleton.registerListener(function() {});
-                    }).not.toThrow(); // correct call
-                    expect(function() {
-                        webMessagingSkeleton.registerListener("");
-                    }).toThrow(); // listener is of wrong type
-                    expect(function() {
-                        webMessagingSkeleton.registerListener({});
-                    }).toThrow(); // listener is of wrong type
-
-                    expect(function() {
-                        webMessagingSkeleton.unregisterListener(function() {});
-                    }).not.toThrow(); // correct call
-                    expect(function() {
-                        webMessagingSkeleton.unregisterListener("");
-                    }).toThrow(); // listener is of wrong type
-                    expect(function() {
-                        webMessagingSkeleton.unregisterListener({});
-                    }).toThrow(); // listener is of wrong type
-                });
-
-                function callAllRegisteredListeners(calls, event) {
-                    var i;
-
-                    for (i = 0; i < calls.length; ++i) {
-                        calls[i].args[1](event);
-                    }
-                }
-
-                it("event calls through to registered listeners", function() {
-                    webMessagingSkeleton.registerListener(listener1);
-                    webMessagingSkeleton.registerListener(listener2);
-                    expect(listener1).not.toHaveBeenCalled();
-                    expect(listener2).not.toHaveBeenCalled();
-                    callAllRegisteredListeners(window.addEventListener.calls, event);
-                    expect(listener1).toHaveBeenCalledWith(data);
-                    expect(listener2).toHaveBeenCalledWith(data);
-                    expect(listener1.calls.length).toBe(1);
-                    expect(listener2.calls.length).toBe(1);
-                });
-
-                it("event does not call through to unregistered listeners", function() {
-                    webMessagingSkeleton.registerListener(listener1);
-                    webMessagingSkeleton.registerListener(listener2);
-                    webMessagingSkeleton.unregisterListener(listener1);
-                    callAllRegisteredListeners(window.addEventListener.calls, event);
-                    webMessagingSkeleton.unregisterListener(listener2);
-                    callAllRegisteredListeners(window.addEventListener.calls, event);
-
-                    expect(listener1).not.toHaveBeenCalled();
-                    expect(listener2).toHaveBeenCalled();
-                    expect(listener2.calls.length).toBe(1);
-                });
-
+            webMessagingSkeleton = new WebMessagingSkeleton({
+                window : window
             });
+
+            listener1 = jasmine.createSpy();
+            listener2 = jasmine.createSpy();
+
+            data = {
+                key : "myData"
+            };
+            event = {
+                data : data
+            };
         });
+
+        it("is of correct type and has all members", function() {
+            expect(WebMessagingSkeleton).toBeDefined();
+            expect(typeof WebMessagingSkeleton === "function").toBeTruthy();
+            expect(webMessagingSkeleton).toBeDefined();
+            expect(webMessagingSkeleton instanceof WebMessagingSkeleton).toBeTruthy();
+            expect(webMessagingSkeleton.registerListener).toBeDefined();
+            expect(typeof webMessagingSkeleton.registerListener === "function").toBeTruthy();
+            expect(webMessagingSkeleton.unregisterListener).toBeDefined();
+            expect(typeof webMessagingSkeleton.unregisterListener === "function").toBeTruthy();
+        });
+
+        it("throws if arguments are missing or of wrong type", function() {
+            expect(function() {
+                webMessagingSkeleton = new WebMessagingSkeleton({
+                    window : window
+                });
+            }).not.toThrow(); // correct call
+            expect(function() {
+                webMessagingSkeleton = new WebMessagingSkeleton({});
+            }).toThrow(); // window is missing
+            expect(function() {
+                webMessagingSkeleton = new WebMessagingSkeleton({
+                    window : ""
+                });
+            }).toThrow(); // window is of wrong type
+
+            expect(function() {
+                webMessagingSkeleton = new WebMessagingSkeleton({
+                    window : {}
+                });
+            }).toThrow(); // window does not provide the expected functions
+
+            expect(function() {
+                webMessagingSkeleton = new WebMessagingSkeleton({
+                    window : {
+                        addEventListener : function() {}
+                    }
+                });
+            }).toThrow(); // window does not provide the expected functions
+
+            expect(function() {
+                webMessagingSkeleton = new WebMessagingSkeleton({
+                    window : {
+                        addEventListener : function() {},
+                        removeEventListener : function() {}
+                    }
+                });
+            }).not.toThrow(); // window does not provide the expected functions
+
+            expect(function() {
+                webMessagingSkeleton.registerListener(function() {});
+            }).not.toThrow(); // correct call
+            expect(function() {
+                webMessagingSkeleton.registerListener("");
+            }).toThrow(); // listener is of wrong type
+            expect(function() {
+                webMessagingSkeleton.registerListener({});
+            }).toThrow(); // listener is of wrong type
+
+            expect(function() {
+                webMessagingSkeleton.unregisterListener(function() {});
+            }).not.toThrow(); // correct call
+            expect(function() {
+                webMessagingSkeleton.unregisterListener("");
+            }).toThrow(); // listener is of wrong type
+            expect(function() {
+                webMessagingSkeleton.unregisterListener({});
+            }).toThrow(); // listener is of wrong type
+        });
+
+        function callAllRegisteredListeners(calls, event) {
+            var i;
+
+            for (i = 0; i < calls.length; ++i) {
+                calls[i].args[1](event);
+            }
+        }
+
+        it("event calls through to registered listeners", function() {
+            webMessagingSkeleton.registerListener(listener1);
+            webMessagingSkeleton.registerListener(listener2);
+            expect(listener1).not.toHaveBeenCalled();
+            expect(listener2).not.toHaveBeenCalled();
+            callAllRegisteredListeners(window.addEventListener.calls, event);
+            expect(listener1).toHaveBeenCalledWith(data);
+            expect(listener2).toHaveBeenCalledWith(data);
+            expect(listener1.calls.length).toBe(1);
+            expect(listener2.calls.length).toBe(1);
+        });
+
+        it("event does not call through to unregistered listeners", function() {
+            webMessagingSkeleton.registerListener(listener1);
+            webMessagingSkeleton.registerListener(listener2);
+            webMessagingSkeleton.unregisterListener(listener1);
+            callAllRegisteredListeners(window.addEventListener.calls, event);
+            webMessagingSkeleton.unregisterListener(listener2);
+            callAllRegisteredListeners(window.addEventListener.calls, event);
+
+            expect(listener1).not.toHaveBeenCalled();
+            expect(listener2).toHaveBeenCalled();
+            expect(listener2.calls.length).toBe(1);
+        });
+
+    });
+});

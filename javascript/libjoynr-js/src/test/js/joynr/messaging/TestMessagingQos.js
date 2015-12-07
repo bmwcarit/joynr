@@ -1,5 +1,3 @@
-/*global joynrTestRequire: true */
-
 /*
  * #%L
  * %%
@@ -19,7 +17,7 @@
  * #L%
  */
 
-joynrTestRequire("joynr/messaging/TestMessagingQos", [
+define([
     "joynr/start/settings/defaultMessagingSettings",
     "joynr/messaging/MessagingQos"
 ], function(defaultMessagingSettings, MessagingQos) {

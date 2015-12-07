@@ -1,5 +1,3 @@
-/*global joynrTestRequire: true */
-
 /*
  * #%L
  * %%
@@ -19,8 +17,7 @@
  * #L%
  */
 
-joynrTestRequire(
-        "joynr/util/TestInProcessStubAndSkeleton",
+define(
         [
             "joynr/types/GlobalDiscoveryEntry",
             "joynr/types/ProviderQos",

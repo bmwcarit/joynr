@@ -1,5 +1,3 @@
-/*global joynrTestRequire: true */
-
 /*
  * #%L
  * %%
@@ -20,7 +18,7 @@
  */
 
 //TODO: some of this relies on the dummy implementation, change accordingly when implementating
-joynrTestRequire("joynr/provider/TestProviderEvent", [
+define([
     "joynr/provider/ProviderEvent",
     "joynr/types/ProviderQos"
 ], function(ProviderEvent, ProviderQos) {

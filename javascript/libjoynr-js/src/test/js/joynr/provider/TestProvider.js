@@ -1,5 +1,3 @@
-/*global joynrTestRequire: true */
-
 /*
  * #%L
  * %%
@@ -19,8 +17,7 @@
  * #L%
  */
 
-joynrTestRequire(
-        "joynr/provider/TestProvider",
+define(
         [
             "joynr/vehicle/RadioProvider",
             "joynr/vehicle/radiotypes/RadioStation",

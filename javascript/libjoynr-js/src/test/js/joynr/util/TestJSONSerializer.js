@@ -1,5 +1,4 @@
 /*jslint es5: true, nomen: true */
-/*global joynrTestRequire: true */
 
 /*
  * #%L
@@ -20,7 +19,7 @@
  * #L%
  */
 
-joynrTestRequire("joynr/util/TestJSONSerializer", [
+define([
     "joynr/util/JSONSerializer",
     "joynr/tests/testTypes/TestEnum"
 ], function(JSONSerializer, TestEnum) {

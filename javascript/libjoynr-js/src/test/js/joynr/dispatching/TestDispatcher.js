@@ -1,5 +1,3 @@
-/*global joynrTestRequire: true */
-
 /*
  * #%L
  * %%
@@ -19,8 +17,7 @@
  * #L%
  */
 
-joynrTestRequire(
-        "joynr/dispatching/TestDispatcher",
+define(
         [
             "joynr/util/Util",
             "joynr/dispatching/Dispatcher",

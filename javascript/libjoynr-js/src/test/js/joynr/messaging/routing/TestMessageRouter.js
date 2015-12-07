@@ -1,4 +1,3 @@
-/*global joynrTestRequire: true */
 /*jslint es5: true */
 
 /*
@@ -20,9 +19,7 @@
  * #L%
  */
 
-joynrTestRequire(
-        "joynr/messaging/routing/TestMessageRouter",
-        [
+define([
             "joynr/messaging/routing/MessageRouter",
             "joynr/system/RoutingTypes/BrowserAddress",
             "joynr/system/RoutingTypes/ChannelAddress",

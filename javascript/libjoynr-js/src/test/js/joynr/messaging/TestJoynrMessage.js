@@ -1,5 +1,3 @@
-/*global joynrTestRequire: true */
-
 /*
  * #%L
  * %%
@@ -19,7 +17,7 @@
  * #L%
  */
 
-joynrTestRequire("joynr/messaging/TestJoynrMessage", [ "joynr/messaging/JoynrMessage"
+define([ "joynr/messaging/JoynrMessage"
 ], function(JoynrMessage) {
 
     describe("libjoynr-js.joynr.messaging.JoynrMessage", function() {

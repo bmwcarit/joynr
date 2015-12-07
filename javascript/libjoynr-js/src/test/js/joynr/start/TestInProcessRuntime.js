@@ -1,4 +1,3 @@
-/*global joynrTestRequire: true */
 /*jslint es5: true */
 
 /*
@@ -20,7 +19,7 @@
  * #L%
  */
 
-joynrTestRequire("joynr/start/TestInProcessRuntime", [
+define([
     "joynr/provisioning/provisioning_cc",
     "joynr/start/InProcessRuntime"
 ], function(provisioning, InProcessRuntime) {

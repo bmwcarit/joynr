@@ -1,5 +1,4 @@
 /*jslint es5: true, nomen: true */
-/*global joynrTestRequire: true */
 
 /*
  * #%L
@@ -20,9 +19,7 @@
  * #L%
  */
 
-joynrTestRequire(
-        "joynr/proxy/TestProxyAttribute",
-        [
+define([
             "joynr/proxy/ProxyAttribute",
             "joynr/proxy/ProxyAttributeNotifyReadWrite",
             "joynr/proxy/ProxyAttributeNotifyRead",

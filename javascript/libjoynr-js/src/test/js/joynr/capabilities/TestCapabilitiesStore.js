@@ -1,5 +1,3 @@
-/*global joynrTestRequire: true */
-
 /*
  * #%L
  * %%
@@ -19,7 +17,7 @@
  * #L%
  */
 
-joynrTestRequire("joynr/capabilities/TestCapabilitiesStore", [
+define([
     "joynr/capabilities/CapabilitiesStore",
     "joynr/types/DiscoveryEntry",
     "joynr/types/DiscoveryQos",
@@ -66,13 +64,14 @@ joynrTestRequire("joynr/capabilities/TestCapabilitiesStore", [
 
         function increaseFakeTime(time_ms) {
             fakeTime = fakeTime + time_ms;
-            jasmine.Clock.tick(time_ms);
+            jasmine.clock().tick(time_ms);
         }
 
         /**
          * Called before each test.
          */
         beforeEach(function() {
+            jasmine.clock().install();
             directory = new CapabilitiesStore();
             discoveryEntry1 = new DiscoveryEntry(settings);
             discoveryEntry2 = new DiscoveryEntry(settings);
@@ -84,11 +83,13 @@ joynrTestRequire("joynr/capabilities/TestCapabilitiesStore", [
                 discoveryScope : DiscoveryScope.LOCAL_ONLY
             });
 
-            jasmine.Clock.useMock();
-            jasmine.Clock.reset();
-            spyOn(Date, "now").andCallFake(function() {
+            spyOn(Date, "now").and.callFake(function() {
                 return fakeTime;
             });
+        });
+
+        afterEach(function() {
+            jasmine.clock().uninstall();
         });
 
         function checkCapabilitiesDirectoryStateForUnregister(capabilityToRemove) {

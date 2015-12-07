@@ -1,5 +1,3 @@
-/*global joynrTestRequire: true */
-
 /*
  * #%L
  * %%
@@ -19,65 +17,49 @@
  * #L%
  */
 
-joynrTestRequire(
-        "joynr/messaging/inprocess/TestInProcessMessagingStubFactory",
-        [ "joynr/messaging/inprocess/InProcessMessagingStubFactory"
-        ],
-        function(InProcessMessagingStubFactory) {
+define([ "joynr/messaging/inprocess/InProcessMessagingStubFactory"
+], function(InProcessMessagingStubFactory) {
 
-            describe(
-                    "libjoynr-js.joynr.messaging.inprocess.InProcessMessagingStubFactory",
-                    function() {
-                        var skeletonCallReturn, inProcessMessagingSkeleton, inProcessAddress;
-                        var inProcessMessagingStubFactory, joynrMessage;
+    describe("libjoynr-js.joynr.messaging.inprocess.InProcessMessagingStubFactory", function() {
+        var skeletonCallReturn, inProcessMessagingSkeleton, inProcessAddress;
+        var inProcessMessagingStubFactory, joynrMessage;
 
-                        beforeEach(function() {
-                            skeletonCallReturn = {
-                                key : "skeletonCallReturn"
-                            };
-                            inProcessMessagingSkeleton =
-                                    jasmine.createSpyObj(
-                                            "inProcessMessagingSkeleton",
-                                            [ "receiveMessage"
-                                            ]);
-                            inProcessMessagingSkeleton.receiveMessage.andReturn(skeletonCallReturn);
-                            inProcessAddress =
-                                    jasmine.createSpyObj("inProcessAddress", [ "getSkeleton"
-                                    ]);
-                            inProcessAddress.getSkeleton.andReturn(inProcessMessagingSkeleton);
-                            inProcessMessagingStubFactory = new InProcessMessagingStubFactory({});
-                            joynrMessage = {
-                                key : "joynrMessage"
-                            };
-                        });
-
-                        it(
-                                "is instantiable and of correct type",
-                                function() {
-                                    expect(InProcessMessagingStubFactory).toBeDefined();
-                                    expect(typeof InProcessMessagingStubFactory === "function")
-                                            .toBeTruthy();
-                                    expect(inProcessMessagingStubFactory).toBeDefined();
-                                    expect(
-                                            inProcessMessagingStubFactory instanceof InProcessMessagingStubFactory)
-                                            .toBeTruthy();
-                                    expect(inProcessMessagingStubFactory.build).toBeDefined();
-                                    expect(
-                                            typeof inProcessMessagingStubFactory.build === "function")
-                                            .toBeTruthy();
-                                });
-
-                        it("creates a messaging stub and uses it correctly", function() {
-                            var inProcessMessagingStub =
-                                    inProcessMessagingStubFactory.build(inProcessAddress);
-                            expect(inProcessAddress.getSkeleton).toHaveBeenCalledWith();
-
-                            var result = inProcessMessagingStub.transmit(joynrMessage);
-                            expect(inProcessMessagingSkeleton.receiveMessage).toHaveBeenCalledWith(
-                                    joynrMessage);
-                            expect(result).toEqual(skeletonCallReturn);
-                        });
-
-                    });
-
+        beforeEach(function() {
+            skeletonCallReturn = {
+                key : "skeletonCallReturn"
+            };
+            inProcessMessagingSkeleton =
+                    jasmine.createSpyObj("inProcessMessagingSkeleton", [ "receiveMessage"
+                    ]);
+            inProcessMessagingSkeleton.receiveMessage.andReturn(skeletonCallReturn);
+            inProcessAddress = jasmine.createSpyObj("inProcessAddress", [ "getSkeleton"
+            ]);
+            inProcessAddress.getSkeleton.andReturn(inProcessMessagingSkeleton);
+            inProcessMessagingStubFactory = new InProcessMessagingStubFactory({});
+            joynrMessage = {
+                key : "joynrMessage"
+            };
         });
+
+        it("is instantiable and of correct type", function() {
+            expect(InProcessMessagingStubFactory).toBeDefined();
+            expect(typeof InProcessMessagingStubFactory === "function").toBeTruthy();
+            expect(inProcessMessagingStubFactory).toBeDefined();
+            expect(inProcessMessagingStubFactory instanceof InProcessMessagingStubFactory)
+                    .toBeTruthy();
+            expect(inProcessMessagingStubFactory.build).toBeDefined();
+            expect(typeof inProcessMessagingStubFactory.build === "function").toBeTruthy();
+        });
+
+        it("creates a messaging stub and uses it correctly", function() {
+            var inProcessMessagingStub = inProcessMessagingStubFactory.build(inProcessAddress);
+            expect(inProcessAddress.getSkeleton).toHaveBeenCalledWith();
+
+            var result = inProcessMessagingStub.transmit(joynrMessage);
+            expect(inProcessMessagingSkeleton.receiveMessage).toHaveBeenCalledWith(joynrMessage);
+            expect(result).toEqual(skeletonCallReturn);
+        });
+
+    });
+
+});

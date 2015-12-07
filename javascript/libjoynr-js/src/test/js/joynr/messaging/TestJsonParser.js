@@ -1,5 +1,3 @@
-/*global joynrTestRequire: true */
-
 /*
  * #%L
  * %%
@@ -19,7 +17,7 @@
  * #L%
  */
 
-joynrTestRequire("joynr/messaging/TestJsonParser", [
+define([
     "JsonParser",
     "joynr/system/LoggerFactory"
 ], function(JsonParser, LoggerFactory) {

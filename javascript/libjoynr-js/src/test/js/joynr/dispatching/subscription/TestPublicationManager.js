@@ -1,4 +1,4 @@
-/*global joynrTestRequire: true, xit: true */
+/*global xit: true */
 
 /*
  * #%L
@@ -19,8 +19,7 @@
  * #L%
  */
 
-joynrTestRequire(
-        "joynr/dispatching/subscription/TestPublicationManager",
+define(
         [
             "global/Promise",
             "joynr/dispatching/subscription/PublicationManager",

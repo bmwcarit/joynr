@@ -1,5 +1,3 @@
-/*global joynrTestRequire: true */
-
 /*
  * #%L
  * %%
@@ -19,7 +17,7 @@
  * #L%
  */
 
-joynrTestRequire("joynr/messaging/websocket/TestSharedWebSocket", [
+define([
     "joynr/messaging/websocket/SharedWebSocket",
     "joynr/messaging/JoynrMessage",
     "joynr/system/RoutingTypes/WebSocketAddress",

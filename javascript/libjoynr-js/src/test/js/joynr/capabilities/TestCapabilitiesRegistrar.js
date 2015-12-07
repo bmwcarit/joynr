@@ -1,4 +1,3 @@
-/*global joynrTestRequire: true */
 /*jslint es5: true */
 
 /*
@@ -21,9 +20,7 @@
  */
 
 //TODO: some of this relies on the dummy implementation, change accordingly when implementating
-joynrTestRequire(
-        "joynr/capabilities/TestCapabilitiesRegistrar",
-        [
+define([
             "global/Promise",
             "joynr/capabilities/CapabilitiesRegistrar",
             "joynr/types/ProviderQos",

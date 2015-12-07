@@ -1,4 +1,3 @@
-/*global joynrTestRequire: true */
 /*jslint es5: true */
 
 /*
@@ -20,9 +19,7 @@
  * #L%
  */
 
-joynrTestRequire(
-        "joynr/capabilities/arbitration/TestArbitrator",
-        [
+define([
             "joynr/capabilities/arbitration/Arbitrator",
             "joynr/types/DiscoveryEntry",
             "joynr/types/ProviderQos",

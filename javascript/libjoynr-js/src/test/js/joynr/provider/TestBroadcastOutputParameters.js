@@ -1,5 +1,3 @@
-/*global joynrTestRequire: true */
-
 /*
  * #%L
  * %%
@@ -19,99 +17,95 @@
  * #L%
  */
 
-joynrTestRequire(
-        "joynr/provider/TestBroadcastOutputParameters",
-        [ "joynr/provider/BroadcastOutputParameters"
-        ],
-        function(BroadcastOutputParameters) {
+define([ "joynr/provider/BroadcastOutputParameters"
+], function(BroadcastOutputParameters) {
 
-            describe("libjoynr-js.joynr.provider.BroadcastOutputParameters", function() {
-                it("is instantiable", function() {
-                    expect(new BroadcastOutputParameters([
-                        {
-                            name : "param1",
-                            type : "String"
-                        },
-                        {
-                            name : "param2",
-                            type : "String"
-                        }
-                    ])).toBeDefined();
-                });
+    describe("libjoynr-js.joynr.provider.BroadcastOutputParameters", function() {
+        it("is instantiable", function() {
+            expect(new BroadcastOutputParameters([
+                {
+                    name : "param1",
+                    type : "String"
+                },
+                {
+                    name : "param2",
+                    type : "String"
+                }
+            ])).toBeDefined();
+        });
 
-                it("is of correct type", function() {
-                    var broadcastOutputParameters = new BroadcastOutputParameters([
-                        {
-                            name : "param1",
-                            type : "String"
-                        },
-                        {
-                            name : "param2",
-                            type : "String"
-                        }
-                    ]);
-                    expect(broadcastOutputParameters).toBeDefined();
-                    expect(broadcastOutputParameters).not.toBeNull();
-                    expect(typeof broadcastOutputParameters === "object").toBeTruthy();
-                    expect(broadcastOutputParameters instanceof BroadcastOutputParameters).toEqual(
-                            true);
-                });
+        it("is of correct type", function() {
+            var broadcastOutputParameters = new BroadcastOutputParameters([
+                {
+                    name : "param1",
+                    type : "String"
+                },
+                {
+                    name : "param2",
+                    type : "String"
+                }
+            ]);
+            expect(broadcastOutputParameters).toBeDefined();
+            expect(broadcastOutputParameters).not.toBeNull();
+            expect(typeof broadcastOutputParameters === "object").toBeTruthy();
+            expect(broadcastOutputParameters instanceof BroadcastOutputParameters).toEqual(true);
+        });
 
-                it("has setters and getters for each output parameter", function() {
-                    var broadcastOutputParameters = new BroadcastOutputParameters([
-                        {
-                            name : "param1",
-                            type : "String"
-                        },
-                        {
-                            name : "param2",
-                            type : "String"
-                        }
-                    ]);
-                    expect(broadcastOutputParameters.setParam1).toBeDefined();
-                    expect(broadcastOutputParameters.setParam2).toBeDefined();
-                    expect(broadcastOutputParameters.getParam1).toBeDefined();
-                    expect(broadcastOutputParameters.getParam2).toBeDefined();
-                    expect(typeof broadcastOutputParameters.setParam1 === "function").toBeTruthy();
-                    expect(typeof broadcastOutputParameters.setParam2 === "function").toBeTruthy();
-                    expect(typeof broadcastOutputParameters.getParam1 === "function").toBeTruthy();
-                    expect(typeof broadcastOutputParameters.getParam2 === "function").toBeTruthy();
-                });
+        it("has setters and getters for each output parameter", function() {
+            var broadcastOutputParameters = new BroadcastOutputParameters([
+                {
+                    name : "param1",
+                    type : "String"
+                },
+                {
+                    name : "param2",
+                    type : "String"
+                }
+            ]);
+            expect(broadcastOutputParameters.setParam1).toBeDefined();
+            expect(broadcastOutputParameters.setParam2).toBeDefined();
+            expect(broadcastOutputParameters.getParam1).toBeDefined();
+            expect(broadcastOutputParameters.getParam2).toBeDefined();
+            expect(typeof broadcastOutputParameters.setParam1 === "function").toBeTruthy();
+            expect(typeof broadcastOutputParameters.setParam2 === "function").toBeTruthy();
+            expect(typeof broadcastOutputParameters.getParam1 === "function").toBeTruthy();
+            expect(typeof broadcastOutputParameters.getParam2 === "function").toBeTruthy();
+        });
 
-                it("setters and getters store and retrieve correct values", function() {
-                    var broadcastOutputParameters = new BroadcastOutputParameters([
-                        {
-                            name : "param1",
-                            type : "String"
-                        },
-                        {
-                            name : "param2",
-                            type : "String"
-                        }
-                    ]);
-                    broadcastOutputParameters.setParam1("Hello");
-                    broadcastOutputParameters.setParam2("world");
-                    expect(broadcastOutputParameters.getParam1()).toEqual("Hello");
-                    expect(broadcastOutputParameters.getParam2()).toEqual("world");
-                });
+        it("setters and getters store and retrieve correct values", function() {
+            var broadcastOutputParameters = new BroadcastOutputParameters([
+                {
+                    name : "param1",
+                    type : "String"
+                },
+                {
+                    name : "param2",
+                    type : "String"
+                }
+            ]);
+            broadcastOutputParameters.setParam1("Hello");
+            broadcastOutputParameters.setParam2("world");
+            expect(broadcastOutputParameters.getParam1()).toEqual("Hello");
+            expect(broadcastOutputParameters.getParam2()).toEqual("world");
+        });
 
-                it("array outputParameters contains correct values", function() {
-                    var broadcastOutputParameters = new BroadcastOutputParameters([
-                        {
-                            name : "param1",
-                            type : "String"
-                        },
-                        {
-                            name : "param2",
-                            type : "String"
-                        }
-                    ]);
-                    broadcastOutputParameters.setParam2("world");
-                    broadcastOutputParameters.setParam1("Hello");
-                    expect(broadcastOutputParameters.outputParameters[0]).toEqual("Hello");
-                    expect(broadcastOutputParameters.outputParameters[1]).toEqual("world");
-                });
+        it("array outputParameters contains correct values", function() {
+            var broadcastOutputParameters = new BroadcastOutputParameters([
+                {
+                    name : "param1",
+                    type : "String"
+                },
+                {
+                    name : "param2",
+                    type : "String"
+                }
+            ]);
+            broadcastOutputParameters.setParam2("world");
+            broadcastOutputParameters.setParam1("Hello");
+            expect(broadcastOutputParameters.outputParameters[0]).toEqual("Hello");
+            expect(broadcastOutputParameters.outputParameters[1]).toEqual("world");
+        });
 
-            });
+    });
 
-        }); // require
+}); // require

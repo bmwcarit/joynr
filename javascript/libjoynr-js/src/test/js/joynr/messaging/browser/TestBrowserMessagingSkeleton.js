@@ -1,5 +1,3 @@
-/*global joynrTestRequire: true */
-
 /*
  * #%L
  * %%
@@ -19,7 +17,7 @@
  * #L%
  */
 
-joynrTestRequire("joynr/messaging/browser/TestBrowserMessagingSkeleton", [
+define([
     "joynr/messaging/browser/BrowserMessagingSkeleton",
     "joynr/messaging/JoynrMessage"
 ], function(BrowserMessagingSkeleton, JoynrMessage) {

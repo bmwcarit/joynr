@@ -1,5 +1,3 @@
-/*global joynrTestRequire: true */
-
 /*
  * #%L
  * %%
@@ -19,7 +17,7 @@
  * #L%
  */
 
-joynrTestRequire("joynr/messaging/browser/TestBrowserMessagingStubFactory", [
+define([
     "joynr/util/Util",
     "joynr/messaging/browser/BrowserMessagingStubFactory"
 ], function(Util, BrowserMessagingStubFactory) {

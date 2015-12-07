@@ -1,4 +1,3 @@
-/*global joynrTestRequire: true */
 /*jslint es5: true */
 
 /*
@@ -20,9 +19,7 @@
  * #L%
  */
 
-joynrTestRequire(
-        "joynr/capabilities/discovery/TestCapabilityDiscovery",
-        [
+define([
             "joynr/capabilities/discovery/CapabilityDiscovery",
             "joynr/types/DiscoveryQos",
             "joynr/types/ArbitrationStrategyCollection",

@@ -1,5 +1,4 @@
 /*jslint es5: true, nomen: true */
-/*global joynrTestRequire: true */
 
 /*
  * #%L
@@ -20,9 +19,7 @@
  * #L%
  */
 
-joynrTestRequire(
-        "joynr/provider/TestProviderOperation",
-        [
+define([
             "joynr/provider/ProviderOperation",
             "joynr/types/ProviderQos",
             "test/data/Operation",

@@ -1,5 +1,3 @@
-/*global joynrTestRequire: true */
-
 /*
  * #%L
  * %%
@@ -19,7 +17,7 @@
  * #L%
  */
 
-joynrTestRequire("joynr/system/TestDistributedLoggingAppender", [
+define([
     "joynr/system/LoggingManager",
     "joynr/system/DistributedLoggingAppender"
 ], function(LoggingManager, DistributedLoggingAppender) {

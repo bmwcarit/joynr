@@ -1,5 +1,3 @@
-/*global joynrTestRequire: true */
-
 /*
  * #%L
  * %%
@@ -19,52 +17,37 @@
  * #L%
  */
 
-joynrTestRequire(
-        "joynr/messaging/inprocess/TestInProcessMessagingSkeletion",
-        [ "joynr/messaging/inprocess/InProcessMessagingSkeleton"
-        ],
-        function(InProcessMessagingSkeleton) {
+define([ "joynr/messaging/inprocess/InProcessMessagingSkeleton"
+], function(InProcessMessagingSkeleton) {
 
-            describe(
-                    "libjoynr-js.joynr.messaging.inprocess.InProcessMessagingSkeleton",
-                    function() {
-                        var listener, inProcessMessagingSkeleton, joynrMessage;
+    describe("libjoynr-js.joynr.messaging.inprocess.InProcessMessagingSkeleton", function() {
+        var listener, inProcessMessagingSkeleton, joynrMessage;
 
-                        beforeEach(function() {
-                            listener = jasmine.createSpy("listener");
-                            inProcessMessagingSkeleton = new InProcessMessagingSkeleton();
-                            inProcessMessagingSkeleton.registerListener(listener);
-                            joynrMessage = {
-                                key : "joynrMessage"
-                            };
-                        });
-
-                        it(
-                                "is instantiable and of correct type",
-                                function() {
-                                    expect(InProcessMessagingSkeleton).toBeDefined();
-                                    expect(typeof InProcessMessagingSkeleton === "function")
-                                            .toBeTruthy();
-                                    expect(inProcessMessagingSkeleton).toBeDefined();
-                                    expect(
-                                            inProcessMessagingSkeleton instanceof InProcessMessagingSkeleton)
-                                            .toBeTruthy();
-                                    expect(inProcessMessagingSkeleton.receiveMessage).toBeDefined();
-                                    expect(
-                                            typeof inProcessMessagingSkeleton.receiveMessage === "function")
-                                            .toBeTruthy();
-                                    expect(inProcessMessagingSkeleton.registerListener)
-                                            .toBeDefined();
-                                    expect(
-                                            typeof inProcessMessagingSkeleton.registerListener === "function")
-                                            .toBeTruthy();
-                                });
-
-                        it("transmits a message", function() {
-                            inProcessMessagingSkeleton.receiveMessage(joynrMessage);
-                            expect(listener).toHaveBeenCalledWith(joynrMessage);
-                        });
-
-                    });
-
+        beforeEach(function() {
+            listener = jasmine.createSpy("listener");
+            inProcessMessagingSkeleton = new InProcessMessagingSkeleton();
+            inProcessMessagingSkeleton.registerListener(listener);
+            joynrMessage = {
+                key : "joynrMessage"
+            };
         });
+
+        it("is instantiable and of correct type", function() {
+            expect(InProcessMessagingSkeleton).toBeDefined();
+            expect(typeof InProcessMessagingSkeleton === "function").toBeTruthy();
+            expect(inProcessMessagingSkeleton).toBeDefined();
+            expect(inProcessMessagingSkeleton instanceof InProcessMessagingSkeleton).toBeTruthy();
+            expect(inProcessMessagingSkeleton.receiveMessage).toBeDefined();
+            expect(typeof inProcessMessagingSkeleton.receiveMessage === "function").toBeTruthy();
+            expect(inProcessMessagingSkeleton.registerListener).toBeDefined();
+            expect(typeof inProcessMessagingSkeleton.registerListener === "function").toBeTruthy();
+        });
+
+        it("transmits a message", function() {
+            inProcessMessagingSkeleton.receiveMessage(joynrMessage);
+            expect(listener).toHaveBeenCalledWith(joynrMessage);
+        });
+
+    });
+
+});

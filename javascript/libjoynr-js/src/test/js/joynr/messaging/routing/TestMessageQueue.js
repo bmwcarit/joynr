@@ -1,5 +1,3 @@
-/*global joynrTestRequire: true */
-
 /*
  * #%L
  * %%
@@ -19,8 +17,7 @@
  * #L%
  */
 
-joynrTestRequire(
-        "joynr/messaging/routing/TestMessageQueue",
+define(
         [
             "joynr/util/UtilInternal",
             "joynr/messaging/routing/MessageQueue",

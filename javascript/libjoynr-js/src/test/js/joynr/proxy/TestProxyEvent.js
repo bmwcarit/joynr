@@ -1,4 +1,3 @@
-/*global joynrTestRequire: true */
 /*jslint es5: true */
 
 /*
@@ -21,7 +20,7 @@
  */
 
 //TODO: some of this relies on the dummy implementation, change accordingly when implementing
-joynrTestRequire("joynr/proxy/TestProxyEvent", [
+define([
     "joynr/proxy/ProxyAttribute",
     "joynr/proxy/ProxyOperation",
     "joynr/proxy/ProxyEvent",

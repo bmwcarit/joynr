@@ -1,5 +1,3 @@
-/*global joynrTestRequire: true */
-
 /*
  * #%L
  * %%
@@ -19,7 +17,7 @@
  * #L%
  */
 
-joynrTestRequire("joynr/provider/TestProviderQos", [
+define([
     "joynr/types/ProviderQos",
     "joynr/types/ProviderScope",
     "joynr/types/CustomParameter"

@@ -1,5 +1,3 @@
-/*global joynrTestRequire: true */
-
 /*
  * #%L
  * %%
@@ -19,8 +17,7 @@
  * #L%
  */
 
-joynrTestRequire(
-        "joynr/dispatching/TestRequestReplyManager",
+define(
         [
             "joynr/dispatching/RequestReplyManager",
             "joynr/dispatching/types/OneWayRequest",

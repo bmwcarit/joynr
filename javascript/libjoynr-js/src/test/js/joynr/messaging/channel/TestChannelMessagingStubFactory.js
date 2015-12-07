@@ -1,5 +1,3 @@
-/*global joynrTestRequire: true */
-
 /*
  * #%L
  * %%
@@ -19,7 +17,7 @@
  * #L%
  */
 
-joynrTestRequire("joynr/messaging/channel/TestChannelMessagingStubFactory", [
+define([
     "global/Promise",
     "joynr/system/RoutingTypes/ChannelAddress",
     "joynr/messaging/channel/ChannelMessagingStubFactory"

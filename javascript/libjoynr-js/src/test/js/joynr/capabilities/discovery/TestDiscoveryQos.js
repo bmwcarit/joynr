@@ -1,5 +1,3 @@
-/*global joynrTestRequire: true */
-
 /*
  * #%L
  * %%
@@ -19,7 +17,7 @@
  * #L%
  */
 
-joynrTestRequire("joynr/capabilities/discovery/TestDisoveryQos", [
+define([
     "joynr/proxy/DiscoveryQos",
     "joynr/types/ArbitrationStrategyCollection",
     "joynr/types/DiscoveryScope"

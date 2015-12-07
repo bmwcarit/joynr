@@ -1,5 +1,3 @@
-/*global joynrTestRequire: true */
-
 /*
  * #%L
  * %%
@@ -19,130 +17,127 @@
  * #L%
  */
 
-joynrTestRequire(
-        "joynr/messaging/webmessaging/TestWebMessagingStub",
-        [ "joynr/messaging/webmessaging/WebMessagingStub"
-        ],
-        function(WebMessagingStub) {
+define([ "joynr/messaging/webmessaging/WebMessagingStub"
+], function(WebMessagingStub) {
 
-            describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingStub", function() {
+    describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingStub", function() {
 
-                var window, origin, webMessagingStub, joynrMessage;
+        var window, origin, webMessagingStub, joynrMessage;
 
-                beforeEach(function() {
-                    function Window() {}
-                    window = new Window();
-                    window.postMessage = jasmine.createSpy("postMessage");
-                    origin = "defaultOrigin";
+        beforeEach(function() {
+            function Window() {}
+            window = new Window();
+            window.postMessage = jasmine.createSpy("postMessage");
+            origin = "defaultOrigin";
 
-                    webMessagingStub = new WebMessagingStub({
-                        window : window,
-                        origin : origin
-                    });
-
-                    function JoynrMessage() {}
-                    joynrMessage = new JoynrMessage();
-                });
-
-                it("is of correct type and has all members", function() {
-                    expect(WebMessagingStub).toBeDefined();
-                    expect(typeof WebMessagingStub === "function").toBeTruthy();
-                    expect(webMessagingStub).toBeDefined();
-                    expect(webMessagingStub instanceof WebMessagingStub).toBeTruthy();
-                    expect(webMessagingStub.transmit).toBeDefined();
-                    expect(typeof webMessagingStub.transmit === "function").toBeTruthy();
-                });
-
-                it("throws on missing or wrongly typed arguments in constructur", function() {
-                    expect(function() {
-                        webMessagingStub = new WebMessagingStub(); // settings object is undefined
-                    }).toThrow();
-
-                    expect(function() {
-                        webMessagingStub = new WebMessagingStub({}); // both arguments, window and origin are missing
-                    }).toThrow();
-
-                    expect(function() {
-                        webMessagingStub = new WebMessagingStub({
-                            window : window
-                        // origin argument is missing
-                        });
-                    }).toThrow();
-
-                    expect(function() {
-                        webMessagingStub = new WebMessagingStub({
-                            origin : origin
-                        // window argument is missing
-                        });
-                    }).toThrow();
-
-                    expect(function() {
-                        webMessagingStub = new WebMessagingStub({
-                            window : "", // window is of wrong type
-                            origin : origin
-                        });
-                    }).toThrow();
-
-                    expect(function() {
-                        webMessagingStub = new WebMessagingStub({
-                            window : {}, // window does not provide the expected functions
-                            origin : origin
-                        });
-                    }).toThrow();
-
-                    expect(function() {
-                        webMessagingStub = new WebMessagingStub({ // everything's fine here
-                            window : {
-                                postMessage : function() {}
-                            },
-                            origin : origin
-                        // origin is of wrong type
-                        });
-                    }).not.toThrow();
-
-                    expect(function() {
-                        webMessagingStub = new WebMessagingStub({ // everything's fine here
-                            window : window,
-                            origin : {}
-                        // origin is of wrong type
-                        });
-                    }).toThrow();
-
-                    expect(function() {
-                        webMessagingStub = new WebMessagingStub({ // everything's fine here
-                            window : window,
-                            origin : origin
-                        });
-                    }).not.toThrow();
-                });
-
-                it("throws on missing or wrongly typed arguments in transmit", function() {
-                    expect(function() {
-                        webMessagingStub.transmit(undefined);
-                    }).toThrow();
-                    expect(function() {
-                        webMessagingStub.transmit(null);
-                    }).toThrow();
-                    expect(function() {
-                        webMessagingStub.transmit("");
-                    }).toThrow();
-                    expect(function() {
-                        webMessagingStub.transmit({});
-                    }).toThrow();
-                    expect(function() {
-                        webMessagingStub.transmit({
-                            message : joynrMessage
-                        });
-                    }).not.toThrow();
-                });
-
-                it("calls correctly window.postMessage correctly", function() {
-                    var param = {
-                        message : joynrMessage
-                    };
-                    webMessagingStub.transmit(param);
-                    expect(window.postMessage).toHaveBeenCalledWith(param, origin);
-                });
-
+            webMessagingStub = new WebMessagingStub({
+                window : window,
+                origin : origin
             });
+
+            function JoynrMessage() {}
+            joynrMessage = new JoynrMessage();
         });
+
+        it("is of correct type and has all members", function() {
+            expect(WebMessagingStub).toBeDefined();
+            expect(typeof WebMessagingStub === "function").toBeTruthy();
+            expect(webMessagingStub).toBeDefined();
+            expect(webMessagingStub instanceof WebMessagingStub).toBeTruthy();
+            expect(webMessagingStub.transmit).toBeDefined();
+            expect(typeof webMessagingStub.transmit === "function").toBeTruthy();
+        });
+
+        it("throws on missing or wrongly typed arguments in constructur", function() {
+            expect(function() {
+                webMessagingStub = new WebMessagingStub(); // settings object is undefined
+            }).toThrow();
+
+            expect(function() {
+                webMessagingStub = new WebMessagingStub({}); // both arguments, window and origin are missing
+            }).toThrow();
+
+            expect(function() {
+                webMessagingStub = new WebMessagingStub({
+                    window : window
+                // origin argument is missing
+                });
+            }).toThrow();
+
+            expect(function() {
+                webMessagingStub = new WebMessagingStub({
+                    origin : origin
+                // window argument is missing
+                });
+            }).toThrow();
+
+            expect(function() {
+                webMessagingStub = new WebMessagingStub({
+                    window : "", // window is of wrong type
+                    origin : origin
+                });
+            }).toThrow();
+
+            expect(function() {
+                webMessagingStub = new WebMessagingStub({
+                    window : {}, // window does not provide the expected functions
+                    origin : origin
+                });
+            }).toThrow();
+
+            expect(function() {
+                webMessagingStub = new WebMessagingStub({ // everything's fine here
+                    window : {
+                        postMessage : function() {}
+                    },
+                    origin : origin
+                // origin is of wrong type
+                });
+            }).not.toThrow();
+
+            expect(function() {
+                webMessagingStub = new WebMessagingStub({ // everything's fine here
+                    window : window,
+                    origin : {}
+                // origin is of wrong type
+                });
+            }).toThrow();
+
+            expect(function() {
+                webMessagingStub = new WebMessagingStub({ // everything's fine here
+                    window : window,
+                    origin : origin
+                });
+            }).not.toThrow();
+        });
+
+        it("throws on missing or wrongly typed arguments in transmit", function() {
+            expect(function() {
+                webMessagingStub.transmit(undefined);
+            }).toThrow();
+            expect(function() {
+                webMessagingStub.transmit(null);
+            }).toThrow();
+            expect(function() {
+                webMessagingStub.transmit("");
+            }).toThrow();
+            expect(function() {
+                webMessagingStub.transmit({});
+            }).toThrow();
+            expect(function() {
+                webMessagingStub.transmit({
+                    message : joynrMessage
+                });
+            }).not.toThrow();
+        });
+
+        it("calls correctly window.postMessage correctly", function() {
+            var param = {
+                message : joynrMessage
+            };
+            webMessagingStub.transmit(param);
+            expect(window.postMessage).toHaveBeenCalledWith(param, origin);
+        });
+
+    });
+});

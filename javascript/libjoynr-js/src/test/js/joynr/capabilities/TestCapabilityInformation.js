@@ -1,5 +1,3 @@
-/*global joynrTestRequire: true */
-
 /*
  * #%L
  * %%
@@ -19,7 +17,7 @@
  * #L%
  */
 
-joynrTestRequire("joynr/capabilities/TestCapabilityInformation", [
+define([
     "joynr/types/GlobalDiscoveryEntry",
     "joynr/types/ProviderQos",
     "joynr/types/ProviderScope",

@@ -1,4 +1,3 @@
-/*global joynrTestRequire: true */
 /*jslint es5: true */
 
 /*
@@ -20,9 +19,7 @@
  * #L%
  */
 
-joynrTestRequire(
-        "joynr/messaging/channel/TestLongPollingChannelMessageReceiver",
-        [
+define([
             "global/Promise",
             "joynr/messaging/CommunicationModule",
             "joynr/messaging/channel/LongPollingChannelMessageReceiver",

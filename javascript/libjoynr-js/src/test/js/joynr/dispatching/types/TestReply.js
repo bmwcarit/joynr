@@ -1,5 +1,4 @@
 /*jslint nomen: true */
-/*global joynrTestRequire: true */
 
 /*
  * #%L
@@ -20,7 +19,7 @@
  * #L%
  */
 
-joynrTestRequire("joynr/dispatching/types/TestReply", [
+define([
     "joynr/dispatching/types/Reply",
     "joynr/vehicle/radiotypes/RadioStation"
 ], function(Reply, RadioStation) {

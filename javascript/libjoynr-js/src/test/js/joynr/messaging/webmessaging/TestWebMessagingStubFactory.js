@@ -1,5 +1,3 @@
-/*global joynrTestRequire: true */
-
 /*
  * #%L
  * %%
@@ -19,68 +17,60 @@
  * #L%
  */
 
-joynrTestRequire(
-        "joynr/messaging/webmessaging/TestWebMessagingStubFactory",
-        [ "joynr/messaging/webmessaging/WebMessagingStubFactory"
-        ],
-        function(WebMessagingStubFactory) {
+define([ "joynr/messaging/webmessaging/WebMessagingStubFactory"
+], function(WebMessagingStubFactory) {
 
-            describe(
-                    "libjoynr-js.joynr.messaging.webmessaging.WebMessagingStubFactory",
-                    function() {
-                        var returnValue;
-                        var webMessagingSender;
-                        var webMessagingStubFactory;
-                        var window;
-                        var origin;
-                        var webMessagingAddress;
-                        var joynrMessage;
+    describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingStubFactory", function() {
+        var returnValue;
+        var webMessagingSender;
+        var webMessagingStubFactory;
+        var window;
+        var origin;
+        var webMessagingAddress;
+        var joynrMessage;
 
-                        beforeEach(function() {
-                            returnValue = {
-                                key : "returnValue"
-                            };
-                            webMessagingStubFactory = new WebMessagingStubFactory();
+        beforeEach(function() {
+            returnValue = {
+                key : "returnValue"
+            };
+            webMessagingStubFactory = new WebMessagingStubFactory();
 
-                            function Window() {}
-                            window = new Window();
-                            window.postMessage = jasmine.createSpy("postMessage");
+            function Window() {}
+            window = new Window();
+            window.postMessage = jasmine.createSpy("postMessage");
 
-                            origin = "origin";
-                            webMessagingAddress = jasmine.createSpyObj("webMessagingAddress", [
-                                "getWindow",
-                                "getOrigin"
-                            ]);
-                            webMessagingAddress.getWindow.andReturn(window);
-                            webMessagingAddress.getOrigin.andReturn(origin);
-                            function JoynrMessage() {}
-                            joynrMessage = new JoynrMessage();
-                        });
-
-                        it("is instantiable and of correct type", function() {
-                            expect(WebMessagingStubFactory).toBeDefined();
-                            expect(typeof WebMessagingStubFactory === "function").toBeTruthy();
-                            expect(webMessagingStubFactory).toBeDefined();
-                            expect(webMessagingStubFactory instanceof WebMessagingStubFactory)
-                                    .toBeTruthy();
-                            expect(webMessagingStubFactory.build).toBeDefined();
-                            expect(typeof webMessagingStubFactory.build === "function")
-                                    .toBeTruthy();
-                        });
-
-                        it("creates a messaging stub and uses it correctly", function() {
-                            var webMessagingStub =
-                                    webMessagingStubFactory.build(webMessagingAddress);
-                            expect(webMessagingAddress.getWindow).toHaveBeenCalledWith();
-                            expect(webMessagingAddress.getOrigin).toHaveBeenCalledWith();
-
-                            var param = {
-                                message : joynrMessage
-                            };
-                            var result = webMessagingStub.transmit(param);
-                            expect(window.postMessage).toHaveBeenCalledWith(param, origin);
-                        });
-
-                    });
-
+            origin = "origin";
+            webMessagingAddress = jasmine.createSpyObj("webMessagingAddress", [
+                "getWindow",
+                "getOrigin"
+            ]);
+            webMessagingAddress.getWindow.andReturn(window);
+            webMessagingAddress.getOrigin.andReturn(origin);
+            function JoynrMessage() {}
+            joynrMessage = new JoynrMessage();
         });
+
+        it("is instantiable and of correct type", function() {
+            expect(WebMessagingStubFactory).toBeDefined();
+            expect(typeof WebMessagingStubFactory === "function").toBeTruthy();
+            expect(webMessagingStubFactory).toBeDefined();
+            expect(webMessagingStubFactory instanceof WebMessagingStubFactory).toBeTruthy();
+            expect(webMessagingStubFactory.build).toBeDefined();
+            expect(typeof webMessagingStubFactory.build === "function").toBeTruthy();
+        });
+
+        it("creates a messaging stub and uses it correctly", function() {
+            var webMessagingStub = webMessagingStubFactory.build(webMessagingAddress);
+            expect(webMessagingAddress.getWindow).toHaveBeenCalledWith();
+            expect(webMessagingAddress.getOrigin).toHaveBeenCalledWith();
+
+            var param = {
+                message : joynrMessage
+            };
+            var result = webMessagingStub.transmit(param);
+            expect(window.postMessage).toHaveBeenCalledWith(param, origin);
+        });
+
+    });
+
+});

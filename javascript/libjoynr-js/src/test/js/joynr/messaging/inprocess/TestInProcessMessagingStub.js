@@ -1,5 +1,3 @@
-/*global joynrTestRequire: true */
-
 /*
  * #%L
  * %%
@@ -19,52 +17,41 @@
  * #L%
  */
 
-joynrTestRequire(
-        "joynr/messaging/inprocess/TestInProcessMessagingStub",
-        [ "joynr/messaging/inprocess/InProcessMessagingStub"
-        ],
-        function(InProcessMessagingStub) {
+define([ "joynr/messaging/inprocess/InProcessMessagingStub"
+], function(InProcessMessagingStub) {
 
-            describe(
-                    "libjoynr-js.joynr.messaging.inprocess.InProcessMessagingStub",
-                    function() {
-                        var skeletonCallReturn, inProcessMessagingSkeleton, inProcessMessagingStub, joynrMessage;
+    describe("libjoynr-js.joynr.messaging.inprocess.InProcessMessagingStub", function() {
+        var skeletonCallReturn, inProcessMessagingSkeleton, inProcessMessagingStub, joynrMessage;
 
-                        beforeEach(function() {
-                            skeletonCallReturn = {
-                                key : "skeletonCallReturn"
-                            };
-                            inProcessMessagingSkeleton =
-                                    jasmine.createSpyObj(
-                                            "inProcessMessagingSkeleton",
-                                            [ "receiveMessage"
-                                            ]);
-                            inProcessMessagingSkeleton.receiveMessage.andReturn(skeletonCallReturn);
-                            inProcessMessagingStub =
-                                    new InProcessMessagingStub(inProcessMessagingSkeleton);
-                            joynrMessage = {
-                                key : "joynrMessage"
-                            };
-                        });
-
-                        it("is instantiable and of correct type", function() {
-                            expect(InProcessMessagingStub).toBeDefined();
-                            expect(typeof InProcessMessagingStub === "function").toBeTruthy();
-                            expect(inProcessMessagingStub).toBeDefined();
-                            expect(inProcessMessagingStub instanceof InProcessMessagingStub)
-                                    .toBeTruthy();
-                            expect(inProcessMessagingStub.transmit).toBeDefined();
-                            expect(typeof inProcessMessagingStub.transmit === "function")
-                                    .toBeTruthy();
-                        });
-
-                        it("transmits a message", function() {
-                            var result = inProcessMessagingStub.transmit(joynrMessage);
-                            expect(inProcessMessagingSkeleton.receiveMessage).toHaveBeenCalledWith(
-                                    joynrMessage);
-                            expect(result).toEqual(skeletonCallReturn);
-                        });
-
-                    });
-
+        beforeEach(function() {
+            skeletonCallReturn = {
+                key : "skeletonCallReturn"
+            };
+            inProcessMessagingSkeleton =
+                    jasmine.createSpyObj("inProcessMessagingSkeleton", [ "receiveMessage"
+                    ]);
+            inProcessMessagingSkeleton.receiveMessage.andReturn(skeletonCallReturn);
+            inProcessMessagingStub = new InProcessMessagingStub(inProcessMessagingSkeleton);
+            joynrMessage = {
+                key : "joynrMessage"
+            };
         });
+
+        it("is instantiable and of correct type", function() {
+            expect(InProcessMessagingStub).toBeDefined();
+            expect(typeof InProcessMessagingStub === "function").toBeTruthy();
+            expect(inProcessMessagingStub).toBeDefined();
+            expect(inProcessMessagingStub instanceof InProcessMessagingStub).toBeTruthy();
+            expect(inProcessMessagingStub.transmit).toBeDefined();
+            expect(typeof inProcessMessagingStub.transmit === "function").toBeTruthy();
+        });
+
+        it("transmits a message", function() {
+            var result = inProcessMessagingStub.transmit(joynrMessage);
+            expect(inProcessMessagingSkeleton.receiveMessage).toHaveBeenCalledWith(joynrMessage);
+            expect(result).toEqual(skeletonCallReturn);
+        });
+
+    });
+
+});

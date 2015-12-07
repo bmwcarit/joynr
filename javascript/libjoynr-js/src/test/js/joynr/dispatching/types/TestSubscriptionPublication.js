@@ -1,5 +1,3 @@
-/*global joynrTestRequire: true */
-
 /*
  * #%L
  * %%
@@ -19,7 +17,7 @@
  * #L%
  */
 
-joynrTestRequire("joynr/dispatching/types/TestSubscriptionPublication", [
+define([
     "joynr/dispatching/types/SubscriptionPublication",
     "joynr/vehicle/radiotypes/RadioStation"
 ], function(SubscriptionPublication, RadioStation) {

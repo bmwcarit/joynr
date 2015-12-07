@@ -1,4 +1,4 @@
-/*global joynrTestRequire: true, xit: true */
+/*global xit: true */
 /*jslint es5: true */
 
 /*
@@ -20,9 +20,7 @@
  * #L%
  */
 
-joynrTestRequire(
-        "joynr/dispatching/subscription/TestSubscriptionManager",
-        [
+define([
             "joynr/dispatching/subscription/SubscriptionManager",
             "joynr/messaging/MessagingQos",
             "joynr/start/settings/defaultMessagingSettings",

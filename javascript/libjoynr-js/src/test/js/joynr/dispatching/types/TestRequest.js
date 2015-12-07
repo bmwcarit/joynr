@@ -1,5 +1,4 @@
 /*jslint nomen: true */
-/*global joynrTestRequire: true */
 
 /*
  * #%L
@@ -20,7 +19,7 @@
  * #L%
  */
 
-joynrTestRequire("joynr/dispatching/types/TestRequest", [
+define([
     "joynr/dispatching/types/Request",
     "joynr/types/TypeRegistrySingleton",
     "joynr/vehicle/radiotypes/RadioStation"

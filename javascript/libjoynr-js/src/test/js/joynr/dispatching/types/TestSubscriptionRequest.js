@@ -1,5 +1,3 @@
-/*global joynrTestRequire: true */
-
 /*
  * #%L
  * %%
@@ -19,7 +17,7 @@
  * #L%
  */
 
-joynrTestRequire("joynr/dispatching/types/TestSubscriptionRequest", [
+define([
     "joynr/dispatching/types/SubscriptionRequest",
     "joynr/proxy/PeriodicSubscriptionQos",
     "joynr/proxy/OnChangeWithKeepAliveSubscriptionQos"

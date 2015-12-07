@@ -1,5 +1,3 @@
-/*global joynrTestRequire: true */
-
 /*
  * #%L
  * %%
@@ -19,8 +17,7 @@
  * #L%
  */
 
-joynrTestRequire("joynr/messaging/channel/TestChannelMessagingSkeletion", [
-    "joynr/messaging/channel/ChannelMessagingSkeleton",
+define([ "joynr/messaging/channel/ChannelMessagingSkeleton",
     "joynr/system/RoutingTypes/ChannelAddress"
 ], function(ChannelMessagingSkeleton, ChannelAddress) {
 

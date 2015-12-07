@@ -1,5 +1,3 @@
-/*global joynrTestRequire: true */
-
 /*
  * #%L
  * %%
@@ -19,7 +17,7 @@
  * #L%
  */
 
-joynrTestRequire("joynr/Util/TestLongTimer", [
+define([
     "joynr/util/LongTimer",
     "joynr/util/Typing"
 ], function(LongTimer, Typing) {

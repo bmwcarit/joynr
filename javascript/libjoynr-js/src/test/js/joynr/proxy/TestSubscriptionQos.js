@@ -1,5 +1,3 @@
-/*global joynrTestRequire: true */
-
 /*
  * #%L
  * %%
@@ -19,8 +17,7 @@
  * #L%
  */
 
-joynrTestRequire(
-        "joynr/proxy/TestSubscriptionQos",
+define(
         [
             "joynr/proxy/SubscriptionQos",
             "joynr/proxy/PeriodicSubscriptionQos",
@@ -34,7 +31,6 @@ joynrTestRequire(
                 OnChangeSubscriptionQos,
                 OnChangeWithKeepAliveSubscriptionQos,
                 Date) {
-
             describe(
                     "libjoynr-js.joynr.proxy.SubscriptionQos",
                     function() {
