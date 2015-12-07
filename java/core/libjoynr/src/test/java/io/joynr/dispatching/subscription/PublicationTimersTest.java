@@ -76,7 +76,7 @@ public class PublicationTimersTest {
     private ScheduledExecutorService cleanupScheduler = Executors.newSingleThreadScheduledExecutor();
 
     @Mock
-    private PubSubTestProviderImpl provider;
+    private SubscriptionTestsProviderImpl provider;
 
     @Before
     public void setUp() {

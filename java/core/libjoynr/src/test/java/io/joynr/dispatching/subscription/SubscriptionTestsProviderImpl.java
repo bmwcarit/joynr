@@ -20,7 +20,6 @@ package io.joynr.dispatching.subscription;
  */
 
 import io.joynr.provider.Deferred;
-import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 
 import java.util.ArrayList;
@@ -31,14 +30,14 @@ import joynr.tests.DefaulttestProvider;
 import joynr.types.Localisation.GpsFixEnum;
 import joynr.types.Localisation.GpsLocation;
 
-public class PubSubTestProviderImpl extends DefaulttestProvider {
+public class SubscriptionTestsProviderImpl extends DefaulttestProvider {
 
     public static final String MESSAGE_PROVIDERRUNTIMEEXCEPTION = "ProviderRuntimeException";
     public static final String MESSAGE_THROWN_PROVIDERRUNTIMEEXCEPTION = "thrownException";
 
     List<Integer> list = new ArrayList<Integer>();
 
-    public PubSubTestProviderImpl() {
+    public SubscriptionTestsProviderImpl() {
         testAttribute = 42;
         complexTestAttribute = new GpsLocation();
         complexTestAttribute.setLatitude(48.143554);

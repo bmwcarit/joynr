@@ -31,7 +31,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.dispatching.subscription.PubSubTestProviderImpl;
+import io.joynr.dispatching.subscription.SubscriptionTestsProviderImpl;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.MessagingPropertyKeys;
@@ -78,7 +78,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
     @Rule
     public TestName name = new TestName();
 
-    private static PubSubTestProviderImpl provider;
+    private static SubscriptionTestsProviderImpl provider;
     private String domain;
     private static testProxy proxy;
 
@@ -97,7 +97,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         String methodName = name.getMethodName();
         logger.info("Starting {} ...", methodName);
         domain = "ProviderDomain-SubscriptionEnd2End-" + methodName + "-" + System.currentTimeMillis();
-        provisionPermissiveAccessControlEntry(domain, PubSubTestProviderImpl.INTERFACE_NAME);
+        provisionPermissiveAccessControlEntry(domain, SubscriptionTestsProviderImpl.INTERFACE_NAME);
 
         setupProviderRuntime(methodName);
         setupConsumerRuntime(methodName);
@@ -121,7 +121,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         factoryPropertiesProvider.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, domain);
         providerRuntime = getRuntime(factoryPropertiesProvider, new StaticDomainAccessControlProvisioningModule());
 
-        provider = new PubSubTestProviderImpl();
+        provider = new SubscriptionTestsProviderImpl();
         providerRuntime.registerProvider(domain, provider).get(CONST_DEFAULT_TEST_TIMEOUT);
     }
 
@@ -410,7 +410,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
     @Test
     public void subscribeToAttributeWithProviderRuntimeException() throws InterruptedException {
         AttributeSubscriptionListener<Integer> providerRuntimeExceptionListener = mock(AttributeSubscriptionListener.class);
-        ProviderRuntimeException expectedException = new ProviderRuntimeException(PubSubTestProviderImpl.MESSAGE_PROVIDERRUNTIMEEXCEPTION);
+        ProviderRuntimeException expectedException = new ProviderRuntimeException(SubscriptionTestsProviderImpl.MESSAGE_PROVIDERRUNTIMEEXCEPTION);
 
         int periods = 4;
         int subscriptionDuration = (period_ms * periods);
@@ -433,7 +433,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
     @Test
     public void subscribeToAttributeWithThrownException() throws InterruptedException {
         AttributeSubscriptionListener<Integer> providerRuntimeExceptionListener = mock(AttributeSubscriptionListener.class);
-        ProviderRuntimeException expectedException = new ProviderRuntimeException(new IllegalArgumentException(PubSubTestProviderImpl.MESSAGE_THROWN_PROVIDERRUNTIMEEXCEPTION).toString());
+        ProviderRuntimeException expectedException = new ProviderRuntimeException(new IllegalArgumentException(SubscriptionTestsProviderImpl.MESSAGE_THROWN_PROVIDERRUNTIMEEXCEPTION).toString());
 
         int periods = 4;
         int subscriptionDuration = (period_ms * periods);
