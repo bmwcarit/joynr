@@ -77,7 +77,7 @@ std::string «interfaceName»AbstractProvider::getInterfaceName() const {
 				"«attributeName»",
 				«IF isArray(attribute)»
 					«IF isEnum(attribute.type)»
-						Variant::make<std::vector<Variant>>(Util::convertEnumVectorToVariantVector(«attribute.joynrName»))
+						Variant::make<std::vector<Variant>>(Util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(attribute.type.derived)»>(«attribute.joynrName»))
 					«ELSE»
 						Variant::make<std::vector<Variant>>(TypeUtil::toVectorOfVariants(«attribute.joynrName»))
 					«ENDIF»
@@ -97,7 +97,7 @@ std::string «interfaceName»AbstractProvider::getInterfaceName() const {
 		«FOR parameter: getOutputParameters(broadcast)»
 			«IF isArray(parameter)»
 				«IF isEnum(parameter.type)»
-					broadcastValues.push_back(Variant::make<std::vector<Variant>>(Util::convertEnumVectorToVariantVector(«parameter.joynrName»)));
+					broadcastValues.push_back(Variant::make<std::vector<Variant>>(Util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(parameter.type.derived)»>(«parameter.joynrName»)));
 				«ELSE»
 					broadcastValues.push_back(Variant::make<std::vector<Variant>>(TypeUtil::toVectorOfVariants(«parameter.joynrName»)));
 				«ENDIF»
