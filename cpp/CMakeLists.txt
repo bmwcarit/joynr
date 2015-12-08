@@ -19,6 +19,14 @@ if(POLICY CMP0020)
     cmake_policy(SET CMP0020 OLD)
 endif(POLICY CMP0020)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake")
+message(STATUS "variable CMAKE_MODULE_PATH=" ${CMAKE_MODULE_PATH})
+message(STATUS "variable CMAKE_PREFIX_PATH=" ${CMAKE_PREFIX_PATH})
+message(STATUS "variable CMAKE_VERSION=" ${CMAKE_VERSION})
+message(STATUS "variable CMAKE_ROOT=" ${CMAKE_ROOT})
+message(STATUS "variable CMAKE_SOURCE_DIR=" ${CMAKE_SOURCE_DIR})
+message(STATUS "variable CMAKE_CURRENT_SOURCE_DIR=" ${CMAKE_CURRENT_SOURCE_DIR})
+
 set(INSTALL_LIB_DIR lib CACHE PATH "Installation sub directory for libraries")
 set(INSTALL_BIN_DIR bin CACHE PATH "Installation sub directory for executables")
 set(INSTALL_INCLUDE_DIR include CACHE PATH "Installation sub directory for header files")
@@ -49,8 +57,6 @@ message(STATUS "INSTALL_INCLUDE_DIR  = ${INSTALL_INCLUDE_DIR}")
 message(STATUS "INSTALL_CMAKE_DIR    = ${INSTALL_CMAKE_DIR}")
 message(STATUS "-----------------------------------------------------")
 
-message(STATUS "############ OPTIONS ############")
-
 # should we use DBUS to communicate between libjoynr and cluster-controller
 option(
     USE_DBUS_COMMONAPI_COMMUNICATION
@@ -80,6 +86,8 @@ option(
 )
 message(STATUS "option ENABLE_DOXYGEN=" ${ENABLE_DOXYGEN})
 
+include(LocateProgram)
+
 option(
     ENABLE_CLANG_FORMATTER
     "Use clang-formatter to format source code?"
@@ -88,20 +96,9 @@ option(
 
 message(STATUS "option ENABLE_CLANG_FORMATTER=" ${ENABLE_CLANG_FORMATTER})
 
-set(CLANG_FORMAT_PATH "CLANG_FORMAT_PATH-NOTFOUND" CACHE PATH "Path to 'clang-format' executable")
-
 if(${ENABLE_CLANG_FORMATTER})
-    if("${CLANG_FORMAT_PATH}" STREQUAL "CLANG_FORMAT_PATH-NOTFOUND")
-            find_program(CLANG_FORMAT_PATH clang-format)
-            if("${CLANG_FORMAT_PATH}" STREQUAL "FIND_CLANG_FORMAT-NOTFOUND")
-                message(FATAL_ERROR "Unable to locate 'clang-format'")
-            endif()
-    else("${CLANG_FORMAT_PATH}" STREQUAL "CLANG_FORMAT_PATH-NOTFOUND")
-            if(NOT EXISTS ${CLANG_FORMAT_PATH})
-                message(FATAL_ERROR "CLANG_FORMAT_PATH does not exist: '${CLANG_FORMAT_PATH}'")
-            endif()
-    endif("${CLANG_FORMAT_PATH}" STREQUAL "CLANG_FORMAT_PATH-NOTFOUND")
-    message(STATUS "CLANG_FORMAT_PATH=${CLANG_FORMAT_PATH}")
+    set(CLANG_FORMAT_PATH "CLANG_FORMAT_PATH-NOTFOUND" CACHE FILEPATH "Path to 'clang-format' executable")
+    locate_program(clang-format CLANG_FORMAT_PATH)
 endif(${ENABLE_CLANG_FORMATTER})
 
 option(
@@ -112,23 +109,12 @@ option(
 
 message(STATUS "option BUILD_CLUSTER_CONTROLLER=" ${BUILD_CLUSTER_CONTROLLER})
 
-
-message(STATUS "############ VARIABLES ############")
-
 if(NOT DEFINED JOYNR_SERVER)
     set(JOYNR_SERVER "localhost:8080")
 endif(NOT DEFINED JOYNR_SERVER)
 message(STATUS "variable JOYNR_SERVER=" ${JOYNR_SERVER})
 
 message(STATUS "variable CMAKE_BUILD_TYPE=" ${CMAKE_BUILD_TYPE})
-
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake")
-message(STATUS "variable CMAKE_MODULE_PATH=" ${CMAKE_MODULE_PATH})
-message(STATUS "variable CMAKE_PREFIX_PATH=" ${CMAKE_PREFIX_PATH})
-message(STATUS "variable CMAKE_VERSION=" ${CMAKE_VERSION})
-message(STATUS "variable CMAKE_ROOT=" ${CMAKE_ROOT})
-message(STATUS "variable CMAKE_SOURCE_DIR=" ${CMAKE_SOURCE_DIR})
-message(STATUS "variable CMAKE_CURRENT_SOURCE_DIR=" ${CMAKE_CURRENT_SOURCE_DIR})
 
 include(AddClangFormat)
 
