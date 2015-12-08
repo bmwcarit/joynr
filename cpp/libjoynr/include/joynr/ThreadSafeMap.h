@@ -104,7 +104,7 @@ template <class Key, class T>
 void ThreadSafeMap<Key, T>::deleteAll()
 {
     lock.lockForWrite();
-    foreach (const QString& str, map.keys()) {
+    for (const QString& str : map.keys()) {
         T value = map.take(str);
         delete value;
         value = NULL;

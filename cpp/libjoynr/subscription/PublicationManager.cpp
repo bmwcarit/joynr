@@ -135,13 +135,17 @@ PublicationManager::~PublicationManager()
 
     // Remove all publications
     LOG_DEBUG(logger, "Destructor: removing publications");
-    foreach (std::shared_ptr<SubscriptionRequestInformation> request,
-             subscriptionId2SubscriptionRequest) {
-        removeAttributePublication(QString::fromStdString(request->getSubscriptionId()));
+
+    while (subscriptionId2SubscriptionRequest.size() > 0) {
+        auto subscriptionRequest = subscriptionId2SubscriptionRequest.begin();
+        removeAttributePublication(
+                QString::fromStdString((*subscriptionRequest)->getSubscriptionId()));
     }
-    foreach (std::shared_ptr<BroadcastSubscriptionRequestInformation> request,
-             subscriptionId2BroadcastSubscriptionRequest) {
-        removeBroadcastPublication(QString::fromStdString(request->getSubscriptionId()));
+
+    while (subscriptionId2BroadcastSubscriptionRequest.size() > 0) {
+        auto broadcastRequest = subscriptionId2BroadcastSubscriptionRequest.begin();
+        removeBroadcastPublication(
+                QString::fromStdString((*broadcastRequest)->getSubscriptionId()));
     }
 
     subscriptionLocker.unlock();
@@ -474,8 +478,8 @@ void PublicationManager::removeAllSubscriptions(const QString& providerId)
     {
         QReadLocker subscriptionLocker(&subscriptionLock);
 
-        foreach (std::shared_ptr<SubscriptionRequestInformation> requestInfo,
-                 subscriptionId2SubscriptionRequest) {
+        for (std::shared_ptr<SubscriptionRequestInformation> requestInfo :
+             subscriptionId2SubscriptionRequest) {
             subscriptionId = QString::fromStdString(requestInfo->getSubscriptionId());
 
             if (requestInfo->getProviderId() == providerId) {
@@ -488,8 +492,8 @@ void PublicationManager::removeAllSubscriptions(const QString& providerId)
     {
         QReadLocker subscriptionLocker(&subscriptionLock);
 
-        foreach (std::shared_ptr<BroadcastSubscriptionRequestInformation> requestInfo,
-                 subscriptionId2BroadcastSubscriptionRequest) {
+        for (std::shared_ptr<BroadcastSubscriptionRequestInformation> requestInfo :
+             subscriptionId2BroadcastSubscriptionRequest) {
             subscriptionId = QString::fromStdString(requestInfo->getSubscriptionId());
 
             if (requestInfo->getProviderId() == providerId) {
@@ -499,7 +503,7 @@ void PublicationManager::removeAllSubscriptions(const QString& providerId)
     }
 
     // Remove each publication
-    foreach (subscriptionId, publicationsToRemove) {
+    for (const QString& subscriptionId : publicationsToRemove) {
         LOG_DEBUG(logger,
                   QString("Removing subscription providerId= %1, subscriptionId =%2")
                           .arg(providerId)
@@ -508,7 +512,7 @@ void PublicationManager::removeAllSubscriptions(const QString& providerId)
     }
 
     // Remove each broadcast
-    foreach (subscriptionId, broadcastsToRemove) {
+    for (const QString& subscriptionId : broadcastsToRemove) {
         LOG_DEBUG(logger,
                   QString("Removing subscription providerId= %1, subscriptionId =%2")
                           .arg(providerId)
@@ -607,7 +611,7 @@ QList<QVariant> PublicationManager::subscriptionMapToListCopy(
 {
     QList<QVariant> subscriptionList;
     {
-        foreach (std::shared_ptr<RequestInformationType> requestInfo, map) {
+        for (std::shared_ptr<RequestInformationType> requestInfo : map) {
             if (!isSubscriptionExpired(requestInfo->getSubscriptionQosPtr())) {
                 subscriptionList.append(QVariant::fromValue(*requestInfo));
             }
@@ -622,7 +626,7 @@ std::vector<Variant> PublicationManager::subscriptionMapToVectorCopy(
 {
     std::vector<Variant> subscriptionVector;
     {
-        foreach (std::shared_ptr<RequestInformationType> requestInfo, map) {
+        for (std::shared_ptr<RequestInformationType> requestInfo : map) {
             if (!isSubscriptionExpired(requestInfo->getSubscriptionQosPtr())) {
                 subscriptionVector.push_back(Variant::make<RequestInformationType>(*requestInfo));
             }
@@ -819,7 +823,7 @@ bool PublicationManager::processFilterChain(const QString& subscriptionId,
             subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId));
     BroadcastFilterParameters filterParameters = subscriptionRequest->getFilterParameters();
 
-    foreach (std::shared_ptr<IBroadcastFilter> filter, filters) {
+    for (std::shared_ptr<IBroadcastFilter> filter : filters) {
         success = success && filter->filter(broadcastValues, filterParameters);
     }
     return success;

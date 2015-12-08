@@ -44,7 +44,7 @@ CapabilitiesRegistrar::CapabilitiesRegistrar(
 
 void CapabilitiesRegistrar::remove(const std::string& participantId)
 {
-    foreach (IDispatcher* currentDispatcher, dispatcherList) {
+    for (IDispatcher* currentDispatcher : dispatcherList) {
         currentDispatcher->removeRequestCaller(participantId);
     }
     try {

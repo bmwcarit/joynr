@@ -44,7 +44,7 @@ uint qHash(const QList<T>& key, uint seed = 0)
 {
     uint hashCode = 0;
     uint prime = 31;
-    foreach (T k, key) {
+    for (T k : key) {
         hashCode = prime * hashCode + qHash(k, seed);
     }
     return hashCode;

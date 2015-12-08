@@ -87,7 +87,7 @@ void PerThreadCurlHandlePool::returnHandle(void* handle)
     if (!handleOrderList.isEmpty() && handleOrderList.size() + outHandleMap.size() > POOL_SIZE) {
         // if the list of idle handles is too big, remove the last item of the ordered list
         std::shared_ptr<PooledCurlHandle> handle2remove = handleOrderList.takeLast();
-        foreach (Qt::HANDLE threadId, idleHandleMap.keys()) {
+        for (Qt::HANDLE threadId : idleHandleMap.keys()) {
             int removed = idleHandleMap.remove(threadId, handle2remove);
             if (removed > 0) {
                 break;

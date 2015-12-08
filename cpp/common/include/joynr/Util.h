@@ -98,7 +98,7 @@ public:
     {
         QList<QVariant> variantList;
         variantList.reserve(enumList.length());
-        foreach (const typename T::Enum e, enumList) {
+        for (const typename T::Enum e : enumList) {
             variantList.append(convertEnumToVariant<T>(e));
         }
         return variantList;
@@ -109,7 +109,7 @@ public:
     {
         QList<typename T::Enum> enumList;
         enumList.reserve(variantList.length());
-        foreach (const QVariant& v, variantList) {
+        for (const QVariant& v : variantList) {
             enumList.append(convertVariantToEnum<T>(v));
         }
         return enumList;
@@ -158,7 +158,7 @@ public:
     {
         QList<T> ret;
         ret.reserve(inputList.length());
-        foreach (const QVariant& q, inputList) {
+        for (const QVariant& q : inputList) {
             assert(q.canConvert<T>());
             ret.append(q.value<T>());
         }
@@ -182,7 +182,7 @@ public:
     {
         QList<T> ret;
         ret.reserve(inputList.length());
-        foreach (const int& i, inputList) {
+        for (const int& i : inputList) {
             ret.append((T)i);
         }
         return ret;
@@ -193,7 +193,7 @@ public:
     {
         QList<int> enumAsIntList;
         enumAsIntList.reserve(enumList.length());
-        foreach (const T& e, enumList) {
+        for (const T& e : enumList) {
             enumAsIntList.append(e);
         }
         return enumAsIntList;

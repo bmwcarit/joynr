@@ -589,7 +589,7 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
     std::function<void(const std::vector<DomainRoleEntry>& domainRoleEntries)> domainRoleOnSuccess =
             [this, initialiser](const std::vector<DomainRoleEntry>& domainRoleEntries) {
         // Add the results
-        foreach (const DomainRoleEntry& dre, domainRoleEntries) {
+        for (const DomainRoleEntry& dre : domainRoleEntries) {
             localDomainAccessStore->updateDomainRole(QtDomainRoleEntry::createQt(dre));
         }
         initialiser->update();
@@ -612,7 +612,7 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
             masterAceOnSuccess =
                     [this, initialiser](const std::vector<MasterAccessControlEntry>& masterAces) {
         // Add the results
-        foreach (const MasterAccessControlEntry& masterAce, masterAces) {
+        for (const MasterAccessControlEntry& masterAce : masterAces) {
             localDomainAccessStore->updateMasterAccessControlEntry(
                     QtMasterAccessControlEntry::createQt(masterAce));
         }
@@ -637,7 +637,7 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
             mediatorAceOnSuccess =
                     [this, initialiser](const std::vector<MasterAccessControlEntry>& mediatorAces) {
         // Add the results
-        foreach (const MasterAccessControlEntry& mediatorAce, mediatorAces) {
+        for (const MasterAccessControlEntry& mediatorAce : mediatorAces) {
             localDomainAccessStore->updateMediatorAccessControlEntry(
                     QtMasterAccessControlEntry::createQt(mediatorAce));
         }
@@ -661,7 +661,7 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
     std::function<void(const std::vector<OwnerAccessControlEntry>& ownerAces)> ownerAceOnSuccess =
             [this, initialiser](const std::vector<OwnerAccessControlEntry>& ownerAces) {
         // Add the results
-        foreach (const OwnerAccessControlEntry& ownerAce, ownerAces) {
+        for (const OwnerAccessControlEntry& ownerAce : ownerAces) {
             localDomainAccessStore->updateOwnerAccessControlEntry(
                     QtOwnerAccessControlEntry::createQt(ownerAce));
         }
@@ -725,7 +725,7 @@ void LocalDomainAccessController::abortInitialisation(const std::string& domain,
 
     // Mark all the requests as failed - we have no information from the Global
     // Domain Access Controller
-    foreach (const ConsumerPermissionRequest& request, requests) {
+    for (const ConsumerPermissionRequest& request : requests) {
         request.callbacks->consumerPermission(Permission::NO);
     }
 }
@@ -750,7 +750,7 @@ bool LocalDomainAccessController::queueConsumerRequest(const std::string& key,
 void LocalDomainAccessController::processConsumerRequests(
         const QList<ConsumerPermissionRequest>& requests)
 {
-    foreach (const ConsumerPermissionRequest& request, requests) {
+    for (const ConsumerPermissionRequest& request : requests) {
         getConsumerPermission(request.userId,
                               request.domain,
                               request.interfaceName,

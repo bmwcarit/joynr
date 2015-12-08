@@ -265,12 +265,12 @@ bool LocalCapabilitiesDirectory::callRecieverIfPossible(
         if (!globalCapabilities.empty()) {
             // remove duplicates
             std::vector<CapabilityEntry> result;
-            foreach (CapabilityEntry entry, localCapabilities) {
+            for (CapabilityEntry entry : localCapabilities) {
                 if (std::find(result.begin(), result.end(), entry) == result.end()) {
                     result.push_back(entry);
                 }
             }
-            foreach (CapabilityEntry entry, globalCapabilities) {
+            for (CapabilityEntry entry : globalCapabilities) {
                 if (std::find(result.begin(), result.end(), entry) == result.end()) {
                     result.push_back(entry);
                 }
@@ -299,7 +299,7 @@ void LocalCapabilitiesDirectory::capabilitiesReceived(
     QMap<std::string, CapabilityEntry> capabilitiesMap;
     std::vector<CapabilityEntry> mergedEntries;
 
-    foreach (types::CapabilityInformation capInfo, results) {
+    for (types::CapabilityInformation capInfo : results) {
         QList<joynr::types::QtCommunicationMiddleware::Enum> connections;
         connections.append(joynr::types::QtCommunicationMiddleware::JOYNR);
         CapabilityEntry capEntry(QString::fromStdString(capInfo.getDomain()),
@@ -530,7 +530,7 @@ void LocalCapabilitiesDirectory::insertInCache(const joynr::types::DiscoveryEntr
         CapabilityEntry newEntry;
         convertDiscoveryEntryIntoCapabilityEntry(discoveryEntry, newEntry);
         entry.setGlobal(isGlobal);
-        foreach (CapabilityEntry oldEntry, entryList) {
+        for (CapabilityEntry oldEntry : entryList) {
             if (oldEntry == newEntry) {
                 foundMatch = true;
             }
@@ -607,7 +607,7 @@ void LocalCapabilitiesDirectory::convertCapabilityEntriesIntoDiscoveryEntries(
         const std::vector<CapabilityEntry>& capabilityEntries,
         std::vector<types::DiscoveryEntry>& discoveryEntries)
 {
-    foreach (const CapabilityEntry& capabilityEntry, capabilityEntries) {
+    for (const CapabilityEntry& capabilityEntry : capabilityEntries) {
         joynr::types::DiscoveryEntry discoveryEntry;
         convertCapabilityEntryIntoDiscoveryEntry(capabilityEntry, discoveryEntry);
         discoveryEntries.push_back(discoveryEntry);
@@ -616,7 +616,7 @@ void LocalCapabilitiesDirectory::convertCapabilityEntriesIntoDiscoveryEntries(
 
 void LocalCapabilitiesDirectory::informObserversOnAdd(const types::DiscoveryEntry& discoveryEntry)
 {
-    foreach (const std::shared_ptr<IProviderRegistrationObserver>& observer, observers) {
+    for (const std::shared_ptr<IProviderRegistrationObserver>& observer : observers) {
         observer->onProviderAdd(discoveryEntry);
     }
 }
@@ -624,7 +624,7 @@ void LocalCapabilitiesDirectory::informObserversOnAdd(const types::DiscoveryEntr
 void LocalCapabilitiesDirectory::informObserversOnRemove(
         const types::DiscoveryEntry& discoveryEntry)
 {
-    foreach (const std::shared_ptr<IProviderRegistrationObserver>& observer, observers) {
+    for (const std::shared_ptr<IProviderRegistrationObserver>& observer : observers) {
         observer->onProviderRemove(discoveryEntry);
     }
 }

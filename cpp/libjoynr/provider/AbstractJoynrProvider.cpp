@@ -36,8 +36,8 @@ AbstractJoynrProvider::AbstractJoynrProvider()
 AbstractJoynrProvider::~AbstractJoynrProvider()
 {
     // Delete all attribute listeners
-    foreach (const QList<IAttributeListener*>& listeners, attributeListeners) {
-        foreach (IAttributeListener* listener, listeners) {
+    for (const QList<IAttributeListener*>& listeners : attributeListeners) {
+        for (IAttributeListener* listener : listeners) {
             delete listener;
         }
     }
@@ -79,7 +79,7 @@ void AbstractJoynrProvider::onAttributeValueChanged(const std::string& attribute
     const QList<IAttributeListener*>& listeners = attributeListeners[attributeName];
 
     // Inform all the attribute listeners for this attribute
-    foreach (IAttributeListener* listener, listeners) {
+    for (IAttributeListener* listener : listeners) {
         listener->attributeValueChanged(value);
     }
 }
@@ -109,7 +109,7 @@ void AbstractJoynrProvider::fireBroadcast(const std::string& broadcastName,
     const QList<IBroadcastListener*>& listeners = broadcastListeners[broadcastName];
 
     // Inform all the broadcast listeners for this broadcast
-    foreach (IBroadcastListener* listener, listeners) {
+    for (IBroadcastListener* listener : listeners) {
         listener->broadcastOccurred(values, broadcastFilters.value(broadcastName));
     }
 }

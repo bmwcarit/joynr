@@ -66,7 +66,7 @@ public:
         std::string participantId =
                 participantIdStorage->getProviderParticipantId(domain, interfaceName);
 
-        foreach (IDispatcher* currentDispatcher, dispatcherList) {
+        for (IDispatcher* currentDispatcher : dispatcherList) {
             // TODO will the provider be registered at all dispatchers or
             //     should it be configurable which ones are used to contact it.
             assert(currentDispatcher != NULL);
@@ -113,7 +113,7 @@ public:
         std::string participantId =
                 participantIdStorage->getProviderParticipantId(domain, interfaceName);
 
-        foreach (IDispatcher* currentDispatcher, dispatcherList) {
+        for (IDispatcher* currentDispatcher : dispatcherList) {
             // TODO will the provider be registered at all dispatchers or
             //     should it be configurable which ones are used to contact it.
             assert(currentDispatcher != NULL);
