@@ -63,24 +63,13 @@ static const bool is«joynrName»SerializerRegistered =
 template <>
 void EnumDeserializer<«typeName»>::deserialize(«typeName»& «joynrName.toFirstLower», IValue& value)
 {
-	std::string text = value;
-
-	«FOR literal : type.enumElementsAndBaseEnumElements»
-	if (text == "«literal.joynrName»") {
-		«joynrName.toFirstLower» = «typeName»::«literal.joynrName»;
-	} else
-	«ENDFOR»
-	{
-		throw std::invalid_argument("Unknown enum value");
-	}
+	«joynrName.toFirstLower» = «type.typeNameOfContainingClass»::getEnum(value);
 }
 
 template <>
 void ClassSerializer<«typeName»>::serialize(const «typeName»& «joynrName.toFirstLower», std::ostream& stringstream)
 {
-	«val nameOfContainingEnum = buildPackagePath(type, "::", true) + joynrName»;
-
-	stringstream << "\""<< «nameOfContainingEnum»::getLiteral(«joynrName.toFirstLower») << "\"";
+	stringstream << "\""<< «type.typeNameOfContainingClass»::getLiteral(«joynrName.toFirstLower») << "\"";
 }
 
 } /* namespace joynr */
