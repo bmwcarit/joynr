@@ -2,15 +2,15 @@
 
 source /data/src/docker/joynr-base/scripts/global.sh
 
+DBUS='OFF'
+GCOV='OFF'
+JOBS=8
+
 function usage
 {
     echo "usage: cpp-clean-build.sh [--dbus ON|OFF --gcov ON|OFF --jobs X]"
-    echo "default dbus is OFF, gcov is OFF, jobs is 20"
+    echo "default dbus is $DBUS, gcov is $GCOV, jobs is $JOBS"
 }
-
-DBUS='OFF'
-GCOV='OFF'
-JOBS=20
 
 while [ "$1" != "" ]; do
     case $1 in

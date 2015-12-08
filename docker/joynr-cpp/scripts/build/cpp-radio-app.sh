@@ -3,12 +3,12 @@
 source /data/src/docker/joynr-base/scripts/global.sh
 
 START=$(date +%s)
-JOBS=20
+JOBS=8
 
 function usage
 {
     echo "usage: cpp-radio-app.sh [--jobs X]"
-    echo "default jobs is 20"
+    echo "default jobs is $JOBS"
 }
 
 while [ "$1" != "" ]; do
