@@ -36,8 +36,8 @@ joynr_logging::Logger* LibJoynrWebSocketRuntime::logger =
 LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(Settings* settings)
         : LibJoynrRuntime(settings),
           wsSettings(*settings),
-          websocket(Q_NULLPTR),
-          wsLibJoynrMessagingSkeleton(Q_NULLPTR)
+          websocket(nullptr),
+          wsLibJoynrMessagingSkeleton(nullptr)
 {
     QString messagingUuid = Util::createUuid().replace("-", "");
     QString libjoynrMessagingId("libjoynr.messaging.participantid_" + messagingUuid);
@@ -80,7 +80,7 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(Settings* settings)
 LibJoynrWebSocketRuntime::~LibJoynrWebSocketRuntime()
 {
     delete wsLibJoynrMessagingSkeleton;
-    wsLibJoynrMessagingSkeleton = Q_NULLPTR;
+    wsLibJoynrMessagingSkeleton = nullptr;
 }
 
 void LibJoynrWebSocketRuntime::startLibJoynrMessagingSkeleton(MessageRouter& messageRouter)

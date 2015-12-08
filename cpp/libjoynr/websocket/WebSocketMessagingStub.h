@@ -46,7 +46,7 @@ class WebSocketMessagingStub : public QObject, public IMessaging
 public:
     WebSocketMessagingStub(system::RoutingTypes::QtAddress* address,
                            QWebSocket* webSocket,
-                           QObject* parent = Q_NULLPTR);
+                           QObject* parent = nullptr);
     virtual ~WebSocketMessagingStub();
     virtual void transmit(JoynrMessage& message);
 

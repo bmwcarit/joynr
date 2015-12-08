@@ -186,7 +186,7 @@ void LongPollingMessageReceiver::processReceivedInput(const QByteArray& received
 void LongPollingMessageReceiver::processReceivedJsonObjects(const std::string& jsonObject)
 {
     JoynrMessage* msg = JsonSerializer::deserialize<JoynrMessage>(jsonObject);
-    if (msg == Q_NULLPTR) {
+    if (msg == nullptr) {
         LOG_ERROR(logger,
                   QString("Unable to deserialize message. Raw message: %1")
                           .arg(QString::fromStdString(jsonObject)));

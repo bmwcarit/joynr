@@ -34,7 +34,7 @@ WebSocketCcMessagingSkeleton::WebSocketCcMessagingSkeleton(
         MessageRouter& messageRouter,
         WebSocketMessagingStubFactory& messagingStubFactory,
         const system::RoutingTypes::QtWebSocketAddress& serverAddress)
-        : webSocketServer(Q_NULLPTR),
+        : webSocketServer(nullptr),
           clients(),
           messageRouter(messageRouter),
           messagingStubFactory(messagingStubFactory)
@@ -125,7 +125,7 @@ void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString& message)
     // deserialize message and transmit
     joynr::JoynrMessage* joynrMsg =
             JsonSerializer::deserialize<joynr::JoynrMessage>(message.toStdString());
-    if (joynrMsg == Q_NULLPTR) {
+    if (joynrMsg == nullptr) {
         LOG_ERROR(logger,
                   QString("Unable to deserialize joynr message object from: %1").arg(message));
         return;

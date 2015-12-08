@@ -29,13 +29,13 @@ namespace joynr
 
 JoynrRuntimeExecutor::JoynrRuntimeExecutor(Settings* settings)
         : QObject(),
-          coreApplication(Q_NULLPTR),
+          coreApplication(nullptr),
           runtimeThread(new QThread()),
           settings(settings),
-          runtime(Q_NULLPTR),
+          runtime(nullptr),
           runtimeSemaphore(0)
 {
-    if (QCoreApplication::instance() == Q_NULLPTR) {
+    if (QCoreApplication::instance() == nullptr) {
         int argc = 0;
         char* argv[] = {0};
         coreApplication = new QCoreApplication(argc, argv);
@@ -49,20 +49,20 @@ JoynrRuntimeExecutor::JoynrRuntimeExecutor(Settings* settings)
 
 JoynrRuntimeExecutor::~JoynrRuntimeExecutor()
 {
-    if (coreApplication != Q_NULLPTR) {
+    if (coreApplication != nullptr) {
         coreApplication->deleteLater();
-        coreApplication = Q_NULLPTR;
+        coreApplication = nullptr;
     }
     runtimeThread->deleteLater();
     delete runtime;
-    runtime = Q_NULLPTR;
+    runtime = nullptr;
 }
 
 LibJoynrRuntime* JoynrRuntimeExecutor::getRuntime()
 {
     runtimeSemaphore.wait();
     LibJoynrRuntime* runtimeTmp = runtime;
-    runtime = Q_NULLPTR;
+    runtime = nullptr;
     return runtimeTmp;
 }
 

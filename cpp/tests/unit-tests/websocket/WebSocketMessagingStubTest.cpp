@@ -34,7 +34,7 @@ class WebSocketMessagingStubTest : public QObject, public testing::Test
 {
     Q_OBJECT
 public:
-    explicit WebSocketMessagingStubTest(QObject* parent = Q_NULLPTR) :
+    explicit WebSocketMessagingStubTest(QObject* parent = nullptr) :
         QObject(parent),
         logger(joynr::joynr_logging::Logging::getInstance()->getLogger("TEST", "WebSocketMessagingStubTest")),
         server(
@@ -42,8 +42,8 @@ public:
             QWebSocketServer::NonSecureMode,
             this
         ),
-        serverAddress(Q_NULLPTR),
-        webSocket(Q_NULLPTR)
+        serverAddress(nullptr),
+        webSocket(nullptr)
     {
         qRegisterMetaType<joynr::JoynrMessage>("joynr::JoynrMessage");
         if(server.listen(QHostAddress::Any)) {

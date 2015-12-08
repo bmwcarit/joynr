@@ -67,12 +67,12 @@ LibJoynrRuntime::~LibJoynrRuntime()
     delete joynrMessageSender;
     delete joynrDispatcher;
     delete libjoynrSettings;
-    libjoynrSettings = Q_NULLPTR;
+    libjoynrSettings = nullptr;
     delete settings;
-    if (runtimeExecutor != Q_NULLPTR) {
+    if (runtimeExecutor != nullptr) {
         runtimeExecutor->stop();
         runtimeExecutor->deleteLater();
-        runtimeExecutor = Q_NULLPTR;
+        runtimeExecutor = nullptr;
     }
 }
 

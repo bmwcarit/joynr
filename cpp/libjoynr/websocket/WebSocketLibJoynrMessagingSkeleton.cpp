@@ -49,7 +49,7 @@ void WebSocketLibJoynrMessagingSkeleton::onTextMessageReceived(const QString& me
     // deserialize message and transmit
     joynr::JoynrMessage* joynrMsg =
             JsonSerializer::deserialize<joynr::JoynrMessage>(message.toStdString());
-    if (joynrMsg == Q_NULLPTR) {
+    if (joynrMsg == nullptr) {
         LOG_ERROR(logger,
                   QString("Unable to deserialize joynr message object from: %1").arg(message));
         return;
