@@ -121,16 +121,16 @@ JsonValue::JsonValue(JsonTokenizer &tokenizer) :
 
     switch(tokenType) {
     case JSMN_ARRAY:
-        value = std::move(Variant::make<JsonArray>(tokenizer));
+        value = Variant::make<JsonArray>(tokenizer);
         break;
     case JSMN_OBJECT:
-        value = std::move(Variant::make<JsonObject>(tokenizer));
+        value = Variant::make<JsonObject>(tokenizer);
         break;
     case JSMN_PRIMITIVE:
         value = parseJsonPrimitive(tokenizer.currentToken().asString());
         break;
     case JSMN_STRING:
-        value = std::move(Variant::make<std::string>(tokenizer.currentToken().asString()));
+        value = Variant::make<std::string>(tokenizer.currentToken().asString());
         break;
     case JSMN_UNDEFINED:
     default:
