@@ -90,7 +90,7 @@ void SubscriptionManager::registerSubscription(
     // required after the subscription unlock
     QWriteLocker subscriptionsLocker(&subscriptionsLock);
 
-    if (subscriptions.contains(subscriptionId)) {
+    if (subscriptions.find(subscriptionId) != subscriptions.end()) {
         // pre-existing subscription: remove it first from the internal data structure
         unregisterSubscription(subscriptionId);
     }
@@ -107,7 +107,7 @@ void SubscriptionManager::registerSubscription(
 
     std::shared_ptr<Subscription> subscription(new Subscription(subscriptionCaller));
 
-    subscriptions.insert(subscriptionId, subscription);
+    subscriptions.insert(std::make_pair(subscriptionId, subscription));
 
     subscriptionsLocker.unlock();
 
@@ -148,8 +148,10 @@ void SubscriptionManager::registerSubscription(
 void SubscriptionManager::unregisterSubscription(const QString& subscriptionId)
 {
     QWriteLocker subscriptionsLocker(&subscriptionsLock);
-    if (subscriptions.contains(subscriptionId)) {
-        std::shared_ptr<Subscription> subscription = subscriptions.take(subscriptionId);
+    auto subscriptionsIterator = subscriptions.find(subscriptionId);
+    if (subscriptionsIterator != subscriptions.end()) {
+        std::shared_ptr<Subscription> subscription = subscriptionsIterator->second;
+        subscriptions.erase(subscriptionsIterator);
         LOG_DEBUG(logger, "Called unregister / unsubscribe on subscription id= " + subscriptionId);
         QMutexLocker subscriptionLocker(&(subscription->mutex));
         subscription->isStopped = true;
@@ -176,10 +178,11 @@ void SubscriptionManager::touchSubscriptionState(const QString& subscriptionId)
 {
     QReadLocker subscriptionsLocker(&subscriptionsLock);
     LOG_DEBUG(logger, "Touching subscription state for id=" + subscriptionId);
-    if (!subscriptions.contains(subscriptionId)) {
+    auto subscriptionElement = subscriptions.find(subscriptionId);
+    if (subscriptionElement == subscriptions.end()) {
         return;
     }
-    std::shared_ptr<Subscription> subscription = subscriptions.value(subscriptionId);
+    std::shared_ptr<Subscription> subscription = subscriptionElement->second;
     {
         int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
         QMutexLocker subscriptionLocker(&(subscription->mutex));
@@ -192,13 +195,14 @@ std::shared_ptr<ISubscriptionCallback> SubscriptionManager::getSubscriptionCallb
 {
     QReadLocker subscriptionsLocker(&subscriptionsLock);
     LOG_DEBUG(logger, "Getting subscription callback for subscription id=" + subscriptionId);
-    if (!subscriptions.contains(subscriptionId)) {
+    auto subscriptionElement = subscriptions.find(subscriptionId);
+    if (subscriptionElement == subscriptions.end()) {
         LOG_DEBUG(logger,
                   "Trying to acces a non existing subscription callback for id=" + subscriptionId);
         return std::shared_ptr<ISubscriptionCallback>();
     }
 
-    std::shared_ptr<Subscription> subscription(subscriptions.value(subscriptionId));
+    std::shared_ptr<Subscription> subscription(subscriptionElement->second);
 
     {
         QMutexLocker subscriptionLockers(&(subscription->mutex));

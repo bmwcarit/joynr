@@ -211,11 +211,13 @@ public:
     {
         unsigned long delay = 0;
 
-        while (testProvider->attributeListeners.value(attributeName).isEmpty() && delay <= subscribeToAttributeWait) {
+        while (testProvider->attributeListeners.find(attributeName) == testProvider->attributeListeners.cend()
+               && delay <= subscribeToAttributeWait
+        ) {
             QThreadSleep::msleep(50);
             delay+=50;
         }
-        EXPECT_FALSE(testProvider->attributeListeners.value(attributeName).isEmpty());
+        EXPECT_FALSE(testProvider->attributeListeners.find(attributeName)->second.isEmpty());
     }
 
     /*
@@ -228,11 +230,13 @@ public:
     {
         unsigned long delay = 0;
 
-        while (testProvider->broadcastListeners.value(broadcastName).isEmpty() && delay <= subscribeToBroadcastWait) {
+        while (testProvider->broadcastListeners.find(broadcastName) == testProvider->broadcastListeners.cend()
+               && delay <= subscribeToBroadcastWait
+        ) {
             QThreadSleep::msleep(50);
             delay+=50;
         }
-        EXPECT_FALSE(testProvider->broadcastListeners.value(broadcastName).isEmpty());
+        EXPECT_FALSE(testProvider->broadcastListeners.find(broadcastName)->second.isEmpty());
     }
 
     ~End2EndBroadcastTest(){

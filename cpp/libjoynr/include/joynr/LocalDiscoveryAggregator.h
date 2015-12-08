@@ -18,7 +18,6 @@
  */
 #ifndef LOCALDISCOVERYAGGREGATOR_H
 #define LOCALDISCOVERYAGGREGATOR_H
-#include <QMap>
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrExport.h"
@@ -27,6 +26,7 @@
 #include "joynr/system/IDiscovery.h"
 #include <string>
 #include <vector>
+#include <map>
 
 namespace joynr
 {
@@ -95,7 +95,7 @@ private:
     joynr::system::IDiscoverySync* discoveryProxy;
     bool hasOwnershipOfDiscoveryProxy;
     IRequestCallerDirectory& requestCallerDirectory;
-    QMap<std::string, joynr::types::QtDiscoveryEntry> provisionedDiscoveryEntries;
+    std::map<std::string, joynr::types::QtDiscoveryEntry> provisionedDiscoveryEntries;
     const SystemServicesSettings& systemServicesSettings;
 };
 } // namespace joynr

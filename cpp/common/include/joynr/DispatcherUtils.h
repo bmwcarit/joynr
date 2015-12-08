@@ -27,6 +27,9 @@
 #include <stdint.h>
 #include <string>
 #include <chrono>
+#include <map>
+
+#include "joynr/Variant.h"
 
 namespace joynr
 {
@@ -45,7 +48,7 @@ class JOYNRCOMMON_EXPORT DispatcherUtils
 public:
     DispatcherUtils();
     // todo some of those could be moved  to other classes (e.g. a HeaderMap Dataclass)
-    typedef QMap<QString, QVariant>
+    typedef std::map<std::string, Variant>
             HeaderMap; // todo refactor this,  remove Headermap and create dataclass
 
     /**

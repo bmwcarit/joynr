@@ -36,8 +36,9 @@ AbstractJoynrProvider::AbstractJoynrProvider()
 AbstractJoynrProvider::~AbstractJoynrProvider()
 {
     // Delete all attribute listeners
-    for (const QList<IAttributeListener*>& listeners : attributeListeners) {
-        for (IAttributeListener* listener : listeners) {
+    for (auto& mapEntry : attributeListeners) {
+        const QList<IAttributeListener*>& listeners(mapEntry.second);
+        foreach (IAttributeListener* listener, listeners) {
             delete listener;
         }
     }
@@ -110,20 +111,25 @@ void AbstractJoynrProvider::fireBroadcast(const std::string& broadcastName,
 
     // Inform all the broadcast listeners for this broadcast
     for (IBroadcastListener* listener : listeners) {
-        listener->broadcastOccurred(values, broadcastFilters.value(broadcastName));
+        auto broadcastFiletersIterator = broadcastFilters.find(broadcastName);
+        if (broadcastFiletersIterator != broadcastFilters.end()) {
+            listener->broadcastOccurred(values, broadcastFiletersIterator->second);
+        } else {
+            listener->broadcastOccurred(values, QList<std::shared_ptr<IBroadcastFilter>>());
+        }
     }
 }
 
 void AbstractJoynrProvider::addBroadcastFilter(std::shared_ptr<IBroadcastFilter> filter)
 {
-    QMap<std::string, QList<std::shared_ptr<IBroadcastFilter>>>::iterator it =
+    std::map<std::string, QList<std::shared_ptr<IBroadcastFilter>>>::iterator it =
             broadcastFilters.find(filter->getName());
 
     if (it != broadcastFilters.end()) {
-        it.value().append(filter);
+        it->second.append(filter);
     } else {
-        broadcastFilters.insert(
-                filter->getName(), QList<std::shared_ptr<IBroadcastFilter>>({filter}));
+        broadcastFilters.insert(std::make_pair(
+                filter->getName(), QList<std::shared_ptr<IBroadcastFilter>>({filter})));
     }
 }
 

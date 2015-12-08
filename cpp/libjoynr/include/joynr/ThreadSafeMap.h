@@ -20,8 +20,8 @@
 #define THREADSAFEMAP_H
 #include "joynr/PrivateCopyAssign.h"
 
-#include <QMap>
 #include <QReadWriteLock>
+#include <map>
 
 namespace joynr
 {
@@ -44,7 +44,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ThreadSafeMap);
-    QMap<Key, T> map;
+    std::map<Key, T> map;
     QReadWriteLock lock;
 };
 
@@ -58,7 +58,7 @@ template <class Key, class T>
 void ThreadSafeMap<Key, T>::insert(const Key& key, const T& value)
 {
     lock.lockForWrite();
-    map.insert(key, value);
+    map.insert(std::make_pair(key, value));
     lock.unlock();
 }
 
@@ -66,7 +66,7 @@ template <class Key, class T>
 void ThreadSafeMap<Key, T>::remove(const Key& key)
 {
     lock.lockForWrite();
-    map.remove(key);
+    map.erase(map.find(key));
     lock.unlock();
 }
 
@@ -75,7 +75,7 @@ T ThreadSafeMap<Key, T>::value(const Key& key)
 {
     T aValue;
     lock.lockForRead();
-    aValue = map.value(key);
+    aValue = map.find(key)->second;
     lock.unlock();
     return aValue;
 }
@@ -85,7 +85,11 @@ T ThreadSafeMap<Key, T>::take(const Key& key)
 {
     T aValue;
     lock.lockForWrite();
-    aValue = map.take(key);
+    auto mapElement = map.find(key);
+    if (mapElement != map.end()) {
+        aValue = mapElement->second;
+        map.erase(mapElement);
+    }
     lock.unlock();
     return aValue;
 }
@@ -95,7 +99,7 @@ bool ThreadSafeMap<Key, T>::contains(const Key& key)
 {
     bool aValue;
     lock.lockForRead();
-    aValue = map.contains(key);
+    aValue = map.find(key) != map.end();
     lock.unlock();
     return aValue;
 }

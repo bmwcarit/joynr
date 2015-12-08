@@ -25,7 +25,6 @@
 
 #include "joynr/joynrlogging.h"
 
-#include <QMultiMap>
 #include <QString>
 #include <QVariant>
 #include <QMutex>
@@ -33,6 +32,8 @@
 #include <QThreadPool>
 #include <memory>
 #include <vector>
+#include <map>
+#include <string>
 
 #include "joynr/Variant.h"
 
@@ -166,10 +167,10 @@ private:
     class Publication;
 
     // Information for each publication is keyed by subcriptionId
-    QMap<QString, std::shared_ptr<Publication>> publications;
-    QMap<QString, std::shared_ptr<SubscriptionRequestInformation>>
+    std::map<std::string, std::shared_ptr<Publication>> publications;
+    std::map<std::string, std::shared_ptr<SubscriptionRequestInformation>>
             subscriptionId2SubscriptionRequest;
-    QMap<QString, std::shared_ptr<BroadcastSubscriptionRequestInformation>>
+    std::map<std::string, std::shared_ptr<BroadcastSubscriptionRequestInformation>>
             subscriptionId2BroadcastSubscriptionRequest;
 
     // .. and protected with a read/write lock
@@ -191,13 +192,14 @@ private:
     // Queues all subscription requests that are either received by the
     // dispatcher or restored from the subscription storage file before
     // the corresponding provider is added
-    QMultiMap<QString, std::shared_ptr<SubscriptionRequestInformation>> queuedSubscriptionRequests;
+    std::multimap<std::string, std::shared_ptr<SubscriptionRequestInformation>>
+            queuedSubscriptionRequests;
     QMutex queuedSubscriptionRequestsMutex;
 
     // Queues all broadcast subscription requests that are either received by the
     // dispatcher or restored from the subscription storage file before
     // the corresponding provider is added
-    QMultiMap<QString, std::shared_ptr<BroadcastSubscriptionRequestInformation>>
+    std::multimap<std::string, std::shared_ptr<BroadcastSubscriptionRequestInformation>>
             queuedBroadcastSubscriptionRequests;
     QMutex queuedBroadcastSubscriptionRequestsMutex;
 
@@ -209,7 +211,7 @@ private:
     QMutex currentScheduledPublicationsMutex;
 
     // Filters registered for broadcasts. Keyed by broadcast name.
-    QMap<QString, QList<std::shared_ptr<IBroadcastFilter>>> broadcastFilters;
+    std::map<std::string, QList<std::shared_ptr<IBroadcastFilter>>> broadcastFilters;
 
     // Read/write lock for broadcast filters
     mutable QReadWriteLock broadcastFilterLock;
@@ -256,15 +258,16 @@ private:
     void loadSavedSubscriptionRequestsMap(
             const QString& storageFilename,
             QMutex& mutex,
-            QMultiMap<QString, std::shared_ptr<RequestInformationType>>& queuedSubscriptions);
+            std::multimap<std::string, std::shared_ptr<RequestInformationType>>&
+                    queuedSubscriptions);
 
     template <class RequestInformationType>
     QList<QVariant> subscriptionMapToListCopy(
-            const QMap<QString, std::shared_ptr<RequestInformationType>>& map);
+            const std::map<std::string, std::shared_ptr<RequestInformationType>>& map);
 
     template <class RequestInformationType>
     std::vector<Variant> subscriptionMapToVectorCopy(
-            const QMap<QString, std::shared_ptr<RequestInformationType>>& map);
+            const std::map<std::string, std::shared_ptr<RequestInformationType>>& map);
 
     bool isShuttingDown();
     int64_t getPublicationTtl(std::shared_ptr<SubscriptionRequest> subscriptionRequest) const;

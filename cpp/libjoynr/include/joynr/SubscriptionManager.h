@@ -31,7 +31,6 @@
 #include <QReadWriteLock>
 #include <QThreadPool>
 #include <QString>
-#include <QMap>
 #include <memory>
 #include <stdint.h>
 
@@ -102,7 +101,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(SubscriptionManager);
     class Subscription;
 
-    QMap<QString, std::shared_ptr<Subscription>> subscriptions;
+    std::map<QString, std::shared_ptr<Subscription>> subscriptions;
 
     QReadWriteLock subscriptionsLock;
 

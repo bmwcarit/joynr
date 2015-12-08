@@ -28,6 +28,8 @@
 #include <QMutex>
 #include <QRunnable>
 #include <string>
+#include <map>
+#include <cstdint>
 
 namespace joynr
 {
@@ -41,18 +43,18 @@ public:
 
     ~MessageQueue();
 
-    qint64 getQueueLength();
+    std::size_t getQueueLength();
 
-    qint64 queueMessage(const JoynrMessage& message);
+    std::size_t queueMessage(const JoynrMessage& message);
 
     MessageQueueItem* getNextMessageForParticipant(const std::string destinationPartId);
 
-    qint64 removeOutdatedMessages();
+    int64_t removeOutdatedMessages();
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MessageQueue);
 
-    QMap<std::string, MessageQueueItem*>* queue;
+    std::multimap<std::string, MessageQueueItem*>* queue;
     mutable QMutex queueMutex;
 };
 
@@ -62,14 +64,14 @@ private:
 class JOYNR_EXPORT MessageQueueCleanerRunnable : public QRunnable
 {
 public:
-    MessageQueueCleanerRunnable(MessageQueue& messageQueue, qint64 sleepInterval = 1000);
+    MessageQueueCleanerRunnable(MessageQueue& messageQueue, int64_t sleepInterval = 1000);
     void run();
     void stop();
 
 private:
     MessageQueue& messageQueue;
     bool stopped;
-    qint64 sleepInterval;
+    int64_t sleepInterval;
 };
 }
 

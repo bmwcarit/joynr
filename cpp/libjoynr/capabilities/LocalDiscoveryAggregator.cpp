@@ -54,8 +54,8 @@ LocalDiscoveryAggregator::LocalDiscoveryAggregator(
             joynr::types::QtProviderQos(),
             connections);
     provisionedDiscoveryEntries.insert(
-            routingProviderDiscoveryEntry.getParticipantId().toStdString(),
-            routingProviderDiscoveryEntry);
+            std::make_pair(routingProviderDiscoveryEntry.getParticipantId().toStdString(),
+                           routingProviderDiscoveryEntry));
     joynr::types::QtDiscoveryEntry discoveryProviderDiscoveryEntry(
             TypeUtil::toQt(systemServicesSettings.getDomain()),
             TypeUtil::toQt(joynr::system::IDiscovery::INTERFACE_NAME()),
@@ -63,8 +63,8 @@ LocalDiscoveryAggregator::LocalDiscoveryAggregator(
             joynr::types::QtProviderQos(),
             connections);
     provisionedDiscoveryEntries.insert(
-            discoveryProviderDiscoveryEntry.getParticipantId().toStdString(),
-            discoveryProviderDiscoveryEntry);
+            std::make_pair(discoveryProviderDiscoveryEntry.getParticipantId().toStdString(),
+                           discoveryProviderDiscoveryEntry));
 }
 
 LocalDiscoveryAggregator::~LocalDiscoveryAggregator()
@@ -126,9 +126,9 @@ void LocalDiscoveryAggregator::lookup(std::vector<joynr::types::DiscoveryEntry>&
 void LocalDiscoveryAggregator::lookup(joynr::types::DiscoveryEntry& result,
                                       const std::string& participantId)
 {
-    if (provisionedDiscoveryEntries.contains(participantId)) {
-        result = joynr::types::QtDiscoveryEntry::createStd(
-                provisionedDiscoveryEntries.value(participantId));
+    auto entry = provisionedDiscoveryEntries.find(participantId);
+    if (entry != provisionedDiscoveryEntries.end()) {
+        result = joynr::types::QtDiscoveryEntry::createStd(entry->second);
     } else {
         if (discoveryProxy == NULL) {
             throw exceptions::JoynrRuntimeException(

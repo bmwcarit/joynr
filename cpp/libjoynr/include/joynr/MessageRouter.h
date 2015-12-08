@@ -34,7 +34,6 @@
 #include <QThreadPool>
 #include <QSemaphore>
 #include <QPair>
-#include <QMap>
 #include <QSet>
 #include <QMutex>
 #include <string>

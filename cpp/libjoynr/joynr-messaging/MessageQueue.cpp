@@ -20,14 +20,14 @@
 #include "joynr/DispatcherUtils.h"
 #include <QThread>
 #include <chrono>
-#include <QMap>
 
 namespace joynr
 {
 
 using namespace std::chrono;
 
-MessageQueue::MessageQueue() : queue(new QMap<std::string, MessageQueueItem*>()), queueMutex()
+MessageQueue::MessageQueue()
+        : queue(new std::multimap<std::string, MessageQueueItem*>()), queueMutex()
 {
 }
 
@@ -36,18 +36,18 @@ MessageQueue::~MessageQueue()
     delete queue;
 }
 
-qint64 MessageQueue::getQueueLength()
+std::size_t MessageQueue::getQueueLength()
 {
     return queue->size();
 }
 
-qint64 MessageQueue::queueMessage(const JoynrMessage& message)
+std::size_t MessageQueue::queueMessage(const JoynrMessage& message)
 {
     JoynrTimePoint absTtl = message.getHeaderExpiryDate();
     MessageQueueItem* item = new MessageQueueItem(message, absTtl);
     {
         QMutexLocker locker(&queueMutex);
-        queue->insertMulti(message.getHeaderTo(), item);
+        queue->insert(std::make_pair(message.getHeaderTo(), item));
     }
     return queue->size();
 }
@@ -55,31 +55,33 @@ qint64 MessageQueue::queueMessage(const JoynrMessage& message)
 MessageQueueItem* MessageQueue::getNextMessageForParticipant(const std::string destinationPartId)
 {
     QMutexLocker locker(&queueMutex);
-    if (queue->contains(destinationPartId)) {
-        return queue->take(destinationPartId);
+    auto queueElement = queue->find(destinationPartId);
+    if (queueElement != queue->end()) {
+        MessageQueueItem* item = queueElement->second;
+        queue->erase(queueElement);
+        return item;
     }
     return NULL;
 }
 
-qint64 MessageQueue::removeOutdatedMessages()
+int64_t MessageQueue::removeOutdatedMessages()
 {
-    qint64 counter = 0;
-    if (queue->isEmpty()) {
+    int64_t counter = 0;
+    if (queue->empty()) {
         return counter;
     }
 
-    QMap<std::string, MessageQueueItem*>::iterator i;
     JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
     {
         QMutexLocker locker(&queueMutex);
-        for (i = queue->begin(); i != queue->end();) {
-            MessageQueueItem* value = i.value();
+        for (auto queueIterator = queue->begin(); queueIterator != queue->end();) {
+            MessageQueueItem* value = queueIterator->second;
             if (value->getDecayTime() < now) {
-                i = queue->erase(i);
+                queueIterator = queue->erase(queueIterator);
                 delete value;
                 counter++;
             } else {
-                ++i;
+                ++queueIterator;
             }
         }
     }
@@ -91,7 +93,7 @@ qint64 MessageQueue::removeOutdatedMessages()
  */
 
 MessageQueueCleanerRunnable::MessageQueueCleanerRunnable(MessageQueue& messageQueue,
-                                                         qint64 sleepInterval)
+                                                         int64_t sleepInterval)
         : messageQueue(messageQueue), stopped(false), sleepInterval(sleepInterval)
 {
 }

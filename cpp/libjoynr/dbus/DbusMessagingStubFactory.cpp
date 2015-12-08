@@ -43,17 +43,21 @@ std::shared_ptr<IMessaging> DbusMessagingStubFactory::create(
             dynamic_cast<const system::RoutingTypes::QtCommonApiDbusAddress*>(&destAddress);
     QString address = dbusAddress->getDomain() + ":" + dbusAddress->getServiceName() + ":" +
                       dbusAddress->getParticipantId();
+    std::shared_ptr<IMessaging> stub = nullptr;
     // lookup address
     {
         QMutexLocker locker(&mutex);
-        if (!stubMap.contains(address)) {
+        auto entry = stubMap.find(address.toStdString());
+        if (entry == stubMap.end()) {
             // create new stub
-            auto stub = std::shared_ptr<IMessaging>(
+            stub = std::shared_ptr<IMessaging>(
                     new DbusMessagingStubAdapter(TypeUtil::toStd(address)));
-            stubMap.insert(address, stub);
+            stubMap.insert(std::make_pair(address.toStdString(), stub));
+        } else {
+            stub = entry->second;
         }
     }
-    return stubMap.value(address);
+    return stub;
 }
 
 } // namespace joynr
