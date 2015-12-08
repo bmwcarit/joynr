@@ -25,7 +25,7 @@
 #include "joynr/RequestCaller.h"
 
 #include <QMutex>
-#include <QHash>
+#include <unordered_map>
 #include <string>
 #include <memory>
 
@@ -74,24 +74,23 @@ private:
     static InterfaceRegistrar* registrarInstance;
 
     // Thread safe hash table of request interpreters
-    QHash<QString, std::shared_ptr<IRequestInterpreter>> requestInterpreters;
+    std::unordered_map<std::string, std::shared_ptr<IRequestInterpreter>> requestInterpreters;
     QMutex requestInterpretersMutex;
 
     // A count of how many registrations are done for each request interpreter
     // Also protected by requestInterpretersMutex
-    QHash<QString, int> requestInterpreterCounts;
+    std::unordered_map<std::string, int> requestInterpreterCounts;
 };
 
 template <class T>
 void InterfaceRegistrar::registerRequestInterpreter(const std::string& interfaceName)
 {
     QMutexLocker locker(&requestInterpretersMutex);
-    QString qInterfaceName(QString::fromStdString(interfaceName));
-    if (!requestInterpreters.contains(qInterfaceName)) {
-        requestInterpreters.insert(qInterfaceName, std::shared_ptr<IRequestInterpreter>(new T()));
-        requestInterpreterCounts.insert(qInterfaceName, 1);
+    if (requestInterpreters.find(interfaceName) == requestInterpreters.end()) {
+        requestInterpreters.insert({interfaceName, std::shared_ptr<IRequestInterpreter>(new T())});
+        requestInterpreterCounts.insert({interfaceName, 1});
     } else {
-        ++requestInterpreterCounts[qInterfaceName];
+        ++requestInterpreterCounts[interfaceName];
     }
 }
 

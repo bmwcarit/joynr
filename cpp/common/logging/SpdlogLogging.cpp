@@ -24,7 +24,7 @@
 #include "spdlog/sinks/sink.h"
 
 #include <QString>
-#include <QHash>
+#include <unordered_map>
 #include <QMutex>
 
 namespace joynr
@@ -60,7 +60,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(SpdlogLogging);
-    typedef QHash<QString, joynr_logging::Logger*> LoggerHash;
+    typedef std::unordered_map<std::string, joynr_logging::Logger*> LoggerHash;
     LoggerHash loggers;
 
     QMutex loggerMutex;
@@ -108,26 +108,26 @@ void SpdlogLogging::shutdown()
 joynr_logging::Logger* SpdlogLogging::getLogger(const QString contextId, const QString className)
 {
     std::string prefix = contextId.toStdString() + "-" + className.toStdString();
-    if (!loggers.contains(QString::fromUtf8(prefix.c_str()))) {
+    if (loggers.find(prefix) == loggers.end()) {
         QMutexLocker lock(&loggerMutex);
-        if (!loggers.contains(QString::fromUtf8(prefix.c_str()))) {
-            loggers.insert(QString::fromUtf8(prefix.c_str()),
-                           new SpdlogLogger(QString::fromStdString(prefix)));
+        if (loggers.find(prefix) == loggers.end()) {
+            loggers.insert({prefix, new SpdlogLogger(QString::fromStdString(prefix))});
         }
     }
 
-    return loggers.value(QString::fromUtf8(prefix.c_str()));
+    return loggers.find(prefix)->second;
 }
 
 void SpdlogLogging::destroyLogger(const QString contextId, const QString className)
 {
     std::string prefix = contextId.toStdString() + " - " + className.toStdString();
     QMutexLocker lock(&loggerMutex);
-    if (!loggers.contains(QString::fromUtf8(prefix.c_str()))) {
+    if (loggers.find(prefix) == loggers.end()) {
         return;
     }
-    delete loggers.value(QString::fromUtf8(prefix.c_str()));
-    loggers.remove(QString::fromUtf8(prefix.c_str()));
+
+    delete loggers.find(prefix)->second;
+    loggers.erase(prefix);
 }
 
 SpdlogLogger::SpdlogLogger(const QString& prefix) : logger(nullptr)

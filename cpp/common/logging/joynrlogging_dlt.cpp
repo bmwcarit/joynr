@@ -21,6 +21,7 @@
 #include "dlt/dlt.h"
 
 #include <QtCore>
+#include <unordered_map>
 
 namespace joynr {
 
@@ -33,8 +34,8 @@ public:
     virtual void destroyLogger(const QString& contextId, const QString& className);
 
 private:
-    typedef QHash<QString, joynr_logging::Logger*> LoggerHash;
-    typedef QHash<QString, DltContext> ContextHash;
+    typedef std::unordered_map<std::string, joynr_logging::Logger*> LoggerHash;
+    typedef std::unordered_map<std::string, DltContext> ContextHash;
 
     LoggerHash loggers;
     ContextHash contextHash;
@@ -66,28 +67,29 @@ void Logging_dlt::shutdown() {
 }
 
 joynr_logging::Logger* Logging_dlt::getLogger(const QString& contextId, const QString& className) {
-    QString loggerName = contextId + className;
-    if (!loggers.contains(loggerName)) {
+    std::string loggerName = contextId.toStdString() + className.toStdString();
+    if (loggers.find(loggerName) == loggers.end()) {
         QMutexLocker lock(&loggerMutex);
-        if (!loggers.contains(loggerName)) {
-            if (!contextHash.contains(contextId)) {
+        if (loggers.find(loggerName) == loggers.end()) {
+            if (contextHash.find(contextId.toStdString()) == contextHash.end()) {
                 DLT_REGISTER_CONTEXT(contextHash[contextId], contextId.toAscii(), contextId.toAscii());
             }
-            loggers.insert(loggerName, new Logger_dlt(contextHash[contextId], className));
+            loggers.insert({loggerName, new Logger_dlt(contextHash[contextId], className)});
         }
     }
 
-    return loggers.value(loggerName);
+    return loggers.find(loggerName)->second;
 }
 
 void Logging_dlt::destroyLogger(const QString& contextId, const QString& className) {
-    QString loggerName = contextId + className;
+    std::string loggerName = contextId.toStdString() + className.toStdString();
     QMutexLocker lock(&loggerMutex);
-    if (!loggers.contains(loggerName)) {
+    if (loggers.find(loggerName) == loggers.end()) {
         return;
     }
-    delete loggers.value(loggerName);
-    loggers.remove(loggerName);
+
+    delete loggers.find(loggerName)->second;
+    loggers.erase(loggerName);
 }
 
 

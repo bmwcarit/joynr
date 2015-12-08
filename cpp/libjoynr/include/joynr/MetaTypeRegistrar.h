@@ -25,7 +25,7 @@
 #include "joynr/ReplyInterpreter.h"
 #include <QMutex>
 #include <QMutexLocker>
-#include <QHash>
+#include <unordered_map>
 #include <QMetaType>
 
 #include "joynr/JoynrTypeId.h"
@@ -117,19 +117,19 @@ private:
     void addPublicationInterpreterForBroadcastType();
 
     // A threadsafe hash holding PublicationInterpreters
-    QHash<int, IPublicationInterpreter*> publicationInterpreters;
+    std::unordered_map<int, IPublicationInterpreter*> publicationInterpreters;
     QMutex publicationInterpretersMutex;
 
     // A threadsafe hash holding ReplyInterpreters
-    QHash<int, IReplyInterpreter*> replyInterpreters;
+    std::unordered_map<int, IReplyInterpreter*> replyInterpreters;
     QMutex replyInterpretersMutex;
 };
 
 template <class T>
 void MetaTypeRegistrar::addEnumPublicationInterpreter(int typeId)
 {
-    if (!publicationInterpreters.contains(typeId)) {
-        publicationInterpreters.insert(typeId, new EnumPublicationInterpreter<T>());
+    if (publicationInterpreters.find(typeId) == publicationInterpreters.end()) {
+        publicationInterpreters.insert({typeId, new EnumPublicationInterpreter<T>()});
     }
 }
 
@@ -169,8 +169,8 @@ void MetaTypeRegistrar::addPublicationInterpreter()
 {
     int typeId = Util::getTypeId<Ts...>();
 
-    if (!publicationInterpreters.contains(typeId)) {
-        publicationInterpreters.insert(typeId, new PublicationInterpreter<Ts...>());
+    if (publicationInterpreters.find(typeId) == publicationInterpreters.end()) {
+        publicationInterpreters.insert({typeId, new PublicationInterpreter<Ts...>()});
     }
 }
 
@@ -181,8 +181,8 @@ void MetaTypeRegistrar::registerReplyMetaType()
         QMutexLocker locker(&replyInterpretersMutex);
         int typeId = Util::getTypeId<Ts...>();
 
-        if (!replyInterpreters.contains(typeId)) {
-            replyInterpreters.insert(typeId, new ReplyInterpreter<Ts...>());
+        if (replyInterpreters.find(typeId) == replyInterpreters.end()) {
+            replyInterpreters.insert({typeId, new ReplyInterpreter<Ts...>()});
         }
     }
 }

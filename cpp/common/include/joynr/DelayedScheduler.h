@@ -23,7 +23,7 @@
 
 #include <QThreadPool>
 #include <QRunnable>
-#include <QHash>
+#include <unordered_map>
 #include <QMutex>
 #include <QSemaphore>
 #include <QEventLoop>
@@ -81,8 +81,8 @@ private:
     quint32 runnableHandle;
 
     EventThread eventThread;
-    QHash<quint32, QRunnable*> runnables;
-    QHash<QTimer*, quint32> timers;
+    std::unordered_map<quint32, QRunnable*> runnables;
+    std::unordered_map<QTimer*, quint32> timers;
     QMutex mutex;
     bool stoppingScheduler;
     static joynr_logging::Logger* logger;

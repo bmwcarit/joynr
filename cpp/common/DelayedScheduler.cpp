@@ -74,12 +74,16 @@ void DelayedScheduler::shutdown()
     stoppingScheduler = true;
     // LOG_TRACE(logger, "shutdown: stopping running timers");
 
-    QMutableHashIterator<QTimer*, quint32> iterator(timers);
+    auto timersIterator = timers.begin();
+    while (timersIterator != timers.end()) {
+        QTimer* timer = timersIterator->first;
+        QRunnable* runnable;
 
-    while (iterator.hasNext()) {
-        iterator.next();
-        QTimer* timer = iterator.key();
-        QRunnable* runnable = runnables.take(iterator.value());
+        auto runnablesIterator = runnables.find(timersIterator->second);
+        if (runnablesIterator != runnables.end()) {
+            runnable = runnablesIterator->second;
+            runnables.erase(runnablesIterator);
+        }
 
         assert(runnable != NULL);
         if (runnable->autoDelete()) {
@@ -88,7 +92,9 @@ void DelayedScheduler::shutdown()
 
         assert(timer != NULL);
         QMetaObject::invokeMethod(timer, "stop", Qt::QueuedConnection);
-        iterator.remove();
+
+        timersIterator = timers.erase(timersIterator);
+
         timer->deleteLater();
     }
 
@@ -98,14 +104,21 @@ void DelayedScheduler::shutdown()
 void DelayedScheduler::unschedule(quint32& runnableHandle)
 {
     QMutexLocker locker(&mutex);
-    if (runnables.contains(runnableHandle)) {
-        QRunnable* runnable = runnables.take(runnableHandle);
-        QMutableHashIterator<QTimer*, quint32> iterator(timers);
-        if (iterator.findNext(runnableHandle)) {
-            QTimer* timer = iterator.key();
-            timers.remove(timer);
-            QMetaObject::invokeMethod(timer, "stop", Qt::QueuedConnection);
-            timer->deleteLater();
+    auto runnableIterator = runnables.find(runnableHandle);
+    if (runnableIterator != runnables.end()) {
+        QRunnable* runnable = runnableIterator->second;
+        runnables.erase(runnableHandle);
+
+        auto timersIterator = timers.begin();
+        while (timersIterator != timers.end()) {
+            if (timersIterator->second == runnableHandle) {
+                QTimer* timer = timersIterator->first;
+                timersIterator = timers.erase(timersIterator);
+                QMetaObject::invokeMethod(timer, "stop", Qt::QueuedConnection);
+                timer->deleteLater();
+            } else {
+                ++timersIterator;
+            }
         }
 
         if (runnable->autoDelete()) {
@@ -158,8 +171,8 @@ void DelayedScheduler::scheduleUsingTimer(void* runnable, quint32 runnableHandle
     timer->setSingleShot(true);
 
     // Make note of the runnable that will be executed
-    runnables.insert(runnableHandle, (QRunnable*)runnable);
-    timers.insert(timer, runnableHandle);
+    runnables.insert({runnableHandle, (QRunnable*)runnable});
+    timers.insert({timer, runnableHandle});
 
     // Connect the timer to call run()
     connect(timer, SIGNAL(timeout()), this, SLOT(run()));
@@ -183,8 +196,15 @@ void DelayedScheduler::run()
         QTimer* timer = reinterpret_cast<QTimer*>(sender());
         timer->deleteLater();
 
-        if (timers.contains(timer)) {
-            runnable = runnables.take(timers.take(timer));
+        auto timersIterator = timers.find(timer);
+        if (timersIterator != timers.end()) {
+            timers.erase(timersIterator);
+
+            auto runnablesIterator = runnables.find(timersIterator->second);
+            if (runnablesIterator != runnables.end()) {
+                runnable = runnablesIterator->second;
+                runnables.erase(runnablesIterator);
+            }
         }
     }
 

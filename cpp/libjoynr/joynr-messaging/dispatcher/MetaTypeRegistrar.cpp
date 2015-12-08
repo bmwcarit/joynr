@@ -46,7 +46,7 @@ MetaTypeRegistrar::MetaTypeRegistrar()
 
     // Register a reply interpreter for void type
     QMutexLocker locker(&replyInterpretersMutex);
-    replyInterpreters.insert(Util::getTypeId<void>(), new ReplyInterpreter<void>());
+    replyInterpreters.insert({Util::getTypeId<void>(), new ReplyInterpreter<void>()});
 }
 
 MetaTypeRegistrar& MetaTypeRegistrar::instance()
@@ -69,7 +69,11 @@ IPublicationInterpreter& MetaTypeRegistrar::getPublicationInterpreter(int typeId
 {
     QMutexLocker locker(&publicationInterpretersMutex);
 
-    IPublicationInterpreter* ret = publicationInterpreters.value(typeId);
+    IPublicationInterpreter* ret;
+    auto search = publicationInterpreters.find(typeId);
+    if (search != publicationInterpreters.end()) {
+        ret = search->second;
+    }
 
     // It is a programming error if the interpreter does not exist
     assert(ret);
@@ -80,7 +84,11 @@ IReplyInterpreter& MetaTypeRegistrar::getReplyInterpreter(int typeId)
 {
     QMutexLocker locker(&replyInterpretersMutex);
 
-    IReplyInterpreter* ret = replyInterpreters.value(typeId);
+    IReplyInterpreter* ret;
+    auto search = replyInterpreters.find(typeId);
+    if (search != replyInterpreters.end()) {
+        ret = search->second;
+    }
 
     // It is a programming error if the interpreter does not exist
     assert(ret);
