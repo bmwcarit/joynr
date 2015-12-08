@@ -20,7 +20,7 @@
 #define BROADCASTSUBSCRIPTIONREQUEST_H
 
 #include "joynr/SubscriptionRequest.h"
-#include "joynr/QtBroadcastFilterParameters.h"
+#include "joynr/BroadcastFilterParameters.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 
 #include <QString>

@@ -34,7 +34,6 @@ static const bool isBroadcastSubscriptionRequestRegistered =
 
 BroadcastSubscriptionRequest::BroadcastSubscriptionRequest() : filterParameters()
 {
-    qRegisterMetaType<QtBroadcastFilterParameters>("QtBroadcastFilterParameters");
 }
 
 BroadcastSubscriptionRequest::BroadcastSubscriptionRequest(

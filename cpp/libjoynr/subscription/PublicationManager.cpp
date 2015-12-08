@@ -28,7 +28,7 @@
 #include "joynr/IPublicationSender.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
-#include "joynr/QtBroadcastFilterParameters.h"
+#include "joynr/BroadcastFilterParameters.h"
 #include "joynr/Util.h"
 #include "joynr/IBroadcastFilter.h"
 #include "libjoynr/subscription/SubscriptionRequestInformation.h"
