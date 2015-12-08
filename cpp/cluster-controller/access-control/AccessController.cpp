@@ -32,6 +32,8 @@
 #include "joynr/system/RoutingTypes_QtAddress.h"
 #include "joynr/joynrlogging.h"
 
+#include <tuple>
+
 #include <QByteArray>
 #include <QScopedPointer>
 
@@ -172,9 +174,7 @@ bool AccessController::LdacConsumerPermissionCallback::convertToBool(QtPermissio
     case QtPermission::YES:
         return true;
     case QtPermission::ASK:
-        Q_ASSERT_X(false,
-                   "hasConsumerPermission",
-                   "QtPermission.ASK user dialog not yet implemented.");
+        assert(false && "QtPermission.ASK user dialog not yet implemented.");
         return false;
     case QtPermission::NO:
         return false;
@@ -195,7 +195,7 @@ public:
     }
     virtual void onProviderAdd(const DiscoveryEntry& discoveryEntry)
     {
-        Q_UNUSED(discoveryEntry)
+        std::ignore = discoveryEntry;
         // Ignored
     }
 
@@ -307,12 +307,12 @@ bool AccessController::hasProviderPermission(const QString& userId,
                                              const QString& domain,
                                              const QString& interfaceName)
 {
-    Q_UNUSED(userId)
-    Q_UNUSED(trustLevel)
-    Q_UNUSED(domain)
-    Q_UNUSED(interfaceName)
+    std::ignore = userId;
+    std::ignore = trustLevel;
+    std::ignore = domain;
+    std::ignore = interfaceName;
 
-    Q_ASSERT_X(false, "hasProviderPermission", "Not yet implemented.");
+    assert(false && "Not yet implemented.");
     return true;
 }
 

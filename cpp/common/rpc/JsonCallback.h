@@ -23,6 +23,7 @@
 #include "joynr/Reply.h"
 #include "joynr/IReplyCaller.h"
 #include <memory>
+#include <tuple>
 
 namespace joynr
 {
@@ -80,7 +81,7 @@ public:
 
     void onSuccess(const RequestStatus status, Reply result)
     {
-        Q_UNUSED(result);
+        std::ignore = result;
         callback->onSuccess(status);
     }
 

@@ -25,7 +25,6 @@
 #include "cluster-controller/http-communication-manager/IChannelUrlSelector.h"
 #include "joynr/types/QtChannelUrlInformation.h"
 #include "joynr/BounceProxyUrl.h"
-#include <QtGlobal>
 #include <stdint.h>
 #include <memory>
 

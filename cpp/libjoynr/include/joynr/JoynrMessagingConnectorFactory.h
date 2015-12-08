@@ -23,6 +23,7 @@
 #include "joynr/types/QtCommunicationMiddleware.h"
 
 #include <string>
+#include <tuple>
 
 namespace joynr
 {
@@ -52,15 +53,15 @@ public:
               IClientCache* cache,
               bool cached)
     {
-        Q_UNUSED(messageSender);
-        Q_UNUSED(subscriptionManager);
-        Q_UNUSED(domain);
-        Q_UNUSED(interfaceName);
-        Q_UNUSED(proxyParticipantId);
-        Q_UNUSED(providerParticipantId);
-        Q_UNUSED(qosSettings);
-        Q_UNUSED(cache);
-        Q_UNUSED(cached);
+        std::ignore = messageSender;
+        std::ignore = subscriptionManager;
+        std::ignore = domain;
+        std::ignore = interfaceName;
+        std::ignore = proxyParticipantId;
+        std::ignore = providerParticipantId;
+        std::ignore = qosSettings;
+        std::ignore = cache;
+        std::ignore = cached;
         notImplemented();
         return 0;
     }

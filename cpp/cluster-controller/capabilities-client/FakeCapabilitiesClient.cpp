@@ -20,6 +20,7 @@
 #include "cluster-controller/capabilities-client/FakeCapabilitiesClient.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "cluster-controller/capabilities-client/IGlobalCapabilitiesCallback.h"
+#include <tuple>
 
 #include <QUuid>
 
@@ -65,7 +66,7 @@ std::string FakeCapabilitiesClient::getLocalChannelId()
 void FakeCapabilitiesClient::add(
         std::vector<types::CapabilityInformation> capabilitiesInformationList)
 {
-    Q_UNUSED(capabilitiesInformationList)
+    std::ignore = capabilitiesInformationList;
     if (localChannelId.empty()) {
         throw exceptions::JoynrRuntimeException(
                 "Exception in CapabilitiesClient: Local channelId is empty. Tried to "
@@ -77,7 +78,7 @@ void FakeCapabilitiesClient::add(
 
 void FakeCapabilitiesClient::remove(std::vector<std::string> participantIdList)
 {
-    Q_UNUSED(participantIdList);
+    std::ignore = participantIdList;
 }
 
 std::vector<types::CapabilityInformation> FakeCapabilitiesClient::lookup(

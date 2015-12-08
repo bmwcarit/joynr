@@ -36,6 +36,7 @@
 #include <QList>
 #include <cassert>
 #include <memory>
+#include <tuple>
 
 namespace joynr
 {
@@ -105,7 +106,7 @@ public:
     std::string remove(const std::string& domain, std::shared_ptr<T> provider)
 
     {
-        Q_UNUSED(provider)
+        std::ignore = provider;
 
         std::string interfaceName = provider->getInterfaceName();
 

@@ -20,7 +20,7 @@
 #define JOYNROPTIONAL_H
 
 #include "joynr/JoynrCommonExport.h"
-#include <assert.h>
+#include <cassert>
 
 namespace joynr
 {
@@ -77,7 +77,7 @@ Optional<T>::operator bool() const
 template <typename T>
 T Optional<T>::getValue() const
 {
-    assert(!this->invalid && "Optional::getValue called on not initialized optional!");
+    assert(!this->invalid && "Optional is not initialized properly, it holds uninitialized value!");
     return value;
 }
 }

@@ -33,6 +33,7 @@
 
 #include <cassert>
 #include <atomic>
+#include <tuple>
 
 namespace joynr
 {
@@ -413,10 +414,10 @@ Permission::Enum LocalDomainAccessController::getProviderPermission(
         const std::string& interfaceName,
         TrustLevel::Enum trustLevel)
 {
-    Q_ASSERT_X(false, "getProviderPermission", "Not implemented yet");
-    Q_UNUSED(uid);
-    Q_UNUSED(domain);
-    Q_UNUSED(interfaceName);
+    assert(false && "Not implemented yet");
+    std::ignore = uid;
+    std::ignore = domain;
+    std::ignore = interfaceName;
 
     return QtPermission::createStd(accessControlAlgorithm.getProviderPermission(
             Optional<QtMasterAccessControlEntry>::createNull(),
@@ -428,8 +429,8 @@ Permission::Enum LocalDomainAccessController::getProviderPermission(
 std::vector<MasterRegistrationControlEntry> LocalDomainAccessController::
         getMasterRegistrationControlEntries(const std::string& uid)
 {
-    Q_ASSERT_X(false, "getMasterRegistrationControlEntries", "Not implemented yet");
-    Q_UNUSED(uid);
+    assert(false && "Not implemented yet");
+    std::ignore = uid;
 
     return std::vector<MasterRegistrationControlEntry>();
 }
@@ -439,8 +440,8 @@ std::vector<MasterRegistrationControlEntry> LocalDomainAccessController::
 std::vector<MasterRegistrationControlEntry> LocalDomainAccessController::
         getEditableMasterRegistrationControlEntries(const std::string& uid)
 {
-    Q_ASSERT_X(false, "getEditableMasterRegistrationControlEntries", "Not implemented yet");
-    Q_UNUSED(uid);
+    assert(false && "Not implemented yet");
+    std::ignore = uid;
 
     return std::vector<MasterRegistrationControlEntry>();
 }
@@ -448,8 +449,8 @@ std::vector<MasterRegistrationControlEntry> LocalDomainAccessController::
 bool LocalDomainAccessController::updateMasterRegistrationControlEntry(
         const MasterRegistrationControlEntry& updatedMasterRce)
 {
-    Q_ASSERT_X(false, "updateMasterRegistrationControlEntry", "Not implemented yet");
-    Q_UNUSED(updatedMasterRce);
+    assert(false && "Not implemented yet");
+    std::ignore = updatedMasterRce;
 
     return false;
 }
@@ -459,10 +460,10 @@ bool LocalDomainAccessController::removeMasterRegistrationControlEntry(
         const std::string& domain,
         const std::string& interfaceName)
 {
-    Q_ASSERT_X(false, "removeMasterRegistrationControlEntry", "Not implemented yet");
-    Q_UNUSED(uid);
-    Q_UNUSED(domain);
-    Q_UNUSED(interfaceName);
+    assert(false && "Not implemented yet");
+    std::ignore = uid;
+    std::ignore = domain;
+    std::ignore = interfaceName;
 
     return false;
 }
@@ -470,8 +471,8 @@ bool LocalDomainAccessController::removeMasterRegistrationControlEntry(
 std::vector<MasterRegistrationControlEntry> LocalDomainAccessController::
         getMediatorRegistrationControlEntries(const std::string& uid)
 {
-    Q_ASSERT_X(false, "getMediatorRegistrationControlEntries", "Not implemented yet");
-    Q_UNUSED(uid);
+    assert(false && "Not implemented yet");
+    std::ignore = uid;
 
     return std::vector<MasterRegistrationControlEntry>();
 }
@@ -479,8 +480,8 @@ std::vector<MasterRegistrationControlEntry> LocalDomainAccessController::
 std::vector<MasterRegistrationControlEntry> LocalDomainAccessController::
         getEditableMediatorRegistrationControlEntries(const std::string& uid)
 {
-    Q_ASSERT_X(false, "getEditableMediatorRegistrationControlEntries", "Not implemented yet");
-    Q_UNUSED(uid);
+    assert(false && "Not implemented yet");
+    std::ignore = uid;
 
     return std::vector<MasterRegistrationControlEntry>();
 }
@@ -488,8 +489,8 @@ std::vector<MasterRegistrationControlEntry> LocalDomainAccessController::
 bool LocalDomainAccessController::updateMediatorRegistrationControlEntry(
         const MasterRegistrationControlEntry& updatedMediatorRce)
 {
-    Q_ASSERT_X(false, "updateMediatorRegistrationControlEntry", "Not implemented yet");
-    Q_UNUSED(updatedMediatorRce);
+    assert(false && "Not implemented yet");
+    std::ignore = updatedMediatorRce;
 
     return false;
 }
@@ -499,10 +500,10 @@ bool LocalDomainAccessController::removeMediatorRegistrationControlEntry(
         const std::string& domain,
         const std::string& interfaceName)
 {
-    Q_ASSERT_X(false, "removeMediatorRegistrationControlEntry", "Not implemented yet");
-    Q_UNUSED(uid);
-    Q_UNUSED(domain);
-    Q_UNUSED(interfaceName);
+    assert(false && "Not implemented yet");
+    std::ignore = uid;
+    std::ignore = domain;
+    std::ignore = interfaceName;
 
     return false;
 }
@@ -510,8 +511,8 @@ bool LocalDomainAccessController::removeMediatorRegistrationControlEntry(
 std::vector<OwnerRegistrationControlEntry> LocalDomainAccessController::
         getOwnerRegistrationControlEntries(const std::string& uid)
 {
-    Q_ASSERT_X(false, "getOwnerRegistrationControlEntries", "Not implemented yet");
-    Q_UNUSED(uid);
+    assert(false && "Not implemented yet");
+    std::ignore = uid;
 
     return std::vector<OwnerRegistrationControlEntry>();
 }
@@ -519,8 +520,8 @@ std::vector<OwnerRegistrationControlEntry> LocalDomainAccessController::
 std::vector<OwnerRegistrationControlEntry> LocalDomainAccessController::
         getEditableOwnerRegistrationControlEntries(const std::string& uid)
 {
-    Q_ASSERT_X(false, "getEditableOwnerRegistrationControlEntries", "Not implemented yet");
-    Q_UNUSED(uid);
+    assert(false && "Not implemented yet");
+    std::ignore = uid;
 
     return std::vector<OwnerRegistrationControlEntry>();
 }
@@ -528,8 +529,8 @@ std::vector<OwnerRegistrationControlEntry> LocalDomainAccessController::
 bool LocalDomainAccessController::updateOwnerRegistrationControlEntry(
         const OwnerRegistrationControlEntry& updatedOwnerRce)
 {
-    Q_ASSERT_X(false, "updateOwnerRegistrationControlEntry", "Not implemented yet");
-    Q_UNUSED(updatedOwnerRce);
+    assert(false && "Not implemented yet");
+    std::ignore = updatedOwnerRce;
 
     return false;
 }
@@ -539,10 +540,10 @@ bool LocalDomainAccessController::removeOwnerRegistrationControlEntry(
         const std::string& domain,
         const std::string& interfaceName)
 {
-    Q_ASSERT_X(false, "removeOwnerRegistrationControlEntry", "Not implemented yet");
-    Q_UNUSED(uid);
-    Q_UNUSED(domain);
-    Q_UNUSED(interfaceName);
+    assert(false && "Not implemented yet");
+    std::ignore = uid;
+    std::ignore = domain;
+    std::ignore = interfaceName;
 
     return false;
 }

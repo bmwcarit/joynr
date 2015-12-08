@@ -101,6 +101,33 @@ if(${ENABLE_CLANG_FORMATTER})
     locate_program(clang-format CLANG_FORMAT_PATH)
 endif(${ENABLE_CLANG_FORMATTER})
 
+# include-what-you-use can be used with CMake 3.3.0 and higher
+if("${CMAKE_VERSION}" VERSION_GREATER 3.3.0)
+
+    option(
+        ENABLE_INCLUDE_WHAT_YOU_USE
+        "Use include-what-you-use to identify missing/superfluous includes?"
+        OFF
+    )
+
+    message(STATUS "option ENABLE_INCLUDE_WHAT_YOU_USE=" ${ENABLE_INCLUDE_WHAT_YOU_USE})
+
+    if(${ENABLE_INCLUDE_WHAT_YOU_USE})
+        set(INCLUDE_WHAT_YOU_USE_PATH "INCLUDE_WHAT_YOU_USE_PATH-NOTFOUND" CACHE FILEPATH "Path to 'include-what-you-use' executable")
+        locate_program(include-what-you-use INCLUDE_WHAT_YOU_USE_PATH)
+    endif(${ENABLE_INCLUDE_WHAT_YOU_USE})
+
+set(INCLUDE_WHAT_YOU_USE_OPTIONS "" CACHE STRING "additional options for include-what-you-use")
+
+SET(INCLUDE_WHAT_YOU_USE_PATH_AND_OPTIONS
+    ${INCLUDE_WHAT_YOU_USE_PATH}
+    ${INCLUDE_WHAT_YOU_USE_OPTIONS}
+    )
+
+endif("${CMAKE_VERSION}" VERSION_GREATER 3.3.0)
+
+include(AddIncludeWhatYouUse)
+
 option(
     BUILD_CLUSTER_CONTROLLER
     "Build ClusterController?"

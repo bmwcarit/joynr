@@ -99,6 +99,8 @@ include_directories(
     ${jsonserializer_INCLUDE_DIRECTORIES}
 )
 
+add_include_what_you_use(jsonserializer)
+
 SET(LIB_SUFFIX "" CACHE STRING "Define suffix of directory name (32/64)" )
 SET(LIB_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}" CACHE STRING "Directory where lib will install")
 SET(CMAKE_MODULES_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib/cmake/jsonserializer" CACHE PATH "The directory to install find modules to")

@@ -47,11 +47,11 @@ public:
               const std::string& providerParticipantId,
               std::shared_ptr<InProcessAddress> address)
     {
-        Q_UNUSED(subscriptionManager);
-        Q_UNUSED(publicationManager);
-        Q_UNUSED(proxyParticipantId);
-        Q_UNUSED(providerParticipantId);
-        Q_UNUSED(address);
+        std::ignore = subscriptionManager;
+        std::ignore = publicationManager;
+        std::ignore = proxyParticipantId;
+        std::ignore = providerParticipantId;
+        std::ignore = address;
         notImplemented();
         return 0;
     }

@@ -22,6 +22,7 @@
 #include "joynr/SubscriptionPublication.h"
 
 #include <cassert>
+#include <tuple>
 
 namespace joynr
 {
@@ -45,11 +46,11 @@ void InProcessPublicationSender::sendSubscriptionPublication(
         const MessagingQos& qos,
         const SubscriptionPublication& subscriptionPublication)
 {
-    Q_UNUSED(senderParticipantId); // interface has sourcePartId, because JoynrMessages have a
-                                   // source and dest. partId. Those are not necessary for in
-                                   // process
-    Q_UNUSED(receiverParticipantId);
-    Q_UNUSED(qos);
+    std::ignore = senderParticipantId; // interface has sourcePartId, because JoynrMessages have a
+                                       // source and dest. partId. Those are not necessary for in
+                                       // process
+    std::ignore = receiverParticipantId;
+    std::ignore = qos;
 
     /**
       * just call the InProcessDispatcher!

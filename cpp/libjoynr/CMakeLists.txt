@@ -131,6 +131,8 @@ add_clang_format(
     ${JoynrLib_SOURCES}
 )
 
+add_include_what_you_use(Joynr)
+
 set_target_properties(
     Joynr
     PROPERTIES

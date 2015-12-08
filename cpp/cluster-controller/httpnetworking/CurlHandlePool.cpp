@@ -31,13 +31,14 @@
 #include <QUrl>
 #include <QThread>
 #include <curl/curl.h>
+#include <tuple>
 
 namespace joynr
 {
 
 void* AlwaysNewCurlHandlePool::getHandle(const QString& url)
 {
-    Q_UNUSED(url)
+    std::ignore = url;
     return curl_easy_init();
 }
 

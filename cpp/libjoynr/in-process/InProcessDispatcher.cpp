@@ -20,6 +20,7 @@
 
 #include "joynr/MessagingQos.h"
 #include "joynr/JoynrMessage.h"
+#include <tuple>
 
 namespace joynr
 {
@@ -70,7 +71,7 @@ void InProcessDispatcher::removeRequestCaller(const std::string& participantId)
 
 void InProcessDispatcher::receive(const JoynrMessage& message)
 {
-    Q_UNUSED(message);
+    std::ignore = message;
     LOG_FATAL(logger, "Not implemented");
     assert(false);
 }

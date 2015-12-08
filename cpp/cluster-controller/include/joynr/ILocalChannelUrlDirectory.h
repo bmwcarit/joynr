@@ -21,7 +21,6 @@
 #include <memory>
 #include <functional>
 #include <string>
-#include <QtGlobal>
 #include "joynr/exceptions/JoynrException.h"
 
 namespace joynr

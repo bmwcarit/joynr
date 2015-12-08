@@ -131,6 +131,8 @@ add_clang_format(
     ${JoynrClusterController_SOURCES}
 )
 
+add_include_what_you_use(JoynrClusterController)
+
 set_target_properties(
     JoynrClusterController
     PROPERTIES
