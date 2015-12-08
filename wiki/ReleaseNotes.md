@@ -1,3 +1,14 @@
+#joynr 0.12.2
+
+This is a minor bug fix release.
+
+##API relevant changes
+None.
+
+##Other changes
+* **[C++]** Generated enum throws exception in the getLiteral method in case of an
+  unresolved value.
+
 #joynr 0.12.1
 
 This is a minor bug fix release.

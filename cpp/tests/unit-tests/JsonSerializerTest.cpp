@@ -437,6 +437,7 @@ TEST_F(JsonSerializerTest, serializeDeserializeTypeWithEnumList) {
 
     // Serialize
     QByteArray serializedContent = JsonSerializer::serialize(expectedMac);
+    LOG_DEBUG(logger, "Serialized expectedMac: " + QString(serializedContent));
 
     // Deserialize the result
     infrastructure::DacTypes::QtMasterAccessControlEntry *mac = JsonSerializer::deserialize<infrastructure::DacTypes::QtMasterAccessControlEntry>(serializedContent);
@@ -445,6 +446,31 @@ TEST_F(JsonSerializerTest, serializeDeserializeTypeWithEnumList) {
     EXPECT_EQ(expectedMac, *mac);
 
     delete(mac);
+}
+
+using namespace infrastructure::DacTypes;
+void serializeAndDeserializeQtPermission(const QtPermission::Enum& input, QString inputAsString, joynr_logging::Logger* logger) {
+    // Serialize
+    QString serializedContent(JsonSerializer::serialize(QVariant::fromValue<QtPermission::Enum>(input)));
+    LOG_DEBUG(logger, "Serialized permission for input " + inputAsString + ": " + serializedContent);
+
+    QVariant variant(QVariant::fromValue<QString>(serializedContent.replace(QString("\""), QString())));
+
+    // Deserialize the result and compare
+    EXPECT_EQ(input, joynr::Util::valueOf<QtPermission::Enum>(variant));
+}
+
+TEST_F(JsonSerializerTest, serializeDeserializeTypeEnum) {
+    using namespace infrastructure::DacTypes;
+
+    qRegisterMetaType<QtPermission>();
+    int id = qRegisterMetaType<QtPermission::Enum>("joynr::infrastructure::DacTypes::QtPermission::Enum");
+    QJson::Serializer::registerEnum(
+            id, QtPermission::staticMetaObject.enumerator(0));
+
+    ASSERT_NO_THROW(serializeAndDeserializeQtPermission(QtPermission::NO, "QtPermission::NO", logger));
+
+    ASSERT_ANY_THROW(serializeAndDeserializeQtPermission(static_cast<QtPermission::Enum>(999), "999", logger));
 }
 
 TEST_F(JsonSerializerTest, serialize_operation_with_multiple_params2) {
