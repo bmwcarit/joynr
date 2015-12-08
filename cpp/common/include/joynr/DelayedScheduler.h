@@ -24,7 +24,6 @@
 #include <QThreadPool>
 #include <QRunnable>
 #include <QHash>
-#include <QAtomicInt>
 #include <QMutex>
 #include <QSemaphore>
 #include <QEventLoop>

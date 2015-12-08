@@ -34,7 +34,7 @@
 #include "joynr/TypeUtil.h"
 
 #include <cassert>
-#include <QAtomicInt>
+#include <atomic>
 
 namespace joynr
 {
@@ -67,8 +67,8 @@ public:
     void abort();
 
 private:
-    QAtomicInt counter;
-    QAtomicInt aborted;
+    std::atomic<uint8_t> counter;
+    std::atomic<bool> aborted;
     LocalDomainAccessController& parent;
     std::string domain;
     std::string interfaceName;
@@ -855,16 +855,17 @@ std::string LocalDomainAccessController::createCompoundKey(const std::string& do
 LocalDomainAccessController::Initialiser::Initialiser(LocalDomainAccessController& parent,
                                                       const std::string& domain,
                                                       const std::string& interfaceName)
-        : counter(4), aborted(0), parent(parent), domain(domain), interfaceName(interfaceName)
+        : counter(4), aborted(false), parent(parent), domain(domain), interfaceName(interfaceName)
 // counter == 4, because there are 4 init operations (DRT, MasterACE, MediatorACE, OwnerACE)
 {
 }
 
 void LocalDomainAccessController::Initialiser::update()
 {
-    if (counter.deref() == false) {
+    uint8_t prevValue = counter--;
+    if (prevValue == 1) {
         // Initialisation has finished
-        if (aborted.load() == 1) {
+        if (aborted) {
             parent.abortInitialisation(domain, interfaceName);
         } else {
             parent.initialised(domain, interfaceName);
@@ -874,7 +875,7 @@ void LocalDomainAccessController::Initialiser::update()
 
 void LocalDomainAccessController::Initialiser::abort()
 {
-    aborted.store(1);
+    aborted = true;
     update();
 }
 
