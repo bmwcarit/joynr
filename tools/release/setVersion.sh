@@ -25,7 +25,7 @@ mvn versions:set -o -P android,javascript -DnewVersion=$2
 echo mvn versions:commit -o -P android,javascript
 mvn versions:commit -o -P android,javascript
 
-sed -i '' 's/'$1'/'$2'/g' \
+sed -i '' 's/'$oldVersion'/'$newVersion'/g' \
 cpp/CMakeLists.txt \
 examples/radio-app/CMakeLists.txt \
 android/robolectric-integration-tests/src/test/AndroidManifest.xml \
@@ -37,4 +37,10 @@ java/backend-services/domain-access-controller-servlet/pom.xml \
 javascript/apps/radio-node/package.json \
 javascript/libjoynr-js/src/main/resources/package.json
 
-git add -A && git commit -m "[Release] set version to $newVersion"
+countFoundOldVersions=$(grep -r ${oldVersion} * | grep -v ReleaseNotes | wc -l)
+if (($countFoundOldVersions > 0)); then
+    echo "WARNING: a grep over your workspace emphasised that the oldVersion is still present in some of your resources. Please check manually!"
+    grep -r ${oldVersion} * | grep -v ReleaseNotes
+else
+    git add -A && git commit -m "[Release] set version to $newVersion"
+fi

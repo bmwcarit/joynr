@@ -425,6 +425,7 @@ TEST_F(JsonSerializerTest, serializeDeserializeTypeWithEnumList) {
 
     // Serialize
     std::string serializedContent = JsonSerializer::serialize<infrastructure::DacTypes::MasterAccessControlEntry>(expectedMac);
+    LOG_DEBUG(logger, "Serialized expectedMac: " + TypeUtil::toQt(serializedContent));
 
     // Deserialize the result
     infrastructure::DacTypes::MasterAccessControlEntry *mac = JsonSerializer::deserialize<infrastructure::DacTypes::MasterAccessControlEntry>(serializedContent);
@@ -433,6 +434,26 @@ TEST_F(JsonSerializerTest, serializeDeserializeTypeWithEnumList) {
     EXPECT_EQ(expectedMac, *mac);
 
     delete(mac);
+}
+
+using namespace infrastructure::DacTypes;
+void serializeAndDeserializePermission(const Permission::Enum& input, const std::string& inputAsString, joynr_logging::Logger* logger) {
+    // Serialize
+    std::string serializedContent(JsonSerializer::serialize<Permission::Enum>(input));
+    LOG_DEBUG(logger, "Serialized permission for input " + TypeUtil::toQt(inputAsString) + ": " + TypeUtil::toQt(serializedContent));
+
+    Variant variant = Variant::make<std::string>(serializedContent.substr(1, serializedContent.size()-2 ));
+
+    // Deserialize the result and compare
+    EXPECT_EQ(input, joynr::Util::valueOf<Permission::Enum>(variant));
+}
+
+TEST_F(JsonSerializerTest, serializeDeserializeTypeEnum) {
+    using namespace infrastructure::DacTypes;
+
+    ASSERT_NO_THROW(serializeAndDeserializePermission(Permission::NO, "Permission::NO", logger));
+
+    ASSERT_ANY_THROW(serializeAndDeserializePermission(static_cast<Permission::Enum>(999), "999", logger));
 }
 
 TEST_F(JsonSerializerTest, serialize_operation_with_multiple_params2) {

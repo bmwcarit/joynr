@@ -342,6 +342,20 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         }
         EXPECT_EQ(outputIntLIst, inputIntList);
         EXPECT_EQ(outputIntLIst.at(1), 11);
+
+        // Testing enums
+        testProxy->setEnumAttribute(tests::testTypes::TestEnum::TWO);
+        tests::testTypes::TestEnum::Enum actualEnumAttribute;
+        testProxy->getEnumAttribute(actualEnumAttribute);
+        EXPECT_EQ(actualEnumAttribute, tests::testTypes::TestEnum::TWO);
+        try {
+            testProxy->setEnumAttribute(static_cast<tests::testTypes::TestEnum::Enum>(999));
+            ASSERT_FALSE(true) << "This line of code should never be reached";
+        } catch (joynr::exceptions::MethodInvocationException e) {
+            LOG_DEBUG(logger, TypeUtil::toQt("Expected joynr::exceptions::MethodInvocationException has been thrown. Message: " + e.getMessage()));
+        } catch (std::exception e) {
+            ASSERT_FALSE(true) << "joynr::exceptions::MethodInvocationException is expected, however exception with message " << e.what() << "is thrown";
+        }
     }
 
     // Testing TTL

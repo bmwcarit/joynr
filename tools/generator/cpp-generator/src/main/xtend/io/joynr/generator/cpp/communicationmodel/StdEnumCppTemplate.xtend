@@ -61,6 +61,9 @@ std::string «typeName»::getLiteral(«typeName»::«getNestedEnumName()» «typ
 			break;
 	«ENDFOR»
 	}
+	if (literal.empty()) {
+		throw "«typeName»: No literal found for value \"" + std::to_string(«typeName.toFirstLower»Value) + "\"";
+	}
 	return literal;
 }
 
