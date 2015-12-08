@@ -31,7 +31,7 @@
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 #include "joynr/SubscriptionPublication.h"
-#include "joynr/QtPeriodicSubscriptionQos.h"
+#include "joynr/PeriodicSubscriptionQos.h"
 #include "tests/utils/MockObjects.h"
 
 using ::testing::A;

@@ -255,7 +255,7 @@ void PublicationManager::handleAttributeSubscriptionRequest(
 
         // check for a valid publication end date
         if (!isSubscriptionExpired(qos)) {
-            if (qos->getExpiryDate() != joynr::QtSubscriptionQos::NO_EXPIRY_DATE()) {
+            if (qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
                 publication->publicationEndRunnableHandle = delayedScheduler->schedule(
                         new PublicationEndRunnable(*this, subscriptionId), publicationEndDelay);
                 LOG_DEBUG(
@@ -393,7 +393,7 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
 
         // check for a valid publication end date
         if (!isSubscriptionExpired(qos)) {
-            if (qos->getExpiryDate() != joynr::QtSubscriptionQos::NO_EXPIRY_DATE()) {
+            if (qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
                 publication->publicationEndRunnableHandle = delayedScheduler->schedule(
                         new PublicationEndRunnable(*this, subscriptionId), publicationEndDelay);
                 LOG_DEBUG(

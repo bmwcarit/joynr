@@ -42,8 +42,8 @@
 #include "joynr/tests/testTypes_QtTestEnum.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
-#include "joynr/QtOnChangeSubscriptionQos.h"
-#include "joynr/QtOnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/TypeUtil.h"
 
 #include "joynr/infrastructure/DacTypes_QtMasterAccessControlEntry.h"
 #include "QTime"

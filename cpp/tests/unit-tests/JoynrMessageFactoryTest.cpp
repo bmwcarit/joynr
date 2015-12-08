@@ -27,8 +27,8 @@
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/SubscriptionStop.h"
-#include "joynr/QtOnChangeSubscriptionQos.h"
 #include "joynr/DispatcherUtils.h"
+#include "joynr/OnChangeSubscriptionQos.h"
 #include <chrono>
 #include <stdint.h>
 

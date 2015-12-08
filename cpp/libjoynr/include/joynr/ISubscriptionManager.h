@@ -26,7 +26,6 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/ISubscriptionCallback.h"
-#include "joynr/QtSubscriptionQos.h"
 #include <QString>
 #include <memory>
 

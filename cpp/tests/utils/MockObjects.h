@@ -869,25 +869,25 @@ public:
                      joynr::infrastructure::GlobalDomainAccessControllerDomainRoleEntryChangedBroadcastFilterParameters,
                      std::shared_ptr<joynr::ISubscriptionListener<joynr::infrastructure::DacTypes::DomainRoleEntry,
                                                                  joynr::infrastructure::DacTypes::ChangeType::Enum>>,
-                     std::shared_ptr<joynr::QtOnChangeSubscriptionQos>));
+                     std::shared_ptr<joynr::OnChangeSubscriptionQos>));
     MOCK_METHOD3(subscribeToOwnerAccessControlEntryChangedBroadcast,
                  std::string(
                      joynr::infrastructure::GlobalDomainAccessControllerOwnerAccessControlEntryChangedBroadcastFilterParameters,
                      std::shared_ptr<joynr::ISubscriptionListener<joynr::infrastructure::DacTypes::OwnerAccessControlEntry,
                                                                  joynr::infrastructure::DacTypes::ChangeType::Enum>>,
-                     std::shared_ptr<joynr::QtOnChangeSubscriptionQos>));
+                     std::shared_ptr<joynr::OnChangeSubscriptionQos>));
     MOCK_METHOD3(subscribeToMediatorAccessControlEntryChangedBroadcast,
                  std::string(
                      joynr::infrastructure::GlobalDomainAccessControllerMediatorAccessControlEntryChangedBroadcastFilterParameters,
                      std::shared_ptr<joynr::ISubscriptionListener<joynr::infrastructure::DacTypes::ChangeType::Enum,
                                                                  joynr::infrastructure::DacTypes::MasterAccessControlEntry>>,
-                     std::shared_ptr<joynr::QtOnChangeSubscriptionQos>));
+                     std::shared_ptr<joynr::OnChangeSubscriptionQos>));
     MOCK_METHOD3(subscribeToMasterAccessControlEntryChangedBroadcast,
                  std::string(
                      joynr::infrastructure::GlobalDomainAccessControllerMasterAccessControlEntryChangedBroadcastFilterParameters,
                      std::shared_ptr<joynr::ISubscriptionListener<joynr::infrastructure::DacTypes::ChangeType::Enum,
                                                                  joynr::infrastructure::DacTypes::MasterAccessControlEntry>>,
-                     std::shared_ptr<joynr::QtOnChangeSubscriptionQos>));
+                     std::shared_ptr<joynr::OnChangeSubscriptionQos>));
 
 };
 

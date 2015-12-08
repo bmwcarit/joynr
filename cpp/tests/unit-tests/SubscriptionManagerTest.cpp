@@ -31,8 +31,7 @@
 #include "joynr/TimeUtils.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/Directory.h"
-#include "joynr/QtPeriodicSubscriptionQos.h"
-#include "joynr/QtOnChangeSubscriptionQos.h"
+#include "joynr/PeriodicSubscriptionQos.h"
 #include "joynr/Util.h"
 #include <chrono>
 #include <stdint.h>

@@ -17,36 +17,18 @@
  * #L%
  */
 #include "joynr/SubscriptionUtil.h"
-
-#include "joynr/QtOnChangeSubscriptionQos.h"
-#include "joynr/QtOnChangeWithKeepAliveSubscriptionQos.h"
-#include "joynr/QtPeriodicSubscriptionQos.h"
+#include "joynr/Variant.h"
 #include "joynr/exceptions/JoynrException.h"
+#include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/PeriodicSubscriptionQos.h"
 
 namespace joynr
 {
 
-bool SubscriptionUtil::isOnChangeSubscription(QtSubscriptionQos* qos)
-{
-    return qos->inherits(QtOnChangeSubscriptionQos::staticMetaObject.className()) ||
-           qos->inherits(QtOnChangeWithKeepAliveSubscriptionQos::staticMetaObject.className());
-}
-
 bool SubscriptionUtil::isOnChangeSubscription(const Variant& qos)
 {
     return qos.is<OnChangeWithKeepAliveSubscriptionQos>() || qos.is<OnChangeSubscriptionQos>();
-}
-
-qint64 SubscriptionUtil::getAlertInterval(QtSubscriptionQos* qos)
-{
-    if (qos->inherits(QtPeriodicSubscriptionQos::staticMetaObject.className())) {
-        return (qobject_cast<QtPeriodicSubscriptionQos*>(qos))->getAlertAfterInterval();
-    }
-    if (qos->inherits(QtOnChangeWithKeepAliveSubscriptionQos::staticMetaObject.className())) {
-        return (qobject_cast<QtOnChangeWithKeepAliveSubscriptionQos*>(qos))
-                ->getAlertAfterInterval();
-    }
-    return -1;
 }
 
 int64_t SubscriptionUtil::getAlertInterval(const Variant& qos)
@@ -63,17 +45,6 @@ int64_t SubscriptionUtil::getAlertInterval(const Variant& qos)
     return -1;
 }
 
-qint64 SubscriptionUtil::getMinInterval(QtSubscriptionQos* qos)
-{
-    if (qos->inherits(QtOnChangeSubscriptionQos::staticMetaObject.className())) {
-        return (qobject_cast<QtOnChangeSubscriptionQos*>(qos))->getMinInterval();
-    }
-    if (qos->inherits(QtOnChangeWithKeepAliveSubscriptionQos::staticMetaObject.className())) {
-        return (qobject_cast<QtOnChangeWithKeepAliveSubscriptionQos*>(qos))->getMinInterval();
-    }
-    return -1;
-}
-
 int64_t SubscriptionUtil::getMinInterval(const Variant& qos)
 {
     if (qos.is<OnChangeWithKeepAliveSubscriptionQos>()) {
@@ -84,17 +55,6 @@ int64_t SubscriptionUtil::getMinInterval(const Variant& qos)
     if (qos.is<OnChangeSubscriptionQos>()) {
         const OnChangeSubscriptionQos* subscriptionQosPtr = &qos.get<OnChangeSubscriptionQos>();
         return subscriptionQosPtr->getMinInterval();
-    }
-    return -1;
-}
-
-qint64 SubscriptionUtil::getPeriodicPublicationInterval(QtSubscriptionQos* qos)
-{
-    if (qos->inherits(QtOnChangeWithKeepAliveSubscriptionQos::staticMetaObject.className())) {
-        return (qobject_cast<QtOnChangeWithKeepAliveSubscriptionQos*>(qos))->getMaxInterval();
-    }
-    if (qos->inherits(QtPeriodicSubscriptionQos::staticMetaObject.className())) {
-        return (qobject_cast<QtPeriodicSubscriptionQos*>(qos))->getPeriod();
     }
     return -1;
 }
@@ -130,4 +90,5 @@ Variant SubscriptionUtil::getVariant(const SubscriptionQos& qos)
     throw exceptions::JoynrRuntimeException(
             "Exception in SubscriptionUtil: reference to unknown SubscriptionQos has been sent");
 }
-}
+
+} // namespace joynr

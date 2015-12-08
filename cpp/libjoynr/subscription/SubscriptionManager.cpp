@@ -93,7 +93,7 @@ void SubscriptionManager::registerSubscription(
     int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
     subscriptionRequest.setQos(qosVariant);
     const SubscriptionQos* qos = subscriptionRequest.getSubscriptionQosPtr();
-    if (qos->getExpiryDate() != joynr::QtSubscriptionQos::NO_EXPIRY_DATE() &&
+    if (qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE() &&
         qos->getExpiryDate() < now) {
         throw std::invalid_argument("Subscription ExpiryDate " +
                                     std::to_string(qos->getExpiryDate()) + " in the past. Now: " +

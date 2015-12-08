@@ -47,7 +47,6 @@ class SubscriptionRequestInformation;
 class SubscriptionInformation;
 class IPublicationSender;
 class RequestCaller;
-class QtSubscriptionQos;
 class IBroadcastFilter;
 
 namespace exceptions

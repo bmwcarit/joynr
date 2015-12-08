@@ -23,7 +23,7 @@
 #include "tests/utils/MockObjects.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/JoynrMessageSender.h"
-#include "joynr/QtOnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/tests/TestLocationUpdateSelectiveBroadcastFilterParameters.h"
 
 #include "libjoynr/subscription/SubscriptionBroadcastListener.h"
