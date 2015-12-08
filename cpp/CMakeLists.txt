@@ -384,9 +384,11 @@ include(AddExternalProject)
 AddExternalProject(
     libwebsockets
     GIT_REPOSITORY https://github.com/warmcat/libwebsockets
+    GIT_TAG v1.5-chrome47-firefox41
     TIMEOUT 10
     # Disable svn update
     UPDATE_COMMAND ""
+    PATCH_COMMAND patch -f -d ${CMAKE_BINARY_DIR}/ThirdParty/src/libwebsockets -p1 < ${CMAKE_SOURCE_DIR}/CMake/libwebsockets-FixEmptyExtensions.patch
     # Configure libwebsockets library features
     CMAKE_ARGS  -DLWS_WITH_SSL=0
                 -DLWS_WITHOUT_CLIENT=0

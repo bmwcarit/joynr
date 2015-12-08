@@ -163,6 +163,7 @@ set(
 
 include_directories(
     ${JoynrRuntime_INCLUDE_DIRECTORIES}
+    ${libwebsockets_INCLUDE_DIRS}
     ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
 )
 
