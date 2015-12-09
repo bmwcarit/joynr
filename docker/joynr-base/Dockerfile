@@ -1,7 +1,7 @@
 FROM fedora:21
 
 # set this date to cause all images to be updated
-ENV REFRESHED_AT 2015-26-11
+ENV REFRESHED_AT 2015-09-12
 
 ###################################################
 # set timezone
@@ -21,6 +21,7 @@ RUN yum update -y \
 	expat-devel \
 	file \
 	gcc-c++ \
+	gdb \
 	git \
 	glibc.i686 \
 	icecream \
