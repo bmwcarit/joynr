@@ -162,7 +162,10 @@ bool HttpReceiver::tryToDeleteChannel()
             HttpNetworking::getInstance()->createHttpDeleteBuilder(deleteChannelUrl));
     std::shared_ptr<HttpRequest> deleteChannelRequest(
             deleteChannelRequestBuilder->withTimeout_ms(20 * 1000)->build());
-    LOG_DEBUG(logger, "sending delete channel request to " + deleteChannelUrl);
+    LOG_DEBUG(logger,
+              FormatString("sending delete channel request to %1")
+                      .arg(deleteChannelUrl.toStdString())
+                      .str());
     HttpResult deleteChannelResult = deleteChannelRequest->execute();
     long statusCode = deleteChannelResult.getStatusCode();
     if (statusCode == 200) {
@@ -174,12 +177,13 @@ bool HttpReceiver::tryToDeleteChannel()
 
         return true;
     } else if (statusCode == 204) {
-        LOG_INFO(logger, "channel did not exist: " + QString::number(statusCode));
+        LOG_INFO(logger, FormatString("channel did not exist: %1").arg(statusCode).str());
         return true;
     } else {
         LOG_INFO(logger,
-                 "channel deletion failed with status code: " +
-                         QString::number(deleteChannelResult.getStatusCode()));
+                 FormatString("channel deletion failed with status code: %1")
+                         .arg(deleteChannelResult.getStatusCode())
+                         .str());
         return false;
     }
 }

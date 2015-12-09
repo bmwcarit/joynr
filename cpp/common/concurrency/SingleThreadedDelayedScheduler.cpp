@@ -93,6 +93,6 @@ void joynr::SingleThreadedDelayedScheduler::run()
         }
     }
 
-    LOG_TRACE(logger, QString("End of loop. Terminating"));
+    LOG_TRACE(logger, FormatString("End of loop. Terminating").str());
 }
 } // namespace joynr

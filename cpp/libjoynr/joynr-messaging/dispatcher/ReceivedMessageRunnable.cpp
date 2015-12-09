@@ -36,8 +36,9 @@ ReceivedMessageRunnable::ReceivedMessageRunnable(const JoynrMessage& message,
           dispatcher(dispatcher)
 {
     LOG_DEBUG(logger,
-              "Creating ReceivedMessageRunnable for message type: " +
-                      TypeUtil::toQt(message.getType()));
+              FormatString("Creating ReceivedMessageRunnable for message type: %1")
+                      .arg(message.getType())
+                      .str());
 }
 
 void ReceivedMessageRunnable::shutdown()
@@ -47,11 +48,12 @@ void ReceivedMessageRunnable::shutdown()
 void ReceivedMessageRunnable::run()
 {
     LOG_DEBUG(logger,
-              QString("Running ReceivedMessageRunnable for message type: %1, msg ID: %2 and "
-                      "payload: %3")
-                      .arg(TypeUtil::toQt(message.getType()))
-                      .arg(TypeUtil::toQt(message.getHeaderMessageId()))
-                      .arg(QString::fromStdString(message.getPayload())));
+              FormatString("Running ReceivedMessageRunnable for message type: %1, msg ID: %2 and "
+                           "payload: %3")
+                      .arg(message.getType())
+                      .arg(message.getHeaderMessageId())
+                      .arg(message.getPayload())
+                      .str());
     if (isExpired()) {
         LOG_DEBUG(logger, "Dropping ReceivedMessageRunnable message, because it is expired: ");
         return;
@@ -74,7 +76,7 @@ void ReceivedMessageRunnable::run()
     } else if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP) {
         dispatcher.handleSubscriptionStopReceived(message);
     } else {
-        LOG_FATAL(logger, "unknown message type: " + TypeUtil::toQt(message.getType()));
+        LOG_FATAL(logger, FormatString("unknown message type: %1").arg(message.getType()).str());
         assert(false);
     }
 }

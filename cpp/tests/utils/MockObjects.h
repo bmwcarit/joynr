@@ -905,7 +905,7 @@ public:
                      std::shared_ptr<joynr::LocalDomainAccessController::IGetConsumerPermissionCallback> callback));
 
     MOCK_METHOD5(getConsumerPermission,
-                 joynr::infrastructure::DacTypes::QtPermission::Enum(
+                 joynr::infrastructure::DacTypes::Permission::Enum(
                      const std::string& userId,
                      const std::string& domain,
                      const std::string& interfaceName,

@@ -64,7 +64,7 @@ void MyRadioHelper::pressQToContinue()
 
 void MyRadioHelper::prettyLog(joynr_logging::Logger* logger, const QString& message)
 {
-    LOG_INFO(logger, QString("--------------------------------------------------"));
-    LOG_INFO(logger, message);
-    LOG_INFO(logger, QString("--------------------------------------------------"));
+    LOG_INFO(logger, "--------------------------------------------------");
+    LOG_INFO(logger, message.toStdString());
+    LOG_INFO(logger, "--------------------------------------------------");
 }

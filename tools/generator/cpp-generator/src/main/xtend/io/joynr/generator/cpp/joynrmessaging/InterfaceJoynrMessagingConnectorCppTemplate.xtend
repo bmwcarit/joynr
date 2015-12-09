@@ -319,7 +319,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 						subscriptionCallback,
 						SubscriptionUtil::getVariant(subscriptionQos),
 						subscriptionRequest);
-			LOG_DEBUG(logger, subscriptionRequest.toQString());
+			LOG_DEBUG(logger, subscriptionRequest.toQString().toStdString());
 			joynrMessageSender->sendSubscriptionRequest(
 						proxyParticipantId,
 						providerParticipantId,
@@ -492,7 +492,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 					subscriptionCallback,
 					Variant::make<OnChangeSubscriptionQos>(subscriptionQos),
 					subscriptionRequest);
-		LOG_DEBUG(logger, subscriptionRequest.toQString());
+		LOG_DEBUG(logger, subscriptionRequest.toQString().toStdString());
 		joynrMessageSender->sendBroadcastSubscriptionRequest(
 					proxyParticipantId,
 					providerParticipantId,

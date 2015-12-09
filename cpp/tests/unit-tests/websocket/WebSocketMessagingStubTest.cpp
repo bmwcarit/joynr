@@ -49,16 +49,16 @@ public:
         if(server.listen(QHostAddress::Any)) {
             LOG_DEBUG(
                         logger,
-                        QString("server listening on %0:%1")
-                            .arg(server.serverAddress().toString())
-                            .arg(server.serverPort())
+                        joynr::FormatString("server listening on %1:%2")
+                            .arg(server.serverAddress().toString().toStdString())
+                            .arg(server.serverPort()).str()
             );
             connect(
                     &server, &QWebSocketServer::newConnection,
                     this, &WebSocketMessagingStubTest::onNewConnection
             );
         } else {
-            LOG_ERROR(logger, QStringLiteral("unable to start WebSocket server"));
+            LOG_ERROR(logger, "unable to start WebSocket server");
         }
     }
 
@@ -83,17 +83,17 @@ public:
                     QString()
         );
         QUrl url(joynr::WebSocketMessagingStubFactory::convertWebSocketAddressToUrl(*serverAddress));
-        LOG_DEBUG(logger, QString("server URL: %0").arg(url.toString()));
+        LOG_DEBUG(logger, joynr::FormatString("server URL: %1").arg(url.toString().toStdString()).str());
         webSocket->open(url);
 
         // waiting until the web socket is connected
         QString webSocketState;
         QDebug(&webSocketState) << "WebSocket state: " << webSocket->state();
-        LOG_DEBUG(logger, webSocketState);
+        LOG_DEBUG(logger, webSocketState.toStdString());
         webSocketConnectedSignalSpy.wait();
         webSocketState.clear();
         QDebug(&webSocketState) << "WebSocket state: " << webSocket->state();
-        LOG_DEBUG(logger, webSocketState);
+        LOG_DEBUG(logger, webSocketState.toStdString());
     }
     virtual void TearDown() {}
 
@@ -102,7 +102,7 @@ Q_SIGNALS:
 
 public Q_SLOTS:
     void onNewConnection() {
-        LOG_TRACE(logger, QStringLiteral("on new connection"));
+        LOG_TRACE(logger, "on new connection");
         QWebSocket* client = server.nextPendingConnection();
 
         connect(
@@ -116,7 +116,7 @@ public Q_SLOTS:
     }
 
     void onDisconnected() {
-        LOG_TRACE(logger, QStringLiteral("on disconnected"));
+        LOG_TRACE(logger, "on disconnected");
         QWebSocket* client = qobject_cast<QWebSocket*>(sender());
         if(client) {
             client->deleteLater();
@@ -131,7 +131,7 @@ protected:
 };
 
 TEST_F(WebSocketMessagingStubTest, emitsClosedSignal) {
-    LOG_TRACE(logger, QStringLiteral("emits closed signal"));
+    LOG_TRACE(logger, "emits closed signal");
 
     // create messaging stub
     joynr::WebSocketMessagingStub messagingStub(serverAddress, webSocket);
@@ -152,7 +152,7 @@ TEST_F(WebSocketMessagingStubTest, emitsClosedSignal) {
 }
 
 TEST_F(WebSocketMessagingStubTest, transmitMessage) {
-    LOG_TRACE(logger, QStringLiteral("transmit message"));
+    LOG_TRACE(logger, "transmit message");
     QSignalSpy textMessageReceivedSignalSpy(this, SIGNAL(textMessageReceived(QString)));
 
     // send message using messaging stub

@@ -152,24 +152,32 @@ void SystemServicesSettings::checkSettings() const
 void SystemServicesSettings::printSettings() const
 {
     LOG_DEBUG(logger,
-              "SETTING: " + TypeUtil::toQt(SETTING_DOMAIN()) + " = " +
-                      TypeUtil::toQt(settings.get<std::string>(SETTING_DOMAIN())));
+              FormatString("SETTING: %1 = %2")
+                      .arg(SETTING_DOMAIN())
+                      .arg(settings.get<std::string>(SETTING_DOMAIN()))
+                      .str());
     LOG_DEBUG(logger,
-              "SETTING: " + TypeUtil::toQt(SETTING_CC_ROUTINGPROVIDER_AUTHENTICATIONTOKEN()) +
-                      " = " + TypeUtil::toQt(settings.get<std::string>(
-                                      SETTING_CC_ROUTINGPROVIDER_AUTHENTICATIONTOKEN())));
+              FormatString("SETTING: %1 = %2")
+                      .arg(SETTING_CC_ROUTINGPROVIDER_AUTHENTICATIONTOKEN())
+                      .arg(settings.get<std::string>(
+                              SETTING_CC_ROUTINGPROVIDER_AUTHENTICATIONTOKEN()))
+                      .str());
     LOG_DEBUG(logger,
-              "SETTING: " + TypeUtil::toQt(SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID()) + " = " +
-                      TypeUtil::toQt(settings.get<std::string>(
-                              SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID())));
+              FormatString("SETTING: %1 = %2")
+                      .arg(SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID())
+                      .arg(settings.get<std::string>(SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID()))
+                      .str());
     LOG_DEBUG(logger,
-              "SETTING: " + TypeUtil::toQt(SETTING_CC_DISCOVERYPROVIDER_AUTHENTICATIONTOKEN()) +
-                      " = " + TypeUtil::toQt(settings.get<std::string>(
-                                      SETTING_CC_DISCOVERYPROVIDER_AUTHENTICATIONTOKEN())));
+              FormatString("SETTING: %1 = %2")
+                      .arg(SETTING_CC_DISCOVERYPROVIDER_AUTHENTICATIONTOKEN())
+                      .arg(settings.get<std::string>(
+                              SETTING_CC_DISCOVERYPROVIDER_AUTHENTICATIONTOKEN()))
+                      .str());
     LOG_DEBUG(logger,
-              "SETTING: " + TypeUtil::toQt(SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID()) + " = " +
-                      TypeUtil::toQt(settings.get<std::string>(
-                              SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID())));
+              FormatString("SETTING: %1 = %2")
+                      .arg(SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID())
+                      .arg(settings.get<std::string>(SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID()))
+                      .str());
 }
 
 } // namespace joynr

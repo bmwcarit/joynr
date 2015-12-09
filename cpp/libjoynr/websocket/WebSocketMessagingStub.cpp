@@ -58,28 +58,38 @@ WebSocketMessagingStub::~WebSocketMessagingStub()
 
 void WebSocketMessagingStub::onSocketDisconnected()
 {
-    LOG_DEBUG(logger, QString("Web Socket disconnected: %0").arg(address->toString()));
+    LOG_DEBUG(logger,
+              FormatString("Web Socket disconnected: %1")
+                      .arg(address->toString().toStdString())
+                      .str());
     emit closed(*address);
 }
 
 void WebSocketMessagingStub::sendTextMessage(const QString& message)
 {
-    LOG_TRACE(
-            logger, QString("OUTGOING\nmessage: %0\nto: %1").arg(message).arg(address->toString()));
+    LOG_TRACE(logger,
+              FormatString("OUTGOING\nmessage: %1\nto: %2")
+                      .arg(message.toStdString())
+                      .arg(address->toString().toStdString())
+                      .str());
     qint64 bytesSent = webSocket->sendTextMessage(message);
     bool flushed = webSocket->flush();
     LOG_TRACE(logger,
-              QString("bytes actually sent (%0): %1 of %2").arg(flushed).arg(bytesSent).arg(
-                      message.size()));
+              FormatString("bytes actually sent (%1): %2 of %3")
+                      .arg(flushed)
+                      .arg(bytesSent)
+                      .arg(message.size())
+                      .str());
 }
 
 void WebSocketMessagingStub::transmit(JoynrMessage& message)
 {
     if (!webSocket->isValid()) {
         LOG_ERROR(logger,
-                  QString("WebSocket not ready %0. Unable to send message %1.")
-                          .arg(address->toString())
-                          .arg(QString::fromStdString(JsonSerializer::serialize(message))));
+                  FormatString("WebSocket not ready %1. Unable to send message %2.")
+                          .arg(address->toString().toStdString())
+                          .arg(JsonSerializer::serialize(message))
+                          .str());
         return;
     }
 

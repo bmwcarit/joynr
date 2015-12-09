@@ -86,10 +86,10 @@ public:
             const uint64_t now_ms = TimeUtils::getCurrentMillisSinceEpoch();
             const uint64_t diff_ms = (now_ms > est_ms) ? now_ms - est_ms : est_ms - now_ms;
 
-            LOG_TRACE(DelayedSchedulerTest::logger, QString("Runnable %0 is available").arg((quintptr)runnable, QT_POINTER_SIZE * 2, 16, QChar('0')));
-            LOG_TRACE(DelayedSchedulerTest::logger, QString(" ETA        : %1").arg(est_ms));
-            LOG_TRACE(DelayedSchedulerTest::logger, QString(" current    : %1").arg(now_ms));
-            LOG_TRACE(DelayedSchedulerTest::logger, QString(" difference : %1").arg(diff_ms));
+            LOG_TRACE(DelayedSchedulerTest::logger, FormatString("Runnable is available").str());
+            LOG_TRACE(DelayedSchedulerTest::logger, FormatString(" ETA        : %1").arg(est_ms).str());
+            LOG_TRACE(DelayedSchedulerTest::logger, FormatString(" current    : %1").arg(now_ms).str());
+            LOG_TRACE(DelayedSchedulerTest::logger, FormatString(" difference : %1").arg(diff_ms).str());
 
             if (diff_ms <= timerAccuracy_ms)
             {

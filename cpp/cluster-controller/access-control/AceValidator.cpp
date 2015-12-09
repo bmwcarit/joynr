@@ -19,16 +19,17 @@
 
 #include "AceValidator.h"
 
-#include <QSet>
+#include <set>
+#include <algorithm>
 
 namespace joynr
 {
 
 using namespace infrastructure::DacTypes;
 
-AceValidator::AceValidator(const Optional<QtMasterAccessControlEntry>& masterAceOptional,
-                           const Optional<QtMasterAccessControlEntry>& mediatorAceOptional,
-                           const Optional<QtOwnerAccessControlEntry>& ownerAceOptional)
+AceValidator::AceValidator(const Optional<MasterAccessControlEntry>& masterAceOptional,
+                           const Optional<MasterAccessControlEntry>& mediatorAceOptional,
+                           const Optional<OwnerAccessControlEntry>& ownerAceOptional)
         : masterAceOptional(masterAceOptional),
           mediatorAceOptional(mediatorAceOptional),
           ownerAceOptional(ownerAceOptional)
@@ -67,32 +68,31 @@ bool AceValidator::isMediatorValid()
         return true;
     }
 
-    QtMasterAccessControlEntry masterAce = masterAceOptional.getValue();
-    QtMasterAccessControlEntry mediatorAce = mediatorAceOptional.getValue();
+    MasterAccessControlEntry masterAce = masterAceOptional.getValue();
+    MasterAccessControlEntry mediatorAce = mediatorAceOptional.getValue();
+
     bool isMediatorValid = true;
-    if (!masterAce.getPossibleConsumerPermissions().contains(
-                mediatorAce.getDefaultConsumerPermission())) {
+
+    auto masterPossiblePermissions = vectorToSet(masterAce.getPossibleConsumerPermissions());
+    if (!masterPossiblePermissions.count(mediatorAce.getDefaultConsumerPermission())) {
         isMediatorValid = false;
     } else {
         // Convert the lists to sets so that intersections can be easily calculated
-        QSet<QtPermission::Enum> masterPossiblePermissions =
-                masterAce.getPossibleConsumerPermissions().toSet();
-        QSet<QtPermission::Enum> mediatorPossiblePermissions =
-                mediatorAce.getPossibleConsumerPermissions().toSet();
-        if (!masterPossiblePermissions.contains(mediatorPossiblePermissions)) {
+        auto mediatorPossiblePermissions =
+                vectorToSet(mediatorAce.getPossibleConsumerPermissions());
+        if (!setContainsSet(masterPossiblePermissions, mediatorPossiblePermissions)) {
             isMediatorValid = false;
         }
     }
-    if (!masterAce.getPossibleRequiredTrustLevels().contains(
-                mediatorAce.getDefaultRequiredTrustLevel())) {
+
+    auto masterPossibleTrustLevels = vectorToSet(masterAce.getPossibleRequiredTrustLevels());
+    if (!masterPossibleTrustLevels.count(mediatorAce.getDefaultRequiredTrustLevel())) {
         isMediatorValid = false;
     } else {
         // Convert the lists to sets so that intersections can be easily calculated
-        QSet<QtTrustLevel::Enum> masterPossibleTrustLevels =
-                masterAce.getPossibleRequiredTrustLevels().toSet();
-        QSet<QtTrustLevel::Enum> mediatorPossibleTrustLevels =
-                mediatorAce.getPossibleRequiredTrustLevels().toSet();
-        if (!masterPossibleTrustLevels.contains(mediatorPossibleTrustLevels)) {
+        auto mediatorPossibleTrustLevels =
+                vectorToSet(mediatorAce.getPossibleRequiredTrustLevels());
+        if (!setContainsSet(masterPossibleTrustLevels, mediatorPossibleTrustLevels)) {
             isMediatorValid = false;
         }
     }
@@ -100,19 +100,19 @@ bool AceValidator::isMediatorValid()
     return isMediatorValid;
 }
 
-bool AceValidator::validateOwner(QtMasterAccessControlEntry targetMasterAce)
+bool AceValidator::validateOwner(MasterAccessControlEntry targetMasterAce)
 {
     if (!ownerAceOptional) {
         return true;
     }
 
-    QtOwnerAccessControlEntry ownerAce = ownerAceOptional.getValue();
+    OwnerAccessControlEntry ownerAce = ownerAceOptional.getValue();
     bool isValid = true;
-    if (!targetMasterAce.getPossibleConsumerPermissions().contains(
-                ownerAce.getConsumerPermission())) {
+    auto&& possibleConsumerPermissions = targetMasterAce.getPossibleConsumerPermissions();
+    auto&& possibleRequiredTrustLevels = targetMasterAce.getPossibleRequiredTrustLevels();
+    if (!vectorContains(possibleConsumerPermissions, ownerAce.getConsumerPermission())) {
         isValid = false;
-    } else if (!targetMasterAce.getPossibleRequiredTrustLevels().contains(
-                       ownerAce.getRequiredTrustLevel())) {
+    } else if (!vectorContains(possibleRequiredTrustLevels, ownerAce.getRequiredTrustLevel())) {
         isValid = false;
     }
 

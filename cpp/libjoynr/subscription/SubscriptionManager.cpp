@@ -83,7 +83,9 @@ void SubscriptionManager::registerSubscription(
 {
     // Register the subscription
     QString subscriptionId = QString::fromStdString(subscriptionRequest.getSubscriptionId());
-    LOG_DEBUG(logger, "Subscription registered. ID=" + subscriptionId);
+    LOG_DEBUG(
+            logger,
+            FormatString("Subscription registered. ID=%1").arg(subscriptionId.toStdString()).str());
 
     if (subscriptions.contains(subscriptionId)) {
         // pre-existing subscription: remove it first from the internal data structure
@@ -142,7 +144,10 @@ void SubscriptionManager::unregisterSubscription(const QString& subscriptionId)
 {
     if (subscriptions.contains(subscriptionId)) {
         std::shared_ptr<Subscription> subscription(subscriptions.take(subscriptionId));
-        LOG_DEBUG(logger, "Called unregister / unsubscribe on subscription id= " + subscriptionId);
+        LOG_DEBUG(logger,
+                  FormatString("Called unregister / unsubscribe on subscription id= %1")
+                          .arg(subscriptionId.toStdString())
+                          .str());
         std::lock_guard<std::recursive_mutex> subscriptionLocker(subscription->mutex);
         subscription->isStopped = true;
         if (subscription->subscriptionEndRunnableHandle !=
@@ -158,8 +163,10 @@ void SubscriptionManager::unregisterSubscription(const QString& subscriptionId)
         }
     } else {
         LOG_DEBUG(logger,
-                  "Called unregister on a non/no longer existent subscription, used id= " +
-                          subscriptionId);
+                  FormatString(
+                          "Called unregister on a non/no longer existent subscription, used id= %1")
+                          .arg(subscriptionId.toStdString())
+                          .str());
     }
 }
 
@@ -221,7 +228,10 @@ void SubscriptionManager::checkMissedPublication(
 
 void SubscriptionManager::touchSubscriptionState(const QString& subscriptionId)
 {
-    LOG_DEBUG(logger, "Touching subscription state for id=" + subscriptionId);
+    LOG_DEBUG(logger,
+              FormatString("Touching subscription state for id=%1")
+                      .arg(subscriptionId.toStdString())
+                      .str());
     if (!subscriptions.contains(subscriptionId)) {
         return;
     }
@@ -236,10 +246,15 @@ void SubscriptionManager::touchSubscriptionState(const QString& subscriptionId)
 std::shared_ptr<ISubscriptionCallback> SubscriptionManager::getSubscriptionCallback(
         const QString& subscriptionId)
 {
-    LOG_DEBUG(logger, "Getting subscription callback for subscription id=" + subscriptionId);
+    LOG_DEBUG(logger,
+              FormatString("Getting subscription callback for subscription id=%1")
+                      .arg(subscriptionId.toStdString())
+                      .str());
     if (!subscriptions.contains(subscriptionId)) {
         LOG_DEBUG(logger,
-                  "Trying to acces a non existing subscription callback for id=" + subscriptionId);
+                  FormatString("Trying to acces a non existing subscription callback for id=%1")
+                          .arg(subscriptionId.toStdString())
+                          .str());
         return std::shared_ptr<ISubscriptionCallback>();
     }
 
@@ -300,8 +315,10 @@ void SubscriptionManager::MissedPublicationRunnable::run()
     std::lock_guard<std::recursive_mutex> subscriptionLocker(subscription->mutex);
 
     if (!isExpired() && !subscription->isStopped) {
-        LOG_DEBUG(
-                logger, "Running MissedPublicationRunnable for subscription id= " + subscriptionId);
+        LOG_DEBUG(logger,
+                  FormatString("Running MissedPublicationRunnable for subscription id= %1")
+                          .arg(subscriptionId.toStdString())
+                          .str());
         qint64 delay = 0;
         int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
         qint64 timeSinceLastPublication = now - subscription->timeOfLastPublication;
@@ -318,7 +335,9 @@ void SubscriptionManager::MissedPublicationRunnable::run()
             delay = alertAfterInterval - timeSinceLastExpectedPublication(timeSinceLastPublication);
         }
         LOG_DEBUG(logger,
-                  "Rescheduling MissedPublicationRunnable with delay: " + QString::number(delay));
+                  FormatString("Rescheduling MissedPublicationRunnable with delay: %1")
+                          .arg(delay)
+                          .str());
         subscription->missedPublicationRunnableHandle =
                 subscriptionManager.missedPublicationScheduler->schedule(
                         new MissedPublicationRunnable(decayTime,
@@ -329,9 +348,10 @@ void SubscriptionManager::MissedPublicationRunnable::run()
                                                       alertAfterInterval),
                         delay);
     } else {
-        LOG_DEBUG(
-                logger,
-                "Publication expired / interrupted. Expiring on subscription id=" + subscriptionId);
+        LOG_DEBUG(logger,
+                  FormatString("Publication expired / interrupted. Expiring on subscription id=%1")
+                          .arg(subscriptionId.toStdString())
+                          .str());
     }
 }
 
@@ -359,9 +379,14 @@ void SubscriptionManager::SubscriptionEndRunnable::shutdown()
 
 void SubscriptionManager::SubscriptionEndRunnable::run()
 {
-    LOG_DEBUG(logger, "Running SubscriptionEndRunnable for subscription id= " + subscriptionId);
     LOG_DEBUG(logger,
-              "Publication expired / interrupted. Expiring on subscription id=" + subscriptionId);
+              FormatString("Running SubscriptionEndRunnable for subscription id= %1")
+                      .arg(subscriptionId.toStdString())
+                      .str());
+    LOG_DEBUG(logger,
+              FormatString("Publication expired / interrupted. Expiring on subscription id=%1")
+                      .arg(subscriptionId.toStdString())
+                      .str());
     subscriptionManager.unregisterSubscription(subscriptionId);
 }
 

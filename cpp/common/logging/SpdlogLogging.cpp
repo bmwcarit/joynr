@@ -23,7 +23,7 @@
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/sink.h"
 
-#include <QString>
+#include <string>
 #include <unordered_map>
 #include <mutex>
 
@@ -50,13 +50,14 @@ public:
      * @param className
      * @return
      */
-    virtual joynr_logging::Logger* getLogger(const QString contextId, const QString className);
+    virtual joynr_logging::Logger* getLogger(const std::string contextId,
+                                             const std::string className);
     /**
      * @brief destroyLogger
      * @param contextId
      * @param className
      */
-    virtual void destroyLogger(const QString contextId, const QString className);
+    virtual void destroyLogger(const std::string contextId, const std::string className);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(SpdlogLogging);
@@ -77,7 +78,7 @@ public:
      * @brief SpdlogLogger constructs logger marked with given prefix
      * @param prefix unique logger id
      */
-    explicit SpdlogLogger(const QString& prefix);
+    SpdlogLogger(const std::string& prefix);
     /**
      * @brief log
      * @param logLevel
@@ -89,7 +90,7 @@ public:
      * @param logLevel
      * @param message as const string ref
      */
-    virtual void log(joynr_logging::LogLevel logLevel, const QString& message);
+    virtual void log(joynr_logging::LogLevel logLevel, const std::string& message);
 
 private:
     void configureLogger();
@@ -105,22 +106,23 @@ void SpdlogLogging::shutdown()
 {
 }
 
-joynr_logging::Logger* SpdlogLogging::getLogger(const QString contextId, const QString className)
+joynr_logging::Logger* SpdlogLogging::getLogger(const std::string contextId,
+                                                const std::string className)
 {
-    std::string prefix = contextId.toStdString() + "-" + className.toStdString();
+    std::string prefix = contextId + "-" + className;
     if (loggers.find(prefix) == loggers.end()) {
         std::lock_guard<std::mutex> lock(loggerMutex);
         if (loggers.find(prefix) == loggers.end()) {
-            loggers.insert({prefix, new SpdlogLogger(QString::fromStdString(prefix))});
+            loggers.insert({prefix, new SpdlogLogger(prefix)});
         }
     }
 
     return loggers.find(prefix)->second;
 }
 
-void SpdlogLogging::destroyLogger(const QString contextId, const QString className)
+void SpdlogLogging::destroyLogger(const std::string contextId, const std::string className)
 {
-    std::string prefix = contextId.toStdString() + " - " + className.toStdString();
+    std::string prefix = FormatString("%1 - %2").arg(contextId).arg(className).str();
     std::lock_guard<std::mutex> lock(loggerMutex);
     if (loggers.find(prefix) == loggers.end()) {
         return;
@@ -130,10 +132,10 @@ void SpdlogLogging::destroyLogger(const QString contextId, const QString classNa
     loggers.erase(prefix);
 }
 
-SpdlogLogger::SpdlogLogger(const QString& prefix) : logger(nullptr)
+SpdlogLogger::SpdlogLogger(const std::string& prefix) : logger(nullptr)
 {
     // create logger
-    logger = spdlog::stdout_logger_mt(prefix.toStdString());
+    logger = spdlog::stdout_logger_mt(prefix);
 
     // configure logger
     configureLogger();
@@ -163,9 +165,9 @@ void SpdlogLogger::log(joynr_logging::LogLevel logLevel, const char* message)
     }
 }
 
-void SpdlogLogger::log(joynr_logging::LogLevel logLevel, const QString& message)
+void SpdlogLogger::log(joynr_logging::LogLevel logLevel, const std::string& message)
 {
-    this->log(logLevel, message.toStdString().c_str());
+    this->log(logLevel, message.c_str());
 }
 
 void SpdlogLogger::configureLogger()

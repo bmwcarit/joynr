@@ -42,8 +42,7 @@ void DbusMessagingSkeleton::transmit(joynr::messaging::IMessaging::JoynrMessage 
     DbusMessagingUtil::copyDbusMsgToJoynrMsg(message, joynrMessage);
     // callback
     LOG_INFO(logger,
-             QString("transmit incoming message: %1")
-                     .arg(TypeUtil::toQt(joynrMessage.getHeaderMessageId())));
+             FormatString("transmit incoming message: %1").arg(joynrMessage.getHeaderMessageId()).str());
     callBack.transmit(joynrMessage);
 }
 

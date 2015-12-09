@@ -112,8 +112,9 @@ public:
             : error(NULL), status(RequestStatusCode::IN_PROGRESS), results(), resultReceived(0)
     {
         LOG_INFO(logger,
-                 QString("resultReceived.getStatus():") +
-                         QString::number(resultReceived.getStatus()));
+                 FormatString("resultReceived.getStatus():%1")
+                         .arg(resultReceived.getStatus())
+                         .str());
     }
 
     /** @brief ResultCopier helper to copy tuple entries to function arguments */
@@ -232,8 +233,9 @@ public:
     void wait()
     {
         LOG_INFO(logger,
-                 QString("resultReceived.getStatus():") +
-                         QString::number(resultReceived.getStatus()));
+                 FormatString("resultReceived.getStatus():%1")
+                         .arg(resultReceived.getStatus())
+                         .str());
         resultReceived.wait();
         resultReceived.notify();
     }

@@ -34,8 +34,10 @@ TrackableObject::TrackableObject()
     QString address;
     address.sprintf("%p", this);
     LOG_TRACE(logger,
-              "Creating Traceable Object at QtAddress " + address + " Now we have " +
-                      QString::number(instances) + " instances.");
+              FormatString("Creating Traceable Object at QtAddress %1 Now we have %2 instances.")
+                      .arg(address.toStdString())
+                      .arg(instances)
+                      .str());
 }
 
 TrackableObject::~TrackableObject()
@@ -44,8 +46,10 @@ TrackableObject::~TrackableObject()
     QString address;
     address.sprintf("%p", this);
     LOG_TRACE(logger,
-              "Deleting Traceable Object at QtAddress " + address + " Now we have " +
-                      QString::number(instances) + " instances.");
+              FormatString("Deleting Traceable Object at QtAddress %1 Now we have %2 instances.")
+                      .arg(address.toStdString())
+                      .arg(instances)
+                      .str());
 }
 
 int TrackableObject::getInstances()

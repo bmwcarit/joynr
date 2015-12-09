@@ -443,10 +443,11 @@ void LocalCapabilitiesDirectory::lookup(
     std::vector<CapabilityEntry> capabilities = future->get();
     if (capabilities.size() > 1) {
         LOG_ERROR(logger,
-                  QString("participantId %1 has more than 1 capability entry:\n %2\n %3")
-                          .arg(QString::fromStdString(participantId))
-                          .arg(capabilities[0].toString())
-                          .arg(capabilities[1].toString()));
+                  FormatString("participantId %1 has more than 1 capability entry:\n %2\n %3")
+                          .arg(participantId)
+                          .arg(capabilities[0].toString().toStdString())
+                          .arg(capabilities[1].toString().toStdString())
+                          .str());
     }
 
     types::DiscoveryEntry result;

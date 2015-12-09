@@ -33,8 +33,9 @@ int main(int argc, char* argv[])
     // Check the usage
     QString programName(argv[0]);
     if (argc == 1) {
-        LOG_INFO(logger, QString("USAGE: No settings provided. Starting with default settings."));
-        LOG_INFO(logger, QString("USAGE: %1 <file.settings>...").arg(programName));
+        LOG_INFO(logger, "USAGE: No settings provided. Starting with default settings.");
+        LOG_INFO(logger,
+                 FormatString("USAGE: %1 <file.settings>...").arg(programName.toStdString()).str());
     }
 
     // Object that holds all the settings
@@ -46,14 +47,15 @@ int main(int argc, char* argv[])
         std::string settingsFileName(argv[i]);
 
         // Read the settings file
-        LOG_INFO(logger, QString("Loading settings file: %1").arg(settingsFileName.c_str()));
+        LOG_INFO(logger, FormatString("Loading settings file: %1").arg(settingsFileName).str());
         Settings currentSettings(settingsFileName);
 
         // Check for errors
         if (!currentSettings.isLoaded()) {
             LOG_FATAL(logger,
-                      QString("Settings file \"%1\" doesn't exist or cannot be read.")
-                              .arg(settingsFileName.c_str()));
+                      FormatString("Settings file \"%1\" doesn't exist.")
+                              .arg(settingsFileName)
+                              .str());
             return 1;
         }
 

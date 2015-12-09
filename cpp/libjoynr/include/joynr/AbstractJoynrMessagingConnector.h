@@ -76,18 +76,18 @@ public:
         if (cached) {
             Variant entry = cache->lookUp(attributeID);
             if (entry.isEmpty()) {
-                LOG_DEBUG(
-                        logger,
-                        QString::fromStdString("Cached value for " + methodName + " is not valid"));
+                LOG_DEBUG(logger,
+                          FormatString("Cached value for %1 is not valid").arg(methodName).str());
             } else if (!entry.is<T>()) {
                 LOG_DEBUG(logger,
-                          QString::fromStdString("Cached value for " + methodName +
-                                                 " cannot be converted to type T"));
+                          FormatString("Cached value for %1 cannot be converted to type T")
+                                  .arg(methodName)
+                                  .str());
                 assert(false);
             } else {
                 LOG_DEBUG(
                         logger,
-                        QString::fromStdString("Returning cached value for method " + methodName));
+                        FormatString("Returning cached value for method %1").arg(methodName).str());
                 std::shared_ptr<ReplyCaller<T>> typedReplyCaller =
                         std::dynamic_pointer_cast<ReplyCaller<T>>(replyCaller);
                 typedReplyCaller->returnValue(entry.get<T>());

@@ -229,7 +229,7 @@ void «interfaceName»RequestInterpreter::execute(
 		«ENDFOR»
 	«ENDIF»
 
-	LOG_FATAL(logger, "unknown method name for interface «interfaceName»: " + TypeUtil::toQt(methodName));
+	LOG_FATAL(logger, FormatString("unknown method name for interface «interfaceName»: %1").arg(methodName).str());
 	assert(false);
 	onError(exceptions::MethodInvocationException("unknown method name for interface «interfaceName»: " + methodName));
 }

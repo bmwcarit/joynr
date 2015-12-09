@@ -20,8 +20,6 @@
 #include "joynr/Settings.h"
 #include "joynr/joynrlogging.h"
 
-#include <QString> // Needed for getLogger()
-
 namespace joynr
 {
 
@@ -87,11 +85,12 @@ void LibjoynrSettings::setParticipantIdsPersistenceFilename(const std::string& f
 
 void LibjoynrSettings::printSettings() const
 {
-    LOG_DEBUG(logger,
-              QString::fromUtf8("SETTING: ") +
-                      QString::fromStdString(SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME()) +
-                      " = " + QString::fromStdString(settings.get<std::string>(
-                                      SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME())));
+    LOG_DEBUG(
+            logger,
+            FormatString("SETTING: %1 = %2")
+                    .arg(SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME())
+                    .arg(settings.get<std::string>(SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME()))
+                    .str());
 }
 
 } // namespace joynr

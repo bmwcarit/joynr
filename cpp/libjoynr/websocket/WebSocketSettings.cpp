@@ -85,7 +85,7 @@ joynr::system::RoutingTypes::WebSocketAddress WebSocketSettings::
     Url url(ccMessagingUrl);
 
     if (!url.isValid()) {
-        LOG_ERROR(logger, "Could not parse URL: " + TypeUtil::toQt(ccMessagingUrl));
+        LOG_ERROR(logger, FormatString("Could not parse URL: %1").arg(ccMessagingUrl).str());
         return system::RoutingTypes::WebSocketAddress{};
     }
 
@@ -104,8 +104,10 @@ bool WebSocketSettings::contains(const std::string& key) const
 void WebSocketSettings::printSettings() const
 {
     LOG_DEBUG(logger,
-              "SETTING: " + TypeUtil::toQt(SETTING_CC_MESSAGING_URL()) + " = " +
-                      TypeUtil::toQt(settings.get<std::string>(SETTING_CC_MESSAGING_URL())));
+              FormatString("SETTING: %1 = %2")
+                      .arg(SETTING_CC_MESSAGING_URL())
+                      .arg(settings.get<std::string>(SETTING_CC_MESSAGING_URL()))
+                      .str());
 }
 
 } // namespace joynr

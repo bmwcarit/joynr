@@ -183,23 +183,26 @@ void MessageRouter::route(const JoynrMessage& message)
     JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
     if (now > message.getHeaderExpiryDate()) {
         LOG_WARN(logger,
-                 QString("Received expired message. Dropping the message (ID: %1).")
-                         .arg(QString::fromStdString(message.getHeaderMessageId())));
+                 FormatString("Received expired message. Dropping the message (ID: %1).")
+                         .arg(message.getHeaderMessageId())
+                         .str());
         return;
     }
 
     // Validate the message if possible
     if (securityManager != NULL && !securityManager->validate(message)) {
         LOG_ERROR(logger,
-                  QString("messageId %1 failed validation")
-                          .arg(QString::fromStdString(message.getHeaderMessageId())));
+                  FormatString("messageId %1 failed validation")
+                          .arg(message.getHeaderMessageId())
+                          .str());
         return;
     }
 
     LOG_DEBUG(logger,
-              QString("Route message with Id %1 and payload %2")
-                      .arg(QString::fromStdString(message.getHeaderMessageId()))
-                      .arg(QString::fromStdString(message.getPayload())));
+              FormatString("Route message with Id %1 and payload %2")
+                      .arg(message.getHeaderMessageId())
+                      .arg(message.getPayload())
+                      .str());
     // search for the destination address
     const QString destinationPartId = QString::fromStdString(message.getHeaderTo());
     std::shared_ptr<joynr::system::RoutingTypes::QtAddress> destAddress(NULL);
@@ -212,8 +215,7 @@ void MessageRouter::route(const JoynrMessage& message)
     if (!destAddress) {
         // save the message for later delivery
         messageQueue->queueMessage(message);
-        LOG_DEBUG(logger,
-                  QString("message queued: %1").arg(QString::fromStdString(message.getPayload())));
+        LOG_DEBUG(logger, FormatString("message queued: %1").arg(message.getPayload()).str());
 
         // and try to resolve destination address via parent message router
         if (isChildMessageRouter()) {
@@ -225,16 +227,19 @@ void MessageRouter::route(const JoynrMessage& message)
                         [this, destinationPartId](const bool& resolved) {
                     if (resolved) {
                         LOG_INFO(this->logger,
-                                 "Got destination address for participant " + destinationPartId);
+                                 FormatString("Got destination address for participant %1")
+                                         .arg(destinationPartId.toStdString())
+                                         .str());
                         // save next hop in the routing table
                         this->addProvisionedNextHop(
                                 destinationPartId.toStdString(), this->parentAddress);
                         this->removeRunningParentResolvers(destinationPartId);
                         this->sendMessages(destinationPartId.toStdString(), this->parentAddress);
                     } else {
-                        LOG_ERROR(
-                                this->logger,
-                                "Failed to resolve next hop for participant " + destinationPartId);
+                        LOG_ERROR(this->logger,
+                                  FormatString("Failed to resolve next hop for participant %1")
+                                          .arg(destinationPartId.toStdString())
+                                          .str());
                         // TODO error handling in case of failing submission (?)
                     }
                 };
@@ -245,11 +250,13 @@ void MessageRouter::route(const JoynrMessage& message)
         } else {
             // no parent message router to resolve destination address
             LOG_WARN(logger,
-                     QString("No routing information found for destination participant ID \"%1\" "
+                     FormatString(
+                             "No routing information found for destination participant ID \"%1\" "
                              "so far. Waiting for participant registration. "
                              "Queueing message (ID : %2)")
-                             .arg(QString::fromStdString(message.getHeaderTo()))
-                             .arg(QString::fromStdString(message.getHeaderMessageId())));
+                             .arg(message.getHeaderTo())
+                             .arg(message.getHeaderMessageId())
+                             .str());
         }
         return;
     }
@@ -527,8 +534,9 @@ void MessageRunnable::run()
         messagingStub->transmit(message);
     } else {
         LOG_ERROR(logger,
-                  QString("Message with ID %1 expired: dropping!")
-                          .arg(QString::fromStdString(message.getHeaderMessageId())));
+                  FormatString("Message with ID %1 expired: dropping!")
+                          .arg(message.getHeaderMessageId())
+                          .str());
     }
 }
 

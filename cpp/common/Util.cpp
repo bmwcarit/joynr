@@ -84,13 +84,18 @@ void Util::logSerializedMessage(joynr_logging::Logger* logger,
 {
     if (message.length() > 2048) {
         LOG_DEBUG(logger,
-                  QString("%1 %2<**truncated, length %3")
-                          .arg(explanation)
-                          .arg(message.left(2048))
-                          .arg(message.length()));
+                  FormatString("%1 %2<**truncated, length %3")
+                          .arg(explanation.toStdString())
+                          .arg(message.left(2048).toStdString())
+                          .arg(message.length())
+                          .str());
     } else {
         LOG_DEBUG(logger,
-                  QString("%1 %2, length %3").arg(explanation).arg(message).arg(message.length()));
+                  FormatString("%1 %2, length %3")
+                          .arg(explanation.toStdString())
+                          .arg(message.toStdString())
+                          .arg(message.length())
+                          .str());
     }
 }
 

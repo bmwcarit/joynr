@@ -129,7 +129,7 @@ Directory<Key, T>::~Directory()
 {
     callBackRemoverScheduler.shutdown();
     LOG_TRACE(logger,
-              QString("destructor: number of entries = ") + QString::number(callbackMap.size()));
+              FormatString("destructor: number of entries = %1").arg(callbackMap.size()).str());
 }
 
 template <typename Key, typename T>

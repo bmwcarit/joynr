@@ -20,7 +20,7 @@
 #ifndef IACCESSCONTROLLER_H
 #define IACCESSCONTROLLER_H
 
-#include "joynr/infrastructure/DacTypes_QtTrustLevel.h"
+#include "joynr/infrastructure/DacTypes/TrustLevel.h"
 
 #include <memory>
 
@@ -81,7 +81,7 @@ public:
      * @return true if the message has permission, false otherwise
      */
     virtual bool hasProviderPermission(const QString& userId,
-                                       infrastructure::DacTypes::QtTrustLevel::Enum trustLevel,
+                                       infrastructure::DacTypes::TrustLevel::Enum trustLevel,
                                        const QString& domain,
                                        const QString& interfaceName) = 0;
     /**

@@ -82,13 +82,15 @@ public:
             discoveryProxy.add(entry);
         } catch (exceptions::JoynrException& e) {
             LOG_ERROR(logger,
-                      QString("Unable to add provider (participant ID: %1, domain: %2, interface: "
+                      FormatString(
+                              "Unable to add provider (participant ID: %1, domain: %2, interface: "
                               "%3) "
                               "to discovery. Error: %4.")
-                              .arg(QString::fromStdString(participantId))
-                              .arg(QString::fromStdString(domain))
-                              .arg(QString::fromStdString(interfaceName))
-                              .arg(QString::fromStdString(e.getMessage())));
+                              .arg(participantId)
+                              .arg(domain)
+                              .arg(interfaceName)
+                              .arg(e.getMessage())
+                              .str());
         }
 
         // add next hop to dispatcher
@@ -125,13 +127,14 @@ public:
             discoveryProxy.remove(participantId);
         } catch (exceptions::JoynrException& e) {
             LOG_ERROR(logger,
-                      QString("Unable to remove provider (participant ID: %1, domain: %2, "
-                              "interface: %3) "
-                              "to discovery. Status code: %4.")
-                              .arg(QString::fromStdString(participantId))
-                              .arg(QString::fromStdString(domain))
-                              .arg(QString::fromStdString(interfaceName))
-                              .arg(QString::fromStdString(e.getMessage())));
+                      FormatString("Unable to remove provider (participant ID: %1, domain: %2, "
+                                   "interface: %3) "
+                                   "to discovery. Status code: %4.")
+                              .arg(participantId)
+                              .arg(domain)
+                              .arg(interfaceName)
+                              .arg(e.getMessage())
+                              .str());
         }
 
         std::shared_ptr<joynr::Future<void>> future(new Future<void>());
@@ -141,8 +144,10 @@ public:
 
         if (!future->getStatus().successful()) {
             LOG_ERROR(logger,
-                      QString("Unable to remove next hop (participant ID: %1) from message router.")
-                              .arg(QString::fromStdString(participantId)));
+                      FormatString(
+                              "Unable to remove next hop (participant ID: %1) from message router.")
+                              .arg(participantId)
+                              .str());
         }
 
         return participantId;

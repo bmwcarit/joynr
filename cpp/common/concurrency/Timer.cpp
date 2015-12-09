@@ -68,7 +68,8 @@ joynr::Timer::TimerId joynr::Timer::addTimer(
 
     // If the new timer the next timer in the list we need to reorganize
     if (timers.begin()->second == newTimer) {
-        LOG_TRACE(logger, QString("New timer %0 has the earliest deadline").arg(currentId));
+        LOG_TRACE(logger,
+                  FormatString("New timer %0 has the earliest deadline").arg(currentId).str());
         waitCondition.notify_one();
     }
     return currentId;
@@ -93,7 +94,7 @@ bool joynr::Timer::removeTimer(TimerId id)
 
             // Only reorganize if timer is the current timer
             if (reorganize) {
-                LOG_TRACE(logger, QString("Reorganize after %0 was removed.").arg(id));
+                LOG_TRACE(logger, FormatString("Reorganize after %0 was removed.").arg(id).str());
                 waitCondition.notify_one();
             }
             return true;

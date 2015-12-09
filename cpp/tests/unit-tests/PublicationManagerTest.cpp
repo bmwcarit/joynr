@@ -678,6 +678,8 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
 }
 
 TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_withLowerExpiryDate) {
+    LOG_DEBUG(logger, FormatString("DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME: %1").arg(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()).str());
+
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 

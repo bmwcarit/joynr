@@ -20,16 +20,16 @@
 #include "joynr/PrivateCopyAssign.h"
 #include <gtest/gtest.h>
 #include "cluster-controller/access-control/AceValidator.h"
-
+#include "joynr/TypeUtil.h"
 using namespace ::testing;
 using namespace joynr;
 using namespace joynr::infrastructure::DacTypes;
 
 class AceValidatorTest : public ::testing::Test {
 public:
-    QtMasterAccessControlEntry masterAce;
-    QtMasterAccessControlEntry mediatorAce;
-    QtOwnerAccessControlEntry ownerAce;
+    MasterAccessControlEntry masterAce;
+    MasterAccessControlEntry mediatorAce;
+    OwnerAccessControlEntry ownerAce;
 public:
     AceValidatorTest()
     {
@@ -40,44 +40,44 @@ public:
     }
 
     void SetUp(){
-        QList<QtPermission::Enum> possiblePermissions;
-        possiblePermissions.append(QtPermission::NO);
-        possiblePermissions.append(QtPermission::ASK);
-        QList<QtTrustLevel::Enum> possibleRequiredTrustLevels;
-        possibleRequiredTrustLevels.append(QtTrustLevel::LOW);
-        possibleRequiredTrustLevels.append(QtTrustLevel::MID);
-        QList<QtTrustLevel::Enum> possibleRequiredAceChangeTrustLevels;
-        possibleRequiredAceChangeTrustLevels.append(QtTrustLevel::MID);
-        possibleRequiredAceChangeTrustLevels.append(QtTrustLevel::HIGH);
-        masterAce = QtMasterAccessControlEntry(TEST_USER,
-                                                                    QString(),
-                                                                    QString(),
-                                                                    QtTrustLevel::LOW,
-                                                                    possibleRequiredTrustLevels,
-                                                                    QtTrustLevel::LOW,
-                                                                    possibleRequiredAceChangeTrustLevels,
-                                                                    QString(),
-                                                                    QtPermission::NO,
-                                                                    possiblePermissions);
+        QList<Permission::Enum> possiblePermissions;
+        possiblePermissions.append(Permission::NO);
+        possiblePermissions.append(Permission::ASK);
+        QList<TrustLevel::Enum> possibleRequiredTrustLevels;
+        possibleRequiredTrustLevels.append(TrustLevel::LOW);
+        possibleRequiredTrustLevels.append(TrustLevel::MID);
+        QList<TrustLevel::Enum> possibleRequiredAceChangeTrustLevels;
+        possibleRequiredAceChangeTrustLevels.append(TrustLevel::MID);
+        possibleRequiredAceChangeTrustLevels.append(TrustLevel::HIGH);
+        masterAce = MasterAccessControlEntry(TEST_USER.toStdString(),
+                                                                    std::string(),
+                                                                    std::string(),
+                                                                    TrustLevel::LOW,
+                                                                    TypeUtil::toStd(possibleRequiredTrustLevels),
+                                                                    TrustLevel::LOW,
+                                                                    TypeUtil::toStd(possibleRequiredAceChangeTrustLevels),
+                                                                    std::string(),
+                                                                    Permission::NO,
+                                                                    TypeUtil::toStd(possiblePermissions));
 
-        mediatorAce = QtMasterAccessControlEntry(TEST_USER,
-                                               QString(),
-                                               QString(),
-                                               QtTrustLevel::LOW,
-                                               possibleRequiredTrustLevels,
-                                               QtTrustLevel::LOW,
-                                               possibleRequiredAceChangeTrustLevels,
-                                               QString(),
-                                               QtPermission::NO,
-                                               possiblePermissions);
+        mediatorAce = MasterAccessControlEntry(TEST_USER.toStdString(),
+                                               std::string(),
+                                               std::string(),
+                                               TrustLevel::LOW,
+                                               TypeUtil::toStd(possibleRequiredTrustLevels),
+                                               TrustLevel::LOW,
+                                               TypeUtil::toStd(possibleRequiredAceChangeTrustLevels),
+                                               std::string(),
+                                               Permission::NO,
+                                               TypeUtil::toStd(possiblePermissions));
 
-        ownerAce = QtOwnerAccessControlEntry(TEST_USER,
-                                                                  QString(),
-                                                                  QString(),
-                                                                  QtTrustLevel::MID,
-                                                                  QtTrustLevel::HIGH,
-                                                                  QString(),
-                                                                  QtPermission::ASK);
+        ownerAce = OwnerAccessControlEntry(TEST_USER.toStdString(),
+                                                                  std::string(),
+                                                                  std::string(),
+                                                                  TrustLevel::MID,
+                                                                  TrustLevel::HIGH,
+                                                                  std::string(),
+                                                                  Permission::ASK);
     }
 
     void TearDown()
@@ -95,10 +95,10 @@ const QString AceValidatorTest::TEST_USER("testUser");
 
 TEST_F(AceValidatorTest, TestMediatorInvalidPossiblePermissions)
 {
-    QList<QtPermission::Enum> possiblePermissions;
-    possiblePermissions.append(QtPermission::ASK);
-    possiblePermissions.append(QtPermission::YES);
-    mediatorAce.setPossibleConsumerPermissions(possiblePermissions);
+    QList<Permission::Enum> possiblePermissions;
+    possiblePermissions.append(Permission::ASK);
+    possiblePermissions.append(Permission::YES);
+    mediatorAce.setPossibleConsumerPermissions(TypeUtil::toStd(possiblePermissions));
     AceValidator validator(masterAce, mediatorAce, ownerAce);
 
     EXPECT_FALSE(validator.isMediatorValid());
@@ -106,10 +106,10 @@ TEST_F(AceValidatorTest, TestMediatorInvalidPossiblePermissions)
 
 TEST_F(AceValidatorTest, TestMediatorInvalidPossibleTrustLevels)
 {
-    QList<QtTrustLevel::Enum> possibleRequiredTrustLevels;
-    possibleRequiredTrustLevels.append(QtTrustLevel::HIGH);
-    possibleRequiredTrustLevels.append(QtTrustLevel::MID);
-    mediatorAce.setPossibleRequiredTrustLevels(possibleRequiredTrustLevels);
+    QList<TrustLevel::Enum> possibleRequiredTrustLevels;
+    possibleRequiredTrustLevels.append(TrustLevel::HIGH);
+    possibleRequiredTrustLevels.append(TrustLevel::MID);
+    mediatorAce.setPossibleRequiredTrustLevels(TypeUtil::toStd(possibleRequiredTrustLevels));
     AceValidator validator(masterAce, mediatorAce, ownerAce);
 
     EXPECT_FALSE(validator.isMediatorValid());
@@ -131,7 +131,7 @@ TEST_F(AceValidatorTest, TestOwnerValid)
 
 TEST_F(AceValidatorTest, TestOwnerInvalid)
 {
-    ownerAce.setConsumerPermission(QtPermission::YES);
+    ownerAce.setConsumerPermission(Permission::YES);
     AceValidator validator(masterAce, mediatorAce, ownerAce);
     EXPECT_FALSE(validator.isOwnerValid());
 }

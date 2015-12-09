@@ -20,11 +20,9 @@
 #ifndef ACEVALIDATOR_H
 #define ACEVALIDATOR_H
 
-#include "joynr/infrastructure/DacTypes_QtMasterAccessControlEntry.h"
-#include "joynr/infrastructure/DacTypes_QtOwnerAccessControlEntry.h"
+#include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
+#include "joynr/infrastructure/DacTypes/OwnerAccessControlEntry.h"
 #include "joynr/Optional.h"
-
-#include <QList>
 
 namespace joynr
 {
@@ -36,10 +34,9 @@ class AceValidator
 {
 public:
     AceValidator(
-            const Optional<infrastructure::DacTypes::QtMasterAccessControlEntry>& masterAceOptional,
-            const Optional<infrastructure::DacTypes::QtMasterAccessControlEntry>&
-                    mediatorAceOptional,
-            const Optional<infrastructure::DacTypes::QtOwnerAccessControlEntry>& ownerAceOptional);
+            const Optional<infrastructure::DacTypes::MasterAccessControlEntry>& masterAceOptional,
+            const Optional<infrastructure::DacTypes::MasterAccessControlEntry>& mediatorAceOptional,
+            const Optional<infrastructure::DacTypes::OwnerAccessControlEntry>& ownerAceOptional);
 
     ~AceValidator();
 
@@ -52,11 +49,11 @@ public:
     bool isMediatorValid();
 
 private:
-    Optional<infrastructure::DacTypes::QtMasterAccessControlEntry> masterAceOptional;
-    Optional<infrastructure::DacTypes::QtMasterAccessControlEntry> mediatorAceOptional;
-    Optional<infrastructure::DacTypes::QtOwnerAccessControlEntry> ownerAceOptional;
+    Optional<infrastructure::DacTypes::MasterAccessControlEntry> masterAceOptional;
+    Optional<infrastructure::DacTypes::MasterAccessControlEntry> mediatorAceOptional;
+    Optional<infrastructure::DacTypes::OwnerAccessControlEntry> ownerAceOptional;
 
-    bool validateOwner(infrastructure::DacTypes::QtMasterAccessControlEntry targetMasterAce);
+    bool validateOwner(infrastructure::DacTypes::MasterAccessControlEntry targetMasterAce);
 };
 
 } // namespace joynr

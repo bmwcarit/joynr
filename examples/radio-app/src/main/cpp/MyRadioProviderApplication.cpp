@@ -43,14 +43,14 @@ int main(int argc, char* argv[])
     // Check the usage
     QString programName(argv[0]);
     if (argc != 2) {
-        LOG_ERROR(logger, QString("USAGE: %1 <provider-domain>").arg(programName));
+        LOG_ERROR(logger, FormatString("USAGE: %1 <provider-domain>").arg(programName.toStdString()).str());
         return 1;
     }
 
     // Get the provider domain
     std::string providerDomain(argv[1]);
     LOG_INFO(logger,
-             QString("Registering provider on domain \"%1\"").arg(TypeUtil::toQt(providerDomain)));
+             FormatString("Registering provider on domain \"%1\"").arg(providerDomain).str());
 
     // Get the current program directory
     QString dir(QFileInfo(programName).absolutePath());

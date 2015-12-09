@@ -98,7 +98,8 @@ void PingLogger::error(QProcess::ProcessError error)
         errorStr = "unknown";
     }
 
-    LOG_DEBUG(logger, QString("error while executing ping: ") + errorStr);
+    LOG_DEBUG(logger,
+              FormatString("error while executing ping: %1").arg(errorStr.toStdString()).str());
 }
 
 void PingLogger::finished(int exitCode, QProcess::ExitStatus exitStatus)
@@ -125,8 +126,10 @@ void PingLogger::finished(int exitCode, QProcess::ExitStatus exitStatus)
     }
 
     LOG_DEBUG(logger,
-              QString("ping finished; exit code: ") + QString::number(exitCode) +
-                      QString("; exit status: ") + exitStatusStr);
+              FormatString("ping finished; exit code: %1; exit status: %2")
+                      .arg(exitCode)
+                      .arg(exitStatusStr.toStdString())
+                      .str());
 }
 
 void PingLogger::readyReadStandardError()
@@ -138,7 +141,7 @@ void PingLogger::readyReadStandardError()
 
 void PingLogger::readAndLogAvailableInput()
 {
-    LOG_DEBUG(logger, QString(ping.readAll()));
+    LOG_DEBUG(logger, QString(ping.readAll()).toStdString());
 }
 
 void PingLogger::readyReadStandardOutput()
@@ -150,7 +153,7 @@ void PingLogger::readyReadStandardOutput()
 
 void PingLogger::started()
 {
-    LOG_DEBUG(logger, QString("ping process started"));
+    LOG_DEBUG(logger, "ping process started");
 }
 
 void PingLogger::stateChanged(QProcess::ProcessState newState)
@@ -178,7 +181,8 @@ void PingLogger::stateChanged(QProcess::ProcessState newState)
         stateStr = "unknown";
     }
 
-    LOG_DEBUG(logger, QString("ping process state changed to ") + stateStr);
+    LOG_DEBUG(logger,
+              FormatString("ping process state changed to %1").arg(stateStr.toStdString()).str());
 }
 
 } // namespace joynr

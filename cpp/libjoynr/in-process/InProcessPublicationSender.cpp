@@ -57,14 +57,17 @@ void InProcessPublicationSender::sendSubscriptionPublication(
       */
 
     QString subscriptionId = QString::fromStdString(subscriptionPublication.getSubscriptionId());
-    LOG_TRACE(logger, "Sending publication. id=" + subscriptionId);
+    LOG_TRACE(logger,
+              FormatString("Sending publication. id=%1").arg(subscriptionId.toStdString()).str());
     assert(subscriptionManager != NULL);
     subscriptionManager->touchSubscriptionState(subscriptionId);
     std::shared_ptr<ISubscriptionCallback> callback =
             subscriptionManager->getSubscriptionCallback(subscriptionId);
     if (!callback) {
         LOG_ERROR(logger,
-                  "Dropping reply for non/no more existing subscription with id=" + subscriptionId);
+                  FormatString("Dropping reply for non/no more existing subscription with id=%1")
+                          .arg(subscriptionId.toStdString())
+                          .str());
         return;
     }
 
@@ -74,7 +77,10 @@ void InProcessPublicationSender::sendSubscriptionPublication(
     // PublicationInterpreter polymorphism
     IPublicationInterpreter& interpreter =
             MetaTypeRegistrar::instance().getPublicationInterpreter(typeId);
-    LOG_TRACE(logger, "Interpreting publication. id=" + subscriptionId);
+    LOG_TRACE(logger,
+              FormatString("Interpreting publication. id=%1")
+                      .arg(subscriptionId.toStdString())
+                      .str());
     interpreter.execute(callback, subscriptionPublication);
 }
 

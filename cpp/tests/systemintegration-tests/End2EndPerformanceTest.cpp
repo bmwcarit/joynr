@@ -147,6 +147,6 @@ TEST_F(End2EndPerformanceTest, sendManyRequests) {
     //check if all Messages were received:
     EXPECT_EQ(numberOfMessages, successFullMessages);
     Logger* logger = Logging::getInstance()->getLogger("TEST", "CombinedEnd2EndTest");
-    LOG_INFO(logger,"Required Time for 1000 Messages: " + QString::number(TypeUtil::toQt(stopTime - startTime)));
+    LOG_INFO(logger,FormatString("Required Time for 1000 Messages: %1").arg((stopTime - startTime)).str());
 }
 

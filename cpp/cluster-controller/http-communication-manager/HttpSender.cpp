@@ -150,16 +150,16 @@ void HttpSender::SendMessageRunnable::run()
     qint64 startTime = TypeUtil::toQt(DispatcherUtils::nowInMilliseconds());
     if (isExpired()) {
         LOG_DEBUG(logger,
-                  "Message expired, expiration time: " +
-                          QString::fromStdString(
-                                  DispatcherUtils::convertAbsoluteTimeToTtlString(decayTime)));
+                  FormatString("Message expired, expiration time: %1")
+                          .arg(DispatcherUtils::convertAbsoluteTimeToTtlString(decayTime))
+                          .str());
         return;
     }
 
     LOG_TRACE(logger,
-              "messageRunnableCounter: + " +
-                      QString::number(SendMessageRunnable::messageRunnableCounter) +
-                      " SMR existing. ");
+              FormatString("messageRunnableCounter: + %1 SMR existing. ")
+                      .arg(SendMessageRunnable::messageRunnableCounter)
+                      .str());
 
     assert(messageSender->channelUrlCache != NULL);
     // A channelId can have several Url's. Hence, we cannot use up all the time we have for testing
@@ -192,27 +192,34 @@ void HttpSender::SendMessageRunnable::run()
             body = QString(sendMessageResult.getBody().data());
         }
         LOG_ERROR(logger,
-                  QString("sending message - fail; error message %1; contents %2; scheduling for "
+                  FormatString(
+                          "sending message - fail; error message %1; contents %2; scheduling for "
                           "retry...")
-                          .arg(sendMessageResult.getErrorMessage())
-                          .arg(body));
+                          .arg(sendMessageResult.getErrorMessage().toStdString())
+                          .arg(body.toStdString())
+                          .str());
     } else {
         LOG_DEBUG(logger,
-                  "sending message - success; url: " + url + " status code: " +
-                          QString::number(sendMessageResult.getStatusCode()) + " at " +
-                          QString::number(TypeUtil::toQt(DispatcherUtils::nowInMilliseconds())));
+                  FormatString("sending message - success; url: %1 status code: %2 at %3")
+                          .arg(url.toStdString())
+                          .arg(sendMessageResult.getStatusCode())
+                          .arg(DispatcherUtils::nowInMilliseconds())
+                          .str());
     }
 }
 QString HttpSender::SendMessageRunnable::resolveUrlForChannelId(qint64 curlTimeout)
 {
-    LOG_TRACE(logger, "obtaining Url with a curlTimeout of : " + QString::number(curlTimeout));
+    LOG_TRACE(logger,
+              FormatString("obtaining Url with a curlTimeout of : %1").arg(curlTimeout).str());
     RequestStatus status;
     // we also use the curl timeout here, to prevent long blocking during shutdown.
     QString url = messageSender->channelUrlCache->obtainUrl(channelId, status, curlTimeout);
     if (!status.successful()) {
-        LOG_ERROR(logger,
-                  "Issue while trying to obtained URl from the ChannelUrlDirectory: " +
-                          QString::fromStdString(status.toString()));
+        LOG_ERROR(
+                logger,
+                FormatString("Issue while trying to obtained URl from the ChannelUrlDirectory: %1")
+                        .arg(status.toString())
+                        .str());
     }
     if (url.isNull() || url.isEmpty()) {
         LOG_DEBUG(logger,
@@ -222,8 +229,10 @@ QString HttpSender::SendMessageRunnable::resolveUrlForChannelId(qint64 curlTimeo
     }
 
     LOG_TRACE(logger,
-              "Sending message; url: " + url + ", time  left: " +
-                      DispatcherUtils::convertAbsoluteTimeToTtlString(decayTime).c_str());
+              FormatString("Sending message; url: %1, time  left: %2")
+                      .arg(url.toStdString())
+                      .arg(DispatcherUtils::convertAbsoluteTimeToTtlString(decayTime).c_str())
+                      .str());
     return url;
 }
 

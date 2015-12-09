@@ -131,8 +131,9 @@ void joynr::ThreadPool::threadLifecycle()
 void joynr::ThreadPool::reportThreadPoolStats()
 {
     LOG_TRACE(logger,
-              QString("Thread statistics (active / waiting / available threads): %0 / %1 / %2")
+              FormatString("Thread statistics (active / waiting / available threads): %0 / %1 / %2")
                       .arg(currentlyRunning.size())
                       .arg(scheduler.getQueueLength())
-                      .arg(threads.size()));
+                      .arg(threads.size())
+                      .str());
 }

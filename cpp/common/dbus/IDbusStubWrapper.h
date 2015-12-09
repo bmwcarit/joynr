@@ -97,14 +97,12 @@ private:
 
     void logCallStatus(const QString method, const QString status)
     {
-        LOG_INFO(logger,
-                 "Call status " + TypeUtil::toQt(serviceAddress) + "->" + method + ": " + status);
+        LOG_INFO(logger, FormatString("Call status %1->%2: %3").arg(serviceAddress).arg(method.toStdString()).arg(status.toStdString()).str());
     }
 
     void logAvailabilityStatus(const QString status)
     {
-        LOG_INFO(logger,
-                 "Status dbus proxy on address " + TypeUtil::toQt(serviceAddress) + ": " + status);
+        LOG_INFO(logger, FormatString("Status dbus proxy on address %1: %2").arg(serviceAddress).arg(status.toStdString()).str());
     }
 
 protected:
@@ -140,15 +138,15 @@ protected:
         // if proxy not available log and exit
         if (!isProxyAvailable()) {
             LOG_ERROR(logger,
-                      QString("Could not connect to proxy within %1ms!")
-                              .arg(max_retries * retry_delay));
+                      FormatString("Could not connect to proxy within %1ms!")
+                              .arg((max_retries * retry_delay)).str());
             assert(false);
         }
     }
 
     void logMethodCall(const QString& method)
     {
-        LOG_INFO(logger, "Call method " + TypeUtil::toQt(serviceAddress) + "-> " + method);
+        LOG_INFO(logger, FormatString("Call method %1-> %2").arg(serviceAddress).arg(method.toStdString()).str());
     }
 };
 

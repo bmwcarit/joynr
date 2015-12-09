@@ -61,10 +61,10 @@ void MockRunnableWithAccuracy::run()
     const uint64_t now_ms = TimeUtils::getCurrentMillisSinceEpoch();
 
     const uint64_t diff = (now_ms > est_ms) ? now_ms - est_ms : est_ms - now_ms;
-    LOG_TRACE(MockObjects::logger, QString("Runnable run() is called"));
-    LOG_TRACE(MockObjects::logger, QString(" ETA        : %1").arg(est_ms));
-    LOG_TRACE(MockObjects::logger, QString(" current    : %1").arg(now_ms));
-    LOG_TRACE(MockObjects::logger, QString(" difference : %1").arg(diff));
+    LOG_TRACE(MockObjects::logger, FormatString("Runnable run() is called").str());
+    LOG_TRACE(MockObjects::logger, FormatString(" ETA        : %1").arg(est_ms).str());
+    LOG_TRACE(MockObjects::logger, FormatString(" current    : %1").arg(now_ms).str());
+    LOG_TRACE(MockObjects::logger, FormatString(" difference : %1").arg(diff).str());
 
     if (diff <= timerAccuracyTolerance_ms)
     {

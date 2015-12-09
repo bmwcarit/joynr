@@ -60,8 +60,7 @@ DelayedScheduler::RunnableHandle DelayedScheduler::schedule(
         optionalDelayMs = OptionalDelay(this->defaultDelayMs);
     }
 
-    LOG_TRACE(logger,
-              QString("schedule: enter with %0 ms delay").arg(optionalDelayMs.getValue().count()));
+    LOG_TRACE(logger, FormatString("schedule: enter with %0 ms delay").arg(optionalDelayMs.getValue().count()).str());
 
     if (stoppingDelayedScheduler) {
         if (runnable->isDeleteOnExit()) {
@@ -82,7 +81,7 @@ DelayedScheduler::RunnableHandle DelayedScheduler::schedule(
                            optionalDelayMs.getValue().count(),
                            false);
 
-    LOG_TRACE(logger, QString("Added timer with ID %0").arg(currentHandle));
+    LOG_TRACE(logger, FormatString("Added timer with ID %0").arg(currentHandle).str());
 
     std::lock_guard<std::mutex> lock(writeLock);
     timedRunnables.emplace(currentHandle, runnable);
@@ -98,13 +97,14 @@ void DelayedScheduler::unschedule(const RunnableHandle runnableHandle)
     }
 
     if (!timer.removeTimer(runnableHandle)) {
-        LOG_TRACE(logger, QString("Failed to remove timer %0").arg(runnableHandle));
+        LOG_TRACE(logger, FormatString("Failed to remove timer %0").arg(runnableHandle).str());
     }
 
     std::lock_guard<std::mutex> lock(writeLock);
     auto it = timedRunnables.find(runnableHandle);
     if (it == timedRunnables.end()) {
-        LOG_WARN(logger, QString("Timed runnable with ID %0 not found.").arg(runnableHandle));
+        LOG_WARN(logger,
+                 FormatString("Timed runnable with ID %0 not found.").arg(runnableHandle).str());
         return;
     }
 
@@ -114,7 +114,8 @@ void DelayedScheduler::unschedule(const RunnableHandle runnableHandle)
     }
     timedRunnables.erase(it);
 
-    LOG_TRACE(logger, QString("runnable with handle %0 unscheduled").arg(runnableHandle));
+    LOG_TRACE(
+            logger, FormatString("runnable with handle %0 unscheduled").arg(runnableHandle).str());
 }
 
 void DelayedScheduler::shutdown()
@@ -137,12 +138,12 @@ void DelayedScheduler::shutdown()
 
 void DelayedScheduler::timerForRunnableExpired(Timer::TimerId timerId)
 {
-    LOG_TRACE(logger, QString("timerForRunnableExpired(%0)").arg(timerId));
+    LOG_TRACE(logger, FormatString("timerForRunnableExpired(%0)").arg(timerId).str());
 
     std::lock_guard<std::mutex> lock(writeLock);
     auto it = timedRunnables.find(timerId);
     if (it == timedRunnables.end()) {
-        LOG_WARN(logger, QString("Timed runnable with ID %0 not found.").arg(timerId));
+        LOG_WARN(logger, FormatString("Timed runnable with ID %0 not found.").arg(timerId).str());
         return;
     }
     Runnable* tmp = it->second;
@@ -161,12 +162,13 @@ void DelayedScheduler::timerForRunnableExpired(Timer::TimerId timerId)
 
 void DelayedScheduler::timerForRunnableRemoved(Timer::TimerId timerId)
 {
-    LOG_INFO(logger, QString("timerForRunnableRemoved(%0). Doing a cleanup").arg(timerId));
+    LOG_INFO(logger,
+             FormatString("timerForRunnableRemoved(%0). Doing a cleanup").arg(timerId).str());
 
     std::lock_guard<std::mutex> lock(writeLock);
     auto it = timedRunnables.find(timerId);
     if (it == timedRunnables.end()) {
-        LOG_WARN(logger, QString("Timed runnable with ID %0 not found.").arg(timerId));
+        LOG_WARN(logger, FormatString("Timed runnable with ID %0 not found.").arg(timerId).str());
         return;
     }
     Runnable* tmp = it->second;

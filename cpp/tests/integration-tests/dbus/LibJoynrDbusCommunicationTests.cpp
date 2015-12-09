@@ -58,7 +58,7 @@ public:
     }
 
     void printResult(Logger* logger, QString text, bool result) {
-        if(result) LOG_INFO(logger, text + " SUCCESS"); else LOG_ERROR(logger, text + " ERROR");
+        if(result) LOG_INFO(logger, FormatString("%1 SUCCESS").arg(text.toStdString()).str()); else LOG_ERROR(logger, FormatString("%1 ERROR").arg(text.toStdString()).str());
     }
 };
 

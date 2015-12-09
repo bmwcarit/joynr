@@ -228,9 +228,9 @@ void PublicationManager::handleAttributeSubscriptionRequest(
 
     if (publicationExists(subscriptionId)) {
         LOG_DEBUG(logger,
-                  "Publication with id: " +
-                          QString::fromStdString(requestInfo->getSubscriptionId()) +
-                          " already exists. Updating...");
+                  FormatString("Publication with id: %1 already exists. Updating...")
+                          .arg(requestInfo->getSubscriptionId())
+                          .str());
         removeAttributePublication(subscriptionId);
     }
 
@@ -241,7 +241,10 @@ void PublicationManager::handleAttributeSubscriptionRequest(
     std::vector<Variant> subscriptionVector(
             subscriptionMapToVectorCopy(subscriptionId2SubscriptionRequest));
 
-    LOG_DEBUG(logger, QString("added subscription: %1").arg(requestInfo->toQString()));
+    LOG_DEBUG(logger,
+              FormatString("added subscription: %1")
+                      .arg(requestInfo->toQString().toStdString())
+                      .str());
 
     {
         std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
@@ -258,8 +261,10 @@ void PublicationManager::handleAttributeSubscriptionRequest(
             if (qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
                 publication->publicationEndRunnableHandle = delayedScheduler->schedule(
                         new PublicationEndRunnable(*this, subscriptionId), publicationEndDelay);
-                LOG_DEBUG(
-                        logger, QString("publication will end in %1 ms").arg(publicationEndDelay));
+                LOG_DEBUG(logger,
+                          FormatString("publication will end in %1 ms")
+                                  .arg(publicationEndDelay)
+                                  .str());
             }
             {
                 std::lock_guard<std::mutex> currentScheduledLocker(
@@ -269,7 +274,7 @@ void PublicationManager::handleAttributeSubscriptionRequest(
             // sent at least once the current value
             delayedScheduler->schedule(new PublisherRunnable(*this, subscriptionId), -1);
         } else {
-            LOG_WARN(logger, QString("publication end is in the past"));
+            LOG_WARN(logger, "publication end is in the past");
         }
     }
     saveAttributeSubscriptionRequestsMap(subscriptionVector);
@@ -282,7 +287,10 @@ void PublicationManager::addOnChangePublication(
 {
     std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
     if (SubscriptionUtil::isOnChangeSubscription(request->getQos())) {
-        LOG_TRACE(logger, QString("adding onChange subscription: %1").arg(subscriptionId));
+        LOG_TRACE(logger,
+                  FormatString("adding onChange subscription: %1")
+                          .arg(subscriptionId.toStdString())
+                          .str());
 
         // Create an attribute listener to listen for onChange events
         SubscriptionAttributeListener* attributeListener =
@@ -302,7 +310,10 @@ void PublicationManager::addBroadcastPublication(
         std::shared_ptr<BroadcastSubscriptionRequestInformation> request,
         std::shared_ptr<PublicationManager::Publication> publication)
 {
-    LOG_TRACE(logger, QString("adding broadcast subscription: %1").arg(subscriptionId));
+    LOG_TRACE(logger,
+              FormatString("adding broadcast subscription: %1")
+                      .arg(subscriptionId.toStdString())
+                      .str());
 
     std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
 
@@ -366,9 +377,9 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
 
     if (publicationExists(subscriptionId)) {
         LOG_DEBUG(logger,
-                  "Publication with id: " +
-                          QString::fromStdString(requestInfo->getSubscriptionId()) +
-                          " already exists. Updating...");
+                  FormatString("Publication with id: %1 already exists. Updating...")
+                          .arg(requestInfo->getSubscriptionId())
+                          .str());
         removeBroadcastPublication(subscriptionId);
     }
 
@@ -376,7 +387,10 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
 
     // Make note of the publication
     publications.insert(subscriptionId.toStdString(), publication);
-    LOG_DEBUG(logger, QString("added subscription: %1").arg(requestInfo->toQString()));
+    LOG_DEBUG(logger,
+              FormatString("added subscription: %1")
+                      .arg(requestInfo->toQString().toStdString())
+                      .str());
 
     std::vector<Variant> subscriptionList(
             subscriptionMapToVectorCopy(subscriptionId2BroadcastSubscriptionRequest));
@@ -396,11 +410,13 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
             if (qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
                 publication->publicationEndRunnableHandle = delayedScheduler->schedule(
                         new PublicationEndRunnable(*this, subscriptionId), publicationEndDelay);
-                LOG_DEBUG(
-                        logger, QString("publication will end in %1 ms").arg(publicationEndDelay));
+                LOG_DEBUG(logger,
+                          FormatString("publication will end in %1 ms")
+                                  .arg(publicationEndDelay)
+                                  .str());
             }
         } else {
-            LOG_WARN(logger, QString("publication end is in the past"));
+            LOG_WARN(logger, "publication end is in the past");
         }
     }
     saveBroadcastSubscriptionRequestsMap(subscriptionList);
@@ -432,7 +448,10 @@ void PublicationManager::add(const QString& proxyParticipantId,
 
 void PublicationManager::removeAllSubscriptions(const QString& providerId)
 {
-    LOG_DEBUG(logger, QString("Removing all subscriptions for provider id= %1").arg(providerId));
+    LOG_DEBUG(logger,
+              FormatString("Removing all subscriptions for provider id= %1")
+                      .arg(providerId.toStdString())
+                      .str());
 
     // Build lists of subscriptionIds to remove
     QString subscriptionId;
@@ -462,25 +481,27 @@ void PublicationManager::removeAllSubscriptions(const QString& providerId)
     // Remove each publication
     for (const QString& subscriptionId : publicationsToRemove) {
         LOG_DEBUG(logger,
-                  QString("Removing subscription providerId= %1, subscriptionId =%2")
-                          .arg(providerId)
-                          .arg(subscriptionId));
+                  FormatString("Removing subscription providerId= %1, subscriptionId =%2")
+                          .arg(providerId.toStdString())
+                          .arg(subscriptionId.toStdString())
+                          .str());
         removeAttributePublication(subscriptionId);
     }
 
     // Remove each broadcast
     for (const QString& subscriptionId : broadcastsToRemove) {
         LOG_DEBUG(logger,
-                  QString("Removing subscription providerId= %1, subscriptionId =%2")
-                          .arg(providerId)
-                          .arg(subscriptionId));
+                  FormatString("Removing subscription providerId= %1, subscriptionId =%2")
+                          .arg(providerId.toStdString())
+                          .arg(subscriptionId.toStdString())
+                          .str());
         removeBroadcastPublication(subscriptionId);
     }
 }
 
 void PublicationManager::stopPublication(const QString& subscriptionId)
 {
-    LOG_DEBUG(logger, QString("stopPublication: %1").arg(subscriptionId));
+    LOG_DEBUG(logger, FormatString("stopPublication: %1").arg(subscriptionId.toStdString()).str());
     removePublication(subscriptionId);
 }
 
@@ -506,8 +527,10 @@ void PublicationManager::restore(const QString& providerId,
             queuedSubscriptionRequests.erase(queuedSubscriptionRequestsIterator);
             if (!isSubscriptionExpired(requestInfo->getSubscriptionQosPtr())) {
                 LOG_DEBUG(logger,
-                          QString("Restoring subscription for provider: %1 %2").arg(providerId).arg(
-                                  requestInfo->toQString()));
+                          FormatString("Restoring subscription for provider: %1 %2")
+                                  .arg(providerId.toStdString())
+                                  .arg(requestInfo->toQString().toStdString())
+                                  .str());
                 handleAttributeSubscriptionRequest(requestInfo, requestCaller, publicationSender);
             }
             queuedSubscriptionRequestsIterator =
@@ -528,8 +551,10 @@ void PublicationManager::restore(const QString& providerId,
             queuedBroadcastSubscriptionRequests.erase(queuedBroadcastSubscriptionRequestsIterator);
             if (!isSubscriptionExpired(requestInfo->getSubscriptionQosPtr())) {
                 LOG_DEBUG(logger,
-                          QString("Restoring subscription for provider: %1 %2").arg(providerId).arg(
-                                  requestInfo->toQString()));
+                          FormatString("Restoring subscription for provider: %1 %2")
+                                  .arg(providerId.toStdString())
+                                  .arg(requestInfo->toQString().toStdString())
+                                  .str());
                 handleBroadcastSubscriptionRequest(requestInfo, requestCaller, publicationSender);
             }
             queuedBroadcastSubscriptionRequestsIterator =
@@ -624,8 +649,9 @@ void PublicationManager::saveSubscriptionRequestsMap(const std::vector<Variant>&
         QFile file(storageFilename);
         if (!file.open(QIODevice::WriteOnly)) {
             LOG_ERROR(logger,
-                      QString("Could not open subscription request storage file: %1")
-                              .arg(file.errorString()));
+                      FormatString("Could not open subscription request storage file: %1")
+                              .arg(file.errorString().toStdString())
+                              .str());
             return;
         }
 
@@ -651,14 +677,17 @@ void PublicationManager::loadSavedSubscriptionRequestsMap(
     QFile file(storageFilename);
     if (!file.open(QIODevice::ReadOnly)) {
         LOG_ERROR(logger,
-                  QString("Unable to read file: %1, reson: %2").arg(storageFilename).arg(
-                          file.errorString()));
+                  FormatString("Unable to read file: %1, reson: %2")
+                          .arg(storageFilename.toStdString())
+                          .arg(file.errorString().toStdString())
+                          .str());
         return;
     }
 
     // Read the Json into memory
     QByteArray jsonBytes = file.readAll();
-    LOG_DEBUG(logger, QString("jsonBytes: %1").arg(QString::fromUtf8(jsonBytes)));
+    LOG_DEBUG(logger,
+              FormatString("jsonBytes: %1").arg(QString::fromUtf8(jsonBytes).toStdString()).str());
 
     // Deserialize the JSON into a list of subscription requests
     std::vector<RequestInformationType*> subscriptionVector =
@@ -677,19 +706,24 @@ void PublicationManager::loadSavedSubscriptionRequestsMap(
             QString providerId = requestInfo->getProviderId();
             queuedSubscriptions.insert(std::make_pair(providerId.toStdString(), requestInfo));
             LOG_DEBUG(logger,
-                      QString("Queuing subscription Request: %1 : %2").arg(providerId).arg(
-                              requestInfo->toQString()));
+                      FormatString("Queuing subscription Request: %1 : %2")
+                              .arg(providerId.toStdString())
+                              .arg(requestInfo->toQString().toStdString())
+                              .str());
         }
     }
 }
 
 void PublicationManager::removeAttributePublication(const QString& subscriptionId)
 {
-    LOG_DEBUG(logger, QString("removePublication: %1").arg(subscriptionId));
+    LOG_DEBUG(
+            logger, FormatString("removePublication: %1").arg(subscriptionId.toStdString()).str());
 
     if (!publicationExists(subscriptionId)) {
         LOG_DEBUG(logger,
-                  QString("publication %1 does not exist - will not remove").arg(subscriptionId));
+                  FormatString("publication %1 does not exist - will not remove")
+                          .arg(subscriptionId.toStdString())
+                          .str());
         return;
     }
 
@@ -711,11 +745,13 @@ void PublicationManager::removeAttributePublication(const QString& subscriptionI
 
 void PublicationManager::removeBroadcastPublication(const QString& subscriptionId)
 {
-    LOG_DEBUG(logger, QString("removeBroadcast: %1").arg(subscriptionId));
+    LOG_DEBUG(logger, FormatString("removeBroadcast: %1").arg(subscriptionId.toStdString()).str());
 
     if (!publicationExists(subscriptionId)) {
         LOG_DEBUG(logger,
-                  QString("publication %1 does not exist - will not remove").arg(subscriptionId));
+                  FormatString("publication %1 does not exist - will not remove")
+                          .arg(subscriptionId.toStdString())
+                          .str());
         return;
     }
 
@@ -754,7 +790,10 @@ void PublicationManager::removeOnChangePublication(
 {
     std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
     if (SubscriptionUtil::isOnChangeSubscription(request->getQos())) {
-        LOG_DEBUG(logger, QString("Removing onChange publication for id = %1").arg(subscriptionId));
+        LOG_DEBUG(logger,
+                  FormatString("Removing onChange publication for id = %1")
+                          .arg(subscriptionId.toStdString())
+                          .str());
 
         // Unregister and delete the attribute listener
         std::shared_ptr<RequestCaller> requestCaller = publication->requestCaller;
@@ -771,8 +810,9 @@ void PublicationManager::removePublicationEndRunnable(std::shared_ptr<Publicatio
     if (publication->publicationEndRunnableHandle != DelayedScheduler::INVALID_RUNNABLE_HANDLE &&
         !isShuttingDown()) {
         LOG_DEBUG(logger,
-                  QString("Unscheduling PublicationEndRunnable with handle: %1")
-                          .arg(publication->publicationEndRunnableHandle));
+                  FormatString("Unscheduling PublicationEndRunnable with handle: %1")
+                          .arg(publication->publicationEndRunnableHandle)
+                          .str());
         delayedScheduler->unschedule(publication->publicationEndRunnableHandle);
         publication->publicationEndRunnableHandle = DelayedScheduler::INVALID_RUNNABLE_HANDLE;
     }
@@ -853,7 +893,7 @@ void PublicationManager::sendSubscriptionPublication(
         currentScheduledPublications.removeAll(
                 QString::fromStdString(request->getSubscriptionId()));
     }
-    LOG_TRACE(logger, QString("sent publication @ %1").arg(now));
+    LOG_TRACE(logger, FormatString("sent publication @ %1").arg(now).str());
 }
 
 void PublicationManager::sendPublication(
@@ -868,12 +908,12 @@ void PublicationManager::sendPublication(
     subscriptionPublication.setResponse(value);
     sendSubscriptionPublication(
             publication, subscriptionInformation, request, subscriptionPublication);
-    LOG_TRACE(logger, QString("sent subscription reply"));
+    LOG_TRACE(logger, "sent subscription reply");
 }
 
 void PublicationManager::pollSubscription(const QString& subscriptionId)
 {
-    LOG_TRACE(logger, QString("pollSubscription %1").arg(subscriptionId));
+    LOG_TRACE(logger, FormatString("pollSubscription %1").arg(subscriptionId.toStdString()).str());
 
     if (isShuttingDown() || !publicationExists(subscriptionId) ||
         !subscriptionId2SubscriptionRequest.contains(subscriptionId.toStdString())) {
@@ -898,10 +938,11 @@ void PublicationManager::pollSubscription(const QString& subscriptionId)
             // publish only if not published in the current interval
             if (timeSinceLast < publicationInterval) {
                 LOG_DEBUG(logger,
-                          QString("no publication necessary. publicationInterval: %1, "
-                                  "timeSinceLast %2")
+                          FormatString("no publication necessary. publicationInterval: %1, "
+                                       "timeSinceLast %2")
                                   .arg(publicationInterval)
-                                  .arg(timeSinceLast));
+                                  .arg(timeSinceLast)
+                                  .str());
 
                 qint64 delayUntilNextPublication = publicationInterval - timeSinceLast;
                 assert(delayUntilNextPublication >= 0);
@@ -927,7 +968,9 @@ void PublicationManager::pollSubscription(const QString& subscriptionId)
             // Reschedule the next poll
             if (publicationInterval > 0 && (!isSubscriptionExpired(qos))) {
                 LOG_DEBUG(logger,
-                          QString("rescheduling runnable with delay: %1").arg(publicationInterval));
+                          FormatString("rescheduling runnable with delay: %1")
+                                  .arg(publicationInterval)
+                                  .str());
                 delayedScheduler->schedule(
                         new PublisherRunnable(*this, subscriptionId), publicationInterval);
             }
@@ -942,13 +985,18 @@ void PublicationManager::pollSubscription(const QString& subscriptionId)
             // Reschedule the next poll
             if (publicationInterval > 0 && (!isSubscriptionExpired(qos))) {
                 LOG_DEBUG(logger,
-                          QString("rescheduling runnable with delay: %1").arg(publicationInterval));
+                          FormatString("rescheduling runnable with delay: %1")
+                                  .arg(publicationInterval)
+                                  .str());
                 delayedScheduler->schedule(
                         new PublisherRunnable(*this, subscriptionId), publicationInterval);
             }
         };
 
-        LOG_DEBUG(logger, QString("run: executing requestInterpreter= %1").arg(attributeGetter));
+        LOG_DEBUG(logger,
+                  FormatString("run: executing requestInterpreter= %1")
+                          .arg(attributeGetter.toStdString())
+                          .str());
         try {
             requestInterpreter->execute(requestCaller,
                                         attributeGetter.toStdString(),
@@ -984,13 +1032,16 @@ void PublicationManager::removePublication(const QString& subscriptionId)
 void PublicationManager::attributeValueChanged(const QString& subscriptionId, const Variant& value)
 {
     LOG_DEBUG(logger,
-              QString("attributeValueChanged for onChange subscription %1").arg(subscriptionId));
+              FormatString("attributeValueChanged for onChange subscription %1")
+                      .arg(subscriptionId.toStdString())
+                      .str());
 
     // See if the subscription is still valid
     if (!publicationExists(subscriptionId)) {
         LOG_ERROR(logger,
-                  QString("attributeValueChanged called for non-existing subscription %1")
-                          .arg(subscriptionId));
+                  FormatString("attributeValueChanged called for non-existing subscription %1")
+                          .arg(subscriptionId.toStdString())
+                          .str());
         return;
     }
 
@@ -1022,15 +1073,17 @@ void PublicationManager::broadcastOccurred(const QString& subscriptionId,
                                            const QList<std::shared_ptr<IBroadcastFilter>>& filters)
 {
     LOG_DEBUG(logger,
-              QString("broadcastOccurred for subscription %1. Number of values: %2")
-                      .arg(subscriptionId)
-                      .arg(values.size()));
+              FormatString("broadcastOccurred for subscription %1. Number of values: %2")
+                      .arg(subscriptionId.toStdString())
+                      .arg(values.size())
+                      .str());
 
     // See if the subscription is still valid
     if (!publicationExists(subscriptionId)) {
         LOG_ERROR(logger,
-                  QString("broadcastOccurred called for non-existing subscription %1")
-                          .arg(subscriptionId));
+                  FormatString("broadcastOccurred called for non-existing subscription %1")
+                          .arg(subscriptionId.toStdString())
+                          .str());
         return;
     }
 
@@ -1051,14 +1104,16 @@ void PublicationManager::broadcastOccurred(const QString& subscriptionId,
                 sendPublication(publication, subscriptionRequest, subscriptionRequest, values);
             }
         } else {
-            LOG_DEBUG(
-                    logger,
-                    QString("Omitting broadcast publication for subscription %1 because of ")
-                            .append(timeUntilNextPublication > 0 ? "too short interval. Next "
-                                                                   "publication possible in %2 ms."
-                                                                 : " error.")
-                            .arg(subscriptionId)
-                            .arg(timeUntilNextPublication));
+            LOG_DEBUG(logger,
+                      FormatString(timeUntilNextPublication > 0
+                                           ? "Omitting broadcast publication for subscription %1 "
+                                             "because of too short interval. Next publication "
+                                             "possible in %2 ms."
+                                           : "Omitting broadcast publication for subscription %1 "
+                                             "because of error.")
+                              .arg(subscriptionId.toStdString())
+                              .arg(timeUntilNextPublication)
+                              .str());
         }
     }
 }
@@ -1094,7 +1149,10 @@ void PublicationManager::reschedulePublication(const QString& subscriptionId,
 
         // Schedule a publication so that the change is not forgotten
         if (!currentScheduledPublications.contains(subscriptionId)) {
-            LOG_DEBUG(logger, QString("rescheduling runnable with delay: %1").arg(nextPublication));
+            LOG_DEBUG(logger,
+                      FormatString("rescheduling runnable with delay: %1")
+                              .arg(nextPublication)
+                              .str());
             currentScheduledPublications.append(subscriptionId);
             delayedScheduler->schedule(
                     new PublisherRunnable(*this, subscriptionId), nextPublication);

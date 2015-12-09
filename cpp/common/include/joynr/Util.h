@@ -31,6 +31,7 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
+#include <set>
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/Variant.h"
 
@@ -462,6 +463,28 @@ template <typename... Ts>
 inline std::tuple<Ts...> Util::toValueTuple(const std::vector<Variant>& list)
 {
     return toValueTuple_split<0, Ts...>(list);
+}
+
+template <typename T>
+std::set<T> vectorToSet(const std::vector<T>& v)
+{
+    return std::set<T>(v.begin(), v.end());
+}
+
+template <typename T>
+bool setContainsSet(const std::set<T>& haystack, const std::set<T>& needle)
+{
+    bool contains = true;
+    for (const T& element : haystack) {
+        contains = (needle.count(element) == 1);
+    }
+    return contains;
+}
+
+template <typename T>
+bool vectorContains(const std::vector<T>& v, const T& e)
+{
+    return v.end() != std::find(v.cbegin(), v.cend(), e);
 }
 
 } // namespace joynr

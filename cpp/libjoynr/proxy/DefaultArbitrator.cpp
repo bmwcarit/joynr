@@ -45,11 +45,12 @@ void DefaultArbitrator::attemptArbitration()
         discoveryProxy.lookup(result, domain, interfaceName, systemDiscoveryQos);
     } catch (exceptions::JoynrException& e) {
         LOG_ERROR(logger,
-                  QString("Unable to lookup provider (domain: %1, interface: %2) "
-                          "from discovery. Error: %3.")
-                          .arg(QString::fromStdString(domain))
-                          .arg(QString::fromStdString(interfaceName))
-                          .arg(QString::fromStdString(e.getMessage())));
+                  FormatString("Unable to lookup provider (domain: %1, interface: %2) "
+                               "from discovery. Error: %3.")
+                          .arg(domain)
+                          .arg(interfaceName)
+                          .arg(e.getMessage())
+                          .str());
     }
 }
 

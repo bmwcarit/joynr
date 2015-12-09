@@ -44,7 +44,9 @@ public:
               serviceAddress(serviceAddress),
               logger(Logging::getInstance()->getLogger("MSG", "DbusSkeletonWrapper"))
     {
-        LOG_INFO(logger, "Registering dbus skeleton on address: " + TypeUtil::toQt(serviceAddress));
+        LOG_INFO(
+                logger,
+                FormatString("Registering dbus skeleton on address: %1").arg(serviceAddress).str());
 
         // create the skeleton
         std::shared_ptr<_SkeletonClass> skeleton = std::make_shared<_SkeletonClass>(callBack);
@@ -57,19 +59,20 @@ public:
         std::this_thread::sleep_for(std::chrono::milliseconds(25));
 
         if (success) {
-            LOG_INFO(
-                    logger,
-                    QString("registering service %1: SUCCESS").arg(TypeUtil::toQt(serviceAddress)));
+            LOG_INFO(logger,
+                     FormatString("registering service %1: SUCCESS").arg(serviceAddress).str());
         } else {
             LOG_FATAL(logger,
-                      QString("registering service %1: ERROR").arg(TypeUtil::toQt(serviceAddress)));
+                      FormatString("registering service %1: ERROR").arg(serviceAddress).str());
         }
     }
 
     ~IDbusSkeletonWrapper()
     {
         LOG_INFO(logger,
-                 "Unregistering dbus skeleton from address: " + TypeUtil::toQt(serviceAddress));
+                 FormatString("Unregistering dbus skeleton from address: %1")
+                         .arg(serviceAddress)
+                         .str());
 
         auto runtime = CommonAPI::Runtime::load("DBus");
         bool success = runtime->getServicePublisher()->unregisterService(serviceAddress);
@@ -78,19 +81,21 @@ public:
 
         if (success) {
             LOG_INFO(logger,
-                     QString("unregistering service %1: SUCCESS")
-                             .arg(TypeUtil::toQt(serviceAddress)));
+                     FormatString("unregistering service %1: SUCCESS").arg(serviceAddress).str());
         } else {
-            LOG_FATAL(
-                    logger,
-                    QString("unregistering service %1: ERROR").arg(TypeUtil::toQt(serviceAddress)));
+            LOG_FATAL(logger,
+                      FormatString("unregistering service %1: ERROR").arg(serviceAddress).str());
         }
     }
 
     void logMethodCall(const QString& method, const QString& adapter)
     {
         LOG_INFO(logger,
-                 "Call method " + adapter + ":" + TypeUtil::toQt(serviceAddress) + "-> " + method);
+                 FormatString("Call method %1:%2-> %3")
+                         .arg(adapter.toStdString())
+                         .arg(serviceAddress)
+                         .arg(method.toStdString())
+                         .str());
     }
 
 private:

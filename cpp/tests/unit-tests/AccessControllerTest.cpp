@@ -218,7 +218,7 @@ TEST_F(AccessControllerTest, accessWithOperationLevelAccessControl) {
                     TrustLevel::HIGH
             )
     )
-            .WillOnce(Return(QtPermission::createQt(permissionYes)));
+            .WillOnce(Return(permissionYes));
 
     EXPECT_CALL(*accessControllerCallback, hasConsumerPermission(true))
             .Times(1);

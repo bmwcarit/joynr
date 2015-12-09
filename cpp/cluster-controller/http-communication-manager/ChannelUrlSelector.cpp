@@ -98,26 +98,41 @@ QString ChannelUrlSelector::obtainUrl(const QString& channelId,
     }
 
     if (entries.contains(channelId)) {
-        LOG_DEBUG(logger, "obtainUrl: using cached Urls for id = " + channelId);
+        LOG_DEBUG(logger,
+                  FormatString("obtainUrl: using cached Urls for id = %1")
+                          .arg(channelId.toStdString())
+                          .str());
         ChannelUrlSelectorEntry* entry = entries.value(channelId);
         status.setCode(RequestStatusCode::OK);
         return constructUrl(entry->best());
     }
-    LOG_DEBUG(logger,
-              "obtainUrl: trying to obtain Urls from remote ChannelUrlDirectory for id = " +
-                      channelId);
+    LOG_DEBUG(
+            logger,
+            FormatString(
+                    "obtainUrl: trying to obtain Urls from remote ChannelUrlDirectory for id = %1")
+                    .arg(channelId.toStdString())
+                    .str());
     std::shared_ptr<Future<types::ChannelUrlInformation>> proxyFuture(
             channelUrlDirectory->getUrlsForChannelAsync(channelId.toStdString(), timeout_ms));
     status = proxyFuture->getStatus();
 
     if (status.successful()) {
-        LOG_DEBUG(logger,
-                  "obtainUrl: obtained Urls from remote ChannelUrlDirectory for id = " + channelId);
+        LOG_DEBUG(
+                logger,
+                FormatString("obtainUrl: obtained Urls from remote ChannelUrlDirectory for id = %1")
+                        .arg(channelId.toStdString())
+                        .str());
         types::ChannelUrlInformation urlInformation;
         proxyFuture->get(urlInformation);
         if (urlInformation.getUrls().empty()) {
-            LOG_DEBUG(logger, "obtainUrl: empty list of urls obtained from id = " + channelId);
-            LOG_DEBUG(logger, "obtainUrl: constructing default url for id = " + channelId);
+            LOG_DEBUG(logger,
+                      FormatString("obtainUrl: empty list of urls obtained from id = %1")
+                              .arg(channelId.toStdString())
+                              .str());
+            LOG_DEBUG(logger,
+                      FormatString("obtainUrl: constructing default url for id = %1")
+                              .arg(channelId.toStdString())
+                              .str());
             status.setCode(RequestStatusCode::ERROR);
             url = constructDefaultUrl(channelId);
             return constructUrl(url);
@@ -132,8 +147,10 @@ QString ChannelUrlSelector::obtainUrl(const QString& channelId,
         return constructUrl(url);
     } else {
         LOG_DEBUG(logger,
-                  "obtainUrl: FAILED to obtain Urls from remote ChannelUrlDirectory for id = " +
-                          channelId);
+                  FormatString("obtainUrl: FAILED to obtain Urls from remote ChannelUrlDirectory "
+                               "for id = %1")
+                          .arg(channelId.toStdString())
+                          .str());
         status.setCode(RequestStatusCode::ERROR);
         url = constructDefaultUrl(channelId);
         return constructUrl(url);
@@ -153,8 +170,8 @@ void ChannelUrlSelector::feedback(bool success, const QString& channelId, QStrin
         LOG_DEBUG(logger, "feedback for an unknown channelId");
         return;
     }
-    LOG_TRACE(logger, "feedback: punishing Url = " + url);
-    LOG_TRACE(logger, " for channelId= " + channelId);
+    LOG_TRACE(logger, FormatString("feedback: punishing Url = %1").arg(url.toStdString()).str());
+    LOG_TRACE(logger, FormatString(" for channelId= %1").arg(channelId.toStdString()).str());
     ChannelUrlSelectorEntry* entry = entries.value(channelId);
     int cutoff = url.indexOf("/" + BounceProxyUrl::SEND_MESSAGE_PATH_APPENDIX());
     url.resize(cutoff);

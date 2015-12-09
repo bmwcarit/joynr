@@ -26,7 +26,7 @@
 #include <QtSql/QSqlQuery>
 #include <QtSql/QSqlRecord>
 #include <QDataStream>
-
+#include "joynr/TypeUtil.h"
 #include <cassert>
 
 namespace joynr
@@ -290,7 +290,7 @@ T LocalDomainAccessStore::getEnumField(QSqlQuery& query, int field)
 
 LocalDomainAccessStore::LocalDomainAccessStore(bool clearDatabaseOnStartup)
 {
-    // Its a compilation problem if Qt SQLite is unavailable
+    // Its a compilation problem if  SQLite is unavailable
     assert(db.isValid());
 
     LOG_DEBUG(logger, "Called LocalDomainAccessStore");
@@ -359,29 +359,32 @@ LocalDomainAccessStore::LocalDomainAccessStore(bool clearDatabaseOnStartup)
                                  db);
         assert(createOwnerACL.exec());
     }
-    LOG_DEBUG(logger, QString("Connection to SQLite DB opened"));
+    LOG_DEBUG(logger, "Connection to SQLite DB opened");
 }
 
 LocalDomainAccessStore::~LocalDomainAccessStore()
 {
     if (db.isOpen()) {
         db.close();
-        LOG_DEBUG(logger, QString("Connection to SQLite DB closed"));
+        LOG_DEBUG(logger, "Connection to SQLite DB closed");
     }
 }
 
-QList<QtDomainRoleEntry> LocalDomainAccessStore::getDomainRoles(const QString& userId)
+QList<DomainRoleEntry> LocalDomainAccessStore::getDomainRoles(const QString& userId)
 {
-    LOG_DEBUG(logger, QString("execute: entering getDomainRoleEntries with userId %1").arg(userId));
+    LOG_DEBUG(logger,
+              FormatString("execute: entering getDomainRoleEntries with userId %1")
+                      .arg(userId.toStdString())
+                      .str());
 
-    QList<QtDomainRoleEntry> domainRoles;
-    Optional<QtDomainRoleEntry> masterDre = getDomainRole(userId, QtRole::MASTER);
+    QList<DomainRoleEntry> domainRoles;
+    Optional<DomainRoleEntry> masterDre = getDomainRole(userId, Role::MASTER);
     if (masterDre) {
         // add dre to resultset only if it defines role for some domain
         domainRoles.append(masterDre.getValue());
     }
 
-    Optional<QtDomainRoleEntry> ownerDre = getDomainRole(userId, QtRole::OWNER);
+    Optional<DomainRoleEntry> ownerDre = getDomainRole(userId, Role::OWNER);
     if (ownerDre) {
         // add dre to resultset only if it defines role for some domain
         domainRoles.append(ownerDre.getValue());
@@ -390,8 +393,8 @@ QList<QtDomainRoleEntry> LocalDomainAccessStore::getDomainRoles(const QString& u
     return domainRoles;
 }
 
-Optional<QtDomainRoleEntry> joynr::LocalDomainAccessStore::getDomainRole(const QString& uid,
-                                                                         QtRole::Enum role)
+Optional<DomainRoleEntry> joynr::LocalDomainAccessStore::getDomainRole(const QString& uid,
+                                                                       Role::Enum role)
 {
     // Execute a query to get the domain role entry
     QSqlQuery query;
@@ -409,26 +412,31 @@ Optional<QtDomainRoleEntry> joynr::LocalDomainAccessStore::getDomainRole(const Q
     }
 
     if (domains.isEmpty()) {
-        return Optional<QtDomainRoleEntry>::createNull();
+        return Optional<DomainRoleEntry>::createNull();
     }
 
-    return QtDomainRoleEntry(uid, domains, role);
+    return DomainRoleEntry(uid.toStdString(), TypeUtil::toStd(domains), role);
 }
 
-bool LocalDomainAccessStore::updateDomainRole(const QtDomainRoleEntry& updatedEntry)
+bool LocalDomainAccessStore::updateDomainRole(const DomainRoleEntry& updatedEntry)
 {
     LOG_DEBUG(logger,
-              QString("execute: entering updateDomainRoleEntry with uId %1")
-                      .arg(updatedEntry.getUid()));
+              FormatString("execute: entering updateDomainRoleEntry with uId %1")
+                      .arg(updatedEntry.getUid().toStdString())
+                      .str());
 
-    bool updateSuccess = insertDomainRoleEntry(
-            updatedEntry.getUid(), updatedEntry.getRole(), updatedEntry.getDomains());
+    bool updateSuccess = insertDomainRoleEntry(QString::fromStdString(updatedEntry.getUid()),
+                                               updatedEntry.getRole(),
+                                               TypeUtil::toQt(updatedEntry.getDomains()));
     return updateSuccess;
 }
 
-bool LocalDomainAccessStore::removeDomainRole(const QString& userId, QtRole::Enum role)
+bool LocalDomainAccessStore::removeDomainRole(const QString& userId, Role::Enum role)
 {
-    LOG_DEBUG(logger, QString("execute: entering removeDomainRoleEntry with uId %1").arg(userId));
+    LOG_DEBUG(logger,
+              FormatString("execute: entering removeDomainRoleEntry with uId %1")
+                      .arg(userId.toStdString())
+                      .str());
 
     QSqlQuery query;
     query.setForwardOnly(true);
@@ -440,7 +448,7 @@ bool LocalDomainAccessStore::removeDomainRole(const QString& userId, QtRole::Enu
     return removeSuccess;
 }
 
-QList<QtMasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessControlEntries(
+QList<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessControlEntries(
         const QString& uid)
 {
     QSqlQuery query = createGetAceQuery(GET_UID_MASTER_ACES, uid);
@@ -449,21 +457,22 @@ QList<QtMasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessControl
     return extractMasterAces(query);
 }
 
-QList<QtMasterAccessControlEntry> LocalDomainAccessStore::getEditableMasterAccessControlEntries(
+QList<MasterAccessControlEntry> LocalDomainAccessStore::getEditableMasterAccessControlEntries(
         const QString& userId)
 {
     LOG_DEBUG(logger,
-              QString("execute: entering getEditableMasterAccessControlEntry with uId %1")
-                      .arg(userId));
+              FormatString("execute: entering getEditableMasterAccessControlEntry with uId %1")
+                      .arg(userId.toStdString())
+                      .str());
 
     // Get all the Master ACEs for the domains where the user is master
-    QSqlQuery query = createGetEditableAceQuery(GET_EDITABLE_MASTER_ACES, userId, QtRole::MASTER);
+    QSqlQuery query = createGetEditableAceQuery(GET_EDITABLE_MASTER_ACES, userId, Role::MASTER);
     assert(query.exec());
 
     return extractMasterAces(query);
 }
 
-QList<QtMasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessControlEntries(
+QList<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessControlEntries(
         const QString& domain,
         const QString& interfaceName)
 {
@@ -473,7 +482,7 @@ QList<QtMasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessControl
     return extractMasterAces(query);
 }
 
-QList<QtMasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessControlEntries(
+QList<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessControlEntries(
         const QString& uid,
         const QString& domain,
         const QString& interfaceName)
@@ -485,7 +494,7 @@ QList<QtMasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessControl
     return extractMasterAces(query);
 }
 
-Optional<QtMasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessControlEntry(
+Optional<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessControlEntry(
         const QString& uid,
         const QString& domain,
         const QString& interfaceName,
@@ -494,16 +503,17 @@ Optional<QtMasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessCont
     QSqlQuery query = createGetAceQuery(GET_MASTER_ACE, uid, domain, interfaceName, operation);
     assert(query.exec());
 
-    QList<QtMasterAccessControlEntry> masterAceList = extractMasterAces(query);
+    QList<MasterAccessControlEntry> masterAceList = extractMasterAces(query);
     return firstEntry(masterAceList);
 }
 
 bool LocalDomainAccessStore::updateMasterAccessControlEntry(
-        const QtMasterAccessControlEntry& updatedMasterAce)
+        const MasterAccessControlEntry& updatedMasterAce)
 {
     LOG_DEBUG(logger,
-              QString("execute: entering updateMasterAce with uId %1")
-                      .arg(updatedMasterAce.getUid()));
+              FormatString("execute: entering updateMasterAce with uId %1")
+                      .arg(updatedMasterAce.getUid().toStdString())
+                      .str());
 
     // Add/update a master ACE
     QSqlQuery query = createUpdateMasterAceQuery(UPDATE_MASTER_ACE, updatedMasterAce);
@@ -520,7 +530,7 @@ bool LocalDomainAccessStore::removeMasterAccessControlEntry(const QString& userI
     return query.exec();
 }
 
-QList<QtMasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessControlEntries(
+QList<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessControlEntries(
         const QString& uid)
 {
     QSqlQuery query = createGetAceQuery(GET_UID_MEDIATOR_ACES, uid);
@@ -529,19 +539,22 @@ QList<QtMasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessContr
     return extractMasterAces(query);
 }
 
-QList<QtMasterAccessControlEntry> LocalDomainAccessStore::getEditableMediatorAccessControlEntries(
+QList<MasterAccessControlEntry> LocalDomainAccessStore::getEditableMediatorAccessControlEntries(
         const QString& userId)
 {
-    LOG_DEBUG(logger, QString("execute: entering getEditableMediatorAces with uId %1").arg(userId));
+    LOG_DEBUG(logger,
+              FormatString("execute: entering getEditableMediatorAces with uId %1")
+                      .arg(userId.toStdString())
+                      .str());
 
     // Get all the Mediator ACEs for the domains where the user is master
-    QSqlQuery query = createGetEditableAceQuery(GET_EDITABLE_MEDIATOR_ACES, userId, QtRole::MASTER);
+    QSqlQuery query = createGetEditableAceQuery(GET_EDITABLE_MEDIATOR_ACES, userId, Role::MASTER);
     assert(query.exec());
 
     return extractMasterAces(query);
 }
 
-QList<QtMasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessControlEntries(
+QList<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessControlEntries(
         const QString& domain,
         const QString& interfaceName)
 {
@@ -551,7 +564,7 @@ QList<QtMasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessContr
     return extractMasterAces(query);
 }
 
-QList<QtMasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessControlEntries(
+QList<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessControlEntries(
         const QString& uid,
         const QString& domain,
         const QString& interfaceName)
@@ -563,7 +576,7 @@ QList<QtMasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessContr
     return extractMasterAces(query);
 }
 
-Optional<QtMasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessControlEntry(
+Optional<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessControlEntry(
         const QString& uid,
         const QString& domain,
         const QString& interfaceName,
@@ -572,27 +585,28 @@ Optional<QtMasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessCo
     QSqlQuery query = createGetAceQuery(GET_MEDIATOR_ACE, uid, domain, interfaceName, operation);
     assert(query.exec());
 
-    QList<QtMasterAccessControlEntry> mediatorAceList = extractMasterAces(query);
+    QList<MasterAccessControlEntry> mediatorAceList = extractMasterAces(query);
     return firstEntry(mediatorAceList);
 }
 
 bool LocalDomainAccessStore::updateMediatorAccessControlEntry(
-        const QtMasterAccessControlEntry& updatedMediatorAce)
+        const MasterAccessControlEntry& updatedMediatorAce)
 {
     LOG_DEBUG(logger,
-              QString("execute: entering updateMediatorAce with uId %1")
-                      .arg(updatedMediatorAce.getUid()));
+              FormatString("execute: entering updateMediatorAce with uId %1")
+                      .arg(updatedMediatorAce.getUid().toStdString())
+                      .str());
 
     bool updateSuccess = false;
 
-    Optional<QtMasterAccessControlEntry> masterAceOptional =
-            getMasterAccessControlEntry(updatedMediatorAce.getUid(),
-                                        updatedMediatorAce.getDomain(),
-                                        updatedMediatorAce.getInterfaceName(),
-                                        updatedMediatorAce.getOperation());
+    Optional<MasterAccessControlEntry> masterAceOptional = getMasterAccessControlEntry(
+            QString::fromStdString(updatedMediatorAce.getUid()),
+            QString::fromStdString(updatedMediatorAce.getDomain()),
+            QString::fromStdString(updatedMediatorAce.getInterfaceName()),
+            QString::fromStdString(updatedMediatorAce.getOperation()));
     AceValidator aceValidator(masterAceOptional,
-                              Optional<QtMasterAccessControlEntry>(updatedMediatorAce),
-                              Optional<QtOwnerAccessControlEntry>::createNull());
+                              Optional<MasterAccessControlEntry>(updatedMediatorAce),
+                              Optional<OwnerAccessControlEntry>::createNull());
 
     if (aceValidator.isMediatorValid()) {
         // Add/update a mediator ACE
@@ -609,19 +623,20 @@ bool LocalDomainAccessStore::removeMediatorAccessControlEntry(const QString& use
                                                               const QString& operation)
 {
     LOG_DEBUG(logger,
-              QString("execute: entering removeMediatorAce with userId: %1, domain: %2, "
-                      "interface: %3, operation: %4")
-                      .arg(userId)
-                      .arg(domain)
-                      .arg(interfaceName)
-                      .arg(operation));
+              FormatString("execute: entering removeMediatorAce with userId: %1, domain: %2, "
+                           "interface: %3, operation: %4")
+                      .arg(userId.toStdString())
+                      .arg(domain.toStdString())
+                      .arg(interfaceName.toStdString())
+                      .arg(operation.toStdString())
+                      .str());
 
     QSqlQuery query =
             createRemoveAceQuery(DELETE_MEDIATOR_ACE, userId, domain, interfaceName, operation);
     return query.exec();
 }
 
-QList<QtOwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessControlEntries(
+QList<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessControlEntries(
         const QString& uid)
 {
     QSqlQuery query = createGetAceQuery(GET_UID_OWNER_ACES, uid);
@@ -630,19 +645,22 @@ QList<QtOwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessControlEn
     return extractOwnerAces(query);
 }
 
-QList<QtOwnerAccessControlEntry> LocalDomainAccessStore::getEditableOwnerAccessControlEntries(
+QList<OwnerAccessControlEntry> LocalDomainAccessStore::getEditableOwnerAccessControlEntries(
         const QString& userId)
 {
-    LOG_DEBUG(logger, QString("execute: entering getEditableOwnerAces with uId %1").arg(userId));
+    LOG_DEBUG(logger,
+              FormatString("execute: entering getEditableOwnerAces with uId %1")
+                      .arg(userId.toStdString())
+                      .str());
 
     // Get all the Owner ACEs for the domains owned by the user
-    QSqlQuery query = createGetEditableAceQuery(GET_EDITABLE_OWNER_ACES, userId, QtRole::OWNER);
+    QSqlQuery query = createGetEditableAceQuery(GET_EDITABLE_OWNER_ACES, userId, Role::OWNER);
     assert(query.exec());
 
     return extractOwnerAces(query);
 }
 
-QList<QtOwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessControlEntries(
+QList<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessControlEntries(
         const QString& domain,
         const QString& interfaceName)
 {
@@ -652,7 +670,7 @@ QList<QtOwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessControlEn
     return extractOwnerAces(query);
 }
 
-QList<QtOwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessControlEntries(
+QList<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessControlEntries(
         const QString& userId,
         const QString& domain,
         const QString& interfaceName)
@@ -664,7 +682,7 @@ QList<QtOwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessControlEn
     return extractOwnerAces(query);
 }
 
-Optional<QtOwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessControlEntry(
+Optional<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessControlEntry(
         const QString& userId,
         const QString& domain,
         const QString& interfaceName,
@@ -673,41 +691,42 @@ Optional<QtOwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessContro
     QSqlQuery query = createGetAceQuery(GET_OWNER_ACE, userId, domain, interfaceName, operation);
     assert(query.exec());
 
-    QList<QtOwnerAccessControlEntry> ownerAceList = extractOwnerAces(query);
+    QList<OwnerAccessControlEntry> ownerAceList = extractOwnerAces(query);
     return firstEntry(ownerAceList);
 }
 
 bool LocalDomainAccessStore::updateOwnerAccessControlEntry(
-        const QtOwnerAccessControlEntry& updatedOwnerAce)
+        const OwnerAccessControlEntry& updatedOwnerAce)
 {
-    LOG_DEBUG(
-            logger,
-            QString("execute: entering updateOwnerAce with uId %1").arg(updatedOwnerAce.getUid()));
+    LOG_DEBUG(logger,
+              FormatString("execute: entering updateOwnerAce with uId %1")
+                      .arg(updatedOwnerAce.getUid().toStdString())
+                      .str());
 
     bool updateSuccess = false;
 
-    Optional<QtMasterAccessControlEntry> masterAceOptional =
-            getMasterAccessControlEntry(updatedOwnerAce.getUid(),
-                                        updatedOwnerAce.getDomain(),
-                                        updatedOwnerAce.getInterfaceName(),
-                                        updatedOwnerAce.getOperation());
-    Optional<QtMasterAccessControlEntry> mediatorAceOptional =
-            getMediatorAccessControlEntry(updatedOwnerAce.getUid(),
-                                          updatedOwnerAce.getDomain(),
-                                          updatedOwnerAce.getInterfaceName(),
-                                          updatedOwnerAce.getOperation());
+    Optional<MasterAccessControlEntry> masterAceOptional =
+            getMasterAccessControlEntry(QString::fromStdString(updatedOwnerAce.getUid()),
+                                        QString::fromStdString(updatedOwnerAce.getDomain()),
+                                        QString::fromStdString(updatedOwnerAce.getInterfaceName()),
+                                        QString::fromStdString(updatedOwnerAce.getOperation()));
+    Optional<MasterAccessControlEntry> mediatorAceOptional = getMediatorAccessControlEntry(
+            QString::fromStdString(updatedOwnerAce.getUid()),
+            QString::fromStdString(updatedOwnerAce.getDomain()),
+            QString::fromStdString(updatedOwnerAce.getInterfaceName()),
+            QString::fromStdString(updatedOwnerAce.getOperation()));
     AceValidator aceValidator(masterAceOptional,
                               mediatorAceOptional,
-                              Optional<QtOwnerAccessControlEntry>(updatedOwnerAce));
+                              Optional<OwnerAccessControlEntry>(updatedOwnerAce));
 
     if (aceValidator.isOwnerValid()) {
         QSqlQuery query;
         query.prepare(UPDATE_OWNER_ACE);
 
-        query.bindValue(BIND_UID, updatedOwnerAce.getUid());
-        query.bindValue(BIND_DOMAIN, updatedOwnerAce.getDomain());
-        query.bindValue(BIND_INTERFACE, updatedOwnerAce.getInterfaceName());
-        query.bindValue(BIND_OPERATION, updatedOwnerAce.getOperation());
+        query.bindValue(BIND_UID, QString::fromStdString(updatedOwnerAce.getUid()));
+        query.bindValue(BIND_DOMAIN, QString::fromStdString(updatedOwnerAce.getDomain()));
+        query.bindValue(BIND_INTERFACE, QString::fromStdString(updatedOwnerAce.getInterfaceName()));
+        query.bindValue(BIND_OPERATION, QString::fromStdString(updatedOwnerAce.getOperation()));
 
         query.bindValue(BIND_REQUIRED_TRUSTLEVEL, updatedOwnerAce.getRequiredTrustLevel());
         query.bindValue(
@@ -724,13 +743,15 @@ bool LocalDomainAccessStore::removeOwnerAccessControlEntry(const QString& userId
                                                            const QString& interfaceName,
                                                            const QString& operation)
 {
-    LOG_DEBUG(logger,
-              QString("execute: entering removeOwnerAce with userId: %1, domain: %2, interface: "
-                      "%3, operation: %4")
-                      .arg(userId)
-                      .arg(domain)
-                      .arg(interfaceName)
-                      .arg(operation));
+    LOG_DEBUG(
+            logger,
+            FormatString("execute: entering removeOwnerAce with userId: %1, domain: %2, interface: "
+                         "%3, operation: %4")
+                    .arg(userId.toStdString())
+                    .arg(domain.toStdString())
+                    .arg(interfaceName.toStdString())
+                    .arg(operation.toStdString())
+                    .str());
 
     QSqlQuery query =
             createRemoveAceQuery(DELETE_OWNER_ACE, userId, domain, interfaceName, operation);
@@ -739,7 +760,7 @@ bool LocalDomainAccessStore::removeOwnerAccessControlEntry(const QString& userId
 
 void LocalDomainAccessStore::reset()
 {
-    LOG_DEBUG(logger, QString("execute: entering reset store"));
+    LOG_DEBUG(logger, "execute: entering reset store");
 
     QSqlQuery dropDomainRole("DROP TABLE IF EXISTS DomainRole", db);
     QSqlQuery dropMasterAcl("DROP TABLE IF EXISTS MasterACL", db);
@@ -755,7 +776,7 @@ void LocalDomainAccessStore::reset()
 }
 
 bool LocalDomainAccessStore::insertDomainRoleEntry(const QString& userId,
-                                                   QtRole::Enum role,
+                                                   Role::Enum role,
                                                    const QList<QString>& domains)
 {
 
@@ -774,8 +795,11 @@ bool LocalDomainAccessStore::insertDomainRoleEntry(const QString& userId,
 
         if (!query.exec()) {
             LOG_ERROR(logger,
-                      QString("Could not add domain entry %1 %2 %3").arg(userId).arg(role).arg(
-                              domain));
+                      FormatString("Could not add domain entry %1 %2 %3")
+                              .arg(userId.toStdString())
+                              .arg(role)
+                              .arg(domain.toStdString())
+                              .str());
             return false;
         }
     }
@@ -784,9 +808,9 @@ bool LocalDomainAccessStore::insertDomainRoleEntry(const QString& userId,
     return true;
 }
 
-QList<QtMasterAccessControlEntry> LocalDomainAccessStore::extractMasterAces(QSqlQuery& query)
+QList<MasterAccessControlEntry> LocalDomainAccessStore::extractMasterAces(QSqlQuery& query)
 {
-    QList<QtMasterAccessControlEntry> masterAces;
+    QList<MasterAccessControlEntry> masterAces;
 
     int uidField = query.record().indexOf("uid");
     int domainField = query.record().indexOf("domain");
@@ -801,19 +825,18 @@ QList<QtMasterAccessControlEntry> LocalDomainAccessStore::extractMasterAces(QSql
 
     while (query.next()) {
 
-        QtMasterAccessControlEntry entry;
+        MasterAccessControlEntry entry;
 
         // Set the scalar fields
-        entry.setUid(query.value(uidField).toString());
-        entry.setDomain(query.value(domainField).toString());
-        entry.setInterfaceName(query.value(interfaceNameField).toString());
-        entry.setDefaultRequiredTrustLevel(
-                getEnumField<QtTrustLevel::Enum>(query, defaultRTLField));
+        entry.setUid(query.value(uidField).toString().toStdString());
+        entry.setDomain(query.value(domainField).toString().toStdString());
+        entry.setInterfaceName(query.value(interfaceNameField).toString().toStdString());
+        entry.setDefaultRequiredTrustLevel(getEnumField<TrustLevel::Enum>(query, defaultRTLField));
         entry.setDefaultRequiredControlEntryChangeTrustLevel(
-                getEnumField<QtTrustLevel::Enum>(query, defaultRCETLField));
-        entry.setOperation(query.value(operationField).toString());
+                getEnumField<TrustLevel::Enum>(query, defaultRCETLField));
+        entry.setOperation(query.value(operationField).toString().toStdString());
         entry.setDefaultConsumerPermission(
-                getEnumField<QtPermission::Enum>(query, defaultConsumerPermissionField));
+                getEnumField<Permission::Enum>(query, defaultConsumerPermissionField));
 
         // Append the list fields
         setPossibleConsumerPermissions(entry, query, possibleConsumerPermissionsField);
@@ -828,9 +851,9 @@ QList<QtMasterAccessControlEntry> LocalDomainAccessStore::extractMasterAces(QSql
     return masterAces;
 }
 
-QList<QtOwnerAccessControlEntry> LocalDomainAccessStore::extractOwnerAces(QSqlQuery& query)
+QList<OwnerAccessControlEntry> LocalDomainAccessStore::extractOwnerAces(QSqlQuery& query)
 {
-    QList<QtOwnerAccessControlEntry> ownerAces;
+    QList<OwnerAccessControlEntry> ownerAces;
 
     int uidField = query.record().indexOf("uid");
     int domainField = query.record().indexOf("domain");
@@ -842,19 +865,17 @@ QList<QtOwnerAccessControlEntry> LocalDomainAccessStore::extractOwnerAces(QSqlQu
 
     while (query.next()) {
 
-        QtOwnerAccessControlEntry entry;
+        OwnerAccessControlEntry entry;
 
-        entry.setUid(query.value(uidField).toString());
-        entry.setDomain(query.value(domainField).toString());
-        entry.setInterfaceName(query.value(interfaceNameField).toString());
-        entry.setOperation(query.value(operationField).toString());
+        entry.setUid(query.value(uidField).toString().toStdString());
+        entry.setDomain(query.value(domainField).toString().toStdString());
+        entry.setInterfaceName(query.value(interfaceNameField).toString().toStdString());
+        entry.setOperation(query.value(operationField).toString().toStdString());
 
-        entry.setRequiredTrustLevel(
-                getEnumField<QtTrustLevel::Enum>(query, requiredTrustLevelField));
+        entry.setRequiredTrustLevel(getEnumField<TrustLevel::Enum>(query, requiredTrustLevelField));
         entry.setRequiredAceChangeTrustLevel(
-                getEnumField<QtTrustLevel::Enum>(query, requiredACEChangeTLField));
-        entry.setConsumerPermission(
-                getEnumField<QtPermission::Enum>(query, consumerPermissionField));
+                getEnumField<TrustLevel::Enum>(query, requiredACEChangeTLField));
+        entry.setConsumerPermission(getEnumField<Permission::Enum>(query, consumerPermissionField));
 
         // Append the result
         ownerAces.append(entry);
@@ -863,50 +884,50 @@ QList<QtOwnerAccessControlEntry> LocalDomainAccessStore::extractOwnerAces(QSqlQu
     return ownerAces;
 }
 
-void LocalDomainAccessStore::setPossibleConsumerPermissions(QtMasterAccessControlEntry& entry,
+void LocalDomainAccessStore::setPossibleConsumerPermissions(MasterAccessControlEntry& entry,
                                                             QSqlQuery& query,
                                                             int field)
 {
     // Create a list of permissions
     QByteArray value = query.value(field).toByteArray();
-    QList<QtPermission::Enum> permissions = deserializeEnumList<QtPermission::Enum>(value);
+    QList<Permission::Enum> permissions = deserializeEnumList<Permission::Enum>(value);
 
     // Set the result
-    entry.setPossibleConsumerPermissions(permissions);
+    entry.setPossibleConsumerPermissions(TypeUtil::toStd(permissions));
 }
 
-void LocalDomainAccessStore::setPossibleRequiredTrustLevels(QtMasterAccessControlEntry& entry,
+void LocalDomainAccessStore::setPossibleRequiredTrustLevels(MasterAccessControlEntry& entry,
                                                             QSqlQuery& query,
                                                             int field)
 {
     QByteArray value = query.value(field).toByteArray();
-    QList<QtTrustLevel::Enum> trustLevels = deserializeEnumList<QtTrustLevel::Enum>(value);
-    entry.setPossibleRequiredTrustLevels(trustLevels);
+    QList<TrustLevel::Enum> trustLevels = deserializeEnumList<TrustLevel::Enum>(value);
+    entry.setPossibleRequiredTrustLevels(TypeUtil::toStd(trustLevels));
 }
 
 void LocalDomainAccessStore::setPossibleRequiredControlEntryChangeTrustLevels(
-        QtMasterAccessControlEntry& entry,
+        MasterAccessControlEntry& entry,
         QSqlQuery& query,
         int field)
 {
     QByteArray value = query.value(field).toByteArray();
-    QList<QtTrustLevel::Enum> trustLevels = deserializeEnumList<QtTrustLevel::Enum>(value);
-    entry.setPossibleRequiredControlEntryChangeTrustLevels(trustLevels);
+    QList<TrustLevel::Enum> trustLevels = deserializeEnumList<TrustLevel::Enum>(value);
+    entry.setPossibleRequiredControlEntryChangeTrustLevels(TypeUtil::toStd(trustLevels));
 }
 
 QSqlQuery LocalDomainAccessStore::createUpdateMasterAceQuery(
         const QString& sqlQuery,
-        const QtMasterAccessControlEntry& updatedMasterAce)
+        const MasterAccessControlEntry& updatedMasterAce)
 {
     QSqlQuery query;
     query.setForwardOnly(true);
     query.prepare(sqlQuery);
 
     // Add scalar fields
-    query.bindValue(BIND_UID, updatedMasterAce.getUid());
-    query.bindValue(BIND_DOMAIN, updatedMasterAce.getDomain());
-    query.bindValue(BIND_INTERFACE, updatedMasterAce.getInterfaceName());
-    query.bindValue(BIND_OPERATION, updatedMasterAce.getOperation());
+    query.bindValue(BIND_UID, QString::fromStdString(updatedMasterAce.getUid()));
+    query.bindValue(BIND_DOMAIN, QString::fromStdString(updatedMasterAce.getDomain()));
+    query.bindValue(BIND_INTERFACE, QString::fromStdString(updatedMasterAce.getInterfaceName()));
+    query.bindValue(BIND_OPERATION, QString::fromStdString(updatedMasterAce.getOperation()));
     query.bindValue(BIND_DEFAULT_TRUSTLEVEL, updatedMasterAce.getDefaultRequiredTrustLevel());
     query.bindValue(BIND_DEFAULT_CHANGETRUSTLEVEL,
                     updatedMasterAce.getDefaultRequiredControlEntryChangeTrustLevel());
@@ -915,10 +936,11 @@ QSqlQuery LocalDomainAccessStore::createUpdateMasterAceQuery(
 
     // Serialize list fields
     QByteArray consumerPermissions =
-            serializeEnumList(updatedMasterAce.getPossibleConsumerPermissions());
-    QByteArray trustLevels = serializeEnumList(updatedMasterAce.getPossibleRequiredTrustLevels());
-    QByteArray changeTrustLevels =
-            serializeEnumList(updatedMasterAce.getPossibleRequiredControlEntryChangeTrustLevels());
+            serializeEnumList(TypeUtil::toQt(updatedMasterAce.getPossibleConsumerPermissions()));
+    QByteArray trustLevels =
+            serializeEnumList(TypeUtil::toQt(updatedMasterAce.getPossibleRequiredTrustLevels()));
+    QByteArray changeTrustLevels = serializeEnumList(
+            TypeUtil::toQt(updatedMasterAce.getPossibleRequiredControlEntryChangeTrustLevels()));
 
     query.bindValue(BIND_POSSIBLE_CONSUMERPERMISSIONS, consumerPermissions);
     query.bindValue(BIND_POSSIBLE_TRUSTLEVELS, trustLevels);
@@ -946,7 +968,7 @@ QSqlQuery LocalDomainAccessStore::createRemoveAceQuery(const QString& sqlQuery,
 
 QSqlQuery LocalDomainAccessStore::createGetEditableAceQuery(const QString& sqlQuery,
                                                             const QString& uid,
-                                                            QtRole::Enum role)
+                                                            Role::Enum role)
 {
     QSqlQuery query;
     query.setForwardOnly(true);

@@ -51,7 +51,7 @@ public:
         }
 
         if ((reply.getResponse()).empty()) {
-            LOG_ERROR(logger, QString("Unexpected empty reply object. Calling error callback"));
+            LOG_ERROR(logger, "Unexpected empty reply object. Calling error callback");
             caller->returnError(exceptions::JoynrRuntimeException("Reply object had no response."));
             return;
         }

@@ -156,18 +156,18 @@ const std::string LocalDomainAccessControllerTest::joynrDomain("LocalDomainAcces
 //----- Tests ------------------------------------------------------------------
 
 TEST_F(LocalDomainAccessControllerTest, testHasRole) {
-    localDomainAccessStore->updateDomainRole(QtDomainRoleEntry::createQt(userDre));
+    localDomainAccessStore->updateDomainRole(userDre);
 
     QString defaultString;
     DefaultValue<QString>::Set(defaultString);
 
     EXPECT_TRUE(localDomainAccessController->hasRole(QString::fromStdString(LocalDomainAccessControllerTest::TEST_USER),
                                                      QString::fromStdString(LocalDomainAccessControllerTest::TEST_DOMAIN1),
-                                                     QtRole::OWNER));
+                                                     Role::OWNER));
 }
 
 TEST_F(LocalDomainAccessControllerTest, consumerPermission) {
-    localDomainAccessStore->updateOwnerAccessControlEntry(QtOwnerAccessControlEntry::createQt(ownerAce));
+    localDomainAccessStore->updateOwnerAccessControlEntry(ownerAce);
 
     QString defaultString;
     DefaultValue<QString>::Set(defaultString);
@@ -184,7 +184,7 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermission) {
 }
 
 TEST_F(LocalDomainAccessControllerTest, consumerPermissionInvalidOwnerAce) {
-    localDomainAccessStore->updateOwnerAccessControlEntry(QtOwnerAccessControlEntry::createQt(ownerAce));
+    localDomainAccessStore->updateOwnerAccessControlEntry(ownerAce);
 
     // Update the MasterACE so that it does not permit Permission::YES
     std::vector<Permission::Enum> possiblePermissions = {
@@ -192,7 +192,7 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionInvalidOwnerAce) {
     };
     masterAce.setDefaultConsumerPermission(Permission::ASK);
     masterAce.setPossibleConsumerPermissions(possiblePermissions);
-    localDomainAccessStore->updateMasterAccessControlEntry(QtMasterAccessControlEntry::createQt(masterAce));
+    localDomainAccessStore->updateMasterAccessControlEntry(masterAce);
 
     QString defaultString;
     DefaultValue<QString>::Set(defaultString);
@@ -211,8 +211,8 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionInvalidOwnerAce) {
 TEST_F(LocalDomainAccessControllerTest, consumerPermissionOwnerAceOverrulesMaster) {
     ownerAce.setRequiredTrustLevel(TrustLevel::MID);
     ownerAce.setConsumerPermission(Permission::ASK);
-    localDomainAccessStore->updateOwnerAccessControlEntry(QtOwnerAccessControlEntry::createQt(ownerAce));
-    localDomainAccessStore->updateMasterAccessControlEntry(QtMasterAccessControlEntry::createQt(masterAce));
+    localDomainAccessStore->updateOwnerAccessControlEntry(ownerAce);
+    localDomainAccessStore->updateMasterAccessControlEntry(masterAce);
 
     QString defaultString;
     DefaultValue<QString>::Set(defaultString);
@@ -240,7 +240,7 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionOwnerAceOverrulesMaste
 
 TEST_F(LocalDomainAccessControllerTest, consumerPermissionOperationWildcard) {
     ownerAce.setOperation(LocalDomainAccessStore::WILDCARD);
-    localDomainAccessStore->updateOwnerAccessControlEntry(QtOwnerAccessControlEntry::createQt(ownerAce));
+    localDomainAccessStore->updateOwnerAccessControlEntry(ownerAce);
 
     QString defaultString;
     DefaultValue<QString>::Set(defaultString);

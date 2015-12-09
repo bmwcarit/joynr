@@ -61,7 +61,7 @@ Runnable* BlockingQueue::take()
     std::unique_lock<std::mutex> lock(
             conditionMutex); // std::condition_variable works only with unique_lock
 
-    // LOG_TRACE(logger, QString("Wait for condition (queuelen=%0)").arg(queue.size()));
+    LOG_TRACE(logger, FormatString("Wait for condition (queuelen=%0)").arg(queue.size()).str());
     // Wait for work or shutdown
     condition.wait(lock, [this] { return (stoppingScheduler || !queue.empty()); });
     if (stoppingScheduler) {

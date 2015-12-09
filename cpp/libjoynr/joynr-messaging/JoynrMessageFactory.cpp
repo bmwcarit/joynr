@@ -34,8 +34,7 @@ namespace joynr
 
 JoynrMessageFactory::JoynrMessageFactory()
         : securityManager(new DummyPlatformSecurityManager()),
-          logger(joynr_logging::Logging::getInstance()->getLogger(QString("LIB"),
-                                                                  QString("JoynrMessageFactory")))
+          logger(joynr_logging::Logging::getInstance()->getLogger("LIB", "JoynrMessageFactory"))
 {
     qRegisterMetaType<Reply>();
     qRegisterMetaType<Request>();

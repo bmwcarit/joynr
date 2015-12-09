@@ -32,7 +32,7 @@ DbusMessagingStubAdapter::DbusMessagingStubAdapter(std::string serviceAddress)
 {
     // init logger
     logger = Logging::getInstance()->getLogger("MSG", "DbusMessagingStubAdapter");
-    LOG_INFO(logger, "Get dbus proxy on address: " + TypeUtil::toQt(serviceAddress));
+    LOG_INFO(logger, FormatString("Get dbus proxy on address: %1").arg(serviceAddress).str());
 
     // init the stub
     init();

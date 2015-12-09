@@ -38,7 +38,7 @@ using namespace std::chrono;
 class JoynrMessageFactoryTest : public ::testing::Test {
 public:
     JoynrMessageFactoryTest()
-        : logger(joynr_logging::Logging::getInstance()->getLogger(QString("TEST"), QString("JoynrMessageFactoryTest"))),
+        : logger(joynr_logging::Logging::getInstance()->getLogger("TEST","JoynrMessageFactoryTest")),
           messageFactory(),
           senderID(),
           receiverID(),
@@ -146,13 +146,13 @@ TEST_F(JoynrMessageFactoryTest, createRequest){
     JoynrTimePoint expiryDate = joynrMessage.getHeaderExpiryDate();
     EXPECT_NEAR(expectedExpiryDate.time_since_epoch().count(), expiryDate.time_since_epoch().count(), 100.);
     LOG_DEBUG(logger,
-              QString("expiryDate: %1 [%2]")
-              .arg(QString::fromStdString(DispatcherUtils::convertAbsoluteTimeToTtlString(expiryDate)))
-              .arg(duration_cast<milliseconds>(expiryDate.time_since_epoch()).count()));
+              FormatString("expiryDate: %1 [%2]")
+              .arg(DispatcherUtils::convertAbsoluteTimeToTtlString(expiryDate))
+              .arg(duration_cast<milliseconds>(expiryDate.time_since_epoch()).count()).str());
     LOG_DEBUG(logger,
-              QString("expectedExpiryDate: %1 [%2]")
-              .arg(QString::fromStdString(DispatcherUtils::convertAbsoluteTimeToTtlString(expectedExpiryDate)))
-              .arg(duration_cast<milliseconds>(expectedExpiryDate.time_since_epoch()).count()));
+              FormatString("expectedExpiryDate: %1 [%2]")
+              .arg(DispatcherUtils::convertAbsoluteTimeToTtlString(expectedExpiryDate))
+              .arg(duration_cast<milliseconds>(expectedExpiryDate.time_since_epoch()).count()).str());
 
     checkHeaderCreatorFromTo(joynrMessage);
     checkRequest(joynrMessage);

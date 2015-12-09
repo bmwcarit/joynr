@@ -88,7 +88,8 @@ void LongPollingMessageReceiver::run()
 {
     checkServerTime();
     QString createChannelUrl = bounceProxyUrl.getCreateChannelUrl(channelId).toString();
-    LOG_INFO(logger, "Running lpmr with channelId " + channelId);
+    LOG_INFO(logger,
+             FormatString("Running lpmr with channelId %1").arg(channelId.toStdString()).str());
     std::shared_ptr<IHttpPostBuilder> createChannelRequestBuilder(
             HttpNetworking::getInstance()->createHttpPostBuilder(createChannelUrl));
     std::shared_ptr<HttpRequest> createChannelRequest(
@@ -103,12 +104,16 @@ void LongPollingMessageReceiver::run()
         HttpResult createChannelResult = createChannelRequest->execute();
         if (createChannelResult.getStatusCode() == 201) {
             channelUrl = *createChannelResult.getHeaders().find("Location");
-            LOG_INFO(logger, "channel creation successfull; channel url:" + channelUrl);
+            LOG_INFO(logger,
+                     FormatString("channel creation successfull; channel url:%1")
+                             .arg(channelUrl.toStdString())
+                             .str());
             channelCreatedSemaphore->notify();
         } else {
             LOG_INFO(logger,
-                     "channel creation failed; status code:" +
-                             QString::number(createChannelResult.getStatusCode()));
+                     FormatString("channel creation failed; status code:%1")
+                             .arg(createChannelResult.getStatusCode())
+                             .str());
 
             std::unique_lock<std::mutex> lock(interruptedMutex);
             interruptedWait.wait_for(lock, milliseconds(settings.createChannelRetryInterval_ms));
@@ -122,8 +127,10 @@ void LongPollingMessageReceiver::run()
     std::vector<std::string> urls = {channelUrl.toStdString()};
     urlInformation.setUrls(urls);
     LOG_INFO(logger,
-             "Adding channelId and Url of cluster controller to remote ChannelUrlDirectory" +
-                     channelUrl);
+             FormatString("Adding channelId and Url of cluster controller to remote "
+                          "ChannelUrlDirectory%1")
+                     .arg(channelUrl.toStdString())
+                     .str());
     channelUrlDirectory->registerChannelUrlsAsync(channelId.toStdString(), urlInformation);
 
     while (!isInterrupted()) {
@@ -138,7 +145,10 @@ void LongPollingMessageReceiver::run()
                         ->withTimeout_ms(settings.longPollTimeout_ms)
                         ->build());
 
-        LOG_DEBUG(logger, QString("sending long polling request; url: %1").arg(channelUrl));
+        LOG_DEBUG(logger,
+                  FormatString("sending long polling request; url: %1")
+                          .arg(channelUrl.toStdString())
+                          .str());
         HttpResult longPollingResult = longPollRequest->execute();
         if (!isInterrupted()) {
             // TODO: remove HttpErrorCodes and use constants.
@@ -163,9 +173,10 @@ void LongPollingMessageReceiver::run()
                     body = QString(longPollingResult.getBody().data());
                 }
                 LOG_ERROR(logger,
-                          QString("long polling failed; error message: %1; contents: %2")
-                                  .arg(longPollingResult.getErrorMessage())
-                                  .arg(body));
+                          FormatString("long polling failed; error message: %1; contents: %2")
+                                  .arg(longPollingResult.getErrorMessage().toStdString())
+                                  .arg(body.toStdString())
+                                  .str());
 
                 std::unique_lock<std::mutex> lock(interruptedMutex);
                 interruptedWait.wait_for(
@@ -188,8 +199,9 @@ void LongPollingMessageReceiver::processReceivedJsonObjects(const std::string& j
     JoynrMessage* msg = JsonSerializer::deserialize<JoynrMessage>(jsonObject);
     if (msg == nullptr) {
         LOG_ERROR(logger,
-                  QString("Unable to deserialize message. Raw message: %1")
-                          .arg(QString::fromStdString(jsonObject)));
+                  FormatString("Unable to deserialize message. Raw message: %1")
+                          .arg(jsonObject)
+                          .str());
         return;
     }
     if (msg->getType().empty()) {
@@ -198,8 +210,9 @@ void LongPollingMessageReceiver::processReceivedJsonObjects(const std::string& j
     }
     if (!msg->containsHeaderExpiryDate()) {
         LOG_ERROR(logger,
-                  QString("received message [msgId=%1] without decay time - dropping message")
-                          .arg(QString::fromStdString(msg->getHeaderMessageId())));
+                  FormatString("received message [msgId=%1] without decay time - dropping message")
+                          .arg(msg->getHeaderMessageId())
+                          .str());
     }
 
     if (msg->getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST ||
@@ -231,8 +244,9 @@ void LongPollingMessageReceiver::checkServerTime()
                     ->withTimeout_ms(settings.bounceProxyTimeout_ms)
                     ->build());
     LOG_DEBUG(logger,
-              QString("CheckServerTime: sending request to Bounce Proxy (") + timeCheckUrl +
-                      QString(")"));
+              FormatString("CheckServerTime: sending request to Bounce Proxy (%1)")
+                      .arg(timeCheckUrl.toStdString())
+                      .str());
     system_clock::time_point localTimeBeforeRequest = DispatcherUtils::now();
     HttpResult timeCheckResult = timeCheckRequest->execute();
     system_clock::time_point localTimeAfterRequest = DispatcherUtils::now();
@@ -240,30 +254,33 @@ void LongPollingMessageReceiver::checkServerTime()
                           TypeUtil::toMilliseconds(localTimeAfterRequest)) /
                          2;
     if (timeCheckResult.getStatusCode() != 200) {
-        LOG_ERROR(logger,
-                  QString("CheckServerTime: Bounce Proxy not reached [statusCode=%1] [body=%2]")
-                          .arg(QString::number(timeCheckResult.getStatusCode()))
-                          .arg(QString(timeCheckResult.getBody())));
+        LOG_ERROR(
+                logger,
+                FormatString("CheckServerTime: Bounce Proxy not reached [statusCode=%1] [body=%2]")
+                        .arg(timeCheckResult.getStatusCode())
+                        .arg(QString(timeCheckResult.getBody()).toStdString())
+                        .str());
     } else {
         LOG_TRACE(logger,
-                  QString("CheckServerTime: reply received [statusCode=%1] [body=%2]")
-                          .arg(QString::number(timeCheckResult.getStatusCode()))
-                          .arg(QString(timeCheckResult.getBody())));
+                  FormatString("CheckServerTime: reply received [statusCode=%1] [body=%2]")
+                          .arg(timeCheckResult.getStatusCode())
+                          .arg(QString(timeCheckResult.getBody()).toStdString())
+                          .str());
         uint64_t serverTime =
                 TypeUtil::toStdUInt64(QString(timeCheckResult.getBody()).toLongLong());
         uint64_t diff = abs(serverTime - localTime);
 
         LOG_INFO(logger,
-                 QString("CheckServerTime [server time=%1] [local time=%2] [diff=%3 ms]")
-                         .arg(TypeUtil::toQt(
-                                 TypeUtil::toDateString(JoynrTimePoint(milliseconds(serverTime)))))
-                         .arg(TypeUtil::toQt(
-                                 TypeUtil::toDateString(JoynrTimePoint(milliseconds(localTime)))))
-                         .arg(QString::number(diff)));
+                 FormatString("CheckServerTime [server time=%1] [local time=%2] [diff=%3 ms]")
+                         .arg(TypeUtil::toDateString(JoynrTimePoint(milliseconds(serverTime))))
+                         .arg(TypeUtil::toDateString(JoynrTimePoint(milliseconds(localTime))))
+                         .arg(diff)
+                         .str());
         if (diff > 500) {
             LOG_ERROR(logger,
-                      QString("CheckServerTime: time difference to server is %1 ms")
-                              .arg(QString::number(diff)));
+                      FormatString("CheckServerTime: time difference to server is %1 ms")
+                              .arg(diff)
+                              .str());
         }
     }
 }

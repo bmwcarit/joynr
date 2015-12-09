@@ -66,9 +66,10 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(Settings* settings)
                     *std::static_pointer_cast<system::RoutingTypes::QtWebSocketClientAddress>(
                             libjoynrMessagingAddress)))));
     LOG_TRACE(logger,
-              QString("OUTGOING sending websocket intialization message\nmessage: %0\nto: %1")
-                      .arg(initializationMsg)
-                      .arg(libjoynrMessagingAddress->toString()));
+              FormatString("OUTGOING sending websocket intialization message\nmessage: %1\nto: %2")
+                      .arg(initializationMsg.toStdString())
+                      .arg(libjoynrMessagingAddress->toString().toStdString())
+                      .str());
     websocket->sendTextMessage(initializationMsg);
 
     WebSocketMessagingStubFactory* factory = new WebSocketMessagingStubFactory();

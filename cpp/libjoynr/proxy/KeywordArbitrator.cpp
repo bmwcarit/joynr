@@ -47,11 +47,12 @@ void KeywordArbitrator::attemptArbitration()
         receiveCapabilitiesLookupResults(result);
     } catch (exceptions::JoynrException& e) {
         LOG_ERROR(logger,
-                  QString("Unable to lookup provider (domain: %1, interface: %2) "
-                          "from discovery. Error: %3.")
-                          .arg(QString::fromStdString(domain))
-                          .arg(QString::fromStdString(interfaceName))
-                          .arg(QString::fromStdString(e.getMessage())));
+                  FormatString("Unable to lookup provider (domain: %1, interface: %2) "
+                               "from discovery. Error: %3.")
+                          .arg(domain)
+                          .arg(interfaceName)
+                          .arg(e.getMessage())
+                          .str());
     }
 }
 
@@ -67,8 +68,9 @@ void KeywordArbitrator::receiveCapabilitiesLookupResults(
     for (joynr::types::DiscoveryEntry discoveryEntry : discoveryEntries) {
         types::ProviderQos providerQos = discoveryEntry.getQos();
         LOG_TRACE(logger,
-                  QString("Looping over capabilitiesEntry: %1")
-                          .arg(QString::fromStdString(discoveryEntry.toString())));
+                  FormatString("Looping over capabilitiesEntry: %1")
+                          .arg(discoveryEntry.toString())
+                          .str());
 
         // Check that the provider supports onChange subscriptions if this was requested
         if (discoveryQos.getProviderMustSupportOnChange() &&
@@ -82,7 +84,7 @@ void KeywordArbitrator::receiveCapabilitiesLookupResults(
             std::string name = parameter.getName();
             if (name == DiscoveryQos::KEYWORD_PARAMETER() && keyword == parameter.getValue()) {
                 std::string res = discoveryEntry.getParticipantId();
-                LOG_TRACE(logger, QString("setting res to %1").arg(QString::fromStdString(res)));
+                LOG_TRACE(logger, FormatString("setting res to %1").arg(res).str());
                 joynr::types::CommunicationMiddleware::Enum preferredConnection(
                         selectPreferredCommunicationMiddleware(discoveryEntry.getConnections()));
                 updateArbitrationStatusParticipantIdAndAddress(

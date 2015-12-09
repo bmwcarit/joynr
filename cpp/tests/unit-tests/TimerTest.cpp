@@ -77,10 +77,10 @@ public:
         const uint64_t start_ms = timerStartMapping.at(id);
         const int64_t  diff_ms  = now_ms - start_ms;
 
-        LOG_TRACE(TimerTest::logger, QString("Timer %0 expired").arg(id));
-        LOG_TRACE(TimerTest::logger, QString("  started    : %0").arg(start_ms));
-        LOG_TRACE(TimerTest::logger, QString("  returned   : %0").arg(now_ms));
-        LOG_TRACE(TimerTest::logger, QString("  difference : %0").arg(diff_ms));
+        LOG_TRACE(TimerTest::logger, FormatString("Timer %0 expired").arg(id).str());
+        LOG_TRACE(TimerTest::logger, FormatString("  started    : %0").arg(start_ms).str());
+        LOG_TRACE(TimerTest::logger, FormatString("  returned   : %0").arg(now_ms).str());
+        LOG_TRACE(TimerTest::logger, FormatString("  difference : %0").arg(diff_ms).str());
 
         onTimerExpired(id, diff_ms);
     }

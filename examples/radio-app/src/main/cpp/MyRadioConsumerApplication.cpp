@@ -151,15 +151,16 @@ int main(int argc, char* argv[])
     // Check the usage
     QString programName(argv[0]);
     if (argc != 2) {
-        LOG_ERROR(logger, QString("USAGE: %1 <provider-domain>").arg(programName));
+        LOG_ERROR(logger,
+                  FormatString("USAGE: %1 <provider-domain>").arg(programName.toStdString()).str());
         return 1;
     }
 
     // Get the provider domain
     std::string providerDomain(argv[1]);
-    LOG_INFO(logger,
-             QString("Creating proxy for provider on domain \"%1\"")
-                     .arg(TypeUtil::toQt(providerDomain)));
+    LOG_INFO(
+            logger,
+            FormatString("Creating proxy for provider on domain \"%1\"").arg(providerDomain).str());
 
     // Get the current program directory
     QString dir(QFileInfo(programName).absolutePath());
@@ -308,12 +309,14 @@ int main(int argc, char* argv[])
             MyRadioHelper::prettyLog(
                     logger,
                     QString("METHOD: add favorite station a second time failed with the following "
-                            "expected exception: %1").arg(QString::fromStdString(e.getName())));
+                            "expected exception: %1")
+                            .arg(QString::fromStdString(e.getName())));
         } else {
             MyRadioHelper::prettyLog(
                     logger,
                     QString("METHOD: add favorite station a second time failed with the following "
-                            "UNEXPECTED exception: %1").arg(QString::fromStdString(e.getName())));
+                            "UNEXPECTED exception: %1")
+                            .arg(QString::fromStdString(e.getName())));
         }
     }
 
@@ -326,7 +329,8 @@ int main(int argc, char* argv[])
                     logger,
                     QString("METHOD: add favorite station with empty name failed with the "
                             "following "
-                            "expected exception: %1").arg(QString::fromStdString(e.getMessage())));
+                            "expected exception: %1")
+                            .arg(QString::fromStdString(e.getMessage())));
         } else {
             MyRadioHelper::prettyLog(logger,
                                      QString("METHOD: add favorite station with empty name failed "

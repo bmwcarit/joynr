@@ -269,8 +269,8 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 						subscriptionCallback,
 						SubscriptionUtil::getVariant(subscriptionQos),
 						subscriptionRequest);
-				LOG_DEBUG(logger, QString("Registered subscription: %1")
-						.arg(QString::fromStdString(subscriptionRequest.toString()))
+				LOG_DEBUG(logger, FormatString("Registered subscription: %1")
+						.arg(subscriptionRequest.toString()).str()
 				);
 				assert(address);
 				std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
@@ -303,7 +303,7 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 				assert(false);
 			«ELSE»
 				QString subscriptionIdQT(QString::fromStdString(subscriptionId));
-				LOG_DEBUG(logger, "Unsubscribing. Id=" +subscriptionIdQT);
+				LOG_DEBUG(logger, FormatString("Unsubscribing. Id=%1").arg(subscriptionId).str());
 				assert(publicationManager != NULL);
 				LOG_DEBUG(logger, "Stopping publications by publication manager.");
 				publicationManager->stopPublication(subscriptionIdQT);
@@ -457,7 +457,7 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 					subscriptionCallback,
 					Variant::make<OnChangeSubscriptionQos>(subscriptionQos),
 					subscriptionRequest);
-		LOG_DEBUG(logger, "Registered broadcast subscription: " + subscriptionRequest.toQString());
+		LOG_DEBUG(logger, FormatString("Registered broadcast subscription: %1").arg(subscriptionRequest.toQString().toStdString()).str());
 		assert(address);
 		std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
 		assert(caller);
@@ -487,7 +487,7 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 			std::string& subscriptionId
 	) {
 		QString subscriptionIdQT(QString::fromStdString(subscriptionId));
-		LOG_DEBUG(logger, "Unsubscribing broadcast. Id=" + subscriptionIdQT);
+		LOG_DEBUG(logger, FormatString("Unsubscribing broadcast. Id=%1").arg(subscriptionId).str());
 		assert(publicationManager != NULL);
 		LOG_DEBUG(logger, "Stopping publications by publication manager.");
 		publicationManager->stopPublication(subscriptionIdQT);

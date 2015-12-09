@@ -97,8 +97,8 @@ void CombinedEnd2EndTest::SetUp()
     std::string systemSettingsFile = configuration.getDefaultSystemSettingsFile();
     std::string websocketSettingsFile = configuration.getDefaultWebsocketSettingsFile();
 
-    LOG_DEBUG(logger, QString("Default system settings file: %1").arg(systemSettingsFile.c_str()));
-    LOG_DEBUG(logger, QString("Default websocket settings file: %1").arg(websocketSettingsFile.c_str()));
+    LOG_DEBUG(logger, FormatString("Default system settings file: %1").arg(systemSettingsFile.c_str()).str());
+    LOG_DEBUG(logger, FormatString("Default websocket settings file: %1").arg(websocketSettingsFile.c_str()).str());
 
     if (systemSettingsFile.empty() && websocketSettingsFile.empty()) {
         runtime1 = JoynrRuntime::createRuntime("test-resources/libjoynrSystemIntegration1.settings",
@@ -352,7 +352,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
             testProxy->setEnumAttribute(static_cast<tests::testTypes::TestEnum::Enum>(999));
             ASSERT_FALSE(true) << "This line of code should never be reached";
         } catch (joynr::exceptions::MethodInvocationException e) {
-            LOG_DEBUG(logger, TypeUtil::toQt("Expected joynr::exceptions::MethodInvocationException has been thrown. Message: " + e.getMessage()));
+            LOG_DEBUG(logger, FormatString("Expected joynr::exceptions::MethodInvocationException has been thrown. Message: %1").arg(e.getMessage()).str());
         } catch (std::exception e) {
             ASSERT_FALSE(true) << "joynr::exceptions::MethodInvocationException is expected, however exception with message " << e.what() << "is thrown";
         }

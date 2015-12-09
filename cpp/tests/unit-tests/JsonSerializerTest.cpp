@@ -68,7 +68,7 @@ public:
     }
 
     void test(types::TestTypes::QtTStruct tStruct){
-        LOG_DEBUG(logger, tStruct.toString());
+        LOG_DEBUG(logger, tStruct.toString().toStdString());
     }
 
 protected:
@@ -121,7 +121,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_SubscriptionRequest) {
     Variant subscriptionQos = Variant::make<SubscriptionQos>(SubscriptionQos(5000));
     request.setQos(subscriptionQos);
     std::string result = JsonSerializer::serialize<SubscriptionRequest>(request);
-    LOG_DEBUG(logger, QString("result: %1").arg(QString::fromStdString(result)));
+    LOG_DEBUG(logger, FormatString("result: %1").arg(result).str());
     SubscriptionRequest* desRequest = JsonSerializer::deserialize<SubscriptionRequest>(result);
     EXPECT_TRUE(request == *desRequest);
 
@@ -138,7 +138,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_BroadcastSubscriptionRequest) {
     request.setFilterParameters(filterParams);
     request.setSubscribeToName("myAttribute");
     std::string requestJson = JsonSerializer::serialize<BroadcastSubscriptionRequest>(request);
-    LOG_DEBUG(logger, QString::fromStdString(requestJson));
+    LOG_DEBUG(logger, requestJson);
     BroadcastSubscriptionRequest* desRequest = JsonSerializer::deserialize<BroadcastSubscriptionRequest>(requestJson);
     EXPECT_TRUE(request == *desRequest);
 }
@@ -154,7 +154,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JoynrMessage) {
     expectedJoynrMessage.setType(JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST);
     expectedJoynrMessage.setPayload(JsonSerializer::serialize(expectedRequest));
     std::string serializedContent(JsonSerializer::serialize(expectedJoynrMessage));
-    LOG_DEBUG(logger, QString("serialize_JoynrMessage: actual  : %1").arg(QString::fromStdString(serializedContent)));
+    LOG_DEBUG(logger, FormatString("serialize_JoynrMessage: actual  : %1").arg(serializedContent).str());
 
     std::stringstream expectedStringStream;
     expectedStringStream << R"({"_typeName": "joynr.JoynrMessage","header": )";
@@ -165,15 +165,15 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JoynrMessage) {
     expectedStringStream << R"("type": "request"})";
 
     std::string expectedString = expectedStringStream.str();
-    LOG_DEBUG(logger, QString("serialize_JoynrMessage: expected: %1").arg(QString::fromStdString(expectedString)));
+    LOG_DEBUG(logger, FormatString("serialize_JoynrMessage: expected: %1").arg(expectedString).str());
     EXPECT_EQ(expectedString, serializedContent);
 
     JoynrMessage* joynrMessage = JsonSerializer::deserialize<JoynrMessage>(serializedContent);
-    LOG_DEBUG(logger, QString("joynrMessage->getPayload(): %1").arg(QString::fromStdString(joynrMessage->getPayload())));
+    LOG_DEBUG(logger, FormatString("joynrMessage->getPayload(): %1").arg(joynrMessage->getPayload()).str());
     Request* request = JsonSerializer::deserialize<Request>(joynrMessage->getPayload());
-    LOG_DEBUG(logger, QString("joynrMessage->getType(): %1").arg(QString::fromStdString(joynrMessage->getType())));
+    LOG_DEBUG(logger, FormatString("joynrMessage->getType(): %1").arg(joynrMessage->getType()).str());
     EXPECT_EQ(joynrMessage->getType(), expectedJoynrMessage.getType());
-    LOG_DEBUG(logger, QString("request->getMethodName(): %1").arg(QString::fromStdString(request->getMethodName())));
+    LOG_DEBUG(logger, FormatString("request->getMethodName(): %1").arg(request->getMethodName()).str());
     EXPECT_EQ(request->getMethodName(), expectedRequest.getMethodName());
     // Clean up
     delete request;
@@ -210,8 +210,8 @@ TEST_F(JsonSerializerTest, serialize_deserialize_byte_array) {
                 R"("requestReplyId": ")" << request.getRequestReplyId() << R"("})";
     std::string expectedRequestJson = jsonStringStream.str();
 
-    LOG_DEBUG(logger, QString("expected: %1").arg(QString::fromStdString(expectedRequestJson)));
-    LOG_DEBUG(logger, QString("serialized: %1").arg(QString::fromStdString(serializedRequestJson)));
+    LOG_DEBUG(logger, FormatString("expected: %1").arg(expectedRequestJson).str());
+    LOG_DEBUG(logger, FormatString("serialized: %1").arg(serializedRequestJson).str());
     EXPECT_EQ(expectedRequestJson, serializedRequestJson);
 
     // Deserialize the request
@@ -423,7 +423,7 @@ TEST_F(JsonSerializerTest, serializeDeserializeTypeWithEnumList) {
 
     // Serialize
     std::string serializedContent = JsonSerializer::serialize<infrastructure::DacTypes::MasterAccessControlEntry>(expectedMac);
-    LOG_DEBUG(logger, "Serialized expectedMac: " + TypeUtil::toQt(serializedContent));
+    LOG_DEBUG(logger, FormatString("Serialized expectedMac: %1").arg(serializedContent).str());
 
     // Deserialize the result
     infrastructure::DacTypes::MasterAccessControlEntry *mac = JsonSerializer::deserialize<infrastructure::DacTypes::MasterAccessControlEntry>(serializedContent);
@@ -450,7 +450,7 @@ void deserializePermission(const std::string& serializedPermission, const Permis
 void serializeAndDeserializePermission(const Permission::Enum& input, const std::string& inputAsString, joynr_logging::Logger* logger) {
     // Serialize
     std::string serializedContent(JsonSerializer::serialize<Permission::Enum>(input));
-    LOG_DEBUG(logger, "Serialized permission for input " + TypeUtil::toQt(inputAsString) + ": " + TypeUtil::toQt(serializedContent));
+    LOG_DEBUG(logger, FormatString("Serialized permission for input %1: %2").arg(inputAsString).arg(serializedContent).str());
 
     deserializePermission(serializedContent.substr(1, serializedContent.size()-2 ), input);
 }
@@ -495,8 +495,8 @@ TEST_F(JsonSerializerTest, serialize_operation_with_multiple_params2) {
 
     std::string expected = expectedStringStream.str();
 
-    LOG_DEBUG(logger, QString::fromStdString("Serialized method call: "+ serializedContent));
-    LOG_DEBUG(logger, QString::fromStdString("Expected method call: "+ expected));
+    LOG_DEBUG(logger, FormatString("Serialized method call: %1").arg(serializedContent).str());
+    LOG_DEBUG(logger, FormatString("Expected method call: %1").arg(expected).str());
 
     // Expected literal is:
     // { "_typeName" : "joynr.Request", "methodName" : "methodStringDoubleParameters", "paramDatatypes" : [ "String", "Double" ], "params" : { "doubleParam" : 3.33, "stringParam" : "testStringParam" } }
@@ -522,7 +522,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_TStruct) {
                 );
 
     std::string serializedContent = JsonSerializer::serialize<types::TestTypes::TStruct>(tStruct);
-    LOG_DEBUG(logger, QString::fromStdString(serializedContent));
+    LOG_DEBUG(logger, serializedContent);
     EXPECT_EQ(expectedTStruct, serializedContent);
 
     types::TestTypes::TStruct* tStructDeserialized = JsonSerializer::deserialize<types::TestTypes::TStruct>(serializedContent);
@@ -553,7 +553,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_TStructExtended) {
                 );
 
     std::string serializedTStructExt = JsonSerializer::serialize<types::TestTypes::TStructExtended>(tStructExt);
-    LOG_DEBUG(logger, QString::fromStdString(serializedTStructExt));
+    LOG_DEBUG(logger, serializedTStructExt);
 
     EXPECT_EQ(expectedTStructExt, serializedTStructExt);
     types::TestTypes::TStructExtended* deserializedTStructExt = JsonSerializer::deserialize<types::TestTypes::TStructExtended>(serializedTStructExt);
@@ -632,7 +632,7 @@ TEST_F(JsonSerializerTest, deserialize_replyWithVoid) {
 
     EXPECT_EQ(expected, jsonReply);
 
-    LOG_DEBUG(logger, "Serialized Reply: "+ QString::fromStdString(jsonReply));
+    LOG_DEBUG(logger, FormatString("Serialized Reply: %1").arg(jsonReply).str());
 
     Reply* receivedReply = JsonSerializer::deserialize<Reply>(jsonReply);
 
@@ -693,7 +693,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocationList) {
     std::string expectedReply = expectedReplyStringStream.str();
 
     std::string jsonReply = JsonSerializer::serialize<Reply>(reply);
-    LOG_DEBUG(logger, QString::fromStdString(jsonReply));
+    LOG_DEBUG(logger, jsonReply);
     //EXPECT_EQ(expectedReply, jsonReply);
 
     Reply* receivedReply = JsonSerializer::deserialize<Reply>(jsonReply);
@@ -712,7 +712,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocationList) {
     while(i_received != receivedReplyResponse.end()) {
         types::Localisation::GpsLocation receivedIterValue = i_received->get<types::Localisation::GpsLocation>();
         types::Localisation::GpsLocation originItervalue = i_origin->get<types::Localisation::GpsLocation>();
-        LOG_DEBUG(logger, QString::fromStdString(receivedIterValue.toString()));
+        LOG_DEBUG(logger, receivedIterValue.toString());
         EXPECT_EQ(originItervalue, receivedIterValue);
         i_received++;
         i_origin++;
@@ -807,7 +807,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequest) {
     request1.setParams(params);
 
     std::string serializedContent = JsonSerializer::serialize(request1);
-    LOG_DEBUG(logger, QString::fromStdString(serializedContent));
+    LOG_DEBUG(logger, serializedContent);
 
     Request* request2 = JsonSerializer::deserialize<Request>(serializedContent);
 
@@ -834,7 +834,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_Reply_with_Array_as_Response) {
     response.push_back(joynr::TypeUtil::toVariant(capabilityInformations));
     reply.setResponse(std::move(response));
     std::string serializedContent = JsonSerializer::serialize<Reply>(reply);
-    LOG_DEBUG(logger, QString::fromStdString(serializedContent));
+    LOG_DEBUG(logger, serializedContent);
 
     Reply* deserializedReply = JsonSerializer::deserialize<Reply>(serializedContent);
 
@@ -913,11 +913,11 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequestWithLists) {
     Request* request2 = JsonSerializer::deserialize<Request>(serializedContent);
     std::vector<Variant> paramsReceived = request2->getParams();
 
-    LOG_DEBUG(logger, QString("x1%1").arg(TypeUtil::toQt(paramsReceived.at(0).getTypeName())));
+    LOG_DEBUG(logger, FormatString("x1%1").arg(paramsReceived.at(0).getTypeName()).str());
     ASSERT_TRUE(paramsReceived.at(0).is<std::vector<Variant>>()) << "Cannot convert the field of the Param Map to a std::vector<Variant>";
     std::vector<Variant> returnvl = paramsReceived.at(0).get<std::vector<Variant>>();
     ASSERT_TRUE(returnvl.size() == 3) << "list size size != 3";
-    LOG_DEBUG(logger, QString("%1").arg(TypeUtil::toQt(returnvl.at(0).getTypeName())));
+    LOG_DEBUG(logger, FormatString("%1").arg(returnvl.at(0).getTypeName()).str());
 
     ASSERT_TRUE(returnvl.at(0).is<types::Localisation::GpsLocation>()) << "Cannot convert the first entry of the return List to QtGpsLocation";
 
@@ -972,7 +972,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_ListComplexity) {
     std::vector<Variant> inputv2 = TypeUtil::toVectorOfVariants(inputLocationList);
     end = time_point_cast<milliseconds>(system_clock::now());
     int convertedElapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-    LOG_DEBUG(logger, QString("converted to vector<Variant> %1 in %2 milliseconds").arg(firstListSize).arg(convertedElapsed));
+    LOG_DEBUG(logger, FormatString("converted to vector<Variant> %1 in %2 milliseconds").arg(firstListSize).arg(convertedElapsed).str());
     params2.push_back(Variant::make<std::vector<Variant>>(inputv2));
     request2.setParams(params2);
 
@@ -988,10 +988,10 @@ TEST_F(JsonSerializerTest, serialize_deserialize_ListComplexity) {
     end = time_point_cast<milliseconds>(system_clock::now());
     int deserializationElapsed2 = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
-    LOG_DEBUG(logger, QString("%1 Objects serialized in %2 milliseconds").arg(firstListSize).arg(serializationElapsed1));
-    LOG_DEBUG(logger, QString("%1 Objects serialized in %2 milliseconds").arg(firstListSize * 2).arg(serializationElapsed2));
-    LOG_DEBUG(logger, QString("%1 Objects deserialized in %2 milliseconds").arg(firstListSize).arg(deserializationElapsed1));
-    LOG_DEBUG(logger, QString("%1 Objects deserialized in %2 milliseconds").arg(firstListSize * 2).arg(deserializationElapsed2));
+    LOG_DEBUG(logger, FormatString("%1 Objects serialized in %2 milliseconds").arg(firstListSize).arg(serializationElapsed1).str());
+    LOG_DEBUG(logger, FormatString("%1 Objects serialized in %2 milliseconds").arg(firstListSize * 2).arg(serializationElapsed2).str());
+    LOG_DEBUG(logger, FormatString("%1 Objects deserialized in %2 milliseconds").arg(firstListSize).arg(deserializationElapsed1).str());
+    LOG_DEBUG(logger, FormatString("%1 Objects deserialized in %2 milliseconds").arg(firstListSize * 2).arg(deserializationElapsed2).str());
 
     // Assert O(N) complexity
     ASSERT_TRUE(serializationElapsed2 < serializationElapsed1 * serializationElapsed1);
@@ -1018,10 +1018,10 @@ TEST_F(JsonSerializerTest, serialize_deserialize_EndpointAddress) {
     std::string wsServerSerialized = JsonSerializer::serialize<joynr::system::RoutingTypes::WebSocketAddress>(wsServer);
     std::string wsClientSerialized = JsonSerializer::serialize<joynr::system::RoutingTypes::WebSocketClientAddress>(wsClient);
 
-    LOG_DEBUG(logger, "serialized Joynr address: "+ QString::fromStdString(joynrSerialized));
-    LOG_DEBUG(logger, "serialized Dbus address: "+ QString::fromStdString(dbusSerialized));
-    LOG_DEBUG(logger, QString("serialized WS server address: %0").arg(QString::fromStdString(wsServerSerialized)));
-    LOG_DEBUG(logger, QString("serialized WS client address: %0").arg(QString::fromStdString(wsClientSerialized)));
+    LOG_DEBUG(logger, FormatString("serialized Joynr address: %1").arg(joynrSerialized).str());
+    LOG_DEBUG(logger, FormatString("serialized Dbus address: %1").arg(dbusSerialized).str());
+    LOG_DEBUG(logger, FormatString("serialized WS server address: %1").arg(wsServerSerialized).str());
+    LOG_DEBUG(logger, FormatString("serialized WS client address: %1").arg(wsClientSerialized).str());
 
     // deserialize
     joynr::system::RoutingTypes::ChannelAddress* joynrDeserialized = JsonSerializer::deserialize<joynr::system::RoutingTypes::ChannelAddress>(joynrSerialized);
@@ -1067,17 +1067,17 @@ TEST_F(JsonSerializerTest, serialize_deserialize_CapabilityInformation) {
     capabilityInformation.setChannelId("channeldId");
     capabilityInformation.setDomain("domain");
     capabilityInformation.setProviderQos(qos);
-    LOG_DEBUG(logger,"capabilityInformation" + QString::fromStdString(capabilityInformation.toString()));
+    LOG_DEBUG(logger,FormatString("capabilityInformation%1").arg(capabilityInformation.toString()).str());
 
     std::string serialized = JsonSerializer::serialize<types::CapabilityInformation>(capabilityInformation);
     EXPECT_EQ(expected, serialized);
     // deserialize
-    LOG_DEBUG(logger,"serialized capabilityInformation" + QString::fromStdString(serialized));
+    LOG_DEBUG(logger,FormatString("serialized capabilityInformation%1").arg(serialized).str());
 
     types::CapabilityInformation* deserializedCI = JsonSerializer::deserialize<types::CapabilityInformation>(serialized);
 
     EXPECT_EQ(capabilityInformation, *deserializedCI);
-    LOG_DEBUG(logger,"deserialized capabilityInformation" + QString::fromStdString(deserializedCI->toString()));
+    LOG_DEBUG(logger,FormatString("deserialized capabilityInformation%1").arg(deserializedCI->toString()).str());
 }
 
 //// Test of ChannelURLInformation which is of type std::Vector<std::string>.
@@ -1089,7 +1089,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_ChannelURLInformation) {
 
     // Serialize the URL Information
     std::string serialized = JsonSerializer::serialize(Variant::make<types::ChannelUrlInformation>(urlInformation));
-    LOG_DEBUG(logger,"serialized QtChannelUrlInformation" + QString::fromStdString(serialized));
+    LOG_DEBUG(logger,FormatString("serialized QtChannelUrlInformation%1").arg(serialized).str());
 
     // Expected JSON : { "_typeName" : "joynr.types.ChannelUrlInformation", "urls" : [ "http://example1.com/", "http://example2.com/" ] }
     std::string expected("{\"_typeName\": \"joynr.types.ChannelUrlInformation\",\"urls\": [\"http://example1.com/\",\"http://example2.com/\"]}");
@@ -1160,12 +1160,12 @@ TEST_F(JsonSerializerTest, serialize_OnchangeWithKeepAliveSubscription) {
     joynr::OnChangeWithKeepAliveSubscriptionQos qos(750, 100, 900, 1050);
 
     std::string jsonQos = JsonSerializer::serialize<joynr::OnChangeWithKeepAliveSubscriptionQos>(qos);
-    LOG_DEBUG(logger,"serialized OnChangeWithKeepAliveSubscriptionQos" + QString::fromStdString(jsonQos));
+    LOG_DEBUG(logger,FormatString("serialized OnChangeWithKeepAliveSubscriptionQos%1").arg(jsonQos).str());
 
     joynr::OnChangeWithKeepAliveSubscriptionQos* desQos = JsonSerializer::deserialize<joynr::OnChangeWithKeepAliveSubscriptionQos>(jsonQos);
 
     jsonQos = JsonSerializer::serialize<joynr::OnChangeWithKeepAliveSubscriptionQos>(*desQos);
-    LOG_DEBUG(logger,"serialized QtOnChangeWithKeepAliveSubscriptionQos" + QString::fromStdString(jsonQos));
+    LOG_DEBUG(logger,FormatString("serialized QtOnChangeWithKeepAliveSubscriptionQos%1").arg(jsonQos).str());
 
 
     EXPECT_EQ(qos, *desQos);

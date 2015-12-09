@@ -26,7 +26,6 @@
 #include <iostream>
 #include <tuple>
 #include <vector>
-#include <QString>
 #include <tuple>
 
 #include "joynr/joynrlogging.h"
@@ -288,13 +287,16 @@ T& Variant::get()
         if (JoynrTypeId<T>::getTypeId() == 0) {
             LOG_TRACE(
                     logger,
-                    QString("Type param T is not registered with type registry. Variant stores %1.")
-                            .arg(QString::fromStdString(getTypeName())));
+                    FormatString(
+                            "Type param T is not registered with type registry. Variant stores %1.")
+                            .arg(getTypeName())
+                            .str());
         } else {
             LOG_TRACE(logger,
-                      QString("Getting type %1 from variant, but variant stores %2.")
-                              .arg(QString::fromStdString(JoynrTypeId<T>::getTypeName()))
-                              .arg(QString::fromStdString(getTypeName())));
+                      FormatString("Getting type %1 from variant, but variant stores %2.")
+                              .arg(JoynrTypeId<T>::getTypeName())
+                              .arg(getTypeName())
+                              .str());
         }
     }
     VariantHolder<T>* holder = static_cast<VariantHolder<T>*>(pointer.get());
@@ -308,13 +310,16 @@ const T& Variant::get() const
         if (JoynrTypeId<T>::getTypeId() == 0) {
             LOG_TRACE(
                     logger,
-                    QString("Type param T is not registered with type registry. Variant stores %1.")
-                            .arg(QString::fromStdString(getTypeName())));
+                    FormatString(
+                            "Type param T is not registered with type registry. Variant stores %1.")
+                            .arg(getTypeName())
+                            .str());
         } else {
             LOG_TRACE(logger,
-                      QString("Getting type %1 from variant, but variant stores %2.")
-                              .arg(QString::fromStdString(JoynrTypeId<T>::getTypeName()))
-                              .arg(QString::fromStdString(getTypeName())));
+                      FormatString("Getting type %1 from variant, but variant stores %2.")
+                              .arg(JoynrTypeId<T>::getTypeName())
+                              .arg(getTypeName())
+                              .str());
         }
     }
     VariantHolder<T>* holder = static_cast<VariantHolder<T>*>(pointer.get());

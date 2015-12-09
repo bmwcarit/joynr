@@ -98,6 +98,7 @@ file(
 list(
     APPEND JoynrCommon_SOURCES
     "logging/SpdlogLogging.cpp"
+    "logging/FormatString.cpp"
 )
 
 

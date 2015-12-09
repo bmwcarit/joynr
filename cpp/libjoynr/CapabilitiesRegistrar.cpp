@@ -51,10 +51,11 @@ void CapabilitiesRegistrar::remove(const std::string& participantId)
         discoveryProxy.remove(participantId);
     } catch (exceptions::JoynrException& e) {
         LOG_ERROR(logger,
-                  QString("Unable to remove provider (participant ID: %1) "
-                          "to discovery. Error: %2.")
-                          .arg(QString::fromStdString(participantId))
-                          .arg(QString::fromStdString(e.getMessage())));
+                  FormatString("Unable to remove provider (participant ID: %1) "
+                               "to discovery. Error: %2.")
+                          .arg(participantId)
+                          .arg(e.getMessage())
+                          .str());
     }
 
     std::shared_ptr<joynr::Future<void>> future(new Future<void>());
@@ -63,9 +64,11 @@ void CapabilitiesRegistrar::remove(const std::string& participantId)
     future->wait();
 
     if (!future->getStatus().successful()) {
-        LOG_ERROR(logger,
-                  QString("Unable to remove next hop (participant ID: %1) from message router.")
-                          .arg(QString::fromStdString(participantId)));
+        LOG_ERROR(
+                logger,
+                FormatString("Unable to remove next hop (participant ID: %1) from message router.")
+                        .arg(participantId)
+                        .str());
     }
 }
 

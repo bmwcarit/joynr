@@ -52,16 +52,18 @@ WebSocketCcMessagingSkeleton::WebSocketCcMessagingSkeleton(
 
     if (webSocketServer->listen(QHostAddress::Any, serverAddress.getPort())) {
         LOG_INFO(logger,
-                 QString("joynr CC WebSocket server listening on port %0.")
-                         .arg(serverAddress.getPort()));
+                 FormatString("joynr CC WebSocket server listening on port %1.")
+                         .arg(serverAddress.getPort())
+                         .str());
         connect(webSocketServer,
                 &QWebSocketServer::newConnection,
                 this,
                 &WebSocketCcMessagingSkeleton::onNewConnection);
     } else {
         LOG_FATAL(logger,
-                  QString("Error: WebSocket server could not listen on port %0.")
-                          .arg(serverAddress.getPort()));
+                  FormatString("Error: WebSocket server could not listen on port %1.")
+                          .arg(serverAddress.getPort())
+                          .str());
     }
 }
 
@@ -98,9 +100,10 @@ void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString& message)
     QWebSocket* client = qobject_cast<QWebSocket*>(sender());
 
     if (isInitializationMessage(message)) {
-        LOG_DEBUG(
-                logger,
-                QString("received initialization message from websocket client: %0").arg(message));
+        LOG_DEBUG(logger,
+                  FormatString("received initialization message from websocket client: %1")
+                          .arg(message.toStdString())
+                          .str());
         // register client with messaging stub factory
         joynr::system::RoutingTypes::WebSocketClientAddress* clientAddress =
                 JsonSerializer::deserialize<joynr::system::RoutingTypes::WebSocketClientAddress>(
@@ -127,10 +130,12 @@ void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString& message)
             JsonSerializer::deserialize<joynr::JoynrMessage>(message.toStdString());
     if (joynrMsg == nullptr) {
         LOG_ERROR(logger,
-                  QString("Unable to deserialize joynr message object from: %1").arg(message));
+                  FormatString("Unable to deserialize joynr message object from: %1")
+                          .arg(message.toStdString())
+                          .str());
         return;
     }
-    LOG_TRACE(logger, QString("INCOMING\nmessage: %0").arg(message));
+    LOG_TRACE(logger, FormatString("INCOMING\nmessage: %1").arg(message.toStdString()).str());
     // message router copies joynr message when scheduling thread that handles
     // message delivery
     transmit(*joynrMsg);
@@ -150,7 +155,10 @@ void WebSocketCcMessagingSkeleton::onAcceptError(QAbstractSocket::SocketError so
 {
     QString code;
     QDebug(&code) << socketError;
-    LOG_ERROR(logger, QString("Unable to accept new socket connection. Error: %0.").arg(code));
+    LOG_ERROR(logger,
+              FormatString("Unable to accept new socket connection. Error: %1.")
+                      .arg(code.toStdString())
+                      .str());
 }
 
 void WebSocketCcMessagingSkeleton::onServerError(QWebSocketProtocol::CloseCode closeCode)
@@ -158,8 +166,10 @@ void WebSocketCcMessagingSkeleton::onServerError(QWebSocketProtocol::CloseCode c
     QString code;
     QDebug(&code) << closeCode;
     LOG_ERROR(logger,
-              QString("Error occured on WebSocket connection: %0. Description: %1.").arg(code).arg(
-                      webSocketServer->errorString()));
+              FormatString("Error occured on WebSocket connection: %1. Description: %2.")
+                      .arg(code.toStdString())
+                      .arg(webSocketServer->errorString().toStdString())
+                      .str());
 }
 
 bool WebSocketCcMessagingSkeleton::isInitializationMessage(const QString& message)

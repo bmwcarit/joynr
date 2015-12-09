@@ -61,8 +61,9 @@ std::shared_ptr<IMessaging> WebSocketMessagingStubFactory::create(
             std::lock_guard<std::mutex> lock(mutex);
             if (!clientStubMap.contains(*webSocketClientAddress)) {
                 LOG_ERROR(logger,
-                          QString("No websocket found for address %0")
-                                  .arg(webSocketClientAddress->toString()));
+                          FormatString("No websocket found for address %1")
+                                  .arg(webSocketClientAddress->toString().toStdString())
+                                  .str());
             }
         }
         return clientStubMap.value(*webSocketClientAddress, std::shared_ptr<IMessaging>());
@@ -77,8 +78,9 @@ std::shared_ptr<IMessaging> WebSocketMessagingStubFactory::create(
             std::lock_guard<std::mutex> lock(mutex);
             if (!serverStubMap.contains(*webSocketServerAddress)) {
                 LOG_ERROR(logger,
-                          QString("No websocket found for address %0")
-                                  .arg(webSocketServerAddress->toString()));
+                          FormatString("No websocket found for address %1")
+                                  .arg(webSocketServerAddress->toString().toStdString())
+                                  .str());
             }
         }
         return serverStubMap.value(*webSocketServerAddress, std::shared_ptr<IMessaging>());
@@ -124,7 +126,10 @@ void WebSocketMessagingStubFactory::addServer(
 void WebSocketMessagingStubFactory::onMessagingStubClosed(
         const system::RoutingTypes::QtAddress& address)
 {
-    LOG_DEBUG(logger, QString("removing messaging stub for address: %0").arg(address.toString()));
+    LOG_DEBUG(logger,
+              FormatString("removing messaging stub for address: %1")
+                      .arg(address.toString().toStdString())
+                      .str());
     if (address.inherits(
                 system::RoutingTypes::QtWebSocketClientAddress::staticMetaObject.className())) {
         const system::RoutingTypes::QtWebSocketClientAddress* wsClientAddress =
@@ -141,7 +146,7 @@ void WebSocketMessagingStubFactory::onMessagingStubClosed(
 QUrl WebSocketMessagingStubFactory::convertWebSocketAddressToUrl(
         const system::RoutingTypes::QtWebSocketAddress& address)
 {
-    return QUrl(QString("%0://%1:%2%3")
+    return QUrl(QString("%1://%2:%3%4")
                         .arg(address.getProtocolInternal().toLower())
                         .arg(address.getHost())
                         .arg(address.getPort())

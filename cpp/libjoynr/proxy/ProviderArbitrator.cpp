@@ -190,8 +190,9 @@ void ProviderArbitrator::setArbitrationStatus(
             listener->setArbitrationStatus(arbitrationStatus);
         } catch (exceptions::DiscoveryException& e) {
             LOG_ERROR(logger,
-                      "Exception while setting arbitration status: " +
-                              QString::fromStdString(e.getMessage()));
+                      FormatString("Exception while setting arbitration status: %1")
+                              .arg(e.getMessage())
+                              .str());
             listenerSemaphore.notify();
             throw;
         }

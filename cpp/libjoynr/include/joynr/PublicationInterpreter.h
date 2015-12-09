@@ -54,7 +54,7 @@ public:
 
         std::vector<Variant> response = subscriptionPublication.getResponse();
         if (response.empty()) {
-            LOG_ERROR(logger, QString("Publication object has no response, discarding message"));
+            LOG_ERROR(logger, "Publication object has no response, discarding message");
             exceptions::JoynrRuntimeException error(
                     "Publication object had no response, discarded message");
             callback->onError(error);
@@ -102,7 +102,7 @@ public:
         }
 
         if (subscriptionPublication.getResponse().empty()) {
-            LOG_ERROR(logger, QString("Publication object has no response, discarding message"));
+            LOG_ERROR(logger, "Publication object has no response, discarding message");
             exceptions::JoynrRuntimeException error(
                     "Publication object had no response, discarded message");
             callback->onError(error);
@@ -150,7 +150,7 @@ public:
 
         std::vector<Variant> qvList = subscriptionPublication.getResponse();
         if (qvList.empty()) {
-            LOG_ERROR(logger, QString("Publication object has no response, discarding message"));
+            LOG_ERROR(logger, "Publication object has no response, discarding message");
             exceptions::JoynrRuntimeException error(
                     "Publication object had no response, discarded message");
             callback->onError(error);

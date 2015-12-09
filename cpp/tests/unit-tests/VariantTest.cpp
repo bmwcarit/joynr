@@ -98,14 +98,14 @@ TEST_F(VariantTest, checkCollectionOfVariants) {
     // Use the collection of Variants
     for (auto& v : variants) {
         if (v.is<std::string>()) {
-            LOG_DEBUG(logger, QString("Variant is std::string, value: %1").arg(TypeUtil::toQt(v.get<std::string>())));
+            LOG_DEBUG(logger, FormatString("Variant is std::string, value: %1").arg(v.get<std::string>()).str());
         } else if (v.is<ExampleCustomType>()) {
-            LOG_DEBUG(logger, QString("Variant is ExampleCustomType, value: %1").arg(TypeUtil::toQt(v.get<ExampleCustomType>().expectedInt)));
+            LOG_DEBUG(logger, FormatString("Variant is ExampleCustomType, value: %1").arg(v.get<ExampleCustomType>().expectedInt).str());
         } else if (v.is<std::vector<Variant>>()) {
-            LOG_DEBUG(logger, QString("Variant is a collection of variants"));
+            LOG_DEBUG(logger, FormatString("Variant is a collection of variants").str());
             auto& vec = v.get<std::vector<Variant>>();
             for (auto& i : vec) {
-                LOG_DEBUG(logger, QString("expectedInt: %1").arg(i.get<ExampleCustomType>().expectedInt));
+                LOG_DEBUG(logger, FormatString("expectedInt: %1").arg(i.get<ExampleCustomType>().expectedInt).str());
             }
         }
     }

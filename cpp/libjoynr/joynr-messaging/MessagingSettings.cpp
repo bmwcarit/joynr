@@ -521,66 +521,92 @@ void MessagingSettings::checkSettings() const
 void MessagingSettings::printSettings() const
 {
     LOG_DEBUG(logger,
-              "SETTING: " + TypeUtil::toQt(SETTING_BOUNCE_PROXY_URL()) + " = " +
-                      TypeUtil::toQt(settings.get<std::string>(SETTING_BOUNCE_PROXY_URL())));
+              FormatString("SETTING: %1 = %2")
+                      .arg(SETTING_BOUNCE_PROXY_URL())
+                      .arg(settings.get<std::string>(SETTING_BOUNCE_PROXY_URL()))
+                      .str());
     LOG_DEBUG(logger,
-              "SETTING: " + TypeUtil::toQt(SETTING_DISCOVERY_DIRECTORIES_DOMAIN()) + " = " +
-                      TypeUtil::toQt(
-                              settings.get<std::string>(SETTING_DISCOVERY_DIRECTORIES_DOMAIN())));
+              FormatString("SETTING: %1 = %2")
+                      .arg(SETTING_DISCOVERY_DIRECTORIES_DOMAIN())
+                      .arg(settings.get<std::string>(SETTING_DISCOVERY_DIRECTORIES_DOMAIN()))
+                      .str());
+    LOG_DEBUG(logger,
+              FormatString("SETTING: %1 = %2")
+                      .arg(SETTING_CHANNEL_URL_DIRECTORY_URL())
+                      .arg(settings.get<std::string>(SETTING_CHANNEL_URL_DIRECTORY_URL()))
+                      .str());
+    LOG_DEBUG(logger,
+              FormatString("SETTING: %1 = %2")
+                      .arg(SETTING_CHANNEL_URL_DIRECTORY_CHANNELID())
+                      .arg(settings.get<std::string>(SETTING_CHANNEL_URL_DIRECTORY_CHANNELID()))
+                      .str());
+    LOG_DEBUG(logger,
+              FormatString("SETTING: %1 = %2")
+                      .arg(SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID())
+                      .arg(settings.get<std::string>(SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID()))
+                      .str());
+    LOG_DEBUG(logger,
+              FormatString("SETTING: %1 = %2")
+                      .arg(SETTING_CAPABILITIES_DIRECTORY_URL())
+                      .arg(settings.get<std::string>(SETTING_CAPABILITIES_DIRECTORY_URL()))
+                      .str());
+    LOG_DEBUG(logger,
+              FormatString("SETTING: %1 = %2")
+                      .arg(SETTING_CAPABILITIES_DIRECTORY_CHANNELID())
+                      .arg(settings.get<std::string>(SETTING_CAPABILITIES_DIRECTORY_CHANNELID()))
+                      .str());
     LOG_DEBUG(
             logger,
-            "SETTING: " + TypeUtil::toQt(SETTING_CHANNEL_URL_DIRECTORY_URL()) + " = " +
-                    TypeUtil::toQt(settings.get<std::string>(SETTING_CHANNEL_URL_DIRECTORY_URL())));
+            FormatString("SETTING: %1 = %2")
+                    .arg(SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID())
+                    .arg(settings.get<std::string>(SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID()))
+                    .str());
     LOG_DEBUG(logger,
-              "SETTING: " + TypeUtil::toQt(SETTING_CHANNEL_URL_DIRECTORY_CHANNELID()) + " = " +
-                      TypeUtil::toQt(settings.get<std::string>(
-                              SETTING_CHANNEL_URL_DIRECTORY_CHANNELID())));
+              FormatString("SETTING: %1 = %2")
+                      .arg(SETTING_INDEX())
+                      .arg(settings.get<std::string>(SETTING_INDEX()))
+                      .str());
     LOG_DEBUG(logger,
-              "SETTING: " + TypeUtil::toQt(SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID()) + " = " +
-                      TypeUtil::toQt(settings.get<std::string>(
-                              SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID())));
+              FormatString("SETTING: %1 = %2")
+                      .arg(SETTING_CREATE_CHANNEL_RETRY_INTERVAL())
+                      .arg(settings.get<std::string>(SETTING_CREATE_CHANNEL_RETRY_INTERVAL()))
+                      .str());
     LOG_DEBUG(logger,
-              "SETTING: " + TypeUtil::toQt(SETTING_CAPABILITIES_DIRECTORY_URL()) + " = " +
-                      TypeUtil::toQt(
-                              settings.get<std::string>(SETTING_CAPABILITIES_DIRECTORY_URL())));
+              FormatString("SETTING: %1 = %2")
+                      .arg(SETTING_DELETE_CHANNEL_RETRY_INTERVAL())
+                      .arg(settings.get<std::string>(SETTING_DELETE_CHANNEL_RETRY_INTERVAL()))
+                      .str());
     LOG_DEBUG(logger,
-              "SETTING: " + TypeUtil::toQt(SETTING_CAPABILITIES_DIRECTORY_CHANNELID()) + " = " +
-                      TypeUtil::toQt(settings.get<std::string>(
-                              SETTING_CAPABILITIES_DIRECTORY_CHANNELID())));
+              FormatString("SETTING: %1 = %2")
+                      .arg(SETTING_SEND_MSG_RETRY_INTERVAL())
+                      .arg(settings.get<std::string>(SETTING_SEND_MSG_RETRY_INTERVAL()))
+                      .str());
     LOG_DEBUG(logger,
-              "SETTING: " + TypeUtil::toQt(SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID()) + " = " +
-                      TypeUtil::toQt(settings.get<std::string>(
-                              SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID())));
+              FormatString("SETTING: %1 = %2")
+                      .arg(SETTING_LONGPOLL_RETRY_INTERVAL())
+                      .arg(settings.get<std::string>(SETTING_LONGPOLL_RETRY_INTERVAL()))
+                      .str());
     LOG_DEBUG(logger,
-              "SETTING: " + TypeUtil::toQt(SETTING_INDEX()) + " = " +
-                      TypeUtil::toQt(settings.get<std::string>(SETTING_INDEX())));
+              FormatString("SETTING: %1 = %2")
+                      .arg(SETTING_LOCAL_PROXY_HOST())
+                      .arg(settings.get<std::string>(SETTING_LOCAL_PROXY_HOST()))
+                      .str());
     LOG_DEBUG(logger,
-              "SETTING: " + TypeUtil::toQt(SETTING_CREATE_CHANNEL_RETRY_INTERVAL()) + " = " +
-                      TypeUtil::toQt(
-                              settings.get<std::string>(SETTING_CREATE_CHANNEL_RETRY_INTERVAL())));
+              FormatString("SETTING: %1 = %2")
+                      .arg(SETTING_LOCAL_PROXY_PORT())
+                      .arg(settings.get<std::string>(SETTING_LOCAL_PROXY_PORT()))
+                      .str());
     LOG_DEBUG(logger,
-              "SETTING: " + TypeUtil::toQt(SETTING_DELETE_CHANNEL_RETRY_INTERVAL()) + " = " +
-                      TypeUtil::toQt(
-                              settings.get<std::string>(SETTING_DELETE_CHANNEL_RETRY_INTERVAL())));
+              FormatString("SETTING: %1 = %2")
+                      .arg(SETTING_PERSISTENCE_FILENAME())
+                      .arg(settings.get<std::string>(SETTING_PERSISTENCE_FILENAME()))
+                      .str());
+
     LOG_DEBUG(logger,
-              "SETTING: " + TypeUtil::toQt(SETTING_SEND_MSG_RETRY_INTERVAL()) + " = " +
-                      TypeUtil::toQt(settings.get<std::string>(SETTING_SEND_MSG_RETRY_INTERVAL())));
-    LOG_DEBUG(logger,
-              "SETTING: " + TypeUtil::toQt(SETTING_LONGPOLL_RETRY_INTERVAL()) + " = " +
-                      TypeUtil::toQt(settings.get<std::string>(SETTING_LONGPOLL_RETRY_INTERVAL())));
-    LOG_DEBUG(logger,
-              "SETTING: " + TypeUtil::toQt(SETTING_LOCAL_PROXY_HOST()) + " = " +
-                      TypeUtil::toQt(settings.get<std::string>(SETTING_LOCAL_PROXY_HOST())));
-    LOG_DEBUG(logger,
-              "SETTING: " + TypeUtil::toQt(SETTING_LOCAL_PROXY_PORT()) + " = " +
-                      TypeUtil::toQt(settings.get<std::string>(SETTING_LOCAL_PROXY_PORT())));
-    LOG_DEBUG(logger,
-              "SETTING: " + TypeUtil::toQt(SETTING_PERSISTENCE_FILENAME()) + " = " +
-                      TypeUtil::toQt(settings.get<std::string>(SETTING_PERSISTENCE_FILENAME())));
-    LOG_DEBUG(
-            logger,
-            "SETTING: " + TypeUtil::toQt(SETTING_DISCOVERY_MESSAGES_TTL_MS()) + " = " +
-                    TypeUtil::toQt(settings.get<std::string>(SETTING_DISCOVERY_MESSAGES_TTL_MS())));
+              FormatString("SETTING: %1 = %2")
+                      .arg(SETTING_DISCOVERY_MESSAGES_TTL_MS())
+                      .arg(settings.get<std::string>(SETTING_DISCOVERY_MESSAGES_TTL_MS()))
+                      .str());
 }
 
 } // namespace joynr
