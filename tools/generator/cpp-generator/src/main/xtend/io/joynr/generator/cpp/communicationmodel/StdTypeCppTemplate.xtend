@@ -54,6 +54,7 @@ class StdTypeCppTemplate implements CompoundTypeTemplate{
 #include "joynr/Reply.h"
 #include "joynr/DeclareMetatypeUtil.h"
 #include "joynr/Util.h"
+#include "boost/functional/hash.hpp"
 
 «getNamespaceStarter(type, true)»
 
@@ -123,6 +124,20 @@ bool «typeName»::operator==(const «typeName»& other) const {
 		«ENDIF»
 }
 
+std::size_t «typeName»::hashCode() const {
+	std::size_t seed = 0;
+
+	«FOR member: getMembers(type)»
+		«val joynrName = member.joynrName»
+		boost::hash_combine(seed, get«joynrName.toFirstUpper»());
+	«ENDFOR»
+
+	«IF type.hasExtendsDeclaration»
+		boost::hash_combine(seed, «type.extendedType.joynrName»::hashCode());
+	«ENDIF»
+	return seed;
+}
+
 «FOR member: getMembers(type)»
 	«val joynrName = member.joynrName»
 	«IF isEnum(member.type) && ! isArray(member)»
@@ -165,6 +180,12 @@ std::string «typeName»::toString() const {
 void PrintTo(const «typeName»& «typeName.toFirstLower», ::std::ostream* os) {
 	*os << "«typeName»::" << «typeName.toFirstLower».toString();
 }
+
+std::size_t hash_value(«typeName» const& «typeName.toFirstLower»Value)
+{
+	return «typeName.toFirstLower»Value.hashCode();
+}
+
 «getNamespaceEnder(type, true)»
 '''
 }
