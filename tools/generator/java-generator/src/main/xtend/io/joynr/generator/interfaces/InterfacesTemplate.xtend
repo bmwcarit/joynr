@@ -22,16 +22,12 @@ import io.joynr.generator.communicationmodel.EnumTypeTemplate
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.NamingUtil
-import io.joynr.generator.util.JavaTypeUtil
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import io.joynr.generator.util.TemplateBase
-import java.util.ArrayList
-import java.util.Collection
 import org.franca.core.franca.FInterface
 
 class InterfacesTemplate implements InterfaceTemplate{
 	@Inject extension JoynrJavaGeneratorExtensions
-	@Inject extension JavaTypeUtil
 	@Inject extension NamingUtil
 	@Inject extension InterfaceUtil
 	@Inject extension EnumTypeTemplate

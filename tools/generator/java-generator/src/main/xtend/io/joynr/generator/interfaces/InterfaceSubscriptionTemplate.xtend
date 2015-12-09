@@ -17,7 +17,6 @@ package io.joynr.generator.interfaces
  * limitations under the License.
  */
 
-import com.google.common.collect.Collections2
 import com.google.inject.Inject
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
@@ -26,7 +25,6 @@ import io.joynr.generator.templates.util.NamingUtil
 import io.joynr.generator.util.JavaTypeUtil
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import io.joynr.generator.util.TemplateBase
-import java.util.HashSet
 import org.franca.core.franca.FInterface
 
 class InterfaceSubscriptionTemplate implements InterfaceTemplate{
