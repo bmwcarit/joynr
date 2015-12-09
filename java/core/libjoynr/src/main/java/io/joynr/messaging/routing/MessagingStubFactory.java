@@ -26,9 +26,6 @@ import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessMessagingStub;
 import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.ChannelAddress;
-import joynr.system.RoutingTypes.WebSocketAddress;
-import joynr.system.RoutingTypes.WebSocketClientAddress;
 
 import java.util.Map;
 
@@ -39,23 +36,25 @@ public class MessagingStubFactory {
     @Inject
     public MessagingStubFactory(Map<Class<? extends Address>, AbstractMessagingStubFactory> messagingStubFactories) {
         this.messagingStubFactories = messagingStubFactories;
+        messagingStubFactories.put(InProcessAddress.class, new AbstractMessagingStubFactory<InProcessAddress>() {
+            @Override
+            protected IMessaging createInternal(InProcessAddress address) {
+                return new InProcessMessagingStub((address).getSkeleton());
+            }
+
+            @Override
+            public void shutdown() {
+                //nothing to do
+            }
+        });
     }
 
     public IMessaging create(Address address) {
-        IMessaging messagingStub;
-
-        if (address instanceof ChannelAddress) {
-            messagingStub = messagingStubFactories.get(ChannelAddress.class).create(address);
-        } else if (address instanceof InProcessAddress) {
-            messagingStub = new InProcessMessagingStub(((InProcessAddress) address).getSkeleton());
-        } else if (address instanceof WebSocketAddress) {
-            messagingStub = messagingStubFactories.get(WebSocketAddress.class).create(address);
-        } else if (address instanceof WebSocketClientAddress) {
-            messagingStub = messagingStubFactories.get(WebSocketClientAddress.class).create(address);
-        } else {
+        AbstractMessagingStubFactory messagingStubFactory = messagingStubFactories.get(address.getClass());
+        if (messagingStubFactory == null) {
             throw new JoynrMessageNotSentException("Failed to send Request: Address type not supported");
         }
-        return messagingStub;
+        return messagingStubFactory.create(address);
     }
 
     public void shutdown() {
