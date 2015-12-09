@@ -139,10 +139,9 @@ QString ChannelUrlSelector::obtainUrl(const QString& channelId,
         }
         url = QString::fromStdString(urlInformation.getUrls().at(0)); // return the first, store all
         entries.insert(channelId,
-                       new ChannelUrlSelectorEntry(
-                               types::QtChannelUrlInformation::createQt(urlInformation),
-                               punishmentFactor,
-                               timeForOneRecouperation)); // deleted where?
+                       new ChannelUrlSelectorEntry(urlInformation,
+                                                   punishmentFactor,
+                                                   timeForOneRecouperation)); // deleted where?
         status.setCode(RequestStatusCode::OK);
         return constructUrl(url);
     } else {
@@ -201,15 +200,15 @@ QString ChannelUrlSelector::constructDefaultUrl(const QString& channelId)
             "constructDefaultUrl ... using default Url inferred from channelId and BounceProxyUrl");
     if (!useDefaultUrl)
         assert(false);
-    QString url = bounceProxyUrl.getBounceProxyBaseUrl().toString() + channelId;
-    types::QtChannelUrlInformation urlInformation;
-    QList<QString> urls;
-    urls << url;
+    std::string url = (bounceProxyUrl.getBounceProxyBaseUrl().toString() + channelId).toStdString();
+    types::ChannelUrlInformation urlInformation;
+    std::vector<std::string> urls;
+    urls.push_back(url);
     urlInformation.setUrls(urls);
     entries.insert(
             channelId,
             new ChannelUrlSelectorEntry(urlInformation, punishmentFactor, timeForOneRecouperation));
-    return url;
+    return TypeUtil::toQt(url);
 }
 
 /**
@@ -223,10 +222,9 @@ QString ChannelUrlSelector::constructDefaultUrl(const QString& channelId)
 joynr_logging::Logger* ChannelUrlSelectorEntry::logger =
         joynr_logging::Logging::getInstance()->getLogger("MSG", "ChannelUrlSelectorEntry");
 
-ChannelUrlSelectorEntry::ChannelUrlSelectorEntry(
-        const types::QtChannelUrlInformation& urlInformation,
-        double punishmentFactor,
-        qint64 timeForOneRecouperation)
+ChannelUrlSelectorEntry::ChannelUrlSelectorEntry(const types::ChannelUrlInformation& urlInformation,
+                                                 double punishmentFactor,
+                                                 qint64 timeForOneRecouperation)
         : lastUpdate(DispatcherUtils::nowInMilliseconds()),
           fitness(),
           urlInformation(urlInformation),
@@ -247,8 +245,8 @@ QString ChannelUrlSelectorEntry::best()
 {
     LOG_TRACE(logger, "best ...");
     updateFitness();
-    QList<QString> urls = urlInformation.getUrls();
-    double temp = fitness.first();
+    const std::vector<std::string>& urls = urlInformation.getUrls();
+    double temp = fitness[0];
     int posOfMax = 0;
 
     for (int i = 0; i < urls.size(); i++) {
@@ -257,31 +255,33 @@ QString ChannelUrlSelectorEntry::best()
             posOfMax = i;
         }
     }
-    return urls.at(posOfMax);
+    return TypeUtil::toQt(urls.at(posOfMax));
 }
 
 void ChannelUrlSelectorEntry::punish(const QString& url)
 {
     LOG_TRACE(logger, "punish ...");
-    QList<QString> urls = urlInformation.getUrls();
-    if (!urls.contains(url)) {
+    const std::string stdUrl = TypeUtil::toStd(url);
+    const std::vector<std::string>& urls = urlInformation.getUrls();
+    if (!vectorContains(urls, stdUrl)) {
         LOG_DEBUG(logger, "Url not contained in cache entry ...");
         return;
     }
     updateFitness();
-    int urlPosition = urls.indexOf(url);
+    auto urlIt = std::find(urls.cbegin(), urls.cend(), stdUrl);
+    std::size_t urlPosition = std::distance(urls.cbegin(), urlIt);
     double urlFitness = fitness.at(urlPosition);
     urlFitness -= punishmentFactor;
-    fitness.replace(urlPosition, urlFitness);
+    fitness[urlPosition] = urlFitness;
 }
 
 void ChannelUrlSelectorEntry::initFitness()
 {
     LOG_TRACE(logger, "initFitness ...");
-    QList<QString> urls = urlInformation.getUrls();
+    const std::vector<std::string>& urls = urlInformation.getUrls();
     double rank = urls.size();
     for (int i = 0; i < urls.size(); i++) {
-        fitness.append(rank);
+        fitness.push_back(rank);
         rank -= 1;
     }
 }
@@ -296,7 +296,7 @@ void ChannelUrlSelectorEntry::updateFitness()
     if (numberOfIncreases < 1) {
         return;
     }
-    QList<QString> urls = urlInformation.getUrls();
+    std::vector<std::string> urls = urlInformation.getUrls();
     double increase = numberOfIncreases * punishmentFactor;
     double urlFitness = 0;
 
@@ -307,12 +307,12 @@ void ChannelUrlSelectorEntry::updateFitness()
             urls.size() - i) { // the fitness of an url of rank eg 2 cannot be hiher than 2
             urlFitness = urls.size() - i;
         }
-        fitness.replace(i, urlFitness);
+        fitness[i] = urlFitness;
     }
     lastUpdate = DispatcherUtils::nowInMilliseconds();
 }
 
-QList<double> ChannelUrlSelectorEntry::getFitness()
+std::vector<double> ChannelUrlSelectorEntry::getFitness()
 {
     return fitness;
 }

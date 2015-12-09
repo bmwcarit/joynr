@@ -254,8 +254,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     proxyFactory = new ProxyFactory(libjoynrMessagingAddress, connectorFactory, &cache);
 
-    dispatcherList.append(joynrDispatcher);
-    dispatcherList.append(inProcessDispatcher);
+    dispatcherList.push_back(joynrDispatcher);
+    dispatcherList.push_back(inProcessDispatcher);
 
     // Set up the persistence file for storing provider participant ids
     std::string persistenceFilename = libjoynrSettings->getParticipantIdsPersistenceFilename();

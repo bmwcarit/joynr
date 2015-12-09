@@ -24,7 +24,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/infrastructure/DacTypes/TrustLevel.h"
 #include <memory>
-#include <QList>
+#include <vector>
 #include <QString>
 
 namespace joynr
@@ -70,7 +70,7 @@ private:
     LocalCapabilitiesDirectory& localCapabilitiesDirectory;
     LocalDomainAccessController& localDomainAccessController;
     std::shared_ptr<ProviderRegistrationObserver> providerRegistrationObserver;
-    QList<QString> whitelistParticipantIds;
+    std::vector<std::string> whitelistParticipantIds;
 
     static joynr_logging::Logger* logger;
 };

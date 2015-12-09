@@ -156,7 +156,7 @@ public:
       */
     virtual void broadcastOccurred(const QString& subscriptionId,
                                    const std::vector<Variant>& values,
-                                   const QList<std::shared_ptr<IBroadcastFilter>>& filters);
+                                   const std::vector<std::shared_ptr<IBroadcastFilter>>& filters);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(PublicationManager);
@@ -201,11 +201,11 @@ private:
     static joynr_logging::Logger* logger;
 
     // List of subscriptionId's of runnables scheduled with delay <= qos.getMinInterval_ms()
-    QList<QString> currentScheduledPublications;
+    std::vector<QString> currentScheduledPublications;
     std::mutex currentScheduledPublicationsMutex;
 
     // Filters registered for broadcasts. Keyed by broadcast name.
-    std::map<std::string, QList<std::shared_ptr<IBroadcastFilter>>> broadcastFilters;
+    std::map<std::string, std::vector<std::shared_ptr<IBroadcastFilter>>> broadcastFilters;
 
     // Read/write lock for broadcast filters
     mutable ReadWriteLock broadcastFilterLock;
@@ -256,7 +256,7 @@ private:
                     queuedSubscriptions);
 
     template <class RequestInformationType>
-    QList<QVariant> subscriptionMapToListCopy(
+    std::vector<QVariant> subscriptionMapToListCopy(
             const std::map<std::string, std::shared_ptr<RequestInformationType>>& map);
 
     template <class RequestInformationType>
@@ -301,7 +301,7 @@ private:
 
     bool processFilterChain(const QString& subscriptionId,
                             const std::vector<Variant>& broadcastValues,
-                            const QList<std::shared_ptr<IBroadcastFilter>>& filters);
+                            const std::vector<std::shared_ptr<IBroadcastFilter>>& filters);
 };
 
 } // namespace joynr

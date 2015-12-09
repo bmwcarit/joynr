@@ -48,23 +48,23 @@ public:
                                              TEST_DOMAIN1.toStdString(),
                                              TEST_INTERFACE1.toStdString(),
                                              TrustLevel::LOW,
-                                             TypeUtil::toStd(ALL_TRUST_LEVELS),
+                                             ALL_TRUST_LEVELS,
                                              TrustLevel::LOW,
-                                             TypeUtil::toStd(ALL_TRUST_LEVELS),
+                                             ALL_TRUST_LEVELS,
                                              std::string(),
                                              Permission::NO,
-                                             TypeUtil::toStd(ALL_PERMISSIONS));
+                                             ALL_PERMISSIONS);
 
         mediatorAce = MasterAccessControlEntry(TEST_USER.toStdString(),
                                                TEST_DOMAIN1.toStdString(),
                                                TEST_INTERFACE1.toStdString(),
                                                TrustLevel::LOW,
-                                               TypeUtil::toStd(ALL_TRUST_LEVELS),
+                                               ALL_TRUST_LEVELS,
                                                TrustLevel::LOW,
-                                               TypeUtil::toStd(ALL_TRUST_LEVELS),
+                                               ALL_TRUST_LEVELS,
                                                std::string(),
                                                Permission::NO,
-                                               TypeUtil::toStd(ALL_PERMISSIONS));
+                                               ALL_PERMISSIONS);
 
         ownerAce = OwnerAccessControlEntry(TEST_USER.toStdString(),
                                            TEST_DOMAIN1.toStdString(),
@@ -79,8 +79,8 @@ public:
     {
     }
 
-    static const QList<TrustLevel::Enum> ALL_TRUST_LEVELS;
-    static const QList<Permission::Enum> ALL_PERMISSIONS;
+    static const std::vector<TrustLevel::Enum> ALL_TRUST_LEVELS;
+    static const std::vector<Permission::Enum> ALL_PERMISSIONS;
 
 protected:
     AccessControlAlgorithm accessControlAlgorithm;
@@ -98,13 +98,8 @@ private:
 const QString AccessControlAlgorithmTest::TEST_USER("testUser");
 const QString AccessControlAlgorithmTest::TEST_DOMAIN1("domain1");
 const QString AccessControlAlgorithmTest::TEST_INTERFACE1("interface1");
-const QList<TrustLevel::Enum> AccessControlAlgorithmTest::ALL_TRUST_LEVELS =
-        QList<TrustLevel::Enum>()
-        << TrustLevel::LOW << TrustLevel::MID << TrustLevel::HIGH;
-const QList<Permission::Enum> AccessControlAlgorithmTest::ALL_PERMISSIONS =
-        QList<Permission::Enum>()
-        << Permission::NO << Permission::ASK << Permission::YES;
-
+const std::vector<TrustLevel::Enum> AccessControlAlgorithmTest::ALL_TRUST_LEVELS = {TrustLevel::LOW, TrustLevel::MID, TrustLevel::HIGH};
+const std::vector<Permission::Enum> AccessControlAlgorithmTest::ALL_PERMISSIONS = {Permission::NO, Permission::ASK, Permission::YES};
 
 TEST_F(AccessControlAlgorithmTest, permissionWithMasterAceOnly)
 {
@@ -145,8 +140,8 @@ TEST_F(AccessControlAlgorithmTest, permissionWithAllAceNull) {
 TEST_F(AccessControlAlgorithmTest, permissionWithMasterAndMediatorAce) {
     masterAce.setDefaultConsumerPermission(Permission::YES);
     masterAce.setDefaultRequiredTrustLevel(TrustLevel::HIGH);
-    masterAce.setPossibleConsumerPermissions(TypeUtil::toStd(ALL_PERMISSIONS));
-    masterAce.setPossibleRequiredTrustLevels(TypeUtil::toStd(ALL_TRUST_LEVELS));
+    masterAce.setPossibleConsumerPermissions(ALL_PERMISSIONS);
+    masterAce.setPossibleRequiredTrustLevels(ALL_TRUST_LEVELS);
 
     mediatorAce.setDefaultConsumerPermission(Permission::ASK);
     mediatorAce.setDefaultRequiredTrustLevel(TrustLevel::LOW);
@@ -173,14 +168,14 @@ TEST_F(AccessControlAlgorithmTest, permissionWithMediatorOnly) {
 }
 
 TEST_F(AccessControlAlgorithmTest, permissionWithMasterAndInvalidMediatorAce) {
-    QList<Permission::Enum> possibleMasterConsumerPermissions;
-    possibleMasterConsumerPermissions.append(Permission::NO);
-    masterAce.setPossibleConsumerPermissions(TypeUtil::toStd(possibleMasterConsumerPermissions));
+    std::vector<Permission::Enum> possibleMasterConsumerPermissions;
+    possibleMasterConsumerPermissions.push_back(Permission::NO);
+    masterAce.setPossibleConsumerPermissions(possibleMasterConsumerPermissions);
 
-    QList<Permission::Enum> possibleMediatorConsumerPermissions;
-    possibleMediatorConsumerPermissions.append(Permission::ASK);
-    possibleMediatorConsumerPermissions.append(Permission::YES);
-    mediatorAce.setPossibleConsumerPermissions(TypeUtil::toStd(possibleMediatorConsumerPermissions));
+    std::vector<Permission::Enum> possibleMediatorConsumerPermissions;
+    possibleMediatorConsumerPermissions.push_back(Permission::ASK);
+    possibleMediatorConsumerPermissions.push_back(Permission::YES);
+    mediatorAce.setPossibleConsumerPermissions(possibleMediatorConsumerPermissions);
     mediatorAce.setDefaultConsumerPermission(Permission::YES);
     mediatorAce.setDefaultRequiredTrustLevel(TrustLevel::MID);
 
@@ -244,9 +239,9 @@ TEST_F(AccessControlAlgorithmTest, permissionWithOwnerAceOnly) {
 }
 
 TEST_F(AccessControlAlgorithmTest, permissionWithMediatorAndInvalidOwnerAce) {
-    QList<Permission::Enum> possibleMediatorConsumerPermissions;
-    possibleMediatorConsumerPermissions.append(Permission::NO);
-    mediatorAce.setPossibleConsumerPermissions(TypeUtil::toStd(possibleMediatorConsumerPermissions));
+    std::vector<Permission::Enum> possibleMediatorConsumerPermissions;
+    possibleMediatorConsumerPermissions.push_back(Permission::NO);
+    mediatorAce.setPossibleConsumerPermissions(possibleMediatorConsumerPermissions);
 
     ownerAce.setConsumerPermission(Permission::ASK);
 
@@ -260,9 +255,9 @@ TEST_F(AccessControlAlgorithmTest, permissionWithMediatorAndInvalidOwnerAce) {
 }
 
 TEST_F(AccessControlAlgorithmTest, permissionWithMasterAndInvalidOwnerAce) {
-    QList<Permission::Enum> possibleMasterConsumerPermissions;
-    possibleMasterConsumerPermissions.append(Permission::NO);
-    masterAce.setPossibleConsumerPermissions(TypeUtil::toStd(possibleMasterConsumerPermissions));
+    std::vector<Permission::Enum> possibleMasterConsumerPermissions;
+    possibleMasterConsumerPermissions.push_back(Permission::NO);
+    masterAce.setPossibleConsumerPermissions(possibleMasterConsumerPermissions);
 
     ownerAce.setConsumerPermission(Permission::ASK);
 

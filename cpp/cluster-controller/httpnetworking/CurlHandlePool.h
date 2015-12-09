@@ -28,6 +28,7 @@
 #include <QMap>
 
 #include <memory>
+#include <vector>
 
 namespace joynr
 {
@@ -201,7 +202,7 @@ private:
     QMultiMap<Qt::HANDLE, std::shared_ptr<PooledCurlHandle>> idleHandleMap;
     // handleOrderList is used to sort the curl handles according to their last use.
     // By deleting the last item of this list, the longest idle curl handle will be deleted.
-    QList<std::shared_ptr<PooledCurlHandle>> handleOrderList;
+    std::vector<std::shared_ptr<PooledCurlHandle>> handleOrderList;
 
     /**
       * Handles that are currently in use(rented using getHandle(url)).

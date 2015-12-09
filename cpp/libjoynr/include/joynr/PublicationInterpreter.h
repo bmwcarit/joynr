@@ -129,7 +129,7 @@ joynr_logging::Logger* EnumPublicationInterpreter<T>::logger =
         joynr_logging::Logging::getInstance()->getLogger("MSG", "EnumPublicationInterpreter");
 
 template <class T>
-class EnumPublicationInterpreter<QList<T>> : public IPublicationInterpreter
+class EnumPublicationInterpreter<std::vector<T>> : public IPublicationInterpreter
 {
 public:
     EnumPublicationInterpreter()
@@ -171,9 +171,9 @@ private:
 };
 
 template <class T>
-joynr_logging::Logger* EnumPublicationInterpreter<QList<T>>::logger =
+joynr_logging::Logger* EnumPublicationInterpreter<std::vector<T>>::logger =
         joynr_logging::Logging::getInstance()->getLogger("MSG",
-                                                         "EnumPublicationInterpreter<QList>");
+                                                         "EnumPublicationInterpreter<std::vector>");
 
 } // namespace joynr
 #endif // PUBLICATIONINTERPRETER_H

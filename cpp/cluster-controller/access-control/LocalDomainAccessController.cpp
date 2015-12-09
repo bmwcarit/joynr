@@ -173,8 +173,8 @@ bool LocalDomainAccessController::hasRole(const QString& userId,
     bool hasRole = false;
     Optional<DomainRoleEntry> dre = localDomainAccessStore->getDomainRole(userId, role);
     if (dre) {
-        QList<QString> domains = TypeUtil::toQt(dre.getValue().getDomains());
-        if (domains.contains(domain)) {
+        std::vector<std::string> domains = dre.getValue().getDomains();
+        if (vectorContains(domains, domain.toStdString())) {
             hasRole = true;
         }
     }
@@ -225,20 +225,21 @@ void LocalDomainAccessController::getConsumerPermission(
     }
 
     // If this point is reached the data for the ACL check is available
-    QList<MasterAccessControlEntry> masterAces =
+    std::vector<MasterAccessControlEntry> masterAces =
             localDomainAccessStore->getMasterAccessControlEntries(
                     QString::fromStdString(userId),
                     QString::fromStdString(domain),
                     QString::fromStdString(interfaceName));
-    QList<MasterAccessControlEntry> mediatorAces =
+    std::vector<MasterAccessControlEntry> mediatorAces =
             localDomainAccessStore->getMediatorAccessControlEntries(
                     QString::fromStdString(userId),
                     QString::fromStdString(domain),
                     QString::fromStdString(interfaceName));
-    QList<OwnerAccessControlEntry> ownerAces = localDomainAccessStore->getOwnerAccessControlEntries(
-            QString::fromStdString(userId),
-            QString::fromStdString(domain),
-            QString::fromStdString(interfaceName));
+    std::vector<OwnerAccessControlEntry> ownerAces =
+            localDomainAccessStore->getOwnerAccessControlEntries(
+                    QString::fromStdString(userId),
+                    QString::fromStdString(domain),
+                    QString::fromStdString(interfaceName));
 
     // The operations of the ACEs should only contain wildcards, if not
     // getConsumerPermission should be called with an operation
@@ -686,7 +687,7 @@ void LocalDomainAccessController::initialised(const std::string& domain,
                                               const std::string& interfaceName)
 {
     std::string compoundKey = createCompoundKey(domain, interfaceName);
-    QList<ConsumerPermissionRequest> requests;
+    std::vector<ConsumerPermissionRequest> requests;
 
     {
         std::lock_guard<std::mutex> lock(initStateMutex);
@@ -714,7 +715,7 @@ void LocalDomainAccessController::abortInitialisation(const std::string& domain,
                      .str());
 
     std::string compoundKey = createCompoundKey(domain, interfaceName);
-    QList<ConsumerPermissionRequest> requests;
+    std::vector<ConsumerPermissionRequest> requests;
 
     {
         std::lock_guard<std::mutex> lock(initStateMutex);
@@ -737,18 +738,18 @@ bool LocalDomainAccessController::queueConsumerRequest(const std::string& key,
     // This function assumes that the initStateMutex has already been obtained
 
     if (consumerPermissionRequests.contains(QString::fromStdString(key))) {
-        consumerPermissionRequests[QString::fromStdString(key)].append(request);
+        consumerPermissionRequests[QString::fromStdString(key)].push_back(request);
         return true;
     } else {
-        QList<ConsumerPermissionRequest> requestList;
-        requestList << request;
+        std::vector<ConsumerPermissionRequest> requestList;
+        requestList.push_back(request);
         consumerPermissionRequests.insert(QString::fromStdString(key), requestList);
         return false;
     }
 }
 
 void LocalDomainAccessController::processConsumerRequests(
-        const QList<ConsumerPermissionRequest>& requests)
+        const std::vector<ConsumerPermissionRequest>& requests)
 {
     for (const ConsumerPermissionRequest& request : requests) {
         getConsumerPermission(request.userId,
@@ -1000,9 +1001,9 @@ void LocalDomainAccessController::OwnerAccessControlEntryChangedBroadcastListene
 }
 
 template <typename T>
-bool LocalDomainAccessController::onlyWildcardOperations(const QList<T> aceEntries)
+bool LocalDomainAccessController::onlyWildcardOperations(const std::vector<T>& aceEntries)
 {
-    if (aceEntries.isEmpty()) {
+    if (aceEntries.empty()) {
         return true;
     }
 
@@ -1010,7 +1011,7 @@ bool LocalDomainAccessController::onlyWildcardOperations(const QList<T> aceEntri
         return false;
     }
 
-    return aceEntries.first().getOperation() == LocalDomainAccessStore::WILDCARD;
+    return aceEntries.begin()->getOperation() == LocalDomainAccessStore::WILDCARD;
 }
 
 } // namespace joynr

@@ -28,6 +28,7 @@
 #include <QDataStream>
 #include "joynr/TypeUtil.h"
 #include <cassert>
+#include <QVector>
 
 namespace joynr
 {
@@ -255,26 +256,26 @@ const QString LocalDomainAccessStore::GET_EDITABLE_OWNER_ACES =
 //--- Generic serialization functions --------------------------------------------
 
 template <typename T>
-QList<T> LocalDomainAccessStore::deserializeEnumList(const QByteArray& serializedEnumList)
+std::vector<T> LocalDomainAccessStore::deserializeEnumList(const QByteArray& serializedEnumList)
 {
-    // Deserialize the blob into a QList
-    QList<int> enumAsIntList;
+    // Deserialize the blob into a std::vector
+    QList<int> temp;
     QDataStream stream(serializedEnumList);
-    stream >> enumAsIntList;
+    stream >> temp;
 
-    return Util::convertIntListToEnumList<T>(enumAsIntList);
+    return Util::convertIntListToEnumList<T>(temp.toVector().toStdVector());
 }
 
 template <typename T>
-QByteArray LocalDomainAccessStore::serializeEnumList(const QList<T>& enumList)
+QByteArray LocalDomainAccessStore::serializeEnumList(const std::vector<T>& enumList)
 {
     // Convert to an int list
-    QList<int> ints = Util::convertEnumListToIntList<T>(enumList);
+    std::vector<int> ints = Util::convertEnumListToIntList<T>(enumList);
 
     // Serialize to a bytearray
     QByteArray serializedEnumList;
     QDataStream stream(&serializedEnumList, QIODevice::WriteOnly);
-    stream << ints;
+    stream << TypeUtil::toQt(ints);
 
     // Return the blob for binding
     return serializedEnumList;
@@ -370,24 +371,24 @@ LocalDomainAccessStore::~LocalDomainAccessStore()
     }
 }
 
-QList<DomainRoleEntry> LocalDomainAccessStore::getDomainRoles(const QString& userId)
+std::vector<DomainRoleEntry> LocalDomainAccessStore::getDomainRoles(const QString& userId)
 {
     LOG_DEBUG(logger,
               FormatString("execute: entering getDomainRoleEntries with userId %1")
                       .arg(userId.toStdString())
                       .str());
 
-    QList<DomainRoleEntry> domainRoles;
+    std::vector<DomainRoleEntry> domainRoles;
     Optional<DomainRoleEntry> masterDre = getDomainRole(userId, Role::MASTER);
     if (masterDre) {
         // add dre to resultset only if it defines role for some domain
-        domainRoles.append(masterDre.getValue());
+        domainRoles.push_back(masterDre.getValue());
     }
 
     Optional<DomainRoleEntry> ownerDre = getDomainRole(userId, Role::OWNER);
     if (ownerDre) {
         // add dre to resultset only if it defines role for some domain
-        domainRoles.append(ownerDre.getValue());
+        domainRoles.push_back(ownerDre.getValue());
     }
 
     return domainRoles;
@@ -406,16 +407,16 @@ Optional<DomainRoleEntry> joynr::LocalDomainAccessStore::getDomainRole(const QSt
     int domainField = query.record().indexOf("domain");
 
     // Extract the results
-    QList<QString> domains;
+    std::vector<std::string> domains;
     while (query.next()) {
-        domains.append(query.value(domainField).toString());
+        domains.push_back(query.value(domainField).toString().toStdString());
     }
 
-    if (domains.isEmpty()) {
+    if (domains.empty()) {
         return Optional<DomainRoleEntry>::createNull();
     }
 
-    return DomainRoleEntry(uid.toStdString(), TypeUtil::toStd(domains), role);
+    return DomainRoleEntry(uid.toStdString(), domains, role);
 }
 
 bool LocalDomainAccessStore::updateDomainRole(const DomainRoleEntry& updatedEntry)
@@ -427,7 +428,7 @@ bool LocalDomainAccessStore::updateDomainRole(const DomainRoleEntry& updatedEntr
 
     bool updateSuccess = insertDomainRoleEntry(QString::fromStdString(updatedEntry.getUid()),
                                                updatedEntry.getRole(),
-                                               TypeUtil::toQt(updatedEntry.getDomains()));
+                                               updatedEntry.getDomains());
     return updateSuccess;
 }
 
@@ -448,7 +449,7 @@ bool LocalDomainAccessStore::removeDomainRole(const QString& userId, Role::Enum 
     return removeSuccess;
 }
 
-QList<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessControlEntries(
+std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessControlEntries(
         const QString& uid)
 {
     QSqlQuery query = createGetAceQuery(GET_UID_MASTER_ACES, uid);
@@ -457,7 +458,7 @@ QList<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessControlEn
     return extractMasterAces(query);
 }
 
-QList<MasterAccessControlEntry> LocalDomainAccessStore::getEditableMasterAccessControlEntries(
+std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getEditableMasterAccessControlEntries(
         const QString& userId)
 {
     LOG_DEBUG(logger,
@@ -472,7 +473,7 @@ QList<MasterAccessControlEntry> LocalDomainAccessStore::getEditableMasterAccessC
     return extractMasterAces(query);
 }
 
-QList<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessControlEntries(
+std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessControlEntries(
         const QString& domain,
         const QString& interfaceName)
 {
@@ -482,7 +483,7 @@ QList<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessControlEn
     return extractMasterAces(query);
 }
 
-QList<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessControlEntries(
+std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessControlEntries(
         const QString& uid,
         const QString& domain,
         const QString& interfaceName)
@@ -503,7 +504,7 @@ Optional<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessContro
     QSqlQuery query = createGetAceQuery(GET_MASTER_ACE, uid, domain, interfaceName, operation);
     assert(query.exec());
 
-    QList<MasterAccessControlEntry> masterAceList = extractMasterAces(query);
+    std::vector<MasterAccessControlEntry> masterAceList = extractMasterAces(query);
     return firstEntry(masterAceList);
 }
 
@@ -530,7 +531,7 @@ bool LocalDomainAccessStore::removeMasterAccessControlEntry(const QString& userI
     return query.exec();
 }
 
-QList<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessControlEntries(
+std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessControlEntries(
         const QString& uid)
 {
     QSqlQuery query = createGetAceQuery(GET_UID_MEDIATOR_ACES, uid);
@@ -539,8 +540,8 @@ QList<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessControl
     return extractMasterAces(query);
 }
 
-QList<MasterAccessControlEntry> LocalDomainAccessStore::getEditableMediatorAccessControlEntries(
-        const QString& userId)
+std::vector<MasterAccessControlEntry> LocalDomainAccessStore::
+        getEditableMediatorAccessControlEntries(const QString& userId)
 {
     LOG_DEBUG(logger,
               FormatString("execute: entering getEditableMediatorAces with uId %1")
@@ -554,7 +555,7 @@ QList<MasterAccessControlEntry> LocalDomainAccessStore::getEditableMediatorAcces
     return extractMasterAces(query);
 }
 
-QList<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessControlEntries(
+std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessControlEntries(
         const QString& domain,
         const QString& interfaceName)
 {
@@ -564,7 +565,7 @@ QList<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessControl
     return extractMasterAces(query);
 }
 
-QList<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessControlEntries(
+std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessControlEntries(
         const QString& uid,
         const QString& domain,
         const QString& interfaceName)
@@ -585,7 +586,7 @@ Optional<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessCont
     QSqlQuery query = createGetAceQuery(GET_MEDIATOR_ACE, uid, domain, interfaceName, operation);
     assert(query.exec());
 
-    QList<MasterAccessControlEntry> mediatorAceList = extractMasterAces(query);
+    std::vector<MasterAccessControlEntry> mediatorAceList = extractMasterAces(query);
     return firstEntry(mediatorAceList);
 }
 
@@ -636,7 +637,7 @@ bool LocalDomainAccessStore::removeMediatorAccessControlEntry(const QString& use
     return query.exec();
 }
 
-QList<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessControlEntries(
+std::vector<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessControlEntries(
         const QString& uid)
 {
     QSqlQuery query = createGetAceQuery(GET_UID_OWNER_ACES, uid);
@@ -645,7 +646,7 @@ QList<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessControlEntr
     return extractOwnerAces(query);
 }
 
-QList<OwnerAccessControlEntry> LocalDomainAccessStore::getEditableOwnerAccessControlEntries(
+std::vector<OwnerAccessControlEntry> LocalDomainAccessStore::getEditableOwnerAccessControlEntries(
         const QString& userId)
 {
     LOG_DEBUG(logger,
@@ -660,7 +661,7 @@ QList<OwnerAccessControlEntry> LocalDomainAccessStore::getEditableOwnerAccessCon
     return extractOwnerAces(query);
 }
 
-QList<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessControlEntries(
+std::vector<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessControlEntries(
         const QString& domain,
         const QString& interfaceName)
 {
@@ -670,7 +671,7 @@ QList<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessControlEntr
     return extractOwnerAces(query);
 }
 
-QList<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessControlEntries(
+std::vector<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessControlEntries(
         const QString& userId,
         const QString& domain,
         const QString& interfaceName)
@@ -691,7 +692,7 @@ Optional<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessControlE
     QSqlQuery query = createGetAceQuery(GET_OWNER_ACE, userId, domain, interfaceName, operation);
     assert(query.exec());
 
-    QList<OwnerAccessControlEntry> ownerAceList = extractOwnerAces(query);
+    std::vector<OwnerAccessControlEntry> ownerAceList = extractOwnerAces(query);
     return firstEntry(ownerAceList);
 }
 
@@ -777,16 +778,16 @@ void LocalDomainAccessStore::reset()
 
 bool LocalDomainAccessStore::insertDomainRoleEntry(const QString& userId,
                                                    Role::Enum role,
-                                                   const QList<QString>& domains)
+                                                   const std::vector<std::string>& domains)
 {
 
     // Loop through the domains
-    QListIterator<QString> it(domains);
-    while (it.hasNext()) {
+    auto it = domains.begin();
+    while (it != domains.end()) {
 
         // Insert a record for each domain
         QSqlQuery query;
-        QString domain = it.next();
+        QString domain = TypeUtil::toQt(*it);
 
         query.prepare(UPDATE_DRE);
         query.bindValue(BIND_UID, userId);
@@ -802,15 +803,16 @@ bool LocalDomainAccessStore::insertDomainRoleEntry(const QString& userId,
                               .str());
             return false;
         }
+        ++it;
     }
 
     // Assume success
     return true;
 }
 
-QList<MasterAccessControlEntry> LocalDomainAccessStore::extractMasterAces(QSqlQuery& query)
+std::vector<MasterAccessControlEntry> LocalDomainAccessStore::extractMasterAces(QSqlQuery& query)
 {
-    QList<MasterAccessControlEntry> masterAces;
+    std::vector<MasterAccessControlEntry> masterAces;
 
     int uidField = query.record().indexOf("uid");
     int domainField = query.record().indexOf("domain");
@@ -838,22 +840,22 @@ QList<MasterAccessControlEntry> LocalDomainAccessStore::extractMasterAces(QSqlQu
         entry.setDefaultConsumerPermission(
                 getEnumField<Permission::Enum>(query, defaultConsumerPermissionField));
 
-        // Append the list fields
+        // push_back the list fields
         setPossibleConsumerPermissions(entry, query, possibleConsumerPermissionsField);
         setPossibleRequiredTrustLevels(entry, query, possibleTrustLevelsField);
         setPossibleRequiredControlEntryChangeTrustLevels(
                 entry, query, possibleChangeTrustLevelsField);
 
-        // Append the result
-        masterAces.append(entry);
+        // push_back the result
+        masterAces.push_back(entry);
     }
 
     return masterAces;
 }
 
-QList<OwnerAccessControlEntry> LocalDomainAccessStore::extractOwnerAces(QSqlQuery& query)
+std::vector<OwnerAccessControlEntry> LocalDomainAccessStore::extractOwnerAces(QSqlQuery& query)
 {
-    QList<OwnerAccessControlEntry> ownerAces;
+    std::vector<OwnerAccessControlEntry> ownerAces;
 
     int uidField = query.record().indexOf("uid");
     int domainField = query.record().indexOf("domain");
@@ -877,8 +879,8 @@ QList<OwnerAccessControlEntry> LocalDomainAccessStore::extractOwnerAces(QSqlQuer
                 getEnumField<TrustLevel::Enum>(query, requiredACEChangeTLField));
         entry.setConsumerPermission(getEnumField<Permission::Enum>(query, consumerPermissionField));
 
-        // Append the result
-        ownerAces.append(entry);
+        // push_back the result
+        ownerAces.push_back(entry);
     }
 
     return ownerAces;
@@ -890,10 +892,10 @@ void LocalDomainAccessStore::setPossibleConsumerPermissions(MasterAccessControlE
 {
     // Create a list of permissions
     QByteArray value = query.value(field).toByteArray();
-    QList<Permission::Enum> permissions = deserializeEnumList<Permission::Enum>(value);
+    std::vector<Permission::Enum> permissions = deserializeEnumList<Permission::Enum>(value);
 
     // Set the result
-    entry.setPossibleConsumerPermissions(TypeUtil::toStd(permissions));
+    entry.setPossibleConsumerPermissions(permissions);
 }
 
 void LocalDomainAccessStore::setPossibleRequiredTrustLevels(MasterAccessControlEntry& entry,
@@ -901,8 +903,8 @@ void LocalDomainAccessStore::setPossibleRequiredTrustLevels(MasterAccessControlE
                                                             int field)
 {
     QByteArray value = query.value(field).toByteArray();
-    QList<TrustLevel::Enum> trustLevels = deserializeEnumList<TrustLevel::Enum>(value);
-    entry.setPossibleRequiredTrustLevels(TypeUtil::toStd(trustLevels));
+    std::vector<TrustLevel::Enum> trustLevels = deserializeEnumList<TrustLevel::Enum>(value);
+    entry.setPossibleRequiredTrustLevels(trustLevels);
 }
 
 void LocalDomainAccessStore::setPossibleRequiredControlEntryChangeTrustLevels(
@@ -911,8 +913,8 @@ void LocalDomainAccessStore::setPossibleRequiredControlEntryChangeTrustLevels(
         int field)
 {
     QByteArray value = query.value(field).toByteArray();
-    QList<TrustLevel::Enum> trustLevels = deserializeEnumList<TrustLevel::Enum>(value);
-    entry.setPossibleRequiredControlEntryChangeTrustLevels(TypeUtil::toStd(trustLevels));
+    std::vector<TrustLevel::Enum> trustLevels = deserializeEnumList<TrustLevel::Enum>(value);
+    entry.setPossibleRequiredControlEntryChangeTrustLevels(trustLevels);
 }
 
 QSqlQuery LocalDomainAccessStore::createUpdateMasterAceQuery(
@@ -936,11 +938,10 @@ QSqlQuery LocalDomainAccessStore::createUpdateMasterAceQuery(
 
     // Serialize list fields
     QByteArray consumerPermissions =
-            serializeEnumList(TypeUtil::toQt(updatedMasterAce.getPossibleConsumerPermissions()));
-    QByteArray trustLevels =
-            serializeEnumList(TypeUtil::toQt(updatedMasterAce.getPossibleRequiredTrustLevels()));
-    QByteArray changeTrustLevels = serializeEnumList(
-            TypeUtil::toQt(updatedMasterAce.getPossibleRequiredControlEntryChangeTrustLevels()));
+            serializeEnumList(updatedMasterAce.getPossibleConsumerPermissions());
+    QByteArray trustLevels = serializeEnumList(updatedMasterAce.getPossibleRequiredTrustLevels());
+    QByteArray changeTrustLevels =
+            serializeEnumList(updatedMasterAce.getPossibleRequiredControlEntryChangeTrustLevels());
 
     query.bindValue(BIND_POSSIBLE_CONSUMERPERMISSIONS, consumerPermissions);
     query.bindValue(BIND_POSSIBLE_TRUSTLEVELS, trustLevels);
@@ -1035,13 +1036,13 @@ QSqlQuery LocalDomainAccessStore::createGetAceQuery(const QString& sqlQuery,
 }
 
 template <typename T>
-Optional<T> LocalDomainAccessStore::firstEntry(const QList<T>& list)
+Optional<T> LocalDomainAccessStore::firstEntry(const std::vector<T>& list)
 {
-    if (list.isEmpty()) {
+    if (list.empty()) {
         return Optional<T>::createNull();
     }
 
-    return list.first();
+    return *list.begin();
 }
 
 } // namespace joynr

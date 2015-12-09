@@ -203,15 +203,14 @@ TEST(ChannelUrlSelectorTest, obtainUrlRetriesUrlOfHigherPriority) {
 
 
 TEST(ChannelUrlSelectorTest, initFitnessTest) {
-    types::QtChannelUrlInformation urlInformation;
-    QList<QString> urls;
-    urls << "firstUrl" << "secondUrl" << "thirdUrl";
+    types::ChannelUrlInformation urlInformation;
+    std::vector<std::string> urls = {"firstUrl", "secondUrl", "thirdUrl"};
     urlInformation.setUrls(urls);
     ChannelUrlSelectorEntry* entry = new ChannelUrlSelectorEntry(
                 urlInformation,
                 ChannelUrlSelector::PUNISHMENT_FACTOR(),
                 ChannelUrlSelector::TIME_FOR_ONE_RECOUPERATION());
-    QList<double> fitness = entry->getFitness();
+    std::vector<double> fitness = entry->getFitness();
     EXPECT_EQ(3,fitness.size());
     EXPECT_EQ(3,fitness.at(0));
     EXPECT_EQ(2,fitness.at(1));
@@ -220,9 +219,8 @@ TEST(ChannelUrlSelectorTest, initFitnessTest) {
 }
 
 TEST(ChannelUrlSelectorTest, punishTest) {
-    types::QtChannelUrlInformation urlInformation;
-    QList<QString> urls;
-    urls << "firstUrl" << "secondUrl" << "thirdUrl";
+    types::ChannelUrlInformation urlInformation;
+    std::vector<std::string> urls = {"firstUrl", "secondUrl", "thirdUrl"};
     urlInformation.setUrls(urls);
     double punishmentFactor = 0.4;
     ChannelUrlSelectorEntry* entry = new ChannelUrlSelectorEntry(
@@ -230,7 +228,7 @@ TEST(ChannelUrlSelectorTest, punishTest) {
                 ChannelUrlSelector::PUNISHMENT_FACTOR(),
                 ChannelUrlSelector::TIME_FOR_ONE_RECOUPERATION());
 
-    QList<double> fitness = entry->getFitness();
+    std::vector<double> fitness = entry->getFitness();
     EXPECT_EQ(3,fitness.at(0));
     entry->punish("firstUrl");
     fitness = entry->getFitness();
@@ -261,9 +259,8 @@ TEST(ChannelUrlSelectorTest, punishTest) {
 
 TEST(ChannelUrlSelectorTest, updateTest) {
 
-    types::QtChannelUrlInformation urlInformation;
-    QList<QString> urls;
-    urls << "firstUrl" << "secondUrl" << "thirdUrl";
+    types::ChannelUrlInformation urlInformation;
+    std::vector<std::string> urls = {"firstUrl", "secondUrl", "thirdUrl"};
     urlInformation.setUrls(urls);
     double punishmentFactor = 0.4;
     qint64 timeForOneRecouperation = 300;
@@ -277,7 +274,7 @@ TEST(ChannelUrlSelectorTest, updateTest) {
     entry->punish("thirdUrl");
     entry->punish("thirdUrl");
     entry->updateFitness();
-    QList<double> fitness = entry->getFitness();
+    std::vector<double> fitness = entry->getFitness();
     EXPECT_EQ(3 - punishmentFactor,fitness.at(0));
     EXPECT_EQ(2 - punishmentFactor,fitness.at(1));
     EXPECT_EQ(1 - punishmentFactor - punishmentFactor,fitness.at(2));
@@ -329,9 +326,8 @@ TEST(ChannelUrlSelectorTest, updateTest) {
 
 TEST(ChannelUrlSelectorTest, bestTest) {
 
-    types::QtChannelUrlInformation urlInformation;
-    QList<QString> urls;
-    urls << "firstUrl" << "secondUrl" << "thirdUrl";
+    types::ChannelUrlInformation urlInformation;
+    std::vector<std::string> urls = {"firstUrl", "secondUrl", "thirdUrl"};
     urlInformation.setUrls(urls);
     double punishmentFactor = 0.4;
     qint64 timeForOneRecouperation = 300;

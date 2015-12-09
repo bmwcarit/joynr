@@ -126,7 +126,7 @@ private:
 class JOYNRCLUSTERCONTROLLER_EXPORT ChannelUrlSelectorEntry
 {
 public:
-    ChannelUrlSelectorEntry(const types::QtChannelUrlInformation& urlInformation,
+    ChannelUrlSelectorEntry(const types::ChannelUrlInformation& urlInformation,
                             double punishmentFactor,
                             qint64 timeForOneRecouperation);
     ~ChannelUrlSelectorEntry();
@@ -158,7 +158,7 @@ public:
      * @brief Returns the current fitness values.
      *
      */
-    QList<double> getFitness();
+    std::vector<double> getFitness();
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ChannelUrlSelectorEntry);
@@ -168,8 +168,8 @@ private:
     friend class ::ChannelUrlSelectorTest_initFittnessTest_Test;
 
     uint64_t lastUpdate;
-    QList<double> fitness;
-    types::QtChannelUrlInformation urlInformation;
+    std::vector<double> fitness;
+    types::ChannelUrlInformation urlInformation;
     double punishmentFactor;
     qint64 timeForOneRecouperation;
     static joynr_logging::Logger* logger;

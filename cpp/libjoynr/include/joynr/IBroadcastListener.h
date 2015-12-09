@@ -23,9 +23,6 @@
 #include <memory>
 #include <vector>
 
-template <typename T>
-class QList;
-
 namespace joynr
 {
 
@@ -39,8 +36,9 @@ public:
     virtual ~IBroadcastListener()
     {
     }
-    virtual void broadcastOccurred(const std::vector<Variant>& values,
-                                   const QList<std::shared_ptr<IBroadcastFilter>>& filters) = 0;
+    virtual void broadcastOccurred(
+            const std::vector<Variant>& values,
+            const std::vector<std::shared_ptr<IBroadcastFilter>>& filters) = 0;
 };
 
 } // namespace joynr

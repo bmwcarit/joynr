@@ -27,8 +27,10 @@ namespace joynr
 
 MessagingStubFactory::~MessagingStubFactory()
 {
-    while (!factoryList.isEmpty()) {
-        delete factoryList.takeFirst();
+    while (!factoryList.empty()) {
+        auto it = factoryList.begin();
+        delete *it;
+        factoryList.erase(it);
     }
 }
 
@@ -47,7 +49,8 @@ std::shared_ptr<IMessaging> MessagingStubFactory::create(
 
         if (!address2MessagingStubDirectory.contains(destinationAddress)) {
             // search for the corresponding factory
-            for (QList<IMiddlewareMessagingStubFactory*>::iterator it = this->factoryList.begin();
+            for (std::vector<IMiddlewareMessagingStubFactory*>::iterator it =
+                         this->factoryList.begin();
                  it != factoryList.end();
                  ++it) {
                 if ((*it)->canCreate(destinationAddress)) {
@@ -77,7 +80,7 @@ bool MessagingStubFactory::contains(
 
 void MessagingStubFactory::registerStubFactory(IMiddlewareMessagingStubFactory* factory)
 {
-    this->factoryList.append(factory);
+    this->factoryList.push_back(factory);
 }
 
 } // namespace joynr

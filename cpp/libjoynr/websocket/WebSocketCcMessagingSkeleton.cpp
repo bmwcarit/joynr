@@ -92,7 +92,7 @@ void WebSocketCcMessagingSkeleton::onNewConnection()
             this,
             &WebSocketCcMessagingSkeleton::onSocketDisconnected);
 
-    clients.append(client);
+    clients.push_back(client);
 }
 
 void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString& message)
@@ -121,7 +121,7 @@ void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString& message)
                    &QWebSocket::disconnected,
                    this,
                    &WebSocketCcMessagingSkeleton::onSocketDisconnected);
-        clients.removeAll(client);
+        removeAll(clients, client);
         return;
     }
 
@@ -145,8 +145,8 @@ void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString& message)
 void WebSocketCcMessagingSkeleton::onSocketDisconnected()
 {
     QWebSocket* client = qobject_cast<QWebSocket*>(sender());
-    if (clients.contains(client)) {
-        clients.removeAll(client);
+    if (vectorContains(clients, client)) {
+        removeAll(clients, client);
         client->deleteLater();
     }
 }

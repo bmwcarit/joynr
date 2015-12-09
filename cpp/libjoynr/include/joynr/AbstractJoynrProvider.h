@@ -26,11 +26,11 @@
 #include "joynr/IBroadcastFilter.h"
 #include "joynr/ReadWriteLock.h"
 
-#include <QList>
 #include <QVariant>
 #include <string>
 #include <memory>
 #include <map>
+#include <vector>
 
 namespace joynr
 {
@@ -124,9 +124,9 @@ private:
     DISALLOW_COPY_AND_ASSIGN(AbstractJoynrProvider);
 
     joynr::ReadWriteLock lock;
-    std::map<std::string, QList<IAttributeListener*>> attributeListeners;
-    std::map<std::string, QList<IBroadcastListener*>> broadcastListeners;
-    std::map<std::string, QList<std::shared_ptr<IBroadcastFilter>>> broadcastFilters;
+    std::map<std::string, std::vector<IAttributeListener*>> attributeListeners;
+    std::map<std::string, std::vector<IBroadcastListener*>> broadcastListeners;
+    std::map<std::string, std::vector<std::shared_ptr<IBroadcastFilter>>> broadcastFilters;
 
     friend class End2EndBroadcastTest;
 };

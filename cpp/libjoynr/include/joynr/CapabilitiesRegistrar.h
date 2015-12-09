@@ -33,7 +33,7 @@
 
 #include <QString>
 #include <string>
-#include <QList>
+#include <vector>
 #include <cassert>
 #include <memory>
 #include <tuple>
@@ -48,7 +48,7 @@ class JOYNR_EXPORT CapabilitiesRegistrar
 {
 public:
     CapabilitiesRegistrar(
-            QList<IDispatcher*> dispatcherList,
+            std::vector<IDispatcher*> dispatcherList,
             joynr::system::IDiscoverySync& discoveryProxy,
             std::shared_ptr<joynr::system::RoutingTypes::QtAddress> messagingStubAddress,
             std::shared_ptr<ParticipantIdStorage> participantIdStorage,
@@ -158,7 +158,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesRegistrar);
-    QList<IDispatcher*> dispatcherList;
+    std::vector<IDispatcher*> dispatcherList;
     joynr::system::IDiscoverySync& discoveryProxy;
     std::shared_ptr<joynr::system::RoutingTypes::QtAddress> messagingStubAddress;
     std::shared_ptr<ParticipantIdStorage> participantIdStorage;

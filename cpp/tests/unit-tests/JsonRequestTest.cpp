@@ -20,7 +20,7 @@
 #include <QVariant>
 #include <QVariantList>
 #include <QString>
-#include <QList>
+#include <vector>
 
 
 #include "gtest/gtest.h"
@@ -47,7 +47,7 @@ public:
         list1(mockArgument.list1)
     {}
 
-    MockArgument(QString atr1, QList<QString>& array1):
+    MockArgument(QString atr1, std::vector<QString>& array1):
         str1(atr1),
         list1(array1)
     {}
@@ -64,7 +64,7 @@ public:
     }
 
     QString str1;
-    QList<QString> list1;
+    std::vector<QString> list1;
 };
 
 bool isMockArgumentRegistered = Variant::registerType<MockArgument>("MockArgument");
@@ -83,10 +83,10 @@ public:
     {};
 
     void SetUp(){
-        list.append("1");
-        list.append("2");
-        list.append("3");
-        list.append("4");
+        list.push_back("1");
+        list.push_back("2");
+        list.push_back("3");
+        list.push_back("4");
 
         operationName = "operation";
         arg1 = "arg1";
@@ -114,7 +114,7 @@ public:
     }
 
 protected:
-    QList<QString> list;
+    std::vector<QString> list;
     std::string operationName;
     QString arg1;
     QString arg2;

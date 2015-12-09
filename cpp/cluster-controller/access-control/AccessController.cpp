@@ -230,12 +230,12 @@ AccessController::~AccessController()
 
 void AccessController::addParticipantToWhitelist(const QString& participantId)
 {
-    whitelistParticipantIds.append(participantId);
+    whitelistParticipantIds.push_back(participantId.toStdString());
 }
 
 bool AccessController::needsPermissionCheck(const JoynrMessage& message)
 {
-    if (whitelistParticipantIds.contains(QString::fromStdString(message.getHeaderTo()))) {
+    if (vectorContains(whitelistParticipantIds, message.getHeaderTo())) {
         return false;
     }
 

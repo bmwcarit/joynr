@@ -33,7 +33,6 @@
 #include "Future.h"
 #include <QCoreApplication>
 #include "joynr/Semaphore.h"
-#include <QList>
 #include <string>
 #include <stdint.h>
 #include <joynr/TypeUtil.h>

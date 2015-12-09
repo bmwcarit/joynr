@@ -316,10 +316,9 @@ TEST_F(MessagingTest, routeMultipleMessages)
 }
 
 // global function used for calls to the MockChannelUrlSelectorProxy
-void messagingTestPseudoGetChannelUrls(std::shared_ptr<Future<types::QtChannelUrlInformation> > future , QString channelId, int timeout) {
-    types::QtChannelUrlInformation urlInformation;
-    QList<QString> urls;
-    urls << "firstUrl" << "secondUrl" << "thirdUrl";
+void messagingTestPseudoGetChannelUrls(std::shared_ptr<Future<types::ChannelUrlInformation> > future , QString channelId, int timeout) {
+    types::ChannelUrlInformation urlInformation;
+    std::vector<std::string> urls = {"firstUrl", "secondUrl", "thirdUrl"};
     urlInformation.setUrls(urls);
     future->onSuccess(urlInformation);
 }

@@ -132,7 +132,7 @@ void MetaTypeRegistrar::addEnumPublicationInterpreter(int typeId)
     }
 }
 
-// For enums, the metatype Id is T::Enum or QList<T::Enum>
+// For enums, the metatype Id is T::Enum or std::vector<T::Enum>
 // However, the publication and reply interpreters must be created as type T or QList<T>
 template <class T>
 void MetaTypeRegistrar::registerEnumMetaType()
@@ -140,7 +140,8 @@ void MetaTypeRegistrar::registerEnumMetaType()
     {
         std::lock_guard<std::mutex> lock(publicationInterpretersMutex);
         addEnumPublicationInterpreter<T>(Util::getTypeId<typename T::Enum>());
-        addEnumPublicationInterpreter<QList<T>>(Util::getTypeId<QList<typename T::Enum>>());
+        addEnumPublicationInterpreter<std::vector<T>>(
+                Util::getTypeId<std::vector<typename T::Enum>>());
     }
 }
 

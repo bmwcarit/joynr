@@ -40,17 +40,17 @@ public:
     void SetUp(){
         bool startWithCleanDatabase = true;
         localDomainAccessStore = new LocalDomainAccessStore(startWithCleanDatabase);
-        expectedDomainRoleEntry = DomainRoleEntry(TEST_USER1.toStdString(), TypeUtil::toStd(DOMAINS), Role::OWNER);
+        expectedDomainRoleEntry = DomainRoleEntry(TEST_USER1.toStdString(), DOMAINS, Role::OWNER);
         expectedMasterAccessControlEntry = MasterAccessControlEntry(TEST_USER1.toStdString(),
                                                                     TEST_DOMAIN1.toStdString(),
                                                                     TEST_INTERFACE1.toStdString(),
                                                                     TrustLevel::LOW,
-                                                                    TypeUtil::toStd(TRUST_LEVELS),
+                                                                    TRUST_LEVELS,
                                                                     TrustLevel::LOW,
-                                                                    TypeUtil::toStd(TRUST_LEVELS),
+                                                                    TRUST_LEVELS,
                                                                     TEST_OPERATION1.toStdString(),
                                                                     Permission::NO,
-                                                                    TypeUtil::toStd(PERMISSIONS));
+                                                                    PERMISSIONS);
         expectedOwnerAccessControlEntry = OwnerAccessControlEntry(TEST_USER1.toStdString(),
                                                                   TEST_DOMAIN1.toStdString(),
                                                                   TEST_INTERFACE1.toStdString(),
@@ -76,9 +76,9 @@ protected:
     static const QString TEST_INTERFACE2;
     static const QString TEST_OPERATION1;
     static const QString TEST_OPERATION2;
-    static const QList<QString> DOMAINS;
-    static const QList<Permission::Enum> PERMISSIONS;
-    static const QList<TrustLevel::Enum> TRUST_LEVELS;
+    static const std::vector<std::string> DOMAINS;
+    static const std::vector<Permission::Enum> PERMISSIONS;
+    static const std::vector<TrustLevel::Enum> TRUST_LEVELS;
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalDomainAccessStoreTest);
 };
@@ -90,17 +90,17 @@ const QString LocalDomainAccessStoreTest::TEST_INTERFACE1("interface1");
 const QString LocalDomainAccessStoreTest::TEST_INTERFACE2("interface2");
 const QString LocalDomainAccessStoreTest::TEST_OPERATION1("READ");
 const QString LocalDomainAccessStoreTest::TEST_OPERATION2("WRITE");
-const QList<QString> LocalDomainAccessStoreTest::DOMAINS = QList<QString>() << TEST_DOMAIN1;
-const QList<Permission::Enum> LocalDomainAccessStoreTest::PERMISSIONS = QList<Permission::Enum>() << Permission::NO << Permission::ASK;
-const QList<TrustLevel::Enum> LocalDomainAccessStoreTest::TRUST_LEVELS = QList<TrustLevel::Enum>() << TrustLevel::LOW << TrustLevel::MID;
+const std::vector<std::string> LocalDomainAccessStoreTest::DOMAINS = {TypeUtil::toStd(TEST_DOMAIN1)};
+const std::vector<Permission::Enum> LocalDomainAccessStoreTest::PERMISSIONS = {Permission::NO, Permission::ASK};
+const std::vector<TrustLevel::Enum> LocalDomainAccessStoreTest::TRUST_LEVELS = {TrustLevel::LOW, TrustLevel::MID};
 
 //----- Tests ------------------------------------------------------------------
 
 TEST_F(LocalDomainAccessStoreTest, getDomainRoles) {
     localDomainAccessStore->updateDomainRole(expectedDomainRoleEntry);
 
-    QList<DomainRoleEntry> domainRoles = localDomainAccessStore->getDomainRoles(QString::fromStdString(expectedDomainRoleEntry.getUid()));
-    EXPECT_EQ(expectedDomainRoleEntry, domainRoles.first());
+    std::vector<DomainRoleEntry> domainRoles = localDomainAccessStore->getDomainRoles(QString::fromStdString(expectedDomainRoleEntry.getUid()));
+    EXPECT_EQ(expectedDomainRoleEntry, *domainRoles.begin());
 
     Optional<DomainRoleEntry> domainRole = localDomainAccessStore->getDomainRole(QString::fromStdString(expectedDomainRoleEntry.getUid()),
                                                                                  expectedDomainRoleEntry.getRole());
@@ -112,8 +112,8 @@ TEST_F(LocalDomainAccessStoreTest, updateDomainRole) {
     EXPECT_TRUE(localDomainAccessStore->updateDomainRole(expectedDomainRoleEntry));
 
     // Check that an entry was added
-    QList<DomainRoleEntry> dres = localDomainAccessStore->getDomainRoles(QString::fromStdString(expectedDomainRoleEntry.getUid()));
-    EXPECT_FALSE(dres.isEmpty());
+    std::vector<DomainRoleEntry> dres = localDomainAccessStore->getDomainRoles(QString::fromStdString(expectedDomainRoleEntry.getUid()));
+    EXPECT_FALSE(dres.empty());
     Optional<DomainRoleEntry> dreFromDb = localDomainAccessStore->getDomainRole(QString::fromStdString(expectedDomainRoleEntry.getUid()),
                                                                                 expectedDomainRoleEntry.getRole());
 
@@ -131,12 +131,12 @@ TEST_F(LocalDomainAccessStoreTest, removeDomainRole) {
 
 TEST_F(LocalDomainAccessStoreTest, getMasterAces) {
     localDomainAccessStore->updateMasterAccessControlEntry(expectedMasterAccessControlEntry);
-    EXPECT_EQ(expectedMasterAccessControlEntry, localDomainAccessStore->getMasterAccessControlEntries(QString::fromStdString(expectedMasterAccessControlEntry.getUid())).first());
-    EXPECT_EQ(expectedMasterAccessControlEntry, localDomainAccessStore->getMasterAccessControlEntries(QString::fromStdString(expectedMasterAccessControlEntry.getDomain()),
-                                                                                                     QString::fromStdString(expectedMasterAccessControlEntry.getInterfaceName())).first());
-    EXPECT_EQ(expectedMasterAccessControlEntry, localDomainAccessStore->getMasterAccessControlEntries(QString::fromStdString(expectedMasterAccessControlEntry.getUid()),
+    EXPECT_EQ(expectedMasterAccessControlEntry, *localDomainAccessStore->getMasterAccessControlEntries(QString::fromStdString(expectedMasterAccessControlEntry.getUid())).begin());
+    EXPECT_EQ(expectedMasterAccessControlEntry, *localDomainAccessStore->getMasterAccessControlEntries(QString::fromStdString(expectedMasterAccessControlEntry.getDomain()),
+                                                                                                     QString::fromStdString(expectedMasterAccessControlEntry.getInterfaceName())).begin());
+    EXPECT_EQ(expectedMasterAccessControlEntry, *localDomainAccessStore->getMasterAccessControlEntries(QString::fromStdString(expectedMasterAccessControlEntry.getUid()),
                                                                                                      QString::fromStdString(expectedMasterAccessControlEntry.getDomain()),
-                                                                                                     QString::fromStdString(expectedMasterAccessControlEntry.getInterfaceName())).first());
+                                                                                                     QString::fromStdString(expectedMasterAccessControlEntry.getInterfaceName())).begin());
     EXPECT_EQ(expectedMasterAccessControlEntry, localDomainAccessStore->getMasterAccessControlEntry(QString::fromStdString(expectedMasterAccessControlEntry.getUid()),
                                                                                                     QString::fromStdString(expectedMasterAccessControlEntry.getDomain()),
                                                                                                     QString::fromStdString(expectedMasterAccessControlEntry.getInterfaceName()),
@@ -145,19 +145,19 @@ TEST_F(LocalDomainAccessStoreTest, getMasterAces) {
     masterAceWildcardUser.setUid(LocalDomainAccessStore::WILDCARD);
     localDomainAccessStore->updateMasterAccessControlEntry(masterAceWildcardUser);
 
-    QList<MasterAccessControlEntry> masterAces = localDomainAccessStore->getMasterAccessControlEntries(TEST_DOMAIN1, TEST_INTERFACE1);
+    std::vector<MasterAccessControlEntry> masterAces = localDomainAccessStore->getMasterAccessControlEntries(TEST_DOMAIN1, TEST_INTERFACE1);
     int expectedNumberOfMasterAces = 2;
-    EXPECT_EQ(expectedNumberOfMasterAces, masterAces.length());
-    EXPECT_TRUE(masterAces.contains(expectedMasterAccessControlEntry));
-    EXPECT_TRUE(masterAces.contains(masterAceWildcardUser));
+    EXPECT_EQ(expectedNumberOfMasterAces, masterAces.size());
+    EXPECT_TRUE(vectorContains(masterAces, expectedMasterAccessControlEntry));
+    EXPECT_TRUE(vectorContains(masterAces, masterAceWildcardUser));
     EXPECT_EQ(masterAceWildcardUser, localDomainAccessStore->getMasterAccessControlEntry(TEST_USER2,
                                                                                          QString::fromStdString(masterAceWildcardUser.getDomain()),
                                                                                          QString::fromStdString(masterAceWildcardUser.getInterfaceName()),
                                                                                          QString::fromStdString(masterAceWildcardUser.getOperation())).getValue());
-    EXPECT_EQ(masterAceWildcardUser, (localDomainAccessStore->getMasterAccessControlEntries(TEST_USER2)).first());
-    EXPECT_EQ(masterAceWildcardUser, (localDomainAccessStore->getMasterAccessControlEntries(TEST_USER2,
+    EXPECT_EQ(masterAceWildcardUser, *(localDomainAccessStore->getMasterAccessControlEntries(TEST_USER2)).begin());
+    EXPECT_EQ(masterAceWildcardUser, *(localDomainAccessStore->getMasterAccessControlEntries(TEST_USER2,
                                                                                             QString::fromStdString(masterAceWildcardUser.getDomain()),
-                                                                                            QString::fromStdString(masterAceWildcardUser.getInterfaceName())).first()));
+                                                                                            QString::fromStdString(masterAceWildcardUser.getInterfaceName())).begin()));
 }
 
 TEST_F(LocalDomainAccessStoreTest, getMasterAceWithWildcardOperation) {
@@ -175,18 +175,18 @@ TEST_F(LocalDomainAccessStoreTest, editableMasterAces) {
     localDomainAccessStore->updateDomainRole(expectedDomainRoleEntry);
     localDomainAccessStore->updateMasterAccessControlEntry(expectedMasterAccessControlEntry);
 
-    QList<MasterAccessControlEntry> editableMasterAces = localDomainAccessStore->getEditableMasterAccessControlEntries(TEST_USER1);
+    std::vector<MasterAccessControlEntry> editableMasterAces = localDomainAccessStore->getEditableMasterAccessControlEntries(TEST_USER1);
     int expectedNumberOfMasterAces = 1;
-    EXPECT_EQ(expectedNumberOfMasterAces, editableMasterAces.length());
-    EXPECT_EQ(expectedMasterAccessControlEntry, editableMasterAces.first());
+    EXPECT_EQ(expectedNumberOfMasterAces, editableMasterAces.size());
+    EXPECT_EQ(expectedMasterAccessControlEntry, *editableMasterAces.begin());
 }
 
 TEST_F(LocalDomainAccessStoreTest, editableMasterAccessControlEntryNoMatchingDre) {
     expectedMasterAccessControlEntry.setUid(TEST_USER2.toStdString());
     localDomainAccessStore->updateMasterAccessControlEntry(expectedMasterAccessControlEntry);
 
-    QList<MasterAccessControlEntry> editableMasterAces = localDomainAccessStore->getEditableMasterAccessControlEntries(TEST_USER1);
-    EXPECT_TRUE(editableMasterAces.isEmpty());
+    std::vector<MasterAccessControlEntry> editableMasterAces = localDomainAccessStore->getEditableMasterAccessControlEntries(TEST_USER1);
+    EXPECT_TRUE(editableMasterAces.empty());
 }
 
 TEST_F(LocalDomainAccessStoreTest, updateMasterAce) {
@@ -209,23 +209,23 @@ TEST_F(LocalDomainAccessStoreTest, removeMasterAce) {
                                                          QString::fromStdString(expectedMasterAccessControlEntry.getOperation())));
 
     // Check the ACE does not exist
-    QList<MasterAccessControlEntry> masterAces =
+    std::vector<MasterAccessControlEntry> masterAces =
             localDomainAccessStore->getMasterAccessControlEntries(QString::fromStdString(expectedMasterAccessControlEntry.getUid()),
                                                   QString::fromStdString(expectedMasterAccessControlEntry.getDomain()),
                                                   QString::fromStdString(expectedMasterAccessControlEntry.getInterfaceName()));
 
-    EXPECT_TRUE(masterAces.isEmpty());
+    EXPECT_TRUE(masterAces.empty());
 }
 
 TEST_F(LocalDomainAccessStoreTest, getOwnerAccessControlEntry) {
     localDomainAccessStore->updateOwnerAccessControlEntry(expectedOwnerAccessControlEntry);
 
-    EXPECT_EQ(expectedOwnerAccessControlEntry, localDomainAccessStore->getOwnerAccessControlEntries(QString::fromStdString(expectedOwnerAccessControlEntry.getUid())).first());
-    EXPECT_EQ(expectedOwnerAccessControlEntry, localDomainAccessStore->getOwnerAccessControlEntries(QString::fromStdString(expectedOwnerAccessControlEntry.getDomain()),
-                                                                                                    QString::fromStdString(expectedOwnerAccessControlEntry.getInterfaceName())).first());
-    EXPECT_EQ(expectedOwnerAccessControlEntry, localDomainAccessStore->getOwnerAccessControlEntries(QString::fromStdString(expectedOwnerAccessControlEntry.getUid()),
+    EXPECT_EQ(expectedOwnerAccessControlEntry, *localDomainAccessStore->getOwnerAccessControlEntries(QString::fromStdString(expectedOwnerAccessControlEntry.getUid())).begin());
+    EXPECT_EQ(expectedOwnerAccessControlEntry, *localDomainAccessStore->getOwnerAccessControlEntries(QString::fromStdString(expectedOwnerAccessControlEntry.getDomain()),
+                                                                                                    QString::fromStdString(expectedOwnerAccessControlEntry.getInterfaceName())).begin());
+    EXPECT_EQ(expectedOwnerAccessControlEntry, *localDomainAccessStore->getOwnerAccessControlEntries(QString::fromStdString(expectedOwnerAccessControlEntry.getUid()),
                                                                                                     QString::fromStdString(expectedOwnerAccessControlEntry.getDomain()),
-                                                                                                    QString::fromStdString(expectedOwnerAccessControlEntry.getInterfaceName())).first());
+                                                                                                    QString::fromStdString(expectedOwnerAccessControlEntry.getInterfaceName())).begin());
     EXPECT_EQ(expectedOwnerAccessControlEntry, localDomainAccessStore->getOwnerAccessControlEntry(QString::fromStdString(expectedOwnerAccessControlEntry.getUid()),
                                                                                                     QString::fromStdString(expectedOwnerAccessControlEntry.getDomain()),
                                                                                                     QString::fromStdString(expectedOwnerAccessControlEntry.getInterfaceName()),
@@ -234,19 +234,19 @@ TEST_F(LocalDomainAccessStoreTest, getOwnerAccessControlEntry) {
     ownerAceWildcardUser.setUid(LocalDomainAccessStore::WILDCARD);
     EXPECT_TRUE(localDomainAccessStore->updateOwnerAccessControlEntry(ownerAceWildcardUser));
 
-    QList<OwnerAccessControlEntry> ownerAces = localDomainAccessStore->getOwnerAccessControlEntries(TEST_DOMAIN1, TEST_INTERFACE1);
+    std::vector<OwnerAccessControlEntry> ownerAces = localDomainAccessStore->getOwnerAccessControlEntries(TEST_DOMAIN1, TEST_INTERFACE1);
     int expectedNumberOfOwnerAces = 2;
-    EXPECT_EQ(expectedNumberOfOwnerAces, ownerAces.length());
-    EXPECT_TRUE(ownerAces.contains(expectedOwnerAccessControlEntry));
-    EXPECT_TRUE(ownerAces.contains(ownerAceWildcardUser));
+    EXPECT_EQ(expectedNumberOfOwnerAces, ownerAces.size());
+    EXPECT_TRUE(vectorContains(ownerAces, expectedOwnerAccessControlEntry));
+    EXPECT_TRUE(vectorContains(ownerAces, ownerAceWildcardUser));
     EXPECT_EQ(ownerAceWildcardUser, localDomainAccessStore->getOwnerAccessControlEntry(TEST_USER2,
                                                                                          QString::fromStdString(ownerAceWildcardUser.getDomain()),
                                                                                          QString::fromStdString(ownerAceWildcardUser.getInterfaceName()),
                                                                                          QString::fromStdString(ownerAceWildcardUser.getOperation())).getValue());
-    EXPECT_EQ(ownerAceWildcardUser, (localDomainAccessStore->getOwnerAccessControlEntries(TEST_USER2)).first());
-    EXPECT_EQ(ownerAceWildcardUser, (localDomainAccessStore->getOwnerAccessControlEntries(TEST_USER2,
+    EXPECT_EQ(ownerAceWildcardUser, *(localDomainAccessStore->getOwnerAccessControlEntries(TEST_USER2)).begin());
+    EXPECT_EQ(ownerAceWildcardUser, *(localDomainAccessStore->getOwnerAccessControlEntries(TEST_USER2,
                                                                                             QString::fromStdString(ownerAceWildcardUser.getDomain()),
-                                                                                            QString::fromStdString(ownerAceWildcardUser.getInterfaceName()))).first());
+                                                                                            QString::fromStdString(ownerAceWildcardUser.getInterfaceName()))).begin());
 }
 
 TEST_F(LocalDomainAccessStoreTest, getEditableOwnerAces) {
@@ -254,12 +254,12 @@ TEST_F(LocalDomainAccessStoreTest, getEditableOwnerAces) {
     localDomainAccessStore->updateOwnerAccessControlEntry(expectedOwnerAccessControlEntry);
 
     // Check that the correct editable domain is returned
-    QList<OwnerAccessControlEntry> editableOwnerAces =
+    std::vector<OwnerAccessControlEntry> editableOwnerAces =
             localDomainAccessStore->getEditableOwnerAccessControlEntries(TEST_USER1);
 
     int expectedEditableOwnerAces = 1;
-    EXPECT_EQ(expectedEditableOwnerAces, editableOwnerAces.length());
-    EXPECT_EQ(expectedOwnerAccessControlEntry, editableOwnerAces.first());
+    EXPECT_EQ(expectedEditableOwnerAces, editableOwnerAces.size());
+    EXPECT_EQ(expectedOwnerAccessControlEntry, *editableOwnerAces.begin());
 }
 
 TEST_F(LocalDomainAccessStoreTest, editableOwnerAccessControlEntryNoMatchingDre) {
@@ -268,10 +268,10 @@ TEST_F(LocalDomainAccessStoreTest, editableOwnerAccessControlEntryNoMatchingDre)
     localDomainAccessStore->updateOwnerAccessControlEntry(expectedOwnerAccessControlEntry);
 
     // Check that the correct editable domain is returned
-    QList<OwnerAccessControlEntry> editableOwnerAces =
+    std::vector<OwnerAccessControlEntry> editableOwnerAces =
             localDomainAccessStore->getEditableOwnerAccessControlEntries(TEST_USER2);
 
-    EXPECT_TRUE(editableOwnerAces.isEmpty());
+    EXPECT_TRUE(editableOwnerAces.empty());
 }
 
 TEST_F(LocalDomainAccessStoreTest, updateOwnerAccessControlEntry) {
@@ -299,7 +299,7 @@ TEST_F(LocalDomainAccessStoreTest, removeOwnerAce) {
                                                         QString::fromStdString(expectedOwnerAccessControlEntry.getOperation())));
 
     // Check the ACE does not exist
-    QList<OwnerAccessControlEntry> ownerAces =
+    std::vector<OwnerAccessControlEntry> ownerAces =
             localDomainAccessStore->getOwnerAccessControlEntries(QString::fromStdString(expectedOwnerAccessControlEntry.getUid()),
                                                   QString::fromStdString(expectedOwnerAccessControlEntry.getDomain()),
                                                   QString::fromStdString(expectedOwnerAccessControlEntry.getInterfaceName()));

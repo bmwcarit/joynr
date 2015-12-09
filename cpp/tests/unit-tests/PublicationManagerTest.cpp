@@ -787,7 +787,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     std::vector<Variant> broadcastValues;
     broadcastValues.push_back(Variant::make<joynr::types::Localisation::GpsLocation>(gpsLocation));
 
-    QList<std::shared_ptr<IBroadcastFilter> > filters;
+    std::vector<std::shared_ptr<IBroadcastFilter> > filters;
 
     // Expect calls to register an unregister an broadcast listener
     std::string broadcastName("Location");
@@ -906,7 +906,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     std::vector<Variant> broadcastValues;
     broadcastValues.push_back(Variant::make<joynr::types::Localisation::GpsLocation>(gpsLocation));
 
-    QList<std::shared_ptr<IBroadcastFilter> > filters;
+    std::vector<std::shared_ptr<IBroadcastFilter> > filters;
 
     // Expect calls to register an unregister a broadcast listener
     std::string broadcastName("Location");
@@ -991,7 +991,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     std::vector<Variant> broadcastValues;
     broadcastValues.push_back(Variant::make<joynr::types::Localisation::GpsLocation>(gpsLocation));
 
-    QList<std::shared_ptr<IBroadcastFilter> > filters;
+    std::vector<std::shared_ptr<IBroadcastFilter> > filters;
 
     // Expect calls to register an unregister a broadcast listener
     std::string broadcastName("Location");

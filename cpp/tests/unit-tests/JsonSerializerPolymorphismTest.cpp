@@ -27,7 +27,6 @@
 #include "joynr/joynrlogging.h"
 #include "joynr/DeclareMetatypeUtil.h"
 #include "joynr/Util.h"
-#include <QList>
 
 #include "joynr/types/TestTypes/TStruct.h"
 #include "joynr/types/TestTypes/TStructExtended.h"

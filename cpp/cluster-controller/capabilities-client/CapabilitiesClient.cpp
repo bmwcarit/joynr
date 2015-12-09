@@ -27,7 +27,7 @@
 #include "joynr/DispatcherUtils.h"
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
 #include "joynr/Future.h"
-
+#include "joynr/types/QtCapabilityInformation.h"
 #include <QString>
 #include <string>
 #include <stdint.h>

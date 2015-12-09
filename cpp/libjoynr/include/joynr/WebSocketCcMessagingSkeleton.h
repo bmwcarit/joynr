@@ -20,7 +20,7 @@
 #define WEBSOCKETCCMESSAGINGSKELETON_H
 
 #include <QtCore/QObject>
-#include <QtCore/QList>
+#include <vector>
 #include <QtNetwork/QAbstractSocket>
 #include <QtWebSockets/qwebsocketprotocol.h>
 
@@ -64,7 +64,7 @@ private:
     bool isInitializationMessage(const QString& message);
     static joynr_logging::Logger* logger;
     QWebSocketServer* webSocketServer;
-    QList<QWebSocket*> clients;
+    std::vector<QWebSocket*> clients;
     MessageRouter& messageRouter;
     WebSocketMessagingStubFactory& messagingStubFactory;
 };

@@ -25,6 +25,7 @@
 #include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
 #include "joynr/infrastructure/DacTypes/OwnerAccessControlEntry.h"
 #include "joynr/Optional.h"
+#include <vector>
 #include <QString>
 #include <QtSql/QSqlDatabase>
 
@@ -44,11 +45,11 @@ public:
      * Get the domain roles for the given user.
      *
      * @param userId The user to get the domain roles for. No wildcards supported.
-     * @return QList of Domain Role Entries that apply to the user uid.
-     * The QList contains max two entries (since we only have two roles Master and Owner).
+     * @return std::vector of Domain Role Entries that apply to the user uid.
+     * The std::vector contains max two entries (since we only have two roles Master and Owner).
      * Used to get domain roles when a user logs in.
      */
-    QList<infrastructure::DacTypes::DomainRoleEntry> getDomainRoles(const QString& userId);
+    std::vector<infrastructure::DacTypes::DomainRoleEntry> getDomainRoles(const QString& userId);
 
     /**
      * Get the domain role for the given user and role.
@@ -89,22 +90,22 @@ public:
      *user.
      *
      * @param uid The user id that owns the domains.
-     * @return QList of master ACEs with entries owned by the user.
+     * @return std::vector of master ACEs with entries owned by the user.
      * If no entry has been found for specified uid, then returns master ACE with uid "*".
      */
-    QList<infrastructure::DacTypes::MasterAccessControlEntry> getMasterAccessControlEntries(
+    std::vector<infrastructure::DacTypes::MasterAccessControlEntry> getMasterAccessControlEntries(
             const QString& uid);
 
     /**
-     * Returns a QList of master ACEs applying to domains the user uid has role Master,
+     * Returns a std::vector of master ACEs applying to domains the user uid has role Master,
      * i.e. the entries the user uid is allowed to edit. Used by an Master ACL editor app.
      *
      * @param userId The user id that owns the domains.
-     * @return QList of master ACEs with entries owned by the user.
-     * In case userId has no domains with role MASTER, this function returns empty QList.
+     * @return std::vector of master ACEs with entries owned by the user.
+     * In case userId has no domains with role MASTER, this function returns empty std::vector.
      */
-    QList<infrastructure::DacTypes::MasterAccessControlEntry> getEditableMasterAccessControlEntries(
-            const QString& userId);
+    std::vector<infrastructure::DacTypes::MasterAccessControlEntry>
+    getEditableMasterAccessControlEntries(const QString& userId);
 
     /**
      * Returns a list of master ACEs that apply to the domain and interface combination.
@@ -114,7 +115,7 @@ public:
      * @param interfaceName The interface you search ACE's for.
      * @return List of master ACEs associated to given domain and interface.
      */
-    QList<infrastructure::DacTypes::MasterAccessControlEntry> getMasterAccessControlEntries(
+    std::vector<infrastructure::DacTypes::MasterAccessControlEntry> getMasterAccessControlEntries(
             const QString& domain,
             const QString& interfaceName);
 
@@ -127,7 +128,7 @@ public:
      * @param interfaceName The interface being called.
      * @return The matching Master ACEs.
      */
-    QList<infrastructure::DacTypes::MasterAccessControlEntry> getMasterAccessControlEntries(
+    std::vector<infrastructure::DacTypes::MasterAccessControlEntry> getMasterAccessControlEntries(
             const QString& uid,
             const QString& domain,
             const QString& interfaceName);
@@ -185,7 +186,7 @@ public:
      * If no entry has been found for specified uid, then returns master ACE from Mediator ACL with
      *uid "*".
      */
-    QList<infrastructure::DacTypes::MasterAccessControlEntry> getMediatorAccessControlEntries(
+    std::vector<infrastructure::DacTypes::MasterAccessControlEntry> getMediatorAccessControlEntries(
             const QString& uid);
 
     /**
@@ -195,9 +196,9 @@ public:
      *
      * @param userId The user id that owns the domains.
      * @return List of master ACEs with entries owned by the user.
-     * In case userId has no domains with role MASTER, this function returns empty QList.
+     * In case userId has no domains with role MASTER, this function returns empty std::vector.
      */
-    QList<infrastructure::DacTypes::MasterAccessControlEntry>
+    std::vector<infrastructure::DacTypes::MasterAccessControlEntry>
     getEditableMediatorAccessControlEntries(const QString& userId);
 
     /**
@@ -207,9 +208,9 @@ public:
      *
      * @param domain The domain you search ACE's for.
      * @param interfaceName The interface you search ACE's for.
-     * @return QList of master ACEs associated to given domain and interface.
+     * @return std::vector of master ACEs associated to given domain and interface.
      */
-    QList<infrastructure::DacTypes::MasterAccessControlEntry> getMediatorAccessControlEntries(
+    std::vector<infrastructure::DacTypes::MasterAccessControlEntry> getMediatorAccessControlEntries(
             const QString& domain,
             const QString& interfaceName);
 
@@ -222,7 +223,7 @@ public:
      * @param interfaceName The interface being called.
      * @return The matching mediator ACEs
      */
-    QList<infrastructure::DacTypes::MasterAccessControlEntry> getMediatorAccessControlEntries(
+    std::vector<infrastructure::DacTypes::MasterAccessControlEntry> getMediatorAccessControlEntries(
             const QString& uid,
             const QString& domain,
             const QString& interfaceName);
@@ -274,24 +275,26 @@ public:
      *user.
      *
      * @param uid The user id that owns the domains.
-     * @return QList of owner ACEs with entries owned by the user.
+     * @return std::vector of owner ACEs with entries owned by the user.
      */
-    QList<infrastructure::DacTypes::OwnerAccessControlEntry> getOwnerAccessControlEntries(
+    std::vector<infrastructure::DacTypes::OwnerAccessControlEntry> getOwnerAccessControlEntries(
             const QString& uid);
 
     /**
-     * Returns a QList of owner ACEs from Owner ACL applying to domains the user uid has role OWNER,
+     * Returns a std::vector of owner ACEs from Owner ACL applying to domains the user uid has role
+     *OWNER,
      * i.e. the entries the user uid is allowed to edit. Used by an Owner ACL editor app.
      * This method is called when a user logs in and a client wishes to cache OwnerAcl for that
      *user.
      *
      * @param userId The user id that owns the domains.
-     * @return QList of owner ACEs with entries owned by the user.
-     * In case userId has no domains with role OWNER, this function returns QList of all userId
+     * @return std::vector of owner ACEs with entries owned by the user.
+     * In case userId has no domains with role OWNER, this function returns std::vector of all
+     *userId
      *owner ACEs.
      */
-    QList<infrastructure::DacTypes::OwnerAccessControlEntry> getEditableOwnerAccessControlEntries(
-            const QString& userId);
+    std::vector<infrastructure::DacTypes::OwnerAccessControlEntry>
+    getEditableOwnerAccessControlEntries(const QString& userId);
 
     /**
      * Returns a list of owner ACEs that apply to the domain and interface combination.
@@ -299,9 +302,9 @@ public:
      *
      * @param domain The domain you search ACE's for.
      * @param interfaceName The interface you search ACE's for.
-     * @return QList of owner ACEs associated to given domain and interface.
+     * @return std::vector of owner ACEs associated to given domain and interface.
      */
-    QList<infrastructure::DacTypes::OwnerAccessControlEntry> getOwnerAccessControlEntries(
+    std::vector<infrastructure::DacTypes::OwnerAccessControlEntry> getOwnerAccessControlEntries(
             const QString& domain,
             const QString& interfaceName);
 
@@ -313,7 +316,7 @@ public:
      * @param interfaceName The interface being accessed
      * @return The matching OwnerACEs
      */
-    QList<infrastructure::DacTypes::OwnerAccessControlEntry> getOwnerAccessControlEntries(
+    std::vector<infrastructure::DacTypes::OwnerAccessControlEntry> getOwnerAccessControlEntries(
             const QString& userId,
             const QString& domain,
             const QString& interfaceName);
@@ -411,11 +414,13 @@ private:
     // Helper functions
     bool insertDomainRoleEntry(const QString& userId,
                                infrastructure::DacTypes::Role::Enum role,
-                               const QList<QString>& domains);
+                               const std::vector<std::string>& domains);
 
-    QList<infrastructure::DacTypes::MasterAccessControlEntry> extractMasterAces(QSqlQuery& query);
+    std::vector<infrastructure::DacTypes::MasterAccessControlEntry> extractMasterAces(
+            QSqlQuery& query);
 
-    QList<infrastructure::DacTypes::OwnerAccessControlEntry> extractOwnerAces(QSqlQuery& query);
+    std::vector<infrastructure::DacTypes::OwnerAccessControlEntry> extractOwnerAces(
+            QSqlQuery& query);
 
     void setPossibleConsumerPermissions(infrastructure::DacTypes::MasterAccessControlEntry& entry,
                                         QSqlQuery& query,
@@ -434,13 +439,13 @@ private:
     T getEnumField(QSqlQuery& query, int field);
 
     template <typename T>
-    QList<T> deserializeEnumList(const QByteArray& value);
+    std::vector<T> deserializeEnumList(const QByteArray& value);
 
     template <typename T>
-    QByteArray serializeEnumList(const QList<T>& value);
+    QByteArray serializeEnumList(const std::vector<T>& value);
 
     template <typename T>
-    Optional<T> firstEntry(const QList<T>& list);
+    Optional<T> firstEntry(const std::vector<T>& list);
 
     QSqlQuery createGetAceQuery(const QString& sqlQuery,
                                 const QString& uid,

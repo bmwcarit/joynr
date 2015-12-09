@@ -40,7 +40,7 @@
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/system/DiscoveryAbstractProvider.h"
-#include "joynr/types/QtDiscoveryQos.h"
+#include "joynr/types/DiscoveryQos.h"
 #include "joynr/Semaphore.h"
 #include <vector>
 
@@ -171,12 +171,12 @@ private:
                               joynr::types::DiscoveryScope::Enum discoveryScope);
 
     bool getLocalAndCachedCapabilities(const InterfaceAddress& interfaceAddress,
-                                       const joynr::types::QtDiscoveryQos& discoveryQos,
+                                       const joynr::types::DiscoveryQos& discoveryQos,
                                        std::shared_ptr<ILocalCapabilitiesCallback> callback);
     bool getLocalAndCachedCapabilities(const std::string& participantId,
-                                       const joynr::types::QtDiscoveryQos& discoveryQos,
+                                       const joynr::types::DiscoveryQos& discoveryQos,
                                        std::shared_ptr<ILocalCapabilitiesCallback> callback);
-    bool callRecieverIfPossible(joynr::types::QtDiscoveryScope::Enum& scope,
+    bool callRecieverIfPossible(joynr::types::DiscoveryScope::Enum& scope,
                                 std::vector<CapabilityEntry>& localCapabilities,
                                 std::vector<CapabilityEntry>& globalCapabilities,
                                 std::shared_ptr<ILocalCapabilitiesCallback> callback);
@@ -215,7 +215,7 @@ private:
 
     std::vector<types::CapabilityInformation> registeredGlobalCapabilities;
     MessageRouter& messageRouter;
-    QList<std::shared_ptr<IProviderRegistrationObserver>> observers;
+    std::vector<std::shared_ptr<IProviderRegistrationObserver>> observers;
 
     void informObserversOnAdd(const types::DiscoveryEntry& discoveryEntry);
     void informObserversOnRemove(const types::DiscoveryEntry& discoveryEntry);

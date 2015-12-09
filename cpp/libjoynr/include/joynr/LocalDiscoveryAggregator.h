@@ -95,7 +95,7 @@ private:
     joynr::system::IDiscoverySync* discoveryProxy;
     bool hasOwnershipOfDiscoveryProxy;
     IRequestCallerDirectory& requestCallerDirectory;
-    std::map<std::string, joynr::types::QtDiscoveryEntry> provisionedDiscoveryEntries;
+    std::map<std::string, joynr::types::DiscoveryEntry> provisionedDiscoveryEntries;
     const SystemServicesSettings& systemServicesSettings;
 };
 } // namespace joynr

@@ -30,6 +30,7 @@
 #include <QMutableLinkedListIterator>
 #include <QUrl>
 #include <QThread>
+#include <QVector>
 #include <curl/curl.h>
 #include <tuple>
 
@@ -82,12 +83,13 @@ void PerThreadCurlHandlePool::returnHandle(void* handle)
     pooledHandle->clearHandle();
     idleHandleMap.insert(QThread::currentThreadId(), pooledHandle);
     // handles most recently used are prepended
-    handleOrderList.removeAll(pooledHandle);
-    handleOrderList.prepend(pooledHandle);
+    removeAll(handleOrderList, pooledHandle);
+    handleOrderList.insert(handleOrderList.begin(), pooledHandle);
 
-    if (!handleOrderList.isEmpty() && handleOrderList.size() + outHandleMap.size() > POOL_SIZE) {
+    if (!handleOrderList.empty() && handleOrderList.size() + outHandleMap.size() > POOL_SIZE) {
         // if the list of idle handles is too big, remove the last item of the ordered list
-        std::shared_ptr<PooledCurlHandle> handle2remove = handleOrderList.takeLast();
+        std::shared_ptr<PooledCurlHandle> handle2remove = handleOrderList.back();
+        handleOrderList.pop_back();
         for (Qt::HANDLE threadId : idleHandleMap.keys()) {
             int removed = idleHandleMap.remove(threadId, handle2remove);
             if (removed > 0) {
@@ -102,7 +104,7 @@ void PerThreadCurlHandlePool::deleteHandle(void* handle)
     std::lock_guard<std::mutex> lock(mutex);
     std::shared_ptr<PooledCurlHandle> pooledHandle = outHandleMap.take(handle);
     if (pooledHandle) {
-        handleOrderList.removeAll(pooledHandle);
+        removeAll(handleOrderList, pooledHandle);
         idleHandleMap.remove(QThread::currentThreadId(), pooledHandle);
     }
 }
@@ -127,10 +129,11 @@ std::shared_ptr<PooledCurlHandle> PerThreadCurlHandlePool::takeOrCreateHandle(
         QString host)
 {
     if (idleHandleMap.contains(threadId)) {
-        QList<std::shared_ptr<PooledCurlHandle>> handleList = idleHandleMap.values(threadId);
-        QListIterator<std::shared_ptr<PooledCurlHandle>> i(handleList);
-        while (i.hasNext()) {
-            std::shared_ptr<PooledCurlHandle> pooledHandle = i.next();
+        std::vector<std::shared_ptr<PooledCurlHandle>> handleList =
+                idleHandleMap.values(threadId).toVector().toStdVector();
+        auto i = handleList.cbegin();
+        while (i != handleList.cend()) {
+            std::shared_ptr<PooledCurlHandle> pooledHandle = *i;
             // prefer handles which have already been connected to the desired host address.
             // Reusing open connections has performance benefits
             if (pooledHandle->hasHost(host)) {

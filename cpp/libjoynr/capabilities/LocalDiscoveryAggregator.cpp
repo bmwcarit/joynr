@@ -18,14 +18,11 @@
  */
 #include "joynr/LocalDiscoveryAggregator.h"
 
-#include <vector>
-
 #include "joynr/IRequestCallerDirectory.h"
 #include "joynr/SystemServicesSettings.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/RequestStatusCode.h"
 
-#include "joynr/types/QtDiscoveryEntry.h"
 #include "joynr/types/DiscoveryEntry.h"
 #include "joynr/types/DiscoveryQos.h"
 #include "joynr/system/IRouting.h"
@@ -45,26 +42,24 @@ LocalDiscoveryAggregator::LocalDiscoveryAggregator(
           provisionedDiscoveryEntries(),
           systemServicesSettings(systemServicesSettings)
 {
-    QList<joynr::types::QtCommunicationMiddleware::Enum> connections;
-    connections << joynr::types::QtCommunicationMiddleware::JOYNR;
-    joynr::types::QtDiscoveryEntry routingProviderDiscoveryEntry(
-            TypeUtil::toQt(systemServicesSettings.getDomain()),
-            TypeUtil::toQt(joynr::system::IRouting::INTERFACE_NAME()),
-            TypeUtil::toQt(systemServicesSettings.getCcRoutingProviderParticipantId()),
-            joynr::types::QtProviderQos(),
+    std::vector<joynr::types::CommunicationMiddleware::Enum> connections;
+    connections.push_back(joynr::types::CommunicationMiddleware::JOYNR);
+    joynr::types::DiscoveryEntry routingProviderDiscoveryEntry(
+            systemServicesSettings.getDomain(),
+            joynr::system::IRouting::INTERFACE_NAME(),
+            systemServicesSettings.getCcRoutingProviderParticipantId(),
+            joynr::types::ProviderQos(),
             connections);
-    provisionedDiscoveryEntries.insert(
-            std::make_pair(routingProviderDiscoveryEntry.getParticipantId().toStdString(),
-                           routingProviderDiscoveryEntry));
-    joynr::types::QtDiscoveryEntry discoveryProviderDiscoveryEntry(
-            TypeUtil::toQt(systemServicesSettings.getDomain()),
-            TypeUtil::toQt(joynr::system::IDiscovery::INTERFACE_NAME()),
-            TypeUtil::toQt(systemServicesSettings.getCcDiscoveryProviderParticipantId()),
-            joynr::types::QtProviderQos(),
+    provisionedDiscoveryEntries.insert(std::make_pair(
+            routingProviderDiscoveryEntry.getParticipantId(), routingProviderDiscoveryEntry));
+    joynr::types::DiscoveryEntry discoveryProviderDiscoveryEntry(
+            systemServicesSettings.getDomain(),
+            joynr::system::IDiscovery::INTERFACE_NAME(),
+            systemServicesSettings.getCcDiscoveryProviderParticipantId(),
+            joynr::types::ProviderQos(),
             connections);
-    provisionedDiscoveryEntries.insert(
-            std::make_pair(discoveryProviderDiscoveryEntry.getParticipantId().toStdString(),
-                           discoveryProviderDiscoveryEntry));
+    provisionedDiscoveryEntries.insert(std::make_pair(
+            discoveryProviderDiscoveryEntry.getParticipantId(), discoveryProviderDiscoveryEntry));
 }
 
 LocalDiscoveryAggregator::~LocalDiscoveryAggregator()
@@ -128,7 +123,7 @@ void LocalDiscoveryAggregator::lookup(joynr::types::DiscoveryEntry& result,
 {
     auto entry = provisionedDiscoveryEntries.find(participantId);
     if (entry != provisionedDiscoveryEntries.end()) {
-        result = joynr::types::QtDiscoveryEntry::createStd(entry->second);
+        result = entry->second;
     } else {
         if (discoveryProxy == NULL) {
             throw exceptions::JoynrRuntimeException(

@@ -20,6 +20,8 @@
 #include "joynr/ParticipantIdStorage.h"
 #include "joynr/RequestStatus.h"
 
+#include <algorithm>
+
 namespace joynr
 {
 
@@ -27,7 +29,7 @@ joynr_logging::Logger* CapabilitiesRegistrar::logger =
         joynr_logging::Logging::getInstance()->getLogger("DIS", "CapabilitiesRegistrar");
 
 CapabilitiesRegistrar::CapabilitiesRegistrar(
-        QList<IDispatcher*> dispatcherList,
+        std::vector<IDispatcher*> dispatcherList,
         joynr::system::IDiscoverySync& discoveryProxy,
         std::shared_ptr<joynr::system::RoutingTypes::QtAddress> messagingStubAddress,
         std::shared_ptr<ParticipantIdStorage> participantIdStorage,
@@ -74,12 +76,12 @@ void CapabilitiesRegistrar::remove(const std::string& participantId)
 
 void CapabilitiesRegistrar::addDispatcher(IDispatcher* dispatcher)
 {
-    dispatcherList.append(dispatcher);
+    dispatcherList.push_back(dispatcher);
 }
 
 void CapabilitiesRegistrar::removeDispatcher(IDispatcher* dispatcher)
 {
-    dispatcherList.removeAll(dispatcher);
+    removeAll(dispatcherList, dispatcher);
 }
 
 } // namespace joynr

@@ -34,7 +34,7 @@ import org.franca.core.franca.FInterface
 class IInterfaceConnectorHTemplate implements InterfaceTemplate{
 	@Inject	extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
-	@Inject private CppStdTypeUtil cppStdTypeUtil;
+	@Inject private CppStdTypeUtil cppStdTypeUtil
 	@Inject private extension QtTypeUtil qtTypeUtil
 	@Inject private extension NamingUtil
 	@Inject private extension AttributeUtil
@@ -54,9 +54,6 @@ class IInterfaceConnectorHTemplate implements InterfaceTemplate{
 
 «getDllExportIncludeStatement()»
 «FOR parameterType: cppStdTypeUtil.getRequiredIncludesFor(serviceInterface)»
-	#include «parameterType»
-«ENDFOR»
-«FOR parameterType: qtTypeUtil.getRequiredIncludesFor(serviceInterface)»
 	#include «parameterType»
 «ENDFOR»
 
@@ -94,9 +91,8 @@ public:
 protected:
 	«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.notifiable]»
 		«val returnType = cppStdTypeUtil.getTypeName(attribute)»
-		«val returnTypeQT = qtTypeUtil.getTypeName(attribute)»
 		«IF needsDatatypeConversion(attribute)»
-			class «attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper : public ISubscriptionListener<«returnTypeQT»> {
+			class «attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper : public ISubscriptionListener<«returnType»> {
 				public:
 					«attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper(
 							std::shared_ptr<ISubscriptionListener<«returnType»>> wrappedListener
@@ -104,8 +100,8 @@ protected:
 							wrappedListener(wrappedListener)
 					{
 					}
-					void onReceive(const «returnTypeQT»& receivedValue) {
-						wrappedListener->onReceive(«fromQTTypeToStdType(attribute, "receivedValue")»);
+					void onReceive(const «returnType»& receivedValue) {
+						wrappedListener->onReceive(receivedValue);
 					}
 					void onError(const exceptions::JoynrRuntimeException& error) {
 						wrappedListener->onError(error);
@@ -115,18 +111,18 @@ protected:
 					std::shared_ptr<ISubscriptionListener<«returnType»>> wrappedListener;
 			};
 
-			class «attribute.joynrName.toFirstUpper»AttributeSubscriptionCallbackWrapper : public SubscriptionCallback<«returnTypeQT»> {
+			class «attribute.joynrName.toFirstUpper»AttributeSubscriptionCallbackWrapper : public SubscriptionCallback<«returnType»> {
 			public:
 				«attribute.joynrName.toFirstUpper»AttributeSubscriptionCallbackWrapper(
 						std::shared_ptr<ISubscriptionListener<«returnType»>> wrappedListener
 				) :
 						SubscriptionCallback(
-								std::shared_ptr<ISubscriptionListener<«returnTypeQT»>>(
+								std::shared_ptr<ISubscriptionListener<«returnType»>>(
 										new «attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper(wrappedListener))
 								)
 				{
 				}
-				virtual void onSuccess(const «returnTypeQT»& receivedValue) {
+				virtual void onSuccess(const «returnType»& receivedValue) {
 					std::shared_ptr<«attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper> wrapper =
 						std::dynamic_pointer_cast<
 								«attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper>(listener);
@@ -143,10 +139,9 @@ protected:
 	«ENDFOR»
 	«FOR broadcast: serviceInterface.broadcasts»
 		«IF needsDatatypeConversion(broadcast)»
-			«val returnTypesQT = qtTypeUtil.getCommaSeparatedOutputParameterTypes(broadcast)»
 			«val returnTypesStd = cppStdTypeUtil.getCommaSeparatedOutputParameterTypes(broadcast)»
-			«val outputParametersSignature = qtTypeUtil.getCommaSeperatedTypedConstOutputParameterList(broadcast)»
-			class «broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper : public ISubscriptionListener<«returnTypesQT»> {
+			«val outputParametersSignature = cppStdTypeUtil.getCommaSeperatedTypedConstOutputParameterList(broadcast)»
+			class «broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper : public ISubscriptionListener<«returnTypesStd»> {
 				public:
 					«broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper(
 							std::shared_ptr<ISubscriptionListener<«returnTypesStd»>> wrappedListener
@@ -157,7 +152,7 @@ protected:
 					void onReceive(
 							«outputParametersSignature»
 					) {
-						wrappedListener->onReceive(«qtTypeUtil.getCommaSeperatedUntypedOutputParameterList(broadcast, DatatypeSystemTransformation.FROM_QT_TO_STANDARD)»);
+						wrappedListener->onReceive(«cppStdTypeUtil.getCommaSeperatedUntypedParameterList(broadcast.outputParameters)»);
 					}
 					void onError(const exceptions::JoynrRuntimeException& error) {
 						wrappedListener->onError(error);
@@ -168,7 +163,7 @@ protected:
 			};
 
 			class «broadcast.joynrName.toFirstUpper»BroadcastSubscriptionCallbackWrapper
-					: public SubscriptionCallback<«returnTypesQT»>
+					: public SubscriptionCallback<«returnTypesStd»>
 			{
 			public:
 				«broadcast.joynrName.toFirstUpper»BroadcastSubscriptionCallbackWrapper(
@@ -178,7 +173,7 @@ protected:
 				) :
 						SubscriptionCallback(
 								std::shared_ptr<ISubscriptionListener<
-										«returnTypesQT»
+										«returnTypesStd»
 								>>(new «broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper(wrappedListener)))
 				{
 				}

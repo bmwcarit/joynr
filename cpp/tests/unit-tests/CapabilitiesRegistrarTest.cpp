@@ -46,9 +46,9 @@ public:
 
     }
     void SetUp(){
-        QList<IDispatcher*> dispatcherList;
+        std::vector<IDispatcher*> dispatcherList;
         mockDispatcher = new MockDispatcher();
-        dispatcherList.append(mockDispatcher);
+        dispatcherList.push_back(mockDispatcher);
 
         capabilitiesRegistrar = new CapabilitiesRegistrar(
                     dispatcherList,

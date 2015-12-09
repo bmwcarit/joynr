@@ -40,36 +40,36 @@ public:
     }
 
     void SetUp(){
-        QList<Permission::Enum> possiblePermissions;
-        possiblePermissions.append(Permission::NO);
-        possiblePermissions.append(Permission::ASK);
-        QList<TrustLevel::Enum> possibleRequiredTrustLevels;
-        possibleRequiredTrustLevels.append(TrustLevel::LOW);
-        possibleRequiredTrustLevels.append(TrustLevel::MID);
-        QList<TrustLevel::Enum> possibleRequiredAceChangeTrustLevels;
-        possibleRequiredAceChangeTrustLevels.append(TrustLevel::MID);
-        possibleRequiredAceChangeTrustLevels.append(TrustLevel::HIGH);
+        std::vector<Permission::Enum> possiblePermissions;
+        possiblePermissions.push_back(Permission::NO);
+        possiblePermissions.push_back(Permission::ASK);
+        std::vector<TrustLevel::Enum> possibleRequiredTrustLevels;
+        possibleRequiredTrustLevels.push_back(TrustLevel::LOW);
+        possibleRequiredTrustLevels.push_back(TrustLevel::MID);
+        std::vector<TrustLevel::Enum> possibleRequiredAceChangeTrustLevels;
+        possibleRequiredAceChangeTrustLevels.push_back(TrustLevel::MID);
+        possibleRequiredAceChangeTrustLevels.push_back(TrustLevel::HIGH);
         masterAce = MasterAccessControlEntry(TEST_USER.toStdString(),
                                                                     std::string(),
                                                                     std::string(),
                                                                     TrustLevel::LOW,
-                                                                    TypeUtil::toStd(possibleRequiredTrustLevels),
+                                                                    possibleRequiredTrustLevels,
                                                                     TrustLevel::LOW,
-                                                                    TypeUtil::toStd(possibleRequiredAceChangeTrustLevels),
+                                                                    possibleRequiredAceChangeTrustLevels,
                                                                     std::string(),
                                                                     Permission::NO,
-                                                                    TypeUtil::toStd(possiblePermissions));
+                                                                    possiblePermissions);
 
         mediatorAce = MasterAccessControlEntry(TEST_USER.toStdString(),
                                                std::string(),
                                                std::string(),
                                                TrustLevel::LOW,
-                                               TypeUtil::toStd(possibleRequiredTrustLevels),
+                                               possibleRequiredTrustLevels,
                                                TrustLevel::LOW,
-                                               TypeUtil::toStd(possibleRequiredAceChangeTrustLevels),
+                                               possibleRequiredAceChangeTrustLevels,
                                                std::string(),
                                                Permission::NO,
-                                               TypeUtil::toStd(possiblePermissions));
+                                               possiblePermissions);
 
         ownerAce = OwnerAccessControlEntry(TEST_USER.toStdString(),
                                                                   std::string(),
@@ -95,10 +95,10 @@ const QString AceValidatorTest::TEST_USER("testUser");
 
 TEST_F(AceValidatorTest, TestMediatorInvalidPossiblePermissions)
 {
-    QList<Permission::Enum> possiblePermissions;
-    possiblePermissions.append(Permission::ASK);
-    possiblePermissions.append(Permission::YES);
-    mediatorAce.setPossibleConsumerPermissions(TypeUtil::toStd(possiblePermissions));
+    std::vector<Permission::Enum> possiblePermissions;
+    possiblePermissions.push_back(Permission::ASK);
+    possiblePermissions.push_back(Permission::YES);
+    mediatorAce.setPossibleConsumerPermissions(possiblePermissions);
     AceValidator validator(masterAce, mediatorAce, ownerAce);
 
     EXPECT_FALSE(validator.isMediatorValid());
@@ -106,10 +106,10 @@ TEST_F(AceValidatorTest, TestMediatorInvalidPossiblePermissions)
 
 TEST_F(AceValidatorTest, TestMediatorInvalidPossibleTrustLevels)
 {
-    QList<TrustLevel::Enum> possibleRequiredTrustLevels;
-    possibleRequiredTrustLevels.append(TrustLevel::HIGH);
-    possibleRequiredTrustLevels.append(TrustLevel::MID);
-    mediatorAce.setPossibleRequiredTrustLevels(TypeUtil::toStd(possibleRequiredTrustLevels));
+    std::vector<TrustLevel::Enum> possibleRequiredTrustLevels;
+    possibleRequiredTrustLevels.push_back(TrustLevel::HIGH);
+    possibleRequiredTrustLevels.push_back(TrustLevel::MID);
+    mediatorAce.setPossibleRequiredTrustLevels(possibleRequiredTrustLevels);
     AceValidator validator(masterAce, mediatorAce, ownerAce);
 
     EXPECT_FALSE(validator.isMediatorValid());

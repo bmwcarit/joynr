@@ -32,7 +32,6 @@
 #include "AccessControlAlgorithm.h"
 #include "joynr/PrivateCopyAssign.h"
 
-#include <QList>
 #include <QString>
 #include <string>
 #include <memory>
@@ -478,7 +477,7 @@ private:
     std::string createCompoundKey(const std::string& domain, const std::string& interfaceName);
 
     template <typename T>
-    bool onlyWildcardOperations(const QList<T> aceEntries);
+    bool onlyWildcardOperations(const std::vector<T>& aceEntries);
 
     // Requests waiting to get consumer permission
     struct ConsumerPermissionRequest
@@ -490,10 +489,10 @@ private:
         std::shared_ptr<IGetConsumerPermissionCallback> callbacks;
     };
 
-    QHash<QString, QList<ConsumerPermissionRequest>> consumerPermissionRequests;
+    QHash<QString, std::vector<ConsumerPermissionRequest>> consumerPermissionRequests;
 
     bool queueConsumerRequest(const std::string& key, const ConsumerPermissionRequest& request);
-    void processConsumerRequests(const QList<ConsumerPermissionRequest>& requests);
+    void processConsumerRequests(const std::vector<ConsumerPermissionRequest>& requests);
 
     // Mutex that protects all member variables involved in initialisation
     // of data for a domain/interface

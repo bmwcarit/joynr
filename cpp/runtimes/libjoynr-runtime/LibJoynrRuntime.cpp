@@ -34,8 +34,8 @@
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include "joynr/system/DiscoveryProxy.h"
 #include "joynr/TypeUtil.h"
-
 #include "joynr/Util.h"
+#include <vector>
 
 namespace joynr
 {
@@ -126,9 +126,9 @@ void LibJoynrRuntime::init(
             std::shared_ptr<ParticipantIdStorage>(new ParticipantIdStorage(persistenceFilename));
 
     // initialize the dispatchers
-    QList<IDispatcher*> dispatcherList;
-    dispatcherList.append(inProcessDispatcher);
-    dispatcherList.append(joynrDispatcher);
+    std::vector<IDispatcher*> dispatcherList;
+    dispatcherList.push_back(inProcessDispatcher);
+    dispatcherList.push_back(joynrDispatcher);
 
     joynrDispatcher->registerPublicationManager(publicationManager);
     joynrDispatcher->registerSubscriptionManager(subscriptionManager);

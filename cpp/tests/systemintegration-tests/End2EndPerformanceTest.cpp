@@ -121,7 +121,7 @@ TEST_F(End2EndPerformanceTest, sendManyRequests) {
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
     uint64_t startTime = DispatcherUtils::nowInMilliseconds();
-    QList<std::shared_ptr<Future<int> > >testFutureList;
+    std::vector<std::shared_ptr<Future<int> > >testFutureList;
     int numberOfMessages = 150;
     int successFullMessages = 0;
     for (int i=0; i<numberOfMessages; i++){
@@ -130,7 +130,7 @@ TEST_F(End2EndPerformanceTest, sendManyRequests) {
         list.push_back(4);
         list.push_back(8);
         list.push_back(i);
-        testFutureList.append(testProxy->sumIntsAsync(list));
+        testFutureList.push_back(testProxy->sumIntsAsync(list));
     }
 
     for (int i=0; i<numberOfMessages; i++){

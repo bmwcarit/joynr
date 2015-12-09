@@ -269,7 +269,7 @@ void PublicationManager::handleAttributeSubscriptionRequest(
             {
                 std::lock_guard<std::mutex> currentScheduledLocker(
                         currentScheduledPublicationsMutex);
-                currentScheduledPublications.append(subscriptionId);
+                currentScheduledPublications.push_back(subscriptionId);
             }
             // sent at least once the current value
             delayedScheduler->schedule(new PublisherRunnable(*this, subscriptionId), -1);
@@ -456,24 +456,24 @@ void PublicationManager::removeAllSubscriptions(const QString& providerId)
     // Build lists of subscriptionIds to remove
     QString subscriptionId;
 
-    QList<QString> publicationsToRemove;
+    std::vector<QString> publicationsToRemove;
     {
         for (auto& requestInfo : subscriptionId2SubscriptionRequest) {
             subscriptionId = QString::fromStdString((requestInfo.second)->getSubscriptionId());
 
             if ((requestInfo.second)->getProviderId() == providerId) {
-                publicationsToRemove.append(subscriptionId);
+                publicationsToRemove.push_back(subscriptionId);
             }
         }
     }
 
-    QList<QString> broadcastsToRemove;
+    std::vector<QString> broadcastsToRemove;
     {
         for (auto& requestInfo : subscriptionId2BroadcastSubscriptionRequest) {
             subscriptionId = QString::fromStdString((requestInfo.second)->getSubscriptionId());
 
             if ((requestInfo.second)->getProviderId() == providerId) {
-                broadcastsToRemove.append(subscriptionId);
+                broadcastsToRemove.push_back(subscriptionId);
             }
         }
     }
@@ -602,14 +602,14 @@ void PublicationManager::loadSavedBroadcastSubscriptionRequestsMap()
 
 // Returns a list containing copies of the values of map
 template <class RequestInformationType>
-QList<QVariant> PublicationManager::subscriptionMapToListCopy(
+std::vector<QVariant> PublicationManager::subscriptionMapToListCopy(
         const std::map<std::string, std::shared_ptr<RequestInformationType>>& map)
 {
-    QList<QVariant> subscriptionList;
+    std::vector<QVariant> subscriptionList;
     {
         for (std::shared_ptr<RequestInformationType> requestInfo : map) {
             if (!isSubscriptionExpired(requestInfo->getSubscriptionQosPtr())) {
-                subscriptionList.append(QVariant::fromValue(*requestInfo));
+                subscriptionList.push_back(QVariant::fromValue(*requestInfo));
             }
         }
     }
@@ -819,9 +819,10 @@ void PublicationManager::removePublicationEndRunnable(std::shared_ptr<Publicatio
 }
 
 // This function assumes that a read lock is already held
-bool PublicationManager::processFilterChain(const QString& subscriptionId,
-                                            const std::vector<Variant>& broadcastValues,
-                                            const QList<std::shared_ptr<IBroadcastFilter>>& filters)
+bool PublicationManager::processFilterChain(
+        const QString& subscriptionId,
+        const std::vector<Variant>& broadcastValues,
+        const std::vector<std::shared_ptr<IBroadcastFilter>>& filters)
 {
     bool success = true;
 
@@ -890,8 +891,8 @@ void PublicationManager::sendSubscriptionPublication(
 
     {
         std::lock_guard<std::mutex> currentScheduledLocker(currentScheduledPublicationsMutex);
-        currentScheduledPublications.removeAll(
-                QString::fromStdString(request->getSubscriptionId()));
+        removeAll(
+                currentScheduledPublications, QString::fromStdString(request->getSubscriptionId()));
     }
     LOG_TRACE(logger, FormatString("sent publication @ %1").arg(now).str());
 }
@@ -1068,9 +1069,10 @@ void PublicationManager::attributeValueChanged(const QString& subscriptionId, co
     }
 }
 
-void PublicationManager::broadcastOccurred(const QString& subscriptionId,
-                                           const std::vector<Variant>& values,
-                                           const QList<std::shared_ptr<IBroadcastFilter>>& filters)
+void PublicationManager::broadcastOccurred(
+        const QString& subscriptionId,
+        const std::vector<Variant>& values,
+        const std::vector<std::shared_ptr<IBroadcastFilter>>& filters)
 {
     LOG_DEBUG(logger,
               FormatString("broadcastOccurred for subscription %1. Number of values: %2")
@@ -1121,7 +1123,7 @@ void PublicationManager::broadcastOccurred(const QString& subscriptionId,
 bool PublicationManager::isPublicationAlreadyScheduled(const QString& subscriptionId)
 {
     std::lock_guard<std::mutex> currentScheduledLocker(currentScheduledPublicationsMutex);
-    return currentScheduledPublications.contains(subscriptionId);
+    return vectorContains(currentScheduledPublications, subscriptionId);
 }
 
 int64_t PublicationManager::getTimeUntilNextPublication(std::shared_ptr<Publication> publication,
@@ -1148,12 +1150,12 @@ void PublicationManager::reschedulePublication(const QString& subscriptionId,
         std::lock_guard<std::mutex> currentScheduledLocker(currentScheduledPublicationsMutex);
 
         // Schedule a publication so that the change is not forgotten
-        if (!currentScheduledPublications.contains(subscriptionId)) {
+        if (!vectorContains(currentScheduledPublications, subscriptionId)) {
             LOG_DEBUG(logger,
                       FormatString("rescheduling runnable with delay: %1")
                               .arg(nextPublication)
                               .str());
-            currentScheduledPublications.append(subscriptionId);
+            currentScheduledPublications.push_back(subscriptionId);
             delayedScheduler->schedule(
                     new PublisherRunnable(*this, subscriptionId), nextPublication);
         }

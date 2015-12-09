@@ -73,14 +73,13 @@ public:
         EXPECT_CALL(*capabilitiesClient, getLocalChannelId()).WillRepeatedly(Return(LOCAL_CHANNEL_ID));
 
         // init a capentry recieved from the global capabilities directory
-        types::QtProviderQos qos;
-        QList<joynr::types::QtCommunicationMiddleware::Enum> connections;
-        connections.push_back(joynr::types::QtCommunicationMiddleware::JOYNR);
+        types::ProviderQos qos;
+        std::vector<joynr::types::CommunicationMiddleware::Enum> connections = {joynr::types::CommunicationMiddleware::JOYNR};
         CapabilityEntry globalCapEntry(
-                    QString::fromStdString(DOMAIN_1_NAME),
-                    QString::fromStdString(INTERFACE_1_NAME),
+                    TypeUtil::toQt(DOMAIN_1_NAME),
+                    TypeUtil::toQt(INTERFACE_1_NAME),
                     qos,
-                    QString::fromStdString(dummyParticipantId3),
+                    TypeUtil::toQt(dummyParticipantId3),
                     connections,
                     true
         );

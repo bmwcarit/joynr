@@ -48,7 +48,7 @@ public:
 
     // Implementation of IBroadcastListener::receive
     void broadcastOccurred(const std::vector<Variant>& values,
-                           const QList<std::shared_ptr<IBroadcastFilter>>& filters);
+                           const std::vector<std::shared_ptr<IBroadcastFilter>>& filters) override;
 
 private:
     QString subscriptionId;

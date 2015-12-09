@@ -28,6 +28,7 @@
 #include <string>
 #include <memory>
 #include <mutex>
+#include <vector>
 
 namespace joynr
 {
@@ -66,7 +67,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(MessagingStubFactory);
 
     Directory<joynr::system::RoutingTypes::QtAddress, IMessaging> address2MessagingStubDirectory;
-    QList<IMiddlewareMessagingStubFactory*> factoryList;
+    std::vector<IMiddlewareMessagingStubFactory*> factoryList;
     std::mutex mutex;
 };
 

@@ -30,10 +30,10 @@ using namespace joynr_logging;
 
 Logger* Util::logger = Logging::getInstance()->getLogger("MSG", "Util");
 
-QList<QByteArray> Util::splitIntoJsonObjects(const QByteArray& jsonStream)
+std::vector<QByteArray> Util::splitIntoJsonObjects(const QByteArray& jsonStream)
 {
     // This code relies assumes jsonStream is a valid JSON string
-    QList<QByteArray> jsonObjects;
+    std::vector<QByteArray> jsonObjects;
     int parenthesisCount = 0;
     int currentObjectStart = -1;
     bool isInsideString = false;
@@ -56,7 +56,7 @@ QList<QByteArray> Util::splitIntoJsonObjects(const QByteArray& jsonStream)
         }
         if (parenthesisCount == 0 && currentObjectStart >= 0) {
             // found end of object
-            jsonObjects += jsonStream.mid(currentObjectStart, i - currentObjectStart + 1);
+            jsonObjects.push_back(jsonStream.mid(currentObjectStart, i - currentObjectStart + 1));
 
             currentObjectStart = -1;
         }

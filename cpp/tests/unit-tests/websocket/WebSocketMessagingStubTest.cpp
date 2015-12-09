@@ -29,6 +29,7 @@
 #include "joynr/system/RoutingTypes_QtWebSocketAddress.h"
 #include "libjoynr/websocket/WebSocketMessagingStub.h"
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
+#include <vector>
 
 class WebSocketMessagingStubTest : public QObject, public testing::Test
 {
@@ -145,10 +146,10 @@ TEST_F(WebSocketMessagingStubTest, emitsClosedSignal) {
     ASSERT_EQ(1, messagingStubClosedSpy.count());
 
     // verify signal's address parameter
-    QList<QVariant> args = messagingStubClosedSpy.takeFirst();
+    std::vector<QVariant> args = messagingStubClosedSpy.takeFirst().toVector().toStdVector();
     ASSERT_EQ(1, args.size());
-    EXPECT_EQ(QVariant::UserType, args.first().type());
-    EXPECT_TRUE(args.first().canConvert<joynr::system::RoutingTypes::QtAddress>());
+    EXPECT_EQ(QVariant::UserType, args.begin()->type());
+    EXPECT_TRUE(args.begin()->canConvert<joynr::system::RoutingTypes::QtAddress>());
 }
 
 TEST_F(WebSocketMessagingStubTest, transmitMessage) {
@@ -166,10 +167,10 @@ TEST_F(WebSocketMessagingStubTest, transmitMessage) {
     ASSERT_EQ(1, textMessageReceivedSignalSpy.count());
 
     // verify received message
-    QList<QVariant> args = textMessageReceivedSignalSpy.takeFirst();
+    std::vector<QVariant> args = textMessageReceivedSignalSpy.takeFirst().toVector().toStdVector();
     ASSERT_EQ(1, args.size());
-    EXPECT_EQ(QVariant::String, args.first().type());
-    EXPECT_EQ(expectedMessage, args.first().toString().toStdString());
+    EXPECT_EQ(QVariant::String, args.begin()->type());
+    EXPECT_EQ(expectedMessage, args.begin()->toString().toStdString());
 }
 
 #include "WebSocketMessagingStubTest.moc"

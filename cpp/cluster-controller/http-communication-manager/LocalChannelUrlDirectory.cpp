@@ -46,32 +46,31 @@ void LocalChannelUrlDirectory::init()
 {
 
     // provisioning of Global Channel URL Directory URL
-    types::QtChannelUrlInformation channelUrlDirectoryUrlInformation;
-    QList<QString> channelUrlDirectoryUrls;
-    QString channelUrlDirectoryUrl = TypeUtil::toQt(messagingSettings.getChannelUrlDirectoryUrl());
-    channelUrlDirectoryUrls << channelUrlDirectoryUrl;
+    types::ChannelUrlInformation channelUrlDirectoryUrlInformation;
+    std::vector<std::string> channelUrlDirectoryUrls;
+    std::string channelUrlDirectoryUrl = messagingSettings.getChannelUrlDirectoryUrl();
+    channelUrlDirectoryUrls.push_back(channelUrlDirectoryUrl);
     channelUrlDirectoryUrlInformation.setUrls(channelUrlDirectoryUrls);
     localCache.insert(TypeUtil::toQt(messagingSettings.getChannelUrlDirectoryChannelId()),
                       channelUrlDirectoryUrlInformation);
     LOG_TRACE(logger,
               FormatString("Provisioned Global Channel URL Directory URL (%1) into Local "
                            "Channel URL Directory")
-                      .arg(channelUrlDirectoryUrl.toStdString())
+                      .arg(channelUrlDirectoryUrl)
                       .str());
 
     // provisioning of Global Capabilities Directory URL
-    types::QtChannelUrlInformation capabilitiesDirectoryUrlInformation;
-    QList<QString> capabilitiesDirectoryUrls;
-    QString capabilitiesDirectoryUrl =
-            TypeUtil::toQt(messagingSettings.getCapabilitiesDirectoryUrl());
-    capabilitiesDirectoryUrls << capabilitiesDirectoryUrl;
+    types::ChannelUrlInformation capabilitiesDirectoryUrlInformation;
+    std::vector<std::string> capabilitiesDirectoryUrls;
+    std::string capabilitiesDirectoryUrl = messagingSettings.getCapabilitiesDirectoryUrl();
+    capabilitiesDirectoryUrls.push_back(capabilitiesDirectoryUrl);
     capabilitiesDirectoryUrlInformation.setUrls(capabilitiesDirectoryUrls);
     localCache.insert(TypeUtil::toQt(messagingSettings.getCapabilitiesDirectoryChannelId()),
                       capabilitiesDirectoryUrlInformation);
     LOG_TRACE(logger,
               FormatString("Provisioned Global Capabilities Directory URL (%1) into Local "
                            "Channel URL Directory")
-                      .arg(capabilitiesDirectoryUrl.toStdString())
+                      .arg(capabilitiesDirectoryUrl)
                       .str());
 }
 
@@ -113,9 +112,9 @@ std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> LocalChannel
                   FormatString("using cached Urls for id=%1").arg(channelIdQT.toStdString()).str());
         std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> future(
                 new joynr::Future<joynr::types::ChannelUrlInformation>());
-        future->onSuccess(types::QtChannelUrlInformation::createStd(localCache.value(channelIdQT)));
+        future->onSuccess(localCache.value(channelIdQT));
         if (onSuccess) {
-            onSuccess(types::QtChannelUrlInformation::createStd(localCache.value(channelIdQT)));
+            onSuccess(localCache.value(channelIdQT));
         }
         return future;
     }
@@ -131,7 +130,7 @@ std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> LocalChannel
                              .str());
             joynr::types::ChannelUrlInformation urls;
             future->get(urls);
-            localCache.insert(channelIdQT, types::QtChannelUrlInformation::createQt(urls));
+            localCache.insert(channelIdQT, urls);
             LOG_INFO(logger,
                      FormatString("Stored url information for channelId=%1")
                              .arg(channelIdQT.toStdString())

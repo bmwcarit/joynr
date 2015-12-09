@@ -39,8 +39,6 @@
 #include "joynr/DelayedScheduler.h"
 #include "joynr/Runnable.h"
 #include "joynr/vehicle/GpsRequestCaller.h"
-#include "joynr/types/Localisation_QtGpsLocation.h"
-#include "joynr/types/Localisation_QtTrip.h"
 #include "joynr/IMessageReceiver.h"
 #include "joynr/IDispatcher.h"
 #include "joynr/IMessaging.h"

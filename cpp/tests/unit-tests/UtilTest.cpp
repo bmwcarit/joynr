@@ -22,7 +22,7 @@
 #include "joynr/Util.h"
 #include <QString>
 #include <QByteArray>
-#include <QList>
+#include <vector>
 #include <tuple>
 #include <functional>
 #include <string>
@@ -45,7 +45,7 @@ protected:
 TEST_F(UtilTest, splitIntoJsonObjects)
 {
     QByteArray inputStream;
-    QList<QByteArray> result;
+    std::vector<QByteArray> result;
 
     inputStream = " not a valid Json ";
     result = Util::splitIntoJsonObjects(inputStream);

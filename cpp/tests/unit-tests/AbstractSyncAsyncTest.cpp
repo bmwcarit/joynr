@@ -25,6 +25,7 @@
 #include "joynr/ReplyCaller.h"
 #include "joynr/IReplyCaller.h"
 #include "tests/utils/MockObjects.h"
+#include "joynr/system/RoutingTypes_QtChannelAddress.h"
 
 using ::testing::A;
 using ::testing::_;

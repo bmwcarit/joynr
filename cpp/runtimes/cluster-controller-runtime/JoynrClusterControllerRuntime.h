@@ -126,7 +126,7 @@ protected:
     std::shared_ptr<IMessageReceiver> messageReceiver;
     std::shared_ptr<IMessageSender> messageSender;
 
-    QList<IDispatcher*> dispatcherList;
+    std::vector<IDispatcher*> dispatcherList;
     InProcessConnectorFactory* inProcessConnectorFactory;
     InProcessPublicationSender* inProcessPublicationSender;
     JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory;

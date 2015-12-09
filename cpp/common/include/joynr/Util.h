@@ -49,7 +49,7 @@ public:
       * Splits a byte array representation of multiple JSON objects into
       * a list of byte arrays, each containing a single JSON object.
       */
-    static QList<QByteArray> splitIntoJsonObjects(const QByteArray& jsonStream);
+    static std::vector<QByteArray> splitIntoJsonObjects(const QByteArray& jsonStream);
 
     /**
       * Converts an enum value to the corresponding name of the value.
@@ -189,12 +189,34 @@ public:
     }
 
     template <class T>
+    static std::vector<T> convertIntListToEnumList(const std::vector<int>& inputList)
+    {
+        std::vector<T> ret;
+        ret.reserve(inputList.size());
+        for (const int& i : inputList) {
+            ret.push_back((T)i);
+        }
+        return ret;
+    }
+
+    template <class T>
     static QList<int> convertEnumListToIntList(const QList<T>& enumList)
     {
         QList<int> enumAsIntList;
         enumAsIntList.reserve(enumList.length());
         for (const T& e : enumList) {
             enumAsIntList.append(e);
+        }
+        return enumAsIntList;
+    }
+
+    template <class T>
+    static std::vector<int> convertEnumListToIntList(const std::vector<T>& enumList)
+    {
+        std::vector<int> enumAsIntList;
+        enumAsIntList.reserve(enumList.size());
+        for (const T& e : enumList) {
+            enumAsIntList.push_back(e);
         }
         return enumAsIntList;
     }
@@ -485,6 +507,13 @@ template <typename T>
 bool vectorContains(const std::vector<T>& v, const T& e)
 {
     return v.end() != std::find(v.cbegin(), v.cend(), e);
+}
+
+template <typename T>
+auto removeAll(std::vector<T>& v, const T& e)
+        -> decltype(v.erase(std::remove(v.begin(), v.end(), e), v.end()))
+{
+    return v.erase(std::remove(v.begin(), v.end(), e), v.end());
 }
 
 } // namespace joynr
