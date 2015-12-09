@@ -18,7 +18,6 @@ package io.joynr.generator.cpp.communicationmodel.serializer
  */
 
 import io.joynr.generator.cpp.util.CppStdTypeUtil
-import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.EnumTemplate
 import io.joynr.generator.templates.util.NamingUtil
@@ -26,9 +25,6 @@ import javax.inject.Inject
 import org.franca.core.franca.FEnumerationType
 
 class EnumSerializerCppTemplate implements EnumTemplate{
-
-	@Inject
-	private extension JoynrCppGeneratorExtensions
 
 	@Inject
 	private extension CppStdTypeUtil

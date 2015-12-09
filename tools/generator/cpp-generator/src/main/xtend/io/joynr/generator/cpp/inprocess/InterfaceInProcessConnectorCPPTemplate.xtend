@@ -20,7 +20,6 @@ package io.joynr.generator.cpp.inprocess
 import com.google.inject.Inject
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
-import io.joynr.generator.cpp.util.QtTypeUtil
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
@@ -35,7 +34,6 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 
 	@Inject private extension TemplateBase
 	@Inject private extension CppStdTypeUtil cppStdTypeUtil
-	@Inject private QtTypeUtil qtTypeUtil
 	@Inject private extension NamingUtil
 	@Inject private extension AttributeUtil
 	@Inject private extension MethodUtil
@@ -100,7 +98,6 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 
 «FOR attribute : getAttributes(serviceInterface)»
 	«val returnType = cppStdTypeUtil.getTypeName(attribute)»
-	«val returnTypeQt = qtTypeUtil.getTypeName(attribute)»
 	«val attributeName = attribute.joynrName»
 	«val setAttributeName = "set" + attribute.joynrName.toFirstUpper»
 	«IF attribute.readable»
@@ -393,7 +390,6 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 
 «FOR broadcast: serviceInterface.broadcasts»
 	«val returnTypes = cppStdTypeUtil.getCommaSeparatedOutputParameterTypes(broadcast)»
-	«val returnTypesQt = qtTypeUtil.getCommaSeparatedOutputParameterTypes(broadcast)»
 	«val broadcastName = broadcast.joynrName»
 
 	«IF isSelective(broadcast)»

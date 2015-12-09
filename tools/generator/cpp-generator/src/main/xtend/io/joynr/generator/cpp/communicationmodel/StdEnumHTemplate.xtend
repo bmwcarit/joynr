@@ -42,7 +42,6 @@ class StdEnumHTemplate implements EnumTemplate {
 	override generate(FEnumerationType type)
 '''
 «val typeName = type.joynrName»
-«val namespaceName = (getPackagePathWithJoynrPrefix(type, "::", true))»
 «val headerGuard = (getPackagePathWithJoynrPrefix(type, "_", true)+"_"+typeName+"_h").toUpperCase»
 «warning»
 #ifndef «headerGuard»
@@ -149,9 +148,6 @@ inline std::vector<«type.typeName»> joynr::Util::valueOf<std::vector<«type.ty
 }
 
 namespace std {
-// Function object that implements a hash function for «type.buildPackagePath("::", true)»«typeName».
-// Used by the unordered associative containers std::unordered_set, std::unordered_multiset,
-// std::unordered_map, std::unordered_multimap as default hash function.
 
 /**
  * @brief Function object that implements a hash function for «type.buildPackagePath("::", true)»«typeName».
