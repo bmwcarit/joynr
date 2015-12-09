@@ -108,25 +108,25 @@ public class SubscriptionTestsProviderImpl extends DefaulttestProvider {
 
     @Override
     public void registerAttributeListener(String attributeName,
-    		AttributeListener attributeListener) {
+            AttributeListener attributeListener) {
         super.registerAttributeListener(attributeName, attributeListener);
         synchronized (this) {
-        	if (!attributeSubscriptionArrived.contains(attributeName)) {
-        		attributeSubscriptionArrived.add(attributeName);
-        		this.notify();
-        	}
+            if (!attributeSubscriptionArrived.contains(attributeName)) {
+                attributeSubscriptionArrived.add(attributeName);
+                this.notify();
+            }
         }
     }
 
     @Override
     public void unregisterAttributeListener(String attributeName,
-    		AttributeListener attributeListener) {
-    	super.unregisterAttributeListener(attributeName, attributeListener);
+            AttributeListener attributeListener) {
+        super.unregisterAttributeListener(attributeName, attributeListener);
         synchronized (this) {
-        	if (attributeSubscriptionArrived.contains(attributeName)) {
-        		attributeSubscriptionArrived.remove(attributeName);
-        		this.notify();
-        	}
+            if (attributeSubscriptionArrived.contains(attributeName)) {
+                attributeSubscriptionArrived.remove(attributeName);
+                this.notify();
+            }
         }
     }
 }
