@@ -30,7 +30,7 @@
 #include "joynr/JoynrMessage.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/RequestStatusCode.h"
-#include "joynr/types/QtDiscoveryEntry.h"
+#include "joynr/types/DiscoveryEntry.h"
 
 #define EXPECT_EQ_QSTRING(a, b) EXPECT_EQ(a, b) << "  Actual: " << b.toStdString() << std::endl << "Expected: " << a.toStdString() << std::endl
 #define EXPECT_EQ_QBYTEARRAY(a, b) EXPECT_EQ(a, b) << "  Actual: " << b.constData() << std::endl << "Expected: " << a.constData() << std::endl
@@ -58,10 +58,10 @@ namespace types {
     void PrintTo(const joynr::types::QtTrip& value, ::std::ostream* os);
 }
 namespace system {
-    class QtDiscoveryEntry;
-    void PrintTo(const joynr::types::QtDiscoveryEntry& value, ::std::ostream* os);
-    class QtWebSocketAddress;
-    void PrintTo(const joynr::system::QtWebSocketAddress& value, ::std::ostream* os);
+    class DiscoveryEntry;
+    void PrintTo(const joynr::types::DiscoveryEntry& value, ::std::ostream* os);
+    class WebSocketAddress;
+    void PrintTo(const joynr::system::WebSocketAddress& value, ::std::ostream* os);
 }
 }
 void PrintTo(const QString& value, ::std::ostream* os);

@@ -132,7 +132,7 @@ TEST_F(PublicationManagerTest, stop_publications) {
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
     std::string attributeName("Location");
-    //QtSubscriptionQos
+    //SubscriptionQos
     int64_t period_ms = 100;
     int64_t validity_ms = 10000;
     int64_t alertInterval_ms = 1000;
@@ -175,7 +175,7 @@ TEST_F(PublicationManagerTest, remove_all_publications) {
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
     std::string attributeName("Location");
-    //QtSubscriptionQos
+    //SubscriptionQos
     int64_t period_ms = 100;
     int64_t validity_ms = 10000;
     int64_t alertInterval_ms = 1000;
@@ -214,7 +214,7 @@ TEST_F(PublicationManagerTest, restore_publications) {
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
     std::string attributeName("Location");
-    //QtSubscriptionQos
+    //SubscriptionQos
     int64_t period_ms = 100;
     int64_t validity_ms = 1000;
     int64_t alertInterval_ms = 1000;
@@ -294,7 +294,7 @@ TEST_F(PublicationManagerTest, add_onChangeSubscription) {
     //SubscriptionRequest
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
-    //QtSubscriptionQos
+    //SubscriptionQos
     int64_t minInterval_ms = 50;
     int64_t validity_ms = 500;
     Variant qos = Variant::make<OnChangeSubscriptionQos>(OnChangeSubscriptionQos(
@@ -359,7 +359,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
     //SubscriptionRequest
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
-    //QtSubscriptionQos
+    //SubscriptionQos
     int64_t minInterval_ms = 500;
     int64_t validity_ms = -1; //no expiry date -> infinite subscription
     Variant qos = Variant::make<OnChangeSubscriptionQos>(OnChangeSubscriptionQos(
@@ -432,7 +432,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval) {
     //SubscriptionRequest
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
-    //QtSubscriptionQos
+    //SubscriptionQos
     int64_t minInterval_ms = 500;
     int64_t validity_ms = 600;
     Variant qos = Variant::make<OnChangeSubscriptionQos>(OnChangeSubscriptionQos(
@@ -525,7 +525,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
     //SubscriptionRequest
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
-    //QtSubscriptionQos
+    //SubscriptionQos
     int64_t minInterval_ms = 100;
     int64_t validity_ms = 600;
     OnChangeSubscriptionQos qos{validity_ms,minInterval_ms};
@@ -631,7 +631,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
     //SubscriptionRequest
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
-    //QtSubscriptionQos
+    //SubscriptionQos
     int64_t minInterval_ms = 50;
     int64_t validity_ms = 600;
     int64_t testRelExpiryDate = 500;
@@ -725,7 +725,7 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
     //SubscriptionRequest
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
-    //QtSubscriptionQos
+    //SubscriptionQos
     int64_t minInterval_ms = 50;
     int64_t validity_ms = 600;
     int64_t testExpiryDate_shift = 2500;
@@ -843,7 +843,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     //SubscriptionRequest
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
-    //QtSubscriptionQos
+    //SubscriptionQos
     int64_t minInterval_ms = 100;
     int64_t validity_ms = 600;
     OnChangeSubscriptionQos qos{validity_ms,minInterval_ms};
@@ -942,7 +942,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     //SubscriptionRequest
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
-    //QtSubscriptionQos
+    //SubscriptionQos
     int64_t minInterval_ms = 50;
     int64_t validity_ms = 600;
     int64_t testRelExpiryDate = 500;
@@ -1027,7 +1027,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     //SubscriptionRequest
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
-    //QtSubscriptionQos
+    //SubscriptionQos
     int64_t minInterval_ms = 50;
     int64_t validity_ms = 600;
     int64_t testExpiryDate_shift = 2500;
@@ -1103,7 +1103,7 @@ TEST_F(PublicationManagerTest, remove_onChangeSubscription) {
     //SubscriptionRequest
     QString senderId = "SenderId";
     QString receiverId = "ReceiverId";
-    //QtSubscriptionQos
+    //SubscriptionQos
     int64_t minInterval_ms = 1;
     int64_t validity_ms = 100;
     Variant qos = Variant::make<OnChangeSubscriptionQos>(OnChangeSubscriptionQos(

@@ -23,7 +23,6 @@
 #include "cluster-controller/http-communication-manager/HttpSender.h"
 #include "joynr/MessagingSettings.h"
 #include "cluster-controller/capabilities-client/CapabilitiesClient.h"
-#include "runtimes/JoynrMetaTypes.h"
 #include "joynr/CapabilitiesRegistrar.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/InProcessDispatcher.h"
@@ -106,17 +105,6 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(QCoreApplication* a
           securityManager(NULL),
           messagingIsRunning(false)
 {
-    /*
-      * WARNING - metatypes are not registered yet here.
-      */
-
-    // This is a workaround to register the Metatypes for providerQos.
-    // Normally a new datatype is registered in all datatypes that use the new datatype.
-    // However, when receiving a datatype as a returnValue of a RPC, the constructor has never been
-    // called before
-    // so the datatype is not registered, and cannot be deserialized.
-
-    registerJoynrMetaTypes();
     initializeAllDependencies();
 }
 

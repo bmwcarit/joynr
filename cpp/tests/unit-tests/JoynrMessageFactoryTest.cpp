@@ -21,7 +21,6 @@
 #include "utils/TestQString.h"
 #include "joynr/Request.h"
 #include "joynr/DeclareMetatypeUtil.h"
-#include "common/rpc/RpcMetaTypes.h"
 #include "joynr/Reply.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/SubscriptionPublication.h"
@@ -48,7 +47,6 @@ public:
           reply(),
           subscriptionPublication()
     {
-        registerRpcMetaTypes();
     }
 
     void SetUp(){

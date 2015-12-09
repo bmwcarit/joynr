@@ -69,10 +69,6 @@ Dispatcher::Dispatcher(JoynrMessageSender* messageSender, int maxThreads)
           subscriptionHandlingMutex()
 
 {
-    // Register metatypes
-    qRegisterMetaType<Request>();
-    qRegisterMetaType<Reply>();
-    qRegisterMetaType<SubscriptionRequest>();
 }
 
 Dispatcher::~Dispatcher()

@@ -46,7 +46,6 @@ public:
         serverAddress(nullptr),
         webSocket(nullptr)
     {
-        qRegisterMetaType<joynr::JoynrMessage>("joynr::JoynrMessage");
         if(server.listen(QHostAddress::Any)) {
             LOG_DEBUG(
                         logger,

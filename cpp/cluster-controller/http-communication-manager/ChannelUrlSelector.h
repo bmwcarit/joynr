@@ -23,7 +23,7 @@
 #include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/joynrlogging.h"
 #include "cluster-controller/http-communication-manager/IChannelUrlSelector.h"
-#include "joynr/types/QtChannelUrlInformation.h"
+#include "joynr/types/ChannelUrlInformation.h"
 #include "joynr/BounceProxyUrl.h"
 #include <stdint.h>
 #include <memory>

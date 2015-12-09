@@ -21,14 +21,14 @@
 #include <QVariant>
 #include <limits>
 #include "joynr/Util.h"
-#include "joynr/types/TestTypes_QtTEnum.h"
-#include "joynr/types/TestTypes_QtTStruct.h"
-#include "joynr/types/TestTypes_QtTStructExtended.h"
-#include "joynr/types/TestTypes_QtTStructComposition.h"
-#include "joynr/types/Localisation_QtTrip.h"
-#include "joynr/types/QtChannelUrlInformation.h"
-#include "joynr/types/QtCapabilityInformation.h"
-#include "joynr/types/QtProviderQos.h"
+#include "joynr/types/TestTypes/TEnum.h"
+#include "joynr/types/TestTypes/TStruct.h"
+#include "joynr/types/TestTypes/TStructExtended.h"
+#include "joynr/types/TestTypes/TStructComposition.h"
+#include "joynr/types/Localisation/Trip.h"
+#include "joynr/types/ChannelUrlInformation.h"
+#include "joynr/types/CapabilityInformation.h"
+#include "joynr/types/ProviderQos.h"
 #include "joynr/Reply.h"
 #include "joynr/Request.h"
 #include "joynr/JoynrMessage.h"
@@ -45,7 +45,7 @@
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/TypeUtil.h"
 
-#include "joynr/infrastructure/DacTypes_QtMasterAccessControlEntry.h"
+#include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
 #include "QTime"
 #include <chrono>
 
@@ -64,11 +64,6 @@ public:
     JsonSerializerTest() :
         logger(joynr_logging::Logging::getInstance()->getLogger("TST", "JsonSerializerTest"))
     {
-
-    }
-
-    void test(types::TestTypes::QtTStruct tStruct){
-        LOG_DEBUG(logger, tStruct.toString().toStdString());
     }
 
 protected:

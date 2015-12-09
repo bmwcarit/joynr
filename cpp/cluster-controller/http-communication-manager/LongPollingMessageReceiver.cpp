@@ -27,7 +27,7 @@
 #include "cluster-controller/httpnetworking/HttpResult.h"
 #include "joynr/ILocalChannelUrlDirectory.h"
 #include "joynr/Future.h"
-#include "joynr/types/QtChannelUrlInformation.h"
+#include "joynr/types/ChannelUrlInformation.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/system/RoutingTypes_QtChannelAddress.h"
 #include "joynr/MessageRouter.h"

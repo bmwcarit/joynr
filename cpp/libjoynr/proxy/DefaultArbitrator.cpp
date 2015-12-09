@@ -18,7 +18,7 @@
  */
 #include "joynr/DefaultArbitrator.h"
 #include "joynr/system/IDiscovery.h"
-#include "joynr/types/QtDiscoveryEntry.h"
+#include "joynr/types/DiscoveryEntry.h"
 #include "joynr/system/RoutingTypes_QtChannelAddress.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/RequestStatus.h"

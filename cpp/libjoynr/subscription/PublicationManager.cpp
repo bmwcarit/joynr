@@ -168,8 +168,6 @@ PublicationManager::PublicationManager(DelayedScheduler* scheduler)
           broadcastFilters(),
           broadcastFilterLock()
 {
-    qRegisterMetaType<SubscriptionRequest>("SubscriptionRequest");
-    qRegisterMetaType<std::shared_ptr<SubscriptionRequest>>("std::shared_ptr<SubscriptionRequest>");
     loadSavedAttributeSubscriptionRequestsMap();
     loadSavedBroadcastSubscriptionRequestsMap();
 }

@@ -76,7 +76,6 @@ class ReplyInterpreter<void> : public IReplyInterpreter
 public:
     ReplyInterpreter()
     {
-        qRegisterMetaType<Reply>();
     }
 
     void execute(std::shared_ptr<IReplyCaller> caller, const Reply& reply)

@@ -27,7 +27,7 @@
 #include "joynr/tests/testProvider.h"
 #include "joynr/tests/testProxy.h"
 #include "joynr/vehicle/GpsProxy.h"
-#include "joynr/types/QtProviderQos.h"
+#include "joynr/types/ProviderQos.h"
 #include "joynr/Future.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/TypeUtil.h"
@@ -53,13 +53,6 @@ public:
                     NULL,
                     new Settings("test-resources/integrationtest.settings")
         );
-        //This is a workaround to register the Metatypes for providerQos.
-        //Normally a new datatype is registered in all datatypes that use the new datatype.
-        //However, when receiving a datatype as a returnValue of a RPC, the constructor has never been called before
-        //so the datatype is not registered, and cannot be deserialized.
-        qRegisterMetaType<joynr::types::QtProviderQos>("joynr::types::ProviderQos");
-        qRegisterMetaType<joynr__types__QtProviderQos>("joynr__types__ProviderQos");
-
         std::string uuid = TypeUtil::toStd(QUuid::createUuid().toString());
         uuid = uuid.substr(1, uuid.length()-2);
         domain = "cppEnd2EndRPCTest_Domain_" + uuid;

@@ -36,14 +36,6 @@ JoynrMessageFactory::JoynrMessageFactory()
         : securityManager(new DummyPlatformSecurityManager()),
           logger(joynr_logging::Logging::getInstance()->getLogger("LIB", "JoynrMessageFactory"))
 {
-    qRegisterMetaType<Reply>();
-    qRegisterMetaType<Request>();
-    qRegisterMetaType<SubscriptionRequest>();
-    qRegisterMetaType<BroadcastSubscriptionRequest>();
-    qRegisterMetaType<SubscriptionReply>();
-    qRegisterMetaType<SubscriptionStop>();
-    qRegisterMetaType<SubscriptionPublication>();
-    qRegisterMetaType<JoynrMessage>();
 }
 
 JoynrMessageFactory::~JoynrMessageFactory()

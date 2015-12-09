@@ -22,7 +22,7 @@
 #include <gtest/gtest.h>
 #include "cluster-controller/access-control/AccessController.h"
 #include "cluster-controller/access-control/LocalDomainAccessStore.h"
-#include "joynr/types/QtDiscoveryEntry.h"
+#include "joynr/types/DiscoveryEntry.h"
 #include <string>
 
 using namespace ::testing;

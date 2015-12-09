@@ -27,7 +27,7 @@
 #include "joynr/system/RoutingTypes_QtBrowserAddress.h"
 #include "joynr/system/RoutingTypes_QtWebSocketAddress.h"
 #include "joynr/system/RoutingTypes_QtWebSocketClientAddress.h"
-#include "joynr/types/QtProviderQos.h"
+#include "joynr/types/ProviderQos.h"
 #include "joynr/RequestStatusCode.h"
 #include "joynr/JsonSerializer.h"
 #include "cluster-controller/access-control/IAccessController.h"

@@ -24,7 +24,7 @@
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "joynr/tests/testProxy.h"
-#include "joynr/types/QtProviderQos.h"
+#include "joynr/types/ProviderQos.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/tests/TestLocationUpdateSelectiveBroadcastFilter.h"
@@ -81,8 +81,6 @@ public:
 
 class End2EndBroadcastTest : public Test {
 public:
-    types::QtProviderQos qRegisterMetaTypeQos;
-//    types::QtCapabilityInformation qRegisterMetaTypeCi;
     JoynrClusterControllerRuntime* runtime1;
     JoynrClusterControllerRuntime* runtime2;
     Settings settings1;
@@ -105,8 +103,6 @@ public:
     joynr::types::Localisation::GpsLocation gpsLocation4;
 
     End2EndBroadcastTest() :
-        qRegisterMetaTypeQos(),
-//        qRegisterMetaTypeCi(),
         runtime1(NULL),
         runtime2(NULL),
         settings1("test-resources/SystemIntegrationTest1.settings"),

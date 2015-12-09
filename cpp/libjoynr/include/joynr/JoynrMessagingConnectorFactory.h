@@ -20,7 +20,7 @@
 #define JOYNRMESSAGINGCONNECTORFACTORY_H
 
 #include "joynr/JoynrExport.h"
-#include "joynr/types/QtCommunicationMiddleware.h"
+#include "joynr/types/CommunicationMiddleware.h"
 
 #include <string>
 #include <tuple>

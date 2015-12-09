@@ -28,7 +28,7 @@
 #include "joynr/MessageRouter.h"
 #include "joynr/system/IDiscovery.h"
 #include "joynr/joynrlogging.h"
-#include "joynr/types/QtDiscoveryEntry.h"
+#include "joynr/types/DiscoveryEntry.h"
 #include "joynr/Future.h"
 
 #include <QString>

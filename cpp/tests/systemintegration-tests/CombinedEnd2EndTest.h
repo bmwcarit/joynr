@@ -26,8 +26,8 @@
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrRuntime.h"
-#include "joynr/types/QtProviderQos.h"
-#include "joynr/types/QtCapabilityInformation.h"
+#include "joynr/types/ProviderQos.h"
+#include "joynr/types/CapabilityInformation.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/Semaphore.h"
@@ -45,8 +45,6 @@ public:
     void SetUp();
     void TearDown();
 
-    joynr::types::QtProviderQos qRegisterMetaTypeQos; //this is necessary to force a qRegisterMetaType<types::QtProviderQos>(); during setup
-    joynr::types::QtCapabilityInformation qRegisterMetaTypeCi; //this is necessary to force a qRegisterMetaType<types::QtProviderQos>(); during setup
     joynr::JoynrRuntime* runtime1;
     joynr::JoynrRuntime* runtime2;
     std::string registeredSubscriptionId;

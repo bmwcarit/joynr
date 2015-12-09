@@ -111,8 +111,6 @@ private:
   */
 TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
 
-    qRegisterMetaType<SubscriptionPublication>("SubscriptionPublication");
-
     // Use a semaphore to count and wait on calls to the mockSubscriptionListener
     joynr::Semaphore semaphore(0);
     EXPECT_CALL(*mockSubscriptionListenerOne, onReceive(A<const types::Localisation::GpsLocation&>()))

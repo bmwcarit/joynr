@@ -27,7 +27,7 @@
 #include "joynr/DispatcherUtils.h"
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
 #include "joynr/Future.h"
-#include "joynr/types/QtCapabilityInformation.h"
+#include "joynr/types/CapabilityInformation.h"
 #include <QString>
 #include <string>
 #include <stdint.h>
@@ -46,10 +46,6 @@ CapabilitiesClient::CapabilitiesClient(const std::string& localChannelId)
           localChannelId(localChannelId),
           capabilitiesProxy(NULL)
 {
-    // We will be deserializing QtCapabilityInformation - register the metatypes
-    qRegisterMetaType<joynr::types::QtCapabilityInformation>(
-            "joynr::types::QtCapabilityInformation");
-    qRegisterMetaType<joynr__types__QtCapabilityInformation>("joynr__types__CapabilityInformation");
 }
 
 CapabilitiesClient::~CapabilitiesClient()

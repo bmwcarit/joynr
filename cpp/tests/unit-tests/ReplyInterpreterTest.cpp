@@ -44,9 +44,6 @@ protected:
 
 
 TEST_F(ReplyInterpreterTest, execute_calls_caller) {
-    // Register metatypes
-    //qRegisterMetaType<Reply>();
-    //qRegisterMetaType<types::Localisation::GpsLocation>();
     MetaTypeRegistrar& registrar = MetaTypeRegistrar::instance();
     registrar.registerReplyMetaType<types::Localisation::GpsLocation>();
 
