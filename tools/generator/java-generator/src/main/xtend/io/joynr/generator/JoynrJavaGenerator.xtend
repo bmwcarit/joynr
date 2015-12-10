@@ -20,6 +20,7 @@ package io.joynr.generator
 import com.google.common.collect.Sets
 import com.google.inject.Inject
 import io.joynr.generator.communicationmodel.CommunicationModelGenerator
+import io.joynr.generator.filter.FilterGenerator
 import io.joynr.generator.interfaces.InterfaceGenerator
 import io.joynr.generator.provider.ProviderGenerator
 import io.joynr.generator.proxy.ProxyGenerator
@@ -32,13 +33,12 @@ import java.util.Map
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.dsl.FrancaPersistenceManager
+import org.franca.core.franca.FCompoundType
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FModel
-import org.franca.core.franca.FType
 
 import static com.google.common.base.Preconditions.*
 import static org.eclipse.xtext.util.Files.*
-import io.joynr.generator.filter.FilterGenerator
 
 class JoynrJavaGenerator implements IJoynrGenerator {
 	@Inject
@@ -109,8 +109,8 @@ class JoynrJavaGenerator implements IJoynrGenerator {
 		return result
 	}
 
-	def Iterable<FType> findAllComplexTypes(Resource resource) {
-		val result = new HashSet<FType>()
+	def Iterable<FCompoundType> findAllComplexTypes(Resource resource) {
+		val result = new HashSet<FCompoundType>()
 		val rs = resource.resourceSet
 		for (r : rs.resources){
 			for (c : r.contents){

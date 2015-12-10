@@ -29,7 +29,6 @@ import io.joynr.generator.templates.util.NamingUtil
 import io.joynr.generator.templates.util.TypeUtil
 import java.io.File
 import org.eclipse.xtext.generator.IFileSystemAccess
-import org.franca.core.franca.FCompoundType
 import org.franca.core.franca.FEnumerationType
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FModel
@@ -92,44 +91,40 @@ class CommunicationModelGenerator {
 				headerContainerPath
 
 		for( type: getComplexDataTypes(fModel)){
-			if(type instanceof FCompoundType) {
-				var sourcepath = dataTypePath + getPackageSourceDirectory(type) + File::separator
-				var headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
-
-				if (type.isPartOfTypeCollection) {
-					headerpath += type.typeCollectionName + File::separator
-					sourcepath += type.typeCollectionName + File::separator
-				}
-
-				generateFile(
-					headerFileSystem,
-					headerpath + stdTypeUtil.getGenerationTypeName(type) + ".h",
-					stdTypeH,
-					type
-				)
-
-				generateFile(
-					sourceFileSystem,
-					sourcepath + stdTypeUtil.getGenerationTypeName(type) + ".cpp",
-					stdTypeCpp,
-					type
-				)
-
-				generateFile(
-					headerFileSystem,
-					headerpath + stdTypeUtil.getGenerationTypeName(type) + "Serializer.h",
-					typeSerializerH,
-					type
-				)
-
-				generateFile(
-					sourceFileSystem,
-					sourcepath + stdTypeUtil.getGenerationTypeName(type) + "Serializer.cpp",
-					typeSerializerCpp,
-					type
-				)
-
+			var sourcepath = dataTypePath + getPackageSourceDirectory(type) + File::separator
+			var headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
+			if (type.isPartOfTypeCollection) {
+				headerpath += type.typeCollectionName + File::separator
+				sourcepath += type.typeCollectionName + File::separator
 			}
+
+			generateFile(
+				headerFileSystem,
+				headerpath + stdTypeUtil.getGenerationTypeName(type) + ".h",
+				stdTypeH,
+				type
+			)
+
+			generateFile(
+				sourceFileSystem,
+				sourcepath + stdTypeUtil.getGenerationTypeName(type) + ".cpp",
+				stdTypeCpp,
+				type
+			)
+
+			generateFile(
+				headerFileSystem,
+				headerpath + stdTypeUtil.getGenerationTypeName(type) + "Serializer.h",
+				typeSerializerH,
+				type
+			)
+
+			generateFile(
+				sourceFileSystem,
+				sourcepath + stdTypeUtil.getGenerationTypeName(type) + "Serializer.cpp",
+				typeSerializerCpp,
+				type
+			)
 		}
 
 		for (type : getEnumDataTypes(fModel)) {
@@ -143,7 +138,7 @@ class CommunicationModelGenerator {
 			generateEnum(
 				headerFileSystem,
 				sourceFileSystem,
-				type as FEnumerationType,
+				type,
 				headerpath + stdTypeUtil.getGenerationTypeName(type),
 				sourcepath + stdTypeUtil.getGenerationTypeName(type)
 			);

@@ -18,14 +18,12 @@ package io.joynr.generator.communicationmodel
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.templates.util.NamingUtil
+import io.joynr.generator.templates.util.TypeUtil
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import java.io.File
 import org.eclipse.xtext.generator.IFileSystemAccess
-import org.franca.core.franca.FCompoundType
-import org.franca.core.franca.FEnumerationType
 import org.franca.core.franca.FModel
-import io.joynr.generator.templates.util.TypeUtil
-import io.joynr.generator.templates.util.NamingUtil
 
 class CommunicationModelGenerator {
 
@@ -46,18 +44,16 @@ class CommunicationModelGenerator {
 
 	def doGenerate(FModel fModel, IFileSystemAccess fsa){
 		for( type: getComplexDataTypes(fModel)){
-			if(type instanceof FCompoundType) {
-				var path = getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
-				if (type.isPartOfTypeCollection) {
-					path += type.typeCollectionName + File::separator
-				}
-				generateFile(
-					fsa,
-					path + type.joynrName + ".java",
-					complexTypeTemplate,
-					type
-				)
+			var path = getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
+			if (type.isPartOfTypeCollection) {
+				path += type.typeCollectionName + File::separator
 			}
+			generateFile(
+				fsa,
+				path + type.joynrName + ".java",
+				complexTypeTemplate,
+				type
+			)
 		}
 
 		for( type: getEnumDataTypes(fModel)){
@@ -65,14 +61,12 @@ class CommunicationModelGenerator {
 			if (type.isPartOfTypeCollection) {
 				path += type.typeCollectionName + File::separator
 			}
-			if(type instanceof FEnumerationType) {
-				generateFile(
-					fsa,
-					path + type.joynrName + ".java",
-					enumTemplate,
-					type
-				)
-			}
+			generateFile(
+				fsa,
+				path + type.joynrName + ".java",
+				enumTemplate,
+				type
+			)
 		}
 	}
 }

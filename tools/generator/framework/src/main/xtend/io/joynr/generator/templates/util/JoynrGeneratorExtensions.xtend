@@ -130,7 +130,7 @@ abstract class JoynrGeneratorExtensions {
 	}
 
 	def getComplexDataTypes(FModel fModel) {
-		getDataTypes(fModel).filter(type | type.isComplex)
+		getDataTypes(fModel).filter(type | type.isComplex).map(type | type.complexType).filterNull
 	}
 
 	def getPrimitiveDataTypes() {
@@ -138,9 +138,12 @@ abstract class JoynrGeneratorExtensions {
 	}
 
 	def getEnumDataTypes(FModel fModel) {
-		getDataTypes(fModel).filter(type | type.isEnum)
+		getDataTypes(fModel).filter(type | type.isEnum).map(type | type.enumType).filterNull
 	}
 
+	def getMapDataTypes(FModel fModel) {
+		getDataTypes(fModel).filter(type | type.isMap).map(type | type.mapType).filterNull
+	}
 
 	def prependCommaIfNotEmpty(String input) {
 		if (input.equals("")) {
