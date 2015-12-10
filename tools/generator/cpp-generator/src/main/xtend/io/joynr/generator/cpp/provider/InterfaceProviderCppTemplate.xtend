@@ -18,8 +18,8 @@ package io.joynr.generator.cpp.provider
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
-import io.joynr.generator.cpp.util.QtTypeUtil
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.InterfaceUtil
@@ -30,7 +30,7 @@ import org.franca.core.franca.FType
 class InterfaceProviderCppTemplate implements InterfaceTemplate{
 
 	@Inject private extension TemplateBase
-	@Inject private extension QtTypeUtil
+	@Inject private extension CppStdTypeUtil
 	@Inject private extension JoynrCppGeneratorExtensions
 	@Inject private extension NamingUtil
 	@Inject private extension InterfaceUtil
@@ -72,7 +72,6 @@ class InterfaceProviderCppTemplate implements InterfaceTemplate{
 «««			registrar.registerEnumMetaType<«datatype.typeNameOfContainingClass»>();
 		}
 		«ELSE»
-			«registerMetatypeStatement(datatype.typeName)»
 			registrar.registerMetaType<«datatype.typeName»>();
 		«ENDIF»
 	«ENDFOR»

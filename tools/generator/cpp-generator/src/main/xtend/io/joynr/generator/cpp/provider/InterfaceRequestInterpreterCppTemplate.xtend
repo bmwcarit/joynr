@@ -19,9 +19,7 @@ package io.joynr.generator.cpp.provider
 
 import com.google.inject.Inject
 import io.joynr.generator.cpp.util.CppStdTypeUtil
-import io.joynr.generator.cpp.util.DatatypeSystemTransformation
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
-import io.joynr.generator.cpp.util.QtTypeUtil
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
@@ -29,13 +27,11 @@ import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
-import org.franca.core.franca.FType
 
 class InterfaceRequestInterpreterCppTemplate implements InterfaceTemplate{
 
 	@Inject private extension TemplateBase
 	@Inject private extension CppStdTypeUtil
-	@Inject private QtTypeUtil qtTypeUtil
 	@Inject private extension JoynrCppGeneratorExtensions
 	@Inject private extension NamingUtil
 	@Inject private extension AttributeUtil
@@ -57,7 +53,7 @@ class InterfaceRequestInterpreterCppTemplate implements InterfaceTemplate{
 #include "joynr/RequestStatus.h"
 #include <cassert>
 
-«FOR parameterType: qtTypeUtil.getRequiredIncludesFor(serviceInterface)»
+«FOR parameterType: getRequiredIncludesFor(serviceInterface)»
 	#include «parameterType»
 «ENDFOR»
 
@@ -67,11 +63,6 @@ joynr::joynr_logging::Logger* «interfaceName»RequestInterpreter::logger = joyn
 
 «interfaceName»RequestInterpreter::«interfaceName»RequestInterpreter()
 {
-	«FOR datatype: getAllComplexAndEnumTypes(serviceInterface)»
-		«IF datatype instanceof FType»
-			«qtTypeUtil.registerMetatypeStatement(qtTypeUtil.getTypeName(datatype))»
-		«ENDIF»
-	«ENDFOR»
 }
 
 «val requestCallerName = interfaceName.toFirstLower+"RequestCallerVar"»
@@ -170,7 +161,6 @@ void «interfaceName»RequestInterpreter::execute(
 				std::function<void(«outputTypedParamList»)> requestCallerOnSuccess =
 						[onSuccess](«outputTypedParamList»){
 							std::vector<Variant> outParams;
-							«var index = 0»
 							«FOR param : method.outputParameters»
 								outParams.push_back(
 										«IF isArray(param)»

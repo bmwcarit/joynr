@@ -19,15 +19,10 @@ package io.joynr.generator.cpp.proxy
 
 import com.google.inject.Inject
 import io.joynr.generator.cpp.util.CppStdTypeUtil
-import io.joynr.generator.cpp.util.DatatypeSystemTransformation
 import io.joynr.generator.cpp.util.InterfaceSubscriptionUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
-import io.joynr.generator.cpp.util.QtTypeUtil
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
-import io.joynr.generator.templates.util.AttributeUtil
-import io.joynr.generator.templates.util.BroadcastUtil
-import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
 
@@ -35,11 +30,7 @@ class IInterfaceConnectorHTemplate implements InterfaceTemplate{
 	@Inject	extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
 	@Inject private CppStdTypeUtil cppStdTypeUtil
-	@Inject private extension QtTypeUtil qtTypeUtil
 	@Inject private extension NamingUtil
-	@Inject private extension AttributeUtil
-	@Inject private extension BroadcastUtil
-	@Inject private extension InterfaceUtil
 
 	@Inject extension InterfaceSubscriptionUtil
 	override generate(FInterface serviceInterface)
@@ -88,115 +79,6 @@ class «getDllExportMacro()» I«interfaceName»Connector: virtual public I«int
 
 public:
 	virtual ~I«interfaceName»Connector() {}
-protected:
-	«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.notifiable]»
-		«val returnType = cppStdTypeUtil.getTypeName(attribute)»
-		«IF needsDatatypeConversion(attribute)»
-			class «attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper : public ISubscriptionListener<«returnType»> {
-				public:
-					«attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper(
-							std::shared_ptr<ISubscriptionListener<«returnType»>> wrappedListener
-					) :
-							wrappedListener(wrappedListener)
-					{
-					}
-					void onReceive(const «returnType»& receivedValue) {
-						wrappedListener->onReceive(receivedValue);
-					}
-					void onError(const exceptions::JoynrRuntimeException& error) {
-						wrappedListener->onError(error);
-					}
-
-				private:
-					std::shared_ptr<ISubscriptionListener<«returnType»>> wrappedListener;
-			};
-
-			class «attribute.joynrName.toFirstUpper»AttributeSubscriptionCallbackWrapper : public SubscriptionCallback<«returnType»> {
-			public:
-				«attribute.joynrName.toFirstUpper»AttributeSubscriptionCallbackWrapper(
-						std::shared_ptr<ISubscriptionListener<«returnType»>> wrappedListener
-				) :
-						SubscriptionCallback(
-								std::shared_ptr<ISubscriptionListener<«returnType»>>(
-										new «attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper(wrappedListener))
-								)
-				{
-				}
-				virtual void onSuccess(const «returnType»& receivedValue) {
-					std::shared_ptr<«attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper> wrapper =
-						std::dynamic_pointer_cast<
-								«attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper>(listener);
-					wrapper->onReceive(receivedValue);
-				}
-				virtual void onError(const exceptions::JoynrRuntimeException& error) {
-					std::shared_ptr<«attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper> wrapper =
-						std::dynamic_pointer_cast<
-								«attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper>(listener);
-					wrapper->onError(error);
-				}
-			};
-		«ENDIF»
-	«ENDFOR»
-	«FOR broadcast: serviceInterface.broadcasts»
-		«IF needsDatatypeConversion(broadcast)»
-			«val returnTypesStd = cppStdTypeUtil.getCommaSeparatedOutputParameterTypes(broadcast)»
-			«val outputParametersSignature = cppStdTypeUtil.getCommaSeperatedTypedConstOutputParameterList(broadcast)»
-			class «broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper : public ISubscriptionListener<«returnTypesStd»> {
-				public:
-					«broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper(
-							std::shared_ptr<ISubscriptionListener<«returnTypesStd»>> wrappedListener
-					) :
-							wrappedListener(wrappedListener)
-					{
-					}
-					void onReceive(
-							«outputParametersSignature»
-					) {
-						wrappedListener->onReceive(«cppStdTypeUtil.getCommaSeperatedUntypedParameterList(broadcast.outputParameters)»);
-					}
-					void onError(const exceptions::JoynrRuntimeException& error) {
-						wrappedListener->onError(error);
-					}
-
-				private:
-					std::shared_ptr<ISubscriptionListener<«returnTypesStd»>> wrappedListener;
-			};
-
-			class «broadcast.joynrName.toFirstUpper»BroadcastSubscriptionCallbackWrapper
-					: public SubscriptionCallback<«returnTypesStd»>
-			{
-			public:
-				«broadcast.joynrName.toFirstUpper»BroadcastSubscriptionCallbackWrapper(
-						std::shared_ptr<ISubscriptionListener<
-								«returnTypesStd»
-						>> wrappedListener
-				) :
-						SubscriptionCallback(
-								std::shared_ptr<ISubscriptionListener<
-										«returnTypesStd»
-								>>(new «broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper(wrappedListener)))
-				{
-				}
-				virtual void onSuccess(
-						«outputParametersSignature.substring(1)»
-				) {
-					std::shared_ptr<«broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper> wrapper =
-						std::dynamic_pointer_cast<
-									«broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper>(listener);
-					wrapper->onReceive(«cppStdTypeUtil.getCommaSeperatedUntypedParameterList(broadcast.outputParameters)»
-					);
-				}
-				virtual void onError(const exceptions::JoynrRuntimeException& error)
-				{
-					std::shared_ptr<«broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper> wrapper =
-						std::dynamic_pointer_cast<
-									«broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper>(listener);
-					wrapper->onError(error);
-				}
-			};
-
-		«ENDIF»
-	«ENDFOR»
 };
 
 «getNamespaceEnder(serviceInterface)»

@@ -18,19 +18,15 @@ package io.joynr.generator.cpp.communicationmodel
  */
 
 import com.google.inject.Inject
-import io.joynr.generator.cpp.communicationmodel.qt.EnumHTemplate
-import io.joynr.generator.cpp.communicationmodel.qt.TypeCppTemplate
-import io.joynr.generator.cpp.communicationmodel.qt.TypeHTemplate
-import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.communicationmodel.serializer.EnumSerializerCppTemplate
 import io.joynr.generator.cpp.communicationmodel.serializer.EnumSerializerHTemplate
 import io.joynr.generator.cpp.communicationmodel.serializer.TypeSerializerCppTemplate
 import io.joynr.generator.cpp.communicationmodel.serializer.TypeSerializerHTemplate
+import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
-import io.joynr.generator.cpp.util.QtTypeUtil
+import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.NamingUtil
 import io.joynr.generator.templates.util.TypeUtil
-import io.joynr.generator.templates.util.InterfaceUtil
 import java.io.File
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FCompoundType
@@ -45,9 +41,6 @@ class CommunicationModelGenerator {
 
 	@Inject
 	private extension TypeUtil
-
-	@Inject
-	private QtTypeUtil qtTypeUtil
 
 	@Inject
 	private CppStdTypeUtil stdTypeUtil
@@ -65,19 +58,10 @@ class CommunicationModelGenerator {
 	InterfaceCppTemplate interfaceCpp;
 
 	@Inject
-	EnumHTemplate enumh;
-
-	@Inject
 	StdEnumHTemplate stdEnumH;
 
 	@Inject
 	StdEnumCppTemplate stdEnumCpp;
-
-	@Inject
-	TypeHTemplate typeH;
-
-	@Inject
-	TypeCppTemplate typeCpp;
 
 	@Inject
 	StdTypeHTemplate stdTypeH;
@@ -111,29 +95,11 @@ class CommunicationModelGenerator {
 			if(type instanceof FCompoundType) {
 				var sourcepath = dataTypePath + getPackageSourceDirectory(type) + File::separator
 				var headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
-				var sourcepathQt = sourcepath
-				var headerpathQt = headerpath
 
 				if (type.isPartOfTypeCollection) {
 					headerpath += type.typeCollectionName + File::separator
 					sourcepath += type.typeCollectionName + File::separator
-					headerpathQt += type.typeCollectionName + "_"
-					sourcepathQt += type.typeCollectionName + "_"
 				}
-
-				generateFile(
-					headerFileSystem,
-					headerpathQt + qtTypeUtil.getGenerationTypeName(type) + ".h",
-					typeH,
-					type
-				)
-
-				generateFile(
-					sourceFileSystem,
-					sourcepathQt + qtTypeUtil.getGenerationTypeName(type) + ".cpp",
-					typeCpp,
-					type
-				)
 
 				generateFile(
 					headerFileSystem,
@@ -169,18 +135,15 @@ class CommunicationModelGenerator {
 		for (type : getEnumDataTypes(fModel)) {
 			var sourcepath = dataTypePath + getPackageSourceDirectory(type) + File::separator
 			var headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
-			var headerpathQt = headerpath
 			if (type.isPartOfTypeCollection) {
 				headerpath += type.typeCollectionName + File::separator
 				sourcepath += type.typeCollectionName + File::separator
-				headerpathQt += type.typeCollectionName + "_"
 			}
 
 			generateEnum(
 				headerFileSystem,
 				sourceFileSystem,
 				type as FEnumerationType,
-				headerpathQt + qtTypeUtil.getGenerationTypeName(type),
 				headerpath + stdTypeUtil.getGenerationTypeName(type),
 				sourcepath + stdTypeUtil.getGenerationTypeName(type)
 			);
@@ -232,13 +195,11 @@ class CommunicationModelGenerator {
 				val headerFilename = path + File::separator + stdTypeUtil.getGenerationTypeName(enumType)
 				val sourceFilepath = dataTypePath + getPackageSourceDirectory(fInterface) + File::separator + fInterface.joynrName;
 				val sourceFilename = sourceFilepath + File::separator + stdTypeUtil.getGenerationTypeName(enumType)
-				val headerFilenameQt = path + File::separator + qtTypeUtil.getGenerationTypeName(enumType)
 
 				generateEnum(
 					headerFileSystem,
 					sourceFileSystem,
 					enumType,
-					headerFilenameQt,
 					headerFilename,
 					sourceFilename
 				)
@@ -250,17 +211,9 @@ class CommunicationModelGenerator {
 		IFileSystemAccess headerFileSystem,
 		IFileSystemAccess sourceFileSystem,
 		FEnumerationType enumType,
-		String headerFilenameQt,
 		String headerFilename,
 		String sourceFilename
 	) {
-		generateFile(
-			headerFileSystem,
-			headerFilenameQt + ".h",
-			enumh,
-			enumType
-		)
-
 		generateFile(
 			headerFileSystem,
 			headerFilename + ".h",
