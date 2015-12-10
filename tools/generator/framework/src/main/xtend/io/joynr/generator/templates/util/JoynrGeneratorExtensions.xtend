@@ -131,8 +131,8 @@ abstract class JoynrGeneratorExtensions {
 		return referencedFTypes
 	}
 
-	def getComplexDataTypes(FModel fModel) {
-		getDataTypes(fModel).filter(type | type.isComplex).map(type | type.complexType).filterNull
+	def getCompoundDataTypes(FModel fModel) {
+		getDataTypes(fModel).filter(type | type.isComplex).map(type | type.compoundType).filterNull
 	}
 
 	def getPrimitiveDataTypes() {

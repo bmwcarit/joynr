@@ -115,7 +115,7 @@ class JoynrJavaGenerator implements IJoynrGenerator {
 		for (r : rs.resources){
 			for (c : r.contents){
 				if (c instanceof FModel){
-					result.addAll(getComplexDataTypes(c))
+					result.addAll(getCompoundDataTypes(c))
 				}
 			}
 		}

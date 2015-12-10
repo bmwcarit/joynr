@@ -225,27 +225,27 @@ class TypeUtil {
 		}
 	}
 
-	def FCompoundType getComplexType(FType type){
+	def FCompoundType getCompoundType(FType type){
 		if (type == null){
 			return null;
 		}
 		if (type instanceof FArrayType){
-			return getComplexType(type.elementType)
+			return getCompoundType(type.elementType)
 		}
 		else if (type instanceof FCompoundType){
 			return type;
 		}
 		else if (type instanceof FTypeDef){
-			return getComplexType(type.actualType)
+			return getCompoundType(type.actualType)
 		}
 	}
 
-	def FCompoundType getComplexType(FTypeRef type){
+	def FCompoundType getCompoundType(FTypeRef type){
 		if (type==null){
 			return null;
 		}
 		else{
-			return getComplexType(type.derived)
+			return getCompoundType(type.derived)
 		}
 	}
 

@@ -93,7 +93,7 @@ class JSTypeUtil extends AbstractTypeUtil {
 			return getTypeName(getPrimitive(datatype))
 		}
 		if (isComplex(datatype)){
-			return getComplexType(datatype).joynrName
+			return getCompoundType(datatype).joynrName
 		}
 		if (isMap(datatype)){
 			return getMapType(datatype).joynrName
@@ -159,7 +159,7 @@ class JSTypeUtil extends AbstractTypeUtil {
 			return getTypeName(getPrimitive(datatype))
 		}
 		if (isComplex(datatype)){
-			return getComplexType(datatype).joynrName
+			return getCompoundType(datatype).joynrName
 		}
 		if (isMap(datatype)){
 			return getMapType(datatype).joynrName
@@ -257,7 +257,7 @@ class JSTypeUtil extends AbstractTypeUtil {
 	//		} else
 			if (isComplex(element.type)) {
 				buffer.append("new ")
-				buffer.append(getComplexType(element.type).joynrName)
+				buffer.append(getCompoundType(element.type).joynrName)
 				buffer.append("()");
 			} else if (element.type.isMap) {
 				buffer.append("new ")

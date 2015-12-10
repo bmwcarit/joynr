@@ -47,7 +47,7 @@ class CommunicationModelGenerator {
 	ComplexTypeTemplate complexTypeTemplate
 
 	def doGenerate(FModel fModel, IFileSystemAccess fsa){
-		for( type: getComplexDataTypes(fModel)){
+		for( type: getCompoundDataTypes(fModel)){
 			var path = getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
 			if (type.isPartOfTypeCollection) {
 				path += type.typeCollectionName + File::separator

@@ -90,7 +90,7 @@ class CommunicationModelGenerator {
 			else
 				headerContainerPath
 
-		for( type: getComplexDataTypes(fModel)){
+		for( type: getCompoundDataTypes(fModel)){
 			var sourcepath = dataTypePath + getPackageSourceDirectory(type) + File::separator
 			var headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
 			if (type.isPartOfTypeCollection) {

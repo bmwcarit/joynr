@@ -45,7 +45,7 @@ public class TypeUtilTest {
         field.setType(typeRef);
         structType.getElements().add(field);
         TypeUtil typeUtil = Guice.createInjector().getInstance(TypeUtil.class);
-        FCompoundType result = typeUtil.getComplexType(structType);
+        FCompoundType result = typeUtil.getCompoundType(structType);
         assertEquals(structType, result);
     }
 

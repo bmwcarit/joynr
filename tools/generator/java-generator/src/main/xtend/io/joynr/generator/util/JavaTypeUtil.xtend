@@ -222,7 +222,7 @@ class JavaTypeUtil extends AbstractTypeUtil {
 			return "new " + element.type.joynrName + "()";
 		}
 		if (isComplex(element.type)) {
-			return "new " + element.type.complexType.joynrName + "(" + constructorParams + ")";
+			return "new " + element.type.compoundType.joynrName + "(" + constructorParams + ")";
 		} else if (isEnum(element.type)) {
 			return  element.type.enumType.joynrName + "." + element.type.enumType.enumerators.get(0).joynrName;
 		} else if (!primitiveDataTypeDefaultMap.containsKey(element.type.predefined)) {
