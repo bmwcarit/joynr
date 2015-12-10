@@ -39,6 +39,7 @@ public:
     virtual ~IField() = default;
 
     virtual const std::string& name() const = 0;
+    virtual const IValue& key() const = 0;
     virtual IValue& value() = 0;
 };
 

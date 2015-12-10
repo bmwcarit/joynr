@@ -99,9 +99,15 @@ public:
      */
     IValue& value();
 
+    /**
+     * @brief value get keyValue
+     * @return
+     */
+    const IValue& key() const;
+
 private:
     JsonTokenizer& tokenizer;
-    std::string fieldName;
+    std::unique_ptr<IValue> tokenKey;
     std::unique_ptr<IValue> tokenValue;
 };
 

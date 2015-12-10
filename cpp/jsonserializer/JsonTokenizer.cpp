@@ -276,16 +276,22 @@ Variant JsonValue::getVariant() const
 
 JsonField::JsonField(JsonTokenizer &tokenizer) :
     tokenizer(tokenizer),
-    fieldName(tokenizer.currentToken().asString()),
+    tokenKey(),
     tokenValue()
 {
+    tokenKey = makeUnique<JsonValue>(this->tokenizer);
     this->tokenizer.nextToken();
     tokenValue = makeUnique<JsonValue>(this->tokenizer);
 }
 
 const std::string &JsonField::name() const
 {
-    return fieldName;
+    return key();
+}
+
+const IValue &JsonField::key() const
+{
+    return *tokenKey;
 }
 
 IValue &JsonField::value()
