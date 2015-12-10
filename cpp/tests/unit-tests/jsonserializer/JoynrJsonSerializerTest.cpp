@@ -40,6 +40,10 @@
 
 #include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
 #include "joynr/types/TestTypes/TEverythingStruct.h"
+#include "joynr/types/TestTypes/TEverythingMap.h"
+#include "joynr/types/TestTypes/TStringKeyMap.h"
+#include "joynr/types/TestTypes/TIntegerKeyMap.h"
+#include "joynr/types/TestTypes/TDoubleKeyMap.h"
 #include "joynr/JsonSerializer.h"
 #include "joynr/tests/test/MethodWithErrorEnumExtendedErrorEnum.h"
 #include "joynr/tests/test/MethodWithErrorEnumExtendedErrorEnumSerializer.h"
@@ -692,6 +696,68 @@ TEST_F(JoynrJsonSerializerTest, serializeDeserializeMasterAccessControlEntry)
     EXPECT_EQ(expectedMac, mac);
 }
 
+template <typename T>
+void serializeDeserializeMap(T expectedMap, joynr::joynr_logging::Logger* logger) {
+    // Serialize
+    std::stringstream stream;
+    auto serializer = ClassSerializer<T>{};
+    serializer.serialize(expectedMap, stream);
+    std::string json{ stream.str() };
+
+    // TODO: replace with logging
+    LOG_DEBUG(logger,FormatString("ExpectedMap Json: %1").arg(json).str());
+    JsonTokenizer tokenizer(json);
+
+    T actualMap;
+    // Deserialize
+    ClassDeserializer<T>::deserialize(actualMap, tokenizer.nextObject());
+
+    // Check that the object serialized/deserialized correctly
+    EXPECT_EQ(expectedMap, actualMap);
+}
+
+TEST_F(JoynrJsonSerializerTest, serializeDeserializeTDoubleKeyMap)
+{
+    using namespace joynr::types::TestTypes;
+    TDoubleKeyMap expectedMap;
+    expectedMap.insert({1.1, "StringValue1"});
+    expectedMap.insert({2.2, "StringValue2"});
+
+    serializeDeserializeMap<TDoubleKeyMap>(expectedMap, logger);
+}
+
+TEST_F(JoynrJsonSerializerTest, serializeDeserializeTIntegerKeyMap)
+{
+    using namespace joynr::types::TestTypes;
+    TIntegerKeyMap expectedMap;
+    expectedMap.insert({1, "StringValue1"});
+    expectedMap.insert({2, "StringValue2"});
+
+    serializeDeserializeMap<TIntegerKeyMap>(expectedMap, logger);
+}
+
+TEST_F(JoynrJsonSerializerTest, serializeDeserializeTEverythingMap)
+{
+    using namespace joynr::types::TestTypes;
+
+    TEverythingMap expectedMap;
+    expectedMap.insert({TEnum::TLITERALA, TEverythingExtendedStruct()});
+    expectedMap.insert({TEnum::TLITERALB, TEverythingExtendedStruct()});
+
+    serializeDeserializeMap<TEverythingMap>(expectedMap, logger);
+}
+
+TEST_F(JoynrJsonSerializerTest, serializeDeserializeTStringKeyMap)
+{
+    using namespace joynr::types::TestTypes;
+
+    TStringKeyMap expectedMap;
+    expectedMap.insert({"StringKey1", "StringValue1"});
+    expectedMap.insert({"StringKey2", "StringValue2"});
+
+    serializeDeserializeMap<TStringKeyMap>(expectedMap, logger);
+}
+
 // test with TEverythingStruct
 TEST_F(JoynrJsonSerializerTest, serializeDeserializeTEverythingStruct)
 {
@@ -726,6 +792,7 @@ TEST_F(JoynrJsonSerializerTest, serializeDeserializeTEverythingStruct)
                     wordEmpty
                 });
     TStringKeyMap stringMap;
+    stringMap.insert({"StringKey", "StringValue"});
     TEverythingStruct expectedEverythingStruct{
         1,
         2,
