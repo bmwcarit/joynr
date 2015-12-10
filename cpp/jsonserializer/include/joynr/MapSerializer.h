@@ -35,29 +35,53 @@ public:
     /**
      * @brief Serialize map to stream
      */
-    template <typename T>
-    static void serialize(const std::map<std::string, T>& map, std::ostream& stream);
+    template <typename T, typename S>
+    static void serialize(const std::string& typeName, const std::map<T, S>& map, std::ostream& stream);
+
+    template <typename T, typename S>
+    static void serialize(const std::map<T, S>& map, std::ostream& stream);
+private:
+    template <typename T, typename S>
+    static void serializeEntries(const std::map<T, S>& map, std::ostream& stream, bool needsComma);
 };
 
-template <typename T>
-void MapSerializer::serialize(const std::map<std::string, T>& map,
-                                std::ostream& stream)
-{
-    stream << "{";
-    bool needsComma = false;
 
+template <typename T, typename S>
+void MapSerializer::serializeEntries(const std::map<T, S>& map,
+                                     std::ostream& stream,
+                                     bool needsInitialComma)
+{
     for (const auto& entry : map) {
-        if (needsComma) {
+        if (needsInitialComma) {
             stream << ",";
         } else {
-            needsComma = true;
+            needsInitialComma = true;
         }
-        ClassSerializer<std::string> stringSerializer;
+        ClassSerializer<T> stringSerializer;
         stringSerializer.serialize(entry.first, stream);
         stream << R"(: )";
-        ClassSerializer<T> serializer;
+        ClassSerializer<S> serializer;
         serializer.serialize(entry.second, stream);
     }
+}
+
+template <typename T, typename S>
+void MapSerializer::serialize(const std::string& typeName,
+                              const std::map<T, S>& map,
+                              std::ostream& stream)
+{
+    stream << "{";
+    stream << "\"_typeName\": \"" << typeName << "\"";
+    serializeEntries(map, stream, true);
+    stream << "}";
+}
+
+template <typename T, typename S>
+void MapSerializer::serialize(const std::map<T, S>& map,
+                              std::ostream& stream)
+{
+    stream << "{";
+    serializeEntries(map, stream, false);
     stream << "}";
 }
 

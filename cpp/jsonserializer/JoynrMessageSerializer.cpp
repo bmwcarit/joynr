@@ -63,7 +63,7 @@ void ClassSerializer<JoynrMessage>::serialize(const JoynrMessage& msg, std::ostr
     stream << R"({)";
     stream << R"("_typeName": ")" << JoynrTypeId<JoynrMessage>::getTypeName() << R"(",)";
     stream << R"("header": )";
-    MapSerializer::serialize<std::string>(msg.getHeader(), stream);
+    MapSerializer::serialize<std::string, std::string>(msg.getHeader(), stream);
     stream << R"(,"payload": )";
     ClassSerializer<std::string> stringSerializer{};
     stringSerializer.serialize(msg.getPayload(), stream);
