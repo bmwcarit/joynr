@@ -48,7 +48,7 @@ public class BroadcastUtil {
 	def getAllRequiredTypes(FBroadcast broadcast) {
 		var typeList = new HashSet<Object>();
 		for (outParameter : broadcast.outputParameters.filterNull) {
-			typeList.add(getDatatype(outParameter.type));
+			typeList.add(getRequiredTypes(outParameter.type));
 		}
 		return typeList
 	}

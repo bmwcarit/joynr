@@ -27,6 +27,7 @@ import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FCompoundType
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FMethod
+import org.franca.core.franca.FMapType
 
 @Singleton
 public class InterfaceUtil {
@@ -176,7 +177,7 @@ public class InterfaceUtil {
 					|| (writeAttributes && attribute.writable)
 					|| (notifyAttributes && attribute.notifiable)
 			) {
-				typeList.add(getDatatype(attribute.type));
+				typeList.addAll(getRequiredTypes(attribute.type));
 			}
 		}
 
@@ -240,6 +241,9 @@ public class InterfaceUtil {
 				cache.add(element)
 				if (element instanceof FCompoundType){
 					getAllReferredDatatypes(element.members.map[e | e.type.datatype], cache)
+				}
+				if (element instanceof FMapType){
+					getAllReferredDatatypes(newArrayList(element.keyType, element.valueType), cache)
 				}
 			}
 		}

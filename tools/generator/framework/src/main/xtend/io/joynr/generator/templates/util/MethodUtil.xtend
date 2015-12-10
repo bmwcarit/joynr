@@ -58,10 +58,10 @@ public class MethodUtil {
 		var Object datatype = null
 		var typeList = new HashSet<Object>();
 		for(returnParameter : getOutputParameters(method).filterNull){
-			typeList.add(getDatatype(returnParameter.type));
+			typeList.addAll(getRequiredTypes(returnParameter.type));
 		}
 		for (inputParameter : getInputParameters(method).filterNull) {
-			typeList.add(getDatatype(inputParameter.type));
+			typeList.addAll(getRequiredTypes(inputParameter.type));
 		}
 		if (errorTypes) {
 			if (method.errors !== null) {
