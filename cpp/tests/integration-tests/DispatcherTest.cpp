@@ -37,7 +37,7 @@
 
 #include "joynr/tests/Itest.h"
 #include "joynr/tests/testRequestInterpreter.h"
-#include "joynr/types/Localisation_QtGpsLocation.h"
+#include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/MetaTypeRegistrar.h"
 #include "joynr/ThreadUtil.h"
 
@@ -183,7 +183,7 @@ TEST_F(DispatcherTest, receive_interpreteReplyAndCallReplyCaller) {
     // so this has to match with the type being passed to the dispatcher in the reply
     ON_CALL(*mockReplyCaller, getType()).WillByDefault(Return(QString("types::Localisation::GpsLocation")));
 
-    //construct a reply containing a QtGpsLocation
+    //construct a reply containing a GpsLocation
     Reply reply;
     reply.setRequestReplyId(requestReplyId);
     std::vector<Variant> response;

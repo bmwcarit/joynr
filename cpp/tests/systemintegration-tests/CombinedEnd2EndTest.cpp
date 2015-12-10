@@ -31,10 +31,10 @@
 #include "joynr/JoynrRuntime.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/tests/testProxy.h"
-#include "joynr/tests/testTypes_QtDerivedStruct.h"
-#include "joynr/tests/testTypes_QtAnotherDerivedStruct.h"
-#include "joynr/types/Localisation_QtTrip.h"
-#include "joynr/types/Localisation_QtGpsLocation.h"
+#include "joynr/tests/testTypes/DerivedStruct.h"
+#include "joynr/tests/testTypes/AnotherDerivedStruct.h"
+#include "joynr/types/Localisation/Trip.h"
+#include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/types/ProviderQos.h"
 #include "joynr/types/CapabilityInformation.h"
 #include "joynr/CapabilitiesRegistrar.h"
@@ -159,7 +159,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
 
      /*
       * Testing TRIP
-      * Now try to send a QtTrip (which contains a list) and check if the returned trip is identical.
+      * Now try to send a Trip (which contains a list) and check if the returned trip is identical.
       */
 
         std::vector<types::Localisation::GpsLocation> inputLocationList;
@@ -199,13 +199,13 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
      * Now try to send a List of Vowels and see if it is returned correctly.
      */
 // does not compile, see 654
-//       std::vector<QtVowel> inputWord;
+//       std::vector<Vowel> inputWord;
 //       inputWord.push_back("h");
 //       inputWord.push_back("e");
 //       inputWord.push_back("l");
 //       inputWord.push_back("l");
 //       inputWord.push_back("o");
-//       std::shared_ptr<Future<std::vector<QtVowel> > > wordFuture (new std::shared_ptr<Future<std::vector<QtVowel> > >());
+//       std::shared_ptr<Future<std::vector<Vowel> > > wordFuture (new std::shared_ptr<Future<std::vector<Vowel> > >());
 //       testProxy->optimizeWord(wordFuture, inputTrip);
 //       wordFuture->wait();
 //       ASSERT_EQ(RequestStatusCode::OK, wordFuture->getStatus().getCode());
@@ -406,10 +406,10 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         std::string anotherDerivedStructResult;
 
         // Check that the operation overloading worked and the result is of the correct type
-        testProxy->overloadedOperation(derivedStructResult, tests::QtDerivedStruct());
-        testProxy->overloadedOperation(anotherDerivedStructResult, tests::QtAnotherDerivedStruct());
-        EXPECT_EQ(derivedStructResult, "QtDerivedStruct");
-        EXPECT_EQ(anotherDerivedStructResult, "QtAnotherDerivedStruct");
+        testProxy->overloadedOperation(derivedStructResult, tests::DerivedStruct());
+        testProxy->overloadedOperation(anotherDerivedStructResult, tests::AnotherDerivedStruct());
+        EXPECT_EQ(derivedStructResult, "DerivedStruct");
+        EXPECT_EQ(anotherDerivedStructResult, "AnotherDerivedStruct");
     }
 #endif
 
@@ -771,7 +771,7 @@ void subscribeToLocation(std::shared_ptr<ISubscriptionListener<types::Localisati
     testSuite->registeredSubscriptionId = testProxy->subscribeToLocation(listener, subscriptionQos);
 }
 
-// A function that subscribes to a QtGpsPosition - to be run in a background thread
+// A function that subscribes to a GpsPosition - to be run in a background thread
 static void unsubscribeFromLocation(tests::testProxy* testProxy,
                             std::string subscriptionId) {
     testProxy->unsubscribeFromLocation(subscriptionId);

@@ -25,9 +25,7 @@
 
 #include "websocket/WebSocketMessagingStub.h"
 #include "joynr/system/RoutingTypes/Address.h"
-#include "joynr/system/RoutingTypes_QtWebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
-#include "joynr/system/RoutingTypes_QtWebSocketClientAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 #include "joynr/TypeUtil.h"
 

@@ -126,7 +126,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
     ));
 
     BroadcastSubscriptionRequest subscriptionRequest;
-    //construct a reply containing a QtGpsLocation
+    //construct a reply containing a GpsLocation
     SubscriptionPublication subscriptionPublication;
     subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     std::vector<Variant> response;

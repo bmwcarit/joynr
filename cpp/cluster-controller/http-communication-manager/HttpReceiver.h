@@ -40,11 +40,6 @@ namespace joynr
 class LongPollingMessageReceiver;
 class MessageRouter;
 
-namespace system
-{
-class QtAddress;
-}
-
 /**
   * @class HttpReceiver
   * @brief Implements HTTP communication to the bounce proxy (backend)

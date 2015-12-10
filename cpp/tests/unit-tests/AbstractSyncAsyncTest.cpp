@@ -21,7 +21,7 @@
 #include <gmock/gmock.h>
 #include <QVariant>
 #include <string>
-#include "joynr/types/Localisation_QtGpsLocation.h"
+#include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/ReplyCaller.h"
 #include "joynr/IReplyCaller.h"
 #include "tests/utils/MockObjects.h"

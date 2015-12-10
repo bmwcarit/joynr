@@ -41,9 +41,9 @@ namespace system
 
 namespace RoutingTypes
 {
-class QtAddress;
-class QtWebSocketAddress;
-class QtWebSocketClientAddress;
+class Address;
+class WebSocketAddress;
+class WebSocketClientAddress;
 }
 }
 

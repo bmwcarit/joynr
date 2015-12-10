@@ -49,14 +49,7 @@ namespace joynr {
 //    void PrintTo(const joynr::JoynrMessage& value, ::std::ostream* os);
 //    class MessagingQos;
 //    void PrintTo(const joynr::MessagingQos& value, ::std::ostream* os);
-namespace types {
-    class QtTStruct;
-    void PrintTo(const joynr::types::QtTStruct& value, ::std::ostream* os);
-    class QtGpsLocation;
-    void PrintTo(const joynr::types::QtGpsLocation& value, ::std::ostream* os);
-    class QtTrip;
-    void PrintTo(const joynr::types::QtTrip& value, ::std::ostream* os);
-}
+
 namespace system {
     class DiscoveryEntry;
     void PrintTo(const joynr::types::DiscoveryEntry& value, ::std::ostream* os);

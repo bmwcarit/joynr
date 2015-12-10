@@ -33,10 +33,6 @@
 namespace joynr
 {
 
-namespace system
-{
-class QtAddress;
-}
 class InProcessDispatcher;
 
 class JOYNR_EXPORT ConnectorFactory

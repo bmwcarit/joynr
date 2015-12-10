@@ -21,7 +21,7 @@
 #include <QtWebSockets/QWebSocket>
 
 #include "joynr/JsonSerializer.h"
-#include "joynr/system/RoutingTypes_QtWebSocketClientAddress.h"
+#include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 
 namespace joynr
 {

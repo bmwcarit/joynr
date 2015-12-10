@@ -912,7 +912,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequestWithLists) {
     ASSERT_TRUE(returnvl.size() == 3) << "list size size != 3";
     LOG_DEBUG(logger, FormatString("%1").arg(returnvl.at(0).getTypeName()).str());
 
-    ASSERT_TRUE(returnvl.at(0).is<types::Localisation::GpsLocation>()) << "Cannot convert the first entry of the return List to QtGpsLocation";
+    ASSERT_TRUE(returnvl.at(0).is<types::Localisation::GpsLocation>()) << "Cannot convert the first entry of the return List to GpsLocation";
 
     std::vector<types::Localisation::GpsLocation> resultLocationList = Util::convertVariantVectorToVector<types::Localisation::GpsLocation>(returnvl);
     EXPECT_EQ(resultLocationList.at(1), types::Localisation::GpsLocation(4.4, 5.5, 6.6, types::Localisation::GpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0, 317));
@@ -1158,7 +1158,7 @@ TEST_F(JsonSerializerTest, serialize_OnchangeWithKeepAliveSubscription) {
     joynr::OnChangeWithKeepAliveSubscriptionQos* desQos = JsonSerializer::deserialize<joynr::OnChangeWithKeepAliveSubscriptionQos>(jsonQos);
 
     jsonQos = JsonSerializer::serialize<joynr::OnChangeWithKeepAliveSubscriptionQos>(*desQos);
-    LOG_DEBUG(logger,FormatString("serialized QtOnChangeWithKeepAliveSubscriptionQos%1").arg(jsonQos).str());
+    LOG_DEBUG(logger,FormatString("serialized OnChangeWithKeepAliveSubscriptionQos%1").arg(jsonQos).str());
 
 
     EXPECT_EQ(qos, *desQos);

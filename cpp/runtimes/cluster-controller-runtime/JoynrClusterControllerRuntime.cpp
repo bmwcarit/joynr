@@ -37,7 +37,7 @@
 #include "joynr/JoynrMessageSender.h"
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
 #include "joynr/LocalChannelUrlDirectory.h"
-#include "joynr/system/RoutingTypes_QtChannelAddress.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include "cluster-controller/messaging/joynr-messaging/JoynrMessagingStubFactory.h"
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
@@ -48,7 +48,7 @@
 #include "joynr/Settings.h"
 #include "joynr/LibjoynrSettings.h"
 
-#include "joynr/system/RoutingTypes_QtWebSocketAddress.h"
+#include "joynr/system/RoutingTypes/WebSocketAddress.h"
 
 #include "joynr/system/DiscoveryRequestCaller.h"
 #include "joynr/system/DiscoveryInProcessConnector.h"
@@ -152,11 +152,11 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     // setup CC WebSocket interface
     WebSocketMessagingStubFactory* wsMessagingStubFactory = new WebSocketMessagingStubFactory();
     messagingStubFactory->registerStubFactory(wsMessagingStubFactory);
-    system::RoutingTypes::QtWebSocketAddress qtWsAddress =
-            system::RoutingTypes::QtWebSocketAddress::createQt(
-                    wsSettings.createClusterControllerMessagingAddress());
+    system::RoutingTypes::WebSocketAddress WsAddress =
+            wsSettings.createClusterControllerMessagingAddress();
+
     wsCcMessagingSkeleton =
-            new WebSocketCcMessagingSkeleton(*messageRouter, *wsMessagingStubFactory, qtWsAddress);
+            new WebSocketCcMessagingSkeleton(*messageRouter, *wsMessagingStubFactory, WsAddress);
 
     /* LibJoynr */
     assert(messageRouter);

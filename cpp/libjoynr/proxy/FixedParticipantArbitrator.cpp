@@ -20,7 +20,7 @@
 #include "joynr/ArbitrationStatus.h"
 #include "joynr/system/IDiscovery.h"
 #include "joynr/types/DiscoveryEntry.h"
-#include "joynr/system/RoutingTypes_QtChannelAddress.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/DiscoveryQos.h"
 

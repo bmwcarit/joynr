@@ -233,7 +233,7 @@ TEST_F(SubscriptionTest, receive_enumPublication ) {
 
     // getType is used by the ReplyInterpreterFactory to create an interpreter for the reply
     // so this has to match with the type being passed to the dispatcher in the reply
-    ON_CALL(*mockReplyCaller, getType()).WillByDefault(Return(QString("QtTestEnum")));
+    ON_CALL(*mockReplyCaller, getType()).WillByDefault(Return(QString("TestEnum")));
 
     // Use a semaphore to count and wait on calls to the mockTestEnumSubscriptionListener
     joynr::Semaphore semaphore(0);

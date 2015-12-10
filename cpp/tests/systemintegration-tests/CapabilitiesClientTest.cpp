@@ -111,7 +111,7 @@ TEST_F(CapabilitiesClientTest, registerAndRetrieveCapability) {
     capabilitiesClient->add(capabilitiesInformationList);
     LOG_DEBUG(logger,"Registered capabilities");
     //sync methods are not yet implemented
-//    std::vector<types::QtCapabilityInformation> capResultList = capabilitiesClient->lookup(capDomain, capInterface);
+//    std::vector<types::CapabilityInformation> capResultList = capabilitiesClient->lookup(capDomain, capInterface);
 //    EXPECT_EQ(capResultList, capabilitiesInformationList);
     std::shared_ptr<GlobalCapabilitiesMock> callback(new GlobalCapabilitiesMock());
 

@@ -90,7 +90,5 @@ void PrintTo(const QUrl& value, std::ostream* os)
 // void initPretty(void) {
 // EXPECT_TRUE(false) << ::testing::PrintToString(QString("hello"));
 // EXPECT_TRUE(false) << ::testing::PrintToString(JoynrMessage());
-// EXPECT_TRUE(false) << ::testing::PrintToString(types::QtGpsLocation(1.1, 2.2, 3.3, types::QtGpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444));
-//// EXPECT_TRUE(false) << ::testing::PrintToString(QtTrip("tripName", QtGpsLocation(QtGpsFixEnum::MODE2D,1,2,3,0, 0, 0, 0, 0, 4), QList<types::QtGpsLocation>()));
 // }
 

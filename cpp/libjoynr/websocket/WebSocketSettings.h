@@ -20,7 +20,7 @@
 #define WEBSOCKETSETTINGS_H
 
 #include "joynr/joynrlogging.h"
-#include "joynr/system/RoutingTypes_QtWebSocketAddress.h"
+#include "joynr/system/RoutingTypes/WebSocketAddress.h"
 
 #include <string>
 

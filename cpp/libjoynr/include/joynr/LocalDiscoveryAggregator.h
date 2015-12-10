@@ -36,7 +36,6 @@ class SystemServicesSettings;
 
 namespace system
 {
-class QtDiscoveryEntry;
 class DiscoveryQos;
 class DiscoveryProxy;
 }

@@ -19,7 +19,6 @@
 #include <gtest/gtest.h>
 #include <string>
 
-#include "joynr/types/TestTypes_QtTStructExtended.h"
 #include "joynr/types/TestTypes/TStructExtended.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include <unordered_map>
@@ -43,13 +42,6 @@ protected:
 
 joynr::joynr_logging::Logger* ComplexDataTypeTest::logger(
         joynr::joynr_logging::Logging::getInstance()->getLogger("TST", "ComplexDataTypeTest"));
-
-TEST_F(ComplexDataTypeTest, createCStdomplexDataType)
-{
-    joynr::types::TestTypes::QtTStructExtended fixture;
-    joynr::types::TestTypes::TStructExtended result = joynr::types::TestTypes::QtTStructExtended::createStd(fixture);
-    EXPECT_EQ(fixture.getTDouble(), result.getTDouble());
-}
 
 TEST_F(ComplexDataTypeTest, hashCodeFunction)
 {

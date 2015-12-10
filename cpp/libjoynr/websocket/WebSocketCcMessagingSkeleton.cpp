@@ -22,7 +22,7 @@
 #include <QtWebSockets/QWebSocket>
 
 #include "joynr/JsonSerializer.h"
-#include "joynr/system/RoutingTypes_QtWebSocketClientAddress.h"
+#include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 
 namespace joynr
 {
@@ -33,18 +33,14 @@ joynr_logging::Logger* WebSocketCcMessagingSkeleton::logger =
 WebSocketCcMessagingSkeleton::WebSocketCcMessagingSkeleton(
         MessageRouter& messageRouter,
         WebSocketMessagingStubFactory& messagingStubFactory,
-        const system::RoutingTypes::QtWebSocketAddress& serverAddress)
+        const system::RoutingTypes::WebSocketAddress& serverAddress)
         : webSocketServer(nullptr),
           clients(),
           messageRouter(messageRouter),
           messagingStubFactory(messagingStubFactory)
 {
-    // must register metatype in order to deserialize initialization message from client
-    qRegisterMetaType<joynr::system::RoutingTypes::QtWebSocketClientAddress>(
-            "joynr::system::RoutingTypes::QtWebSocketClientAddress");
-
     QWebSocketServer::SslMode sslMode(QWebSocketServer::NonSecureMode);
-    if (serverAddress.getProtocol() == joynr::system::RoutingTypes::QtWebSocketProtocol::WSS) {
+    if (serverAddress.getProtocol() == joynr::system::RoutingTypes::WebSocketProtocol::WSS) {
         sslMode = QWebSocketServer::SecureMode;
     }
 

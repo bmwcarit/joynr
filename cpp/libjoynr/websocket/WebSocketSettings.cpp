@@ -32,10 +32,6 @@ Logger* WebSocketSettings::logger = Logging::getInstance()->getLogger("MSG", "We
 
 WebSocketSettings::WebSocketSettings(Settings& settings) : settings(settings)
 {
-    qRegisterMetaType<joynr::system::RoutingTypes::QtWebSocketAddress>(
-            "joynr::system::RoutingTypes::QtWebSocketAddress");
-    qRegisterMetaType<joynr::system::RoutingTypes::QtWebSocketProtocol>();
-    qRegisterMetaType<joynr::system::RoutingTypes::QtWebSocketProtocol::Enum>();
     Settings defaultWebSocketSettings(DEFAULT_WEBSOCKET_SETTINGS_FILENAME());
     Settings::merge(defaultWebSocketSettings, this->settings, false);
     checkSettings();
