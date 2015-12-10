@@ -102,46 +102,46 @@ void «interfaceName»RequestInterpreter::execute(
 		«ENDIF»
 		«IF attribute.writable»
 			if (methodName == "set«attributeName.toFirstUpper»" && paramTypes.size() == 1){
-				Variant «attributeName»Var(paramValues.at(0));
 				try {
-				«IF isEnum(attribute.type) && isArray(attribute)»
-					«val attributeRef = joynrGenerationPrefix + "::Util::convertVariantVectorToEnumVector<" + getTypeNameOfContainingClass(attribute.type.derived) + ">(" + attributeName + "Var.get<std::vector<Variant>>())"»
-					assert(«attributeName»Var.is<std::vector<Variant>>());
-					«getTypeName(attribute)» typedInput«attributeName.toFirstUpper» =
-						«attributeRef»;
-				«ELSEIF isEnum(attribute.type)»
-					«getTypeName(attribute)» typedInput«attributeName.toFirstUpper» =
-						«joynrGenerationPrefix»::Util::convertVariantToEnum<«getTypeNameOfContainingClass(attribute.type.derived)»>(«attributeName»Var);
-				«ELSEIF isArray(attribute)»
-					«val attributeRef = joynrGenerationPrefix + "::Util::convertVariantVectorToVector<" + getTypeName(attribute.type) + ">(paramList)"»
-					if (!«attributeName»Var.is<std::vector<Variant>>()) {
-						onError(exceptions::MethodInvocationException("Illegal argument for attribute setter set«attributeName.toFirstUpper» («getJoynrTypeName(attribute)»)"));
-						return;
-					}
-					std::vector<Variant> paramList = «attributeName»Var.get<std::vector<Variant>>();
-					«getTypeName(attribute)» typedInput«attributeName.toFirstUpper» = 
+					Variant «attributeName»Var(paramValues.at(0));
+					«IF isEnum(attribute.type) && isArray(attribute)»
+						«val attributeRef = joynrGenerationPrefix + "::Util::convertVariantVectorToEnumVector<" + getTypeNameOfContainingClass(attribute.type.derived) + ">(" + attributeName + "Var.get<std::vector<Variant>>())"»
+						assert(«attributeName»Var.is<std::vector<Variant>>());
+						«getTypeName(attribute)» typedInput«attributeName.toFirstUpper» =
 							«attributeRef»;
-				«ELSE»
-					«val attributeRef = attributeName + "Var.get<" + getTypeName(attribute) + ">()"»
-					«IF getTypeName(attribute).startsWith("int")»
-						if (!(«attributeName»Var.is<uint64_t>() || «attributeName»Var.is<int64_t>())) {
-					«ELSEIF getTypeName(attribute).startsWith("uint")»
-						if (!«attributeName»Var.is<uint64_t>()) {
+					«ELSEIF isEnum(attribute.type)»
+						«getTypeName(attribute)» typedInput«attributeName.toFirstUpper» =
+							«joynrGenerationPrefix»::Util::convertVariantToEnum<«getTypeNameOfContainingClass(attribute.type.derived)»>(«attributeName»Var);
+					«ELSEIF isArray(attribute)»
+						«val attributeRef = joynrGenerationPrefix + "::Util::convertVariantVectorToVector<" + getTypeName(attribute.type) + ">(paramList)"»
+						if (!«attributeName»Var.is<std::vector<Variant>>()) {
+							onError(exceptions::MethodInvocationException("Illegal argument for attribute setter set«attributeName.toFirstUpper» («getJoynrTypeName(attribute)»)"));
+							return;
+						}
+						std::vector<Variant> paramList = «attributeName»Var.get<std::vector<Variant>>();
+						«getTypeName(attribute)» typedInput«attributeName.toFirstUpper» = 
+								«attributeRef»;
 					«ELSE»
-						if (!«attributeName»Var.is<«getTypeName(attribute)»>()) {
+						«val attributeRef = attributeName + "Var.get<" + getTypeName(attribute) + ">()"»
+						«IF getTypeName(attribute).startsWith("int")»
+							if (!(«attributeName»Var.is<uint64_t>() || «attributeName»Var.is<int64_t>())) {
+						«ELSEIF getTypeName(attribute).startsWith("uint")»
+							if (!«attributeName»Var.is<uint64_t>()) {
+						«ELSE»
+							if (!«attributeName»Var.is<«getTypeName(attribute)»>()) {
+						«ENDIF»
+							onError(exceptions::MethodInvocationException("Illegal argument for attribute setter set«attributeName.toFirstUpper» («getJoynrTypeName(attribute)»)"));
+							return;
+						}
+						«getTypeName(attribute)» typedInput«attributeName.toFirstUpper» =
+								«attributeRef»;
 					«ENDIF»
-						onError(exceptions::MethodInvocationException("Illegal argument for attribute setter set«attributeName.toFirstUpper» («getJoynrTypeName(attribute)»)"));
-						return;
-					}
-					«getTypeName(attribute)» typedInput«attributeName.toFirstUpper» =
-							«attributeRef»;
-				«ENDIF»
-				std::function<void()> requestCallerOnSuccess =
-						[onSuccess] () {
-							std::vector<Variant> outParams;
-							onSuccess(std::move(outParams));
-						};
-				«requestCallerName»->set«attributeName.toFirstUpper»(typedInput«attributeName.toFirstUpper», requestCallerOnSuccess, onError);
+					std::function<void()> requestCallerOnSuccess =
+							[onSuccess] () {
+								std::vector<Variant> outParams;
+								onSuccess(std::move(outParams));
+							};
+					«requestCallerName»->set«attributeName.toFirstUpper»(typedInput«attributeName.toFirstUpper», requestCallerOnSuccess, onError);
 			    } catch (std::invalid_argument exception) {
 					onError(exceptions::MethodInvocationException("Illegal argument for attribute setter set«attributeName.toFirstUpper» («getJoynrTypeName(attribute)»)"));
 			    }
@@ -180,43 +180,43 @@ void «interfaceName»RequestInterpreter::execute(
 
 				«var iterator2 = -1»
 				try {
-				«FOR input : inputParams»
-					«val inputName = input.joynrName»
-					Variant «inputName»Var(paramValues.at(«iterator2=iterator2+1»));
-					«IF isEnum(input.type) && isArray(input)»
-						//isEnumArray
-						«getTypeName(input)» «inputName» =
-							«joynrGenerationPrefix»::Util::convertVariantVectorToEnumVector<«getTypeNameOfContainingClass(input.type.derived)»> («inputName»Var.get<std::vector<Variant>>());
-					«ELSEIF isEnum(input.type)»
-						//isEnum
-						«getTypeName(input)» «inputName» = «joynrGenerationPrefix»::Util::convertVariantToEnum<«buildPackagePath(input.type.derived, "::", true) + input.type.joynrName»>(«inputName»Var);
-					«ELSEIF isArray(input)»
-						//isArray
-						if (!«inputName»Var.is<std::vector<Variant>>()) {
-							onError(exceptions::MethodInvocationException("Illegal argument for method «methodName»: «inputName» («getJoynrTypeName(input)»)"));
-							return;
-						}
-						std::vector<Variant> «inputName»VarList = «inputName»Var.get<std::vector<Variant>>();
-						std::vector<«getTypeName(input.type)»> «inputName» = «joynrGenerationPrefix»::Util::convertVariantVectorToVector<«getTypeName(input.type)»>(«inputName»VarList);
-					«ELSE»
-						//«getTypeName(input)»
-						«IF getTypeName(input).startsWith("int")»
-							if (!(«inputName»Var.is<uint64_t>() || «inputName»Var.is<int64_t>())) {
-						«ELSEIF getTypeName(input).startsWith("uint")»
-							if (!«inputName»Var.is<uint64_t>()) {
+					«FOR input : inputParams»
+						«val inputName = input.joynrName»
+						Variant «inputName»Var(paramValues.at(«iterator2=iterator2+1»));
+						«IF isEnum(input.type) && isArray(input)»
+							//isEnumArray
+							«getTypeName(input)» «inputName» =
+								«joynrGenerationPrefix»::Util::convertVariantVectorToEnumVector<«getTypeNameOfContainingClass(input.type.derived)»> («inputName»Var.get<std::vector<Variant>>());
+						«ELSEIF isEnum(input.type)»
+							//isEnum
+							«getTypeName(input)» «inputName» = «joynrGenerationPrefix»::Util::convertVariantToEnum<«buildPackagePath(input.type.derived, "::", true) + input.type.joynrName»>(«inputName»Var);
+						«ELSEIF isArray(input)»
+							//isArray
+							if (!«inputName»Var.is<std::vector<Variant>>()) {
+								onError(exceptions::MethodInvocationException("Illegal argument for method «methodName»: «inputName» («getJoynrTypeName(input)»)"));
+								return;
+							}
+							std::vector<Variant> «inputName»VarList = «inputName»Var.get<std::vector<Variant>>();
+							std::vector<«getTypeName(input.type)»> «inputName» = «joynrGenerationPrefix»::Util::convertVariantVectorToVector<«getTypeName(input.type)»>(«inputName»VarList);
 						«ELSE»
-							if (!«inputName»Var.is<«getTypeName(input)»>()) {
+							//«getTypeName(input)»
+							«IF getTypeName(input).startsWith("int")»
+								if (!(«inputName»Var.is<uint64_t>() || «inputName»Var.is<int64_t>())) {
+							«ELSEIF getTypeName(input).startsWith("uint")»
+								if (!«inputName»Var.is<uint64_t>()) {
+							«ELSE»
+								if (!«inputName»Var.is<«getTypeName(input)»>()) {
+							«ENDIF»
+								onError(exceptions::MethodInvocationException("Illegal argument for method «methodName»: «inputName» («getJoynrTypeName(input)»)"));
+								return;
+							}
+							«getTypeName(input)» «inputName» = «inputName»Var.get<«getTypeName(input)»>();
 						«ENDIF»
-							onError(exceptions::MethodInvocationException("Illegal argument for method «methodName»: «inputName» («getJoynrTypeName(input)»)"));
-							return;
-						}
-						«getTypeName(input)» «inputName» = «inputName»Var.get<«getTypeName(input)»>();
-					«ENDIF»
-				«ENDFOR»
-				«requestCallerName»->«methodName»(
-						«IF !method.inputParameters.empty»«inputUntypedParamList»,«ENDIF»
-						requestCallerOnSuccess,
-						onError);
+					«ENDFOR»
+					«requestCallerName»->«methodName»(
+							«IF !method.inputParameters.empty»«inputUntypedParamList»,«ENDIF»
+							requestCallerOnSuccess,
+							onError);
 				} catch (std::invalid_argument exception) {
 					onError(exceptions::MethodInvocationException(exception.what()));
 				}
