@@ -161,8 +161,8 @@ TEST_F(LocalDomainAccessControllerTest, testHasRole) {
     QString defaultString;
     DefaultValue<QString>::Set(defaultString);
 
-    EXPECT_TRUE(localDomainAccessController->hasRole(QString::fromStdString(LocalDomainAccessControllerTest::TEST_USER),
-                                                     QString::fromStdString(LocalDomainAccessControllerTest::TEST_DOMAIN1),
+    EXPECT_TRUE(localDomainAccessController->hasRole(LocalDomainAccessControllerTest::TEST_USER,
+                                                     LocalDomainAccessControllerTest::TEST_DOMAIN1,
                                                      Role::OWNER));
 }
 

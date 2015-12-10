@@ -32,13 +32,12 @@
 #include "AccessControlAlgorithm.h"
 #include "joynr/PrivateCopyAssign.h"
 
-#include <QString>
 #include <string>
 #include <memory>
 #include <vector>
 #include <stdint.h>
-#include <QSharedPointer>
 #include <mutex>
+#include <unordered_map>
 
 namespace joynr
 {
@@ -96,8 +95,8 @@ public:
      * @param role The domain that is being accessed
      * @return Returns true, if user uid has role role for domain domain.
      */
-    virtual bool hasRole(const QString& userId,
-                         const QString& domain,
+    virtual bool hasRole(const std::string& userId,
+                         const std::string& domain,
                          infrastructure::DacTypes::Role::Enum role);
 
     /**
@@ -439,7 +438,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(LocalDomainAccessController);
 
     AccessControlAlgorithm accessControlAlgorithm;
-    QHash<QString, QString> dreSubscriptions;
+    std::unordered_map<std::string, std::string> dreSubscriptions;
 
     struct AceSubscription
     {
@@ -453,7 +452,7 @@ private:
         }
     };
 
-    QHash<QString, AceSubscription> aceSubscriptions;
+    std::unordered_map<std::string, AceSubscription> aceSubscriptions;
 
     std::shared_ptr<infrastructure::GlobalDomainAccessControllerProxy>
             globalDomainAccessControllerProxy;
@@ -471,9 +470,9 @@ private:
     void initialised(const std::string& domain, const std::string& interfaceName);
     void abortInitialisation(const std::string& domain, const std::string& interfaceName);
 
-    QString subscribeForDreChange(const QString& userId);
-    AceSubscription subscribeForAceChange(const QString& domain, const QString& interfaceName);
-    QString createCompoundKey(const QString& domain, const QString& interfaceName);
+    std::string subscribeForDreChange(const std::string& userId);
+    AceSubscription subscribeForAceChange(const std::string& domain,
+                                          const std::string& interfaceName);
     std::string createCompoundKey(const std::string& domain, const std::string& interfaceName);
 
     template <typename T>
@@ -489,7 +488,8 @@ private:
         std::shared_ptr<IGetConsumerPermissionCallback> callbacks;
     };
 
-    QHash<QString, std::vector<ConsumerPermissionRequest>> consumerPermissionRequests;
+    std::unordered_map<std::string, std::vector<ConsumerPermissionRequest>>
+            consumerPermissionRequests;
 
     bool queueConsumerRequest(const std::string& key, const ConsumerPermissionRequest& request);
     void processConsumerRequests(const std::vector<ConsumerPermissionRequest>& requests);

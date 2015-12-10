@@ -29,7 +29,7 @@
 #include "joynr/TypeUtil.h"
 #include <cassert>
 #include <QVector>
-
+#include "joynr/FormatString.h"
 namespace joynr
 {
 using namespace infrastructure::DacTypes;
@@ -42,59 +42,68 @@ Logger* LocalDomainAccessStore::logger =
 
 //--- SQL statements -------------------------------------------------------------
 
-const QString LocalDomainAccessStore::SELECT_DRE =
-        QString("SELECT domain from DomainRole WHERE uid = %1 AND role = %2").arg(BIND_UID).arg(
-                BIND_ROLE);
-
-const QString LocalDomainAccessStore::UPDATE_DRE =
-        QString("INSERT OR REPLACE INTO DomainRole(uid, role, domain) VALUES(%1, %2, %3)")
+const std::string LocalDomainAccessStore::SELECT_DRE =
+        FormatString("SELECT domain from DomainRole WHERE uid = %1 AND role = %2")
                 .arg(BIND_UID)
                 .arg(BIND_ROLE)
-                .arg(BIND_DOMAIN);
+                .str();
 
-const QString LocalDomainAccessStore::DELETE_DRE =
-        QString("DELETE FROM DomainRole WHERE uid = %1 AND role = %2").arg(BIND_UID).arg(BIND_ROLE);
-
-const QString LocalDomainAccessStore::GET_UID_MASTER_ACES =
-        QString("SELECT * FROM MasterACL WHERE uid IN (%1 , '*')").arg(BIND_UID);
-
-const QString LocalDomainAccessStore::GET_DOMAIN_INTERFACE_MASTER_ACES =
-        QString("SELECT * FROM MasterACL "
-                "WHERE domain = %1 AND interfaceName = %2")
-                .arg(BIND_DOMAIN)
-                .arg(BIND_INTERFACE);
-
-const QString LocalDomainAccessStore::GET_UID_DOMAIN_INTERFACE_MASTER_ACES =
-        QString("SELECT * FROM MasterACL "
-                "WHERE uid IN (%1 , '*') AND domain = %2 AND interfaceName = %3")
+const std::string LocalDomainAccessStore::UPDATE_DRE =
+        FormatString("INSERT OR REPLACE INTO DomainRole(uid, role, domain) VALUES(%1, %2, %3)")
                 .arg(BIND_UID)
+                .arg(BIND_ROLE)
                 .arg(BIND_DOMAIN)
-                .arg(BIND_INTERFACE);
+                .str();
 
-const QString LocalDomainAccessStore::GET_MASTER_ACE =
-        QString("SELECT * FROM MasterACL "
-                "WHERE uid IN (%1 , '*') AND domain = %2 AND interfaceName = %3"
-                " AND operation IN (%4 , '*') "
-                "ORDER BY CASE uid"
-                " WHEN '*' THEN 2"
-                " ELSE 1 "
-                "END, "
-                "CASE operation"
-                " WHEN '*' THEN 2"
-                " ELSE 1 "
-                "END")
+const std::string LocalDomainAccessStore::DELETE_DRE =
+        FormatString("DELETE FROM DomainRole WHERE uid = %1 AND role = %2")
+                .arg(BIND_UID)
+                .arg(BIND_ROLE)
+                .str();
+
+const std::string LocalDomainAccessStore::GET_UID_MASTER_ACES =
+        FormatString("SELECT * FROM MasterACL WHERE uid IN (%1 , '*')").arg(BIND_UID).str();
+
+const std::string LocalDomainAccessStore::GET_DOMAIN_INTERFACE_MASTER_ACES =
+        FormatString("SELECT * FROM MasterACL "
+                     "WHERE domain = %1 AND interfaceName = %2")
+                .arg(BIND_DOMAIN)
+                .arg(BIND_INTERFACE)
+                .str();
+
+const std::string LocalDomainAccessStore::GET_UID_DOMAIN_INTERFACE_MASTER_ACES =
+        FormatString("SELECT * FROM MasterACL "
+                     "WHERE uid IN (%1 , '*') AND domain = %2 AND interfaceName = %3")
                 .arg(BIND_UID)
                 .arg(BIND_DOMAIN)
                 .arg(BIND_INTERFACE)
-                .arg(BIND_OPERATION);
+                .str();
 
-const QString LocalDomainAccessStore::UPDATE_MASTER_ACE =
-        QString("INSERT OR REPLACE INTO MasterACL "
-                "(uid, domain, interfaceName, operation,"
-                " defaultRequiredTrustLevel, defaultRequiredControlEntryTrustLevel,"
-                " defaultConsumerPermission, possibleConsumerPermissions,"
-                " possibleTrustLevels, possibleChangeTrustLevels) "
-                "VALUES(%1, %2, %3, %4, %5, %6, %7, %8, %9, %10)")
+const std::string LocalDomainAccessStore::GET_MASTER_ACE =
+        FormatString("SELECT * FROM MasterACL "
+                     "WHERE uid IN (%1 , '*') AND domain = %2 AND interfaceName = %3"
+                     " AND operation IN (%4 , '*') "
+                     "ORDER BY CASE uid"
+                     " WHEN '*' THEN 2"
+                     " ELSE 1 "
+                     "END, "
+                     "CASE operation"
+                     " WHEN '*' THEN 2"
+                     " ELSE 1 "
+                     "END")
+                .arg(BIND_UID)
+                .arg(BIND_DOMAIN)
+                .arg(BIND_INTERFACE)
+                .arg(BIND_OPERATION)
+                .str();
+
+const std::string LocalDomainAccessStore::UPDATE_MASTER_ACE =
+        FormatString("INSERT OR REPLACE INTO MasterACL "
+                     "(uid, domain, interfaceName, operation,"
+                     " defaultRequiredTrustLevel, defaultRequiredControlEntryTrustLevel,"
+                     " defaultConsumerPermission, possibleConsumerPermissions,"
+                     " possibleTrustLevels, possibleChangeTrustLevels) "
+                     "VALUES(%1, %2, %3, %4, %5, %6, %7, %8, %9, %10)")
                 .arg(BIND_UID)
                 .arg(BIND_DOMAIN)
                 .arg(BIND_INTERFACE)
@@ -104,65 +113,73 @@ const QString LocalDomainAccessStore::UPDATE_MASTER_ACE =
                 .arg(BIND_DEFAULT_CONSUMERPERMISSION)
                 .arg(BIND_POSSIBLE_CONSUMERPERMISSIONS)
                 .arg(BIND_POSSIBLE_TRUSTLEVELS)
-                .arg(BIND_POSSIBLE_CHANGETRUSTLEVELS);
+                .arg(BIND_POSSIBLE_CHANGETRUSTLEVELS)
+                .str();
 
-const QString LocalDomainAccessStore::DELETE_MASTER_ACE =
-        QString("DELETE FROM MasterACL "
-                "WHERE uid = %1 AND domain = %2 AND interfaceName = %3"
-                " AND operation = %4")
+const std::string LocalDomainAccessStore::DELETE_MASTER_ACE =
+        FormatString("DELETE FROM MasterACL "
+                     "WHERE uid = %1 AND domain = %2 AND interfaceName = %3"
+                     " AND operation = %4")
                 .arg(BIND_UID)
                 .arg(BIND_DOMAIN)
                 .arg(BIND_INTERFACE)
-                .arg(BIND_OPERATION);
+                .arg(BIND_OPERATION)
+                .str();
 
-const QString LocalDomainAccessStore::GET_EDITABLE_MASTER_ACES =
-        QString("SELECT acl.* FROM DomainRole as role, MasterACL as acl "
-                "WHERE role.uid = %1 AND role.role = %2"
-                " AND role.domain = acl.domain")
+const std::string LocalDomainAccessStore::GET_EDITABLE_MASTER_ACES =
+        FormatString("SELECT acl.* FROM DomainRole as role, MasterACL as acl "
+                     "WHERE role.uid = %1 AND role.role = %2"
+                     " AND role.domain = acl.domain")
                 .arg(BIND_UID)
-                .arg(BIND_ROLE);
+                .arg(BIND_ROLE)
+                .str();
 
-const QString LocalDomainAccessStore::GET_UID_MEDIATOR_ACES =
-        QString("SELECT * FROM MediatorACL "
-                "WHERE uid IN (%1 , '*')").arg(BIND_UID);
-
-const QString LocalDomainAccessStore::GET_DOMAIN_INTERFACE_MEDIATOR_ACES =
-        QString("SELECT * FROM MediatorACL "
-                "WHERE domain = %1 AND interfaceName = %2")
-                .arg(BIND_DOMAIN)
-                .arg(BIND_INTERFACE);
-
-const QString LocalDomainAccessStore::GET_UID_DOMAIN_INTERFACE_MEDIATOR_ACES =
-        QString("SELECT * FROM MediatorACL "
-                "WHERE uid IN (%1 , '*') AND domain = %2 AND interfaceName = %3")
+const std::string LocalDomainAccessStore::GET_UID_MEDIATOR_ACES =
+        FormatString("SELECT * FROM MediatorACL "
+                     "WHERE uid IN (%1 , '*')")
                 .arg(BIND_UID)
-                .arg(BIND_DOMAIN)
-                .arg(BIND_INTERFACE);
+                .str();
 
-const QString LocalDomainAccessStore::GET_MEDIATOR_ACE =
-        QString("SELECT * FROM MediatorACL "
-                "WHERE uid IN (%1 , '*') AND domain = %2 AND interfaceName = %3"
-                " AND operation IN (%4 , '*')"
-                "ORDER BY CASE uid"
-                " WHEN '*' THEN 2"
-                " ELSE 1 "
-                "END, "
-                "CASE operation"
-                " WHEN '*' THEN 2"
-                " ELSE 1 "
-                "END")
+const std::string LocalDomainAccessStore::GET_DOMAIN_INTERFACE_MEDIATOR_ACES =
+        FormatString("SELECT * FROM MediatorACL "
+                     "WHERE domain = %1 AND interfaceName = %2")
+                .arg(BIND_DOMAIN)
+                .arg(BIND_INTERFACE)
+                .str();
+
+const std::string LocalDomainAccessStore::GET_UID_DOMAIN_INTERFACE_MEDIATOR_ACES =
+        FormatString("SELECT * FROM MediatorACL "
+                     "WHERE uid IN (%1 , '*') AND domain = %2 AND interfaceName = %3")
                 .arg(BIND_UID)
                 .arg(BIND_DOMAIN)
                 .arg(BIND_INTERFACE)
-                .arg(BIND_OPERATION);
+                .str();
 
-const QString LocalDomainAccessStore::UPDATE_MEDIATOR_ACE =
-        QString("INSERT OR REPLACE INTO MediatorACL "
-                "(uid, domain, interfaceName, operation,"
-                " defaultRequiredTrustLevel, defaultRequiredControlEntryTrustLevel,"
-                " defaultConsumerPermission, possibleConsumerPermissions,"
-                " possibleTrustLevels, possibleChangeTrustLevels) "
-                "VALUES(%1, %2, %3, %4, %5, %6, %7, %8, %9, %10)")
+const std::string LocalDomainAccessStore::GET_MEDIATOR_ACE =
+        FormatString("SELECT * FROM MediatorACL "
+                     "WHERE uid IN (%1 , '*') AND domain = %2 AND interfaceName = %3"
+                     " AND operation IN (%4 , '*')"
+                     "ORDER BY CASE uid"
+                     " WHEN '*' THEN 2"
+                     " ELSE 1 "
+                     "END, "
+                     "CASE operation"
+                     " WHEN '*' THEN 2"
+                     " ELSE 1 "
+                     "END")
+                .arg(BIND_UID)
+                .arg(BIND_DOMAIN)
+                .arg(BIND_INTERFACE)
+                .arg(BIND_OPERATION)
+                .str();
+
+const std::string LocalDomainAccessStore::UPDATE_MEDIATOR_ACE =
+        FormatString("INSERT OR REPLACE INTO MediatorACL "
+                     "(uid, domain, interfaceName, operation,"
+                     " defaultRequiredTrustLevel, defaultRequiredControlEntryTrustLevel,"
+                     " defaultConsumerPermission, possibleConsumerPermissions,"
+                     " possibleTrustLevels, possibleChangeTrustLevels) "
+                     "VALUES(%1, %2, %3, %4, %5, %6, %7, %8, %9, %10)")
                 .arg(BIND_UID)
                 .arg(BIND_DOMAIN)
                 .arg(BIND_INTERFACE)
@@ -172,86 +189,97 @@ const QString LocalDomainAccessStore::UPDATE_MEDIATOR_ACE =
                 .arg(BIND_DEFAULT_CONSUMERPERMISSION)
                 .arg(BIND_POSSIBLE_CONSUMERPERMISSIONS)
                 .arg(BIND_POSSIBLE_TRUSTLEVELS)
-                .arg(BIND_POSSIBLE_CHANGETRUSTLEVELS);
+                .arg(BIND_POSSIBLE_CHANGETRUSTLEVELS)
+                .str();
 
-const QString LocalDomainAccessStore::DELETE_MEDIATOR_ACE =
-        QString("DELETE FROM MediatorACL "
-                "WHERE uid = %1 AND domain = %2 AND interfaceName = %3"
-                " AND operation = %4")
+const std::string LocalDomainAccessStore::DELETE_MEDIATOR_ACE =
+        FormatString("DELETE FROM MediatorACL "
+                     "WHERE uid = %1 AND domain = %2 AND interfaceName = %3"
+                     " AND operation = %4")
                 .arg(BIND_UID)
                 .arg(BIND_DOMAIN)
                 .arg(BIND_INTERFACE)
-                .arg(BIND_OPERATION);
+                .arg(BIND_OPERATION)
+                .str();
 
-const QString LocalDomainAccessStore::GET_EDITABLE_MEDIATOR_ACES =
-        QString("SELECT acl.* FROM DomainRole as role, MediatorACL as acl "
-                "WHERE role.uid = %1 AND role.role = %2"
-                " AND role.domain = acl.domain")
+const std::string LocalDomainAccessStore::GET_EDITABLE_MEDIATOR_ACES =
+        FormatString("SELECT acl.* FROM DomainRole as role, MediatorACL as acl "
+                     "WHERE role.uid = %1 AND role.role = %2"
+                     " AND role.domain = acl.domain")
                 .arg(BIND_UID)
-                .arg(BIND_ROLE);
+                .arg(BIND_ROLE)
+                .str();
 
-const QString LocalDomainAccessStore::GET_UID_OWNER_ACES =
-        QString("SELECT * from OwnerACL "
-                "WHERE uid IN (%1, '*')").arg(BIND_UID);
-
-const QString LocalDomainAccessStore::GET_DOMAIN_INTERFACE_OWNER_ACES =
-        QString("SELECT * from OwnerACL "
-                "WHERE domain = %1 AND interfaceName = %2")
-                .arg(BIND_DOMAIN)
-                .arg(BIND_INTERFACE);
-
-const QString LocalDomainAccessStore::GET_UID_DOMAIN_INTERFACE_OWNER_ACES =
-        QString("SELECT * from OwnerACL "
-                "WHERE uid IN (%1 , '*') AND domain = %2 AND interfaceName = %3")
+const std::string LocalDomainAccessStore::GET_UID_OWNER_ACES =
+        FormatString("SELECT * from OwnerACL "
+                     "WHERE uid IN (%1, '*')")
                 .arg(BIND_UID)
-                .arg(BIND_DOMAIN)
-                .arg(BIND_INTERFACE);
+                .str();
 
-const QString LocalDomainAccessStore::GET_OWNER_ACE =
-        QString("SELECT * from OwnerACL "
-                "WHERE uid IN (%1 , '*') AND domain = %2 AND interfaceName = %3"
-                " AND operation IN (%4 , '*')"
-                "ORDER BY CASE uid"
-                " WHEN '*' THEN 2"
-                " ELSE 1 "
-                "END, "
-                "CASE operation"
-                " WHEN '*' THEN 2"
-                " ELSE 1 "
-                "END")
+const std::string LocalDomainAccessStore::GET_DOMAIN_INTERFACE_OWNER_ACES =
+        FormatString("SELECT * from OwnerACL "
+                     "WHERE domain = %1 AND interfaceName = %2")
+                .arg(BIND_DOMAIN)
+                .arg(BIND_INTERFACE)
+                .str();
+
+const std::string LocalDomainAccessStore::GET_UID_DOMAIN_INTERFACE_OWNER_ACES =
+        FormatString("SELECT * from OwnerACL "
+                     "WHERE uid IN (%1 , '*') AND domain = %2 AND interfaceName = %3")
                 .arg(BIND_UID)
                 .arg(BIND_DOMAIN)
                 .arg(BIND_INTERFACE)
-                .arg(BIND_OPERATION);
+                .str();
 
-const QString LocalDomainAccessStore::UPDATE_OWNER_ACE =
-        QString("INSERT OR REPLACE INTO OwnerACL "
-                "(uid, domain, interfaceName, operation, requiredTrustLevel,"
-                " requiredAceChangeTrustLevel, consumerPermission) "
-                "VALUES(%1, %2, %3, %4, %5, %6, %7)")
+const std::string LocalDomainAccessStore::GET_OWNER_ACE =
+        FormatString("SELECT * from OwnerACL "
+                     "WHERE uid IN (%1 , '*') AND domain = %2 AND interfaceName = %3"
+                     " AND operation IN (%4 , '*')"
+                     "ORDER BY CASE uid"
+                     " WHEN '*' THEN 2"
+                     " ELSE 1 "
+                     "END, "
+                     "CASE operation"
+                     " WHEN '*' THEN 2"
+                     " ELSE 1 "
+                     "END")
+                .arg(BIND_UID)
+                .arg(BIND_DOMAIN)
+                .arg(BIND_INTERFACE)
+                .arg(BIND_OPERATION)
+                .str();
+
+const std::string LocalDomainAccessStore::UPDATE_OWNER_ACE =
+        FormatString("INSERT OR REPLACE INTO OwnerACL "
+                     "(uid, domain, interfaceName, operation, requiredTrustLevel,"
+                     " requiredAceChangeTrustLevel, consumerPermission) "
+                     "VALUES(%1, %2, %3, %4, %5, %6, %7)")
                 .arg(BIND_UID)
                 .arg(BIND_DOMAIN)
                 .arg(BIND_INTERFACE)
                 .arg(BIND_OPERATION)
                 .arg(BIND_REQUIRED_TRUSTLEVEL)
                 .arg(BIND_REQUIRED_CHANGETRUSTLEVEL)
-                .arg(BIND_CONSUMERPERMISSION);
+                .arg(BIND_CONSUMERPERMISSION)
+                .str();
 
-const QString LocalDomainAccessStore::DELETE_OWNER_ACE =
-        QString("DELETE FROM OwnerACL "
-                "WHERE uid = %1 AND domain = %2 AND interfaceName = %3"
-                " AND operation = %4")
+const std::string LocalDomainAccessStore::DELETE_OWNER_ACE =
+        FormatString("DELETE FROM OwnerACL "
+                     "WHERE uid = %1 AND domain = %2 AND interfaceName = %3"
+                     " AND operation = %4")
                 .arg(BIND_UID)
                 .arg(BIND_DOMAIN)
                 .arg(BIND_INTERFACE)
-                .arg(BIND_OPERATION);
+                .arg(BIND_OPERATION)
+                .str();
 
-const QString LocalDomainAccessStore::GET_EDITABLE_OWNER_ACES =
-        QString("SELECT acl.* FROM DomainRole as role, OwnerACL as acl "
-                "WHERE role.uid = %1 AND role.role = %2"
-                " AND role.domain = acl.domain")
+const std::string LocalDomainAccessStore::GET_EDITABLE_OWNER_ACES =
+        FormatString("SELECT acl.* FROM DomainRole as role, OwnerACL as acl "
+                     "WHERE role.uid = %1 AND role.role = %2"
+                     " AND role.domain = acl.domain")
                 .arg(BIND_UID)
-                .arg(BIND_ROLE);
+                .arg(BIND_ROLE)
+                .str();
 
 //--- Generic serialization functions --------------------------------------------
 
@@ -371,11 +399,11 @@ LocalDomainAccessStore::~LocalDomainAccessStore()
     }
 }
 
-std::vector<DomainRoleEntry> LocalDomainAccessStore::getDomainRoles(const QString& userId)
+std::vector<DomainRoleEntry> LocalDomainAccessStore::getDomainRoles(const std::string& userId)
 {
     LOG_DEBUG(logger,
               FormatString("execute: entering getDomainRoleEntries with userId %1")
-                      .arg(userId.toStdString())
+                      .arg(userId)
                       .str());
 
     std::vector<DomainRoleEntry> domainRoles;
@@ -394,14 +422,14 @@ std::vector<DomainRoleEntry> LocalDomainAccessStore::getDomainRoles(const QStrin
     return domainRoles;
 }
 
-Optional<DomainRoleEntry> joynr::LocalDomainAccessStore::getDomainRole(const QString& uid,
+Optional<DomainRoleEntry> joynr::LocalDomainAccessStore::getDomainRole(const std::string& uid,
                                                                        Role::Enum role)
 {
     // Execute a query to get the domain role entry
     QSqlQuery query;
-    assert(query.prepare(SELECT_DRE));
-    query.bindValue(BIND_UID, uid);
-    query.bindValue(BIND_ROLE, role);
+    assert(query.prepare(TypeUtil::toQt(SELECT_DRE)));
+    query.bindValue(BIND_UID, TypeUtil::toQt(uid));
+    query.bindValue(BIND_ROLE, TypeUtil::toQt(role));
     assert(query.exec());
 
     int domainField = query.record().indexOf("domain");
@@ -416,7 +444,7 @@ Optional<DomainRoleEntry> joynr::LocalDomainAccessStore::getDomainRole(const QSt
         return Optional<DomainRoleEntry>::createNull();
     }
 
-    return DomainRoleEntry(uid.toStdString(), domains, role);
+    return DomainRoleEntry(uid, domains, role);
 }
 
 bool LocalDomainAccessStore::updateDomainRole(const DomainRoleEntry& updatedEntry)
@@ -426,23 +454,21 @@ bool LocalDomainAccessStore::updateDomainRole(const DomainRoleEntry& updatedEntr
                       .arg(updatedEntry.getUid())
                       .str());
 
-    bool updateSuccess = insertDomainRoleEntry(QString::fromStdString(updatedEntry.getUid()),
-                                               updatedEntry.getRole(),
-                                               updatedEntry.getDomains());
+    bool updateSuccess = insertDomainRoleEntry(
+            updatedEntry.getUid(), updatedEntry.getRole(), updatedEntry.getDomains());
     return updateSuccess;
 }
 
-bool LocalDomainAccessStore::removeDomainRole(const QString& userId, Role::Enum role)
+bool LocalDomainAccessStore::removeDomainRole(const std::string& userId, Role::Enum role)
 {
-    LOG_DEBUG(logger,
-              FormatString("execute: entering removeDomainRoleEntry with uId %1")
-                      .arg(userId.toStdString())
-                      .str());
+    LOG_DEBUG(
+            logger,
+            FormatString("execute: entering removeDomainRoleEntry with uId %1").arg(userId).str());
 
     QSqlQuery query;
     query.setForwardOnly(true);
-    query.prepare(DELETE_DRE);
-    query.bindValue(BIND_UID, userId);
+    query.prepare(TypeUtil::toQt(DELETE_DRE));
+    query.bindValue(BIND_UID, TypeUtil::toQt(userId));
     query.bindValue(BIND_ROLE, role);
 
     bool removeSuccess = query.exec();
@@ -450,7 +476,7 @@ bool LocalDomainAccessStore::removeDomainRole(const QString& userId, Role::Enum 
 }
 
 std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessControlEntries(
-        const QString& uid)
+        const std::string& uid)
 {
     QSqlQuery query = createGetAceQuery(GET_UID_MASTER_ACES, uid);
     assert(query.exec());
@@ -459,11 +485,11 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessCon
 }
 
 std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getEditableMasterAccessControlEntries(
-        const QString& userId)
+        const std::string& userId)
 {
     LOG_DEBUG(logger,
               FormatString("execute: entering getEditableMasterAccessControlEntry with uId %1")
-                      .arg(userId.toStdString())
+                      .arg(userId)
                       .str());
 
     // Get all the Master ACEs for the domains where the user is master
@@ -474,8 +500,8 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getEditableMasterA
 }
 
 std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessControlEntries(
-        const QString& domain,
-        const QString& interfaceName)
+        const std::string& domain,
+        const std::string& interfaceName)
 {
     QSqlQuery query = createGetAceQuery(GET_DOMAIN_INTERFACE_MASTER_ACES, domain, interfaceName);
     assert(query.exec());
@@ -484,9 +510,9 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessCon
 }
 
 std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessControlEntries(
-        const QString& uid,
-        const QString& domain,
-        const QString& interfaceName)
+        const std::string& uid,
+        const std::string& domain,
+        const std::string& interfaceName)
 {
     QSqlQuery query =
             createGetAceQuery(GET_UID_DOMAIN_INTERFACE_MASTER_ACES, uid, domain, interfaceName);
@@ -496,10 +522,10 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessCon
 }
 
 Optional<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessControlEntry(
-        const QString& uid,
-        const QString& domain,
-        const QString& interfaceName,
-        const QString& operation)
+        const std::string& uid,
+        const std::string& domain,
+        const std::string& interfaceName,
+        const std::string& operation)
 {
     QSqlQuery query = createGetAceQuery(GET_MASTER_ACE, uid, domain, interfaceName, operation);
     assert(query.exec());
@@ -521,10 +547,10 @@ bool LocalDomainAccessStore::updateMasterAccessControlEntry(
     return query.exec();
 }
 
-bool LocalDomainAccessStore::removeMasterAccessControlEntry(const QString& userId,
-                                                            const QString& domain,
-                                                            const QString& interfaceName,
-                                                            const QString& operation)
+bool LocalDomainAccessStore::removeMasterAccessControlEntry(const std::string& userId,
+                                                            const std::string& domain,
+                                                            const std::string& interfaceName,
+                                                            const std::string& operation)
 {
     QSqlQuery query =
             createRemoveAceQuery(DELETE_MASTER_ACE, userId, domain, interfaceName, operation);
@@ -532,7 +558,7 @@ bool LocalDomainAccessStore::removeMasterAccessControlEntry(const QString& userI
 }
 
 std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessControlEntries(
-        const QString& uid)
+        const std::string& uid)
 {
     QSqlQuery query = createGetAceQuery(GET_UID_MEDIATOR_ACES, uid);
     assert(query.exec());
@@ -541,11 +567,11 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessC
 }
 
 std::vector<MasterAccessControlEntry> LocalDomainAccessStore::
-        getEditableMediatorAccessControlEntries(const QString& userId)
+        getEditableMediatorAccessControlEntries(const std::string& userId)
 {
     LOG_DEBUG(logger,
               FormatString("execute: entering getEditableMediatorAces with uId %1")
-                      .arg(userId.toStdString())
+                      .arg(userId)
                       .str());
 
     // Get all the Mediator ACEs for the domains where the user is master
@@ -556,8 +582,8 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessStore::
 }
 
 std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessControlEntries(
-        const QString& domain,
-        const QString& interfaceName)
+        const std::string& domain,
+        const std::string& interfaceName)
 {
     QSqlQuery query = createGetAceQuery(GET_DOMAIN_INTERFACE_MEDIATOR_ACES, domain, interfaceName);
     assert(query.exec());
@@ -566,9 +592,9 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessC
 }
 
 std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessControlEntries(
-        const QString& uid,
-        const QString& domain,
-        const QString& interfaceName)
+        const std::string& uid,
+        const std::string& domain,
+        const std::string& interfaceName)
 {
     QSqlQuery query =
             createGetAceQuery(GET_UID_DOMAIN_INTERFACE_MEDIATOR_ACES, uid, domain, interfaceName);
@@ -578,10 +604,10 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessC
 }
 
 Optional<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessControlEntry(
-        const QString& uid,
-        const QString& domain,
-        const QString& interfaceName,
-        const QString& operation)
+        const std::string& uid,
+        const std::string& domain,
+        const std::string& interfaceName,
+        const std::string& operation)
 {
     QSqlQuery query = createGetAceQuery(GET_MEDIATOR_ACE, uid, domain, interfaceName, operation);
     assert(query.exec());
@@ -600,11 +626,11 @@ bool LocalDomainAccessStore::updateMediatorAccessControlEntry(
 
     bool updateSuccess = false;
 
-    Optional<MasterAccessControlEntry> masterAceOptional = getMasterAccessControlEntry(
-            QString::fromStdString(updatedMediatorAce.getUid()),
-            QString::fromStdString(updatedMediatorAce.getDomain()),
-            QString::fromStdString(updatedMediatorAce.getInterfaceName()),
-            QString::fromStdString(updatedMediatorAce.getOperation()));
+    Optional<MasterAccessControlEntry> masterAceOptional =
+            getMasterAccessControlEntry(updatedMediatorAce.getUid(),
+                                        updatedMediatorAce.getDomain(),
+                                        updatedMediatorAce.getInterfaceName(),
+                                        updatedMediatorAce.getOperation());
     AceValidator aceValidator(masterAceOptional,
                               Optional<MasterAccessControlEntry>(updatedMediatorAce),
                               Optional<OwnerAccessControlEntry>::createNull());
@@ -618,18 +644,18 @@ bool LocalDomainAccessStore::updateMediatorAccessControlEntry(
     return updateSuccess;
 }
 
-bool LocalDomainAccessStore::removeMediatorAccessControlEntry(const QString& userId,
-                                                              const QString& domain,
-                                                              const QString& interfaceName,
-                                                              const QString& operation)
+bool LocalDomainAccessStore::removeMediatorAccessControlEntry(const std::string& userId,
+                                                              const std::string& domain,
+                                                              const std::string& interfaceName,
+                                                              const std::string& operation)
 {
     LOG_DEBUG(logger,
               FormatString("execute: entering removeMediatorAce with userId: %1, domain: %2, "
                            "interface: %3, operation: %4")
-                      .arg(userId.toStdString())
-                      .arg(domain.toStdString())
-                      .arg(interfaceName.toStdString())
-                      .arg(operation.toStdString())
+                      .arg(userId)
+                      .arg(domain)
+                      .arg(interfaceName)
+                      .arg(operation)
                       .str());
 
     QSqlQuery query =
@@ -638,7 +664,7 @@ bool LocalDomainAccessStore::removeMediatorAccessControlEntry(const QString& use
 }
 
 std::vector<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessControlEntries(
-        const QString& uid)
+        const std::string& uid)
 {
     QSqlQuery query = createGetAceQuery(GET_UID_OWNER_ACES, uid);
     assert(query.exec());
@@ -647,12 +673,10 @@ std::vector<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessContr
 }
 
 std::vector<OwnerAccessControlEntry> LocalDomainAccessStore::getEditableOwnerAccessControlEntries(
-        const QString& userId)
+        const std::string& userId)
 {
     LOG_DEBUG(logger,
-              FormatString("execute: entering getEditableOwnerAces with uId %1")
-                      .arg(userId.toStdString())
-                      .str());
+              FormatString("execute: entering getEditableOwnerAces with uId %1").arg(userId).str());
 
     // Get all the Owner ACEs for the domains owned by the user
     QSqlQuery query = createGetEditableAceQuery(GET_EDITABLE_OWNER_ACES, userId, Role::OWNER);
@@ -662,8 +686,8 @@ std::vector<OwnerAccessControlEntry> LocalDomainAccessStore::getEditableOwnerAcc
 }
 
 std::vector<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessControlEntries(
-        const QString& domain,
-        const QString& interfaceName)
+        const std::string& domain,
+        const std::string& interfaceName)
 {
     QSqlQuery query = createGetAceQuery(GET_DOMAIN_INTERFACE_OWNER_ACES, domain, interfaceName);
     assert(query.exec());
@@ -672,9 +696,9 @@ std::vector<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessContr
 }
 
 std::vector<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessControlEntries(
-        const QString& userId,
-        const QString& domain,
-        const QString& interfaceName)
+        const std::string& userId,
+        const std::string& domain,
+        const std::string& interfaceName)
 {
     QSqlQuery query =
             createGetAceQuery(GET_UID_DOMAIN_INTERFACE_OWNER_ACES, userId, domain, interfaceName);
@@ -684,10 +708,10 @@ std::vector<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessContr
 }
 
 Optional<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessControlEntry(
-        const QString& userId,
-        const QString& domain,
-        const QString& interfaceName,
-        const QString& operation)
+        const std::string& userId,
+        const std::string& domain,
+        const std::string& interfaceName,
+        const std::string& operation)
 {
     QSqlQuery query = createGetAceQuery(GET_OWNER_ACE, userId, domain, interfaceName, operation);
     assert(query.exec());
@@ -707,27 +731,27 @@ bool LocalDomainAccessStore::updateOwnerAccessControlEntry(
     bool updateSuccess = false;
 
     Optional<MasterAccessControlEntry> masterAceOptional =
-            getMasterAccessControlEntry(QString::fromStdString(updatedOwnerAce.getUid()),
-                                        QString::fromStdString(updatedOwnerAce.getDomain()),
-                                        QString::fromStdString(updatedOwnerAce.getInterfaceName()),
-                                        QString::fromStdString(updatedOwnerAce.getOperation()));
-    Optional<MasterAccessControlEntry> mediatorAceOptional = getMediatorAccessControlEntry(
-            QString::fromStdString(updatedOwnerAce.getUid()),
-            QString::fromStdString(updatedOwnerAce.getDomain()),
-            QString::fromStdString(updatedOwnerAce.getInterfaceName()),
-            QString::fromStdString(updatedOwnerAce.getOperation()));
+            getMasterAccessControlEntry(updatedOwnerAce.getUid(),
+                                        updatedOwnerAce.getDomain(),
+                                        updatedOwnerAce.getInterfaceName(),
+                                        updatedOwnerAce.getOperation());
+    Optional<MasterAccessControlEntry> mediatorAceOptional =
+            getMediatorAccessControlEntry(updatedOwnerAce.getUid(),
+                                          updatedOwnerAce.getDomain(),
+                                          updatedOwnerAce.getInterfaceName(),
+                                          updatedOwnerAce.getOperation());
     AceValidator aceValidator(masterAceOptional,
                               mediatorAceOptional,
                               Optional<OwnerAccessControlEntry>(updatedOwnerAce));
 
     if (aceValidator.isOwnerValid()) {
         QSqlQuery query;
-        query.prepare(UPDATE_OWNER_ACE);
+        query.prepare(TypeUtil::toQt(UPDATE_OWNER_ACE));
 
-        query.bindValue(BIND_UID, QString::fromStdString(updatedOwnerAce.getUid()));
-        query.bindValue(BIND_DOMAIN, QString::fromStdString(updatedOwnerAce.getDomain()));
-        query.bindValue(BIND_INTERFACE, QString::fromStdString(updatedOwnerAce.getInterfaceName()));
-        query.bindValue(BIND_OPERATION, QString::fromStdString(updatedOwnerAce.getOperation()));
+        query.bindValue(BIND_UID, TypeUtil::toQt(updatedOwnerAce.getUid()));
+        query.bindValue(BIND_DOMAIN, TypeUtil::toQt(updatedOwnerAce.getDomain()));
+        query.bindValue(BIND_INTERFACE, TypeUtil::toQt(updatedOwnerAce.getInterfaceName()));
+        query.bindValue(BIND_OPERATION, TypeUtil::toQt(updatedOwnerAce.getOperation()));
 
         query.bindValue(BIND_REQUIRED_TRUSTLEVEL, updatedOwnerAce.getRequiredTrustLevel());
         query.bindValue(
@@ -739,19 +763,19 @@ bool LocalDomainAccessStore::updateOwnerAccessControlEntry(
     return updateSuccess;
 }
 
-bool LocalDomainAccessStore::removeOwnerAccessControlEntry(const QString& userId,
-                                                           const QString& domain,
-                                                           const QString& interfaceName,
-                                                           const QString& operation)
+bool LocalDomainAccessStore::removeOwnerAccessControlEntry(const std::string& userId,
+                                                           const std::string& domain,
+                                                           const std::string& interfaceName,
+                                                           const std::string& operation)
 {
     LOG_DEBUG(
             logger,
             FormatString("execute: entering removeOwnerAce with userId: %1, domain: %2, interface: "
                          "%3, operation: %4")
-                    .arg(userId.toStdString())
-                    .arg(domain.toStdString())
-                    .arg(interfaceName.toStdString())
-                    .arg(operation.toStdString())
+                    .arg(userId)
+                    .arg(domain)
+                    .arg(interfaceName)
+                    .arg(operation)
                     .str());
 
     QSqlQuery query =
@@ -776,7 +800,7 @@ void LocalDomainAccessStore::reset()
     assert(vacuum.exec());
 }
 
-bool LocalDomainAccessStore::insertDomainRoleEntry(const QString& userId,
+bool LocalDomainAccessStore::insertDomainRoleEntry(const std::string& userId,
                                                    Role::Enum role,
                                                    const std::vector<std::string>& domains)
 {
@@ -787,19 +811,19 @@ bool LocalDomainAccessStore::insertDomainRoleEntry(const QString& userId,
 
         // Insert a record for each domain
         QSqlQuery query;
-        QString domain = TypeUtil::toQt(*it);
+        std::string domain = *it;
 
-        query.prepare(UPDATE_DRE);
-        query.bindValue(BIND_UID, userId);
+        query.prepare(TypeUtil::toQt(UPDATE_DRE));
+        query.bindValue(BIND_UID, TypeUtil::toQt(userId));
         query.bindValue(BIND_ROLE, role);
-        query.bindValue(BIND_DOMAIN, domain);
+        query.bindValue(BIND_DOMAIN, TypeUtil::toQt(domain));
 
         if (!query.exec()) {
             LOG_ERROR(logger,
                       FormatString("Could not add domain entry %1 %2 %3")
-                              .arg(userId.toStdString())
+                              .arg(userId)
                               .arg(role)
-                              .arg(domain.toStdString())
+                              .arg(domain)
                               .str());
             return false;
         }
@@ -918,18 +942,18 @@ void LocalDomainAccessStore::setPossibleRequiredControlEntryChangeTrustLevels(
 }
 
 QSqlQuery LocalDomainAccessStore::createUpdateMasterAceQuery(
-        const QString& sqlQuery,
+        const std::string& sqlQuery,
         const MasterAccessControlEntry& updatedMasterAce)
 {
     QSqlQuery query;
     query.setForwardOnly(true);
-    query.prepare(sqlQuery);
+    query.prepare(TypeUtil::toQt(sqlQuery));
 
     // Add scalar fields
-    query.bindValue(BIND_UID, QString::fromStdString(updatedMasterAce.getUid()));
-    query.bindValue(BIND_DOMAIN, QString::fromStdString(updatedMasterAce.getDomain()));
-    query.bindValue(BIND_INTERFACE, QString::fromStdString(updatedMasterAce.getInterfaceName()));
-    query.bindValue(BIND_OPERATION, QString::fromStdString(updatedMasterAce.getOperation()));
+    query.bindValue(BIND_UID, TypeUtil::toQt(updatedMasterAce.getUid()));
+    query.bindValue(BIND_DOMAIN, TypeUtil::toQt(updatedMasterAce.getDomain()));
+    query.bindValue(BIND_INTERFACE, TypeUtil::toQt(updatedMasterAce.getInterfaceName()));
+    query.bindValue(BIND_OPERATION, TypeUtil::toQt(updatedMasterAce.getOperation()));
     query.bindValue(BIND_DEFAULT_TRUSTLEVEL, updatedMasterAce.getDefaultRequiredTrustLevel());
     query.bindValue(BIND_DEFAULT_CHANGETRUSTLEVEL,
                     updatedMasterAce.getDefaultRequiredControlEntryChangeTrustLevel());
@@ -950,87 +974,88 @@ QSqlQuery LocalDomainAccessStore::createUpdateMasterAceQuery(
     return query;
 }
 
-QSqlQuery LocalDomainAccessStore::createRemoveAceQuery(const QString& sqlQuery,
-                                                       const QString& uid,
-                                                       const QString& domain,
-                                                       const QString& interfaceName,
-                                                       const QString& operation)
+QSqlQuery LocalDomainAccessStore::createRemoveAceQuery(const std::string& sqlQuery,
+                                                       const std::string& uid,
+                                                       const std::string& domain,
+                                                       const std::string& interfaceName,
+                                                       const std::string& operation)
 {
     QSqlQuery query;
     query.setForwardOnly(true);
-    query.prepare(sqlQuery);
-    query.bindValue(BIND_UID, uid);
-    query.bindValue(BIND_DOMAIN, domain);
-    query.bindValue(BIND_INTERFACE, interfaceName);
-    query.bindValue(BIND_OPERATION, operation);
+    query.prepare(TypeUtil::toQt(sqlQuery));
+    query.bindValue(BIND_UID, TypeUtil::toQt(uid));
+    query.bindValue(BIND_DOMAIN, TypeUtil::toQt(domain));
+    query.bindValue(BIND_INTERFACE, TypeUtil::toQt(interfaceName));
+    query.bindValue(BIND_OPERATION, TypeUtil::toQt(operation));
 
     return query;
 }
 
-QSqlQuery LocalDomainAccessStore::createGetEditableAceQuery(const QString& sqlQuery,
-                                                            const QString& uid,
+QSqlQuery LocalDomainAccessStore::createGetEditableAceQuery(const std::string& sqlQuery,
+                                                            const std::string& uid,
                                                             Role::Enum role)
 {
     QSqlQuery query;
     query.setForwardOnly(true);
-    query.prepare(sqlQuery);
-    query.bindValue(BIND_UID, uid);
+    query.prepare(TypeUtil::toQt(sqlQuery));
+    query.bindValue(BIND_UID, TypeUtil::toQt(uid));
     query.bindValue(BIND_ROLE, role);
 
     return query;
 }
 
-QSqlQuery LocalDomainAccessStore::createGetAceQuery(const QString& sqlQuery,
-                                                    const QString& uid,
-                                                    const QString& domain,
-                                                    const QString& interfaceName,
-                                                    const QString& operation)
+QSqlQuery LocalDomainAccessStore::createGetAceQuery(const std::string& sqlQuery,
+                                                    const std::string& uid,
+                                                    const std::string& domain,
+                                                    const std::string& interfaceName,
+                                                    const std::string& operation)
 {
     QSqlQuery query;
     query.setForwardOnly(true);
-    query.prepare(sqlQuery);
-    query.bindValue(BIND_UID, uid);
-    query.bindValue(BIND_DOMAIN, domain);
-    query.bindValue(BIND_INTERFACE, interfaceName);
-    query.bindValue(BIND_OPERATION, operation);
+    query.prepare(TypeUtil::toQt(sqlQuery));
+    query.bindValue(BIND_UID, TypeUtil::toQt(uid));
+    query.bindValue(BIND_DOMAIN, TypeUtil::toQt(domain));
+    query.bindValue(BIND_INTERFACE, TypeUtil::toQt(interfaceName));
+    query.bindValue(BIND_OPERATION, TypeUtil::toQt(operation));
 
     return query;
 }
 
-QSqlQuery LocalDomainAccessStore::createGetAceQuery(const QString& sqlQuery, const QString& uid)
+QSqlQuery LocalDomainAccessStore::createGetAceQuery(const std::string& sqlQuery,
+                                                    const std::string& uid)
 {
     QSqlQuery query;
     query.setForwardOnly(true);
-    query.prepare(sqlQuery);
-    query.bindValue(BIND_UID, uid);
+    query.prepare(TypeUtil::toQt(sqlQuery));
+    query.bindValue(BIND_UID, TypeUtil::toQt(uid));
 
     return query;
 }
 
-QSqlQuery LocalDomainAccessStore::createGetAceQuery(const QString& sqlQuery,
-                                                    const QString& domain,
-                                                    const QString& interfaceName)
+QSqlQuery LocalDomainAccessStore::createGetAceQuery(const std::string& sqlQuery,
+                                                    const std::string& domain,
+                                                    const std::string& interfaceName)
 {
     QSqlQuery query;
     query.setForwardOnly(true);
-    query.prepare(sqlQuery);
-    query.bindValue(BIND_DOMAIN, domain);
-    query.bindValue(BIND_INTERFACE, interfaceName);
+    query.prepare(TypeUtil::toQt(sqlQuery));
+    query.bindValue(BIND_DOMAIN, TypeUtil::toQt(domain));
+    query.bindValue(BIND_INTERFACE, TypeUtil::toQt(interfaceName));
 
     return query;
 }
 
-QSqlQuery LocalDomainAccessStore::createGetAceQuery(const QString& sqlQuery,
-                                                    const QString& uid,
-                                                    const QString& domain,
-                                                    const QString& interfaceName)
+QSqlQuery LocalDomainAccessStore::createGetAceQuery(const std::string& sqlQuery,
+                                                    const std::string& uid,
+                                                    const std::string& domain,
+                                                    const std::string& interfaceName)
 {
     QSqlQuery query;
     query.setForwardOnly(true);
-    query.prepare(sqlQuery);
-    query.bindValue(BIND_UID, uid);
-    query.bindValue(BIND_DOMAIN, domain);
-    query.bindValue(BIND_INTERFACE, interfaceName);
+    query.prepare(TypeUtil::toQt(sqlQuery));
+    query.bindValue(BIND_UID, TypeUtil::toQt(uid));
+    query.bindValue(BIND_DOMAIN, TypeUtil::toQt(domain));
+    query.bindValue(BIND_INTERFACE, TypeUtil::toQt(interfaceName));
 
     return query;
 }

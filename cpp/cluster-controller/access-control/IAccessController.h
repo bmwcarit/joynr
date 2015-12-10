@@ -23,8 +23,7 @@
 #include "joynr/infrastructure/DacTypes/TrustLevel.h"
 
 #include <memory>
-
-class QString;
+#include <string>
 
 namespace joynr
 {
@@ -80,10 +79,10 @@ public:
      * @param interfaceName The interface provider wants to register
      * @return true if the message has permission, false otherwise
      */
-    virtual bool hasProviderPermission(const QString& userId,
+    virtual bool hasProviderPermission(const std::string& userId,
                                        infrastructure::DacTypes::TrustLevel::Enum trustLevel,
-                                       const QString& domain,
-                                       const QString& interfaceName) = 0;
+                                       const std::string& domain,
+                                       const std::string& interfaceName) = 0;
     /**
      * @brief addParticipantToWhitelist Adds a participant to the internal
      * whitelist. Access control to participants on the whitelist is always
@@ -91,7 +90,7 @@ public:
      *
      * @param participantId the participant ID to add to the whitelist.
      */
-    virtual void addParticipantToWhitelist(const QString& participantId) = 0;
+    virtual void addParticipantToWhitelist(const std::string& participantId) = 0;
 };
 
 } // namespace joynr

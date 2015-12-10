@@ -59,8 +59,8 @@ public:
     LdacConsumerPermissionCallback(
             AccessController& owningAccessController,
             const JoynrMessage& message,
-            const QString& domain,
-            const QString& interfaceName,
+            const std::string& domain,
+            const std::string& interfaceName,
             TrustLevel::Enum trustlevel,
             std::shared_ptr<IAccessController::IHasConsumerPermissionCallback> callback);
 
@@ -71,8 +71,8 @@ public:
 private:
     AccessController& owningAccessController;
     JoynrMessage message;
-    QString domain;
-    QString interfaceName;
+    std::string domain;
+    std::string interfaceName;
     TrustLevel::Enum trustlevel;
     std::shared_ptr<IAccessController::IHasConsumerPermissionCallback> callback;
 
@@ -82,8 +82,8 @@ private:
 AccessController::LdacConsumerPermissionCallback::LdacConsumerPermissionCallback(
         AccessController& parent,
         const JoynrMessage& message,
-        const QString& domain,
-        const QString& interfaceName,
+        const std::string& domain,
+        const std::string& interfaceName,
         TrustLevel::Enum trustlevel,
         std::shared_ptr<IAccessController::IHasConsumerPermissionCallback> callback)
         : owningAccessController(parent),
@@ -104,8 +104,8 @@ void AccessController::LdacConsumerPermissionCallback::consumerPermission(
         LOG_ERROR(logger,
                   FormatString("Message %1 to domain %2, interface %3 failed ACL check")
                           .arg(message.getHeaderMessageId())
-                          .arg(domain.toStdString())
-                          .arg(interfaceName.toStdString())
+                          .arg(domain)
+                          .arg(interfaceName)
                           .str());
     }
     callback->hasConsumerPermission(hasPermission);
@@ -149,11 +149,7 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
     // Get the permission for given operation
     Permission::Enum permission =
             owningAccessController.localDomainAccessController.getConsumerPermission(
-                    message.getHeaderCreatorUserId(),
-                    domain.toStdString(),
-                    interfaceName.toStdString(),
-                    operation,
-                    trustlevel);
+                    message.getHeaderCreatorUserId(), domain, interfaceName, operation, trustlevel);
 
     bool hasPermission = convertToBool(permission);
 
@@ -162,8 +158,8 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
                 logger,
                 FormatString("Message %1 to domain %2, interface/operation %3/%4 failed ACL check")
                         .arg(message.getHeaderMessageId())
-                        .arg(domain.toStdString())
-                        .arg(interfaceName.toStdString())
+                        .arg(domain)
+                        .arg(interfaceName)
                         .arg(operation)
                         .str());
     }
@@ -228,9 +224,9 @@ AccessController::~AccessController()
     localCapabilitiesDirectory.removeProviderRegistrationObserver(providerRegistrationObserver);
 }
 
-void AccessController::addParticipantToWhitelist(const QString& participantId)
+void AccessController::addParticipantToWhitelist(const std::string& participantId)
 {
-    whitelistParticipantIds.push_back(participantId.toStdString());
+    whitelistParticipantIds.push_back(participantId);
 }
 
 bool AccessController::needsPermissionCheck(const JoynrMessage& message)
@@ -284,18 +280,14 @@ void AccessController::hasConsumerPermission(
 
         // Create a callback object
         std::shared_ptr<LocalDomainAccessController::IGetConsumerPermissionCallback> ldacCallback(
-                new LdacConsumerPermissionCallback(*this,
-                                                   message,
-                                                   QString::fromStdString(domain),
-                                                   QString::fromStdString(interfaceName),
-                                                   TrustLevel::HIGH,
-                                                   callback));
+                new LdacConsumerPermissionCallback(
+                        *this, message, domain, interfaceName, TrustLevel::HIGH, callback));
 
         // Try to determine permission without expensive message deserialization
         // For now TrustLevel::HIGH is assumed.
-        QString msgCreatorUid = QString::fromStdString(message.getHeaderCreatorUserId());
+        std::string msgCreatorUid = message.getHeaderCreatorUserId();
         localDomainAccessController.getConsumerPermission(
-                msgCreatorUid.toStdString(), domain, interfaceName, TrustLevel::HIGH, ldacCallback);
+                msgCreatorUid, domain, interfaceName, TrustLevel::HIGH, ldacCallback);
     };
 
     std::function<void(const joynr::exceptions::ProviderRuntimeException&)> lookupErrorCallback =
@@ -306,10 +298,10 @@ void AccessController::hasConsumerPermission(
     localCapabilitiesDirectory.lookup(participantId, lookupSuccessCallback, lookupErrorCallback);
 }
 
-bool AccessController::hasProviderPermission(const QString& userId,
+bool AccessController::hasProviderPermission(const std::string& userId,
                                              TrustLevel::Enum trustLevel,
-                                             const QString& domain,
-                                             const QString& interfaceName)
+                                             const std::string& domain,
+                                             const std::string& interfaceName)
 {
     std::ignore = userId;
     std::ignore = trustLevel;

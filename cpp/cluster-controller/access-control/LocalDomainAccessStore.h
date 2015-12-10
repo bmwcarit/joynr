@@ -26,7 +26,7 @@
 #include "joynr/infrastructure/DacTypes/OwnerAccessControlEntry.h"
 #include "joynr/Optional.h"
 #include <vector>
-#include <QString>
+#include <string>
 #include <QtSql/QSqlDatabase>
 
 namespace joynr
@@ -49,7 +49,8 @@ public:
      * The std::vector contains max two entries (since we only have two roles Master and Owner).
      * Used to get domain roles when a user logs in.
      */
-    std::vector<infrastructure::DacTypes::DomainRoleEntry> getDomainRoles(const QString& userId);
+    std::vector<infrastructure::DacTypes::DomainRoleEntry> getDomainRoles(
+            const std::string& userId);
 
     /**
      * Get the domain role for the given user and role.
@@ -61,7 +62,7 @@ public:
      *found.
      */
     Optional<infrastructure::DacTypes::DomainRoleEntry> getDomainRole(
-            const QString& uid,
+            const std::string& uid,
             infrastructure::DacTypes::Role::Enum role);
 
     /**
@@ -81,7 +82,7 @@ public:
      *be removed.
      * @return If operation succeeded return true.
      */
-    bool removeDomainRole(const QString& userId, infrastructure::DacTypes::Role::Enum role);
+    bool removeDomainRole(const std::string& userId, infrastructure::DacTypes::Role::Enum role);
 
     /**
      * Returns a list of entries that apply to user uid, i.e. the entries that define the access
@@ -94,7 +95,7 @@ public:
      * If no entry has been found for specified uid, then returns master ACE with uid "*".
      */
     std::vector<infrastructure::DacTypes::MasterAccessControlEntry> getMasterAccessControlEntries(
-            const QString& uid);
+            const std::string& uid);
 
     /**
      * Returns a std::vector of master ACEs applying to domains the user uid has role Master,
@@ -105,7 +106,7 @@ public:
      * In case userId has no domains with role MASTER, this function returns empty std::vector.
      */
     std::vector<infrastructure::DacTypes::MasterAccessControlEntry>
-    getEditableMasterAccessControlEntries(const QString& userId);
+    getEditableMasterAccessControlEntries(const std::string& userId);
 
     /**
      * Returns a list of master ACEs that apply to the domain and interface combination.
@@ -116,8 +117,8 @@ public:
      * @return List of master ACEs associated to given domain and interface.
      */
     std::vector<infrastructure::DacTypes::MasterAccessControlEntry> getMasterAccessControlEntries(
-            const QString& domain,
-            const QString& interfaceName);
+            const std::string& domain,
+            const std::string& interfaceName);
 
     /**
      * Get the master access control entries for an incoming message with
@@ -129,9 +130,9 @@ public:
      * @return The matching Master ACEs.
      */
     std::vector<infrastructure::DacTypes::MasterAccessControlEntry> getMasterAccessControlEntries(
-            const QString& uid,
-            const QString& domain,
-            const QString& interfaceName);
+            const std::string& uid,
+            const std::string& domain,
+            const std::string& interfaceName);
 
     /**
      * Get the master access control entry for an incoming message with
@@ -145,10 +146,10 @@ public:
      * If no master ACE found for given parameters, returned Optional is null.
      */
     Optional<infrastructure::DacTypes::MasterAccessControlEntry> getMasterAccessControlEntry(
-            const QString& uid,
-            const QString& domain,
-            const QString& interfaceName,
-            const QString& operation);
+            const std::string& uid,
+            const std::string& domain,
+            const std::string& interfaceName,
+            const std::string& operation);
 
     /**
      * Update given master access control entry.
@@ -170,10 +171,10 @@ public:
      * @param operation
      * @return false if remove fails or master ACE that match given parameters was not found.
      */
-    bool removeMasterAccessControlEntry(const QString& userId,
-                                        const QString& domain,
-                                        const QString& interfaceName,
-                                        const QString& operation);
+    bool removeMasterAccessControlEntry(const std::string& userId,
+                                        const std::string& domain,
+                                        const std::string& interfaceName,
+                                        const std::string& operation);
 
     /**
      * Returns a list of master ACEs from Mediator ACL that apply to user uid,
@@ -187,7 +188,7 @@ public:
      *uid "*".
      */
     std::vector<infrastructure::DacTypes::MasterAccessControlEntry> getMediatorAccessControlEntries(
-            const QString& uid);
+            const std::string& uid);
 
     /**
      * Returns a list of master ACEs from Mediator ACL applying to domains the user uid has role
@@ -199,7 +200,7 @@ public:
      * In case userId has no domains with role MASTER, this function returns empty std::vector.
      */
     std::vector<infrastructure::DacTypes::MasterAccessControlEntry>
-    getEditableMediatorAccessControlEntries(const QString& userId);
+    getEditableMediatorAccessControlEntries(const std::string& userId);
 
     /**
      * Returns a list of master ACEs from Mediator ACL that apply to the domain and interface
@@ -211,8 +212,8 @@ public:
      * @return std::vector of master ACEs associated to given domain and interface.
      */
     std::vector<infrastructure::DacTypes::MasterAccessControlEntry> getMediatorAccessControlEntries(
-            const QString& domain,
-            const QString& interfaceName);
+            const std::string& domain,
+            const std::string& interfaceName);
 
     /**
      * Get the master ACEs from Mediator ACL for an incoming message with
@@ -224,9 +225,9 @@ public:
      * @return The matching mediator ACEs
      */
     std::vector<infrastructure::DacTypes::MasterAccessControlEntry> getMediatorAccessControlEntries(
-            const QString& uid,
-            const QString& domain,
-            const QString& interfaceName);
+            const std::string& uid,
+            const std::string& domain,
+            const std::string& interfaceName);
 
     /**
      * Get the mediator access control entry for an incoming message with
@@ -240,10 +241,10 @@ public:
      * If no mediator ACE found for given parameters, returned Optional is null.
      */
     Optional<infrastructure::DacTypes::MasterAccessControlEntry> getMediatorAccessControlEntry(
-            const QString& uid,
-            const QString& domain,
-            const QString& interfaceName,
-            const QString& operation);
+            const std::string& uid,
+            const std::string& domain,
+            const std::string& interfaceName,
+            const std::string& operation);
     /**
      * Update given master ACE in MediatorACL.
      * If such doesn't already exist in the store, it will be added to the store.
@@ -263,10 +264,10 @@ public:
      * @param operation
      * @return false if remove fails or master ACE that match given parameters was not found.
      */
-    bool removeMediatorAccessControlEntry(const QString& userId,
-                                          const QString& domain,
-                                          const QString& interfaceName,
-                                          const QString& operation);
+    bool removeMediatorAccessControlEntry(const std::string& userId,
+                                          const std::string& domain,
+                                          const std::string& interfaceName,
+                                          const std::string& operation);
 
     /**
      * Returns a list of owner ACEs that apply to user uid,
@@ -278,7 +279,7 @@ public:
      * @return std::vector of owner ACEs with entries owned by the user.
      */
     std::vector<infrastructure::DacTypes::OwnerAccessControlEntry> getOwnerAccessControlEntries(
-            const QString& uid);
+            const std::string& uid);
 
     /**
      * Returns a std::vector of owner ACEs from Owner ACL applying to domains the user uid has role
@@ -294,7 +295,7 @@ public:
      *owner ACEs.
      */
     std::vector<infrastructure::DacTypes::OwnerAccessControlEntry>
-    getEditableOwnerAccessControlEntries(const QString& userId);
+    getEditableOwnerAccessControlEntries(const std::string& userId);
 
     /**
      * Returns a list of owner ACEs that apply to the domain and interface combination.
@@ -305,8 +306,8 @@ public:
      * @return std::vector of owner ACEs associated to given domain and interface.
      */
     std::vector<infrastructure::DacTypes::OwnerAccessControlEntry> getOwnerAccessControlEntries(
-            const QString& domain,
-            const QString& interfaceName);
+            const std::string& domain,
+            const std::string& interfaceName);
 
     /**
      * Get the Owner ACEs for the given user,domain and interface.
@@ -317,9 +318,9 @@ public:
      * @return The matching OwnerACEs
      */
     std::vector<infrastructure::DacTypes::OwnerAccessControlEntry> getOwnerAccessControlEntries(
-            const QString& userId,
-            const QString& domain,
-            const QString& interfaceName);
+            const std::string& userId,
+            const std::string& domain,
+            const std::string& interfaceName);
 
     /**
      * Get the Owner ACE for the given user,domain and interface and operation.
@@ -332,10 +333,10 @@ public:
      * If no owner ACE found for given parameters, returned Optional is null.
      */
     Optional<infrastructure::DacTypes::OwnerAccessControlEntry> getOwnerAccessControlEntry(
-            const QString& userId,
-            const QString& domain,
-            const QString& interfaceName,
-            const QString& operation);
+            const std::string& userId,
+            const std::string& domain,
+            const std::string& interfaceName,
+            const std::string& operation);
 
     /**
      * Update given owner ACE.
@@ -356,10 +357,10 @@ public:
      * @param operation
      * @return false if remove fails or ownerAce ACE that match given parameters was not found.
      */
-    bool removeOwnerAccessControlEntry(const QString& userId,
-                                       const QString& domain,
-                                       const QString& interfaceName,
-                                       const QString& operation);
+    bool removeOwnerAccessControlEntry(const std::string& userId,
+                                       const std::string& domain,
+                                       const std::string& interfaceName,
+                                       const std::string& operation);
 
     static constexpr const char* WILDCARD = "*";
 
@@ -386,33 +387,33 @@ private:
     static constexpr const char* BIND_CONSUMERPERMISSION = ":consumerPermission";
 
     // Queries
-    static const QString SELECT_DRE;
-    static const QString UPDATE_DRE;
-    static const QString DELETE_DRE;
-    static const QString GET_UID_MASTER_ACES;
-    static const QString GET_DOMAIN_INTERFACE_MASTER_ACES;
-    static const QString GET_UID_DOMAIN_INTERFACE_MASTER_ACES;
-    static const QString GET_MASTER_ACE;
-    static const QString UPDATE_MASTER_ACE;
-    static const QString DELETE_MASTER_ACE;
-    static const QString GET_EDITABLE_MASTER_ACES;
-    static const QString GET_UID_MEDIATOR_ACES;
-    static const QString GET_DOMAIN_INTERFACE_MEDIATOR_ACES;
-    static const QString GET_UID_DOMAIN_INTERFACE_MEDIATOR_ACES;
-    static const QString GET_MEDIATOR_ACE;
-    static const QString UPDATE_MEDIATOR_ACE;
-    static const QString DELETE_MEDIATOR_ACE;
-    static const QString GET_EDITABLE_MEDIATOR_ACES;
-    static const QString GET_UID_OWNER_ACES;
-    static const QString GET_DOMAIN_INTERFACE_OWNER_ACES;
-    static const QString GET_UID_DOMAIN_INTERFACE_OWNER_ACES;
-    static const QString GET_OWNER_ACE;
-    static const QString UPDATE_OWNER_ACE;
-    static const QString DELETE_OWNER_ACE;
-    static const QString GET_EDITABLE_OWNER_ACES;
+    static const std::string SELECT_DRE;
+    static const std::string UPDATE_DRE;
+    static const std::string DELETE_DRE;
+    static const std::string GET_UID_MASTER_ACES;
+    static const std::string GET_DOMAIN_INTERFACE_MASTER_ACES;
+    static const std::string GET_UID_DOMAIN_INTERFACE_MASTER_ACES;
+    static const std::string GET_MASTER_ACE;
+    static const std::string UPDATE_MASTER_ACE;
+    static const std::string DELETE_MASTER_ACE;
+    static const std::string GET_EDITABLE_MASTER_ACES;
+    static const std::string GET_UID_MEDIATOR_ACES;
+    static const std::string GET_DOMAIN_INTERFACE_MEDIATOR_ACES;
+    static const std::string GET_UID_DOMAIN_INTERFACE_MEDIATOR_ACES;
+    static const std::string GET_MEDIATOR_ACE;
+    static const std::string UPDATE_MEDIATOR_ACE;
+    static const std::string DELETE_MEDIATOR_ACE;
+    static const std::string GET_EDITABLE_MEDIATOR_ACES;
+    static const std::string GET_UID_OWNER_ACES;
+    static const std::string GET_DOMAIN_INTERFACE_OWNER_ACES;
+    static const std::string GET_UID_DOMAIN_INTERFACE_OWNER_ACES;
+    static const std::string GET_OWNER_ACE;
+    static const std::string UPDATE_OWNER_ACE;
+    static const std::string DELETE_OWNER_ACE;
+    static const std::string GET_EDITABLE_OWNER_ACES;
 
     // Helper functions
-    bool insertDomainRoleEntry(const QString& userId,
+    bool insertDomainRoleEntry(const std::string& userId,
                                infrastructure::DacTypes::Role::Enum role,
                                const std::vector<std::string>& domains);
 
@@ -447,33 +448,33 @@ private:
     template <typename T>
     Optional<T> firstEntry(const std::vector<T>& list);
 
-    QSqlQuery createGetAceQuery(const QString& sqlQuery,
-                                const QString& uid,
-                                const QString& domain,
-                                const QString& interfaceName,
-                                const QString& operation);
+    QSqlQuery createGetAceQuery(const std::string& sqlQuery,
+                                const std::string& uid,
+                                const std::string& domain,
+                                const std::string& interfaceName,
+                                const std::string& operation);
 
-    QSqlQuery createGetAceQuery(const QString& sqlQuery, const QString& uid);
+    QSqlQuery createGetAceQuery(const std::string& sqlQuery, const std::string& uid);
 
-    QSqlQuery createGetAceQuery(const QString& sqlQuery,
-                                const QString& domain,
-                                const QString& interfaceName);
+    QSqlQuery createGetAceQuery(const std::string& sqlQuery,
+                                const std::string& domain,
+                                const std::string& interfaceName);
 
-    QSqlQuery createGetAceQuery(const QString& sqlQuery,
-                                const QString& uid,
-                                const QString& domain,
-                                const QString& interfaceName);
+    QSqlQuery createGetAceQuery(const std::string& sqlQuery,
+                                const std::string& uid,
+                                const std::string& domain,
+                                const std::string& interfaceName);
 
     QSqlQuery createUpdateMasterAceQuery(
-            const QString& sqlQuery,
+            const std::string& sqlQuery,
             const infrastructure::DacTypes::MasterAccessControlEntry& updatedMasterAce);
-    QSqlQuery createRemoveAceQuery(const QString& sqlQuery,
-                                   const QString& uid,
-                                   const QString& domain,
-                                   const QString& interfaceName,
-                                   const QString& operation);
-    QSqlQuery createGetEditableAceQuery(const QString& sqlQuery,
-                                        const QString& uid,
+    QSqlQuery createRemoveAceQuery(const std::string& sqlQuery,
+                                   const std::string& uid,
+                                   const std::string& domain,
+                                   const std::string& interfaceName,
+                                   const std::string& operation);
+    QSqlQuery createGetEditableAceQuery(const std::string& sqlQuery,
+                                        const std::string& uid,
                                         infrastructure::DacTypes::Role::Enum role);
 
     /**

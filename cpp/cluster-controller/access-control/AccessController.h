@@ -25,7 +25,7 @@
 #include "joynr/infrastructure/DacTypes/TrustLevel.h"
 #include <memory>
 #include <vector>
-#include <QString>
+#include <string>
 
 namespace joynr
 {
@@ -50,15 +50,16 @@ public:
 
     //---IAccessController interface -------------------------------------------
 
-    virtual void hasConsumerPermission(const JoynrMessage& message,
-                                       std::shared_ptr<IHasConsumerPermissionCallback> callback);
+    virtual void hasConsumerPermission(
+            const JoynrMessage& message,
+            std::shared_ptr<IHasConsumerPermissionCallback> callback) override;
 
-    virtual bool hasProviderPermission(const QString& userId,
+    virtual bool hasProviderPermission(const std::string& userId,
                                        infrastructure::DacTypes::TrustLevel::Enum trustLevel,
-                                       const QString& domain,
-                                       const QString& interfaceName);
+                                       const std::string& domain,
+                                       const std::string& interfaceName) override;
 
-    virtual void addParticipantToWhitelist(const QString& participantId);
+    virtual void addParticipantToWhitelist(const std::string& participantId) override;
 
 private:
     class LdacConsumerPermissionCallback;
