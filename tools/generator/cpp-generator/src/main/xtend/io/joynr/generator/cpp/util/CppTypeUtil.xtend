@@ -198,7 +198,7 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 				return member.getDEFAULTVALUE();
 			}
 		} else */
-		if (isCompound(element.type)) {
+		if (isCompound(element.type) || element.type.isMap) {
 			return "";
 		} else if (isArray(element)){
 			return "";
