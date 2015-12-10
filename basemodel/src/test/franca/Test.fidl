@@ -120,6 +120,8 @@ interface test {
 
 	attribute Int32 attributeWithThrownException
 
+	attribute TEverythingMap EverythingMap
+
 	attribute testTypes.HavingComplexArrayMemberStruct[] attributeArrayOfNestedStructs
 
 	method addNumbers {
@@ -252,6 +254,15 @@ interface test {
 		in {
 			String stringParam
 			Boolean boolParam
+		}
+	}
+
+	method mapParameters{
+		in {
+			TStringKeyMap tStringMapIn
+		}
+		out {
+			TStringKeyMap tStringMapOut
 		}
 	}
 
@@ -515,6 +526,12 @@ interface test {
 	broadcast broadcastWithSingleArrayParameter {
 		out {
 			String[] singleParam
+		}
+	}
+
+	broadcast broadcastWithMapParameters {
+		out {
+			TStringKeyMap mapParam
 		}
 	}
 

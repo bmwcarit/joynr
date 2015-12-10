@@ -71,6 +71,7 @@ typeCollection TestTypes {
 		String[] tStringArray
 		Word word
 		Word[] wordArray
+		TStringKeyMap stringMap
 	}
 
 	struct TEverythingExtendedStruct extends TEverythingStruct {
@@ -81,4 +82,12 @@ typeCollection TestTypes {
 	struct TEverythingExtendedExtendedStruct extends TEverythingExtendedStruct {
 		String	tStringExtendedExtended
 	}
+
+	map TStringKeyMap {String to String}
+
+	map TIntegerKeyMap {Int32 to String}
+
+	map TDoubleKeyMap {Double to String}
+
+	map TEverythingMap {TEnum to TEverythingExtendedStruct}
 }
