@@ -20,7 +20,6 @@
 #ifndef LIBJOYNRWEBSOCKETRUNTIME_H
 #define LIBJOYNRWEBSOCKETRUNTIME_H
 
-#include <QtCore/QSettings>
 #include <QtWebSockets/QWebSocket>
 
 #include "joynr/PrivateCopyAssign.h"

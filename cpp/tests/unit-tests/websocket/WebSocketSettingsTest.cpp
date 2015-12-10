@@ -17,7 +17,6 @@
  * #L%
  */
 #include <gtest/gtest.h>
-#include <QSettings>
 #include <QFile>
 #include "PrettyPrint.h"
 #include "libjoynr/websocket/WebSocketSettings.h"

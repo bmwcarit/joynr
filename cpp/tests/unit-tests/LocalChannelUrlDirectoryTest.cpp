@@ -18,7 +18,6 @@
  */
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include <QSettings>
 #include <QFile>
 #include <string>
 #include "joynr/MessagingSettings.h"

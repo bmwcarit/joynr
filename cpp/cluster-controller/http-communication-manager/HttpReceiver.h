@@ -28,7 +28,6 @@
 #include "joynr/ILocalChannelUrlDirectory.h"
 
 #include <QString>
-#include <QSettings>
 #include "joynr/Semaphore.h"
 #include <memory>
 

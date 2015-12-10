@@ -17,7 +17,6 @@
  * #L%
  */
 #include <QFile>
-#include <QSettings>
 #include "cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/Util.h"
