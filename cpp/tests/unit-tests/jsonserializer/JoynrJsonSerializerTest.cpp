@@ -725,7 +725,7 @@ TEST_F(JoynrJsonSerializerTest, serializeDeserializeTEverythingStruct)
                     wordWithVowelinies,
                     wordEmpty
                 });
-
+    TStringKeyMap stringMap;
     TEverythingStruct expectedEverythingStruct{
         1,
         2,
@@ -745,7 +745,8 @@ TEST_F(JoynrJsonSerializerTest, serializeDeserializeTEverythingStruct)
         enumArray,
         stringArray,
         wordWithVowelinies,
-        words
+        words,
+        stringMap
     };
 
     // Serialize
