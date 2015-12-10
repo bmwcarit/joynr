@@ -209,8 +209,6 @@ option(
     ON
 )
 
-message(STATUS "option BUILD_CLUSTER_CONTROLLER=" ${BUILD_CLUSTER_CONTROLLER})
-
 if(NOT DEFINED JOYNR_SERVER)
     set(JOYNR_SERVER "localhost:8080")
 endif(NOT DEFINED JOYNR_SERVER)
@@ -269,13 +267,22 @@ message(STATUS "variable Qt5::Core LOCATION=${Qt5Core_LOCATION}")
 message(STATUS "variable Qt5Core_LIBRARIES=${Qt5Core_LIBRARIES}")
 message(STATUS "variable Qt5Core_DEFINITIONS=${Qt5Core_DEFINITIONS}")
 
-find_package(Qt5WebSockets REQUIRED)
-message(STATUS "variable Qt5WebSockets_VERSION_STRING=${Qt5WebSockets_VERSION_STRING}")
-message(STATUS "variable Qt5WebSockets_INCLUDE_DIRS=${Qt5WebSockets_INCLUDE_DIRS}")
-get_target_property(Qt5WebSockets_LOCATION Qt5::WebSockets LOCATION)
-message(STATUS "variable Qt5::WebSockets LOCATION=${Qt5WebSockets_LOCATION}")
-message(STATUS "variable Qt5WebSockets_LIBRARIES=${Qt5WebSockets_LIBRARIES}")
-message(STATUS "variable Qt5WebSockets_DEFINITIONS=${Qt5WebSockets_DEFINITIONS}")
+find_package(Qt5WebSockets)
+
+# Qt-Websockets is only needed for the Cluster-Controller
+IF(NOT ${Qt5WebSockets_FOUND})
+
+    message(STATUS "variable Qt5WebSockets_VERSION_STRING=${Qt5WebSockets_VERSION_STRING}")
+    message(STATUS "variable Qt5WebSockets_INCLUDE_DIRS=${Qt5WebSockets_INCLUDE_DIRS}")
+    get_target_property(Qt5WebSockets_LOCATION Qt5::WebSockets LOCATION)
+    message(STATUS "variable Qt5::WebSockets LOCATION=${Qt5WebSockets_LOCATION}")
+    message(STATUS "variable Qt5WebSockets_LIBRARIES=${Qt5WebSockets_LIBRARIES}")
+    message(STATUS "variable Qt5WebSockets_DEFINITIONS=${Qt5WebSockets_DEFINITIONS}")
+
+    SET(BUILD_CLUSTER_CONTROLLER OFF)
+
+ENDIF()
+message(STATUS "option BUILD_CLUSTER_CONTROLLER=" ${BUILD_CLUSTER_CONTROLLER})
 
 find_package(Qt5Test REQUIRED)
 message(STATUS "variable Qt5Test_VERSION_STRING=${Qt5Test_VERSION_STRING}")
@@ -286,7 +293,7 @@ message(STATUS "variable Qt5Test_LIBRARIES=${Qt5Test_LIBRARIES}")
 message(STATUS "variable Qt5Test_DEFINITIONS=${Qt5Test_DEFINITIONS}")
 
 include_directories(
-    SYSTEM ${Qt5Core_INCLUDE_DIRS} ${Qt5WebSockets_INCLUDE_DIRS}
+    SYSTEM ${Qt5Core_INCLUDE_DIRS}
 )
 find_package(Qt5Sql REQUIRED)
 message(STATUS "variable Qt5Sql_VERSION_STRING=${Qt5Sql_VERSION_STRING}")

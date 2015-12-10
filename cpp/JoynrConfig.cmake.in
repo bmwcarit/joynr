@@ -32,7 +32,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 find_package(Qt5Core REQUIRED)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Core_EXECUTABLE_COMPILE_FLAGS}")
-find_package(Qt5WebSockets REQUIRED)
+find_package(Qt5WebSockets)
 find_package(Qt5Sql REQUIRED)
 
 # Boost
@@ -52,7 +52,6 @@ get_filename_component(JOYNR_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
 set(
     JOYNR_INCLUDE_DIRS
     "${Qt5Core_INCLUDE_DIRS}"
-    "${Qt5WebSockets_INCLUDE_DIRS}"
     "${Qt5Sql_INCLUDE_DIRS}"
     "${Boost_INCLUDE_DIRS}"
     @JoynrConfig_INCLUDE_DIRS@
@@ -62,7 +61,6 @@ set(
     JOYNR_LIBRARIES
     @JoynrConfig_LIBRARIES@
     "${Qt5Core_LIBRARIES}"
-    "${Qt5WebSockets_LIBRARIES}"
     "${Qt5Sql_LIBRARIES}"
     "${Boost_LIBRARIES}"
 )
@@ -76,7 +74,6 @@ set(
 set(
     JOYNR_LIB_WS_INCLUDE_DIRS
     "${Qt5Core_INCLUDE_DIRS}"
-    "${Qt5WebSockets_INCLUDE_DIRS}"
     @JoynrConfig_LIB_WS_INCLUDE_DIRS@
 )
 
@@ -84,7 +81,6 @@ set(
     JOYNR_LIB_WS_LIBRARIES
     @JoynrConfig_LIB_WS_LIBRARIES@
     "${Qt5Core_LIBRARIES}"
-    "${Qt5WebSockets_LIBRARIES}"
 )
 
 # configuration if dbus is used
@@ -92,7 +88,6 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     set(
         JOYNR_LIB_DBUS_INCLUDE_DIRS
         "${Qt5Core_INCLUDE_DIRS}"
-        "${Qt5WebSockets_INCLUDE_DIRS}"
         @JoynrConfig_LIB_DBUS_INCLUDE_DIRS@
     )
 
@@ -100,7 +95,6 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         JOYNR_LIB_DBUS_LIBRARIES
         @JoynrConfig_LIB_DBUS_LIBRARIES@
         "${Qt5Core_LIBRARIES}"
-        "${Qt5WebSockets_LIBRARIES}"
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 

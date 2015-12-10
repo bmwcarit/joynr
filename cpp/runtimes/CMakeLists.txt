@@ -76,6 +76,11 @@ if(${BUILD_CLUSTER_CONTROLLER})
         ${JoynrClusterControllerRuntime_INCLUDE_DIRECTORIES}
     )
 
+    include_directories(
+        SYSTEM
+        ${Qt5WebSockets_INCLUDE_DIRS}
+    )
+
     add_library(
         JoynrClusterControllerRuntime
         SHARED
@@ -105,6 +110,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
     target_link_libraries(
         JoynrClusterControllerRuntime
         ${JoynrClusterControllerRuntime_TARGET_LIBRARIES}
+        ${Qt5WebSockets_LIBRARIES}
     )
 
     install(
