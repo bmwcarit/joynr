@@ -33,6 +33,7 @@ import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FBroadcast
 import org.franca.core.franca.FCompoundType
 import org.franca.core.franca.FInterface
+import org.franca.core.franca.FMapType
 import org.franca.core.franca.FMethod
 import org.franca.core.franca.FType
 import org.franca.core.franca.FTypedElement
@@ -225,6 +226,21 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 		}
 		return typeList;
 	}
+
+    def Iterable<String> getRequiredIncludesFor(FMapType datatype){
+        val typeList = new TreeSet<String>();
+        var type = getDatatype(datatype.keyType);
+        if (type instanceof FType){
+            typeList.add(getIncludeOf(type));
+        }
+
+        type = getDatatype(datatype.valueType)
+        if (type instanceof FType){
+            typeList.add(getIncludeOf(type));
+        }
+    
+        return typeList;
+    }
 
 	def Set<String> getIncludesFor(Iterable<FBasicTypeId> datatypes)
 
