@@ -499,4 +499,14 @@ class TypeUtil {
 
 		return type
 	}
+
+	def Iterable<Object> getRequiredTypes(FTypeRef typeRef) {
+		val type = typeRef.datatype
+		val result = newArrayList(type)
+		if (type instanceof FMapType) {
+			result.addAll(getRequiredTypes(type.keyType))
+			result.addAll(getRequiredTypes(type.valueType))
+		}
+		return result
+	}
 }
