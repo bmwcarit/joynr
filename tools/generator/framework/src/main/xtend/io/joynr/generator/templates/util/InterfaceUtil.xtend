@@ -234,7 +234,7 @@ public class InterfaceUtil {
 			filterComplexAndEnum
 	}
 
-	def private getAllReferredDatatypes(Iterable<Object> list, HashSet<Object> cache) {
+	def private void getAllReferredDatatypes(Iterable<Object> list, HashSet<Object> cache) {
 		for(element : list){
 			if (!cache.contains(element)){
 				cache.add(element)
