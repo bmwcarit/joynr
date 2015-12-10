@@ -509,4 +509,13 @@ class TypeUtil {
 		}
 		return result
 	}
+	
+	def hasMapMember(FCompoundType type) {
+		for (member : type.membersRecursive) {
+			if (member.type.isMap) {
+				return true
+			}	
+		}
+		return false
+	}	
 }
