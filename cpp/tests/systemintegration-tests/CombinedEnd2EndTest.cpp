@@ -22,6 +22,7 @@
 #include <memory>
 #include <string>
 #include <stdint.h>
+#include <chrono>
 #include <QtConcurrent/QtConcurrent>
 
 #include "systemintegration-tests/CombinedEnd2EndTest.h"
@@ -612,9 +613,9 @@ TEST_F(CombinedEnd2EndTest, subscribeToNonExistentDomain) {
     discoveryQos.setDiscoveryTimeout(arbitrationTimeout);
 
     // Time how long arbitration takes
-    QTime timer;
-    timer.start();
-	bool haveDiscoveryException = false;
+    using Clock = std::chrono::system_clock;
+    auto start = Clock::now();
+    bool haveDiscoveryException = false;
     int elapsed = 0;
 
 	// Expect an ArbitrationException
@@ -634,8 +635,10 @@ TEST_F(CombinedEnd2EndTest, subscribeToNonExistentDomain) {
         std::string subscriptionId = testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
 
 	} catch (exceptions::DiscoveryException& e) {
-		haveDiscoveryException = true;
-        elapsed = timer.elapsed();
+        haveDiscoveryException = true;
+        auto now = Clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
+        elapsed = duration.count();
 	}
 
 	ASSERT_TRUE(haveDiscoveryException);

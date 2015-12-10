@@ -45,7 +45,6 @@
 #include "joynr/TypeUtil.h"
 
 #include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
-#include "QTime"
 #include <chrono>
 
 #include <sstream>

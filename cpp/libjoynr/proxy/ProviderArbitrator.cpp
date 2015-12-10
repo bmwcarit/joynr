@@ -16,9 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#include <QTime>
 #include <vector>
-
+#include <chrono>
 #include "joynr/ProviderArbitrator.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/joynrlogging.h"
@@ -61,13 +60,13 @@ ProviderArbitrator::~ProviderArbitrator()
 
 void ProviderArbitrator::startArbitration()
 {
-    QTime timer;
+    using Clock = std::chrono::system_clock;
     joynr::Semaphore semaphore;
 
     // Arbitrate until successful or timed out
     while (true) {
 
-        timer.start();
+        auto start = Clock::now();
 
         // Attempt arbitration (overloaded in subclasses)
         attemptArbitration();
@@ -77,7 +76,9 @@ void ProviderArbitrator::startArbitration()
             return;
 
         // Reduce the timeout by the elapsed time
-        discoveryQos.setDiscoveryTimeout(discoveryQos.getDiscoveryTimeout() - timer.restart());
+        auto now = Clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
+        discoveryQos.setDiscoveryTimeout(discoveryQos.getDiscoveryTimeout() - duration.count());
         if (discoveryQos.getDiscoveryTimeout() <= 0)
             break;
 
@@ -85,7 +86,9 @@ void ProviderArbitrator::startArbitration()
         semaphore.waitFor(std::chrono::milliseconds(discoveryQos.getRetryInterval()));
 
         // Reduce the timeout again
-        discoveryQos.setDiscoveryTimeout(discoveryQos.getDiscoveryTimeout() - timer.elapsed());
+        now = Clock::now();
+        duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
+        discoveryQos.setDiscoveryTimeout(discoveryQos.getDiscoveryTimeout() - duration.count());
         if (discoveryQos.getDiscoveryTimeout() <= 0)
             break;
     }
