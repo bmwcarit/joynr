@@ -20,8 +20,10 @@
 
 #include <QtCore/QDebug>
 #include <QByteArray>
-#include <QUuid>
 #include <cstring>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace joynr
 {
@@ -72,10 +74,10 @@ QString Util::attributeGetterFromName(const QString& attributeName)
     return result;
 }
 
-QString Util::createUuid()
+std::string Util::createUuid()
 {
-    QString baseUuid = QUuid::createUuid().toString();
-    return baseUuid.mid(1, baseUuid.length() - 2);
+    boost::uuids::uuid uuid = boost::uuids::random_generator()();
+    return boost::uuids::to_string(uuid);
 }
 
 void Util::logSerializedMessage(joynr_logging::Logger* logger,

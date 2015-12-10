@@ -73,7 +73,7 @@ std::string ParticipantIdStorage::getProviderParticipantId(const std::string& do
 
     if (!value.isValid()) {
         // Persist a new participant Id, using the defaultValue if possible
-        participantId = (!defaultValue.empty()) ? defaultValue : Util::createUuid().toStdString();
+        participantId = (!defaultValue.empty()) ? defaultValue : Util::createUuid();
         settings.setValue(
                 QString::fromStdString(providerKey), QString::fromStdString(participantId));
         settings.sync();

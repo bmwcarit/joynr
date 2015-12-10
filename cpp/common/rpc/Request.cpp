@@ -26,7 +26,7 @@ bool isRequestTypeRegistered = Variant::registerType<Request>("joynr.Request");
 
 Request::Request() : QObject(), requestReplyId(), methodName(), params(), paramDatatypes()
 {
-    this->requestReplyId = Util::createUuid().toStdString();
+    this->requestReplyId = Util::createUuid();
 }
 
 Request::Request(const Request& other)

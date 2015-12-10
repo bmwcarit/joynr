@@ -16,7 +16,6 @@
  * limitations under the License.
  * #L%
  */
-#include <QUuid>
 #include <QVariant>
 #include <QVariantList>
 #include <QString>

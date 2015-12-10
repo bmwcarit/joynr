@@ -109,7 +109,7 @@ public:
         settings2("test-resources/SystemIntegrationTest2.settings"),
         messagingSettings1(settings1),
         messagingSettings2(settings2),
-        baseUuid(TypeUtil::toStd(QUuid::createUuid().toString())),
+        baseUuid(Util::createUuid()),
         uuid( "_" + baseUuid.substr(1, baseUuid.length()-2)),
         domainName("cppEnd2EndBroadcastTest_Domain" + uuid),
         semaphore(0),

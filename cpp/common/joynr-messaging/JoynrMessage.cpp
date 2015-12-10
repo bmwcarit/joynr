@@ -20,8 +20,6 @@
 
 #include <iostream>
 #include <string>
-#include <QUuid>
-
 #include "joynr/Util.h"
 
 namespace joynr
@@ -108,7 +106,7 @@ JoynrMessage& JoynrMessage::operator=(const JoynrMessage& message)
 void JoynrMessage::generateAndSetMsgIdHeaderIfAbsent()
 {
     if (!containsHeader(HEADER_MESSAGE_ID())) {
-        std::string msgId = Util::createUuid().toStdString();
+        std::string msgId = Util::createUuid();
         setHeaderForKey(HEADER_MESSAGE_ID(), msgId);
     }
 }

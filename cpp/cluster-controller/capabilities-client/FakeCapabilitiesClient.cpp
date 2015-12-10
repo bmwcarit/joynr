@@ -22,8 +22,6 @@
 #include "cluster-controller/capabilities-client/IGlobalCapabilitiesCallback.h"
 #include <tuple>
 
-#include <QUuid>
-
 namespace joynr
 {
 
@@ -50,8 +48,7 @@ FakeCapabilitiesClient::FakeCapabilitiesClient(const std::string& localChannelId
                           .value<QString>()
                           .toStdString())
 {
-    QString uuid = QUuid::createUuid().toString();
-    capabilitiesClientParticipantId = uuid.mid(1, uuid.length() - 2).toStdString();
+    capabilitiesClientParticipantId = Util::createUuid();
 }
 
 FakeCapabilitiesClient::~FakeCapabilitiesClient()

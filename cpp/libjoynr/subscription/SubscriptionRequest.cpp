@@ -41,7 +41,7 @@ SubscriptionRequest::SubscriptionRequest()
           subscribedToName(),
           qos(Variant::make<OnChangeSubscriptionQos>(OnChangeSubscriptionQos()))
 {
-    subscriptionId = Util::createUuid().toStdString();
+    subscriptionId = Util::createUuid();
 }
 
 SubscriptionRequest::SubscriptionRequest(const SubscriptionRequest& subscriptionRequest)

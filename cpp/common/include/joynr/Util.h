@@ -224,10 +224,9 @@ public:
     /**
      * Create a Uuid for use in Joynr.
      *
-     * The QUuid class produces UUIDs surrounded by curly braces and this
-     * function removes them.
+     * This is simply a wrapper around boost::uuid
      */
-    static QString createUuid();
+    static std::string createUuid();
 
     /**
      * Remove the leading namespace from a class name.

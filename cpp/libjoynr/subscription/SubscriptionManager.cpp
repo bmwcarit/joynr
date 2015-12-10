@@ -21,7 +21,6 @@
 #include "joynr/SubscriptionUtil.h"
 #include "joynr/SingleThreadedDelayedScheduler.h"
 
-#include <QUuid>
 #include <mutex>
 
 #include <assert.h>

@@ -53,9 +53,7 @@ public:
                     NULL,
                     new Settings("test-resources/integrationtest.settings")
         );
-        std::string uuid = TypeUtil::toStd(QUuid::createUuid().toString());
-        uuid = uuid.substr(1, uuid.length()-2);
-        domain = "cppEnd2EndRPCTest_Domain_" + uuid;
+        domain = "cppEnd2EndRPCTest_Domain_" + Util::createUuid();
     }
     // Sets up the test fixture.
     void SetUp(){

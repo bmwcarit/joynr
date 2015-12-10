@@ -56,7 +56,7 @@ public:
         runtime2(NULL),
         settings1("test-resources/SystemIntegrationTest1.settings"),
         settings2("test-resources/SystemIntegrationTest2.settings"),
-        baseUuid(TypeUtil::toStd(QUuid::createUuid().toString())),
+        baseUuid(Util::createUuid()),
         uuid( "_" + baseUuid.substr(1, baseUuid.length()-2)),
         domain("cppEnd2EndPerformancesTestDomain" + uuid)
     {

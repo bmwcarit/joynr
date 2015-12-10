@@ -23,7 +23,6 @@
 #include "joynr/Request.h"
 #include "joynr/MessageRouter.h"
 
-#include <QUuid>
 #include <cassert>
 
 namespace joynr

@@ -46,7 +46,6 @@
 #include "joynr/exceptions/JoynrExceptionUtil.h"
 #include "joynr/TypeUtil.h"
 
-#include <QUuid>
 #include <chrono>
 #include <stdint.h>
 #include <cassert>

@@ -19,8 +19,6 @@
 #include "joynr/DeclareMetatypeUtil.h"
 #include "joynr/ProxyBase.h"
 
-#include <QUuid>
-
 namespace joynr
 {
 
@@ -43,8 +41,7 @@ ProxyBase::ProxyBase(ConnectorFactory* connectorFactory,
           proxyParticipantId(""),
           connection(NULL)
 {
-    QString internalId = QUuid::createUuid().toString();
-    proxyParticipantId = internalId.mid(1, internalId.length() - 2).toStdString();
+    proxyParticipantId = Util::createUuid();
 }
 
 ProxyBase::~ProxyBase()

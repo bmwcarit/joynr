@@ -39,8 +39,10 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(Settings* settings)
           websocket(nullptr),
           wsLibJoynrMessagingSkeleton(nullptr)
 {
-    QString messagingUuid = Util::createUuid().replace("-", "");
-    QString libjoynrMessagingId("libjoynr.messaging.participantid_" + messagingUuid);
+    std::string uuid = Util::createUuid();
+    // remove dashes
+    uuid.erase(std::remove(uuid.begin(), uuid.end(), '-'), uuid.end());
+    QString libjoynrMessagingId("libjoynr.messaging.participantid_" + TypeUtil::toQt(uuid));
     std::shared_ptr<joynr::system::RoutingTypes::QtAddress> libjoynrMessagingAddress(
             new system::RoutingTypes::QtWebSocketClientAddress(libjoynrMessagingId));
 
