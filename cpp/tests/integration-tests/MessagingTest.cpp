@@ -40,11 +40,21 @@
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include "joynr/Future.h"
 #include "joynr/Settings.h"
+#include "joynr/Semaphore.h"
+#include <chrono>
 
 using namespace ::testing;
 using namespace joynr;
 
+ACTION_P(ReleaseSemaphore,semaphore)
+{
+    semaphore->notify();
+}
 
+#define WaitXTimes(x) \
+    for(int i = 0; i<x; ++i) {\
+        ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));\
+    }
 
 class MessagingTest : public ::testing::Test {
 public:
@@ -60,6 +70,7 @@ public:
     QString requestId;
     MessagingQos qos;
     std::shared_ptr<MockInProcessMessagingSkeleton> inProcessMessagingSkeleton;
+    joynr::Semaphore semaphore;
 
     JoynrMessageFactory messageFactory;
     std::shared_ptr<MockMessageReceiver> mockMessageReceiver;
@@ -79,6 +90,7 @@ public:
         requestId("requestId"),
         qos(),
         inProcessMessagingSkeleton(new MockInProcessMessagingSkeleton()),
+        semaphore(0),
         messageFactory(),
         mockMessageReceiver(new MockMessageReceiver()),
         mockMessageSender(new MockMessageSender()),
@@ -129,10 +141,10 @@ TEST_F(MessagingTest, sendMsgFromMessageSenderViaInProcessMessagingAndMessageRou
 
     // MessageSender should receive the message
     EXPECT_CALL(*mockMessageSender, sendMessage(_,_))
-            .Times(1);
+            .Times(1).WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     EXPECT_CALL(mockDispatcher, addReplyCaller(_,_,_))
-            .Times(1);
+            .Times(1).WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     JoynrMessageSender messageSender(messageRouter);
     std::shared_ptr<IReplyCaller> replyCaller;
@@ -145,6 +157,8 @@ TEST_F(MessagingTest, sendMsgFromMessageSenderViaInProcessMessagingAndMessageRou
     messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr);
 
     messageSender.sendRequest(senderId, receiverId, qos, request, replyCaller);
+
+    WaitXTimes(2);
 }
 
 
@@ -172,7 +186,7 @@ TEST_F(MessagingTest, routeMsgToInProcessMessagingSkeleton)
 
     // InProcessMessagingSkeleton should receive the message
     EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(message)))
-            .Times(1);
+            .Times(1).WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     // MessageSender should not receive the message
     EXPECT_CALL(*mockMessageSender, sendMessage(_,_))
@@ -189,6 +203,8 @@ TEST_F(MessagingTest, routeMsgToInProcessMessagingSkeleton)
     messageRouter->addNextHop(receiverId, messagingSkeletonEndpointAddr);
 
     messageRouter->route(message);
+
+    WaitXTimes(1);
 }
 
 TEST_F(MessagingTest, DISABLED_routeMsgToLipciMessagingSkeleton)
@@ -240,7 +256,7 @@ TEST_F(MessagingTest, routeMsgToHttpCommunicationMgr)
 
     // HttpCommunicationManager should receive the message
     EXPECT_CALL(*mockMessageSender, sendMessage(Eq(receiverChannelId),Eq(message)))
-            .Times(1);
+            .Times(1).WillRepeatedly(ReleaseSemaphore(&semaphore));;
 
     std::shared_ptr<system::RoutingTypes::QtChannelAddress> joynrMessagingEndpointAddr =
             std::shared_ptr<system::RoutingTypes::QtChannelAddress>(new system::RoutingTypes::QtChannelAddress());
@@ -249,6 +265,8 @@ TEST_F(MessagingTest, routeMsgToHttpCommunicationMgr)
     messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr);
 
     messageRouter->route(message);
+
+    WaitXTimes(1);
 }
 
 
@@ -271,11 +289,11 @@ TEST_F(MessagingTest, routeMultipleMessages)
 
     // InProcessMessagingSkeleton should receive the message2 and message3
     EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(message2)))
-            .Times(2);
+            .Times(2).WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     // MessageSender should receive the message
     EXPECT_CALL(*mockMessageSender, sendMessage(Eq(receiverChannelId), Eq(message)))
-            .Times(1);
+            .Times(1).WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     EXPECT_CALL(*mockMessageReceiver, getReceiveChannelId())
 //            .WillOnce(ReturnRefOfCopy(senderChannelId));
@@ -296,6 +314,8 @@ TEST_F(MessagingTest, routeMultipleMessages)
     messageRouter->route(message);
     messageRouter->route(message2);
     messageRouter->route(message2);
+
+    WaitXTimes(3);
 }
 
 // global function used for calls to the MockChannelUrlSelectorProxy
