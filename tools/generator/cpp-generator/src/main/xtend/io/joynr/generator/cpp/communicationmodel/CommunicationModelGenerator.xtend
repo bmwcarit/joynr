@@ -68,6 +68,8 @@ class CommunicationModelGenerator {
 	@Inject
 	StdTypeCppTemplate stdTypeCpp;
 
+    @Inject
+    MapHTemplate mapH;
 	@Inject
 	TypeSerializerHTemplate typeSerializerH;
 	@Inject
@@ -144,6 +146,23 @@ class CommunicationModelGenerator {
 			);
 
 		}
+
+        for (type : getMapDataTypes(fModel)) {
+            var sourcepath = dataTypePath + getPackageSourceDirectory(type) + File::separator
+            var headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
+            if (type.isPartOfTypeCollection) {
+                headerpath += type.typeCollectionName + File::separator
+                sourcepath += type.typeCollectionName + File::separator
+            }
+
+            generateFile(
+                headerFileSystem,
+                headerpath + stdTypeUtil.getGenerationTypeName(type) + ".h",
+                mapH,
+                type
+            )
+
+        }
 
 		val interfacePath = sourceContainerPath + "interfaces" + File::separator
 		val headerInterfacePath = 

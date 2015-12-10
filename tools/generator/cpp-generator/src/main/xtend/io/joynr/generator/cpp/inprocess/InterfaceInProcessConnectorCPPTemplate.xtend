@@ -51,7 +51,7 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestCaller.h"
 «FOR datatype: getAllComplexTypes(serviceInterface)»
 «IF datatype instanceof FType»
-	«IF isCompound(datatype)»
+	«IF isCompound(datatype) || isMap(datatype)»
 		#include "«getIncludeOf(datatype)»"
 	«ENDIF»
 «ENDIF»

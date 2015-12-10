@@ -20,6 +20,7 @@ package io.joynr.generator.templates.util
 import com.google.common.collect.Iterables
 import com.google.inject.Inject
 import java.util.ArrayList
+import java.util.Comparator
 import java.util.Set
 import org.eclipse.emf.common.util.BasicEList
 import org.eclipse.emf.common.util.EList
@@ -46,6 +47,15 @@ import org.franca.core.franca.FTypeDef
 import org.franca.core.franca.FTypeRef
 import org.franca.core.franca.FTypedElement
 import org.franca.core.franca.FUnionType
+
+public class FMapTypeAsLastComparator implements Comparator<Object> {  
+    override int compare (Object object1, Object object2)
+    {
+        val object1Type = if (object1 instanceof FMapType) 1 else 0
+        val object2Type = if (object2 instanceof FMapType) 1 else 0
+        return object1Type - object2Type
+    }
+}
 
 class TypeUtil {
 

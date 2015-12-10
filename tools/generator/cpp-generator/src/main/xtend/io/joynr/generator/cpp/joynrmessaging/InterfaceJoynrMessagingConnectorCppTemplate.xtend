@@ -56,6 +56,8 @@ internalRequestObject.setMethodName("«method.joynrName»");
 		internalRequestObject.addParam(TypeUtil::toVariant<«getTypeName(param.type)»>(«param.name»), "«getJoynrTypeName(param)»");
 	«ELSEIF isCompound(param.type)»
 		internalRequestObject.addParam(Variant::make<«getTypeName(param)»>(«param.name»), "«getJoynrTypeName(param)»");
+	«ELSEIF isMap(param.type)»
+		internalRequestObject.addParam(Variant::make<«getTypeName(param)»>(«param.name»), "«getJoynrTypeName(param)»");
 	«ELSE»
 		internalRequestObject.addParam(Variant::make<«getTypeName(param)»>(«param.name»), "«getJoynrTypeName(param)»");
 	«ENDIF»
@@ -98,7 +100,7 @@ internalRequestObject.setMethodName("«method.joynrName»");
 
 «FOR datatype: getAllComplexTypes(serviceInterface)»
 «IF datatype instanceof FType»
-	«IF isCompound(datatype)»
+	«IF isCompound(datatype) || isMap(datatype)»
 		#include "«getIncludeOf(datatype)»"
 	«ENDIF»
 «ENDIF»
