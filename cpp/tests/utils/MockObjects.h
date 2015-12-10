@@ -609,6 +609,12 @@ public:
         onError(joynr::exceptions::ProviderRuntimeException(providerRuntimeExceptionTestMsg));
     }
 
+    void invokeMapParametersOnSuccessFct(const joynr::types::TestTypes::TStringKeyMap& tStringMapIn,
+                                         std::function<void(const joynr::types::TestTypes::TStringKeyMap&)> onSuccess,
+                                         std::function<void(const joynr::exceptions::JoynrException&)>) {
+        onSuccess(tStringMapIn);
+    }
+
     MockTestRequestCaller() :
             joynr::tests::testRequestCaller(std::make_shared<MockTestProvider>())
     {
@@ -632,6 +638,12 @@ public:
                 methodWithProviderRuntimeException(_,_)
         )
                 .WillByDefault(testing::Invoke(this, &MockTestRequestCaller::invokeMethodOnErrorFunctionWithProviderRuntimeException));
+        ON_CALL(
+                *this,
+                mapParameters(_,_,_)
+        )
+                .WillByDefault(testing::Invoke(this, &MockTestRequestCaller::invokeMapParametersOnSuccessFct));
+
     }
     MockTestRequestCaller(testing::Cardinality getLocationCardinality) :
             joynr::tests::testRequestCaller(std::make_shared<MockTestProvider>())
@@ -652,6 +664,10 @@ public:
     MOCK_METHOD2(getLocation,
                  void(std::function<void(const joynr::types::Localisation::GpsLocation& location)>,
                       std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>));
+    MOCK_METHOD3(mapParameters,
+                 void(const joynr::types::TestTypes::TStringKeyMap&,
+                      std::function<void(const joynr::types::TestTypes::TStringKeyMap&)>,
+                      std::function<void(const joynr::exceptions::JoynrException&)>));
     MOCK_METHOD2(getListOfStrings,
                  void(std::function<void(const std::vector<std::string>& listOfStrings)>,
                       std::function<void(const joynr::exceptions::JoynrException& exception)>));

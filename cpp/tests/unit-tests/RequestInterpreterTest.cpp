@@ -54,6 +54,36 @@ protected:
     std::string gpsInterfaceName;
 };
 
+TEST_F(RequestInterpreterTest, execute_callsMethodOnRequestCallerWithMapParameter) {
+    std::shared_ptr<MockTestRequestCaller> mockCaller(new MockTestRequestCaller());
+    EXPECT_CALL(
+            *mockCaller,
+            mapParameters(A<const types::TestTypes::TStringKeyMap&>(),
+                          A<std::function<void(const types::TestTypes::TStringKeyMap&)>>(),
+                          A<std::function<void(const exceptions::JoynrException&)>>())
+    )
+            .Times(1);
+
+    tests::testRequestInterpreter interpreter;
+    std::string methodName = "mapParameters";
+    std::vector<Variant> paramValues;
+    types::TestTypes::TStringKeyMap inputMap;
+    paramValues.push_back(Variant::make<types::TestTypes::TStringKeyMap>(inputMap));
+    std::vector<std::string> paramDatatypes;
+    paramDatatypes.push_back("joynr.types.TestTypes.TStringKeyMap");
+
+    std::shared_ptr<MockCallback<std::vector<Variant>>> callback(new MockCallback<std::vector<Variant>>());
+    std::function<void(const std::vector<Variant>& response)> onSuccess = [inputMap, callback] (const std::vector<Variant>& response) {
+        EXPECT_EQ(inputMap, response.at(0).get<types::TestTypes::TStringKeyMap>());
+        callback->onSuccess(response);
+    };
+    std::function<void(const exceptions::JoynrException& exception)> onError = [] (const exceptions::JoynrException& exception) {
+        ADD_FAILURE()<< "unexpected call of onError function";
+    };
+    EXPECT_CALL(*callback, onSuccess(A<const std::vector<Variant>&>())).Times(1);
+
+    interpreter.execute(mockCaller, methodName, paramValues, paramDatatypes, onSuccess, onError);
+}
 
 TEST_F(RequestInterpreterTest, execute_callsMethodOnRequestCaller) {
     std::shared_ptr<MockTestRequestCaller> mockCaller(new MockTestRequestCaller());
