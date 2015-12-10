@@ -99,14 +99,14 @@ struct «getDllExportMacro()»«typeName» {
 	 * @param «typeName.toFirstLower»Value The ordinal number
 	 * @return The string representing the enum for the given ordinal number
 	 */
-	static std::string getLiteral(«typeName»::«getNestedEnumName()» «typeName.toFirstLower»Value);
+	static std::string getLiteral(const «typeName»::«getNestedEnumName()»& «typeName.toFirstLower»Value);
 
 	/**
 	 * @brief Get the matching enum for a string
 	 * @param «typeName.toFirstLower»String The string representing the enum value
 	 * @return The enum value representing the string
 	 */
-	static «typeName»::«getNestedEnumName()» getEnum(std::string «typeName.toFirstLower»String);
+	static «typeName»::«getNestedEnumName()» getEnum(const std::string& «typeName.toFirstLower»String);
 
 	/**
 	 * @brief Get the matching ordinal number for an enum

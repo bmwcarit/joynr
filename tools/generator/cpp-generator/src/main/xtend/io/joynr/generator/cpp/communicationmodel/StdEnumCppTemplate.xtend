@@ -52,7 +52,7 @@ class StdEnumCppTemplate implements EnumTemplate {
 
 static const bool is«typeName»Registered = Variant::registerType<«type.typeName»>("«type.typeNameOfContainingClass.replace("::", ".")»");
 
-std::string «typeName»::getLiteral(«typeName»::«getNestedEnumName()» «typeName.toFirstLower»Value) {
+std::string «typeName»::getLiteral(const «typeName»::«getNestedEnumName()»& «typeName.toFirstLower»Value) {
 	std::string literal;
 	switch («typeName.toFirstLower»Value) {
 	«FOR literal : getEnumElementsAndBaseEnumElements(type)»
@@ -67,7 +67,7 @@ std::string «typeName»::getLiteral(«typeName»::«getNestedEnumName()» «typ
 	return literal;
 }
 
-«typeName»::«getNestedEnumName()» «typeName»::getEnum(std::string «typeName.toFirstLower»String) {
+«typeName»::«getNestedEnumName()» «typeName»::getEnum(const std::string& «typeName.toFirstLower»String) {
 	«FOR literal : getEnumElementsAndBaseEnumElements(type)»
 		if («typeName.toFirstLower»String == std::string("«literal.joynrName»")) {
 			return «literal.joynrName»;

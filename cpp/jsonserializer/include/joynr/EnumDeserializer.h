@@ -67,7 +67,7 @@ public:
      * @param typeReference Reference to instance of given type
      * @param value Reference to object produced by Serializer Engine
      */
-    static void deserialize(T& typeReference, IValue& value);
+    static void deserialize(T& typeReference, const IValue& value);
     /**
      * @brief deserializeVariant
      * @param object

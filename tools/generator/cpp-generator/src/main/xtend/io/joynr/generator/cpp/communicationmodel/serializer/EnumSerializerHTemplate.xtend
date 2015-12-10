@@ -70,7 +70,7 @@ void ClassSerializer<«joynrName»>::serialize(const «joynrName»& «joynrName.
  * @param value value containing the parsed json tokens
  */
 template <>
-void EnumDeserializer<«joynrName»>::deserialize(«joynrName»& «joynrName.toFirstLower», IValue& value);
+void EnumDeserializer<«joynrName»>::deserialize(«joynrName»& «joynrName.toFirstLower», const IValue& value);
 
 } /* namespace joynr */
 
