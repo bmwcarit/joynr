@@ -78,8 +78,8 @@ protected:
     virtual void startLibJoynrMessagingSkeleton(MessageRouter& messageRouter) = 0;
 
     void init(IMiddlewareMessagingStubFactory* middlewareMessagingStubFactory,
-              std::shared_ptr<joynr::system::RoutingTypes::QtAddress> libjoynrMessagingAddress,
-              std::shared_ptr<joynr::system::RoutingTypes::QtAddress> ccMessagingAddress);
+              std::shared_ptr<system::RoutingTypes::Address> libjoynrMessagingAddress,
+              std::shared_ptr<system::RoutingTypes::Address> ccMessagingAddress);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LibJoynrRuntime);

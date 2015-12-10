@@ -21,6 +21,7 @@
 
 #include "joynr/IMiddlewareMessagingStubFactory.h"
 #include <memory>
+#include <string>
 
 namespace joynr
 {
@@ -32,13 +33,13 @@ class JoynrMessagingStubFactory : public IMiddlewareMessagingStubFactory
 
 public:
     JoynrMessagingStubFactory(std::shared_ptr<IMessageSender> messageSender,
-                              QString receiveChannelId);
-    std::shared_ptr<IMessaging> create(const joynr::system::RoutingTypes::QtAddress& destAddress);
-    bool canCreate(const joynr::system::RoutingTypes::QtAddress& destAddress);
+                              std::string receiveChannelId);
+    std::shared_ptr<IMessaging> create(const joynr::system::RoutingTypes::Address& destAddress);
+    bool canCreate(const joynr::system::RoutingTypes::Address& destAddress);
 
 private:
     std::shared_ptr<IMessageSender> messageSender;
-    QString receiveChannelId;
+    std::string receiveChannelId;
 };
 
 } // namespace joynr

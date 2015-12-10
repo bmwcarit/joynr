@@ -20,7 +20,7 @@
 #define INPROCESSMESSAGINGENDPOINTADDRESS_H
 
 #include "joynr/JoynrCommonExport.h"
-#include "joynr/system/RoutingTypes_QtAddress.h"
+#include "joynr/system/RoutingTypes/Address.h"
 
 #include <memory>
 
@@ -29,9 +29,8 @@ namespace joynr
 
 class InProcessMessagingSkeleton;
 
-class JOYNRCOMMON_EXPORT InProcessMessagingAddress : public joynr::system::RoutingTypes::QtAddress
+class JOYNRCOMMON_EXPORT InProcessMessagingAddress : public joynr::system::RoutingTypes::Address
 {
-    Q_OBJECT
 public:
     InProcessMessagingAddress(std::shared_ptr<InProcessMessagingSkeleton> skeleton);
     std::shared_ptr<InProcessMessagingSkeleton> getSkeleton() const;

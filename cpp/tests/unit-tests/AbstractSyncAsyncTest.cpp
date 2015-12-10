@@ -25,7 +25,7 @@
 #include "joynr/ReplyCaller.h"
 #include "joynr/IReplyCaller.h"
 #include "tests/utils/MockObjects.h"
-#include "joynr/system/RoutingTypes_QtChannelAddress.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
 
 using ::testing::A;
 using ::testing::_;
@@ -112,7 +112,7 @@ public:
     virtual ~AbstractSyncAsyncTest(){}
     void SetUp(){
         qosSettings = MessagingQos(456000);
-        endPointAddress = std::shared_ptr<system::RoutingTypes::QtAddress>(new system::RoutingTypes::QtChannelAddress("endPointAddress"));
+        endPointAddress = std::shared_ptr<system::RoutingTypes::Address>(new system::RoutingTypes::ChannelAddress("endPointAddress"));
         proxyParticipantId = "participantId";
         providerParticipantId = "providerParticipantId";
         mockJoynrMessageSender = new MockJoynrMessageSender();
@@ -277,7 +277,7 @@ protected:
     std::string proxyParticipantId;
     std::string providerParticipantId;
     MockClientCache mockClientCache;
-    std::shared_ptr<system::RoutingTypes::QtAddress> endPointAddress;
+    std::shared_ptr<system::RoutingTypes::Address> endPointAddress;
     tests::Itest* asyncTestFixture;
 private:
     DISALLOW_COPY_AND_ASSIGN(AbstractSyncAsyncTest);

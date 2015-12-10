@@ -32,10 +32,6 @@ class IJoynrMessageSender;
 class ISubscriptionManager;
 class MessagingQos;
 class IClientCache;
-namespace system
-{
-class QtAddress;
-}
 
 // Default implementation of a JoynrMessagingConnectorFactoryHelper
 // Template specializations are found in the generated *JoynrMessagingConnector.h files

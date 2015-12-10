@@ -34,11 +34,11 @@
 #include "joynr/JoynrMessage.h"
 #include "joynr/JsonSerializer.h"
 #include "joynr/joynrlogging.h"
-#include "joynr/system/RoutingTypes_QtChannelAddress.h"
-#include "joynr/system/RoutingTypes_QtCommonApiDbusAddress.h"
-#include "joynr/system/RoutingTypes_QtWebSocketAddress.h"
-#include "joynr/system/RoutingTypes_QtWebSocketClientAddress.h"
-#include "joynr/tests/testTypes_QtTestEnum.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
+#include "joynr/system/RoutingTypes/CommonApiDbusAddress.h"
+#include "joynr/system/RoutingTypes/WebSocketAddress.h"
+#include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
+#include "joynr/tests/testTypes/TestEnum.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
@@ -1082,7 +1082,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_ChannelURLInformation) {
 
     // Serialize the URL Information
     std::string serialized = JsonSerializer::serialize(Variant::make<types::ChannelUrlInformation>(urlInformation));
-    LOG_DEBUG(logger,FormatString("serialized QtChannelUrlInformation%1").arg(serialized).str());
+    LOG_DEBUG(logger,FormatString("serialized ChannelUrlInformation%1").arg(serialized).str());
 
     // Expected JSON : { "_typeName" : "joynr.types.ChannelUrlInformation", "urls" : [ "http://example1.com/", "http://example2.com/" ] }
     std::string expected("{\"_typeName\": \"joynr.types.ChannelUrlInformation\",\"urls\": [\"http://example1.com/\",\"http://example2.com/\"]}");

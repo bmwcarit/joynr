@@ -32,7 +32,7 @@
 #include <QString>
 #include <QtGlobal>
 #include <mutex>
-#include <QHash>
+#include <unordered_map>
 
 #include <memory>
 
@@ -95,7 +95,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(Directory);
-    QHash<Key, std::shared_ptr<T>> callbackMap;
+    std::unordered_map<Key, std::shared_ptr<T>> callbackMap;
     std::mutex mutex;
     SingleThreadedDelayedScheduler callBackRemoverScheduler;
     static joynr_logging::Logger* logger;
@@ -142,14 +142,14 @@ template <typename Key, typename T>
 std::shared_ptr<T> Directory<Key, T>::lookup(const Key& keyId)
 {
     std::lock_guard<std::mutex> lock(mutex);
-    return callbackMap.value(keyId);
+    return callbackMap[keyId];
 }
 
 template <typename Key, typename T>
 bool Directory<Key, T>::contains(const Key& keyId)
 {
     std::lock_guard<std::mutex> lock(mutex);
-    return callbackMap.contains(keyId);
+    return callbackMap.find(keyId) != callbackMap.cend();
 }
 
 template <typename Key, typename T>
@@ -164,7 +164,7 @@ template <typename Key, typename T>
 void Directory<Key, T>::add(const Key& keyId, std::shared_ptr<T> value)
 {
     std::lock_guard<std::mutex> lock(mutex);
-    callbackMap.insert(keyId, value);
+    callbackMap[keyId] = value;
 }
 
 // ownership passed off to the directory, which passes off to SharedPointer
@@ -181,7 +181,7 @@ void Directory<Key, T>::add(const Key& keyId, std::shared_ptr<T> value, qint64 t
     // Insert the value
     {
         std::lock_guard<std::mutex> lock(mutex);
-        callbackMap.insert(keyId, value);
+        callbackMap[keyId] = value;
     }
 
     // make a removerRunnable and shedule it to remove the entry after ttl!
@@ -193,7 +193,7 @@ template <typename Key, typename T>
 void Directory<Key, T>::remove(const Key& keyId)
 {
     std::lock_guard<std::mutex> lock(mutex);
-    callbackMap.remove(keyId);
+    callbackMap.erase(keyId);
 }
 
 template <typename Key, typename T>

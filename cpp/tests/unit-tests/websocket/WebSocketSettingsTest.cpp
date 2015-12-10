@@ -20,7 +20,7 @@
 #include <QFile>
 #include "PrettyPrint.h"
 #include "libjoynr/websocket/WebSocketSettings.h"
-#include "joynr/system/RoutingTypes_QtWebSocketAddress.h"
+#include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/TypeUtil.h"
 #include "joynr/Settings.h"
 
@@ -62,8 +62,8 @@ TEST_F(WebSocketSettingsTest, overrideDefaultSettings) {
 
 TEST_F(WebSocketSettingsTest, createsWebSocketAddress) {
     std::string expectedMessagingUrl("ws://test-host:42/test-path");
-    joynr::system::RoutingTypes::QtWebSocketAddress expectedMessagingAddress(
-                joynr::system::RoutingTypes::QtWebSocketProtocol::WS,
+    joynr::system::RoutingTypes::WebSocketAddress expectedMessagingAddress(
+                joynr::system::RoutingTypes::WebSocketProtocol::WS,
                 "test-host",
                 42,
                 "/test-path"
@@ -72,7 +72,6 @@ TEST_F(WebSocketSettingsTest, createsWebSocketAddress) {
     testSettings.set(WebSocketSettings::SETTING_CC_MESSAGING_URL(), expectedMessagingUrl);
     WebSocketSettings wsSettings(testSettings);
 
-    system::RoutingTypes::QtWebSocketAddress wsAddress =
-            system::RoutingTypes::QtWebSocketAddress::createQt(wsSettings.createClusterControllerMessagingAddress());
+    system::RoutingTypes::WebSocketAddress wsAddress = wsSettings.createClusterControllerMessagingAddress();
     EXPECT_EQ(expectedMessagingAddress, wsAddress);
 }

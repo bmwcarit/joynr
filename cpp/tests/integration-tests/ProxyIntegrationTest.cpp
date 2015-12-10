@@ -24,7 +24,7 @@
 #include "joynr/vehicle/GpsProxy.h"
 #include "joynr/InProcessConnectorFactory.h"
 #include "joynr/ConnectorFactory.h"
-#include "joynr/system/RoutingTypes_QtChannelAddress.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
 
 using ::testing::A;
 using ::testing::_;
@@ -51,7 +51,7 @@ public:
         mockJoynrMessageSender(new MockJoynrMessageSender()),
         domain("cppProxyIntegrationTestDomain"),
         messagingQos(),
-        endPointAddress(new system::RoutingTypes::QtChannelAddress("endPointAddress"))
+        endPointAddress(new system::RoutingTypes::ChannelAddress("endPointAddress"))
     {
     }
 
@@ -77,7 +77,7 @@ protected:
     MockJoynrMessageSender* mockJoynrMessageSender;
     std::string domain;
     MessagingQos messagingQos;
-    std::shared_ptr<system::RoutingTypes::QtChannelAddress> endPointAddress;
+    std::shared_ptr<system::RoutingTypes::ChannelAddress> endPointAddress;
 
 
 private:

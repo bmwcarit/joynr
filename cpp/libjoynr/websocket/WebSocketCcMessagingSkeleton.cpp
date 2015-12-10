@@ -111,10 +111,7 @@ void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString& message)
         // client address must be valid, or libjoynr and CC are deployed in different versions
         assert(clientAddress);
 
-        joynr::system::RoutingTypes::QtWebSocketClientAddress qtClientAddress =
-                joynr::system::RoutingTypes::QtWebSocketClientAddress::createQt(*clientAddress);
-        messagingStubFactory.addClient(qtClientAddress, client);
-        delete clientAddress;
+        messagingStubFactory.addClient(clientAddress, client);
 
         // cleanup
         disconnect(client,

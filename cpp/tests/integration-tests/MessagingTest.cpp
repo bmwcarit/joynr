@@ -27,7 +27,7 @@
 #include "joynr/JoynrMessage.h"
 #include "joynr/JoynrMessageFactory.h"
 #include "joynr/JoynrMessageSender.h"
-#include "joynr/system/RoutingTypes_QtChannelAddress.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/Request.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/InProcessMessagingAddress.h"
@@ -60,9 +60,9 @@ public:
     MessagingSettings messagingSettings;
     joynr_logging::Logger* logger;
     std::string senderId;
-    QString senderChannelId;
+    std::string senderChannelId;
     std::string receiverId;
-    QString receiverChannelId;
+    std::string receiverChannelId;
     Request request;
     QString requestId;
     MessagingQos qos;
@@ -95,15 +95,15 @@ public:
         messageRouter(new MessageRouter(messagingStubFactory, NULL))
     {
         // provision global capabilities directory
-        std::shared_ptr<joynr::system::RoutingTypes::QtAddress> addressCapabilitiesDirectory(
-            new system::RoutingTypes::QtChannelAddress(
-                        TypeUtil::toQt(messagingSettings.getCapabilitiesDirectoryChannelId()))
+        std::shared_ptr<joynr::system::RoutingTypes::Address> addressCapabilitiesDirectory(
+            new system::RoutingTypes::ChannelAddress(
+                        messagingSettings.getCapabilitiesDirectoryChannelId())
         );
         messageRouter->addProvisionedNextHop(messagingSettings.getCapabilitiesDirectoryParticipantId(), addressCapabilitiesDirectory);
         // provision channel url directory
-        std::shared_ptr<joynr::system::RoutingTypes::QtAddress> addressChannelUrlDirectory(
-            new system::RoutingTypes::QtChannelAddress(
-                        TypeUtil::toQt(messagingSettings.getChannelUrlDirectoryChannelId()))
+        std::shared_ptr<joynr::system::RoutingTypes::Address> addressChannelUrlDirectory(
+            new system::RoutingTypes::ChannelAddress(
+                        messagingSettings.getChannelUrlDirectoryChannelId())
         );
         messageRouter->addProvisionedNextHop(messagingSettings.getChannelUrlDirectoryParticipantId(), addressChannelUrlDirectory);
         messagingStubFactory->registerStubFactory(new JoynrMessagingStubFactory(mockMessageSender, senderChannelId));
@@ -147,8 +147,8 @@ TEST_F(MessagingTest, sendMsgFromMessageSenderViaInProcessMessagingAndMessageRou
     std::shared_ptr<IReplyCaller> replyCaller;
     messageSender.registerDispatcher(&mockDispatcher);
 
-    std::shared_ptr<system::RoutingTypes::QtChannelAddress> joynrMessagingEndpointAddr =
-            std::shared_ptr<system::RoutingTypes::QtChannelAddress>(new system::RoutingTypes::QtChannelAddress());
+    std::shared_ptr<system::RoutingTypes::ChannelAddress> joynrMessagingEndpointAddr =
+            std::shared_ptr<system::RoutingTypes::ChannelAddress>(new system::RoutingTypes::ChannelAddress());
     joynrMessagingEndpointAddr->setChannelId(receiverChannelId);
 
     messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr);
@@ -245,18 +245,18 @@ TEST_F(MessagingTest, routeMsgToHttpCommunicationMgr)
                 QString::fromStdString(receiverId),
                 qos,
                 request);
-    message.setHeaderReplyChannelId(senderChannelId.toStdString());
+    message.setHeaderReplyChannelId(senderChannelId);
 
     // InProcessMessagingSkeleton should not receive the message
     EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(message)))
             .Times(0);
 
     // HttpCommunicationManager should receive the message
-    EXPECT_CALL(*mockMessageSender, sendMessage(Eq(receiverChannelId),Eq(message)))
-            .Times(1).WillRepeatedly(ReleaseSemaphore(&semaphore));;
+    EXPECT_CALL(*mockMessageSender, sendMessage(Eq(QString::fromStdString(receiverChannelId)),Eq(message)))
+            .Times(1).WillRepeatedly(ReleaseSemaphore(&semaphore));
 
-    std::shared_ptr<system::RoutingTypes::QtChannelAddress> joynrMessagingEndpointAddr =
-            std::shared_ptr<system::RoutingTypes::QtChannelAddress>(new system::RoutingTypes::QtChannelAddress());
+    std::shared_ptr<system::RoutingTypes::ChannelAddress> joynrMessagingEndpointAddr =
+            std::shared_ptr<system::RoutingTypes::ChannelAddress>(new system::RoutingTypes::ChannelAddress());
     joynrMessagingEndpointAddr->setChannelId(receiverChannelId);
 
     messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr);
@@ -274,7 +274,7 @@ TEST_F(MessagingTest, routeMultipleMessages)
                 QString::fromStdString(receiverId),
                 qos,
                 request);
-    message.setHeaderReplyChannelId(senderChannelId.toStdString());
+    message.setHeaderReplyChannelId(senderChannelId);
 
     std::string receiverId2("receiverId2");
     JoynrMessage message2 = messageFactory.createRequest(
@@ -282,19 +282,19 @@ TEST_F(MessagingTest, routeMultipleMessages)
                 QString::fromStdString(receiverId2),
                 qos,
                 request);
-    message2.setHeaderReplyChannelId(senderChannelId.toStdString());
+    message2.setHeaderReplyChannelId(senderChannelId);
 
     // InProcessMessagingSkeleton should receive the message2 and message3
     EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(message2)))
             .Times(2).WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     // MessageSender should receive the message
-    EXPECT_CALL(*mockMessageSender, sendMessage(Eq(receiverChannelId), Eq(message)))
+    EXPECT_CALL(*mockMessageSender, sendMessage(Eq(QString::fromStdString(receiverChannelId)), Eq(message)))
             .Times(1).WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     EXPECT_CALL(*mockMessageReceiver, getReceiveChannelId())
 //            .WillOnce(ReturnRefOfCopy(senderChannelId));
-            .WillRepeatedly(ReturnRefOfCopy(senderChannelId));
+            .WillRepeatedly(ReturnRefOfCopy(QString::fromStdString(senderChannelId)));
 
     std::shared_ptr<InProcessMessagingAddress> messagingSkeletonEndpointAddr(
                 new InProcessMessagingAddress(inProcessMessagingSkeleton)
@@ -302,8 +302,8 @@ TEST_F(MessagingTest, routeMultipleMessages)
 
     messageRouter->addNextHop(receiverId2, messagingSkeletonEndpointAddr);
 
-    std::shared_ptr<system::RoutingTypes::QtChannelAddress> joynrMessagingEndpointAddr =
-            std::shared_ptr<system::RoutingTypes::QtChannelAddress>(new system::RoutingTypes::QtChannelAddress());
+    std::shared_ptr<system::RoutingTypes::ChannelAddress> joynrMessagingEndpointAddr =
+            std::shared_ptr<system::RoutingTypes::ChannelAddress>(new system::RoutingTypes::ChannelAddress());
     joynrMessagingEndpointAddr->setChannelId(receiverChannelId);
 
     messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr);
@@ -335,7 +335,7 @@ TEST_F(MessagingTest, DISABLED_messageSenderGetsAndUsesDifferentUrlsForOneChanne
 //    MockLocalChannelUrlDirectory mockDirectory;
 //    messageSender->init(mockDirectory, *settings);
 
-//    EXPECT_CALL(*mockDirectory, getUrlsForChannel(A<std::shared_ptr<Future<types::QtChannelUrlInformation> > >(), A<QString>(),A<int>()))
+//    EXPECT_CALL(*mockDirectory, getUrlsForChannel(A<std::shared_ptr<Future<types::ChannelUrlInformation> > >(), A<QString>(),A<int>()))
 //            .WillOnce(Invoke(messagingTestPseudoGetChannelUrls));
 
 

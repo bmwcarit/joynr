@@ -23,7 +23,7 @@ namespace joynr
 
 InProcessMessagingAddress::InProcessMessagingAddress(
         std::shared_ptr<InProcessMessagingSkeleton> skeleton)
-        : QtAddress(), skeleton(skeleton)
+        : Address(), skeleton(skeleton)
 {
 }
 

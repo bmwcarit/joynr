@@ -23,7 +23,7 @@
 
 #include "joynr/JsonSerializer.h"
 #include "joynr/JoynrMessage.h"
-#include "joynr/system/RoutingTypes_QtAddress.h"
+#include "joynr/system/RoutingTypes/Address.h"
 
 namespace joynr
 {
@@ -31,7 +31,7 @@ namespace joynr
 joynr_logging::Logger* WebSocketMessagingStub::logger =
         joynr_logging::Logging::getInstance()->getLogger("MSG", "WebSocketMessagingStub");
 
-WebSocketMessagingStub::WebSocketMessagingStub(system::RoutingTypes::QtAddress* address,
+WebSocketMessagingStub::WebSocketMessagingStub(const system::RoutingTypes::Address* address,
                                                QWebSocket* webSocket,
                                                QObject* parent)
         : QObject(parent), address(address), webSocket(webSocket)
@@ -53,15 +53,12 @@ WebSocketMessagingStub::~WebSocketMessagingStub()
     // QWebSocket.close() is a slot - call from the event loop
     QMetaObject::invokeMethod(webSocket, "close", Qt::QueuedConnection);
     webSocket->deleteLater();
-    address->deleteLater();
+    delete address;
 }
 
 void WebSocketMessagingStub::onSocketDisconnected()
 {
-    LOG_DEBUG(logger,
-              FormatString("Web Socket disconnected: %1")
-                      .arg(address->toString().toStdString())
-                      .str());
+    LOG_DEBUG(logger, FormatString("Web Socket disconnected: %1").arg(address->toString()).str());
     emit closed(*address);
 }
 
@@ -70,7 +67,7 @@ void WebSocketMessagingStub::sendTextMessage(const QString& message)
     LOG_TRACE(logger,
               FormatString("OUTGOING\nmessage: %1\nto: %2")
                       .arg(message.toStdString())
-                      .arg(address->toString().toStdString())
+                      .arg(address->toString())
                       .str());
     qint64 bytesSent = webSocket->sendTextMessage(message);
     bool flushed = webSocket->flush();
@@ -87,7 +84,7 @@ void WebSocketMessagingStub::transmit(JoynrMessage& message)
     if (!webSocket->isValid()) {
         LOG_ERROR(logger,
                   FormatString("WebSocket not ready %1. Unable to send message %2.")
-                          .arg(address->toString().toStdString())
+                          .arg(address->toString())
                           .arg(JsonSerializer::serialize(message))
                           .str());
         return;

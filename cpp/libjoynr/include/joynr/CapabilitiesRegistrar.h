@@ -50,9 +50,9 @@ public:
     CapabilitiesRegistrar(
             std::vector<IDispatcher*> dispatcherList,
             joynr::system::IDiscoverySync& discoveryProxy,
-            std::shared_ptr<joynr::system::RoutingTypes::QtAddress> messagingStubAddress,
+            std::shared_ptr<joynr::system::RoutingTypes::Address> messagingStubAddress,
             std::shared_ptr<ParticipantIdStorage> participantIdStorage,
-            std::shared_ptr<joynr::system::RoutingTypes::QtAddress> dispatcherAddress,
+            std::shared_ptr<joynr::system::RoutingTypes::Address> dispatcherAddress,
             std::shared_ptr<MessageRouter> messageRouter);
 
     template <class T>
@@ -160,9 +160,9 @@ private:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesRegistrar);
     std::vector<IDispatcher*> dispatcherList;
     joynr::system::IDiscoverySync& discoveryProxy;
-    std::shared_ptr<joynr::system::RoutingTypes::QtAddress> messagingStubAddress;
+    std::shared_ptr<joynr::system::RoutingTypes::Address> messagingStubAddress;
     std::shared_ptr<ParticipantIdStorage> participantIdStorage;
-    std::shared_ptr<joynr::system::RoutingTypes::QtAddress> dispatcherAddress;
+    std::shared_ptr<joynr::system::RoutingTypes::Address> dispatcherAddress;
     std::shared_ptr<MessageRouter> messageRouter;
     static joynr_logging::Logger* logger;
 };

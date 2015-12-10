@@ -21,7 +21,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/IMessaging.h"
 
-#include <QString>
+#include <string>
 
 #include <memory>
 
@@ -37,16 +37,16 @@ class JoynrMessagingStub : public IMessaging
 {
 public:
     explicit JoynrMessagingStub(std::shared_ptr<IMessageSender> messageSender,
-                                QString destinationChannelId,
-                                QString receiveChannelId);
+                                const std::string& destinationChannelId,
+                                const std::string& receiveChannelId);
     virtual ~JoynrMessagingStub();
     void transmit(JoynrMessage& message);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrMessagingStub);
     std::shared_ptr<IMessageSender> messageSender;
-    QString destinationChannelId;
-    QString receiveChannelId;
+    const std::string destinationChannelId;
+    const std::string receiveChannelId;
 };
 
 } // namespace joynr

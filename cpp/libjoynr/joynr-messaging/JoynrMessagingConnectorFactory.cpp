@@ -18,8 +18,6 @@
  */
 
 #include "joynr/JoynrMessagingConnectorFactory.h"
-#include "joynr/system/RoutingTypes_QtAddress.h"
-#include "joynr/system/RoutingTypes_QtChannelAddress.h"
 
 namespace joynr
 {

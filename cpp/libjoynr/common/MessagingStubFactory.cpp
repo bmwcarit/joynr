@@ -42,7 +42,7 @@ MessagingStubFactory::MessagingStubFactory()
 }
 
 std::shared_ptr<IMessaging> MessagingStubFactory::create(
-        const joynr::system::RoutingTypes::QtAddress& destinationAddress)
+        const joynr::system::RoutingTypes::Address& destinationAddress)
 {
     {
         std::lock_guard<std::mutex> lock(this->mutex);
@@ -67,13 +67,12 @@ std::shared_ptr<IMessaging> MessagingStubFactory::create(
     return address2MessagingStubDirectory.lookup(destinationAddress);
 }
 
-void MessagingStubFactory::remove(const joynr::system::RoutingTypes::QtAddress& destinationAddress)
+void MessagingStubFactory::remove(const joynr::system::RoutingTypes::Address& destinationAddress)
 {
     address2MessagingStubDirectory.remove(destinationAddress);
 }
 
-bool MessagingStubFactory::contains(
-        const joynr::system::RoutingTypes::QtAddress& destinationAddress)
+bool MessagingStubFactory::contains(const joynr::system::RoutingTypes::Address& destinationAddress)
 {
     return address2MessagingStubDirectory.contains(destinationAddress);
 }

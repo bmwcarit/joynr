@@ -25,8 +25,8 @@ namespace joynr
 {
 
 JoynrMessagingStub::JoynrMessagingStub(std::shared_ptr<IMessageSender> messageSender,
-                                       QString destinationChannelId,
-                                       QString receiveChannelId)
+                                       const std::string& destinationChannelId,
+                                       const std::string& receiveChannelId)
         : messageSender(messageSender),
           destinationChannelId(destinationChannelId),
           receiveChannelId(receiveChannelId)
@@ -42,9 +42,9 @@ void JoynrMessagingStub::transmit(JoynrMessage& message)
     if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST ||
         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST ||
         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
-        message.setHeaderReplyChannelId(receiveChannelId.toStdString());
+        message.setHeaderReplyChannelId(receiveChannelId);
     }
-    messageSender->sendMessage(destinationChannelId, message);
+    messageSender->sendMessage(QString::fromStdString(destinationChannelId), message);
 }
 
 } // namespace joynr

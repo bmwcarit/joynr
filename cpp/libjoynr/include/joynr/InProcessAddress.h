@@ -20,7 +20,7 @@
 #define INPROCESSADDRESS_H
 
 #include "joynr/JoynrExport.h"
-#include "joynr/system/RoutingTypes_QtAddress.h"
+#include "joynr/system/RoutingTypes/Address.h"
 
 #include <memory>
 
@@ -29,9 +29,8 @@ namespace joynr
 
 class RequestCaller;
 
-class JOYNR_EXPORT InProcessAddress : public joynr::system::RoutingTypes::QtAddress
+class JOYNR_EXPORT InProcessAddress : public joynr::system::RoutingTypes::Address
 {
-    Q_OBJECT
 public:
     virtual ~InProcessAddress();
     InProcessAddress(std::shared_ptr<RequestCaller> requestCaller);

@@ -24,7 +24,7 @@
 #include "joynr/Directory.h"
 #include "joynr/IMessagingStubFactory.h"
 #include "joynr/IMiddlewareMessagingStubFactory.h"
-#include "joynr/system/RoutingTypes_QtAddress.h"
+#include "joynr/system/RoutingTypes/Address.h"
 #include <string>
 #include <memory>
 #include <mutex>
@@ -57,16 +57,16 @@ public:
     MessagingStubFactory();
 
     std::shared_ptr<IMessaging> create(
-            const joynr::system::RoutingTypes::QtAddress& destinationAddress);
-    void remove(const joynr::system::RoutingTypes::QtAddress& destinationAddress);
-    bool contains(const joynr::system::RoutingTypes::QtAddress& destinationAddress);
+            const joynr::system::RoutingTypes::Address& destinationAddress);
+    void remove(const joynr::system::RoutingTypes::Address& destinationAddress);
+    bool contains(const joynr::system::RoutingTypes::Address& destinationAddress);
 
     void registerStubFactory(IMiddlewareMessagingStubFactory* factory);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MessagingStubFactory);
 
-    Directory<joynr::system::RoutingTypes::QtAddress, IMessaging> address2MessagingStubDirectory;
+    Directory<joynr::system::RoutingTypes::Address, IMessaging> address2MessagingStubDirectory;
     std::vector<IMiddlewareMessagingStubFactory*> factoryList;
     std::mutex mutex;
 };

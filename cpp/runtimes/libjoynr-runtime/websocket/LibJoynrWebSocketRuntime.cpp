@@ -43,15 +43,13 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(Settings* settings)
     // remove dashes
     uuid.erase(std::remove(uuid.begin(), uuid.end(), '-'), uuid.end());
     QString libjoynrMessagingId("libjoynr.messaging.participantid_" + TypeUtil::toQt(uuid));
-    std::shared_ptr<joynr::system::RoutingTypes::QtAddress> libjoynrMessagingAddress(
-            new system::RoutingTypes::QtWebSocketClientAddress(libjoynrMessagingId));
+    std::shared_ptr<joynr::system::RoutingTypes::Address> libjoynrMessagingAddress(
+            new system::RoutingTypes::WebSocketClientAddress(libjoynrMessagingId.toStdString()));
 
     // create connection to parent routing service
-    system::RoutingTypes::QtWebSocketAddress qtWsAddress =
-            system::RoutingTypes::QtWebSocketAddress::createQt(
-                    wsSettings.createClusterControllerMessagingAddress());
-    std::shared_ptr<joynr::system::RoutingTypes::QtWebSocketAddress> ccMessagingAddress(
-            new joynr::system::RoutingTypes::QtWebSocketAddress(qtWsAddress));
+    std::shared_ptr<joynr::system::RoutingTypes::WebSocketAddress> ccMessagingAddress(
+            new joynr::system::RoutingTypes::WebSocketAddress(
+                    wsSettings.createClusterControllerMessagingAddress()));
 
     websocket = new QWebSocket();
 
@@ -63,14 +61,12 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(Settings* settings)
     loop.exec();
 
     // send intialization message containing libjoynr messaging address
-    QString initializationMsg(QString::fromStdString(
-            JsonSerializer::serialize(system::RoutingTypes::QtWebSocketClientAddress::createStd(
-                    *std::static_pointer_cast<system::RoutingTypes::QtWebSocketClientAddress>(
-                            libjoynrMessagingAddress)))));
+    QString initializationMsg(
+            QString::fromStdString(JsonSerializer::serialize(*libjoynrMessagingAddress)));
     LOG_TRACE(logger,
               FormatString("OUTGOING sending websocket intialization message\nmessage: %1\nto: %2")
                       .arg(initializationMsg.toStdString())
-                      .arg(libjoynrMessagingAddress->toString().toStdString())
+                      .arg(libjoynrMessagingAddress->toString())
                       .str());
     websocket->sendTextMessage(initializationMsg);
 

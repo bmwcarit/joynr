@@ -137,15 +137,15 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     messageRouter = std::shared_ptr<MessageRouter>(
             new MessageRouter(messagingStubFactory, securityManager));
     // provision global capabilities directory
-    std::shared_ptr<joynr::system::RoutingTypes::QtAddress> globalCapabilitiesDirectoryAddress(
-            new system::RoutingTypes::QtChannelAddress(
-                    TypeUtil::toQt(messagingSettings->getCapabilitiesDirectoryChannelId())));
+    std::shared_ptr<joynr::system::RoutingTypes::Address> globalCapabilitiesDirectoryAddress(
+            new system::RoutingTypes::ChannelAddress(
+                    messagingSettings->getCapabilitiesDirectoryChannelId()));
     messageRouter->addProvisionedNextHop(messagingSettings->getCapabilitiesDirectoryParticipantId(),
                                          globalCapabilitiesDirectoryAddress);
     // provision channel url directory
-    std::shared_ptr<joynr::system::RoutingTypes::QtAddress> globalChannelUrlDirectoryAddress(
-            new system::RoutingTypes::QtChannelAddress(
-                    TypeUtil::toQt(messagingSettings->getChannelUrlDirectoryChannelId())));
+    std::shared_ptr<joynr::system::RoutingTypes::Address> globalChannelUrlDirectoryAddress(
+            new system::RoutingTypes::ChannelAddress(
+                    messagingSettings->getChannelUrlDirectoryChannelId()));
     messageRouter->addProvisionedNextHop(messagingSettings->getChannelUrlDirectoryParticipantId(),
                                          globalChannelUrlDirectoryAddress);
 
@@ -193,8 +193,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                                messagingSettings->getSendMsgMaxTtl(),
                                messagingSettings->getSendMsgRetryInterval()));
     }
-    messagingStubFactory->registerStubFactory(
-            new JoynrMessagingStubFactory(messageSender, messageReceiver->getReceiveChannelId()));
+    messagingStubFactory->registerStubFactory(new JoynrMessagingStubFactory(
+            messageSender, messageReceiver->getReceiveChannelId().toStdString()));
 
     // joynrMessagingSendSkeleton = new DummyClusterControllerMessagingSkeleton(messageRouter);
     // ccDispatcher = DispatcherFactory::createDispatcherInSameThread(messagingSettings);
@@ -226,7 +226,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     publicationManager = new PublicationManager();
     subscriptionManager = new SubscriptionManager();
     inProcessPublicationSender = new InProcessPublicationSender(subscriptionManager);
-    std::shared_ptr<joynr::system::RoutingTypes::QtAddress> libjoynrMessagingAddress(
+    std::shared_ptr<joynr::system::RoutingTypes::Address> libjoynrMessagingAddress(
             new InProcessMessagingAddress(libJoynrMessagingSkeleton));
     // subscriptionManager = new SubscriptionManager(...)
     inProcessConnectorFactory = new InProcessConnectorFactory(

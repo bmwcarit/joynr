@@ -78,8 +78,8 @@ LibJoynrRuntime::~LibJoynrRuntime()
 
 void LibJoynrRuntime::init(
         IMiddlewareMessagingStubFactory* middlewareMessagingStubFactory,
-        std::shared_ptr<joynr::system::RoutingTypes::QtAddress> libjoynrMessagingAddress,
-        std::shared_ptr<joynr::system::RoutingTypes::QtAddress> ccMessagingAddress)
+        std::shared_ptr<joynr::system::RoutingTypes::Address> libjoynrMessagingAddress,
+        std::shared_ptr<joynr::system::RoutingTypes::Address> ccMessagingAddress)
 {
     // create messaging stub factory
     MessagingStubFactory* messagingStubFactory = new MessagingStubFactory();
@@ -99,7 +99,7 @@ void LibJoynrRuntime::init(
     // create the inprocess skeleton for the dispatcher
     dispatcherMessagingSkeleton = std::shared_ptr<InProcessMessagingSkeleton>(
             new InProcessLibJoynrMessagingSkeleton(joynrDispatcher));
-    dispatcherAddress = std::shared_ptr<joynr::system::RoutingTypes::QtAddress>(
+    dispatcherAddress = std::shared_ptr<joynr::system::RoutingTypes::Address>(
             new InProcessMessagingAddress(dispatcherMessagingSkeleton));
 
     publicationManager = new PublicationManager();

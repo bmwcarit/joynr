@@ -31,9 +31,9 @@ joynr_logging::Logger* CapabilitiesRegistrar::logger =
 CapabilitiesRegistrar::CapabilitiesRegistrar(
         std::vector<IDispatcher*> dispatcherList,
         joynr::system::IDiscoverySync& discoveryProxy,
-        std::shared_ptr<joynr::system::RoutingTypes::QtAddress> messagingStubAddress,
+        std::shared_ptr<joynr::system::RoutingTypes::Address> messagingStubAddress,
         std::shared_ptr<ParticipantIdStorage> participantIdStorage,
-        std::shared_ptr<joynr::system::RoutingTypes::QtAddress> dispatcherAddress,
+        std::shared_ptr<system::RoutingTypes::Address> dispatcherAddress,
         std::shared_ptr<MessageRouter> messageRouter)
         : dispatcherList(dispatcherList),
           discoveryProxy(discoveryProxy),

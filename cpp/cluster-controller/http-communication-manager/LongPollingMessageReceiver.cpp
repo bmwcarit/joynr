@@ -29,7 +29,7 @@
 #include "joynr/Future.h"
 #include "joynr/types/ChannelUrlInformation.h"
 #include "joynr/JoynrMessage.h"
-#include "joynr/system/RoutingTypes_QtChannelAddress.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/MessageRouter.h"
 #include "joynr/JoynrMessage.h"
 
@@ -219,9 +219,9 @@ void LongPollingMessageReceiver::processReceivedJsonObjects(const std::string& j
         msg->getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST ||
         msg->getType() == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
         // TODO ca: check if replyTo header info is available?
-        QString replyChannelId = QString::fromStdString(msg->getHeaderReplyChannelId());
-        std::shared_ptr<system::RoutingTypes::QtChannelAddress> address(
-                new system::RoutingTypes::QtChannelAddress(replyChannelId));
+        std::string replyChannelId = msg->getHeaderReplyChannelId();
+        std::shared_ptr<system::RoutingTypes::ChannelAddress> address(
+                new system::RoutingTypes::ChannelAddress(replyChannelId));
         messageRouter->addNextHop(
                 QString::fromStdString(msg->getHeaderFrom()).toStdString(), address);
     }

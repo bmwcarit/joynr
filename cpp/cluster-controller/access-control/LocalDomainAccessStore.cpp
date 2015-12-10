@@ -423,7 +423,7 @@ bool LocalDomainAccessStore::updateDomainRole(const DomainRoleEntry& updatedEntr
 {
     LOG_DEBUG(logger,
               FormatString("execute: entering updateDomainRoleEntry with uId %1")
-                      .arg(updatedEntry.getUid().toStdString())
+                      .arg(updatedEntry.getUid())
                       .str());
 
     bool updateSuccess = insertDomainRoleEntry(QString::fromStdString(updatedEntry.getUid()),
@@ -513,7 +513,7 @@ bool LocalDomainAccessStore::updateMasterAccessControlEntry(
 {
     LOG_DEBUG(logger,
               FormatString("execute: entering updateMasterAce with uId %1")
-                      .arg(updatedMasterAce.getUid().toStdString())
+                      .arg(updatedMasterAce.getUid())
                       .str());
 
     // Add/update a master ACE
@@ -595,7 +595,7 @@ bool LocalDomainAccessStore::updateMediatorAccessControlEntry(
 {
     LOG_DEBUG(logger,
               FormatString("execute: entering updateMediatorAce with uId %1")
-                      .arg(updatedMediatorAce.getUid().toStdString())
+                      .arg(updatedMediatorAce.getUid())
                       .str());
 
     bool updateSuccess = false;
@@ -701,7 +701,7 @@ bool LocalDomainAccessStore::updateOwnerAccessControlEntry(
 {
     LOG_DEBUG(logger,
               FormatString("execute: entering updateOwnerAce with uId %1")
-                      .arg(updatedOwnerAce.getUid().toStdString())
+                      .arg(updatedOwnerAce.getUid())
                       .str());
 
     bool updateSuccess = false;

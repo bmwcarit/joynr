@@ -30,7 +30,7 @@ namespace system
 
 namespace RoutingTypes
 {
-class QtAddress;
+class Address;
 }
 }
 class IMessaging;
@@ -42,9 +42,9 @@ public:
     {
     }
     virtual std::shared_ptr<IMessaging> create(
-            const joynr::system::RoutingTypes::QtAddress& destEndpointAddress) = 0;
-    virtual void remove(const joynr::system::RoutingTypes::QtAddress& destParticipantId) = 0;
-    virtual bool contains(const joynr::system::RoutingTypes::QtAddress& destParticipantId) = 0;
+            const joynr::system::RoutingTypes::Address& destEndpointAddress) = 0;
+    virtual void remove(const joynr::system::RoutingTypes::Address& destParticipantId) = 0;
+    virtual bool contains(const joynr::system::RoutingTypes::Address& destParticipantId) = 0;
 };
 
 } // namespace joynr

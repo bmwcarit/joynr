@@ -24,9 +24,12 @@
 #include <assert.h>
 
 #include "websocket/WebSocketMessagingStub.h"
-#include "joynr/system/RoutingTypes_QtAddress.h"
+#include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes_QtWebSocketAddress.h"
+#include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes_QtWebSocketClientAddress.h"
+#include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
+#include "joynr/TypeUtil.h"
 
 namespace joynr
 {
@@ -40,117 +43,112 @@ WebSocketMessagingStubFactory::WebSocketMessagingStubFactory(QObject* parent)
 }
 
 bool WebSocketMessagingStubFactory::canCreate(
-        const joynr::system::RoutingTypes::QtAddress& destAddress)
+        const joynr::system::RoutingTypes::Address& destAddress)
 {
-    return destAddress.inherits(
-                   system::RoutingTypes::QtWebSocketAddress::staticMetaObject.className()) ||
-           destAddress.inherits(
-                   system::RoutingTypes::QtWebSocketClientAddress::staticMetaObject.className());
+    return dynamic_cast<const system::RoutingTypes::WebSocketAddress*>(&destAddress) ||
+           dynamic_cast<const system::RoutingTypes::WebSocketClientAddress*>(&destAddress);
 }
 
 std::shared_ptr<IMessaging> WebSocketMessagingStubFactory::create(
-        const joynr::system::RoutingTypes::QtAddress& destAddress)
+        const joynr::system::RoutingTypes::Address& destAddress)
 {
     // if destination is a WS client address
-    if (destAddress.inherits(
-                system::RoutingTypes::QtWebSocketClientAddress::staticMetaObject.className())) {
-        const system::RoutingTypes::QtWebSocketClientAddress* webSocketClientAddress =
-                qobject_cast<const system::RoutingTypes::QtWebSocketClientAddress*>(&destAddress);
+    if (auto webSocketClientAddress =
+                dynamic_cast<const system::RoutingTypes::WebSocketClientAddress*>(&destAddress)) {
         // lookup address
         {
             std::lock_guard<std::mutex> lock(mutex);
-            if (!clientStubMap.contains(*webSocketClientAddress)) {
+            if (clientStubMap.find(*webSocketClientAddress) == clientStubMap.cend()) {
                 LOG_ERROR(logger,
                           FormatString("No websocket found for address %1")
-                                  .arg(webSocketClientAddress->toString().toStdString())
+                                  .arg(webSocketClientAddress->toString())
                                   .str());
+                return std::shared_ptr<IMessaging>();
             }
         }
-        return clientStubMap.value(*webSocketClientAddress, std::shared_ptr<IMessaging>());
+        return clientStubMap[*webSocketClientAddress];
     }
     // if destination is a WS server address
-    if (destAddress.inherits(
-                system::RoutingTypes::QtWebSocketAddress::staticMetaObject.className())) {
-        const system::RoutingTypes::QtWebSocketAddress* webSocketServerAddress =
-                qobject_cast<const system::RoutingTypes::QtWebSocketAddress*>(&destAddress);
+    if (const system::RoutingTypes::WebSocketAddress* webSocketServerAddress =
+                dynamic_cast<const system::RoutingTypes::WebSocketAddress*>(&destAddress)) {
         // lookup address
         {
             std::lock_guard<std::mutex> lock(mutex);
-            if (!serverStubMap.contains(*webSocketServerAddress)) {
+            if (serverStubMap.find(*webSocketServerAddress) == serverStubMap.cend()) {
                 LOG_ERROR(logger,
                           FormatString("No websocket found for address %1")
-                                  .arg(webSocketServerAddress->toString().toStdString())
+                                  .arg(webSocketServerAddress->toString())
                                   .str());
+                return std::shared_ptr<IMessaging>();
             }
         }
-        return serverStubMap.value(*webSocketServerAddress, std::shared_ptr<IMessaging>());
+        return serverStubMap[*webSocketServerAddress];
     }
 
     return std::shared_ptr<IMessaging>();
 }
 
 void WebSocketMessagingStubFactory::addClient(
-        const joynr::system::RoutingTypes::QtWebSocketClientAddress& clientAddress,
+        const joynr::system::RoutingTypes::WebSocketClientAddress* clientAddress,
         QWebSocket* webSocket)
 {
-    WebSocketMessagingStub* wsClientStub = new WebSocketMessagingStub(
-            new joynr::system::RoutingTypes::QtWebSocketClientAddress(clientAddress), webSocket);
+    WebSocketMessagingStub* wsClientStub = new WebSocketMessagingStub(clientAddress, webSocket);
     connect(wsClientStub,
             &WebSocketMessagingStub::closed,
             this,
             &WebSocketMessagingStubFactory::onMessagingStubClosed);
     std::shared_ptr<IMessaging> clientStub(wsClientStub);
-    clientStubMap.insert(clientAddress, clientStub);
+    clientStubMap[*clientAddress] = clientStub;
 }
 
 void WebSocketMessagingStubFactory::removeClient(
-        const joynr::system::RoutingTypes::QtWebSocketClientAddress& clientAddress)
+        const joynr::system::RoutingTypes::WebSocketClientAddress& clientAddress)
 {
-    clientStubMap.remove(clientAddress);
+    clientStubMap.erase(clientAddress);
 }
 
 void WebSocketMessagingStubFactory::addServer(
-        const system::RoutingTypes::QtWebSocketAddress& serverAddress,
+        const joynr::system::RoutingTypes::WebSocketAddress& serverAddress,
         QWebSocket* webSocket)
 {
+
     WebSocketMessagingStub* wsServerStub = new WebSocketMessagingStub(
-            new joynr::system::RoutingTypes::QtWebSocketAddress(serverAddress), webSocket);
+            new system::RoutingTypes::WebSocketAddress(serverAddress), webSocket);
     connect(wsServerStub,
             &WebSocketMessagingStub::closed,
             this,
             &WebSocketMessagingStubFactory::onMessagingStubClosed);
     std::shared_ptr<IMessaging> serverStub(wsServerStub);
-    serverStubMap.insert(serverAddress, serverStub);
+    serverStubMap[serverAddress] = serverStub;
 }
 
 void WebSocketMessagingStubFactory::onMessagingStubClosed(
-        const system::RoutingTypes::QtAddress& address)
+        const system::RoutingTypes::Address& address)
 {
-    LOG_DEBUG(logger,
-              FormatString("removing messaging stub for address: %1")
-                      .arg(address.toString().toStdString())
-                      .str());
-    if (address.inherits(
-                system::RoutingTypes::QtWebSocketClientAddress::staticMetaObject.className())) {
-        const system::RoutingTypes::QtWebSocketClientAddress* wsClientAddress =
-                qobject_cast<const system::RoutingTypes::QtWebSocketClientAddress*>(&address);
-        clientStubMap.remove(*wsClientAddress);
+    LOG_DEBUG(
+            logger,
+            FormatString("removing messaging stub for address: %1").arg(address.toString()).str());
+    // if destination is a WS client address
+    if (auto webSocketClientAddress =
+                dynamic_cast<const system::RoutingTypes::WebSocketClientAddress*>(&address)) {
+        clientStubMap.erase(*webSocketClientAddress);
     }
-    if (address.inherits(system::RoutingTypes::QtWebSocketAddress::staticMetaObject.className())) {
-        const system::RoutingTypes::QtWebSocketAddress* wsServerAddress =
-                qobject_cast<const system::RoutingTypes::QtWebSocketAddress*>(&address);
-        serverStubMap.remove(*wsServerAddress);
+    if (auto webSocketServerAddress =
+                dynamic_cast<const system::RoutingTypes::WebSocketAddress*>(&address)) {
+        serverStubMap.erase(*webSocketServerAddress);
     }
 }
 
 QUrl WebSocketMessagingStubFactory::convertWebSocketAddressToUrl(
-        const system::RoutingTypes::QtWebSocketAddress& address)
+        const system::RoutingTypes::WebSocketAddress& address)
 {
-    return QUrl(QString("%1://%2:%3%4")
-                        .arg(address.getProtocolInternal().toLower())
-                        .arg(address.getHost())
+    return QUrl(QString("%0://%1:%2%3")
+                        .arg(QString::fromStdString(
+                                     joynr::system::RoutingTypes::WebSocketProtocol::getLiteral(
+                                             address.getProtocol())).toLower())
+                        .arg(QString::fromStdString(address.getHost()))
                         .arg(address.getPort())
-                        .arg(address.getPath()));
+                        .arg(QString::fromStdString(address.getPath())));
 }
 
 } // namespace joynr

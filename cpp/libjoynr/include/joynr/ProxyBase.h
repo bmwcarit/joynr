@@ -23,7 +23,6 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/MessagingQos.h"
-#include "joynr/system/RoutingTypes_QtAddress.h"
 #include "joynr/types/CommunicationMiddleware.h"
 #include <string>
 

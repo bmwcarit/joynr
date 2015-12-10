@@ -70,7 +70,7 @@ public:
 	 * @param cached True, if cached, false otherwise
 	 */
 	«syncClassName»(
-			std::shared_ptr<joynr::system::RoutingTypes::QtAddress> messagingAddress,
+			std::shared_ptr<joynr::system::RoutingTypes::Address> messagingAddress,
 			joynr::ConnectorFactory* connectorFactory,
 			joynr::IClientCache* cache,
 			const std::string& domain,

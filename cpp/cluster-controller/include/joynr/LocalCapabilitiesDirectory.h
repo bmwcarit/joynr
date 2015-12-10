@@ -42,6 +42,8 @@
 #include "joynr/system/DiscoveryAbstractProvider.h"
 #include "joynr/types/DiscoveryQos.h"
 #include "joynr/Semaphore.h"
+#include "common/InterfaceAddress.h"
+#include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
 #include <vector>
 
 #include <memory>

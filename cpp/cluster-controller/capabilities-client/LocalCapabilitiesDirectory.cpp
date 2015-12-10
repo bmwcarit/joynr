@@ -20,10 +20,10 @@
 #include "joynr/infrastructure/IGlobalCapabilitiesDirectory.h"
 #include "joynr/infrastructure/IChannelUrlDirectory.h"
 #include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
-#include "joynr/system/RoutingTypes_QtChannelAddress.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/CapabilityEntry.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
-#include "joynr/system/RoutingTypes_QtAddress.h"
+#include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/MessageRouter.h"
 #include "common/InterfaceAddress.h"
 
@@ -395,9 +395,8 @@ void LocalCapabilitiesDirectory::registerReceivedCapabilities(
     while (entryIterator.hasNext()) {
         entryIterator.next();
         CapabilityEntry currentEntry = entryIterator.value();
-        std::shared_ptr<joynr::system::RoutingTypes::QtAddress> joynrAddress(
-                new system::RoutingTypes::QtChannelAddress(
-                        QString::fromStdString(entryIterator.key())));
+        std::shared_ptr<joynr::system::RoutingTypes::Address> joynrAddress(
+                new system::RoutingTypes::ChannelAddress(entryIterator.key()));
         messageRouter.addNextHop(currentEntry.getParticipantId().toStdString(), joynrAddress);
         this->insertInCache(currentEntry, false, true);
     }
