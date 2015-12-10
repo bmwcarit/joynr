@@ -34,7 +34,6 @@
 #include "joynr/JoynrMessage.h"
 #include "joynr/JsonSerializer.h"
 #include "joynr/joynrlogging.h"
-#include "joynr/DeclareMetatypeUtil.h"
 #include "joynr/system/RoutingTypes_QtChannelAddress.h"
 #include "joynr/system/RoutingTypes_QtCommonApiDbusAddress.h"
 #include "joynr/system/RoutingTypes_QtWebSocketAddress.h"

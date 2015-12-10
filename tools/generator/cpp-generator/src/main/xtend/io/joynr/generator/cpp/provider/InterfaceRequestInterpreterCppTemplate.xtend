@@ -52,7 +52,6 @@ class InterfaceRequestInterpreterCppTemplate implements InterfaceTemplate{
 
 #include "joynr/Request.h"
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestCaller.h"
-#include "joynr/DeclareMetatypeUtil.h"
 #include "joynr/Util.h"
 #include "joynr/TypeUtil.h"
 #include "joynr/RequestStatus.h"

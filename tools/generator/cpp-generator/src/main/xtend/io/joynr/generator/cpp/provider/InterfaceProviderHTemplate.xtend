@@ -52,7 +52,6 @@ class InterfaceProviderHTemplate implements InterfaceTemplate{
 
 #include "joynr/IJoynrProvider.h"
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName».h"
-#include "joynr/DeclareMetatypeUtil.h"
 #include "joynr/RequestCallerFactory.h"
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestCaller.h"
 

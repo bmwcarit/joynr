@@ -25,7 +25,6 @@
 #include "joynr/types/Localisation/Trip.h"
 #include "joynr/JsonSerializer.h"
 #include "joynr/joynrlogging.h"
-#include "joynr/DeclareMetatypeUtil.h"
 #include "joynr/Util.h"
 
 #include "joynr/types/TestTypes/TStruct.h"

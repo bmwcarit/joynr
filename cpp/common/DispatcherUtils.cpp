@@ -16,7 +16,6 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/DeclareMetatypeUtil.h"
 #include "joynr/DispatcherUtils.h"
 
 #include <limits>

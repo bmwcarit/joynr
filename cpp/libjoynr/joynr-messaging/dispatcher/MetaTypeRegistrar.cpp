@@ -17,7 +17,6 @@
  * #L%
  */
 #include "joynr/MetaTypeRegistrar.h"
-#include "joynr/DeclareMetatypeUtil.h"
 
 namespace joynr
 {

@@ -20,7 +20,6 @@
 #include "joynr/JoynrMessageFactory.h"
 #include "utils/TestQString.h"
 #include "joynr/Request.h"
-#include "joynr/DeclareMetatypeUtil.h"
 #include "joynr/Reply.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/SubscriptionPublication.h"

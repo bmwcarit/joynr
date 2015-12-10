@@ -49,7 +49,6 @@ class TypeCppTemplate implements CompoundTypeTemplate{
 
 #include "«type.includeOf»"
 #include "joynr/Reply.h"
-#include "joynr/DeclareMetatypeUtil.h"
 #include "joynr/Util.h"
 #include "joynr/TypeUtil.h"
 #include <QMetaEnum>

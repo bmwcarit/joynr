@@ -20,8 +20,6 @@
 #define DISPATCHERUTILS_H
 
 #include "joynr/JoynrCommonExport.h"
-
-#include "joynr/DeclareMetatypeUtil.h"
 #include "joynr/joynrlogging.h"
 
 #include <stdint.h>
