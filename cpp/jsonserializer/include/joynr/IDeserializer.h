@@ -87,19 +87,19 @@ public:
     virtual bool isObject() const = 0;
 
     template<typename T>
-    T getIntType()
+    T getIntType() const
     {
         return static_cast<T>(getInt64());
     }
 
     template<typename T>
-    T getDoubleType()
+    T getDoubleType() const
     {
         return static_cast<T>(getDouble());
     }
 
     template<typename T>
-    T getUIntType()
+    T getUIntType() const
     {
         return static_cast<T>(getUInt64());
     }
