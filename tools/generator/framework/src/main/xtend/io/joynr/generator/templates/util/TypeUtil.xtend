@@ -297,18 +297,18 @@ class TypeUtil {
 		}
 	}
 
-	def boolean isComplex(FType type) {
+	def boolean isCompound(FType type) {
 		if (type==null){
 			return false
 		}
 		if (type instanceof FArrayType){
-			return isComplex(type.elementType)
+			return isCompound(type.elementType)
 		}
 		if (type instanceof FCompoundType){
 			return true
 		}
 		if (type instanceof FTypeDef){
-			return isComplex(type.actualType)
+			return isCompound(type.actualType)
 		}
 		if (type instanceof FEnumerationType){
 			return false
@@ -319,12 +319,12 @@ class TypeUtil {
 		return false
 	}
 
-	def boolean isComplex(FTypeRef typeRef) {
+	def boolean isCompound(FTypeRef typeRef) {
 		if (typeRef == null){
 			return false;
 		}
 		if (typeRef.derived!=null){
-			return isComplex(typeRef.derived)
+			return isCompound(typeRef.derived)
 		}
 		return false
 	}
@@ -408,16 +408,16 @@ class TypeUtil {
 		datatype.elements.filter(element | isEnum(element.type));
 	}
 
+	def getCompoundMembers(FCompoundType datatype) {
+		datatype.elements.filter(element | isCompound(element.type));
+	}
+
 	def getComplexMembers(FCompoundType datatype) {
-		datatype.elements.filter(element | isComplex(element.type));
+		datatype.elements.filter(element | isMap(element.type) || isCompound(element.type) || isEnum(element.type) || isArray(element));
 	}
 
-	def getComplexAndEnumMembers(FCompoundType datatype) {
-		datatype.elements.filter(element | isComplex(element.type) || isEnum(element.type) || isArray(element));
-	}
-
-	def filterComplexAndEnum(Iterable<Object> iterable) {
-		iterable.filter[type | type instanceof FType && ((type as FType).complex || (type as FType).enum || (type as FType).map)]
+	def filterComplex(Iterable<Object> iterable) {
+		iterable.filter[type | type instanceof FType && ((type as FType).map || (type as FType).compound || (type as FType).enum || (type as FType).map)]
 	}
 
 	def boolean isPartOfTypeCollection(FType datatype) {

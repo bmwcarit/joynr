@@ -27,6 +27,7 @@ import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
+import org.franca.core.franca.FType
 
 class InterfaceRequestInterpreterCppTemplate implements InterfaceTemplate{
 

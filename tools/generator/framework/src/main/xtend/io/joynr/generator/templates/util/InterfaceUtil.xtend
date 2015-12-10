@@ -205,11 +205,11 @@ public class InterfaceUtil {
 		getAllRequiredTypes(fInterface, includingTransitiveTypes, true, true, true, true, true, false);
 	}
 
-	def getAllComplexAndEnumTypes(FInterface fInterface, Boolean includingTransitiveTypes) {
-		getAllComplexAndEnumTypes(fInterface, includingTransitiveTypes, true, true, true, true, true)
+	def getAllComplexTypes(FInterface fInterface, Boolean includingTransitiveTypes) {
+		getAllComplexTypes(fInterface, includingTransitiveTypes, true, true, true, true, true)
 	}
 
-	def getAllComplexAndEnumTypes(
+	def getAllComplexTypes(
 			FInterface fInterface,
 			Boolean includingTransitiveTypes,
 			boolean methods,
@@ -218,10 +218,10 @@ public class InterfaceUtil {
 			boolean notifyAttributes,
 			boolean broadcasts
 			) {
-			getAllComplexAndEnumTypes(fInterface, includingTransitiveTypes, methods, readAttributes, writeAttributes, notifyAttributes, broadcasts, false)
+			getAllComplexTypes(fInterface, includingTransitiveTypes, methods, readAttributes, writeAttributes, notifyAttributes, broadcasts, false)
 			}
 
-	def getAllComplexAndEnumTypes(
+	def getAllComplexTypes(
 			FInterface fInterface,
 			Boolean includingTransitiveTypes,
 			boolean methods,
@@ -232,7 +232,7 @@ public class InterfaceUtil {
 			boolean errorTypes
 	) {
 		getAllRequiredTypes(fInterface, includingTransitiveTypes, methods, readAttributes, writeAttributes, notifyAttributes, broadcasts, errorTypes).
-			filterComplexAndEnum
+			filterComplex
 	}
 
 	def private void getAllReferredDatatypes(Iterable<Object> list, HashSet<Object> cache) {
@@ -249,11 +249,11 @@ public class InterfaceUtil {
 		}
 	}
 
-	def getAllComplexAndEnumTypes(FInterface fInterface) {
-		getAllComplexAndEnumTypes(fInterface, false)
+	def getAllComplexTypes(FInterface fInterface) {
+		getAllComplexTypes(fInterface, false)
 	}
 
-	def getAllComplexAndEnumTypes(
+	def getAllComplexTypes(
 			FInterface fInterface,
 			boolean methods,
 			boolean readAttributes,
@@ -261,7 +261,7 @@ public class InterfaceUtil {
 			boolean notifyAttributes,
 			boolean broadcasts
 	) {
-		getAllComplexAndEnumTypes(fInterface, false, methods, readAttributes, writeAttributes, notifyAttributes, broadcasts)
+		getAllComplexTypes(fInterface, false, methods, readAttributes, writeAttributes, notifyAttributes, broadcasts)
 	}
 
 	def boolean hasReadAttribute(FInterface interfaceType){

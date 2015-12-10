@@ -197,7 +197,8 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 			else{
 				return member.getDEFAULTVALUE();
 			}
-		} else */if (isComplex(element.type)) {
+		} else */
+		if (isCompound(element.type)) {
 			return "";
 		} else if (isArray(element)){
 			return "";
@@ -211,7 +212,7 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 	}
 
 	def Iterable<String> getRequiredIncludesFor(FCompoundType datatype){
-		val members = getComplexAndEnumMembers(datatype);
+		val members = getComplexMembers(datatype);
 
 		val typeList = new TreeSet<String>();
 		if (hasExtendsDeclaration(datatype)){
@@ -250,7 +251,7 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 
 	def Set<String> getRequiredIncludesFor(FInterface serviceInterface){
 		val includeSet = new HashSet<String>();
-		for(datatype: getAllComplexAndEnumTypes(
+		for(datatype: getAllComplexTypes(
 			serviceInterface,
 			false,
 			true,

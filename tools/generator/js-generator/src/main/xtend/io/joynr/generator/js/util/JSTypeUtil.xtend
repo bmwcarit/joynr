@@ -87,16 +87,16 @@ class JSTypeUtil extends AbstractTypeUtil {
 
 	override getTypeName(FType datatype) {
 		if (isEnum(datatype)){
-			return getEnumType(datatype).joynrName;
+			return datatype.enumType.joynrName;
 		}
 		if (isPrimitive(datatype)){
-			return getTypeName(getPrimitive(datatype))
+			return datatype.getPrimitive.typeName
 		}
-		if (isComplex(datatype)){
-			return getCompoundType(datatype).joynrName
+		if (isCompound(datatype)){
+			return datatype.compoundType.joynrName
 		}
 		if (isMap(datatype)){
-			return getMapType(datatype).joynrName
+			return datatype.mapType.joynrName
 		}
 		throw new IllegalStateException("JoynrJSGeneratorExtensions.getMappedDatatype: unsupported state, datatype " +
 			datatype.joynrName + " could not be mapped to an implementation datatype")
@@ -127,7 +127,7 @@ class JSTypeUtil extends AbstractTypeUtil {
 			}
 			return "\"Number\""
 		} else {
-			if (type.complex) {
+			if (type.isCompound || type.isMap) {
 				return "\"" + type.derived.joynrName + "\""
 			}
 			else {
@@ -152,17 +152,17 @@ class JSTypeUtil extends AbstractTypeUtil {
 	}
 
 	def getJsdocTypeName(FType datatype) {
-		if (isEnum(datatype)){
+		if (datatype.isEnum){
 			return  datatype.name
 		}
-		if (isPrimitive(datatype)){
-			return getTypeName(getPrimitive(datatype))
+		if (datatype.isPrimitive){
+			return datatype.getPrimitive.typeName
 		}
-		if (isComplex(datatype)){
-			return getCompoundType(datatype).joynrName
+		if (datatype.isCompound){
+			return datatype.compoundType.joynrName
 		}
-		if (isMap(datatype)){
-			return getMapType(datatype).joynrName
+		if (datatype.isMap){
+			return datatype.mapType.joynrName
 		}
 		throw new IllegalStateException("JoynrJSGeneratorExtensions.getMappedDatatype: unsupported state, datatype " +
 			datatype.joynrName + " could not be mapped to an implementation datatype")
@@ -255,7 +255,7 @@ class JSTypeUtil extends AbstractTypeUtil {
 	//				return member.getDEFAULTVALUE();
 	//			}
 	//		} else
-			if (isComplex(element.type)) {
+			if (element.type.isCompound) {
 				buffer.append("new ")
 				buffer.append(getCompoundType(element.type).joynrName)
 				buffer.append("()");

@@ -132,7 +132,7 @@ abstract class JoynrGeneratorExtensions {
 	}
 
 	def getCompoundDataTypes(FModel fModel) {
-		getDataTypes(fModel).filter(type | type.isComplex).map(type | type.compoundType).filterNull
+		getDataTypes(fModel).filter(type | type.isCompound).map(type | type.compoundType).filterNull
 	}
 
 	def getPrimitiveDataTypes() {

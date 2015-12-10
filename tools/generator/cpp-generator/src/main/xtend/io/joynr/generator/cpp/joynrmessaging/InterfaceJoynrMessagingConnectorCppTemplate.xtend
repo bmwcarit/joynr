@@ -54,7 +54,7 @@ internalRequestObject.setMethodName("«method.joynrName»");
 		internalRequestObject.addParam(Variant::make<«getTypeName(param)»>(«param.name»), "«getJoynrTypeName(param)»");
 	«ELSEIF isArray(param)»
 		internalRequestObject.addParam(TypeUtil::toVariant<«getTypeName(param.type)»>(«param.name»), "«getJoynrTypeName(param)»");
-	«ELSEIF isComplex(param.type)»
+	«ELSEIF isCompound(param.type)»
 		internalRequestObject.addParam(Variant::make<«getTypeName(param)»>(«param.name»), "«getJoynrTypeName(param)»");
 	«ELSE»
 		internalRequestObject.addParam(Variant::make<«getTypeName(param)»>(«param.name»), "«getJoynrTypeName(param)»");
@@ -96,9 +96,9 @@ internalRequestObject.setMethodName("«method.joynrName»");
 	«ENDIF»
 «ENDFOR»
 
-«FOR datatype: getAllComplexAndEnumTypes(serviceInterface)»
+«FOR datatype: getAllComplexTypes(serviceInterface)»
 «IF datatype instanceof FType»
-	«IF isComplex(datatype)»
+	«IF isCompound(datatype)»
 		#include "«getIncludeOf(datatype)»"
 	«ENDIF»
 «ENDIF»

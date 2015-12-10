@@ -166,7 +166,7 @@ std::string «typeName»::toString() const {
 			typeAsString << "«memberName»:" + get«memberName.toFirstUpper»();
 		«ELSEIF isEnum(member.type)»
 			typeAsString << "«memberName»:" + get«memberName.toFirstUpper»Internal();
-		«ELSEIF isComplex(member.type)»
+		«ELSEIF isCompound(member.type)»
 			typeAsString << "«memberName»:" + get«memberName.toFirstUpper»().toString();
 		«ELSE»
 			typeAsString << "«memberName»:" + std::to_string(get«memberName.toFirstUpper»());

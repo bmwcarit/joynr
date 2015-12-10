@@ -56,7 +56,7 @@ class InterfaceProviderCppTemplate implements InterfaceTemplate{
 	// Register a request interpreter to interpret requests to this interface
 	joynr::InterfaceRegistrar::instance().registerRequestInterpreter<«interfaceName»RequestInterpreter>(INTERFACE_NAME());
 
-	«val typeObjs = getAllComplexAndEnumTypes(serviceInterface, true)»
+	«val typeObjs = getAllComplexTypes(serviceInterface, true)»
 
 	«IF !typeObjs.isEmpty()»
 		joynr::MetaTypeRegistrar& registrar = joynr::MetaTypeRegistrar::instance();

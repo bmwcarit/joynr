@@ -97,7 +97,7 @@ public class «typeName»«IF hasExtendsDeclaration(complexType)» extends «com
 		«IF isArray(member)»
 			this.«member.joynrName» = «copyObjName».«member.joynrName»;
 		«ELSE»
-			«IF isComplex(member.type)»
+			«IF isCompound(member.type) || isMap(member.type)»
 			«val memberType = member.type.typeName»
 			this.«member.joynrName» = new «memberType»(«copyObjName».«member.joynrName»);
 			«ELSE»

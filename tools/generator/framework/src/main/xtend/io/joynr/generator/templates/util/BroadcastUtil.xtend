@@ -53,8 +53,8 @@ public class BroadcastUtil {
 		return typeList
 	}
 
-	def getAllComplexAndEnumTypes(FBroadcast broadcast) {
-		broadcast.allRequiredTypes.filterComplexAndEnum
+	def getAllComplexTypes(FBroadcast broadcast) {
+		broadcast.allRequiredTypes.filterComplex
 	}
 
 	def getFilterParameters(FBroadcast broadcast) {

@@ -221,9 +221,9 @@ class JavaTypeUtil extends AbstractTypeUtil {
 		if (isMap(element.type)) {
 			return "new " + element.type.joynrName + "()";
 		}
-		if (isComplex(element.type)) {
+		if (element.type.isCompound || element.type.isMap) {
 			return "new " + element.type.compoundType.joynrName + "(" + constructorParams + ")";
-		} else if (isEnum(element.type)) {
+		} else if (element.type.isEnum) {
 			return  element.type.enumType.joynrName + "." + element.type.enumType.enumerators.get(0).joynrName;
 		} else if (!primitiveDataTypeDefaultMap.containsKey(element.type.predefined)) {
  			return "NaN";

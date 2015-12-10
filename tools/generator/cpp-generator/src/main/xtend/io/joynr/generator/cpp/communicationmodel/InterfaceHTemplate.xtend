@@ -60,9 +60,9 @@ class InterfaceHTemplate implements InterfaceTemplate{
 #ifndef «headerGuard»
 #define «headerGuard»
 
-«FOR datatype: getAllComplexAndEnumTypes(serviceInterface)»
+«FOR datatype: getAllComplexTypes(serviceInterface)»
 	«IF datatype instanceof FType»
-		«IF isComplex(datatype)»
+		«IF isCompound(datatype)»
 			«getNamespaceStarter(datatype, true)»
 				class «(datatype).joynrName»;
 			«getNamespaceEnder(datatype, true)»
