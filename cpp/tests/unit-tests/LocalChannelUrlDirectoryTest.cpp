@@ -18,7 +18,6 @@
  */
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include <QFile>
 #include <string>
 #include "joynr/MessagingSettings.h"
 #include "joynr/LocalChannelUrlDirectory.h"
@@ -62,7 +61,7 @@ public:
     {}
 
     ~LocalChannelUrlDirectoryTest() {
-        QFile::remove(TypeUtil::toQt(settingsFileName));
+        std::remove(settingsFileName.c_str());
     }
 
     void SetUp(){

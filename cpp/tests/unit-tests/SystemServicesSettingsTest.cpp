@@ -17,7 +17,7 @@
  * #L%
  */
 #include <gtest/gtest.h>
-#include <QFile>
+#include <cstdio>
 #include "PrettyPrint.h"
 #include "joynr/SystemServicesSettings.h"
 #include "joynr/TypeUtil.h"
@@ -33,7 +33,7 @@ public:
     }
 
     virtual void TearDown() {
-        QFile::remove(TypeUtil::toQt(testSettingsFileName));
+        std::remove(testSettingsFileName.c_str());
     }
 
 protected:

@@ -50,8 +50,8 @@ public:
         logger(joynr_logging::Logging::getInstance()->getLogger("TST", "PublicationManagerTest"))
     {}
     void TearDown(){
-        QFile::remove(TypeUtil::toQt(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME())); //remove stored subscriptions
-        QFile::remove(TypeUtil::toQt(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME())); //remove stored broadcastsubscriptions
+        std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME().c_str()); //remove stored subscriptions
+        std::remove(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME().c_str()); //remove stored broadcastsubscriptions
     }
 protected:
     joynr_logging::Logger* logger;

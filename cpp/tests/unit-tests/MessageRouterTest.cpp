@@ -18,7 +18,6 @@
  */
 #include "joynr/PrivateCopyAssign.h"
 #include <gtest/gtest.h>
-#include <QFile>
 #include <gmock/gmock.h>
 #include "joynr/MessageRouter.h"
 #include "tests/utils/MockObjects.h"
@@ -61,7 +60,7 @@ public:
     }
 
     ~MessageRouterTest() {
-        QFile::remove(TypeUtil::toQt(settingsFileName));
+        std::remove(settingsFileName.c_str());
     }
 
     void SetUp(){

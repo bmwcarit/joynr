@@ -82,7 +82,7 @@ public:
         runtime2->stop(deleteChannel);
 
         // Remove participant id persistence file
-        QFile::remove(TypeUtil::toQt(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME()));
+        std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
     }
 
     ~End2EndPerformanceTest(){

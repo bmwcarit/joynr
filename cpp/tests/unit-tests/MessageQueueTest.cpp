@@ -28,8 +28,6 @@
 #include <chrono>
 #include <stdint.h>
 
-#include <QFile>
-
 using namespace joynr;
 using namespace std::chrono;
 

@@ -41,7 +41,8 @@
 
 #include "joynr/SubscriptionUtil.h"
 
-#include <QFile>
+#include <fstream>
+#include <sstream>
 #include <cassert>
 #include <chrono>
 #include <stdint.h>
@@ -628,20 +629,26 @@ void PublicationManager::saveSubscriptionRequestsMap(const std::vector<Variant>&
 
     {
         std::lock_guard<std::mutex> fileWritelocker(fileWriteLock);
-        QFile file(QString::fromStdString(storageFilename));
-        if (!file.open(QIODevice::WriteOnly)) {
+        std::fstream file;
+        file.open(storageFilename, std::ios::out);
+        if (!file.is_open()) {
+            std::string error;
+            if (file.rdstate() == std::ios_base::badbit) {
+                error = "irrecoverable stream error";
+            } else if (file.rdstate() == std::ios_base::failbit) {
+                error = "input/output operation failed";
+            } else if (file.rdstate() == std::ios_base::eofbit) {
+                error = "associated input sequence has reached end-of-file";
+            }
             LOG_ERROR(logger,
                       FormatString("Could not open subscription request storage file: %1")
-                              .arg(file.errorString().toStdString())
+                              .arg(error)
                               .str());
             return;
         }
 
-        // Write the subscription information as a json list
-        file.resize(0);
-
         std::string json = JsonSerializer::serializeVector(subscriptionVector);
-        file.write(json.c_str());
+        file << json;
     }
 }
 
@@ -656,25 +663,33 @@ void PublicationManager::loadSavedSubscriptionRequestsMap(
                   "loadSavedSubscriptionRequestsMap can only be used for subclasses of "
                   "SubscriptionRequest");
 
-    QFile file(QString::fromStdString(storageFilename));
-    if (!file.open(QIODevice::ReadOnly)) {
+    std::fstream file;
+    file.open(storageFilename, std::ios::in);
+    if (!file.is_open()) {
+        std::string error;
+        if (file.rdstate() == std::ios_base::badbit) {
+            error = "irrecoverable stream error";
+        } else if (file.rdstate() == std::ios_base::failbit) {
+            error = "input/output operation failed";
+        } else if (file.rdstate() == std::ios_base::eofbit) {
+            error = "associated input sequence has reached end-of-file";
+        }
         LOG_ERROR(logger,
                   FormatString("Unable to read file: %1, reson: %2")
                           .arg(storageFilename)
-                          .arg(file.errorString().toStdString())
+                          .arg(error)
                           .str());
         return;
     }
 
     // Read the Json into memory
-    QByteArray jsonBytes = file.readAll();
-    LOG_DEBUG(logger,
-              FormatString("jsonBytes: %1").arg(QString::fromUtf8(jsonBytes).toStdString()).str());
+    std::stringstream jsonBytes;
+    jsonBytes << file.rdbuf();
+    LOG_DEBUG(logger, FormatString("jsonBytes: %1").arg(jsonBytes.str()).str());
 
     // Deserialize the JSON into a list of subscription requests
     std::vector<RequestInformationType*> subscriptionVector =
-            JsonSerializer::deserializeVector<RequestInformationType>(
-                    QString::fromUtf8(jsonBytes).toStdString());
+            JsonSerializer::deserializeVector<RequestInformationType>(jsonBytes.str());
 
     // Loop through the saved subscriptions
     std::lock_guard<std::mutex> queueLocker(queueMutex);

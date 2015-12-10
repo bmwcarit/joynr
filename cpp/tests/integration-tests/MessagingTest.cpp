@@ -19,7 +19,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include <QFile>
+#include <cstdio>
 #include <QString>
 #include <string>
 #include "joynr/MessageRouter.h"
@@ -112,7 +112,7 @@ public:
         qos.setTtl(10000);
     }
     ~MessagingTest(){
-        QFile::remove(TypeUtil::toQt(settingsFileName));
+        std::remove(settingsFileName.c_str());
     }
 private:
     DISALLOW_COPY_AND_ASSIGN(MessagingTest);

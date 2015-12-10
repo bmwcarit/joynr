@@ -117,10 +117,10 @@ void SetUp(){
 }
 
 void TearDown(){
-    QFile::remove(
-                TypeUtil::toQt(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()));
-    QFile::remove(
-                TypeUtil::toQt(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME()));
+    std::remove(
+                LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME().c_str());
+    std::remove(
+                LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
 }
 
 TEST_F(JoynrClusterControllerRuntimeTest, instantiateRuntime)
@@ -235,7 +235,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
 }
 
 TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
-    QFile::remove(TypeUtil::toQt(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()));
+    std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME().c_str());
     std::string domain("JoynrClusterControllerRuntimeTest.Domain.A");
     std::shared_ptr<MockTestProvider> mockTestProvider(new MockTestProvider());
 
@@ -292,7 +292,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
 
 
 TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
-    QFile::remove(TypeUtil::toQt(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()));
+    std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME().c_str());
     std::string domain("JoynrClusterControllerRuntimeTest.Domain.A");
     std::shared_ptr<MockTestProvider> mockTestProvider(new MockTestProvider());
 

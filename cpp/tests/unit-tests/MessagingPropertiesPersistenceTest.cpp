@@ -22,7 +22,7 @@
 #include "cluster-controller/messaging/MessagingPropertiesPersistence.h"
 #include "joynr/TypeUtil.h"
 
-#include <QFile>
+#include <cstdio>
 
 using namespace joynr;
 
@@ -34,7 +34,7 @@ public:
 
     void SetUp()
     {
-        QFile::remove(TypeUtil::toQt(persistenceFilename));
+        std::remove(persistenceFilename.c_str());
     }
 
 };

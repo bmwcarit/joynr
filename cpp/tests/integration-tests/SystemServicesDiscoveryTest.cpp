@@ -77,7 +77,7 @@ public:
         runtime->deleteChannel();
         runtime->stopMessaging();
         delete runtime;
-        QFile::remove(TypeUtil::toQt(settingsFilename));
+        std::remove(settingsFilename.c_str());
     }
 
     void SetUp(){
@@ -86,10 +86,10 @@ public:
     }
 
     void TearDown(){
-        QFile::remove(
-                    TypeUtil::toQt(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()));
-        QFile::remove(
-                    TypeUtil::toQt(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME()));
+        std::remove(
+                    LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME().c_str());
+        std::remove(
+                    LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
         delete discoveryProxy;
         delete discoveryProxyBuilder;
     }

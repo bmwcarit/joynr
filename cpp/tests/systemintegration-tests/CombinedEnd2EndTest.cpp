@@ -107,7 +107,7 @@ void CombinedEnd2EndTest::TearDown()
     delete runtime2;
 
     // Delete the persisted participant ids so that each test uses different participant ids
-    QFile::remove(TypeUtil::toQt(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME()));
+    std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
 }
 
 CombinedEnd2EndTest::~CombinedEnd2EndTest()

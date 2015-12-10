@@ -19,7 +19,6 @@
 #include "joynr/PrivateCopyAssign.h"
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include <QFile>
 #include <string>
 #include <stdint.h>
 #include "utils/TestQString.h"
@@ -56,7 +55,7 @@ public:
     }
 
     ~LocalCapabilitiesDirectoryTest() {
-        QFile::remove(TypeUtil::toQt(settingsFileName));
+        std::remove(settingsFileName.c_str());
     }
 
     void SetUp(){
