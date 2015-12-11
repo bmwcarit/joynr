@@ -76,6 +76,11 @@ public:
     virtual bool isArray() const = 0;
 
     /**
+     * @brief Is this value a string?
+     */
+    virtual bool isString() const = 0;
+
+    /**
      * @brief Is this value an object?
      */
     virtual bool isObject() const = 0;

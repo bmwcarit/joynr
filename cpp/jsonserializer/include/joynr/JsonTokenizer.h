@@ -220,6 +220,11 @@ public:
      */
     bool getBool() const;
     /**
+     * @brief isString
+     * @return
+     */
+    bool isString() const;
+    /**
      * @brief isArray
      * @return
      */

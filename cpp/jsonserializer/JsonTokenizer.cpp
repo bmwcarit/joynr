@@ -257,6 +257,11 @@ bool JsonValue::isArray() const
     return value.is<JsonArray>();
 }
 
+bool JsonValue::isString() const
+{
+    return value.getTypeName() == "String";
+}
+
 bool JsonValue::isObject() const
 {
     return value.is<JsonObject>();
