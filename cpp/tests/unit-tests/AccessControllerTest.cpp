@@ -104,8 +104,8 @@ public:
     void SetUp(){
         request.setMethodName(TEST_OPERATION);
         messagingQos = MessagingQos(5000);
-        message = messageFactory.createRequest(QString::fromStdString(fromParticipantId),
-                                     QString::fromStdString(toParticipantId),
+        message = messageFactory.createRequest(fromParticipantId,
+                                     toParticipantId,
                                      messagingQos,
                                      request);
         message.setHeaderCreatorUserId(DUMMY_USERID);

@@ -34,11 +34,11 @@ public:
     {
     }
 
-    virtual QString getCurrentProcessUserId();
-    virtual JoynrMessage sign(JoynrMessage message);
-    virtual bool validate(const JoynrMessage& message) const;
-    virtual QByteArray encrypt(const QByteArray& unencryptedBytes);
-    virtual QByteArray decrypt(const QByteArray& encryptedBytes);
+    virtual std::string getCurrentProcessUserId() override;
+    virtual JoynrMessage sign(JoynrMessage message) override;
+    virtual bool validate(const JoynrMessage& message) const override;
+    virtual QByteArray encrypt(const QByteArray& unencryptedBytes) override;
+    virtual QByteArray decrypt(const QByteArray& encryptedBytes) override;
 
 private:
     static joynr_logging::Logger* logger;

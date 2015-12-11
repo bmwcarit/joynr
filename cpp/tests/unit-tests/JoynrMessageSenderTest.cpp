@@ -18,7 +18,6 @@
  */
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include "utils/TestQString.h"
 #include <string>
 #include <vector>
 
@@ -100,8 +99,8 @@ TEST_F(JoynrMessageSenderTest, sendRequest_normal){
     request.setParamDatatypes(paramDatatypes);
 
     JoynrMessage message = messageFactory.createRequest(
-                QString::fromStdString(senderID),
-                QString::fromStdString(receiverID),
+                senderID,
+                receiverID,
                 qosSettings,
                 request
     );
@@ -142,8 +141,8 @@ TEST_F(JoynrMessageSenderTest, sendReply_normal){
     reply.setResponse(std::move(response));
 
     JoynrMessage message = messageFactory.createReply(
-                QString::fromStdString(senderID),
-                QString::fromStdString(receiverID),
+                senderID,
+                receiverID,
                 qosSettings,
                 reply);
 
@@ -170,8 +169,8 @@ TEST_F(JoynrMessageSenderTest, sendSubscriptionRequest_normal){
     subscriptionRequest.setQos(qos);
 
     JoynrMessage message = messageFactory.createSubscriptionRequest(
-                QString::fromStdString(senderID),
-                QString::fromStdString(receiverID),
+                senderID,
+                receiverID,
                 qosSettings,
                 subscriptionRequest);
 
@@ -203,8 +202,8 @@ TEST_F(JoynrMessageSenderTest, sendBroadcastSubscriptionRequest_normal){
     subscriptionRequest.setQos(qos);
 
     JoynrMessage message = messageFactory.createBroadcastSubscriptionRequest(
-                QString::fromStdString(senderID),
-                QString::fromStdString(receiverID),
+                senderID,
+                receiverID,
                 qosSettings,
                 subscriptionRequest);
 
@@ -249,8 +248,8 @@ TEST_F(JoynrMessageSenderTest, sendPublication_normal){
     response.push_back(Variant::make<std::string>("publication"));
     publication.setResponse(response);
     JoynrMessage message = messageFactory.createSubscriptionPublication(
-                QString::fromStdString(senderID),
-                QString::fromStdString(receiverID),
+                senderID,
+                receiverID,
                 qosSettings,
                 publication);
 

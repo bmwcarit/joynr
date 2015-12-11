@@ -132,8 +132,8 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
 
 
     JoynrMessage msg = messageFactory.createRequest(
-                QString::fromStdString(proxyParticipantId),
-                QString::fromStdString(providerParticipantId),
+                proxyParticipantId,
+                providerParticipantId,
                 qos,
                 request
     );
@@ -147,8 +147,8 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
     reply.setResponse(std::move(value));
     reply.setRequestReplyId(requestReplyId);
     JoynrMessage expectedReply = messageFactory.createReply(
-                QString::fromStdString(proxyParticipantId),
-                QString::fromStdString(providerParticipantId),
+                proxyParticipantId,
+                providerParticipantId,
                 qos,
                 reply
     );
@@ -181,7 +181,7 @@ TEST_F(DispatcherTest, receive_interpreteReplyAndCallReplyCaller) {
 
     // getType is used by the ReplyInterpreterFactory to create an interpreter for the reply
     // so this has to match with the type being passed to the dispatcher in the reply
-    ON_CALL(*mockReplyCaller, getType()).WillByDefault(Return(QString("types::Localisation::GpsLocation")));
+    ON_CALL(*mockReplyCaller, getType()).WillByDefault(Return(std::string("types::Localisation::GpsLocation")));
 
     //construct a reply containing a GpsLocation
     Reply reply;
@@ -191,8 +191,8 @@ TEST_F(DispatcherTest, receive_interpreteReplyAndCallReplyCaller) {
     reply.setResponse(std::move(response));
 
     JoynrMessage msg = messageFactory.createReply(
-                QString::fromStdString(proxyParticipantId),
-                QString::fromStdString(providerParticipantId),
+                proxyParticipantId,
+                providerParticipantId,
                 qos,
                 reply
     );

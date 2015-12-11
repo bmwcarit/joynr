@@ -208,12 +208,12 @@ void MessageRouter::route(const JoynrMessage& message)
                       .arg(message.getPayload())
                       .str());
     // search for the destination address
-    const QString destinationPartId = QString::fromStdString(message.getHeaderTo());
+    const std::string destinationPartId = message.getHeaderTo();
     std::shared_ptr<joynr::system::RoutingTypes::Address> destAddress(NULL);
 
     {
         joynr::ReadLocker lock(routingTableLock);
-        destAddress = routingTable.lookup(destinationPartId.toStdString());
+        destAddress = routingTable.lookup(destinationPartId);
     }
     // if destination address is not known
     if (!destAddress) {
@@ -224,32 +224,30 @@ void MessageRouter::route(const JoynrMessage& message)
         // and try to resolve destination address via parent message router
         if (isChildMessageRouter()) {
             std::lock_guard<std::mutex> lock(parentResolveMutex);
-            if (runningParentResolves->find(destinationPartId.toStdString()) ==
-                runningParentResolves->end()) {
-                runningParentResolves->insert(destinationPartId.toStdString());
+            if (runningParentResolves->find(destinationPartId) == runningParentResolves->end()) {
+                runningParentResolves->insert(destinationPartId);
                 std::function<void(const bool&)> onSuccess =
                         [this, destinationPartId](const bool& resolved) {
                     if (resolved) {
                         LOG_INFO(this->logger,
                                  FormatString("Got destination address for participant %1")
-                                         .arg(destinationPartId.toStdString())
+                                         .arg(destinationPartId)
                                          .str());
                         // save next hop in the routing table
-                        this->addProvisionedNextHop(
-                                destinationPartId.toStdString(), this->parentAddress);
+                        this->addProvisionedNextHop(destinationPartId, this->parentAddress);
                         this->removeRunningParentResolvers(destinationPartId);
-                        this->sendMessages(destinationPartId.toStdString(), this->parentAddress);
+                        this->sendMessages(destinationPartId, this->parentAddress);
                     } else {
                         LOG_ERROR(this->logger,
                                   FormatString("Failed to resolve next hop for participant %1")
-                                          .arg(destinationPartId.toStdString())
+                                          .arg(destinationPartId)
                                           .str());
                         // TODO error handling in case of failing submission (?)
                     }
                 };
 
                 // TODO error handling in case of failing submission (?)
-                parentRouter->resolveNextHopAsync(destinationPartId.toStdString(), onSuccess);
+                parentRouter->resolveNextHopAsync(destinationPartId, onSuccess);
             }
         } else {
             // no parent message router to resolve destination address
@@ -278,12 +276,11 @@ void MessageRouter::route(const JoynrMessage& message)
     sendMessage(message, destAddress);
 }
 
-void MessageRouter::removeRunningParentResolvers(const QString& destinationPartId)
+void MessageRouter::removeRunningParentResolvers(const std::string& destinationPartId)
 {
     std::lock_guard<std::mutex> lock(parentResolveMutex);
-    if (runningParentResolves->find(destinationPartId.toStdString()) !=
-        runningParentResolves->end()) {
-        runningParentResolves->erase(destinationPartId.toStdString());
+    if (runningParentResolves->find(destinationPartId) != runningParentResolves->end()) {
+        runningParentResolves->erase(destinationPartId);
     }
 }
 

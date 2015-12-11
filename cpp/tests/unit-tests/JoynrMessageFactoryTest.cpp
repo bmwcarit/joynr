@@ -18,7 +18,6 @@
  */
 #include <gtest/gtest.h>
 #include "joynr/JoynrMessageFactory.h"
-#include "utils/TestQString.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 #include "joynr/MessagingQos.h"
@@ -49,8 +48,8 @@ public:
     }
 
     void SetUp(){
-        senderID = QString("senderId");
-        receiverID = QString("receiverID");
+        senderID = std::string("senderId");
+        receiverID = std::string("receiverID");
         requestReplyID = "requestReplyID";
         qos = MessagingQos(456000);
         request.setMethodName("methodName");
@@ -74,8 +73,8 @@ public:
     }
     void checkHeaderCreatorFromTo(const JoynrMessage& joynrMessage){
         EXPECT_TRUE(joynrMessage.containsHeaderCreatorUserId());
-        EXPECT_STREQ(senderID.toStdString().c_str(), joynrMessage.getHeaderFrom().c_str());
-        EXPECT_STREQ(receiverID.toStdString().c_str(), joynrMessage.getHeaderTo().c_str());
+        EXPECT_STREQ(senderID.c_str(), joynrMessage.getHeaderFrom().c_str());
+        EXPECT_STREQ(receiverID.c_str(), joynrMessage.getHeaderTo().c_str());
     }
 
     void checkRequest(const JoynrMessage& joynrMessage){
@@ -111,8 +110,8 @@ public:
 protected:
     joynr_logging::Logger* logger;
     JoynrMessageFactory messageFactory;
-    QString senderID;
-    QString receiverID;
+    std::string senderID;
+    std::string receiverID;
     std::string requestReplyID;
     MessagingQos qos;
     Request request;
@@ -181,11 +180,11 @@ TEST_F(JoynrMessageFactoryTest, createOneWay){
 }
 
 //TEST_F(JoynrMessageFactoryTest, createSubscriptionReply){
-//    QString subscriptionId("subscriptionTestId");
+//    std::string subscriptionId("subscriptionTestId");
 //    JoynrMessage joynrMessage = JoynrMessageFactory::prepareSubscriptionReply(senderID, receiverID, payload, subscriptionId);
 //    checkHeaderCreatorFromTo(joynrMessage);
 //    checkPayload(joynrMessage);
-//    EXPECT_QSTREQ(subscriptionId, joynrMessage.getHeader<QString>(JoynrMessage::HEADER_NAME_SUBSCRIPTION_ID));
+//    EXPECT_QSTREQ(subscriptionId, joynrMessage.getHeader<std::string>(JoynrMessage::HEADER_NAME_SUBSCRIPTION_ID));
 //    EXPECT_QSTREQ(JoynrMessage::MESSAGE_TYPE_SUBSCRIPTION_REPLY, joynrMessage.getType());
 //}
 

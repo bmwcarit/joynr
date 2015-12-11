@@ -180,7 +180,7 @@ private:
     void addToRoutingTable(std::string participantId,
                            std::shared_ptr<joynr::system::RoutingTypes::Address> address);
 
-    void removeRunningParentResolvers(const QString& destinationPartId);
+    void removeRunningParentResolvers(const std::string& destinationPartId);
 };
 
 /**

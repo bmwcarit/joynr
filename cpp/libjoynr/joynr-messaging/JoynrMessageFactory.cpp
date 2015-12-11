@@ -43,8 +43,8 @@ JoynrMessageFactory::~JoynrMessageFactory()
     delete securityManager;
 }
 
-JoynrMessage JoynrMessageFactory::createRequest(const QString& senderId,
-                                                const QString& receiverId,
+JoynrMessage JoynrMessageFactory::createRequest(const std::string& senderId,
+                                                const std::string& receiverId,
                                                 const MessagingQos& qos,
                                                 const Request& payload)
 {
@@ -55,8 +55,8 @@ JoynrMessage JoynrMessageFactory::createRequest(const QString& senderId,
     return msg;
 }
 
-JoynrMessage JoynrMessageFactory::createReply(const QString& senderId,
-                                              const QString& receiverId,
+JoynrMessage JoynrMessageFactory::createReply(const std::string& senderId,
+                                              const std::string& receiverId,
                                               const MessagingQos& qos,
                                               const Reply& payload)
 {
@@ -66,8 +66,8 @@ JoynrMessage JoynrMessageFactory::createReply(const QString& senderId,
     return msg;
 }
 
-JoynrMessage JoynrMessageFactory::createOneWay(const QString& senderId,
-                                               const QString& receiverId,
+JoynrMessage JoynrMessageFactory::createOneWay(const std::string& senderId,
+                                               const std::string& receiverId,
                                                const MessagingQos& qos,
                                                const Reply& payload)
 {
@@ -78,8 +78,8 @@ JoynrMessage JoynrMessageFactory::createOneWay(const QString& senderId,
 }
 
 JoynrMessage JoynrMessageFactory::createSubscriptionPublication(
-        const QString& senderId,
-        const QString& receiverId,
+        const std::string& senderId,
+        const std::string& receiverId,
         const MessagingQos& qos,
         const SubscriptionPublication& payload)
 {
@@ -93,8 +93,8 @@ JoynrMessage JoynrMessageFactory::createSubscriptionPublication(
     return msg;
 }
 
-JoynrMessage JoynrMessageFactory::createSubscriptionRequest(const QString& senderId,
-                                                            const QString& receiverId,
+JoynrMessage JoynrMessageFactory::createSubscriptionRequest(const std::string& senderId,
+                                                            const std::string& receiverId,
                                                             const MessagingQos& qos,
                                                             const SubscriptionRequest& payload)
 {
@@ -109,8 +109,8 @@ JoynrMessage JoynrMessageFactory::createSubscriptionRequest(const QString& sende
 }
 
 JoynrMessage JoynrMessageFactory::createBroadcastSubscriptionRequest(
-        const QString& senderId,
-        const QString& receiverId,
+        const std::string& senderId,
+        const std::string& receiverId,
         const MessagingQos& qos,
         const BroadcastSubscriptionRequest& payload)
 {
@@ -124,8 +124,8 @@ JoynrMessage JoynrMessageFactory::createBroadcastSubscriptionRequest(
     return msg;
 }
 
-JoynrMessage JoynrMessageFactory::createSubscriptionReply(const QString& senderId,
-                                                          const QString& receiverId,
+JoynrMessage JoynrMessageFactory::createSubscriptionReply(const std::string& senderId,
+                                                          const std::string& receiverId,
                                                           const MessagingQos& qos,
                                                           const SubscriptionReply& payload)
 {
@@ -139,8 +139,8 @@ JoynrMessage JoynrMessageFactory::createSubscriptionReply(const QString& senderI
     return msg;
 }
 
-JoynrMessage JoynrMessageFactory::createSubscriptionStop(const QString& senderId,
-                                                         const QString& receiverId,
+JoynrMessage JoynrMessageFactory::createSubscriptionStop(const std::string& senderId,
+                                                         const std::string& receiverId,
                                                          const MessagingQos& qos,
                                                          const SubscriptionStop& payload)
 {
@@ -155,14 +155,14 @@ JoynrMessage JoynrMessageFactory::createSubscriptionStop(const QString& senderId
 }
 
 void JoynrMessageFactory::initMsg(JoynrMessage& msg,
-                                  const QString& senderParticipantId,
-                                  const QString& receiverParticipantId,
+                                  const std::string& senderParticipantId,
+                                  const std::string& receiverParticipantId,
                                   const qint64 ttl,
                                   const std::string& payload)
 {
-    msg.setHeaderCreatorUserId(securityManager->getCurrentProcessUserId().toStdString());
-    msg.setHeaderFrom(senderParticipantId.toStdString());
-    msg.setHeaderTo(receiverParticipantId.toStdString());
+    msg.setHeaderCreatorUserId(securityManager->getCurrentProcessUserId());
+    msg.setHeaderFrom(senderParticipantId);
+    msg.setHeaderTo(receiverParticipantId);
 
     // calculate expiry date
     JoynrTimePoint expiryDate = DispatcherUtils::convertTtlToAbsoluteTime(ttl);

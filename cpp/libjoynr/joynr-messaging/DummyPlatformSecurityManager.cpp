@@ -30,9 +30,9 @@ DummyPlatformSecurityManager::DummyPlatformSecurityManager()
 {
 }
 
-QString DummyPlatformSecurityManager::getCurrentProcessUserId()
+std::string DummyPlatformSecurityManager::getCurrentProcessUserId()
 {
-    return QString(qgetenv("USER"));
+    return std::string(qgetenv("USER"));
 }
 
 JoynrMessage DummyPlatformSecurityManager::sign(JoynrMessage message)

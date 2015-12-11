@@ -362,7 +362,7 @@ public:
                     std::function<void(const joynr::RequestStatus& status, const joynr::exceptions::JoynrException& error)> errorFct) : joynr::ReplyCaller<T>(callbackFct, errorFct) {}
     MOCK_METHOD1_T(returnValue, void(const T& payload));
     MOCK_METHOD0_T(timeOut, void());
-    MOCK_CONST_METHOD0_T(getType, QString());
+    MOCK_CONST_METHOD0_T(getType, std::string());
 };
 
 class MockGpsFloatSubscriptionListener
@@ -665,7 +665,7 @@ public:
     MOCK_METHOD1_T(remove, void(const Key& keyId));
 };
 
-typedef MockDirectory<QString, joynr::system::RoutingTypes::Address> MockMessagingEndpointDirectory;
+typedef MockDirectory<std::string, joynr::system::RoutingTypes::Address> MockMessagingEndpointDirectory;
 
 
 
@@ -912,10 +912,10 @@ public:
         MessagingSettings(settings){}
     MOCK_METHOD0(
             getDiscoveryDirectoriesDomain,
-            QString());
+            std::string());
     MOCK_METHOD0(
             getCapabilitiesDirectoryParticipantId,
-            QString());
+            std::string());
 };
 
 class MockLocalCapabilitiesDirectory : public joynr::LocalCapabilitiesDirectory {

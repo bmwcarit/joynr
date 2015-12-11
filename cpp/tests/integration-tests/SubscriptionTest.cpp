@@ -19,8 +19,6 @@
 #include "joynr/PrivateCopyAssign.h"
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include <QString>
-#include <string>
 #include "joynr/JoynrMessage.h"
 #include "joynr/JoynrMessageFactory.h"
 #include "joynr/JoynrMessageSender.h"
@@ -33,7 +31,6 @@
 #include "joynr/tests/testRequestInterpreter.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
-#include <QString>
 #include <string>
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/tests/testTypes/TestEnum.h"
@@ -111,7 +108,7 @@ protected:
     MessagingQos qos;
     std::string providerParticipantId;
     std::string proxyParticipantId;
-    QString requestReplyId;
+    std::string requestReplyId;
 
     JoynrMessageFactory messageFactory;
     JoynrMessageSender messageSender;
@@ -154,8 +151,8 @@ TEST_F(SubscriptionTest, receive_subscriptionRequestAndPollAttribute) {
     subscriptionRequest.setQos(subscriptionQos);
 
     JoynrMessage msg = messageFactory.createSubscriptionRequest(
-                QString::fromStdString(proxyParticipantId),
-                QString::fromStdString(providerParticipantId),
+                proxyParticipantId,
+                providerParticipantId,
                 qos,
                 subscriptionRequest);
 
@@ -176,7 +173,7 @@ TEST_F(SubscriptionTest, receive_publication ) {
 
     // getType is used by the ReplyInterpreterFactory to create an interpreter for the reply
     // so this has to match with the type being passed to the dispatcher in the reply
-    ON_CALL(*mockReplyCaller, getType()).WillByDefault(Return(QString("GpsLocation")));
+    ON_CALL(*mockReplyCaller, getType()).WillByDefault(Return(std::string("GpsLocation")));
 
     // Use a semaphore to count and wait on calls to the mockGpsLocationListener
     joynr::Semaphore semaphore(0);
@@ -212,8 +209,8 @@ TEST_F(SubscriptionTest, receive_publication ) {
                 subscriptionRequest);
     // incoming publication from the provider
     JoynrMessage msg = messageFactory.createSubscriptionPublication(
-                QString::fromStdString(providerParticipantId),
-                QString::fromStdString(proxyParticipantId),
+                providerParticipantId,
+                proxyParticipantId,
                 qos,
                 subscriptionPublication);
 
@@ -233,7 +230,7 @@ TEST_F(SubscriptionTest, receive_enumPublication ) {
 
     // getType is used by the ReplyInterpreterFactory to create an interpreter for the reply
     // so this has to match with the type being passed to the dispatcher in the reply
-    ON_CALL(*mockReplyCaller, getType()).WillByDefault(Return(QString("TestEnum")));
+    ON_CALL(*mockReplyCaller, getType()).WillByDefault(Return(std::string("TestEnum")));
 
     // Use a semaphore to count and wait on calls to the mockTestEnumSubscriptionListener
     joynr::Semaphore semaphore(0);
@@ -269,8 +266,8 @@ TEST_F(SubscriptionTest, receive_enumPublication ) {
                 subscriptionRequest);
     // incoming publication from the provider
     JoynrMessage msg = messageFactory.createSubscriptionPublication(
-                QString::fromStdString(providerParticipantId),
-                QString::fromStdString(proxyParticipantId),
+                providerParticipantId,
+                proxyParticipantId,
                 qos,
                 subscriptionPublication);
 
@@ -315,8 +312,8 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription) {
     subscriptionRequest.setQos(subscriptionQos);
 
     JoynrMessage msg = messageFactory.createSubscriptionRequest(
-                QString::fromStdString(proxyParticipantId),
-                QString::fromStdString(providerParticipantId),
+                proxyParticipantId,
+                providerParticipantId,
                 qos,
                 subscriptionRequest);
     // first received message with subscription request
@@ -424,8 +421,8 @@ TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications) {
     subscriptionRequest.setQos(subscriptionQos);
 
     JoynrMessage msg = messageFactory.createSubscriptionRequest(
-                QString::fromStdString(proxyParticipantId),
-                QString::fromStdString(providerParticipantId),
+                proxyParticipantId,
+                providerParticipantId,
                 qos,
                 subscriptionRequest);
     // first received message with subscription request
@@ -470,8 +467,8 @@ TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
     subscriptionRequest.setQos(subscriptionQos);
 
     JoynrMessage msg = messageFactory.createSubscriptionRequest(
-                QString::fromStdString(proxyParticipantId),
-                QString::fromStdString(providerParticipantId),
+                proxyParticipantId,
+                providerParticipantId,
                 qos,
                 subscriptionRequest);
     // first received message with subscription request
@@ -485,8 +482,8 @@ TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
     subscriptionStop.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     // receive a subscription stop message
     msg = messageFactory.createSubscriptionStop(
-                QString::fromStdString(proxyParticipantId),
-                QString::fromStdString(providerParticipantId),
+                proxyParticipantId,
+                providerParticipantId,
                 qos,
                 subscriptionStop);
     dispatcher.receive(msg);

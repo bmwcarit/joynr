@@ -283,8 +283,8 @@ void Dispatcher::handleSubscriptionRequestReceived(const JoynrMessage& message)
     std::lock_guard<std::mutex> lock(subscriptionHandlingMutex);
     assert(publicationManager != NULL);
 
-    QString receiverId = QString::fromStdString(message.getHeaderTo());
-    std::shared_ptr<RequestCaller> caller = requestCallerDirectory.lookup(receiverId.toStdString());
+    std::string receiverId = message.getHeaderTo();
+    std::shared_ptr<RequestCaller> caller = requestCallerDirectory.lookup(receiverId);
 
     std::string jsonSubscriptionRequest = message.getPayload();
 
@@ -323,8 +323,8 @@ void Dispatcher::handleBroadcastSubscriptionRequestReceived(const JoynrMessage& 
     std::lock_guard<std::mutex> lock(subscriptionHandlingMutex);
     assert(publicationManager != NULL);
 
-    QString receiverId = QString::fromStdString(message.getHeaderTo());
-    std::shared_ptr<RequestCaller> caller = requestCallerDirectory.lookup(receiverId.toStdString());
+    std::string receiverId = message.getHeaderTo();
+    std::shared_ptr<RequestCaller> caller = requestCallerDirectory.lookup(receiverId);
 
     std::string jsonSubscriptionRequest = message.getPayload();
 
@@ -370,9 +370,9 @@ void Dispatcher::handleSubscriptionStopReceived(const JoynrMessage& message)
                           .str());
         return;
     }
-    QString subscriptionId = TypeUtil::toQt(subscriptionStop->getSubscriptionId());
+    std::string subscriptionId = subscriptionStop->getSubscriptionId();
     assert(publicationManager != NULL);
-    publicationManager->stopPublication(subscriptionId.toStdString());
+    publicationManager->stopPublication(subscriptionId);
 }
 
 void Dispatcher::handlePublicationReceived(const JoynrMessage& message)

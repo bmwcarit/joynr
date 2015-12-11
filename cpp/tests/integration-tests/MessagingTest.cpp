@@ -20,7 +20,6 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <cstdio>
-#include <QString>
 #include <string>
 #include "joynr/MessageRouter.h"
 #include "joynr/MessagingStubFactory.h"
@@ -38,6 +37,7 @@
 #include "joynr/Future.h"
 #include "joynr/Settings.h"
 #include "joynr/Semaphore.h"
+#include <QString>
 #include <chrono>
 
 using namespace ::testing;
@@ -64,7 +64,7 @@ public:
     std::string receiverId;
     std::string receiverChannelId;
     Request request;
-    QString requestId;
+    std::string requestId;
     MessagingQos qos;
     std::shared_ptr<MockInProcessMessagingSkeleton> inProcessMessagingSkeleton;
     joynr::Semaphore semaphore;
@@ -163,8 +163,8 @@ TEST_F(MessagingTest, routeMsgWithInvalidParticipantId)
 {
     std::string invalidReceiverId("invalidReceiverId");
     JoynrMessage message = messageFactory.createRequest(
-                QString::fromStdString(senderId),
-                QString::fromStdString(invalidReceiverId),
+                senderId,
+                invalidReceiverId,
                 qos,
                 request);
 
@@ -176,8 +176,8 @@ TEST_F(MessagingTest, routeMsgWithInvalidParticipantId)
 TEST_F(MessagingTest, routeMsgToInProcessMessagingSkeleton)
 {
     JoynrMessage message = messageFactory.createRequest(
-                QString::fromStdString(senderId),
-                QString::fromStdString(receiverId),
+                senderId,
+                receiverId,
                 qos,
                 request);
 
@@ -211,8 +211,8 @@ TEST_F(MessagingTest, DISABLED_routeMsgToLipciMessagingSkeleton)
 //                new MockLipciMessagingSkeleton());
 
     JoynrMessage message = messageFactory.createRequest(
-                QString::fromStdString(senderId),
-                QString::fromStdString(receiverId),
+                senderId,
+                receiverId,
                 qos,
                 request);
 
@@ -241,8 +241,8 @@ TEST_F(MessagingTest, DISABLED_routeMsgToLipciMessagingSkeleton)
 TEST_F(MessagingTest, routeMsgToHttpCommunicationMgr)
 {
     JoynrMessage message = messageFactory.createRequest(
-                QString::fromStdString(senderId),
-                QString::fromStdString(receiverId),
+                senderId,
+                receiverId,
                 qos,
                 request);
     message.setHeaderReplyChannelId(senderChannelId);
@@ -270,16 +270,16 @@ TEST_F(MessagingTest, routeMsgToHttpCommunicationMgr)
 TEST_F(MessagingTest, routeMultipleMessages)
 {
     JoynrMessage message = messageFactory.createRequest(
-                QString::fromStdString(senderId),
-                QString::fromStdString(receiverId),
+                senderId,
+                receiverId,
                 qos,
                 request);
     message.setHeaderReplyChannelId(senderChannelId);
 
     std::string receiverId2("receiverId2");
     JoynrMessage message2 = messageFactory.createRequest(
-                QString::fromStdString(senderId),
-                QString::fromStdString(receiverId2),
+                senderId,
+                receiverId2,
                 qos,
                 request);
     message2.setHeaderReplyChannelId(senderChannelId);
@@ -316,7 +316,7 @@ TEST_F(MessagingTest, routeMultipleMessages)
 }
 
 // global function used for calls to the MockChannelUrlSelectorProxy
-void messagingTestPseudoGetChannelUrls(std::shared_ptr<Future<types::ChannelUrlInformation> > future , QString channelId, int timeout) {
+void messagingTestPseudoGetChannelUrls(std::shared_ptr<Future<types::ChannelUrlInformation> > future , std::string channelId, int timeout) {
     types::ChannelUrlInformation urlInformation;
     std::vector<std::string> urls = {"firstUrl", "secondUrl", "thirdUrl"};
     urlInformation.setUrls(urls);

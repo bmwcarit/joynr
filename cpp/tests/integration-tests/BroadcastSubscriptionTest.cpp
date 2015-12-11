@@ -146,8 +146,8 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
                 subscriptionRequest);
     // incoming publication from the provider
     JoynrMessage msg = messageFactory.createSubscriptionPublication(
-                QString::fromStdString(providerParticipantId),
-                QString::fromStdString(proxyParticipantId),
+                providerParticipantId,
+                proxyParticipantId,
                 qos,
                 subscriptionPublication);
 
@@ -199,8 +199,8 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters )
                 subscriptionRequest);
     // incoming publication from the provider
     JoynrMessage msg = messageFactory.createSubscriptionPublication(
-                QString::fromStdString(providerParticipantId),
-                QString::fromStdString(proxyParticipantId),
+                providerParticipantId,
+                proxyParticipantId,
                 qos,
                 subscriptionPublication);
 

@@ -19,7 +19,7 @@
 #ifndef IPLATFORMSECURITYMANAGER_H_
 #define IPLATFORMSECURITYMANAGER_H_
 
-#include <QString>
+#include <string>
 #include <QByteArray>
 
 #include "joynr/JoynrExport.h"
@@ -39,7 +39,7 @@ public:
     /**
      * @return the platform user ID of the running process.
      */
-    virtual QString getCurrentProcessUserId() = 0;
+    virtual std::string getCurrentProcessUserId() = 0;
 
     /**
      * @param message
