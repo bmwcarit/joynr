@@ -70,8 +70,8 @@ class CommunicationModelGenerator {
 	@Inject
 	StdTypeCppTemplate stdTypeCpp;
 
-    @Inject
-    MapHTemplate mapH;
+    @Inject MapHTemplate mapH;
+    @Inject MapCppTemplate mapCpp;
 
 	@Inject TypeSerializerHTemplate typeSerializerH;
 	@Inject TypeSerializerCppTemplate typeSerializerCpp;
@@ -164,6 +164,13 @@ class CommunicationModelGenerator {
                 mapH,
                 type
             )
+
+			generateFile(
+				sourceFileSystem,
+				sourceFilename + ".cpp",
+				mapCpp,
+				type
+			)
 
 			generateFile(
 				headerFileSystem,
