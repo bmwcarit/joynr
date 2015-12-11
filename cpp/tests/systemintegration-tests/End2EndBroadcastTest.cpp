@@ -202,7 +202,7 @@ public:
     }
 
     /*
-     *  This wait is necessary, because subcriptions are async, and a broadcast could occur
+     *  This wait is necessary, because subcriptions are async, and a publication could occur
      * before the subscription has started.
      */
     void waitForAttributeSubscriptionArrivedAtProvider(
@@ -217,7 +217,8 @@ public:
             QThreadSleep::msleep(50);
             delay+=50;
         }
-        EXPECT_FALSE(testProvider->attributeListeners.find(attributeName)->second.isEmpty());
+        EXPECT_FALSE(testProvider->attributeListeners.find(attributeName) == testProvider->attributeListeners.cend() ||
+                     testProvider->attributeListeners.find(attributeName)->second.isEmpty());
     }
 
     /*
@@ -236,7 +237,8 @@ public:
             QThreadSleep::msleep(50);
             delay+=50;
         }
-        EXPECT_FALSE(testProvider->broadcastListeners.find(broadcastName)->second.isEmpty());
+        EXPECT_FALSE(testProvider->broadcastListeners.find(broadcastName) == testProvider->broadcastListeners.cend() ||
+                     testProvider->broadcastListeners.find(broadcastName)->second.isEmpty());
     }
 
     ~End2EndBroadcastTest(){
