@@ -31,6 +31,7 @@
 
 #include "joynr/Semaphore.h"
 #include <memory>
+#include <string>
 
 namespace joynr
 {
@@ -56,8 +57,8 @@ class LongPollingMessageReceiver : public joynr::Thread
 {
 public:
     LongPollingMessageReceiver(const BounceProxyUrl& bounceProxyUrl,
-                               const QString& channelId,
-                               const QString& receiverId,
+                               const std::string& channelId,
+                               const std::string& receiverId,
                                const LongPollingMessageReceiverSettings& settings,
                                joynr::Semaphore* channelCreatedSemaphore,
                                std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
@@ -74,8 +75,8 @@ private:
     void checkServerTime();
     DISALLOW_COPY_AND_ASSIGN(LongPollingMessageReceiver);
     const BounceProxyUrl bounceProxyUrl;
-    const QString channelId;
-    const QString receiverId;
+    const std::string channelId;
+    const std::string receiverId;
     const LongPollingMessageReceiverSettings settings;
 
     bool interrupted;

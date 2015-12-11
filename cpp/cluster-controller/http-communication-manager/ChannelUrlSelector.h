@@ -77,7 +77,7 @@ public:
     * @param channelUrlDirectoryProxy
     */
     virtual void init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
-                      const MessagingSettings& settings);
+                      const MessagingSettings& settings) override;
 
     /**
     * @brief Get the "best" URL for this channel. Feedback is used to figure out which
@@ -87,11 +87,11 @@ public:
     * @param channelId
     * @param status
     * @param timeout
-    * @return QString
+    * @return std::string
     */
-    virtual QString obtainUrl(const QString& channelId,
-                              RequestStatus& status,
-                              const qint64& timeout_ms);
+    virtual std::string obtainUrl(const std::string& channelId,
+                                  RequestStatus& status,
+                                  const qint64& timeout_ms) override;
     /**
     * @brief Provide feedback on performance of URL: was the connection successful or not?
     *
@@ -99,18 +99,18 @@ public:
     * @param channelId
     * @param url
     */
-    virtual void feedback(bool success, const QString& channelId, QString url);
+    virtual void feedback(bool success, const std::string& channelId, std::string url) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ChannelUrlSelector);
-    QString constructDefaultUrl(const QString& channelId);
-    QString constructUrl(const QString& baseUrl);
+    std::string constructDefaultUrl(const std::string& channelId);
+    std::string constructUrl(const std::string& baseUrl);
     std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory;
     const BounceProxyUrl& bounceProxyUrl;
-    QMap<QString, ChannelUrlSelectorEntry*> entries;
+    QMap<std::string, ChannelUrlSelectorEntry*> entries;
     qint64 timeForOneRecouperation;
     double punishmentFactor;
-    QString channelUrlDirectoryUrl;
+    std::string channelUrlDirectoryUrl;
     bool useDefaultUrl;
     static joynr_logging::Logger* logger;
 };
@@ -133,15 +133,15 @@ public:
     /**
      * @brief Returns the Url with the higest fitness value.
      *
-     * @return QString
+     * @return std::string
      */
-    QString best();
+    std::string best();
     /**
      * @brief Reduces the fitness value of Url url.
      *
      * @param url
      */
-    void punish(const QString& url);
+    void punish(const std::string& url);
     /**
      * @brief Initializes the fitness values, ranks the Urls according to their position
      * (first Url has highest rank).

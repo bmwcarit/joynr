@@ -30,7 +30,7 @@
 #include "joynr/ThreadPoolDelayedScheduler.h"
 #include "joynr/Runnable.h"
 
-#include <QString>
+#include <string>
 #include <QByteArray>
 
 #include <memory>
@@ -57,13 +57,13 @@ public:
     /**
     * @brief Sends the message to the given channel.
     */
-    void sendMessage(const QString& channelId, const JoynrMessage& message);
+    void sendMessage(const std::string& channelId, const JoynrMessage& message) override;
     /**
     * @brief The MessageSender needs the localChannelUrlDirectory to obtain Url's for
     * the channelIds.
     */
     void init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
-              const MessagingSettings& settings);
+              const MessagingSettings& settings) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(HttpSender);
@@ -94,7 +94,7 @@ private:
     {
     public:
         SendMessageRunnable(HttpSender* messageSender,
-                            const QString& channelId,
+                            const std::string& channelId,
                             const JoynrTimePoint& decayTime,
                             std::string&& data,
                             DelayedScheduler& delayedScheduler,
@@ -117,9 +117,9 @@ private:
 
     private:
         DISALLOW_COPY_AND_ASSIGN(SendMessageRunnable);
-        HttpResult buildRequestAndSend(const QString& url, qint64 curlTimeout);
-        QString resolveUrlForChannelId(qint64 curlTimeout);
-        QString channelId;
+        HttpResult buildRequestAndSend(const std::string& url, qint64 curlTimeout);
+        std::string resolveUrlForChannelId(qint64 curlTimeout);
+        std::string channelId;
         std::string data;
         DelayedScheduler& delayedScheduler;
         HttpSender* messageSender;

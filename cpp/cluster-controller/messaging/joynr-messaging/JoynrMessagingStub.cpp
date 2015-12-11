@@ -44,7 +44,7 @@ void JoynrMessagingStub::transmit(JoynrMessage& message)
         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
         message.setHeaderReplyChannelId(receiveChannelId);
     }
-    messageSender->sendMessage(QString::fromStdString(destinationChannelId), message);
+    messageSender->sendMessage(destinationChannelId, message);
 }
 
 } // namespace joynr

@@ -62,7 +62,7 @@ public:
         discoveryQos.addCustomParameter("fixedParticipantId", discoveryProviderParticipantId);
         discoveryQos.setDiscoveryTimeout(50);
 
-        QString channelId("SystemServicesDiscoveryTest.ChannelId");
+        std::string channelId("SystemServicesDiscoveryTest.ChannelId");
         EXPECT_CALL(*(dynamic_cast<MockMessageReceiver*>(mockMessageReceiver)), getReceiveChannelId())
                 .WillRepeatedly(::testing::ReturnRefOfCopy(channelId));
 

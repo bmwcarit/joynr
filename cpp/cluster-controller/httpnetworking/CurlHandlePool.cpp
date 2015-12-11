@@ -26,7 +26,6 @@
 #define NOMINMAX
 #endif
 
-#include <QString>
 #include <QMutableLinkedListIterator>
 #include <QUrl>
 #include <QThread>
@@ -37,7 +36,7 @@
 namespace joynr
 {
 
-void* AlwaysNewCurlHandlePool::getHandle(const QString& url)
+void* AlwaysNewCurlHandlePool::getHandle(const std::string& url)
 {
     std::ignore = url;
     return curl_easy_init();
@@ -65,11 +64,11 @@ PerThreadCurlHandlePool::PerThreadCurlHandlePool()
 {
 }
 
-void* PerThreadCurlHandlePool::getHandle(const QString& url)
+void* PerThreadCurlHandlePool::getHandle(const std::string& url)
 {
     std::lock_guard<std::mutex> lock(mutex);
     std::shared_ptr<PooledCurlHandle> pooledHandle;
-    QString host = extractHost(url);
+    std::string host = extractHost(url);
     pooledHandle = takeOrCreateHandle(QThread::currentThreadId(), host);
     pooledHandle->setActiveHost(host);
     outHandleMap.insert(pooledHandle->getHandle(), pooledHandle);
@@ -118,15 +117,15 @@ void PerThreadCurlHandlePool::reset()
     idleHandleMap.clear();
 }
 
-QString PerThreadCurlHandlePool::extractHost(const QString& url)
+std::string PerThreadCurlHandlePool::extractHost(const std::string& url)
 {
-    QUrl qurl(url);
-    return qurl.host() + ":" + QString::number(qurl.port());
+    QUrl qurl(QString::fromStdString(url));
+    return qurl.host().toStdString() + ":" + std::to_string(qurl.port());
 }
 
 std::shared_ptr<PooledCurlHandle> PerThreadCurlHandlePool::takeOrCreateHandle(
         const Qt::HANDLE& threadId,
-        QString host)
+        std::string host)
 {
     if (idleHandleMap.contains(threadId)) {
         std::vector<std::shared_ptr<PooledCurlHandle>> handleList =
@@ -160,7 +159,7 @@ PooledCurlHandle::~PooledCurlHandle()
     curl_easy_cleanup(handle);
 }
 
-bool PooledCurlHandle::hasHost(const QString& host) const
+bool PooledCurlHandle::hasHost(const std::string& host) const
 {
     return hosts.contains(host);
 }
@@ -170,11 +169,11 @@ void* PooledCurlHandle::getHandle()
     return handle;
 }
 
-void PooledCurlHandle::setActiveHost(const QString& host)
+void PooledCurlHandle::setActiveHost(const std::string& host)
 {
-    QMutableLinkedListIterator<QString> i(hosts);
+    QMutableLinkedListIterator<std::string> i(hosts);
     while (i.hasNext()) {
-        const QString& itHost = i.next();
+        const std::string& itHost = i.next();
         if (itHost == host) {
             i.remove();
             hosts.prepend(host);
@@ -201,9 +200,9 @@ void PooledCurlHandle::clearHandle()
 // TODO make this configurable
 const int SingleThreadCurlHandlePool::POOL_SIZE = 10;
 
-void* SingleThreadCurlHandlePool::getHandle(const QString& url)
+void* SingleThreadCurlHandlePool::getHandle(const std::string& url)
 {
-    QString host(extractHost(url));
+    std::string host(extractHost(url));
     std::lock_guard<std::mutex> lock(mutex);
 
     std::shared_ptr<PooledCurlHandle> pooledHandle = takeOrCreateHandle(host);
@@ -241,14 +240,14 @@ void SingleThreadCurlHandlePool::reset()
     handleList.clear();
 }
 
-QString SingleThreadCurlHandlePool::extractHost(const QString& url)
+std::string SingleThreadCurlHandlePool::extractHost(const std::string& url)
 {
-    QUrl qurl(url);
-    return qurl.host() + ":" + QString::number(qurl.port());
+    QUrl qurl(QString::fromStdString(url));
+    return qurl.host().toStdString() + ":" + std::to_string(qurl.port());
 }
 
 std::shared_ptr<PooledCurlHandle> SingleThreadCurlHandlePool::takeOrCreateHandle(
-        const QString& host)
+        const std::string& host)
 {
     QMutableLinkedListIterator<std::shared_ptr<PooledCurlHandle>> i(handleList);
     while (i.hasNext()) {

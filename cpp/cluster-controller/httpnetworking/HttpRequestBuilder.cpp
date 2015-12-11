@@ -29,11 +29,11 @@ using namespace joynr_logging;
 
 Logger* HttpRequestBuilder::logger = Logging::getInstance()->getLogger("MSG", "HttpRequestBuilder");
 
-HttpRequestBuilder::HttpRequestBuilder(const QString& url)
+HttpRequestBuilder::HttpRequestBuilder(const std::string& url)
         : handle(NULL), headers(NULL), content(), built(false)
 {
     handle = HttpNetworking::getInstance()->getCurlHandlePool()->getHandle(url);
-    curl_easy_setopt(handle, CURLOPT_URL, url.toLatin1().data());
+    curl_easy_setopt(handle, CURLOPT_URL, url.c_str());
 }
 
 HttpRequestBuilder::~HttpRequestBuilder()
@@ -46,27 +46,27 @@ HttpRequestBuilder::~HttpRequestBuilder()
     }
 }
 
-HttpRequestBuilder* HttpRequestBuilder::withProxy(const QString& proxy)
+HttpRequestBuilder* HttpRequestBuilder::withProxy(const std::string& proxy)
 {
-    curl_easy_setopt(handle, CURLOPT_PROXY, proxy.toLatin1().data());
+    curl_easy_setopt(handle, CURLOPT_PROXY, proxy.c_str());
     return this;
 }
 
-HttpRequestBuilder* HttpRequestBuilder::withCertificateAuthority(const QString& caFile)
+HttpRequestBuilder* HttpRequestBuilder::withCertificateAuthority(const std::string& caFile)
 {
-    curl_easy_setopt(handle, CURLOPT_CAINFO, caFile.toLatin1().data());
+    curl_easy_setopt(handle, CURLOPT_CAINFO, caFile.c_str());
     return this;
 }
 
-HttpRequestBuilder* HttpRequestBuilder::withClientCertificate(const QString& certificateFile)
+HttpRequestBuilder* HttpRequestBuilder::withClientCertificate(const std::string& certificateFile)
 {
-    curl_easy_setopt(handle, CURLOPT_SSLCERT, certificateFile.toLatin1().data());
+    curl_easy_setopt(handle, CURLOPT_SSLCERT, certificateFile.c_str());
     return this;
 }
 
-HttpRequestBuilder* HttpRequestBuilder::withClientCertificatePassword(const QString& password)
+HttpRequestBuilder* HttpRequestBuilder::withClientCertificatePassword(const std::string& password)
 {
-    curl_easy_setopt(handle, CURLOPT_KEYPASSWD, password.toLatin1().data());
+    curl_easy_setopt(handle, CURLOPT_KEYPASSWD, password.c_str());
     return this;
 }
 
@@ -117,16 +117,16 @@ HttpRequestBuilder* HttpRequestBuilder::acceptGzip()
     return this;
 }
 
-HttpRequestBuilder* HttpRequestBuilder::withContentType(const QString& contentType)
+HttpRequestBuilder* HttpRequestBuilder::withContentType(const std::string& contentType)
 {
     addHeader("Content-Type", contentType);
     return this;
 }
 
-HttpRequestBuilder* HttpRequestBuilder::addHeader(const QString& name, const QString& value)
+HttpRequestBuilder* HttpRequestBuilder::addHeader(const std::string& name, const std::string& value)
 {
-    QString header(name + ": " + value);
-    headers = curl_slist_append(headers, header.toLatin1().data());
+    std::string header(name + ": " + value);
+    headers = curl_slist_append(headers, header.c_str());
     return this;
 }
 

@@ -20,8 +20,7 @@
 #define IMESSAGERECEIVER_H
 
 #include <memory>
-
-class QString;
+#include <string>
 
 namespace joynr
 {
@@ -47,7 +46,7 @@ public:
     /**
       * Gets the channel ID of the receive channel for incoming messages.
       */
-    virtual const QString& getReceiveChannelId() const = 0;
+    virtual const std::string& getReceiveChannelId() const = 0;
 
     /**
       * Starts processing incomming messages. This method must be called

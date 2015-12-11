@@ -51,15 +51,15 @@ std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> pseudoGetCha
 
 // No longer desired behavior!
 TEST(ChannelUrlSelectorTest, DISABLED_usesBounceProxyUrlIfNotProvidedWithChannelUrlDir) {
-    const QString bounceProxyBaseUrl = "http://www.urltest.org/pseudoBp";
+    const std::string bounceProxyBaseUrl = "http://www.urltest.org/pseudoBp";
     BounceProxyUrl bounceProxyUrl(bounceProxyBaseUrl);
     ChannelUrlSelector* urlCache = new ChannelUrlSelector(
                 bounceProxyUrl,
                 ChannelUrlSelector::TIME_FOR_ONE_RECOUPERATION(),
                 ChannelUrlSelector::PUNISHMENT_FACTOR());
     RequestStatus* status = new RequestStatus();
-    QString channelId = "testChannelId";
-    QString url = urlCache->obtainUrl(channelId,*status, 20000);
+    std::string channelId = "testChannelId";
+    std::string url = urlCache->obtainUrl(channelId,*status, 20000);
     EXPECT_EQ("http://www.urltest.org/pseudoBp/testChannelId/message/", url);
     delete urlCache;
     delete status;
@@ -67,7 +67,7 @@ TEST(ChannelUrlSelectorTest, DISABLED_usesBounceProxyUrlIfNotProvidedWithChannel
 
 
 TEST(ChannelUrlSelectorTest, obtainUrlUsesLocalDirectory) {
-    const QString bounceProxyBaseUrl = "http://www.UrlTest.org/pseudoBp";
+    const std::string bounceProxyBaseUrl = "http://www.UrlTest.org/pseudoBp";
     const std::string settingsFileName ("test-resources/ChannelUrlSelectorTest.settings");
 
     BounceProxyUrl bounceProxyUrl(bounceProxyBaseUrl);
@@ -92,9 +92,9 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesLocalDirectory) {
             .WillOnce(WithArgs<0,1>(Invoke(pseudoGetChannelUrls)));
 
     RequestStatus* status = new RequestStatus();
-    QString channelId = "testChannelId";
+    std::string channelId = "testChannelId";
 
-    QString url = urlCache->obtainUrl(channelId,*status, 20000);
+    std::string url = urlCache->obtainUrl(channelId,*status, 20000);
     EXPECT_EQ("firstUrl/message/", url);
 
     delete status;
@@ -105,7 +105,7 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesLocalDirectory) {
 
 
 TEST(ChannelUrlSelectorTest, obtainUrlUsesFeedbackToChangeProviderUrl) {
-    const QString bounceProxyBaseUrl = "http://www.UrlTest.org/pseudoBp";
+    const std::string bounceProxyBaseUrl = "http://www.UrlTest.org/pseudoBp";
     const std::string settingsFileName("test-resources/ChannelUrlSelectorTest.settings");
 
     BounceProxyUrl bounceProxyUrl(bounceProxyBaseUrl);
@@ -130,9 +130,9 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesFeedbackToChangeProviderUrl) {
             .WillOnce(WithArgs<0,1>(Invoke(pseudoGetChannelUrls)));
 
     RequestStatus* status = new RequestStatus();
-    QString channelId = "testChannelId";
+    std::string channelId = "testChannelId";
 
-    QString url = urlCache->obtainUrl(channelId,*status, 20000);
+    std::string url = urlCache->obtainUrl(channelId,*status, 20000);
     EXPECT_EQ("firstUrl/message/", url);
 
     urlCache->feedback(false,channelId,url);
@@ -155,7 +155,7 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesFeedbackToChangeProviderUrl) {
 
 
 TEST(ChannelUrlSelectorTest, obtainUrlRetriesUrlOfHigherPriority) {
-    const QString bounceProxyBaseUrl = "http://www.UrlTest.org/pseudoBp";
+    const std::string bounceProxyBaseUrl = "http://www.UrlTest.org/pseudoBp";
     const std::string settingsFileName("test-resources/ChannelUrlSelectorTest.settings");
     qint64 timeForOneRecouperation = 1000; //half a minute
     double punishmentFactor = 0.4;//three punishments will lead to a try of the second Url
@@ -182,8 +182,8 @@ TEST(ChannelUrlSelectorTest, obtainUrlRetriesUrlOfHigherPriority) {
             .WillOnce(WithArgs<0,1>(Invoke(pseudoGetChannelUrls)));
 
     RequestStatus* status = new RequestStatus();
-    QString channelId = "testChannelId";
-    QString url = urlCache->obtainUrl(channelId,*status, 20000);
+    std::string channelId = "testChannelId";
+    std::string url = urlCache->obtainUrl(channelId,*status, 20000);
 
     urlCache->feedback(false,channelId,url);
     urlCache->feedback(false,channelId,url);

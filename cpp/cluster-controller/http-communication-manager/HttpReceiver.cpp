@@ -27,6 +27,8 @@
 #include "joynr/TypeUtil.h"
 
 #include <QtCore>
+#include <QString>
+#include <QByteArray>
 
 namespace joynr
 {
@@ -46,7 +48,7 @@ HttpReceiver::HttpReceiver(const MessagingSettings& settings,
           messageRouter(messageRouter)
 {
     MessagingPropertiesPersistence persist(settings.getMessagingPropertiesPersistenceFilename());
-    channelId = TypeUtil::toQt(persist.getChannelId());
+    channelId = persist.getChannelId();
     receiverId = persist.getReceiverId();
     init();
 
@@ -71,11 +73,10 @@ void HttpReceiver::updateSettings()
 {
     // Setup the proxy to use
     if (settings.getLocalProxyHost().empty()) {
-        HttpNetworking::getInstance()->setGlobalProxy(QString());
+        HttpNetworking::getInstance()->setGlobalProxy(std::string());
     } else {
-        HttpNetworking::getInstance()->setGlobalProxy(TypeUtil::toQt(settings.getLocalProxyHost()) +
-                                                      ":" +
-                                                      TypeUtil::toQt(settings.getLocalProxyPort()));
+        HttpNetworking::getInstance()->setGlobalProxy(settings.getLocalProxyHost() + ":" +
+                                                      settings.getLocalProxyPort());
     }
 
     // Turn on HTTP debug
@@ -87,12 +88,10 @@ void HttpReceiver::updateSettings()
     HttpNetworking::getInstance()->setConnectTimeout_ms(settings.getHttpConnectTimeout());
 
     // HTTPS settings
-    HttpNetworking::getInstance()->setCertificateAuthority(
-            TypeUtil::toQt(settings.getCertificateAuthority()));
-    HttpNetworking::getInstance()->setClientCertificate(
-            TypeUtil::toQt(settings.getClientCertificate()));
+    HttpNetworking::getInstance()->setCertificateAuthority(settings.getCertificateAuthority());
+    HttpNetworking::getInstance()->setClientCertificate(settings.getClientCertificate());
     HttpNetworking::getInstance()->setClientCertificatePassword(
-            TypeUtil::toQt(settings.getClientCertificatePassword()));
+            settings.getClientCertificatePassword());
 }
 
 HttpReceiver::~HttpReceiver()
@@ -118,7 +117,7 @@ void HttpReceiver::startReceiveQueue()
     LOG_DEBUG(logger, "startReceiveQueue");
     messageReceiver = new LongPollingMessageReceiver(settings.getBounceProxyUrl(),
                                                      channelId,
-                                                     TypeUtil::toQt(receiverId),
+                                                     receiverId,
                                                      longPollSettings,
                                                      channelCreatedSemaphore,
                                                      channelUrlDirectory,
@@ -146,7 +145,7 @@ void HttpReceiver::stopReceiveQueue()
     }
 }
 
-const QString& HttpReceiver::getReceiveChannelId() const
+const std::string& HttpReceiver::getReceiveChannelId() const
 {
     return channelId;
 }
@@ -156,23 +155,23 @@ bool HttpReceiver::tryToDeleteChannel()
     // If more than one attempt is needed, create a deleteChannelRunnable and move this to
     // messageSender.
     // TODO channelUrl is known only to the LongPlooMessageReceiver!
-    QString deleteChannelUrl =
-            settings.getBounceProxyUrl().getDeleteChannelUrl(getReceiveChannelId()).toString();
+    std::string deleteChannelUrl = settings.getBounceProxyUrl()
+                                           .getDeleteChannelUrl(getReceiveChannelId())
+                                           .toString()
+                                           .toStdString();
     std::shared_ptr<IHttpDeleteBuilder> deleteChannelRequestBuilder(
             HttpNetworking::getInstance()->createHttpDeleteBuilder(deleteChannelUrl));
     std::shared_ptr<HttpRequest> deleteChannelRequest(
             deleteChannelRequestBuilder->withTimeout_ms(20 * 1000)->build());
     LOG_DEBUG(logger,
-              FormatString("sending delete channel request to %1")
-                      .arg(deleteChannelUrl.toStdString())
-                      .str());
+              FormatString("sending delete channel request to %1").arg(deleteChannelUrl).str());
     HttpResult deleteChannelResult = deleteChannelRequest->execute();
     long statusCode = deleteChannelResult.getStatusCode();
     if (statusCode == 200) {
         channelCreatedSemaphore->waitFor(
                 std::chrono::milliseconds(5000)); // Reset the channel created Semaphore.
         LOG_INFO(logger, "channel deletion successfull");
-        channelUrlDirectory->unregisterChannelUrlsAsync(channelId.toStdString());
+        channelUrlDirectory->unregisterChannelUrlsAsync(channelId);
         LOG_INFO(logger, "Sendeing unregister request to ChannelUrlDirectory ...");
 
         return true;

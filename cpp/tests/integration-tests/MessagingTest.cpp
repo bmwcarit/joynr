@@ -37,7 +37,6 @@
 #include "joynr/Future.h"
 #include "joynr/Settings.h"
 #include "joynr/Semaphore.h"
-#include <QString>
 #include <chrono>
 
 using namespace ::testing;
@@ -252,7 +251,7 @@ TEST_F(MessagingTest, routeMsgToHttpCommunicationMgr)
             .Times(0);
 
     // HttpCommunicationManager should receive the message
-    EXPECT_CALL(*mockMessageSender, sendMessage(Eq(QString::fromStdString(receiverChannelId)),Eq(message)))
+    EXPECT_CALL(*mockMessageSender, sendMessage(Eq(receiverChannelId),Eq(message)))
             .Times(1).WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     std::shared_ptr<system::RoutingTypes::ChannelAddress> joynrMessagingEndpointAddr =
@@ -289,12 +288,12 @@ TEST_F(MessagingTest, routeMultipleMessages)
             .Times(2).WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     // MessageSender should receive the message
-    EXPECT_CALL(*mockMessageSender, sendMessage(Eq(QString::fromStdString(receiverChannelId)), Eq(message)))
+    EXPECT_CALL(*mockMessageSender, sendMessage(Eq(receiverChannelId), Eq(message)))
             .Times(1).WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     EXPECT_CALL(*mockMessageReceiver, getReceiveChannelId())
 //            .WillOnce(ReturnRefOfCopy(senderChannelId));
-            .WillRepeatedly(ReturnRefOfCopy(QString::fromStdString(senderChannelId)));
+            .WillRepeatedly(ReturnRefOfCopy(senderChannelId));
 
     std::shared_ptr<InProcessMessagingAddress> messagingSkeletonEndpointAddr(
                 new InProcessMessagingAddress(inProcessMessagingSkeleton)

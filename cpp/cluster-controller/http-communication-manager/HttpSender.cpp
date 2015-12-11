@@ -80,7 +80,7 @@ HttpSender::~HttpSender()
     delete channelUrlCache;
 }
 
-void HttpSender::sendMessage(const QString& channelId, const JoynrMessage& message)
+void HttpSender::sendMessage(const std::string& channelId, const JoynrMessage& message)
 {
 
     LOG_TRACE(logger, "sendMessage: ...");
@@ -89,8 +89,8 @@ void HttpSender::sendMessage(const QString& channelId, const JoynrMessage& messa
      * occur
       */
     DelayedScheduler* scheduler;
-    QString channelUrlDirChannelId =
-            TypeUtil::toQt(MessagingSettings::SETTING_CHANNEL_URL_DIRECTORY_CHANNELID());
+    std::string channelUrlDirChannelId =
+            MessagingSettings::SETTING_CHANNEL_URL_DIRECTORY_CHANNELID();
     if (channelId == channelUrlDirChannelId) {
         scheduler = &channelUrlContactorDelayedScheduler;
     } else {
@@ -98,8 +98,8 @@ void HttpSender::sendMessage(const QString& channelId, const JoynrMessage& messa
     }
 
     /**
-     * NOTE: passing QString by value into the runnable and thereby relying on the fact that the
-     * QString internally
+     * NOTE: passing std::string by value into the runnable and thereby relying on the fact that the
+     * std::string internally
      * uses QSharedDataPointer to manage the string's data, which when copied by value only copies
      * the pointer (but safely)
      */
@@ -120,7 +120,7 @@ Logger* HttpSender::SendMessageRunnable::logger =
 int HttpSender::SendMessageRunnable::messageRunnableCounter = 0;
 
 HttpSender::SendMessageRunnable::SendMessageRunnable(HttpSender* messageSender,
-                                                     const QString& channelId,
+                                                     const std::string& channelId,
                                                      const JoynrTimePoint& decayTime,
                                                      std::string&& data,
                                                      DelayedScheduler& delayedScheduler,
@@ -168,7 +168,7 @@ void HttpSender::SendMessageRunnable::run()
     qint64 curlTimeout = std::max(
             getRemainingTtl_ms() / HttpSender::FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIAL(),
             HttpSender::MIN_ATTEMPT_TTL());
-    QString url = resolveUrlForChannelId(curlTimeout);
+    std::string url = resolveUrlForChannelId(curlTimeout);
     LOG_TRACE(logger, "going to buildRequest");
     HttpResult sendMessageResult = buildRequestAndSend(url, curlTimeout);
 
@@ -187,33 +187,33 @@ void HttpSender::SendMessageRunnable::run()
                                                           delayedScheduler,
                                                           maxAttemptTtl_ms),
                                   delay);
-        QString body("NULL");
+        std::string body("NULL");
         if (!sendMessageResult.getBody().isNull()) {
-            body = QString(sendMessageResult.getBody().data());
+            body = std::string(sendMessageResult.getBody().data());
         }
         LOG_ERROR(logger,
                   FormatString(
                           "sending message - fail; error message %1; contents %2; scheduling for "
                           "retry...")
-                          .arg(sendMessageResult.getErrorMessage().toStdString())
-                          .arg(body.toStdString())
+                          .arg(sendMessageResult.getErrorMessage())
+                          .arg(body)
                           .str());
     } else {
         LOG_DEBUG(logger,
                   FormatString("sending message - success; url: %1 status code: %2 at %3")
-                          .arg(url.toStdString())
+                          .arg(url)
                           .arg(sendMessageResult.getStatusCode())
                           .arg(DispatcherUtils::nowInMilliseconds())
                           .str());
     }
 }
-QString HttpSender::SendMessageRunnable::resolveUrlForChannelId(qint64 curlTimeout)
+std::string HttpSender::SendMessageRunnable::resolveUrlForChannelId(qint64 curlTimeout)
 {
     LOG_TRACE(logger,
               FormatString("obtaining Url with a curlTimeout of : %1").arg(curlTimeout).str());
     RequestStatus status;
     // we also use the curl timeout here, to prevent long blocking during shutdown.
-    QString url = messageSender->channelUrlCache->obtainUrl(channelId, status, curlTimeout);
+    std::string url = messageSender->channelUrlCache->obtainUrl(channelId, status, curlTimeout);
     if (!status.successful()) {
         LOG_ERROR(
                 logger,
@@ -221,7 +221,7 @@ QString HttpSender::SendMessageRunnable::resolveUrlForChannelId(qint64 curlTimeo
                         .arg(status.toString())
                         .str());
     }
-    if (url.isNull() || url.isEmpty()) {
+    if (url.empty()) {
         LOG_DEBUG(logger,
                   "Url for channelId could not be obtained from the ChannelUrlDirectory"
                   "... EXITING ...");
@@ -230,13 +230,13 @@ QString HttpSender::SendMessageRunnable::resolveUrlForChannelId(qint64 curlTimeo
 
     LOG_TRACE(logger,
               FormatString("Sending message; url: %1, time  left: %2")
-                      .arg(url.toStdString())
+                      .arg(url)
                       .arg(DispatcherUtils::convertAbsoluteTimeToTtlString(decayTime).c_str())
                       .str());
     return url;
 }
 
-HttpResult HttpSender::SendMessageRunnable::buildRequestAndSend(const QString& url,
+HttpResult HttpSender::SendMessageRunnable::buildRequestAndSend(const std::string& url,
                                                                 qint64 curlTimeout)
 {
     std::shared_ptr<IHttpPostBuilder> sendMessageRequestBuilder(
@@ -249,7 +249,8 @@ HttpResult HttpSender::SendMessageRunnable::buildRequestAndSend(const QString& u
                     ->build());
     LOG_TRACE(logger, "builtRequest");
 
-    Util::logSerializedMessage(logger, QString("Sending Message: "), TypeUtil::toQt(data));
+    Util::logSerializedMessage(
+            logger, QString::fromStdString("Sending Message: "), QString::fromStdString(data));
 
     return sendMessageRequest->execute();
 }

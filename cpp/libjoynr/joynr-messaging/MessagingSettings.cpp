@@ -269,7 +269,7 @@ int64_t MessagingSettings::DEFAULT_SEND_MESSAGE_MAX_TTL()
 
 BounceProxyUrl MessagingSettings::getBounceProxyUrl() const
 {
-    return BounceProxyUrl(TypeUtil::toQt(settings.get<std::string>(SETTING_BOUNCE_PROXY_URL())));
+    return BounceProxyUrl(settings.get<std::string>(SETTING_BOUNCE_PROXY_URL()));
 }
 
 std::string MessagingSettings::getBounceProxyUrlString() const

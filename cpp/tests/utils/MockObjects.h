@@ -491,7 +491,7 @@ class MockMessageReceiver : public joynr::IMessageReceiver
 public:
     MockMessageReceiver(){};
     MOCK_METHOD1(init, void(std::shared_ptr<joynr::ILocalChannelUrlDirectory> channelUrlDirectory));
-    MOCK_CONST_METHOD0(getReceiveChannelId, QString&());
+    MOCK_CONST_METHOD0(getReceiveChannelId, std::string&());
     MOCK_METHOD0(startReceiveQueue, void());
     MOCK_METHOD0(stopReceiveQueue, void());
     MOCK_METHOD0(waitForReceiveQueueStarted, void());
@@ -502,7 +502,7 @@ public:
 class MockMessageSender : public joynr::IMessageSender
 {
 public:
-    MOCK_METHOD2(sendMessage,void(const QString&, const joynr::JoynrMessage&));
+    MOCK_METHOD2(sendMessage,void(const std::string&, const joynr::JoynrMessage&));
     MOCK_METHOD2(init,void(std::shared_ptr<joynr::ILocalChannelUrlDirectory> channelUrlDirectory,const joynr::MessagingSettings& settings));
 };
 

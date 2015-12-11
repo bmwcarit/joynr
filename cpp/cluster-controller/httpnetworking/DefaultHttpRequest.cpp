@@ -18,7 +18,7 @@
  */
 #include "cluster-controller/httpnetworking/DefaultHttpRequest.h"
 #include "cluster-controller/httpnetworking/HttpResult.h"
-
+#include <boost/algorithm/string.hpp>
 #include <curl/curl.h>
 
 namespace joynr
@@ -39,12 +39,16 @@ size_t DefaultHttpRequest::writeToQByteArray(void* buffer, size_t size, size_t n
 
 size_t DefaultHttpRequest::writeToQMultiMap(void* buffer, size_t size, size_t nmemb, void* userp)
 {
-    QMultiMap<QString, QString>* headers = reinterpret_cast<QMultiMap<QString, QString>*>(userp);
+    QMultiMap<std::string, std::string>* headers =
+            reinterpret_cast<QMultiMap<std::string, std::string>*>(userp);
     size_t numBytes = size * nmemb;
-    QString header = QString::fromUtf8(reinterpret_cast<char*>(buffer), numBytes);
-    int separatorPosition = header.indexOf(':');
-    QString headerName = header.left(separatorPosition).trimmed();
-    QString headerValue = header.mid(separatorPosition + 1).trimmed();
+    std::string header = std::string(reinterpret_cast<char*>(buffer), numBytes);
+    std::string::size_type separatorPosition = header.find(":", 0);
+    std::string headerName = header.substr(0, separatorPosition);
+    std::string headerValue = header.substr(separatorPosition + 1);
+    using boost::algorithm::trim;
+    trim(headerName);
+    trim(headerValue);
     headers->insert(headerName, headerValue);
     return numBytes;
 }
@@ -81,7 +85,7 @@ HttpResult DefaultHttpRequest::execute()
     curl_easy_setopt(handle, CURLOPT_NOSIGNAL, 1);
     curl_easy_setopt(handle, CURLOPT_WRITEDATA, body);
 
-    QMultiMap<QString, QString>* headers = new QMultiMap<QString, QString>;
+    QMultiMap<std::string, std::string>* headers = new QMultiMap<std::string, std::string>;
     curl_easy_setopt(handle, CURLOPT_WRITEHEADER, headers);
 
     CURLcode curlError;

@@ -18,14 +18,14 @@
  */
 #include "cluster-controller/httpnetworking/HttpResult.h"
 #include <curl/curl.h>
-
+#include "joynr/FormatString.h"
 namespace joynr
 {
 
 HttpResult::HttpResult(long curlError,
                        int statusCode,
                        QByteArray* body,
-                       QMultiMap<QString, QString>* headers)
+                       QMultiMap<std::string, std::string>* headers)
         : curlError(static_cast<int>(curlError)),
           statusCode(statusCode),
           body(body),
@@ -52,36 +52,37 @@ int HttpResult::getStatusCode() const
     return statusCode;
 }
 
-QString HttpResult::getErrorMessage() const
+std::string HttpResult::getErrorMessage() const
 {
     if (isCurlError()) {
         switch (curlError) {
         case CURLE_COULDNT_RESOLVE_PROXY:
-            return QString("Could not resolve network proxy address");
+            return std::string("Could not resolve network proxy address");
         case CURLE_COULDNT_RESOLVE_HOST:
-            return QString("Could not resolve host address");
+            return std::string("Could not resolve host address");
         case CURLE_COULDNT_CONNECT:
-            return QString("Curl reported connection failure");
+            return std::string("Curl reported connection failure");
         case CURLE_OPERATION_TIMEDOUT:
-            return QString("Curl operation timeout");
+            return std::string("Curl operation timeout");
         case CURLE_SSL_CONNECT_ERROR:
-            return QString("SSL connection error");
+            return std::string("SSL connection error");
         default:
-            return QString("Error during HTTP request/response, curl error code : %1")
-                    .arg(curlError);
+            return FormatString("Error during HTTP request/response, curl error code : %1")
+                    .arg(curlError)
+                    .str();
         }
     } else {
         switch (statusCode) {
         case 407:
-            return QString("407 Proxy authentication required");
+            return std::string("407 Proxy authentication required");
         case 500:
-            return QString("500 Internal server error");
+            return std::string("500 Internal server error");
         case 502:
-            return QString("502 Bad gateway");
+            return std::string("502 Bad gateway");
         case 503:
-            return QString("503 Service unavailable");
+            return std::string("503 Service unavailable");
         default:
-            return QString("HTTP error, status code : %1").arg(statusCode);
+            return FormatString("HTTP error, status code : %1").arg(statusCode).str();
         }
     }
 }
@@ -91,7 +92,7 @@ const QByteArray& HttpResult::getBody() const
     return *body;
 }
 
-const QMultiMap<QString, QString>& HttpResult::getHeaders() const
+const QMultiMap<std::string, std::string>& HttpResult::getHeaders() const
 {
     return *headers;
 }

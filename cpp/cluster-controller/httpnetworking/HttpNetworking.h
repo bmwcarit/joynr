@@ -21,7 +21,8 @@
 #include "joynr/PrivateCopyAssign.h"
 
 #include "joynr/JoynrClusterControllerExport.h"
-#include <QString>
+#include <string>
+#include <QByteArray>
 
 namespace joynr
 {
@@ -44,9 +45,7 @@ public:
       */
     virtual HttpResult execute() = 0;
 
-    virtual ~HttpRequest()
-    {
-    }
+    virtual ~HttpRequest() = default;
 };
 
 /**
@@ -63,11 +62,11 @@ public:
       */
     virtual HttpRequest* build() = 0;
 
-    virtual ~IHttpBuilder(){};
+    virtual ~IHttpBuilder() = default;
     /**
       * Sets a proxy for the built http request overriding the global proxy set in HttpNetworking.
       */
-    virtual T* withProxy(const QString& proxy) = 0;
+    virtual T* withProxy(const std::string& proxy) = 0;
 
     /**
       * Enables HTTP logging if available. The method of logging is dependent on the HTTP library
@@ -78,22 +77,22 @@ public:
     /**
      * Adds a certificate authority certificate file so that the server can be authenticated:
      */
-    virtual T* withCertificateAuthority(const QString& caFile) = 0;
+    virtual T* withCertificateAuthority(const std::string& caFile) = 0;
 
     /**
      * Adds a client certificate so that the server can authenticate this client
      */
-    virtual T* withClientCertificate(const QString& certificateFile) = 0;
+    virtual T* withClientCertificate(const std::string& certificateFile) = 0;
 
     /**
      * Enables the client certificate to be unlocked with a password
      */
-    virtual T* withClientCertificatePassword(const QString& password) = 0;
+    virtual T* withClientCertificatePassword(const std::string& password) = 0;
 
     /**
       * Adds an http header. Only ASCII characters are allowed.
       */
-    virtual T* addHeader(const QString& name, const QString& value) = 0;
+    virtual T* addHeader(const std::string& name, const std::string& value) = 0;
     virtual T* withConnectTimeout_ms(long timeout_ms) = 0;
     virtual T* withTimeout_ms(long timeout_ms) = 0;
 };
@@ -129,7 +128,7 @@ public:
     /**
       * Sets the content type. Only ASCII characters are allowed.
       */
-    virtual IHttpPostBuilder* withContentType(const QString& contentType) = 0;
+    virtual IHttpPostBuilder* withContentType(const std::string& contentType) = 0;
 
     /**
       * Tells to post the data supplied. No copy of the data is internally created.
@@ -148,7 +147,7 @@ public:
 class JOYNRCLUSTERCONTROLLER_EXPORT ICurlHandlePool
 {
 public:
-    virtual void* getHandle(const QString& url) = 0;
+    virtual void* getHandle(const std::string& url) = 0;
     virtual void returnHandle(void* handle) = 0;
 
     /**
@@ -180,9 +179,9 @@ public:
 
     static HttpNetworking* getInstance();
 
-    IHttpGetBuilder* createHttpGetBuilder(const QString& url);
-    IHttpDeleteBuilder* createHttpDeleteBuilder(const QString& url);
-    IHttpPostBuilder* createHttpPostBuilder(const QString& url);
+    IHttpGetBuilder* createHttpGetBuilder(const std::string& url);
+    IHttpDeleteBuilder* createHttpDeleteBuilder(const std::string& url);
+    IHttpPostBuilder* createHttpPostBuilder(const std::string& url);
 
     /**
       * Used internally
@@ -194,7 +193,7 @@ public:
       * If the string is empty the proxy is unset.
       * This setting only affects http builders created after the method was called.
       */
-    void setGlobalProxy(const QString& proxy);
+    void setGlobalProxy(const std::string& proxy);
 
     /**
      * Sets the HTTP connect timeout
@@ -211,31 +210,31 @@ public:
       * Sets the certificate authority that will be used to authenticate the server for HTTPS
      * requests
       */
-    void setCertificateAuthority(const QString& certificateAuthority);
+    void setCertificateAuthority(const std::string& certificateAuthority);
 
     /**
       * Sets the client certificate that the server will use to authenticate the client during HTTPS
      * requests
       */
-    void setClientCertificate(const QString& clientCertificate);
+    void setClientCertificate(const std::string& clientCertificate);
 
     /**
       * Enables a password protected client certificate to be unlocked
       */
-    void setClientCertificatePassword(const QString& clientCertificatePassword);
+    void setClientCertificatePassword(const std::string& clientCertificatePassword);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(HttpNetworking);
     HttpNetworking();
-    HttpRequestBuilder* createRequestBuilder(const QString& url);
+    HttpRequestBuilder* createRequestBuilder(const std::string& url);
     static HttpNetworking* httpNetworking;
     ICurlHandlePool* curlHandlePool;
 
-    QString proxy;
+    std::string proxy;
     long connectTimeout_ms;
-    QString certificateAuthority;
-    QString clientCertificate;
-    QString clientCertificatePassword;
+    std::string certificateAuthority;
+    std::string clientCertificate;
+    std::string clientCertificatePassword;
     bool httpDebug;
 };
 

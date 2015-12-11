@@ -64,7 +64,7 @@ public:
         discoveryQos.addCustomParameter("fixedParticipantId", routingProviderParticipantId);
         discoveryQos.setDiscoveryTimeout(50);
 
-        QString channelId("SystemServicesRoutingTest.ChannelId");
+        std::string channelId("SystemServicesRoutingTest.ChannelId");
         EXPECT_CALL(*(dynamic_cast<MockMessageReceiver*>(mockMessageReceiver)), getReceiveChannelId())
                 .WillRepeatedly(::testing::ReturnRefOfCopy(channelId));
 

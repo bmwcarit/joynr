@@ -47,8 +47,8 @@ Logger* LongPollingMessageReceiver::logger =
 
 LongPollingMessageReceiver::LongPollingMessageReceiver(
         const BounceProxyUrl& bounceProxyUrl,
-        const QString& channelId,
-        const QString& receiverId,
+        const std::string& channelId,
+        const std::string& receiverId,
         const LongPollingMessageReceiverSettings& settings,
         joynr::Semaphore* channelCreatedSemaphore,
         std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
@@ -87,9 +87,9 @@ void LongPollingMessageReceiver::stop()
 void LongPollingMessageReceiver::run()
 {
     checkServerTime();
-    QString createChannelUrl = bounceProxyUrl.getCreateChannelUrl(channelId).toString();
-    LOG_INFO(logger,
-             FormatString("Running lpmr with channelId %1").arg(channelId.toStdString()).str());
+    std::string createChannelUrl =
+            bounceProxyUrl.getCreateChannelUrl(channelId).toString().toStdString();
+    LOG_INFO(logger, FormatString("Running lpmr with channelId %1").arg(channelId).str());
     std::shared_ptr<IHttpPostBuilder> createChannelRequestBuilder(
             HttpNetworking::getInstance()->createHttpPostBuilder(createChannelUrl));
     std::shared_ptr<HttpRequest> createChannelRequest(
@@ -98,15 +98,15 @@ void LongPollingMessageReceiver::run()
                     ->withTimeout_ms(settings.bounceProxyTimeout_ms)
                     ->build());
 
-    QString channelUrl;
-    while (channelUrl.isEmpty() && !isInterrupted()) {
+    std::string channelUrl;
+    while (channelUrl.empty() && !isInterrupted()) {
         LOG_DEBUG(logger, "sending create channel request");
         HttpResult createChannelResult = createChannelRequest->execute();
         if (createChannelResult.getStatusCode() == 201) {
             channelUrl = *createChannelResult.getHeaders().find("Location");
             LOG_INFO(logger,
                      FormatString("channel creation successfull; channel url:%1")
-                             .arg(channelUrl.toStdString())
+                             .arg(channelUrl)
                              .str());
             channelCreatedSemaphore->notify();
         } else {
@@ -124,14 +124,14 @@ void LongPollingMessageReceiver::run()
       */
     assert(channelUrlDirectory != NULL);
     types::ChannelUrlInformation urlInformation;
-    std::vector<std::string> urls = {channelUrl.toStdString()};
+    std::vector<std::string> urls = {channelUrl};
     urlInformation.setUrls(urls);
     LOG_INFO(logger,
              FormatString("Adding channelId and Url of cluster controller to remote "
                           "ChannelUrlDirectory%1")
-                     .arg(channelUrl.toStdString())
+                     .arg(channelUrl)
                      .str());
-    channelUrlDirectory->registerChannelUrlsAsync(channelId.toStdString(), urlInformation);
+    channelUrlDirectory->registerChannelUrlsAsync(channelId, urlInformation);
 
     while (!isInterrupted()) {
 
@@ -146,9 +146,7 @@ void LongPollingMessageReceiver::run()
                         ->build());
 
         LOG_DEBUG(logger,
-                  FormatString("sending long polling request; url: %1")
-                          .arg(channelUrl.toStdString())
-                          .str());
+                  FormatString("sending long polling request; url: %1").arg(channelUrl).str());
         HttpResult longPollingResult = longPollRequest->execute();
         if (!isInterrupted()) {
             // TODO: remove HttpErrorCodes and use constants.
@@ -160,7 +158,7 @@ void LongPollingMessageReceiver::run()
             if (longPollingResult.getStatusCode() == 200 ||
                 longPollingResult.getStatusCode() == 503) {
                 Util::logSerializedMessage(logger,
-                                           QString("long polling successful; contents: "),
+                                           "long polling successful; contents: ",
                                            longPollingResult.getBody().data());
                 processReceivedInput(longPollingResult.getBody());
                 // Atmosphere currently cannot return 204 when a long poll times out, so this code
@@ -168,14 +166,14 @@ void LongPollingMessageReceiver::run()
             } else if (longPollingResult.getStatusCode() == 204) {
                 LOG_DEBUG(logger, "long polling successfull; no data");
             } else {
-                QString body("NULL");
+                std::string body("NULL");
                 if (!longPollingResult.getBody().isNull()) {
-                    body = QString(longPollingResult.getBody().data());
+                    body = QString(longPollingResult.getBody().data()).toStdString();
                 }
                 LOG_ERROR(logger,
                           FormatString("long polling failed; error message: %1; contents: %2")
-                                  .arg(longPollingResult.getErrorMessage().toStdString())
-                                  .arg(body.toStdString())
+                                  .arg(longPollingResult.getErrorMessage())
+                                  .arg(body)
                                   .str());
 
                 std::unique_lock<std::mutex> lock(interruptedMutex);
@@ -222,8 +220,7 @@ void LongPollingMessageReceiver::processReceivedJsonObjects(const std::string& j
         std::string replyChannelId = msg->getHeaderReplyChannelId();
         std::shared_ptr<system::RoutingTypes::ChannelAddress> address(
                 new system::RoutingTypes::ChannelAddress(replyChannelId));
-        messageRouter->addNextHop(
-                QString::fromStdString(msg->getHeaderFrom()).toStdString(), address);
+        messageRouter->addNextHop(msg->getHeaderFrom(), address);
     }
 
     // messageRouter.route passes the message reference to the MessageRunnable, which copies it.
@@ -235,7 +232,7 @@ void LongPollingMessageReceiver::processReceivedJsonObjects(const std::string& j
 
 void LongPollingMessageReceiver::checkServerTime()
 {
-    QString timeCheckUrl = bounceProxyUrl.getTimeCheckUrl().toString();
+    std::string timeCheckUrl = bounceProxyUrl.getTimeCheckUrl().toString().toStdString();
 
     std::shared_ptr<IHttpGetBuilder> timeCheckRequestBuilder(
             HttpNetworking::getInstance()->createHttpGetBuilder(timeCheckUrl));
@@ -245,7 +242,7 @@ void LongPollingMessageReceiver::checkServerTime()
                     ->build());
     LOG_DEBUG(logger,
               FormatString("CheckServerTime: sending request to Bounce Proxy (%1)")
-                      .arg(timeCheckUrl.toStdString())
+                      .arg(timeCheckUrl)
                       .str());
     system_clock::time_point localTimeBeforeRequest = DispatcherUtils::now();
     HttpResult timeCheckResult = timeCheckRequest->execute();

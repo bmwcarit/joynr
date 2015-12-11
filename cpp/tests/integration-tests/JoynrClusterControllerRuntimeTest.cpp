@@ -80,7 +80,7 @@ public:
             mockMessageSender(new MockMessageSender()),
             semaphore(0)
     {
-        QString channelId("JoynrClusterControllerRuntimeTest.ChannelId");
+        std::string channelId("JoynrClusterControllerRuntimeTest.ChannelId");
 
         //runtime can only be created, after MockMessageReceiver has been told to return
         //a channelId for getReceiveChannelId.

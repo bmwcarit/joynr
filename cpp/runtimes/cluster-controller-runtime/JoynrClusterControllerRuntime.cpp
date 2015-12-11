@@ -183,7 +183,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                 new HttpReceiver(*messagingSettings, messageRouter));
     }
 
-    QString channelId = messageReceiver->getReceiveChannelId();
+    std::string channelId = messageReceiver->getReceiveChannelId();
 
     // create message sender
     if (!messageSender) {
@@ -193,8 +193,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                                messagingSettings->getSendMsgMaxTtl(),
                                messagingSettings->getSendMsgRetryInterval()));
     }
-    messagingStubFactory->registerStubFactory(new JoynrMessagingStubFactory(
-            messageSender, messageReceiver->getReceiveChannelId().toStdString()));
+    messagingStubFactory->registerStubFactory(
+            new JoynrMessagingStubFactory(messageSender, messageReceiver->getReceiveChannelId()));
 
     // joynrMessagingSendSkeleton = new DummyClusterControllerMessagingSkeleton(messageRouter);
     // ccDispatcher = DispatcherFactory::createDispatcherInSameThread(messagingSettings);
@@ -203,8 +203,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     // CapabilitiesServer.
     bool usingRealCapabilitiesClient =
             /*when switching this to true, turn on the UUID in systemintegrationtests again*/ true;
-    capabilitiesClient =
-            new CapabilitiesClient(channelId.toStdString()); // ownership of this is not transferred
+    capabilitiesClient = new CapabilitiesClient(channelId); // ownership of this is not transferred
     // try using the real capabilitiesClient again:
     // capabilitiesClient = new CapabilitiesClient(channelId);// ownership of this is not
     // transferred

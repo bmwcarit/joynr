@@ -21,6 +21,7 @@
 #include "joynr/Future.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/TypeUtil.h"
+#include <boost/algorithm/string/predicate.hpp>
 
 #include <cmath>
 #include <memory>
@@ -59,13 +60,14 @@ ChannelUrlSelector::ChannelUrlSelector(const BounceProxyUrl& bounceProxyUrl,
 ChannelUrlSelector::~ChannelUrlSelector()
 {
     // Delete all entries
-    QMapIterator<QString, ChannelUrlSelectorEntry*> i(entries);
+    auto it = entries.begin();
     ChannelUrlSelectorEntry* v;
-    while (i.hasNext()) {
-        i.next();
-        v = i.value();
-        if (v)
+    while (it != entries.end()) {
+        v = *it;
+        if (v) {
             delete v;
+        }
+        ++it;
     }
     LOG_TRACE(logger, "Destroyed ...");
 }
@@ -75,18 +77,18 @@ void ChannelUrlSelector::init(std::shared_ptr<ILocalChannelUrlDirectory> channel
 {
 
     this->channelUrlDirectory = channelUrlDirectory;
-    channelUrlDirectoryUrl = TypeUtil::toQt(settings.getChannelUrlDirectoryUrl());
+    channelUrlDirectoryUrl = settings.getChannelUrlDirectoryUrl();
 }
 
-QString ChannelUrlSelector::obtainUrl(const QString& channelId,
-                                      RequestStatus& status,
-                                      const qint64& timeout_ms)
+std::string ChannelUrlSelector::obtainUrl(const std::string& channelId,
+                                          RequestStatus& status,
+                                          const qint64& timeout_ms)
 {
 
     LOG_TRACE(logger, "entering obtainUrl ...");
     status.setCode(RequestStatusCode::IN_PROGRESS);
 
-    QString url("");
+    std::string url("");
 
     if (!channelUrlDirectory) {
         LOG_DEBUG(logger, "obtainUrl: channelUrlDirectoryProxy not available ...");
@@ -99,9 +101,7 @@ QString ChannelUrlSelector::obtainUrl(const QString& channelId,
 
     if (entries.contains(channelId)) {
         LOG_DEBUG(logger,
-                  FormatString("obtainUrl: using cached Urls for id = %1")
-                          .arg(channelId.toStdString())
-                          .str());
+                  FormatString("obtainUrl: using cached Urls for id = %1").arg(channelId).str());
         ChannelUrlSelectorEntry* entry = entries.value(channelId);
         status.setCode(RequestStatusCode::OK);
         return constructUrl(entry->best());
@@ -110,34 +110,34 @@ QString ChannelUrlSelector::obtainUrl(const QString& channelId,
             logger,
             FormatString(
                     "obtainUrl: trying to obtain Urls from remote ChannelUrlDirectory for id = %1")
-                    .arg(channelId.toStdString())
+                    .arg(channelId)
                     .str());
     std::shared_ptr<Future<types::ChannelUrlInformation>> proxyFuture(
-            channelUrlDirectory->getUrlsForChannelAsync(channelId.toStdString(), timeout_ms));
+            channelUrlDirectory->getUrlsForChannelAsync(channelId, timeout_ms));
     status = proxyFuture->getStatus();
 
     if (status.successful()) {
         LOG_DEBUG(
                 logger,
                 FormatString("obtainUrl: obtained Urls from remote ChannelUrlDirectory for id = %1")
-                        .arg(channelId.toStdString())
+                        .arg(channelId)
                         .str());
         types::ChannelUrlInformation urlInformation;
         proxyFuture->get(urlInformation);
         if (urlInformation.getUrls().empty()) {
             LOG_DEBUG(logger,
                       FormatString("obtainUrl: empty list of urls obtained from id = %1")
-                              .arg(channelId.toStdString())
+                              .arg(channelId)
                               .str());
             LOG_DEBUG(logger,
                       FormatString("obtainUrl: constructing default url for id = %1")
-                              .arg(channelId.toStdString())
+                              .arg(channelId)
                               .str());
             status.setCode(RequestStatusCode::ERROR);
             url = constructDefaultUrl(channelId);
             return constructUrl(url);
         }
-        url = QString::fromStdString(urlInformation.getUrls().at(0)); // return the first, store all
+        url = urlInformation.getUrls().at(0); // return the first, store all
         entries.insert(channelId,
                        new ChannelUrlSelectorEntry(urlInformation,
                                                    punishmentFactor,
@@ -148,7 +148,7 @@ QString ChannelUrlSelector::obtainUrl(const QString& channelId,
         LOG_DEBUG(logger,
                   FormatString("obtainUrl: FAILED to obtain Urls from remote ChannelUrlDirectory "
                                "for id = %1")
-                          .arg(channelId.toStdString())
+                          .arg(channelId)
                           .str());
         status.setCode(RequestStatusCode::ERROR);
         url = constructDefaultUrl(channelId);
@@ -157,9 +157,8 @@ QString ChannelUrlSelector::obtainUrl(const QString& channelId,
     return url;
 }
 
-void ChannelUrlSelector::feedback(bool success, const QString& channelId, QString url)
+void ChannelUrlSelector::feedback(bool success, const std::string& channelId, std::string url)
 {
-
     LOG_TRACE(logger, "entering feedback ...");
     if (success) {
         LOG_TRACE(logger, "feedback was positive");
@@ -169,38 +168,39 @@ void ChannelUrlSelector::feedback(bool success, const QString& channelId, QStrin
         LOG_DEBUG(logger, "feedback for an unknown channelId");
         return;
     }
-    LOG_TRACE(logger, FormatString("feedback: punishing Url = %1").arg(url.toStdString()).str());
-    LOG_TRACE(logger, FormatString(" for channelId= %1").arg(channelId.toStdString()).str());
+    LOG_TRACE(logger, FormatString("feedback: punishing Url = %1").arg(url).str());
+    LOG_TRACE(logger, FormatString(" for channelId= %1").arg(channelId).str());
     ChannelUrlSelectorEntry* entry = entries.value(channelId);
-    int cutoff = url.indexOf("/" + BounceProxyUrl::SEND_MESSAGE_PATH_APPENDIX());
+    std::string::size_type cutoff = url.find("/" + BounceProxyUrl::SEND_MESSAGE_PATH_APPENDIX(), 0);
     url.resize(cutoff);
     entry->punish(url);
     url.append("/"); // necessary because an Url can be provided without the ending /
     entry->punish(url);
 }
 
-QString ChannelUrlSelector::constructUrl(const QString& baseUrl)
+std::string ChannelUrlSelector::constructUrl(const std::string& baseUrl)
 {
-    QUrl sendUrl(baseUrl);
-    QString path = sendUrl.path();
-    if (!path.endsWith("/")) {
+    QUrl sendUrl(QString::fromStdString(baseUrl));
+    std::string path = sendUrl.path().toStdString();
+    using boost::algorithm::ends_with;
+    if (!ends_with(path, "/")) {
         path.append("/");
     }
     path.append(BounceProxyUrl::SEND_MESSAGE_PATH_APPENDIX());
     path.append("/");
-    sendUrl.setPath(path);
-    return sendUrl.toString();
+    sendUrl.setPath(QString::fromStdString(path));
+    return sendUrl.toString().toStdString();
 }
 
 // TODO: needs to be removed in future when directoy is working! OR: declare as default strategy
-QString ChannelUrlSelector::constructDefaultUrl(const QString& channelId)
+std::string ChannelUrlSelector::constructDefaultUrl(const std::string& channelId)
 {
     LOG_DEBUG(
             logger,
             "constructDefaultUrl ... using default Url inferred from channelId and BounceProxyUrl");
     if (!useDefaultUrl)
         assert(false);
-    std::string url = (bounceProxyUrl.getBounceProxyBaseUrl().toString() + channelId).toStdString();
+    std::string url = bounceProxyUrl.getBounceProxyBaseUrl().toString().toStdString() + channelId;
     types::ChannelUrlInformation urlInformation;
     std::vector<std::string> urls;
     urls.push_back(url);
@@ -208,7 +208,7 @@ QString ChannelUrlSelector::constructDefaultUrl(const QString& channelId)
     entries.insert(
             channelId,
             new ChannelUrlSelectorEntry(urlInformation, punishmentFactor, timeForOneRecouperation));
-    return TypeUtil::toQt(url);
+    return url;
 }
 
 /**
@@ -241,7 +241,7 @@ ChannelUrlSelectorEntry::~ChannelUrlSelectorEntry()
     LOG_TRACE(logger, "Destroyed ...");
 }
 
-QString ChannelUrlSelectorEntry::best()
+std::string ChannelUrlSelectorEntry::best()
 {
     LOG_TRACE(logger, "best ...");
     updateFitness();
@@ -255,13 +255,13 @@ QString ChannelUrlSelectorEntry::best()
             posOfMax = i;
         }
     }
-    return TypeUtil::toQt(urls.at(posOfMax));
+    return urls.at(posOfMax);
 }
 
-void ChannelUrlSelectorEntry::punish(const QString& url)
+void ChannelUrlSelectorEntry::punish(const std::string& url)
 {
     LOG_TRACE(logger, "punish ...");
-    const std::string stdUrl = TypeUtil::toStd(url);
+    const std::string stdUrl = url;
     const std::vector<std::string>& urls = urlInformation.getUrls();
     if (!vectorContains(urls, stdUrl)) {
         LOG_DEBUG(logger, "Url not contained in cache entry ...");

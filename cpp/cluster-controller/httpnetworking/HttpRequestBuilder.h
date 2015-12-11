@@ -24,6 +24,7 @@
 #include "joynr/joynrlogging.h"
 
 #include <QByteArray>
+#include <string>
 
 struct curl_slist;
 
@@ -42,23 +43,23 @@ class HttpRequestBuilder : public IHttpGetBuilder,
                            public IHttpDeleteBuilder
 {
 public:
-    HttpRequestBuilder(const QString& url);
+    HttpRequestBuilder(const std::string& url);
     ~HttpRequestBuilder();
 
     HttpRequest* build();
-    HttpRequestBuilder* withProxy(const QString& proxy);
-    HttpRequestBuilder* withDebug();
-    HttpRequestBuilder* withCertificateAuthority(const QString& caFile);
-    HttpRequestBuilder* withClientCertificate(const QString& certificateFile);
-    HttpRequestBuilder* withClientCertificatePassword(const QString& password);
-    HttpRequestBuilder* acceptGzip();
-    HttpRequestBuilder* withConnectTimeout_ms(long timeout_ms);
-    HttpRequestBuilder* withTimeout_ms(long timeout_ms);
-    HttpRequestBuilder* withContentType(const QString& contentType);
-    HttpRequestBuilder* addHeader(const QString& name, const QString& value);
+    HttpRequestBuilder* withProxy(const std::string& proxy) override;
+    HttpRequestBuilder* withDebug() override;
+    HttpRequestBuilder* withCertificateAuthority(const std::string& caFile) override;
+    HttpRequestBuilder* withClientCertificate(const std::string& certificateFile) override;
+    HttpRequestBuilder* withClientCertificatePassword(const std::string& password) override;
+    HttpRequestBuilder* acceptGzip() override;
+    HttpRequestBuilder* withConnectTimeout_ms(long timeout_ms) override;
+    HttpRequestBuilder* withTimeout_ms(long timeout_ms) override;
+    HttpRequestBuilder* withContentType(const std::string& contentType) override;
+    HttpRequestBuilder* addHeader(const std::string& name, const std::string& value) override;
     HttpRequestBuilder* asPost();
     HttpRequestBuilder* asDelete();
-    HttpRequestBuilder* postContent(const QByteArray& data);
+    HttpRequestBuilder* postContent(const QByteArray& data) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(HttpRequestBuilder);

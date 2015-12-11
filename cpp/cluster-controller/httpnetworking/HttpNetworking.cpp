@@ -52,10 +52,10 @@ HttpNetworking* HttpNetworking::getInstance()
     return httpNetworking;
 }
 
-HttpRequestBuilder* HttpNetworking::createRequestBuilder(const QString& url)
+HttpRequestBuilder* HttpNetworking::createRequestBuilder(const std::string& url)
 {
     HttpRequestBuilder* requestBuilder = new HttpRequestBuilder(url);
-    if (!proxy.isEmpty()) {
+    if (!proxy.empty()) {
         requestBuilder->withProxy(proxy);
     }
     if (httpDebug) {
@@ -65,32 +65,32 @@ HttpRequestBuilder* HttpNetworking::createRequestBuilder(const QString& url)
     requestBuilder->withConnectTimeout_ms(connectTimeout_ms);
 
     // Check for HTTPS options
-    if (!certificateAuthority.isEmpty()) {
+    if (!certificateAuthority.empty()) {
         requestBuilder->withCertificateAuthority(certificateAuthority);
     }
 
-    if (!clientCertificate.isEmpty()) {
+    if (!clientCertificate.empty()) {
         requestBuilder->withClientCertificate(clientCertificate);
     }
 
-    if (!clientCertificatePassword.isEmpty()) {
+    if (!clientCertificatePassword.empty()) {
         requestBuilder->withClientCertificatePassword(clientCertificatePassword);
     }
 
     return requestBuilder;
 }
 
-IHttpGetBuilder* HttpNetworking::createHttpGetBuilder(const QString& url)
+IHttpGetBuilder* HttpNetworking::createHttpGetBuilder(const std::string& url)
 {
     return createRequestBuilder(url);
 }
 
-IHttpDeleteBuilder* HttpNetworking::createHttpDeleteBuilder(const QString& url)
+IHttpDeleteBuilder* HttpNetworking::createHttpDeleteBuilder(const std::string& url)
 {
     return createRequestBuilder(url)->asDelete();
 }
 
-IHttpPostBuilder* HttpNetworking::createHttpPostBuilder(const QString& url)
+IHttpPostBuilder* HttpNetworking::createHttpPostBuilder(const std::string& url)
 {
     return createRequestBuilder(url)->asPost();
 }
@@ -99,7 +99,7 @@ IHttpPostBuilder::~IHttpPostBuilder()
 {
 }
 
-void HttpNetworking::setGlobalProxy(const QString& proxy)
+void HttpNetworking::setGlobalProxy(const std::string& proxy)
 {
     this->proxy = proxy;
 }
@@ -114,17 +114,17 @@ void HttpNetworking::setConnectTimeout_ms(long connectTimeout)
     this->connectTimeout_ms = connectTimeout;
 }
 
-void HttpNetworking::setCertificateAuthority(const QString& certificateAuthority)
+void HttpNetworking::setCertificateAuthority(const std::string& certificateAuthority)
 {
     this->certificateAuthority = certificateAuthority;
 }
 
-void HttpNetworking::setClientCertificate(const QString& clientCertificate)
+void HttpNetworking::setClientCertificate(const std::string& clientCertificate)
 {
     this->clientCertificate = clientCertificate;
 }
 
-void HttpNetworking::setClientCertificatePassword(const QString& clientCertificatePassword)
+void HttpNetworking::setClientCertificatePassword(const std::string& clientCertificatePassword)
 {
     this->clientCertificatePassword = clientCertificatePassword;
 }

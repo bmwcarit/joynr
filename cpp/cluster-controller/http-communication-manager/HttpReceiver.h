@@ -27,7 +27,7 @@
 #include "joynr/joynrlogging.h"
 #include "joynr/ILocalChannelUrlDirectory.h"
 
-#include <QString>
+#include <string>
 #include "joynr/Semaphore.h"
 #include <memory>
 
@@ -58,33 +58,33 @@ public:
     /**
       * Gets the channel ID of the receive channel for incoming messages.
       */
-    virtual const QString& getReceiveChannelId() const;
+    virtual const std::string& getReceiveChannelId() const override;
 
     /**
       * Checks the MessageSettings and updates the configuration.
       * Can be called at any time to read settings.
       */
-    virtual void updateSettings();
+    virtual void updateSettings() override;
 
     /**
       * Deletes the channel on the bounceproxy. Will only try once
       */
-    virtual bool tryToDeleteChannel();
+    virtual bool tryToDeleteChannel() override;
 
     /**
       * Blocks until the ReceiveQue is started.
       */
-    virtual void waitForReceiveQueueStarted();
+    virtual void waitForReceiveQueueStarted() override;
 
-    virtual void startReceiveQueue();
+    virtual void startReceiveQueue() override;
 
     /**
       * stops the receiveQue. This might ungracefully terminate the thread of the
      * LongPollingMessageReceiver.
       */
-    virtual void stopReceiveQueue();
+    virtual void stopReceiveQueue() override;
 
-    virtual void init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory);
+    virtual void init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(HttpReceiver);
@@ -99,8 +99,8 @@ private:
        of
        createChannel and waitForReceiveQueueStarted works as well. */
     Semaphore* channelCreatedSemaphore;
-    QString channelId; // currently channelid is used to construct the channelUrl or
-                       // channelLocation.
+    std::string channelId; // currently channelid is used to construct the channelUrl or
+                           // channelLocation.
     // Receiver ID is used to uniquely identify a message receiver (X-Atmosphere-tracking-id).
     // Allows for registering multiple receivers for a single channel.
     std::string receiverId;
