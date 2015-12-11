@@ -383,7 +383,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         ASSERT_EQ(result, setValue);
     }
 
-    // TESTING Attribute getter/setter of maps
+    // TESTING Attribute getter/setter and operation calls of maps
     {
         using namespace joynr::types::TestTypes;
         ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domainName);
@@ -408,6 +408,14 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         TEverythingMap result;
         testProxy->getEverythingMap(result);
         ASSERT_EQ(result, setValue);
+
+        TStringKeyMap mapParameterResult;
+        TStringKeyMap stringKeyMap;
+        stringKeyMap.insert({"StringKey1", "StringValue1"});
+        stringKeyMap.insert({"StringKey2", "StringValue2"});
+
+        testProxy->mapParameters(mapParameterResult, stringKeyMap);
+        ASSERT_EQ(mapParameterResult, stringKeyMap);
     }
     // Operation overloading is not currently supported
 #if 0
