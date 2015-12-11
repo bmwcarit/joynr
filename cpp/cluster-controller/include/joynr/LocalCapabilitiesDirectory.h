@@ -210,10 +210,10 @@ private:
     std::mutex cacheLock;
 
     TypedClientMultiCache<InterfaceAddress, CapabilityEntry> interfaceAddress2GlobalCapabilities;
-    TypedClientMultiCache<QString, CapabilityEntry> participantId2GlobalCapabilities;
+    TypedClientMultiCache<std::string, CapabilityEntry> participantId2GlobalCapabilities;
 
     TypedClientMultiCache<InterfaceAddress, CapabilityEntry> interfaceAddress2LocalCapabilities;
-    TypedClientMultiCache<QString, CapabilityEntry> participantId2LocalCapability;
+    TypedClientMultiCache<std::string, CapabilityEntry> participantId2LocalCapability;
 
     std::vector<types::CapabilityInformation> registeredGlobalCapabilities;
     MessageRouter& messageRouter;

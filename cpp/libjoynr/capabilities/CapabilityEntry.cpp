@@ -38,10 +38,10 @@ CapabilityEntry::CapabilityEntry(const CapabilityEntry& other)
 }
 
 CapabilityEntry::CapabilityEntry(
-        const QString& domain,
-        const QString& interfaceName,
+        const std::string& domain,
+        const std::string& interfaceName,
         joynr::types::ProviderQos qos,
-        const QString& participantId,
+        const std::string& participantId,
         std::vector<joynr::types::CommunicationMiddleware::Enum> middlewareConnections,
         bool isGlobal,
         QObject* parent)
@@ -74,22 +74,22 @@ bool CapabilityEntry::operator==(const CapabilityEntry& other) const
            this->global == other.global;
 }
 
-QString CapabilityEntry::getInterfaceName() const
+std::string CapabilityEntry::getInterfaceName() const
 {
     return interfaceName;
 }
 
-QString CapabilityEntry::getDomain() const
+std::string CapabilityEntry::getDomain() const
 {
     return domain;
 }
 
-void CapabilityEntry::setInterfaceName(QString interfaceName)
+void CapabilityEntry::setInterfaceName(std::string interfaceName)
 {
     this->interfaceName = interfaceName;
 }
 
-void CapabilityEntry::setDomain(QString domain)
+void CapabilityEntry::setDomain(std::string domain)
 {
     this->domain = domain;
 }
@@ -104,12 +104,12 @@ void CapabilityEntry::setQos(joynr::types::ProviderQos qos)
     this->qos = qos;
 }
 
-void CapabilityEntry::setParticipantId(QString participantId)
+void CapabilityEntry::setParticipantId(std::string participantId)
 {
     this->participantId = participantId;
 }
 
-QString CapabilityEntry::getParticipantId() const
+std::string CapabilityEntry::getParticipantId() const
 {
     return participantId;
 }
@@ -142,10 +142,10 @@ void CapabilityEntry::setGlobal(bool global)
     this->global = global;
 }
 
-QString CapabilityEntry::toString() const
+std::string CapabilityEntry::toString() const
 {
-    return QString("{ domain: " + domain + ", interfaceName: " + interfaceName +
-                   ", participantId: " + participantId + "}");
+    return std::string("{ domain: " + domain + ", interfaceName: " + interfaceName +
+                       ", participantId: " + participantId + "}");
 }
 
 } // namespace joynr

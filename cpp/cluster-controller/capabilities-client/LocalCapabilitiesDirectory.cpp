@@ -143,8 +143,7 @@ void LocalCapabilitiesDirectory::remove(const std::string& domain,
     // without knowing which provider registered the capability
     std::lock_guard<std::mutex> lock(cacheLock);
     std::vector<CapabilityEntry> entries =
-            interfaceAddress2GlobalCapabilities.lookUpAll(InterfaceAddress(
-                    QString::fromStdString(domain), QString::fromStdString(interfaceName)));
+            interfaceAddress2GlobalCapabilities.lookUpAll(InterfaceAddress(domain, interfaceName));
     std::vector<std::string> participantIdsToRemove;
 
     types::DiscoveryEntry discoveryEntry;
@@ -156,7 +155,7 @@ void LocalCapabilitiesDirectory::remove(const std::string& domain,
                                                  interfaceName,
                                                  qos,
                                                  capabilitiesClient->getLocalChannelId(),
-                                                 entry.getParticipantId().toStdString());
+                                                 entry.getParticipantId());
             while (registeredGlobalCapabilities.erase(
                            std::remove(registeredGlobalCapabilities.begin(),
                                        registeredGlobalCapabilities.end(),
@@ -164,16 +163,13 @@ void LocalCapabilitiesDirectory::remove(const std::string& domain,
                            registeredGlobalCapabilities.end()) !=
                    registeredGlobalCapabilities.end()) {
             }
-            participantIdsToRemove.push_back(entry.getParticipantId().toStdString());
+            participantIdsToRemove.push_back(entry.getParticipantId());
             participantId2GlobalCapabilities.remove(entry.getParticipantId(), entry);
             interfaceAddress2GlobalCapabilities.remove(
                     InterfaceAddress(entry.getDomain(), entry.getInterfaceName()), entry);
         }
         participantId2LocalCapability.remove(entry.getParticipantId(), entry);
-        interfaceAddress2LocalCapabilities.remove(
-                InterfaceAddress(
-                        QString::fromStdString(domain), QString::fromStdString(interfaceName)),
-                entry);
+        interfaceAddress2LocalCapabilities.remove(InterfaceAddress(domain, interfaceName), entry);
 
         convertCapabilityEntryIntoDiscoveryEntry(entry, discoveryEntry);
         informObserversOnRemove(discoveryEntry);
@@ -186,12 +182,11 @@ void LocalCapabilitiesDirectory::remove(const std::string& domain,
 void LocalCapabilitiesDirectory::remove(const std::string& participantId)
 {
     std::lock_guard<std::mutex> lock(cacheLock);
-    CapabilityEntry entry =
-            participantId2LocalCapability.take(QString::fromStdString(participantId));
+    CapabilityEntry entry = participantId2LocalCapability.take(participantId);
     interfaceAddress2LocalCapabilities.remove(
             InterfaceAddress(entry.getDomain(), entry.getInterfaceName()), entry);
     if (entry.isGlobal()) {
-        participantId2GlobalCapabilities.remove(QString::fromStdString(participantId), entry);
+        participantId2GlobalCapabilities.remove(participantId, entry);
         interfaceAddress2GlobalCapabilities.remove(
                 InterfaceAddress(entry.getDomain(), entry.getInterfaceName()), entry);
         capabilitiesClient->remove(participantId);
@@ -297,10 +292,10 @@ void LocalCapabilitiesDirectory::capabilitiesReceived(
     for (types::CapabilityInformation capInfo : results) {
         std::vector<joynr::types::CommunicationMiddleware::Enum> connections;
         connections.push_back(joynr::types::CommunicationMiddleware::JOYNR);
-        CapabilityEntry capEntry(QString::fromStdString(capInfo.getDomain()),
-                                 QString::fromStdString(capInfo.getInterfaceName()),
+        CapabilityEntry capEntry(capInfo.getDomain(),
+                                 capInfo.getInterfaceName(),
                                  capInfo.getProviderQos(),
-                                 QString::fromStdString(capInfo.getParticipantId()),
+                                 capInfo.getParticipantId(),
                                  connections,
                                  true);
         capabilitiesMap.insertMulti(capInfo.getChannelId(), capEntry);
@@ -347,8 +342,7 @@ void LocalCapabilitiesDirectory::lookup(const std::string& domain,
                                         std::shared_ptr<ILocalCapabilitiesCallback> callback,
                                         const joynr::types::DiscoveryQos& discoveryQos)
 {
-    InterfaceAddress interfaceAddress(
-            QString::fromStdString(domain), QString::fromStdString(interfaceName));
+    InterfaceAddress interfaceAddress(domain, interfaceName);
 
     // get the local and cached entries
     bool receiverCalled = getLocalAndCachedCapabilities(interfaceAddress, discoveryQos, callback);
@@ -397,7 +391,7 @@ void LocalCapabilitiesDirectory::registerReceivedCapabilities(
         CapabilityEntry currentEntry = entryIterator.value();
         std::shared_ptr<joynr::system::RoutingTypes::Address> joynrAddress(
                 new system::RoutingTypes::ChannelAddress(entryIterator.key()));
-        messageRouter.addNextHop(currentEntry.getParticipantId().toStdString(), joynrAddress);
+        messageRouter.addNextHop(currentEntry.getParticipantId(), joynrAddress);
         this->insertInCache(currentEntry, false, true);
     }
 }
@@ -444,8 +438,8 @@ void LocalCapabilitiesDirectory::lookup(
         LOG_ERROR(logger,
                   FormatString("participantId %1 has more than 1 capability entry:\n %2\n %3")
                           .arg(participantId)
-                          .arg(capabilities[0].toString().toStdString())
-                          .arg(capabilities[1].toString().toStdString())
+                          .arg(capabilities[0].toString())
+                          .arg(capabilities[1].toString())
                           .str());
     }
 
@@ -556,10 +550,9 @@ std::vector<CapabilityEntry> LocalCapabilitiesDirectory::searchCache(
 
     // search in local
     if (localEntries) {
-        return participantId2LocalCapability.lookUpAll(QString::fromStdString(participantId));
+        return participantId2LocalCapability.lookUpAll(participantId);
     } else {
-        return participantId2GlobalCapabilities.lookUp(
-                QString::fromStdString(participantId), maxCacheAge);
+        return participantId2GlobalCapabilities.lookUp(participantId, maxCacheAge);
     }
 }
 
@@ -567,9 +560,9 @@ void LocalCapabilitiesDirectory::convertCapabilityEntryIntoDiscoveryEntry(
         const CapabilityEntry& capabilityEntry,
         joynr::types::DiscoveryEntry& discoveryEntry)
 {
-    discoveryEntry.setDomain(capabilityEntry.getDomain().toStdString());
-    discoveryEntry.setInterfaceName(capabilityEntry.getInterfaceName().toStdString());
-    discoveryEntry.setParticipantId(capabilityEntry.getParticipantId().toStdString());
+    discoveryEntry.setDomain(capabilityEntry.getDomain());
+    discoveryEntry.setInterfaceName(capabilityEntry.getInterfaceName());
+    discoveryEntry.setParticipantId(capabilityEntry.getParticipantId());
     discoveryEntry.setQos(capabilityEntry.getQos());
     discoveryEntry.setConnections(capabilityEntry.getMiddlewareConnections());
 }
@@ -578,9 +571,9 @@ void LocalCapabilitiesDirectory::convertDiscoveryEntryIntoCapabilityEntry(
         const joynr::types::DiscoveryEntry& discoveryEntry,
         CapabilityEntry& capabilityEntry)
 {
-    capabilityEntry.setDomain(QString::fromStdString(discoveryEntry.getDomain()));
-    capabilityEntry.setInterfaceName(QString::fromStdString(discoveryEntry.getInterfaceName()));
-    capabilityEntry.setParticipantId(QString::fromStdString(discoveryEntry.getParticipantId()));
+    capabilityEntry.setDomain(discoveryEntry.getDomain());
+    capabilityEntry.setInterfaceName(discoveryEntry.getInterfaceName());
+    capabilityEntry.setParticipantId(discoveryEntry.getParticipantId());
     capabilityEntry.setQos(discoveryEntry.getQos());
     capabilityEntry.setMiddlewareConnections(discoveryEntry.getConnections());
 }

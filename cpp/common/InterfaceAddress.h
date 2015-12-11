@@ -20,9 +20,8 @@
 #define INTERFACEADDRESS_H_
 
 #include "joynr/JoynrCommonExport.h"
-
-#include <QObject>
-#include <QString>
+#include <QHash>
+#include <string>
 
 namespace joynr
 {
@@ -34,15 +33,15 @@ class JOYNRCOMMON_EXPORT InterfaceAddress
 {
 public:
     InterfaceAddress();
-    explicit InterfaceAddress(const QString& domain, const QString& interfaceName);
-    const QString& getDomain() const;
-    const QString& getInterface() const;
+    explicit InterfaceAddress(const std::string& domain, const std::string& interfaceName);
+    const std::string& getDomain() const;
+    const std::string& getInterface() const;
 
     bool operator==(const InterfaceAddress& interfaceAddress) const;
 
 private:
-    QString domain;
-    QString interfaceName;
+    std::string domain;
+    std::string interfaceName;
 };
 
 JOYNRCOMMON_EXPORT uint qHash(const InterfaceAddress& interfaceAddress);

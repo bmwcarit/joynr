@@ -76,10 +76,10 @@ public:
         types::ProviderQos qos;
         std::vector<joynr::types::CommunicationMiddleware::Enum> connections = {joynr::types::CommunicationMiddleware::JOYNR};
         CapabilityEntry globalCapEntry(
-                    TypeUtil::toQt(DOMAIN_1_NAME),
-                    TypeUtil::toQt(INTERFACE_1_NAME),
+                    DOMAIN_1_NAME,
+                    INTERFACE_1_NAME,
                     qos,
-                    TypeUtil::toQt(dummyParticipantId3),
+                    dummyParticipantId3,
                     connections,
                     true
         );
@@ -386,9 +386,9 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForInterfaceAddressDelegatesToCapab
     bool secondParticipantIdFound = false;
     for (uint16_t i = 0; i < capabilities.size(); i++) {
         CapabilityEntry entry = capabilities.at(i);
-        EXPECT_EQ(DOMAIN_1_NAME, entry.getDomain().toStdString());
-        EXPECT_EQ(INTERFACE_1_NAME, entry.getInterfaceName().toStdString());
-        std::string participantId = entry.getParticipantId().toStdString();
+        EXPECT_EQ(DOMAIN_1_NAME, entry.getDomain());
+        EXPECT_EQ(INTERFACE_1_NAME, entry.getInterfaceName());
+        std::string participantId = entry.getParticipantId();
         if (participantId == dummyParticipantId1) {
             firstParticipantIdFound = true;
         } else if (participantId == dummyParticipantId2) {
@@ -439,9 +439,9 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdDelegatesToCapabili
     bool interfaceAddress2Found = false;
     for (uint16_t i = 0; i < capabilities.size(); i++) {
         CapabilityEntry entry = capabilities.at(i);
-        if ((entry.getDomain().toStdString() == DOMAIN_1_NAME) && (entry.getInterfaceName().toStdString() == INTERFACE_1_NAME)) {
+        if ((entry.getDomain() == DOMAIN_1_NAME) && (entry.getInterfaceName() == INTERFACE_1_NAME)) {
             interfaceAddress1Found = true;
-        } else if ((entry.getDomain().toStdString() == DOMAIN_2_NAME) && (entry.getInterfaceName().toStdString() == INTERFACE_2_NAME)) {
+        } else if ((entry.getDomain() == DOMAIN_2_NAME) && (entry.getInterfaceName() == INTERFACE_2_NAME)) {
             interfaceAddress2Found = true;
         }
     }

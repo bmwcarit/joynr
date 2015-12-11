@@ -59,10 +59,10 @@ void LocalCapabilitiesCallbackWrapper::capabilitiesReceived(
     for (types::CapabilityInformation capInfo : results) {
         std::vector<joynr::types::CommunicationMiddleware::Enum> connections;
         connections.push_back(joynr::types::CommunicationMiddleware::JOYNR);
-        CapabilityEntry capEntry(QString::fromStdString(capInfo.getDomain()),
-                                 QString::fromStdString(capInfo.getInterfaceName()),
+        CapabilityEntry capEntry(capInfo.getDomain(),
+                                 capInfo.getInterfaceName(),
                                  capInfo.getProviderQos(),
-                                 QString::fromStdString(capInfo.getParticipantId()),
+                                 capInfo.getParticipantId(),
                                  connections,
                                  true);
         capabilitiesMap.insertMulti(capInfo.getChannelId(), capEntry);

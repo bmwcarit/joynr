@@ -17,7 +17,7 @@
  * #L%
  */
 #include "common/InterfaceAddress.h"
-#include <QHash>
+#include <QString>
 
 namespace joynr
 {
@@ -26,17 +26,17 @@ InterfaceAddress::InterfaceAddress() : domain(), interfaceName()
 {
 }
 
-InterfaceAddress::InterfaceAddress(const QString& domain, const QString& interfaceName)
+InterfaceAddress::InterfaceAddress(const std::string& domain, const std::string& interfaceName)
         : domain(domain), interfaceName(interfaceName)
 {
 }
 
-const QString& InterfaceAddress::getDomain() const
+const std::string& InterfaceAddress::getDomain() const
 {
     return domain;
 }
 
-const QString& InterfaceAddress::getInterface() const
+const std::string& InterfaceAddress::getInterface() const
 {
     return interfaceName;
 }
@@ -49,7 +49,8 @@ bool InterfaceAddress::operator==(const InterfaceAddress& interfaceAddress) cons
 
 uint qHash(const InterfaceAddress& interfaceAddress)
 {
-    return qHash(interfaceAddress.getDomain()) * 31 + qHash(interfaceAddress.getInterface());
+    return qHash(QString::fromStdString(interfaceAddress.getDomain())) * 31 +
+           qHash(QString::fromStdString(interfaceAddress.getInterface()));
 }
 
 } // namespace joynr
