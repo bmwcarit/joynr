@@ -214,6 +214,20 @@ public:
         onSuccess();
     }
 
+    void mapParameters(
+            const joynr::types::TestTypes::TStringKeyMap& tStringMapIn,
+            std::function<void(
+                    const joynr::types::TestTypes::TStringKeyMap& tStringMapOut
+            )> onSuccess,
+            std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
+    ) {
+        (void) onError;
+        onSuccess(
+                tStringMapIn
+        );
+    }
+    std::string providerRuntimeExceptionTestMsg = "ProviderRuntimeExceptionTestMessage";
+
 private:
     std::vector<std::string> listOfStrings;
 };

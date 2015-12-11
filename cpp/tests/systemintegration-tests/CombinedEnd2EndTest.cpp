@@ -382,6 +382,33 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         testProxy->getAttributeArrayOfNestedStructs(result);
         ASSERT_EQ(result, setValue);
     }
+
+    // TESTING Attribute getter/setter of maps
+    {
+        using namespace joynr::types::TestTypes;
+        ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domainName);
+        DiscoveryQos discoveryQos;
+        discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
+        discoveryQos.setDiscoveryTimeout(1000);
+
+        qlonglong qosRoundTripTTL = 40000;
+
+        // Send a message and expect to get a result
+        std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
+                                                   ->setMessagingQos(MessagingQos(qosRoundTripTTL))
+                                                   ->setCached(false)
+                                                   ->setDiscoveryQos(discoveryQos)
+                                                   ->build());
+
+        TEverythingMap setValue;
+        setValue.insert({TEnum::TLITERALA, TEverythingExtendedStruct()});
+        setValue.insert({TEnum::TLITERALB, TEverythingExtendedStruct()});
+        testProxy->setEverythingMap(setValue);
+
+        TEverythingMap result;
+        testProxy->getEverythingMap(result);
+        ASSERT_EQ(result, setValue);
+    }
     // Operation overloading is not currently supported
 #if 0
     // Testing operation overloading
