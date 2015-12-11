@@ -45,7 +45,38 @@ protected:
 };
 
 
+TEST_F(ReplyInterpreterTest, execute_calls_caller_with_maps) {
+    // Register metatypes
 
+    MetaTypeRegistrar& registrar = MetaTypeRegistrar::instance();
+    registrar.registerReplyMetaType<types::TestTypes::TEverythingMap>();
+
+    // Create a mock callback
+    std::shared_ptr<MockCallbackWithOnErrorHavingRequestStatus<joynr::types::TestTypes::TEverythingMap>> callback(
+                new MockCallbackWithOnErrorHavingRequestStatus<joynr::types::TestTypes::TEverythingMap>());
+    types::TestTypes::TEverythingMap responseValue;
+    EXPECT_CALL(*callback, onSuccess(Eq(responseValue))).Times(1);
+    EXPECT_CALL(*callback, onError(_,_)).Times(0);
+
+    // Create a reply caller
+    std::shared_ptr<IReplyCaller> icaller(new ReplyCaller<types::TestTypes::TEverythingMap>(
+            [callback](const RequestStatus&, const types::TestTypes::TEverythingMap& map) {
+                callback->onSuccess(map);
+            },
+            [callback](const RequestStatus& status, const exceptions::JoynrException& error){
+                callback->onError(status, error);
+            }));
+
+    // Create a reply
+    std::vector<Variant> response;
+    response.push_back(Variant::make<types::TestTypes::TEverythingMap>(responseValue));
+    Reply reply;
+    reply.setResponse(std::move(response));
+
+    // Interpret the reply
+    IReplyInterpreter& interpreter = registrar.getReplyInterpreter(Util::getTypeId<types::TestTypes::TEverythingMap>());
+    interpreter.execute(icaller, reply);
+}
 
 TEST_F(ReplyInterpreterTest, execute_calls_caller) {
     MetaTypeRegistrar& registrar = MetaTypeRegistrar::instance();
