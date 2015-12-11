@@ -21,7 +21,6 @@
 
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/ITimeoutListener.h"
-#include <QString>
 #include <cassert>
 #include <memory>
 

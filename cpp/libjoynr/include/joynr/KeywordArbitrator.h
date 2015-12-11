@@ -23,7 +23,6 @@
 
 #include <vector>
 #include "joynr/ProviderArbitrator.h"
-#include <QString>
 #include <string>
 namespace joynr
 {

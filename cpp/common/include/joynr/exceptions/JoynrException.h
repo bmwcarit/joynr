@@ -22,7 +22,6 @@
 #include "joynr/JoynrCommonExport.h"
 
 #include <exception>
-#include <QString>
 #include <string>
 #include <memory>
 #include "joynr/Variant.h"

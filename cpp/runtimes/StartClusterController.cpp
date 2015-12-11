@@ -33,8 +33,7 @@ int main(int argc, char* argv[])
     std::string programName(argv[0]);
     if (argc == 1) {
         LOG_INFO(logger, "USAGE: No settings provided. Starting with default settings.");
-        LOG_INFO(logger,
-                 FormatString("USAGE: %1 <file.settings>...").arg(programName).str());
+        LOG_INFO(logger, FormatString("USAGE: %1 <file.settings>...").arg(programName).str());
     }
 
     // Object that holds all the settings

@@ -22,7 +22,6 @@
 #include <cassert>
 
 #include "joynr/joynrlogging.h"
-#include <QString>
 
 using namespace joynr::joynr_logging;
 Logger* joynr::ThreadPool::logger = Logging::getInstance()->getLogger("MSG", "ThreadPool");

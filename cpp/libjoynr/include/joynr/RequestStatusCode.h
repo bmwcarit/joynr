@@ -69,7 +69,7 @@ public:
     /**
      * @brief Convenience method to print the object to String.
      *
-     * @return QString
+     * @return std::string
      */
     std::string toString() const;
 

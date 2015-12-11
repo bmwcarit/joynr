@@ -249,8 +249,7 @@ HttpResult HttpSender::SendMessageRunnable::buildRequestAndSend(const std::strin
                     ->build());
     LOG_TRACE(logger, "builtRequest");
 
-    Util::logSerializedMessage(
-            logger, QString::fromStdString("Sending Message: "), QString::fromStdString(data));
+    Util::logSerializedMessage(logger, "Sending Message: ", data);
 
     return sendMessageRequest->execute();
 }

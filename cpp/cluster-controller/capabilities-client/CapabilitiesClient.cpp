@@ -28,7 +28,6 @@
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
 #include "joynr/Future.h"
 #include "joynr/types/CapabilityInformation.h"
-#include <QString>
 #include <string>
 #include <stdint.h>
 #include <cassert>

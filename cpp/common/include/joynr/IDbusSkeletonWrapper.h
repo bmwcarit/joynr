@@ -25,7 +25,7 @@
 #include "joynr/joynrlogging.h"
 #include "joynr/TypeUtil.h"
 
-#include <QString>
+#include <string>
 #include <CommonAPI/CommonAPI.h>
 
 #include <chrono>
@@ -88,7 +88,7 @@ public:
         }
     }
 
-    void logMethodCall(const QString& method, const QString& adapter)
+    void logMethodCall(const std::string& method, const std::string& adapter)
     {
         LOG_INFO(logger,
                  FormatString("Call method %1:%2-> %3")

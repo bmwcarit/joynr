@@ -30,6 +30,8 @@
 #include <cassert>
 #include <QVector>
 #include "joynr/FormatString.h"
+#include <QVariant>
+
 namespace joynr
 {
 using namespace infrastructure::DacTypes;

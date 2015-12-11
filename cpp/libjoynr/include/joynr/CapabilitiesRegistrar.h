@@ -31,7 +31,6 @@
 #include "joynr/types/DiscoveryEntry.h"
 #include "joynr/Future.h"
 
-#include <QString>
 #include <string>
 #include <vector>
 #include <cassert>

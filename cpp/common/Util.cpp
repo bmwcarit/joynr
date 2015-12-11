@@ -81,32 +81,24 @@ std::string Util::createUuid()
 }
 
 void Util::logSerializedMessage(joynr_logging::Logger* logger,
-                                const QString& explanation,
-                                const QString& message)
+                                const std::string& explanation,
+                                const std::string& message)
 {
-    if (message.length() > 2048) {
+    if (message.size() > 2048) {
         LOG_DEBUG(logger,
                   FormatString("%1 %2<**truncated, length %3")
-                          .arg(explanation.toStdString())
-                          .arg(message.left(2048).toStdString())
+                          .arg(explanation)
+                          .arg(message.substr(0, 2048))
                           .arg(message.length())
                           .str());
     } else {
         LOG_DEBUG(logger,
                   FormatString("%1 %2, length %3")
-                          .arg(explanation.toStdString())
-                          .arg(message.toStdString())
+                          .arg(explanation)
+                          .arg(message)
                           .arg(message.length())
                           .str());
     }
-}
-
-QString Util::removeNamespace(const QString& className)
-{
-    static QString doubleColon = QString::fromLatin1("::");
-
-    int namespaceEnd = className.indexOf(doubleColon);
-    return (namespaceEnd == -1) ? className : className.mid(namespaceEnd + 2);
 }
 
 void Util::throwJoynrException(const exceptions::JoynrException& error)

@@ -21,15 +21,8 @@
 
 #include "joynr/JoynrExport.h"
 #include "joynr/BroadcastFilterParameters.h"
-
-template <typename K, typename V>
-class QMap;
-
-class QString;
 #include <string>
 #include <vector>
-
-typedef QMap<QString, QVariant> QVariantMap;
 
 namespace joynr
 {

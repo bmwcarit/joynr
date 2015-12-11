@@ -22,7 +22,6 @@
 #include "joynr/JoynrExport.h"
 
 #include <QObject>
-#include <QString>
 
 #include <memory>
 

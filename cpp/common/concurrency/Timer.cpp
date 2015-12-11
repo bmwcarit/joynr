@@ -22,7 +22,6 @@
 #include <chrono>
 #include <cassert>
 
-#include <QString>
 #include "joynr/joynrlogging.h"
 
 using namespace joynr::joynr_logging;

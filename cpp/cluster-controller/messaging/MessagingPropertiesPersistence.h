@@ -21,7 +21,7 @@
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrClusterControllerExport.h"
-#include <QString>
+#include <string>
 
 namespace joynr
 {

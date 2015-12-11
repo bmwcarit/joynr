@@ -44,7 +44,7 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(Settings* settings)
     uuid.erase(std::remove(uuid.begin(), uuid.end(), '-'), uuid.end());
     std::string libjoynrMessagingId = "libjoynr.messaging.participantid_" + uuid;
     std::shared_ptr<joynr::system::RoutingTypes::Address> libjoynrMessagingAddress(
-            new system::RoutingTypes::WebSocketClientAddress(libjoynrMessagingId.toStdString()));
+            new system::RoutingTypes::WebSocketClientAddress(libjoynrMessagingId));
 
     // create connection to parent routing service
     std::shared_ptr<joynr::system::RoutingTypes::WebSocketAddress> ccMessagingAddress(

@@ -19,7 +19,6 @@
 #ifndef ISUBSCRIPTIONCALLBACK_H
 #define ISUBSCRIPTIONCALLBACK_H
 
-#include <QString>
 #include "joynr/exceptions/JoynrException.h"
 
 namespace joynr

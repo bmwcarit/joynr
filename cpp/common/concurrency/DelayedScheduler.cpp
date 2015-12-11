@@ -24,8 +24,6 @@
 #include <cassert>
 #include <functional>
 
-#include <QString>
-
 using namespace std::placeholders;
 
 namespace joynr

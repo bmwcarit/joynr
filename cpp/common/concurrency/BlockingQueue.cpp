@@ -22,7 +22,6 @@
 #include <cassert>
 
 #include "joynr/joynrlogging.h"
-#include <QString>
 
 namespace joynr
 {

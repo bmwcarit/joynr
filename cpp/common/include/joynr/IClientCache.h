@@ -19,8 +19,6 @@
 #ifndef CLIENTCACHE_H
 #define CLIENTCACHE_H
 
-#include <QString>
-
 #include "joynr/Variant.h"
 
 namespace joynr

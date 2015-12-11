@@ -21,7 +21,7 @@
 #include "joynr/PrivateCopyAssign.h"
 
 #include <QFuture>
-#include <QString>
+#include <string>
 #include "joynr/Semaphore.h"
 
 namespace joynr
@@ -35,7 +35,7 @@ class Logger;
 class DbusProcessor
 {
 public:
-    DbusProcessor(const QString& dbusBusName);
+    DbusProcessor(const std::string& dbusBusName);
     virtual ~DbusProcessor();
 
     void startDbusMainLoop();
@@ -50,7 +50,7 @@ private:
 
     bool processDbus;
     joynr::Semaphore dbusMainLoopStarted;
-    QString dbusBusName;
+    std::string dbusBusName;
     QFuture<void> dbusFuture;
 };
 

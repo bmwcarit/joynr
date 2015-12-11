@@ -27,7 +27,6 @@
 #include "joynr/TypeUtil.h"
 
 #include <QtCore>
-#include <QString>
 #include <QByteArray>
 
 namespace joynr

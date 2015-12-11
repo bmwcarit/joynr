@@ -123,8 +123,6 @@ private:
 
     // Request jsonRequest;
     void sendRequest(const Request& request, std::shared_ptr<IReplyCaller> replyCaller);
-
-    Reply makeRequest(QString methodName, RequestStatus* status, QVariantMap params);
 };
 
 } // namespace joynr

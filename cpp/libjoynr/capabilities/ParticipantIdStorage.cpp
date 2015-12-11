@@ -20,6 +20,7 @@
 #include "joynr/Util.h"
 
 #include "joynr/Settings.h"
+#include <algorithm>
 
 namespace joynr
 {
@@ -28,9 +29,9 @@ ParticipantIdStorage::ParticipantIdStorage(const std::string& filename) : filena
 {
 }
 
-const QString& ParticipantIdStorage::STORAGE_FORMAT_STRING()
+const std::string& ParticipantIdStorage::STORAGE_FORMAT_STRING()
 {
-    static const QString value("joynr.participant.%1.%2.%3");
+    static const std::string value("joynr.participant.%1.%2.%3");
     return value;
 }
 
@@ -84,12 +85,13 @@ std::string ParticipantIdStorage::createProviderKey(const std::string& domain,
                                                     const std::string& interfaceName,
                                                     const std::string& authenticationToken)
 {
-    QString key = STORAGE_FORMAT_STRING()
-                          .arg(QString::fromStdString(domain))
-                          .arg(QString::fromStdString(interfaceName))
-                          .arg(QString::fromStdString(authenticationToken));
-
-    return key.replace("/", ".").toStdString();
+    std::string key = FormatString(STORAGE_FORMAT_STRING())
+                              .arg(domain)
+                              .arg(interfaceName)
+                              .arg(authenticationToken)
+                              .str();
+    std::replace(key.begin(), key.end(), '/', '.');
+    return key;
 }
 
 } // namespace joynr
