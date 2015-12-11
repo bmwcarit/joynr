@@ -19,12 +19,10 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <string>
-#include <QString>
 #include "joynr/MessageRouter.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/Dispatcher.h"
 #include "joynr/SubscriptionCallback.h"
-#include "QString"
 #include <string>
 #include <vector>
 #include "joynr/JoynrMessageFactory.h"

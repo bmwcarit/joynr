@@ -20,7 +20,6 @@
 #define PRETTYPRINT_H_
 
 #include <gtest/gtest.h>
-#include <QString>
 #include <QChar>
 #include <QByteArray>
 #include <QtCore/QUrl>
@@ -32,7 +31,6 @@
 #include "joynr/RequestStatusCode.h"
 #include "joynr/types/DiscoveryEntry.h"
 
-#define EXPECT_EQ_QSTRING(a, b) EXPECT_EQ(a, b) << "  Actual: " << b.toStdString() << std::endl << "Expected: " << a.toStdString() << std::endl
 #define EXPECT_EQ_QBYTEARRAY(a, b) EXPECT_EQ(a, b) << "  Actual: " << b.constData() << std::endl << "Expected: " << a.constData() << std::endl
 
 //void initPretty(void);

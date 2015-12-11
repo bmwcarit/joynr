@@ -24,8 +24,6 @@
 
 #include "joynr/TimeUtils.h"
 
-#include <QString>
-
 #include <stdint.h>
 #include <unordered_map>
 

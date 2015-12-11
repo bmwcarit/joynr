@@ -20,7 +20,6 @@
 #include "joynr/TimeUtils.h"
 
 #include "joynr/joynrlogging.h"
-#include <QString>
 
 using namespace joynr;
 using namespace joynr_logging;

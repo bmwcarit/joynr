@@ -21,7 +21,6 @@
 #include "joynr/SubscriptionManager.h"
 #include "joynr/ISubscriptionCallback.h"
 #include "tests/utils/MockObjects.h"
-#include "utils/TestQString.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/SubscriptionCallback.h"
 #include "joynr/ThreadPoolDelayedScheduler.h"

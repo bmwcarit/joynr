@@ -21,7 +21,6 @@
 #include <gmock/gmock.h>
 #include <string>
 #include <stdint.h>
-#include "utils/TestQString.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
 #include "joynr/ClusterControllerDirectories.h"

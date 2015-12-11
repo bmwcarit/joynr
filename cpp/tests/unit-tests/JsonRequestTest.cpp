@@ -18,13 +18,11 @@
  */
 #include <QVariant>
 #include <QVariantList>
-#include <QString>
 #include <vector>
 
 
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
-#include "utils/TestQString.h"
 #include "joynr/Request.h"
 
 using ::testing::A;
@@ -46,7 +44,7 @@ public:
         list1(mockArgument.list1)
     {}
 
-    MockArgument(QString atr1, std::vector<QString>& array1):
+    MockArgument(std::string atr1, std::vector<std::string>& array1):
         str1(atr1),
         list1(array1)
     {}
@@ -62,8 +60,8 @@ public:
       return !(*this == other);
     }
 
-    QString str1;
-    std::vector<QString> list1;
+    std::string str1;
+    std::vector<std::string> list1;
 };
 
 bool isMockArgumentRegistered = Variant::registerType<MockArgument>("MockArgument");
@@ -92,7 +90,7 @@ public:
         arg2 = "arg2";
         arg3 = "arg3";
         valueOfArg1 = "valueOfArg1";
-        valueOfArg2.str1 = QString("mockargumentStringValue");
+        valueOfArg2.str1 = std::string("mockargumentStringValue");
         valueOfArg2.list1 = list;
         valueOfArg3 = "valueOfArg3";
     }
@@ -113,11 +111,11 @@ public:
     }
 
 protected:
-    std::vector<QString> list;
+    std::vector<std::string> list;
     std::string operationName;
-    QString arg1;
-    QString arg2;
-    QString arg3;
+    std::string arg1;
+    std::string arg2;
+    std::string arg3;
 
     std::string valueOfArg1;
     MockArgument valueOfArg2;

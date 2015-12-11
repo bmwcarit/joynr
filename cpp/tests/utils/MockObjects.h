@@ -33,7 +33,6 @@
 #include "joynr/vehicle/DefaultGpsProvider.h"
 #include "joynr/tests/TestLocationUpdateSelectiveBroadcastFilter.h"
 #include "QtCore"
-#include "utils/TestQString.h"
 #include <string>
 #include <vector>
 #include "joynr/DelayedScheduler.h"

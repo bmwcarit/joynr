@@ -49,7 +49,7 @@ public:
         std::vector<TrustLevel::Enum> possibleRequiredAceChangeTrustLevels;
         possibleRequiredAceChangeTrustLevels.push_back(TrustLevel::MID);
         possibleRequiredAceChangeTrustLevels.push_back(TrustLevel::HIGH);
-        masterAce = MasterAccessControlEntry(TEST_USER.toStdString(),
+        masterAce = MasterAccessControlEntry(TEST_USER,
                                                                     std::string(),
                                                                     std::string(),
                                                                     TrustLevel::LOW,
@@ -60,7 +60,7 @@ public:
                                                                     Permission::NO,
                                                                     possiblePermissions);
 
-        mediatorAce = MasterAccessControlEntry(TEST_USER.toStdString(),
+        mediatorAce = MasterAccessControlEntry(TEST_USER,
                                                std::string(),
                                                std::string(),
                                                TrustLevel::LOW,
@@ -71,7 +71,7 @@ public:
                                                Permission::NO,
                                                possiblePermissions);
 
-        ownerAce = OwnerAccessControlEntry(TEST_USER.toStdString(),
+        ownerAce = OwnerAccessControlEntry(TEST_USER,
                                                                   std::string(),
                                                                   std::string(),
                                                                   TrustLevel::MID,
@@ -84,12 +84,12 @@ public:
     {
     }
 protected:
-    static const QString TEST_USER;
+    static const std::string TEST_USER;
 private:
     DISALLOW_COPY_AND_ASSIGN(AceValidatorTest);
 };
 
-const QString AceValidatorTest::TEST_USER("testUser");
+const std::string AceValidatorTest::TEST_USER("testUser");
 
 //----- Tests ------------------------------------------------------------------
 

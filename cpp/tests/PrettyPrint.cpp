@@ -56,10 +56,6 @@ namespace system {
 }
 }
 
-void PrintTo(const QString& value, ::std::ostream* os) {
-     *os << value.toStdString();
-}
-
 void PrintTo(const QChar& value, ::std::ostream* os) {
      *os << value.toLatin1();
 }
@@ -86,9 +82,3 @@ void PrintTo(const QUrl& value, std::ostream* os)
  {
      *os << joynr::JsonSerializer::serialize(value);
  }
-
-// void initPretty(void) {
-// EXPECT_TRUE(false) << ::testing::PrintToString(QString("hello"));
-// EXPECT_TRUE(false) << ::testing::PrintToString(JoynrMessage());
-// }
-

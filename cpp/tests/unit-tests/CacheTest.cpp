@@ -21,8 +21,6 @@
 #include "joynr/Cache.h"
 #include "joynr/joynrlogging.h"
 
-#include <QString>
-
 using ::testing::Property;
 using ::testing::Eq;
 using ::testing::ByRef;

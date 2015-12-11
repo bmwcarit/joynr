@@ -18,7 +18,6 @@
  */
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include "utils/TestQString.h"
 #include "joynr/Util.h"
 #include <QString>
 #include <QByteArray>
@@ -34,7 +33,7 @@ class UtilTest : public ::testing::Test {
 protected:
 
     struct ExpandTuple {
-        bool expandIntoThis(int arg1, float arg2, QString arg3) {
+        bool expandIntoThis(int arg1, float arg2, std::string arg3) {
             return arg1 == 23 && arg2 == 24.25 && arg3 == "Test";
         }
     };
@@ -54,15 +53,15 @@ TEST_F(UtilTest, splitIntoJsonObjects)
     inputStream = "{\"id\":34}";
     result = Util::splitIntoJsonObjects(inputStream);
     EXPECT_EQ(1, result.size());
-    EXPECT_QSTREQ(QString::fromUtf8(result.at(0)),
+    EXPECT_TRUE(QString::fromUtf8(result.at(0)) ==
                   QString("{\"id\":34}") );
 
     inputStream = "{\"message\":{one:two}}{\"id\":35}";
     result = Util::splitIntoJsonObjects(inputStream);
     EXPECT_EQ(2, result.size());
-    EXPECT_QSTREQ(QString::fromUtf8(result.at(0)),
+    EXPECT_TRUE(QString::fromUtf8(result.at(0)) ==
                   QString("{\"message\":{one:two}}") );
-    EXPECT_QSTREQ(QString::fromUtf8(result.at(1)),
+    EXPECT_TRUE(QString::fromUtf8(result.at(1)) ==
                   QString("{\"id\":35}") );
 
     //payload may not contain { or } outside a string.
@@ -74,28 +73,28 @@ TEST_F(UtilTest, splitIntoJsonObjects)
     inputStream = "{\"messa{ge\":{one:two}}{\"id\":35}";
     result = Util::splitIntoJsonObjects(inputStream);
     EXPECT_EQ(2, result.size());
-    EXPECT_QSTREQ(QString::fromUtf8(result.at(0)),
+    EXPECT_TRUE(QString::fromUtf8(result.at(0)) ==
                   QString("{\"messa{ge\":{one:two}}") );
 
     //  } within a string should be ok
     inputStream = "{\"messa}ge\":{one:two}}{\"id\":35}";
     result = Util::splitIntoJsonObjects(inputStream);
     EXPECT_EQ(2, result.size());
-    EXPECT_QSTREQ(QString::fromUtf8(result.at(0)),
+    EXPECT_TRUE(QString::fromUtf8(result.at(0)) ==
                   QString("{\"messa}ge\":{one:two}}") );
 
     //  }{ within a string should be ok
     inputStream = "{\"messa}{ge\":{one:two}}{\"id\":35}";
     result = Util::splitIntoJsonObjects(inputStream);
     EXPECT_EQ(2, result.size());
-    EXPECT_QSTREQ(QString::fromUtf8(result.at(0)),
+    EXPECT_TRUE(QString::fromUtf8(result.at(0)) ==
                   QString("{\"messa}{ge\":{one:two}}") );
 
     //  {} within a string should be ok
     inputStream = "{\"messa{}ge\":{one:two}}{\"id\":35}";
     result = Util::splitIntoJsonObjects(inputStream);
     EXPECT_EQ(2, result.size());
-    EXPECT_QSTREQ(QString::fromUtf8(result.at(0)),
+    EXPECT_TRUE(QString::fromUtf8(result.at(0)) ==
                   QString("{\"messa{}ge\":{one:two}}") );
 
     //string may contain \"
@@ -103,7 +102,7 @@ TEST_F(UtilTest, splitIntoJsonObjects)
     //inputStream:{"mes\"sa{ge":{one:two}}{"id":35}
     result = Util::splitIntoJsonObjects(inputStream);
     EXPECT_EQ(2, result.size());
-    EXPECT_QSTREQ(QString::fromUtf8(result.at(0)),
+    EXPECT_TRUE(QString::fromUtf8(result.at(0)) ==
                   QString("{\"mes\\\"sa{ge\":{one:two}}") );
 
 
@@ -112,7 +111,7 @@ TEST_F(UtilTest, splitIntoJsonObjects)
     // / does not escape within JSON String, so the string should not be ended after mes\"
     result = Util::splitIntoJsonObjects(inputStream);
     EXPECT_EQ(2, result.size());
-    EXPECT_QSTREQ(QString::fromUtf8(result.at(0)),
+    EXPECT_TRUE(QString::fromUtf8(result.at(0)) ==
                   QString("{\"mes\\\\\"sa{ge\":{one:two}}"));
 }
 
@@ -172,7 +171,7 @@ TEST_F(UtilTest, typeIdVector){
 }
 
 TEST_F(UtilTest, expandTuple){
-    std::tuple<int, float, QString> tup = std::make_tuple(23, 24.25, "Test");
+    std::tuple<int, float, std::string> tup = std::make_tuple(23, 24.25, std::string("Test"));
     auto memberFunction = std::mem_fn(&ExpandTuple::expandIntoThis);
     bool ret = Util::expandTupleIntoFunctionArguments(memberFunction, expandTuple, tup);
 

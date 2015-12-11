@@ -226,7 +226,6 @@ set(
     cluster_controller_test_HEADERS
     "PrettyPrint.h"
     "utils/MockObjects.h"
-    "utils/TestQString.h"
     "utils/MockLocalCapabilitiesDirectoryCallback.h"
     ${JoynrTest_GENHEADERS}
 )
@@ -261,7 +260,6 @@ set(
     libjoynr_test_HEADERS
     "PrettyPrint.h"
     "utils/LibJoynrMockObjects.h"
-    "utils/TestQString.h"
     ${JoynrTest_GENHEADERS}
 )
 

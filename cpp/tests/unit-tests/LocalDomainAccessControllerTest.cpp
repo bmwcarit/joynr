@@ -24,6 +24,7 @@
 #include "cluster-controller/access-control/LocalDomainAccessStore.h"
 
 #include "joynr/Semaphore.h"
+#include <string>
 
 using namespace ::testing;
 using namespace joynr;
@@ -158,8 +159,8 @@ const std::string LocalDomainAccessControllerTest::joynrDomain("LocalDomainAcces
 TEST_F(LocalDomainAccessControllerTest, testHasRole) {
     localDomainAccessStore->updateDomainRole(userDre);
 
-    QString defaultString;
-    DefaultValue<QString>::Set(defaultString);
+    std::string defaultString;
+    DefaultValue<std::string>::Set(defaultString);
 
     EXPECT_TRUE(localDomainAccessController->hasRole(LocalDomainAccessControllerTest::TEST_USER,
                                                      LocalDomainAccessControllerTest::TEST_DOMAIN1,
@@ -169,8 +170,8 @@ TEST_F(LocalDomainAccessControllerTest, testHasRole) {
 TEST_F(LocalDomainAccessControllerTest, consumerPermission) {
     localDomainAccessStore->updateOwnerAccessControlEntry(ownerAce);
 
-    QString defaultString;
-    DefaultValue<QString>::Set(defaultString);
+    std::string defaultString;
+    DefaultValue<std::string>::Set(defaultString);
     EXPECT_EQ(
             Permission::YES,
             localDomainAccessController->getConsumerPermission(
@@ -194,8 +195,8 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionInvalidOwnerAce) {
     masterAce.setPossibleConsumerPermissions(possiblePermissions);
     localDomainAccessStore->updateMasterAccessControlEntry(masterAce);
 
-    QString defaultString;
-    DefaultValue<QString>::Set(defaultString);
+    std::string defaultString;
+    DefaultValue<std::string>::Set(defaultString);
     EXPECT_EQ(
             Permission::NO,
             localDomainAccessController->getConsumerPermission(
@@ -214,8 +215,8 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionOwnerAceOverrulesMaste
     localDomainAccessStore->updateOwnerAccessControlEntry(ownerAce);
     localDomainAccessStore->updateMasterAccessControlEntry(masterAce);
 
-    QString defaultString;
-    DefaultValue<QString>::Set(defaultString);
+    std::string defaultString;
+    DefaultValue<std::string>::Set(defaultString);
     EXPECT_EQ(
             Permission::ASK,
             localDomainAccessController->getConsumerPermission(
@@ -242,8 +243,8 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionOperationWildcard) {
     ownerAce.setOperation(LocalDomainAccessStore::WILDCARD);
     localDomainAccessStore->updateOwnerAccessControlEntry(ownerAce);
 
-    QString defaultString;
-    DefaultValue<QString>::Set(defaultString);
+    std::string defaultString;
+    DefaultValue<std::string>::Set(defaultString);
     EXPECT_EQ(
             Permission::YES,
             localDomainAccessController->getConsumerPermission(
@@ -292,8 +293,8 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionAmbigious) {
             ));
 
     // Set default return value for Google mock
-    QString defaultString;
-    DefaultValue<QString>::Set(defaultString);
+    std::string defaultString;
+    DefaultValue<std::string>::Set(defaultString);
 
     // Get the consumer permission (async)
     std::shared_ptr<ConsumerPermissionCallback> getConsumerPersmissionCallback(
@@ -364,8 +365,8 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionCommunicationFailure) 
             ));
 
     // Set default return value for Google mock
-    QString defaultString;
-    DefaultValue<QString>::Set(defaultString);
+    std::string defaultString;
+    DefaultValue<std::string>::Set(defaultString);
 
     // Get the consumer permission (async)
     std::shared_ptr<ConsumerPermissionCallback> getConsumerPermissionCallback(
@@ -424,8 +425,8 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionQueuedRequests) {
             ));
 
     // Set default return value for Google mock
-    QString defaultString;
-    DefaultValue<QString>::Set(defaultString);
+    std::string defaultString;
+    DefaultValue<std::string>::Set(defaultString);
 
     // Get the consumer permission (async)
     std::shared_ptr<ConsumerPermissionCallback> getConsumerPermissionCallback1(

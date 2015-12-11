@@ -29,8 +29,6 @@
 #include <stdint.h>
 #include <cassert>
 
-#include <QString>
-
 using namespace joynr;
 using namespace joynr_logging;
 

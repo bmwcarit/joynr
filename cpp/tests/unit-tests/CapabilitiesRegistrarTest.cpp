@@ -28,7 +28,7 @@
 using namespace ::testing;
 using namespace joynr;
 
-const QString participantIdFile("test_participantids.settings");
+const std::string participantIdFile = "test_participantids.settings";
 
 class CapabilitiesRegistrarTest : public ::testing::Test {
 public:

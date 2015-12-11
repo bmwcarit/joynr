@@ -26,8 +26,6 @@
 #include <cassert>
 #include <chrono>
 
-#include <QString>
-
 using namespace ::testing;
 using namespace joynr;
 using namespace joynr_logging;

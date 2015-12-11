@@ -45,7 +45,6 @@
 #include "joynr/tests/test/MethodWithErrorEnumExtendedErrorEnumSerializer.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/exceptions/JoynrExceptionUtil.h"
-#include <QString>
 
 using namespace ::testing;
 using namespace joynr;

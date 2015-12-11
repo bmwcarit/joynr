@@ -44,9 +44,9 @@ public:
 
     void SetUp()
     {
-        masterAce = MasterAccessControlEntry(TEST_USER.toStdString(),
-                                             TEST_DOMAIN1.toStdString(),
-                                             TEST_INTERFACE1.toStdString(),
+        masterAce = MasterAccessControlEntry(TEST_USER,
+                                             TEST_DOMAIN1,
+                                             TEST_INTERFACE1,
                                              TrustLevel::LOW,
                                              ALL_TRUST_LEVELS,
                                              TrustLevel::LOW,
@@ -55,9 +55,9 @@ public:
                                              Permission::NO,
                                              ALL_PERMISSIONS);
 
-        mediatorAce = MasterAccessControlEntry(TEST_USER.toStdString(),
-                                               TEST_DOMAIN1.toStdString(),
-                                               TEST_INTERFACE1.toStdString(),
+        mediatorAce = MasterAccessControlEntry(TEST_USER,
+                                               TEST_DOMAIN1,
+                                               TEST_INTERFACE1,
                                                TrustLevel::LOW,
                                                ALL_TRUST_LEVELS,
                                                TrustLevel::LOW,
@@ -66,9 +66,9 @@ public:
                                                Permission::NO,
                                                ALL_PERMISSIONS);
 
-        ownerAce = OwnerAccessControlEntry(TEST_USER.toStdString(),
-                                           TEST_DOMAIN1.toStdString(),
-                                           TEST_INTERFACE1.toStdString(),
+        ownerAce = OwnerAccessControlEntry(TEST_USER,
+                                           TEST_DOMAIN1,
+                                           TEST_INTERFACE1,
                                            TrustLevel::LOW,
                                            TrustLevel::LOW,
                                            std::string(),
@@ -87,17 +87,17 @@ protected:
     MasterAccessControlEntry masterAce;
     MasterAccessControlEntry mediatorAce;
     OwnerAccessControlEntry ownerAce;
-    static const QString TEST_USER;
-    static const QString TEST_DOMAIN1;
-    static const QString TEST_INTERFACE1;
+    static const std::string TEST_USER;
+    static const std::string TEST_DOMAIN1;
+    static const std::string TEST_INTERFACE1;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(AccessControlAlgorithmTest);
 };
 
-const QString AccessControlAlgorithmTest::TEST_USER("testUser");
-const QString AccessControlAlgorithmTest::TEST_DOMAIN1("domain1");
-const QString AccessControlAlgorithmTest::TEST_INTERFACE1("interface1");
+const std::string AccessControlAlgorithmTest::TEST_USER("testUser");
+const std::string AccessControlAlgorithmTest::TEST_DOMAIN1("domain1");
+const std::string AccessControlAlgorithmTest::TEST_INTERFACE1("interface1");
 const std::vector<TrustLevel::Enum> AccessControlAlgorithmTest::ALL_TRUST_LEVELS = {TrustLevel::LOW, TrustLevel::MID, TrustLevel::HIGH};
 const std::vector<Permission::Enum> AccessControlAlgorithmTest::ALL_PERMISSIONS = {Permission::NO, Permission::ASK, Permission::YES};
 
