@@ -19,6 +19,7 @@
 #include "cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/Util.h"
+#include <string>
 
 using namespace joynr;
 
@@ -29,11 +30,11 @@ int main(int argc, char* argv[])
             joynr_logging::Logging::getInstance()->getLogger("ClusterController", "Runtime");
 
     // Check the usage
-    QString programName(argv[0]);
+    std::string programName(argv[0]);
     if (argc == 1) {
         LOG_INFO(logger, "USAGE: No settings provided. Starting with default settings.");
         LOG_INFO(logger,
-                 FormatString("USAGE: %1 <file.settings>...").arg(programName.toStdString()).str());
+                 FormatString("USAGE: %1 <file.settings>...").arg(programName).str());
     }
 
     // Object that holds all the settings

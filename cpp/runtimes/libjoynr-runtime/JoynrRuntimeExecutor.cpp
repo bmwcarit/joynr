@@ -40,7 +40,7 @@ JoynrRuntimeExecutor::JoynrRuntimeExecutor(Settings* settings)
         char* argv[] = {0};
         coreApplication = new QCoreApplication(argc, argv);
     }
-    runtimeThread->setObjectName(QString("LibJoynrRuntime-Thread"));
+    runtimeThread->setObjectName("LibJoynrRuntime-Thread");
     this->moveToThread(runtimeThread);
     connect(runtimeThread, &QThread::finished, this, &QObject::deleteLater);
     connect(runtimeThread, &QThread::started, this, &JoynrRuntimeExecutor::createRuntime);

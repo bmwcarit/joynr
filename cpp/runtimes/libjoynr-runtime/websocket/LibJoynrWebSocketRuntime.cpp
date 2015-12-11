@@ -26,7 +26,7 @@
 #include "joynr/Util.h"
 #include "joynr/TypeUtil.h"
 #include "joynr/JsonSerializer.h"
-
+#include <QString>
 namespace joynr
 {
 
@@ -42,7 +42,7 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(Settings* settings)
     std::string uuid = Util::createUuid();
     // remove dashes
     uuid.erase(std::remove(uuid.begin(), uuid.end(), '-'), uuid.end());
-    QString libjoynrMessagingId("libjoynr.messaging.participantid_" + TypeUtil::toQt(uuid));
+    std::string libjoynrMessagingId = "libjoynr.messaging.participantid_" + uuid;
     std::shared_ptr<joynr::system::RoutingTypes::Address> libjoynrMessagingAddress(
             new system::RoutingTypes::WebSocketClientAddress(libjoynrMessagingId.toStdString()));
 
@@ -61,14 +61,13 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(Settings* settings)
     loop.exec();
 
     // send intialization message containing libjoynr messaging address
-    QString initializationMsg(
-            QString::fromStdString(JsonSerializer::serialize(*libjoynrMessagingAddress)));
+    std::string initializationMsg = JsonSerializer::serialize(*libjoynrMessagingAddress);
     LOG_TRACE(logger,
               FormatString("OUTGOING sending websocket intialization message\nmessage: %1\nto: %2")
-                      .arg(initializationMsg.toStdString())
+                      .arg(initializationMsg)
                       .arg(libjoynrMessagingAddress->toString())
                       .str());
-    websocket->sendTextMessage(initializationMsg);
+    websocket->sendTextMessage(QString::fromStdString(initializationMsg));
 
     WebSocketMessagingStubFactory* factory = new WebSocketMessagingStubFactory();
     factory->addServer(*ccMessagingAddress, websocket);

@@ -136,8 +136,8 @@ void LibJoynrRuntime::init(
     discoveryProxy = new LocalDiscoveryAggregator(
             *dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher), systemServicesSettings);
     std::string systemServicesDomain = systemServicesSettings.getDomain();
-    QString routingProviderParticipantId =
-            TypeUtil::toQt(systemServicesSettings.getCcRoutingProviderParticipantId());
+    std::string routingProviderParticipantId =
+            systemServicesSettings.getCcRoutingProviderParticipantId();
 
     DiscoveryQos routingProviderDiscoveryQos;
     routingProviderDiscoveryQos.setCacheMaxAge(1000);
@@ -158,7 +158,7 @@ void LibJoynrRuntime::init(
     delete routingProxyBuilder;
 
     // setup discovery
-    QString discoveryProviderParticipantId =
+    std::string discoveryProviderParticipantId =
             TypeUtil::toQt(systemServicesSettings.getCcDiscoveryProviderParticipantId());
     DiscoveryQos discoveryProviderDiscoveryQos;
     discoveryProviderDiscoveryQos.setCacheMaxAge(1000);
