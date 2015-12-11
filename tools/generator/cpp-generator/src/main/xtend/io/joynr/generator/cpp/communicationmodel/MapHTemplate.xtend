@@ -52,6 +52,7 @@ class MapHTemplate implements MapTemplate{
 #include <string>
 #include <map>
 #include "joynr/HashUtil.h"
+#include "joynr/Util.h"
 
 // include complex Datatype headers.
 «FOR member: getRequiredIncludesFor(type)»
@@ -63,6 +64,17 @@ class MapHTemplate implements MapTemplate{
 «type.typeDefinition»
 
 «getNamespaceEnder(type, true)»
+
+namespace joynr
+{
+template <>
+inline std::vector<«type.typeName»> Util::valueOf<
+		std::vector<«type.typeName»>>(const Variant& variant)
+{
+	return joynr::Util::convertVariantVectorToVector<«type.typeName»>(
+			variant.get<std::vector<Variant>>());
+}
+} /* namespace joynr */
 
 #endif // «headerGuard»
 '''
