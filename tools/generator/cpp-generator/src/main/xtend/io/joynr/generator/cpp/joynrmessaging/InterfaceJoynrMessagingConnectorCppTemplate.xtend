@@ -303,7 +303,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 					SubscriptionRequest& subscriptionRequest
 		) {
 			LOG_DEBUG(logger, "Subscribing to «attributeName».");
-			QString attributeName("«attributeName»");
+			std::string attributeName("«attributeName»");
 			joynr::MessagingQos clonedMessagingQos(qosSettings);
 			if (subscriptionQos.getExpiryDate() == joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
 				clonedMessagingQos.setTtl(joynr::SubscriptionQos::NO_EXPIRY_DATE_TTL());
@@ -319,7 +319,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 						subscriptionCallback,
 						SubscriptionUtil::getVariant(subscriptionQos),
 						subscriptionRequest);
-			LOG_DEBUG(logger, subscriptionRequest.toQString().toStdString());
+			LOG_DEBUG(logger, subscriptionRequest.toString());
 			joynrMessageSender->sendSubscriptionRequest(
 						proxyParticipantId,
 						providerParticipantId,
@@ -335,7 +335,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 			joynr::SubscriptionStop subscriptionStop;
 			subscriptionStop.setSubscriptionId(subscriptionId);
 
-			subscriptionManager->unregisterSubscription(QString::fromStdString(subscriptionId));
+			subscriptionManager->unregisterSubscription(subscriptionId);
 			joynrMessageSender->sendSubscriptionStop(
 						proxyParticipantId,
 						providerParticipantId,
@@ -475,7 +475,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 				BroadcastSubscriptionRequest& subscriptionRequest
 	) {
 		LOG_DEBUG(logger, "Subscribing to «broadcastName» broadcast.");
-		QString broadcastName("«broadcastName»");
+		std::string broadcastName("«broadcastName»");
 		joynr::MessagingQos clonedMessagingQos(qosSettings);
 		if (subscriptionQos.getExpiryDate() == joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
 			clonedMessagingQos.setTtl(joynr::SubscriptionQos::NO_EXPIRY_DATE_TTL());
@@ -492,7 +492,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 					subscriptionCallback,
 					Variant::make<OnChangeSubscriptionQos>(subscriptionQos),
 					subscriptionRequest);
-		LOG_DEBUG(logger, subscriptionRequest.toQString().toStdString());
+		LOG_DEBUG(logger, subscriptionRequest.toString());
 		joynrMessageSender->sendBroadcastSubscriptionRequest(
 					proxyParticipantId,
 					providerParticipantId,
@@ -508,7 +508,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 		joynr::SubscriptionStop subscriptionStop;
 		subscriptionStop.setSubscriptionId(subscriptionId);
 
-		subscriptionManager->unregisterSubscription(QString::fromStdString(subscriptionId));
+		subscriptionManager->unregisterSubscription(subscriptionId);
 		joynrMessageSender->sendSubscriptionStop(
 					proxyParticipantId,
 					providerParticipantId,

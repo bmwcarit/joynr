@@ -115,11 +115,6 @@ void SubscriptionRequest::setQos(const Variant& qos)
     this->qos = qos;
 }
 
-QString SubscriptionRequest::toQString() const
-{
-    return QString::fromStdString(toString());
-}
-
 std::string SubscriptionRequest::toString() const
 {
     return JsonSerializer::serialize(*this);

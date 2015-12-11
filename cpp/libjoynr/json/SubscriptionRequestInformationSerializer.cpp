@@ -46,10 +46,10 @@ void ClassDeserializer<SubscriptionRequestInformation>::deserialize(
             info.setQos(qos);
         } else if (field.name() == "proxyId") {
             std::string proxyId = field.value();
-            info.setProxyId(QString::fromStdString(proxyId));
+            info.setProxyId(proxyId);
         } else if (field.name() == "providerId") {
             std::string providerId = field.value();
-            info.setProviderId(QString::fromStdString(providerId));
+            info.setProviderId(providerId);
         }
     }
 }
@@ -68,8 +68,8 @@ void ClassSerializer<SubscriptionRequestInformation>::serialize(
     ClassSerializer<Variant> variantSerializer;
     variantSerializer.serialize(info.getQos(), stream);
     stream << R"(,)"
-           << R"("proxyId": ")" << info.getProxyId().toStdString() << R"(",)";
-    stream << R"("providerId": ")" << info.getProviderId().toStdString();
+           << R"("proxyId": ")" << info.getProxyId() << R"(",)";
+    stream << R"("providerId": ")" << info.getProviderId();
     stream << R"("})";
 }
 } /* namespace joynr */

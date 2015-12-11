@@ -22,7 +22,7 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/IBroadcastListener.h"
 
-#include <QString>
+#include <string>
 #include <memory>
 #include <vector>
 
@@ -43,7 +43,7 @@ public:
     /**
      * Create an broadcast listener linked to a subscription
      */
-    SubscriptionBroadcastListener(const QString& subscriptionId,
+    SubscriptionBroadcastListener(const std::string& subscriptionId,
                                   PublicationManager& publicationManager);
 
     // Implementation of IBroadcastListener::receive
@@ -51,7 +51,7 @@ public:
                            const std::vector<std::shared_ptr<IBroadcastFilter>>& filters) override;
 
 private:
-    QString subscriptionId;
+    std::string subscriptionId;
     PublicationManager& publicationManager;
 };
 

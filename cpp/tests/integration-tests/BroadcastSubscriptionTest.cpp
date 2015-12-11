@@ -33,7 +33,7 @@
 #include "joynr/tests/testRequestInterpreter.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
-#include <QString>
+#include <string>
 #include "joynr/LibjoynrSettings.h"
 
 #include "joynr/types/Localisation/GpsLocation.h"
@@ -93,8 +93,8 @@ protected:
 
     // create test data
     MessagingQos qos;
-    QString providerParticipantId;
-    QString proxyParticipantId;
+    std::string providerParticipantId;
+    std::string proxyParticipantId;
 
     JoynrMessageFactory messageFactory;
     JoynrMessageSender messageSender;
@@ -117,7 +117,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     //register the subscription on the consumer side
-    QString subscribeToName = "locationUpdate";
+    std::string subscribeToName = "locationUpdate";
     Variant subscriptionQos = Variant::make<OnChangeWithKeepAliveSubscriptionQos>(OnChangeWithKeepAliveSubscriptionQos(
                 80, // validity_ms
                 100, // minInterval_ms
@@ -145,8 +145,8 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
                 subscriptionRequest);
     // incoming publication from the provider
     JoynrMessage msg = messageFactory.createSubscriptionPublication(
-                providerParticipantId,
-                proxyParticipantId,
+                QString::fromStdString(providerParticipantId),
+                QString::fromStdString(proxyParticipantId),
                 qos,
                 subscriptionPublication);
 
@@ -170,7 +170,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters )
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     //register the subscription on the consumer side
-    QString subscribeToName = "locationUpdateWithSpeed";
+    std::string subscribeToName = "locationUpdateWithSpeed";
     Variant subscriptionQos = Variant::make<OnChangeWithKeepAliveSubscriptionQos>(OnChangeWithKeepAliveSubscriptionQos(
                 80, // validity_ms
                 100, // minInterval_ms
@@ -198,8 +198,8 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters )
                 subscriptionRequest);
     // incoming publication from the provider
     JoynrMessage msg = messageFactory.createSubscriptionPublication(
-                providerParticipantId,
-                proxyParticipantId,
+                QString::fromStdString(providerParticipantId),
+                QString::fromStdString(proxyParticipantId),
                 qos,
                 subscriptionPublication);
 

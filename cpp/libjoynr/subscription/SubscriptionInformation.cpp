@@ -30,8 +30,8 @@ SubscriptionInformation::SubscriptionInformation() : proxyId(), providerId()
 {
 }
 
-SubscriptionInformation::SubscriptionInformation(const QString& proxyParticipantId,
-                                                 const QString& providerParticipantId)
+SubscriptionInformation::SubscriptionInformation(const std::string& proxyParticipantId,
+                                                 const std::string& providerParticipantId)
         : proxyId(proxyParticipantId), providerId(providerParticipantId)
 {
 }
@@ -58,22 +58,22 @@ bool SubscriptionInformation::operator==(
            providerId == subscriptionInformation.getProviderId();
 }
 
-QString SubscriptionInformation::getProxyId() const
+std::string SubscriptionInformation::getProxyId() const
 {
     return proxyId;
 }
 
-QString SubscriptionInformation::getProviderId() const
+std::string SubscriptionInformation::getProviderId() const
 {
     return providerId;
 }
 
-void SubscriptionInformation::setProxyId(const QString& id)
+void SubscriptionInformation::setProxyId(const std::string& id)
 {
     this->proxyId = id;
 }
 
-void SubscriptionInformation::setProviderId(const QString& id)
+void SubscriptionInformation::setProviderId(const std::string& id)
 {
     this->providerId = id;
 }

@@ -23,7 +23,7 @@
 #include "joynr/BroadcastFilterParameters.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 
-#include <QString>
+#include <string>
 #include <memory>
 
 #include "joynr/Variant.h"
@@ -50,7 +50,7 @@ public:
             const BroadcastSubscriptionRequest& subscriptionRequest);
     bool operator==(const BroadcastSubscriptionRequest& subscriptionRequest) const;
 
-    QString toQString() const;
+    std::string toString() const;
 
     // Make sure that broadcast subscriptions are only used with on change qos.
     // Method from base class is hidden. See below in private section.

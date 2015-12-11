@@ -23,7 +23,6 @@
 #include "joynr/exceptions/JoynrException.h"
 
 #include <QObject>
-#include <QString>
 #include <vector>
 
 #include <memory>

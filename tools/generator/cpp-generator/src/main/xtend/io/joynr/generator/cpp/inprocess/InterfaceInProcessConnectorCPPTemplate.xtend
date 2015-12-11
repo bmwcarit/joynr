@@ -259,7 +259,7 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 			«ELSE»
 				LOG_DEBUG(logger, "Subscribing to «attributeName».");
 				assert(subscriptionManager != NULL);
-				QString attributeName("«attributeName»");
+				std::string attributeName("«attributeName»");
 				auto subscriptionCallback = std::make_shared<
 						joynr::SubscriptionCallback<«returnType»>
 				>(subscriptionListener);
@@ -284,9 +284,9 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 					* Dispatcher will call publicationManger->restore when a new provider is added to activate
 					* subscriptions for that provider
 					*/
-					publicationManager->add(QString::fromStdString(proxyParticipantId), QString::fromStdString(providerParticipantId), subscriptionRequest);
+					publicationManager->add(proxyParticipantId, providerParticipantId, subscriptionRequest);
 				} else {
-					publicationManager->add(QString::fromStdString(proxyParticipantId), QString::fromStdString(providerParticipantId), caller, subscriptionRequest, inProcessPublicationSender);
+					publicationManager->add(proxyParticipantId, providerParticipantId, caller, subscriptionRequest, inProcessPublicationSender);
 				}
 				return subscriptionId;
 			«ENDIF»
@@ -301,14 +301,13 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 				LOG_FATAL(logger, "enum return values are currently not supported in C++ client (attribute name: «interfaceName».«attributeName»)");
 				assert(false);
 			«ELSE»
-				QString subscriptionIdQT(QString::fromStdString(subscriptionId));
 				LOG_DEBUG(logger, FormatString("Unsubscribing. Id=%1").arg(subscriptionId).str());
 				assert(publicationManager != NULL);
 				LOG_DEBUG(logger, "Stopping publications by publication manager.");
-				publicationManager->stopPublication(subscriptionIdQT);
+				publicationManager->stopPublication(subscriptionId);
 				assert(subscriptionManager != NULL);
 				LOG_DEBUG(logger, "Unregistering attribute subscription.");
-				subscriptionManager->unregisterSubscription(subscriptionIdQT);
+				subscriptionManager->unregisterSubscription(subscriptionId);
 			«ENDIF»
 		}
 
@@ -404,7 +403,7 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 	) {
 		LOG_DEBUG(logger, "Subscribing to «broadcastName».");
 		assert(subscriptionManager != NULL);
-		QString broadcastName("«broadcastName»");
+		std::string broadcastName("«broadcastName»");
 		joynr::BroadcastSubscriptionRequest subscriptionRequest;
 		«IF isSelective(broadcast)»
 			subscriptionRequest.setFilterParameters(filterParameters);
@@ -446,7 +445,7 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 	) {
 		LOG_DEBUG(logger, "Subscribing to «broadcastName».");
 		assert(subscriptionManager != NULL);
-		QString broadcastName("«broadcastName»");
+		std::string broadcastName("«broadcastName»");
 
 		auto subscriptionCallback = std::make_shared<
 				joynr::SubscriptionCallback<«returnTypes»>
@@ -456,7 +455,7 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 					subscriptionCallback,
 					Variant::make<OnChangeSubscriptionQos>(subscriptionQos),
 					subscriptionRequest);
-		LOG_DEBUG(logger, FormatString("Registered broadcast subscription: %1").arg(subscriptionRequest.toQString().toStdString()).str());
+		LOG_DEBUG(logger, FormatString("Registered broadcast subscription: %1").arg(subscriptionRequest.toString()).str());
 		assert(address);
 		std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
 		assert(caller);
@@ -470,11 +469,11 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 			* Dispatcher will call publicationManger->restore when a new provider is added to activate
 			* subscriptions for that provider
 			*/
-			publicationManager->add(QString::fromStdString(proxyParticipantId), QString::fromStdString(providerParticipantId), subscriptionRequest);
+			publicationManager->add(proxyParticipantId, providerParticipantId, subscriptionRequest);
 		} else {
 			publicationManager->add(
-						QString::fromStdString(proxyParticipantId),
-						QString::fromStdString(providerParticipantId),
+						proxyParticipantId,
+						providerParticipantId,
 						caller,
 						subscriptionRequest,
 						inProcessPublicationSender);
@@ -485,14 +484,13 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 	void «interfaceName»InProcessConnector::unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(
 			std::string& subscriptionId
 	) {
-		QString subscriptionIdQT(QString::fromStdString(subscriptionId));
 		LOG_DEBUG(logger, FormatString("Unsubscribing broadcast. Id=%1").arg(subscriptionId).str());
 		assert(publicationManager != NULL);
 		LOG_DEBUG(logger, "Stopping publications by publication manager.");
-		publicationManager->stopPublication(subscriptionIdQT);
+		publicationManager->stopPublication(subscriptionId);
 		assert(subscriptionManager != NULL);
 		LOG_DEBUG(logger, "Unregistering broadcast subscription.");
-		subscriptionManager->unregisterSubscription(subscriptionIdQT);
+		subscriptionManager->unregisterSubscription(subscriptionId);
 	}
 «ENDFOR»
 «getNamespaceEnder(serviceInterface)»

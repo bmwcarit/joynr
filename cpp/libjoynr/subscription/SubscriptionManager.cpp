@@ -75,16 +75,14 @@ SubscriptionManager::SubscriptionManager(DelayedScheduler* scheduler)
 }
 
 void SubscriptionManager::registerSubscription(
-        const QString& subscribeToName,
+        const std::string& subscribeToName,
         std::shared_ptr<ISubscriptionCallback> subscriptionCaller,
         const Variant& qosVariant,
         SubscriptionRequest& subscriptionRequest)
 {
     // Register the subscription
-    QString subscriptionId = QString::fromStdString(subscriptionRequest.getSubscriptionId());
-    LOG_DEBUG(
-            logger,
-            FormatString("Subscription registered. ID=%1").arg(subscriptionId.toStdString()).str());
+    std::string subscriptionId = subscriptionRequest.getSubscriptionId();
+    LOG_DEBUG(logger, FormatString("Subscription registered. ID=%1").arg(subscriptionId).str());
 
     if (subscriptions.contains(subscriptionId)) {
         // pre-existing subscription: remove it first from the internal data structure
@@ -135,17 +133,17 @@ void SubscriptionManager::registerSubscription(
                     new SubscriptionEndRunnable(subscriptionId, *this), qos->getExpiryDate() - now);
         }
     }
-    subscriptionRequest.setSubscriptionId(subscriptionId.toStdString());
-    subscriptionRequest.setSubscribeToName(subscribeToName.toStdString());
+    subscriptionRequest.setSubscriptionId(subscriptionId);
+    subscriptionRequest.setSubscribeToName(subscribeToName);
 }
 
-void SubscriptionManager::unregisterSubscription(const QString& subscriptionId)
+void SubscriptionManager::unregisterSubscription(const std::string& subscriptionId)
 {
     if (subscriptions.contains(subscriptionId)) {
         std::shared_ptr<Subscription> subscription(subscriptions.take(subscriptionId));
         LOG_DEBUG(logger,
                   FormatString("Called unregister / unsubscribe on subscription id= %1")
-                          .arg(subscriptionId.toStdString())
+                          .arg(subscriptionId)
                           .str());
         std::lock_guard<std::recursive_mutex> subscriptionLocker(subscription->mutex);
         subscription->isStopped = true;
@@ -164,7 +162,7 @@ void SubscriptionManager::unregisterSubscription(const QString& subscriptionId)
         LOG_DEBUG(logger,
                   FormatString(
                           "Called unregister on a non/no longer existent subscription, used id= %1")
-                          .arg(subscriptionId.toStdString())
+                          .arg(subscriptionId)
                           .str());
     }
 }
@@ -204,7 +202,7 @@ void SubscriptionManager::checkMissedPublication(
         }
         LOG_DEBUG(logger,
             "Resceduling MissedPublicationRunnable with delay: "
-                + QString::number(delay));
+                + std::string::number(delay));
         subscription->missedPublicationRunnableHandle =
             subscriptionManager.missedPublicationScheduler->schedule(
                 new MissedPublicationRunnable(decayTime,
@@ -225,12 +223,10 @@ void SubscriptionManager::checkMissedPublication(
 }
 #endif
 
-void SubscriptionManager::touchSubscriptionState(const QString& subscriptionId)
+void SubscriptionManager::touchSubscriptionState(const std::string& subscriptionId)
 {
     LOG_DEBUG(logger,
-              FormatString("Touching subscription state for id=%1")
-                      .arg(subscriptionId.toStdString())
-                      .str());
+              FormatString("Touching subscription state for id=%1").arg(subscriptionId).str());
     if (!subscriptions.contains(subscriptionId)) {
         return;
     }
@@ -243,16 +239,16 @@ void SubscriptionManager::touchSubscriptionState(const QString& subscriptionId)
 }
 
 std::shared_ptr<ISubscriptionCallback> SubscriptionManager::getSubscriptionCallback(
-        const QString& subscriptionId)
+        const std::string& subscriptionId)
 {
     LOG_DEBUG(logger,
               FormatString("Getting subscription callback for subscription id=%1")
-                      .arg(subscriptionId.toStdString())
+                      .arg(subscriptionId)
                       .str());
     if (!subscriptions.contains(subscriptionId)) {
         LOG_DEBUG(logger,
                   FormatString("Trying to acces a non existing subscription callback for id=%1")
-                          .arg(subscriptionId.toStdString())
+                          .arg(subscriptionId)
                           .str());
         return std::shared_ptr<ISubscriptionCallback>();
     }
@@ -291,7 +287,7 @@ Logger* SubscriptionManager::MissedPublicationRunnable::logger =
 SubscriptionManager::MissedPublicationRunnable::MissedPublicationRunnable(
         const JoynrTimePoint& expiryDate,
         const qint64& expectedIntervalMSecs,
-        const QString& subscriptionId,
+        const std::string& subscriptionId,
         std::shared_ptr<Subscription> subscription,
         SubscriptionManager& subscriptionManager,
         const qint64& alertAfterInterval)
@@ -316,7 +312,7 @@ void SubscriptionManager::MissedPublicationRunnable::run()
     if (!isExpired() && !subscription->isStopped) {
         LOG_DEBUG(logger,
                   FormatString("Running MissedPublicationRunnable for subscription id= %1")
-                          .arg(subscriptionId.toStdString())
+                          .arg(subscriptionId)
                           .str());
         qint64 delay = 0;
         int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
@@ -329,7 +325,7 @@ void SubscriptionManager::MissedPublicationRunnable::run()
             LOG_DEBUG(logger, "Publication missed!");
             std::shared_ptr<ISubscriptionCallback> callback = subscription->subscriptionCaller;
 
-            exceptions::PublicationMissedException error(subscriptionId.toStdString());
+            exceptions::PublicationMissedException error(subscriptionId);
             callback->onError(error);
             delay = alertAfterInterval - timeSinceLastExpectedPublication(timeSinceLastPublication);
         }
@@ -349,7 +345,7 @@ void SubscriptionManager::MissedPublicationRunnable::run()
     } else {
         LOG_DEBUG(logger,
                   FormatString("Publication expired / interrupted. Expiring on subscription id=%1")
-                          .arg(subscriptionId.toStdString())
+                          .arg(subscriptionId)
                           .str());
     }
 }
@@ -364,7 +360,7 @@ Logger* SubscriptionManager::SubscriptionEndRunnable::logger =
         Logging::getInstance()->getLogger("MSG", "SubscriptionEndRunnable");
 
 SubscriptionManager::SubscriptionEndRunnable::SubscriptionEndRunnable(
-        const QString& subscriptionId,
+        const std::string& subscriptionId,
         SubscriptionManager& subscriptionManager)
         : joynr::Runnable(true),
           subscriptionId(subscriptionId),
@@ -380,11 +376,11 @@ void SubscriptionManager::SubscriptionEndRunnable::run()
 {
     LOG_DEBUG(logger,
               FormatString("Running SubscriptionEndRunnable for subscription id= %1")
-                      .arg(subscriptionId.toStdString())
+                      .arg(subscriptionId)
                       .str());
     LOG_DEBUG(logger,
               FormatString("Publication expired / interrupted. Expiring on subscription id=%1")
-                      .arg(subscriptionId.toStdString())
+                      .arg(subscriptionId)
                       .str());
     subscriptionManager.unregisterSubscription(subscriptionId);
 }

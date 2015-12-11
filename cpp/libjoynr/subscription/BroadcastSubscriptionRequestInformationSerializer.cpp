@@ -51,10 +51,10 @@ void ClassDeserializer<BroadcastSubscriptionRequestInformation>::deserialize(
             info.setFilterParameters(filterParameters);
         } else if (field.name() == "proxyId") {
             std::string proxyId = field.value();
-            info.setProxyId(QString::fromStdString(proxyId));
+            info.setProxyId(proxyId);
         } else if (field.name() == "providerId") {
             std::string providerId = field.value();
-            info.setProviderId(QString::fromStdString(providerId));
+            info.setProviderId(providerId);
         }
     }
 }
@@ -79,8 +79,8 @@ void ClassSerializer<BroadcastSubscriptionRequestInformation>::serialize(
         ClassSerializer<BroadcastFilterParameters> filterParametersSerializer;
         filterParametersSerializer.serialize(info.getFilterParameters(), stream);
     }
-    stream << R"(,"proxyId": ")" << info.getProxyId().toStdString() << R"(",)";
-    stream << R"("providerId": ")" << info.getProviderId().toStdString();
+    stream << R"(,"proxyId": ")" << info.getProxyId() << R"(",)";
+    stream << R"("providerId": ")" << info.getProviderId();
     stream << R"("})";
 }
 } /* namespace joynr */

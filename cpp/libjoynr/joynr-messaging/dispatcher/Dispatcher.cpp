@@ -91,8 +91,7 @@ void Dispatcher::addRequestCaller(const std::string& participantId,
     if (publicationManager != NULL) {
         // publication manager queues received subscription requests, that are
         // received before the corresponding request caller is added
-        publicationManager->restore(
-                QString::fromStdString(participantId), requestCaller, messageSender);
+        publicationManager->restore(participantId, requestCaller, messageSender);
     } else {
         LOG_DEBUG(logger, "No publication manager available!");
     }
@@ -105,7 +104,7 @@ void Dispatcher::removeRequestCaller(const std::string& participantId)
     // TODO if a provider is removed, all publication runnables are stopped
     // the subscription request is deleted,
     // Q: Should it be restored once the provider is registered again?
-    publicationManager->removeAllSubscriptions(QString::fromStdString(participantId));
+    publicationManager->removeAllSubscriptions(participantId);
     requestCallerDirectory.remove(participantId);
 }
 
@@ -304,12 +303,11 @@ void Dispatcher::handleSubscriptionRequestReceived(const JoynrMessage& message)
         // Provider not registered yet
         // Dispatcher will call publicationManger->restore when a new provider is added to activate
         // subscriptions for that provider
-        publicationManager->add(QString::fromStdString(message.getHeaderFrom()),
-                                QString::fromStdString(message.getHeaderTo()),
-                                *subscriptionRequest);
+        publicationManager->add(
+                message.getHeaderFrom(), message.getHeaderTo(), *subscriptionRequest);
     } else {
-        publicationManager->add(QString::fromStdString(message.getHeaderFrom()),
-                                QString::fromStdString(message.getHeaderTo()),
+        publicationManager->add(message.getHeaderFrom(),
+                                message.getHeaderTo(),
                                 caller,
                                 *subscriptionRequest,
                                 messageSender);
@@ -346,12 +344,11 @@ void Dispatcher::handleBroadcastSubscriptionRequestReceived(const JoynrMessage& 
         // Provider not registered yet
         // Dispatcher will call publicationManger->restore when a new provider is added to activate
         // subscriptions for that provider
-        publicationManager->add(QString::fromStdString(message.getHeaderFrom()),
-                                QString::fromStdString(message.getHeaderTo()),
-                                *subscriptionRequest);
+        publicationManager->add(
+                message.getHeaderFrom(), message.getHeaderTo(), *subscriptionRequest);
     } else {
-        publicationManager->add(QString::fromStdString(message.getHeaderFrom()),
-                                QString::fromStdString(message.getHeaderTo()),
+        publicationManager->add(message.getHeaderFrom(),
+                                message.getHeaderTo(),
                                 caller,
                                 *subscriptionRequest,
                                 messageSender);
@@ -375,7 +372,7 @@ void Dispatcher::handleSubscriptionStopReceived(const JoynrMessage& message)
     }
     QString subscriptionId = TypeUtil::toQt(subscriptionStop->getSubscriptionId());
     assert(publicationManager != NULL);
-    publicationManager->stopPublication(subscriptionId);
+    publicationManager->stopPublication(subscriptionId.toStdString());
 }
 
 void Dispatcher::handlePublicationReceived(const JoynrMessage& message)
@@ -391,7 +388,7 @@ void Dispatcher::handlePublicationReceived(const JoynrMessage& message)
                           .str());
         return;
     }
-    QString subscriptionId = QString::fromStdString(subscriptionPublication->getSubscriptionId());
+    std::string subscriptionId = subscriptionPublication->getSubscriptionId();
 
     assert(subscriptionManager != NULL);
 
@@ -400,7 +397,7 @@ void Dispatcher::handlePublicationReceived(const JoynrMessage& message)
     if (!callback) {
         LOG_ERROR(logger,
                   FormatString("Dropping reply for non/no more existing subscription with id=%1")
-                          .arg(subscriptionId.toStdString())
+                          .arg(subscriptionId)
                           .str());
         delete subscriptionPublication;
         return;

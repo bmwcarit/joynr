@@ -77,7 +77,7 @@ public:
         return QVariant(metaEnum.valueToKey(value));
     }
 
-    static QString attributeGetterFromName(const QString& attributeName);
+    static std::string attributeGetterFromName(const std::string& attributeName);
 
     template <class T>
     static typename T::Enum convertVariantToEnum(const QVariant& v)

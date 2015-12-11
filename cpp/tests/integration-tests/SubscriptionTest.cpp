@@ -184,7 +184,7 @@ TEST_F(SubscriptionTest, receive_publication ) {
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     //register the subscription on the consumer side
-    QString attributeName = "Location";
+    std::string attributeName = "Location";
     Variant subscriptionQos = Variant::make<OnChangeWithKeepAliveSubscriptionQos>(OnChangeWithKeepAliveSubscriptionQos(
                 80, // validity_ms
                 100, // minInterval_ms
@@ -241,7 +241,7 @@ TEST_F(SubscriptionTest, receive_enumPublication ) {
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     //register the subscription on the consumer side
-    QString attributeName = "testEnum";
+    std::string attributeName = "testEnum";
     Variant subscriptionQos = Variant::make<OnChangeWithKeepAliveSubscriptionQos>(OnChangeWithKeepAliveSubscriptionQos(
                 80, // validity_ms
                 100, // minInterval_ms
@@ -367,8 +367,8 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam) {
                      ));
 
     publicationManager->add(
-                QString::fromStdString(proxyParticipantId),
-                QString::fromStdString(providerParticipantId),
+                proxyParticipantId,
+                providerParticipantId,
                 requestCaller,
                 subscriptionRequest,
                 joynrMessageSender);

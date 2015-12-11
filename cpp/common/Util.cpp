@@ -66,11 +66,11 @@ std::vector<QByteArray> Util::splitIntoJsonObjects(const QByteArray& jsonStream)
     return jsonObjects;
 }
 
-QString Util::attributeGetterFromName(const QString& attributeName)
+std::string Util::attributeGetterFromName(const std::string& attributeName)
 {
-    QString result = attributeName;
-    result[0] = result[0].toUpper();
-    result.prepend("get");
+    std::string result = attributeName;
+    result[0] = std::toupper(result[0]);
+    result.insert(0, "get");
     return result;
 }
 

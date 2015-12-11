@@ -61,9 +61,9 @@ bool BroadcastSubscriptionRequest::operator==(
            getSubscribeToName() == subscriptionRequest.getSubscribeToName() && equal;
 }
 
-QString BroadcastSubscriptionRequest::toQString() const
+std::string BroadcastSubscriptionRequest::toString() const
 {
-    return QString::fromStdString(JsonSerializer::serialize(*this));
+    return JsonSerializer::serialize(*this);
 }
 
 void BroadcastSubscriptionRequest::setQos(const OnChangeSubscriptionQos& qos)

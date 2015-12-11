@@ -33,7 +33,7 @@
 #include "joynr/ReadWriteLock.h"
 #include "joynr/ThreadSafeMap.h"
 
-#include <QString>
+#include <string>
 #include <memory>
 #include <stdint.h>
 
@@ -70,10 +70,10 @@ public:
      * @param qos
      * @param subscriptionRequest
      */
-    void registerSubscription(const QString& subscribeToName,
+    void registerSubscription(const std::string& subscribeToName,
                               std::shared_ptr<ISubscriptionCallback> subscriptionCaller,
                               const Variant& qosVariant,
-                              SubscriptionRequest& subscriptionRequest);
+                              SubscriptionRequest& subscriptionRequest) override;
 
     /**
      * @brief Stop the subscription. Removes the callback and stops the notifications
@@ -81,7 +81,7 @@ public:
      *
      * @param subscriptionId
      */
-    void unregisterSubscription(const QString& subscriptionId);
+    void unregisterSubscription(const std::string& subscriptionId) override;
 
     /**
      * @brief Sets the time of last received publication (incoming attribute value) to the current
@@ -89,7 +89,7 @@ public:
      *
      * @param subscriptionId
      */
-    void touchSubscriptionState(const QString& subscriptionId);
+    void touchSubscriptionState(const std::string& subscriptionId) override;
 
     /**
      * @brief Get a shared pointer to the subscription callback. The shared pointer points to null
@@ -98,7 +98,8 @@ public:
      * @param subscriptionId
      * @return std::shared_ptr<ISubscriptionCallback>
      */
-    std::shared_ptr<ISubscriptionCallback> getSubscriptionCallback(const QString& subscriptionId);
+    std::shared_ptr<ISubscriptionCallback> getSubscriptionCallback(
+            const std::string& subscriptionId) override;
 
 private:
     //    void checkMissedPublication(const Timer::TimerId id);
@@ -106,7 +107,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(SubscriptionManager);
     class Subscription;
 
-    ThreadSafeMap<QString, std::shared_ptr<Subscription>> subscriptions;
+    ThreadSafeMap<std::string, std::shared_ptr<Subscription>> subscriptions;
 
     DelayedScheduler* missedPublicationScheduler;
     static joynr_logging::Logger* logger;
@@ -119,7 +120,7 @@ private:
     public:
         MissedPublicationRunnable(const JoynrTimePoint& expiryDate,
                                   const qint64& expectedIntervalMSecs,
-                                  const QString& subscriptionId,
+                                  const std::string& subscriptionId,
                                   std::shared_ptr<Subscription> subscription,
                                   SubscriptionManager& subscriptionManager,
                                   const qint64& alertAfterInterval);
@@ -138,7 +139,7 @@ private:
         qint64 timeSinceLastExpectedPublication(const qint64& timeSinceLastPublication);
         qint64 expectedIntervalMSecs;
         std::shared_ptr<Subscription> subscription;
-        const QString subscriptionId;
+        const std::string subscriptionId;
         qint64 alertAfterInterval;
         SubscriptionManager& subscriptionManager;
         static joynr_logging::Logger* logger;
@@ -150,7 +151,7 @@ private:
     class SubscriptionEndRunnable : public Runnable
     {
     public:
-        SubscriptionEndRunnable(const QString& subscriptionId,
+        SubscriptionEndRunnable(const std::string& subscriptionId,
                                 SubscriptionManager& subscriptionManager);
 
         void shutdown() override;
@@ -162,7 +163,7 @@ private:
 
     private:
         DISALLOW_COPY_AND_ASSIGN(SubscriptionEndRunnable);
-        QString subscriptionId;
+        std::string subscriptionId;
         SubscriptionManager& subscriptionManager;
         static joynr_logging::Logger* logger;
     };

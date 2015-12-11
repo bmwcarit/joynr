@@ -115,7 +115,7 @@ public:
         return dynamic_cast<tests::Itest*>(createConnector(cacheEnabled));
     }
 
-    void invokeSubscriptionCallback(const QString& subscribeToName,
+    void invokeSubscriptionCallback(const std::string& subscribeToName,
                                       std::shared_ptr<ISubscriptionCallback> callback,
                                       const Variant& qosVariant,
                                       SubscriptionRequest& subscriptionRequest) {

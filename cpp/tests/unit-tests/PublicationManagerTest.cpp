@@ -92,8 +92,8 @@ TEST_F(PublicationManagerTest, add_requestCallerIsCalledCorrectlyByPublisherRunn
     PublicationManager publicationManager;
 
     //SubscriptionRequest
-    QString senderId = "SenderId";
-    QString receiverId = "ReceiverId";
+    std::string senderId = "SenderId";
+    std::string receiverId = "ReceiverId";
     std::string attributeName("Location");
     // SUbscriptionQos
     int64_t period_ms = 100;
@@ -129,8 +129,8 @@ TEST_F(PublicationManagerTest, stop_publications) {
     PublicationManager publicationManager;
 
     //SubscriptionRequest
-    QString senderId = "SenderId";
-    QString receiverId = "ReceiverId";
+    std::string senderId = "SenderId";
+    std::string receiverId = "ReceiverId";
     std::string attributeName("Location");
     //SubscriptionQos
     int64_t period_ms = 100;
@@ -153,7 +153,7 @@ TEST_F(PublicationManagerTest, stop_publications) {
                 &mockPublicationSender
     );
     ThreadUtil::sleepForMillis(80);
-    publicationManager.stopPublication(QString::fromStdString(subscriptionRequest.getSubscriptionId()));
+    publicationManager.stopPublication(subscriptionRequest.getSubscriptionId());
     ThreadUtil::sleepForMillis(300);
 }
 
@@ -172,8 +172,8 @@ TEST_F(PublicationManagerTest, remove_all_publications) {
     PublicationManager publicationManager;
 
     //SubscriptionRequest
-    QString senderId = "SenderId";
-    QString receiverId = "ReceiverId";
+    std::string senderId = "SenderId";
+    std::string receiverId = "ReceiverId";
     std::string attributeName("Location");
     //SubscriptionQos
     int64_t period_ms = 100;
@@ -211,8 +211,8 @@ TEST_F(PublicationManagerTest, restore_publications) {
     PublicationManager* publicationManager = new PublicationManager() ;
 
     //SubscriptionRequest
-    QString senderId = "SenderId";
-    QString receiverId = "ReceiverId";
+    std::string senderId = "SenderId";
+    std::string receiverId = "ReceiverId";
     std::string attributeName("Location");
     //SubscriptionQos
     int64_t period_ms = 100;
@@ -292,8 +292,8 @@ TEST_F(PublicationManagerTest, add_onChangeSubscription) {
     PublicationManager publicationManager;
 
     //SubscriptionRequest
-    QString senderId = "SenderId";
-    QString receiverId = "ReceiverId";
+    std::string senderId = "SenderId";
+    std::string receiverId = "ReceiverId";
     //SubscriptionQos
     int64_t minInterval_ms = 50;
     int64_t validity_ms = 500;
@@ -305,7 +305,7 @@ TEST_F(PublicationManagerTest, add_onChangeSubscription) {
     subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(qos);
     LOG_DEBUG(logger, "adding request");
-    publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
+    publicationManager.add(senderId, receiverId, requestCaller, subscriptionRequest, &mockPublicationSender);
 
     // Fake an attribute change
     attributeListener->attributeValueChanged(attributeValue);
@@ -357,8 +357,8 @@ TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
     PublicationManager publicationManager;
 
     //SubscriptionRequest
-    QString senderId = "SenderId";
-    QString receiverId = "ReceiverId";
+    std::string senderId = "SenderId";
+    std::string receiverId = "ReceiverId";
     //SubscriptionQos
     int64_t minInterval_ms = 500;
     int64_t validity_ms = -1; //no expiry date -> infinite subscription
@@ -430,8 +430,8 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval) {
     PublicationManager publicationManager;
 
     //SubscriptionRequest
-    QString senderId = "SenderId";
-    QString receiverId = "ReceiverId";
+    std::string senderId = "SenderId";
+    std::string receiverId = "ReceiverId";
     //SubscriptionQos
     int64_t minInterval_ms = 500;
     int64_t validity_ms = 600;
@@ -523,8 +523,8 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
     PublicationManager publicationManager;
 
     //SubscriptionRequest
-    QString senderId = "SenderId";
-    QString receiverId = "ReceiverId";
+    std::string senderId = "SenderId";
+    std::string receiverId = "ReceiverId";
     //SubscriptionQos
     int64_t minInterval_ms = 100;
     int64_t validity_ms = 600;
@@ -629,8 +629,8 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
     PublicationManager publicationManager;
 
     //SubscriptionRequest
-    QString senderId = "SenderId";
-    QString receiverId = "ReceiverId";
+    std::string senderId = "SenderId";
+    std::string receiverId = "ReceiverId";
     //SubscriptionQos
     int64_t minInterval_ms = 50;
     int64_t validity_ms = 600;
@@ -723,8 +723,8 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
     PublicationManager publicationManager;
 
     //SubscriptionRequest
-    QString senderId = "SenderId";
-    QString receiverId = "ReceiverId";
+    std::string senderId = "SenderId";
+    std::string receiverId = "ReceiverId";
     //SubscriptionQos
     int64_t minInterval_ms = 50;
     int64_t validity_ms = 600;
@@ -841,8 +841,8 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     PublicationManager publicationManager;
 
     //SubscriptionRequest
-    QString senderId = "SenderId";
-    QString receiverId = "ReceiverId";
+    std::string senderId = "SenderId";
+    std::string receiverId = "ReceiverId";
     //SubscriptionQos
     int64_t minInterval_ms = 100;
     int64_t validity_ms = 600;
@@ -940,8 +940,8 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     PublicationManager publicationManager;
 
     //SubscriptionRequest
-    QString senderId = "SenderId";
-    QString receiverId = "ReceiverId";
+    std::string senderId = "SenderId";
+    std::string receiverId = "ReceiverId";
     //SubscriptionQos
     int64_t minInterval_ms = 50;
     int64_t validity_ms = 600;
@@ -1025,8 +1025,8 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     PublicationManager publicationManager;
 
     //SubscriptionRequest
-    QString senderId = "SenderId";
-    QString receiverId = "ReceiverId";
+    std::string senderId = "SenderId";
+    std::string receiverId = "ReceiverId";
     //SubscriptionQos
     int64_t minInterval_ms = 50;
     int64_t validity_ms = 600;
@@ -1101,8 +1101,8 @@ TEST_F(PublicationManagerTest, remove_onChangeSubscription) {
     PublicationManager publicationManager;
 
     //SubscriptionRequest
-    QString senderId = "SenderId";
-    QString receiverId = "ReceiverId";
+    std::string senderId = "SenderId";
+    std::string receiverId = "ReceiverId";
     //SubscriptionQos
     int64_t minInterval_ms = 1;
     int64_t validity_ms = 100;

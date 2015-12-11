@@ -37,8 +37,8 @@ BroadcastSubscriptionRequestInformation::BroadcastSubscriptionRequestInformation
 }
 
 BroadcastSubscriptionRequestInformation::BroadcastSubscriptionRequestInformation(
-        const QString& proxyParticipantId,
-        const QString& providerParticipantId,
+        const std::string& proxyParticipantId,
+        const std::string& providerParticipantId,
         const BroadcastSubscriptionRequest& subscriptionRequest)
         : BroadcastSubscriptionRequest(subscriptionRequest),
           SubscriptionInformation(proxyParticipantId, providerParticipantId)
@@ -68,9 +68,9 @@ bool BroadcastSubscriptionRequestInformation::operator==(
            SubscriptionInformation::operator==(subscriptionRequestInformation);
 }
 
-QString BroadcastSubscriptionRequestInformation::toQString() const
+std::string BroadcastSubscriptionRequestInformation::toString() const
 {
-    return QString::fromStdString(JsonSerializer::serialize(*this));
+    return JsonSerializer::serialize(*this);
 }
 
 } // namespace joynr

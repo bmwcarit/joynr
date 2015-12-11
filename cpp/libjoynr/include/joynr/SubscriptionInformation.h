@@ -23,7 +23,7 @@
 #include "joynr/joynrlogging.h"
 #include "joynr/SubscriptionRequest.h"
 
-#include <QString>
+#include <string>
 
 namespace joynr
 {
@@ -38,8 +38,8 @@ class JOYNR_EXPORT SubscriptionInformation
 
 public:
     SubscriptionInformation();
-    SubscriptionInformation(const QString& proxyParticipantId,
-                            const QString& providerParticipantId);
+    SubscriptionInformation(const std::string& proxyParticipantId,
+                            const std::string& providerParticipantId);
     SubscriptionInformation(const SubscriptionInformation& subscriptionInformation);
     SubscriptionInformation& operator=(const SubscriptionInformation& subscriptionInformation);
     virtual ~SubscriptionInformation()
@@ -47,15 +47,15 @@ public:
     }
     bool operator==(const SubscriptionInformation& subscriptionInformation) const;
 
-    QString getProxyId() const;
-    void setProxyId(const QString& id);
+    std::string getProxyId() const;
+    void setProxyId(const std::string& id);
 
-    QString getProviderId() const;
-    void setProviderId(const QString& id);
+    std::string getProviderId() const;
+    void setProviderId(const std::string& id);
 
 private:
-    QString proxyId;
-    QString providerId;
+    std::string proxyId;
+    std::string providerId;
 
     static joynr_logging::Logger* logger;
 };

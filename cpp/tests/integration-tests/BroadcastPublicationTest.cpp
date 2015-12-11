@@ -60,7 +60,7 @@ public:
         QFile::remove(TypeUtil::toQt(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME()));
         publicationManager = new PublicationManager();
         subscriptionBroadcastListener =
-                new SubscriptionBroadcastListener(QString::fromStdString(subscriptionId), *publicationManager);
+                new SubscriptionBroadcastListener(subscriptionId, *publicationManager);
         publicationSender = new MockPublicationSender();
 
         request.setSubscribeToName("locationUpdateSelective");
@@ -80,8 +80,8 @@ public:
                     subscriptionBroadcastListener);
 
         publicationManager->add(
-                    QString::fromStdString(proxyParticipantId),
-                    QString::fromStdString(providerParticipantId),
+                    proxyParticipantId,
+                    providerParticipantId,
                     requestCaller,
                     request,
                     publicationSender);
@@ -174,8 +174,8 @@ TEST_F(BroadcastPublicationTest, sendPublication_broadcastwithSingleArrayParam) 
     std::shared_ptr<MockMessageRouter> mockMessageRouter(std::shared_ptr<MockMessageRouter>(new MockMessageRouter()));
     JoynrMessageSender* joynrMessageSender = new JoynrMessageSender(mockMessageRouter);
     publicationManager->add(
-                QString::fromStdString(proxyParticipantId),
-                QString::fromStdString(providerParticipantId),
+                proxyParticipantId,
+                providerParticipantId,
                 requestCaller,
                 request,
                 joynrMessageSender);

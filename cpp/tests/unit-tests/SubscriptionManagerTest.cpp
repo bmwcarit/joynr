@@ -270,7 +270,7 @@ TEST(SubscriptionManagerTest, unregisterSubscription_unregisterLeadsToStoppingMi
                 qos,
                 subscriptionRequest);
      ThreadUtil::sleepForMillis(900);
-     subscriptionManager.unregisterSubscription(QString::fromStdString(subscriptionRequest.getSubscriptionId()));
+     subscriptionManager.unregisterSubscription(subscriptionRequest.getSubscriptionId());
      ThreadUtil::sleepForMillis(1100);
 }
 

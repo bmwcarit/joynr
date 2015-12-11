@@ -672,19 +672,19 @@ typedef MockDirectory<QString, joynr::system::RoutingTypes::Address> MockMessagi
 
 class MockSubscriptionManager : public joynr::SubscriptionManager {
 public:
-    MOCK_METHOD1(getSubscriptionCallback,std::shared_ptr<joynr::ISubscriptionCallback>(const QString& subscriptionId));
-    MOCK_METHOD4(registerSubscription,void(const QString& subscribeToName,
+    MOCK_METHOD1(getSubscriptionCallback,std::shared_ptr<joynr::ISubscriptionCallback>(const std::string& subscriptionId));
+    MOCK_METHOD4(registerSubscription,void(const std::string& subscribeToName,
                                                     std::shared_ptr<joynr::ISubscriptionCallback> subscriptionCaller, // SubMgr gets ownership of ptr
                                                     const joynr::Variant& qosVariant,
                                                     joynr::SubscriptionRequest& subscriptionRequest));
-    MOCK_METHOD1(unregisterSubscription, void(const QString& subscriptionId));
-    MOCK_METHOD1(touchSubscriptionState,void(const QString& subscriptionId));
+    MOCK_METHOD1(unregisterSubscription, void(const std::string& subscriptionId));
+    MOCK_METHOD1(touchSubscriptionState,void(const std::string& subscriptionId));
 };
 
 
 class MockPublicationManager : public joynr::PublicationManager {
 public:
-    MOCK_METHOD2(attributeValueChanged, void(const QString& subscriptionId, const joynr::Variant& value));
+    MOCK_METHOD2(attributeValueChanged, void(const std::string& subscriptionId, const joynr::Variant& value));
 };
 
 //virtual public IChannelUrlDirectory, virtual public ChannelUrlDirectorySyncProxy, virtual public ChannelUrlDirectoryAsyncProxy

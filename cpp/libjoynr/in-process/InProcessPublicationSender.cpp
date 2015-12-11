@@ -56,9 +56,8 @@ void InProcessPublicationSender::sendSubscriptionPublication(
       * just call the InProcessDispatcher!
       */
 
-    QString subscriptionId = QString::fromStdString(subscriptionPublication.getSubscriptionId());
-    LOG_TRACE(logger,
-              FormatString("Sending publication. id=%1").arg(subscriptionId.toStdString()).str());
+    std::string subscriptionId = subscriptionPublication.getSubscriptionId();
+    LOG_TRACE(logger, FormatString("Sending publication. id=%1").arg(subscriptionId).str());
     assert(subscriptionManager != NULL);
     subscriptionManager->touchSubscriptionState(subscriptionId);
     std::shared_ptr<ISubscriptionCallback> callback =
@@ -66,7 +65,7 @@ void InProcessPublicationSender::sendSubscriptionPublication(
     if (!callback) {
         LOG_ERROR(logger,
                   FormatString("Dropping reply for non/no more existing subscription with id=%1")
-                          .arg(subscriptionId.toStdString())
+                          .arg(subscriptionId)
                           .str());
         return;
     }
@@ -77,10 +76,7 @@ void InProcessPublicationSender::sendSubscriptionPublication(
     // PublicationInterpreter polymorphism
     IPublicationInterpreter& interpreter =
             MetaTypeRegistrar::instance().getPublicationInterpreter(typeId);
-    LOG_TRACE(logger,
-              FormatString("Interpreting publication. id=%1")
-                      .arg(subscriptionId.toStdString())
-                      .str());
+    LOG_TRACE(logger, FormatString("Interpreting publication. id=%1").arg(subscriptionId).str());
     interpreter.execute(callback, subscriptionPublication);
 }
 

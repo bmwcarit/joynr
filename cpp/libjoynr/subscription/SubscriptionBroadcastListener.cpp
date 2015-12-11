@@ -25,7 +25,7 @@
 namespace joynr
 {
 
-SubscriptionBroadcastListener::SubscriptionBroadcastListener(const QString& subscriptionId,
+SubscriptionBroadcastListener::SubscriptionBroadcastListener(const std::string& subscriptionId,
                                                              PublicationManager& publicationManager)
         : subscriptionId(subscriptionId), publicationManager(publicationManager)
 {

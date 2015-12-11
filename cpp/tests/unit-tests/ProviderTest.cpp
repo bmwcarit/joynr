@@ -49,7 +49,7 @@ public:
 TEST(ProviderTest, register_attributeListener) {
     MockPublicationManager publicationManager;
     std::string attributeName("testAttribute");
-    QString subscriptionId("test-subscription-id");
+    std::string subscriptionId("test-subscription-id");
     Variant attributeValue(Variant::make<int>(42));
 
     // Expect the publicationManager to be called when the attribute value changes
@@ -67,7 +67,7 @@ TEST(ProviderTest, register_attributeListener) {
 TEST(ProviderTest, unregister_attributeListener) {
     MockPublicationManager publicationManager;
     std::string attributeName("testAttribute");
-    QString subscriptionId("test-subscription-id");
+    std::string subscriptionId("test-subscription-id");
     Variant attributeValue(Variant::make<int>(42));
 
     // Expect the publicationManager not to be called when the attribute value changes

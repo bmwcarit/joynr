@@ -77,7 +77,7 @@ class PublicationManager::PublisherRunnable : public Runnable
 {
 public:
     virtual ~PublisherRunnable();
-    PublisherRunnable(PublicationManager& publicationManager, const QString& subscriptionId);
+    PublisherRunnable(PublicationManager& publicationManager, const std::string& subscriptionId);
 
     void shutdown() override;
 
@@ -87,14 +87,15 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(PublisherRunnable);
     PublicationManager& publicationManager;
-    QString subscriptionId;
+    std::string subscriptionId;
 };
 
 class PublicationManager::PublicationEndRunnable : public Runnable
 {
 public:
     virtual ~PublicationEndRunnable();
-    PublicationEndRunnable(PublicationManager& publicationManager, const QString& subscriptionId);
+    PublicationEndRunnable(PublicationManager& publicationManager,
+                           const std::string& subscriptionId);
 
     void shutdown();
 
@@ -104,7 +105,7 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(PublicationEndRunnable);
     PublicationManager& publicationManager;
-    QString subscriptionId;
+    std::string subscriptionId;
 };
 
 //------ PublicationManager ----------------------------------------------------
@@ -136,14 +137,12 @@ PublicationManager::~PublicationManager()
 
     while (subscriptionId2SubscriptionRequest.size() > 0) {
         auto subscriptionRequest = subscriptionId2SubscriptionRequest.begin();
-        removeAttributePublication(
-                QString::fromStdString((subscriptionRequest->second)->getSubscriptionId()));
+        removeAttributePublication((subscriptionRequest->second)->getSubscriptionId());
     }
 
     while (subscriptionId2BroadcastSubscriptionRequest.size() > 0) {
         auto broadcastRequest = subscriptionId2BroadcastSubscriptionRequest.begin();
-        removeBroadcastPublication(
-                QString::fromStdString((broadcastRequest->second)->getSubscriptionId()));
+        removeBroadcastPublication((broadcastRequest->second)->getSubscriptionId());
     }
 }
 
@@ -155,10 +154,10 @@ PublicationManager::PublicationManager(DelayedScheduler* scheduler)
           delayedScheduler(scheduler),
           shutDownMutex(),
           shuttingDown(false),
-          subscriptionRequestStorageFileName(QString::fromStdString(
-                  LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME())),
-          broadcastSubscriptionRequestStorageFileName(QString::fromStdString(
-                  LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME())),
+          subscriptionRequestStorageFileName(
+                  LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()),
+          broadcastSubscriptionRequestStorageFileName(
+                  LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME()),
           queuedSubscriptionRequests(),
           queuedSubscriptionRequestsMutex(),
           queuedBroadcastSubscriptionRequests(),
@@ -180,10 +179,10 @@ PublicationManager::PublicationManager(int maxThreads)
           delayedScheduler(new ThreadPoolDelayedScheduler(maxThreads, "PubManager", 0)),
           shutDownMutex(),
           shuttingDown(false),
-          subscriptionRequestStorageFileName(QString::fromStdString(
-                  LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME())),
-          broadcastSubscriptionRequestStorageFileName(QString::fromStdString(
-                  LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME())),
+          subscriptionRequestStorageFileName(
+                  LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()),
+          broadcastSubscriptionRequestStorageFileName(
+                  LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME()),
           queuedSubscriptionRequests(),
           queuedSubscriptionRequestsMutex(),
           queuedBroadcastSubscriptionRequests(),
@@ -204,8 +203,8 @@ bool isSubscriptionExpired(const SubscriptionQos* qos, int offset = 0)
            qos->getExpiryDate() < (now + offset);
 }
 
-void PublicationManager::add(const QString& proxyParticipantId,
-                             const QString& providerParticipantId,
+void PublicationManager::add(const std::string& proxyParticipantId,
+                             const std::string& providerParticipantId,
                              std::shared_ptr<RequestCaller> requestCaller,
                              SubscriptionRequest& subscriptionRequest,
                              IPublicationSender* publicationSender)
@@ -221,7 +220,7 @@ void PublicationManager::handleAttributeSubscriptionRequest(
         std::shared_ptr<RequestCaller> requestCaller,
         IPublicationSender* publicationSender)
 {
-    QString subscriptionId = QString::fromStdString(requestInfo->getSubscriptionId());
+    std::string subscriptionId = requestInfo->getSubscriptionId();
     std::shared_ptr<Publication> publication(new Publication(publicationSender, requestCaller));
 
     if (publicationExists(subscriptionId)) {
@@ -232,17 +231,14 @@ void PublicationManager::handleAttributeSubscriptionRequest(
         removeAttributePublication(subscriptionId);
     }
 
-    subscriptionId2SubscriptionRequest.insert(subscriptionId.toStdString(), requestInfo);
+    subscriptionId2SubscriptionRequest.insert(subscriptionId, requestInfo);
     // Make note of the publication
-    publications.insert(subscriptionId.toStdString(), publication);
+    publications.insert(subscriptionId, publication);
 
     std::vector<Variant> subscriptionVector(
             subscriptionMapToVectorCopy(subscriptionId2SubscriptionRequest));
 
-    LOG_DEBUG(logger,
-              FormatString("added subscription: %1")
-                      .arg(requestInfo->toQString().toStdString())
-                      .str());
+    LOG_DEBUG(logger, FormatString("added subscription: %1").arg(requestInfo->toString()).str());
 
     {
         std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
@@ -279,16 +275,14 @@ void PublicationManager::handleAttributeSubscriptionRequest(
 }
 
 void PublicationManager::addOnChangePublication(
-        const QString& subscriptionId,
+        const std::string& subscriptionId,
         std::shared_ptr<SubscriptionRequestInformation> request,
         std::shared_ptr<Publication> publication)
 {
     std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
     if (SubscriptionUtil::isOnChangeSubscription(request->getQos())) {
-        LOG_TRACE(logger,
-                  FormatString("adding onChange subscription: %1")
-                          .arg(subscriptionId.toStdString())
-                          .str());
+        LOG_TRACE(
+                logger, FormatString("adding onChange subscription: %1").arg(subscriptionId).str());
 
         // Create an attribute listener to listen for onChange events
         SubscriptionAttributeListener* attributeListener =
@@ -304,14 +298,11 @@ void PublicationManager::addOnChangePublication(
 }
 
 void PublicationManager::addBroadcastPublication(
-        const QString& subscriptionId,
+        const std::string& subscriptionId,
         std::shared_ptr<BroadcastSubscriptionRequestInformation> request,
         std::shared_ptr<PublicationManager::Publication> publication)
 {
-    LOG_TRACE(logger,
-              FormatString("adding broadcast subscription: %1")
-                      .arg(subscriptionId.toStdString())
-                      .str());
+    LOG_TRACE(logger, FormatString("adding broadcast subscription: %1").arg(subscriptionId).str());
 
     std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
 
@@ -327,8 +318,8 @@ void PublicationManager::addBroadcastPublication(
     publication->broadcastListener = broadcastListener;
 }
 
-void PublicationManager::add(const QString& proxyParticipantId,
-                             const QString& providerParticipantId,
+void PublicationManager::add(const std::string& proxyParticipantId,
+                             const std::string& providerParticipantId,
                              SubscriptionRequest& subscriptionRequest)
 {
     LOG_DEBUG(
@@ -339,7 +330,7 @@ void PublicationManager::add(const QString& proxyParticipantId,
     {
         std::lock_guard<std::mutex> queueLocker(queuedSubscriptionRequestsMutex);
         queuedSubscriptionRequests.insert(
-                std::make_pair(requestInfo->getProviderId().toStdString(), requestInfo));
+                std::make_pair(requestInfo->getProviderId(), requestInfo));
     }
 
     subscriptionId2SubscriptionRequest.insert(requestInfo->getSubscriptionId(), requestInfo);
@@ -349,8 +340,8 @@ void PublicationManager::add(const QString& proxyParticipantId,
     saveAttributeSubscriptionRequestsMap(subscriptionList);
 }
 
-void PublicationManager::add(const QString& proxyParticipantId,
-                             const QString& providerParticipantId,
+void PublicationManager::add(const std::string& proxyParticipantId,
+                             const std::string& providerParticipantId,
                              std::shared_ptr<RequestCaller> requestCaller,
                              BroadcastSubscriptionRequest& subscriptionRequest,
                              IPublicationSender* publicationSender)
@@ -369,7 +360,7 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
         IPublicationSender* publicationSender)
 {
 
-    QString subscriptionId = QString::fromStdString(requestInfo->getSubscriptionId());
+    std::string subscriptionId = requestInfo->getSubscriptionId();
 
     std::shared_ptr<Publication> publication(new Publication(publicationSender, requestCaller));
 
@@ -381,14 +372,11 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
         removeBroadcastPublication(subscriptionId);
     }
 
-    subscriptionId2BroadcastSubscriptionRequest.insert(subscriptionId.toStdString(), requestInfo);
+    subscriptionId2BroadcastSubscriptionRequest.insert(subscriptionId, requestInfo);
 
     // Make note of the publication
-    publications.insert(subscriptionId.toStdString(), publication);
-    LOG_DEBUG(logger,
-              FormatString("added subscription: %1")
-                      .arg(requestInfo->toQString().toStdString())
-                      .str());
+    publications.insert(subscriptionId, publication);
+    LOG_DEBUG(logger, FormatString("added subscription: %1").arg(requestInfo->toString()).str());
 
     std::vector<Variant> subscriptionList(
             subscriptionMapToVectorCopy(subscriptionId2BroadcastSubscriptionRequest));
@@ -420,8 +408,8 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
     saveBroadcastSubscriptionRequestsMap(subscriptionList);
 }
 
-void PublicationManager::add(const QString& proxyParticipantId,
-                             const QString& providerParticipantId,
+void PublicationManager::add(const std::string& proxyParticipantId,
+                             const std::string& providerParticipantId,
                              BroadcastSubscriptionRequest& subscriptionRequest)
 {
     LOG_DEBUG(logger,
@@ -433,7 +421,7 @@ void PublicationManager::add(const QString& proxyParticipantId,
     {
         std::lock_guard<std::mutex> queueLocker(queuedBroadcastSubscriptionRequestsMutex);
         queuedBroadcastSubscriptionRequests.insert(
-                std::make_pair(requestInfo->getProviderId().toStdString(), requestInfo));
+                std::make_pair(requestInfo->getProviderId(), requestInfo));
     }
 
     subscriptionId2BroadcastSubscriptionRequest.insert(
@@ -444,20 +432,18 @@ void PublicationManager::add(const QString& proxyParticipantId,
     saveBroadcastSubscriptionRequestsMap(subscriptionList);
 }
 
-void PublicationManager::removeAllSubscriptions(const QString& providerId)
+void PublicationManager::removeAllSubscriptions(const std::string& providerId)
 {
     LOG_DEBUG(logger,
-              FormatString("Removing all subscriptions for provider id= %1")
-                      .arg(providerId.toStdString())
-                      .str());
+              FormatString("Removing all subscriptions for provider id= %1").arg(providerId).str());
 
     // Build lists of subscriptionIds to remove
-    QString subscriptionId;
+    std::string subscriptionId;
 
-    std::vector<QString> publicationsToRemove;
+    std::vector<std::string> publicationsToRemove;
     {
         for (auto& requestInfo : subscriptionId2SubscriptionRequest) {
-            subscriptionId = QString::fromStdString((requestInfo.second)->getSubscriptionId());
+            subscriptionId = requestInfo.second->getSubscriptionId();
 
             if ((requestInfo.second)->getProviderId() == providerId) {
                 publicationsToRemove.push_back(subscriptionId);
@@ -465,10 +451,10 @@ void PublicationManager::removeAllSubscriptions(const QString& providerId)
         }
     }
 
-    std::vector<QString> broadcastsToRemove;
+    std::vector<std::string> broadcastsToRemove;
     {
         for (auto& requestInfo : subscriptionId2BroadcastSubscriptionRequest) {
-            subscriptionId = QString::fromStdString((requestInfo.second)->getSubscriptionId());
+            subscriptionId = requestInfo.second->getSubscriptionId();
 
             if ((requestInfo.second)->getProviderId() == providerId) {
                 broadcastsToRemove.push_back(subscriptionId);
@@ -477,38 +463,38 @@ void PublicationManager::removeAllSubscriptions(const QString& providerId)
     }
 
     // Remove each publication
-    for (const QString& subscriptionId : publicationsToRemove) {
+    for (const std::string& subscriptionId : publicationsToRemove) {
         LOG_DEBUG(logger,
                   FormatString("Removing subscription providerId= %1, subscriptionId =%2")
-                          .arg(providerId.toStdString())
-                          .arg(subscriptionId.toStdString())
+                          .arg(providerId)
+                          .arg(subscriptionId)
                           .str());
         removeAttributePublication(subscriptionId);
     }
 
     // Remove each broadcast
-    for (const QString& subscriptionId : broadcastsToRemove) {
+    for (const std::string& subscriptionId : broadcastsToRemove) {
         LOG_DEBUG(logger,
                   FormatString("Removing subscription providerId= %1, subscriptionId =%2")
-                          .arg(providerId.toStdString())
-                          .arg(subscriptionId.toStdString())
+                          .arg(providerId)
+                          .arg(subscriptionId)
                           .str());
         removeBroadcastPublication(subscriptionId);
     }
 }
 
-void PublicationManager::stopPublication(const QString& subscriptionId)
+void PublicationManager::stopPublication(const std::string& subscriptionId)
 {
-    LOG_DEBUG(logger, FormatString("stopPublication: %1").arg(subscriptionId.toStdString()).str());
+    LOG_DEBUG(logger, FormatString("stopPublication: %1").arg(subscriptionId).str());
     removePublication(subscriptionId);
 }
 
-bool PublicationManager::publicationExists(const QString& subscriptionId)
+bool PublicationManager::publicationExists(const std::string& subscriptionId)
 {
-    return publications.contains(subscriptionId.toStdString());
+    return publications.contains(subscriptionId);
 }
 
-void PublicationManager::restore(const QString& providerId,
+void PublicationManager::restore(const std::string& providerId,
                                  std::shared_ptr<RequestCaller> requestCaller,
                                  IPublicationSender* publicationSender)
 {
@@ -517,8 +503,7 @@ void PublicationManager::restore(const QString& providerId,
     {
         std::lock_guard<std::mutex> queueLocker(queuedSubscriptionRequestsMutex);
         std::multimap<std::string, std::shared_ptr<SubscriptionRequestInformation>>::iterator
-                queuedSubscriptionRequestsIterator =
-                        queuedSubscriptionRequests.find(providerId.toStdString());
+                queuedSubscriptionRequestsIterator = queuedSubscriptionRequests.find(providerId);
         while (queuedSubscriptionRequestsIterator != queuedSubscriptionRequests.end()) {
             std::shared_ptr<SubscriptionRequestInformation> requestInfo(
                     queuedSubscriptionRequestsIterator->second);
@@ -526,13 +511,12 @@ void PublicationManager::restore(const QString& providerId,
             if (!isSubscriptionExpired(requestInfo->getSubscriptionQosPtr())) {
                 LOG_DEBUG(logger,
                           FormatString("Restoring subscription for provider: %1 %2")
-                                  .arg(providerId.toStdString())
-                                  .arg(requestInfo->toQString().toStdString())
+                                  .arg(providerId)
+                                  .arg(requestInfo->toString())
                                   .str());
                 handleAttributeSubscriptionRequest(requestInfo, requestCaller, publicationSender);
             }
-            queuedSubscriptionRequestsIterator =
-                    queuedSubscriptionRequests.find(providerId.toStdString());
+            queuedSubscriptionRequestsIterator = queuedSubscriptionRequests.find(providerId);
         }
     }
 
@@ -541,7 +525,7 @@ void PublicationManager::restore(const QString& providerId,
         std::multimap<std::string,
                       std::shared_ptr<BroadcastSubscriptionRequestInformation>>::iterator
                 queuedBroadcastSubscriptionRequestsIterator =
-                        queuedBroadcastSubscriptionRequests.find(providerId.toStdString());
+                        queuedBroadcastSubscriptionRequests.find(providerId);
         while (queuedBroadcastSubscriptionRequestsIterator !=
                queuedBroadcastSubscriptionRequests.end()) {
             std::shared_ptr<BroadcastSubscriptionRequestInformation> requestInfo(
@@ -550,13 +534,13 @@ void PublicationManager::restore(const QString& providerId,
             if (!isSubscriptionExpired(requestInfo->getSubscriptionQosPtr())) {
                 LOG_DEBUG(logger,
                           FormatString("Restoring subscription for provider: %1 %2")
-                                  .arg(providerId.toStdString())
-                                  .arg(requestInfo->toQString().toStdString())
+                                  .arg(providerId)
+                                  .arg(requestInfo->toString())
                                   .str());
                 handleBroadcastSubscriptionRequest(requestInfo, requestCaller, publicationSender);
             }
             queuedBroadcastSubscriptionRequestsIterator =
-                    queuedBroadcastSubscriptionRequests.find(providerId.toStdString());
+                    queuedBroadcastSubscriptionRequests.find(providerId);
         }
     }
 }
@@ -635,7 +619,7 @@ std::vector<Variant> PublicationManager::subscriptionMapToVectorCopy(
 
 // This function assumes that subscriptionVector is a copy that is exclusively used by this function
 void PublicationManager::saveSubscriptionRequestsMap(const std::vector<Variant>& subscriptionVector,
-                                                     const QString& storageFilename)
+                                                     const std::string& storageFilename)
 {
     if (isShuttingDown()) {
         LOG_DEBUG(logger, "Abort saving, because we are already shutting down.");
@@ -644,7 +628,7 @@ void PublicationManager::saveSubscriptionRequestsMap(const std::vector<Variant>&
 
     {
         std::lock_guard<std::mutex> fileWritelocker(fileWriteLock);
-        QFile file(storageFilename);
+        QFile file(QString::fromStdString(storageFilename));
         if (!file.open(QIODevice::WriteOnly)) {
             LOG_ERROR(logger,
                       FormatString("Could not open subscription request storage file: %1")
@@ -663,7 +647,7 @@ void PublicationManager::saveSubscriptionRequestsMap(const std::vector<Variant>&
 
 template <class RequestInformationType>
 void PublicationManager::loadSavedSubscriptionRequestsMap(
-        const QString& storageFilename,
+        const std::string& storageFilename,
         std::mutex& queueMutex,
         std::multimap<std::string, std::shared_ptr<RequestInformationType>>& queuedSubscriptions)
 {
@@ -672,11 +656,11 @@ void PublicationManager::loadSavedSubscriptionRequestsMap(
                   "loadSavedSubscriptionRequestsMap can only be used for subclasses of "
                   "SubscriptionRequest");
 
-    QFile file(storageFilename);
+    QFile file(QString::fromStdString(storageFilename));
     if (!file.open(QIODevice::ReadOnly)) {
         LOG_ERROR(logger,
                   FormatString("Unable to read file: %1, reson: %2")
-                          .arg(storageFilename.toStdString())
+                          .arg(storageFilename)
                           .arg(file.errorString().toStdString())
                           .str());
         return;
@@ -701,33 +685,32 @@ void PublicationManager::loadSavedSubscriptionRequestsMap(
 
         // Add the subscription if it is still valid
         if (!isSubscriptionExpired(requestInfo->getSubscriptionQosPtr())) {
-            QString providerId = requestInfo->getProviderId();
-            queuedSubscriptions.insert(std::make_pair(providerId.toStdString(), requestInfo));
+            std::string providerId = requestInfo->getProviderId();
+            queuedSubscriptions.insert(std::make_pair(providerId, requestInfo));
             LOG_DEBUG(logger,
                       FormatString("Queuing subscription Request: %1 : %2")
-                              .arg(providerId.toStdString())
-                              .arg(requestInfo->toQString().toStdString())
+                              .arg(providerId)
+                              .arg(requestInfo->toString())
                               .str());
         }
     }
 }
 
-void PublicationManager::removeAttributePublication(const QString& subscriptionId)
+void PublicationManager::removeAttributePublication(const std::string& subscriptionId)
 {
-    LOG_DEBUG(
-            logger, FormatString("removePublication: %1").arg(subscriptionId.toStdString()).str());
+    LOG_DEBUG(logger, FormatString("removePublication: %1").arg(subscriptionId).str());
 
     if (!publicationExists(subscriptionId)) {
         LOG_DEBUG(logger,
                   FormatString("publication %1 does not exist - will not remove")
-                          .arg(subscriptionId.toStdString())
+                          .arg(subscriptionId)
                           .str());
         return;
     }
 
-    std::shared_ptr<Publication> publication(publications.take(subscriptionId.toStdString()));
+    std::shared_ptr<Publication> publication(publications.take(subscriptionId));
     std::shared_ptr<SubscriptionRequestInformation> request(
-            subscriptionId2SubscriptionRequest.take(subscriptionId.toStdString()));
+            subscriptionId2SubscriptionRequest.take(subscriptionId));
 
     std::vector<Variant> subscriptionList(
             subscriptionMapToVectorCopy(subscriptionId2SubscriptionRequest));
@@ -741,27 +724,27 @@ void PublicationManager::removeAttributePublication(const QString& subscriptionI
     saveAttributeSubscriptionRequestsMap(subscriptionList);
 }
 
-void PublicationManager::removeBroadcastPublication(const QString& subscriptionId)
+void PublicationManager::removeBroadcastPublication(const std::string& subscriptionId)
 {
-    LOG_DEBUG(logger, FormatString("removeBroadcast: %1").arg(subscriptionId.toStdString()).str());
+    LOG_DEBUG(logger, FormatString("removeBroadcast: %1").arg(subscriptionId).str());
 
     if (!publicationExists(subscriptionId)) {
         LOG_DEBUG(logger,
                   FormatString("publication %1 does not exist - will not remove")
-                          .arg(subscriptionId.toStdString())
+                          .arg(subscriptionId)
                           .str());
         return;
     }
 
     std::shared_ptr<Publication> publication = nullptr;
-    if (publications.contains(subscriptionId.toStdString())) {
-        publication = std::shared_ptr<Publication>(publications.take(subscriptionId.toStdString()));
+    if (publications.contains(subscriptionId)) {
+        publication = std::shared_ptr<Publication>(publications.take(subscriptionId));
     }
 
     std::shared_ptr<BroadcastSubscriptionRequestInformation> request = nullptr;
-    if (subscriptionId2BroadcastSubscriptionRequest.contains(subscriptionId.toStdString())) {
+    if (subscriptionId2BroadcastSubscriptionRequest.contains(subscriptionId)) {
         request = std::shared_ptr<BroadcastSubscriptionRequestInformation>(
-                subscriptionId2BroadcastSubscriptionRequest.take(subscriptionId.toStdString()));
+                subscriptionId2BroadcastSubscriptionRequest.take(subscriptionId));
     }
 
     std::vector<Variant> subscriptionList(
@@ -782,7 +765,7 @@ void PublicationManager::removeBroadcastPublication(const QString& subscriptionI
 }
 
 void PublicationManager::removeOnChangePublication(
-        const QString& subscriptionId,
+        const std::string& subscriptionId,
         std::shared_ptr<SubscriptionRequestInformation> request,
         std::shared_ptr<Publication> publication)
 {
@@ -790,7 +773,7 @@ void PublicationManager::removeOnChangePublication(
     if (SubscriptionUtil::isOnChangeSubscription(request->getQos())) {
         LOG_DEBUG(logger,
                   FormatString("Removing onChange publication for id = %1")
-                          .arg(subscriptionId.toStdString())
+                          .arg(subscriptionId)
                           .str());
 
         // Unregister and delete the attribute listener
@@ -818,14 +801,14 @@ void PublicationManager::removePublicationEndRunnable(std::shared_ptr<Publicatio
 
 // This function assumes that a read lock is already held
 bool PublicationManager::processFilterChain(
-        const QString& subscriptionId,
+        const std::string& subscriptionId,
         const std::vector<Variant>& broadcastValues,
         const std::vector<std::shared_ptr<IBroadcastFilter>>& filters)
 {
     bool success = true;
 
     std::shared_ptr<BroadcastSubscriptionRequestInformation> subscriptionRequest(
-            subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId.toStdString()));
+            subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId));
     BroadcastFilterParameters filterParameters = subscriptionRequest->getFilterParameters();
 
     for (std::shared_ptr<IBroadcastFilter> filter : filters) {
@@ -877,11 +860,10 @@ void PublicationManager::sendSubscriptionPublication(
 
     IPublicationSender* publicationSender = publication->sender;
 
-    publicationSender->sendSubscriptionPublication(
-            subscriptionInformation->getProviderId().toStdString(),
-            subscriptionInformation->getProxyId().toStdString(),
-            mQos,
-            subscriptionPublication);
+    publicationSender->sendSubscriptionPublication(subscriptionInformation->getProviderId(),
+                                                   subscriptionInformation->getProxyId(),
+                                                   mQos,
+                                                   subscriptionPublication);
 
     // Make note of when this publication was sent
     int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
@@ -889,8 +871,7 @@ void PublicationManager::sendSubscriptionPublication(
 
     {
         std::lock_guard<std::mutex> currentScheduledLocker(currentScheduledPublicationsMutex);
-        removeAll(
-                currentScheduledPublications, QString::fromStdString(request->getSubscriptionId()));
+        removeAll(currentScheduledPublications, request->getSubscriptionId());
     }
     LOG_TRACE(logger, FormatString("sent publication @ %1").arg(now).str());
 }
@@ -910,19 +891,19 @@ void PublicationManager::sendPublication(
     LOG_TRACE(logger, "sent subscription reply");
 }
 
-void PublicationManager::pollSubscription(const QString& subscriptionId)
+void PublicationManager::pollSubscription(const std::string& subscriptionId)
 {
-    LOG_TRACE(logger, FormatString("pollSubscription %1").arg(subscriptionId.toStdString()).str());
+    LOG_TRACE(logger, FormatString("pollSubscription %1").arg(subscriptionId).str());
 
     if (isShuttingDown() || !publicationExists(subscriptionId) ||
-        !subscriptionId2SubscriptionRequest.contains(subscriptionId.toStdString())) {
+        !subscriptionId2SubscriptionRequest.contains(subscriptionId)) {
         return;
     }
 
     // Get the subscription details
-    std::shared_ptr<Publication> publication(publications.value(subscriptionId.toStdString()));
+    std::shared_ptr<Publication> publication(publications.value(subscriptionId));
     std::shared_ptr<SubscriptionRequestInformation> subscriptionRequest(
-            subscriptionId2SubscriptionRequest.value(subscriptionId.toStdString()));
+            subscriptionId2SubscriptionRequest.value(subscriptionId));
     {
         std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
         // See if the publication is needed
@@ -952,8 +933,8 @@ void PublicationManager::pollSubscription(const QString& subscriptionId)
         }
 
         // Get the value of the attribute
-        QString attributeGetter(Util::attributeGetterFromName(
-                QString::fromStdString(subscriptionRequest->getSubscribeToName())));
+        std::string attributeGetter(
+                Util::attributeGetterFromName(subscriptionRequest->getSubscribeToName()));
         std::shared_ptr<RequestCaller> requestCaller(publication->requestCaller);
         std::shared_ptr<IRequestInterpreter> requestInterpreter(
                 InterfaceRegistrar::instance().getRequestInterpreter(
@@ -993,12 +974,10 @@ void PublicationManager::pollSubscription(const QString& subscriptionId)
         };
 
         LOG_DEBUG(logger,
-                  FormatString("run: executing requestInterpreter= %1")
-                          .arg(attributeGetter.toStdString())
-                          .str());
+                  FormatString("run: executing requestInterpreter= %1").arg(attributeGetter).str());
         try {
             requestInterpreter->execute(requestCaller,
-                                        attributeGetter.toStdString(),
+                                        attributeGetter,
                                         std::vector<Variant>(),
                                         std::vector<std::string>(),
                                         onSuccess,
@@ -1019,35 +998,36 @@ void PublicationManager::pollSubscription(const QString& subscriptionId)
     }
 }
 
-void PublicationManager::removePublication(const QString& subscriptionId)
+void PublicationManager::removePublication(const std::string& subscriptionId)
 {
-    if (subscriptionId2SubscriptionRequest.contains(subscriptionId.toStdString())) {
+    if (subscriptionId2SubscriptionRequest.contains(subscriptionId)) {
         removeAttributePublication(subscriptionId);
-    } else if (subscriptionId2BroadcastSubscriptionRequest.contains(subscriptionId.toStdString())) {
+    } else if (subscriptionId2BroadcastSubscriptionRequest.contains(subscriptionId)) {
         removeBroadcastPublication(subscriptionId);
     }
 }
 
-void PublicationManager::attributeValueChanged(const QString& subscriptionId, const Variant& value)
+void PublicationManager::attributeValueChanged(const std::string& subscriptionId,
+                                               const Variant& value)
 {
     LOG_DEBUG(logger,
               FormatString("attributeValueChanged for onChange subscription %1")
-                      .arg(subscriptionId.toStdString())
+                      .arg(subscriptionId)
                       .str());
 
     // See if the subscription is still valid
     if (!publicationExists(subscriptionId)) {
         LOG_ERROR(logger,
                   FormatString("attributeValueChanged called for non-existing subscription %1")
-                          .arg(subscriptionId.toStdString())
+                          .arg(subscriptionId)
                           .str());
         return;
     }
 
     std::shared_ptr<SubscriptionRequestInformation> subscriptionRequest(
-            subscriptionId2SubscriptionRequest.value(subscriptionId.toStdString()));
+            subscriptionId2SubscriptionRequest.value(subscriptionId));
 
-    std::shared_ptr<Publication> publication(publications.value(subscriptionId.toStdString()));
+    std::shared_ptr<Publication> publication(publications.value(subscriptionId));
 
     {
         std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
@@ -1068,13 +1048,13 @@ void PublicationManager::attributeValueChanged(const QString& subscriptionId, co
 }
 
 void PublicationManager::broadcastOccurred(
-        const QString& subscriptionId,
+        const std::string& subscriptionId,
         const std::vector<Variant>& values,
         const std::vector<std::shared_ptr<IBroadcastFilter>>& filters)
 {
     LOG_DEBUG(logger,
               FormatString("broadcastOccurred for subscription %1. Number of values: %2")
-                      .arg(subscriptionId.toStdString())
+                      .arg(subscriptionId)
                       .arg(values.size())
                       .str());
 
@@ -1082,14 +1062,14 @@ void PublicationManager::broadcastOccurred(
     if (!publicationExists(subscriptionId)) {
         LOG_ERROR(logger,
                   FormatString("broadcastOccurred called for non-existing subscription %1")
-                          .arg(subscriptionId.toStdString())
+                          .arg(subscriptionId)
                           .str());
         return;
     }
 
     std::shared_ptr<BroadcastSubscriptionRequestInformation> subscriptionRequest(
-            subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId.toStdString()));
-    std::shared_ptr<Publication> publication(publications.value(subscriptionId.toStdString()));
+            subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId));
+    std::shared_ptr<Publication> publication(publications.value(subscriptionId));
 
     {
         std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
@@ -1111,14 +1091,14 @@ void PublicationManager::broadcastOccurred(
                                              "possible in %2 ms."
                                            : "Omitting broadcast publication for subscription %1 "
                                              "because of error.")
-                              .arg(subscriptionId.toStdString())
+                              .arg(subscriptionId)
                               .arg(timeUntilNextPublication)
                               .str());
         }
     }
 }
 
-bool PublicationManager::isPublicationAlreadyScheduled(const QString& subscriptionId)
+bool PublicationManager::isPublicationAlreadyScheduled(const std::string& subscriptionId)
 {
     std::lock_guard<std::mutex> currentScheduledLocker(currentScheduledPublicationsMutex);
     return vectorContains(currentScheduledPublications, subscriptionId);
@@ -1141,7 +1121,7 @@ int64_t PublicationManager::getTimeUntilNextPublication(std::shared_ptr<Publicat
     return 0;
 }
 
-void PublicationManager::reschedulePublication(const QString& subscriptionId,
+void PublicationManager::reschedulePublication(const std::string& subscriptionId,
                                                qint64 nextPublication)
 {
     if (nextPublication > 0) {
@@ -1186,7 +1166,7 @@ PublicationManager::PublisherRunnable::~PublisherRunnable()
 }
 
 PublicationManager::PublisherRunnable::PublisherRunnable(PublicationManager& publicationManager,
-                                                         const QString& subscriptionId)
+                                                         const std::string& subscriptionId)
         : Runnable(true), publicationManager(publicationManager), subscriptionId(subscriptionId)
 {
 }
@@ -1208,7 +1188,7 @@ PublicationManager::PublicationEndRunnable::~PublicationEndRunnable()
 
 PublicationManager::PublicationEndRunnable::PublicationEndRunnable(
         PublicationManager& publicationManager,
-        const QString& subscriptionId)
+        const std::string& subscriptionId)
         : Runnable(true), publicationManager(publicationManager), subscriptionId(subscriptionId)
 {
 }
@@ -1222,8 +1202,7 @@ void PublicationManager::PublicationEndRunnable::run()
     if (!publicationManager.publicationExists(subscriptionId)) {
         return;
     }
-    std::shared_ptr<Publication> publication(
-            publicationManager.publications.value(subscriptionId.toStdString()));
+    std::shared_ptr<Publication> publication(publicationManager.publications.value(subscriptionId));
     publicationManager.removePublication(subscriptionId);
 
     {
