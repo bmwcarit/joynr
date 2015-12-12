@@ -209,6 +209,16 @@ class TypeUtil {
 		return false
 	}
 
+	def boolean isMap(FTypeRef typeRef) {
+		if (typeRef == null){
+			return false;
+		}
+		if (typeRef.derived!=null){
+			return isMap(typeRef.derived)
+		}
+		return false
+	}
+
 	def boolean isPrimitive(FTypeRef typeRef){
 		if (typeRef== null){
 			return false;
@@ -252,6 +262,30 @@ class TypeUtil {
 		}
 		else{
 			return getEnumType(type.derived)
+		}
+	}
+
+	def FMapType getMapType(FType type){
+		if (type == null){
+			return null;
+		}
+		if (type instanceof FArrayType){
+			return getMapType(type.elementType)
+		}
+		else if (type instanceof FMapType){
+			return type;
+		}
+		else if (type instanceof FTypeDef){
+			return getMapType(type.actualType)
+		}
+	}
+
+	def FMapType getMapType(FTypeRef type){
+		if (type==null){
+			return null;
+		}
+		else{
+			return getMapType(type.derived)
 		}
 	}
 
@@ -300,6 +334,22 @@ class TypeUtil {
 		}
 		if (typeRef.derived!=null){
 			return isComplex(typeRef.derived)
+		}
+		return false
+	}
+
+	def boolean isMap(FType type) {
+		if (type == null){
+			return false;
+		}
+		if (type instanceof FArrayType){
+			isMap(type.elementType)
+		}
+		if (type instanceof FTypeDef){
+			isMap(type.actualType)
+		}
+		if (type instanceof FMapType){
+			return true;
 		}
 		return false
 	}
