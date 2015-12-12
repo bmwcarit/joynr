@@ -22,27 +22,6 @@ package io.joynr.serialize;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Properties;
-import java.util.UUID;
-import java.util.concurrent.RejectedExecutionException;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-
 import io.joynr.common.ExpiryDate;
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.dispatcher.rpc.JoynrInterface;
@@ -63,6 +42,14 @@ import io.joynr.exceptions.JoynrWaitExpiredException;
 import io.joynr.messaging.MessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.pubsub.SubscriptionQos;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Properties;
+import java.util.UUID;
+import java.util.concurrent.RejectedExecutionException;
+
 import joynr.BroadcastSubscriptionRequest;
 import joynr.JoynrMessage;
 import joynr.OnChangeSubscriptionQos;
@@ -85,6 +72,27 @@ import joynr.types.ProviderQos;
 import joynr.types.Localisation.GpsFixEnum;
 import joynr.types.Localisation.GpsLocation;
 import joynr.types.Localisation.GpsPosition;
+import joynr.types.TestTypes.TDoubleKeyMap;
+import joynr.types.TestTypes.TEnum;
+import joynr.types.TestTypes.TEverythingExtendedStruct;
+import joynr.types.TestTypes.TEverythingMap;
+import joynr.types.TestTypes.TIntegerKeyMap;
+import joynr.types.TestTypes.TStringKeyMap;
+import joynr.types.TestTypes.Vowel;
+import joynr.types.TestTypes.Word;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 
 /**
  * This test sends two messages in each direction, containing different TTL values. One with a very high TTL value to
@@ -198,13 +206,111 @@ public class SerializationTest {
     }
 
     @Test
+    public void serializeDeserializeSimpleMapTest() throws Exception {
+        TStringKeyMap tStringMap = new TStringKeyMap();
+        tStringMap.put("key1", "value1");
+        tStringMap.put("key2", "value2");
+
+        String valueAsString = objectMapper.writeValueAsString(tStringMap);
+
+        TStringKeyMap readValue = objectMapper.readValue(valueAsString, TStringKeyMap.class);
+        assertEquals(tStringMap, readValue);
+    }
+
+    @Test
+    public void serializeDeserializeMapWithEnumKeyTest() throws Exception {
+        TEverythingMap tmap = new TEverythingMap();
+        Byte tInt8 = 1;
+        Byte tUInt8 = 2;
+        Short tInt16 = 3;
+        Short tUInt16 = 4;
+        Integer tInt32 = 5;
+        Integer tUInt32 = 6;
+        Long tInt64 = 7L;
+        Long tUInt64 = 8L;
+        Double tDouble = 9.0;
+        Float tFloat = 10.0f;
+        Boolean tBoolean = false;
+        String tString = "tString";
+        Byte[] tByteBuffer = { 1, 2, 3 };
+        Byte[] tUInt8Array = { 4, 5, 6 };
+        TEnum tEnum = TEnum.TLITERALA;
+        TEnum[] tEnumArray = { TEnum.TLITERALA, TEnum.TLITERALB };
+        String[] tStringArray = { "tStringArray1", "tStringArray2" };
+        Word word = new Word(new Vowel[]{ Vowel.A, Vowel.E });
+        Word[] wordArray = { word, word };
+        Boolean tBooleanExtended = true;
+        String tStringExtended = "tStringExtended";
+        TStringKeyMap tStringMap = new TStringKeyMap();
+        tStringMap.put("key1", "value1");
+        tStringMap.put("key2", "value2");
+
+        TEverythingExtendedStruct value = new TEverythingExtendedStruct(tInt8,
+                                                                        tUInt8,
+                                                                        tInt16,
+                                                                        tUInt16,
+                                                                        tInt32,
+                                                                        tUInt32,
+                                                                        tInt64,
+                                                                        tUInt64,
+                                                                        tDouble,
+                                                                        tFloat,
+                                                                        tString,
+                                                                        tBoolean,
+                                                                        tByteBuffer,
+                                                                        tUInt8Array,
+                                                                        tEnum,
+                                                                        tEnumArray,
+                                                                        tStringArray,
+                                                                        word,
+                                                                        wordArray,
+                                                                        tStringMap,
+                                                                        tBooleanExtended,
+                                                                        tStringExtended);
+        tmap.put(TEnum.TLITERALA, value);
+        tmap.put(TEnum.TLITERALB, value);
+
+        String valueAsString = objectMapper.writeValueAsString(tmap);
+
+        TEverythingMap readValue = objectMapper.readValue(valueAsString, TEverythingMap.class);
+        assertEquals(tmap, readValue);
+    }
+
+    @Test
+    public void serializeMapWithDoubleKeyTest() throws Exception {
+        TDoubleKeyMap tmap = new TDoubleKeyMap();
+
+        tmap.put(1d, "value1");
+        tmap.put(2d, "value2");
+
+        String valueAsString = objectMapper.writeValueAsString(tmap);
+        System.out.println(valueAsString);
+
+        TDoubleKeyMap readValue = objectMapper.readValue(valueAsString, TDoubleKeyMap.class);
+        assertEquals(tmap, readValue);
+    }
+
+    @Test
+    public void serializeMapWithIntegerKeyTest() throws Exception {
+        TIntegerKeyMap tmap = new TIntegerKeyMap();
+
+        tmap.put(1, "value1");
+        tmap.put(2, "value2");
+
+        String valueAsString = objectMapper.writeValueAsString(tmap);
+        System.out.println(valueAsString);
+
+        TIntegerKeyMap readValue = objectMapper.readValue(valueAsString, TIntegerKeyMap.class);
+        assertEquals(tmap, readValue);
+    }
+
+    @Test
     public void serializeEnumTest() throws Exception {
         String valueAsString = objectMapper.writeValueAsString(TestEnum.TWO);
         System.out.println(valueAsString);
 
         TestEnum readValue = objectMapper.readValue(valueAsString, TestEnum.class);
         assertEquals(TestEnum.TWO, readValue);
-
     }
 
     @Test
@@ -546,7 +652,7 @@ public class SerializationTest {
         Assert.assertArrayEquals((CapabilityInformation[]) reply.getResponse()[0], convertValue);
 
         ComplexTestType2[] complexTestType2Array = { new ComplexTestType2(3, 4), new ComplexTestType2(5, 6) };
-        ArrayList<ComplexTestType2> customListParam2List = new ArrayList();
+        ArrayList<ComplexTestType2> customListParam2List = new ArrayList<ComplexTestType2>();
         customListParam2List.add(new ComplexTestType2(3, 4));
         customListParam2List.add(new ComplexTestType2(5, 6));
 

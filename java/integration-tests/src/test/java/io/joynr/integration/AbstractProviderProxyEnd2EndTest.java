@@ -66,6 +66,7 @@ import joynr.tests.DefaulttestProvider;
 import joynr.tests.test.MethodWithErrorEnumExtendedErrorEnum;
 import joynr.tests.test.MethodWithImplicitErrorEnumErrorEnum;
 import joynr.tests.testAsync.MethodWithMultipleOutputParametersCallback;
+import joynr.tests.testBroadcastInterface.BroadcastWithMapParametersBroadcastListener;
 import joynr.tests.testBroadcastInterface.LocationUpdateWithSpeedBroadcastAdapter;
 import joynr.tests.testProxy;
 import joynr.tests.testSync.MethodWithMultipleOutputParametersReturned;
@@ -92,6 +93,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Module;
 
+import joynr.types.TestTypes.TStringKeyMap;
+
 public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest {
     private static final Logger logger = LoggerFactory.getLogger(AbstractProviderProxyEnd2EndTest.class);
 
@@ -103,6 +106,8 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
     String domain;
     String domainAsync;
 
+    private static final String OUT_KEY = "outKey";
+    private static final String OUT_VALUE = "outValue";
     public static final String TEST_STRING = "Test String";
     public static final Integer TEST_INTEGER = 633536;
     private static final TestEnum TEST_ENUM = TestEnum.TWO;
@@ -397,7 +402,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         @Override
         public void registerBroadcastListener(String broadcastName, BroadcastListener broadcastListener) {
             super.registerBroadcastListener(broadcastName, broadcastListener);
-            if (broadcastName.equals("locationUpdateWithSpeed") && !broadcastSubscriptionArrived) {
+            if (!broadcastSubscriptionArrived) {
                 synchronized (this) {
                     broadcastSubscriptionArrived = true;
                     this.notify();
@@ -420,6 +425,14 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
             Deferred<TestEnum> deferred = new Deferred<TestEnum>();
             deferred.resolve(TestEnum.ONE);
             return new Promise<Deferred<TestEnum>>(deferred);
+        }
+
+        @Override
+        public Promise<MapParametersDeferred> mapParameters(TStringKeyMap tStringMapIn) {
+            MapParametersDeferred deferred = new MapParametersDeferred();
+            tStringMapIn.put(OUT_KEY, OUT_VALUE);
+            deferred.resolve(tStringMapIn);
+            return new Promise<MapParametersDeferred>(deferred);
         }
 
     }
@@ -707,6 +720,40 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         // wait to allow the subscription request to arrive at the provider
         provider.waitForBroadcastSubscription();
         provider.fireBroadcast("locationUpdateWithSpeed", null, gpsLocation, currentSpeed);
+        broadcastReceived.acquire();
+
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void testBroadcastWithMapParameter() throws DiscoveryException, JoynrIllegalStateException,
+                                               InterruptedException {
+        final Semaphore broadcastReceived = new Semaphore(0);
+
+        ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
+        testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        long minInterval_ms = 0;
+        long expiryDate = System.currentTimeMillis() + CONST_DEFAULT_TEST_TIMEOUT;
+        long publicationTtl_ms = CONST_DEFAULT_TEST_TIMEOUT;
+        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms,
+                                                                              expiryDate,
+                                                                              publicationTtl_ms);
+        final TStringKeyMap mapParam = new TStringKeyMap();
+        mapParam.put("key", "value");
+        proxy.subscribeToBroadcastWithMapParametersBroadcast(new BroadcastWithMapParametersBroadcastListener() {
+            @Override
+            public void onReceive(TStringKeyMap receivedMapParam) {
+                assertEquals(mapParam, receivedMapParam);
+                broadcastReceived.release();
+            }
+
+            @Override
+            public void onError() {
+            }
+        }, subscriptionQos);
+
+        // wait to allow the subscription request to arrive at the provider
+        provider.waitForBroadcastSubscription();
+        provider.fireBroadcastWithMapParameters(mapParam);
         broadcastReceived.acquire();
 
     }
@@ -1065,5 +1112,20 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
         assertEquals(expectedResult1, result1);
         assertEquals(expectedResult2, result2);
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void methodWithMapParameters() throws Exception {
+        ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domainAsync, testProxy.class);
+        testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+
+        TStringKeyMap inMap = new TStringKeyMap();
+        String key = "inkey";
+        String value = "invalue";
+        inMap.put(key, value);
+        TStringKeyMap result1 = proxy.mapParameters(inMap);
+
+        assertEquals(value, result1.get(key));
+        assertEquals(OUT_VALUE, result1.get(OUT_KEY));
     }
 }

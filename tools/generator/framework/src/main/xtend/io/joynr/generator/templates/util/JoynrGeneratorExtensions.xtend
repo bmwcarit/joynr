@@ -39,6 +39,8 @@ import org.franca.core.franca.FMethod
 import org.franca.core.franca.FModel
 import org.franca.core.franca.FModelElement
 import org.franca.core.franca.FType
+import org.franca.core.franca.FMapType
+import io.joynr.generator.templates.MapTemplate
 
 abstract class JoynrGeneratorExtensions {
 
@@ -218,6 +220,20 @@ abstract class JoynrGeneratorExtensions {
 		}
 		if (generate) {
 			fsa.generateFile(path, generator.generate(enumType).toString);
+		}
+	}
+
+	def generateFile(
+		IFileSystemAccess fsa,
+		String path,
+		MapTemplate generator,
+		FMapType mapType
+	) {
+		if (clean) {
+			fsa.deleteFile(path);
+		}
+		if (generate) {
+			fsa.generateFile(path, generator.generate(mapType).toString);
 		}
 	}
 

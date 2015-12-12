@@ -18,7 +18,6 @@ class JavaTypeUtil extends AbstractTypeUtil {
 
 	@Inject private extension MethodUtil
 	@Inject private extension BroadcastUtil
-	@Inject private extension JoynrJavaGeneratorExtensions
 
 	private Map<FBasicTypeId,String> primitiveDataTypeDefaultMap;
 
@@ -218,8 +217,10 @@ class JavaTypeUtil extends AbstractTypeUtil {
 	def getDefaultValue(FTypedElement element, String constructorParams) {
 		if ((isArray(element))){
 			return "{}";
-		} 
-
+		}
+		if (isMap(element.type)) {
+			return "new " + element.type.joynrName + "()";
+		}
 		if (isComplex(element.type)) {
 			return "new " + element.type.complexType.joynrName + "(" + constructorParams + ")";
 		} else if (isEnum(element.type)) {

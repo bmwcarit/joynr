@@ -23,6 +23,7 @@ import io.joynr.generator.templates.util.TypeUtil
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import java.io.File
 import org.eclipse.xtext.generator.IFileSystemAccess
+import org.franca.core.franca.FMapType
 import org.franca.core.franca.FModel
 
 class CommunicationModelGenerator {
@@ -35,6 +36,9 @@ class CommunicationModelGenerator {
 
 	@Inject
 	private extension NamingUtil
+
+	@Inject
+	MapTypeTemplate mapTemplate
 
 	@Inject
 	EnumTypeTemplate enumTemplate
@@ -67,6 +71,21 @@ class CommunicationModelGenerator {
 				enumTemplate,
 				type
 			)
+		}
+
+		for( type: getMapDataTypes(fModel)){
+			var path = getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
+			if (type.isPartOfTypeCollection) {
+				path += type.typeCollectionName + File::separator
+			}
+			if(type instanceof FMapType) {
+				generateFile(
+					fsa,
+					path + type.joynrName + ".java",
+					mapTemplate,
+					type
+				)
+			}
 		}
 	}
 }

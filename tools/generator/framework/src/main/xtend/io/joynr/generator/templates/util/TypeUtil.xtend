@@ -102,9 +102,7 @@ class TypeUtil {
 			return type
 		}
 		if (type instanceof FMapType){
-			throw new IllegalStateException("JoynGeneratorExtensions.xtend: isComplex for map types is not implemented!")
-//			val mapType = type as FMapType
-//			return (isComplex(mapType.keyType) || isComplex(mapType.valueType));
+			return type
 		}
 
 	}
@@ -164,16 +162,11 @@ class TypeUtil {
 	}
 
 	def boolean isPrimitive(FType type){
-		if (type instanceof FMapType){
-			throw new IllegalStateException("JoynGeneratorExtensions.xtend: isPrimitive for map types is not implemented!")
+		if (type instanceof FArrayType){
+			return isPrimitive(type.elementType)
 		}
-		else {
-			if (type instanceof FArrayType){
-				return isPrimitive(type.elementType)
-			}
-			if (type instanceof FTypeDef){
-				return isPrimitive(type.actualType)
-			}
+		if (type instanceof FTypeDef){
+			return isPrimitive(type.actualType)
 		}
 		return false;
 	}
@@ -222,7 +215,7 @@ class TypeUtil {
 	def boolean isPrimitive(FTypeRef typeRef){
 		if (typeRef== null){
 			return false;
-		} 
+		}
 
 		if (typeRef.predefined!=null && typeRef.predefined!=FBasicTypeId::UNDEFINED){
 			return true;
@@ -321,9 +314,7 @@ class TypeUtil {
 			return false
 		}
 		if (type instanceof FMapType){
-			throw new IllegalStateException("JoynGeneratorExtensions.xtend: isComplex for map types is not implemented!")
-//			val mapType = type as FMapType
-//			return (isComplex(mapType.keyType) || isComplex(mapType.valueType));
+			return false
 		}
 		return false
 	}
@@ -369,11 +360,6 @@ class TypeUtil {
 		}
 		if (type instanceof FEnumerationType){
 			return true
-		}
-		if (type instanceof FMapType){
-			throw new IllegalStateException("JoynGeneratorExtensions.xtend: isEnum for map types is not implemented!")
-//			val mapType = type as FMapType
-//			return (isComplex(mapType.keyType) || isComplex(mapType.valueType));
 		}
 		return false
 	}
@@ -431,7 +417,7 @@ class TypeUtil {
 	}
 
 	def filterComplexAndEnum(Iterable<Object> iterable) {
-		iterable.filter[type | type instanceof FType && ((type as FType).complex || (type as FType).enum) ]
+		iterable.filter[type | type instanceof FType && ((type as FType).complex || (type as FType).enum || (type as FType).map)]
 	}
 
 	def boolean isPartOfTypeCollection(FType datatype) {
