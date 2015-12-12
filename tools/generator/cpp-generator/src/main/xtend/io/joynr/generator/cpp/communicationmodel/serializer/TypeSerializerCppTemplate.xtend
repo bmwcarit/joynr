@@ -23,8 +23,9 @@ import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.CompoundTypeTemplate
 import io.joynr.generator.templates.util.NamingUtil
 import javax.inject.Inject
-import org.franca.core.franca.FCompoundType
 import org.franca.core.franca.FBasicTypeId
+import org.franca.core.franca.FCompoundType
+import org.franca.core.franca.FType
 
 class TypeSerializerCppTemplate implements CompoundTypeTemplate{
 
@@ -80,7 +81,7 @@ void ClassDeserializer<«joynrName»>::deserialize(«joynrName» &«joynrName.to
 						«deserializePrimitiveArrayValue(member.type.predefined,member.name, joynrName.toFirstLower+"Var", "field")»
 					«ELSE»
 						«val complexType = member.type.derived»
-						«val deserializerType = if (complexType.isEnum) "EnumDeserializer" else "ClassDeserializer"»
+						«val deserializerType = complexType.deserializer»
 						IArray& array = field.value();
 						auto&& converted«member.name.toFirstUpper» = convertArray<«complexType.typeName»>(array, «deserializerType»<«complexType.typeName»>::deserialize);
 						«joynrName.toFirstLower»Var.set«member.name.toFirstUpper»(std::forward<std::vector<«complexType.typeName»>>(converted«member.name.toFirstUpper»));
@@ -90,7 +91,7 @@ void ClassDeserializer<«joynrName»>::deserialize(«joynrName» &«joynrName.to
 						«deserializePrimitiveValue(member.type.predefined,member.name, joynrName.toFirstLower+"Var", "field")»
 					«ELSE»
 						«val complexType = member.type.derived»
-						«val deserializerType = if (complexType.isEnum) "EnumDeserializer" else "ClassDeserializer"»
+						«val deserializerType = complexType.deserializer»
 						«complexType.typeName» «member.name»Container;
 						«deserializerType»<«complexType.typeName»>::deserialize(«member.name»Container, field.value());
 						«joynrName.toFirstLower»Var.set«member.name.toFirstUpper»(«member.name»Container);
@@ -140,6 +141,16 @@ void ClassSerializer<«joynrName»>::serialize(const «joynrName» &«joynrName.
 } /* namespace joynr */
 
 '''
+	
+def getDeserializer(FType type) {
+	if (type.isEnum){
+		"EnumDeserializer"
+	}  else if (type.isCompound || type.isMap) {
+		"ClassDeserializer"
+	} else {
+		throw new IllegalStateException("No deserializer known for type " + type.class.simpleName)
+	}
+}
 
 def deserializePrimitiveArrayValue(FBasicTypeId basicType, String memberName, String varName, String fieldName) {
 	var primitiveType = basicType.typeName

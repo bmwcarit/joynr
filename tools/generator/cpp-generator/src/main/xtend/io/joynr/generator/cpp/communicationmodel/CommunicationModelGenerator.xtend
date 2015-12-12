@@ -20,6 +20,8 @@ package io.joynr.generator.cpp.communicationmodel
 import com.google.inject.Inject
 import io.joynr.generator.cpp.communicationmodel.serializer.EnumSerializerCppTemplate
 import io.joynr.generator.cpp.communicationmodel.serializer.EnumSerializerHTemplate
+import io.joynr.generator.cpp.communicationmodel.serializer.MapSerializerCppTemplate
+import io.joynr.generator.cpp.communicationmodel.serializer.MapSerializerHTemplate
 import io.joynr.generator.cpp.communicationmodel.serializer.TypeSerializerCppTemplate
 import io.joynr.generator.cpp.communicationmodel.serializer.TypeSerializerHTemplate
 import io.joynr.generator.cpp.util.CppStdTypeUtil
@@ -70,14 +72,13 @@ class CommunicationModelGenerator {
 
     @Inject
     MapHTemplate mapH;
-	@Inject
-	TypeSerializerHTemplate typeSerializerH;
-	@Inject
-	TypeSerializerCppTemplate typeSerializerCpp;
-	@Inject
-	EnumSerializerHTemplate enumSerializerH;
-	@Inject
-	EnumSerializerCppTemplate enumSerializerCpp;
+
+	@Inject TypeSerializerHTemplate typeSerializerH;
+	@Inject TypeSerializerCppTemplate typeSerializerCpp;
+	@Inject MapSerializerHTemplate mapSerializerH;
+	@Inject MapSerializerCppTemplate mapSerializerCpp;
+	@Inject EnumSerializerHTemplate enumSerializerH;
+	@Inject EnumSerializerCppTemplate enumSerializerCpp;
 
 	def doGenerate(FModel fModel,
 		IFileSystemAccess sourceFileSystem,
@@ -154,14 +155,28 @@ class CommunicationModelGenerator {
                 headerpath += type.typeCollectionName + File::separator
                 sourcepath += type.typeCollectionName + File::separator
             }
+            val headerFilename = headerpath + stdTypeUtil.getGenerationTypeName(type)
+			val sourceFilename = sourcepath + stdTypeUtil.getGenerationTypeName(type)
 
             generateFile(
                 headerFileSystem,
-                headerpath + stdTypeUtil.getGenerationTypeName(type) + ".h",
+                headerFilename + ".h",
                 mapH,
                 type
             )
 
+			generateFile(
+				headerFileSystem,
+				headerFilename + "Serializer.h",
+				mapSerializerH,
+				type
+			)
+			generateFile(
+				sourceFileSystem,
+				sourceFilename + "Serializer.cpp",
+				mapSerializerCpp,
+				type
+			)
         }
 
 		val interfacePath = sourceContainerPath + "interfaces" + File::separator
