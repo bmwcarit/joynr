@@ -95,6 +95,9 @@ class JSTypeUtil extends AbstractTypeUtil {
 		if (isComplex(datatype)){
 			return getComplexType(datatype).joynrName
 		}
+		if (isMap(datatype)){
+			return getMapType(datatype).joynrName
+		}
 		throw new IllegalStateException("JoynrJSGeneratorExtensions.getMappedDatatype: unsupported state, datatype " +
 			datatype.joynrName + " could not be mapped to an implementation datatype")
 	}
@@ -157,6 +160,9 @@ class JSTypeUtil extends AbstractTypeUtil {
 		}
 		if (isComplex(datatype)){
 			return getComplexType(datatype).joynrName
+		}
+		if (isMap(datatype)){
+			return getMapType(datatype).joynrName
 		}
 		throw new IllegalStateException("JoynrJSGeneratorExtensions.getMappedDatatype: unsupported state, datatype " +
 			datatype.joynrName + " could not be mapped to an implementation datatype")
@@ -252,6 +258,10 @@ class JSTypeUtil extends AbstractTypeUtil {
 			if (isComplex(element.type)) {
 				buffer.append("new ")
 				buffer.append(getComplexType(element.type).joynrName)
+				buffer.append("()");
+			} else if (element.type.isMap) {
+				buffer.append("new ")
+				buffer.append(element.type.mapType.joynrName)
 				buffer.append("()");
 			} else if (isEnum(element.type)){
 				val enumType = getEnumType(element.type);

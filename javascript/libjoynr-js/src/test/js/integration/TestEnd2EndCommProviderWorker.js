@@ -33,6 +33,7 @@ importScripts("provisioning_end2end_common.js");
 importScripts("../joynr/vehicle/RadioProvider.js");
 importScripts("../joynr/vehicle/radiotypes/RadioStation.js");
 importScripts("../joynr/datatypes/exampleTypes/Country.js");
+importScripts("../joynr/datatypes/exampleTypes/StringMap.js");
 importScripts("../joynr/vehicle/radiotypes/ErrorList.js");
 importScripts("../../classes/lib/bluebird.js");
 
@@ -45,6 +46,7 @@ var attrProvidedImpl;
 var numberOfStations = -1;
 var mixedSubscriptions = null;
 var byteBufferAttribute = null;
+var stringMapAttribute = null;
 
 var providerDomain;
 var libjoynrAsync;
@@ -172,6 +174,14 @@ function initializeTest(provisioningSuffix, providedDomain) {
 
             radioProvider.byteBufferAttribute.registerGetter(function(value) {
                 return byteBufferAttribute;
+            });
+
+            radioProvider.stringMapAttribute.registerSetter(function(value) {
+                stringMapAttribute = value;
+            });
+
+            radioProvider.stringMapAttribute.registerGetter(function() {
+                return stringMapAttribute;
             });
 
             // register operation functions

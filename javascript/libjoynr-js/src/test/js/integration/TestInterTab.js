@@ -38,6 +38,7 @@ joynrTestRequire(
             "joynr/vehicle/RadioProxy",
             "joynr/vehicle/RadioProvider",
             "joynr/datatypes/exampleTypes/Country",
+            "joynr/datatypes/exampleTypes/StringMap",
             "joynr/provisioning/provisioning_libjoynr",
             "integration/IntegrationUtils"
         ],
@@ -57,6 +58,7 @@ joynrTestRequire(
                 RadioProxy,
                 RadioProvider,
                 Country,
+                StringMap,
                 provisioning,
                 IntegrationUtils) {
             describe(
@@ -298,6 +300,7 @@ joynrTestRequire(
                                     var enumAttribute = Country.GERMANY;
                                     var enumArrayAttribute = [Country.GERMANY];
                                     var byteBufferAttribute = null;
+                                    var stringMapAttribute = null;
                                     var attrProvidedImpl;
                                     var mixedSubscriptions = null;
                                     var numberOfStations = 0;
@@ -382,6 +385,14 @@ joynrTestRequire(
 
                                     radioProvider.byteBufferAttribute.registerGetter(function(value) {
                                         return byteBufferAttribute;
+                                    });
+
+                                    radioProvider.stringMapAttribute.registerSetter(function(value) {
+                                        stringMapAttribute = value;
+                                    });
+
+                                    radioProvider.stringMapAttribute.registerGetter(function(value) {
+                                        return stringMapAttribute;
                                     });
 
                                     radioProvider.failingSyncAttribute.registerGetter(function() {

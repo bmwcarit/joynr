@@ -25,7 +25,6 @@ import io.joynr.generator.templates.util.NamingUtil
 import java.util.Date
 import java.util.Set
 import org.franca.core.franca.FCompoundType
-import org.franca.core.franca.FField
 import org.franca.core.franca.FStructType
 import org.franca.core.franca.FUnionType
 

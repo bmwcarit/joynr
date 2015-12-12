@@ -29,6 +29,7 @@ joynrTestRequire(
             "joynr/vehicle/radiotypes/RadioStation",
             "joynr/vehicle/radiotypes/ErrorList",
             "joynr/datatypes/exampleTypes/Country",
+            "joynr/datatypes/exampleTypes/StringMap",
             "integration/IntegrationUtils",
             "joynr/provisioning/provisioning_cc",
             "integration/provisioning_end2end_common"
@@ -40,6 +41,7 @@ joynrTestRequire(
                 RadioStation,
                 ErrorList,
                 Country,
+                StringMap,
                 IntegrationUtils,
                 provisioning,
                 provisioning_end2end) {
@@ -469,6 +471,14 @@ joynrTestRequire(
                             getAttribute("byteBufferAttribute", testByteBuffer);
                             setAttribute("byteBufferAttribute", testByteBuffer);
                             getAttribute("byteBufferAttribute", testByteBuffer);
+                        });
+
+                        it("sets the stringMapAttribute", function() {
+                            var stringMap = new StringMap({key1: "value1"});
+                            setAttribute("stringMapAttribute", stringMap);
+                            getAttribute("stringMapAttribute", stringMap);
+                            setAttribute("stringMapAttribute", stringMap);
+                            getAttribute("stringMapAttribute", stringMap);
                         });
 
                         it("subscribe to failingSyncAttribute", function() {

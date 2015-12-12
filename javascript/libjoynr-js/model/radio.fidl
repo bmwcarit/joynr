@@ -59,6 +59,8 @@ interface Radio {
 
 	attribute ByteBuffer byteBufferAttribute
 
+	attribute StringMap stringMapAttribute
+
 	attribute Int32 failingSyncAttribute readonly
 
 	attribute Int32 failingAsyncAttribute readonly

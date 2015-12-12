@@ -24,6 +24,7 @@ joynrTestRequire(
         [
             "joynr/vehicle/RadioProvider",
             "joynr/datatypes/exampleTypes/Country",
+            "joynr/datatypes/exampleTypes/StringMap",
             "joynr/provider/ProviderAttributeNotifyReadWrite",
             "joynr/provider/ProviderAttributeNotifyRead",
             "joynr/provider/ProviderAttributeNotifyWrite",
@@ -39,6 +40,7 @@ joynrTestRequire(
         function(
                 RadioProvider,
                 Country,
+                StringMap,
                 ProviderAttributeNotifyReadWrite,
                 ProviderAttributeNotifyRead,
                 ProviderAttributeNotifyWrite,
@@ -119,6 +121,15 @@ joynrTestRequire(
                                         },
                                         byteBufferAttribute : {
                                             value : [],
+                                            get : function() {
+                                                return this.value;
+                                            },
+                                            set : function(newValue) {
+                                                this.value = newValue;
+                                            }
+                                        },
+                                        stringMapAttribute : {
+                                            value : {},
                                             get : function() {
                                                 return this.value;
                                             },
