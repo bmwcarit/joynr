@@ -159,11 +159,7 @@ target_link_libraries(JoynrCommon ${JoynrCommon_TARGET_LIBRARIES})
 
 add_dependencies(JoynrCommon spdlog)
 
-add_clang_format(
-    JoynrCommon
-    ${JoynrCommon_HEADERS}
-    ${JoynrCommon_SOURCES}
-)
+add_clang_format(JoynrCommon)
 
 add_include_what_you_use(JoynrCommon)
 

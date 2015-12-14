@@ -125,11 +125,7 @@ add_library(
     ${JoynrLib_SOURCES}
 )
 
-add_clang_format(
-    Joynr
-    ${JoynrLib_HEADERS}
-    ${JoynrLib_SOURCES}
-)
+add_clang_format(Joynr)
 
 add_include_what_you_use(Joynr)
 

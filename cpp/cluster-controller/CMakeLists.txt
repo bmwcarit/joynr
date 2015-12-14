@@ -125,11 +125,7 @@ add_library(
     ${JoynrClusterController_SOURCES}
 )
 
-add_clang_format(
-    JoynrClusterController
-    ${JoynrClusterController_HEADERS}
-    ${JoynrClusterController_SOURCES}
-)
+add_clang_format(JoynrClusterController)
 
 add_include_what_you_use(JoynrClusterController)
 
