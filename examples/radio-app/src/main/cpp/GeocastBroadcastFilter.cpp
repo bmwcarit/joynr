@@ -46,7 +46,8 @@ bool GeocastBroadcastFilter::filter(
     if (positionOfInterest == Q_NULLPTR) {
         LOG_ERROR(logger,
                   FormatString("Unable to deserialize geo position object from: %1")
-                          .arg(filterParameters.getPositionOfInterest()).str());
+                          .arg(filterParameters.getPositionOfInterest())
+                          .str());
         return true;
     }
     int radiusOfInterestArea = std::stoi(filterParameters.getRadiusOfInterestArea());

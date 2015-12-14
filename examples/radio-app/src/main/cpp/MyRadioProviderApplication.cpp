@@ -43,7 +43,8 @@ int main(int argc, char* argv[])
     // Check the usage
     QString programName(argv[0]);
     if (argc != 2) {
-        LOG_ERROR(logger, FormatString("USAGE: %1 <provider-domain>").arg(programName.toStdString()).str());
+        LOG_ERROR(logger,
+                  FormatString("USAGE: %1 <provider-domain>").arg(programName.toStdString()).str());
         return 1;
     }
 

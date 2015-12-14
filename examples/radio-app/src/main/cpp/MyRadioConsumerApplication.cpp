@@ -309,14 +309,12 @@ int main(int argc, char* argv[])
             MyRadioHelper::prettyLog(
                     logger,
                     QString("METHOD: add favorite station a second time failed with the following "
-                            "expected exception: %1")
-                            .arg(QString::fromStdString(e.getName())));
+                            "expected exception: %1").arg(QString::fromStdString(e.getName())));
         } else {
             MyRadioHelper::prettyLog(
                     logger,
                     QString("METHOD: add favorite station a second time failed with the following "
-                            "UNEXPECTED exception: %1")
-                            .arg(QString::fromStdString(e.getName())));
+                            "UNEXPECTED exception: %1").arg(QString::fromStdString(e.getName())));
         }
     }
 
@@ -329,8 +327,7 @@ int main(int argc, char* argv[])
                     logger,
                     QString("METHOD: add favorite station with empty name failed with the "
                             "following "
-                            "expected exception: %1")
-                            .arg(QString::fromStdString(e.getMessage())));
+                            "expected exception: %1").arg(QString::fromStdString(e.getMessage())));
         } else {
             MyRadioHelper::prettyLog(logger,
                                      QString("METHOD: add favorite station with empty name failed "
