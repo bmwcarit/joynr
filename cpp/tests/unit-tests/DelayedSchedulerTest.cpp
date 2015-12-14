@@ -25,6 +25,7 @@
 #include "joynr/DelayedScheduler.h"
 
 #include "utils/MockObjects.h"
+#include "joynr/TimeUtils.h"
 
 #include <stdint.h>
 #include <cassert>

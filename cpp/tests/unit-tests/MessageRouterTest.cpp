@@ -24,7 +24,6 @@
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/MessageQueue.h"
-#include "joynr/ThreadUtil.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include <chrono>
 #include <stdint.h>
@@ -126,6 +125,6 @@ TEST_F(MessageRouterTest, outdatedMessagesAreRemoved){
     EXPECT_EQ(messageQueue->getQueueLength(), 1);
 
     // we wait for the time out (500ms) and the thread sleep (1000ms)
-    ThreadUtil::sleepForMillis(1200);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1200));
     EXPECT_EQ(messageQueue->getQueueLength(), 0);
 }

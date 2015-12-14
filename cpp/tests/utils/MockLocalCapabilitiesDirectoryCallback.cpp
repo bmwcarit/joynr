@@ -18,7 +18,7 @@
  */
 #include "MockLocalCapabilitiesDirectoryCallback.h"
 
-#include "joynr/ThreadUtil.h"
+#include <thread>
 
 using namespace joynr;
 
@@ -37,7 +37,7 @@ void MockLocalCapabilitiesDirectoryCallback::capabilitiesReceived(std::vector<Ca
 std::vector<CapabilityEntry> MockLocalCapabilitiesDirectoryCallback::getResults(int timeout) {
     const int waitInterval = 20;
     for (int i = 0; i < timeout; i += waitInterval) {
-        ThreadUtil::sleepForMillis(waitInterval);
+        std::this_thread::sleep_for(std::chrono::milliseconds(waitInterval));
         if (semaphore.waitFor()) {
             semaphore.notify();
             return results;

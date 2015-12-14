@@ -19,7 +19,6 @@
 
 #include "systemintegration-tests/CombinedEnd2EndTest.h"
 #include "joynr/LocalChannelUrlDirectory.h"
-#include "joynr/ThreadUtil.h"
 
 #include <QtConcurrent/QtConcurrent>
 
@@ -64,7 +63,7 @@ TEST_F(CombinedEnd2EndTest, channelUrlProxyRegistersUrlsCorrectly) {
     // There is a race condition where the actual channel url can be set AFTER the dummy data
     // used for testing. Pause for a short time so that the dummy data is always written
     // last
-    ThreadUtil::sleepForMillis(2000);
+    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 
     // Register new channel URLs
     std::string channelId = "bogus_1";

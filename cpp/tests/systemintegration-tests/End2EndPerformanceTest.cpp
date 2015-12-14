@@ -26,7 +26,6 @@
 #include "joynr/tests/testProxy.h"
 #include "joynr/Future.h"
 #include "joynr/DispatcherUtils.h"
-#include "joynr/ThreadUtil.h"
 #include "joynr/LibjoynrSettings.h"
 
 using namespace ::testing;
@@ -104,7 +103,7 @@ TEST_F(End2EndPerformanceTest, sendManyRequests) {
 
     runtime1->registerProvider<tests::testProvider>(domain, testProvider);
 
-    ThreadUtil::sleepForMillis(2000);
+    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domain);

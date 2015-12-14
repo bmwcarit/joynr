@@ -58,7 +58,10 @@ DelayedScheduler::RunnableHandle DelayedScheduler::schedule(
         optionalDelayMs = OptionalDelay(this->defaultDelayMs);
     }
 
-    LOG_TRACE(logger, FormatString("schedule: enter with %0 ms delay").arg(optionalDelayMs.getValue().count()).str());
+    LOG_TRACE(logger,
+              FormatString("schedule: enter with %0 ms delay")
+                      .arg(optionalDelayMs.getValue().count())
+                      .str());
 
     if (stoppingDelayedScheduler) {
         if (runnable->isDeleteOnExit()) {

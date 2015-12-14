@@ -24,7 +24,6 @@
 #include "joynr/BounceProxyUrl.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/Future.h"
-#include "joynr/ThreadUtil.h"
 
 using ::testing::A;
 using ::testing::_;
@@ -191,7 +190,7 @@ TEST(ChannelUrlSelectorTest, obtainUrlRetriesUrlOfHigherPriority) {
     url = urlCache->obtainUrl(channelId,*status, 20000);
     EXPECT_EQ("secondUrl/message/", url);
 
-    ThreadUtil::sleepForMillis(timeForOneRecouperation + 100);
+    std::this_thread::sleep_for(std::chrono::milliseconds(timeForOneRecouperation + 100));
     url = urlCache->obtainUrl(channelId,*status, 20000);
     EXPECT_EQ("firstUrl/message/", url);
 
@@ -279,28 +278,28 @@ TEST(ChannelUrlSelectorTest, updateTest) {
     EXPECT_EQ(2 - punishmentFactor,fitness.at(1));
     EXPECT_EQ(1 - punishmentFactor - punishmentFactor,fitness.at(2));
 
-    ThreadUtil::sleepForMillis(timeForOneRecouperation /3);
+    std::this_thread::sleep_for(std::chrono::milliseconds(timeForOneRecouperation /3));
     entry->updateFitness();
     fitness = entry->getFitness();
     EXPECT_EQ(3 - punishmentFactor,fitness.at(0));
     EXPECT_EQ(2 - punishmentFactor,fitness.at(1));
     EXPECT_EQ(1 - punishmentFactor - punishmentFactor, fitness.at(2));
 
-    ThreadUtil::sleepForMillis(timeForOneRecouperation );
+    std::this_thread::sleep_for(std::chrono::milliseconds(timeForOneRecouperation ));
     entry->updateFitness();
     fitness = entry->getFitness();
     EXPECT_EQ(3,fitness.at(0));
     EXPECT_EQ(2,fitness.at(1));
     EXPECT_EQ(1 - punishmentFactor,fitness.at(2));
 
-    ThreadUtil::sleepForMillis(timeForOneRecouperation);
+    std::this_thread::sleep_for(std::chrono::milliseconds(timeForOneRecouperation));
     entry->updateFitness();
     fitness = entry->getFitness();
     EXPECT_EQ(3,fitness.at(0));
     EXPECT_EQ(2,fitness.at(1));
     EXPECT_EQ(1,fitness.at(2));
 
-    ThreadUtil::sleepForMillis(timeForOneRecouperation );
+    std::this_thread::sleep_for(std::chrono::milliseconds(timeForOneRecouperation ));
     entry->updateFitness();
     fitness = entry->getFitness();
     EXPECT_EQ(3,fitness.at(0));
@@ -313,7 +312,7 @@ TEST(ChannelUrlSelectorTest, updateTest) {
     entry->punish("thirdUrl");
     entry->punish("thirdUrl");
 
-    ThreadUtil::sleepForMillis( 2 * timeForOneRecouperation + 10 );
+    std::this_thread::sleep_for(std::chrono::milliseconds( 2 * timeForOneRecouperation + 10 ));
     entry->updateFitness();
     fitness = entry->getFitness();
     EXPECT_EQ(3,fitness.at(0));
@@ -347,9 +346,9 @@ TEST(ChannelUrlSelectorTest, bestTest) {
     EXPECT_EQ("firstUrl", entry->best());
     entry->punish("firstUrl");
     EXPECT_EQ("secondUrl", entry->best());
-    ThreadUtil::sleepForMillis(timeForOneRecouperation + 100);
+    std::this_thread::sleep_for(std::chrono::milliseconds(timeForOneRecouperation + 100));
     EXPECT_EQ("secondUrl", entry->best());
-    ThreadUtil::sleepForMillis(timeForOneRecouperation + 100);
+    std::this_thread::sleep_for(std::chrono::milliseconds(timeForOneRecouperation + 100));
     EXPECT_EQ("firstUrl", entry->best());
 
     delete entry;

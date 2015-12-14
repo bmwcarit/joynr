@@ -61,8 +61,10 @@ HttpSender::HttpSender(const BounceProxyUrl& bounceProxyUrl,
                                                  ChannelUrlSelector::PUNISHMENT_FACTOR())),
           maxAttemptTtl_ms(maxAttemptTtl_ms),
           messageSendRetryInterval(messageSendRetryInterval),
-          delayedScheduler(6, "MessageSender", 0),
-          channelUrlContactorDelayedScheduler(3, "ChannelUrlContator", messageSendRetryInterval)
+          delayedScheduler(6, "MessageSender"),
+          channelUrlContactorDelayedScheduler(3,
+                                              "ChannelUrlContator",
+                                              std::chrono::milliseconds(messageSendRetryInterval))
 {
 }
 
@@ -186,7 +188,7 @@ void HttpSender::SendMessageRunnable::run()
                                                           std::move(data),
                                                           delayedScheduler,
                                                           maxAttemptTtl_ms),
-                                  delay);
+                                  OptionalDelay(std::chrono::milliseconds(delay)));
         std::string body("NULL");
         if (!sendMessageResult.getBody().isNull()) {
             body = std::string(sendMessageResult.getBody().data());

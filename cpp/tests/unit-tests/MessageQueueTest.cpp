@@ -23,7 +23,6 @@
 
 #include "joynr/MessageQueue.h"
 #include "joynr/Timer.h"
-#include "joynr/ThreadUtil.h"
 
 #include <chrono>
 #include <stdint.h>
@@ -141,9 +140,9 @@ TEST_F(MessageQueueTest, removeOutdatedMessage) {
     JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
     msg10.setHeaderExpiryDate(now + milliseconds(10));
     EXPECT_EQ(messageQueue.queueMessage(msg10), 1);
-    ThreadUtil::sleepForMillis(5);
+    std::this_thread::sleep_for(std::chrono::milliseconds(5));
     EXPECT_EQ(messageQueue.removeOutdatedMessages(), 0);
-    ThreadUtil::sleepForMillis(6);
+    std::this_thread::sleep_for(std::chrono::milliseconds(6));
     EXPECT_EQ(messageQueue.removeOutdatedMessages(), 1);
 }
 
@@ -160,10 +159,10 @@ TEST_F(MessageQueueTest, removeOutdatedMessagesWithRunnable) {
     EXPECT_EQ(messageQueue.queueMessage(msg300), 3);
 
     // wait to remove the first message
-    ThreadUtil::sleepForMillis(100);
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     EXPECT_EQ(messageQueue.getQueueLength(), 2);
 
     // wait to remove all messages
-    ThreadUtil::sleepForMillis(500);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
     EXPECT_EQ(messageQueue.getQueueLength(), 0);
 }

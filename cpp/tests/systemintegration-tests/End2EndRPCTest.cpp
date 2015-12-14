@@ -31,7 +31,6 @@
 #include "joynr/Future.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/TypeUtil.h"
-#include "joynr/ThreadUtil.h"
 #include "joynr/LibjoynrSettings.h"
 
 using namespace ::testing;
@@ -68,7 +67,7 @@ public:
         // Remove participant id persistence file
         std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
 
-        ThreadUtil::sleepForMillis(550);
+        std::this_thread::sleep_for(std::chrono::milliseconds(550));
     }
 
     ~End2EndRPCTest(){
@@ -85,7 +84,7 @@ TEST_F(End2EndRPCTest, call_rpc_method_and_get_expected_result)
     std::shared_ptr<MockGpsProvider> mockProvider(new MockGpsProvider());
 
     runtime->registerProvider<vehicle::GpsProvider>(domain, mockProvider);
-    ThreadUtil::sleepForMillis(550);
+    std::this_thread::sleep_for(std::chrono::milliseconds(550));
 
     ProxyBuilder<vehicle::GpsProxy>* gpsProxyBuilder = runtime->createProxyBuilder<vehicle::GpsProxy>(domain);
     DiscoveryQos discoveryQos;
@@ -122,7 +121,7 @@ TEST_F(End2EndRPCTest, call_void_operation)
     )));
 
     runtime->registerProvider<tests::testProvider>(domain, mockProvider);
-    ThreadUtil::sleepForMillis(550);
+    std::this_thread::sleep_for(std::chrono::milliseconds(550));
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime->createProxyBuilder<tests::testProxy>(domain);
     DiscoveryQos discoveryQos;
@@ -150,7 +149,7 @@ TEST_F(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
     std::shared_ptr<MockTestProvider> mockProvider(new MockTestProvider());
     runtime->registerProvider<tests::testProvider>(domain, mockProvider);
 
-    ThreadUtil::sleepForMillis(550);
+    std::this_thread::sleep_for(std::chrono::milliseconds(550));
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder =
             runtime->createProxyBuilder<tests::testProxy>(domain);
@@ -179,7 +178,7 @@ TEST_F(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
                 1000 // alertInterval_ms
     );
     testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
-    ThreadUtil::sleepForMillis(1500);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1500));
     //TODO CA: shared pointer for proxy builder?
     delete testProxyBuilder;
     // This is not yet implemented in CapabilitiesClient

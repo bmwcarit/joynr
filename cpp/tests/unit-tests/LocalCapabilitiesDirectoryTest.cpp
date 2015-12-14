@@ -28,7 +28,6 @@
 #include "common/capabilities/CapabilitiesMetaTypes.h"
 #include "tests/utils/MockLocalCapabilitiesDirectoryCallback.h"
 #include "cluster-controller/capabilities-client/IGlobalCapabilitiesCallback.h"
-#include "joynr/ThreadUtil.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/CapabilityEntry.h"
@@ -459,7 +458,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, cleanCacheRemovesOldEntries) {
             .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithTwoResults));
 
     localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
-    ThreadUtil::sleepForMillis(1000);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
     // this should remove all entries in the cache
     localCapabilitiesDirectory->cleanCache(100);
@@ -815,7 +814,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocalThenG
     EXPECT_EQ(1, callback->getResults(10).size());
     callback->clearResults();
 
-    ThreadUtil::sleepForMillis(200);
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
 
     // get the global, but timeout occured
     EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_))

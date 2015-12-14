@@ -77,7 +77,7 @@ public:
         auto runtime = CommonAPI::Runtime::load("DBus");
         bool success = runtime->getServicePublisher()->unregisterService(serviceAddress);
         // wait some time so that the service is unregistered on dbus level
-        ThreadUtil::sleepForMillis(25);
+        std::this_thread::sleep_for(std::chrono::milliseconds(25));
 
         if (success) {
             LOG_INFO(logger,

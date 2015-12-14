@@ -26,7 +26,6 @@
 #include "joynr/IBroadcastListener.h"
 #include "joynr/PeriodicSubscriptionQos.h"
 #include "joynr/LibjoynrSettings.h"
-#include "joynr/ThreadUtil.h"
 #include "joynr/TimeUtils.h"
 
 using ::testing::A;
@@ -110,7 +109,7 @@ TEST_F(PublicationManagerTest, add_requestCallerIsCalledCorrectlyByPublisherRunn
     subscriptionRequest.setQos(qos);
     LOG_DEBUG(logger, "adding request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
-    ThreadUtil::sleepForMillis(500);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 }
 
 
@@ -152,9 +151,9 @@ TEST_F(PublicationManagerTest, stop_publications) {
                 subscriptionRequest,
                 &mockPublicationSender
     );
-    ThreadUtil::sleepForMillis(80);
+    std::this_thread::sleep_for(std::chrono::milliseconds(80));
     publicationManager.stopPublication(subscriptionRequest.getSubscriptionId());
-    ThreadUtil::sleepForMillis(300);
+    std::this_thread::sleep_for(std::chrono::milliseconds(300));
 }
 
 TEST_F(PublicationManagerTest, remove_all_publications) {
@@ -189,9 +188,9 @@ TEST_F(PublicationManagerTest, remove_all_publications) {
     subscriptionRequest.setQos(qos);
 
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
-    ThreadUtil::sleepForMillis(80);
+    std::this_thread::sleep_for(std::chrono::milliseconds(80));
     publicationManager.removeAllSubscriptions(receiverId);
-    ThreadUtil::sleepForMillis(300);
+    std::this_thread::sleep_for(std::chrono::milliseconds(300));
 }
 
 TEST_F(PublicationManagerTest, restore_publications) {
@@ -229,7 +228,7 @@ TEST_F(PublicationManagerTest, restore_publications) {
     subscriptionRequest.setQos(qos);
 
     publicationManager->add(senderId, receiverId,requestCaller,subscriptionRequest,&mockPublicationSender);
-    ThreadUtil::sleepForMillis(100); //make sure, that the first request caller is actually called.
+    std::this_thread::sleep_for(std::chrono::milliseconds(100)); //make sure, that the first request caller is actually called.
     delete publicationManager;
 
     PublicationManager* publicationManager2 = new PublicationManager();
@@ -237,7 +236,7 @@ TEST_F(PublicationManagerTest, restore_publications) {
     publicationManager2->restore(receiverId,
                                 requestCaller2,
                                 &mockPublicationSender);
-    ThreadUtil::sleepForMillis(350);
+    std::this_thread::sleep_for(std::chrono::milliseconds(350));
     delete publicationManager2;
 }
 
@@ -310,7 +309,7 @@ TEST_F(PublicationManagerTest, add_onChangeSubscription) {
     // Fake an attribute change
     attributeListener->attributeValueChanged(attributeValue);
 
-    ThreadUtil::sleepForMillis(500);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 }
 
 TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
@@ -373,7 +372,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
     // Sleep so that the first publication is sent
-    ThreadUtil::sleepForMillis(50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
     // Fake many attribute changes - but expect only one publication to be sent by this loop
     for (int i = 0; i < 10; i++) {
@@ -381,7 +380,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
     }
 
     // Wait for the subscription to finish
-    ThreadUtil::sleepForMillis(700);
+    std::this_thread::sleep_for(std::chrono::milliseconds(700));
 
 }
 
@@ -445,7 +444,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval) {
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
     // Sleep so that the first publication is sent
-    ThreadUtil::sleepForMillis(50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
     // Fake many attribute changes - but expect only one publication to be sent by this loop
     for (int i = 0; i < 10; i++) {
@@ -453,7 +452,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval) {
     }
 
     // Wait for the subscription to finish
-    ThreadUtil::sleepForMillis(700);
+    std::this_thread::sleep_for(std::chrono::milliseconds(700));
 
 }
 
@@ -540,20 +539,20 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
     // Sleep so that the first publication is sent
-    ThreadUtil::sleepForMillis(minInterval_ms + 50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms + 50));
 
     // Fake attribute change
     attributeListener->attributeValueChanged(attributeValue);
 
-    ThreadUtil::sleepForMillis(50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
     // now, we assume that two publications have been occured
 
-    ThreadUtil::sleepForMillis(minInterval_ms);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
 
     // Fake attribute change
     attributeListener->attributeValueChanged(attributeValue);
 
-    ThreadUtil::sleepForMillis(minInterval_ms + 50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms + 50));
     // now, we assume that three publications have been occured
 
     //now, let's update the subscription and check if the provided data is correctly processed by the PublicationManager
@@ -566,13 +565,13 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
     publicationManager.add(senderId, receiverId, requestCaller2,subscriptionRequest,&mockPublicationSender2);
 
     // Sleep so that the first publication is sent
-    ThreadUtil::sleepForMillis(minInterval_ms + 50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms + 50));
 
     // Fake attribute change
     attributeListener->attributeValueChanged(attributeValue);
 
     // sleep, waiting for the async publication (which shouldn't come)
-    ThreadUtil::sleepForMillis(50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
     // until now, only one publication should be arrived to mockPublicationSender2
 
@@ -580,7 +579,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
     attributeListener->attributeValueChanged(attributeValue);
 
     // Wait for the subscription to finish
-    ThreadUtil::sleepForMillis(minInterval_ms + 500);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms + 500));
 
     // now, we should got 2 publications on mockPublicationSender2
 }
@@ -649,7 +648,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
     // exceed the minInterval
-    ThreadUtil::sleepForMillis(minInterval_ms+50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms+50));
 
     // now, we expect that one publication has been performed
 
@@ -662,19 +661,19 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
     // Sleep so that the first publication is sent
-    ThreadUtil::sleepForMillis(50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
     //now we expect that two puclications have been performed
 
     //now, exceed the original expiryDate, and make an attribute change
-    ThreadUtil::sleepForMillis(testRelExpiryDate);
+    std::this_thread::sleep_for(std::chrono::milliseconds(testRelExpiryDate));
     attributeListener->attributeValueChanged(attributeValue);
 
     // wait for the async publication
-    ThreadUtil::sleepForMillis(50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
     // now, three publications should be noticed
 
     // wait for the subscription to finish
-    ThreadUtil::sleepForMillis(minInterval_ms + testRelExpiryDate);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms + testRelExpiryDate));
 }
 
 TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_withLowerExpiryDate) {
@@ -743,10 +742,10 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
     // exceed the minInterval
-    ThreadUtil::sleepForMillis(50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
     attributeListener->attributeValueChanged(attributeValue);
-    ThreadUtil::sleepForMillis(minInterval_ms + 50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms + 50));
 
     // now, we expect that two publications have been performed
 
@@ -759,17 +758,17 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
     // Sleep so that the first publication is sent
-    ThreadUtil::sleepForMillis(50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
     // now we expect that three puclications have been performed
 
     // now, exceed the new expiryDate, and make an attribute change
-    ThreadUtil::sleepForMillis(testRelExpiryDate - testExpiryDate_shift);
+    std::this_thread::sleep_for(std::chrono::milliseconds(testRelExpiryDate - testExpiryDate_shift));
     // now, the subscription should be death
 
     attributeListener->attributeValueChanged(attributeValue);
 
     // wait for the async publication, which shouldn't arrive
-    ThreadUtil::sleepForMillis(50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
 }
 
 TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
@@ -859,16 +858,16 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     // Fake broadcast
     broadcastListener->broadcastOccurred(broadcastValues, filters);
 
-    ThreadUtil::sleepForMillis(50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
     // now, we assume that one publication has been occured
-    ThreadUtil::sleepForMillis(minInterval_ms);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
 
     // Fake broadcast
     broadcastListener->broadcastOccurred(broadcastValues, filters);
 
     int64_t newMinInterval = minInterval_ms + 500;
-    ThreadUtil::sleepForMillis(50 + newMinInterval);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50 + newMinInterval));
     // now, we assume that two publications have been occured
 
     //now, let's update the subscription an check if the provided data is correctly processed by the PublicationManager
@@ -882,16 +881,16 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     broadcastListener->broadcastOccurred(broadcastValues, filters);
 
     // sleep, waiting for the async publication (which shouldn't come)
-    ThreadUtil::sleepForMillis(50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
     // until now, only one publication should be arrived to mockPublicationSender2
 
-    ThreadUtil::sleepForMillis(minInterval_ms + 50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms + 50));
 
     // Fake broadcast. This change shall not result in a new broadcast to the client
     broadcastListener->broadcastOccurred(broadcastValues, filters);
 
     // Wait for the subscription to finish
-    ThreadUtil::sleepForMillis(500);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 }
 
 TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_withGreaterExpiryDate) {
@@ -959,7 +958,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
 
     broadcastListener->broadcastOccurred(broadcastValues, filters);
     // exceed the minInterval
-    ThreadUtil::sleepForMillis(minInterval_ms+50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms+50));
 
     // now, we expect that one publication has been performed
 
@@ -971,11 +970,11 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
     //now, exceed the original expiryDate, and make a broadcast
-    ThreadUtil::sleepForMillis(testRelExpiryDate);
+    std::this_thread::sleep_for(std::chrono::milliseconds(testRelExpiryDate));
     broadcastListener->broadcastOccurred(broadcastValues, filters);
 
     // wait for the async publication
-    ThreadUtil::sleepForMillis(50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
     //now, two publications should be noticed, even if the original subscription is expired
 }
 
@@ -1044,7 +1043,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
     broadcastListener->broadcastOccurred(broadcastValues, filters);
-    ThreadUtil::sleepForMillis(50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
     // now, we expect that one publications have been performed
 
@@ -1056,13 +1055,13 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
     // now, exceed the new expiryDate, and make a broadcast
-    ThreadUtil::sleepForMillis(testRelExpiryDate - testExpiryDate_shift);
+    std::this_thread::sleep_for(std::chrono::milliseconds(testRelExpiryDate - testExpiryDate_shift));
     // now, the subscription should be death
 
     broadcastListener->broadcastOccurred(broadcastValues, filters);
 
     // wait for the async publication (which shouldn't arrive)
-    ThreadUtil::sleepForMillis(50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
     // now, no new publication should be received, even if the expiry date of the original request hasn't been expired
     // -> one publication expected
@@ -1118,5 +1117,5 @@ TEST_F(PublicationManagerTest, remove_onChangeSubscription) {
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
     // Wait for the subscription to expire
-    ThreadUtil::sleepForMillis(200);
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
 }

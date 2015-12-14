@@ -31,7 +31,6 @@
 #include "joynr/Util.h"
 #include "joynr/TypeUtil.h"
 #include "joynr/Settings.h"
-#include "joynr/ThreadUtil.h"
 #include "joynr/LibjoynrSettings.h"
 
 using namespace ::testing;
@@ -68,7 +67,7 @@ public:
 
         // Remove participant id persistence file
         std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
-        ThreadUtil::sleepForMillis(550);
+        std::this_thread::sleep_for(std::chrono::milliseconds(550));
     }
 
     ~End2EndSSLTest(){
@@ -85,7 +84,7 @@ TEST_F(End2EndSSLTest, call_rpc_method_and_get_expected_result)
     // Create a provider
     std::shared_ptr<MockGpsProvider> mockProvider(new MockGpsProvider());
     runtime->registerProvider<vehicle::GpsProvider>(domain, mockProvider);
-    ThreadUtil::sleepForMillis(550);
+    std::this_thread::sleep_for(std::chrono::milliseconds(550));
 
     // Build a proxy
     ProxyBuilder<vehicle::GpsProxy>* gpsProxyBuilder = runtime->createProxyBuilder<vehicle::GpsProxy>(domain);

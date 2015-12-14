@@ -20,7 +20,6 @@
 
 #include "joynr/Semaphore.h"
 
-#include "joynr/ThreadUtil.h"
 #include "joynr/TimeUtils.h"
 
 #include <thread>
@@ -69,11 +68,11 @@ TEST(SemaphoreTest, multiWait_onlyAcceptFirst) {
     joynr::Semaphore sem(1);
 
     std::thread t1(&joynr::Semaphore::wait, &sem);
-    joynr::ThreadUtil::sleepForMillis(10);
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
     std::thread t2(&joynr::Semaphore::wait, &sem);
-    joynr::ThreadUtil::sleepForMillis(10);
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
     std::thread t3(&joynr::Semaphore::wait, &sem);
-    joynr::ThreadUtil::sleepForMillis(10);
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
     EXPECT_TRUE(t1.joinable());
     EXPECT_TRUE(t2.joinable());
@@ -124,7 +123,7 @@ TEST(SemaphoreTest, timedWait_unlockAfterSomeTime) {
         (*dur) = joynr::TimeUtils::getCurrentMillisSinceEpoch() - start;
     }, &sem, expectedTimeout, &duration, &result);
 
-    joynr::ThreadUtil::sleepForMillis(80);
+    std::this_thread::sleep_for(std::chrono::milliseconds(80));
     sem.notify();
 
     EXPECT_TRUE(t1.joinable());

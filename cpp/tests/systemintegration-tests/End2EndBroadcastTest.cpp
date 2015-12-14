@@ -30,7 +30,6 @@
 #include "joynr/tests/TestLocationUpdateSelectiveBroadcastFilter.h"
 #include "joynr/TypeUtil.h"
 #include "joynr/tests/testAbstractProvider.h"
-#include "joynr/ThreadUtil.h"
 #include "joynr/LibjoynrSettings.h"
 
 using namespace ::testing;
@@ -205,7 +204,7 @@ public:
         while (testProvider->attributeListeners.find(attributeName) == testProvider->attributeListeners.cend()
                && delay <= subscribeToAttributeWait
         ) {
-            ThreadUtil::sleepForMillis(50);
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
             delay+=50;
         }
         EXPECT_FALSE(testProvider->attributeListeners.find(attributeName) == testProvider->attributeListeners.cend() ||
@@ -225,7 +224,7 @@ public:
         while (testProvider->broadcastListeners.find(broadcastName) == testProvider->broadcastListeners.cend()
                && delay <= subscribeToBroadcastWait
         ) {
-            ThreadUtil::sleepForMillis(50);
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
             delay+=50;
         }
         EXPECT_FALSE(testProvider->broadcastListeners.find(broadcastName) == testProvider->broadcastListeners.cend() ||
@@ -261,7 +260,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithEnumOutput) {
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
-    ThreadUtil::sleepForMillis(registerProviderWait);
+    std::this_thread::sleep_for(std::chrono::milliseconds(registerProviderWait));
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder
             = runtime2->createProxyBuilder<tests::testProxy>(domainName);
@@ -324,7 +323,7 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
-    ThreadUtil::sleepForMillis(registerProviderWait);
+    std::this_thread::sleep_for(std::chrono::milliseconds(registerProviderWait));
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder
             = runtime2->createProxyBuilder<tests::testProxy>(domainName);
@@ -351,7 +350,7 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
 
     // This wait is necessary, because subcriptions are async, and a broadcast could occur
     // before the subscription has started.
-    ThreadUtil::sleepForMillis(subscribeToBroadcastWait);
+    std::this_thread::sleep_for(std::chrono::milliseconds(subscribeToBroadcastWait));
 
     testProvider->fireLocationUpdate(
                 gpsLocation2);
@@ -361,7 +360,7 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
 
     // Waiting between   occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
-    ThreadUtil::sleepForMillis(minInterval_ms);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
 
     testProvider->fireLocationUpdate(gpsLocation2);
 
@@ -372,14 +371,14 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
     subscriptionQos.setMinInterval(5000);
     testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener2, subscriptionQos, subscriptionId);
 
-    ThreadUtil::sleepForMillis(subscribeToBroadcastWait);
+    std::this_thread::sleep_for(std::chrono::milliseconds(subscribeToBroadcastWait));
     testProvider->fireLocationUpdate(gpsLocation2);
 //     Wait for a subscription message to arrive
     ASSERT_TRUE(altSemaphore.waitFor(std::chrono::milliseconds(3000)));
 
     // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
-    ThreadUtil::sleepForMillis(minInterval_ms);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
 
     //now, the next broadcast shall not be received, as the minInterval has been updated
     testProvider->fireLocationUpdate(gpsLocation2);
@@ -411,7 +410,7 @@ TEST_F(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
-    ThreadUtil::sleepForMillis(registerProviderWait);
+    std::this_thread::sleep_for(std::chrono::milliseconds(registerProviderWait));
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder
             = runtime2->createProxyBuilder<tests::testProxy>(domainName);
@@ -438,7 +437,7 @@ TEST_F(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
 
     // This wait is necessary, because subcriptions are async, and a broadcast could occur
     // before the subscription has started.
-    ThreadUtil::sleepForMillis(subscribeToBroadcastWait);
+    std::this_thread::sleep_for(std::chrono::milliseconds(subscribeToBroadcastWait));
 
     testProvider->fireLocationUpdate(gpsLocation2);
 
@@ -447,7 +446,7 @@ TEST_F(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
 
     // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
-    ThreadUtil::sleepForMillis(minInterval_ms);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
 
 
     testProxy->unsubscribeFromLocationUpdateBroadcast(subscriptionId);
@@ -479,7 +478,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
-    ThreadUtil::sleepForMillis(registerProviderWait);
+    std::this_thread::sleep_for(std::chrono::milliseconds(registerProviderWait));
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder
             = runtime2->createProxyBuilder<tests::testProxy>(domainName);
@@ -513,7 +512,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
 
     // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
-    ThreadUtil::sleepForMillis(minInterval_ms);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
 
     testProvider->fireLocationUpdate(gpsLocation3);
 //     Wait for a subscription message to arrive
@@ -521,7 +520,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
 
     // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
-    ThreadUtil::sleepForMillis(minInterval_ms);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
 
     testProvider->fireLocationUpdate(gpsLocation4);
 //     Wait for a subscription message to arrive
@@ -552,7 +551,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
-    ThreadUtil::sleepForMillis(registerProviderWait);
+    std::this_thread::sleep_for(std::chrono::milliseconds(registerProviderWait));
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder
             = runtime2->createProxyBuilder<tests::testProxy>(domainName);
@@ -588,7 +587,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
 
     // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
-    ThreadUtil::sleepForMillis(minInterval_ms);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
 
     testProvider->fireLocationUpdateWithSpeed(gpsLocation3, 200);
 //     Wait for a subscription message to arrive
@@ -596,7 +595,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
 
     // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
-    ThreadUtil::sleepForMillis(minInterval_ms);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
 
     testProvider->fireLocationUpdateWithSpeed(gpsLocation4, 300);
 //     Wait for a subscription message to arrive
@@ -630,7 +629,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
-    ThreadUtil::sleepForMillis(registerProviderWait);
+    std::this_thread::sleep_for(std::chrono::milliseconds(registerProviderWait));
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder
             = runtime2->createProxyBuilder<tests::testProxy>(domainName);
@@ -669,7 +668,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
 
     // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
-    ThreadUtil::sleepForMillis(minInterval_ms);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
 
     testProvider->fireLocationUpdateSelective(gpsLocation3);
 
@@ -678,7 +677,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
 
     // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
-    ThreadUtil::sleepForMillis(minInterval_ms);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
 
     testProvider->fireLocationUpdateSelective(gpsLocation4);
 
@@ -707,7 +706,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
-    ThreadUtil::sleepForMillis(registerProviderWait);
+    std::this_thread::sleep_for(std::chrono::milliseconds(registerProviderWait));
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder
             = runtime2->createProxyBuilder<tests::testProxy>(domainName);
@@ -746,7 +745,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
 
     // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
-    ThreadUtil::sleepForMillis(minInterval_ms);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
 
     testProvider->fireLocationUpdateSelective(gpsLocation3);
 
@@ -755,7 +754,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
 
     // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
-    ThreadUtil::sleepForMillis(minInterval_ms);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
 
     testProvider->fireLocationUpdateSelective(gpsLocation4);
 
@@ -793,7 +792,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
-    ThreadUtil::sleepForMillis(registerProviderWait);
+    std::this_thread::sleep_for(std::chrono::milliseconds(registerProviderWait));
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder
             = runtime2->createProxyBuilder<tests::testProxy>(domainName);
@@ -830,7 +829,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
     // Initial attribute publication
     ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(500)));
 
-    ThreadUtil::sleepForMillis(minInterval_ms); //ensure to wait for the minInterval_ms before changing location
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms)); //ensure to wait for the minInterval_ms before changing location
 
     // Change attribute
     testProvider->locationChanged(gpsLocation2);

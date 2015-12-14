@@ -20,7 +20,6 @@
 #include <gtest/gtest.h>
 #include "joynr/Directory.h"
 #include "joynr/TrackableObject.h"
-#include "joynr/ThreadUtil.h"
 
 using namespace joynr;
 
@@ -97,7 +96,7 @@ TEST_F(DirectoryTest, scheduledRemove)
 {
     directory->add(firstKey, std::shared_ptr<std::string>(new std::string("scheduledRemove_testValue")),100);
     ASSERT_TRUE(directory->contains(firstKey));
-    ThreadUtil::sleepForMillis(200);
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
     ASSERT_FALSE(directory->contains(firstKey));
 }
 
@@ -109,7 +108,7 @@ TEST(UnfixturedDirectoryTest, ObjectsAreDeletedByDirectoryAfterTtl)
     ASSERT_EQ(TrackableObject::getInstances(), 1);
     directory->add("key", t1, 100);
     ASSERT_EQ(TrackableObject::getInstances(), 1) << "Directory copied / deleted object";
-    ThreadUtil::sleepForMillis(200);
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
     ASSERT_EQ(TrackableObject::getInstances(), 0) << "Directory did not delete Object";
     delete directory;
 }
@@ -134,7 +133,7 @@ TEST(UnfixturedDirectoryTest, QSPObjectsAreDeletedByDirectoryAfterTtl)
         directory->add("key", tp, 100);
     }
     ASSERT_EQ(TrackableObject::getInstances(), 1) << "Directory copied / deleted object";
-    ThreadUtil::sleepForMillis(200);
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
     ASSERT_EQ(TrackableObject::getInstances(), 0) << "Directory did not delete Object";
     delete directory;
 }

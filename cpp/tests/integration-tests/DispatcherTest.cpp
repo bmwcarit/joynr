@@ -37,7 +37,6 @@
 #include "joynr/tests/testRequestInterpreter.h"
 #include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/MetaTypeRegistrar.h"
-#include "joynr/ThreadUtil.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -168,7 +167,7 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
     dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
 
     dispatcher.receive(msg);
-    ThreadUtil::sleepForMillis(250);
+    std::this_thread::sleep_for(std::chrono::milliseconds(250));
 }
 
 TEST_F(DispatcherTest, receive_interpreteReplyAndCallReplyCaller) {
@@ -201,7 +200,7 @@ TEST_F(DispatcherTest, receive_interpreteReplyAndCallReplyCaller) {
     dispatcher.addReplyCaller(requestReplyId, mockReplyCaller, qos);
     dispatcher.receive(msg);
 
-    ThreadUtil::sleepForMillis(250);
+    std::this_thread::sleep_for(std::chrono::milliseconds(250));
 }
 
 

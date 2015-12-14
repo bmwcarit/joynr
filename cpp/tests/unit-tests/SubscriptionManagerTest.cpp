@@ -26,7 +26,6 @@
 #include "joynr/ThreadPoolDelayedScheduler.h"
 #include "joynr/SingleThreadedDelayedScheduler.h"
 #include "joynr/Runnable.h"
-#include "joynr/ThreadUtil.h"
 #include "joynr/TimeUtils.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/Directory.h"
@@ -93,7 +92,7 @@ TEST(SubscriptionManagerTest, registerSubscription_missedPublicationRunnableWork
                 qos,
                 subscriptionRequest
     );
-    ThreadUtil::sleepForMillis(1200);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1200));
 }
 
 TEST(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_missedPublicationRunnableWorks) {
@@ -114,7 +113,7 @@ TEST(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_missedP
                 qos,
                 subscriptionRequest
     );
-    ThreadUtil::sleepForMillis(300);
+    std::this_thread::sleep_for(std::chrono::milliseconds(300));
 
     std::shared_ptr<MockSubscriptionListenerOneType<types::Localisation::GpsLocation> > mockGpsSubscriptionListener2(
             new MockSubscriptionListenerOneType<types::Localisation::GpsLocation>()
@@ -133,7 +132,7 @@ TEST(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_missedP
     );
 
     // now, no new publicationMissed callbacks are expected for the first subscriptionRequest
-    ThreadUtil::sleepForMillis(900);
+    std::this_thread::sleep_for(std::chrono::milliseconds(900));
 }
 
 TEST(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_correctDealingWithEnlargedExpiryDate) {
@@ -164,7 +163,7 @@ TEST(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_correct
     );
 
     // now, no new publicationMissed callbacks are expected for the first subscriptionRequest
-    ThreadUtil::sleepForMillis(1000);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 }
 
 TEST(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_correctDealingWithReducedExpiryDate) {
@@ -195,7 +194,7 @@ TEST(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_correct
     );
 
     // now, no new publicationMissed callbacks are expected for the first subscriptionRequest
-    ThreadUtil::sleepForMillis(1000);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 }
 
 TEST(SubscriptionManagerTest, registerSubscription_withoutExpiryDate) {
@@ -268,9 +267,9 @@ TEST(SubscriptionManagerTest, unregisterSubscription_unregisterLeadsToStoppingMi
                 gpslocationCallback,
                 qos,
                 subscriptionRequest);
-     ThreadUtil::sleepForMillis(900);
+     std::this_thread::sleep_for(std::chrono::milliseconds(900));
      subscriptionManager.unregisterSubscription(subscriptionRequest.getSubscriptionId());
-     ThreadUtil::sleepForMillis(1100);
+     std::this_thread::sleep_for(std::chrono::milliseconds(1100));
 }
 
 TEST(SubscriptionManagerTest, unregisterSubscription_unregisterLeadsOnNonExistantSubscription) {
@@ -296,7 +295,7 @@ public:
     }
     void run() {
         LOG_TRACE(logger, "run: entering...");
-        joynr::ThreadUtil::sleepForMillis(200);
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
         LOG_TRACE(logger, "run: leaving...");
     }
 private:
@@ -307,15 +306,15 @@ joynr_logging::Logger* TestRunnable::logger = joynr_logging::Logging::getInstanc
 TEST(SingleThreadedDelayedSchedulerTest, schedule_deletingRunnablesCorrectly) {
     SingleThreadedDelayedScheduler scheduler("SingleThread");
     TestRunnable* runnable = new TestRunnable();
-    scheduler.schedule(runnable, 1);
-    joynr::ThreadUtil::sleepForMillis(100);
+    scheduler.schedule(runnable, joynr::OptionalDelay(std::chrono::milliseconds(1)));
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     scheduler.shutdown();
 }
 
 TEST(ThreadPoolDelayedSchedulerTest, schedule_deletingRunnablesCorrectly) {
-    ThreadPoolDelayedScheduler scheduler(3, "ThreadPool", 0);
+    ThreadPoolDelayedScheduler scheduler(3, "ThreadPool");
     TestRunnable* runnable = new TestRunnable();
-    scheduler.schedule(runnable, 1);
-    joynr::ThreadUtil::sleepForMillis(100);
+    scheduler.schedule(runnable, joynr::OptionalDelay(std::chrono::milliseconds(1)));
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     scheduler.shutdown();
 }

@@ -29,7 +29,6 @@
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/TypeUtil.h"
 #include "joynr/Settings.h"
-#include "joynr/ThreadUtil.h"
 #include "joynr/LibjoynrSettings.h"
 
 #include "joynr/tests/Itest.h"
@@ -284,7 +283,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
                     200  // alert after interval
                 );
     std::string subscriptionId = testProxy->subscribeToLocation(mockSubscriptionListener, subscriptionQos);
-    ThreadUtil::sleepForMillis(250);
+    std::this_thread::sleep_for(std::chrono::milliseconds(250));
     testProxy->unsubscribeFromLocation(subscriptionId);
     delete testProxy;
     delete testProxyBuilder;
@@ -345,7 +344,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
 
     testProxy->unsubscribeFromLocation(subscriptionId);
 
-    ThreadUtil::sleepForMillis(300);
+    std::this_thread::sleep_for(std::chrono::milliseconds(300));
 
     ASSERT_FALSE(semaphore.tryAcquire(1, 1000));
 
