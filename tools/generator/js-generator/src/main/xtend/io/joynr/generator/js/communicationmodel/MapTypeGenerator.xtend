@@ -54,13 +54,6 @@ class MapTypeGenerator {
 				return new «type.joynrName»(members);
 			}
 
-			if (settings !== undefined) {
-				var clone = JSON.parse(JSON.stringify(settings));
-				for (var key in clone) {
-					this[key] = clone[key];
-				}
-			}
-
 			/**
 			 * Used for serialization.
 			 * @name «type.joynrName»#_typeName
@@ -74,6 +67,13 @@ class MapTypeGenerator {
 				enumerable : true,
 				value : "«type.toTypesEnum»"
 			});
+
+			if (settings !== undefined) {
+				var clone = JSON.parse(JSON.stringify(settings));
+				for (var key in clone) {
+					this[key] = clone[key];
+				}
+			}
 
 			Object.defineProperty(this, 'checkMembers', {
 				enumerable: false,

@@ -48,13 +48,13 @@ import org.franca.core.franca.FTypeRef
 import org.franca.core.franca.FTypedElement
 import org.franca.core.franca.FUnionType
 
-public class FMapTypeAsLastComparator implements Comparator<Object> {  
-    override int compare (Object object1, Object object2)
-    {
-        val object1Type = if (object1 instanceof FMapType) 1 else 0
-        val object2Type = if (object2 instanceof FMapType) 1 else 0
-        return object1Type - object2Type
-    }
+public class FMapTypeAsLastComparator implements Comparator<Object> {
+	override int compare (Object object1, Object object2)
+	{
+		val object1Type = if (object1 instanceof FMapType) 1 else 0
+		val object2Type = if (object2 instanceof FMapType) 1 else 0
+		return object1Type - object2Type
+	}
 }
 
 class TypeUtil {
@@ -519,13 +519,13 @@ class TypeUtil {
 		}
 		return result
 	}
-	
+
 	def hasMapMember(FCompoundType type) {
 		for (member : type.membersRecursive) {
 			if (member.type.isMap) {
 				return true
-			}	
+			}
 		}
 		return false
-	}	
+	}
 }

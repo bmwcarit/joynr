@@ -141,11 +141,11 @@ void ClassSerializer<«joynrName»>::serialize(const «joynrName» &«joynrName.
 } /* namespace joynr */
 
 '''
-	
+
 def getDeserializer(FType type) {
 	if (type.isEnum){
 		"EnumDeserializer"
-	}  else if (type.isCompound || type.isMap) {
+	} else if (type.isCompound || type.isMap) {
 		"ClassDeserializer"
 	} else {
 		throw new IllegalStateException("No deserializer known for type " + type.class.simpleName)

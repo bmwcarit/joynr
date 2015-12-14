@@ -70,8 +70,8 @@ class CommunicationModelGenerator {
 	@Inject
 	StdTypeCppTemplate stdTypeCpp;
 
-    @Inject MapHTemplate mapH;
-    @Inject MapCppTemplate mapCpp;
+	@Inject MapHTemplate mapH;
+	@Inject MapCppTemplate mapCpp;
 
 	@Inject TypeSerializerHTemplate typeSerializerH;
 	@Inject TypeSerializerCppTemplate typeSerializerCpp;
@@ -87,8 +87,8 @@ class CommunicationModelGenerator {
 		String headerContainerPath
 	){
 		val dataTypePath = sourceContainerPath + "datatypes" + File::separator
-		val headerDataTypePath = 
-			if (sourceFileSystem == headerFileSystem) 
+		val headerDataTypePath =
+			if (sourceFileSystem == headerFileSystem)
 				headerContainerPath + "datatypes" + File::separator
 			else
 				headerContainerPath
@@ -148,22 +148,22 @@ class CommunicationModelGenerator {
 
 		}
 
-        for (type : getMapDataTypes(fModel)) {
-            var sourcepath = dataTypePath + getPackageSourceDirectory(type) + File::separator
-            var headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
-            if (type.isPartOfTypeCollection) {
-                headerpath += type.typeCollectionName + File::separator
-                sourcepath += type.typeCollectionName + File::separator
-            }
-            val headerFilename = headerpath + stdTypeUtil.getGenerationTypeName(type)
+		for (type : getMapDataTypes(fModel)) {
+			var sourcepath = dataTypePath + getPackageSourceDirectory(type) + File::separator
+			var headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
+			if (type.isPartOfTypeCollection) {
+				headerpath += type.typeCollectionName + File::separator
+				sourcepath += type.typeCollectionName + File::separator
+			}
+			val headerFilename = headerpath + stdTypeUtil.getGenerationTypeName(type)
 			val sourceFilename = sourcepath + stdTypeUtil.getGenerationTypeName(type)
 
-            generateFile(
-                headerFileSystem,
-                headerFilename + ".h",
-                mapH,
-                type
-            )
+			generateFile(
+				headerFileSystem,
+				headerFilename + ".h",
+				mapH,
+				type
+			)
 
 			generateFile(
 				sourceFileSystem,
@@ -184,15 +184,15 @@ class CommunicationModelGenerator {
 				mapSerializerCpp,
 				type
 			)
-        }
+		}
 
 		val interfacePath = sourceContainerPath + "interfaces" + File::separator
-		val headerInterfacePath = 
-			if (sourceFileSystem == headerFileSystem) 
+		val headerInterfacePath =
+			if (sourceFileSystem == headerFileSystem)
 				headerContainerPath + "interfaces" + File::separator
 			else
 				headerContainerPath
-		
+
 		for(serviceInterface: fModel.interfaces){
 			val sourcepath = interfacePath + getPackageSourceDirectory(serviceInterface) + File::separator 
 			val headerpath = headerInterfacePath + getPackagePathWithJoynrPrefix(serviceInterface, File::separator) + File::separator 
@@ -203,7 +203,7 @@ class CommunicationModelGenerator {
 				interfaceH,
 				serviceInterface
 			);
-			
+
 			generateFile(
 				sourceFileSystem,
 				sourcepath + "I" + serviceInterface.joynrName + ".cpp",
