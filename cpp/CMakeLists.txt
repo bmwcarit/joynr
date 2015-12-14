@@ -19,6 +19,19 @@ if(POLICY CMP0020)
     cmake_policy(SET CMP0020 OLD)
 endif(POLICY CMP0020)
 
+if(NOT CMAKE_BUILD_TYPE)
+    message(STATUS "setting default value 'Debug' for CMAKE_BUILD_TYPE")
+    set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build type" FORCE)
+endif()
+
+set_property(
+    CACHE
+    CMAKE_BUILD_TYPE
+    PROPERTY STRINGS
+    "Debug"
+    "Release"
+)
+
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake")
 message(STATUS "variable CMAKE_MODULE_PATH=" ${CMAKE_MODULE_PATH})
 message(STATUS "variable CMAKE_PREFIX_PATH=" ${CMAKE_PREFIX_PATH})
