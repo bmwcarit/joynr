@@ -112,6 +112,7 @@ public abstract class AbstractBounceProxyServerTest {
     }
 
     @Test(timeout = 20000)
+    @Ignore
     // This is a test to see if the atmos bug still exists. If the bug exists,
     // the server will hang 20 secs
     public void testSendAndReceiveMessagesOnAtmosphereServer() throws Exception {
@@ -180,6 +181,7 @@ public abstract class AbstractBounceProxyServerTest {
     }
 
     @Test(timeout = 1000000)
+    @Ignore
     // This is a test to see if sending and receiving messages at the same time
     // results in duplicate messages in the long poll.
     public void testSendAndReceiveMessagesConcurrently() throws Exception {

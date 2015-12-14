@@ -21,7 +21,6 @@ package io.joynr.dispatching;
 
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import static org.mockito.Mockito.mock;
-import io.joynr.accesscontrol.AccessController;
 import io.joynr.dispatching.rpc.RpcUtils;
 import io.joynr.dispatching.subscription.PublicationManager;
 import io.joynr.dispatching.subscription.SubscriptionManager;
@@ -29,7 +28,6 @@ import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.ReceiverStatusListener;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.proxy.JoynrMessagingConnectorFactory;
-import io.joynr.security.PlatformSecurityManager;
 
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -71,10 +69,6 @@ public class DispatcherImplTest {
     private MessageRouter messageRouterMock;
     @Spy
     private MessageSenderReceiverMock messageReceiverMock = new MessageSenderReceiverMock();
-    @Mock
-    private PlatformSecurityManager platformSecurityManagerMock;
-    @Mock
-    private AccessController accessControllerMock;
 
     private Dispatcher fixture;
     private RequestCallerDirectory requestCallerDirectory;
@@ -91,8 +85,6 @@ public class DispatcherImplTest {
                 bind(PublicationManager.class).toInstance(publicationManagerMock);
                 bind(MessageRouter.class).toInstance(messageRouterMock);
                 bind(MessageReceiver.class).toInstance(messageReceiverMock);
-                bind(PlatformSecurityManager.class).toInstance(platformSecurityManagerMock);
-                bind(AccessController.class).toInstance(accessControllerMock);
 
                 requestStaticInjection(RpcUtils.class, Request.class, JoynrMessagingConnectorFactory.class);
 
@@ -131,7 +123,7 @@ public class DispatcherImplTest {
                      * during startup
                      * The MessageReceiver is invoked by the dispatcher once a request caller
                      * is registered
-                     * 
+                     *
                      */
                     messageReceiverMock.setBlockOnInitialisation(true);
                     requestCallerDirectory.addCaller(requestReplyId, requestCaller);

@@ -20,20 +20,9 @@ package io.joynr.dispatching;
  */
 
 import static org.junit.Assert.assertNotNull;
-import io.joynr.common.ExpiryDate;
-import io.joynr.dispatching.JoynrMessageFactory;
-import io.joynr.messaging.MessagingModule;
-import io.joynr.pubsub.SubscriptionQos;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
-
-import joynr.JoynrMessage;
-import joynr.PeriodicSubscriptionQos;
-import joynr.Reply;
-import joynr.Request;
-import joynr.SubscriptionPublication;
-import joynr.SubscriptionRequest;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -46,6 +35,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+
+import io.joynr.common.ExpiryDate;
+import io.joynr.messaging.JsonMessageSerializerModule;
+import io.joynr.pubsub.SubscriptionQos;
+import joynr.JoynrMessage;
+import joynr.PeriodicSubscriptionQos;
+import joynr.Reply;
+import joynr.Request;
+import joynr.SubscriptionPublication;
+import joynr.SubscriptionRequest;
 
 @RunWith(MockitoJUnitRunner.class)
 public class JoynrMessageFactoryTest {
@@ -67,7 +66,7 @@ public class JoynrMessageFactoryTest {
 
         fromParticipantId = "sender";
         toParticipantId = "receiver";
-        Injector injector = Guice.createInjector(new MessagingModule(), new AbstractModule() {
+        Injector injector = Guice.createInjector(new JsonMessageSerializerModule(), new AbstractModule() {
 
             @Override
             protected void configure() {

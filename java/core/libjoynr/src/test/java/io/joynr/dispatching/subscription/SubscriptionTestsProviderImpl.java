@@ -1,5 +1,6 @@
 package io.joynr.dispatching.subscription;
 
+
 /*
  * #%L
  * %%
@@ -30,6 +31,7 @@ import java.util.Set;
 
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.tests.DefaulttestProvider;
+import joynr.types.ProviderQos;
 import joynr.types.Localisation.GpsFixEnum;
 import joynr.types.Localisation.GpsLocation;
 
@@ -40,7 +42,8 @@ public class SubscriptionTestsProviderImpl extends DefaulttestProvider {
 
     List<Integer> list = new ArrayList<Integer>();
 
-    public SubscriptionTestsProviderImpl() {
+    public SubscriptionTestsProviderImpl(ProviderQos providerQos) {
+        this.providerQos = providerQos;
         testAttribute = 42;
         complexTestAttribute = new GpsLocation();
         complexTestAttribute.setLatitude(48.143554);
@@ -48,6 +51,10 @@ public class SubscriptionTestsProviderImpl extends DefaulttestProvider {
         complexTestAttribute.setAltitude(6.0);
         complexTestAttribute.setGpsFix(GpsFixEnum.MODE3D);
         ATTRIBUTEWITHCAPITALLETTERS = 42;
+    }
+
+    public SubscriptionTestsProviderImpl() {
+        this(new ProviderQos());
     }
 
     @Override

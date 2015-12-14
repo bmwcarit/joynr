@@ -36,6 +36,11 @@
 	<dependencies>
 		<!-- Robolectric dependencies -->
 		<dependency>
+			<groupId>io.joynr.java.common</groupId>
+			<artifactId>access-control-common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>org.robolectric</groupId>
 			<artifactId>robolectric</artifactId>
 			<version>3.0</version>
@@ -98,21 +103,17 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.eclipse.jetty</groupId>
-			<artifactId>jetty-webapp</artifactId>
-            <scope>test</scope>
+			<groupId>io.joynr.java.core</groupId>
+			<artifactId>clustercontroller-websocket-runtime</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
 		</dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty.websocket</groupId>
-            <artifactId>websocket-server</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.joynr.java.messaging</groupId>
-            <artifactId>servlet-common</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
+		<dependency>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>servlet-common</artifactId>
+			<scope>test</scope>
+			<version>${project.version}</version>
+		</dependency>
 	</dependencies>
 
 	<build>

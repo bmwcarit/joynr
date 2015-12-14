@@ -3,7 +3,7 @@ package io.joynr.runtime;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,17 +19,13 @@ package io.joynr.runtime;
  * #L%
  */
 
-import io.joynr.accesscontrol.AccessControlClientModule;
-import io.joynr.common.JoynrPropertiesModule;
-import io.joynr.discovery.DiscoveryClientModule;
-import io.joynr.dispatching.subscription.PubSubModule;
-import io.joynr.messaging.LongPollingMessagingModule;
-
 import java.util.Properties;
 
 import com.google.inject.Binder;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
+
+import io.joynr.common.JoynrPropertiesModule;
 
 public class JoynrBaseModule implements Module {
     private Module module = null;
@@ -41,10 +37,6 @@ public class JoynrBaseModule implements Module {
     }
 
     public JoynrBaseModule(Properties customJoynProperties, Module... modules) {
-        module = Modules.override(new JoynrPropertiesModule(customJoynProperties),
-                                  new LongPollingMessagingModule(),
-                                  new PubSubModule(),
-                                  new DiscoveryClientModule(),
-                                  new AccessControlClientModule()).with(modules);
+        module = Modules.override(new JoynrPropertiesModule(customJoynProperties)).with(modules);
     }
 }

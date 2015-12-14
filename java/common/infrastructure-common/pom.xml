@@ -37,6 +37,21 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>io.joynr.java.common</groupId>
+			<artifactId>discovery-common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.common</groupId>
+			<artifactId>access-control-common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>messaging-common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>net.sf.ehcache</groupId>
 			<artifactId>ehcache</artifactId>
 		</dependency>

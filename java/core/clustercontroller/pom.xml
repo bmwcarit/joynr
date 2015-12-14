@@ -1,0 +1,272 @@
+<!--
+  #%L
+  %%
+  Copyright (C) 2011 - 2013 BMW Car IT GmbH
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<name>${project.groupId}:${project.artifactId}</name>
+	<groupId>io.joynr.java.core</groupId>
+	<artifactId>clustercontroller</artifactId>
+	<packaging>jar</packaging>
+
+	<parent>
+		<groupId>io.joynr.java</groupId>
+		<artifactId>core</artifactId>
+		<version>0.13.0-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+
+	<dependencies>
+		<dependency>
+			<groupId>io.joynr.java</groupId>
+			<artifactId>javaapi</artifactId>
+			<version>${project.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.core</groupId>
+			<artifactId>libjoynr</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.common</groupId>
+			<artifactId>infrastructure-common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<!-- used to scan for annotations for subtypes -->
+		<dependency>
+			<groupId>org.reflections</groupId>
+			<artifactId>reflections</artifactId>
+		</dependency>
+		<!--
+			Due to compatibility reasons of httpclient library provided within the
+			Android platform, we use an Android port httpclient-android. It is
+			compiled against official Android SDK, however we must use shaded
+			(org.apache.http.**.*HC4) classes.
+
+			See also: https://hc.apache.org/httpcomponents-client-4.3.x/android-port.html
+
+			The dependency to httpclient is needed here anyway, because httpclient-android
+			is not pulling in transitive dependencies. httpclient is then excluded in
+			Android projects to avoid duplicate file errors during apk build.
+		-->
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.google.inject.extensions</groupId>
+			<artifactId>guice-assistedinject</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.jayway.restassured</groupId>
+			<artifactId>rest-assured</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.groovy</groupId>
+			<artifactId>groovy-all</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<!-- This dependency is needed to ensure the correct build order.
+			Some artifacts is needed by the maven-dependency-plugin, which
+			copies them to the currrent build directory.
+		-->
+		<dependency>
+			<groupId>io.joynr.java.messaging.bounceproxy</groupId>
+			<artifactId>single-bounceproxy</artifactId>
+			<version>${project.version}</version>
+			<type>war</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-webapp</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>io.joynr.tools.generator</groupId>
+				<artifactId>joynr-generator-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>testSources</id>
+						<phase>generate-test-sources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<model>Navigation.fidl</model>
+							<generationLanguage>java</generationLanguage>
+							<outputPath>${basedir}/src/test/generated</outputPath>
+						</configuration>
+					</execution>
+				</executions>
+				<dependencies>
+					<dependency>
+						<groupId>io.joynr.tools.generator</groupId>
+						<artifactId>java-generator</artifactId>
+						<version>${project.version}</version>
+					</dependency>
+					<dependency>
+						<groupId>io.joynr</groupId>
+						<artifactId>basemodel</artifactId>
+						<version>${project.version}</version>
+					</dependency>
+					<dependency>
+						<groupId>io.joynr</groupId>
+						<artifactId>basemodel</artifactId>
+						<classifier>tests</classifier>
+						<version>${project.version}</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>test-jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-clean-plugin</artifactId>
+				<configuration>
+					<filesets>
+						<fileset>
+							<directory>src/test/generated</directory>
+							<includes>
+								<include>**</include>
+							</includes>
+						</fileset>
+					</filesets>
+				</configuration>
+			</plugin>
+		</plugins>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
+		<testResources>
+			<testResource>
+				<directory>src/test/resources</directory>
+				<filtering>true</filtering>
+			</testResource>
+		</testResources>
+
+		<!-- specify plugin versions and configuration here to apply to all submodules
+			that use the specified plugin -->
+		<pluginManagement>
+			<plugins>
+				<!-- Make the libjoynr unittests available to other platforms -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jar-plugin</artifactId>
+					<executions>
+						<execution>
+							<goals>
+								<goal>test-jar</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>appassembler-maven-plugin</artifactId>
+					<configuration>
+						<repositoryLayout>flat</repositoryLayout>
+						<repositoryName>lib</repositoryName>
+						<programs>
+							<program>
+								<mainClass>io.joynr.dispatcher.Test</mainClass>
+								<name>Test</name>
+							</program>
+						</programs>
+					</configuration>
+				</plugin>
+				<plugin>
+					<artifactId>maven-assembly-plugin</artifactId>
+					<configuration>
+						<finalName>demo-messenger-${project.version}</finalName>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-dependency-plugin</artifactId>
+					<executions>
+						<execution>
+							<id>copy-test-dependencies</id>
+							<phase>process-test-resources</phase>
+							<goals>
+								<goal>copy</goal>
+							</goals>
+							<configuration>
+								<artifactItems>
+									<artifactItem>
+										<groupId>io.joynr.java.messaging.bounceproxy</groupId>
+										<artifactId>single-bounceproxy</artifactId>
+										<version>${project.version}</version>
+										<type>war</type>
+										<outputDirectory>${project.build.directory}</outputDirectory>
+										<destFileName>bounceproxy.war</destFileName>
+									</artifactItem>
+								</artifactItems>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+</project>

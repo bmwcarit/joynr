@@ -32,6 +32,7 @@ import joynr.infrastructure.GlobalCapabilitiesDirectoryAbstractProvider;
 import com.google.inject.Inject;
 import com.google.inject.persist.PersistService;
 import com.google.inject.persist.jpa.JpaPersistModule;
+import com.google.inject.util.Modules;
 
 public class CapabilitiesDirectoryLauncher extends AbstractJoynrApplication {
 
@@ -53,9 +54,9 @@ public class CapabilitiesDirectoryLauncher extends AbstractJoynrApplication {
 
         // LongPollingMessagingModule is only added in main(), since the servletMessagingModule will be used otherwise
         JoynrInjectorFactory injectorFactory = new JoynrInjectorFactory(joynrConfig,
-                                                                        new JpaPersistModule("CapabilitiesDirectory"),
-                                                                        new CapabilitiesDirectoryModule(),
-                                                                        new CCInProcessRuntimeModule());
+                                                                        Modules.override(new JpaPersistModule("CapabilitiesDirectory"),
+                                                                                         new CCInProcessRuntimeModule())
+                                                                               .with(new CapabilitiesDirectoryModule()));
         capabilitiesDirectoryLauncher = injectorFactory.createApplication(new JoynrApplicationModule("capabilitiesDirectoryLauncher",
                                                                                                      CapabilitiesDirectoryLauncher.class));
         capabilitiesDirectoryLauncher.run();

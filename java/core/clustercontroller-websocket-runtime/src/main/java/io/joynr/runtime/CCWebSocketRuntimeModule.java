@@ -43,7 +43,7 @@ import java.util.Map;
 /**
  *
  */
-public class CCWebSocketRuntimeModule extends AbstractRuntimeModule {
+public class CCWebSocketRuntimeModule extends ClusterControllerRuntimeModule {
     @Override
     protected void configure() {
         super.configure();

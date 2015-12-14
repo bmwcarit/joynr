@@ -26,8 +26,8 @@ import javax.inject.Named;
 import com.google.common.collect.Maps;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
-
 import com.google.inject.name.Names;
+
 import io.joynr.messaging.AbstractMessagingStubFactory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.IMessagingSkeleton;
@@ -42,7 +42,7 @@ import joynr.system.RoutingTypes.ChannelAddress;
 /**
  *  Use this module if you want to run libjoynr and cluster controller in one process
  */
-public class CCInProcessRuntimeModule extends AbstractRuntimeModule {
+public class CCInProcessRuntimeModule extends ClusterControllerRuntimeModule {
 
     @Override
     protected void configure() {

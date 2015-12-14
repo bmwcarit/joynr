@@ -1,5 +1,16 @@
 package io.joynr.proxy;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.mockito.runners.MockitoJUnitRunner;
+
 /*
  * #%L
  * %%
@@ -23,22 +34,6 @@ import io.joynr.arbitration.ArbitrationResult;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.dispatcher.rpc.JoynrSyncInterface;
 import io.joynr.messaging.MessagingQos;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-
-import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.ChannelAddress;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProxyInvocationHandlerTest {

@@ -40,6 +40,7 @@ import joynr.tests.testBroadcastInterface.LocationUpdateSelectiveBroadcastFilter
 import joynr.tests.testLocationUpdateSelectiveBroadcastFilter;
 import joynr.tests.testProxy;
 import joynr.tests.testTypes.TestEnum;
+import joynr.types.ProviderQos;
 import joynr.types.Localisation.GpsFixEnum;
 import joynr.types.Localisation.GpsLocation;
 import org.junit.After;
@@ -63,6 +64,12 @@ import static org.junit.Assert.fail;
 public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
     private static final Logger logger = LoggerFactory.getLogger(AbstractBroadcastEnd2EndTest.class);
 
+    protected static class TestProvider extends DefaulttestProvider {
+        public TestProvider(ProviderQos providerQos) {
+            this.providerQos = providerQos;
+        }
+    }
+
     // This timeout must be shared by all integration test environments and
     // cannot be too short.
     private static final int CONST_DEFAULT_TEST_TIMEOUT = 8000;
@@ -70,7 +77,7 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
     @Rule
     public TestName name = new TestName();
 
-    private static DefaulttestProvider provider;
+    private static TestProvider provider;
     private static testProxy proxy;
     private String domain;
 
@@ -89,6 +96,10 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
 
     private JoynrRuntime providerRuntime;
     private JoynrRuntime consumerRuntime;
+
+    protected ProviderQos providerQos = new ProviderQos();
+    protected MessagingQos messagingQos = new MessagingQos(10000);
+    protected DiscoveryQos discoveryQos = new DiscoveryQos(10000, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
 
     // Overridden by test environment implementations
     protected abstract JoynrRuntime getRuntime(Properties joynrConfig, Module... modules);
@@ -123,7 +134,7 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
         factoryPropertiesProvider.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, domain);
         providerRuntime = getRuntime(factoryPropertiesProvider, new StaticDomainAccessControlProvisioningModule());
 
-        provider = new DefaulttestProvider();
+        provider = new TestProvider(providerQos);
         Future<Void> voidFuture = providerRuntime.registerProvider(domain, provider);//.waitForFullRegistration(CONST_DEFAULT_TEST_TIMEOUT);
         voidFuture.get(CONST_DEFAULT_TEST_TIMEOUT);
     }
@@ -140,9 +151,6 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
                 + UUID.randomUUID().toString());
 
         consumerRuntime = getRuntime(factoryPropertiesB);
-
-        MessagingQos messagingQos = new MessagingQos(10000);
-        DiscoveryQos discoveryQos = new DiscoveryQos(10000, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
 
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
 

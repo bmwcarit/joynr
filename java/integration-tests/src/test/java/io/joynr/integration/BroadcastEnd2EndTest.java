@@ -20,8 +20,11 @@ package io.joynr.integration;
  */
 
 import com.google.inject.Module;
+import com.google.inject.util.Modules;
+
 import io.joynr.integration.util.DummyJoynrApplication;
 import io.joynr.integration.util.ServersUtil;
+import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.runtime.CCInProcessRuntimeModule;
@@ -59,17 +62,16 @@ public class BroadcastEnd2EndTest extends AbstractBroadcastEnd2EndTest {
 
     @Override
     protected JoynrRuntime getRuntime(Properties joynrConfig, Module... modules) {
-        Module[] modulesWithRuntime = new Module[modules.length+1];
-        modulesWithRuntime[0] = new CCInProcessRuntimeModule();
-        System.arraycopy(modules, 0, modulesWithRuntime, 1, modules.length);
-        DummyJoynrApplication application = (DummyJoynrApplication)
-                new JoynrInjectorFactory(joynrConfig, modulesWithRuntime)
-                        .createApplication(DummyJoynrApplication.class);
+        Module runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(new AtmosphereMessagingModule());
+        Module modulesWithRuntime = Modules.override(modules).with(runtimeModule);
+        DummyJoynrApplication application = (DummyJoynrApplication) new JoynrInjectorFactory(joynrConfig,
+                                                                                             modulesWithRuntime).createApplication(DummyJoynrApplication.class);
 
         dummyApplications.add(application);
         return application.getRuntime();
     }
 
+    @Override
     @After
     public void tearDown() throws Exception {
         for (DummyJoynrApplication application : dummyApplications) {

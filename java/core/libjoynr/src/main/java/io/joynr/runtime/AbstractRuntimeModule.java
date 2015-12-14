@@ -22,14 +22,9 @@ import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 
 import javax.inject.Named;
-
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.impl.client.CloseableHttpClient;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
@@ -38,22 +33,27 @@ import com.google.inject.Singleton;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.name.Names;
 
+import io.joynr.arbitration.ArbitratorFactory;
+import io.joynr.capabilities.CapabilitiesRegistrar;
+import io.joynr.capabilities.CapabilitiesRegistrarImpl;
+import io.joynr.capabilities.ParticipantIdStorage;
+import io.joynr.capabilities.PropertiesFileParticipantIdStorage;
+import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.DispatcherImpl;
 import io.joynr.dispatching.RequestReplyManager;
 import io.joynr.dispatching.RequestReplyManagerImpl;
 import io.joynr.dispatching.rpc.RpcUtils;
+import io.joynr.dispatching.subscription.PublicationManager;
+import io.joynr.dispatching.subscription.PublicationManagerImpl;
+import io.joynr.dispatching.subscription.SubscriptionManager;
+import io.joynr.dispatching.subscription.SubscriptionManagerImpl;
 import io.joynr.logging.JoynrAppenderManagerFactory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.IMessaging;
-import io.joynr.messaging.MessageScheduler;
+import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingSettings;
-import io.joynr.messaging.channel.ChannelMessagingSkeleton;
-import io.joynr.messaging.http.operation.HttpClientProvider;
-import io.joynr.messaging.http.operation.HttpDefaultRequestConfigProvider;
 import io.joynr.messaging.inprocess.InProcessAddress;
-import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.messaging.routing.RoutingTableImpl;
 import io.joynr.proxy.ProxyBuilderFactory;
@@ -61,6 +61,7 @@ import io.joynr.proxy.ProxyBuilderFactoryImpl;
 import io.joynr.proxy.ProxyInvocationHandler;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
 import io.joynr.proxy.ProxyInvocationHandlerImpl;
+import joynr.system.DiscoveryAsync;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 
@@ -68,17 +69,21 @@ abstract class AbstractRuntimeModule extends AbstractModule {
 
     @Override
     protected void configure() {
+        install(new JsonMessageSerializerModule());
         install(new FactoryModuleBuilder().implement(ProxyInvocationHandler.class, ProxyInvocationHandlerImpl.class)
                                           .build(ProxyInvocationHandlerFactory.class));
 
         bind(ProxyBuilderFactory.class).to(ProxyBuilderFactoryImpl.class);
-        bind(RequestConfig.class).toProvider(HttpDefaultRequestConfigProvider.class).in(Singleton.class);
         bind(RequestReplyManager.class).to(RequestReplyManagerImpl.class);
+        bind(SubscriptionManager.class).to(SubscriptionManagerImpl.class);
+        bind(PublicationManager.class).to(PublicationManagerImpl.class);
         bind(Dispatcher.class).to(DispatcherImpl.class);
+        bind(LocalDiscoveryAggregator.class).in(Singleton.class);
+        bind(DiscoveryAsync.class).to(LocalDiscoveryAggregator.class);
+        bind(CapabilitiesRegistrar.class).to(CapabilitiesRegistrarImpl.class);
+        bind(ParticipantIdStorage.class).to(PropertiesFileParticipantIdStorage.class);
         bind(MessagingSettings.class).to(ConfigurableMessagingSettings.class);
         bind(RoutingTable.class).to(RoutingTableImpl.class).asEagerSingleton();
-
-        bind(CloseableHttpClient.class).toProvider(HttpClientProvider.class).in(Singleton.class);
 
         requestStaticInjection(RpcUtils.class, JoynrAppenderManagerFactory.class);
 
@@ -86,18 +91,7 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         ScheduledExecutorService cleanupExecutor = Executors.newSingleThreadScheduledExecutor(namedThreadFactory);
         bind(ScheduledExecutorService.class).annotatedWith(Names.named(JOYNR_SCHEDULER_CLEANUP))
                                             .toInstance(cleanupExecutor);
-    }
-
-    @Provides
-    @Named(MessageScheduler.SCHEDULEDTHREADPOOL)
-    ScheduledExecutorService provideMessageSchedulerThreadPoolExecutor(@Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maximumParallelSends) {
-        ThreadFactory schedulerNamedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.MessageScheduler-scheduler-%d")
-                                                                              .build();
-        ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(maximumParallelSends,
-                                                                                schedulerNamedThreadFactory);
-        scheduler.setKeepAliveTime(100, TimeUnit.SECONDS);
-        scheduler.allowCoreThreadTimeOut(true);
-        return scheduler;
+        requestStaticInjection(ArbitratorFactory.class);
     }
 
     @Provides
@@ -129,13 +123,6 @@ abstract class AbstractRuntimeModule extends AbstractModule {
     Address getDomainAccessControllerAddress(@Named(MessagingPropertyKeys.CHANNELID) String channelId,
                                              @com.google.inject.name.Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID) String domainAccessControllerChannelId) {
         return getAddress(channelId, domainAccessControllerChannelId);
-    }
-
-    @Provides
-    @Singleton
-    @Named(ConfigurableMessagingSettings.PROPERTY_CLUSTERCONTROLER_MESSAGING_SKELETON)
-    IMessaging getClusterControllerMessagingSkeleton(MessageRouter messageRouter) {
-        return new ChannelMessagingSkeleton(messageRouter);
     }
 
     private Address getAddress(String localChannelId, String targetChannelId) {

@@ -43,7 +43,7 @@
         </dependency>
         <dependency>
             <groupId>io.joynr.java.messaging</groupId>
-            <artifactId>routing-common</artifactId>
+            <artifactId>messaging-common</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

@@ -25,14 +25,12 @@ import android.util.Log;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
-import io.joynr.joynrandroidruntime.messaging.AndroidLongPollingMessagingModule;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.runtime.ClusterControllerRuntime;
-import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
-import io.joynr.runtime.JoynrRuntimeImpl;
+import io.joynr.runtime.LibjoynrWebSocketRuntime;
+import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
 import io.joynr.runtime.PropertyLoader;
 import java.io.File;
 import java.util.ArrayList;
@@ -65,7 +63,6 @@ public class InitRuntimeTask extends AsyncTask<Object, String, JoynrRuntime> {
 
         // Make note of custom modules and add what is needed for Android long polling
         this.modules = new ArrayList<Module>();
-        this.modules.add(new AndroidLongPollingMessagingModule());
         this.modules.addAll(joynrModules);
     }
 
@@ -97,10 +94,10 @@ public class InitRuntimeTask extends AsyncTask<Object, String, JoynrRuntime> {
 
             // Create an injector with all the required custom modules.
             // CCInProcessRuntimeModule is used by default but can be overwritten by custom modules
-            Module combinedModules = Modules.override(new CCInProcessRuntimeModule()).with(modules);
+            Module combinedModules = Modules.override(new LibjoynrWebSocketRuntimeModule()).with(modules);
             Injector injectorA = new JoynrInjectorFactory(joynrConfig, combinedModules).createChildInjector();
 
-            JoynrRuntimeImpl runtime = injectorA.getInstance(ClusterControllerRuntime.class);
+            JoynrRuntime runtime = injectorA.getInstance(LibjoynrWebSocketRuntime.class);
             if (runtime != null) {
                 Log.d("JAS", "joynr runtime started");
             } else {
@@ -117,6 +114,7 @@ public class InitRuntimeTask extends AsyncTask<Object, String, JoynrRuntime> {
         return null;
     }
 
+    @Override
     protected void onProgressUpdate(String... progress) {
         uiLogger.logText(progress);
     }

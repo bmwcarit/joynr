@@ -57,11 +57,14 @@ public abstract class WebSocketMessagingStub implements IMessaging {
         if (sessionFuture == null) {
             initConnection();
         }
-        try {
-            session = sessionFuture.get(timeout, TimeUnit.MILLISECONDS);
-            session.getRemote().sendString(string);
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            throw new JoynrMessageNotSentException("Websocket transmit error: " + e);
+
+        if (sessionFuture != null) {
+            try {
+                session = sessionFuture.get(timeout, TimeUnit.MILLISECONDS);
+                session.getRemote().sendString(string);
+            } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                throw new JoynrMessageNotSentException("Websocket transmit error: " + e);
+            }
         }
     }
 

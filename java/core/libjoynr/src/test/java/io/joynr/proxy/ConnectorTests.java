@@ -48,7 +48,6 @@ import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import joynr.PeriodicSubscriptionQos;
 import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.types.Localisation.GpsPosition;
 import joynr.vehicle.LocalisationSubscriptionInterface;
 
@@ -67,17 +66,13 @@ public class ConnectorTests {
 
     private String fromParticipantId;
     private String toParticipantId;
-    private String channelId;
     private MessagingQos qosSettings;
-    private ChannelAddress address;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         fromParticipantId = "fromParticipantId";
         toParticipantId = "toParticipantId";
-        channelId = "testChannelId";
-        address = new ChannelAddress(channelId);
         qosSettings = new MessagingQos();
 
     }

@@ -1,5 +1,11 @@
 package io.joynr.messaging;
 
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.impl.client.CloseableHttpClient;
+
+import com.google.inject.AbstractModule;
+import com.google.inject.Singleton;
+
 /*
  * #%L
  * %%
@@ -21,21 +27,28 @@ package io.joynr.messaging;
 
 import io.joynr.dispatcher.ServletMessageReceiver;
 import io.joynr.dispatcher.ServletMessageReceiverImpl;
+import io.joynr.messaging.http.operation.ApacheHttpRequestFactory;
+import io.joynr.messaging.http.operation.HttpClientProvider;
+import io.joynr.messaging.http.operation.HttpDefaultRequestConfigProvider;
+import io.joynr.messaging.http.operation.HttpRequestFactory;
 
 /**
  * Used in conjunction with DefaultDispatcherModule to inject the application side
  *
  */
-public class ServletMessagingModule extends MessagingModule {
+public class ServletMessagingModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        super.configure();
         // bind(String.class).annotatedWith(Names.named("joynr.messaging.channelId")).toInstance(channelId);
         bind(MessageListeners.class).to(MessageListenersImpl.class).asEagerSingleton();
-        bind(MessageReceiver.class).to(ServletMessageReceiverImpl.class);
         bind(ServletMessageReceiver.class).to(ServletMessageReceiverImpl.class);
-        bind(MessageSender.class).to(MessageSenderImpl.class);
+        bind(RequestConfig.class).toProvider(HttpDefaultRequestConfigProvider.class).in(Singleton.class);
+        bind(CloseableHttpClient.class).toProvider(HttpClientProvider.class).in(Singleton.class);
+        bind(MessageSender.class).to(HttpMessageSenderImpl.class);
+        bind(MessageReceiver.class).to(ServletMessageReceiverImpl.class);
+        bind(HttpRequestFactory.class).to(ApacheHttpRequestFactory.class);
+
     }
 
 }

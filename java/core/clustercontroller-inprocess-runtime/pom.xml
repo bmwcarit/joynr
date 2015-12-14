@@ -15,14 +15,8 @@
     <dependencies>
         <dependency>
             <groupId>io.joynr.java.core</groupId>
-            <artifactId>libjoynr</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.joynr.java.messaging</groupId>
-            <artifactId>routing-common</artifactId>
+            <artifactId>clustercontroller</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
-
 </project>

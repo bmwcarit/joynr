@@ -69,7 +69,7 @@ public class MessagingService {
 
     private static final Logger log = LoggerFactory.getLogger(MessagingService.class);
 
-    private static final Injector injector = Guice.createInjector(new MessagingModule());
+    private static final Injector injector = Guice.createInjector(new JsonMessageSerializerModule());
     private static final ObjectMapper objectMapper = injector.getInstance(ObjectMapper.class);
 
     @Context
@@ -84,7 +84,7 @@ public class MessagingService {
 
     /**
      * A simple HTML list view of channels. A JSP is used for rendering.
-     * 
+     *
      * @return a HTML list of available channels, and their resources (long poll connections) if connected.
      */
     @GET
@@ -122,7 +122,7 @@ public class MessagingService {
 
     /**
      * Send a message to the servlet.
-     * 
+     *
      * @param channelId
      *            channel id of the receiver.
      * @param message

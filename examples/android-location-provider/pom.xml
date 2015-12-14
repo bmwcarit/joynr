@@ -44,10 +44,6 @@
 					<groupId>commons-codec</groupId>
 				</exclusion>
 				<exclusion>
-					<artifactId>httpclient</artifactId>
-					<groupId>org.apache.httpcomponents</groupId>
-				</exclusion>
-				<exclusion>
 					<artifactId>opengl-api</artifactId>
 					<groupId>org.khronos</groupId>
 				</exclusion>
@@ -69,7 +65,14 @@
 			<groupId>io.joynr.java.android</groupId>
 			<artifactId>joynr-android-runtime</artifactId>
 			<version>${project.version}</version>
+			<classifier>all</classifier>
 			<scope>compile</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>*</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 	</dependencies>
 	<build>
@@ -151,7 +154,7 @@
 						<jvmArguments>
 							<jvmArgument>-Xmx2048M</jvmArgument>
 						</jvmArguments>
-						<multiDex>true</multiDex>
+						<!-- multiDex>true</multiDex-->
 					</dex>
 					<dexOptimize>false</dexOptimize>
 					<genDirectory>gen</genDirectory>

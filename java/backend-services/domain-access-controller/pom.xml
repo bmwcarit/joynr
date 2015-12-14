@@ -43,6 +43,11 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>io.joynr.java.common</groupId>
+            <artifactId>infrastructure-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.google.inject</groupId>
             <artifactId>guice</artifactId>
         </dependency>

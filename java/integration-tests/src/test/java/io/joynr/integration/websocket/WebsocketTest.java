@@ -26,7 +26,6 @@ import io.joynr.messaging.websocket.CCWebSocketMessagingSkeleton;
 import io.joynr.messaging.websocket.LibWebSocketMessagingSkeleton;
 import io.joynr.messaging.websocket.LibWebSocketMessagingStub;
 import io.joynr.messaging.websocket.WebSocketClientMessagingStubFactory;
-import io.joynr.security.DummyPlatformSecurityManager;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -85,7 +84,7 @@ public class WebsocketTest {
                                                                         new ObjectMapper(),
                                                                         messageRouterMock,
                                                                         webSocketMessagingStubFactory);
-        joynrMessageFactory = new JoynrMessageFactory(new ObjectMapper(), new DummyPlatformSecurityManager());
+        joynrMessageFactory = new JoynrMessageFactory(new ObjectMapper());
         ccWebSocketMessagingSkeleton.init();
     }
 

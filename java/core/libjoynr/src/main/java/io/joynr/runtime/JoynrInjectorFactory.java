@@ -32,12 +32,9 @@ import com.google.inject.util.Modules;
  */
 public class JoynrInjectorFactory extends AbstractJoynrInjectorFactory {
 
-    private AbstractRuntimeModule runtimeModule;
-
     @Inject
-    public JoynrInjectorFactory(AbstractRuntimeModule runtimeModule) {
-        this(new Module[]{ runtimeModule });
-        this.runtimeModule = runtimeModule;
+    public JoynrInjectorFactory() {
+        this(new Module[]{});
     }
 
     /**
@@ -62,7 +59,7 @@ public class JoynrInjectorFactory extends AbstractJoynrInjectorFactory {
 
     @Override
     public void updateInjectorModule(Properties customJoynProperties, Module... modules) {
-        updateModules(Modules.combine(new JoynrBaseModule(customJoynProperties, modules), runtimeModule));
+        updateModules(Modules.combine(new JoynrBaseModule(customJoynProperties, modules)));
     }
 
     @Override

@@ -23,7 +23,6 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import io.joynr.common.ExpiryDate;
-import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.dispatcher.rpc.ReflectionUtils;
 import io.joynr.exceptions.DiscoveryException;
@@ -39,7 +38,7 @@ import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.exceptions.JoynrTimeoutException;
 import io.joynr.exceptions.JoynrWaitExpiredException;
-import io.joynr.messaging.MessagingModule;
+import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.pubsub.SubscriptionQos;
 
@@ -154,17 +153,15 @@ public class SerializationTest {
     public void setUp() {
         Properties properties = new Properties();
         properties.put(MessagingPropertyKeys.CHANNELID, "testChannelId");
-        injector = Guice.createInjector(new MessagingModule(),
-                                        new JoynrPropertiesModule(properties),
-                                        new AbstractModule() {
+        injector = Guice.createInjector(new JsonMessageSerializerModule(), new AbstractModule() {
 
-                                            @Override
-                                            protected void configure() {
-                                                requestStaticInjection(Request.class);
+            @Override
+            protected void configure() {
+                requestStaticInjection(Request.class);
 
-                                            }
+            }
 
-                                        });
+        });
 
         objectMapper = injector.getInstance(ObjectMapper.class);
     }

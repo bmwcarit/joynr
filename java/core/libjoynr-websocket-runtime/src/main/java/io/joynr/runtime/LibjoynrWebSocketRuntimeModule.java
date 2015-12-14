@@ -19,8 +19,6 @@ package io.joynr.runtime;
  * #L%
  */
 
-import io.joynr.accesscontrol.AccessController;
-import io.joynr.accesscontrol.AccessControllerDummy;
 import io.joynr.messaging.AbstractMessagingStubFactory;
 import io.joynr.messaging.routing.ChildMessageRouter;
 import io.joynr.messaging.routing.MessageRouter;
@@ -52,7 +50,6 @@ public class LibjoynrWebSocketRuntimeModule extends AbstractRuntimeModule {
     protected void configure() {
         super.configure();
         install(new WebsocketModule());
-        bind(AccessController.class).to(AccessControllerDummy.class).in(Singleton.class);
         bind(JoynrRuntime.class).to(LibjoynrWebSocketRuntime.class).in(Singleton.class);
         bind(WebSocketMessagingSkeleton.class).annotatedWith(Names.named(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_SKELETON))
                                               .to(LibWebSocketMessagingSkeleton.class)

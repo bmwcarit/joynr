@@ -59,6 +59,7 @@ import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.tests.testProxy;
 import joynr.tests.testTypes.TestEnum;
+import joynr.types.ProviderQos;
 import joynr.types.Localisation.GpsLocation;
 
 import org.junit.After;
@@ -95,6 +96,10 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
     private JoynrRuntime providerRuntime;
     private JoynrRuntime consumerRuntime;
 
+    protected ProviderQos providerQos = new ProviderQos();
+    protected MessagingQos messagingQos = new MessagingQos(10000);
+    protected DiscoveryQos discoveryQos = new DiscoveryQos(10000, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
+
     // Overridden by test environment implementations
     protected abstract JoynrRuntime getRuntime(Properties joynrConfig, Module... modules);
 
@@ -129,7 +134,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         factoryPropertiesProvider.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, domain);
         providerRuntime = getRuntime(factoryPropertiesProvider, new StaticDomainAccessControlProvisioningModule());
 
-        provider = new SubscriptionTestsProviderImpl();
+        provider = new SubscriptionTestsProviderImpl(providerQos);
         providerRuntime.registerProvider(domain, provider).get(CONST_DEFAULT_TEST_TIMEOUT);
     }
 
@@ -145,9 +150,6 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
                 + UUID.randomUUID().toString());
 
         consumerRuntime = getRuntime(factoryPropertiesB);
-
-        MessagingQos messagingQos = new MessagingQos(5000);
-        DiscoveryQos discoveryQos = new DiscoveryQos(5000, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
 
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
@@ -189,6 +191,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         AttributeSubscriptionListener<GpsLocation> gpsListener = mock(AttributeSubscriptionListener.class);
 
         doAnswer(new Answer<Object>() {
+            @Override
             public Object answer(InvocationOnMock invocation) {
                 onReceiveSemaphore.release();
                 return (Void) null;
@@ -215,6 +218,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         AttributeSubscriptionListener<TestEnum> testEnumListener = mock(AttributeSubscriptionListener.class);
 
         doAnswer(new Answer<Object>() {
+            @Override
             public Object answer(InvocationOnMock invocation) {
                 onReceiveSemaphore.release();
                 return (Void) null;
@@ -245,6 +249,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         final Semaphore onReceiveSemaphore = new Semaphore(0);
         AttributeSubscriptionListener<Integer[]> integersListener = mock(AttributeSubscriptionListener.class);
         doAnswer(new Answer<Object>() {
+            @Override
             public Object answer(InvocationOnMock invocation) {
                 onReceiveSemaphore.release();
                 return (Void) null;
@@ -335,6 +340,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         AttributeSubscriptionListener<Integer> integerListener = mock(AttributeSubscriptionListener.class);
 
         doAnswer(new Answer<Object>() {
+            @Override
             public Object answer(InvocationOnMock invocation) {
                 onReceiveSemaphore.release();
                 return (Void) null;
@@ -349,6 +355,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         AttributeSubscriptionListener<Integer> integerListener = mock(AttributeSubscriptionListener.class);
 
         doAnswer(new Answer<Object>() {
+            @Override
             public Object answer(InvocationOnMock invocation) {
                 onErrorSemaphore.release();
                 return (Void) null;
@@ -484,7 +491,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         //expect at most #periods+1 errors
         timeout = Math.max(timeout - (System.currentTimeMillis() - timeBeforeTest), 100);
         assertFalse(onErrorSemaphore.tryAcquire(2, timeout, TimeUnit.MILLISECONDS));
-        //expect no successful subscription callback 
+        //expect no successful subscription callback
         verify(listener, times(0)).onReceive(anyInt());
 
         proxy.unsubscribeFromAttributeWithProviderRuntimeException(subscriptionId);
@@ -514,7 +521,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
 
         timeout = Math.max(timeout - (System.currentTimeMillis() - timeBeforeTest), 100);
         assertFalse(onErrorSemaphore.tryAcquire(2, timeout, TimeUnit.MILLISECONDS));
-        //expect no successful subscription callback 
+        //expect no successful subscription callback
         verify(listener, times(0)).onReceive(anyInt());
 
         proxy.unsubscribeFromAttributeWithThrownException(subscriptionId);

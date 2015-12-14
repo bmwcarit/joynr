@@ -29,7 +29,7 @@ import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.integration.util.ServersUtil;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 
-import io.joynr.messaging.LongPollingMessagingModule;
+import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.MessagingSettings;
 import io.joynr.messaging.http.operation.HttpClientProvider;
 import io.joynr.messaging.http.operation.HttpDefaultRequestConfigProvider;
@@ -65,7 +65,7 @@ public class MessagingIntegrationTestIgnored extends AbstractMessagingIntegratio
 
     @Override
     public Injector createInjector(Properties joynrConfig, Module... modules) {
-        return Guice.createInjector(Modules.override(new LongPollingMessagingModule(), new AbstractModule() {
+        return Guice.createInjector(Modules.override(new AtmosphereMessagingModule(), new AbstractModule() {
             @Override
             protected void configure() {
                 bind(MessagingSettings.class).to(ConfigurableMessagingSettings.class);

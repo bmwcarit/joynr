@@ -206,7 +206,6 @@ public class MessagingServletConfig extends GuiceServletContextListener {
         Injector injector = Guice.createInjector(new AbstractModule() {
             @Override
             protected void configure() {
-                bind(AbstractRuntimeModule.class).to(CCInProcessRuntimeModule.class);
             }
         });
         AbstractJoynrInjectorFactory injectorFactory = injector.getInstance(joynrInjectorFactoryClasses.iterator()
@@ -218,8 +217,8 @@ public class MessagingServletConfig extends GuiceServletContextListener {
         appLauncher.init(properties,
                          joynrApplicationsClasses,
                          injectorFactory,
-                         Modules.override(jerseyServletModule).with(servletModule),
-                         new ServletMessagingModule());
+                         Modules.override(jerseyServletModule, new CCInProcessRuntimeModule())
+                                .with(servletModule, new ServletMessagingModule()));
 
         super.contextInitialized(servletContextEvent);
     }

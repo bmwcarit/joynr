@@ -47,6 +47,7 @@ import joynr.OnChangeSubscriptionQos;
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
+import joynr.types.ProviderQos;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -94,7 +95,7 @@ public class PushingPublicationTest {
     @Before
     public void setUp() throws JoynrSendBufferFullException, JoynrMessageNotSentException, JsonGenerationException,
                        JsonMappingException, IOException {
-        provider = new SubscriptionTestsProviderImpl();
+        provider = new SubscriptionTestsProviderImpl(new ProviderQos());
 
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,

@@ -19,11 +19,10 @@ package io.joynr.dispatching;
  * #L%
  */
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
-import net.sf.ehcache.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 
@@ -31,7 +30,7 @@ import com.google.common.collect.Sets;
 
 public abstract class CallerDirectory<T> {
     protected Set<CallerDirectoryListener<T>> listeners = Sets.newHashSet();
-    protected Map<String, T> callers = new ConcurrentHashMap<String, T>();
+    protected Map<String, T> callers = new HashMap<String, T>();
 
     public void addListener(CallerDirectoryListener<T> listener) {
         synchronized (callers) {

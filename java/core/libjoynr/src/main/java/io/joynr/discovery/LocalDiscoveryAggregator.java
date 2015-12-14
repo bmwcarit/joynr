@@ -23,8 +23,6 @@ import java.util.HashMap;
 
 import io.joynr.runtime.SystemServicesSettings;
 import joynr.system.Routing;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
@@ -45,7 +43,6 @@ import joynr.types.ProviderQos;
 
 public class LocalDiscoveryAggregator implements DiscoveryAsync {
 
-    private static final Logger logger = LoggerFactory.getLogger(LocalDiscoveryAggregator.class);
     private HashMap<String, DiscoveryEntry> provisionedDiscoveryEntries = new HashMap<>();
     private DiscoveryProxy discoveryProxy;
 

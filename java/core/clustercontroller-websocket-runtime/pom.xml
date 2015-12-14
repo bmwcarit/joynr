@@ -20,7 +20,7 @@
         </dependency>
         <dependency>
             <groupId>io.joynr.java.core</groupId>
-            <artifactId>libjoynr</artifactId>
+            <artifactId>clustercontroller</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

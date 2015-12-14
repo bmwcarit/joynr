@@ -18,16 +18,6 @@ package io.joynr.integration;
  * limitations under the License.
  * #L%
  */
-
-import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.websocket.WebsocketModule;
-import io.joynr.runtime.CCWebSocketRuntimeModule;
-import io.joynr.runtime.ClusterControllerRuntime;
-import io.joynr.runtime.JoynrInjectorFactory;
-import io.joynr.runtime.JoynrRuntime;
-import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
-import io.joynr.servlet.ServletUtil;
-
 import java.util.Properties;
 
 import org.junit.After;
@@ -37,12 +27,22 @@ import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
+import io.joynr.integration.util.DummyJoynrApplication;
+import io.joynr.messaging.AtmosphereMessagingModule;
+import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.websocket.WebsocketModule;
+import io.joynr.runtime.CCWebSocketRuntimeModule;
+import io.joynr.runtime.JoynrInjectorFactory;
+import io.joynr.runtime.JoynrRuntime;
+import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
+import io.joynr.servlet.ServletUtil;
+
 /**
  *
  */
 public class WebSocketProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
 
-    private ClusterControllerRuntime ccJoynrRuntime;
+    private JoynrRuntime ccJoynrRuntime;
     private Properties webSocketConfig;
 
     @Before
@@ -59,18 +59,20 @@ public class WebSocketProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest 
         super.baseSetup();
     }
 
+    @Override
     @After
     public void tearDown() throws InterruptedException {
         super.tearDown();
         ccJoynrRuntime.shutdown(false);
     }
 
-    private ClusterControllerRuntime createClusterController(Properties webSocketConfig) {
+    private JoynrRuntime createClusterController(Properties webSocketConfig) {
         Properties ccConfig = new Properties();
         ccConfig.putAll(webSocketConfig);
         ccConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_CC_CONNECTION_TYPE, "WEBSOCKET");
-        Injector injectorCC = new JoynrInjectorFactory(ccConfig, new CCWebSocketRuntimeModule()).getInjector();
-        return (ClusterControllerRuntime) injectorCC.getInstance(JoynrRuntime.class);
+        Injector injectorCC = new JoynrInjectorFactory(ccConfig, Modules.override(new CCWebSocketRuntimeModule())
+                                                                        .with(new AtmosphereMessagingModule())).getInjector();
+        return injectorCC.getInstance(JoynrRuntime.class);
     }
 
     @Override
@@ -80,8 +82,10 @@ public class WebSocketProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest 
         }
         joynrConfig.putAll(webSocketConfig);
         joynrConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_CC_CONNECTION_TYPE, "WEBSOCKET");
-        Injector injectorLib = new JoynrInjectorFactory(joynrConfig, Modules.override(modules)
-                                                                            .with(new LibjoynrWebSocketRuntimeModule())).getInjector();
-        return injectorLib.getInstance(JoynrRuntime.class);
+        Module modulesWithRuntime = Modules.override(modules).with(new LibjoynrWebSocketRuntimeModule());
+        DummyJoynrApplication application = (DummyJoynrApplication) new JoynrInjectorFactory(joynrConfig,
+                                                                                             modulesWithRuntime).createApplication(DummyJoynrApplication.class);
+
+        return application.getRuntime();
     }
 }

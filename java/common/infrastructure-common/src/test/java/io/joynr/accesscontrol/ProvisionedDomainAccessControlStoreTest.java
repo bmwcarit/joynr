@@ -43,7 +43,6 @@ import com.google.inject.Provides;
 
 public class ProvisionedDomainAccessControlStoreTest {
 
-    private static final String WILDCARD = "*";
     private static final String UID1 = "uid1";
     private static final String DOMAIN1 = "domain1";
     private static final String INTERFACE1 = "interface1";

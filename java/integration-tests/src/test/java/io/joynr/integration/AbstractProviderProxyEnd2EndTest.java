@@ -76,6 +76,7 @@ import joynr.tests.testTypes.ComplexTestType2;
 import joynr.tests.testTypes.DerivedStruct;
 import joynr.tests.testTypes.ErrorEnumBase;
 import joynr.tests.testTypes.TestEnum;
+import joynr.types.ProviderQos;
 import joynr.types.Localisation.GpsFixEnum;
 import joynr.types.Localisation.GpsLocation;
 import joynr.types.Localisation.Trip;
@@ -103,6 +104,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
     private static final int CONST_DEFAULT_TEST_TIMEOUT = 8000;
 
     TestProvider provider;
+    protected ProviderQos testProviderQos = new ProviderQos();
     String domain;
     String domainAsync;
 
@@ -128,9 +130,9 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
     @Rule
     public TestName name = new TestName();
 
-    private MessagingQos messagingQos;
-
-    private DiscoveryQos discoveryQos;
+    // The timeouts should not be to small because some test environments are slow
+    protected MessagingQos messagingQos = new MessagingQos(10000);
+    protected DiscoveryQos discoveryQos = new DiscoveryQos(10000, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
 
     @Mock
     Callback<String> callback;
@@ -185,9 +187,9 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
         consumerRuntime = getRuntime(joynrConfigConsumer);
 
-        provider = new TestProvider();
+        provider = new TestProvider(testProviderQos);
 
-        providerAsync = new TestAsyncProviderImpl();
+        providerAsync = new TestAsyncProviderImpl(testProviderQos);
 
         // check that registerProvider does not block
         long startTime = System.currentTimeMillis();
@@ -196,10 +198,6 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         timeTookToRegisterProvider = endTime - startTime;
 
         providerRuntime.registerProvider(domainAsync, providerAsync).get(CONST_DEFAULT_TEST_TIMEOUT);
-
-        // The timeouts should not be to small because some test environments are slow
-        messagingQos = new MessagingQos(10000);
-        discoveryQos = new DiscoveryQos(10000, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
 
         // this sleep greatly speeds up the tests (400 ms vs 2500 / test) by
         // making sure the channel is created before first messages sent.
@@ -223,7 +221,9 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
     protected static class TestProvider extends DefaulttestProvider {
 
-        public TestProvider() {
+        public TestProvider(ProviderQos providerQos) {
+            providerQos.setPriority(System.currentTimeMillis());
+            this.providerQos = providerQos;
         }
 
         @Override
@@ -409,9 +409,19 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
                 }
             }
         }
+
+        @Override
+        public ProviderQos getProviderQos() {
+            return providerQos;
+        }
     }
 
     protected static class TestAsyncProviderImpl extends DefaulttestProvider {
+
+        public TestAsyncProviderImpl(ProviderQos providerQos) {
+            providerQos.setPriority(System.currentTimeMillis());
+            this.providerQos = providerQos;
+        }
 
         @Override
         public Promise<MethodWithEnumReturnValueDeferred> methodWithEnumReturnValue() {
@@ -434,7 +444,6 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
             deferred.resolve(tStringMapIn);
             return new Promise<MapParametersDeferred>(deferred);
         }
-
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
