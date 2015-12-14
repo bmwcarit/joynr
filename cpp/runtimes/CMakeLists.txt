@@ -85,6 +85,8 @@ if(${BUILD_CLUSTER_CONTROLLER})
 
     add_include_what_you_use(JoynrClusterControllerRuntime)
 
+    add_clang_tidy(JoynrClusterControllerRuntime)
+
     set_target_properties(
         JoynrClusterControllerRuntime
         PROPERTIES
@@ -175,6 +177,8 @@ add_clang_format(JoynrWsRuntime)
 
 add_include_what_you_use(JoynrWsRuntime)
 
+add_clang_tidy(JoynrWsRuntime)
+
 target_link_libraries(
     JoynrWsRuntime
     JoynrCommon
@@ -252,6 +256,8 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
     add_include_what_you_use(JoynrDbusRuntime)
 
+    add_clang_tidy(JoynrDbusRuntime)
+
     target_link_libraries(
         JoynrDbusRuntime
         JoynrCommon
@@ -306,6 +312,8 @@ if(${BUILD_CLUSTER_CONTROLLER})
     )
 
     add_clang_format(cluster-controller)
+
+    add_clang_tidy(cluster-controller)
 
     if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         target_link_libraries(cluster-controller

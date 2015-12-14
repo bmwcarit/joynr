@@ -129,6 +129,8 @@ add_clang_format(Joynr)
 
 add_include_what_you_use(Joynr)
 
+add_clang_tidy(Joynr)
+
 set_target_properties(
     Joynr
     PROPERTIES

@@ -163,6 +163,8 @@ add_clang_format(JoynrCommon)
 
 add_include_what_you_use(JoynrCommon)
 
+add_clang_tidy(JoynrCommon)
+
 install(
     TARGETS JoynrCommon
     EXPORT JoynrTargets

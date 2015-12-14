@@ -101,6 +101,8 @@ message(STATUS "option ENABLE_DOXYGEN=" ${ENABLE_DOXYGEN})
 
 include(LocateProgram)
 
+#### BEGIN clang-format ####
+
 option(
     ENABLE_CLANG_FORMATTER
     "Use clang-formatter to format source code?"
@@ -113,6 +115,11 @@ if(${ENABLE_CLANG_FORMATTER})
     set(CLANG_FORMAT_PATH "CLANG_FORMAT_PATH-NOTFOUND" CACHE FILEPATH "Path to 'clang-format' executable")
     locate_program(clang-format CLANG_FORMAT_PATH)
 endif(${ENABLE_CLANG_FORMATTER})
+
+#### END clang-format ####
+
+
+#### BEGIN include-what-you-use ####
 
 # include-what-you-use can be used with CMake 3.3.0 and higher
 if("${CMAKE_VERSION}" VERSION_GREATER 3.3.0)
@@ -130,16 +137,42 @@ if("${CMAKE_VERSION}" VERSION_GREATER 3.3.0)
         locate_program(include-what-you-use INCLUDE_WHAT_YOU_USE_PATH)
     endif(${ENABLE_INCLUDE_WHAT_YOU_USE})
 
-set(INCLUDE_WHAT_YOU_USE_OPTIONS "" CACHE STRING "additional options for include-what-you-use")
-
-SET(INCLUDE_WHAT_YOU_USE_PATH_AND_OPTIONS
-    ${INCLUDE_WHAT_YOU_USE_PATH}
-    ${INCLUDE_WHAT_YOU_USE_OPTIONS}
+    set(INCLUDE_WHAT_YOU_USE_OPTIONS "" CACHE STRING "additional options for include-what-you-use")
+    
+    set(INCLUDE_WHAT_YOU_USE_PATH_AND_OPTIONS
+        ${INCLUDE_WHAT_YOU_USE_PATH}
+        ${INCLUDE_WHAT_YOU_USE_OPTIONS}
     )
 
 endif("${CMAKE_VERSION}" VERSION_GREATER 3.3.0)
 
 include(AddIncludeWhatYouUse)
+
+#### END include-what-you-use ####
+
+
+#### BEGIN clang-tidy ####
+
+option(
+    ENABLE_CLANG_TIDY
+    "Use clang-tidy for code analysis/cleanup?"
+    OFF
+)
+
+message(STATUS "option ENABLE_CLANG_TIDY=" ${ENABLE_CLANG_TIDY})
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+if(${ENABLE_CLANG_TIDY})
+    set(CLANG_TIDY_PATH "CLANG_TIDY_PATH-NOTFOUND" CACHE FILEPATH "Path to 'clang-tidy' executable")
+    locate_program(clang-tidy CLANG_TIDY_PATH)
+endif(${ENABLE_CLANG_TIDY})
+
+set(ENABLE_CLANG_TIDY_OPTIONS "-checks=*" CACHE STRING "additional options for clang-tidy")
+
+include(AddClangTidy)
+
+#### END clang-tidy ####
+
 
 option(
     BUILD_CLUSTER_CONTROLLER

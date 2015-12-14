@@ -129,6 +129,8 @@ add_clang_format(JoynrClusterController)
 
 add_include_what_you_use(JoynrClusterController)
 
+add_clang_tidy(JoynrClusterController)
+
 set_target_properties(
     JoynrClusterController
     PROPERTIES
