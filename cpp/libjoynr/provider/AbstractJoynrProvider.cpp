@@ -50,14 +50,14 @@ types::ProviderQos AbstractJoynrProvider::getProviderQos() const
 void AbstractJoynrProvider::registerAttributeListener(const std::string& attributeName,
                                                       IAttributeListener* attributeListener)
 {
-    joynr::WriteLocker locker(lock);
+    WriteLocker locker(lock);
     attributeListeners[attributeName].push_back(attributeListener);
 }
 
 void AbstractJoynrProvider::unregisterAttributeListener(const std::string& attributeName,
                                                         IAttributeListener* attributeListener)
 {
-    joynr::WriteLocker locker(lock);
+    WriteLocker locker(lock);
     std::vector<IAttributeListener*>& listeners = attributeListeners[attributeName];
 
     // Find and delete the attribute listener
@@ -76,7 +76,7 @@ void AbstractJoynrProvider::unregisterAttributeListener(const std::string& attri
 void AbstractJoynrProvider::onAttributeValueChanged(const std::string& attributeName,
                                                     const Variant& value)
 {
-    joynr::ReadLocker locker(lock);
+    ReadLocker locker(lock);
 
     const std::vector<IAttributeListener*>& listeners = attributeListeners[attributeName];
 
@@ -89,14 +89,14 @@ void AbstractJoynrProvider::onAttributeValueChanged(const std::string& attribute
 void AbstractJoynrProvider::registerBroadcastListener(const std::string& broadcastName,
                                                       IBroadcastListener* broadcastListener)
 {
-    joynr::WriteLocker locker(lock);
+    WriteLocker locker(lock);
     broadcastListeners[broadcastName].push_back(broadcastListener);
 }
 
 void AbstractJoynrProvider::unregisterBroadcastListener(const std::string& broadcastName,
                                                         IBroadcastListener* broadcastListener)
 {
-    joynr::WriteLocker locker(lock);
+    WriteLocker locker(lock);
     std::vector<IBroadcastListener*>& listeners = broadcastListeners[broadcastName];
 
     auto listenerIt = std::find(listeners.cbegin(), listeners.cend(), broadcastListener);
@@ -108,7 +108,7 @@ void AbstractJoynrProvider::unregisterBroadcastListener(const std::string& broad
 void AbstractJoynrProvider::fireBroadcast(const std::string& broadcastName,
                                           const std::vector<Variant>& values)
 {
-    joynr::ReadLocker locker(lock);
+    ReadLocker locker(lock);
 
     const std::vector<IBroadcastListener*>& listeners = broadcastListeners[broadcastName];
 

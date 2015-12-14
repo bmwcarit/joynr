@@ -123,7 +123,7 @@ protected:
 private:
     DISALLOW_COPY_AND_ASSIGN(AbstractJoynrProvider);
 
-    joynr::ReadWriteLock lock;
+    ReadWriteLock lock;
     std::map<std::string, std::vector<IAttributeListener*>> attributeListeners;
     std::map<std::string, std::vector<IBroadcastListener*>> broadcastListeners;
     std::map<std::string, std::vector<std::shared_ptr<IBroadcastFilter>>> broadcastFilters;

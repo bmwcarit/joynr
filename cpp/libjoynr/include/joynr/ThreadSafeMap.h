@@ -54,7 +54,7 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(ThreadSafeMap);
     std::map<Key, T> map;
-    joynr::ReadWriteLock lock;
+    ReadWriteLock lock;
 };
 
 template <class Key, class T>
@@ -66,14 +66,14 @@ ThreadSafeMap<Key, T>::ThreadSafeMap()
 template <class Key, class T>
 void ThreadSafeMap<Key, T>::insert(const Key& key, const T& value)
 {
-    joynr::WriteLocker locker(lock);
+    WriteLocker locker(lock);
     map.insert(std::make_pair(key, value));
 }
 
 template <class Key, class T>
 void ThreadSafeMap<Key, T>::remove(const Key& key)
 {
-    joynr::WriteLocker locker(lock);
+    WriteLocker locker(lock);
     map.erase(map.find(key));
 }
 
@@ -81,7 +81,7 @@ template <class Key, class T>
 T ThreadSafeMap<Key, T>::value(const Key& key)
 {
     T aValue;
-    joynr::ReadLocker locker(lock);
+    ReadLocker locker(lock);
     aValue = map.find(key)->second;
     return aValue;
 }
@@ -90,7 +90,7 @@ template <class Key, class T>
 T ThreadSafeMap<Key, T>::take(const Key& key)
 {
     T aValue;
-    joynr::WriteLocker locker(lock);
+    WriteLocker locker(lock);
     auto mapElement = map.find(key);
     if (mapElement != map.end()) {
         aValue = mapElement->second;
@@ -103,7 +103,7 @@ template <class Key, class T>
 bool ThreadSafeMap<Key, T>::contains(const Key& key)
 {
     bool aValue;
-    joynr::ReadLocker locker(lock);
+    ReadLocker locker(lock);
     aValue = map.find(key) != map.end();
     return aValue;
 }
@@ -111,7 +111,7 @@ bool ThreadSafeMap<Key, T>::contains(const Key& key)
 template <class Key, class T>
 void ThreadSafeMap<Key, T>::deleteAll()
 {
-    joynr::WriteLocker locker(lock);
+    WriteLocker locker(lock);
     map.clear();
 }
 

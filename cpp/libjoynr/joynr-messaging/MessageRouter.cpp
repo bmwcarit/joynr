@@ -212,7 +212,7 @@ void MessageRouter::route(const JoynrMessage& message)
     std::shared_ptr<joynr::system::RoutingTypes::Address> destAddress(NULL);
 
     {
-        joynr::ReadLocker lock(routingTableLock);
+        ReadLocker lock(routingTableLock);
         destAddress = routingTable.lookup(destinationPartId);
     }
     // if destination address is not known
@@ -446,7 +446,7 @@ void MessageRouter::addNextHopToParent(
 void MessageRouter::addToRoutingTable(std::string participantId,
                                       std::shared_ptr<joynr::system::RoutingTypes::Address> address)
 {
-    joynr::WriteLocker lock(routingTableLock);
+    WriteLocker lock(routingTableLock);
     routingTable.add(participantId, address);
 }
 
@@ -457,7 +457,7 @@ void MessageRouter::removeNextHop(
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     {
-        joynr::WriteLocker lock(routingTableLock);
+        WriteLocker lock(routingTableLock);
         routingTable.remove(participantId);
     }
 
@@ -480,7 +480,7 @@ void MessageRouter::resolveNextHop(
         std::function<void(const bool& resolved)> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> /*onError*/)
 {
-    joynr::ReadLocker lock(routingTableLock);
+    ReadLocker lock(routingTableLock);
     bool resolved = routingTable.contains(participantId);
     onSuccess(resolved);
 }

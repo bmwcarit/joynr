@@ -150,7 +150,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(MessageRouter);
     IMessagingStubFactory* messagingStubFactory;
     Directory<std::string, joynr::system::RoutingTypes::Address> routingTable;
-    joynr::ReadWriteLock routingTableLock;
+    ReadWriteLock routingTableLock;
     ThreadPool threadPool;
     joynr::system::RoutingProxy* parentRouter;
     std::shared_ptr<joynr::system::RoutingTypes::Address> parentAddress;
@@ -186,12 +186,12 @@ private:
 /**
  * Class to send message
  */
-class MessageRunnable : public joynr::Runnable, public ObjectWithDecayTime
+class MessageRunnable : public Runnable, public ObjectWithDecayTime
 {
 public:
     MessageRunnable(const JoynrMessage& message, std::shared_ptr<IMessaging> messagingStub);
-    void shutdown();
-    void run();
+    void shutdown() override;
+    void run() override;
 
 private:
     JoynrMessage message;
