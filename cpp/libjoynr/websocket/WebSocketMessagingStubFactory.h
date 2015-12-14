@@ -19,11 +19,11 @@
 #ifndef WEBSOCKETMESSAGINGSTUBFACTORY_H
 #define WEBSOCKETMESSAGINGSTUBFACTORY_H
 
-#include <QtCore/QUrl>
 #include <memory>
 #include <mutex>
 #include <unordered_map>
 
+#include "joynr/Url.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/IMiddlewareMessagingStubFactory.h"
 #include "joynr/system/RoutingTypes/Address.h"
@@ -49,7 +49,7 @@ public:
                    IWebSocketSendInterface* webSocket);
     void onMessagingStubClosed(const joynr::system::RoutingTypes::Address& address);
 
-    static QUrl convertWebSocketAddressToUrl(
+    static Url convertWebSocketAddressToUrl(
             const joynr::system::RoutingTypes::WebSocketAddress& address);
 
 private:

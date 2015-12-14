@@ -134,9 +134,9 @@ TEST_F(WebSocketMessagingStubFactoryTest, convertWebSocketAddressToUrl) {
                 42,
                 "/some/path/"
     );
-    QUrl expectedWsUrl(QString("ws://localhost:42/some/path/"));
+    Url expectedWsUrl("ws://localhost:42/some/path/");
 
-    QUrl wsUrl(WebSocketMessagingStubFactory::convertWebSocketAddressToUrl(wsAddress));
+    Url wsUrl(WebSocketMessagingStubFactory::convertWebSocketAddressToUrl(wsAddress));
     EXPECT_EQ(expectedWsUrl, wsUrl);
 
     joynr::system::RoutingTypes::WebSocketAddress wssAddress(
@@ -145,9 +145,9 @@ TEST_F(WebSocketMessagingStubFactoryTest, convertWebSocketAddressToUrl) {
                 42,
                 "/some/path"
     );
-    QUrl expectedWssUrl(QString("wss://localhost:42/some/path"));
+    Url expectedWssUrl("wss://localhost:42/some/path");
 
-    QUrl wssUrl(WebSocketMessagingStubFactory::convertWebSocketAddressToUrl(wssAddress));
+    Url wssUrl(WebSocketMessagingStubFactory::convertWebSocketAddressToUrl(wssAddress));
     EXPECT_EQ(expectedWssUrl, wssUrl);
 }
 

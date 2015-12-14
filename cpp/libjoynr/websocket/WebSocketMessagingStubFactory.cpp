@@ -21,6 +21,9 @@
 #include <cassert>
 #include <typeinfo>
 #include <functional>
+#include <cctype>
+#include <algorithm>
+#include <string>
 
 #include "websocket/WebSocketMessagingStub.h"
 #include "joynr/system/RoutingTypes/Address.h"
@@ -137,16 +140,19 @@ void WebSocketMessagingStubFactory::onMessagingStubClosed(
     }
 }
 
-QUrl WebSocketMessagingStubFactory::convertWebSocketAddressToUrl(
+Url WebSocketMessagingStubFactory::convertWebSocketAddressToUrl(
         const system::RoutingTypes::WebSocketAddress& address)
 {
-    return QUrl(QString("%0://%1:%2%3")
-                        .arg(QString::fromStdString(
-                                     joynr::system::RoutingTypes::WebSocketProtocol::getLiteral(
-                                             address.getProtocol())).toLower())
-                        .arg(QString::fromStdString(address.getHost()))
-                        .arg(address.getPort())
-                        .arg(QString::fromStdString(address.getPath())));
+    std::string protocol =
+            joynr::system::RoutingTypes::WebSocketProtocol::getLiteral(address.getProtocol());
+    std::transform(protocol.begin(), protocol.end(), protocol.begin(), ::tolower);
+
+    return Url(FormatString("%1://%2:%3%4")
+                       .arg(protocol)
+                       .arg(address.getHost())
+                       .arg(address.getPort())
+                       .arg(address.getPath())
+                       .str());
 }
 
 } // namespace joynr
