@@ -97,6 +97,11 @@ public:
                     std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
             override;
     void addNextHop(const std::string& participantId,
+                    const joynr::system::RoutingTypes::MqttAddress& mqttAddress,
+                    std::function<void()> onSuccess,
+                    std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            override;
+    void addNextHop(const std::string& participantId,
                     const joynr::system::RoutingTypes::CommonApiDbusAddress& commonApiDbusAddress,
                     std::function<void()> onSuccess,
                     std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)

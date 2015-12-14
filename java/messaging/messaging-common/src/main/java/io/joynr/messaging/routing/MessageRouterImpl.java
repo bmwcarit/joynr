@@ -37,6 +37,7 @@ import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.BrowserAddress;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.CommonApiDbusAddress;
+import joynr.system.RoutingTypes.MqttAddress;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
 import joynr.types.ProviderQos;
@@ -69,6 +70,11 @@ public class MessageRouterImpl extends RoutingAbstractProvider implements Messag
     @Override
     public Promise<DeferredVoid> addNextHop(String participantId, ChannelAddress channelAddress) {
         return addNextHopInternal(participantId, channelAddress);
+    }
+
+    @Override
+    public Promise<DeferredVoid> addNextHop(String participantId, MqttAddress mqttAddress) {
+        return addNextHopInternal(participantId, mqttAddress);
     }
 
     @Override

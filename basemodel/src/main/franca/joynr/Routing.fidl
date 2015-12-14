@@ -70,6 +70,21 @@ typeCollection RoutingTypes {
 		String path
 	}
 
+	<** @description: MQTT protocol type **>
+	enumeration MqttProtocol  {
+		<** @description: MQTT (non-secure) **>
+		MQTT
+
+		<** @description: MQTT (secure) **>
+		MQTTS
+	}
+
+	<** @description: MQTT address **>
+	struct MqttAddress extends Address {
+		<** @description: Channel identification **>
+		String channelId
+	}
+
 	<** @description: Websocket client address **>
 	struct WebSocketClientAddress extends Address {
 		<** @description: Websocket client ID **>
@@ -103,6 +118,24 @@ interface Routing {
 					the corresponding participant ID
 			**>
 			RoutingTypes.ChannelAddress channelAddress
+		}
+	}
+
+	<**
+		@description: Adds a hop to the parent routing table.
+			<br/>
+			The overloaded methods (one for each concrete Address type) is
+			needed since polymorphism is currently not supported by joynr.
+	**>
+	method addNextHop {
+		in {
+			<** @description: the ID of the target participant **>
+			String participantId
+			<**
+				@description: the messaging address of the next hop towards
+					the corresponding participant ID
+			**>
+			RoutingTypes.MqttAddress mqttAddress
 		}
 	}
 
