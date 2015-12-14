@@ -76,31 +76,38 @@ joynr::Timer::TimerId joynr::Timer::addTimer(
 
 bool joynr::Timer::removeTimer(TimerId id)
 {
-    for (auto it = timers.begin(); it != timers.end(); ++it) {
-        if (it->second->getId() == id) {
-            const bool reorganize = (it == timers.begin());
-
-            // Send "remove" callback to event receiver
-            auto callback = it->second->getRemoveCallback();
-            callback(it->second->getId());
-
-            // Call Dtor and remove from map
-            {
-                std::unique_lock<std::mutex> lock(mutex);
-                delete it->second;
-                timers.erase(it);
+    bool reorganize = false;
+    // Call Dtor and remove from map
+    {
+        std::unique_lock<std::mutex> lock(mutex);
+        auto it = timers.begin();
+        while (it != timers.end()) {
+            if (it->second->getId() == id) {
+                break;
             }
-
-            // Only reorganize if timer is the current timer
-            if (reorganize) {
-                LOG_TRACE(logger, FormatString("Reorganize after %0 was removed.").arg(id).str());
-                waitCondition.notify_one();
-            }
-            return true;
+            ++it;
         }
+        if (it == timers.end()) {
+            LOG_TRACE(logger, FormatString("Timer %1 not found. Unable to remove.").arg(id).str());
+            return false;
+        }
+        reorganize = (it == timers.begin());
+
+        // Send "remove" callback to event receiver
+        auto callback = it->second->getRemoveCallback();
+        callback(it->second->getId());
+
+        delete it->second;
+        timers.erase(it);
     }
-    LOG_TRACE(logger, "Timer not removed");
-    return false;
+
+    // Only reorganize if timer is the current timer
+    if (reorganize) {
+        LOG_TRACE(logger, FormatString("Reorganize after %1 was removed.").arg(id).str());
+        waitCondition.notify_one();
+    }
+    LOG_TRACE(logger, FormatString("Timer %1 removed.").arg(id).str());
+    return true;
 }
 
 void joynr::Timer::shutdown()
