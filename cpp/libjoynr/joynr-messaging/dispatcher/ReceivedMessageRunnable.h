@@ -40,8 +40,8 @@ class ReceivedMessageRunnable : public joynr::Runnable, public ObjectWithDecayTi
 public:
     ReceivedMessageRunnable(const JoynrMessage& message, Dispatcher& dispatcher);
 
-    void shutdown();
-    void run();
+    void shutdown() override;
+    void run() override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ReceivedMessageRunnable);

@@ -90,7 +90,7 @@ private:
      */
     ThreadPoolDelayedScheduler channelUrlContactorDelayedScheduler;
 
-    class SendMessageRunnable : public joynr::Runnable, public ObjectWithDecayTime
+    class SendMessageRunnable : public Runnable, public ObjectWithDecayTime
     {
     public:
         SendMessageRunnable(HttpSender* messageSender,
@@ -101,7 +101,7 @@ private:
                             int64_t maxAttemptTtl_ms);
         ~SendMessageRunnable();
 
-        void shutdown();
+        void shutdown() override;
 
         /**
          * @brief run
@@ -113,7 +113,7 @@ private:
          * During this procedure, the ChannelUrlSelector decides if it is appropriate
          * to try an alternative Url (depending on the history of feedback).
          */
-        void run();
+        void run() override;
 
     private:
         DISALLOW_COPY_AND_ASSIGN(SendMessageRunnable);

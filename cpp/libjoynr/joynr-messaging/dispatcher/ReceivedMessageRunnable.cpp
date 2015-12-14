@@ -30,7 +30,7 @@ Logger* ReceivedMessageRunnable::logger =
 
 ReceivedMessageRunnable::ReceivedMessageRunnable(const JoynrMessage& message,
                                                  Dispatcher& dispatcher)
-        : joynr::Runnable(true),
+        : Runnable(true),
           ObjectWithDecayTime(message.getHeaderExpiryDate()),
           message(message),
           dispatcher(dispatcher)
