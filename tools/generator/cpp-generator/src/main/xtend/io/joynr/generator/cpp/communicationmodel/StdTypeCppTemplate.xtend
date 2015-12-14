@@ -47,13 +47,14 @@ class StdTypeCppTemplate implements CompoundTypeTemplate{
 #include <string>
 #include <typeinfo>
 
+#include <boost/functional/hash.hpp>
+
 #include <QMetaEnum>
 
 #include "«type.includeOf»"
 
 #include "joynr/Reply.h"
 #include "joynr/Util.h"
-#include "boost/functional/hash.hpp"
 
 «getNamespaceStarter(type, true)»
 
