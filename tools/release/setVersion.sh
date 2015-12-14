@@ -25,6 +25,8 @@ mvn versions:set -o -P android,javascript -DnewVersion=$2
 echo mvn versions:commit -o -P android,javascript
 mvn versions:commit -o -P android,javascript
 
+echo "sed files..."
+
 sed -i '' 's/'$oldVersion'/'$newVersion'/g' \
 cpp/CMakeLists.txt \
 examples/radio-app/CMakeLists.txt \
@@ -36,6 +38,8 @@ java/backend-services/discovery-directory-servlet/pom.xml \
 java/backend-services/domain-access-controller-servlet/pom.xml \
 javascript/apps/radio-node/package.json \
 javascript/libjoynr-js/src/main/resources/package.json
+
+echo "prepare git patch"
 
 countFoundOldVersions=$(grep -r ${oldVersion} * | grep -v ReleaseNotes | wc -l)
 if (($countFoundOldVersions > 0)); then
