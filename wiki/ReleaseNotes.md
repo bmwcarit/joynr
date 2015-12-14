@@ -1,3 +1,13 @@
+#joynr 0.12.3
+
+This is a minor bug fix release.
+
+##API relevant changes
+None.
+
+##Other changes
+* **[C++]** Selective broadcasts of basic types generate compilable code.
+
 #joynr 0.12.2
 
 This is a minor bug fix release.
