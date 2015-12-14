@@ -10,7 +10,6 @@ function(add_clang_format TARGET)
             ${FORMAT_TARGET}
             COMMAND "${CLANG_FORMAT_PATH}" -i ${TARGET_SOURCES}
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-            COMMENT "${COMMENT}"
             VERBATIM
         )
         add_dependencies(${TARGET} ${FORMAT_TARGET})

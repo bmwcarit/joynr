@@ -2,18 +2,13 @@ message(STATUS "#############################################")
 message(STATUS "Configuring tests...")
 message(STATUS "#############################################\n")
 
-# Enable ExternalProject CMake module
-include(ExternalProject)
-# Set default ExternalProject root directory
-set_directory_properties(PROPERTIES EP_PREFIX ${CMAKE_BINARY_DIR}/ThirdParty)
-
 if(${WIN32})
     set(DISABLE_PTHREAD_CMAKE_ARG ON)
 else()
 endif(${WIN32})
 
 ### Add google test ###########################################################
-ExternalProject_Add(
+add_external_project(
     googletest
     SVN_REPOSITORY http://googletest.googlecode.com/svn/tags/release-1.6.0
     TIMEOUT 10
@@ -25,17 +20,7 @@ ExternalProject_Add(
                -DBUILD_SHARED_LIBS=OFF
                -Dgtest_force_shared_crt=ON
                -Dgtest_disable_pthreads=${DISABLE_PTHREAD_CMAKE_ARG}
-    # Disable svn update
-    UPDATE_COMMAND ""
-    # Disable install step
-    INSTALL_COMMAND ""
-    # Wrap download, configure and build steps in a script to log output
-    LOG_DOWNLOAD ON
-    LOG_CONFIGURE ON
-    LOG_BUILD ON
-    CMAKE_CACHE_ARGS "-DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}"
-                     "-DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}"
-                     "-DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}"
+    BUILD_BYPRODUCTS("${CMAKE_BINARY_DIR}/ThirdParty/src/googletest-build/libgtest.a")
 )
 
 # Specify include dir
@@ -49,7 +34,7 @@ set(googletest_binary_dir ${binary_dir})
 message(STATUS "variable googletest_binary_dir=${googletest_binary_dir}")
 
 ### Add google mock ###########################################################
-ExternalProject_Add(
+add_external_project(
     googlemock
     SVN_REPOSITORY http://googlemock.googlecode.com/svn/tags/release-1.6.0
     TIMEOUT 10
@@ -61,17 +46,7 @@ ExternalProject_Add(
                -DBUILD_SHARED_LIBS=OFF
                -Dgtest_force_shared_crt=ON
                -Dgtest_disable_pthreads=${DISABLE_PTHREAD_CMAKE_ARG}
-    # Disable svn update
-    UPDATE_COMMAND ""
-    # Disable install step
-    INSTALL_COMMAND ""
-    # Wrap download, configure and build steps in a script to log output
-    LOG_DOWNLOAD ON
-    LOG_CONFIGURE ON
-    LOG_BUILD ON
-    CMAKE_CACHE_ARGS "-DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}"
-                     "-DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}"
-                     "-DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}"
+    BUILD_BYPRODUCTS("${CMAKE_BINARY_DIR}/ThirdParty/src/googlemock-build/libgmock.a")
 )
 
 # Specify include dir
