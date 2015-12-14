@@ -35,6 +35,13 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Core_EXECUTABLE_COMPILE_FLAGS}")
 find_package(Qt5WebSockets REQUIRED)
 find_package(Qt5Sql REQUIRED)
 
+# Boost
+find_package(Boost 1.56.0 REQUIRED
+    COMPONENTS
+    system
+    thread
+)
+
 # Our library dependencies (contains definitions for IMPORTED targets)
 include(@JoynrConfig_TARGETS_FILE@)
 
@@ -47,6 +54,7 @@ set(
     "${Qt5Core_INCLUDE_DIRS}"
     "${Qt5WebSockets_INCLUDE_DIRS}"
     "${Qt5Sql_INCLUDE_DIRS}"
+    "${Boost_INCLUDE_DIRS}"
     @JoynrConfig_INCLUDE_DIRS@
 )
 
@@ -56,6 +64,7 @@ set(
     "${Qt5Core_LIBRARIES}"
     "${Qt5WebSockets_LIBRARIES}"
     "${Qt5Sql_LIBRARIES}"
+    "${Boost_LIBRARIES}"
 )
 
 set(JOYNR_EXECUTABLES)
