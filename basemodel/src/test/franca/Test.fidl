@@ -90,6 +90,7 @@ interface test {
 	attribute GpsLocation yourLocation readonly
 	attribute Int32 firstPrime
 
+	
 	attribute Int32[] listOfInts
 	attribute GpsLocation[] listOfLocations readonly
 	attribute String[] listOfStrings
@@ -516,6 +517,26 @@ interface test {
 		}
 	}
 
+	broadcast booleanBroadcast selective {
+		out {
+			Boolean b
+		}
+	}
+	broadcast doubleBroadcast selective {
+		out {
+			Double d
+		}
+	}
+	broadcast intBroadcast selective {
+		out {
+			Int32 i32
+		}
+	}
+	broadcast stringBroadcast selective {
+	out {
+		String s
+	}
+}
 	enumeration ErrorEnumInterface {
 		BASE_ERROR_INTERFACE
 	}

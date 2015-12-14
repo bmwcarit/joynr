@@ -43,13 +43,9 @@ class FilterTemplate implements BroadcastTemplate {
 		val returnStringBuilder = new StringBuilder();
 		var i = 0
 		for (FArgument argument : arguments) {
-			returnStringBuilder.append(qtTypeUtil.getTypeName(argument));
-			returnStringBuilder.append("::createStd(");
-			returnStringBuilder.append("eventValues[");
-			returnStringBuilder.append(i++);
-			returnStringBuilder.append("].value<");
-			returnStringBuilder.append(qtTypeUtil.getTypeName(argument));
-			returnStringBuilder.append(">()),\n");
+			val argumentVar = "eventValues[" + i++ + "].value<" + qtTypeUtil.getTypeName(argument) + ">()";
+			returnStringBuilder.append(qtTypeUtil.fromQTTypeToStdType(argument, argumentVar));
+			returnStringBuilder.append(",\n");
 		}
 		val returnString = returnStringBuilder.toString();
 		if (returnString.length() == 0) {
@@ -82,6 +78,7 @@ class FilterTemplate implements BroadcastTemplate {
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«serviceInterface.name».h"
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«className»Parameters.h"
 #include "joynr/IBroadcastFilter.h"
+#include "joynr/TypeUtil.h"
 «getDllExportIncludeStatement()»
 
 «getNamespaceStarter(serviceInterface)»
