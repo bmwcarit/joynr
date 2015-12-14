@@ -22,6 +22,7 @@
 #include "joynr/ReadWriteLock.h"
 
 #include <map>
+#include <type_traits>
 
 namespace joynr
 {
@@ -30,31 +31,92 @@ template <class Key, class T>
 using mapIterator = typename std::map<Key, T>::const_iterator;
 
 /**
- * Thread-safe map. It has been used at the moment to store shared_ptr as values.
- * NOTICE: DO NOT STORE RAW POINTERS IN THIS MAP!!!
+ * Thread safe map
  */
 template <class Key, class T>
 class ThreadSafeMap
 {
 public:
+    /**
+     * @brief ThreadSafeMap
+     */
     ThreadSafeMap();
-    virtual ~ThreadSafeMap()
-    {
-    }
+    ~ThreadSafeMap() = default;
+    /**
+     * @brief insert key-value pair
+     * @param key
+     * @param value
+     */
     void insert(const Key& key, const T& value);
+    /**
+     * @brief remove element stored under given key
+     * @param key
+     */
     void remove(const Key& key);
+    /**
+     * @brief value retrieves copy of value stored under given key
+     * @param key
+     * @return copy of value
+     */
     T value(const Key& key);
+    /**
+     * @brief take retrieves copy of value stored under given key.
+     * After this function returns, given element has been removed from the map
+     * @param key
+     * @return copy of value
+     */
     T take(const Key& key);
+    /**
+     * @brief contains check if map contains element with given key
+     * @param key
+     * @return
+     */
     bool contains(const Key& key) const;
-    void deleteAll();
+
+    /**
+     * @brief deleteAll removes all elements from the map.
+     * This function releases resources properly in case
+     * element stores pointer values.
+     */
+    void deleteAll()
+    {
+        deleteAllImpl(std::is_pointer<T>{});
+    }
+    /**
+     * @brief size
+     * @return number of elements in the map
+     */
     int size();
+    /**
+     * @brief begin
+     * @return iterator pointing to the beginning of the map
+     */
     mapIterator<Key, T> begin() const;
+    /**
+     * @brief end
+     * @return iterator pointing to the end of the map
+     */
     mapIterator<Key, T> end() const;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ThreadSafeMap);
     std::map<Key, T> map;
     mutable ReadWriteLock lock;
+
+    void deleteAllImpl(std::false_type)
+    {
+        WriteLocker locker(lock);
+        map.clear();
+    }
+
+    void deleteAllImpl(std::true_type)
+    {
+        WriteLocker locker(lock);
+        for (auto mapElement : map) {
+            T* value = take(mapElement->first);
+            delete value;
+        }
+    }
 };
 
 template <class Key, class T>
@@ -109,13 +171,6 @@ bool ThreadSafeMap<Key, T>::contains(const Key& key) const
 }
 
 template <class Key, class T>
-void ThreadSafeMap<Key, T>::deleteAll()
-{
-    WriteLocker locker(lock);
-    map.clear();
-}
-
-template <class Key, class T>
 int ThreadSafeMap<Key, T>::size()
 {
     return map.size();
@@ -132,6 +187,7 @@ mapIterator<Key, T> ThreadSafeMap<Key, T>::end() const
 {
     return map.end();
 }
+
 } // namespace joynr
 
 #endif // THREADSAFEMAP_H
