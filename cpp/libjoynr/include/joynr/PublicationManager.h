@@ -222,7 +222,7 @@ private:
     void removeBroadcastPublication(const std::string& subscriptionId);
 
     // Helper functions
-    bool publicationExists(const std::string& subscriptionId);
+    bool publicationExists(const std::string& subscriptionId) const;
     void createPublishRunnable(const std::string& subscriptionId);
     void saveAttributeSubscriptionRequestsMap(const std::vector<Variant>& subscriptionList);
     void loadSavedAttributeSubscriptionRequestsMap();

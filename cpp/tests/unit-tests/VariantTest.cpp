@@ -106,6 +106,8 @@ TEST_F(VariantTest, checkCollectionOfVariants) {
             auto& vec = v.get<std::vector<Variant>>();
             for (auto& i : vec) {
                 LOG_DEBUG(logger, FormatString("expectedInt: %1").arg(i.get<ExampleCustomType>().expectedInt).str());
+                // to silence unused-variable compiler warnings
+                (void)i;
             }
         }
     }

@@ -77,6 +77,9 @@ void WebSocketMessagingStub::sendTextMessage(const QString& message)
                       .arg(bytesSent)
                       .arg(message.size())
                       .str());
+    // to silence unused-variable compiler warnings
+    (void)bytesSent;
+    (void)flushed;
 }
 
 void WebSocketMessagingStub::transmit(JoynrMessage& message)

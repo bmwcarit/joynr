@@ -45,7 +45,7 @@ public:
     void remove(const Key& key);
     T value(const Key& key);
     T take(const Key& key);
-    bool contains(const Key& key);
+    bool contains(const Key& key) const;
     void deleteAll();
     int size();
     mapIterator<Key, T> begin() const;
@@ -54,7 +54,7 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(ThreadSafeMap);
     std::map<Key, T> map;
-    ReadWriteLock lock;
+    mutable ReadWriteLock lock;
 };
 
 template <class Key, class T>
@@ -100,7 +100,7 @@ T ThreadSafeMap<Key, T>::take(const Key& key)
 }
 
 template <class Key, class T>
-bool ThreadSafeMap<Key, T>::contains(const Key& key)
+bool ThreadSafeMap<Key, T>::contains(const Key& key) const
 {
     bool aValue;
     ReadLocker locker(lock);

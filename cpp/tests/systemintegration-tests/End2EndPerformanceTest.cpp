@@ -147,5 +147,9 @@ TEST_F(End2EndPerformanceTest, sendManyRequests) {
     EXPECT_EQ(numberOfMessages, successFullMessages);
     Logger* logger = Logging::getInstance()->getLogger("TEST", "CombinedEnd2EndTest");
     LOG_INFO(logger,FormatString("Required Time for 1000 Messages: %1").arg((stopTime - startTime)).str());
+    // to silence unused-variable compiler warnings
+    (void)startTime;
+    (void)stopTime;
+    (void)logger;
 }
 

@@ -83,7 +83,7 @@ public:
     void shutdown() override;
 
     // Calls PublicationManager::pollSubscription()
-    void run();
+    void run() override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(PublisherRunnable);
@@ -492,7 +492,7 @@ void PublicationManager::stopPublication(const std::string& subscriptionId)
     removePublication(subscriptionId);
 }
 
-bool PublicationManager::publicationExists(const std::string& subscriptionId)
+bool PublicationManager::publicationExists(const std::string& subscriptionId) const
 {
     return publications.contains(subscriptionId);
 }
@@ -787,12 +787,12 @@ void PublicationManager::removeOnChangePublication(
         std::shared_ptr<Publication> publication)
 {
     std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
-    if (SubscriptionUtil::isOnChangeSubscription(request->getQos())) {
-        LOG_DEBUG(logger,
-                  FormatString("Removing onChange publication for id = %1")
-                          .arg(subscriptionId)
-                          .str());
+    LOG_DEBUG(logger,
+              FormatString("Removing onChange publication for id = %1").arg(subscriptionId).str());
+    // to silence unused-variable compiler warnings
+    (void)subscriptionId;
 
+    if (SubscriptionUtil::isOnChangeSubscription(request->getQos())) {
         // Unregister and delete the attribute listener
         std::shared_ptr<RequestCaller> requestCaller = publication->requestCaller;
         requestCaller->unregisterAttributeListener(

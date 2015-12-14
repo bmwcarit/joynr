@@ -99,6 +99,9 @@ void Util::logSerializedMessage(joynr_logging::Logger* logger,
                           .arg(message.length())
                           .str());
     }
+    // to silence unused-variable compiler warnings
+    (void)explanation;
+    (void)logger;
 }
 
 void Util::throwJoynrException(const exceptions::JoynrException& error)
