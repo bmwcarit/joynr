@@ -52,7 +52,7 @@ using namespace joynr_logging;
 
 ACTION_P(ReleaseSemaphore,semaphore)
 {
-    semaphore->wait();
+    semaphore->notify();
 }
 
 static const std::string messagingPropertiesPersistenceFileName1("CombinedEnd2EndTest-runtime1-joynr.settings");
@@ -455,7 +455,7 @@ TEST_F(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply) {
     int64_t maxInterval_ms = 2000;
 
     OnChangeWithKeepAliveSubscriptionQos subscriptionQos(
-                                    500000,   // validity_ms
+                                    10000,   // validity_ms
                                     minInterval_ms,
                                     maxInterval_ms,
                                     3000);  // alertInterval_ms
@@ -464,6 +464,8 @@ TEST_F(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply) {
     // Wait for 2 subscription messages to arrive
     ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
     ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
+
+    testProxy->unsubscribeFromLocation(subscriptionId);
 
     delete testProxyBuilder;
 }
