@@ -305,45 +305,11 @@ else(${WIN32})
     find_package(CURL REQUIRED)
 endif(${WIN32})
 
-message(STATUS "############ Download: spdlog ############")
 # Enable ExternalProject CMake module
 include(ExternalProject)
 
 # Set default ExternalProject root directory
 set_directory_properties(PROPERTIES EP_PREFIX ${CMAKE_BINARY_DIR}/ThirdParty)
-
-### Add spdlog ###########################################################
-set(SPDLOG_SOURCE_URL "https://github.com/gabime/spdlog")
-set(SPDLOG_SOURCE_TYPE "GIT_REPOSITORY")
-if(SPDLOG_ROOT)
-    set(SPDLOG_SOURCE_URL "${SPDLOG_ROOT}")
-    set(SPDLOG_SOURCE_TYPE "URL")
-endif(SPDLOG_ROOT)
-message(STATUS "Using source for spdlog: ${SPDLOG_SOURCE_URL}")
-
-
-ExternalProject_Add(
-    spdlog
-    ${SPDLOG_SOURCE_TYPE} "${SPDLOG_SOURCE_URL}"
-    TIMEOUT 10
-    # Disable svn update
-    UPDATE_COMMAND ""
-    # Disable configure step
-    CONFIGURE_COMMAND ""
-    # Disable build step
-    BUILD_COMMAND ""
-    # Disable install step
-    INSTALL_COMMAND ""
-    # Wrap download, configure and build steps in a script to log output
-    LOG_DOWNLOAD ON
-    LOG_CONFIGURE ON
-    LOG_BUILD ON
-    CMAKE_CACHE_ARGS "-DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}"
-                     "-DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}"
-)
-
-ExternalProject_Get_Property(spdlog SOURCE_DIR)
-set(spdlog_SOURCE_DIR ${SOURCE_DIR})
 
 message(STATUS "variable CURL_FOUND=" ${CURL_FOUND})
 message(STATUS "variable CURL_VERSION_STRING=" ${CURL_VERSION_STRING})
@@ -450,6 +416,14 @@ endif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++11 -Wno-unknown-pragmas")
     if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        option(
+            USE_STDLIB_LIBCPP
+            "use libc++"
+            OFF
+        )
+        if(USE_STDLIB_LIBCPP)
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+        endif()
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
     else()
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
@@ -485,6 +459,41 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     link_directories(${DBUS1_LIBRARY_DIRS} ${COMMONAPI_LIBRARY_DIRS} ${COMMONAPI_DBUS_LIBRARY_DIRS})
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
+
+### Add spdlog ###########################################################
+message(STATUS "############ Download: spdlog ############")
+set(SPDLOG_SOURCE_URL "https://github.com/gabime/spdlog")
+set(SPDLOG_SOURCE_TYPE "GIT_REPOSITORY")
+if(SPDLOG_ROOT)
+    set(SPDLOG_SOURCE_URL "${SPDLOG_ROOT}")
+    set(SPDLOG_SOURCE_TYPE "URL")
+endif(SPDLOG_ROOT)
+message(STATUS "Using source for spdlog: ${SPDLOG_SOURCE_URL}")
+
+
+ExternalProject_Add(
+    spdlog
+    ${SPDLOG_SOURCE_TYPE} "${SPDLOG_SOURCE_URL}"
+    TIMEOUT 10
+    # Disable svn update
+    UPDATE_COMMAND ""
+    # Disable configure step
+    CONFIGURE_COMMAND ""
+    # Disable build step
+    BUILD_COMMAND ""
+    # Disable install step
+    INSTALL_COMMAND ""
+    # Wrap download, configure and build steps in a script to log output
+    LOG_DOWNLOAD ON
+    LOG_CONFIGURE ON
+    LOG_BUILD ON
+    CMAKE_CACHE_ARGS "-DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}"
+                     "-DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}"
+                     "-DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}"
+)
+
+ExternalProject_Get_Property(spdlog SOURCE_DIR)
+set(spdlog_SOURCE_DIR ${SOURCE_DIR})
 
 ######## Add submodules ########
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})

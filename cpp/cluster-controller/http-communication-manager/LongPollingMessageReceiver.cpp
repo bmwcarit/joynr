@@ -265,7 +265,9 @@ void LongPollingMessageReceiver::checkServerTime()
                           .str());
         uint64_t serverTime =
                 TypeUtil::toStdUInt64(QString(timeCheckResult.getBody()).toLongLong());
-        uint64_t diff = abs(serverTime - localTime);
+
+        auto minMaxTime = std::minmax(serverTime, localTime);
+        uint64_t diff = minMaxTime.second - minMaxTime.first;
 
         LOG_INFO(logger,
                  FormatString("CheckServerTime [server time=%1] [local time=%2] [diff=%3 ms]")

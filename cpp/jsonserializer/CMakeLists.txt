@@ -27,6 +27,7 @@ ExternalProject_Add(
     LOG_BUILD ON
     CMAKE_CACHE_ARGS "-DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}"
                      "-DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}"
+                     "-DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}"
 )
 
 ExternalProject_Get_Property(jsmn SOURCE_DIR)

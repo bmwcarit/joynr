@@ -125,7 +125,10 @@ TEST_F(ClockSkewTest, DISABLED_checkClockSkew) {
     uint64_t now        = DispatcherUtils::nowInMilliseconds();
     uint64_t remoteTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::from_time_t(epochsecs).time_since_epoch()).count();
 
+    auto minMaxTime = std::minmax(now, remoteTime);
+    uint64_t diff = minMaxTime.second - minMaxTime.first;
+
     LOG_INFO(logger, FormatString("Time difference is %1 msecs").arg(now).str());
-    EXPECT_TRUE(abs(now - remoteTime) < 2000) << "Time difference between local and remote is over 2 seconds";
+    EXPECT_TRUE(diff < 2000) << "Time difference between local and remote is over 2 seconds";
 
 }
