@@ -71,7 +71,7 @@ TEST_F(ArbitratorTest, getHighestPriority) {
 
     // Create a list of discovery entries
     std::vector<joynr::types::DiscoveryEntry> discoveryEntries;
-    for (int i = 0; i < qosEntries.size(); i++) {
+    for (std::size_t i = 0; i < qosEntries.size(); i++) {
         discoveryEntries.push_back(joynr::types::DiscoveryEntry(
                                  domain,
                                  interfaceName,
@@ -113,7 +113,7 @@ TEST_F(ArbitratorTest, getHighestPriorityOnChange) {
 
     // Create a list of discovery entries
     std::vector<joynr::types::DiscoveryEntry> discoveryEntries;
-    for (int i = 0; i < qosEntries.size(); i++) {
+    for (std::size_t i = 0; i < qosEntries.size(); i++) {
         discoveryEntries.push_back(joynr::types::DiscoveryEntry(
                                  domain,
                                  interfaceName,
@@ -170,7 +170,7 @@ TEST_F(ArbitratorTest, getKeywordProvider) {
 
     // Create a list of discovery entries
     std::vector<joynr::types::DiscoveryEntry> discoveryEntries;
-    for (int i = 0; i < qosEntries.size(); i++) {
+    for (std::size_t i = 0; i < qosEntries.size(); i++) {
         discoveryEntries.push_back(joynr::types::DiscoveryEntry(
                                  domain,
                                  interfaceName,

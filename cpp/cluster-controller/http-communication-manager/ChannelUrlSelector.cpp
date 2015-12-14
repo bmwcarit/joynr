@@ -249,7 +249,7 @@ std::string ChannelUrlSelectorEntry::best()
     double temp = fitness[0];
     int posOfMax = 0;
 
-    for (int i = 0; i < urls.size(); i++) {
+    for (std::size_t i = 0; i < urls.size(); i++) {
         if (temp < fitness.at(i)) {
             temp = fitness.at(i);
             posOfMax = i;
@@ -280,7 +280,7 @@ void ChannelUrlSelectorEntry::initFitness()
     LOG_TRACE(logger, "initFitness ...");
     const std::vector<std::string>& urls = urlInformation.getUrls();
     double rank = urls.size();
-    for (int i = 0; i < urls.size(); i++) {
+    for (std::size_t i = 0; i < urls.size(); i++) {
         fitness.push_back(rank);
         rank -= 1;
     }
@@ -300,7 +300,7 @@ void ChannelUrlSelectorEntry::updateFitness()
     double increase = numberOfIncreases * punishmentFactor;
     double urlFitness = 0;
 
-    for (int i = 0; i < urls.size(); i++) {
+    for (std::size_t i = 0; i < urls.size(); i++) {
         urlFitness = fitness.at(i);
         urlFitness += increase; // did the fitness increase above the allowed value?
         if (urlFitness >

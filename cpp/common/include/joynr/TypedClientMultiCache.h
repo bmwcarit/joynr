@@ -124,7 +124,7 @@ std::vector<T> TypedClientMultiCache<Key, T>::lookUp(const Key& key, qint64 maxA
     std::vector<T> result;
     qint64 time;
 
-    for (int i = 0; i < list->size(); i++) {
+    for (std::size_t i = 0; i < list->size(); i++) {
         time = list->at(i).getTimestamp();
         if (elapsed(time) <= maxAcceptedAgeInMs) {
             result.push_back(list->at(i).getValue());
@@ -143,7 +143,7 @@ std::vector<T> TypedClientMultiCache<Key, T>::lookUpAll(const Key& key)
     std::vector<CachedValue<T>>* list = cache.object(key);
     std::vector<T> result;
 
-    for (int i = 0; i < list->size(); i++) {
+    for (std::size_t i = 0; i < list->size(); i++) {
         result.push_back(list->at(i).getValue());
     }
     return result;
@@ -204,15 +204,15 @@ void TypedClientMultiCache<Key, T>::cleanup(qint64 maxAcceptedAgeInMs)
     std::vector<int> attributesToBeRemoved;
     std::vector<Key> listsToBeRemoved;
 
-    for (int i = 0; i < keyset.size(); i++) {
+    for (std::size_t i = 0; i < keyset.size(); i++) {
         entries = cache.object(keyset[i]);
         attributesToBeRemoved.clear();
-        for (int e = 0; e < entries->size(); e++) {
+        for (std::size_t e = 0; e < entries->size(); e++) {
             if (elapsed(entries->at(e).getTimestamp()) >= maxAcceptedAgeInMs) {
                 attributesToBeRemoved.push_back(e);
             }
         }
-        for (int u = 0; u < attributesToBeRemoved.size(); u++) {
+        for (std::size_t u = 0; u < attributesToBeRemoved.size(); u++) {
             // size of list shrinks as an entry is removed
             auto begin = cache.object(keyset[i])->begin();
             cache.object(keyset[i])->erase(begin + (attributesToBeRemoved[u] - u));
@@ -221,7 +221,7 @@ void TypedClientMultiCache<Key, T>::cleanup(qint64 maxAcceptedAgeInMs)
             listsToBeRemoved.push_back(keyset[i]);
         }
     }
-    for (int v = 0; v < listsToBeRemoved.size(); v++) {
+    for (std::size_t v = 0; v < listsToBeRemoved.size(); v++) {
         cache.remove(listsToBeRemoved[v]);
     }
 }

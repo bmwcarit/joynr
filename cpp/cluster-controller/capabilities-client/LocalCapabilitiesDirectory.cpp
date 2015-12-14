@@ -148,7 +148,7 @@ void LocalCapabilitiesDirectory::remove(const std::string& domain,
 
     types::DiscoveryEntry discoveryEntry;
 
-    for (int i = 0; i < entries.size(); ++i) {
+    for (std::size_t i = 0; i < entries.size(); ++i) {
         CapabilityEntry entry = entries.at(i);
         if (entry.isGlobal()) {
             types::CapabilityInformation capInfo(domain,

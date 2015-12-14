@@ -22,7 +22,8 @@
 namespace joynr
 {
 
-FormatString::FormatString(const String& input) : input(input), output(""), argCount(0), posCount(0)
+FormatString::FormatString(const String& input)
+        : input(input), output(""), args(), positions(), argCount(0), posCount(0)
 {
 }
 
