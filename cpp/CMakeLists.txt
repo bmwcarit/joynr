@@ -379,7 +379,7 @@ link_directories(
 # JOYNR_MAX_LOG_LEVEL_DEBUG
 # JOYNR_MAX_LOG_LEVEL_TRACE
 
-set(JOYNR_MAX_LOG_LEVEL "ERROR" CACHE STRING "joynr max log level")
+set(JOYNR_MAX_LOG_LEVEL "TRACE" CACHE STRING "joynr max log level")
 set_property(
              CACHE
              JOYNR_MAX_LOG_LEVEL
