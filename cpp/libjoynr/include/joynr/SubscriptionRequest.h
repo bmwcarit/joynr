@@ -23,7 +23,6 @@
 #include "joynr/joynrlogging.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/SubscriptionQos.h"
-#include <QObject>
 
 #include <memory>
 #include <string>
@@ -39,14 +38,8 @@ namespace joynr
   * subscriber side, while Aribtration is handled.
   */
 
-class JOYNR_EXPORT SubscriptionRequest : public QObject
+class JOYNR_EXPORT SubscriptionRequest
 {
-    Q_OBJECT
-
-    Q_PROPERTY(std::string subscriptionId READ getSubscriptionId WRITE setSubscriptionId)
-    Q_PROPERTY(std::string subscribedToName READ getSubscribeToName WRITE setSubscribeToName)
-    Q_PROPERTY(Variant qos READ getQos WRITE setQos)
-
 public:
     SubscriptionRequest();
     SubscriptionRequest(const SubscriptionRequest& subscriptionRequest);
@@ -86,5 +79,4 @@ private:
 
 } // namespace joynr
 
-Q_DECLARE_METATYPE(joynr::SubscriptionRequest)
 #endif // SUBSCRIPTIONREQUEST_H

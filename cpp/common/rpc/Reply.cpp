@@ -30,10 +30,7 @@ Reply::Reply() : requestReplyId(), response(), error(Variant::NULL_VARIANT())
 {
 }
 Reply::Reply(const Reply& other)
-        : QObject(),
-          requestReplyId(other.getRequestReplyId()),
-          response(other.response),
-          error(other.error)
+        : requestReplyId(other.getRequestReplyId()), response(other.response), error(other.error)
 {
 }
 

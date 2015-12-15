@@ -20,7 +20,6 @@
 #define OBJECTWITHDECAYTIME_H
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/DispatcherUtils.h"
-#include <QObject>
 #include <stdint.h>
 
 namespace joynr

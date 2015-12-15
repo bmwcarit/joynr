@@ -56,8 +56,8 @@ const std::string& BounceProxyUrl::TIMECHECK_PATH_SUFFIX()
     return value;
 }
 
-BounceProxyUrl::BounceProxyUrl(const std::string& bounceProxyBaseUrl, QObject* parent)
-        : QObject(parent), bounceProxyBaseUrl(bounceProxyBaseUrl), bounceProxyChannelsBaseUrl()
+BounceProxyUrl::BounceProxyUrl(const std::string& bounceProxyBaseUrl)
+        : bounceProxyBaseUrl(bounceProxyBaseUrl), bounceProxyChannelsBaseUrl()
 {
     using boost::algorithm::ends_with;
     if (!ends_with(this->bounceProxyBaseUrl, URL_PATH_SEPARATOR())) {
@@ -70,8 +70,7 @@ BounceProxyUrl::BounceProxyUrl(const std::string& bounceProxyBaseUrl, QObject* p
 }
 
 BounceProxyUrl::BounceProxyUrl(const BounceProxyUrl& other)
-        : QObject(other.parent()),
-          bounceProxyBaseUrl(other.bounceProxyBaseUrl),
+        : bounceProxyBaseUrl(other.bounceProxyBaseUrl),
           bounceProxyChannelsBaseUrl(other.bounceProxyChannelsBaseUrl)
 {
 }

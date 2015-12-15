@@ -36,8 +36,7 @@ static const bool isSubscriptionRequestRegistered =
         Variant::registerType<SubscriptionRequest>("joynr.SubscriptionRequest");
 
 SubscriptionRequest::SubscriptionRequest()
-        : QObject(),
-          subscriptionId(),
+        : subscriptionId(),
           subscribedToName(),
           qos(Variant::make<OnChangeSubscriptionQos>(OnChangeSubscriptionQos()))
 {
@@ -45,8 +44,7 @@ SubscriptionRequest::SubscriptionRequest()
 }
 
 SubscriptionRequest::SubscriptionRequest(const SubscriptionRequest& subscriptionRequest)
-        : QObject(),
-          subscriptionId(subscriptionRequest.getSubscriptionId()),
+        : subscriptionId(subscriptionRequest.getSubscriptionId()),
           subscribedToName(subscriptionRequest.getSubscribeToName()),
           qos(subscriptionRequest.getQos())
 {

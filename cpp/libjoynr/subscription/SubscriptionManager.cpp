@@ -23,8 +23,9 @@
 
 #include <mutex>
 
-#include <assert.h>
+#include <cassert>
 #include <chrono>
+#include <cstdint>
 
 namespace joynr
 {
@@ -35,14 +36,14 @@ class SubscriptionManager::Subscription
 {
 public:
     explicit Subscription(std::shared_ptr<ISubscriptionCallback> subscriptionCaller);
-    ~Subscription();
+    ~Subscription() = default;
 
     int64_t timeOfLastPublication;
     std::shared_ptr<ISubscriptionCallback> subscriptionCaller;
     std::recursive_mutex mutex;
     bool isStopped;
-    quint32 subscriptionEndRunnableHandle;
-    quint32 missedPublicationRunnableHandle;
+    uint32_t subscriptionEndRunnableHandle;
+    uint32_t missedPublicationRunnableHandle;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(Subscription);
@@ -263,11 +264,6 @@ std::shared_ptr<ISubscriptionCallback> SubscriptionManager::getSubscriptionCallb
 }
 
 //------ SubscriptionManager::Subscription ---------------------------------------
-
-SubscriptionManager::Subscription::~Subscription()
-{
-}
-
 SubscriptionManager::Subscription::Subscription(
         std::shared_ptr<ISubscriptionCallback> subscriptionCaller)
         : timeOfLastPublication(0),

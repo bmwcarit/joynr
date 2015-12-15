@@ -21,7 +21,6 @@
 
 #include "joynr/JoynrExport.h"
 
-#include <QObject>
 #include <string>
 
 #include <memory>
@@ -29,11 +28,8 @@
 namespace joynr
 {
 
-class JOYNR_EXPORT SubscriptionReply : public QObject
+class JOYNR_EXPORT SubscriptionReply
 {
-    Q_OBJECT
-
-    Q_PROPERTY(std::string subscriptionId READ getSubscriptionId WRITE setSubscriptionId)
 public:
     SubscriptionReply& operator=(const SubscriptionReply& other);
     bool operator==(const SubscriptionReply& other) const;
@@ -52,8 +48,5 @@ private:
 };
 
 } // namespace joynr
-
-Q_DECLARE_METATYPE(joynr::SubscriptionReply)
-Q_DECLARE_METATYPE(std::shared_ptr<joynr::SubscriptionReply>)
 
 #endif // SUBSCRIPTIONREPLY_H

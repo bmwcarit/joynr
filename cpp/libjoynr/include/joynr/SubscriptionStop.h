@@ -21,18 +21,14 @@
 
 #include "joynr/JoynrExport.h"
 
-#include <QObject>
-
 #include <memory>
+#include <string>
 
 namespace joynr
 {
 
-class JOYNR_EXPORT SubscriptionStop : public QObject
+class JOYNR_EXPORT SubscriptionStop
 {
-    Q_OBJECT
-
-    Q_PROPERTY(std::string subscriptionId READ getSubscriptionId WRITE setSubscriptionId)
 public:
     SubscriptionStop& operator=(const SubscriptionStop& other);
     bool operator==(const SubscriptionStop& other) const;
@@ -51,8 +47,5 @@ private:
 };
 
 } // namespace joynr
-
-Q_DECLARE_METATYPE(joynr::SubscriptionStop)
-Q_DECLARE_METATYPE(std::shared_ptr<joynr::SubscriptionStop>)
 
 #endif // SUBSCRIPTIONSTOP_H

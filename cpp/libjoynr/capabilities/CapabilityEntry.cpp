@@ -27,8 +27,7 @@ CapabilityEntry::CapabilityEntry()
 }
 
 CapabilityEntry::CapabilityEntry(const CapabilityEntry& other)
-        : QObject(),
-          domain(other.domain),
+        : domain(other.domain),
           interfaceName(other.interfaceName),
           qos(other.qos),
           participantId(other.participantId),
@@ -43,10 +42,8 @@ CapabilityEntry::CapabilityEntry(
         joynr::types::ProviderQos qos,
         const std::string& participantId,
         std::vector<joynr::types::CommunicationMiddleware::Enum> middlewareConnections,
-        bool isGlobal,
-        QObject* parent)
-        : QObject(parent),
-          domain(domain),
+        bool isGlobal)
+        : domain(domain),
           interfaceName(interfaceName),
           qos(qos),
           participantId(participantId),

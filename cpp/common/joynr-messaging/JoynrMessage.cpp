@@ -89,7 +89,7 @@ JoynrMessage::JoynrMessage() : type(""), header(), payload()
 }
 
 JoynrMessage::JoynrMessage(const JoynrMessage& message)
-        : QObject(), type(message.type), header(message.header), payload(message.payload)
+        : type(message.type), header(message.header), payload(message.payload)
 {
     generateAndSetMsgIdHeaderIfAbsent();
 }

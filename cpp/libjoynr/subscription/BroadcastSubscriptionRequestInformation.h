@@ -30,11 +30,6 @@ namespace joynr
 class JOYNR_EXPORT BroadcastSubscriptionRequestInformation : public BroadcastSubscriptionRequest,
                                                              public SubscriptionInformation
 {
-    Q_OBJECT
-
-    Q_PROPERTY(std::string proxyId READ getProxyId WRITE setProxyId)
-    Q_PROPERTY(std::string providerId READ getProviderId WRITE setProviderId)
-
 public:
     BroadcastSubscriptionRequestInformation();
     BroadcastSubscriptionRequestInformation(
@@ -60,7 +55,5 @@ private:
 };
 
 } // namespace joynr
-
-Q_DECLARE_METATYPE(joynr::BroadcastSubscriptionRequestInformation)
 
 #endif // BROADCASTSUBSCRIPTIONREQUESTINFORMATION_H

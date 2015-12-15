@@ -38,11 +38,6 @@ namespace joynr
 
 class JOYNR_EXPORT BroadcastSubscriptionRequest : public SubscriptionRequest
 {
-    Q_OBJECT
-
-    Q_PROPERTY(BroadcastFilterParameters filterParameters READ getFilterParameters WRITE
-                       setFilterParameters)
-
 public:
     BroadcastSubscriptionRequest();
     BroadcastSubscriptionRequest(const BroadcastSubscriptionRequest& subscriptionRequest);
@@ -70,6 +65,4 @@ private:
 
 } // namespace joynr
 
-Q_DECLARE_METATYPE(joynr::BroadcastFilterParameters)
-Q_DECLARE_METATYPE(joynr::BroadcastSubscriptionRequest)
 #endif // BROADCASTSUBSCRIPTIONREQUEST_H

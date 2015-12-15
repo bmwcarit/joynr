@@ -22,18 +22,17 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/joynrlogging.h"
 
-#include <QObject>
 #include <QUrl>
+
 #include <string>
 
 namespace joynr
 {
 
-class JOYNR_EXPORT BounceProxyUrl : public QObject
+class JOYNR_EXPORT BounceProxyUrl
 {
-    Q_OBJECT
 public:
-    explicit BounceProxyUrl(const std::string& bounceProxyChannelsBaseUrl, QObject* parent = 0);
+    explicit BounceProxyUrl(const std::string& bounceProxyChannelsBaseUrl);
 
     BounceProxyUrl(const BounceProxyUrl& other);
 
