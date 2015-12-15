@@ -407,6 +407,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdReturnsCachedValues
             .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithTwoResults));
 
     localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
+    std::vector<CapabilityEntry> capabilities = callback->getResults(TIMEOUT);
+    EXPECT_EQ(2, capabilities.size());
     callback->clearResults();
     EXPECT_CALL(*capabilitiesClient, lookup(
                     _,
@@ -414,7 +416,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdReturnsCachedValues
                     A<std::function<void(const exceptions::JoynrException& error)>>()))
             .Times(0);
     localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
-    std::vector<CapabilityEntry> capabilities = callback->getResults(TIMEOUT);
+    capabilities = callback->getResults(TIMEOUT);
     EXPECT_EQ(2, capabilities.size());
 
 }

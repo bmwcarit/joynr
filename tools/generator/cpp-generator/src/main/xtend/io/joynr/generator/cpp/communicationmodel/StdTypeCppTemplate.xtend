@@ -65,7 +65,7 @@ static const bool is«typeName»Registered = Variant::registerType<«type.typeNa
 		«getExtendedType(type).joynrName»()«IF !getMembers(type).empty»,«ENDIF»
 	«ENDIF»
 	«FOR member: getMembers(type) SEPARATOR ','»
-		«member.joynrName»()
+		«member.joynrName»(«member.defaultValue»)
 	«ENDFOR»
 {
 }
