@@ -21,6 +21,9 @@ The software listed below included in some products is licensed under the "Apach
 - com.google.inject.extensions:guice-servlet:3.0
   Notice file: WEB-INF/lib/guice-servlet-3.0.jar:META-INF/NOTICE
   License file: WEB-INF/lib/guice-servlet-3.0.jar:META-INF/LICENSE
+- commons-lang:commons-lang:2.4
+  Notice file: WEB-INF/lib/commons-lang-2.4.jar:META-INF/NOTICE
+  License file: WEB-INF/lib/commons-lang-2.4.jar:META-INF/LICENSE
 - eu.infomas:annotation-detector:3.0.0
 - javax.inject:javax.inject:1
 - log4j:log4j:1.2.17
