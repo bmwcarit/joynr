@@ -848,6 +848,7 @@
 										<versionRange>[1.0.0,)</versionRange>
 										<goals>
 											<goal>enforce</goal>
+											<goal>display-info</goal>
 										</goals>
 									</pluginExecutionFilter>
 									<action>
