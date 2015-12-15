@@ -25,7 +25,8 @@ using namespace joynr;
 MockLocalCapabilitiesDirectoryCallback::MockLocalCapabilitiesDirectoryCallback()
     : ILocalCapabilitiesCallback(),
       results(),
-      semaphore(0) {
+      semaphore(1) {
+    semaphore.wait();
 }
 
 void MockLocalCapabilitiesDirectoryCallback::capabilitiesReceived(std::vector<CapabilityEntry> capabilities) {
@@ -47,7 +48,7 @@ std::vector<CapabilityEntry> MockLocalCapabilitiesDirectoryCallback::getResults(
 }
 
 void MockLocalCapabilitiesDirectoryCallback::clearResults(){
-    semaphore.wait();
+    semaphore.waitFor();
     results.clear();
 }
 
