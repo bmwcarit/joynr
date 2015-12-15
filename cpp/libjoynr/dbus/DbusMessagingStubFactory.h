@@ -35,8 +35,8 @@ class DbusMessagingStubFactory : public IMiddlewareMessagingStubFactory
 
 public:
     DbusMessagingStubFactory();
-    std::shared_ptr<IMessaging> create(const joynr::system::RoutingTypes::QtAddress& destAddress);
-    bool canCreate(const joynr::system::RoutingTypes::QtAddress& destAddress);
+    std::shared_ptr<IMessaging> create(const joynr::system::RoutingTypes::Address& destAddress);
+    bool canCreate(const joynr::system::RoutingTypes::Address& destAddress);
 
 private:
     std::map<std::string, std::shared_ptr<IMessaging>> stubMap;

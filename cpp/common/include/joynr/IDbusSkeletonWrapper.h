@@ -92,9 +92,9 @@ public:
     {
         LOG_INFO(logger,
                  FormatString("Call method %1:%2-> %3")
-                         .arg(adapter.toStdString())
+                         .arg(adapter)
                          .arg(serviceAddress)
-                         .arg(method.toStdString())
+                         .arg(method)
                          .str());
     }
 

@@ -42,7 +42,9 @@ void DbusMessagingSkeleton::transmit(joynr::messaging::IMessaging::JoynrMessage 
     DbusMessagingUtil::copyDbusMsgToJoynrMsg(message, joynrMessage);
     // callback
     LOG_INFO(logger,
-             FormatString("transmit incoming message: %1").arg(joynrMessage.getHeaderMessageId()).str());
+             FormatString("transmit incoming message: %1")
+                     .arg(joynrMessage.getHeaderMessageId())
+                     .str());
     callBack.transmit(joynrMessage);
 }
 

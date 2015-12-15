@@ -21,6 +21,7 @@
 #include <gmock/gmock.h>
 #include <memory>
 #include <string>
+#include <vector>
 #include <stdint.h>
 #include "joynr/DispatcherUtils.h"
 #include "tests/utils/MockObjects.h"
@@ -134,7 +135,7 @@ private:
 
 ACTION_P(ReleaseSemaphore,semaphore)
 {
-    semaphore->unlock();
+    semaphore->notify();
 }
 
 TEST_F(End2EndDbusTest, instantiate_Runtimes)
@@ -246,8 +247,8 @@ TEST_F(End2EndDbusTest, subscriptionlistener)
     testProxy->subscribeToTestAttribute(subscriptionListener, subscriptionQos);
 
     // Wait for 2 subscription messages to arrive
-    ASSERT_TRUE(semaphore.tryLock(20000));
-    ASSERT_TRUE(semaphore.tryLock(20000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
 }
 
 TEST_F(End2EndDbusTest, performance_sendManyRequests) {
@@ -258,7 +259,7 @@ TEST_F(End2EndDbusTest, performance_sendManyRequests) {
     connectProxy();
 
     uint64_t startTime = DispatcherUtils::nowInMilliseconds();
-    QList<std::shared_ptr<Future<int32_t> > >testFutureList;
+    std::vector<std::shared_ptr<Future<int32_t> > >testFutureList;
     int numberOfMessages = 500;
     int successFullMessages = 0;
     for (int32_t i=0; i<numberOfMessages; i++){
@@ -267,7 +268,7 @@ TEST_F(End2EndDbusTest, performance_sendManyRequests) {
         list.push_back(4);
         list.push_back(8);
         list.push_back(i);
-        testFutureList.append(testProxy->sumIntsAsync(list));
+        testFutureList.push_back(testProxy->sumIntsAsync(list));
     }
 
     for (int i=0; i<numberOfMessages; i++){

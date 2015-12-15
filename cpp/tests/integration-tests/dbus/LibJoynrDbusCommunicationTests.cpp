@@ -22,14 +22,14 @@
 #include "joynr/IDbusSkeletonWrapper.h"
 #include "common/dbus/DbusMessagingStubAdapter.h"
 #include "joynr/DbusMessagingSkeleton.h"
-#include "joynr/system/RoutingTypes_QtChannelAddress.h"
-#include "joynr/system/RoutingTypes_QtCommonApiDbusAddress.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
+#include "joynr/system/RoutingTypes/CommonApiDbusAddress.h"
 
 #include "tests/utils/MockObjects.h"
 #include "joynr/IMessaging.h"
 #include "joynr/Settings.h"
 
-#include <QString>
+#include <string>
 #include <chrono>
 
 using namespace joynr;
@@ -57,8 +57,8 @@ public:
     void SetUp() {
     }
 
-    void printResult(Logger* logger, QString text, bool result) {
-        if(result) LOG_INFO(logger, FormatString("%1 SUCCESS").arg(text.toStdString()).str()); else LOG_ERROR(logger, FormatString("%1 ERROR").arg(text.toStdString()).str());
+    void printResult(Logger* logger, const std::string& text, bool result) {
+        if(result) LOG_INFO(logger, FormatString("%1 SUCCESS").arg(text).str()); else LOG_ERROR(logger, FormatString("%1 ERROR").arg(text).str());
     }
 };
 

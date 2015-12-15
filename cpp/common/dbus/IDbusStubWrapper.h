@@ -27,7 +27,7 @@
 #include "joynr/joynrlogging.h"
 #include "joynr/TypeUtil.h"
 
-#include <QString>
+#include <string>
 #include <chrono>
 
 namespace joynr
@@ -71,7 +71,7 @@ public:
         }
     }
 
-    void printCallStatus(const CommonAPI::CallStatus& status, const QString& method)
+    void printCallStatus(const CommonAPI::CallStatus& status, const std::string& method)
     {
         switch (status) {
         case CommonAPI::CallStatus::SUCCESS:
@@ -95,14 +95,23 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(IDbusStubWrapper);
 
-    void logCallStatus(const QString method, const QString status)
+    void logCallStatus(const std::string& method, const std::string& status)
     {
-        LOG_INFO(logger, FormatString("Call status %1->%2: %3").arg(serviceAddress).arg(method.toStdString()).arg(status.toStdString()).str());
+        LOG_INFO(logger,
+                 FormatString("Call status %1->%2: %3")
+                         .arg(serviceAddress)
+                         .arg(method)
+                         .arg(status)
+                         .str());
     }
 
-    void logAvailabilityStatus(const QString status)
+    void logAvailabilityStatus(const std::string& status)
     {
-        LOG_INFO(logger, FormatString("Status dbus proxy on address %1: %2").arg(serviceAddress).arg(status.toStdString()).str());
+        LOG_INFO(logger,
+                 FormatString("Status dbus proxy on address %1: %2")
+                         .arg(serviceAddress)
+                         .arg(status)
+                         .str());
     }
 
 protected:
@@ -139,14 +148,15 @@ protected:
         if (!isProxyAvailable()) {
             LOG_ERROR(logger,
                       FormatString("Could not connect to proxy within %1ms!")
-                              .arg((max_retries * retry_delay)).str());
+                              .arg((max_retries * retry_delay))
+                              .str());
             assert(false);
         }
     }
 
-    void logMethodCall(const QString& method)
+    void logMethodCall(const std::string& method)
     {
-        LOG_INFO(logger, FormatString("Call method %1-> %2").arg(serviceAddress).arg(method.toStdString()).str());
+        LOG_INFO(logger, FormatString("Call method %1-> %2").arg(serviceAddress).arg(method).str());
     }
 };
 

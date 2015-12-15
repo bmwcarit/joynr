@@ -22,6 +22,7 @@
 
 #include "joynr/PrivateCopyAssign.h"
 #include "runtimes/libjoynr-runtime/LibJoynrRuntime.h"
+#include <string>
 
 namespace joynr
 {
@@ -44,7 +45,7 @@ protected:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LibJoynrDbusRuntime);
-    QString libjoynrMessagingServiceUrl;
+    std::string libjoynrMessagingServiceUrl;
 };
 
 } // namespace joynr

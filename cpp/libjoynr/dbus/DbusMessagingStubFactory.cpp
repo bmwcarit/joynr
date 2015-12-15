@@ -17,7 +17,7 @@
  * #L%
  */
 #include "DbusMessagingStubFactory.h"
-#include "joynr/system/RoutingTypes_QtCommonApiDbusAddress.h"
+#include "joynr/system/RoutingTypes/CommonApiDbusAddress.h"
 #include "common/dbus/DbusMessagingStubAdapter.h"
 
 #include "joynr/TypeUtil.h"
@@ -29,29 +29,27 @@ DbusMessagingStubFactory::DbusMessagingStubFactory() : stubMap(), mutex()
 {
 }
 
-bool DbusMessagingStubFactory::canCreate(const joynr::system::RoutingTypes::QtAddress& destAddress)
+bool DbusMessagingStubFactory::canCreate(const joynr::system::RoutingTypes::Address& destAddress)
 {
-    return destAddress.inherits(
-            system::RoutingTypes::QtCommonApiDbusAddress::staticMetaObject.className());
+    return dynamic_cast<const system::RoutingTypes::CommonApiDbusAddress*>(&destAddress);
 }
 
 std::shared_ptr<IMessaging> DbusMessagingStubFactory::create(
-        const joynr::system::RoutingTypes::QtAddress& destAddress)
+        const joynr::system::RoutingTypes::Address& destAddress)
 {
-    const system::RoutingTypes::QtCommonApiDbusAddress* dbusAddress =
-            dynamic_cast<const system::RoutingTypes::QtCommonApiDbusAddress*>(&destAddress);
-    QString address = dbusAddress->getDomain() + ":" + dbusAddress->getServiceName() + ":" +
-                      dbusAddress->getParticipantId();
+    const system::RoutingTypes::CommonApiDbusAddress* dbusAddress =
+            dynamic_cast<const system::RoutingTypes::CommonApiDbusAddress*>(&destAddress);
+    std::string address = dbusAddress->getDomain() + ":" + dbusAddress->getServiceName() + ":" +
+                          dbusAddress->getParticipantId();
     std::shared_ptr<IMessaging> stub = nullptr;
     // lookup address
     {
         std::lock_guard<std::mutex> lock(mutex);
-        auto entry = stubMap.find(address.toStdString());
+        auto entry = stubMap.find(address);
         if (entry == stubMap.end()) {
             // create new stub
-            stub = std::shared_ptr<IMessaging>(
-                    new DbusMessagingStubAdapter(TypeUtil::toStd(address)));
-            stubMap.insert(std::make_pair(address.toStdString(), stub));
+            stub = std::shared_ptr<IMessaging>(new DbusMessagingStubAdapter(address));
+            stubMap.insert(std::make_pair(address, stub));
         } else {
             stub = entry->second;
         }

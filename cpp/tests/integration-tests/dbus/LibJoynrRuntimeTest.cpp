@@ -31,10 +31,10 @@
 
 #include "joynr/IDbusSkeletonWrapper.h"
 #include "joynr/DbusMessagingSkeleton.h"
-#include "joynr/system/RoutingTypes_QtChannelAddress.h"
-#include "joynr/system/RoutingTypes_QtCommonApiDbusAddress.h"
-#include "joynr/types/QtCommunicationMiddleware.h"
-#include "joynr/types/QtDiscoveryEntry.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
+#include "joynr/system/RoutingTypes/CommonApiDbusAddress.h"
+#include "joynr/types/CommunicationMiddleware.h"
+#include "joynr/types/DiscoveryEntry.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/system/RoutingProxy.h"
 #include "joynr/Future.h"
@@ -89,7 +89,7 @@ public:
             discoveryProxyBuilder(NULL),
             discoveryProxy(NULL)
     {
-        QString channelId("LibJoynrRuntimeTest.ChannelId");
+        std::string channelId("LibJoynrRuntimeTest.ChannelId");
 
         //runtime can only be created, after MockMessageReceiver has been told to return
         //a channelId for getReceiveChannelId.

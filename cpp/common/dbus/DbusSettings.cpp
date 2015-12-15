@@ -120,14 +120,20 @@ std::string DbusSettings::createClusterControllerMessagingAddressString() const
 void DbusSettings::printSettings() const
 {
     LOG_DEBUG(logger,
-              FormatString("SETTING: %1 = %2").arg(SETTING_CC_MESSAGING_DOMAIN())
-              .arg(settings.get<std::string>(SETTING_CC_MESSAGING_DOMAIN())).str());
+              FormatString("SETTING: %1 = %2")
+                      .arg(SETTING_CC_MESSAGING_DOMAIN())
+                      .arg(settings.get<std::string>(SETTING_CC_MESSAGING_DOMAIN()))
+                      .str());
     LOG_DEBUG(logger,
-              FormatString("SETTING: %1 = %2").arg(SETTING_CC_MESSAGING_SERVICENAME())
-                      .arg(settings.get<std::string>(SETTING_CC_MESSAGING_SERVICENAME())).str());
+              FormatString("SETTING: %1 = %2")
+                      .arg(SETTING_CC_MESSAGING_SERVICENAME())
+                      .arg(settings.get<std::string>(SETTING_CC_MESSAGING_SERVICENAME()))
+                      .str());
     LOG_DEBUG(logger,
-              FormatString("SETTING: %1 = %2").arg(SETTING_CC_MESSAGING_PARTICIPANTID())
-                      .arg(settings.get<std::string>(SETTING_CC_MESSAGING_PARTICIPANTID())).str());
+              FormatString("SETTING: %1 = %2")
+                      .arg(SETTING_CC_MESSAGING_PARTICIPANTID())
+                      .arg(settings.get<std::string>(SETTING_CC_MESSAGING_PARTICIPANTID()))
+                      .str());
 }
 
 } // namespace joynr
