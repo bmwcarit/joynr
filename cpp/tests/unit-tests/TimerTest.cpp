@@ -23,7 +23,7 @@
 #include "joynr/joynrlogging.h"
 
 #include "joynr/TimeUtils.h"
-
+#include "joynr/Semaphore.h"
 #include <stdint.h>
 #include <unordered_map>
 
@@ -35,6 +35,12 @@ using ::testing::StrictMock;
 
 // Expected accuracy of the timer in milliseconds
 static const int64_t timerAccuracy_ms = 10;
+
+ACTION_P(ReleaseSemaphore, semaphore)
+{
+    semaphore->notify();
+}
+
 
 class TimerTest : public ::testing::Test {
 public:
@@ -89,10 +95,12 @@ public:
     MOCK_CONST_METHOD1(onTimerRemoved, void (Timer::TimerId id));
 #pragma GCC diagnostic pop
 
+protected:
+    Semaphore semaphore;
+
 private:
 
     Timer timer;
-
     std::function<void(Timer::TimerId)> expired;
     std::function<void(Timer::TimerId)> removed;
 
@@ -108,103 +116,92 @@ TEST_F(TimerTest, deinitializationWithoutRun_WaitSomeTime) {
 TEST_F(TimerTest, deinitializationWithoutRun_Immediately) {
 }
 
-TEST_F(TimerTest, shutdownWithActiveTimer_WaitSomeTime) {
+TEST_F(TimerTest, shutdownWithActiveTimer) {
 
-    Timer::TimerId id = addTimer(40, false);
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-
-    EXPECT_CALL(*this, onTimerExpired(_, _)).Times(0);
-    EXPECT_CALL(*this, onTimerRemoved(id)).Times(1);
-}
-
-TEST_F(TimerTest, shutdownWithActiveTimer_Immediately) {
-
-    Timer::TimerId id = addTimer(100, false);
+    Timer::TimerId id = addTimer(100000, false);
 
     EXPECT_CALL(*this, onTimerExpired(_, _)).Times(0);
     EXPECT_CALL(*this, onTimerRemoved(id)).Times(1);
 
 }
 
-TEST_F(TimerTest, testCallbackAndAccuracy) {
+TEST_F(TimerTest, testCallback) {
 
     Timer::TimerId id = addTimer(20, false);
 
-    EXPECT_CALL(*this, onTimerExpired(id, Lt(20 + timerAccuracy_ms))).Times(1);
+    EXPECT_CALL(*this, onTimerExpired(id, Lt(20 + timerAccuracy_ms)))
+            .Times(1)
+            .WillOnce(ReleaseSemaphore(&semaphore));
     EXPECT_CALL(*this, onTimerRemoved(id)).Times(0);
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(30));
-
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
 
 TEST_F(TimerTest, reorganizeTimerByAddingAnEarlierTimer) {
-    Timer::TimerId id50 = addTimer(50, false);
+    Sequence s;
+
+    Timer::TimerId id250 = addTimer(250, false);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
     Timer::TimerId id10 = addTimer(10, false);
 
-    EXPECT_CALL(*this, onTimerExpired(id10, Lt(10 + timerAccuracy_ms))).Times(1);
+    EXPECT_CALL(*this, onTimerExpired(id10, _)).Times(1).InSequence(s).WillOnce(ReleaseSemaphore(&semaphore));
     EXPECT_CALL(*this, onTimerRemoved(_)).Times(0);
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-
-    EXPECT_CALL(*this, onTimerExpired(id50, Lt(50 + timerAccuracy_ms))).Times(1);
+    EXPECT_CALL(*this, onTimerExpired(id250, _)).Times(1).InSequence(s).WillOnce(ReleaseSemaphore(&semaphore));
     EXPECT_CALL(*this, onTimerRemoved(_)).Times(0);
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(40));
-
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(500)));
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(500)));
 }
 
 TEST_F(TimerTest, reorganizeTimerByRemovingTheEarliest) {
-    Timer::TimerId id50 = addTimer(50, false);
 
-    Timer::TimerId id10 = addTimer(10, false);
+    Sequence s;
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    Timer::TimerId id250 = addTimer(250, false);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+    Timer::TimerId id1000 = addTimer(1000, false);
 
     EXPECT_CALL(*this, onTimerExpired(_, _)).Times(0);
-    EXPECT_CALL(*this, onTimerRemoved(id10)).Times(1);
+    EXPECT_CALL(*this, onTimerRemoved(id1000)).Times(1).InSequence(s).WillOnce(ReleaseSemaphore(&semaphore));
 
-    removeTimer(id10);
+    removeTimer(id1000);
 
-    EXPECT_CALL(*this, onTimerExpired(id50, Lt(50 + timerAccuracy_ms))).Times(1);
+    EXPECT_CALL(*this, onTimerExpired(id250, _)).Times(1).InSequence(s).WillOnce(ReleaseSemaphore(&semaphore));
     EXPECT_CALL(*this, onTimerRemoved(_)).Times(0);
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(70));
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(500)));
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(500)));
 }
 
 TEST_F(TimerTest, removingTheOnlyActiveTimer) {
-    Timer::TimerId id10 = addTimer(10, false);
+    Timer::TimerId id10 = addTimer(1000, false);
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
     EXPECT_CALL(*this, onTimerExpired(_, _)).Times(0);
-    EXPECT_CALL(*this, onTimerRemoved(id10)).Times(1);
+    EXPECT_CALL(*this, onTimerRemoved(id10)).Times(1).WillOnce(ReleaseSemaphore(&semaphore));
 
     removeTimer(id10);
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(20));
-
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(500)));
 }
 
 TEST_F(TimerTest, usingIntervallTimer) {
 
-    Timer::TimerId id150 = addTimer(150, false);
-
     Timer::TimerId id10 = addTimer(10, true);
 
-    EXPECT_CALL(*this, onTimerExpired(id10, _)).Times(AtLeast(18));
-    EXPECT_CALL(*this, onTimerRemoved(_)).Times(0);
-
-    EXPECT_CALL(*this, onTimerExpired(id150, Lt(150 + timerAccuracy_ms))).Times(1);
-    EXPECT_CALL(*this, onTimerRemoved(_)).Times(0);
+    EXPECT_CALL(*this, onTimerExpired(id10, _)).Times(AtLeast(2));
 
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
 
+    // timer.shutdown() will be called from TearDown()
+    // It is ensured that onTimerRemoved is invoked before TearDown() returns
     EXPECT_CALL(*this, onTimerRemoved(id10)).Times(1);
-
 }
 
 /* This test is disabled because it could fail sometimes ("Stress-Test") */
