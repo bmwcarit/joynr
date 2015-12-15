@@ -17,7 +17,7 @@
  * #L%
  */
 #include "joynr/MessagingSettings.h"
-#include "joynr/BounceProxyUrl.h"
+#include "joynr/BrokerUrl.h"
 #include "joynr/TypeUtil.h"
 #include "joynr/Settings.h"
 
@@ -40,9 +40,9 @@ MessagingSettings::MessagingSettings(const MessagingSettings& other) : settings(
     checkSettings();
 }
 
-const std::string& MessagingSettings::SETTING_BOUNCE_PROXY_URL()
+const std::string& MessagingSettings::SETTING_BROKER_URL()
 {
-    static const std::string value("messaging/bounce-proxy-url");
+    static const std::string value("messaging/broker-url");
     return value;
 }
 
@@ -226,13 +226,13 @@ std::int64_t MessagingSettings::DEFAULT_HTTP_CONNECT_TIMEOUT_MS()
     return value;
 }
 
-const std::string& MessagingSettings::SETTING_BOUNCEPROXY_TIMEOUT_MS()
+const std::string& MessagingSettings::SETTING_BROKER_TIMEOUT_MS()
 {
-    static const std::string value("messaging/bounce-proxy-timeout");
+    static const std::string value("messaging/broker-timeout");
     return value;
 }
 
-std::int64_t MessagingSettings::DEFAULT_BOUNCEPROXY_TIMEOUT_MS()
+std::int64_t MessagingSettings::DEFAULT_BROKER_TIMEOUT_MS()
 {
     static const std::int64_t value(20 * 1000); // 20 seconds
     return value;
@@ -262,20 +262,20 @@ std::int64_t MessagingSettings::DEFAULT_SEND_MESSAGE_MAX_TTL()
     return value;
 }
 
-BounceProxyUrl MessagingSettings::getBounceProxyUrl() const
+BrokerUrl MessagingSettings::getBrokerUrl() const
 {
-    return BounceProxyUrl(settings.get<std::string>(SETTING_BOUNCE_PROXY_URL()));
+    return BrokerUrl(settings.get<std::string>(SETTING_BROKER_URL()));
 }
 
-std::string MessagingSettings::getBounceProxyUrlString() const
+std::string MessagingSettings::getBrokerUrlString() const
 {
-    return settings.get<std::string>(SETTING_BOUNCE_PROXY_URL());
+    return settings.get<std::string>(SETTING_BROKER_URL());
 }
 
-void MessagingSettings::setBounceProxyUrl(const BounceProxyUrl& bounceProxyUrl)
+void MessagingSettings::setBrokerUrl(const BrokerUrl& brokerUrl)
 {
-    std::string url = bounceProxyUrl.getBounceProxyChannelsBaseUrl().toString();
-    settings.set(SETTING_BOUNCE_PROXY_URL(), url);
+    std::string url = brokerUrl.getBrokerChannelsBaseUrl().toString();
+    settings.set(SETTING_BROKER_URL(), url);
 }
 
 std::string MessagingSettings::getDiscoveryDirectoriesDomain() const
@@ -423,14 +423,14 @@ void MessagingSettings::setHttpConnectTimeout(std::int64_t timeout_ms)
     settings.set(SETTING_HTTP_CONNECT_TIMEOUT_MS(), timeout_ms);
 }
 
-std::int64_t MessagingSettings::getBounceProxyTimeout() const
+std::int64_t MessagingSettings::getBrokerTimeout() const
 {
-    return settings.get<std::int64_t>(SETTING_BOUNCEPROXY_TIMEOUT_MS());
+    return settings.get<std::int64_t>(SETTING_BROKER_TIMEOUT_MS());
 }
 
-void MessagingSettings::setBounceProxyTimeout(std::int64_t timeout_ms)
+void MessagingSettings::setBrokerTimeout(std::int64_t timeout_ms)
 {
-    settings.set(SETTING_BOUNCEPROXY_TIMEOUT_MS(), timeout_ms);
+    settings.set(SETTING_BROKER_TIMEOUT_MS(), timeout_ms);
 }
 
 std::int64_t MessagingSettings::getDiscoveryMessagesTtl() const
@@ -461,11 +461,11 @@ bool MessagingSettings::contains(const std::string& key) const
 // Checks messaging settings and sets defaults
 void MessagingSettings::checkSettings() const
 {
-    assert(settings.contains(SETTING_BOUNCE_PROXY_URL()));
-    std::string bounceProxyUrl = settings.get<std::string>(SETTING_BOUNCE_PROXY_URL());
-    if (bounceProxyUrl.back() != '/') {
-        bounceProxyUrl.append("/");
-        settings.set(SETTING_BOUNCE_PROXY_URL(), bounceProxyUrl);
+    assert(settings.contains(SETTING_BROKER_URL()));
+    std::string brokerUrl = settings.get<std::string>(SETTING_BROKER_URL());
+    if (brokerUrl.back() != '/') {
+        brokerUrl.append("/");
+        settings.set(SETTING_BROKER_URL(), brokerUrl);
     }
 
     assert(settings.contains(SETTING_DISCOVERY_DIRECTORIES_DOMAIN()));
@@ -517,8 +517,8 @@ void MessagingSettings::printSettings() const
 {
     JOYNR_LOG_DEBUG(logger,
                     "SETTING: {} = {})",
-                    SETTING_BOUNCE_PROXY_URL(),
-                    settings.get<std::string>(SETTING_BOUNCE_PROXY_URL()));
+                    SETTING_BROKER_URL(),
+                    settings.get<std::string>(SETTING_BROKER_URL()));
     JOYNR_LOG_DEBUG(logger,
                     "SETTING: {} = {})",
                     SETTING_DISCOVERY_DIRECTORIES_DOMAIN(),

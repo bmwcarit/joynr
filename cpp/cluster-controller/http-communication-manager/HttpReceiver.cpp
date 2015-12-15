@@ -104,13 +104,13 @@ void HttpReceiver::startReceiveQueue()
 
     // Get the settings specific to long polling
     LongPollingMessageReceiverSettings longPollSettings = {
-            std::chrono::milliseconds(settings.getBounceProxyTimeout()),
+            std::chrono::milliseconds(settings.getBrokerTimeout()),
             std::chrono::milliseconds(settings.getLongPollTimeout()),
             std::chrono::milliseconds(settings.getLongPollRetryInterval()),
             std::chrono::milliseconds(settings.getCreateChannelRetryInterval())};
 
     JOYNR_LOG_DEBUG(logger, "startReceiveQueue");
-    messageReceiver = new LongPollingMessageReceiver(settings.getBounceProxyUrl(),
+    messageReceiver = new LongPollingMessageReceiver(settings.getBrokerUrl(),
                                                      channelId,
                                                      receiverId,
                                                      longPollSettings,
@@ -151,7 +151,7 @@ bool HttpReceiver::tryToDeleteChannel()
     // messageSender.
     // TODO channelUrl is known only to the LongPlooMessageReceiver!
     std::string deleteChannelUrl =
-            settings.getBounceProxyUrl().getDeleteChannelUrl(getReceiveChannelId()).toString();
+            settings.getBrokerUrl().getDeleteChannelUrl(getReceiveChannelId()).toString();
     std::shared_ptr<IHttpDeleteBuilder> deleteChannelRequestBuilder(
             HttpNetworking::getInstance()->createHttpDeleteBuilder(deleteChannelUrl));
     std::shared_ptr<HttpRequest> deleteChannelRequest(

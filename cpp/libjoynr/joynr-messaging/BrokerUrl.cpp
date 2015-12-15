@@ -16,66 +16,66 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/BounceProxyUrl.h"
+#include "joynr/BrokerUrl.h"
 #include <boost/algorithm/string/predicate.hpp>
 
 namespace joynr
 {
 
-const std::string& BounceProxyUrl::URL_PATH_SEPARATOR()
+const std::string& BrokerUrl::URL_PATH_SEPARATOR()
 {
     static const std::string value("/");
     return value;
 }
 
-const std::string& BounceProxyUrl::CREATE_CHANNEL_QUERY_ITEM()
+const std::string& BrokerUrl::CREATE_CHANNEL_QUERY_ITEM()
 {
     static const std::string value("ccid");
     return value;
 }
 
-const std::string& BounceProxyUrl::SEND_MESSAGE_PATH_APPENDIX()
+const std::string& BrokerUrl::SEND_MESSAGE_PATH_APPENDIX()
 {
     static const std::string value("message");
     return value;
 }
 
-const std::string& BounceProxyUrl::CHANNEL_PATH_SUFFIX()
+const std::string& BrokerUrl::CHANNEL_PATH_SUFFIX()
 {
     static const std::string value("channels");
     return value;
 }
 
-const std::string& BounceProxyUrl::TIMECHECK_PATH_SUFFIX()
+const std::string& BrokerUrl::TIMECHECK_PATH_SUFFIX()
 {
     static const std::string value("time");
     return value;
 }
 
-BounceProxyUrl::BounceProxyUrl(const std::string& bounceProxyBaseUrl)
-        : bounceProxyBaseUrl(bounceProxyBaseUrl), bounceProxyChannelsBaseUrl()
+BrokerUrl::BrokerUrl(const std::string& brokerBaseUrl)
+        : brokerBaseUrl(brokerBaseUrl), brokerChannelsBaseUrl()
 {
-    std::string channelsBaseUrl = bounceProxyBaseUrl;
+    std::string channelsBaseUrl = brokerBaseUrl;
     channelsBaseUrl.append(CHANNEL_PATH_SUFFIX());
     channelsBaseUrl.append(URL_PATH_SEPARATOR());
-    this->bounceProxyChannelsBaseUrl = Url(channelsBaseUrl);
+    this->brokerChannelsBaseUrl = Url(channelsBaseUrl);
 }
 
-BounceProxyUrl& BounceProxyUrl::operator=(const BounceProxyUrl& bounceProxyUrl)
+BrokerUrl& BrokerUrl::operator=(const BrokerUrl& brokerUrl)
 {
-    bounceProxyBaseUrl = bounceProxyUrl.bounceProxyBaseUrl;
-    bounceProxyChannelsBaseUrl = bounceProxyUrl.bounceProxyChannelsBaseUrl;
+    brokerBaseUrl = brokerUrl.brokerBaseUrl;
+    brokerChannelsBaseUrl = brokerUrl.brokerChannelsBaseUrl;
     return *this;
 }
 
-bool BounceProxyUrl::operator==(const BounceProxyUrl& bounceProxyUrl) const
+bool BrokerUrl::operator==(const BrokerUrl& brokerUrl) const
 {
-    return bounceProxyChannelsBaseUrl == bounceProxyUrl.getBounceProxyChannelsBaseUrl();
+    return brokerChannelsBaseUrl == brokerUrl.getBrokerChannelsBaseUrl();
 }
 
-Url BounceProxyUrl::getCreateChannelUrl(const std::string& mcid) const
+Url BrokerUrl::getCreateChannelUrl(const std::string& mcid) const
 {
-    Url createChannelUrl(bounceProxyChannelsBaseUrl);
+    Url createChannelUrl(brokerChannelsBaseUrl);
     UrlQuery query;
     query.addQueryItem(CREATE_CHANNEL_QUERY_ITEM(), mcid);
     createChannelUrl.setQuery(query);
@@ -83,9 +83,9 @@ Url BounceProxyUrl::getCreateChannelUrl(const std::string& mcid) const
     return createChannelUrl;
 }
 
-Url BounceProxyUrl::getSendUrl(const std::string& channelId) const
+Url BrokerUrl::getSendUrl(const std::string& channelId) const
 {
-    Url sendUrl(bounceProxyChannelsBaseUrl);
+    Url sendUrl(brokerChannelsBaseUrl);
     std::string path = sendUrl.getPath();
     path.append(channelId);
     path.append(URL_PATH_SEPARATOR());
@@ -95,15 +95,15 @@ Url BounceProxyUrl::getSendUrl(const std::string& channelId) const
     return sendUrl;
 }
 
-Url BounceProxyUrl::getBounceProxyChannelsBaseUrl() const
+Url BrokerUrl::getBrokerChannelsBaseUrl() const
 {
-    Url sendUrl(bounceProxyChannelsBaseUrl);
+    Url sendUrl(brokerChannelsBaseUrl);
     return sendUrl;
 }
 
-Url BounceProxyUrl::getDeleteChannelUrl(const std::string& mcid) const
+Url BrokerUrl::getDeleteChannelUrl(const std::string& mcid) const
 {
-    Url sendUrl(bounceProxyChannelsBaseUrl);
+    Url sendUrl(brokerChannelsBaseUrl);
     std::string path = sendUrl.getPath();
     path.append(mcid);
     path.append(URL_PATH_SEPARATOR());
@@ -111,9 +111,9 @@ Url BounceProxyUrl::getDeleteChannelUrl(const std::string& mcid) const
     return sendUrl;
 }
 
-Url BounceProxyUrl::getTimeCheckUrl() const
+Url BrokerUrl::getTimeCheckUrl() const
 {
-    Url timeCheckUrl(bounceProxyBaseUrl);
+    Url timeCheckUrl(brokerBaseUrl);
     std::string path = timeCheckUrl.getPath();
     path.append(TIMECHECK_PATH_SUFFIX());
     path.append(URL_PATH_SEPARATOR());

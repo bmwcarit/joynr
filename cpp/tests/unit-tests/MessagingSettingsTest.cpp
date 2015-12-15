@@ -22,7 +22,7 @@
 #include "joynr/MessagingSettings.h"
 #include "joynr/Settings.h"
 #include "joynr/TypeUtil.h"
-#include "joynr/BounceProxyUrl.h"
+#include "joynr/BrokerUrl.h"
 
 using namespace joynr;
 
@@ -51,7 +51,7 @@ TEST_F(MessagingSettingsTest, intializedWithDefaultSettings) {
 
     MessagingSettings messagingSettings(testSettings);
 
-    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_BOUNCE_PROXY_URL()));
+    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_BROKER_URL()));
 
     EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_DISCOVERY_DIRECTORIES_DOMAIN()));
 
@@ -65,11 +65,11 @@ TEST_F(MessagingSettingsTest, intializedWithDefaultSettings) {
 }
 
 TEST_F(MessagingSettingsTest, overrideDefaultSettings) {
-    std::string expectedBounceProxyUrl("http://localhost:8080/bounceproxy/MessagingSettingsTest-overrideDefaultSettings/");
+    std::string expectedBrokerUrl("http://localhost:8080/bounceproxy/MessagingSettingsTest-overrideDefaultSettings/");
     Settings testSettings(testSettingsFileName);
-    testSettings.set(MessagingSettings::SETTING_BOUNCE_PROXY_URL(), expectedBounceProxyUrl);
+    testSettings.set(MessagingSettings::SETTING_BROKER_URL(), expectedBrokerUrl);
     MessagingSettings messagingSettings(testSettings);
 
-    std::string bounceProxyUrl = messagingSettings.getBounceProxyUrlString();
-    EXPECT_EQ(expectedBounceProxyUrl, bounceProxyUrl);
+    std::string brokerUrl = messagingSettings.getBrokerUrlString();
+    EXPECT_EQ(expectedBrokerUrl, brokerUrl);
 }

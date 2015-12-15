@@ -43,11 +43,11 @@ std::chrono::milliseconds ChannelUrlSelector::TIME_FOR_ONE_RECOUPERATION()
     return std::chrono::minutes(3);
 }
 
-ChannelUrlSelector::ChannelUrlSelector(const BounceProxyUrl& bounceProxyUrl,
+ChannelUrlSelector::ChannelUrlSelector(const BrokerUrl& brokerUrl,
                                        std::chrono::milliseconds timeForOneRecouperation,
                                        double punishmentFactor)
         : channelUrlDirectory(),
-          bounceProxyUrl(bounceProxyUrl),
+          brokerUrl(brokerUrl),
           entries(),
           timeForOneRecouperation(timeForOneRecouperation),
           punishmentFactor(punishmentFactor),
@@ -93,8 +93,7 @@ std::string ChannelUrlSelector::obtainUrl(const std::string& channelId,
     if (!channelUrlDirectory) {
         JOYNR_LOG_DEBUG(logger, "obtainUrl: channelUrlDirectoryProxy not available ...");
         JOYNR_LOG_DEBUG(
-                logger,
-                "using default url constructed from channelId and BounceproxyUrl instead...");
+                logger, "using default url constructed from channelId and BrokerUrl instead...");
         status.setCode(RequestStatusCode::ERROR);
         url = constructDefaultUrl(channelId);
         return constructUrl(url);
@@ -160,7 +159,7 @@ void ChannelUrlSelector::feedback(bool success, const std::string& channelId, st
     JOYNR_LOG_TRACE(logger, "feedback: punishing Url = {}", url);
     JOYNR_LOG_TRACE(logger, " for channelId= {}", channelId);
     ChannelUrlSelectorEntry* entry = entries.value(channelId);
-    std::string::size_type cutoff = url.find("/" + BounceProxyUrl::SEND_MESSAGE_PATH_APPENDIX(), 0);
+    std::string::size_type cutoff = url.find("/" + BrokerUrl::SEND_MESSAGE_PATH_APPENDIX(), 0);
     url.resize(cutoff);
     entry->punish(url);
     url.append("/"); // necessary because an Url can be provided without the ending /
@@ -175,7 +174,7 @@ std::string ChannelUrlSelector::constructUrl(const std::string& baseUrl)
     if (!path.empty() && !ends_with(path, "/")) {
         path.append("/");
     }
-    path.append(BounceProxyUrl::SEND_MESSAGE_PATH_APPENDIX());
+    path.append(BrokerUrl::SEND_MESSAGE_PATH_APPENDIX());
     path.append("/");
     sendUrl.setPath(QString::fromStdString(path));
     return sendUrl.toString().toStdString();
@@ -186,9 +185,9 @@ std::string ChannelUrlSelector::constructDefaultUrl(const std::string& channelId
 {
     JOYNR_LOG_DEBUG(logger,
                     "constructDefaultUrl ... using default Url inferred from channelId and "
-                    "BounceProxyUrl");
+                    "BrokerUrl");
     assert(useDefaultUrl);
-    std::string url = bounceProxyUrl.getBounceProxyChannelsBaseUrl().toString() + channelId;
+    std::string url = brokerUrl.getBrokerChannelsBaseUrl().toString() + channelId;
     types::ChannelUrlInformation urlInformation;
     std::vector<std::string> urls;
     urls.push_back(url);

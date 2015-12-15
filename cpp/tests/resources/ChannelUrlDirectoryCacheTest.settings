@@ -1,5 +1,5 @@
 messaging]
-bounce-proxy-url=http://localhost:8080/bounceproxy-type
+broker-url=http://localhost:8080/bounceproxy-type
 channel-url-directory-url=http://localhost:8080/channelurldirectory/channels
 create-channel-retry-interval=500
 send-msg-retry-interval=500

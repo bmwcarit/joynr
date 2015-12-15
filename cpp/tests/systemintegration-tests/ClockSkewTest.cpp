@@ -18,7 +18,7 @@
  */
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/MessagingSettings.h"
-#include "joynr/BounceProxyUrl.h"
+#include "joynr/BrokerUrl.h"
 #include "joynr/TypeUtil.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/Logger.h"
@@ -89,7 +89,7 @@ TEST_F(ClockSkewTest, DISABLED_checkClockSkew) {
     Logger logger("ClockSkewTest");
 
     // Get the location of the bounce proxy
-    Url bounceurl = messagingSettings->getBounceProxyUrl().getTimeCheckUrl();
+    Url bounceurl = messagingSettings->getBrokerUrl().getTimeCheckUrl();
     ASSERT_TRUE(bounceurl.isValid());
     std::string urlString = bounceurl.toString();
     const char *url  = urlString.c_str();

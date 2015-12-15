@@ -334,8 +334,8 @@ TEST_F(MessagingTest, DISABLED_messageSenderGetsAndUsesDifferentUrlsForOneChanne
 //    MessagingSettings* settings = new MessagingSettings(new QSettings(settingsFileName, QSettings::IniFormat));
 //    int messageSendRetryInterval = 1000;
 
-//    BounceProxyUrl bounceProxyUrl(settings->getBounceProxyUrl());
-//    MessageSender* messageSender = new MessageSender(bounceProxyUrl, messageSendRetryInterval);
+//    BrokerUrl brokerUrl(settings->getBrokerUrl());
+//    MessageSender* messageSender = new MessageSender(brokerUrl, messageSendRetryInterval);
 //    MockLocalChannelUrlDirectory mockDirectory;
 //    messageSender->init(mockDirectory, *settings);
 

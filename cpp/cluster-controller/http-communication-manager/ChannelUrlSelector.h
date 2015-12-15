@@ -24,7 +24,7 @@
 #include "joynr/Logger.h"
 #include "cluster-controller/http-communication-manager/IChannelUrlSelector.h"
 #include "joynr/types/ChannelUrlInformation.h"
-#include "joynr/BounceProxyUrl.h"
+#include "joynr/BrokerUrl.h"
 #include <cstdint>
 #include <memory>
 #include <chrono>
@@ -64,11 +64,11 @@ public:
     /**
      * @brief Initialize
      *
-     * @param bounceProxyUrl
+     * @param brokerUrl
      * @param timeForOneRecouperation
      * @param punishmentFactor
      */
-    explicit ChannelUrlSelector(const BounceProxyUrl& bounceProxyUrl,
+    explicit ChannelUrlSelector(const BrokerUrl& brokerUrl,
                                 std::chrono::milliseconds timeForOneRecouperation,
                                 double punishmentFactor);
 
@@ -85,7 +85,7 @@ public:
     /**
     * @brief Get the "best" URL for this channel. Feedback is used to figure out which
     * URL is currently best depending on recent availability and initial ordering (eg direct before
-    * bounceproxy URL.
+    * broker URL.
     *
     * @param channelId
     * @param status
@@ -109,7 +109,7 @@ private:
     std::string constructDefaultUrl(const std::string& channelId);
     std::string constructUrl(const std::string& baseUrl);
     std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory;
-    const BounceProxyUrl& bounceProxyUrl;
+    const BrokerUrl& brokerUrl;
     QMap<std::string, ChannelUrlSelectorEntry*> entries;
     std::chrono::milliseconds timeForOneRecouperation;
     double punishmentFactor;

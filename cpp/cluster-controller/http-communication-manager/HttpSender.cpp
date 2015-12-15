@@ -47,11 +47,11 @@ const std::int64_t& HttpSender::FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIA
 
 INIT_LOGGER(HttpSender);
 
-HttpSender::HttpSender(const BounceProxyUrl& bounceProxyUrl,
+HttpSender::HttpSender(const BrokerUrl& brokerUrl,
                        std::chrono::milliseconds maxAttemptTtl,
                        std::chrono::milliseconds messageSendRetryInterval)
-        : bounceProxyUrl(bounceProxyUrl),
-          channelUrlCache(new ChannelUrlSelector(this->bounceProxyUrl,
+        : brokerUrl(brokerUrl),
+          channelUrlCache(new ChannelUrlSelector(this->brokerUrl,
                                                  ChannelUrlSelector::TIME_FOR_ONE_RECOUPERATION(),
                                                  ChannelUrlSelector::PUNISHMENT_FACTOR())),
           maxAttemptTtl(maxAttemptTtl),
@@ -217,7 +217,7 @@ std::string HttpSender::SendMessageRunnable::resolveUrlForChannelId(
         JOYNR_LOG_DEBUG(logger,
                         "Url for channelId could not be obtained from the "
                         "ChannelUrlDirectory ... EXITING ...");
-        assert(false); // OR: url = messageSender->bounceProxyUrl.getSendUrl(channelId).toString();
+        assert(false); // OR: url = messageSender->brokerUrl.getSendUrl(channelId).toString();
     }
 
     JOYNR_LOG_TRACE(logger,

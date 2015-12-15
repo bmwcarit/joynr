@@ -990,7 +990,7 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          libjoynr/dbus/DbusMessagingStubFactory.h \
                          libjoynr/include/joynr/AbstractJoynrMessagingConnector.h \
                          libjoynr/include/joynr/ArbitrationStatus.h \
-                         libjoynr/include/joynr/BounceProxyUrl.h \
+                         libjoynr/include/joynr/BrokerUrl.h \
                          libjoynr/include/joynr/BroadcastFilterParameters.h \
                          libjoynr/include/joynr/BroadcastSubscriptionRequest.h \
                          libjoynr/include/joynr/CapabilitiesRegistrar.h \
@@ -1186,7 +1186,7 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          libjoynr/in-process/InProcessMessagingStubFactory.h \
                          libjoynr/in-process/InProcessPublicationSender.cpp \
                          libjoynr/joynr-messaging/AbstractJoynrMessagingConnector.cpp \
-                         libjoynr/joynr-messaging/BounceProxyUrl.cpp \
+                         libjoynr/joynr-messaging/BrokerUrl.cpp \
                          libjoynr/joynr-messaging/dispatcher/Dispatcher.cpp \
                          libjoynr/joynr-messaging/dispatcher/MetaTypeRegistrar.cpp \
                          libjoynr/joynr-messaging/dispatcher/ReceivedMessageRunnable.cpp \

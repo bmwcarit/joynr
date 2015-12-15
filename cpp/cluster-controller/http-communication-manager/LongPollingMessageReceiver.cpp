@@ -42,7 +42,7 @@ namespace joynr
 INIT_LOGGER(LongPollingMessageReceiver);
 
 LongPollingMessageReceiver::LongPollingMessageReceiver(
-        const BounceProxyUrl& bounceProxyUrl,
+        const BrokerUrl& brokerUrl,
         const std::string& channelId,
         const std::string& receiverId,
         const LongPollingMessageReceiverSettings& settings,
@@ -50,7 +50,7 @@ LongPollingMessageReceiver::LongPollingMessageReceiver(
         std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
         std::shared_ptr<MessageRouter> messageRouter)
         : Thread("LongPollRecv"),
-          bounceProxyUrl(bounceProxyUrl),
+          brokerUrl(brokerUrl),
           channelId(channelId),
           receiverId(receiverId),
           settings(settings),
@@ -83,14 +83,14 @@ void LongPollingMessageReceiver::stop()
 void LongPollingMessageReceiver::run()
 {
     checkServerTime();
-    std::string createChannelUrl = bounceProxyUrl.getCreateChannelUrl(channelId).toString();
+    std::string createChannelUrl = brokerUrl.getCreateChannelUrl(channelId).toString();
     JOYNR_LOG_INFO(logger, "Running lpmr with channelId {}", channelId);
     std::shared_ptr<IHttpPostBuilder> createChannelRequestBuilder(
             HttpNetworking::getInstance()->createHttpPostBuilder(createChannelUrl));
     std::shared_ptr<HttpRequest> createChannelRequest(
             createChannelRequestBuilder->addHeader("X-Atmosphere-tracking-id", receiverId)
                     ->withContentType("application/json")
-                    ->withTimeout(settings.bounceProxyTimeout)
+                    ->withTimeout(settings.brokerTimeout)
                     ->build());
 
     std::string channelUrl;
@@ -214,13 +214,13 @@ void LongPollingMessageReceiver::processReceivedJsonObjects(const std::string& j
 
 void LongPollingMessageReceiver::checkServerTime()
 {
-    std::string timeCheckUrl = bounceProxyUrl.getTimeCheckUrl().toString();
+    std::string timeCheckUrl = brokerUrl.getTimeCheckUrl().toString();
 
     std::shared_ptr<IHttpGetBuilder> timeCheckRequestBuilder(
             HttpNetworking::getInstance()->createHttpGetBuilder(timeCheckUrl));
     std::shared_ptr<HttpRequest> timeCheckRequest(
             timeCheckRequestBuilder->addHeader("Accept", "text/plain")
-                    ->withTimeout(settings.bounceProxyTimeout)
+                    ->withTimeout(settings.brokerTimeout)
                     ->build());
     JOYNR_LOG_DEBUG(logger, "CheckServerTime: sending request to Bounce Proxy ({})", timeCheckUrl);
     std::chrono::system_clock::time_point localTimeBeforeRequest = std::chrono::system_clock::now();

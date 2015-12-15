@@ -22,7 +22,7 @@
 #include <memory>
 #include <chrono>
 #include "cluster-controller/http-communication-manager/ChannelUrlSelector.h"
-#include "joynr/BounceProxyUrl.h"
+#include "joynr/BrokerUrl.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/Future.h"
 
@@ -50,11 +50,11 @@ std::shared_ptr<Future<joynr::types::ChannelUrlInformation>> pseudoGetChannelUrl
 
 
 // No longer desired behavior!
-TEST(ChannelUrlSelectorTest, DISABLED_usesBounceProxyUrlIfNotProvidedWithChannelUrlDir) {
-    const std::string bounceProxyBaseUrl = "http://www.urltest.org/pseudoBp";
-    BounceProxyUrl bounceProxyUrl(bounceProxyBaseUrl);
+TEST(ChannelUrlSelectorTest, DISABLED_usesBrokerUrlIfNotProvidedWithChannelUrlDir) {
+    const std::string brokerBaseUrl = "http://www.urltest.org/pseudoBp";
+    BrokerUrl brokerUrl(brokerBaseUrl);
     ChannelUrlSelector* urlCache = new ChannelUrlSelector(
-                bounceProxyUrl,
+                brokerUrl,
                 ChannelUrlSelector::TIME_FOR_ONE_RECOUPERATION(),
                 ChannelUrlSelector::PUNISHMENT_FACTOR());
     RequestStatus* status = new RequestStatus();
@@ -67,12 +67,12 @@ TEST(ChannelUrlSelectorTest, DISABLED_usesBounceProxyUrlIfNotProvidedWithChannel
 
 
 TEST(ChannelUrlSelectorTest, obtainUrlUsesLocalDirectory) {
-    const std::string bounceProxyBaseUrl = "http://www.UrlTest.org/pseudoBp";
+    const std::string brokerBaseUrl = "http://www.UrlTest.org/pseudoBp";
     const std::string settingsFileName ("test-resources/ChannelUrlSelectorTest.settings");
 
-    BounceProxyUrl bounceProxyUrl(bounceProxyBaseUrl);
+    BrokerUrl brokerUrl(brokerBaseUrl);
     ChannelUrlSelector* urlCache = new ChannelUrlSelector(
-                bounceProxyUrl,
+                brokerUrl,
                 ChannelUrlSelector::TIME_FOR_ONE_RECOUPERATION(),
                 ChannelUrlSelector::PUNISHMENT_FACTOR());
 
@@ -105,12 +105,12 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesLocalDirectory) {
 
 
 TEST(ChannelUrlSelectorTest, obtainUrlUsesFeedbackToChangeProviderUrl) {
-    const std::string bounceProxyBaseUrl = "http://www.UrlTest.org/pseudoBp";
+    const std::string brokerBaseUrl = "http://www.UrlTest.org/pseudoBp";
     const std::string settingsFileName("test-resources/ChannelUrlSelectorTest.settings");
 
-    BounceProxyUrl bounceProxyUrl(bounceProxyBaseUrl);
+    BrokerUrl brokerUrl(brokerBaseUrl);
     ChannelUrlSelector* urlCache = new ChannelUrlSelector(
-                bounceProxyUrl,
+                brokerUrl,
                 ChannelUrlSelector::TIME_FOR_ONE_RECOUPERATION(),
                 ChannelUrlSelector::PUNISHMENT_FACTOR());
 
@@ -155,14 +155,14 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesFeedbackToChangeProviderUrl) {
 
 
 TEST(ChannelUrlSelectorTest, obtainUrlRetriesUrlOfHigherPriority) {
-    const std::string bounceProxyBaseUrl = "http://www.UrlTest.org/pseudoBp";
+    const std::string brokerBaseUrl = "http://www.UrlTest.org/pseudoBp";
     const std::string settingsFileName("test-resources/ChannelUrlSelectorTest.settings");
     std::chrono::milliseconds timeForOneRecouperation(1000);
     double punishmentFactor = 0.4;//three punishments will lead to a try of the second Url
-    BounceProxyUrl bounceProxyUrl(bounceProxyBaseUrl);
+    BrokerUrl brokerUrl(brokerBaseUrl);
 
     ChannelUrlSelector* urlCache = new ChannelUrlSelector(
-                bounceProxyUrl,
+                brokerUrl,
                 timeForOneRecouperation,
                 punishmentFactor);
 

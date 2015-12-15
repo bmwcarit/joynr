@@ -51,7 +51,7 @@ public:
     /**
     * @brief Get the "best" URL for this channel. Feedback is used to figure out which
     * URL is currently best depending on recent availability and initial ordering (eg direct before
-    * bounceproxy URL.
+    * broker URL.
     *
     * @param channelId
     * @param status

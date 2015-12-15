@@ -21,7 +21,7 @@
 #include "joynr/PrivateCopyAssign.h"
 
 #include "joynr/ContentWithDecayTime.h"
-#include "joynr/BounceProxyUrl.h"
+#include "joynr/BrokerUrl.h"
 #include "joynr/Logger.h"
 #include "joynr/Directory.h"
 #include "joynr/Thread.h"
@@ -47,7 +47,7 @@ class MessageRouter;
  */
 struct LongPollingMessageReceiverSettings
 {
-    std::chrono::milliseconds bounceProxyTimeout;
+    std::chrono::milliseconds brokerTimeout;
     std::chrono::milliseconds longPollTimeout;
     std::chrono::milliseconds longPollRetryInterval;
     std::chrono::milliseconds createChannelRetryInterval;
@@ -59,7 +59,7 @@ struct LongPollingMessageReceiverSettings
 class LongPollingMessageReceiver : public Thread
 {
 public:
-    LongPollingMessageReceiver(const BounceProxyUrl& bounceProxyUrl,
+    LongPollingMessageReceiver(const BrokerUrl& brokerUrl,
                                const std::string& channelId,
                                const std::string& receiverId,
                                const LongPollingMessageReceiverSettings& settings,
@@ -77,7 +77,7 @@ public:
 private:
     void checkServerTime();
     DISALLOW_COPY_AND_ASSIGN(LongPollingMessageReceiver);
-    const BounceProxyUrl bounceProxyUrl;
+    const BrokerUrl brokerUrl;
     const std::string channelId;
     const std::string receiverId;
     const LongPollingMessageReceiverSettings settings;

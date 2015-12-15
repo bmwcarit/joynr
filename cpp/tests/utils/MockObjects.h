@@ -90,7 +90,7 @@
 #include "joynr/DiscoveryQos.h"
 #include "joynr/types/ChannelUrlInformation.h"
 #include "joynr/IMessageSender.h"
-#include "joynr/BounceProxyUrl.h"
+#include "joynr/BrokerUrl.h"
 #include "joynr/Directory.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/Variant.h"

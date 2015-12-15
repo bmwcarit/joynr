@@ -23,7 +23,7 @@
 #include "joynr/IMessageSender.h"
 
 #include "joynr/ContentWithDecayTime.h"
-#include "joynr/BounceProxyUrl.h"
+#include "joynr/BrokerUrl.h"
 #include "joynr/Logger.h"
 #include "joynr/ILocalChannelUrlDirectory.h"
 #include "joynr/DispatcherUtils.h"
@@ -48,7 +48,7 @@ public:
     static std::chrono::milliseconds MIN_ATTEMPT_TTL();
     static const std::int64_t& FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIAL();
 
-    HttpSender(const BounceProxyUrl& bounceProxyUrl,
+    HttpSender(const BrokerUrl& brokerUrl,
                std::chrono::milliseconds maxAttemptTtl,
                std::chrono::milliseconds messageSendRetryInterval);
     ~HttpSender() override;
@@ -65,7 +65,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(HttpSender);
-    const BounceProxyUrl bounceProxyUrl;
+    const BrokerUrl brokerUrl;
     IChannelUrlSelector* channelUrlCache;
     const std::chrono::milliseconds maxAttemptTtl;
     const std::chrono::milliseconds messageSendRetryInterval;

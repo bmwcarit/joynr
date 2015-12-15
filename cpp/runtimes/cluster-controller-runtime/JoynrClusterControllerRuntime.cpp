@@ -188,7 +188,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
         JOYNR_LOG_INFO(
                 logger, "The message sender supplied is NULL, creating the default MessageSender");
         messageSender = std::shared_ptr<IMessageSender>(new HttpSender(
-                messagingSettings->getBounceProxyUrl(),
+                messagingSettings->getBrokerUrl(),
                 std::chrono::milliseconds(messagingSettings->getSendMsgMaxTtl()),
                 std::chrono::milliseconds(messagingSettings->getSendMsgRetryInterval())));
     }

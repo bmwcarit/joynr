@@ -18,15 +18,15 @@
  */
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include "joynr/BounceProxyUrl.h"
+#include "joynr/BrokerUrl.h"
 #include "joynr/Url.h"
 
 using namespace joynr;
 
-class BounceProxyUrlTest : public ::testing::Test {
+class BrokerUrlTest : public ::testing::Test {
 public:
-    BounceProxyUrlTest() :
-        bounceProxyUrl(BounceProxyUrl("http://localhost:8080/bounceproxy/"))
+    BrokerUrlTest() :
+        brokerUrl(BrokerUrl("http://localhost:8080/bounceproxy/"))
     {}
 
     void SetUp(){
@@ -34,27 +34,27 @@ public:
     void TearDown(){
     }
 protected:
-    BounceProxyUrl bounceProxyUrl;
+    BrokerUrl brokerUrl;
 };
 
 
 
-TEST_F(BounceProxyUrlTest, getCreateChannelUrl) {
-    Url createChannelUrl = bounceProxyUrl.getCreateChannelUrl("testMcid");
+TEST_F(BrokerUrlTest, getCreateChannelUrl) {
+    Url createChannelUrl = brokerUrl.getCreateChannelUrl("testMcid");
     EXPECT_EQ("http://localhost:8080/bounceproxy/channels/?ccid=testMcid", createChannelUrl.toString());
 }
 
-TEST_F(BounceProxyUrlTest, getSendUrl) {
-    Url sendUrl = bounceProxyUrl.getSendUrl("testMcid");
+TEST_F(BrokerUrlTest, getSendUrl) {
+    Url sendUrl = brokerUrl.getSendUrl("testMcid");
     EXPECT_EQ("http://localhost:8080/bounceproxy/channels/testMcid/message/", sendUrl.toString());
 }
 
-TEST_F(BounceProxyUrlTest, getDeleteChannelUrl){
-    Url deleteUrl = bounceProxyUrl.getDeleteChannelUrl("testMcid");
+TEST_F(BrokerUrlTest, getDeleteChannelUrl){
+    Url deleteUrl = brokerUrl.getDeleteChannelUrl("testMcid");
     EXPECT_EQ("http://localhost:8080/bounceproxy/channels/testMcid/", deleteUrl.toString());
 }
 
-TEST_F(BounceProxyUrlTest, getTimeCheckUrl){
-    Url timeCheckUrl = bounceProxyUrl.getTimeCheckUrl();
+TEST_F(BrokerUrlTest, getTimeCheckUrl){
+    Url timeCheckUrl = brokerUrl.getTimeCheckUrl();
     EXPECT_EQ("http://localhost:8080/bounceproxy/time/", timeCheckUrl.toString());
 }

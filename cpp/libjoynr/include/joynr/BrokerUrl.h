@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef BOUNCEPROXYURL_H
-#define BOUNCEPROXYURL_H
+#ifndef BROKERURL_H
+#define BROKERURL_H
 
 #include "joynr/JoynrExport.h"
 #include "joynr/Url.h"
@@ -27,15 +27,15 @@
 namespace joynr
 {
 
-class JOYNR_EXPORT BounceProxyUrl
+class JOYNR_EXPORT BrokerUrl
 {
 public:
-    explicit BounceProxyUrl(const std::string& bounceProxyChannelsBaseUrl);
+    explicit BrokerUrl(const std::string& brokerChannelsBaseUrl);
 
-    BounceProxyUrl(const BounceProxyUrl& other) = default;
+    BrokerUrl(const BrokerUrl& other) = default;
 
-    BounceProxyUrl& operator=(const BounceProxyUrl& bounceProxyUrl);
-    bool operator==(const BounceProxyUrl& bounceProxyUrl) const;
+    BrokerUrl& operator=(const BrokerUrl& brokerUrl);
+    bool operator==(const BrokerUrl& brokerUrl) const;
 
     static const std::string& CREATE_CHANNEL_QUERY_ITEM();
     static const std::string& SEND_MESSAGE_PATH_APPENDIX();
@@ -46,14 +46,14 @@ public:
     Url getCreateChannelUrl(const std::string& mcid) const;
     Url getReceiveUrl(const std::string& channelId) const;
     Url getSendUrl(const std::string& channelId) const;
-    Url getBounceProxyChannelsBaseUrl() const;
+    Url getBrokerChannelsBaseUrl() const;
     Url getDeleteChannelUrl(const std::string& mcid) const;
     Url getTimeCheckUrl() const;
 
 private:
-    std::string bounceProxyBaseUrl;
-    Url bounceProxyChannelsBaseUrl;
+    std::string brokerBaseUrl;
+    Url brokerChannelsBaseUrl;
 };
 
 } // namespace joynr
-#endif // BOUNCEPROXYURL_H
+#endif // BROKERURL_H
