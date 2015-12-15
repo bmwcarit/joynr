@@ -22,12 +22,11 @@ import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.MapTemplate
 import io.joynr.generator.templates.util.NamingUtil
+import java.util.UUID
 import javax.inject.Inject
-import javax.print.DocFlavor.STRING
 import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FMapType
 import org.franca.core.franca.FTypeRef
-import java.util.UUID
 
 class MapSerializerCppTemplate implements MapTemplate{
 

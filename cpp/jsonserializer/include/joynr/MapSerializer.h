@@ -71,7 +71,7 @@ void MapSerializer::serialize(const std::string& typeName,
                               std::ostream& stream)
 {
     stream << "{";
-    stream << "\"_typeName\": \"" << typeName << "\"";
+    stream << "\"_typeName\":\"" << typeName << "\"";
     serializeEntries(map, stream, true);
     stream << "}";
 }

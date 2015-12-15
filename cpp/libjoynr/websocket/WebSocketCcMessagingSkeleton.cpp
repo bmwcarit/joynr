@@ -121,7 +121,7 @@ void WebSocketCcMessagingSkeleton::onTextMessageReceived(const QString& message)
     // deserialize message and transmit
     joynr::JoynrMessage* joynrMsg =
             JsonSerializer::deserialize<joynr::JoynrMessage>(message.toStdString());
-    if (joynrMsg == nullptr) {
+    if (joynrMsg == nullptr || joynrMsg->getPayload().empty()) {
         LOG_ERROR(logger,
                   FormatString("Unable to deserialize joynr message object from: %1")
                           .arg(message.toStdString())

@@ -116,7 +116,7 @@ void ClassSerializer<«joynrName»>::serialize(const «joynrName» &«joynrName.
 		std::ignore = «joynrName.toFirstLower»Var;
 	«ENDIF»
 	stream << "{";
-	stream << "\"_typeName\": \"" << JoynrTypeId<«joynrName»>::getTypeName() << "\",";
+	stream << "\"_typeName\":\"" << JoynrTypeId<«joynrName»>::getTypeName() << "\",";
 	«FOR member: type.membersRecursive SEPARATOR "\nstream << \",\";"»
 		«IF member.array»
 			«IF member.type.isPrimitive»
