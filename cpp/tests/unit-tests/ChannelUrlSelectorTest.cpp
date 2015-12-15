@@ -38,7 +38,7 @@ using ::testing::WithArgs;
 using namespace joynr;
 
 // global function used for calls to the MockChannelUrlSelectorProxy
-std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> pseudoGetChannelUrls(const std::string&  channelId, const qint64& timeout) {
+std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> pseudoGetChannelUrls(const std::string&  channelId, const int64_t& timeout) {
     types::ChannelUrlInformation urlInformation;
     std::vector<std::string> urls = { "firstUrl", "secondUrl", "thirdUrl" };
     urlInformation.setUrls(urls);
@@ -85,7 +85,7 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesLocalDirectory) {
 
     EXPECT_CALL(*mockDir, getUrlsForChannelAsync(
                     A<const std::string&>(),
-                    A<const qint64&>(),
+                    A<const int64_t&>(),
                     A<std::function<void(const types::ChannelUrlInformation& urls)>>(),
                     A<std::function<void(const exceptions::JoynrException& error)>>()))
             .WillOnce(WithArgs<0,1>(Invoke(pseudoGetChannelUrls)));
@@ -123,7 +123,7 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesFeedbackToChangeProviderUrl) {
 
     EXPECT_CALL(*mockDir, getUrlsForChannelAsync(
                     A<const std::string&>(),
-                    A<const qint64&>(),
+                    A<const int64_t&>(),
                     A<std::function<void(const types::ChannelUrlInformation& urls)>>(),
                     A<std::function<void(const exceptions::JoynrException& error)>>()))
             .WillOnce(WithArgs<0,1>(Invoke(pseudoGetChannelUrls)));
@@ -156,7 +156,7 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesFeedbackToChangeProviderUrl) {
 TEST(ChannelUrlSelectorTest, obtainUrlRetriesUrlOfHigherPriority) {
     const std::string bounceProxyBaseUrl = "http://www.UrlTest.org/pseudoBp";
     const std::string settingsFileName("test-resources/ChannelUrlSelectorTest.settings");
-    qint64 timeForOneRecouperation = 1000; //half a minute
+    int64_t timeForOneRecouperation = 1000; //half a minute
     double punishmentFactor = 0.4;//three punishments will lead to a try of the second Url
     BounceProxyUrl bounceProxyUrl(bounceProxyBaseUrl);
 
@@ -175,7 +175,7 @@ TEST(ChannelUrlSelectorTest, obtainUrlRetriesUrlOfHigherPriority) {
 
     EXPECT_CALL(*mockDir, getUrlsForChannelAsync(
                     A<const std::string&>(),
-                    A<const qint64&>(),
+                    A<const int64_t&>(),
                     A<std::function<void(const types::ChannelUrlInformation& urls)>>(),
                     A<std::function<void(const exceptions::JoynrException& error)>>()))
             .WillOnce(WithArgs<0,1>(Invoke(pseudoGetChannelUrls)));
@@ -262,7 +262,7 @@ TEST(ChannelUrlSelectorTest, updateTest) {
     std::vector<std::string> urls = {"firstUrl", "secondUrl", "thirdUrl"};
     urlInformation.setUrls(urls);
     double punishmentFactor = 0.4;
-    qint64 timeForOneRecouperation = 300;
+    int64_t timeForOneRecouperation = 300;
     ChannelUrlSelectorEntry* entry = new ChannelUrlSelectorEntry(
                 urlInformation,
                 punishmentFactor,
@@ -329,7 +329,7 @@ TEST(ChannelUrlSelectorTest, bestTest) {
     std::vector<std::string> urls = {"firstUrl", "secondUrl", "thirdUrl"};
     urlInformation.setUrls(urls);
     double punishmentFactor = 0.4;
-    qint64 timeForOneRecouperation = 300;
+    int64_t timeForOneRecouperation = 300;
     ChannelUrlSelectorEntry* entry = new ChannelUrlSelectorEntry(
                 urlInformation,
                 punishmentFactor,

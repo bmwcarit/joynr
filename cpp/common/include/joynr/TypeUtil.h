@@ -443,21 +443,21 @@ public:
     }
 
     /**
-      * Converts a qint64 into a int64_t
+      * Converts a int64_t into a int64_t
       */
-    static int64_t toStdInt64(const qint64& qtValue)
+    static int64_t toStdInt64(const int64_t& qtValue)
     {
         return static_cast<int64_t>(qtValue);
     }
 
     /**
-      * Converts a list of qint64 values into a vector of int64_t objects
+      * Converts a list of int64_t values into a vector of int64_t objects
       */
-    static std::vector<int64_t> toStdInt64(const QList<qint64>& qtValues)
+    static std::vector<int64_t> toStdInt64(const QList<int64_t>& qtValues)
     {
         std::vector<int64_t> stdValues;
 
-        for (qint64 qtValue : qtValues) {
+        for (int64_t qtValue : qtValues) {
             stdValues.push_back(toStdInt64(qtValue));
         }
 
@@ -465,11 +465,11 @@ public:
     }
 
     /**
-      * Converts a vector of int64_t objects into a list of qint64 objects
+      * Converts a vector of int64_t objects into a list of int64_t objects
       */
-    static QList<qint64> toQt(const std::vector<int64_t>& stdValues)
+    static QList<int64_t> toQt(const std::vector<int64_t>& stdValues)
     {
-        QList<qint64> qtValues;
+        QList<int64_t> qtValues;
 
         for (int64_t stdValue : stdValues) {
             qtValues.append(toQt(stdValue));
@@ -479,29 +479,29 @@ public:
     }
 
     /**
-      * Converts a int64_t object into a qint64 object
+      * Converts a int64_t object into a int64_t object
       */
-    static qint64 toQt(const int64_t& stdValue)
+    static int64_t toQt(const int64_t& stdValue)
     {
-        return static_cast<qint64>(stdValue);
+        return static_cast<int64_t>(stdValue);
     }
 
     /**
-      * Converts a qint64 into a uint64_t
+      * Converts a int64_t into a uint64_t
       */
-    static uint64_t toStdUInt64(const qint64& qtValue)
+    static uint64_t toStdUInt64(const int64_t& qtValue)
     {
         return static_cast<uint64_t>(qtValue);
     }
 
     /**
-      * Converts a list of qint64 values into a vector of uint64_t objects
+      * Converts a list of int64_t values into a vector of uint64_t objects
       */
-    static std::vector<uint64_t> toStdUInt64(const QList<qint64>& qtValues)
+    static std::vector<uint64_t> toStdUInt64(const QList<int64_t>& qtValues)
     {
         std::vector<uint64_t> stdValues;
 
-        for (qint64 qtValue : qtValues) {
+        for (int64_t qtValue : qtValues) {
             stdValues.push_back(toStdUInt64(qtValue));
         }
 
@@ -509,11 +509,11 @@ public:
     }
 
     /**
-      * Converts a vector of uint64_t objects into a list of qint64 objects
+      * Converts a vector of uint64_t objects into a list of int64_t objects
       */
-    static QList<qint64> toQt(const std::vector<uint64_t>& stdValues)
+    static QList<int64_t> toQt(const std::vector<uint64_t>& stdValues)
     {
-        QList<qint64> qtValues;
+        QList<int64_t> qtValues;
 
         for (uint64_t stdValue : stdValues) {
             qtValues.append(toQt(stdValue));
@@ -523,11 +523,11 @@ public:
     }
 
     /**
-      * Converts a uint64_t object into a qint64 object
+      * Converts a uint64_t object into a int64_t object
       */
-    static qint64 toQt(const uint64_t& stdValue)
+    static int64_t toQt(const uint64_t& stdValue)
     {
-        return static_cast<qint64>(stdValue);
+        return static_cast<int64_t>(stdValue);
     }
 
     /**

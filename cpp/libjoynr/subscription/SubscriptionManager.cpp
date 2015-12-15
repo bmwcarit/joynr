@@ -37,7 +37,7 @@ public:
     explicit Subscription(std::shared_ptr<ISubscriptionCallback> subscriptionCaller);
     ~Subscription();
 
-    qint64 timeOfLastPublication;
+    int64_t timeOfLastPublication;
     std::shared_ptr<ISubscriptionCallback> subscriptionCaller;
     std::recursive_mutex mutex;
     bool isStopped;
@@ -180,10 +180,10 @@ void SubscriptionManager::checkMissedPublication(
             logger,
             "Running MissedPublicationRunnable for subscription id= "
                 + subscriptionId);
-        qint64 delay = 0;
+        int64_t delay = 0;
         int64_t now = duration_cast<milliseconds>(
             system_clock::now().time_since_epoch()).count();
-        qint64 timeSinceLastPublication = now
+        int64_t timeSinceLastPublication = now
             - subscription->timeOfLastPublication;
         bool publicationInTime = timeSinceLastPublication < alertAfterInterval;
         if (publicationInTime)
@@ -287,11 +287,11 @@ Logger* SubscriptionManager::MissedPublicationRunnable::logger =
 
 SubscriptionManager::MissedPublicationRunnable::MissedPublicationRunnable(
         const JoynrTimePoint& expiryDate,
-        const qint64& expectedIntervalMSecs,
+        const int64_t& expectedIntervalMSecs,
         const std::string& subscriptionId,
         std::shared_ptr<Subscription> subscription,
         SubscriptionManager& subscriptionManager,
-        const qint64& alertAfterInterval)
+        const int64_t& alertAfterInterval)
         : joynr::Runnable(true),
           ObjectWithDecayTime(expiryDate),
           expectedIntervalMSecs(expectedIntervalMSecs),
@@ -315,9 +315,9 @@ void SubscriptionManager::MissedPublicationRunnable::run()
                   FormatString("Running MissedPublicationRunnable for subscription id= %1")
                           .arg(subscriptionId)
                           .str());
-        qint64 delay = 0;
+        int64_t delay = 0;
         int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-        qint64 timeSinceLastPublication = now - subscription->timeOfLastPublication;
+        int64_t timeSinceLastPublication = now - subscription->timeOfLastPublication;
         bool publicationInTime = timeSinceLastPublication < alertAfterInterval;
         if (publicationInTime) {
             LOG_TRACE(logger, "Publication in time!");
@@ -351,8 +351,8 @@ void SubscriptionManager::MissedPublicationRunnable::run()
     }
 }
 
-qint64 SubscriptionManager::MissedPublicationRunnable::timeSinceLastExpectedPublication(
-        const qint64& timeSinceLastPublication)
+int64_t SubscriptionManager::MissedPublicationRunnable::timeSinceLastExpectedPublication(
+        const int64_t& timeSinceLastPublication)
 {
     return timeSinceLastPublication % expectedIntervalMSecs;
 }

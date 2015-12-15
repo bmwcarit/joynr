@@ -463,7 +463,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, cleanCacheRemovesOldEntries) {
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
     // this should remove all entries in the cache
-    localCapabilitiesDirectory->cleanCache(100);
+    localCapabilitiesDirectory->cleanCache(100ll);
     // retrieving capabilities will force a call to the backend as the cache is empty
     EXPECT_CALL(*capabilitiesClient, lookup(
                     _,

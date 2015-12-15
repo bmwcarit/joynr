@@ -61,26 +61,26 @@ TEST_F(ReplyCallerTest, getType) {
     ASSERT_EQ(Util::getTypeId<int>(), intFixture.getTypeId());
 }
 
-TEST_F(ReplyCallerTest, getTypeQInt64) {
-    std::shared_ptr<MockCallback<qint64>> callback(new MockCallback<qint64>());
-    ReplyCaller<qint64> qint64ReplyCaller(
-                [callback](const RequestStatus& status, const qint64& value) {
+TEST_F(ReplyCallerTest, getTypeInt64_t) {
+    std::shared_ptr<MockCallback<int64_t>> callback(new MockCallback<int64_t>());
+    ReplyCaller<int64_t> int64_tReplyCaller(
+                [callback](const RequestStatus& status, const int64_t& value) {
                     callback->onSuccess(value);
                 },
                 [](const RequestStatus& status, const exceptions::JoynrException& error){
                 });
-    ASSERT_EQ(Util::getTypeId<qint64>(), qint64ReplyCaller.getTypeId());
+    ASSERT_EQ(Util::getTypeId<int64_t>(), int64_tReplyCaller.getTypeId());
 }
 
-TEST_F(ReplyCallerTest, getTypeQInt8) {
-    std::shared_ptr<MockCallback<qint8>> callback(new MockCallback<qint8>());
-    ReplyCaller<qint8> qint8ReplyCaller(
-                [callback](const RequestStatus& status, const qint8& value) {
+TEST_F(ReplyCallerTest, getTypeInt8_t) {
+    std::shared_ptr<MockCallback<int8_t>> callback(new MockCallback<int8_t>());
+    ReplyCaller<int8_t> int8_tReplyCaller(
+                [callback](const RequestStatus& status, const int8_t& value) {
                     callback->onSuccess(value);
                 },
                 [](const RequestStatus& status, const exceptions::JoynrException& error){
                 });
-    ASSERT_EQ(Util::getTypeId<qint8>(), qint8ReplyCaller.getTypeId());
+    ASSERT_EQ(Util::getTypeId<int8_t>(), int8_tReplyCaller.getTypeId());
 }
 
 TEST_F(ReplyCallerTest, getTypeForVoid) {

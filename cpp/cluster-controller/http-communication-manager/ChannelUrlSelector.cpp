@@ -37,14 +37,14 @@ const double& ChannelUrlSelector::PUNISHMENT_FACTOR()
     static const double value = 0.4;
     return value;
 }
-const qint64& ChannelUrlSelector::TIME_FOR_ONE_RECOUPERATION()
+const int64_t& ChannelUrlSelector::TIME_FOR_ONE_RECOUPERATION()
 {
-    static const qint64 value = 1000 * 60 * 3;
+    static const int64_t value = 1000 * 60 * 3;
     return value;
 }
 
 ChannelUrlSelector::ChannelUrlSelector(const BounceProxyUrl& bounceProxyUrl,
-                                       qint64 timeForOneRecouperation,
+                                       int64_t timeForOneRecouperation,
                                        double punishmentFactor)
         : channelUrlDirectory(),
           bounceProxyUrl(bounceProxyUrl),
@@ -82,7 +82,7 @@ void ChannelUrlSelector::init(std::shared_ptr<ILocalChannelUrlDirectory> channel
 
 std::string ChannelUrlSelector::obtainUrl(const std::string& channelId,
                                           RequestStatus& status,
-                                          const qint64& timeout_ms)
+                                          const int64_t& timeout_ms)
 {
 
     LOG_TRACE(logger, "entering obtainUrl ...");
@@ -224,7 +224,7 @@ joynr_logging::Logger* ChannelUrlSelectorEntry::logger =
 
 ChannelUrlSelectorEntry::ChannelUrlSelectorEntry(const types::ChannelUrlInformation& urlInformation,
                                                  double punishmentFactor,
-                                                 qint64 timeForOneRecouperation)
+                                                 int64_t timeForOneRecouperation)
         : lastUpdate(DispatcherUtils::nowInMilliseconds()),
           fitness(),
           urlInformation(urlInformation),

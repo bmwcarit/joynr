@@ -60,7 +60,7 @@ public:
     */
     virtual std::string obtainUrl(const std::string& channelId,
                                   RequestStatus& status,
-                                  const qint64& timeout_ms) = 0;
+                                  const int64_t& timeout_ms) = 0;
     /**
     * @brief Provide feedback on performance of URL: was the connection successful or not?
     *

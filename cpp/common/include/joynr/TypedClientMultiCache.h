@@ -59,7 +59,7 @@ public:
     * maxAcceptedAgeInMs -1 returns all values.
     *
     */
-    std::vector<T> lookUp(const Key& key, qint64 maxAcceptedAgeInMs);
+    std::vector<T> lookUp(const Key& key, int64_t maxAcceptedAgeInMs);
     /*
      *  Returns the list of values stored for the attribute not considering their age.
       */
@@ -84,7 +84,7 @@ public:
     * entries for an attributeID are too old will the key become invalid (deleted).
     * Can be used to clear the cache of all entries by setting 'maxAcceptedAgeInMs = 0'.
     */
-    void cleanup(qint64 maxAcceptedAgeInMs);
+    void cleanup(int64_t maxAcceptedAgeInMs);
 
     bool contains(const Key& key);
 
@@ -98,7 +98,7 @@ private:
     /*
      * Returns time since activation in ms (elapsed())
      */
-    qint64 elapsed(qint64 entryTime);
+    int64_t elapsed(int64_t entryTime);
     QCache<Key, std::vector<CachedValue<T>>> cache;
     std::mutex mutex;
 };
@@ -111,7 +111,7 @@ TypedClientMultiCache<Key, T>::TypedClientMultiCache(int maxCost)
 }
 
 template <class Key, class T>
-std::vector<T> TypedClientMultiCache<Key, T>::lookUp(const Key& key, qint64 maxAcceptedAgeInMs)
+std::vector<T> TypedClientMultiCache<Key, T>::lookUp(const Key& key, int64_t maxAcceptedAgeInMs)
 {
     if (maxAcceptedAgeInMs == -1) {
         return lookUpAll(key);
@@ -122,7 +122,7 @@ std::vector<T> TypedClientMultiCache<Key, T>::lookUp(const Key& key, qint64 maxA
     }
     std::vector<CachedValue<T>>* list = cache.object(key);
     std::vector<T> result;
-    qint64 time;
+    int64_t time;
 
     for (std::size_t i = 0; i < list->size(); i++) {
         time = list->at(i).getTimestamp();
@@ -196,7 +196,7 @@ void TypedClientMultiCache<Key, T>::removeAll(const Key& key)
 }
 
 template <class Key, class T>
-void TypedClientMultiCache<Key, T>::cleanup(qint64 maxAcceptedAgeInMs)
+void TypedClientMultiCache<Key, T>::cleanup(int64_t maxAcceptedAgeInMs)
 {
     std::unique_lock<std::mutex> lock(mutex);
     std::vector<Key> keyset = cache.keys().toVector().toStdVector();
@@ -227,7 +227,7 @@ void TypedClientMultiCache<Key, T>::cleanup(qint64 maxAcceptedAgeInMs)
 }
 
 template <class Key, class T>
-qint64 TypedClientMultiCache<Key, T>::elapsed(qint64 entryTime)
+int64_t TypedClientMultiCache<Key, T>::elapsed(int64_t entryTime)
 {
     int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
     return now - entryTime;

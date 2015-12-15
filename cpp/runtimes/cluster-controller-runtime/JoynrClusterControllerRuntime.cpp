@@ -283,7 +283,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     /**
      * Finish initialising Capabilitiesclient by building a Proxy and passing it
      */
-    qint64 discoveryMessagesTtl = messagingSettings->getDiscoveryMessagesTtl();
+    int64_t discoveryMessagesTtl = messagingSettings->getDiscoveryMessagesTtl();
 
     if (usingRealCapabilitiesClient) {
         ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>* capabilitiesProxyBuilder =

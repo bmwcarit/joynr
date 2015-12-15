@@ -659,8 +659,8 @@ public:
     MOCK_METHOD2_T(add, void(const Key &keyId, T* value));
     MOCK_METHOD2_T(add, void(const Key& keyId, std::shared_ptr < T > value));
 
-    MOCK_METHOD3_T(add, void(const Key &keyId, T* value, qint64 ttl_ms));
-    MOCK_METHOD3_T(add, void(const Key& keyId, std::shared_ptr < T > value, qint64 ttl_ms));
+    MOCK_METHOD3_T(add, void(const Key &keyId, T* value, int64_t ttl_ms));
+    MOCK_METHOD3_T(add, void(const Key& keyId, std::shared_ptr < T > value, int64_t ttl_ms));
     MOCK_METHOD1_T(remove, void(const Key& keyId));
 };
 
@@ -745,7 +745,7 @@ public:
     MOCK_METHOD4(getUrlsForChannelAsync,
                  std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>>(
                      const std::string& channelId,
-                     const qint64& timeout_ms,
+                     const int64_t& timeout_ms,
                      std::function<void(const joynr::types::ChannelUrlInformation&)> onSuccess,
                      std::function<void(const joynr::exceptions::JoynrException& error)> onError
                  )

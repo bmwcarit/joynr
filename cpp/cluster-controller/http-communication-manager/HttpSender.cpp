@@ -38,22 +38,22 @@ namespace joynr
 
 using namespace joynr_logging;
 
-const qint64& HttpSender::MIN_ATTEMPT_TTL()
+const int64_t& HttpSender::MIN_ATTEMPT_TTL()
 {
-    static qint64 value = 2 * 1000;
+    static int64_t value = 2 * 1000;
     return value;
 }
 
-const qint64& HttpSender::FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIAL()
+const int64_t& HttpSender::FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIAL()
 {
-    static qint64 value = 3;
+    static int64_t value = 3;
     return value;
 }
 
 Logger* HttpSender::logger = Logging::getInstance()->getLogger("MSG", "HttpSender");
 
 HttpSender::HttpSender(const BounceProxyUrl& bounceProxyUrl,
-                       qint64 maxAttemptTtl_ms,
+                       int64_t maxAttemptTtl_ms,
                        int messageSendRetryInterval)
         : bounceProxyUrl(bounceProxyUrl),
           channelUrlCache(new ChannelUrlSelector(this->bounceProxyUrl,
@@ -126,7 +126,7 @@ HttpSender::SendMessageRunnable::SendMessageRunnable(HttpSender* messageSender,
                                                      const JoynrTimePoint& decayTime,
                                                      std::string&& data,
                                                      DelayedScheduler& delayedScheduler,
-                                                     qint64 maxAttemptTtl_ms)
+                                                     int64_t maxAttemptTtl_ms)
         : joynr::Runnable(true),
           ObjectWithDecayTime(decayTime),
           channelId(channelId),
@@ -149,7 +149,7 @@ void HttpSender::SendMessageRunnable::shutdown()
 
 void HttpSender::SendMessageRunnable::run()
 {
-    qint64 startTime = TypeUtil::toQt(DispatcherUtils::nowInMilliseconds());
+    int64_t startTime = TypeUtil::toQt(DispatcherUtils::nowInMilliseconds());
     if (isExpired()) {
         LOG_DEBUG(logger,
                   FormatString("Message expired, expiration time: %1")
@@ -167,7 +167,7 @@ void HttpSender::SendMessageRunnable::run()
     // A channelId can have several Url's. Hence, we cannot use up all the time we have for testing
     // just one (in case it is not available). So we use just a fraction, yet at least MIN... and
     // at most MAX... seconds.
-    qint64 curlTimeout = std::max(
+    int64_t curlTimeout = std::max(
             getRemainingTtl_ms() / HttpSender::FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIAL(),
             HttpSender::MIN_ATTEMPT_TTL());
     std::string url = resolveUrlForChannelId(curlTimeout);
@@ -175,8 +175,8 @@ void HttpSender::SendMessageRunnable::run()
     HttpResult sendMessageResult = buildRequestAndSend(url, curlTimeout);
 
     // Delay the next request if an error occurs
-    qint64 currentTime = TypeUtil::toQt(DispatcherUtils::nowInMilliseconds());
-    qint64 delay = messageSender->messageSendRetryInterval - (currentTime - startTime);
+    int64_t currentTime = TypeUtil::toQt(DispatcherUtils::nowInMilliseconds());
+    int64_t delay = messageSender->messageSendRetryInterval - (currentTime - startTime);
     if (delay < 0)
         delay = 10;
 
@@ -209,7 +209,7 @@ void HttpSender::SendMessageRunnable::run()
                           .str());
     }
 }
-std::string HttpSender::SendMessageRunnable::resolveUrlForChannelId(qint64 curlTimeout)
+std::string HttpSender::SendMessageRunnable::resolveUrlForChannelId(int64_t curlTimeout)
 {
     LOG_TRACE(logger,
               FormatString("obtaining Url with a curlTimeout of : %1").arg(curlTimeout).str());
@@ -239,7 +239,7 @@ std::string HttpSender::SendMessageRunnable::resolveUrlForChannelId(qint64 curlT
 }
 
 HttpResult HttpSender::SendMessageRunnable::buildRequestAndSend(const std::string& url,
-                                                                qint64 curlTimeout)
+                                                                int64_t curlTimeout)
 {
     std::shared_ptr<IHttpPostBuilder> sendMessageRequestBuilder(
             HttpNetworking::getInstance()->createHttpPostBuilder(url));

@@ -66,8 +66,8 @@ public:
     virtual void add(const Key& keyId, T* value) = 0;
     virtual void add(const Key& keyId, std::shared_ptr<T> value) = 0;
 
-    virtual void add(const Key& keyId, T* value, qint64 ttl_ms) = 0;
-    virtual void add(const Key& keyId, std::shared_ptr<T> value, qint64 ttl_ms) = 0;
+    virtual void add(const Key& keyId, T* value, int64_t ttl_ms) = 0;
+    virtual void add(const Key& keyId, std::shared_ptr<T> value, int64_t ttl_ms) = 0;
     virtual void remove(const Key& keyId) = 0;
 };
 
@@ -88,8 +88,8 @@ public:
     /*
      * Adds an element and removes it automatically after ttl_ms milliseconds have past.
      */
-    void add(const Key& keyId, T* value, qint64 ttl_ms);
-    void add(const Key& keyId, std::shared_ptr<T> value, qint64 ttl_ms);
+    void add(const Key& keyId, T* value, int64_t ttl_ms);
+    void add(const Key& keyId, std::shared_ptr<T> value, int64_t ttl_ms);
     void remove(const Key& keyId);
 
 private:
@@ -168,14 +168,14 @@ void Directory<Key, T>::add(const Key& keyId, std::shared_ptr<T> value)
 
 // ownership passed off to the directory, which passes off to SharedPointer
 template <typename Key, typename T>
-void Directory<Key, T>::add(const Key& keyId, T* value, qint64 ttl_ms)
+void Directory<Key, T>::add(const Key& keyId, T* value, int64_t ttl_ms)
 {
     std::shared_ptr<T> valuePtr = std::shared_ptr<T>(value);
     add(keyId, valuePtr, ttl_ms);
 }
 
 template <typename Key, typename T>
-void Directory<Key, T>::add(const Key& keyId, std::shared_ptr<T> value, qint64 ttl_ms)
+void Directory<Key, T>::add(const Key& keyId, std::shared_ptr<T> value, int64_t ttl_ms)
 {
     // Insert the value
     {

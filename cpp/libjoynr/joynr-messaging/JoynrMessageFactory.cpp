@@ -157,7 +157,7 @@ JoynrMessage JoynrMessageFactory::createSubscriptionStop(const std::string& send
 void JoynrMessageFactory::initMsg(JoynrMessage& msg,
                                   const std::string& senderParticipantId,
                                   const std::string& receiverParticipantId,
-                                  const qint64 ttl,
+                                  const int64_t ttl,
                                   const std::string& payload)
 {
     msg.setHeaderCreatorUserId(securityManager->getCurrentProcessUserId());

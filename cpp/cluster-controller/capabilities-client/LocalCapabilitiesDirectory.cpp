@@ -35,15 +35,15 @@ using namespace joynr_logging;
 Logger* LocalCapabilitiesDirectory::logger =
         Logging::getInstance()->getLogger("MSG", "LocalCapabilitiesDirectory");
 
-const qint64& LocalCapabilitiesDirectory::NO_CACHE_FRESHNESS_REQ()
+const int64_t& LocalCapabilitiesDirectory::NO_CACHE_FRESHNESS_REQ()
 {
-    static qint64 value(-1);
+    static int64_t value(-1);
     return value;
 }
 
-const qint64& LocalCapabilitiesDirectory::DONT_USE_CACHE()
+const int64_t& LocalCapabilitiesDirectory::DONT_USE_CACHE()
 {
-    static qint64 value(0);
+    static int64_t value(0);
     return value;
 }
 
@@ -373,7 +373,7 @@ std::vector<CapabilityEntry> LocalCapabilitiesDirectory::getCachedLocalCapabilit
     return searchCache(interfaceAddress, -1, true);
 }
 
-void LocalCapabilitiesDirectory::cleanCache(qint64 maxAge_ms)
+void LocalCapabilitiesDirectory::cleanCache(int64_t maxAge_ms)
 {
     std::lock_guard<std::mutex> lock(cacheLock);
     interfaceAddress2GlobalCapabilities.cleanup(maxAge_ms);
@@ -528,7 +528,7 @@ void LocalCapabilitiesDirectory::insertInCache(const joynr::types::DiscoveryEntr
 
 std::vector<CapabilityEntry> LocalCapabilitiesDirectory::searchCache(
         const InterfaceAddress& interfaceAddress,
-        const qint64& maxCacheAge,
+        const int64_t& maxCacheAge,
         bool localEntries)
 {
     std::lock_guard<std::mutex> lock(cacheLock);
@@ -543,7 +543,7 @@ std::vector<CapabilityEntry> LocalCapabilitiesDirectory::searchCache(
 
 std::vector<CapabilityEntry> LocalCapabilitiesDirectory::searchCache(
         const std::string& participantId,
-        const qint64& maxCacheAge,
+        const int64_t& maxCacheAge,
         bool localEntries)
 {
     std::lock_guard<std::mutex> lock(cacheLock);
@@ -621,11 +621,11 @@ std::vector<CapabilityEntry> LocalCapabilitiesFuture::get()
     return capabilities;
 }
 
-std::vector<CapabilityEntry> LocalCapabilitiesFuture::get(const qint64& timeout)
+std::vector<CapabilityEntry> LocalCapabilitiesFuture::get(const int64_t& timeout)
 {
 
     int timeout_int(timeout);
-    // prevent overflow during conversion from qint64 to int
+    // prevent overflow during conversion from int64_t to int
     int maxint = std::numeric_limits<int>::max();
     if (timeout > maxint) {
         timeout_int = maxint;

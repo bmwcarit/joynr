@@ -46,12 +46,12 @@ class IChannelUrlSelector;
 class HttpSender : public IMessageSender
 {
 public:
-    static const qint64& MIN_ATTEMPT_TTL();
-    static const qint64& MAX_ATTEMPT_TTL();
-    static const qint64& FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIAL();
+    static const int64_t& MIN_ATTEMPT_TTL();
+    static const int64_t& MAX_ATTEMPT_TTL();
+    static const int64_t& FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIAL();
 
     HttpSender(const BounceProxyUrl& bounceProxyUrl,
-               qint64 maxAttemptTtl_ms,
+               int64_t maxAttemptTtl_ms,
                int messageSendRetryInterval); // int messageSendRetryInterval
     virtual ~HttpSender();
     /**
@@ -69,7 +69,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(HttpSender);
     const BounceProxyUrl bounceProxyUrl;
     IChannelUrlSelector* channelUrlCache;
-    const qint64 maxAttemptTtl_ms;
+    const int64_t maxAttemptTtl_ms;
     const int messageSendRetryInterval;
     static joynr_logging::Logger* logger;
 
@@ -98,7 +98,7 @@ private:
                             const JoynrTimePoint& decayTime,
                             std::string&& data,
                             DelayedScheduler& delayedScheduler,
-                            qint64 maxAttemptTtl_ms);
+                            int64_t maxAttemptTtl_ms);
         ~SendMessageRunnable();
 
         void shutdown();
@@ -117,13 +117,13 @@ private:
 
     private:
         DISALLOW_COPY_AND_ASSIGN(SendMessageRunnable);
-        HttpResult buildRequestAndSend(const std::string& url, qint64 curlTimeout);
-        std::string resolveUrlForChannelId(qint64 curlTimeout);
+        HttpResult buildRequestAndSend(const std::string& url, int64_t curlTimeout);
+        std::string resolveUrlForChannelId(int64_t curlTimeout);
         std::string channelId;
         std::string data;
         DelayedScheduler& delayedScheduler;
         HttpSender* messageSender;
-        qint64 maxAttemptTtl_ms;
+        int64_t maxAttemptTtl_ms;
 
         static joynr_logging::Logger* logger;
         static int messageRunnableCounter;

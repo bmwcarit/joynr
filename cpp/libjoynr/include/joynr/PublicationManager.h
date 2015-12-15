@@ -229,7 +229,7 @@ private:
     void saveBroadcastSubscriptionRequestsMap(const std::vector<Variant>& subscriptionList);
     void loadSavedBroadcastSubscriptionRequestsMap();
 
-    void reschedulePublication(const std::string& subscriptionId, qint64 nextPublication);
+    void reschedulePublication(const std::string& subscriptionId, int64_t nextPublication);
 
     bool isPublicationAlreadyScheduled(const std::string& subscriptionId);
 

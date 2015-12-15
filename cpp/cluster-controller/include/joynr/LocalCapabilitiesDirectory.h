@@ -70,8 +70,8 @@ public:
 
     virtual ~LocalCapabilitiesDirectory();
 
-    static const qint64& NO_CACHE_FRESHNESS_REQ();
-    static const qint64& DONT_USE_CACHE();
+    static const int64_t& NO_CACHE_FRESHNESS_REQ();
+    static const int64_t& DONT_USE_CACHE();
 
     void add(const joynr::types::DiscoveryEntry& entry);
 
@@ -114,7 +114,7 @@ public:
     /*
      * Performs maintenance on the cache and removes old entries
      */
-    void cleanCache(qint64 maxAge_ms);
+    void cleanCache(int64_t maxAge_ms);
 
     /*
      * Call back methods which will update the local capabilities cache and call the
@@ -189,10 +189,10 @@ private:
                        bool localCache,
                        bool globalCache);
     std::vector<CapabilityEntry> searchCache(const InterfaceAddress& interfaceAddress,
-                                             const qint64& maxCacheAge,
+                                             const int64_t& maxCacheAge,
                                              bool localEntries);
     std::vector<CapabilityEntry> searchCache(const std::string& participantId,
-                                             const qint64& maxCacheAge,
+                                             const int64_t& maxCacheAge,
                                              bool localEntries);
 
     static void convertDiscoveryEntryIntoCapabilityEntry(
@@ -232,7 +232,7 @@ public:
     LocalCapabilitiesFuture();
     void capabilitiesReceived(std::vector<CapabilityEntry> capabilities);
     std::vector<CapabilityEntry> get();
-    std::vector<CapabilityEntry> get(const qint64& timeout_ms);
+    std::vector<CapabilityEntry> get(const int64_t& timeout_ms);
     virtual ~LocalCapabilitiesFuture()
     {
     }

@@ -69,7 +69,7 @@ void WebSocketMessagingStub::sendTextMessage(const QString& message)
                       .arg(message.toStdString())
                       .arg(address->toString())
                       .str());
-    qint64 bytesSent = webSocket->sendTextMessage(message);
+    int64_t bytesSent = webSocket->sendTextMessage(message);
     bool flushed = webSocket->flush();
     LOG_TRACE(logger,
               FormatString("bytes actually sent (%1): %2 of %3")

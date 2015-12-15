@@ -119,11 +119,11 @@ private:
     {
     public:
         MissedPublicationRunnable(const JoynrTimePoint& expiryDate,
-                                  const qint64& expectedIntervalMSecs,
+                                  const int64_t& expectedIntervalMSecs,
                                   const std::string& subscriptionId,
                                   std::shared_ptr<Subscription> subscription,
                                   SubscriptionManager& subscriptionManager,
-                                  const qint64& alertAfterInterval);
+                                  const int64_t& alertAfterInterval);
 
         void shutdown() override;
 
@@ -136,11 +136,11 @@ private:
 
     private:
         DISALLOW_COPY_AND_ASSIGN(MissedPublicationRunnable);
-        qint64 timeSinceLastExpectedPublication(const qint64& timeSinceLastPublication);
-        qint64 expectedIntervalMSecs;
+        int64_t timeSinceLastExpectedPublication(const int64_t& timeSinceLastPublication);
+        int64_t expectedIntervalMSecs;
         std::shared_ptr<Subscription> subscription;
         const std::string subscriptionId;
-        qint64 alertAfterInterval;
+        int64_t alertAfterInterval;
         SubscriptionManager& subscriptionManager;
         static joynr_logging::Logger* logger;
     };

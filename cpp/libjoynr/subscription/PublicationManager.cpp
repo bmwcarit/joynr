@@ -62,7 +62,7 @@ public:
                 std::shared_ptr<RequestCaller> requestCaller);
     ~Publication();
 
-    qint64 timeOfLastPublication;
+    int64_t timeOfLastPublication;
     IPublicationSender* sender;
     std::shared_ptr<RequestCaller> requestCaller;
     SubscriptionAttributeListener* attributeListener;
@@ -932,7 +932,7 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
 
         // check if the subscription qos needs a periodic publication
         if (publicationInterval > 0) {
-            qint64 timeSinceLast = now - publication->timeOfLastPublication;
+            int64_t timeSinceLast = now - publication->timeOfLastPublication;
             // publish only if not published in the current interval
             if (timeSinceLast < publicationInterval) {
                 LOG_DEBUG(logger,
@@ -942,7 +942,7 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
                                   .arg(timeSinceLast)
                                   .str());
 
-                qint64 delayUntilNextPublication = publicationInterval - timeSinceLast;
+                int64_t delayUntilNextPublication = publicationInterval - timeSinceLast;
                 assert(delayUntilNextPublication >= 0);
                 delayedScheduler->schedule(
                         new PublisherRunnable(*this, subscriptionId),
@@ -1053,7 +1053,7 @@ void PublicationManager::attributeValueChanged(const std::string& subscriptionId
     {
         std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
         if (!isPublicationAlreadyScheduled(subscriptionId)) {
-            qint64 timeUntilNextPublication =
+            int64_t timeUntilNextPublication =
                     getTimeUntilNextPublication(publication, subscriptionRequest->getQos());
 
             if (timeUntilNextPublication == 0) {
@@ -1095,7 +1095,7 @@ void PublicationManager::broadcastOccurred(
     {
         std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
         // Only proceed if publication can immediately be sent
-        qint64 timeUntilNextPublication =
+        int64_t timeUntilNextPublication =
                 getTimeUntilNextPublication(publication, subscriptionRequest->getQos());
 
         if (timeUntilNextPublication == 0) {
@@ -1133,7 +1133,7 @@ int64_t PublicationManager::getTimeUntilNextPublication(std::shared_ptr<Publicat
     int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
     int64_t minInterval = SubscriptionUtil::getMinInterval(qos);
 
-    qint64 timeSinceLast = now - publication->timeOfLastPublication;
+    int64_t timeSinceLast = now - publication->timeOfLastPublication;
 
     if (minInterval > 0 && timeSinceLast < minInterval) {
         return minInterval - timeSinceLast;
@@ -1143,7 +1143,7 @@ int64_t PublicationManager::getTimeUntilNextPublication(std::shared_ptr<Publicat
 }
 
 void PublicationManager::reschedulePublication(const std::string& subscriptionId,
-                                               qint64 nextPublication)
+                                               int64_t nextPublication)
 {
     if (nextPublication > 0) {
         std::lock_guard<std::mutex> currentScheduledLocker(currentScheduledPublicationsMutex);

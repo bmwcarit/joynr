@@ -85,7 +85,7 @@ public:
     virtual std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>>
     getUrlsForChannelAsync(
             const std::string& channelId,
-            const qint64& timeout_ms,
+            const int64_t& timeout_ms,
             std::function<void(const types::ChannelUrlInformation&)> onSuccess = nullptr,
             std::function<void(const exceptions::JoynrException&)> onError = nullptr) = 0;
 };

@@ -44,8 +44,8 @@ class MessageRouter;
  */
 struct LongPollingMessageReceiverSettings
 {
-    qint64 bounceProxyTimeout_ms;
-    qint64 longPollTimeout_ms;
+    int64_t bounceProxyTimeout_ms;
+    int64_t longPollTimeout_ms;
     int longPollRetryInterval_ms;
     int createChannelRetryInterval_ms;
 };

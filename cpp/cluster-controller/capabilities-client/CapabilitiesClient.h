@@ -116,8 +116,8 @@ private:
                      MessagingQos qosSettings,
                      std::shared_ptr<IReplyCaller> callBack);
 
-    qint64 defaultRequestTTL;
-    qint64 defaultRequestRoundtripTTL;
+    int64_t defaultRequestTTL;
+    int64_t defaultRequestRoundtripTTL;
 
     std::string capabilitiesClientParticipantId;
     std::string localChannelId;

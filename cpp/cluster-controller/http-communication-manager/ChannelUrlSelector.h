@@ -56,7 +56,7 @@ class JOYNRCLUSTERCONTROLLER_EXPORT ChannelUrlSelector : public IChannelUrlSelec
 {
 
 public:
-    static const qint64& TIME_FOR_ONE_RECOUPERATION();
+    static const int64_t& TIME_FOR_ONE_RECOUPERATION();
     static const double& PUNISHMENT_FACTOR();
     /**
      * @brief Initialize
@@ -66,7 +66,7 @@ public:
      * @param punishmentFactor
      */
     explicit ChannelUrlSelector(const BounceProxyUrl& bounceProxyUrl,
-                                qint64 timeForOneRecouperation,
+                                int64_t timeForOneRecouperation,
                                 double punishmentFactor);
 
     virtual ~ChannelUrlSelector();
@@ -91,7 +91,7 @@ public:
     */
     virtual std::string obtainUrl(const std::string& channelId,
                                   RequestStatus& status,
-                                  const qint64& timeout_ms) override;
+                                  const int64_t& timeout_ms) override;
     /**
     * @brief Provide feedback on performance of URL: was the connection successful or not?
     *
@@ -108,7 +108,7 @@ private:
     std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory;
     const BounceProxyUrl& bounceProxyUrl;
     QMap<std::string, ChannelUrlSelectorEntry*> entries;
-    qint64 timeForOneRecouperation;
+    int64_t timeForOneRecouperation;
     double punishmentFactor;
     std::string channelUrlDirectoryUrl;
     bool useDefaultUrl;
@@ -128,7 +128,7 @@ class JOYNRCLUSTERCONTROLLER_EXPORT ChannelUrlSelectorEntry
 public:
     ChannelUrlSelectorEntry(const types::ChannelUrlInformation& urlInformation,
                             double punishmentFactor,
-                            qint64 timeForOneRecouperation);
+                            int64_t timeForOneRecouperation);
     ~ChannelUrlSelectorEntry();
     /**
      * @brief Returns the Url with the higest fitness value.
@@ -171,7 +171,7 @@ private:
     std::vector<double> fitness;
     types::ChannelUrlInformation urlInformation;
     double punishmentFactor;
-    qint64 timeForOneRecouperation;
+    int64_t timeForOneRecouperation;
     static joynr_logging::Logger* logger;
 };
 
