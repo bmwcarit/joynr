@@ -152,11 +152,11 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     // setup CC WebSocket interface
     WebSocketMessagingStubFactory* wsMessagingStubFactory = new WebSocketMessagingStubFactory();
     messagingStubFactory->registerStubFactory(wsMessagingStubFactory);
-    system::RoutingTypes::WebSocketAddress WsAddress =
+    system::RoutingTypes::WebSocketAddress wsAddress =
             wsSettings.createClusterControllerMessagingAddress();
 
     wsCcMessagingSkeleton =
-            new WebSocketCcMessagingSkeleton(*messageRouter, *wsMessagingStubFactory, WsAddress);
+            new WebSocketCcMessagingSkeleton(*messageRouter, *wsMessagingStubFactory, wsAddress);
 
     /* LibJoynr */
     assert(messageRouter);

@@ -547,7 +547,7 @@ class MockGpsProvider : public joynr::vehicle::DefaultGpsProvider
     {
         qDebug() << "I am being destroyed_ MockProvider";
     };
-    
+
     MOCK_METHOD1(getLocation, void(joynr::types::Localisation::GpsLocation& result) );
     MOCK_METHOD1(setLocation, void(joynr::types::Localisation::GpsLocation gpsLocation));
     //MOCK_METHOD2(calculateAvailableSatellites,joynr::RequestStatus(int32_t& result));

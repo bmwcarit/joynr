@@ -60,13 +60,12 @@ ProviderArbitrator::~ProviderArbitrator()
 
 void ProviderArbitrator::startArbitration()
 {
-    using Clock = std::chrono::system_clock;
     joynr::Semaphore semaphore;
 
     // Arbitrate until successful or timed out
     while (true) {
 
-        auto start = Clock::now();
+        auto start = std::chrono::system_clock::now();
 
         // Attempt arbitration (overloaded in subclasses)
         attemptArbitration();
@@ -76,7 +75,7 @@ void ProviderArbitrator::startArbitration()
             return;
 
         // Reduce the timeout by the elapsed time
-        auto now = Clock::now();
+        auto now = std::chrono::system_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
         discoveryQos.setDiscoveryTimeout(discoveryQos.getDiscoveryTimeout() - duration.count());
         if (discoveryQos.getDiscoveryTimeout() <= 0)
@@ -86,7 +85,7 @@ void ProviderArbitrator::startArbitration()
         semaphore.waitFor(std::chrono::milliseconds(discoveryQos.getRetryInterval()));
 
         // Reduce the timeout again
-        now = Clock::now();
+        now = std::chrono::system_clock::now();
         duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
         discoveryQos.setDiscoveryTimeout(discoveryQos.getDiscoveryTimeout() - duration.count());
         if (discoveryQos.getDiscoveryTimeout() <= 0)

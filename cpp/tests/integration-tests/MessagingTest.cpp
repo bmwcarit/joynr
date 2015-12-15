@@ -38,6 +38,7 @@
 #include "joynr/Settings.h"
 #include "joynr/Semaphore.h"
 #include <chrono>
+#include <cstdint>
 
 using namespace ::testing;
 using namespace joynr;
@@ -46,11 +47,6 @@ ACTION_P(ReleaseSemaphore,semaphore)
 {
     semaphore->notify();
 }
-
-#define WaitXTimes(x) \
-    for(int i = 0; i<x; ++i) {\
-        ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));\
-    }
 
 class MessagingTest : public ::testing::Test {
 public:
@@ -110,6 +106,14 @@ public:
 
         qos.setTtl(10000);
     }
+
+    void WaitXTimes(std::uint64_t x)
+    {
+        for(int i = 0; i<x; ++i) {
+            ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
+        }
+    }
+
     ~MessagingTest(){
         std::remove(settingsFileName.c_str());
     }

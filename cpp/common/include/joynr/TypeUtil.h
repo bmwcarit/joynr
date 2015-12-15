@@ -629,8 +629,8 @@ public:
       */
     static uint64_t toMilliseconds(const std::chrono::system_clock::time_point& timePoint)
     {
-        using namespace std::chrono;
-        return duration_cast<milliseconds>(timePoint.time_since_epoch()).count();
+        return std::chrono::duration_cast<std::chrono::milliseconds>(timePoint.time_since_epoch())
+                .count();
     }
 
     /**

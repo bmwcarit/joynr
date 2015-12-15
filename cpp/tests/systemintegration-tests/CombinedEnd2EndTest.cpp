@@ -614,8 +614,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToNonExistentDomain) {
     discoveryQos.setDiscoveryTimeout(arbitrationTimeout);
 
     // Time how long arbitration takes
-    using Clock = std::chrono::system_clock;
-    auto start = Clock::now();
+    auto start = std::chrono::system_clock::now();
     bool haveDiscoveryException = false;
     int elapsed = 0;
 
@@ -637,7 +636,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToNonExistentDomain) {
 
 	} catch (exceptions::DiscoveryException& e) {
         haveDiscoveryException = true;
-        auto now = Clock::now();
+        auto now = std::chrono::system_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
         elapsed = duration.count();
 	}
