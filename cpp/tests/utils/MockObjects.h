@@ -149,7 +149,7 @@ public:
 
     void shutdown() { joynr::DelayedScheduler::shutdown(); }
     MOCK_METHOD1(unschedule, void (DelayedScheduler::RunnableHandle));
-    MOCK_METHOD2(schedule, DelayedScheduler::RunnableHandle (joynr::Runnable*, joynr::OptionalDelay optionalDelayMs));
+    MOCK_METHOD2(schedule, DelayedScheduler::RunnableHandle (joynr::Runnable*, std::chrono::milliseconds delay));
 };
 
 class MockRunnable : public joynr::Runnable

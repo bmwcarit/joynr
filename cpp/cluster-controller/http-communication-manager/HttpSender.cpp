@@ -188,7 +188,7 @@ void HttpSender::SendMessageRunnable::run()
                                                           std::move(data),
                                                           delayedScheduler,
                                                           maxAttemptTtl_ms),
-                                  OptionalDelay(std::chrono::milliseconds(delay)));
+                                  std::chrono::milliseconds(delay));
         std::string body("NULL");
         if (!sendMessageResult.getBody().isNull()) {
             body = std::string(sendMessageResult.getBody().data());

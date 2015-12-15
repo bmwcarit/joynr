@@ -185,8 +185,7 @@ void Directory<Key, T>::add(const Key& keyId, std::shared_ptr<T> value, int64_t 
 
     // make a removerRunnable and shedule it to remove the entry after ttl!
     RemoverRunnable<Key, T>* removerRunnable = new RemoverRunnable<Key, T>(keyId, this);
-    callBackRemoverScheduler.schedule(
-            removerRunnable, OptionalDelay(std::chrono::milliseconds(ttl_ms)));
+    callBackRemoverScheduler.schedule(removerRunnable, std::chrono::milliseconds(ttl_ms));
 }
 
 template <typename Key, typename T>

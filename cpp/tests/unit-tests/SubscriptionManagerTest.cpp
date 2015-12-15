@@ -306,7 +306,7 @@ joynr_logging::Logger* TestRunnable::logger = joynr_logging::Logging::getInstanc
 TEST(SingleThreadedDelayedSchedulerTest, schedule_deletingRunnablesCorrectly) {
     SingleThreadedDelayedScheduler scheduler("SingleThread");
     TestRunnable* runnable = new TestRunnable();
-    scheduler.schedule(runnable, joynr::OptionalDelay(std::chrono::milliseconds(1)));
+    scheduler.schedule(runnable, std::chrono::milliseconds(1));
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
     scheduler.shutdown();
 }
@@ -314,7 +314,7 @@ TEST(SingleThreadedDelayedSchedulerTest, schedule_deletingRunnablesCorrectly) {
 TEST(ThreadPoolDelayedSchedulerTest, schedule_deletingRunnablesCorrectly) {
     ThreadPoolDelayedScheduler scheduler(3, "ThreadPool");
     TestRunnable* runnable = new TestRunnable();
-    scheduler.schedule(runnable, joynr::OptionalDelay(std::chrono::milliseconds(1)));
+    scheduler.schedule(runnable, std::chrono::milliseconds(1));
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
     scheduler.shutdown();
 }

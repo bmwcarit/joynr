@@ -256,7 +256,7 @@ void PublicationManager::handleAttributeSubscriptionRequest(
             if (qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
                 publication->publicationEndRunnableHandle = delayedScheduler->schedule(
                         new PublicationEndRunnable(*this, subscriptionId),
-                        OptionalDelay(std::chrono::milliseconds(publicationEndDelay)));
+                        std::chrono::milliseconds(publicationEndDelay));
                 LOG_DEBUG(logger,
                           FormatString("publication will end in %1 ms")
                                   .arg(publicationEndDelay)
@@ -268,8 +268,7 @@ void PublicationManager::handleAttributeSubscriptionRequest(
                 currentScheduledPublications.push_back(subscriptionId);
             }
             // sent at least once the current value
-            delayedScheduler->schedule(
-                    new PublisherRunnable(*this, subscriptionId), OptionalDelay::createNull());
+            delayedScheduler->schedule(new PublisherRunnable(*this, subscriptionId));
         } else {
             LOG_WARN(logger, "publication end is in the past");
         }
@@ -399,7 +398,7 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
             if (qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
                 publication->publicationEndRunnableHandle = delayedScheduler->schedule(
                         new PublicationEndRunnable(*this, subscriptionId),
-                        OptionalDelay(std::chrono::milliseconds(publicationEndDelay)));
+                        std::chrono::milliseconds(publicationEndDelay));
                 LOG_DEBUG(logger,
                           FormatString("publication will end in %1 ms")
                                   .arg(publicationEndDelay)
@@ -944,9 +943,8 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
 
                 int64_t delayUntilNextPublication = publicationInterval - timeSinceLast;
                 assert(delayUntilNextPublication >= 0);
-                delayedScheduler->schedule(
-                        new PublisherRunnable(*this, subscriptionId),
-                        OptionalDelay(std::chrono::milliseconds(delayUntilNextPublication)));
+                delayedScheduler->schedule(new PublisherRunnable(*this, subscriptionId),
+                                           std::chrono::milliseconds(delayUntilNextPublication));
                 return;
             }
         }
@@ -970,9 +968,8 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
                           FormatString("rescheduling runnable with delay: %1")
                                   .arg(publicationInterval)
                                   .str());
-                delayedScheduler->schedule(
-                        new PublisherRunnable(*this, subscriptionId),
-                        OptionalDelay(std::chrono::milliseconds(publicationInterval)));
+                delayedScheduler->schedule(new PublisherRunnable(*this, subscriptionId),
+                                           std::chrono::milliseconds(publicationInterval));
             }
         };
 
@@ -988,9 +985,8 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
                           FormatString("rescheduling runnable with delay: %1")
                                   .arg(publicationInterval)
                                   .str());
-                delayedScheduler->schedule(
-                        new PublisherRunnable(*this, subscriptionId),
-                        OptionalDelay(std::chrono::milliseconds(publicationInterval)));
+                delayedScheduler->schedule(new PublisherRunnable(*this, subscriptionId),
+                                           std::chrono::milliseconds(publicationInterval));
             }
         };
 
@@ -1156,7 +1152,7 @@ void PublicationManager::reschedulePublication(const std::string& subscriptionId
                               .str());
             currentScheduledPublications.push_back(subscriptionId);
             delayedScheduler->schedule(new PublisherRunnable(*this, subscriptionId),
-                                       OptionalDelay(std::chrono::milliseconds(nextPublication)));
+                                       std::chrono::milliseconds(nextPublication));
         }
     }
 }

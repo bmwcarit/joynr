@@ -118,11 +118,11 @@ TEST(DelayedSchedulerTest, startAndShutdownWithPendingWork_callDtorOfRunnablesCo
 
     // Dtor should be called
     StrictMock<MockRunnable>* runnable1 = new StrictMock<MockRunnable>(true);
-    scheduler.schedule(runnable1, joynr::OptionalDelay(std::chrono::milliseconds(100)));
+    scheduler.schedule(runnable1, std::chrono::milliseconds(100));
 
     // Dtor called after scheduler was cleaned
     StrictMock<MockRunnable> runnable2(false);
-    scheduler.schedule(&runnable2, joynr::OptionalDelay(std::chrono::milliseconds(100)));
+    scheduler.schedule(&runnable2, std::chrono::milliseconds(100));
 
     EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
 
@@ -139,7 +139,7 @@ TEST(DelayedSchedulerTest, testAccuracyOfDelayedScheduler)
 {
     SimpleDelayedScheduler scheduler(5);
     StrictMock<MockRunnable> runnable1(false);
-    scheduler.schedule(&runnable1, joynr::OptionalDelay(std::chrono::milliseconds(5)));
+    scheduler.schedule(&runnable1, std::chrono::milliseconds(5));
 
     EXPECT_CALL(scheduler, workAvailableCalled(&runnable1)).Times(1);
     EXPECT_CALL(scheduler, workAvailableInTime()).Times(1);
@@ -155,7 +155,7 @@ TEST(DelayedSchedulerTest, avoidCallingDtorOfRunnablesAfterSchedulerHasExpired)
 {
     SimpleDelayedScheduler scheduler;
     StrictMock<MockRunnable> runnable1(true);
-    scheduler.schedule(&runnable1, joynr::OptionalDelay(std::chrono::milliseconds(5)));
+    scheduler.schedule(&runnable1, std::chrono::milliseconds(5));
 
     EXPECT_CALL(scheduler, workAvailableCalled(&runnable1)).Times(1);
 
@@ -174,7 +174,7 @@ TEST(DelayedSchedulerTest, testRunnableWithoutDelay)
     EXPECT_CALL(scheduler, workAvailableCalled(&runnable1)).Times(1);
     EXPECT_CALL(scheduler, workAvailableInTime()).Times(1);
 
-    scheduler.schedule(&runnable1, joynr::OptionalDelay(std::chrono::milliseconds::zero()));
+    scheduler.schedule(&runnable1, std::chrono::milliseconds::zero());
 
     scheduler.shutdown();
 
@@ -185,7 +185,7 @@ TEST(DelayedSchedulerTest, scheduleAndUnscheduleRunnable_NoCallToRunnable)
 {
     SimpleDelayedScheduler scheduler(5);
     StrictMock<MockRunnable> runnable1(false);
-    joynr::DelayedScheduler::RunnableHandle handle = scheduler.schedule(&runnable1, joynr::OptionalDelay(std::chrono::milliseconds(5)));
+    joynr::DelayedScheduler::RunnableHandle handle = scheduler.schedule(&runnable1, std::chrono::milliseconds(5));
 
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
@@ -202,7 +202,7 @@ TEST(DelayedSchedulerTest, scheduleAndUnscheduleRunnable_CallDtorOnUnschedule)
 {
     SimpleDelayedScheduler scheduler(5);
     StrictMock<MockRunnable>* runnable1 = new StrictMock<MockRunnable>(true);
-    joynr::DelayedScheduler::RunnableHandle handle = scheduler.schedule(runnable1, joynr::OptionalDelay(std::chrono::milliseconds(5)));
+    joynr::DelayedScheduler::RunnableHandle handle = scheduler.schedule(runnable1, std::chrono::milliseconds(5));
 
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 

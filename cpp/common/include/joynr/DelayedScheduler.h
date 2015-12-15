@@ -39,8 +39,6 @@ namespace joynr_logging
 class Logger;
 }
 
-using OptionalDelay = Optional<std::chrono::milliseconds>;
-
 /**
  * @class DelayedScheduler
  * @brief Using a @ref Timer and @ref BlockingQueue to execute a runnable delayed
@@ -73,7 +71,7 @@ public:
     /**
      * @brief Schedule a @ref Runnable to be added to execution queue
      * @param runnable Runnable to be added to queue
-     * @param delay_ms Number of milliseconds to delay adding the @ref Runnable
+     * @param delay Number of milliseconds to delay adding the @ref Runnable
      *      to the queue. This parameter is @ref Optional and
      *      if it's value is std::chrono::duration::zero() it will be directly added to the queue.
      *      If this parameter value is invalid (aka null) its default value will be used.
@@ -82,8 +80,20 @@ public:
      *      is directly submitted to run or the @ref DelayedScheduler is already
      *      shutting down.
      */
-    virtual RunnableHandle schedule(Runnable* runnable,
-                                    OptionalDelay optionalDelayMs = OptionalDelay::createNull());
+    virtual RunnableHandle schedule(Runnable* runnable, std::chrono::milliseconds delay);
+
+    /**
+     * @brief Schedule a @ref Runnable to be added to execution queue
+     *
+     * This method calls @ref schedule with the default delay.
+     *
+     * @param runnable Runnable to be added to queue
+     * @return Handle referencing the given @ref Runnable in this scheduler. If
+     *      @ref INVALID_RUNNABLE_HANDLE is returned, the @ref Runnable either
+     *      is directly submitted to run or the @ref DelayedScheduler is already
+     *      shutting down.
+     */
+    virtual RunnableHandle schedule(Runnable* runnable);
 
     /**
      * @brief Try to remove a @ref Runnable while waiting

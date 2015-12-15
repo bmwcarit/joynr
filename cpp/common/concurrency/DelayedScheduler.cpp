@@ -50,18 +50,10 @@ DelayedScheduler::~DelayedScheduler()
     assert(timedRunnables.empty());
 }
 
-DelayedScheduler::RunnableHandle DelayedScheduler::schedule(
-        Runnable* runnable,
-        OptionalDelay optionalDelayMs /* = OptionalDelay::createNull()*/)
+DelayedScheduler::RunnableHandle DelayedScheduler::schedule(Runnable* runnable,
+                                                            std::chrono::milliseconds delay)
 {
-    if (!optionalDelayMs) {
-        optionalDelayMs = OptionalDelay(this->defaultDelayMs);
-    }
-
-    LOG_TRACE(logger,
-              FormatString("schedule: enter with %0 ms delay")
-                      .arg(optionalDelayMs.getValue().count())
-                      .str());
+    LOG_TRACE(logger, FormatString("schedule: enter with %0 ms delay").arg(delay.count()).str());
 
     if (stoppingDelayedScheduler) {
         if (runnable->isDeleteOnExit()) {
@@ -70,7 +62,7 @@ DelayedScheduler::RunnableHandle DelayedScheduler::schedule(
         return INVALID_RUNNABLE_HANDLE;
     }
 
-    if (optionalDelayMs.getValue() == std::chrono::milliseconds::zero()) {
+    if (delay == std::chrono::milliseconds::zero()) {
         LOG_TRACE(logger, "Forward runnable directly (no delay)");
         onWorkAvailable(runnable);
         return INVALID_RUNNABLE_HANDLE;
@@ -79,7 +71,7 @@ DelayedScheduler::RunnableHandle DelayedScheduler::schedule(
     RunnableHandle currentHandle =
             timer.addTimer(std::bind(&DelayedScheduler::timerForRunnableExpired, this, _1),
                            std::bind(&DelayedScheduler::timerForRunnableRemoved, this, _1),
-                           optionalDelayMs.getValue().count(),
+                           delay.count(),
                            false);
 
     LOG_TRACE(logger, FormatString("Added timer with ID %0").arg(currentHandle).str());
@@ -88,6 +80,11 @@ DelayedScheduler::RunnableHandle DelayedScheduler::schedule(
     timedRunnables.emplace(currentHandle, runnable);
 
     return currentHandle;
+}
+
+DelayedScheduler::RunnableHandle DelayedScheduler::schedule(Runnable* runnable)
+{
+    return schedule(runnable, defaultDelayMs);
 }
 
 void DelayedScheduler::unschedule(const RunnableHandle runnableHandle)
