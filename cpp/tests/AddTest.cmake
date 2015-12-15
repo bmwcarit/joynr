@@ -1,4 +1,4 @@
-function(add_test TARGET)
+function(AddTest TARGET)
     add_executable(
         ${TARGET}
         ${ARGN}
@@ -10,4 +10,4 @@ function(add_test TARGET)
     )
     add_dependencies(${TARGET} googletest)
     add_dependencies(${TARGET} googlemock)
-endfunction(add_test)
+endfunction(AddTest)

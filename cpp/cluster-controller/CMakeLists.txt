@@ -125,11 +125,11 @@ add_library(
     ${JoynrClusterController_SOURCES}
 )
 
-add_clang_format(JoynrClusterController)
+AddClangFormat(JoynrClusterController)
 
-add_include_what_you_use(JoynrClusterController)
+AddIncludeWhatYouUse(JoynrClusterController)
 
-add_clang_tidy(JoynrClusterController)
+AddClangTidy(JoynrClusterController)
 
 set_target_properties(
     JoynrClusterController

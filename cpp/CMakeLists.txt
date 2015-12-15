@@ -113,7 +113,7 @@ message(STATUS "option ENABLE_CLANG_FORMATTER=" ${ENABLE_CLANG_FORMATTER})
 
 if(${ENABLE_CLANG_FORMATTER})
     set(CLANG_FORMAT_PATH "CLANG_FORMAT_PATH-NOTFOUND" CACHE FILEPATH "Path to 'clang-format' executable")
-    locate_program(clang-format CLANG_FORMAT_PATH)
+    LocateProgram(clang-format CLANG_FORMAT_PATH)
 endif(${ENABLE_CLANG_FORMATTER})
 
 #### END clang-format ####
@@ -134,7 +134,7 @@ if("${CMAKE_VERSION}" VERSION_GREATER 3.3.0)
 
     if(${ENABLE_INCLUDE_WHAT_YOU_USE})
         set(INCLUDE_WHAT_YOU_USE_PATH "INCLUDE_WHAT_YOU_USE_PATH-NOTFOUND" CACHE FILEPATH "Path to 'include-what-you-use' executable")
-        locate_program(include-what-you-use INCLUDE_WHAT_YOU_USE_PATH)
+        LocateProgram(include-what-you-use INCLUDE_WHAT_YOU_USE_PATH)
     endif(${ENABLE_INCLUDE_WHAT_YOU_USE})
 
     set(INCLUDE_WHAT_YOU_USE_OPTIONS "" CACHE STRING "additional options for include-what-you-use")
@@ -164,7 +164,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(${ENABLE_CLANG_TIDY})
     set(CLANG_TIDY_PATH "CLANG_TIDY_PATH-NOTFOUND" CACHE FILEPATH "Path to 'clang-tidy' executable")
-    locate_program(clang-tidy CLANG_TIDY_PATH)
+    LocateProgram(clang-tidy CLANG_TIDY_PATH)
 endif(${ENABLE_CLANG_TIDY})
 
 set(ENABLE_CLANG_TIDY_OPTIONS "-checks=*" CACHE STRING "additional options for clang-tidy")
@@ -513,7 +513,7 @@ endif(SPDLOG_ROOT)
 message(STATUS "Using source for spdlog: ${SPDLOG_SOURCE_URL}")
 
 
-add_external_project(
+AddExternalProject(
     spdlog
     ${SPDLOG_SOURCE_TYPE} "${SPDLOG_SOURCE_URL}"
     TIMEOUT 10

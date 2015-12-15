@@ -159,11 +159,11 @@ target_link_libraries(JoynrCommon ${JoynrCommon_TARGET_LIBRARIES})
 
 add_dependencies(JoynrCommon spdlog)
 
-add_clang_format(JoynrCommon)
+AddClangFormat(JoynrCommon)
 
-add_include_what_you_use(JoynrCommon)
+AddIncludeWhatYouUse(JoynrCommon)
 
-add_clang_tidy(JoynrCommon)
+AddClangTidy(JoynrCommon)
 
 install(
     TARGETS JoynrCommon

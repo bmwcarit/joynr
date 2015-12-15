@@ -125,11 +125,11 @@ add_library(
     ${JoynrLib_SOURCES}
 )
 
-add_clang_format(Joynr)
+AddClangFormat(Joynr)
 
-add_include_what_you_use(Joynr)
+AddIncludeWhatYouUse(Joynr)
 
-add_clang_tidy(Joynr)
+AddClangTidy(Joynr)
 
 set_target_properties(
     Joynr

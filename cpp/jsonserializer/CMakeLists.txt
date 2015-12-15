@@ -8,7 +8,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 endif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 
 set(jsmn_LIBRARY "${CMAKE_BINARY_DIR}/ThirdParty/src/jsmn/libjsmn.a")
-add_external_project(
+AddExternalProject(
     jsmn
     GIT_REPOSITORY https://github.com/zserge/jsmn
     TIMEOUT 10
@@ -88,7 +88,7 @@ include_directories(
     ${jsonserializer_INCLUDE_DIRECTORIES}
 )
 
-add_include_what_you_use(jsonserializer)
+AddIncludeWhatYouUse(jsonserializer)
 
 SET(LIB_SUFFIX "" CACHE STRING "Define suffix of directory name (32/64)" )
 SET(LIB_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}" CACHE STRING "Directory where lib will install")

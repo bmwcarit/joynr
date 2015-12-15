@@ -8,7 +8,7 @@ else()
 endif(${WIN32})
 
 ### Add google test ###########################################################
-add_external_project(
+AddExternalProject(
     googletest
     SVN_REPOSITORY http://googletest.googlecode.com/svn/tags/release-1.6.0
     TIMEOUT 10
@@ -34,7 +34,7 @@ set(googletest_binary_dir ${binary_dir})
 message(STATUS "variable googletest_binary_dir=${googletest_binary_dir}")
 
 ### Add google mock ###########################################################
-add_external_project(
+AddExternalProject(
     googlemock
     SVN_REPOSITORY http://googlemock.googlecode.com/svn/tags/release-1.6.0
     TIMEOUT 10
@@ -276,7 +276,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
         )
     endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
-    add_test(
+    AddTest(
         g_UnitTests
         ${cluster_controller_test_HEADERS}
         ${cluster_controller_test_SOURCES}
@@ -316,7 +316,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
        )
     endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
-    add_test(
+    AddTest(
        g_IntegrationTests
        ${cluster_controller_test_HEADERS}
        ${cluster_controller_test_SOURCES}
@@ -349,7 +349,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
        )
     endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
-    add_test(
+    AddTest(
        g_SystemIntegrationTests
        ${cluster_controller_test_HEADERS}
        ${cluster_controller_test_SOURCES}
@@ -384,7 +384,7 @@ else()
         "unit-tests/JsonSerializerTest.cpp"
     )
 
-    add_test(
+    AddTest(
         g_UnitTests
         ${libjoynr_test_HEADERS}
         ${libjoynr_test_SOURCES}
@@ -416,7 +416,7 @@ else()
        "systemintegration-tests/CombinedEnd2EndTest.cpp"
     )
 
-    add_test(
+    AddTest(
        g_SystemIntegrationTests
        ${libjoynr_test_HEADERS}
        ${libjoynr_test_SOURCES}

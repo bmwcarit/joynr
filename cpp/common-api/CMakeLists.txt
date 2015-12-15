@@ -49,7 +49,7 @@ add_library(
     ${JoynrCommonAPI_SOURCES}
 )
 
-add_clang_format(
+AddClangFormat(
     JoynrCommonAPI
     ${JoynrCommonAPI_HEADERS}
     ${JoynrCommonAPI_SOURCES}

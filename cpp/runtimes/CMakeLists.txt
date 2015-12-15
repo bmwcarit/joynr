@@ -81,11 +81,11 @@ if(${BUILD_CLUSTER_CONTROLLER})
         ${JoynrClusterControllerRuntime_SOURCES}
     )
 
-    add_clang_format(JoynrClusterControllerRuntime)
+    AddClangFormat(JoynrClusterControllerRuntime)
 
-    add_include_what_you_use(JoynrClusterControllerRuntime)
+    AddIncludeWhatYouUse(JoynrClusterControllerRuntime)
 
-    add_clang_tidy(JoynrClusterControllerRuntime)
+    AddClangTidy(JoynrClusterControllerRuntime)
 
     set_target_properties(
         JoynrClusterControllerRuntime
@@ -173,11 +173,11 @@ add_library(
     ${JoynrWsRuntime_SOURCES}
 )
 
-add_clang_format(JoynrWsRuntime)
+AddClangFormat(JoynrWsRuntime)
 
-add_include_what_you_use(JoynrWsRuntime)
+AddIncludeWhatYouUse(JoynrWsRuntime)
 
-add_clang_tidy(JoynrWsRuntime)
+AddClangTidy(JoynrWsRuntime)
 
 target_link_libraries(
     JoynrWsRuntime
@@ -252,11 +252,11 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         ${JoynrDbusRuntime_SOURCES}
     )
 
-    add_clang_format(JoynrDbusRuntime)
+    AddClangFormat(JoynrDbusRuntime)
 
-    add_include_what_you_use(JoynrDbusRuntime)
+    AddIncludeWhatYouUse(JoynrDbusRuntime)
 
-    add_clang_tidy(JoynrDbusRuntime)
+    AddClangTidy(JoynrDbusRuntime)
 
     target_link_libraries(
         JoynrDbusRuntime
@@ -311,9 +311,9 @@ if(${BUILD_CLUSTER_CONTROLLER})
         ${cluster-controller_SOURCES}
     )
 
-    add_clang_format(cluster-controller)
+    AddClangFormat(cluster-controller)
 
-    add_clang_tidy(cluster-controller)
+    AddClangTidy(cluster-controller)
 
     if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         target_link_libraries(cluster-controller

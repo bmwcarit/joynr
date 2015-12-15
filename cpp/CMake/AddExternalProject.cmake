@@ -6,7 +6,7 @@ set_directory_properties(PROPERTIES EP_PREFIX ${CMAKE_BINARY_DIR}/ThirdParty)
 
 # wrapper function around ExternalProject_Add
 # it sets default arguments which are used for every external project
-function(add_external_project NAME)
+function(AddExternalProject NAME)
     set(INPUT_ARGS "${ARGV}")
     list(REMOVE_AT INPUT_ARGS 0)
     set(DEFAULT_EP_ARGS "")
@@ -40,6 +40,6 @@ function(add_external_project NAME)
     set(ALL_ARGS "${INPUT_ARGS}" "${DEFAULT_EP_ARGS}")
     ExternalProject_Add(${NAME} "${ALL_ARGS}")
 
-endfunction(add_external_project)
+endfunction(AddExternalProject)
 
 
