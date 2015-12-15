@@ -20,9 +20,6 @@
 #define PRETTYPRINT_H_
 
 #include <gtest/gtest.h>
-#include <QChar>
-#include <QByteArray>
-#include <QtCore/QUrl>
 #include <iostream>
 
 #include "joynr/JsonSerializer.h"
@@ -55,12 +52,6 @@ namespace system {
     void PrintTo(const joynr::system::WebSocketAddress& value, ::std::ostream* os);
 }
 }
-void PrintTo(const QString& value, ::std::ostream* os);
-void PrintTo(const QChar& value, ::std::ostream* os);
-void PrintTo(const QByteArray& value, ::std::ostream* os);
-void PrintTo(const QUrl& value, ::std::ostream* os);
-//void PrintTo(const QObject& value, ::std::ostream* os);
-//void PrintTo(const QVariant& value, ::std::ostream* os);
 void PrintTo(const joynr::RequestStatusCode& value, ::std::ostream* os);
 void PrintTo(const joynr::RequestStatus& value, ::std::ostream* os);
 void PrintTo(const joynr::JoynrMessage& value, ::std::ostream* os);
