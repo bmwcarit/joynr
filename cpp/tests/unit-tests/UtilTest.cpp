@@ -19,8 +19,6 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include "joynr/Util.h"
-#include <QString>
-#include <QByteArray>
 #include <vector>
 #include <tuple>
 #include <functional>
@@ -43,76 +41,67 @@ protected:
 
 TEST_F(UtilTest, splitIntoJsonObjects)
 {
-    QByteArray inputStream;
-    std::vector<QByteArray> result;
+    std::string inputStream;
+    std::vector<std::string> result;
 
-    inputStream = " not a valid Json ";
+    inputStream = R"( not a valid Json )";
     result = Util::splitIntoJsonObjects(inputStream);
     EXPECT_EQ(0, result.size());
 
-    inputStream = "{\"id\":34}";
+    inputStream = R"({"id":34})";
     result = Util::splitIntoJsonObjects(inputStream);
     EXPECT_EQ(1, result.size());
-    EXPECT_TRUE(QString::fromUtf8(result.at(0)) ==
-                  QString("{\"id\":34}") );
+    EXPECT_EQ(result.at(0), R"({"id":34})");
 
-    inputStream = "{\"message\":{one:two}}{\"id\":35}";
+    inputStream = R"({"message":{one:two}}{"id":35})";
     result = Util::splitIntoJsonObjects(inputStream);
     EXPECT_EQ(2, result.size());
-    EXPECT_TRUE(QString::fromUtf8(result.at(0)) ==
-                  QString("{\"message\":{one:two}}") );
-    EXPECT_TRUE(QString::fromUtf8(result.at(1)) ==
-                  QString("{\"id\":35}") );
+    EXPECT_EQ(result.at(0), R"({"message":{one:two}})");
+    EXPECT_EQ(result.at(1), R"({"id":35})");
 
     //payload may not contain { or } outside a string.
-    inputStream = "{\"id\":3{4}";
+    inputStream = R"({"id":3{4})";
     result = Util::splitIntoJsonObjects(inputStream);
     EXPECT_EQ(0, result.size());
 
     //  { within a string should be ok
-    inputStream = "{\"messa{ge\":{one:two}}{\"id\":35}";
+    inputStream = R"({"messa{ge":{one:two}}{"id":35})";
     result = Util::splitIntoJsonObjects(inputStream);
     EXPECT_EQ(2, result.size());
-    EXPECT_TRUE(QString::fromUtf8(result.at(0)) ==
-                  QString("{\"messa{ge\":{one:two}}") );
+    EXPECT_EQ(result.at(0), R"({"messa{ge":{one:two}})");
 
     //  } within a string should be ok
-    inputStream = "{\"messa}ge\":{one:two}}{\"id\":35}";
+    inputStream = R"({"messa}ge":{one:two}}{"id":35})";
     result = Util::splitIntoJsonObjects(inputStream);
     EXPECT_EQ(2, result.size());
-    EXPECT_TRUE(QString::fromUtf8(result.at(0)) ==
-                  QString("{\"messa}ge\":{one:two}}") );
+    EXPECT_EQ(result.at(0), R"({"messa}ge":{one:two}})");
 
     //  }{ within a string should be ok
-    inputStream = "{\"messa}{ge\":{one:two}}{\"id\":35}";
+    inputStream = R"({"messa}{ge":{one:two}}{"id":35})";
     result = Util::splitIntoJsonObjects(inputStream);
     EXPECT_EQ(2, result.size());
-    EXPECT_TRUE(QString::fromUtf8(result.at(0)) ==
-                  QString("{\"messa}{ge\":{one:two}}") );
+    EXPECT_EQ(result.at(0), R"({"messa}{ge":{one:two}})");
 
     //  {} within a string should be ok
-    inputStream = "{\"messa{}ge\":{one:two}}{\"id\":35}";
+    inputStream = R"({"messa{}ge":{one:two}}{"id":35})";
     result = Util::splitIntoJsonObjects(inputStream);
     EXPECT_EQ(2, result.size());
-    EXPECT_TRUE(QString::fromUtf8(result.at(0)) ==
-                  QString("{\"messa{}ge\":{one:two}}") );
+    EXPECT_EQ(result.at(0), R"({"messa{}ge":{one:two}})");
 
     //string may contain \"
-    inputStream = "{\"mes\\\"sa{ge\":{one:two}}{\"id\":35}";
+    inputStream = R"({"mes\"sa{ge":{one:two}}{"id":35})";
     //inputStream:{"mes\"sa{ge":{one:two}}{"id":35}
     result = Util::splitIntoJsonObjects(inputStream);
     EXPECT_EQ(2, result.size());
-    EXPECT_TRUE(QString::fromUtf8(result.at(0)) ==
-                  QString("{\"mes\\\"sa{ge\":{one:two}}") );
+    EXPECT_EQ(result.at(0), R"({"mes\"sa{ge":{one:two}})");
 
 
-    inputStream = "{\"mes\\\\\"sa{ge\":{one:two}}{\"id\":35}";
+    inputStream = R"({"mes\\"sa{ge":{one:two}}{"id":35})";
     // inputStream: {"mes\\"sa{ge":{one:two}}{"id":35}
     // / does not escape within JSON String, so the string should not be ended after mes\"
     result = Util::splitIntoJsonObjects(inputStream);
     EXPECT_EQ(2, result.size());
-    EXPECT_TRUE(QString::fromUtf8(result.at(0)) ==
-                  QString("{\"mes\\\\\"sa{ge\":{one:two}}"));
+    EXPECT_EQ(result.at(0), R"({"mes\\"sa{ge":{one:two}})");
 }
 
 TEST_F(UtilTest, convertVectorToVariantVector){

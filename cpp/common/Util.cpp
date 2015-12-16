@@ -18,8 +18,6 @@
  */
 #include "joynr/Util.h"
 
-#include <QtCore/QDebug>
-#include <QByteArray>
 #include <cstring>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -32,17 +30,17 @@ using namespace joynr_logging;
 
 Logger* Util::logger = Logging::getInstance()->getLogger("MSG", "Util");
 
-std::vector<QByteArray> Util::splitIntoJsonObjects(const QByteArray& jsonStream)
+std::vector<std::string> Util::splitIntoJsonObjects(const std::string& jsonStream)
 {
     // This code relies assumes jsonStream is a valid JSON string
-    std::vector<QByteArray> jsonObjects;
+    std::vector<std::string> jsonObjects;
     int parenthesisCount = 0;
     int currentObjectStart = -1;
     bool isInsideString = false;
     /*A string starts with an unescaped " and ends with an unescaped "
      * } or { within a string must be ignored.
     */
-    for (int i = 0; i < jsonStream.size(); i++) {
+    for (std::size_t i = 0; i < jsonStream.size(); i++) {
         if (jsonStream.at(i) == '"' && (i > 0) && jsonStream.at(i - 1) != '\\') {
             // only switch insideString if " is not escaped
             isInsideString = !isInsideString;
@@ -58,7 +56,8 @@ std::vector<QByteArray> Util::splitIntoJsonObjects(const QByteArray& jsonStream)
         }
         if (parenthesisCount == 0 && currentObjectStart >= 0) {
             // found end of object
-            jsonObjects.push_back(jsonStream.mid(currentObjectStart, i - currentObjectStart + 1));
+            jsonObjects.push_back(
+                    jsonStream.substr(currentObjectStart, i - currentObjectStart + 1));
 
             currentObjectStart = -1;
         }

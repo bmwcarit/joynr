@@ -185,9 +185,10 @@ void LongPollingMessageReceiver::run()
 
 void LongPollingMessageReceiver::processReceivedInput(const QByteArray& receivedInput)
 {
-    std::vector<QByteArray> jsonObjects = Util::splitIntoJsonObjects(receivedInput);
+    std::vector<std::string> jsonObjects =
+            Util::splitIntoJsonObjects(QString(receivedInput).toStdString());
     for (std::size_t i = 0; i < jsonObjects.size(); i++) {
-        processReceivedJsonObjects(QString(jsonObjects.at(i)).toStdString());
+        processReceivedJsonObjects(jsonObjects.at(i));
     }
 }
 

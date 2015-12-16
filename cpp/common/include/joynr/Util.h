@@ -22,7 +22,6 @@
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/joynrlogging.h"
 
-#include <QByteArray>
 #include <cassert>
 #include <cstddef>
 #include <tuple>
@@ -30,6 +29,8 @@
 #include <utility>
 #include <vector>
 #include <set>
+#include <algorithm>
+
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/Variant.h"
 
@@ -49,7 +50,7 @@ public:
       * Splits a byte array representation of multiple JSON objects into
       * a list of byte arrays, each containing a single JSON object.
       */
-    static std::vector<QByteArray> splitIntoJsonObjects(const QByteArray& jsonStream);
+    static std::vector<std::string> splitIntoJsonObjects(const std::string& jsonStream);
 
     static std::string attributeGetterFromName(const std::string& attributeName);
 

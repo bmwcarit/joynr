@@ -20,8 +20,6 @@
 #include "joynr/ParticipantIdStorage.h"
 #include "joynr/RequestStatus.h"
 
-#include <algorithm>
-
 namespace joynr
 {
 
