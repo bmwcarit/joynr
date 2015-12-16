@@ -1,24 +1,9 @@
 package io.joynr.messaging;
 
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
-
-import javax.inject.Named;
-
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.google.inject.AbstractModule;
-import com.google.inject.Provides;
-
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,9 +19,11 @@ import com.google.inject.Provides;
  * #L%
  */
 
-import com.google.inject.Singleton;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
-import io.joynr.messaging.http.operation.HttpClientProvider;
+import com.google.inject.AbstractModule;
+
 import joynr.infrastructure.ChannelUrlDirectoryProxy;
 
 public class MessagingTestModule extends AbstractModule {
@@ -52,27 +39,6 @@ public class MessagingTestModule extends AbstractModule {
     @Override
     protected void configure() {
         bind(MessagingSettings.class).to(ConfigurableMessagingSettings.class);
-        bind(MessageSender.class).to(HttpMessageSenderImpl.class);
-        // don't override like this. Override via properties passed to createJoynInjector
-        // bind(String.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_BOUNCE_PROXY_URL)).toInstance(bounceProxyUrl);
-
-        // binding global channelurl interface to local as well, to prevent channelurl comm.
-        // this leads to endless loops
-        // bind(ChannelUrlDirectoryClient.class).to(LocalChannelUrlDirectoryClientImpl.class);
         bind(ChannelUrlDirectoryProxy.class).toInstance(mockChannelUrlClient);
-        bind(CloseableHttpClient.class).toProvider(HttpClientProvider.class).in(Singleton.class);
-
-    }
-
-    @Provides
-    @Named(MessageScheduler.SCHEDULEDTHREADPOOL)
-    ScheduledExecutorService provideMessageSchedulerThreadPoolExecutor(@Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maximumParallelSends) {
-        ThreadFactory schedulerNamedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.MessageScheduler-scheduler-%d")
-                                                                              .build();
-        ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(maximumParallelSends,
-                                                                                schedulerNamedThreadFactory);
-        scheduler.setKeepAliveTime(100, TimeUnit.SECONDS);
-        scheduler.allowCoreThreadTimeOut(true);
-        return scheduler;
     }
 }

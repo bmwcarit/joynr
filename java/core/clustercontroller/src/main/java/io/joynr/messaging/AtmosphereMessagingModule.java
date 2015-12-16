@@ -1,11 +1,5 @@
 package io.joynr.messaging;
 
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.impl.client.CloseableHttpClient;
-
-import com.google.inject.AbstractModule;
-import com.google.inject.Singleton;
-
 /*
  * #%L
  * %%
@@ -25,20 +19,15 @@ import com.google.inject.Singleton;
  * #L%
  */
 
-import io.joynr.messaging.http.operation.ApacheHttpRequestFactory;
-import io.joynr.messaging.http.operation.HttpClientProvider;
-import io.joynr.messaging.http.operation.HttpDefaultRequestConfigProvider;
-import io.joynr.messaging.http.operation.HttpRequestFactory;
+import com.google.inject.AbstractModule;
+
 import io.joynr.messaging.http.operation.LongPollingMessageReceiver;
 
 public class AtmosphereMessagingModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(RequestConfig.class).toProvider(HttpDefaultRequestConfigProvider.class).in(Singleton.class);
-        bind(CloseableHttpClient.class).toProvider(HttpClientProvider.class).in(Singleton.class);
-        bind(MessageSender.class).to(HttpMessageSenderImpl.class);
+        install(new MessagingModule());
         bind(MessageReceiver.class).to(LongPollingMessageReceiver.class).asEagerSingleton();
-        bind(HttpRequestFactory.class).to(ApacheHttpRequestFactory.class);
     }
 }
