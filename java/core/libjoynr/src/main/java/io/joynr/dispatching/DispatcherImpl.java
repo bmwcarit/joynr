@@ -62,8 +62,6 @@ public class DispatcherImpl implements Dispatcher {
     private final MessageRouter messageRouter;
     private ObjectMapper objectMapper;
 
-    //private AccessController accessController;
-
     @Inject
     @Singleton
     // CHECKSTYLE:OFF
@@ -164,25 +162,19 @@ public class DispatcherImpl implements Dispatcher {
                 handle(reply);
             } else {
                 if (JoynrMessage.MESSAGE_TYPE_REQUEST.equals(type)) {
-                    // handle only if this message creator (userId) has permissions
-                    if (true) {
-                        final Request request = objectMapper.readValue(message.getPayload(), Request.class);
-                        logger.debug("Parsed request from message payload :" + message.getPayload());
-                        handle(request, message.getFrom(), message.getTo(), expiryDate);
-                    }
+                    final Request request = objectMapper.readValue(message.getPayload(), Request.class);
+                    logger.debug("Parsed request from message payload :" + message.getPayload());
+                    handle(request, message.getFrom(), message.getTo(), expiryDate);
                 } else if (JoynrMessage.MESSAGE_TYPE_ONE_WAY.equals(type)) {
                     OneWay oneWayRequest = objectMapper.readValue(message.getPayload(), OneWay.class);
                     logger.debug("Parsed one way request from message payload :" + message.getPayload());
                     handle(oneWayRequest, message.getTo(), expiryDate);
                 } else if (JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST.equals(type)
                         || JoynrMessage.MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST.equals(type)) {
-                    // handle only if this message creator (userId) has permissions
-                    if (true) {
-                        SubscriptionRequest subscriptionRequest = objectMapper.readValue(message.getPayload(),
-                                                                                         SubscriptionRequest.class);
-                        logger.debug("Parsed subscription request from message payload :" + message.getPayload());
-                        handle(subscriptionRequest, message.getFrom(), message.getTo());
-                    }
+                    SubscriptionRequest subscriptionRequest = objectMapper.readValue(message.getPayload(),
+                                                                                     SubscriptionRequest.class);
+                    logger.debug("Parsed subscription request from message payload :" + message.getPayload());
+                    handle(subscriptionRequest, message.getFrom(), message.getTo());
                 } else if (JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_STOP.equals(type)) {
                     SubscriptionStop subscriptionStop = objectMapper.readValue(message.getPayload(),
                                                                                SubscriptionStop.class);
