@@ -279,7 +279,7 @@ std::string MessagingSettings::getBounceProxyUrlString() const
 
 void MessagingSettings::setBounceProxyUrl(const BounceProxyUrl& bounceProxyUrl)
 {
-    std::string url = bounceProxyUrl.getBounceProxyBaseUrl().toString().toStdString();
+    std::string url = bounceProxyUrl.getBounceProxyBaseUrl().toString();
     settings.set(SETTING_BOUNCE_PROXY_URL(), url);
 }
 

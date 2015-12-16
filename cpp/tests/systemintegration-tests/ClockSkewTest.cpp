@@ -26,8 +26,8 @@
 
 #include <chrono>
 #include <gtest/gtest.h>
-#include <QString>
 #include <curl/curl.h>
+#include <regex>
 
 using namespace joynr;
 using namespace joynr_logging;
@@ -90,11 +90,10 @@ TEST_F(ClockSkewTest, DISABLED_checkClockSkew) {
     Logger* logger = Logging::getInstance()->getLogger("TEST", "ClockSkewTest");
 
     // Get the location of the bounce proxy
-    QUrl bounceurl   = messagingSettings->getBounceProxyUrl().getTimeCheckUrl();
-	ASSERT_TRUE(bounceurl.isValid());
-	QString urlString = bounceurl.toString();
-    QByteArray urlByteArray = urlString.toLatin1();
-    const char *url  = urlByteArray.data();
+    Url bounceurl = messagingSettings->getBounceProxyUrl().getTimeCheckUrl();
+    ASSERT_TRUE(bounceurl.isValid());
+    std::string urlString = bounceurl.toString();
+    const char *url  = urlString.c_str();
 
     // Use libcurl to get the HTTP date from the bounce proxy server
     CURL *curl = curl_easy_init();

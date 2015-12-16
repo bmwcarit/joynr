@@ -42,9 +42,11 @@ public:
         validTestData.push_back("wss://localhost/some/path");
         expected.push_back(Url("wss","localhost",443,"/some/path"));
         validTestData.push_back("http://bounceproxy.com/script?query");
-        expected.push_back(Url("http","bounceproxy.com",80,"/script"));
+        expected.push_back(Url("http","","","bounceproxy.com",80,"/script","query",""));
         validTestData.push_back("https://bounceproxy.com/script#fragment");
-        expected.push_back(Url("https","bounceproxy.com",443,"/script"));
+        expected.push_back(Url("https","","","bounceproxy.com",443,"/script","","fragment"));
+        validTestData.push_back("https://bounceproxy.com/script?query=someQuery#fragment");
+        expected.push_back(Url("https","","","bounceproxy.com",443,"/script","query=someQuery","fragment"));
     }
 
 protected:
@@ -59,7 +61,6 @@ TEST_F(UrlTest, parseValid)
 
         std::string urlString = validTestData[i];
         Url expectedResult = expected[i];
-
         Url url{urlString};
         ASSERT_TRUE(url.isValid());
 

@@ -87,8 +87,7 @@ void LongPollingMessageReceiver::stop()
 void LongPollingMessageReceiver::run()
 {
     checkServerTime();
-    std::string createChannelUrl =
-            bounceProxyUrl.getCreateChannelUrl(channelId).toString().toStdString();
+    std::string createChannelUrl = bounceProxyUrl.getCreateChannelUrl(channelId).toString();
     LOG_INFO(logger, FormatString("Running lpmr with channelId %1").arg(channelId).str());
     std::shared_ptr<IHttpPostBuilder> createChannelRequestBuilder(
             HttpNetworking::getInstance()->createHttpPostBuilder(createChannelUrl));
@@ -232,7 +231,7 @@ void LongPollingMessageReceiver::processReceivedJsonObjects(const std::string& j
 
 void LongPollingMessageReceiver::checkServerTime()
 {
-    std::string timeCheckUrl = bounceProxyUrl.getTimeCheckUrl().toString().toStdString();
+    std::string timeCheckUrl = bounceProxyUrl.getTimeCheckUrl().toString();
 
     std::shared_ptr<IHttpGetBuilder> timeCheckRequestBuilder(
             HttpNetworking::getInstance()->createHttpGetBuilder(timeCheckUrl));

@@ -16,7 +16,6 @@
  * limitations under the License.
  * #L%
  */
-#include <QtCore/QUrlQuery>
 #include "joynr/BounceProxyUrl.h"
 #include <boost/algorithm/string/predicate.hpp>
 
@@ -66,7 +65,7 @@ BounceProxyUrl::BounceProxyUrl(const std::string& bounceProxyBaseUrl)
     std::string channelsBaseUrl(this->bounceProxyBaseUrl);
     channelsBaseUrl.append(CHANNEL_PATH_SUFFIX());
     channelsBaseUrl.append(URL_PATH_SEPARATOR());
-    this->bounceProxyChannelsBaseUrl = QUrl(QString::fromStdString(channelsBaseUrl));
+    this->bounceProxyChannelsBaseUrl = Url(channelsBaseUrl);
 }
 
 BounceProxyUrl::BounceProxyUrl(const BounceProxyUrl& other)
@@ -86,20 +85,20 @@ bool BounceProxyUrl::operator==(const BounceProxyUrl& bounceProxyUrl) const
     return bounceProxyChannelsBaseUrl == bounceProxyUrl.getBounceProxyBaseUrl();
 }
 
-QUrl BounceProxyUrl::getCreateChannelUrl(const std::string& mcid) const
+Url BounceProxyUrl::getCreateChannelUrl(const std::string& mcid) const
 {
-    QUrl createChannelUrl(bounceProxyChannelsBaseUrl);
-    QUrlQuery query;
-    query.addQueryItem(
-            QString::fromStdString(CREATE_CHANNEL_QUERY_ITEM()), QString::fromStdString(mcid));
+    Url createChannelUrl(bounceProxyChannelsBaseUrl);
+    UrlQuery query;
+    query.addQueryItem(CREATE_CHANNEL_QUERY_ITEM(), mcid);
     createChannelUrl.setQuery(query);
+
     return createChannelUrl;
 }
 
-QUrl BounceProxyUrl::getSendUrl(const std::string& channelId) const
+Url BounceProxyUrl::getSendUrl(const std::string& channelId) const
 {
-    QUrl sendUrl(bounceProxyChannelsBaseUrl);
-    std::string path = sendUrl.path().toStdString();
+    Url sendUrl(bounceProxyChannelsBaseUrl);
+    std::string path = sendUrl.getPath();
     using boost::algorithm::ends_with;
     if (!ends_with(path, URL_PATH_SEPARATOR())) {
         path.append(URL_PATH_SEPARATOR());
@@ -108,39 +107,39 @@ QUrl BounceProxyUrl::getSendUrl(const std::string& channelId) const
     path.append(URL_PATH_SEPARATOR());
     path.append(SEND_MESSAGE_PATH_APPENDIX());
     path.append(URL_PATH_SEPARATOR());
-    sendUrl.setPath(QString::fromStdString(path));
+    sendUrl.setPath(path);
     return sendUrl;
 }
 
-QUrl BounceProxyUrl::getBounceProxyBaseUrl() const
+Url BounceProxyUrl::getBounceProxyBaseUrl() const
 {
-    QUrl sendUrl(bounceProxyChannelsBaseUrl);
-    std::string path = sendUrl.path().toStdString();
+    Url sendUrl(bounceProxyChannelsBaseUrl);
+    std::string path = sendUrl.getPath();
     using boost::algorithm::ends_with;
     if (!ends_with(path, URL_PATH_SEPARATOR())) {
         path.append(URL_PATH_SEPARATOR());
     }
-    sendUrl.setPath(QString::fromStdString(path));
+    sendUrl.setPath(path);
     return sendUrl;
 }
 
-QUrl BounceProxyUrl::getDeleteChannelUrl(const std::string& mcid) const
+Url BounceProxyUrl::getDeleteChannelUrl(const std::string& mcid) const
 {
-    QUrl sendUrl(bounceProxyChannelsBaseUrl);
-    std::string path = sendUrl.path().toStdString();
+    Url sendUrl(bounceProxyChannelsBaseUrl);
+    std::string path = sendUrl.getPath();
     path.append(mcid);
     path.append(URL_PATH_SEPARATOR());
-    sendUrl.setPath(QString::fromStdString(path));
+    sendUrl.setPath(path);
     return sendUrl;
 }
 
-QUrl BounceProxyUrl::getTimeCheckUrl() const
+Url BounceProxyUrl::getTimeCheckUrl() const
 {
-    QUrl timeCheckUrl(QString::fromStdString(bounceProxyBaseUrl));
-    std::string path = timeCheckUrl.path().toStdString();
+    Url timeCheckUrl(bounceProxyBaseUrl);
+    std::string path = timeCheckUrl.getPath();
     path.append(TIMECHECK_PATH_SUFFIX());
     path.append(URL_PATH_SEPARATOR());
-    timeCheckUrl.setPath(QString::fromStdString(path));
+    timeCheckUrl.setPath(path);
     return timeCheckUrl;
 }
 

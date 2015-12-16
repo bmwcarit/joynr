@@ -200,7 +200,7 @@ std::string ChannelUrlSelector::constructDefaultUrl(const std::string& channelId
             "constructDefaultUrl ... using default Url inferred from channelId and BounceProxyUrl");
     if (!useDefaultUrl)
         assert(false);
-    std::string url = bounceProxyUrl.getBounceProxyBaseUrl().toString().toStdString() + channelId;
+    std::string url = bounceProxyUrl.getBounceProxyBaseUrl().toString() + channelId;
     types::ChannelUrlInformation urlInformation;
     std::vector<std::string> urls;
     urls.push_back(url);

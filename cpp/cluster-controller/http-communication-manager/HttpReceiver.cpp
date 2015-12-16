@@ -154,10 +154,8 @@ bool HttpReceiver::tryToDeleteChannel()
     // If more than one attempt is needed, create a deleteChannelRunnable and move this to
     // messageSender.
     // TODO channelUrl is known only to the LongPlooMessageReceiver!
-    std::string deleteChannelUrl = settings.getBounceProxyUrl()
-                                           .getDeleteChannelUrl(getReceiveChannelId())
-                                           .toString()
-                                           .toStdString();
+    std::string deleteChannelUrl =
+            settings.getBounceProxyUrl().getDeleteChannelUrl(getReceiveChannelId()).toString();
     std::shared_ptr<IHttpDeleteBuilder> deleteChannelRequestBuilder(
             HttpNetworking::getInstance()->createHttpDeleteBuilder(deleteChannelUrl));
     std::shared_ptr<HttpRequest> deleteChannelRequest(
