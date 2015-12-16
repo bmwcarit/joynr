@@ -766,7 +766,7 @@ void PublicationManager::removeBroadcastPublication(const std::string& subscript
     }
 
     std::vector<Variant> subscriptionList(
-            subscriptionMapToVectorCopy(subscriptionId2SubscriptionRequest));
+            subscriptionMapToVectorCopy(subscriptionId2BroadcastSubscriptionRequest));
 
     if (publication != nullptr && request != nullptr) {
         std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
