@@ -47,6 +47,15 @@ bool InterfaceAddress::operator==(const InterfaceAddress& interfaceAddress) cons
             (interfaceName == interfaceAddress.interfaceName));
 }
 
+bool InterfaceAddress::operator<(const InterfaceAddress& interfaceAddress) const
+{
+    if (domain == interfaceAddress.domain) {
+        return interfaceName > interfaceAddress.getInterface();
+    }
+
+    return domain < interfaceAddress.getDomain();
+}
+
 uint qHash(const InterfaceAddress& interfaceAddress)
 {
     return qHash(QString::fromStdString(interfaceAddress.getDomain())) * 31 +

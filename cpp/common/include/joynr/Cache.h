@@ -46,7 +46,8 @@ public:
      * @brief Cache with initialy customized cacheCapacity
      * @param cacheCapacity
      */
-    Cache(uint32_t cacheCapacity) : cacheMap(), cacheCapacity(cacheCapacity)
+    Cache(uint32_t cacheCapacity)
+            : cacheMap(), cacheCapacity(static_cast<std::size_t>(cacheCapacity))
     {
     }
     /**
@@ -79,10 +80,11 @@ public:
      */
     void setCacheCapacity(uint32_t cacheCapacity)
     {
-        if (cacheCapacity < cacheMap.size()) {
-            removeElementsFromTheBeginning(cacheMap.size() - cacheCapacity);
+        std::size_t capacity = static_cast<std::size_t>(cacheCapacity);
+        if (capacity < cacheMap.size()) {
+            removeElementsFromTheBeginning(cacheMap.size() - capacity);
         }
-        this->cacheCapacity = cacheCapacity;
+        this->cacheCapacity = capacity;
     }
     /**
      * @brief insert value under given key. If cache contains value with same key
@@ -97,9 +99,13 @@ public:
             removeElementsFromTheBeginning(1);
             assert(cacheMap.size() == cacheCapacity - 1);
         }
+        std::size_t sizeOld = cacheMap.size();
         cacheMap.insert(std::make_pair(key, std::unique_ptr<Value>(value)));
-        assert(cacheMap.size() != 0);
-        assert(cacheMap.size() <= cacheCapacity);
+        std::size_t sizeNew = cacheMap.size();
+        assert(sizeOld != sizeNew);
+        assert(sizeNew != 0);
+        assert(sizeNew <= cacheCapacity);
+        assert(cacheMap.find(key) != cacheMap.end());
     }
     /**
      * @brief clear removes and destroys all values
@@ -146,7 +152,7 @@ public:
 
 private:
     std::map<Key, std::unique_ptr<Value>> cacheMap;
-    uint32_t cacheCapacity;
+    std::size_t cacheCapacity;
 
     /**
      * @brief removeElementsFromTheBeginning removes given number of elements from the beginning

@@ -20,8 +20,8 @@
 #define TYPEDCLIENTMULTICACHE_H
 
 #include "joynr/CachedValue.h"
+#include "joynr/Cache.h"
 
-#include <QCache>
 #include <vector>
 #include <QVector>
 #include <mutex>
@@ -99,7 +99,7 @@ private:
      * Returns time since activation in ms (elapsed())
      */
     int64_t elapsed(int64_t entryTime);
-    QCache<Key, std::vector<CachedValue<T>>> cache;
+    Cache<Key, std::vector<CachedValue<T>>> cache;
     std::mutex mutex;
 };
 
@@ -107,7 +107,7 @@ template <class Key, class T>
 TypedClientMultiCache<Key, T>::TypedClientMultiCache(int maxCost)
         : cache(), mutex()
 {
-    cache.setMaxCost(maxCost);
+    cache.setCacheCapacity(maxCost);
 }
 
 template <class Key, class T>
@@ -199,7 +199,7 @@ template <class Key, class T>
 void TypedClientMultiCache<Key, T>::cleanup(int64_t maxAcceptedAgeInMs)
 {
     std::unique_lock<std::mutex> lock(mutex);
-    std::vector<Key> keyset = cache.keys().toVector().toStdVector();
+    std::vector<Key> keyset = cache.keys();
     std::vector<CachedValue<T>>* entries;
     std::vector<int> attributesToBeRemoved;
     std::vector<Key> listsToBeRemoved;

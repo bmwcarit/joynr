@@ -38,6 +38,7 @@ public:
     const std::string& getInterface() const;
 
     bool operator==(const InterfaceAddress& interfaceAddress) const;
+    bool operator<(const InterfaceAddress& interfaceAddress) const;
 
 private:
     std::string domain;

@@ -519,11 +519,15 @@ void LocalCapabilitiesDirectory::insertInCache(const joynr::types::DiscoveryEntr
         for (CapabilityEntry oldEntry : entryList) {
             if (oldEntry == newEntry) {
                 foundMatch = true;
+                break;
             }
         }
     }
 
-    insertInCache(entry, !foundMatch && localCache, globalCache);
+    // after logic about duplicate entries stated in comment above
+    // TypedClientMultiCache updates the age as stated in comment above
+    bool allowInsertInLocalCache = !foundMatch && localCache;
+    insertInCache(entry, allowInsertInLocalCache, globalCache);
 }
 
 std::vector<CapabilityEntry> LocalCapabilitiesDirectory::searchCache(
