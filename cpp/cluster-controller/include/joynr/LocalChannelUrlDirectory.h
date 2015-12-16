@@ -28,6 +28,9 @@
 #include <string>
 #include <memory>
 
+#include <QMap>
+#include <QString>
+
 namespace joynr
 {
 

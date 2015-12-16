@@ -21,8 +21,6 @@
 #include "joynr/IAttributeListener.h"
 #include "joynr/IBroadcastListener.h"
 
-#include <QVariant>
-
 namespace joynr
 {
 
@@ -36,7 +34,7 @@ AbstractJoynrProvider::~AbstractJoynrProvider()
     // Delete all attribute listeners
     for (auto& mapEntry : attributeListeners) {
         const std::vector<IAttributeListener*>& listeners(mapEntry.second);
-        foreach (IAttributeListener* listener, listeners) {
+        for (IAttributeListener* listener : listeners) {
             delete listener;
         }
     }

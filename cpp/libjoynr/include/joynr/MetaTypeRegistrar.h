@@ -25,7 +25,6 @@
 #include "joynr/ReplyInterpreter.h"
 #include <mutex>
 #include <unordered_map>
-#include <QMetaType>
 
 #include "joynr/JoynrTypeId.h"
 

@@ -28,6 +28,8 @@
 #include <stdint.h>
 #include <memory>
 
+#include <QMap>
+
 // Forward declare test classes
 class ChannelUrlSelectorTest_punishTest_Test;
 class ChannelUrlSelectorTest_updateTest_Test;

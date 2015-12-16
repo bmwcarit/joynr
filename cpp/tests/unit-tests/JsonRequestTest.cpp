@@ -16,8 +16,6 @@
  * limitations under the License.
  * #L%
  */
-#include <QVariant>
-#include <QVariantList>
 #include <vector>
 
 
@@ -122,7 +120,6 @@ protected:
     std::string valueOfArg3;
 };
 
-Q_DECLARE_METATYPE(MockArgument)
 
 typedef JsonRequestTest JsonRequestDeathTest;
 

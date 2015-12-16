@@ -35,7 +35,6 @@
 #include "joynr/Runnable.h"
 #include "joynr/Semaphore.h"
 
-#include <QPair>
 #include <unordered_set>
 #include <mutex>
 #include <string>

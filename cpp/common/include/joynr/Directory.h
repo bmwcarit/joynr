@@ -29,7 +29,6 @@
 #include <string>
 #include <functional>
 
-#include <QtGlobal>
 #include <mutex>
 #include <unordered_map>
 

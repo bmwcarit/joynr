@@ -22,7 +22,6 @@
 #include <functional>
 #include <string>
 #include "joynr/exceptions/JoynrException.h"
-#include <QtCore>
 
 namespace joynr
 {

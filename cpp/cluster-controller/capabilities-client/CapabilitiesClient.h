@@ -34,7 +34,7 @@
 #include <string>
 #include <memory>
 #include <vector>
-
+#include <QObject>
 namespace joynr
 {
 

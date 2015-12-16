@@ -26,7 +26,6 @@
 #include "joynr/ContentWithDecayTime.h"
 
 #include <mutex>
-#include <QRunnable>
 #include <string>
 #include <map>
 #include <cstdint>

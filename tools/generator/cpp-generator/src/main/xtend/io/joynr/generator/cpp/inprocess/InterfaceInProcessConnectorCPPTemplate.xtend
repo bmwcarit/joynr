@@ -46,6 +46,7 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 «var interfaceName = serviceInterface.joynrName»
 «warning()»
 #include <functional>
+#include <tuple>
 
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»InProcessConnector.h"
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestCaller.h"
@@ -249,8 +250,8 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 				joynr::SubscriptionRequest& subscriptionRequest)
 		{
 			«IF isEnum(attribute.type)»
-				Q_UNUSED(subscriptionListener);
-				Q_UNUSED(subscriptionQos);
+				std::ignore = subscriptionListener;
+				std::ignore = subscriptionQos;
 				// TODO support enum return values in C++ client
 				LOG_FATAL(logger, "enum return values are currently not supported in C++ client (attribute name: «interfaceName».«attributeName»)");
 				assert(false);
@@ -296,7 +297,7 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 				std::string& subscriptionId
 		) {
 			«IF isEnum(attribute.type)»
-				Q_UNUSED(subscriptionId);
+				std::ignore = subscriptionId;
 				// TODO support enum return values in C++ client
 				LOG_FATAL(logger, "enum return values are currently not supported in C++ client (attribute name: «interfaceName».«attributeName»)");
 				assert(false);

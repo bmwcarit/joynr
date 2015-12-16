@@ -22,7 +22,7 @@
 #include "joynr/DispatcherUtils.h"
 #include "joynr/TypeUtil.h"
 #include <boost/algorithm/string/predicate.hpp>
-
+#include <QUrl>
 #include <cmath>
 #include <memory>
 

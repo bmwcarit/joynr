@@ -22,7 +22,6 @@
 #include "joynr/IReplyCaller.h"
 
 #include <typeinfo>
-#include <QMetaType>
 #include "joynr/RequestStatus.h"
 #include <functional>
 #include "joynr/Util.h"

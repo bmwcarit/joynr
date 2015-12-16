@@ -20,7 +20,6 @@
 #define IREPLYINTERPRETER_H
 
 #include "joynr/IReplyCaller.h"
-#include <QVariant>
 
 #include <memory>
 

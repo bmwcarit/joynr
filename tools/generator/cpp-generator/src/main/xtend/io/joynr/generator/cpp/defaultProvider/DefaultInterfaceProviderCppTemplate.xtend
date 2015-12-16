@@ -49,6 +49,7 @@ class DefaultInterfaceProviderCppTemplate implements InterfaceTemplate{
 
 #include <chrono>
 #include <cstdint>
+#include <tuple>
 
 #include "joynr/RequestStatus.h"
 #include "joynr/joynrlogging.h"
@@ -143,7 +144,7 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider()
 	) {
 		(void) onError;
 		«FOR inputParameter: getInputParameters(method)»
-			Q_UNUSED(«inputParameter.joynrName»);
+			std::ignore = «inputParameter.joynrName»;
 		«ENDFOR»
 		«FOR argument : method.outputParameters»
 			«val outputParamType = argument.typeName»

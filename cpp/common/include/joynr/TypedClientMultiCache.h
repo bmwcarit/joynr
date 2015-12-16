@@ -23,7 +23,6 @@
 #include "joynr/Cache.h"
 
 #include <vector>
-#include <QVector>
 #include <mutex>
 #include <chrono>
 #include <stdint.h>

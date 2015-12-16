@@ -20,8 +20,8 @@
 #define INTERFACEADDRESS_H_
 
 #include "joynr/JoynrCommonExport.h"
-#include <QHash>
 #include <string>
+#include <cstdint>
 
 namespace joynr
 {
@@ -45,7 +45,7 @@ private:
     std::string interfaceName;
 };
 
-JOYNRCOMMON_EXPORT uint qHash(const InterfaceAddress& interfaceAddress);
+JOYNRCOMMON_EXPORT uint32_t qHash(const InterfaceAddress& interfaceAddress);
 
 } // namespace joynr
 #endif // INTERFACEADDRESS_H_

@@ -18,7 +18,6 @@
  */
 #include <gtest/gtest.h>
 #include <PrettyPrint.h>
-#include <QVariant>
 #include <limits>
 #include "joynr/Util.h"
 #include "joynr/types/TestTypes/TEnum.h"

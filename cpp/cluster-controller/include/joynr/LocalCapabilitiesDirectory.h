@@ -47,9 +47,10 @@
 #include <vector>
 
 #include <memory>
-#include <QVariantMap>
 #include <mutex>
 #include <string>
+
+#include <QMap>
 
 namespace joynr
 {

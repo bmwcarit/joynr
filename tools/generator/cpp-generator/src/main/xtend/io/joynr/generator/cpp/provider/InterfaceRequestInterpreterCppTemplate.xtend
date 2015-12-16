@@ -43,6 +43,7 @@ class InterfaceRequestInterpreterCppTemplate implements InterfaceTemplate{
 «val interfaceName = serviceInterface.joynrName»
 «warning()»
 #include <functional>
+#include <tuple>
 
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestInterpreter.h"
 
@@ -76,8 +77,8 @@ void «interfaceName»RequestInterpreter::execute(
 		std::function<void (std::vector<Variant>&&)> onSuccess,
 		std::function<void (const exceptions::JoynrException& exception)> onError
 ) {
-	Q_UNUSED(paramValues);//if all methods of the interface are empty, the paramValues would not be used and give a warning.
-	Q_UNUSED(paramTypes);//if all methods of the interface are empty, the paramTypes would not be used and give a warning.
+	std::ignore = paramValues;//if all methods of the interface are empty, the paramValues would not be used and give a warning.
+	std::ignore = paramTypes;//if all methods of the interface are empty, the paramTypes would not be used and give a warning.
 	// cast generic RequestCaller to «interfaceName»Requestcaller
 	std::shared_ptr<«interfaceName»RequestCaller> «requestCallerName» =
 			std::dynamic_pointer_cast<«interfaceName»RequestCaller>(requestCaller);

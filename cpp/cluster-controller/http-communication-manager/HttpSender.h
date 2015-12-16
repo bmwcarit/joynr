@@ -31,8 +31,6 @@
 #include "joynr/Runnable.h"
 
 #include <string>
-#include <QByteArray>
-
 #include <memory>
 
 namespace joynr

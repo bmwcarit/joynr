@@ -255,10 +255,6 @@ private:
                     queuedSubscriptions);
 
     template <class RequestInformationType>
-    std::vector<QVariant> subscriptionMapToListCopy(
-            const std::map<std::string, std::shared_ptr<RequestInformationType>>& map);
-
-    template <class RequestInformationType>
     std::vector<Variant> subscriptionMapToVectorCopy(
             const ThreadSafeMap<std::string, std::shared_ptr<RequestInformationType>>& map);
 

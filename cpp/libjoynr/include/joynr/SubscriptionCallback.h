@@ -20,7 +20,6 @@
 #define SUBSCRIPTIONCALLBACK_H
 #include "joynr/PrivateCopyAssign.h"
 #include <memory>
-#include <QMetaType>
 
 #include "joynr/ISubscriptionCallback.h"
 #include "joynr/ISubscriptionListener.h"

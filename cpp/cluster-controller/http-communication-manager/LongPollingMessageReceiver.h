@@ -33,6 +33,8 @@
 #include <memory>
 #include <string>
 
+#include <QByteArray>
+
 namespace joynr
 {
 

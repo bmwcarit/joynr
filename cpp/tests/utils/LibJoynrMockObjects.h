@@ -146,8 +146,7 @@ public:
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError)
     {
         int32_t result = 0;
-        int32_t j;
-        foreach ( j, ints) {
+        for (int32_t j : ints) {
             result += j;
         }
         onSuccess(result);

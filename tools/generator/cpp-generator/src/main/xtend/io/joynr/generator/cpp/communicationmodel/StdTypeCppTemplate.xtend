@@ -49,8 +49,6 @@ class StdTypeCppTemplate implements CompoundTypeTemplate{
 
 #include <boost/functional/hash.hpp>
 
-#include <QMetaEnum>
-
 #include "«type.includeOf»"
 
 #include "joynr/Reply.h"

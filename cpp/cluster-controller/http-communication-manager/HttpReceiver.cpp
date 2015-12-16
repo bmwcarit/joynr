@@ -26,9 +26,6 @@
 #include "joynr/Future.h"
 #include "joynr/TypeUtil.h"
 
-#include <QtCore>
-#include <QByteArray>
-
 namespace joynr
 {
 

@@ -20,8 +20,6 @@
 #include "libjoynr/subscription/SubscriptionBroadcastListener.h"
 #include "joynr/PublicationManager.h"
 
-#include <QVariant>
-
 namespace joynr
 {
 

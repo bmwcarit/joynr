@@ -26,7 +26,6 @@
 #include "joynr/IBroadcastFilter.h"
 #include "joynr/ReadWriteLock.h"
 
-#include <QVariant>
 #include <string>
 #include <memory>
 #include <map>

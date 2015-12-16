@@ -24,7 +24,6 @@
 #include "joynr/JoynrMessage.h"
 
 #include <string>
-#include <QDateTime>
 #include <memory>
 
 namespace joynr

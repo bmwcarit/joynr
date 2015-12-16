@@ -585,22 +585,6 @@ void PublicationManager::loadSavedBroadcastSubscriptionRequestsMap()
             queuedBroadcastSubscriptionRequests);
 }
 
-// Returns a list containing copies of the values of map
-template <class RequestInformationType>
-std::vector<QVariant> PublicationManager::subscriptionMapToListCopy(
-        const std::map<std::string, std::shared_ptr<RequestInformationType>>& map)
-{
-    std::vector<QVariant> subscriptionList;
-    {
-        for (std::shared_ptr<RequestInformationType> requestInfo : map) {
-            if (!isSubscriptionExpired(requestInfo->getSubscriptionQosPtr())) {
-                subscriptionList.push_back(QVariant::fromValue(*requestInfo));
-            }
-        }
-    }
-    return subscriptionList;
-}
-
 template <class RequestInformationType>
 std::vector<Variant> PublicationManager::subscriptionMapToVectorCopy(
         const ThreadSafeMap<std::string, std::shared_ptr<RequestInformationType>>& map)

@@ -18,6 +18,7 @@
  */
 #include "common/InterfaceAddress.h"
 #include <QString>
+#include <QHash>
 
 namespace joynr
 {
@@ -56,7 +57,7 @@ bool InterfaceAddress::operator<(const InterfaceAddress& interfaceAddress) const
     return domain < interfaceAddress.getDomain();
 }
 
-uint qHash(const InterfaceAddress& interfaceAddress)
+uint32_t qHash(const InterfaceAddress& interfaceAddress)
 {
     return qHash(QString::fromStdString(interfaceAddress.getDomain())) * 31 +
            qHash(QString::fromStdString(interfaceAddress.getInterface()));
