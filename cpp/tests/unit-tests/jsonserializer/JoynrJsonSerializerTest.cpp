@@ -125,7 +125,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerKnownType)
 
 TEST_F(JoynrJsonSerializerTest, exampleDeserializerUnknownType)
 {
-    std::string json(R"({"_typeName": "joynr.SomeOtherType","a": 123})");
+    std::string json(R"({"_typeName":"joynr.SomeOtherType","a": 123})");
     JsonTokenizer tokenizer(json);
 
     if (tokenizer.hasNextObject()) {
@@ -137,7 +137,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerUnknownType)
 
 TEST_F(JoynrJsonSerializerTest, exampleDeserializerValue)
 {
-    std::string json(R"([{"_typeName": "joynr.SomeOtherType","a": 123},{"_typeName": "joynr.SomeOtherType","a": 456}])"); // raw string literal
+    std::string json(R"([{"_typeName":"joynr.SomeOtherType","a": 123},{"_typeName":"joynr.SomeOtherType","a": 456}])"); // raw string literal
     LOG_TRACE(logger, FormatString("json: %1").arg(json).str());
     std::vector<SomeOtherType*> vector = JsonSerializer::deserializeVector<SomeOtherType>(json);
     EXPECT_EQ(vector.size(), 2);

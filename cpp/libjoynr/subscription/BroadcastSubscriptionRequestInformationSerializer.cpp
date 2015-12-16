@@ -65,7 +65,7 @@ void ClassSerializer<BroadcastSubscriptionRequestInformation>::serialize(
         std::ostream& stream)
 {
     stream << R"({)";
-    stream << R"("_typeName": ")"
+    stream << R"("_typeName":")"
            << JoynrTypeId<BroadcastSubscriptionRequestInformation>::getTypeName() << R"(",)";
     stream << R"("subscriptionId": ")" << info.getSubscriptionId() << R"(",)";
     stream << R"("subscribeToName": ")" << info.getSubscribeToName() << R"(",)";

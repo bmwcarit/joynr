@@ -61,7 +61,7 @@ template <>
 void ClassSerializer<JoynrMessage>::serialize(const JoynrMessage& msg, std::ostream& stream)
 {
     stream << R"({)";
-    stream << R"("_typeName": ")" << JoynrTypeId<JoynrMessage>::getTypeName() << R"(",)";
+    stream << R"("_typeName":")" << JoynrTypeId<JoynrMessage>::getTypeName() << R"(",)";
     stream << R"("header": )";
     MapSerializer::serialize<std::string, std::string>(msg.getHeader(), stream);
     stream << R"(,"payload": )";

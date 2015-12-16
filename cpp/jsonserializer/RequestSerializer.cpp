@@ -57,7 +57,7 @@ template <>
 void ClassSerializer<Request>::serialize(const Request& request, std::ostream& stream)
 {
     stream << R"({)";
-    stream << R"("_typeName": ")" << JoynrTypeId<Request>::getTypeName() << R"(",)";
+    stream << R"("_typeName":")" << JoynrTypeId<Request>::getTypeName() << R"(",)";
     stream << R"("methodName": ")" << request.getMethodName() << R"(",)";
     stream << R"("paramDatatypes": )";
     ArraySerializer::serialize<std::string>(request.getParamDatatypes(), stream);

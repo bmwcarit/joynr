@@ -50,7 +50,7 @@ template <>
 void ClassSerializer<Reply>::serialize(const Reply& reply, std::ostream& stream)
 {
     stream << R"({)";
-    stream << R"("_typeName": ")" << JoynrTypeId<Reply>::getTypeName() << R"(",)";
+    stream << R"("_typeName":")" << JoynrTypeId<Reply>::getTypeName() << R"(",)";
     stream << R"("requestReplyId": ")" << reply.getRequestReplyId() << R"(",)";
     if (!reply.getError().isEmpty()) {
         stream << R"("error": )";

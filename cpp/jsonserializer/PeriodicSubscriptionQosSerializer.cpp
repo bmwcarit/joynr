@@ -51,7 +51,7 @@ void ClassSerializer<PeriodicSubscriptionQos>::serialize(
         std::ostream& stream)
 {
     stream << R"({)";
-    stream << R"("_typeName": ")" << JoynrTypeId<SubscriptionQos>::getTypeName() << R"(",)";
+    stream << R"("_typeName":")" << JoynrTypeId<SubscriptionQos>::getTypeName() << R"(",)";
     stream << R"("expiryDate": )" << qos.getExpiryDate() << R"(,)";
     stream << R"("publicationTtl": )" << qos.getPublicationTtl() << R"(,)";
     stream << R"("period": )" << qos.getPeriod() << R"(,)";

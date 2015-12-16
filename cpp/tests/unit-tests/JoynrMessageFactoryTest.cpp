@@ -80,7 +80,7 @@ public:
     void checkRequest(const JoynrMessage& joynrMessage){
         //TODO create expected string from params and methodName
         std::stringstream expectedPayloadStream;
-        expectedPayloadStream << R"({"_typeName": "joynr.Request",)";
+        expectedPayloadStream << R"({"_typeName":"joynr.Request",)";
         expectedPayloadStream << R"("methodName": "methodName",)";
         expectedPayloadStream << R"("paramDatatypes": ["java.lang.Integer","java.lang.String"],)";
         expectedPayloadStream << R"("params": [42,"value"],)";
@@ -91,7 +91,7 @@ public:
 
     void checkReply(const JoynrMessage& joynrMessage){
         std::stringstream expectedPayloadStream;
-        expectedPayloadStream << R"({"_typeName": "joynr.Reply",)";
+        expectedPayloadStream << R"({"_typeName":"joynr.Reply",)";
         expectedPayloadStream << R"("requestReplyId": ")" << reply.getRequestReplyId() << R"(",)";
         expectedPayloadStream << R"("response": ["response"]})";
         std::string expectedPayload = expectedPayloadStream.str();
@@ -100,7 +100,7 @@ public:
 
     void checkSubscriptionPublication(const JoynrMessage& joynrMessage){
         std::stringstream expectedPayloadStream;
-        expectedPayloadStream << R"({"_typeName": "joynr.SubscriptionPublication",)";
+        expectedPayloadStream << R"({"_typeName":"joynr.SubscriptionPublication",)";
         expectedPayloadStream << R"("subscriptionId": ")" << subscriptionPublication.getSubscriptionId() << R"(",)";
         expectedPayloadStream << R"("response": ["publication"]})";
         std::string expectedPayload = expectedPayloadStream.str();

@@ -48,7 +48,7 @@ void ClassSerializer<BroadcastFilterParameters>::serialize(
         std::ostream& stream)
 {
     stream << R"({)";
-    stream << R"("_typeName": ")" << JoynrTypeId<BroadcastFilterParameters>::getTypeName()
+    stream << R"("_typeName":")" << JoynrTypeId<BroadcastFilterParameters>::getTypeName()
            << R"(",)";
     stream << R"("filterParameters": )";
     MapSerializer::serialize<std::string>(parameters.getFilterParameters(), stream);

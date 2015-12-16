@@ -54,7 +54,7 @@ void ClassSerializer<SubscriptionPublication>::serialize(
         std::ostream& stream)
 {
     stream << R"({)";
-    stream << R"("_typeName": ")" << JoynrTypeId<SubscriptionPublication>::getTypeName() << R"(",)";
+    stream << R"("_typeName":")" << JoynrTypeId<SubscriptionPublication>::getTypeName() << R"(",)";
     stream << R"("subscriptionId": ")" << subscriptionPublication.getSubscriptionId() << R"(",)";
     if (!subscriptionPublication.getError().isEmpty()) {
         stream << R"("error": )";

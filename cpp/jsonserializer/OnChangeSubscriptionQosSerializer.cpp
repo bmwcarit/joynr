@@ -43,7 +43,7 @@ template <>
 void ClassSerializer<OnChangeSubscriptionQos>::serialize(const OnChangeSubscriptionQos& subscription, std::ostream& stream)
 {
     stream << R"({)";
-    stream << R"("_typeName": ")" << JoynrTypeId<OnChangeSubscriptionQos>::getTypeName() << R"(",)";
+    stream << R"("_typeName":")" << JoynrTypeId<OnChangeSubscriptionQos>::getTypeName() << R"(",)";
     stream << R"("expiryDate": )" << subscription.getExpiryDate() << R"(,)";
     stream << R"("publicationTtl": )" << subscription.getPublicationTtl()<< R"(,)";
     stream << R"("minInterval": )" << subscription.getMinInterval();

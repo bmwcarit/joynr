@@ -119,7 +119,7 @@ void ClassDeserializer<exceptions::PublicationMissedException>::deserialize(exce
 
 void initSerialization (const std::string& typeName, std::ostream& stream) {
     stream << R"({)";
-    stream << R"("_typeName": ")" << typeName << R"(",)";
+    stream << R"("_typeName":")" << typeName << R"(",)";
 }
 
 void serializeExceptionWithDetailMessage(const std::string& typeName, const exceptions::JoynrException& exception, std::ostream& stream) {
@@ -136,7 +136,7 @@ void ClassSerializer<exceptions::ApplicationException>::serialize(const exceptio
         stream << R"("detailMessage": ")" << exception.getMessage() << R"(",)";
     }
     stream << R"("error": {)";
-    stream << R"("_typeName": ")" << exception.getErrorTypeName() << R"(",)";
+    stream << R"("_typeName":")" << exception.getErrorTypeName() << R"(",)";
     stream << R"("name": ")" << exception.getName() << R"(")";
     stream << "}"; //error
     stream << "}"; //exception

@@ -74,7 +74,7 @@ template <>
 void ClassSerializer<SomeOtherType>::serialize(const SomeOtherType& t, std::ostream& stream)
 {
     stream << "{";
-    stream << "\"_typeName\": \"" << JoynrTypeId<SomeOtherType>::getTypeName() << "\",";
+    stream << "\"_typeName\":\"" << JoynrTypeId<SomeOtherType>::getTypeName() << "\",";
     stream << "\"a\": " << t.getA();
     stream << "}";
 }

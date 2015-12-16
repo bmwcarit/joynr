@@ -78,7 +78,7 @@ TEST_F(ProviderIntegrationTest, deserializeStructHavingMemberStruct)
      * has not been registered, thus the deserialization of the joynr.Request failed.
      */
     std::string serializedContent(
-                R"({"_typeName": "joynr.Request",)"
+                R"({"_typeName":"joynr.Request",)"
                 R"("methodName": "setAttributeArrayOfNestedStructs",)"
                 R"("paramDatatypes": ["List"],)"
                 R"("params": [[{"_typeName":"joynr.tests.testTypes.HavingComplexArrayMemberStruct",)"

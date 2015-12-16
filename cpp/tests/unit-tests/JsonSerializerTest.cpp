@@ -76,7 +76,7 @@ protected:
         reply.setResponse(std::move(response));
 
         std::stringstream expectedReplyStringStream;
-        expectedReplyStringStream << R"({"_typeName": "joynr.Reply","requestReplyId": )";
+        expectedReplyStringStream << R"({"_typeName":"joynr.Reply","requestReplyId": )";
         expectedReplyStringStream << R"(")" << reply.getRequestReplyId() << R"(",)";
         expectedReplyStringStream << R"("response": [)";
         ClassSerializer<T> serializer;
@@ -150,10 +150,10 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JoynrMessage) {
     LOG_DEBUG(logger, FormatString("serialize_JoynrMessage: actual  : %1").arg(serializedContent).str());
 
     std::stringstream expectedStringStream;
-    expectedStringStream << R"({"_typeName": "joynr.JoynrMessage","header": )";
+    expectedStringStream << R"({"_typeName":"joynr.JoynrMessage","header": )";
     expectedStringStream << R"({"expiryDate": ")" << testExpiryDate.time_since_epoch().count() << R"(",)";
     expectedStringStream << R"("msgId": ")" << expectedJoynrMessage.getHeaderMessageId() << R"("},)";
-    expectedStringStream << R"("payload": "{\"_typeName\": \"joynr.Request\",\"methodName\": \")" << expectedRequest.getMethodName() << R"(\",)";
+    expectedStringStream << R"("payload": "{\"_typeName\":\"joynr.Request\",\"methodName\": \")" << expectedRequest.getMethodName() << R"(\",)";
     expectedStringStream << R"(\"paramDatatypes\": [],\"params\": [],\"requestReplyId\": \")" << expectedRequest.getRequestReplyId() << R"(\"}",)";
     expectedStringStream << R"("type": "request"})";
 
@@ -196,7 +196,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_byte_array) {
     std::string serializedRequestJson = JsonSerializer::serialize<Request>(request);
 
     std::stringstream jsonStringStream;
-    jsonStringStream << R"({"_typeName": "joynr.Request",)" <<
+    jsonStringStream << R"({"_typeName":"joynr.Request",)" <<
                 R"("methodName": "serialize_deserialize_byte_array",)" <<
                 R"("paramDatatypes": ["List"],)" <<
                 R"("params": [[1,2,3,255,254,253]],)" <<
@@ -314,7 +314,7 @@ TEST_F(JsonSerializerTest, serialize_operation_with_multiple_params1) {
     std::string serializedContent = JsonSerializer::serialize<Request>(request);
 
     std::stringstream expectedStringStream;
-    expectedStringStream << R"({"_typeName": "joynr.Request",)";
+    expectedStringStream << R"({"_typeName":"joynr.Request",)";
     expectedStringStream << R"("methodName": "methodEnumDoubleParameters",)";
     expectedStringStream << R"("paramDatatypes": ["joynr.tests.testTypes.TestEnum.Enum","Double"],)";
     expectedStringStream << R"("params": ["ONE",2.2],)";
@@ -329,7 +329,7 @@ TEST_F(JsonSerializerTest, serialize_operation_with_multiple_params1) {
 TEST_F(JsonSerializerTest, deserialize_operation_with_enum) {
 
     // Deserialize a request containing a Java style enum parameter
-    std::string serializedContent(R"({"_typeName": "joynr.Request",)"
+    std::string serializedContent(R"({"_typeName":"joynr.Request",)"
                                   R"("methodName": "methodEnumDoubleParameters",)"
                                   R"("paramDatatypes": ["joynr.tests.testTypes.TestEnum.Enum","Double"],)"
                                   R"("params": ["ONE",2.2]})");
@@ -357,7 +357,7 @@ TEST_F(JsonSerializerTest, deserializeTypeWithEnumList) {
 
     // Deserialize a type containing multiple enum lists
     std::string serializedContent(
-                R"({"_typeName": "joynr.infrastructure.DacTypes.MasterAccessControlEntry",)"
+                R"({"_typeName":"joynr.infrastructure.DacTypes.MasterAccessControlEntry",)"
                 R"("defaultConsumerPermission": "NO",)"
                 R"("defaultRequiredControlEntryChangeTrustLevel": "LOW",)"
                 R"("defaultRequiredTrustLevel": "LOW",)"
@@ -479,7 +479,7 @@ TEST_F(JsonSerializerTest, serialize_operation_with_multiple_params2) {
     std::string serializedContent = JsonSerializer::serialize<Request>(request);
 
     std::stringstream expectedStringStream;
-    expectedStringStream << R"({"_typeName": "joynr.Request",)";
+    expectedStringStream << R"({"_typeName":"joynr.Request",)";
     expectedStringStream << R"("methodName": "methodStringDoubleParameters",)";
     expectedStringStream << R"("paramDatatypes": ["String","Double","Float"],)";
     expectedStringStream << R"("params": ["testStringParam",3.33,1.25e-09],)";
@@ -507,7 +507,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_TStruct) {
 
     std::string expectedTStruct(
                 R"({)"
-                R"("_typeName": "joynr.types.TestTypes.TStruct",)"
+                R"("_typeName":"joynr.types.TestTypes.TStruct",)"
                 R"("tDouble": 0.123456789,)"
                 R"("tInt64": 64,)"
                 R"("tString": "myTestString")"
@@ -536,7 +536,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_TStructExtended) {
 
     std::string expectedTStructExt(
                 R"({)"
-                R"("_typeName": "joynr.types.TestTypes.TStructExtended",)"
+                R"("_typeName":"joynr.types.TestTypes.TStructExtended",)"
                 R"("tDouble": 0.123456789,)"
                 R"("tInt64": 64,)"
                 R"("tString": "myTestString",)"
@@ -568,10 +568,10 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocation) {
 
     std::stringstream expectedReplyStringStream;
     expectedReplyStringStream << R"({)";
-    expectedReplyStringStream << R"("_typeName": "joynr.Reply",)";
+    expectedReplyStringStream << R"("_typeName":"joynr.Reply",)";
     expectedReplyStringStream << R"("requestReplyId": ")" << reply.getRequestReplyId() << R"(",)";
     expectedReplyStringStream << R"("response": [{)";
-    expectedReplyStringStream << R"("_typeName": "joynr.types.Localisation.GpsLocation",)";
+    expectedReplyStringStream << R"("_typeName":"joynr.types.Localisation.GpsLocation",)";
     expectedReplyStringStream << R"("longitude": 1.1,)";
     expectedReplyStringStream << R"("latitude": 1.2,)";
     expectedReplyStringStream << R"("altitude": 1.3,)";
@@ -616,7 +616,7 @@ TEST_F(JsonSerializerTest, deserialize_replyWithVoid) {
     reply.setResponse(std::move(response));
 
     std::stringstream expectedStringStream;
-    expectedStringStream << R"({"_typeName": "joynr.Reply",)";
+    expectedStringStream << R"({"_typeName":"joynr.Reply",)";
     expectedStringStream << R"("requestReplyId": ")" << reply.getRequestReplyId() << R"(",)";
     expectedStringStream << R"("response": []})";
     std::string expected = expectedStringStream.str();
@@ -652,10 +652,10 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocationList) {
     // Expected literal
     std::stringstream expectedReplyStringStream;
     expectedReplyStringStream << R"({)";
-    expectedReplyStringStream << R"("_typeName": "joynr.Reply",)";
+    expectedReplyStringStream << R"("_typeName":"joynr.Reply",)";
     expectedReplyStringStream << R"("requestReplyId": ")" << reply.getRequestReplyId() << R"(",)";
     expectedReplyStringStream << R"("response": [[{)";
-    expectedReplyStringStream << R"("_typeName": "joynr.types.Localisation.GpsLocation",)";
+    expectedReplyStringStream << R"("_typeName":"joynr.types.Localisation.GpsLocation",)";
     expectedReplyStringStream << R"("longitude": 1.1,)";
     expectedReplyStringStream << R"("latitude": 2.2,)";
     expectedReplyStringStream << R"("altitude": 3.3,)";
@@ -668,7 +668,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocationList) {
     expectedReplyStringStream << R"("deviceTime": 0,)";
     expectedReplyStringStream << R"("time": 17)";
     expectedReplyStringStream << R"(},{)";
-    expectedReplyStringStream << R"("_typeName": "joynr.types.Localisation.GpsLocation",)";
+    expectedReplyStringStream << R"("_typeName":"joynr.types.Localisation.GpsLocation",)";
     expectedReplyStringStream << R"("longitude": 4.4,)";
     expectedReplyStringStream << R"("latitude": 5.5,)";
     expectedReplyStringStream << R"("altitude": 6.6,)";
@@ -721,8 +721,8 @@ TEST_F(JsonSerializerTest, serialize_deserialize_trip) {
     locations.push_back(types::Localisation::GpsLocation(7.7, 8.8, 9.9, types::Localisation::GpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0,3317));
 
     std::string expected(
-                        R"({"_typeName": "joynr.types.Localisation.Trip",)"
-                        R"("locations": [{"_typeName": "joynr.types.Localisation.GpsLocation",)"
+                        R"({"_typeName":"joynr.types.Localisation.Trip",)"
+                        R"("locations": [{"_typeName":"joynr.types.Localisation.GpsLocation",)"
                         R"("longitude": 1.1,)"
                         R"("latitude": 2.2,)"
                         R"("altitude": 3.3,)"
@@ -734,7 +734,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_trip) {
                         R"("gpsTime": 0,)"
                         R"("deviceTime": 0,)"
                         R"("time": 17},)"
-                        R"({"_typeName": "joynr.types.Localisation.GpsLocation",)"
+                        R"({"_typeName":"joynr.types.Localisation.GpsLocation",)"
                         R"("longitude": 4.4,)"
                         R"("latitude": 5.5,)"
                         R"("altitude": 6.6,)"
@@ -746,7 +746,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_trip) {
                         R"("gpsTime": 0,)"
                         R"("deviceTime": 0,)"
                         R"("time": 317},)"
-                        R"({"_typeName": "joynr.types.Localisation.GpsLocation",)"
+                        R"({"_typeName":"joynr.types.Localisation.GpsLocation",)"
                         R"("longitude": 7.7,)"
                         R"("latitude": 8.8,)"
                         R"("altitude": 9.9,)"
@@ -855,10 +855,10 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequestWithLists) {
     request1.addParam(Variant::make<std::vector<Variant>>(inputvl), "List");
 
     std::stringstream expectedStringStream;
-                expectedStringStream << R"({"_typeName": "joynr.Request",)";
+                expectedStringStream << R"({"_typeName":"joynr.Request",)";
                 expectedStringStream << R"("methodName": "serialize_deserialize_JsonRequestTest_method",)";
                 expectedStringStream << R"("paramDatatypes": ["List"],)";
-                expectedStringStream << R"("params": [[{"_typeName": "joynr.types.Localisation.GpsLocation",)";
+                expectedStringStream << R"("params": [[{"_typeName":"joynr.types.Localisation.GpsLocation",)";
                 expectedStringStream << R"("longitude": 1.1,)";
                 expectedStringStream << R"("latitude": 2.2,)";
                 expectedStringStream << R"("altitude": 3.3,)";
@@ -870,7 +870,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequestWithLists) {
                 expectedStringStream << R"("gpsTime": 0,)";
                 expectedStringStream << R"("deviceTime": 0,)";
                 expectedStringStream << R"("time": 17},)";
-                expectedStringStream << R"({"_typeName": "joynr.types.Localisation.GpsLocation",)";
+                expectedStringStream << R"({"_typeName":"joynr.types.Localisation.GpsLocation",)";
                 expectedStringStream << R"("longitude": 4.4,)";
                 expectedStringStream << R"("latitude": 5.5,)";
                 expectedStringStream << R"("altitude": 6.6,)";
@@ -882,7 +882,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequestWithLists) {
                 expectedStringStream << R"("gpsTime": 0,)";
                 expectedStringStream << R"("deviceTime": 0,)";
                 expectedStringStream << R"("time": 317},)";
-                expectedStringStream << R"({"_typeName": "joynr.types.Localisation.GpsLocation",)";
+                expectedStringStream << R"({"_typeName":"joynr.types.Localisation.GpsLocation",)";
                 expectedStringStream << R"("longitude": 7.7,)";
                 expectedStringStream << R"("latitude": 8.8,)";
                 expectedStringStream << R"("altitude": 9.9,)";
@@ -1036,11 +1036,11 @@ TEST_F(JsonSerializerTest, serialize_deserialize_EndpointAddress) {
 TEST_F(JsonSerializerTest, serialize_deserialize_CapabilityInformation) {
 
     std::string expected(
-                R"({"_typeName": "joynr.types.CapabilityInformation",)"
+                R"({"_typeName":"joynr.types.CapabilityInformation",)"
                 R"("domain": "domain",)"
                 R"("interfaceName": "",)"
                 R"("providerQos": {)"
-                R"("_typeName": "joynr.types.ProviderQos",)"
+                R"("_typeName":"joynr.types.ProviderQos",)"
                 R"("customParameters": [],)"
                 R"("providerVersion": 4,)"
                 R"("priority": 2,)"
@@ -1085,7 +1085,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_ChannelURLInformation) {
     LOG_DEBUG(logger,FormatString("serialized ChannelUrlInformation%1").arg(serialized).str());
 
     // Expected JSON : { "_typeName" : "joynr.types.ChannelUrlInformation", "urls" : [ "http://example1.com/", "http://example2.com/" ] }
-    std::string expected("{\"_typeName\": \"joynr.types.ChannelUrlInformation\",\"urls\": [\"http://example1.com/\",\"http://example2.com/\"]}");
+    std::string expected("{\"_typeName\":\"joynr.types.ChannelUrlInformation\",\"urls\": [\"http://example1.com/\",\"http://example2.com/\"]}");
 
     EXPECT_EQ(expected, serialized);
 
@@ -1117,7 +1117,7 @@ TEST_F(JsonSerializerTest, serialize_ProviderQos) {
     qos.setPriority(5);
     qos.setProviderVersion(-1);
 
-    std::string jsonProviderQos("{\"_typeName\": \"joynr.types.ProviderQos\",\"customParameters\": [],\"providerVersion\": -1,\"priority\": 5,\"scope\": \"LOCAL\",\"supportsOnChangeSubscriptions\": false}");
+    std::string jsonProviderQos("{\"_typeName\":\"joynr.types.ProviderQos\",\"customParameters\": [],\"providerVersion\": -1,\"priority\": 5,\"scope\": \"LOCAL\",\"supportsOnChangeSubscriptions\": false}");
 
     std::string result = JsonSerializer::serialize<joynr::types::ProviderQos>(qos);
 
