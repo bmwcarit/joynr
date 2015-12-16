@@ -21,6 +21,8 @@
 
 #include <map>
 #include <memory>
+#include <cassert>
+#include <vector>
 
 namespace joynr
 {
@@ -61,12 +63,13 @@ public:
      * @param key retrieve object stored under given key
      * @return pointer to object, or 0 if no object under given key found
      */
-    Value* object(const Key& key)
+    Value* object(const Key& key) const
     {
-        if (cacheMap.find(key) == cacheMap.end()) {
+        auto elementIterator = cacheMap.find(key);
+        if (elementIterator == cacheMap.end()) {
             return 0;
         }
-        return cacheMap.find(key)->second.get();
+        return elementIterator->second.get();
     }
     /**
      * @brief setCacheCapacity change cacheCapacity
@@ -112,6 +115,33 @@ public:
     int size()
     {
         return cacheMap.size();
+    }
+
+    /**
+     * @brief remove object stored under specified key
+     * @param key
+     */
+    void remove(const Key& key)
+    {
+        auto elementIterator = cacheMap.find(key);
+        if (elementIterator != cacheMap.end()) {
+            cacheMap.erase(elementIterator);
+        }
+    }
+
+    /**
+     * @brief keys retrieves collection of all cache keys
+     * @return vector of keys
+     */
+    std::vector<Key> keys() const
+    {
+        std::vector<Key> keys;
+        keys.reserve(cacheMap.size());
+        for (auto&& mapIterator : cacheMap) {
+            keys.push_back(mapIterator.first);
+        }
+
+        return keys;
     }
 
 private:

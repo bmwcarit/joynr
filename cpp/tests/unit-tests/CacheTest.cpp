@@ -80,3 +80,20 @@ TEST_F(CacheTest, checkInsertOverMaxCost) {
     ASSERT_EQ(cache.size(), 2);
     ASSERT_EQ(*(cache.object("who1")), "CarIT");
 }
+
+TEST_F(CacheTest, checkRemove) {
+    cache.setCacheCapacity(3);
+    cache.insert("who", new std::string("World"));
+    cache.insert("who1", new std::string("CarIT"));
+    ASSERT_EQ(cache.size(), 3);
+    cache.remove("who1");
+    ASSERT_EQ(cache.size(), 2);
+    ASSERT_EQ(*cache.object("who"), "World");
+}
+
+TEST_F(CacheTest, checkKeys) {
+    cache.setCacheCapacity(2);
+    cache.insert("who", new std::string("World"));
+    ASSERT_EQ(cache.size(), 2);
+    ASSERT_EQ(cache.keys().at(1), "who");
+}
