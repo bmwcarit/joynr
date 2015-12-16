@@ -21,7 +21,7 @@
 #include <gmock/gmock.h>
 #include <memory>
 #include <string>
-#include <stdint.h>
+#include <cstdint>
 #include <chrono>
 #include <QtConcurrent/QtConcurrent>
 
@@ -134,7 +134,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
         discoveryQos.setDiscoveryTimeout(1000);
 
-        qlonglong qosRoundTripTTL = 40000;
+        std::uint64_t qosRoundTripTTL = 40000;
 
         // Send a message and expect to get a result
         std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
@@ -344,7 +344,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
         discoveryQos.setDiscoveryTimeout(1000);
 
-        qlonglong qosRoundTripTTL = 1;
+        std::uint64_t qosRoundTripTTL = 1;
         std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
                                                    ->setMessagingQos(MessagingQos(qosRoundTripTTL))
                                                    ->setCached(false)
@@ -364,7 +364,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
         discoveryQos.setDiscoveryTimeout(1000);
 
-        qlonglong qosRoundTripTTL = 40000;
+        std::uint64_t qosRoundTripTTL = 40000;
 
         // Send a message and expect to get a result
         std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
@@ -391,7 +391,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
         discoveryQos.setDiscoveryTimeout(1000);
 
-        qlonglong qosRoundTripTTL = 40000;
+        std::uint64_t qosRoundTripTTL = 40000;
 
         // Send a message and expect to get a result
         std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
@@ -426,8 +426,8 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HighestPriority);
         discoveryQos.setDiscoveryTimeout(1000);
 
-        qlonglong qosOneWayTTL = 40000;
-        qlonglong qosRoundTripTTL = 40000;
+        std::uint64_t qosOneWayTTL = 40000;
+        std::uint64_t qosRoundTripTTL = 40000;
 
         // Send a message and expect to get a result
         std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
@@ -476,7 +476,7 @@ TEST_F(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply) {
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
 
-    qlonglong qosRoundTripTTL = 40000;
+    std::uint64_t qosRoundTripTTL = 40000;
 
     // Send a message and expect to get a result
     std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
@@ -528,7 +528,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToOnChange) {
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
 
-    qlonglong qosRoundTripTTL = 40000;
+    std::uint64_t qosRoundTripTTL = 40000;
 
     // Send a message and expect to get a result
     std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
@@ -603,7 +603,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToListAttribute) {
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
 
-    qlonglong qosRoundTripTTL = 40000;
+    std::uint64_t qosRoundTripTTL = 40000;
 
     // Send a message and expect to get a result
     std::shared_ptr<tests::testProxy> testProxy(proxyBuilder
@@ -645,7 +645,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToNonExistentDomain) {
 
     const int arbitrationTimeout = 5000;
 
-    qlonglong qosRoundTripTTL = 40000;
+    std::uint64_t qosRoundTripTTL = 40000;
     discoveryQos.setDiscoveryTimeout(arbitrationTimeout);
 
     // Time how long arbitration takes
@@ -708,7 +708,7 @@ TEST_F(CombinedEnd2EndTest, unsubscribeViaHttpReceiver) {
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
 
-    qlonglong qosRoundTripTTL = 40000;
+    std::uint64_t qosRoundTripTTL = 40000;
 
     // Send a message and expect to get a result
     std::shared_ptr<tests::testProxy> gpsProxy(testProxyBuilder
@@ -753,7 +753,7 @@ TEST_F(CombinedEnd2EndTest, deleteChannelViaReceiver) {
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
 
-    qlonglong qosRoundTripTTL = 40000;
+    std::uint64_t qosRoundTripTTL = 40000;
 
     // Send a message and expect to get a result
     std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
@@ -781,7 +781,7 @@ tests::testProxy* createTestProxy(JoynrRuntime *runtime, const std::string& doma
    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
    discoveryQos.setDiscoveryTimeout(1000);
 
-   qlonglong qosRoundTripTTL = 40000;
+   std::uint64_t qosRoundTripTTL = 40000;
 
    // Send a message and expect to get a result
    tests::testProxy* testProxy(testProxyBuilder
@@ -865,7 +865,7 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation) {
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
 
-    qlonglong qosRoundTripTTL = 20000;
+    std::uint64_t qosRoundTripTTL = 20000;
 
     // Send a message and expect to get a result
     std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
@@ -912,7 +912,7 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation_failure) {
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
 
-    qlonglong qosRoundTripTTL = 20000;
+    std::uint64_t qosRoundTripTTL = 20000;
 
     // Send a message and expect to get a result
     std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
