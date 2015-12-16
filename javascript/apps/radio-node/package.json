@@ -6,9 +6,12 @@
   "private": true,
   "dependencies": {
   },
+  "config": {
+    "domain": "nodeProvider"
+  },
   "scripts": {
     "preinstall": "npm install ../../libjoynr-js/target/classes",
-    "startconsumer" : "node src/main/js/radioConsumer.js",
-    "startprovider" : "node src/main/js/radioProvider.js"
+    "startconsumer" : "node src/main/js/radioConsumer.js $npm_package_config_domain",
+    "startprovider" : "node src/main/js/radioProvider.js $npm_package_config_domain"
   }
 }
