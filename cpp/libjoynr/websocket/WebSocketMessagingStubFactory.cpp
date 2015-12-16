@@ -130,9 +130,8 @@ void WebSocketMessagingStubFactory::onMessagingStubClosed(
     if (auto webSocketClientAddress =
                 dynamic_cast<const system::RoutingTypes::WebSocketClientAddress*>(&address)) {
         clientStubMap.erase(*webSocketClientAddress);
-    }
-    if (auto webSocketServerAddress =
-                dynamic_cast<const system::RoutingTypes::WebSocketAddress*>(&address)) {
+    } else if (auto webSocketServerAddress =
+                       dynamic_cast<const system::RoutingTypes::WebSocketAddress*>(&address)) {
         serverStubMap.erase(*webSocketServerAddress);
     }
 }
