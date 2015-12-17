@@ -39,6 +39,7 @@ This project has dependencies to:
   Hamcrest Core under New BSD License
   ICU4J under ICU License
   io.joynr.android:robolectric-unittests under The Apache Software License, Version 2.0
+  io.joynr.java.android:joynr-android under The Apache Software License, Version 2.0
   io.joynr.java.android:joynr-android-runtime under The Apache Software License, Version 2.0
   io.joynr.java.common:discovery-common under The Apache Software License, Version 2.0
   io.joynr.java.common:guice-integration under The Apache Software License, Version 2.0

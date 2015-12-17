@@ -65,14 +65,7 @@
 			<groupId>io.joynr.java.android</groupId>
 			<artifactId>joynr-android-runtime</artifactId>
 			<version>${project.version}</version>
-			<classifier>all</classifier>
 			<scope>compile</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>*</groupId>
-					<artifactId>*</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 	</dependencies>
 	<build>
