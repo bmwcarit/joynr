@@ -68,7 +68,7 @@ IPublicationInterpreter& MetaTypeRegistrar::getPublicationInterpreter(int typeId
 {
     std::lock_guard<std::mutex> lock(publicationInterpretersMutex);
 
-    IPublicationInterpreter* ret;
+    IPublicationInterpreter* ret = nullptr;
     auto search = publicationInterpreters.find(typeId);
     if (search != publicationInterpreters.end()) {
         ret = search->second;
@@ -83,7 +83,7 @@ IReplyInterpreter& MetaTypeRegistrar::getReplyInterpreter(int typeId)
 {
     std::lock_guard<std::mutex> lock(replyInterpretersMutex);
 
-    IReplyInterpreter* ret;
+    IReplyInterpreter* ret = nullptr;
     auto search = replyInterpreters.find(typeId);
     if (search != replyInterpreters.end()) {
         ret = search->second;
