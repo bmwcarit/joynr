@@ -110,7 +110,7 @@ void ClassSerializer<bool>::serialize(const bool& i, std::ostream& stream)
  * @param str
  * @return
  */
-static std::string addEscapeForSpecialCharacters(const std::string& str) {
+std::string addEscapeForSpecialCharacters(const std::string& str) {
     std::string escapedString;
     std::regex expr ("(\\\\|\")");
     std::regex_replace (std::back_inserter(escapedString), str.begin(), str.end(), expr, std::string("\\$&"));

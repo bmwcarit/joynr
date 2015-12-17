@@ -70,6 +70,8 @@ void ClassSerializer<Variant>::serializeVariant(const Variant &variant, std::ost
 template <>
 void ClassSerializer<Variant>::serialize(const Variant &variant, std::ostream &stream);
 
+std::string addEscapeForSpecialCharacters(const std::string& str);
+
 } // namespace joynr
 #endif // CLASSSERIALIZER
 

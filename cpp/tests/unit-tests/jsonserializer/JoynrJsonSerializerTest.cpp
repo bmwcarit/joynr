@@ -870,3 +870,12 @@ TEST_F(JoynrJsonSerializerTest, serializeDeserializeStructContainingStringMember
     expectedStruct.setTString(R"(\"String containing quotas\")");
     testSerializationOfTStruct(expectedStruct);
 }
+
+// test with TEverythingStruct
+TEST_F(JoynrJsonSerializerTest, correctEscapingOfStrings)
+{
+    EXPECT_EQ(joynr::addEscapeForSpecialCharacters("normalString"), "normalString");
+    EXPECT_EQ(joynr::addEscapeForSpecialCharacters(R"(\stringWithBackSlash)"), R"(\\stringWithBackSlash)");
+    EXPECT_EQ(joynr::addEscapeForSpecialCharacters(R"("stringWithQuotas")"), R"(\"stringWithQuotas\")");
+    EXPECT_EQ(joynr::addEscapeForSpecialCharacters(R"(\"stringWithBackSlashAndQuotas\")"), R"(\\\"stringWithBackSlashAndQuotas\\\")");
+}
