@@ -900,7 +900,6 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          common/include/joynr/ClientQCache.h \
                          common/include/joynr/ContentWithDecayTime.h \
                          common/include/joynr/DbusMessagingSkeleton.h \
-                         common/include/joynr/DbusProcessor.h \
                          common/include/joynr/DeclareMetatypeUtil.h \
                          common/include/joynr/Directory.h \
                          common/include/joynr/DispatcherUtils.h \
