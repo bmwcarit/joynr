@@ -37,7 +37,7 @@ JoynrRuntimeExecutor::JoynrRuntimeExecutor(Settings* settings)
 {
     if (QCoreApplication::instance() == nullptr) {
         int argc = 0;
-        char* argv[] = {0};
+        char* argv[] = {nullptr};
         coreApplication = new QCoreApplication(argc, argv);
     }
     runtimeThread->setObjectName("LibJoynrRuntime-Thread");

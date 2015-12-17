@@ -28,7 +28,7 @@ namespace joynr
 HttpNetworking* HttpNetworking::httpNetworking = new HttpNetworking();
 
 HttpNetworking::HttpNetworking()
-        : curlHandlePool(NULL),
+        : curlHandlePool(nullptr),
           proxy(),
           connectTimeout_ms(0),
           certificateAuthority(),

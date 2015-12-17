@@ -32,7 +32,7 @@ joynr_logging::Logger* JoynrMessageSender::logger =
         joynr_logging::Logging::getInstance()->getLogger("JOYNR", "JoynrMessageSender");
 
 JoynrMessageSender::JoynrMessageSender(std::shared_ptr<MessageRouter> messageRouter)
-        : dispatcher(NULL), messageRouter(messageRouter), messageFactory()
+        : dispatcher(nullptr), messageRouter(messageRouter), messageFactory()
 {
 }
 
@@ -51,7 +51,7 @@ void JoynrMessageSender::sendRequest(const std::string& senderParticipantId,
                                      const Request& request,
                                      std::shared_ptr<IReplyCaller> callback)
 {
-    assert(dispatcher != NULL);
+    assert(dispatcher != nullptr);
 
     try {
         dispatcher->addReplyCaller(request.getRequestReplyId(), callback, qos);

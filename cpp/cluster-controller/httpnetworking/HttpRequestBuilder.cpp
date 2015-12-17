@@ -30,7 +30,7 @@ using namespace joynr_logging;
 Logger* HttpRequestBuilder::logger = Logging::getInstance()->getLogger("MSG", "HttpRequestBuilder");
 
 HttpRequestBuilder::HttpRequestBuilder(const std::string& url)
-        : handle(NULL), headers(NULL), content(), built(false)
+        : handle(nullptr), headers(nullptr), content(), built(false)
 {
     handle = HttpNetworking::getInstance()->getCurlHandlePool()->getHandle(url);
     curl_easy_setopt(handle, CURLOPT_URL, url.c_str());
@@ -39,7 +39,7 @@ HttpRequestBuilder::HttpRequestBuilder(const std::string& url)
 HttpRequestBuilder::~HttpRequestBuilder()
 {
     if (!built) {
-        if (headers != 0) {
+        if (headers != nullptr) {
             curl_slist_free_all(headers);
         }
         HttpNetworking::getInstance()->getCurlHandlePool()->returnHandle(handle);

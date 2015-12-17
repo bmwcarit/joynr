@@ -68,7 +68,7 @@ MessageRouter::~MessageRouter()
 {
     messageQueueCleanerTimer.shutdown();
     threadPool.shutdown();
-    if (parentRouter != NULL) {
+    if (parentRouter != nullptr) {
         delete parentRouter;
     }
     delete messagingStubFactory;
@@ -86,13 +86,13 @@ MessageRouter::MessageRouter(IMessagingStubFactory* messagingStubFactory,
           routingTable("MessageRouter-RoutingTable"),
           routingTableLock(),
           threadPool("MessageRouter", maxThreads),
-          parentRouter(NULL),
-          parentAddress(NULL),
+          parentRouter(nullptr),
+          parentAddress(nullptr),
           incomingAddress(),
           messageQueue(messageQueue),
           messageQueueCleanerTimer(),
           runningParentResolves(new std::unordered_set<std::string>()),
-          accessController(NULL),
+          accessController(nullptr),
           securityManager(securityManager),
           parentResolveMutex()
 {
@@ -118,14 +118,14 @@ MessageRouter::MessageRouter(IMessagingStubFactory* messagingStubFactory,
           routingTable("MessageRouter-RoutingTable"),
           routingTableLock(),
           threadPool("MessageRouter", maxThreads),
-          parentRouter(NULL),
-          parentAddress(NULL),
+          parentRouter(nullptr),
+          parentAddress(nullptr),
           incomingAddress(incomingAddress),
           messageQueue(messageQueue),
           messageQueueCleanerTimer(),
           runningParentResolves(new std::unordered_set<std::string>()),
-          accessController(NULL),
-          securityManager(NULL),
+          accessController(nullptr),
+          securityManager(nullptr),
           parentResolveMutex()
 {
     messageQueueCleanerTimer.addTimer(
@@ -174,7 +174,7 @@ bool MessageRouter::isChildMessageRouter()
         return false;
     }
     // if an incoming address is set, a parent message router is needed for correct configuration
-    return parentRouter != NULL && parentAddress;
+    return parentRouter != nullptr && parentAddress;
 }
 
 /**
@@ -183,7 +183,7 @@ bool MessageRouter::isChildMessageRouter()
   */
 void MessageRouter::route(const JoynrMessage& message)
 {
-    assert(messagingStubFactory != NULL);
+    assert(messagingStubFactory != nullptr);
     JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
     if (now > message.getHeaderExpiryDate()) {
         LOG_WARN(logger,
@@ -194,7 +194,7 @@ void MessageRouter::route(const JoynrMessage& message)
     }
 
     // Validate the message if possible
-    if (securityManager != NULL && !securityManager->validate(message)) {
+    if (securityManager != nullptr && !securityManager->validate(message)) {
         LOG_ERROR(logger,
                   FormatString("messageId %1 failed validation")
                           .arg(message.getHeaderMessageId())
@@ -209,7 +209,7 @@ void MessageRouter::route(const JoynrMessage& message)
                       .str());
     // search for the destination address
     const std::string destinationPartId = message.getHeaderTo();
-    std::shared_ptr<joynr::system::RoutingTypes::Address> destAddress(NULL);
+    std::shared_ptr<joynr::system::RoutingTypes::Address> destAddress(nullptr);
 
     {
         ReadLocker lock(routingTableLock);

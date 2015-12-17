@@ -58,7 +58,7 @@ void InProcessPublicationSender::sendSubscriptionPublication(
 
     std::string subscriptionId = subscriptionPublication.getSubscriptionId();
     LOG_TRACE(logger, FormatString("Sending publication. id=%1").arg(subscriptionId).str());
-    assert(subscriptionManager != NULL);
+    assert(subscriptionManager != nullptr);
     subscriptionManager->touchSubscriptionState(subscriptionId);
     std::shared_ptr<ISubscriptionCallback> callback =
             subscriptionManager->getSubscriptionCallback(subscriptionId);

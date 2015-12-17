@@ -42,19 +42,19 @@ namespace joynr
 
 LibJoynrRuntime::LibJoynrRuntime(Settings* settings)
         : JoynrRuntime(*settings),
-          connectorFactory(NULL),
-          subscriptionManager(NULL),
-          inProcessPublicationSender(NULL),
-          inProcessConnectorFactory(NULL),
-          joynrMessagingConnectorFactory(NULL),
-          joynrMessagingSendStub(NULL),
-          joynrMessageSender(NULL),
-          joynrDispatcher(NULL),
-          inProcessDispatcher(NULL),
+          connectorFactory(nullptr),
+          subscriptionManager(nullptr),
+          inProcessPublicationSender(nullptr),
+          inProcessConnectorFactory(nullptr),
+          joynrMessagingConnectorFactory(nullptr),
+          joynrMessagingSendStub(nullptr),
+          joynrMessageSender(nullptr),
+          joynrDispatcher(nullptr),
+          inProcessDispatcher(nullptr),
           settings(settings),
           libjoynrSettings(new LibjoynrSettings(*settings)),
-          dispatcherMessagingSkeleton(NULL),
-          runtimeExecutor(NULL)
+          dispatcherMessagingSkeleton(nullptr),
+          runtimeExecutor(nullptr)
 {
     libjoynrSettings->printSettings();
 }
@@ -118,7 +118,7 @@ void LibJoynrRuntime::init(
     connectorFactory =
             new ConnectorFactory(inProcessConnectorFactory, joynrMessagingConnectorFactory);
 
-    proxyFactory = new ProxyFactory(libjoynrMessagingAddress, connectorFactory, NULL);
+    proxyFactory = new ProxyFactory(libjoynrMessagingAddress, connectorFactory, nullptr);
 
     // Set up the persistence file for storing provider participant ids
     std::string persistenceFilename = libjoynrSettings->getParticipantIdsPersistenceFilename();

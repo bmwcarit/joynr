@@ -61,7 +61,7 @@ MessageQueueItem* MessageQueue::getNextMessageForParticipant(const std::string d
         queue->erase(queueElement);
         return item;
     }
-    return NULL;
+    return nullptr;
 }
 
 int64_t MessageQueue::removeOutdatedMessages()

@@ -53,7 +53,7 @@ Runnable* BlockingQueue::take()
 {
     if (stoppingScheduler) {
         LOG_TRACE(logger, "Shuting down and returning NULL");
-        return NULL;
+        return nullptr;
     }
 
     std::unique_lock<std::mutex> lock(
@@ -64,7 +64,7 @@ Runnable* BlockingQueue::take()
     condition.wait(lock, [this] { return (stoppingScheduler || !queue.empty()); });
     if (stoppingScheduler) {
         LOG_TRACE(logger, "Shuting down and returning NULL");
-        return NULL;
+        return nullptr;
     }
 
     LOG_TRACE(logger, "Condition released");

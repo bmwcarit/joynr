@@ -107,7 +107,7 @@ void DelayedScheduler::unschedule(const RunnableHandle runnableHandle)
     }
 
     Runnable* runnable = it->second;
-    if (runnable != NULL && runnable->isDeleteOnExit()) {
+    if (runnable != nullptr && runnable->isDeleteOnExit()) {
         delete runnable;
     }
     timedRunnables.erase(it);
@@ -125,9 +125,9 @@ void DelayedScheduler::shutdown()
         stoppingDelayedScheduler = true;
 
         for (auto it = timedRunnables.begin(); it != timedRunnables.end(); ++it) {
-            if (it->second != NULL && it->second->isDeleteOnExit()) {
+            if (it->second != nullptr && it->second->isDeleteOnExit()) {
                 delete it->second;
-                it->second = NULL;
+                it->second = nullptr;
             }
         }
         timedRunnables.clear();
@@ -145,7 +145,7 @@ void DelayedScheduler::timerForRunnableExpired(Timer::TimerId timerId)
         return;
     }
     Runnable* tmp = it->second;
-    if (tmp != NULL) {
+    if (tmp != nullptr) {
         if (stoppingDelayedScheduler) {
             if (tmp->isDeleteOnExit()) {
                 delete tmp;
@@ -170,9 +170,9 @@ void DelayedScheduler::timerForRunnableRemoved(Timer::TimerId timerId)
         return;
     }
     Runnable* tmp = it->second;
-    if (tmp != NULL && tmp->isDeleteOnExit()) {
+    if (tmp != nullptr && tmp->isDeleteOnExit()) {
         delete it->second;
-        it->second = NULL;
+        it->second = nullptr;
     }
     timedRunnables.erase(it);
 }

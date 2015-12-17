@@ -59,7 +59,7 @@ DefaultHttpRequest::DefaultHttpRequest(void* handle, const QByteArray& content, 
     curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, writeToQByteArray);
     curl_easy_setopt(handle, CURLOPT_HEADERFUNCTION, writeToQMultiMap);
 
-    if (headers != 0) {
+    if (headers != nullptr) {
         curl_easy_setopt(handle, CURLOPT_HTTPHEADER, headers);
     }
 
@@ -71,10 +71,10 @@ DefaultHttpRequest::DefaultHttpRequest(void* handle, const QByteArray& content, 
 
 DefaultHttpRequest::~DefaultHttpRequest()
 {
-    if (headers != 0) {
+    if (headers != nullptr) {
         curl_slist_free_all(headers);
     }
-    if (handle != NULL) {
+    if (handle != nullptr) {
         HttpNetworking::getInstance()->getCurlHandlePool()->returnHandle(handle);
     }
 }
@@ -98,7 +98,7 @@ HttpResult DefaultHttpRequest::execute()
     if (curlError == CURLE_FAILED_INIT) {
         // Delete the handle that we were using
         HttpNetworking::getInstance()->getCurlHandlePool()->deleteHandle(handle);
-        handle = NULL;
+        handle = nullptr;
     }
 
     return HttpResult(curlError, statusCode, body, headers);

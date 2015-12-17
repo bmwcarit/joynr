@@ -43,7 +43,7 @@ CapabilitiesClient::CapabilitiesClient(const std::string& localChannelId)
           defaultRequestRoundtripTTL(40000),
           capabilitiesClientParticipantId(),
           localChannelId(localChannelId),
-          capabilitiesProxy(NULL)
+          capabilitiesProxy(nullptr)
 {
 }
 

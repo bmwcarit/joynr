@@ -73,36 +73,36 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(QCoreApplication* a
                                                              IMessageReceiver* messageReceiver,
                                                              IMessageSender* messageSender)
         : JoynrRuntime(*settings),
-          joynrDispatcher(NULL),
-          inProcessDispatcher(NULL),
-          ccDispatcher(NULL),
-          subscriptionManager(NULL),
-          joynrMessagingSendSkeleton(NULL),
-          joynrMessageSender(NULL),
+          joynrDispatcher(nullptr),
+          inProcessDispatcher(nullptr),
+          ccDispatcher(nullptr),
+          subscriptionManager(nullptr),
+          joynrMessagingSendSkeleton(nullptr),
+          joynrMessageSender(nullptr),
           app(app),
-          capabilitiesClient(NULL),
-          localCapabilitiesDirectory(NULL),
+          capabilitiesClient(nullptr),
+          localCapabilitiesDirectory(nullptr),
           channelUrlDirectory(),
           cache(),
-          channelUrlDirectoryProxy(NULL),
-          libJoynrMessagingSkeleton(NULL),
+          channelUrlDirectoryProxy(nullptr),
+          libJoynrMessagingSkeleton(nullptr),
           messageReceiver(messageReceiver),
           messageSender(messageSender),
           dispatcherList(),
-          inProcessConnectorFactory(NULL),
-          inProcessPublicationSender(NULL),
-          joynrMessagingConnectorFactory(NULL),
-          connectorFactory(NULL),
+          inProcessConnectorFactory(nullptr),
+          inProcessPublicationSender(nullptr),
+          joynrMessagingConnectorFactory(nullptr),
+          connectorFactory(nullptr),
           settings(settings),
-          messagingSettings(NULL),
-          libjoynrSettings(NULL),
+          messagingSettings(nullptr),
+          libjoynrSettings(nullptr),
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
           dbusSettings(NULL),
           ccDbusMessageRouterAdapter(NULL),
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
           wsSettings(*settings),
-          wsCcMessagingSkeleton(NULL),
-          securityManager(NULL),
+          wsCcMessagingSkeleton(nullptr),
+          securityManager(nullptr),
           messagingIsRunning(false)
 {
     initializeAllDependencies();
@@ -359,19 +359,19 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
     LOG_TRACE(logger, "entering ~JoynrClusterControllerRuntime");
     stopMessaging();
 
-    if (joynrDispatcher != NULL) {
+    if (joynrDispatcher != nullptr) {
         LOG_TRACE(logger, "joynrDispatcher");
         // joynrDispatcher->stopMessaging();
         delete joynrDispatcher;
     }
 
     delete inProcessDispatcher;
-    inProcessDispatcher = NULL;
+    inProcessDispatcher = nullptr;
     delete capabilitiesClient;
-    capabilitiesClient = NULL;
+    capabilitiesClient = nullptr;
 
     delete inProcessPublicationSender;
-    inProcessPublicationSender = NULL;
+    inProcessPublicationSender = nullptr;
     delete joynrMessageSender;
     delete proxyFactory;
     delete messagingSettings;
@@ -392,7 +392,7 @@ void JoynrClusterControllerRuntime::startMessaging()
     //    assert(joynrDispatcher!=NULL);
     //    joynrDispatcher->startMessaging();
     //    joynrDispatcher->waitForMessaging();
-    assert(messageReceiver != NULL);
+    assert(messageReceiver != nullptr);
     if (!messagingIsRunning) {
         messageReceiver->startReceiveQueue();
         messagingIsRunning = true;
@@ -417,7 +417,7 @@ JoynrClusterControllerRuntime* JoynrClusterControllerRuntime::create(Settings* s
 {
     // Only allow one QCoreApplication instance
     static int argc = 0;
-    static char* argv[] = {0};
+    static char* argv[] = {nullptr};
     static QCoreApplication* coreApplication =
             (QCoreApplication::instance() == nullptr) ? new QCoreApplication(argc, argv) : nullptr;
 

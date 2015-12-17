@@ -51,7 +51,7 @@ joynr::Timer::TimerId joynr::Timer::addTimer(
         bool periodic)
 {
     const milliseconds interval(msToBeExpired);
-    TimerData* newTimer = NULL;
+    TimerData* newTimer = nullptr;
 
     {
         std::unique_lock<std::mutex> lock(mutex);

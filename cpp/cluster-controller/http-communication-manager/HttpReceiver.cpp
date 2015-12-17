@@ -42,7 +42,7 @@ HttpReceiver::HttpReceiver(const MessagingSettings& settings,
           channelId(),
           receiverId(),
           settings(settings),
-          messageReceiver(NULL),
+          messageReceiver(nullptr),
           channelUrlDirectory(),
           messageRouter(messageRouter)
 {
@@ -136,11 +136,11 @@ void HttpReceiver::stopReceiveQueue()
     // currently channelCreatedSemaphore is not released here. This would be necessary if
     // stopReceivequeue is called, before channel is created.
     LOG_DEBUG(logger, "stopReceiveQueue");
-    if (messageReceiver != NULL) {
+    if (messageReceiver != nullptr) {
         messageReceiver->stop();
 
         delete messageReceiver;
-        messageReceiver = NULL;
+        messageReceiver = nullptr;
     }
 }
 

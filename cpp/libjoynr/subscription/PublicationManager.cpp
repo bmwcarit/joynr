@@ -773,7 +773,7 @@ void PublicationManager::removeBroadcastPublication(const std::string& subscript
         std::shared_ptr<RequestCaller> requestCaller = publication->requestCaller;
         requestCaller->unregisterBroadcastListener(
                 request->getSubscribeToName(), publication->broadcastListener);
-        publication->broadcastListener = NULL;
+        publication->broadcastListener = nullptr;
 
         removePublicationEndRunnable(publication);
     }
@@ -797,7 +797,7 @@ void PublicationManager::removeOnChangePublication(
         std::shared_ptr<RequestCaller> requestCaller = publication->requestCaller;
         requestCaller->unregisterAttributeListener(
                 request->getSubscribeToName(), publication->attributeListener);
-        publication->attributeListener = NULL;
+        publication->attributeListener = nullptr;
     }
     removePublicationEndRunnable(publication);
 }
@@ -1169,8 +1169,8 @@ PublicationManager::Publication::Publication(IPublicationSender* publicationSend
         : timeOfLastPublication(0),
           sender(publicationSender),
           requestCaller(requestCaller),
-          attributeListener(NULL),
-          broadcastListener(NULL),
+          attributeListener(nullptr),
+          broadcastListener(nullptr),
           mutex(),
           publicationEndRunnableHandle(DelayedScheduler::INVALID_RUNNABLE_HANDLE)
 {

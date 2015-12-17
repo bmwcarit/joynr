@@ -36,7 +36,7 @@ namespace joynr
 LocalDiscoveryAggregator::LocalDiscoveryAggregator(
         IRequestCallerDirectory& requestCallerDirectory,
         const SystemServicesSettings& systemServicesSettings)
-        : discoveryProxy(NULL),
+        : discoveryProxy(nullptr),
           hasOwnershipOfDiscoveryProxy(false),
           requestCallerDirectory(requestCallerDirectory),
           provisionedDiscoveryEntries(),
@@ -78,7 +78,7 @@ void LocalDiscoveryAggregator::setDiscoveryProxy(joynr::system::IDiscoverySync* 
 // inherited from joynr::system::IDiscoverySync
 void LocalDiscoveryAggregator::add(const joynr::types::DiscoveryEntry& discoveryEntry)
 {
-    if (discoveryProxy == NULL) {
+    if (discoveryProxy == nullptr) {
         throw exceptions::JoynrRuntimeException(
                 "LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
                 "local capabilitites directory.");
@@ -105,7 +105,7 @@ void LocalDiscoveryAggregator::lookup(std::vector<joynr::types::DiscoveryEntry>&
                                       const std::string& interfaceName,
                                       const joynr::types::DiscoveryQos& discoveryQos)
 {
-    if (discoveryProxy == NULL) {
+    if (discoveryProxy == nullptr) {
         throw exceptions::JoynrRuntimeException(
                 "LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
                 "local capabilitites directory.");
@@ -125,7 +125,7 @@ void LocalDiscoveryAggregator::lookup(joynr::types::DiscoveryEntry& result,
     if (entry != provisionedDiscoveryEntries.end()) {
         result = entry->second;
     } else {
-        if (discoveryProxy == NULL) {
+        if (discoveryProxy == nullptr) {
             throw exceptions::JoynrRuntimeException(
                     "LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
                     "local capabilitites directory.");
@@ -138,7 +138,7 @@ void LocalDiscoveryAggregator::lookup(joynr::types::DiscoveryEntry& result,
 // inherited from joynr::system::IDiscoverySync
 void LocalDiscoveryAggregator::remove(const std::string& participantId)
 {
-    if (discoveryProxy == NULL) {
+    if (discoveryProxy == nullptr) {
         throw exceptions::JoynrRuntimeException(
                 "LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
                 "local capabilitites directory.");

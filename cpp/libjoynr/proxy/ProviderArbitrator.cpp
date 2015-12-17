@@ -49,7 +49,7 @@ ProviderArbitrator::ProviderArbitrator(const std::string& domain,
           participantId(""),
           connection(joynr::types::CommunicationMiddleware::NONE),
           arbitrationStatus(ArbitrationStatus::ArbitrationRunning),
-          listener(NULL),
+          listener(nullptr),
           listenerSemaphore(0)
 {
 }
@@ -145,7 +145,7 @@ void ProviderArbitrator::setParticipantId(std::string participantId)
 {
     this->participantId = participantId;
     if (listenerSemaphore.waitFor()) {
-        assert(listener != NULL);
+        assert(listener != nullptr);
         listener->setParticipantId(participantId);
         listenerSemaphore.notify();
     }
@@ -166,7 +166,7 @@ void ProviderArbitrator::setConnection(
 {
     this->connection = connection;
     if (listenerSemaphore.waitFor()) {
-        assert(listener != NULL);
+        assert(listener != nullptr);
         listener->setConnection(connection);
         listenerSemaphore.notify();
     }
@@ -188,7 +188,7 @@ void ProviderArbitrator::setArbitrationStatus(
     this->arbitrationStatus = arbitrationStatus;
     if (listenerSemaphore.waitFor()) {
         try {
-            assert(listener != NULL);
+            assert(listener != nullptr);
             listener->setArbitrationStatus(arbitrationStatus);
         } catch (exceptions::DiscoveryException& e) {
             LOG_ERROR(logger,
@@ -204,8 +204,8 @@ void ProviderArbitrator::setArbitrationStatus(
 
 void ProviderArbitrator::removeArbitationListener()
 {
-    if (listener != NULL) {
-        this->listener = NULL;
+    if (listener != nullptr) {
+        this->listener = nullptr;
         listenerSemaphore.wait();
     }
 }

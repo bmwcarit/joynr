@@ -60,7 +60,7 @@ void joynr::SingleThreadedDelayedScheduler::shutdown()
 
     DelayedScheduler::shutdown();
 
-    if (currentlyRunning != NULL) {
+    if (currentlyRunning != nullptr) {
         currentlyRunning->shutdown();
     }
 
@@ -76,13 +76,13 @@ void joynr::SingleThreadedDelayedScheduler::run()
 
         Runnable* work = queue.take();
 
-        if (work != NULL) {
+        if (work != nullptr) {
 
             LOG_TRACE(logger, "Got work. Executing now.");
 
             currentlyRunning = work;
             work->run();
-            currentlyRunning = NULL;
+            currentlyRunning = nullptr;
 
             LOG_TRACE(logger, "Finished work");
 

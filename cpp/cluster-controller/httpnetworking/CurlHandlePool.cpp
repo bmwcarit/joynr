@@ -148,7 +148,7 @@ std::shared_ptr<PooledCurlHandle> PerThreadCurlHandlePool::takeOrCreateHandle(
 
 const int PooledCurlHandle::CONNECTIONS_PER_HANDLE = 3;
 
-PooledCurlHandle::PooledCurlHandle() : hosts(), handle(NULL)
+PooledCurlHandle::PooledCurlHandle() : hosts(), handle(nullptr)
 {
     handle = curl_easy_init();
     curl_easy_setopt(handle, CURLOPT_MAXCONNECTS, (long)CONNECTIONS_PER_HANDLE);

@@ -97,7 +97,7 @@ void joynr::ThreadPool::threadLifecycle()
         // Take a runnable
         Runnable* runnable = scheduler.take();
 
-        if (runnable != NULL) {
+        if (runnable != nullptr) {
 
             LOG_TRACE(logger, "Thread got runnable and will do work");
 

@@ -38,7 +38,7 @@ ProxyBase::ProxyBase(ConnectorFactory* connectorFactory,
           cached(cached),
           providerParticipantId(""),
           proxyParticipantId(""),
-          connection(NULL)
+          connection(nullptr)
 {
     proxyParticipantId = Util::createUuid();
 }

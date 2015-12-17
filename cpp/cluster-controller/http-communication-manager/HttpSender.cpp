@@ -163,7 +163,7 @@ void HttpSender::SendMessageRunnable::run()
                       .arg(SendMessageRunnable::messageRunnableCounter)
                       .str());
 
-    assert(messageSender->channelUrlCache != NULL);
+    assert(messageSender->channelUrlCache != nullptr);
     // A channelId can have several Url's. Hence, we cannot use up all the time we have for testing
     // just one (in case it is not available). So we use just a fraction, yet at least MIN... and
     // at most MAX... seconds.

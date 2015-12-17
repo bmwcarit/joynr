@@ -21,7 +21,7 @@
 namespace joynr
 {
 
-MetaTypeRegistrar* MetaTypeRegistrar::registrarInstance = 0;
+MetaTypeRegistrar* MetaTypeRegistrar::registrarInstance = nullptr;
 
 MetaTypeRegistrar::MetaTypeRegistrar()
         : publicationInterpreters(),

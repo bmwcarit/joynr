@@ -62,8 +62,8 @@ Dispatcher::Dispatcher(JoynrMessageSender* messageSender, int maxThreads)
         : messageSender(messageSender),
           requestCallerDirectory("Dispatcher-RequestCallerDirectory"),
           replyCallerDirectory("Dispatcher-ReplyCallerDirectory"),
-          publicationManager(NULL),
-          subscriptionManager(NULL),
+          publicationManager(nullptr),
+          subscriptionManager(nullptr),
           handleReceivedMessageThreadPool("Dispatcher", maxThreads),
           subscriptionHandlingMutex()
 
@@ -76,8 +76,8 @@ Dispatcher::~Dispatcher()
     handleReceivedMessageThreadPool.shutdown();
     delete publicationManager;
     delete subscriptionManager;
-    publicationManager = NULL;
-    subscriptionManager = NULL;
+    publicationManager = nullptr;
+    subscriptionManager = nullptr;
     LOG_DEBUG(logger, "Destructing finished");
 }
 
@@ -88,7 +88,7 @@ void Dispatcher::addRequestCaller(const std::string& participantId,
     LOG_DEBUG(logger, FormatString("addRequestCaller id= %1").arg(participantId).str());
     requestCallerDirectory.add(participantId, requestCaller);
 
-    if (publicationManager != NULL) {
+    if (publicationManager != nullptr) {
         // publication manager queues received subscription requests, that are
         // received before the corresponding request caller is added
         publicationManager->restore(participantId, requestCaller, messageSender);
@@ -141,7 +141,7 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
     // lookup necessary data
     std::string jsonRequest = message.getPayload();
     std::shared_ptr<RequestCaller> caller = requestCallerDirectory.lookup(receiverId);
-    if (caller == NULL) {
+    if (caller == nullptr) {
         LOG_ERROR(logger,
                   FormatString("caller not found in the RequestCallerDirectory for receiverId %1, "
                                "ignoring")
@@ -233,7 +233,7 @@ void Dispatcher::handleReplyReceived(const JoynrMessage& message)
     std::string requestReplyId = reply->getRequestReplyId();
 
     std::shared_ptr<IReplyCaller> caller = replyCallerDirectory.lookup(requestReplyId);
-    if (caller == NULL) {
+    if (caller == nullptr) {
         // This used to be a fatal error, but it is possible that the replyCallerDirectory removed
         // the caller
         // because its lifetime exceeded TTL
@@ -264,7 +264,7 @@ void Dispatcher::handleSubscriptionRequestReceived(const JoynrMessage& message)
     // Make sure that noone is registering a Caller at the moment, because a racing condition could
     // occour.
     std::lock_guard<std::mutex> lock(subscriptionHandlingMutex);
-    assert(publicationManager != NULL);
+    assert(publicationManager != nullptr);
 
     std::string receiverId = message.getHeaderTo();
     std::shared_ptr<RequestCaller> caller = requestCallerDirectory.lookup(receiverId);
@@ -304,7 +304,7 @@ void Dispatcher::handleBroadcastSubscriptionRequestReceived(const JoynrMessage& 
     // Make sure that noone is registering a Caller at the moment, because a racing condition could
     // occour.
     std::lock_guard<std::mutex> lock(subscriptionHandlingMutex);
-    assert(publicationManager != NULL);
+    assert(publicationManager != nullptr);
 
     std::string receiverId = message.getHeaderTo();
     std::shared_ptr<RequestCaller> caller = requestCallerDirectory.lookup(receiverId);
@@ -354,7 +354,7 @@ void Dispatcher::handleSubscriptionStopReceived(const JoynrMessage& message)
         return;
     }
     std::string subscriptionId = subscriptionStop->getSubscriptionId();
-    assert(publicationManager != NULL);
+    assert(publicationManager != nullptr);
     publicationManager->stopPublication(subscriptionId);
 }
 
@@ -373,7 +373,7 @@ void Dispatcher::handlePublicationReceived(const JoynrMessage& message)
     }
     std::string subscriptionId = subscriptionPublication->getSubscriptionId();
 
-    assert(subscriptionManager != NULL);
+    assert(subscriptionManager != nullptr);
 
     std::shared_ptr<ISubscriptionCallback> callback =
             subscriptionManager->getSubscriptionCallback(subscriptionId);

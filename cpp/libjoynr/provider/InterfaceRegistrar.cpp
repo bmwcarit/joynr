@@ -23,7 +23,7 @@
 namespace joynr
 {
 
-InterfaceRegistrar* InterfaceRegistrar::registrarInstance = 0;
+InterfaceRegistrar* InterfaceRegistrar::registrarInstance = nullptr;
 
 InterfaceRegistrar::InterfaceRegistrar()
         : requestInterpreters(), requestInterpretersMutex(), requestInterpreterCounts()
