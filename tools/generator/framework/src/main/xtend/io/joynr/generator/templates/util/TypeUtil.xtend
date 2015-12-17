@@ -164,6 +164,10 @@ class TypeUtil {
 		return type == FBasicTypeId::STRING;
 	}
 
+	def boolean isString(FTypeRef typeRef) {
+		return getPrimitive(typeRef) == FBasicTypeId::STRING;
+	}
+
 	def boolean isByte(FBasicTypeId type) {
 		return type == FBasicTypeId::UINT8 || type == FBasicTypeId::INT8;
 	}
