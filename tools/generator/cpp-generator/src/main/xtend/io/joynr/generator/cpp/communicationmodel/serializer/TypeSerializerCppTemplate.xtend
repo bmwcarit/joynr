@@ -113,6 +113,9 @@ void ClassSerializer<«joynrName»>::serialize(const «joynrName» &«joynrName.
 	«IF type.membersRecursive.exists[member | member.type.typeName.equals("float")]»
 		ClassSerializer<float> floatSerializer;
 	«ENDIF»
+	«IF type.membersRecursive.exists[member | member.type.string]»
+		ClassSerializer<std::string> stringSerializer;
+	«ENDIF»
 	«IF type.membersRecursive.isEmpty»
 		std::ignore = «joynrName.toFirstLower»Var;
 	«ENDIF»
@@ -240,7 +243,8 @@ def serializePrimitiveValue(FBasicTypeId basicType, String memberName, String va
 			floatSerializer.serialize(«varName».get«memberName.toFirstUpper»(), stream);
 		'''
 		case STRING: return '''
-			stream << "\"«memberName»\": \"" << «varName».get«memberName.toFirstUpper»() << "\"";
+			stream << "\"«memberName»\": ";
+			stringSerializer.serialize(«varName».get«memberName.toFirstUpper»(), stream);
 		'''
 		case BOOLEAN: 
 		return '''
