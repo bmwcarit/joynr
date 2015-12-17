@@ -48,6 +48,7 @@ class TypeSerializerCppTemplate implements CompoundTypeTemplate{
 «warning»
 #include "«type.includeOfSerializer»"
 #include "joynr/ArraySerializer.h"
+#include "joynr/PrimitiveDeserializer.h"
 #include "joynr/SerializerRegistry.h"
 #include "joynr/Variant.h"
 #include "joynr/JoynrTypeId.h"
@@ -192,7 +193,11 @@ def deserializePrimitiveValue(FBasicTypeId basicType, String memberName, String 
 		auto&& converted«memberName.toFirstUpper» = convertArray<uint8_t>(array, convertUIntType<uint8_t>);
 		«varName».set«memberName.toFirstUpper»(std::forward<std::vector<uint8_t>>(converted«memberName.toFirstUpper»));
 		'''
-		case STRING : return deserializedValue + ");"
+		case STRING : '''
+		std::string stringValue;
+		PrimitiveDeserializer<std::string>::deserialize(stringValue, «fieldName».value());
+		«varName».set«memberName.toFirstUpper»(stringValue);
+		'''
 		case BOOLEAN : return deserializedValue + ".getBool());"
 		case INT8 : return deserializedValue + ".getIntType<int8_t>());"
 		case INT16 : return deserializedValue + ".getIntType<int16_t>());"

@@ -47,6 +47,7 @@ class MapSerializerCppTemplate implements MapTemplate{
 «warning»
 #include "«type.includeOfSerializer»"
 #include "joynr/ArraySerializer.h"
+#include "joynr/PrimitiveDeserializer.h"
 #include "joynr/MapSerializer.h"
 #include "joynr/SerializerRegistry.h"
 #include "joynr/Variant.h"
@@ -114,7 +115,10 @@ def deserializePrimitiveValue(FBasicTypeId basicType, String varName, String fie
 		auto&& «randomName» = convertArray<uint8_t>(array, convertUIntType<uint8_t>);
 		«basicType.typeName» «varName» = std::forward<std::vector<uint8_t>>(«randomName.toFirstUpper»);
 		'''
-		case STRING : return deserializedValue + ";"
+		case STRING : '''
+		std::string «varName»;
+		PrimitiveDeserializer<std::string>::deserialize(«varName», «fieldValue»);
+		'''
 		case BOOLEAN : return deserializedValue + ".getBool();"
 		case INT8 : return deserializedValue + ".getIntType<int8_t>();"
 		case INT16 : return deserializedValue + ".getIntType<int16_t>();"

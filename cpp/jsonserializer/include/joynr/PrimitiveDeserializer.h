@@ -93,5 +93,13 @@ Variant PrimitiveDeserializer<T>::deserializeVariant(IValue& o)
 
 Variant deserialize(IObject& object);
 
+/**
+ * @brief Specialized deserialize method for std::string.
+ * @param string the object to fill during deserialization
+ * @param value value containing the parsed json value
+ */
+template <>
+void PrimitiveDeserializer<std::string>::deserialize(std::string& string,const IValue& value);
+
 } // namespace joynr
 #endif // PRIMITIVEDESERIALIZER_H
