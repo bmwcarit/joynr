@@ -17,7 +17,7 @@
  * #L%
  */
 #include "JoynrMessageSerializer.h"
-
+#include "joynr/Util.h"
 #include "joynr/MapSerializer.h"
 #include "joynr/SerializerRegistry.h"
 #include "joynr/Variant.h"
@@ -33,14 +33,6 @@ namespace joynr
 static const bool isJoynrMessageRegistered =
         SerializerRegistry::registerType<JoynrMessage>("joynr.JoynrMessage");
 
-static std::string  removeEscapeFromSpecialChars(const std::string& inputStr){
-    std::string unEscapedString;
-    std::regex expr ("(\\\\\")");
-    std::regex_replace (std::back_inserter(unEscapedString), inputStr.begin(), inputStr.end(), expr, std::string(R"(")"));
-
-    return unEscapedString;
-}
-
 template <>
 void ClassDeserializer<JoynrMessage>::deserialize(JoynrMessage& t, IObject& o)
 {
@@ -52,7 +44,7 @@ void ClassDeserializer<JoynrMessage>::deserialize(JoynrMessage& t, IObject& o)
             auto&& converted = convertMap<std::string>(field.value(), convertString);
             t.setHeader(converted);
         } else if (field.name() == "payload") {
-            t.setPayload( removeEscapeFromSpecialChars(field.value()));
+            t.setPayload(removeEscapeFromSpecialChars(field.value()));
         }
     }
 }
