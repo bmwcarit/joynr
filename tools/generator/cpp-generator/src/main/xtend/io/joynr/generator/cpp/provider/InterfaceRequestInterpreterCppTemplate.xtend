@@ -27,7 +27,7 @@ import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
-import org.franca.core.franca.FType
+import org.franca.core.franca.FTypedElement
 
 class InterfaceRequestInterpreterCppTemplate implements InterfaceTemplate{
 
@@ -123,11 +123,16 @@ void «interfaceName»RequestInterpreter::execute(
 						«getTypeName(attribute)» typedInput«attributeName.toFirstUpper» = 
 								«attributeRef»;
 					«ELSE»
-						«val attributeRef = attributeName + "Var.get<" + getTypeName(attribute) + ">()"»
+						«var attributeRef = if (attribute.type.float)
+												"static_cast<float>(" + attributeName + "Var.get<double>())"
+											else
+												attributeName + "Var.get<" + getTypeName(attribute) + ">()"»
 						«IF getTypeName(attribute).startsWith("int")»
 							if (!(«attributeName»Var.is<uint64_t>() || «attributeName»Var.is<int64_t>())) {
 						«ELSEIF getTypeName(attribute).startsWith("uint")»
 							if (!«attributeName»Var.is<uint64_t>()) {
+						«ELSEIF attribute.type.float»
+							if (!«attributeName»Var.is<double>()) {
 						«ELSE»
 							if (!«attributeName»Var.is<«getTypeName(attribute)»>()) {
 						«ENDIF»
@@ -201,17 +206,23 @@ void «interfaceName»RequestInterpreter::execute(
 							std::vector<«getTypeName(input.type)»> «inputName» = «joynrGenerationPrefix»::Util::convertVariantVectorToVector<«getTypeName(input.type)»>(«inputName»VarList);
 						«ELSE»
 							//«getTypeName(input)»
+							«var inputRef = if (input.type.float)
+												"static_cast<float>(" + inputName + "Var.get<double>())"
+											else
+												inputName + "Var.get<" + getTypeName(input) + ">()"»
 							«IF getTypeName(input).startsWith("int")»
 								if (!(«inputName»Var.is<uint64_t>() || «inputName»Var.is<int64_t>())) {
 							«ELSEIF getTypeName(input).startsWith("uint")»
 								if (!«inputName»Var.is<uint64_t>()) {
+							«ELSEIF input.type.float»
+								if (!«inputName»Var.is<double>()) {
 							«ELSE»
 								if (!«inputName»Var.is<«getTypeName(input)»>()) {
 							«ENDIF»
 								onError(exceptions::MethodInvocationException("Illegal argument for method «methodName»: «inputName» («getJoynrTypeName(input)»)"));
 								return;
 							}
-							«getTypeName(input)» «inputName» = «inputName»Var.get<«getTypeName(input)»>();
+							«getTypeName(input)» «inputName» = «inputRef»;
 						«ENDIF»
 					«ENDFOR»
 					«requestCallerName»->«methodName»(

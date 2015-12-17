@@ -136,6 +136,14 @@ class TypeUtil {
 		return type == FBasicTypeId::DOUBLE;
 	}
 
+	def boolean isDouble(FTypeRef typeRef) {
+		return getPrimitive(typeRef) == FBasicTypeId::DOUBLE;
+	}
+
+	def boolean isFloat(FTypeRef typeRef) {
+		return getPrimitive(typeRef) == FBasicTypeId::FLOAT;
+	}
+
 	def boolean isFloat(FBasicTypeId type) {
 		return type == FBasicTypeId::FLOAT;
 	}

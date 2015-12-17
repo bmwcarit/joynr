@@ -383,7 +383,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         ASSERT_EQ(result, setValue);
     }
 
-    // TESTING Attribute getter/setter and operation calls of maps
+    // TESTING getter/setter and operation calls with different kinds of parameters (maps, complex structs, ...)
     {
         using namespace joynr::types::TestTypes;
         ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domainName);
@@ -416,7 +416,71 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
 
         testProxy->mapParameters(mapParameterResult, stringKeyMap);
         ASSERT_EQ(mapParameterResult, stringKeyMap);
+
+        bool booleanOut;
+        double doubleOut;
+        float floatOut;
+        int8_t int8Out;
+        int16_t int16Out;
+        int32_t int32Out;
+        int64_t int64Out;
+        uint8_t uint8Out;
+        uint16_t uint16Out;
+        uint32_t uint32Out;
+        uint64_t uint64Out;
+        std::string stringOut;
+
+        bool booleanArg = true;
+        double doubleArg = 1.1;
+        float floatArg = 2.2;
+        int8_t int8Arg = 6;
+        int16_t int16Arg = 3;
+        int32_t int32Arg = 4;
+        int64_t int64Arg = 5;
+        std::string stringArg = "7";
+        uint16_t uint16Arg = 8;
+        uint32_t uint32Arg = 9;
+        uint64_t uint64Arg = 10;
+        uint8_t uint8Arg = 11;
+        testProxy->methodWithAllPossiblePrimitiveParameters(booleanOut,
+                                                            doubleOut,
+                                                            floatOut,
+                                                            int16Out,
+                                                            int32Out,
+                                                            int64Out,
+                                                            int8Out,
+                                                            stringOut,
+                                                            uint16Out,
+                                                            uint32Out,
+                                                            uint64Out,
+                                                            uint8Out,
+                                                            booleanArg,
+                                                            doubleArg,
+                                                            floatArg,
+                                                            int16Arg,
+                                                            int32Arg,
+                                                            int64Arg,
+                                                            int8Arg,
+                                                            stringArg,
+                                                            uint16Arg,
+                                                            uint32Arg,
+                                                            uint64Arg,
+                                                            uint8Arg);
+
+        EXPECT_EQ(booleanOut, booleanArg);
+        EXPECT_DOUBLE_EQ(doubleOut, doubleArg);
+        EXPECT_FLOAT_EQ(floatOut, floatArg);
+        EXPECT_EQ(stringOut, stringArg);
+        EXPECT_EQ(int8Out, int8Arg);
+        EXPECT_EQ(int16Out, int16Arg);
+        EXPECT_EQ(int32Out, int32Arg);
+        EXPECT_EQ(int64Out, int64Arg);
+        EXPECT_EQ(uint8Out, uint8Arg);
+        EXPECT_EQ(uint16Out, uint16Arg);
+        EXPECT_EQ(uint32Out, uint32Arg);
+        EXPECT_EQ(uint64Out, uint64Arg);
     }
+
     // Operation overloading is not currently supported
 #if 0
     // Testing operation overloading
