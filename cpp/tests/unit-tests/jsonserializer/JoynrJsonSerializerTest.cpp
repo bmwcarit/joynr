@@ -45,6 +45,9 @@
 #include "joynr/types/TestTypes/TStringKeyMap.h"
 #include "joynr/types/TestTypes/TIntegerKeyMap.h"
 #include "joynr/types/TestTypes/TDoubleKeyMap.h"
+#include "joynr/JoynrMessage.h"
+#include "joynr/JoynrMessageFactory.h"
+#include "joynr/MessagingQos.h"
 #include "joynr/JsonSerializer.h"
 #include "joynr/tests/test/MethodWithErrorEnumExtendedErrorEnum.h"
 #include "joynr/tests/test/MethodWithErrorEnumExtendedErrorEnumSerializer.h"
@@ -216,6 +219,27 @@ void initializeRequestWithDummyValues(Request& request) {
     request.addParam(param5, "Bool");
 }
 
+void compareRequest(const Request& expectedRequest, const Request& actualRequest) {
+    std::vector<Variant> params = actualRequest.getParams();
+    EXPECT_EQ(expectedRequest.getParams().size(), params.size());
+    Variant intParam = params[1];
+    EXPECT_TRUE(intParam.is<uint64_t>());
+    EXPECT_FALSE(intParam.is<int32_t>());
+    EXPECT_EQ(expectedRequest.getParams().at(1).get<int>(), static_cast<int32_t>(intParam.get<uint64_t>()));
+    Variant someOtherTypeParam = params[2];
+    EXPECT_TRUE(someOtherTypeParam.is<SomeOtherType>());
+    EXPECT_EQ(expectedRequest.getParams().at(2).get<SomeOtherType>().getA(), someOtherTypeParam.get<SomeOtherType>().getA());
+    std::cout << "Deserialized value is " << someOtherTypeParam.get<SomeOtherType>().getA() << std::endl;
+    Variant floatParam = params[3];
+    EXPECT_TRUE(floatParam.is<double>());
+    EXPECT_FALSE(floatParam.is<float>());
+    EXPECT_FLOAT_EQ(expectedRequest.getParams().at(3).get<float>(),
+                    static_cast<float>(floatParam.get<double>()));
+    Variant boolParam = params[4];
+    EXPECT_TRUE(boolParam.is<bool>());
+    EXPECT_EQ(expectedRequest.getParams().at(4).get<bool>(), boolParam.get<bool>());
+}
+
 TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrRequest)
 {
     // Create a Request
@@ -236,24 +260,37 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrRequest)
     if (tokenizer.hasNextObject()) {
         Request request;
         ClassDeserializer<Request>::deserialize(request, tokenizer.nextObject());
-        std::vector<Variant> params = request.getParams();
-        EXPECT_EQ(expectedRequest.getParams().size(), params.size());
-        Variant intParam = params[1];
-        EXPECT_TRUE(intParam.is<uint64_t>());
-        EXPECT_FALSE(intParam.is<int32_t>());
-        EXPECT_EQ(expectedRequest.getParams().at(1).get<int>(), static_cast<int32_t>(intParam.get<uint64_t>()));
-        Variant someOtherTypeParam = params[2];
-        EXPECT_TRUE(someOtherTypeParam.is<SomeOtherType>());
-        EXPECT_EQ(expectedRequest.getParams().at(2).get<SomeOtherType>().getA(), someOtherTypeParam.get<SomeOtherType>().getA());
-        std::cout << "Deserialized value is " << someOtherTypeParam.get<SomeOtherType>().getA() << std::endl;
-        Variant floatParam = params[3];
-        EXPECT_TRUE(floatParam.is<double>());
-        EXPECT_FALSE(floatParam.is<float>());
-        EXPECT_FLOAT_EQ(expectedRequest.getParams().at(3).get<float>(),
-                        static_cast<float>(floatParam.get<double>()));
-        Variant boolParam = params[4];
-        EXPECT_TRUE(boolParam.is<bool>());
-        EXPECT_EQ(expectedRequest.getParams().at(4).get<bool>(), boolParam.get<bool>());
+        compareRequest(expectedRequest, request);
+    }
+}
+
+TEST_F(JoynrJsonSerializerTest, serializeJoynrMessage)
+{
+    // Create a Request
+    Request expectedRequest;
+
+    initializeRequestWithDummyValues(expectedRequest);
+    JoynrMessage expectedMessage = JoynrMessageFactory().createRequest("sender",
+                                                                      "receiver",
+                                                                      MessagingQos(),
+                                                                      expectedRequest);
+
+    // Serialize into JSON
+    std::stringstream stream;
+    auto serializer = ClassSerializer<JoynrMessage>();
+    serializer.serialize(expectedMessage, stream);
+    std::string json{ stream.str() };
+    LOG_TRACE(logger, FormatString("JoynrMessage JSON: %1").arg(json).str());
+
+    // Deserialize from JSON
+    JsonTokenizer tokenizer(json);
+
+    if (tokenizer.hasNextObject()) {
+        JoynrMessage message;
+        ClassDeserializer<JoynrMessage>::deserialize(message, tokenizer.nextObject());
+        Request* request = JsonSerializer::deserialize<Request>(message.getPayload());
+        compareRequest(expectedRequest, *request);
+        delete request;
     }
 }
 
