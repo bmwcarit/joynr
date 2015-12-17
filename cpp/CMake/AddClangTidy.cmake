@@ -22,6 +22,6 @@ function(AddClangTidy TARGET)
              WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
              VERBATIM
         )
-        add_dependencies(${TARGET} ${TIDY_TARGET})
+        add_dependencies(tidy ${TIDY_TARGET})
     endif(${ENABLE_CLANG_TIDY})
 endfunction(AddClangTidy)

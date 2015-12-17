@@ -165,6 +165,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 if(${ENABLE_CLANG_TIDY})
     set(CLANG_TIDY_PATH "CLANG_TIDY_PATH-NOTFOUND" CACHE FILEPATH "Path to 'clang-tidy' executable")
     LocateProgram(clang-tidy CLANG_TIDY_PATH)
+    add_custom_target(tidy)
 endif(${ENABLE_CLANG_TIDY})
 
 set(CLANG_TIDY_OPTIONS -checks=* CACHE LIST "additional options for clang-tidy")
