@@ -37,6 +37,7 @@ This project has dependencies to:
   Bean Validation API under Apache License, Version 2.0
   CDI APIs under Apache License, Version 2.0
   clustercontroller-inprocess-runtime under The Apache Software License, Version 2.0
+  clustercontroller-standalone under The Apache Software License, Version 2.0
   clustercontroller-websocket-runtime under The Apache Software License, Version 2.0
   Common Annotations 1.1 API under lgpl
   Commons Codec under The Apache Software License, Version 2.0
@@ -170,6 +171,7 @@ This project has dependencies to:
   Jetty :: Websocket :: Server under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Websocket :: Servlet Interface under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: XML utilities under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
+  JLine under The BSD License
   JMS 1.1 under The Apache Software License, Version 2.0
   JMS 1.1 API under lgpl
   JPA 2.0 API under Sun Binary Code License

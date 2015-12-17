@@ -36,5 +36,6 @@
         <module>libjoynr-websocket-runtime</module>
         <module>clustercontroller-websocket-runtime</module>
         <module>clustercontroller-inprocess-runtime</module>
+        <module>clustercontroller-standalone</module>
     </modules>
 </project>
