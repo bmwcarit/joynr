@@ -167,7 +167,7 @@ if(${ENABLE_CLANG_TIDY})
     LocateProgram(clang-tidy CLANG_TIDY_PATH)
 endif(${ENABLE_CLANG_TIDY})
 
-set(ENABLE_CLANG_TIDY_OPTIONS "-checks=*" CACHE STRING "additional options for clang-tidy")
+set(CLANG_TIDY_OPTIONS -checks=* CACHE LIST "additional options for clang-tidy")
 
 include(AddClangTidy)
 
