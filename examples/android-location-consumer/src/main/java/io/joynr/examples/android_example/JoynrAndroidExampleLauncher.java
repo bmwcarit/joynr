@@ -21,6 +21,7 @@ package io.joynr.examples.android_example;
 
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
+import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -55,15 +56,11 @@ public class JoynrAndroidExampleLauncher {
         logger.info("In JoynrAndroidExampleLauncher");
         logToOutput("Creating joynr GPS proxy and requesting location...\n");
 
-        MessagingQos messagingQos = new MessagingQos(); // MessagingQos with defaul values. If messages are dropped due
-        // to high latency, raise TTL values in MessagingQos.
-        DiscoveryQos discoveryQos = new DiscoveryQos(30 * 1000, // 30 msec timeout to find a provider
+        MessagingQos messagingQos = new MessagingQos(2 * 60 * 1000); // 2 minutes ttl
+        DiscoveryQos discoveryQos = new DiscoveryQos(30 * 1000, // 30 second timeout to find a provider
                                                      ArbitrationStrategy.HighestPriority,
-                                                     100); // maxAgeOfCachedProviders == 100 => Arbitration will
-        // request a list of providers from the global
-        // directory if no successful request has been made in
-        // the last 100ms.
-
+                                                     Integer.MAX_VALUE,
+                                                     DiscoveryScope.LOCAL_ONLY);
         try {
             ProxyBuilder<GpsProxy> builder = joynrAndroidRuntime.getProxyBuilder(PROVIDER_DOMAIN, GpsProxy.class);
 
@@ -76,12 +73,10 @@ public class JoynrAndroidExampleLauncher {
                            logger.info("Proxy created");
                            try {
                                // single location request
-                               GpsLocation location = proxy.getLocation();
+                               new GetGpsTask().execute(proxy);
 
                                // Subscription example
-                               subscribeToLocation(proxy);
-
-                               logToOutput("location: " + location + "\n");
+                               //                               subscribeToLocation(proxy);
                            } catch (DiscoveryException e) {
                                logToOutput("Arbitration failed!\n");
                            } catch (JoynrCommunicationException e) {

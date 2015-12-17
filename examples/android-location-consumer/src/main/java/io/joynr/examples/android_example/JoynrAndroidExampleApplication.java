@@ -19,15 +19,16 @@ package io.joynr.examples.android_example;
  * #L%
  */
 
-import io.joynr.joynrandroidruntime.JoynrAndroidRuntime;
-import io.joynr.messaging.MessagingPropertyKeys;
-
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import android.app.Application;
+import io.joynr.joynrandroidruntime.JoynrAndroidRuntime;
+import io.joynr.messaging.websocket.WebsocketModule;
 
 public class JoynrAndroidExampleApplication extends Application {
     private static final Logger logger = LoggerFactory.getLogger(JoynrAndroidExampleApplication.class);
@@ -45,10 +46,24 @@ public class JoynrAndroidExampleApplication extends Application {
 
     public void initJoynrRuntime(Properties joynrConfig) {
         logToOutput("Creating joynr Runtime.");
-        logToOutput("Bounceproxy URL: " + joynrConfig.getProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL));
-        logToOutput("Channel URL Directory: " + joynrConfig.getProperty(MessagingPropertyKeys.CHANNELURLDIRECTORYURL));
-        logToOutput("Capabilities Directory: "
-                + joynrConfig.getProperty(MessagingPropertyKeys.CAPABILITIESDIRECTORYURL));
+        Properties webSocketConfig = new Properties();
+        String clusterControllerUrlString = "ws://10.0.2.2:4242";
+        try {
+            URI clusterControllerUrl = new URI(clusterControllerUrlString);
+            webSocketConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST,
+                                        clusterControllerUrl.getHost());
+            webSocketConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT, ""
+                    + clusterControllerUrl.getPort());
+            webSocketConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL,
+                                        clusterControllerUrl.getScheme());
+            webSocketConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "");
+            joynrConfig.putAll(webSocketConfig);
+        } catch (URISyntaxException e) {
+            logger.info("Cluster Controller WebSocket URL is invalid: " + clusterControllerUrlString + " error: "
+                    + e.getMessage());
+
+        }
+
         runtime = new JoynrAndroidRuntime(getApplicationContext(), joynrConfig);
 
         joynrAndroidExampleLauncher.setJoynAndroidRuntime(runtime);

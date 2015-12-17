@@ -3,7 +3,7 @@ package io.joynr.examples.android_location_provider;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ package io.joynr.examples.android_location_provider;
  * #L%
  */
 
-import io.joynr.messaging.MessagingPropertyKeys;
-
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Properties;
 
 import android.app.Activity;
@@ -30,6 +30,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import io.joynr.messaging.websocket.WebsocketModule;
 
 public class LocationProviderActivity extends Activity {
 
@@ -40,7 +41,7 @@ public class LocationProviderActivity extends Activity {
 
     /**
      * Called when the activity is first created.
-     * 
+     *
      * @param savedInstanceState
      *            If the activity is being re-initialized after previously being shut down then this Bundle contains the
      *            data it most recently supplied in onSaveInstanceState(Bundle). <b>Note: Otherwise it is null.</b>
@@ -77,15 +78,23 @@ public class LocationProviderActivity extends Activity {
         EditText editTextBackendHost = (EditText) findViewById(R.id.editTextBackendHost);
         String backendHost = editTextBackendHost.getText().toString();
         editTextBackendHost.setEnabled(false);
-        Log.i(TAG, "Bounceproxy URL: " + backendHost);
+        Log.i(TAG, "Cluster Controller WebSocket URL: " + backendHost);
 
-        Properties joynrConfig = new Properties();
-        joynrConfig.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL, "http://" + backendHost + "/bounceproxy/");
-        joynrConfig.setProperty(MessagingPropertyKeys.CHANNELURLDIRECTORYURL, "http://" + backendHost
-                + "/discovery/channels/discoverydirectory_channelid/");
-        joynrConfig.setProperty(MessagingPropertyKeys.CAPABILITIESDIRECTORYURL, "http://" + backendHost
-                + "/discovery/channels/discoverydirectory_channelid/");
-        application.initJoynrRuntime(joynrConfig);
+        Properties webSocketConfig = new Properties();
+        try {
+            URI clusterControllerUrl = new URI(backendHost);
+            webSocketConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST,
+                                        clusterControllerUrl.getHost());
+            webSocketConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT, ""
+                    + clusterControllerUrl.getPort());
+            webSocketConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL,
+                                        clusterControllerUrl.getScheme());
+            webSocketConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "");
+            application.initJoynrRuntime(webSocketConfig);
+        } catch (URISyntaxException e) {
+            Log.i(TAG, "Cluster Controller WebSocket URL is invalid: " + backendHost + " error: " + e.getMessage());
+
+        }
     }
 
     public void btnOnClickRegisterLocationProvider(View v) {

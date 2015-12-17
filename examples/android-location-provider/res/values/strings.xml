@@ -5,6 +5,6 @@
     <string name="textDomain">android-domain</string>
     <string name="textRegisterLocationProvider">Register Location Provider</string>
     <string name="textStartJoynrRuntime">Start joynr Runtime</string>
-    <string name="textBackendHost">localhost:8080</string>
+    <string name="textBackendHost">ws://10.0.2.2:4242</string>
     <string name="hintBackendHost">Enter host running Bounceproxy and Discovery.</string>
 </resources>
