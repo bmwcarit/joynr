@@ -24,7 +24,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
-
+#include <regex>
 namespace joynr
 {
 
@@ -132,4 +132,16 @@ void Util::throwJoynrException(const exceptions::JoynrException& error)
     }
 }
 
+std::string removeEscapeFromSpecialChars(const std::string& inputStr)
+{
+    std::string unEscapedString;
+    std::regex expr(R"((\\)(\\|"))");
+    std::regex_replace(std::back_inserter(unEscapedString),
+                       inputStr.begin(),
+                       inputStr.end(),
+                       expr,
+                       std::string(R"($2)"));
+
+    return unEscapedString;
+}
 } // namespace joynr

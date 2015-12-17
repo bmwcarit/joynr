@@ -36,6 +36,8 @@
 namespace joynr
 {
 
+std::string removeEscapeFromSpecialChars(const std::string& inputStr);
+
 /**
   * @class Util
   * @brief Container class for helper methods
