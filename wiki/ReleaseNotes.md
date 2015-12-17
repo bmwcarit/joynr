@@ -1,3 +1,36 @@
+#joynr 0.13.0
+
+##Notes
+* **[Java]** Uint types are not supported in Java: Unsigned values are thus read as
+  signed values, meaning for example that 255 is represented as -1 in a Java Byte. The
+  Java application is responsible for converting from signed to unsigned values as
+  required. Note that this is only an issue if values exceed the largest possible
+  values that can be represented by the signed Java values.
+* **[C++]** Removing QT dependencies from libjoynr stack is almost done. Final cleanup
+  is performed in upcoming releases.
+* **[Java,JS,C++]** The JSON serializer in all three languages escapes already escaped
+  quotas in strings incorrectly.
+
+##API relevant changes
+* **[JS]** Async loading of libjoynr (libjoynr.load()) returns Promise object instead
+  expecting a callback function as input parameter. See the [JavaScript Tutorial](JavaScriptTutorial.md) for more details.
+* **[Java,JS,C++]** Support Franca type Map 
+* **[JS]** Support Franca type Bytebuffer
+* **[C++]** ApplicationException.getError<T>() now expects a template parameter T
+  to get access to the real enum value
+
+##Other changes
+* **[Java]** Clear separation between libjoynr and cluster controller functionality.
+  Java applications do not need to bring its own cluster controller anymore, but can
+  communicate with one provided by the environment.
+* **[Java]** Libjoynr client is now able to communicate with a cluster controller
+  via Websocket communication.
+* **[Java]** Cluster controller supports Websocket communication
+* **[C++]** Replaced QJson-based serializer by own implementation
+* **[C++]** Replace several Qt functionality and data types (QThreadPool,
+  QSemaphore, QMutex, QThread, QHash, QSet, QMap, QList, ...) by own or standard
+  implementations.
+
 #joynr 0.12.3
 
 This is a minor bug fix release.
