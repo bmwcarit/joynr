@@ -270,6 +270,7 @@ TEST_F(JoynrJsonSerializerTest, serializeJoynrMessage)
     Request expectedRequest;
 
     initializeRequestWithDummyValues(expectedRequest);
+    expectedRequest.addParam(Variant::make<std::string>(R"("quotedString")"), "string");
     JoynrMessage expectedMessage = JoynrMessageFactory().createRequest("sender",
                                                                       "receiver",
                                                                       MessagingQos(),
@@ -288,6 +289,7 @@ TEST_F(JoynrJsonSerializerTest, serializeJoynrMessage)
     if (tokenizer.hasNextObject()) {
         JoynrMessage message;
         ClassDeserializer<JoynrMessage>::deserialize(message, tokenizer.nextObject());
+        LOG_TRACE(logger, FormatString("JoynrMessage payload JSON: %1").arg(message.getPayload()).str());
         Request* request = JsonSerializer::deserialize<Request>(message.getPayload());
         compareRequest(expectedRequest, *request);
         delete request;
