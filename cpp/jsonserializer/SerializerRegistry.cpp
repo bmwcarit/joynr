@@ -84,4 +84,4 @@ std::unique_ptr<IEnumDeserializer> SerializerRegistry::getEnumDeserializer(const
     return entry->createEnumDeserializer();
 }
 
-} /* namespace joynr */
+} // namespace joynr

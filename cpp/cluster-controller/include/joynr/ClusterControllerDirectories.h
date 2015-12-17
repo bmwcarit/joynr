@@ -30,4 +30,4 @@ class IMessaging;
 typedef Directory<std::string, IMessaging> MessageStubDirectory;
 
 } // namespace joynr
-#endif
+#endif // CLUSTERCONTROLLERDIRECTORIES_H

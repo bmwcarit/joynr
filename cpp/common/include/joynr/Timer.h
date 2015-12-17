@@ -120,6 +120,6 @@ private:
     std::thread workerThread;
 };
 
-} /* joynr */
+} // namespace joynr
 
-#endif /* TIMER_H_ */
+#endif // TIMER_H_

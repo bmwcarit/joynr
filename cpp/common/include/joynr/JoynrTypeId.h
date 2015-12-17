@@ -154,5 +154,5 @@ TypeId getTemplateTypeId()
 }
 #endif
 
-} /* namespace joynr */
+} // namespace joynr
 #endif // TYPEID_H

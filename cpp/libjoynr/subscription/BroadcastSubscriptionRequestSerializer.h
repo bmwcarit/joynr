@@ -39,6 +39,6 @@ template <>
 void ClassDeserializer<BroadcastSubscriptionRequest>::deserialize(BroadcastSubscriptionRequest& t,
                                                                   IObject& o);
 
-} /* namespace joynr */
+} // namespace joynr
 
 #endif // BROADCASTSUBSCRIPTIONREQUESTSERIALIZER_H

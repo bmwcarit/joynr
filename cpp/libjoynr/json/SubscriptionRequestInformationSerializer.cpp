@@ -72,4 +72,4 @@ void ClassSerializer<SubscriptionRequestInformation>::serialize(
     stream << R"("providerId": ")" << info.getProviderId();
     stream << R"("})";
 }
-} /* namespace joynr */
+} // namespace joynr

@@ -75,4 +75,4 @@ void ClassSerializer<BroadcastSubscriptionRequest>::serialize(
     stream << R"(})";
 }
 
-} /* namespace joynr */
+} // namespace joynr

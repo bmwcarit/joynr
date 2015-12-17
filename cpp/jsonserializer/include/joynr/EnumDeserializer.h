@@ -92,5 +92,5 @@ Variant EnumDeserializer<T>::deserializeVariant(IValue& o)
 
 Variant deserialize(IObject& object);
 
-} /* namespace joynr */
+} // namespace joynr
 #endif // ENUMDESERIALIZER_H

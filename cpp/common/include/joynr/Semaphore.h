@@ -86,6 +86,6 @@ private:
     std::size_t counter;
 };
 
-} /* joynr */
+} // namespace joynr
 
-#endif /* SEMAPHORE_H_ */
+#endif // SEMAPHORE_H_

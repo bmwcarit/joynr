@@ -334,4 +334,4 @@ private:
 } // namespace joynr
 
 Q_DECLARE_METATYPE(joynr::JoynrMessage)
-#endif /* JOYNRMESSAGE_H_ */
+#endif // JOYNRMESSAGE_H_

@@ -37,5 +37,5 @@ void ClassSerializer<Reply>::serialize(const Reply& reply, std::ostream& o);
 template <>
 void ClassDeserializer<Reply>::deserialize(Reply& t, IObject& o);
 
-} /* namespace joynr */
+} // namespace joynr
 #endif // REPLYSERIALIZER_H

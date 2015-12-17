@@ -29,6 +29,6 @@ using ReadWriteLock = boost::shared_mutex;
 using ReadLocker = boost::shared_lock<ReadWriteLock>;
 using WriteLocker = boost::unique_lock<ReadWriteLock>;
 
-} /* joynr */
+} // namespace joynr
 
-#endif /* READWRITELOCK_H_ */
+#endif // READWRITELOCK_H_

@@ -85,6 +85,6 @@ private:
     BlockingQueue queue;
 };
 }
-/* joynr */
+// namespace joynr
 
-#endif /* SINGLETHREADEDDELAYEDSCHEDULER_H_ */
+#endif // SINGLETHREADEDDELAYEDSCHEDULER_H_

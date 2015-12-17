@@ -175,4 +175,4 @@ void ClassSerializer<exceptions::PublicationMissedException>::serialize(const ex
     stream << "}";
 }
 
-} /* namespace joynr */
+} // namespace joynr

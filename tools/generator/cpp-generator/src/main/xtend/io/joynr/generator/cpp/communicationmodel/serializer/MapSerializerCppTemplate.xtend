@@ -100,7 +100,7 @@ void ClassSerializer<«joynrName»>::serialize(const «joynrName» &«joynrName.
 
 }
 
-} /* namespace joynr */
+} // namespace joynr
 
 '''
 

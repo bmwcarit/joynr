@@ -37,6 +37,6 @@ void ClassSerializer<SubscriptionReply>::serialize(const SubscriptionReply& subs
 template <>
 void ClassDeserializer<SubscriptionReply>::deserialize(SubscriptionReply& t, IObject& o);
 
-} /* namespace joynr */
+} // namespace joynr
 
 #endif // SUBSCRIPTIONREPLYSERIALIZER_H

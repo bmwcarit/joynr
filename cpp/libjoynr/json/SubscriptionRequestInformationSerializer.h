@@ -40,6 +40,6 @@ void ClassDeserializer<SubscriptionRequestInformation>::deserialize(
         SubscriptionRequestInformation& info,
         IObject& o);
 
-} /* namespace joynr */
+} // namespace joynr
 
 #endif // SUBSCRIPTIONREQUESTINFORMATIONSERIALIZER_H

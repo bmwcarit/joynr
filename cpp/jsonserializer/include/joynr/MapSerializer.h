@@ -85,6 +85,6 @@ void MapSerializer::serialize(const std::map<T, S>& map,
     stream << "}";
 }
 
-} /* namespace joynr */
+} // namespace joynr
 #endif // MAPSERIALIZER
 

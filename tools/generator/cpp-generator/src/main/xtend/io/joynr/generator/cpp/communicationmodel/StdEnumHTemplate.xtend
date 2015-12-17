@@ -167,7 +167,7 @@ struct hash<«type.buildPackagePath("::", true)»«typeName»::«getNestedEnumNa
 		return «type.buildPackagePath("::", true)»«typeName»::getOrdinal(«typeName.toFirstLower»Value);
 	}
 };
-} /* namespace std */
+} // namespace std
 
 #endif // «headerGuard»
 '''

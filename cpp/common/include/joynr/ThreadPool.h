@@ -108,6 +108,6 @@ private:
     std::mutex mutex;
 };
 
-} /* joynr */
+} // namespace joynr
 
-#endif /* THREADPOOL_H_ */
+#endif // THREADPOOL_H_

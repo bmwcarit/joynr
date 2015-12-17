@@ -45,6 +45,6 @@ void ClassSerializer<OnChangeSubscriptionQos>::serialize(const OnChangeSubscript
 template <>
 void ClassDeserializer<OnChangeSubscriptionQos>::deserialize(OnChangeSubscriptionQos& subscription, IObject& o);
 
-} /* namespace joynr */
+} // namespace joynr
 
 #endif // ONCHANGESUBSCRIPTIONQOSSERIALIZER_H

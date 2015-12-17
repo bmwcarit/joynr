@@ -154,6 +154,6 @@ private:
     const system_clock::time_point creation;
 };
 
-} /* joynr */
+} // namespace joynr
 
-#endif /* TIMERDATA_H_ */
+#endif // TIMERDATA_H_

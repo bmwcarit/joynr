@@ -40,5 +40,5 @@ void ClassDeserializer<OnChangeWithKeepAliveSubscriptionQos>::deserialize(
         OnChangeWithKeepAliveSubscriptionQos& qos,
         IObject& o);
 
-} /* namespace joynr */
+} // namespace joynr
 #endif // ONCHANGEWITHKEEPALIVESUBSCRIPTIONQOSSERIALIZER_H

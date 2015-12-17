@@ -47,6 +47,6 @@ inline static uint64_t getCurrentMillisSinceEpoch()
 }
 }
 
-} /* joynr */
+} // namespace joynr
 
-#endif /* TIMEUTILS_H_ */
+#endif // TIMEUTILS_H_

@@ -356,6 +356,6 @@ IVariantHolder* VariantHolder<T>::clone() const
     return copyVariantHolder<T>(payload);
 }
 
-} /* namespace joynr */
+} // namespace joynr
 
 #endif // UNIQUEVARIANT_H

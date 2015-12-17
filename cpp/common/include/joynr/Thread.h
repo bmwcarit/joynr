@@ -89,4 +89,4 @@ private:
 };
 }
 
-#endif /* THREAD_H_ */
+#endif // THREAD_H_

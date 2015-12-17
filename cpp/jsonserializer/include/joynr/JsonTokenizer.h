@@ -339,5 +339,5 @@ private:
     static std::atomic<std::size_t> maxTokens;
 };
 
-} /* namespace joynr */
+} // namespace joynr
 #endif // JSONTOKENIZER_H

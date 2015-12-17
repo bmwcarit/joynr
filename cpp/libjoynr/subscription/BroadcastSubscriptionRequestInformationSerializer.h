@@ -40,6 +40,6 @@ void ClassDeserializer<BroadcastSubscriptionRequestInformation>::deserialize(
         BroadcastSubscriptionRequestInformation& info,
         IObject& o);
 
-} /* namespace joynr */
+} // namespace joynr
 
 #endif // BROADCASTSUBSCRIPTIONREQUESTINFORMATIONSERIALIZER_H

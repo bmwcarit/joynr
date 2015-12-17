@@ -42,6 +42,6 @@ void ClassDeserializer<BroadcastFilterParameters>::deserialize(
         BroadcastFilterParameters& parameters,
         IObject& o);
 
-} /* namespace joynr */
+} // namespace joynr
 
 #endif // BROADCASTFILTERPARAMETERSSERIALIZER_H

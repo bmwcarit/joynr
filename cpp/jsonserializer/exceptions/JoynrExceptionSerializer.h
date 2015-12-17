@@ -81,5 +81,5 @@ void ClassSerializer<exceptions::MethodInvocationException>::serialize(const exc
 // Deserializes a MethodInvocationException
 template <>
 void ClassDeserializer<exceptions::MethodInvocationException>::deserialize(exceptions::MethodInvocationException& t, IObject& o);
-} /* namespace joynr */
+} // namespace joynr
 #endif // JOYNREXCEPTIONSERIALIZER_H

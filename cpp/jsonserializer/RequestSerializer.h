@@ -37,5 +37,5 @@ void ClassSerializer<Request>::serialize(const Request& request, std::ostream& o
 template <>
 void ClassDeserializer<Request>::deserialize(Request& t, IObject& o);
 
-} /* namespace joynr */
+} // namespace joynr
 #endif // REQUESTSERIALIZER_H

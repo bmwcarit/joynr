@@ -72,6 +72,6 @@ private:
     ThreadPool threadPool;
 };
 
-} /* joynr */
+} // namespace joynr
 
-#endif
+#endif // THREADPOOLDELAYEDSCHEDULER_H_

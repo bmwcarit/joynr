@@ -53,4 +53,4 @@ void ClassSerializer<SubscriptionReply>::serialize(const SubscriptionReply& subs
     stream << "}";
 }
 
-} /* namespace joynr */
+} // namespace joynr

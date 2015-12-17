@@ -212,5 +212,5 @@ bool SerializerRegistry::registerEnum(const std::string& typeName)
     return true;
 }
 
-} /* namespace joynr */
+} // namespace joynr
 #endif // SerializerRegistry_H

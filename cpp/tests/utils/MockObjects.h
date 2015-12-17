@@ -1005,4 +1005,4 @@ public:
 // restore GCC diagnostic state
 #pragma GCC diagnostic pop
 
-#endif /* MOCKOBJECTS_H_ */
+#endif // MOCKOBJECTS_H_

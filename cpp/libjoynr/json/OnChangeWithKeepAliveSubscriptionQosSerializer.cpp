@@ -68,4 +68,4 @@ void ClassSerializer<OnChangeWithKeepAliveSubscriptionQos>::serialize(
     stream << R"(})";
 }
 
-} /* namespace joynr */
+} // namespace joynr

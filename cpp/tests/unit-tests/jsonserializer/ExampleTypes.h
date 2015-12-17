@@ -127,5 +127,5 @@ void ClassSerializer<ExampleMasterAccessControlEntry>::serialize(const ExampleMa
 template <>
 void ClassDeserializer<ExampleMasterAccessControlEntry>::deserialize(ExampleMasterAccessControlEntry& t, IObject& o);
 
-} /* namespace joynr */
+} // namespace joynr
 #endif // EXAMPLETYPES_H

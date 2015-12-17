@@ -36,5 +36,5 @@ void ClassSerializer<JoynrMessage>::serialize(const JoynrMessage& request, std::
 template <>
 void ClassDeserializer<JoynrMessage>::deserialize(JoynrMessage& t, IObject& o);
 
-} /* namespace joynr */
+} // namespace joynr
 #endif // JOYNRMESSAGESERIALIZER_H

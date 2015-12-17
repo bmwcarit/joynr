@@ -58,5 +58,5 @@ void ClassSerializer<PeriodicSubscriptionQos>::serialize(
     stream << R"("alertAfterInterval": )" << qos.getAlertAfterInterval();
     stream << R"(})";
 }
-} /* namespace joynr */
+} // namespace joynr
 

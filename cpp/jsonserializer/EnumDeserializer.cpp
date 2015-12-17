@@ -32,4 +32,4 @@ Variant deserialize(IValue& o, std::string typeName)
     return deserializer->deserializeVariant(o);
 }
 
-} /* namespace joynr */
+} // namespace joynr

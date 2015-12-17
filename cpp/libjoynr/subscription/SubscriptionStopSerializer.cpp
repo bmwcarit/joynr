@@ -49,4 +49,4 @@ void ClassSerializer<SubscriptionStop>::serialize(const SubscriptionStop& subscr
     stream << "}";
 }
 
-} /* namespace joynr */
+} // namespace joynr

@@ -37,5 +37,5 @@ void ClassSerializer<SubscriptionQos>::serialize(const SubscriptionQos& subscrip
 template <>
 void ClassDeserializer<SubscriptionQos>::deserialize(SubscriptionQos& subscription, IObject& o);
 
-} /* namespace joynr */
+} // namespace joynr
 #endif // SUBSCRIPTIONQOSSERIALIZER_H

@@ -74,7 +74,7 @@ inline std::vector<«type.typeName»> Util::valueOf<
 	return joynr::Util::convertVariantVectorToVector<«type.typeName»>(
 			variant.get<std::vector<Variant>>());
 }
-} /* namespace joynr */
+} // namespace joynr
 
 #endif // «headerGuard»
 '''

@@ -218,6 +218,6 @@ public:
     virtual IValue& nextValue() = 0;
 };
 
-} /* namespace joynr */
+} // namespace joynr
 #endif // DESERIALIZER
 

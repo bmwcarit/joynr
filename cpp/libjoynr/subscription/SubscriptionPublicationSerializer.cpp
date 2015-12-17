@@ -67,4 +67,4 @@ void ClassSerializer<SubscriptionPublication>::serialize(
     stream << R"(})";
 }
 
-} /* namespace joynr */
+} // namespace joynr

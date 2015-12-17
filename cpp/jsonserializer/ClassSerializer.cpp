@@ -147,4 +147,4 @@ void ClassSerializer<Variant>::serialize(const Variant &variant,
     }
 }
 
-} /* namespace joynr */
+} // namespace joynr

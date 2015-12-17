@@ -72,4 +72,4 @@ bool convertBool(IValue &value)
 {
     return value.getBool();
 }
-} /* namespace joynr */
+} // namespace joynr

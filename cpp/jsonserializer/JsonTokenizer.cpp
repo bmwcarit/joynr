@@ -400,5 +400,5 @@ JsonToken JsonTokenizer::nextToken()
     return JsonToken(source.c_str(), tokens[++currentIndex]);
 }
 
-} /* namespace joynr */
+} // namespace joynr
 

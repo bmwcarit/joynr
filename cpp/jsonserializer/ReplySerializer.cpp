@@ -63,4 +63,4 @@ void ClassSerializer<Reply>::serialize(const Reply& reply, std::ostream& stream)
     stream << R"(})";
 }
 
-} /* namespace joynr */
+} // namespace joynr

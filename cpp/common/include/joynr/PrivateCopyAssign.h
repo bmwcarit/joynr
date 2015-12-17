@@ -31,4 +31,4 @@
     TypeName(const TypeName&);                                                                     \
     void operator=(const TypeName&)
 
-#endif
+#endif // PRIVATE_COPY_ASSIGN_H

@@ -71,4 +71,4 @@ void ClassSerializer<JoynrMessage>::serialize(const JoynrMessage& msg, std::ostr
     stream << "}";
 }
 
-} /* namespace joynr */
+} // namespace joynr

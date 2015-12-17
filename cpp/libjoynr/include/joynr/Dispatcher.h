@@ -96,4 +96,4 @@ private:
 };
 
 } // namespace joynr
-#endif /* DISPATCHER_H_ */
+#endif // DISPATCHER_H_

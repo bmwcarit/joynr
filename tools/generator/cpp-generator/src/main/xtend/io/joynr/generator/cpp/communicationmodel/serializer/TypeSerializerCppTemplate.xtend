@@ -138,7 +138,7 @@ void ClassSerializer<«joynrName»>::serialize(const «joynrName» &«joynrName.
 	stream << "}";
 }
 
-} /* namespace joynr */
+} // namespace joynr
 
 '''
 

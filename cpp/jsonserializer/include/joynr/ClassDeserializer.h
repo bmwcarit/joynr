@@ -185,5 +185,5 @@ T convertUIntType(IValue& value)
     return value.getUIntType<T>();
 }
 
-} /* namespace joynr */
+} // namespace joynr
 #endif // CLASSDESERIALIZER_H

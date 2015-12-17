@@ -243,4 +243,4 @@ void FormatString::constructOutputString()
     // add what is left after the last argument
     output.append(input.substr(lastPos));
 }
-}
+} // namespace joynr

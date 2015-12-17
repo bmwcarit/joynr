@@ -37,6 +37,6 @@ void ClassSerializer<SubscriptionStop>::serialize(const SubscriptionStop& subscr
 template <>
 void ClassDeserializer<SubscriptionStop>::deserialize(SubscriptionStop& t, IObject& o);
 
-} /* namespace joynr */
+} // namespace joynr
 
 #endif // SUBSCRIPTIONSTOPSERIALIZER_H

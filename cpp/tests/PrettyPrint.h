@@ -64,4 +64,4 @@ void PrintTo(const QUrl& value, ::std::ostream* os);
 void PrintTo(const joynr::RequestStatusCode& value, ::std::ostream* os);
 void PrintTo(const joynr::RequestStatus& value, ::std::ostream* os);
 void PrintTo(const joynr::JoynrMessage& value, ::std::ostream* os);
-#endif /* PRETTYPRINT_H_ */
+#endif // PRETTYPRINT_H_

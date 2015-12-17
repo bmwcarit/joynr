@@ -41,5 +41,5 @@ void ClassDeserializer<PeriodicSubscriptionQos>::deserialize(
         PeriodicSubscriptionQos& qos,
         IObject& o);
 
-} /* namespace joynr */
+} // namespace joynr
 #endif // PERIODICSUBSCRIPTIONQOSSERIALIZER_H

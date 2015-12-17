@@ -72,7 +72,7 @@ void ClassSerializer<«joynrName»>::serialize(const «joynrName»& «joynrName.
 template <>
 void EnumDeserializer<«joynrName»>::deserialize(«joynrName»& «joynrName.toFirstLower», const IValue& value);
 
-} /* namespace joynr */
+} // namespace joynr
 
 #endif // «headerGuard»
 '''

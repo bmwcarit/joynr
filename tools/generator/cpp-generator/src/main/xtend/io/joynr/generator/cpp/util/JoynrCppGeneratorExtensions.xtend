@@ -82,9 +82,9 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 
 	def String getNameSpaceEnderFromPackageList(Iterator<String> packageList){
 		var sb = new StringBuilder();
-		sb.append("} /* namespace " + joynrGenerationPrefix + " */ ");
+		sb.append("\n} // namespace " + joynrGenerationPrefix);
 		while(packageList.hasNext){
-			sb.insert(0, "} /* namespace " + packageList.next + " */ " );
+			sb.insert(0, "\n} // namespace " + packageList.next);
 		}
 		return sb.toString();
 	}

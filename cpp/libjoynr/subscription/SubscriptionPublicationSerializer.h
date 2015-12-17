@@ -39,6 +39,6 @@ template <>
 void ClassDeserializer<SubscriptionPublication>::deserialize(SubscriptionPublication& t,
                                                              IObject& o);
 
-} /* namespace joynr */
+} // namespace joynr
 
 #endif // SUBSCRIPTIONPUBLICATIONSERIALIZER_H

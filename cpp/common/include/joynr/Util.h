@@ -366,4 +366,4 @@ auto removeAll(std::vector<T>& v, const T& e)
 }
 
 } // namespace joynr
-#endif /* UTIL_H_ */
+#endif // UTIL_H_

@@ -70,6 +70,6 @@ void ClassSerializer<Variant>::serializeVariant(const Variant &variant, std::ost
 template <>
 void ClassSerializer<Variant>::serialize(const Variant &variant, std::ostream &stream);
 
-} /* namespace joynr */
+} // namespace joynr
 #endif // CLASSSERIALIZER
 

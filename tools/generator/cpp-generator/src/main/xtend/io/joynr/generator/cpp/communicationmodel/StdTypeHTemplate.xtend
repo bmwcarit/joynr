@@ -178,7 +178,7 @@ inline std::vector<«type.typeName»> Util::valueOf<
 	return joynr::Util::convertVariantVectorToVector<«type.typeName»>(
 			variant.get<std::vector<Variant>>());
 }
-} /* namespace joynr */
+} // namespace joynr
 
 namespace std {
 
@@ -200,7 +200,7 @@ struct hash<«type.typeName»> {
 		return «type.buildPackagePath("::", true)»hash_value(«typeName.toFirstLower»Value);
 	}
 };
-} /* namespace std */
+} // namespace std
 
 #endif // «headerGuard»
 '''

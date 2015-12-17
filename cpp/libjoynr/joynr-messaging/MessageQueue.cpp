@@ -87,4 +87,4 @@ int64_t MessageQueue::removeOutdatedMessages()
     }
     return counter;
 }
-}
+} // namespace joynr

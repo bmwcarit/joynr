@@ -71,6 +71,6 @@ void ArraySerializer::serialize(const std::vector<T>& array,
     stream << "]";
 }
 
-} /* namespace joynr */
+} // namespace joynr
 #endif // ARRAYSERIALIZER_H
 

@@ -68,6 +68,6 @@ private:
     bool deleteOnExit;
 };
 
-} /* namespace joynr */
+} // namespace joynr
 
-#endif /* JOYNRRUNABLE_H_ */
+#endif // JOYNRRUNABLE_H_

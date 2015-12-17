@@ -683,4 +683,4 @@ public:
     }
 };
 } // namespace joynr
-#endif /* TYPE_UTIL_H_ */
+#endif // TYPE_UTIL_H_

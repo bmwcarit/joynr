@@ -68,7 +68,7 @@ void ClassSerializer<«typeName»>::serialize(const «typeName»& «joynrName.to
 	stringstream << "\""<< «type.typeNameOfContainingClass»::getLiteral(«joynrName.toFirstLower») << "\"";
 }
 
-} /* namespace joynr */
+} // namespace joynr
 
 '''
 }
