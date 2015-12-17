@@ -56,12 +56,12 @@ void ClassDeserializer<exceptions::ApplicationException>::deserialize(exceptions
             t.setMessage(field.value());
         } else if (field.name() == "error") {
             IObject& error = field.value();
-            std::shared_ptr<IEnumDeserializer> deserializer;
+            std::shared_ptr<IPrimitiveDeserializer> deserializer;
             while(error.hasNextField()){
                 IField& errorField = error.nextField();
                 if (errorField.name() == "_typeName") {
                     t.setErrorTypeName(errorField.value());
-                    deserializer = SerializerRegistry::getEnumDeserializer(t.getErrorTypeName());
+                    deserializer = SerializerRegistry::getPrimitiveDeserializer(t.getErrorTypeName());
                 } else if (errorField.name() == "name") {
                     t.setName(errorField.value());
                     //we assume that the _typeName is contained before the name field in the json

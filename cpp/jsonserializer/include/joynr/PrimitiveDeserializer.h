@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef ENUMDESERIALIZER_H
-#define ENUMDESERIALIZER_H
+#ifndef PRIMITIVEDESERIALIZER_H
+#define PRIMITIVEDESERIALIZER_H
 
 #include "joynr/Variant.h"
 
@@ -32,15 +32,15 @@ class IValue;
 class IObject;
 
 /**
- * @brief The IEnumDeserializer class is base class used for deserializing classes
+ * @brief The IPrimitiveDeserializer class is base class used for deserializing classes
  */
-class IEnumDeserializer
+class IPrimitiveDeserializer
 {
 public:
     /**
-     * @brief ~IEnumDeserializer
+     * @brief ~IPrimitiveDeserializer
      */
-    virtual ~IEnumDeserializer() = default;
+    virtual ~IPrimitiveDeserializer() = default;
     /**
      * @brief deserializeVariant Every deserializer has be able to deserailize to Variant
      * @param value
@@ -55,10 +55,10 @@ public:
  * @brief Type specific deserialization
  */
 template <class T>
-class EnumDeserializer : public IEnumDeserializer
+class PrimitiveDeserializer : public IPrimitiveDeserializer
 {
 public:
-    ~EnumDeserializer() = default;
+    ~PrimitiveDeserializer() = default;
 
     /**
      * @brief deserialize Implementations are generated with the classes T,
@@ -68,16 +68,17 @@ public:
      * @param value Reference to object produced by Serializer Engine
      */
     static void deserialize(T& typeReference, const IValue& value);
+
     /**
      * @brief deserializeVariant
      * @param object
-     * @return Variant (ref. IEnumDeserializer)
+     * @return Variant (ref. IPrimitiveDeserializer)
      */
     Variant deserializeVariant(IValue& object);
 };
 
 template <class T>
-Variant EnumDeserializer<T>::deserializeVariant(IValue& o)
+Variant PrimitiveDeserializer<T>::deserializeVariant(IValue& o)
 {
     Variant variant = Variant::make<T>();
     deserialize(variant.get<T>(), o);
@@ -93,4 +94,4 @@ Variant EnumDeserializer<T>::deserializeVariant(IValue& o)
 Variant deserialize(IObject& object);
 
 } // namespace joynr
-#endif // ENUMDESERIALIZER_H
+#endif // PRIMITIVEDESERIALIZER_H

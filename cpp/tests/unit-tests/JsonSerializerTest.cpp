@@ -435,7 +435,7 @@ void deserializePermission(const std::string& serializedPermission, const Permis
     // Deserialize the result and compare
     JsonTokenizer tokenizer("{ \"value\" : \"" + serializedPermission + "\" }");
     Permission::Enum deserializedEnum;
-    EnumDeserializer<Permission::Enum>::deserialize(deserializedEnum, tokenizer.nextObject().nextField().value());
+    PrimitiveDeserializer<Permission::Enum>::deserialize(deserializedEnum, tokenizer.nextObject().nextField().value());
     EXPECT_EQ(expectation, deserializedEnum);
     EXPECT_EQ(expectation, joynr::Util::valueOf<Permission::Enum>(variant));
 }

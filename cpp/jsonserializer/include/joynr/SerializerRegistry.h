@@ -26,7 +26,7 @@
 
 #include "joynr/JoynrTypeId.h"
 #include "ClassDeserializer.h"
-#include "EnumDeserializer.h"
+#include "PrimitiveDeserializer.h"
 #include "ClassSerializer.h"
 
 namespace joynr
@@ -52,7 +52,7 @@ public:
         return nullptr;
     }
 
-    virtual std::unique_ptr<IEnumDeserializer> createEnumDeserializer()
+    virtual std::unique_ptr<IPrimitiveDeserializer> createPrimitiveDeserializer()
     {
         // By default there is no deserializer for types - they are treated as string
         // for conversion to Variant
@@ -91,9 +91,9 @@ template <class T>
 class EnumMetaObjectType : public IMetaObject
 {
 public:
-    std::unique_ptr<IEnumDeserializer> createEnumDeserializer()
+    std::unique_ptr<IPrimitiveDeserializer> createPrimitiveDeserializer()
     {
-        return std::unique_ptr<IEnumDeserializer>(new EnumDeserializer<T>());
+        return std::unique_ptr<IPrimitiveDeserializer>(new PrimitiveDeserializer<T>());
     }
 
     std::unique_ptr<IClassSerializer> createSerializer()
@@ -159,7 +159,7 @@ public:
      * @param typeName
      * @return A deserializer for the type with the given typeName
      */
-    static std::unique_ptr<IEnumDeserializer> getEnumDeserializer(const std::string& typeName);
+    static std::unique_ptr<IPrimitiveDeserializer> getPrimitiveDeserializer(const std::string& typeName);
 
     SerializerRegistry(const SerializerRegistry&) = delete;
     void operator=(const SerializerRegistry&) = delete;

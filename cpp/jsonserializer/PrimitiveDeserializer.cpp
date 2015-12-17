@@ -16,7 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/EnumDeserializer.h"
+#include "joynr/PrimitiveDeserializer.h"
+#include "joynr/Util.h"
 #include "joynr/SerializerRegistry.h"
 #include "joynr/IDeserializer.h"
 
@@ -26,7 +27,7 @@ namespace joynr
 // Deserialize not knowing the type
 Variant deserialize(IValue& o, std::string typeName)
 {
-    std::unique_ptr<IEnumDeserializer> deserializer = SerializerRegistry::getEnumDeserializer(typeName);
+    std::unique_ptr<IPrimitiveDeserializer> deserializer = SerializerRegistry::getPrimitiveDeserializer(typeName);
 
     // Deserialize
     return deserializer->deserializeVariant(o);

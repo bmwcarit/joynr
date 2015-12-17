@@ -144,7 +144,7 @@ void ClassSerializer<«joynrName»>::serialize(const «joynrName» &«joynrName.
 
 def getDeserializer(FType type) {
 	if (type.isEnum){
-		"EnumDeserializer"
+		"PrimitiveDeserializer"
 	} else if (type.isCompound || type.isMap) {
 		"ClassDeserializer"
 	} else {

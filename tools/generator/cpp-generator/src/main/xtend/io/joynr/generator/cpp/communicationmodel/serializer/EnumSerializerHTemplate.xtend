@@ -47,7 +47,7 @@ class EnumSerializerHTemplate implements EnumTemplate{
 #ifndef «headerGuard»
 #define «headerGuard»
 
-#include "joynr/EnumDeserializer.h"
+#include "joynr/PrimitiveDeserializer.h"
 #include "joynr/ClassSerializer.h"
 #include "«getIncludeOf(type)»"
 
@@ -70,7 +70,7 @@ void ClassSerializer<«joynrName»>::serialize(const «joynrName»& «joynrName.
  * @param value value containing the parsed json tokens
  */
 template <>
-void EnumDeserializer<«joynrName»>::deserialize(«joynrName»& «joynrName.toFirstLower», const IValue& value);
+void PrimitiveDeserializer<«joynrName»>::deserialize(«joynrName»& «joynrName.toFirstLower», const IValue& value);
 
 } // namespace joynr
 

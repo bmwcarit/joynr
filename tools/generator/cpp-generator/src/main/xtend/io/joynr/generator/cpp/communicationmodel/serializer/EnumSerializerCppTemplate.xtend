@@ -57,7 +57,7 @@ static const bool is«joynrName»SerializerRegistered =
 
 // Deserializes a «joynrName»
 template <>
-void EnumDeserializer<«typeName»>::deserialize(«typeName»& «joynrName.toFirstLower», const IValue& value)
+void PrimitiveDeserializer<«typeName»>::deserialize(«typeName»& «joynrName.toFirstLower», const IValue& value)
 {
 	«joynrName.toFirstLower» = «type.typeNameOfContainingClass»::getEnum(value);
 }

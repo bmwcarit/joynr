@@ -78,10 +78,10 @@ std::unique_ptr<IClassSerializer> SerializerRegistry::getSerializer(const std::s
     return entry->createSerializer();
 }
 
-std::unique_ptr<IEnumDeserializer> SerializerRegistry::getEnumDeserializer(const std::string& typeName)
+std::unique_ptr<IPrimitiveDeserializer> SerializerRegistry::getPrimitiveDeserializer(const std::string& typeName)
 {
     auto* entry = getMetaObject(typeName);
-    return entry->createEnumDeserializer();
+    return entry->createPrimitiveDeserializer();
 }
 
 } // namespace joynr
