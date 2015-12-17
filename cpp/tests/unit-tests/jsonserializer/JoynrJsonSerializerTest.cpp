@@ -194,29 +194,34 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrType)
     }
 }
 
-TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrRequest)
-{
-    // Create a Request
-    Request expectedRequest;
-    expectedRequest.setMethodName("realMethod");
-    expectedRequest.setRequestReplyId("000-10000-01011");
+void initializeRequestWithDummyValues(Request& request) {
+    request.setMethodName("realMethod");
+    request.setRequestReplyId("000-10000-01011");
 
     // Create a vector of variants to use as parameters
     std::string someString{"Hello World"};
     Variant param1 = Variant::make<std::string>(someString);
-    expectedRequest.addParam(param1, "String");
+    request.addParam(param1, "String");
     const int32_t expectedInt = 101;
     Variant param2 = Variant::make<int>(expectedInt);
-    expectedRequest.addParam(param2, "Integer");
+    request.addParam(param2, "Integer");
     SomeOtherType expectedSomeOtherType(2);
     Variant param3 = Variant::make<SomeOtherType>(expectedSomeOtherType);
-    expectedRequest.addParam(param3, "SomeOtherType");
+    request.addParam(param3, "SomeOtherType");
     const float expectedFloat = 9.99f;
     Variant param4 = Variant::make<float>(expectedFloat);
-    expectedRequest.addParam(param4, "Float");
+    request.addParam(param4, "Float");
     bool expectedBool = true;
     Variant param5 = Variant::make<bool>(expectedBool);
-    expectedRequest.addParam(param5, "Bool");
+    request.addParam(param5, "Bool");
+}
+
+TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrRequest)
+{
+    // Create a Request
+    Request expectedRequest;
+
+    initializeRequestWithDummyValues(expectedRequest);
 
     // Serialize into JSON
     std::stringstream stream;
@@ -236,18 +241,19 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrRequest)
         Variant intParam = params[1];
         EXPECT_TRUE(intParam.is<uint64_t>());
         EXPECT_FALSE(intParam.is<int32_t>());
-        EXPECT_EQ(expectedInt, static_cast<int32_t>(intParam.get<uint64_t>()));
+        EXPECT_EQ(expectedRequest.getParams().at(1).get<int>(), static_cast<int32_t>(intParam.get<uint64_t>()));
         Variant someOtherTypeParam = params[2];
         EXPECT_TRUE(someOtherTypeParam.is<SomeOtherType>());
-        EXPECT_EQ(expectedSomeOtherType.getA(), someOtherTypeParam.get<SomeOtherType>().getA());
+        EXPECT_EQ(expectedRequest.getParams().at(2).get<SomeOtherType>().getA(), someOtherTypeParam.get<SomeOtherType>().getA());
         std::cout << "Deserialized value is " << someOtherTypeParam.get<SomeOtherType>().getA() << std::endl;
         Variant floatParam = params[3];
         EXPECT_TRUE(floatParam.is<double>());
         EXPECT_FALSE(floatParam.is<float>());
-        EXPECT_EQ(expectedFloat, static_cast<float>(floatParam.get<double>()));
+        EXPECT_FLOAT_EQ(expectedRequest.getParams().at(3).get<float>(),
+                        static_cast<float>(floatParam.get<double>()));
         Variant boolParam = params[4];
         EXPECT_TRUE(boolParam.is<bool>());
-        EXPECT_EQ(expectedBool, boolParam.get<bool>());
+        EXPECT_EQ(expectedRequest.getParams().at(4).get<bool>(), boolParam.get<bool>());
     }
 }
 
