@@ -31,10 +31,6 @@ using namespace joynr_logging;
 Logger* InProcessPublicationSender::logger =
         Logging::getInstance()->getLogger("MSG", "InProcessPublicationSender");
 
-InProcessPublicationSender::~InProcessPublicationSender()
-{
-}
-
 InProcessPublicationSender::InProcessPublicationSender(ISubscriptionManager* subscriptionManager)
         : subscriptionManager(subscriptionManager)
 {

@@ -26,10 +26,6 @@ InProcessAddress::InProcessAddress(std::shared_ptr<RequestCaller> requestCaller)
 {
 }
 
-InProcessAddress::~InProcessAddress()
-{
-}
-
 std::shared_ptr<RequestCaller> InProcessAddress::getRequestCaller() const
 {
     return requestCaller;

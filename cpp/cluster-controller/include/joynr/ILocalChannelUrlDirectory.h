@@ -43,9 +43,7 @@ class ILocalChannelUrlDirectory
 {
 
 public:
-    virtual ~ILocalChannelUrlDirectory()
-    {
-    }
+    virtual ~ILocalChannelUrlDirectory() = default;
     /**
      * @brief Register a set of Url's for a channelId.
      *

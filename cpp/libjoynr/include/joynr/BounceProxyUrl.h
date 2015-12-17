@@ -33,7 +33,7 @@ class JOYNR_EXPORT BounceProxyUrl
 public:
     explicit BounceProxyUrl(const std::string& bounceProxyChannelsBaseUrl);
 
-    BounceProxyUrl(const BounceProxyUrl& other);
+    BounceProxyUrl(const BounceProxyUrl& other) = default;
 
     BounceProxyUrl& operator=(const BounceProxyUrl& bounceProxyUrl);
     bool operator==(const BounceProxyUrl& bounceProxyUrl) const;

@@ -54,10 +54,6 @@ ProviderArbitrator::ProviderArbitrator(const std::string& domain,
 {
 }
 
-ProviderArbitrator::~ProviderArbitrator()
-{
-}
-
 void ProviderArbitrator::startArbitration()
 {
     joynr::Semaphore semaphore;

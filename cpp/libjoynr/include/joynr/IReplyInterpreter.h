@@ -31,9 +31,7 @@ class Reply;
 class IReplyInterpreter
 {
 public:
-    virtual ~IReplyInterpreter()
-    {
-    }
+    virtual ~IReplyInterpreter() = default;
     // The ReplyCaller is the instance that calls the actual receiver of the reply.
     virtual void execute(std::shared_ptr<IReplyCaller> replyCaller, const Reply& reply) = 0;
 };

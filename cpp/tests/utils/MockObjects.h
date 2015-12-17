@@ -461,7 +461,7 @@ public:
 
 class IMockProviderInterface {
 public:
-    virtual ~IMockProviderInterface(){}
+    virtual ~IMockProviderInterface() = default;
     static const std::string& INTERFACE_NAME();
 };
 
@@ -470,7 +470,7 @@ class MockProvider : public joynr::AbstractJoynrProvider, public IMockProviderIn
 public:
     MOCK_CONST_METHOD0(getProviderQos, joynr::types::ProviderQos());
     MOCK_CONST_METHOD0(getParticipantId, std::string());
-    virtual ~MockProvider(){}
+    virtual ~MockProvider() = default;
     virtual std::string getInterfaceName() const;
 };
 
@@ -488,7 +488,7 @@ public:
 class MockMessageReceiver : public joynr::IMessageReceiver
 {
 public:
-    MockMessageReceiver(){};
+    MockMessageReceiver() = default;
     MOCK_METHOD1(init, void(std::shared_ptr<joynr::ILocalChannelUrlDirectory> channelUrlDirectory));
     MOCK_CONST_METHOD0(getReceiveChannelId, std::string&());
     MOCK_METHOD0(startReceiveQueue, void());

@@ -32,9 +32,7 @@ namespace joynr
 class IMessageSender
 {
 public:
-    virtual ~IMessageSender()
-    {
-    }
+    virtual ~IMessageSender() = default;
     /**
     * @brief Sends the message to the given channel.
     */

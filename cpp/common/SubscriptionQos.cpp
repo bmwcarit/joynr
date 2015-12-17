@@ -72,15 +72,6 @@ SubscriptionQos::SubscriptionQos(const int64_t& validity)
     setValidity(validity);
 }
 
-SubscriptionQos::SubscriptionQos(const SubscriptionQos& subscriptionQos)
-        : expiryDate(subscriptionQos.expiryDate), publicationTtl(subscriptionQos.publicationTtl)
-{
-}
-
-SubscriptionQos::~SubscriptionQos()
-{
-}
-
 int64_t SubscriptionQos::getPublicationTtl() const
 {
     return publicationTtl;

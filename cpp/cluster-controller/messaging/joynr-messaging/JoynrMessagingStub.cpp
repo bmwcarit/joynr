@@ -33,10 +33,6 @@ JoynrMessagingStub::JoynrMessagingStub(std::shared_ptr<IMessageSender> messageSe
 {
 }
 
-JoynrMessagingStub::~JoynrMessagingStub()
-{
-}
-
 void JoynrMessagingStub::transmit(JoynrMessage& message)
 {
     if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST ||

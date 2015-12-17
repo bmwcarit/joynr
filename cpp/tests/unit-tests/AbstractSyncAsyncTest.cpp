@@ -111,7 +111,7 @@ public:
         asyncTestFixture(NULL),
         error(NULL)
     {}
-    virtual ~AbstractSyncAsyncTest(){}
+    virtual ~AbstractSyncAsyncTest() = default;
     void SetUp(){
         qosSettings = MessagingQos(456000);
         endPointAddress = std::shared_ptr<system::RoutingTypes::Address>(new system::RoutingTypes::ChannelAddress("endPointAddress"));

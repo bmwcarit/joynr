@@ -45,9 +45,7 @@ class JOYNR_EXPORT QosArbitrator : public ProviderArbitrator
 {
 
 public:
-    virtual ~QosArbitrator()
-    {
-    }
+    virtual ~QosArbitrator() = default;
     QosArbitrator(const std::string& domain,
                   const std::string& interfaceName,
                   joynr::system::IDiscoverySync& discoveryProxy,

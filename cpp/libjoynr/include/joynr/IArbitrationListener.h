@@ -38,9 +38,7 @@ class IArbitrationListener
 {
 public:
     /** @brief Destructor */
-    virtual ~IArbitrationListener()
-    {
-    }
+    virtual ~IArbitrationListener() = default;
 
     /**
      * @brief Set the status of the arbitration

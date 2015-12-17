@@ -54,7 +54,7 @@ enum LogLevel { TRACE, DEBUG, INFO, WARN, ERROR, FATAL };
 class JOYNRCOMMON_EXPORT Logging
 {
 public:
-    virtual ~Logging(){};
+    virtual ~Logging() = default;
     /**
      * @brief shutdown does necessary cleanup before Logging object has been destroyed
      */
@@ -91,7 +91,7 @@ public:
 class JOYNRCOMMON_EXPORT Logger
 {
 public:
-    virtual ~Logger(){};
+    virtual ~Logger() = default;
     /**
      * @brief log
      * @param logLevel

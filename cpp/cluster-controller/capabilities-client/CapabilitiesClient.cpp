@@ -47,10 +47,6 @@ CapabilitiesClient::CapabilitiesClient(const std::string& localChannelId)
 {
 }
 
-CapabilitiesClient::~CapabilitiesClient()
-{
-}
-
 std::string CapabilitiesClient::getLocalChannelId()
 {
     return localChannelId;

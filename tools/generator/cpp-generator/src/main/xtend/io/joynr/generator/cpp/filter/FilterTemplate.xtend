@@ -90,7 +90,7 @@ public:
 	}
 
 	/** @brief Destructor */
-	~«className»() {}
+	~«className»() = default;
 
 	/**
 	 * @brief Filter method to decide whether a broadcast should be delivered.

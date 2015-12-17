@@ -38,12 +38,10 @@ public:
 
     SubscriptionRequestInformation(
             const SubscriptionRequestInformation& subscriptionRequestInformation);
-    virtual ~SubscriptionRequestInformation()
-    {
-    }
+    virtual ~SubscriptionRequestInformation() = default;
 
     SubscriptionRequestInformation& operator=(
-            const SubscriptionRequestInformation& subscriptionRequestInformation);
+            const SubscriptionRequestInformation& subscriptionRequestInformation) = default;
     bool operator==(const SubscriptionRequestInformation& subscriptionRequestInformation) const;
 
     std::string toString() const;

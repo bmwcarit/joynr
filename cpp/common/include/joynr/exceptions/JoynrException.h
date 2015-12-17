@@ -44,7 +44,7 @@ public:
      * @param other The JoynrException to be copied from.
      */
     JoynrException(const JoynrException& other) noexcept;
-    virtual ~JoynrException() noexcept;
+    virtual ~JoynrException() noexcept = default;
     /**
      * @return The detail message string of the exception.
      */

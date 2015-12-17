@@ -48,9 +48,7 @@ class JOYNR_EXPORT ISubscriptionManager
 {
 
 public:
-    virtual ~ISubscriptionManager()
-    {
-    }
+    virtual ~ISubscriptionManager() = default;
 
     /**
      * @brief Subscribe to an attribute. Modifies the subscription request to include all

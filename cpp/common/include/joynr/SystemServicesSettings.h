@@ -32,9 +32,9 @@ class JOYNRCOMMON_EXPORT SystemServicesSettings
 {
 public:
     explicit SystemServicesSettings(Settings& settings);
-    SystemServicesSettings(const SystemServicesSettings& other);
+    SystemServicesSettings(const SystemServicesSettings& other) = default;
 
-    ~SystemServicesSettings();
+    ~SystemServicesSettings() = default;
 
     static const std::string& SETTING_DOMAIN();
     static const std::string& SETTING_CC_ROUTINGPROVIDER_AUTHENTICATIONTOKEN();

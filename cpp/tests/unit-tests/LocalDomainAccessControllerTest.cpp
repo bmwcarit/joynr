@@ -41,7 +41,7 @@ public:
         sem(0)
     {}
 
-    ~ConsumerPermissionCallback() {}
+    ~ConsumerPermissionCallback() = default;
 
     void consumerPermission(Permission::Enum permission) {
         this->permission = permission;

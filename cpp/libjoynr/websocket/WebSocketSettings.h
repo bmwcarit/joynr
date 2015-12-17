@@ -37,9 +37,9 @@ public:
     static const std::string& DEFAULT_WEBSOCKET_SETTINGS_FILENAME();
 
     explicit WebSocketSettings(Settings& settings);
-    WebSocketSettings(const WebSocketSettings& other);
+    WebSocketSettings(const WebSocketSettings& other) = default;
 
-    ~WebSocketSettings();
+    ~WebSocketSettings() = default;
 
     std::string getClusterControllerMessagingUrl() const;
     void setClusterControllerMessagingUrl(const std::string& url);

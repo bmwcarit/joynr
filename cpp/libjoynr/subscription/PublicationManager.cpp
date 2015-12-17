@@ -77,7 +77,7 @@ private:
 class PublicationManager::PublisherRunnable : public Runnable
 {
 public:
-    virtual ~PublisherRunnable();
+    virtual ~PublisherRunnable() = default;
     PublisherRunnable(PublicationManager& publicationManager, const std::string& subscriptionId);
 
     void shutdown() override;
@@ -94,7 +94,7 @@ private:
 class PublicationManager::PublicationEndRunnable : public Runnable
 {
 public:
-    virtual ~PublicationEndRunnable();
+    virtual ~PublicationEndRunnable() = default;
     PublicationEndRunnable(PublicationManager& publicationManager,
                            const std::string& subscriptionId);
 
@@ -1162,10 +1162,6 @@ PublicationManager::Publication::Publication(IPublicationSender* publicationSend
 
 //------ PublicationManager::PublisherRunnable ---------------------------------
 
-PublicationManager::PublisherRunnable::~PublisherRunnable()
-{
-}
-
 PublicationManager::PublisherRunnable::PublisherRunnable(PublicationManager& publicationManager,
                                                          const std::string& subscriptionId)
         : Runnable(true), publicationManager(publicationManager), subscriptionId(subscriptionId)
@@ -1182,10 +1178,6 @@ void PublicationManager::PublisherRunnable::run()
 }
 
 //------ PublicationManager::PublicationEndRunnable ----------------------------
-
-PublicationManager::PublicationEndRunnable::~PublicationEndRunnable()
-{
-}
 
 PublicationManager::PublicationEndRunnable::PublicationEndRunnable(
         PublicationManager& publicationManager,

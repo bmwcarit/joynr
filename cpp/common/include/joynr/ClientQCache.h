@@ -45,9 +45,7 @@ class JOYNRCOMMON_EXPORT ClientQCache : public IClientCache
 {
 public:
     ClientQCache();
-    virtual ~ClientQCache()
-    {
-    }
+    virtual ~ClientQCache() = default;
     /**
      * Returns the stored object associated with the key 'attributeId',
      * or an empty QVariant() if the object is either not present

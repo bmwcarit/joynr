@@ -31,23 +31,6 @@ BroadcastFilterParameters::BroadcastFilterParameters()
 {
 }
 
-BroadcastFilterParameters::BroadcastFilterParameters(
-        const BroadcastFilterParameters& filterParameters)
-        : filterParameters(filterParameters.filterParameters)
-{
-}
-
-BroadcastFilterParameters& BroadcastFilterParameters::operator=(
-        const BroadcastFilterParameters& filterParameters)
-{
-    this->filterParameters = filterParameters.filterParameters;
-    return *this;
-}
-
-BroadcastFilterParameters::~BroadcastFilterParameters()
-{
-}
-
 bool BroadcastFilterParameters::operator==(const BroadcastFilterParameters& filterParameters) const
 {
     return filterParameters.getFilterParameters().size() == this->filterParameters.size() &&

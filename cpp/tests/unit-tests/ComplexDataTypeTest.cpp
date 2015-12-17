@@ -32,9 +32,7 @@ public:
     {
     }
 
-    virtual ~ComplexDataTypeTest()
-    {
-    }
+    virtual ~ComplexDataTypeTest() = default;
 
 protected:
     static joynr::joynr_logging::Logger* logger;

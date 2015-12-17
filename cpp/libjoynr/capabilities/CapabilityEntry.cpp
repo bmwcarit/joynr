@@ -26,16 +26,6 @@ CapabilityEntry::CapabilityEntry()
 {
 }
 
-CapabilityEntry::CapabilityEntry(const CapabilityEntry& other)
-        : domain(other.domain),
-          interfaceName(other.interfaceName),
-          qos(other.qos),
-          participantId(other.participantId),
-          middlewareConnections(other.middlewareConnections),
-          global(other.global)
-{
-}
-
 CapabilityEntry::CapabilityEntry(
         const std::string& domain,
         const std::string& interfaceName,

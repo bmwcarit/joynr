@@ -96,7 +96,7 @@ namespace joynr {
 class «getDllExportMacro()» I«interfaceName»Base {
 public:
 	I«interfaceName»Base();
-	virtual ~I«interfaceName»Base() { }
+	virtual ~I«interfaceName»Base() = default;
 
 	static const std::string& INTERFACE_NAME();
 };
@@ -107,7 +107,7 @@ public:
  */
 class «getDllExportMacro()» I«interfaceName»Sync : virtual public I«interfaceName»Base {
 public:
-	virtual ~I«interfaceName»Sync(){ }
+	virtual ~I«interfaceName»Sync() = default;
 	«produceSyncGetters(serviceInterface,true)»
 	«produceSyncSetters(serviceInterface,true)»
 	«produceSyncMethods(serviceInterface,true)»
@@ -119,7 +119,7 @@ public:
  */
 class «getDllExportMacro()» I«interfaceName»Async : virtual public I«interfaceName»Base {
 public:
-	virtual ~I«interfaceName»Async(){ }
+	virtual ~I«interfaceName»Async() = default;
 	«produceAsyncGetters(serviceInterface,true)»
 	«produceAsyncSetters(serviceInterface,true)»
 	«produceAsyncMethods(serviceInterface,true)»
@@ -127,7 +127,7 @@ public:
 
 class «getDllExportMacro()» I«interfaceName» : virtual public I«interfaceName»Sync, virtual public I«interfaceName»Async {
 public:
-	virtual ~I«interfaceName»(){ }
+	virtual ~I«interfaceName»() = default;
 	«FOR attribute: getAttributes(serviceInterface)»
 		«val attributeName = attribute.name.toFirstUpper»
 		«IF attribute.readable»

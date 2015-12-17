@@ -38,9 +38,7 @@ class IMessaging;
 class IMessagingStubFactory
 {
 public:
-    virtual ~IMessagingStubFactory()
-    {
-    }
+    virtual ~IMessagingStubFactory() = default;
     virtual std::shared_ptr<IMessaging> create(
             const joynr::system::RoutingTypes::Address& destEndpointAddress) = 0;
     virtual void remove(const joynr::system::RoutingTypes::Address& destParticipantId) = 0;

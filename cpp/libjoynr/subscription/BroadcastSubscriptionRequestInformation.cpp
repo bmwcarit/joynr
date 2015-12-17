@@ -53,14 +53,6 @@ BroadcastSubscriptionRequestInformation::BroadcastSubscriptionRequestInformation
 {
 }
 
-BroadcastSubscriptionRequestInformation& BroadcastSubscriptionRequestInformation::operator=(
-        const BroadcastSubscriptionRequestInformation& subscriptionRequestInformation)
-{
-    BroadcastSubscriptionRequest::operator=(subscriptionRequestInformation);
-    SubscriptionInformation::operator=(subscriptionRequestInformation);
-    return *this;
-}
-
 bool BroadcastSubscriptionRequestInformation::operator==(
         const BroadcastSubscriptionRequestInformation& subscriptionRequestInformation) const
 {

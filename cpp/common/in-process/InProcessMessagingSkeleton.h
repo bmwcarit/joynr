@@ -34,9 +34,7 @@ class JoynrMessage;
 class JOYNRCOMMON_EXPORT InProcessMessagingSkeleton : public IMessaging
 {
 public:
-    virtual ~InProcessMessagingSkeleton()
-    {
-    }
+    virtual ~InProcessMessagingSkeleton() = default;
     virtual void transmit(JoynrMessage& message) = 0;
 
 private:

@@ -60,7 +60,7 @@ class JOYNR_EXPORT JoynrMessageSender : public IJoynrMessageSender
 public:
     JoynrMessageSender(std::shared_ptr<MessageRouter> messagingRouter);
 
-    virtual ~JoynrMessageSender();
+    virtual ~JoynrMessageSender() = default;
 
     /*
       * registers Dispatcher. See above comment why this is necessary.

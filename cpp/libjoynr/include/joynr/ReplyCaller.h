@@ -45,9 +45,7 @@ public:
     {
     }
 
-    ~ReplyCaller()
-    {
-    }
+    ~ReplyCaller() = default;
 
     void returnValue(const Ts&... payload)
     {
@@ -97,9 +95,7 @@ public:
     {
     }
 
-    ~ReplyCaller()
-    {
-    }
+    ~ReplyCaller() = default;
 
     void returnValue()
     {

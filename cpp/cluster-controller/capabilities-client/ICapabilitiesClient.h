@@ -34,9 +34,7 @@ class RequestStatus;
 class ICapabilitiesClient
 {
 public:
-    virtual ~ICapabilitiesClient()
-    {
-    }
+    virtual ~ICapabilitiesClient() = default;
     virtual void add(std::vector<types::CapabilityInformation> capabilitiesInformationList) = 0;
     virtual void remove(const std::string& participantId) = 0;
     virtual void remove(std::vector<std::string> capabilitiesInformationList) = 0;

@@ -30,10 +30,6 @@ using namespace std::chrono;
 
 Logger* DispatcherUtils::logger = Logging::getInstance()->getLogger("MSG", "DispatcherUtils");
 
-DispatcherUtils::DispatcherUtils()
-{
-}
-
 // Dispatcher Utils
 
 JoynrTimePoint DispatcherUtils::convertTtlToAbsoluteTime(int64_t ttl_ms)

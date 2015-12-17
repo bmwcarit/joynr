@@ -29,9 +29,7 @@ class JOYNRCOMMON_EXPORT ObjectWithDecayTime
 {
 
 public:
-    virtual ~ObjectWithDecayTime()
-    {
-    }
+    virtual ~ObjectWithDecayTime() = default;
     //    ObjectWithDecayTime();
     explicit ObjectWithDecayTime(const JoynrTimePoint& decayTime);
     int64_t getRemainingTtl_ms() const;

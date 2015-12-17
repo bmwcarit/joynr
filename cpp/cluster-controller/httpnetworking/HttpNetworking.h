@@ -136,7 +136,7 @@ public:
      * used.
       */
     virtual IHttpPostBuilder* postContent(const QByteArray& data) = 0;
-    virtual ~IHttpPostBuilder();
+    virtual ~IHttpPostBuilder() = default;
 };
 
 /**
@@ -161,7 +161,7 @@ public:
      */
     virtual void reset() = 0;
 
-    virtual ~ICurlHandlePool();
+    virtual ~ICurlHandlePool() = default;
 };
 
 /**

@@ -45,9 +45,7 @@ public:
     class IHasConsumerPermissionCallback
     {
     public:
-        virtual ~IHasConsumerPermissionCallback()
-        {
-        }
+        virtual ~IHasConsumerPermissionCallback() = default;
 
         /**
          * Called with the result of hasConsumerPermission
@@ -55,9 +53,7 @@ public:
         virtual void hasConsumerPermission(bool hasPermission) = 0;
     };
 
-    virtual ~IAccessController()
-    {
-    }
+    virtual ~IAccessController() = default;
 
     /**
      * Does the given request message have permission to reach the provider?

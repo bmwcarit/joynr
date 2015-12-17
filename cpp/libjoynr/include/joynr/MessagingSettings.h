@@ -34,9 +34,9 @@ class JOYNR_EXPORT MessagingSettings
 {
 public:
     explicit MessagingSettings(Settings& settings);
-    MessagingSettings(const MessagingSettings& other);
+    MessagingSettings(const MessagingSettings& other) = default;
 
-    ~MessagingSettings();
+    ~MessagingSettings() = default;
 
     static const std::string& SETTING_BOUNCE_PROXY_URL();
     static const std::string& SETTING_DISCOVERY_DIRECTORIES_DOMAIN();

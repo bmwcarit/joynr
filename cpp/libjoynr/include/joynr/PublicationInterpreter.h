@@ -37,9 +37,8 @@ template <class... Ts>
 class PublicationInterpreter : public IPublicationInterpreter
 {
 public:
-    PublicationInterpreter()
-    {
-    }
+    PublicationInterpreter() = default;
+
     void execute(std::shared_ptr<ISubscriptionCallback> callback,
                  const SubscriptionPublication& subscriptionPublication)
     {
@@ -86,9 +85,8 @@ template <class T>
 class EnumPublicationInterpreter : public IPublicationInterpreter
 {
 public:
-    EnumPublicationInterpreter()
-    {
-    }
+    EnumPublicationInterpreter() = default;
+
     void execute(std::shared_ptr<ISubscriptionCallback> callback,
                  const SubscriptionPublication& subscriptionPublication)
     {
@@ -132,9 +130,7 @@ template <class T>
 class EnumPublicationInterpreter<std::vector<T>> : public IPublicationInterpreter
 {
 public:
-    EnumPublicationInterpreter()
-    {
-    }
+    EnumPublicationInterpreter() = default;
 
     void execute(std::shared_ptr<ISubscriptionCallback> callback,
                  const SubscriptionPublication& subscriptionPublication)

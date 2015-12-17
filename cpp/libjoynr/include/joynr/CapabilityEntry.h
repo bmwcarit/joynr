@@ -39,7 +39,7 @@ class JOYNR_EXPORT CapabilityEntry
 public:
     CapabilityEntry();
 
-    CapabilityEntry(const CapabilityEntry& other);
+    CapabilityEntry(const CapabilityEntry& other) = default;
 
     CapabilityEntry(const std::string& domain,
                     const std::string& interfaceName,

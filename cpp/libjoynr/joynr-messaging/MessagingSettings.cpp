@@ -37,14 +37,6 @@ MessagingSettings::MessagingSettings(Settings& settings) : settings(settings)
     checkSettings();
 }
 
-MessagingSettings::MessagingSettings(const MessagingSettings& other) : settings(other.settings)
-{
-}
-
-MessagingSettings::~MessagingSettings()
-{
-}
-
 const std::string& MessagingSettings::SETTING_BOUNCE_PROXY_URL()
 {
     static const std::string value("messaging/bounce-proxy-url");

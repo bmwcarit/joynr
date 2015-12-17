@@ -42,9 +42,7 @@ public:
                             const std::string& providerParticipantId);
     SubscriptionInformation(const SubscriptionInformation& subscriptionInformation);
     SubscriptionInformation& operator=(const SubscriptionInformation& subscriptionInformation);
-    virtual ~SubscriptionInformation()
-    {
-    }
+    virtual ~SubscriptionInformation() = default;
     bool operator==(const SubscriptionInformation& subscriptionInformation) const;
 
     std::string getProxyId() const;

@@ -39,12 +39,11 @@ public:
 
     BroadcastSubscriptionRequestInformation(
             const BroadcastSubscriptionRequestInformation& subscriptionRequestInformation);
-    virtual ~BroadcastSubscriptionRequestInformation()
-    {
-    }
+    virtual ~BroadcastSubscriptionRequestInformation() = default;
 
     BroadcastSubscriptionRequestInformation& operator=(
-            const BroadcastSubscriptionRequestInformation& subscriptionRequestInformation);
+            const BroadcastSubscriptionRequestInformation& subscriptionRequestInformation) =
+            default;
     bool operator==(
             const BroadcastSubscriptionRequestInformation& subscriptionRequestInformation) const;
 

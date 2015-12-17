@@ -38,9 +38,9 @@ public:
     static const std::string& DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME();
 
     explicit LibjoynrSettings(Settings& settings);
-    LibjoynrSettings(const LibjoynrSettings& other);
+    LibjoynrSettings(const LibjoynrSettings& other) = default;
 
-    ~LibjoynrSettings();
+    ~LibjoynrSettings() = default;
 
     std::string getParticipantIdsPersistenceFilename() const;
     void setParticipantIdsPersistenceFilename(const std::string& persistenceFilename);

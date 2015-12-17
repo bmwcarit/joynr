@@ -45,7 +45,7 @@ class JOYNR_EXPORT ProviderArbitrator
 {
 
 public:
-    virtual ~ProviderArbitrator();
+    virtual ~ProviderArbitrator() = default;
 
     /*
      *  Arbitrate until successful or until a timeout occurs

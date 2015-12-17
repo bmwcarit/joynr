@@ -33,9 +33,7 @@ template <class... Ts>
 class ReplyInterpreter : public IReplyInterpreter
 {
 public:
-    ReplyInterpreter()
-    {
-    }
+    ReplyInterpreter() = default;
 
     void execute(std::shared_ptr<IReplyCaller> caller, const Reply& reply)
     {
@@ -74,9 +72,7 @@ template <>
 class ReplyInterpreter<void> : public IReplyInterpreter
 {
 public:
-    ReplyInterpreter()
-    {
-    }
+    ReplyInterpreter() = default;
 
     void execute(std::shared_ptr<IReplyCaller> caller, const Reply& reply)
     {

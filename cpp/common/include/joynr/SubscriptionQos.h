@@ -45,7 +45,7 @@ public:
      * @brief Copy constructor
      * @param subscriptionQos The SubscriptionQos object to be copied from.
      */
-    SubscriptionQos(const SubscriptionQos& subscriptionQos);
+    SubscriptionQos(const SubscriptionQos& subscriptionQos) = default;
 
     /**
      * @brief Constructor SubscriptionQos objects with specified validity
@@ -57,7 +57,7 @@ public:
     SubscriptionQos(const int64_t& validity);
 
     /** Destructor */
-    virtual ~SubscriptionQos();
+    virtual ~SubscriptionQos() = default;
 
     /**
      * @brief Gets the expiry date of the subscription.

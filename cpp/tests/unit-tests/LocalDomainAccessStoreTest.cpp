@@ -33,9 +33,7 @@ public:
 
     }
 
-    ~LocalDomainAccessStoreTest() {
-
-    }
+    ~LocalDomainAccessStoreTest() = default;
 
     void SetUp(){
         bool startWithCleanDatabase = true;

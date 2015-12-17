@@ -33,9 +33,7 @@ class ISubscriptionCallback
 {
 public:
     virtual void onError(const exceptions::JoynrRuntimeException& error) = 0;
-    virtual ~ISubscriptionCallback()
-    {
-    }
+    virtual ~ISubscriptionCallback() = default;
     virtual int getTypeId() const = 0;
 };
 

@@ -48,7 +48,7 @@ public:
     /**
      * @brief Destructor
      */
-    virtual ~TimerData();
+    virtual ~TimerData() = default;
 
     /**
      * Returns if this timer should be put to queue again
@@ -113,7 +113,7 @@ public:
                      std::function<void(joynr::Timer::TimerId)> expiryCallback,
                      std::function<void(joynr::Timer::TimerId)> removeCallback,
                      const milliseconds delay);
-    virtual ~OneShotTimerData();
+    virtual ~OneShotTimerData() = default;
 
     virtual system_clock::time_point getNextExpiry();
 
@@ -141,7 +141,7 @@ public:
                       std::function<void(joynr::Timer::TimerId)> expiryCallback,
                       std::function<void(joynr::Timer::TimerId)> removeCallback,
                       const milliseconds interval);
-    virtual ~PeriodicTimerData();
+    virtual ~PeriodicTimerData() = default;
 
     virtual system_clock::time_point getNextExpiry();
 

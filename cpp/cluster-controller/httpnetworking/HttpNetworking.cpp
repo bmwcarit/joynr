@@ -95,10 +95,6 @@ IHttpPostBuilder* HttpNetworking::createHttpPostBuilder(const std::string& url)
     return createRequestBuilder(url)->asPost();
 }
 
-IHttpPostBuilder::~IHttpPostBuilder()
-{
-}
-
 void HttpNetworking::setGlobalProxy(const std::string& proxy)
 {
     this->proxy = proxy;
@@ -132,10 +128,6 @@ void HttpNetworking::setClientCertificatePassword(const std::string& clientCerti
 ICurlHandlePool* HttpNetworking::getCurlHandlePool()
 {
     return curlHandlePool;
-}
-
-ICurlHandlePool::~ICurlHandlePool()
-{
 }
 
 } // namespace joynr

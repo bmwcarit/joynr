@@ -34,9 +34,7 @@ class JOYNR_EXPORT InProcessLibJoynrMessagingSkeleton : public InProcessMessagin
 {
 public:
     InProcessLibJoynrMessagingSkeleton(IDispatcher* dispatcher);
-    virtual ~InProcessLibJoynrMessagingSkeleton()
-    {
-    }
+    virtual ~InProcessLibJoynrMessagingSkeleton() = default;
     void transmit(JoynrMessage& message);
 
 private:

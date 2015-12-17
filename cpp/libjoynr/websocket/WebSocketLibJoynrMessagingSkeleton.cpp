@@ -35,10 +35,6 @@ WebSocketLibJoynrMessagingSkeleton::WebSocketLibJoynrMessagingSkeleton(MessageRo
 {
 }
 
-WebSocketLibJoynrMessagingSkeleton::~WebSocketLibJoynrMessagingSkeleton()
-{
-}
-
 void WebSocketLibJoynrMessagingSkeleton::transmit(JoynrMessage& message)
 {
     messageRouter.route(message);

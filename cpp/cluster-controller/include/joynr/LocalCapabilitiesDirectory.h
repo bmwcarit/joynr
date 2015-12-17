@@ -154,9 +154,7 @@ public:
     class IProviderRegistrationObserver
     {
     public:
-        virtual ~IProviderRegistrationObserver()
-        {
-        }
+        virtual ~IProviderRegistrationObserver() = default;
         virtual void onProviderAdd(const types::DiscoveryEntry& discoveryEntry) = 0;
         virtual void onProviderRemove(const types::DiscoveryEntry& discoveryEntry) = 0;
     };
@@ -234,9 +232,7 @@ public:
     void capabilitiesReceived(std::vector<CapabilityEntry> capabilities);
     std::vector<CapabilityEntry> get();
     std::vector<CapabilityEntry> get(const int64_t& timeout_ms);
-    virtual ~LocalCapabilitiesFuture()
-    {
-    }
+    virtual ~LocalCapabilitiesFuture() = default;
 
 private:
     joynr::Semaphore futureSemaphore;

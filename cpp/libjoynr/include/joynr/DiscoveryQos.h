@@ -49,9 +49,7 @@ public:
     explicit DiscoveryQos(const int64_t& cacheMaxAge);
 
     /** @brief Destructor */
-    virtual ~DiscoveryQos()
-    {
-    }
+    virtual ~DiscoveryQos() = default;
 
     /**
      * The strategy specifies which type of Arbitrator will be

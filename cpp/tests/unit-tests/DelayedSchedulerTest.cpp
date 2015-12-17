@@ -65,10 +65,7 @@ public:
     {
     }
 
-    ~SimpleDelayedScheduler()
-    {
-
-    }
+    ~SimpleDelayedScheduler() = default;
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-local-typedefs"

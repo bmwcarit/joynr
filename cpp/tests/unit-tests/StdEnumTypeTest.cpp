@@ -36,8 +36,7 @@ public:
             testEnumTwo(TestEnum::TWO)
     {}
 
-    virtual ~StdEnumTypeTest() {
-    }
+    virtual ~StdEnumTypeTest() = default;
 
 protected:
     static joynr::joynr_logging::Logger* logger;

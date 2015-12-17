@@ -52,14 +52,6 @@ SubscriptionRequestInformation::SubscriptionRequestInformation(
 {
 }
 
-SubscriptionRequestInformation& SubscriptionRequestInformation::operator=(
-        const SubscriptionRequestInformation& subscriptionRequestInformation)
-{
-    SubscriptionRequest::operator=(subscriptionRequestInformation);
-    SubscriptionInformation::operator=(subscriptionRequestInformation);
-    return *this;
-}
-
 bool SubscriptionRequestInformation::operator==(
         const SubscriptionRequestInformation& subscriptionRequestInformation) const
 {

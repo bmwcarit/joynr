@@ -50,8 +50,8 @@ class JOYNRCLUSTERCONTROLLER_EXPORT AccessControlAlgorithm
 public:
     static joynr_logging::Logger* logger;
 
-    AccessControlAlgorithm();
-    virtual ~AccessControlAlgorithm();
+    AccessControlAlgorithm() = default;
+    virtual ~AccessControlAlgorithm() = default;
 
     /**
      * Get the consumer permission for given combination of control entries and with the given trust

@@ -44,9 +44,7 @@ public:
     {
     }
 
-    ~JsonCallback()
-    {
-    }
+    ~JsonCallback() = default;
 
     void onSuccess(const RequestStatus status, Reply result)
     {
@@ -75,9 +73,7 @@ public:
     {
     }
 
-    ~JsonCallback()
-    {
-    }
+    ~JsonCallback() = default;
 
     void onSuccess(const RequestStatus status, Reply result)
     {

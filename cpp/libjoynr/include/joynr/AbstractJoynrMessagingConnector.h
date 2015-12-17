@@ -55,9 +55,7 @@ public:
                                     IClientCache* cache,
                                     bool cached);
     virtual bool usesClusterController() const;
-    virtual ~AbstractJoynrMessagingConnector()
-    {
-    }
+    virtual ~AbstractJoynrMessagingConnector() = default;
 
     /**
      * @brief Makes a request and returns the received response via the callback.

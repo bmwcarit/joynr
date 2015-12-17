@@ -40,9 +40,7 @@ namespace joynr
 class IReplyCaller : virtual public ITimeoutListener
 {
 public:
-    virtual ~IReplyCaller()
-    {
-    }
+    virtual ~IReplyCaller() = default;
 
     /**
       * Every Replycaller should have a returnValue<T> method.

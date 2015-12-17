@@ -27,10 +27,6 @@ joynr::TimerData::TimerData(const Timer::TimerId id,
 {
 }
 
-joynr::TimerData::~TimerData()
-{
-}
-
 bool joynr::TimerData::isPeriodic() const
 {
     return periodic;
@@ -60,10 +56,6 @@ joynr::OneShotTimerData::OneShotTimerData(const Timer::TimerId id,
 {
 }
 
-joynr::OneShotTimerData::~OneShotTimerData()
-{
-}
-
 system_clock::time_point joynr::OneShotTimerData::getNextExpiry()
 {
     return expiry;
@@ -78,10 +70,6 @@ joynr::PeriodicTimerData::PeriodicTimerData(
           interval(interval),
           counter(0),
           creation(joynr::TimeUtils::getCurrentTime())
-{
-}
-
-joynr::PeriodicTimerData::~PeriodicTimerData()
 {
 }
 

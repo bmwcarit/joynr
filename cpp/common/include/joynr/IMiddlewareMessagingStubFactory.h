@@ -37,9 +37,7 @@ class IMessaging;
 class IMiddlewareMessagingStubFactory
 {
 public:
-    virtual ~IMiddlewareMessagingStubFactory()
-    {
-    }
+    virtual ~IMiddlewareMessagingStubFactory() = default;
     virtual std::shared_ptr<IMessaging> create(
             const joynr::system::RoutingTypes::Address& destAddress) = 0;
     virtual bool canCreate(const joynr::system::RoutingTypes::Address& destAddress) = 0;

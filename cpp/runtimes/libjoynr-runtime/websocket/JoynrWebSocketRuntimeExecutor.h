@@ -35,9 +35,7 @@ class JoynrWebSocketRuntimeExecutor : public JoynrRuntimeExecutor
 
 public:
     explicit JoynrWebSocketRuntimeExecutor(Settings* settings);
-    ~JoynrWebSocketRuntimeExecutor()
-    {
-    }
+    ~JoynrWebSocketRuntimeExecutor() = default;
 
 public slots:
     virtual void createRuntime();

@@ -61,7 +61,7 @@ public:
 	«interfaceName»RequestInterpreter();
 
 	/** @brief Destructor */
-	virtual ~«interfaceName»RequestInterpreter(){}
+	virtual ~«interfaceName»RequestInterpreter() = default;
 
 	/**
 	 * @brief Implements IRequestInterpreter.execute().

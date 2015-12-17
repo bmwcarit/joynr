@@ -40,7 +40,7 @@ public:
      */
     MessagingQos(uint64_t ttl = 60000);
     /** @brief Copy constructor */
-    MessagingQos(const MessagingQos& other);
+    MessagingQos(const MessagingQos& other) = default;
 
     /** @brief Destructor */
     virtual ~MessagingQos() = default;

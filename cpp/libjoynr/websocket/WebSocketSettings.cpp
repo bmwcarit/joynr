@@ -37,14 +37,6 @@ WebSocketSettings::WebSocketSettings(Settings& settings) : settings(settings)
     checkSettings();
 }
 
-WebSocketSettings::WebSocketSettings(const WebSocketSettings& other) : settings(other.settings)
-{
-}
-
-WebSocketSettings::~WebSocketSettings()
-{
-}
-
 void WebSocketSettings::checkSettings() const
 {
     assert(settings.contains(SETTING_CC_MESSAGING_URL()));

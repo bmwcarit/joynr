@@ -41,7 +41,7 @@ public:
                int statusCode,
                QByteArray* body,
                QMultiMap<std::string, std::string>* headers);
-    ~HttpResult();
+    ~HttpResult() = default;
 
     bool isCurlError() const;
     int getCurlError() const;

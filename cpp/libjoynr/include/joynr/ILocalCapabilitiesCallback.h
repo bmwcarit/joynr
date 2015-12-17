@@ -29,11 +29,7 @@ namespace joynr
 class JOYNR_EXPORT ILocalCapabilitiesCallback
 {
 public:
-    // This class is accessed through a shared_ptr.
-    // The empty destructor is not defined in the header file:
-    // https://bugreports.qt-project.org/browse/QTBUG-7302
-    // http://doc.qt.digia.com/qt/qscopedpointer.html#forward-declared-pointers
-    virtual ~ILocalCapabilitiesCallback();
+    virtual ~ILocalCapabilitiesCallback() = default;
 
     virtual void capabilitiesReceived(std::vector<CapabilityEntry> capabilities) = 0;
 };

@@ -36,9 +36,7 @@ class IDiscoverySync;
 class FixedParticipantArbitrator : public ProviderArbitrator
 {
 public:
-    virtual ~FixedParticipantArbitrator()
-    {
-    }
+    virtual ~FixedParticipantArbitrator() = default;
     FixedParticipantArbitrator(const std::string& domain,
                                const std::string& interfaceName,
                                joynr::system::IDiscoverySync& discoveryProxy,

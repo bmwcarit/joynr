@@ -282,9 +282,7 @@ TEST(SubscriptionManagerTest, unregisterSubscription_unregisterLeadsOnNonExistan
 
 class TestRunnable : public Runnable {
 public:
-    virtual ~TestRunnable() {
-
-    }
+    virtual ~TestRunnable() = default;
     TestRunnable()
         : joynr::Runnable(true)
     {

@@ -40,9 +40,7 @@ public:
     }
 
     /** Default Destructor */
-    virtual ~SubscriptionListener()
-    {
-    }
+    virtual ~SubscriptionListener() = default;
 
     /**
      * @brief Method to be called on receiving publication

@@ -32,7 +32,7 @@ namespace joynr
 class IClassSerializer
 {
 public:
-    virtual ~IClassSerializer(){}
+    virtual ~IClassSerializer() = default;
     virtual void serializeVariant(const Variant& variant, std::ostream& stream) = 0;
 };
 
@@ -44,7 +44,7 @@ template <class T>
 class ClassSerializer : public IClassSerializer
 {
 public:
-    virtual ~ClassSerializer() {}
+    virtual ~ClassSerializer() = default;
 
     /**
      * @brief Serialize a variant

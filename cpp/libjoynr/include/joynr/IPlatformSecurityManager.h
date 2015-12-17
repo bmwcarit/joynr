@@ -32,9 +32,7 @@ class JoynrMessage;
 class JOYNR_EXPORT IPlatformSecurityManager
 {
 public:
-    virtual ~IPlatformSecurityManager()
-    {
-    }
+    virtual ~IPlatformSecurityManager() = default;
 
     /**
      * @return the platform user ID of the running process.

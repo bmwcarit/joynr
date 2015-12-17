@@ -39,7 +39,7 @@ class JOYNR_EXPORT InProcessPublicationSender : public IPublicationSender
 {
 public:
 public:
-    virtual ~InProcessPublicationSender();
+    virtual ~InProcessPublicationSender() = default;
     InProcessPublicationSender(ISubscriptionManager* subscriptionManager);
     /**
      * @brief

@@ -39,7 +39,7 @@ class WebSocketLibJoynrMessagingSkeleton : public QObject, public IMessaging
 public:
     explicit WebSocketLibJoynrMessagingSkeleton(MessageRouter& messageRouter);
 
-    ~WebSocketLibJoynrMessagingSkeleton();
+    ~WebSocketLibJoynrMessagingSkeleton() = default;
 
     virtual void transmit(JoynrMessage& message);
 

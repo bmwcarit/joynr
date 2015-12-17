@@ -44,9 +44,7 @@ public:
     SubscriptionRequest();
     SubscriptionRequest(const SubscriptionRequest& subscriptionRequest);
     SubscriptionRequest& operator=(const SubscriptionRequest& subscriptionRequest);
-    virtual ~SubscriptionRequest()
-    {
-    }
+    virtual ~SubscriptionRequest() = default;
     bool operator==(const SubscriptionRequest& subscriptionRequest) const;
 
     std::string getSubscriptionId() const;

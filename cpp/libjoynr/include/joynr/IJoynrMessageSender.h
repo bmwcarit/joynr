@@ -65,9 +65,7 @@ class SubscriptionPublication;
 class IJoynrMessageSender : public IPublicationSender
 {
 public:
-    virtual ~IJoynrMessageSender()
-    {
-    }
+    virtual ~IJoynrMessageSender() = default;
 
     /*
       * registers Dispatcher. See above comment why this is necessary.

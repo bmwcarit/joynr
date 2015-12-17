@@ -39,9 +39,7 @@ public:
     {
     }
 
-    ~MessageQueueTest()
-    {
-    }
+    ~MessageQueueTest() = default;
 
     void SetUp()
     {

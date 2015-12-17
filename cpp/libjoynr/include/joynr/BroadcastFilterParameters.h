@@ -37,9 +37,10 @@ class JOYNRCOMMON_EXPORT BroadcastFilterParameters
 
 public:
     BroadcastFilterParameters();
-    BroadcastFilterParameters(const BroadcastFilterParameters& filterParameters);
-    BroadcastFilterParameters& operator=(const BroadcastFilterParameters& filterParameters);
-    virtual ~BroadcastFilterParameters();
+    BroadcastFilterParameters(const BroadcastFilterParameters& filterParameters) = default;
+    BroadcastFilterParameters& operator=(const BroadcastFilterParameters& filterParameters) =
+            default;
+    virtual ~BroadcastFilterParameters() = default;
     bool operator==(const BroadcastFilterParameters& filterParameters) const;
 
     void setFilterParameter(const std::string& parameter, const std::string& value);

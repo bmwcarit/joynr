@@ -41,7 +41,7 @@ public:
     /**
      * @brief ~IClassDeserializer
      */
-    virtual ~IClassDeserializer() {}
+    virtual ~IClassDeserializer() = default;
     /**
      * @brief deserializeVariant Every deserializer has be able to deserailize to Variant
      * @param object
@@ -59,7 +59,7 @@ template <class T>
 class ClassDeserializer : public IClassDeserializer
 {
 public:
-    ~ClassDeserializer() {}
+    ~ClassDeserializer() = default;
 
     /**
      * @brief deserialize Implementations are generated with the classes T,

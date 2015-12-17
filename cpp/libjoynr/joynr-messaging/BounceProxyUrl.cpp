@@ -68,12 +68,6 @@ BounceProxyUrl::BounceProxyUrl(const std::string& bounceProxyBaseUrl)
     this->bounceProxyChannelsBaseUrl = Url(channelsBaseUrl);
 }
 
-BounceProxyUrl::BounceProxyUrl(const BounceProxyUrl& other)
-        : bounceProxyBaseUrl(other.bounceProxyBaseUrl),
-          bounceProxyChannelsBaseUrl(other.bounceProxyChannelsBaseUrl)
-{
-}
-
 BounceProxyUrl& BounceProxyUrl::operator=(const BounceProxyUrl& bounceProxyUrl)
 {
     bounceProxyChannelsBaseUrl = bounceProxyUrl.bounceProxyChannelsBaseUrl;

@@ -38,9 +38,7 @@ class IJoynrProvider
 {
 public:
     /** @brief Destructor */
-    virtual ~IJoynrProvider()
-    {
-    }
+    virtual ~IJoynrProvider() = default;
 
     /**
      * @brief Get the provider quality of service settings

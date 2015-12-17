@@ -30,9 +30,7 @@ class DummyPlatformSecurityManager : public IPlatformSecurityManager
 public:
     DummyPlatformSecurityManager();
 
-    virtual ~DummyPlatformSecurityManager()
-    {
-    }
+    virtual ~DummyPlatformSecurityManager() = default;
 
     virtual std::string getCurrentProcessUserId() override;
     virtual JoynrMessage sign(JoynrMessage message) override;

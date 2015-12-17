@@ -35,7 +35,7 @@ using namespace joynr;
 class MockArgument  {
 public:
     MockArgument() : str1(""), list1(){}
-    virtual ~MockArgument() {}
+    virtual ~MockArgument() = default;
 
     MockArgument(const MockArgument& mockArgument) :
         str1(mockArgument.str1),

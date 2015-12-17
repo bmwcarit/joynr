@@ -56,9 +56,7 @@ template <typename Key, typename T>
 class IDirectory
 {
 public:
-    virtual ~IDirectory()
-    {
-    }
+    virtual ~IDirectory() = default;
     virtual std::shared_ptr<T> lookup(const Key& keyId) = 0;
     virtual bool contains(const Key& keyId) = 0;
 

@@ -39,9 +39,7 @@ public:
     IBroadcastFilter(std::string name) : name(name)
     {
     }
-    virtual ~IBroadcastFilter()
-    {
-    }
+    virtual ~IBroadcastFilter() = default;
 
     virtual bool filter(const std::vector<Variant>& eventValues,
                         const BroadcastFilterParameters& filterParameters) = 0;

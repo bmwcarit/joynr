@@ -138,7 +138,7 @@ public:
 	virtual bool usesClusterController() const;
 
 	/** @brief Destructor */
-	virtual ~«interfaceName»JoynrMessagingConnector(){}
+	virtual ~«interfaceName»JoynrMessagingConnector() = default;
 
 	«produceSyncGetters(serviceInterface, false)»
 	«produceAsyncGetters(serviceInterface, false)»

@@ -32,14 +32,6 @@ LibjoynrSettings::LibjoynrSettings(Settings& settings) : settings(settings)
     checkSettings();
 }
 
-LibjoynrSettings::LibjoynrSettings(const LibjoynrSettings& other) : settings(other.settings)
-{
-}
-
-LibjoynrSettings::~LibjoynrSettings()
-{
-}
-
 void LibjoynrSettings::checkSettings() const
 {
     // set default values

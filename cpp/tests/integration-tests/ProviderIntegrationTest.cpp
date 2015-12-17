@@ -58,8 +58,7 @@ public:
 
     }
 
-    ~ProviderIntegrationTest(){
-    }
+    ~ProviderIntegrationTest() = default;
 
 protected:
 

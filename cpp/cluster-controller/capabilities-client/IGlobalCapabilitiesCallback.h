@@ -41,9 +41,7 @@ namespace joynr
 class IGlobalCapabilitiesCallback
 {
 public:
-    virtual ~IGlobalCapabilitiesCallback()
-    {
-    }
+    virtual ~IGlobalCapabilitiesCallback() = default;
     virtual void capabilitiesReceived(std::vector<types::CapabilityInformation> results) = 0;
 
 private:

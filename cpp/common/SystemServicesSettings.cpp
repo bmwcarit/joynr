@@ -37,15 +37,6 @@ SystemServicesSettings::SystemServicesSettings(Settings& settings) : settings(se
     checkSettings();
 }
 
-SystemServicesSettings::SystemServicesSettings(const SystemServicesSettings& other)
-        : settings(other.settings)
-{
-}
-
-SystemServicesSettings::~SystemServicesSettings()
-{
-}
-
 const std::string& SystemServicesSettings::SETTING_DOMAIN()
 {
     static const std::string value("system.services/domain");

@@ -102,7 +102,7 @@ public:
                     onSuccess,
             std::function<void(const exceptions::JoynrException& error)> onError = nullptr);
 
-    virtual ~CapabilitiesClient();
+    virtual ~CapabilitiesClient() = default;
 
     virtual std::string getLocalChannelId();
 

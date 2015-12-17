@@ -46,9 +46,7 @@ class JOYNR_EXPORT KeywordArbitrator : public ProviderArbitrator
 {
 
 public:
-    virtual ~KeywordArbitrator()
-    {
-    }
+    virtual ~KeywordArbitrator() = default;
 
     KeywordArbitrator(const std::string& domain,
                       const std::string& interfaceName,

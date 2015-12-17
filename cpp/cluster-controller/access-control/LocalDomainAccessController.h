@@ -66,9 +66,7 @@ public:
     class IGetConsumerPermissionCallback
     {
     public:
-        virtual ~IGetConsumerPermissionCallback()
-        {
-        }
+        virtual ~IGetConsumerPermissionCallback() = default;
 
         // Called with the result of a consumer permission request
         virtual void consumerPermission(infrastructure::DacTypes::Permission::Enum permission) = 0;

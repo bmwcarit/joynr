@@ -33,10 +33,6 @@ HttpResult::HttpResult(long curlError,
 {
 }
 
-HttpResult::~HttpResult()
-{
-}
-
 bool HttpResult::isCurlError() const
 {
     return (curlError != 0);

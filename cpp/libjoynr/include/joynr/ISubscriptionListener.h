@@ -40,9 +40,7 @@ public:
     }
 
     /** @brief Destructor */
-    virtual ~ISubscriptionListener()
-    {
-    }
+    virtual ~ISubscriptionListener() = default;
 
     /**
      * @brief onReceive Gets called on every received publication

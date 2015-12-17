@@ -103,8 +103,7 @@ public:
                     tStringExtended)
     {}
 
-    virtual ~StdComplexDataTypeTest() {
-    }
+    virtual ~StdComplexDataTypeTest() = default;
 
 protected:
     static joynr::joynr_logging::Logger* logger;

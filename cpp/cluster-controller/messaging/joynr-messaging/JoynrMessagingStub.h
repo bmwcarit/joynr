@@ -39,7 +39,7 @@ public:
     explicit JoynrMessagingStub(std::shared_ptr<IMessageSender> messageSender,
                                 const std::string& destinationChannelId,
                                 const std::string& receiveChannelId);
-    virtual ~JoynrMessagingStub();
+    virtual ~JoynrMessagingStub() = default;
     void transmit(JoynrMessage& message);
 
 private:

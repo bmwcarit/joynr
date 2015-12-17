@@ -72,7 +72,7 @@ public:
 	explicit «interfaceName»RequestCaller(std::shared_ptr<«interfaceName»Provider> provider);
 
 	/** @brief Destructor */
-	virtual ~«interfaceName»RequestCaller(){}
+	virtual ~«interfaceName»RequestCaller() = default;
 
 	«IF !serviceInterface.attributes.empty»
 		// attributes

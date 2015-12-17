@@ -36,10 +36,6 @@ JoynrMessageSender::JoynrMessageSender(std::shared_ptr<MessageRouter> messageRou
 {
 }
 
-JoynrMessageSender::~JoynrMessageSender()
-{
-}
-
 void JoynrMessageSender::registerDispatcher(IDispatcher* dispatcher)
 {
     this->dispatcher = dispatcher;

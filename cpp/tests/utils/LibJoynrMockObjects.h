@@ -90,9 +90,7 @@ public:
         EXPECT_CALL(*this, getListOfStrings(_,_))
                 .WillRepeatedly(testing::Invoke(this, &MockTestProvider::invokeListOfStringsOnSuccess));
     }
-    ~MockTestProvider()
-    {
-    };
+    ~MockTestProvider() = default;
 
     void invokeLocationOnSuccess(std::function<void(const joynr::types::Localisation::GpsLocation&)> onSuccess,
                          std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError) {
