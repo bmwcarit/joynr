@@ -101,9 +101,9 @@ set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}/lib${LIB_SUFFIX}" )
 message(STATUS "jsonserializer LIBRARY_OUTPUT_PATH=${LIBRARY_OUTPUT_PATH}")
 
 target_link_libraries(
-	jsonserializer
-	JoynrCommon
-	${jsmn_LIBRARY}
+    jsonserializer
+    JoynrCommon
+    ${jsmn_LIBRARY}
 )
 
 set_target_properties(
@@ -114,7 +114,7 @@ set_target_properties(
     PUBLIC_INCLUDE_DIRECTORY "${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}"
 )
 
-add_dependencies(jsonserializer common jsmn)
+add_dependencies(jsonserializer jsmn)
 
 install(
     TARGETS jsonserializer EXPORT JoynrTargets
