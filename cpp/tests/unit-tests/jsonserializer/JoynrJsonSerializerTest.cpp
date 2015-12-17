@@ -40,6 +40,7 @@
 
 #include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
 #include "joynr/types/TestTypes/TEverythingStruct.h"
+#include "joynr/types/TestTypes/TStruct.h"
 #include "joynr/types/TestTypes/TEverythingMap.h"
 #include "joynr/types/TestTypes/TStringKeyMap.h"
 #include "joynr/types/TestTypes/TIntegerKeyMap.h"
@@ -62,6 +63,8 @@ public:
     }
 protected:
     static joynr::joynr_logging::Logger* logger;
+    void testSerializationOfTStruct(joynr::types::TestTypes::TStruct expectedStruct);
+private:
 };
 
 joynr::joynr_logging::Logger* JoynrJsonSerializerTest::logger(
@@ -831,4 +834,39 @@ TEST_F(JoynrJsonSerializerTest, serializeDeserializeTEverythingStruct)
     // Check that the object serialized/deserialized correctly
     EXPECT_EQ(expectedEverythingStruct, *everythingStruct);
     delete everythingStruct;
+}
+
+void JoynrJsonSerializerTest::testSerializationOfTStruct(joynr::types::TestTypes::TStruct expectedStruct) {
+    using namespace joynr::types::TestTypes;
+
+    std::stringstream stream;
+    auto serializer = ClassSerializer<TStruct>{};
+    serializer.serialize(expectedStruct, stream);
+    std::string json{ stream.str() };
+
+    // TODO: replace with logging
+    LOG_TRACE(logger, FormatString("TStruct JSON: %1").arg(json).str());
+
+    // Deserialize
+    TStruct* actualStruct = JsonSerializer::deserialize<TStruct>(json);
+
+    // Check that the object serialized/deserialized correctly
+    EXPECT_EQ(expectedStruct, *actualStruct);
+    delete actualStruct;
+
+}
+
+// test with TEverythingStruct
+TEST_F(JoynrJsonSerializerTest, serializeDeserializeStructContainingStringMember)
+{
+    using namespace joynr::types::TestTypes;
+    TStruct expectedStruct{
+        1.1,
+        2,
+        "normalString"
+    };
+    // Serialize
+    testSerializationOfTStruct(expectedStruct);
+    expectedStruct.setTString(R"(\"String containing quotas\")");
+    testSerializationOfTStruct(expectedStruct);
 }
