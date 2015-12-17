@@ -233,6 +233,12 @@ inline float Util::valueOf<float>(const Variant& variant)
     return variant.get<double>();
 }
 
+template <>
+inline std::string Util::valueOf<std::string>(const Variant& variant)
+{
+    return removeEscapeFromSpecialChars(variant.get<std::string>());
+}
+
 // concrete specilization for lists of primitive datatypes
 template <>
 inline std::vector<int8_t> Util::valueOf<std::vector<int8_t>>(const Variant& variant)
