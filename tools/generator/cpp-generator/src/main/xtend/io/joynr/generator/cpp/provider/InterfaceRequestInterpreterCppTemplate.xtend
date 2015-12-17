@@ -27,7 +27,6 @@ import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
-import org.franca.core.franca.FTypedElement
 
 class InterfaceRequestInterpreterCppTemplate implements InterfaceTemplate{
 
@@ -125,6 +124,8 @@ void «interfaceName»RequestInterpreter::execute(
 					«ELSE»
 						«var attributeRef = if (attribute.type.float)
 												"static_cast<float>(" + attributeName + "Var.get<double>())"
+											else if (attribute.type.string)
+												"joynr::removeEscapeFromSpecialChars(" + attributeName + "Var.get<" + getTypeName(attribute) + ">())"
 											else
 												attributeName + "Var.get<" + getTypeName(attribute) + ">()"»
 						«IF getTypeName(attribute).startsWith("int")»
@@ -208,6 +209,8 @@ void «interfaceName»RequestInterpreter::execute(
 							//«getTypeName(input)»
 							«var inputRef = if (input.type.float)
 												"static_cast<float>(" + inputName + "Var.get<double>())"
+											else if (input.type.string)
+												"joynr::removeEscapeFromSpecialChars(" + inputName + "Var.get<" + getTypeName(input) + ">())"
 											else
 												inputName + "Var.get<" + getTypeName(input) + ">()"»
 							«IF getTypeName(input).startsWith("int")»
