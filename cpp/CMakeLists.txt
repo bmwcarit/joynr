@@ -389,7 +389,8 @@ link_directories(
 # JOYNR_MAX_LOG_LEVEL_TRACE
 
 # for every other build type than debug we limit log messages to level ERROR
-if(CMAKE_BUILD_TYPE MATCHES DEBUG)
+string(TOLOWER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE_TOLOWER)
+if(CMAKE_BUILD_TYPE_TOLOWER MATCHES debug)
     set(JOYNR_MAX_LOG_LEVEL "TRACE" CACHE STRING "joynr max log level")
 else()
     set(JOYNR_MAX_LOG_LEVEL "ERROR" CACHE STRING "joynr max log level")
