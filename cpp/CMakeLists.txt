@@ -114,6 +114,7 @@ message(STATUS "option ENABLE_CLANG_FORMATTER=" ${ENABLE_CLANG_FORMATTER})
 if(${ENABLE_CLANG_FORMATTER})
     set(CLANG_FORMAT_PATH "CLANG_FORMAT_PATH-NOTFOUND" CACHE FILEPATH "Path to 'clang-format' executable")
     LocateProgram(clang-format CLANG_FORMAT_PATH)
+    add_custom_target(format)
 endif(${ENABLE_CLANG_FORMATTER})
 
 #### END clang-format ####
