@@ -25,6 +25,8 @@ set(
     JoynrLib_TARGET_LIBRARIES
     JoynrCommon
     jsonserializer
+    Qt5::Core
+    Qt5::WebSockets
 )
 
 set(

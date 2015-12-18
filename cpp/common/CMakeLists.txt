@@ -28,8 +28,6 @@ set(
 
 set(
     JoynrCommon_TARGET_LIBRARIES
-    Qt5::Core
-    Qt5::WebSockets
 )
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
