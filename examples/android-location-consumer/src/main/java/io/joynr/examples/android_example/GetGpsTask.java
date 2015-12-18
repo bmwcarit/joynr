@@ -28,8 +28,13 @@ import joynr.vehicle.GpsProxy;
 
 class GetGpsTask extends AsyncTask<GpsProxy, Void, GpsLocation> {
     private static final Logger logger = LoggerFactory.getLogger(GetGpsTask.class);
+    private final Output output;
 
     private Exception exception;
+
+    public GetGpsTask(Output output) {
+        this.output = output;
+    }
 
     @Override
     protected GpsLocation doInBackground(GpsProxy... params) {
@@ -44,10 +49,16 @@ class GetGpsTask extends AsyncTask<GpsProxy, Void, GpsLocation> {
     @Override
     protected void onPostExecute(GpsLocation location) {
         if (exception != null) {
-            logger.error("unable to retrieve Gps Location: {}", exception.getMessage());
+            logToOutput("unable to retrieve Gps Location: " + exception.getMessage());
             logger.debug("unable to retrieve Gps Location", exception);
         } else {
-            logger.info("location: {}", location);
+            logToOutput("location: " + location);
+        }
+    }
+
+    private void logToOutput(String string) {
+        if (output != null) {
+            output.append(string);
         }
     }
 }
