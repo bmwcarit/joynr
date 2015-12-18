@@ -22,19 +22,15 @@
 
 #include "IAccessController.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/infrastructure/DacTypes_QtTrustLevel.h"
+#include "joynr/infrastructure/DacTypes/TrustLevel.h"
 #include <memory>
-#include <QList>
+#include <vector>
+#include <string>
 
 namespace joynr
 {
 class LocalCapabilitiesDirectory;
 class LocalDomainAccessController;
-
-namespace types
-{
-class QtDiscoveryEntry;
-}
 
 namespace joynr_logging
 {
@@ -54,15 +50,16 @@ public:
 
     //---IAccessController interface -------------------------------------------
 
-    virtual void hasConsumerPermission(const JoynrMessage& message,
-                                       std::shared_ptr<IHasConsumerPermissionCallback> callback);
+    virtual void hasConsumerPermission(
+            const JoynrMessage& message,
+            std::shared_ptr<IHasConsumerPermissionCallback> callback) override;
 
-    virtual bool hasProviderPermission(const QString& userId,
-                                       infrastructure::DacTypes::QtTrustLevel::Enum trustLevel,
-                                       const QString& domain,
-                                       const QString& interfaceName);
+    virtual bool hasProviderPermission(const std::string& userId,
+                                       infrastructure::DacTypes::TrustLevel::Enum trustLevel,
+                                       const std::string& domain,
+                                       const std::string& interfaceName) override;
 
-    virtual void addParticipantToWhitelist(const QString& participantId);
+    virtual void addParticipantToWhitelist(const std::string& participantId) override;
 
 private:
     class LdacConsumerPermissionCallback;
@@ -74,7 +71,7 @@ private:
     LocalCapabilitiesDirectory& localCapabilitiesDirectory;
     LocalDomainAccessController& localDomainAccessController;
     std::shared_ptr<ProviderRegistrationObserver> providerRegistrationObserver;
-    QList<QString> whitelistParticipantIds;
+    std::vector<std::string> whitelistParticipantIds;
 
     static joynr_logging::Logger* logger;
 };

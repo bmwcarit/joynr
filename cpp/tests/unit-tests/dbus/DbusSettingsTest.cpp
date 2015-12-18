@@ -17,10 +17,11 @@
  * #L%
  */
 #include <gtest/gtest.h>
-#include <QSettings>
-#include <QFile>
+#include <cstdio>
 #include "PrettyPrint.h"
 #include "common/dbus/DbusSettings.h"
+#include "joynr/Settings.h"
+#include "joynr/TypeUtil.h"
 
 using namespace joynr;
 
@@ -33,29 +34,29 @@ public:
     }
 
     virtual void TearDown() {
-        QFile::remove(testSettingsFileName);
+        std::remove(testSettingsFileName.c_str());
     }
 
 protected:
     joynr_logging::Logger* logger;
-    QString testSettingsFileName;
+    std::string testSettingsFileName;
 };
 
 TEST_F(DbusSettingsTest, intializedWithDefaultSettings) {
-    QSettings testSettings(testSettingsFileName, QSettings::IniFormat);
+    Settings testSettings{testSettingsFileName};
     DbusSettings dbusSettings(testSettings);
 
-    EXPECT_TRUE(dbusSettings.contains(DbusSettings::SETTING_CC_MESSAGING_DOMAIN()));
-    EXPECT_TRUE(dbusSettings.contains(DbusSettings::SETTING_CC_MESSAGING_SERVICENAME()));
-    EXPECT_TRUE(dbusSettings.contains(DbusSettings::SETTING_CC_MESSAGING_PARTICIPANTID()));
+    EXPECT_FALSE(dbusSettings.getClusterControllerMessagingDomain().empty());
+    EXPECT_FALSE(dbusSettings.getClusterControllerMessagingServiceName().empty());
+    EXPECT_FALSE(dbusSettings.getClusterControllerMessagingParticipantId().empty());
 }
 
 TEST_F(DbusSettingsTest, overrideDefaultSettings) {
-    QString expectedMessagingDomain("test-domain");
-    QSettings testSettings(testSettingsFileName, QSettings::IniFormat);
-    testSettings.setValue(DbusSettings::SETTING_CC_MESSAGING_DOMAIN(), expectedMessagingDomain);
+    std::string expectedMessagingDomain("test-domain");
+    Settings testSettings{testSettingsFileName};
+    testSettings.set(DbusSettings::SETTING_CC_MESSAGING_DOMAIN(), expectedMessagingDomain);
     DbusSettings dbusSettings(testSettings);
 
-    QString messagingDomain = dbusSettings.value(DbusSettings::SETTING_CC_MESSAGING_DOMAIN()).toString();
-    EXPECT_EQ_QSTRING(expectedMessagingDomain, messagingDomain);
+    std::string messagingDomain = dbusSettings.getClusterControllerMessagingDomain();
+    EXPECT_EQ(expectedMessagingDomain, messagingDomain);
 }

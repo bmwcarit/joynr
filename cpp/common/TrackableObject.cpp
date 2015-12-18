@@ -17,7 +17,8 @@
  * #L%
  */
 #include "joynr/TrackableObject.h"
-#include <QString>
+#include <string>
+#include <boost/format.hpp>
 
 namespace joynr
 {
@@ -31,21 +32,23 @@ int TrackableObject::instances = 0;
 TrackableObject::TrackableObject()
 {
     ++instances;
-    QString address;
-    address.sprintf("%p", this);
+    std::string address = str(boost::format("%p") % this);
     LOG_TRACE(logger,
-              "Creating Traceable Object at QtAddress " + address + " Now we have " +
-                      QString::number(instances) + " instances.");
+              FormatString("Creating Traceable Object at address %1 Now we have %2 instances.")
+                      .arg(address)
+                      .arg(instances)
+                      .str());
 }
 
 TrackableObject::~TrackableObject()
 {
     --instances;
-    QString address;
-    address.sprintf("%p", this);
+    std::string address = str(boost::format("%p") % this);
     LOG_TRACE(logger,
-              "Deleting Traceable Object at QtAddress " + address + " Now we have " +
-                      QString::number(instances) + " instances.");
+              FormatString("Deleting Traceable Object at address %1 Now we have %2 instances.")
+                      .arg(address)
+                      .arg(instances)
+                      .str());
 }
 
 int TrackableObject::getInstances()

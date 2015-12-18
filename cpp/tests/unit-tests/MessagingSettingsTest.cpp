@@ -17,10 +17,12 @@
  * #L%
  */
 #include <gtest/gtest.h>
-#include <QSettings>
-#include <QFile>
+#include <cstdio>
 #include "PrettyPrint.h"
 #include "joynr/MessagingSettings.h"
+#include "joynr/Settings.h"
+#include "joynr/TypeUtil.h"
+#include "joynr/BounceProxyUrl.h"
 
 using namespace joynr;
 
@@ -33,16 +35,19 @@ public:
     }
 
     virtual void TearDown() {
-        QFile::remove(testSettingsFileName);
+        std::remove(testSettingsFileName.c_str());
     }
 
 protected:
     joynr_logging::Logger* logger;
-    QString testSettingsFileName;
+    std::string testSettingsFileName;
 };
 
 TEST_F(MessagingSettingsTest, intializedWithDefaultSettings) {
-    QSettings testSettings(testSettingsFileName, QSettings::IniFormat);
+    Settings testSettings(testSettingsFileName);
+
+    EXPECT_FALSE(testSettings.isLoaded());
+
     MessagingSettings messagingSettings(testSettings);
 
     EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_BOUNCE_PROXY_URL()));
@@ -59,11 +64,11 @@ TEST_F(MessagingSettingsTest, intializedWithDefaultSettings) {
 }
 
 TEST_F(MessagingSettingsTest, overrideDefaultSettings) {
-    QString expectedBounceProxyUrl("http://localhost:8080/bounceproxy/MessagingSettingsTest-overrideDefaultSettings/");
-    QSettings testSettings(testSettingsFileName, QSettings::IniFormat);
-    testSettings.setValue(MessagingSettings::SETTING_BOUNCE_PROXY_URL(), expectedBounceProxyUrl);
+    std::string expectedBounceProxyUrl("http://localhost:8080/bounceproxy/MessagingSettingsTest-overrideDefaultSettings/");
+    Settings testSettings(testSettingsFileName);
+    testSettings.set(MessagingSettings::SETTING_BOUNCE_PROXY_URL(), expectedBounceProxyUrl);
     MessagingSettings messagingSettings(testSettings);
 
-    QString bounceProxyUrl = messagingSettings.value(MessagingSettings::SETTING_BOUNCE_PROXY_URL()).toString();
-    EXPECT_EQ_QSTRING(expectedBounceProxyUrl, bounceProxyUrl);
+    std::string bounceProxyUrl = messagingSettings.getBounceProxyUrlString();
+    EXPECT_EQ(expectedBounceProxyUrl, bounceProxyUrl);
 }

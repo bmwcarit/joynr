@@ -27,21 +27,23 @@ import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.PropertyLoader;
 import joynr.OnChangeSubscriptionQos;
+import joynr.exceptions.ApplicationException;
 import joynr.tests.DefaulttestProvider;
 import joynr.tests.testBroadcastInterface;
 import joynr.tests.testBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters;
 import joynr.tests.testLocationUpdateSelectiveBroadcastFilter;
 import joynr.tests.testProxy;
 import joynr.tests.testTypes.TestEnum;
+import joynr.types.ProviderQos;
 import joynr.types.Localisation.GpsFixEnum;
 import joynr.types.Localisation.GpsLocation;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -57,9 +59,16 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
 
 public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
     private static final Logger logger = LoggerFactory.getLogger(AbstractBroadcastEnd2EndTest.class);
+
+    protected static class TestProvider extends DefaulttestProvider {
+        public TestProvider(ProviderQos providerQos) {
+            this.providerQos = providerQos;
+        }
+    }
 
     // This timeout must be shared by all integration test environments and
     // cannot be too short.
@@ -68,7 +77,7 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
     @Rule
     public TestName name = new TestName();
 
-    private static DefaulttestProvider provider;
+    private static TestProvider provider;
     private static testProxy proxy;
     private String domain;
 
@@ -87,6 +96,10 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
 
     private JoynrRuntime providerRuntime;
     private JoynrRuntime consumerRuntime;
+
+    protected ProviderQos providerQos = new ProviderQos();
+    protected MessagingQos messagingQos = new MessagingQos(10000);
+    protected DiscoveryQos discoveryQos = new DiscoveryQos(10000, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
 
     // Overridden by test environment implementations
     protected abstract JoynrRuntime getRuntime(Properties joynrConfig, Module... modules);
@@ -109,7 +122,7 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
         consumerRuntime.shutdown(true);
     }
 
-    private void setupProviderRuntime(String methodName) throws InterruptedException {
+    private void setupProviderRuntime(String methodName) throws InterruptedException, ApplicationException {
         Properties factoryPropertiesProvider;
 
         String channelIdProvider = "JavaTest-" + UUID.randomUUID().getLeastSignificantBits()
@@ -121,8 +134,9 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
         factoryPropertiesProvider.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, domain);
         providerRuntime = getRuntime(factoryPropertiesProvider, new StaticDomainAccessControlProvisioningModule());
 
-        provider = new DefaulttestProvider();
-        providerRuntime.registerProvider(domain, provider).waitForFullRegistration(CONST_DEFAULT_TEST_TIMEOUT);
+        provider = new TestProvider(providerQos);
+        Future<Void> voidFuture = providerRuntime.registerProvider(domain, provider);//.waitForFullRegistration(CONST_DEFAULT_TEST_TIMEOUT);
+        voidFuture.get(CONST_DEFAULT_TEST_TIMEOUT);
     }
 
     private void setupConsumerRuntime(String methodName) throws DiscoveryException, JoynrIllegalStateException,
@@ -137,9 +151,6 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
                 + UUID.randomUUID().toString());
 
         consumerRuntime = getRuntime(factoryPropertiesB);
-
-        MessagingQos messagingQos = new MessagingQos(10000);
-        DiscoveryQos discoveryQos = new DiscoveryQos(10000, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
 
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
 
@@ -220,7 +231,7 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
 
                                                               @Override
                                                               public void onError() {
-                                                                  Assert.fail("Error while receiving broadcast");
+                                                                  fail("Error while receiving broadcast");
                                                               }
                                                           },
                                                           subscriptionQos);

@@ -17,6 +17,7 @@
  * #L%
  */
 #include "joynr/exceptions/JoynrException.h"
+#include "joynr/Variant.h"
 
 namespace joynr
 {
@@ -36,33 +37,57 @@ const std::string PublicationMissedException::TYPE_NAME =
         "joynr.exceptions.PublicationMissedException";
 const std::string ApplicationException::TYPE_NAME = "joynr.exceptions.ApplicationException";
 
-JoynrException::JoynrException() throw() : message("")
+static const bool isJoynrExceptionRegistered =
+        Variant::registerType<joynr::exceptions::JoynrException>("joynr.exceptions.JoynrException");
+static const bool isJoynrRuntimeExceptionRegistered =
+        Variant::registerType<joynr::exceptions::JoynrRuntimeException>(
+                "joynr.exceptions.JoynrRuntimeException");
+static const bool isJoynrTimeOutExceptionRegistered =
+        Variant::registerType<joynr::exceptions::JoynrTimeOutException>(
+                "joynr.exceptions.JoynrTimeOutException");
+static const bool isDiscoveryExceptionRegistered =
+        Variant::registerType<joynr::exceptions::DiscoveryException>(
+                "joynr.exceptions.DiscoveryException");
+static const bool isMethodInvocationExceptionRegistered =
+        Variant::registerType<joynr::exceptions::MethodInvocationException>(
+                "joynr.exceptions.MethodInvocationException");
+static const bool isProviderRuntimeExceptionRegistered =
+        Variant::registerType<joynr::exceptions::ProviderRuntimeException>(
+                "joynr.exceptions.ProviderRuntimeException");
+static const bool isPublicationMissedExceptionRegistered =
+        Variant::registerType<joynr::exceptions::PublicationMissedException>(
+                "joynr.exceptions.PublicationMissedException");
+static const bool isApplicationExceptionRegistered =
+        Variant::registerType<joynr::exceptions::ApplicationException>(
+                "joynr.exceptions.ApplicationException");
+
+JoynrException::JoynrException() noexcept : message("")
 {
 }
 
-JoynrException::JoynrException(const std::string& message) throw() : message(message)
+JoynrException::JoynrException(const std::string& message) noexcept : message(message)
 {
 }
 
-JoynrException::JoynrException(const JoynrException& other) throw() : message(other.message)
+JoynrException::JoynrException(const JoynrException& other) noexcept : message(other.message)
 {
 }
 
-JoynrException::~JoynrException() throw()
+JoynrException::~JoynrException() noexcept
 {
 }
 
-const char* JoynrException::what() const throw()
+const char* JoynrException::what() const noexcept
 {
     return message.c_str();
 }
 
-const std::string JoynrException::getMessage() const throw()
+const std::string JoynrException::getMessage() const noexcept
 {
     return message;
 }
 
-void JoynrException::setMessage(std::string message)
+void JoynrException::setMessage(const std::string& message)
 {
     this->message = message;
 }
@@ -77,7 +102,12 @@ JoynrException* JoynrException::clone() const
     return new JoynrException(static_cast<JoynrException>(*this));
 }
 
-JoynrRuntimeException::JoynrRuntimeException(const std::string& message) throw()
+bool JoynrException::operator==(const JoynrException& other) const
+{
+    return message == other.getMessage();
+}
+
+JoynrRuntimeException::JoynrRuntimeException(const std::string& message) noexcept
         : JoynrException(message)
 {
 }
@@ -92,7 +122,7 @@ JoynrRuntimeException* JoynrRuntimeException::clone() const
     return new JoynrRuntimeException(static_cast<JoynrRuntimeException>(*this));
 }
 
-JoynrTimeOutException::JoynrTimeOutException(const std::string& message) throw()
+JoynrTimeOutException::JoynrTimeOutException(const std::string& message) noexcept
         : JoynrRuntimeException(message)
 {
 }
@@ -107,12 +137,12 @@ JoynrTimeOutException* JoynrTimeOutException::clone() const
     return new JoynrTimeOutException(static_cast<JoynrTimeOutException>(*this));
 }
 
-JoynrParseError::JoynrParseError(const std::string& message) throw()
+JoynrParseError::JoynrParseError(const std::string& message) noexcept
         : JoynrRuntimeException(message)
 {
 }
 
-DiscoveryException::DiscoveryException(const std::string& message) throw()
+DiscoveryException::DiscoveryException(const std::string& message) noexcept
         : JoynrRuntimeException(message)
 {
 }
@@ -127,7 +157,7 @@ DiscoveryException* DiscoveryException::clone() const
     return new DiscoveryException(static_cast<DiscoveryException>(*this));
 }
 
-MethodInvocationException::MethodInvocationException(const std::string& message) throw()
+MethodInvocationException::MethodInvocationException(const std::string& message) noexcept
         : JoynrRuntimeException(message)
 {
 }
@@ -142,7 +172,7 @@ MethodInvocationException* MethodInvocationException::clone() const
     return new MethodInvocationException(static_cast<MethodInvocationException>(*this));
 }
 
-ProviderRuntimeException::ProviderRuntimeException(const std::string& message) throw()
+ProviderRuntimeException::ProviderRuntimeException(const std::string& message) noexcept
         : JoynrRuntimeException(message)
 {
 }
@@ -157,18 +187,26 @@ ProviderRuntimeException* ProviderRuntimeException::clone() const
     return new ProviderRuntimeException(static_cast<ProviderRuntimeException>(*this));
 }
 
-PublicationMissedException::PublicationMissedException(const std::string& subscriptionId) throw()
-        : JoynrRuntimeException(subscriptionId), subscriptionId(subscriptionId)
+PublicationMissedException::PublicationMissedException() noexcept
+        : JoynrRuntimeException(std::string()),
+          subscriptionId()
+{
+}
+
+PublicationMissedException::PublicationMissedException(const std::string& subscriptionId) noexcept
+        : JoynrRuntimeException(subscriptionId),
+          subscriptionId(subscriptionId)
 {
 }
 
 PublicationMissedException::PublicationMissedException(
-        const PublicationMissedException& other) throw()
-        : JoynrRuntimeException(other.subscriptionId), subscriptionId(other.subscriptionId)
+        const PublicationMissedException& other) noexcept
+        : JoynrRuntimeException(other.subscriptionId),
+          subscriptionId(other.subscriptionId)
 {
 }
 
-std::string PublicationMissedException::getSubscriptionId() const throw()
+std::string PublicationMissedException::getSubscriptionId() const noexcept
 {
     return subscriptionId;
 }
@@ -178,12 +216,23 @@ const std::string PublicationMissedException::getTypeName() const
     return PublicationMissedException::TYPE_NAME;
 }
 
+void PublicationMissedException::setSubscriptionId(const std::string& newValue) noexcept
+{
+    subscriptionId = newValue;
+    setMessage(newValue);
+}
+
 PublicationMissedException* PublicationMissedException::clone() const
 {
     return new PublicationMissedException(static_cast<PublicationMissedException>(*this));
 }
 
-ApplicationException::ApplicationException(const ApplicationException& other) throw()
+bool PublicationMissedException::operator==(const PublicationMissedException& other) const
+{
+    return message == other.getMessage() && subscriptionId == other.getSubscriptionId();
+}
+
+ApplicationException::ApplicationException(const ApplicationException& other) noexcept
         : JoynrException(other.message),
           value(other.value),
           name(other.name),
@@ -191,39 +240,47 @@ ApplicationException::ApplicationException(const ApplicationException& other) th
 {
 }
 
-ApplicationException::ApplicationException(const uint32_t& value,
-                                           const std::string& name,
-                                           const std::string& typeName) throw()
-        : JoynrException(), value(value), name(name), typeName(typeName)
+ApplicationException::ApplicationException() noexcept : JoynrException(),
+                                                        value(Variant::NULL_VARIANT()),
+                                                        name(),
+                                                        typeName()
 {
 }
 
 ApplicationException::ApplicationException(const std::string& message,
-                                           const uint32_t& value,
+                                           const Variant& value,
                                            const std::string& name,
-                                           const std::string& typeName) throw()
-        : JoynrException(message), value(value), name(name), typeName(typeName)
+                                           const std::string& typeName) noexcept
+        : JoynrException(message),
+          value(value),
+          name(name),
+          typeName(typeName)
 {
 }
 
-uint32_t ApplicationException::getError() const throw()
-{
-    return value;
-}
-
-void ApplicationException::setError(const uint32_t& value)
+void ApplicationException::setError(const Variant& value) noexcept
 {
     this->value = value;
 }
 
-std::string ApplicationException::getName() const throw()
+std::string ApplicationException::getName() const noexcept
 {
     return name;
 }
 
-std::string ApplicationException::getErrorTypeName() const throw()
+void ApplicationException::setName(const std::string& value) noexcept
+{
+    this->name = value;
+}
+
+std::string ApplicationException::getErrorTypeName() const noexcept
 {
     return typeName;
+}
+
+void ApplicationException::setErrorTypeName(const std::string& value) noexcept
+{
+    this->typeName = value;
 }
 
 const std::string ApplicationException::getTypeName() const
@@ -234,6 +291,12 @@ const std::string ApplicationException::getTypeName() const
 ApplicationException* ApplicationException::clone() const
 {
     return new ApplicationException(static_cast<ApplicationException>(*this));
+}
+
+bool ApplicationException::operator==(const ApplicationException& other) const
+{
+    return message == other.getMessage() && value == other.value && name == other.name &&
+           typeName == other.typeName;
 }
 
 } // namespace exceptions

@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#include "gtest/gtest.h"
-#include "gmock/gmock.h"
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 #include "joynr/Future.h"
 #include "tests/utils/MockObjects.h"
 
@@ -53,15 +53,21 @@ protected:
 TEST_F(FutureTest, getValueAndStatusAfterResultReceived) {
     intFuture.onSuccess(10);
     int actualValue;
-    intFuture.get(actualValue);
+
+    // try retrieving the results with timeout
+    ASSERT_NO_THROW(intFuture.get(1, actualValue));
     ASSERT_EQ(10, actualValue);
     ASSERT_EQ(RequestStatusCode::OK, intFuture.getStatus().getCode());
 
-    // try retrieving the values a second time
-    intFuture.get(actualValue);
+    // try retrieving the results a second time with timeout
+    ASSERT_NO_THROW(intFuture.get(2, actualValue));
     ASSERT_EQ(10, actualValue);
     ASSERT_EQ(RequestStatusCode::OK, intFuture.getStatus().getCode());
 
+    // try retrieving the results a third time without timeout
+    ASSERT_NO_THROW(intFuture.get(actualValue));
+    ASSERT_EQ(10, actualValue);
+    ASSERT_EQ(RequestStatusCode::OK, intFuture.getStatus().getCode());
 }
 
 TEST_F(FutureTest, isOKReturnsTrueWhenStatusIsOk) {
@@ -70,36 +76,93 @@ TEST_F(FutureTest, isOKReturnsTrueWhenStatusIsOk) {
     ASSERT_TRUE(intFuture.isOk());
 }
 
-TEST_F(FutureTest, getValueAndStatusAfterFailiureReceived) {
-    intFuture.onError(RequestStatus(RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE), exceptions::JoynrRuntimeException("exceptionMessage"));
-    ASSERT_EQ(RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE, intFuture.getStatus().getCode());
+TEST_F(FutureTest, getStatusAndErrorAfterFailiureReceived) {
+    intFuture.onError(RequestStatus(RequestStatusCode::ERROR), exceptions::ProviderRuntimeException("exceptionMessageIntFuture"));
+    ASSERT_EQ(RequestStatusCode::ERROR, intFuture.getStatus().getCode());
     int actualValue;
 
-    ASSERT_THROW(intFuture.get(actualValue), exceptions::JoynrRuntimeException);
+    // get error without timeout
+    try {
+        intFuture.get(actualValue);
+        ADD_FAILURE()<< "expected ProviderRuntimeException";
+    } catch (exceptions::ProviderRuntimeException& e) {
+        ASSERT_EQ(e.getMessage(), "exceptionMessageIntFuture");
+    }
+
+    // get error with timeout
+    try {
+        intFuture.get(1, actualValue);
+        ADD_FAILURE()<< "expected ProviderRuntimeException";
+    } catch (exceptions::ProviderRuntimeException& e) {
+        ASSERT_EQ(e.getMessage(), "exceptionMessageIntFuture");
+    }
 }
 
 TEST_F(FutureTest, getValueAndStatusBeforeOperationFinishes) {
     ASSERT_EQ(RequestStatusCode::IN_PROGRESS, intFuture.getStatus().getCode());
+
+    int value;
+    try {
+        intFuture.get(1, value);
+        ADD_FAILURE()<< "expected JoynrTimeOutException";
+    } catch (exceptions::JoynrTimeOutException& e) {
+        ASSERT_EQ(e.getMessage(), "Request did not finish in time");
+    }
 }
 
-TEST_F(FutureTest, getStatusForVoidAfterResultReceived) {
+TEST_F(FutureTest, getValueAndStatusForVoidAfterResultReceived) {
     voidFuture.onSuccess();
+    ASSERT_EQ(RequestStatusCode::OK, voidFuture.getStatus().getCode());
+
+    // try retrieving the results with timeout
+    ASSERT_NO_THROW(voidFuture.get(1));
+    ASSERT_EQ(RequestStatusCode::OK, voidFuture.getStatus().getCode());
+
+    // try retrieving the results a second time with timeout
+    ASSERT_NO_THROW(voidFuture.get(2));
+    ASSERT_EQ(RequestStatusCode::OK, voidFuture.getStatus().getCode());
+
+    // try retrieving the results a third time without timeout
+    ASSERT_NO_THROW(voidFuture.get());
     ASSERT_EQ(RequestStatusCode::OK, voidFuture.getStatus().getCode());
 }
 
-TEST_F(FutureTest, getStatusForVoidAfterFailureReceived) {
-    voidFuture.onError(RequestStatus(RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE), exceptions::JoynrRuntimeException("exceptionMessage"));
-    ASSERT_EQ(RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE, voidFuture.getStatus().getCode());
+TEST_F(FutureTest, getStatusAndErrorForVoidAfterFailureReceived) {
+    voidFuture.onError(RequestStatus(RequestStatusCode::ERROR), exceptions::ProviderRuntimeException("exceptionMessageVoidFuture"));
+    ASSERT_EQ(RequestStatusCode::ERROR, voidFuture.getStatus().getCode());
+
+    // get error without timeout
+    try {
+        voidFuture.get();
+        ADD_FAILURE()<< "expected ProviderRuntimeException";
+    } catch (exceptions::ProviderRuntimeException& e) {
+        ASSERT_EQ(e.getMessage(), "exceptionMessageVoidFuture");
+    }
+
+    // get error with timeout
+    try {
+        voidFuture.get(1);
+        ADD_FAILURE()<< "expected ProviderRuntimeException";
+    } catch (exceptions::ProviderRuntimeException& e) {
+        ASSERT_EQ(e.getMessage(), "exceptionMessageVoidFuture");
+    }
 }
 
-TEST_F(FutureTest, getStatusForVoidBeforeOperationFinishes) {
+TEST_F(FutureTest, getValueAndStatusForVoidBeforeOperationFinishes) {
     ASSERT_EQ(RequestStatusCode::IN_PROGRESS, voidFuture.getStatus().getCode());
+
+    try {
+            voidFuture.get(1);
+            ADD_FAILURE()<< "expected JoynrTimeOutException";
+        } catch (exceptions::JoynrTimeOutException& e) {
+            ASSERT_EQ(e.getMessage(), "Request did not finish in time");
+        }
 }
 
 TEST_F(FutureTest, waitForFinishWithTimer) {
     try {
         intFuture.wait(5);
-        FAIL();
+        FAIL()<< "expected JoynrTimeOutException";
     } catch (exceptions::JoynrTimeOutException& e) {
         RequestStatus requestStatus = intFuture.getStatus();
         EXPECT_EQ(RequestStatusCode::IN_PROGRESS, requestStatus.getCode());
@@ -109,6 +172,7 @@ TEST_F(FutureTest, waitForFinishWithTimer) {
 TEST_F(FutureTest, waitForFinishWithTimerForVoid) {
     try {
         voidFuture.wait(5);
+        FAIL()<< "expected JoynrTimeOutException";
     } catch (exceptions::JoynrTimeOutException& e) {
         RequestStatus requestStatus = voidFuture.getStatus();
         EXPECT_EQ(RequestStatusCode::IN_PROGRESS, requestStatus.getCode());

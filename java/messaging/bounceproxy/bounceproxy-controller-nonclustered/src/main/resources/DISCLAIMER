@@ -15,15 +15,18 @@ The software listed below included in some products is licensed under the "Apach
   Notice file: WEB-INF/lib/jackson-module-jaxb-annotations-2.6.2.jar:META-INF/NOTICE
   License file: WEB-INF/lib/jackson-module-jaxb-annotations-2.6.2.jar:META-INF/LICENSE
 - com.google.guava:guava:11.0.2
-- com.google.inject:guice:3.0
-  Notice file: WEB-INF/lib/guice-3.0.jar:META-INF/NOTICE
-  License file: WEB-INF/lib/guice-3.0.jar:META-INF/LICENSE
 - com.google.inject.extensions:guice-servlet:3.0
   Notice file: WEB-INF/lib/guice-servlet-3.0.jar:META-INF/NOTICE
   License file: WEB-INF/lib/guice-servlet-3.0.jar:META-INF/LICENSE
+- com.google.inject:guice:3.0
+  Notice file: WEB-INF/lib/guice-3.0.jar:META-INF/NOTICE
+  License file: WEB-INF/lib/guice-3.0.jar:META-INF/LICENSE
 - commons-codec:commons-codec:1.4
   Notice file: WEB-INF/lib/commons-codec-1.4.jar:META-INF/NOTICE.txt
   License file: WEB-INF/lib/commons-codec-1.4.jar:META-INF/LICENSE.txt
+- commons-lang:commons-lang:2.4
+  Notice file: WEB-INF/lib/commons-lang-2.4.jar:META-INF/NOTICE.txt
+  License file: WEB-INF/lib/commons-lang-2.4.jar:META-INF/LICENSE.txt
 - commons-logging:commons-logging:1.0.4
   Notice file: WEB-INF/lib/commons-logging-1.0.4.jar:META-INF/NOTICE.txt
   License file: WEB-INF/lib/commons-logging-1.0.4.jar:META-INF/LICENSE.txt
@@ -47,11 +50,11 @@ The software listed below included in some products is licensed under the "BSD 3
 - asm:asm:3.1
   License: META-INF/licenses/BSD-3-Clause.asm.txt
 
-The software listed below included in some products is licensed under the "Common Development and Distritbuion-License 1.1". A copy of that license in the English original version with a copyright notice, a disclaimer of warranty, and an exclusion of liability is included in this document "META-INF/licenses/CDDL-1.1.txt".
+The software listed below included in some products is licensed under the "Common Development and Distribution-License 1.1". A copy of that license in the English original version with a copyright notice, a disclaimer of warranty, and an exclusion of liability is included in this document "META-INF/licenses/CDDL-1.1.txt".
+- com.sun.jersey.contribs:jersey-guice:1.17
 - com.sun.jersey:jersey-core:1.17
 - com.sun.jersey:jersey-server:1.17
 - com.sun.jersey:jersey-servlet:1.17
-- com.sun.jersey.contribs:jersey-guice:1.17
 
 Software libraries listed below included in some products are free software that is licensed under "GNU Lesser General Public License (LGPL) v3.0". A copy of that license in the English original version with a disclaimer of warranty and an exclusion of liability is included in this document "META-INF/licenses/LGPL-3.txt". This free software has been developed by third parties and is copyrighted. It is provided for free, and you are permitted to use it according to the mentioned license. LGPL v 3.0 supersedes other licenses. The complete corresponding source code is included in the files listed below.
 - com.google.code.findbugs:annotations:2.0.1

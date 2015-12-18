@@ -23,15 +23,11 @@
 #include <string>
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
-#include "joynr/vehicle/GpsProxy.h"
 #include "joynr/tests/testProxy.h"
-#include "joynr/CapabilitiesRegistrar.h"
-#include "utils/QThreadSleep.h"
-#include "PrettyPrint.h"
-#include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/Future.h"
-#include "joynr/SettingsMerger.h"
 #include "joynr/DispatcherUtils.h"
+#include "joynr/LibjoynrSettings.h"
+
 using namespace ::testing;
 
 using namespace joynr;
@@ -48,8 +44,8 @@ class End2EndPerformanceTest : public Test {
 public:
     JoynrClusterControllerRuntime* runtime1;
     JoynrClusterControllerRuntime* runtime2;
-    QSettings settings1;
-    QSettings settings2;
+    Settings settings1;
+    Settings settings2;
     std::string baseUuid;
     std::string uuid;
     std::string domain;
@@ -57,17 +53,20 @@ public:
     End2EndPerformanceTest() :
         runtime1(NULL),
         runtime2(NULL),
-        settings1("test-resources/SystemIntegrationTest1.settings", QSettings::IniFormat),
-        settings2("test-resources/SystemIntegrationTest2.settings", QSettings::IniFormat),
-        baseUuid(TypeUtil::toStd(QUuid::createUuid().toString())),
+        settings1("test-resources/SystemIntegrationTest1.settings"),
+        settings2("test-resources/SystemIntegrationTest2.settings"),
+        baseUuid(Util::createUuid()),
         uuid( "_" + baseUuid.substr(1, baseUuid.length()-2)),
         domain("cppEnd2EndPerformancesTestDomain" + uuid)
     {
-        QSettings* settings_1 = SettingsMerger::mergeSettings(QString("test-resources/SystemIntegrationTest1.settings"));
-        SettingsMerger::mergeSettings(QString("test-resources/libjoynrSystemIntegration1.settings"), settings_1);
+
+        Settings* settings_1 = new Settings("test-resources/SystemIntegrationTest1.settings");
+        Settings integration1Settings{"test-resources/libjoynrSystemIntegration1.settings"};
+        Settings::merge(integration1Settings, *settings_1, false);
         runtime1 = new JoynrClusterControllerRuntime(NULL, settings_1);
-        QSettings* settings_2 = SettingsMerger::mergeSettings(QString("test-resources/SystemIntegrationTest2.settings"));
-        SettingsMerger::mergeSettings(QString("test-resources/libjoynrSystemIntegration2.settings"), settings_2);
+        Settings* settings_2 = new Settings("test-resources/SystemIntegrationTest2.settings");
+        Settings integration2Settings{"test-resources/libjoynrSystemIntegration2.settings"};
+        Settings::merge(integration2Settings, *settings_2, false);
         runtime2 = new JoynrClusterControllerRuntime(NULL, settings_2);
     }
 
@@ -82,7 +81,7 @@ public:
         runtime2->stop(deleteChannel);
 
         // Remove participant id persistence file
-        QFile::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME());
+        std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
     }
 
     ~End2EndPerformanceTest(){
@@ -104,7 +103,7 @@ TEST_F(End2EndPerformanceTest, sendManyRequests) {
 
     runtime1->registerProvider<tests::testProvider>(domain, testProvider);
 
-    QThreadSleep::msleep(2000);
+    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domain);
@@ -121,7 +120,7 @@ TEST_F(End2EndPerformanceTest, sendManyRequests) {
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
     uint64_t startTime = DispatcherUtils::nowInMilliseconds();
-    QList<std::shared_ptr<Future<int> > >testFutureList;
+    std::vector<std::shared_ptr<Future<int> > >testFutureList;
     int numberOfMessages = 150;
     int successFullMessages = 0;
     for (int i=0; i<numberOfMessages; i++){
@@ -130,7 +129,7 @@ TEST_F(End2EndPerformanceTest, sendManyRequests) {
         list.push_back(4);
         list.push_back(8);
         list.push_back(i);
-        testFutureList.append(testProxy->sumIntsAsync(list));
+        testFutureList.push_back(testProxy->sumIntsAsync(list));
     }
 
     for (int i=0; i<numberOfMessages; i++){
@@ -147,6 +146,6 @@ TEST_F(End2EndPerformanceTest, sendManyRequests) {
     //check if all Messages were received:
     EXPECT_EQ(numberOfMessages, successFullMessages);
     Logger* logger = Logging::getInstance()->getLogger("TEST", "CombinedEnd2EndTest");
-    LOG_INFO(logger,"Required Time for 1000 Messages: " + QString::number(TypeUtil::toQt(stopTime - startTime)));
+    LOG_INFO(logger,FormatString("Required Time for 1000 Messages: %1").arg((stopTime - startTime)).str());
 }
 

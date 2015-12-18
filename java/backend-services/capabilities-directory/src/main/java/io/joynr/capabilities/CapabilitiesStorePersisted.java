@@ -19,6 +19,7 @@ package io.joynr.capabilities;
  * #L%
  */
 
+import com.google.inject.persist.PersistService;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.JoynrCommunicationException;
 
@@ -57,7 +58,9 @@ public class CapabilitiesStorePersisted implements CapabilitiesStore {
 
     @Inject
     public CapabilitiesStorePersisted(CapabilitiesProvisioning staticProvisioning,
-                                      Provider<EntityManager> entityManagerProvider) {
+                                      Provider<EntityManager> entityManagerProvider,
+                                      PersistService persistService) {
+        persistService.start();
         this.entityManagerProvider = entityManagerProvider;
         logger.debug("creating CapabilitiesStore {} with static provisioning", this);
         add(staticProvisioning.getCapabilityEntries());

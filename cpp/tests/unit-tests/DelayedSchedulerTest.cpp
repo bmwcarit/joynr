@@ -16,125 +16,201 @@
  * limitations under the License.
  * #L%
  */
+// We need to tell boost we will use the std placeholders
+#define BOOST_BIND_NO_PLACEHOLDERS
+
 #include "gtest/gtest.h"
-#include "joynr/Directory.h"
-#include "utils/QThreadSleep.h"
-#include <QRunnable>
-#include <chrono>
-#include <stdint.h>
-#include "joynr/DelayedScheduler.h"
 #include "joynr/joynrlogging.h"
 
-using namespace ::testing;
+#include "joynr/DelayedScheduler.h"
+
+#include "utils/MockObjects.h"
+#include "joynr/TimeUtils.h"
+
+#include <stdint.h>
+#include <cassert>
+
 using namespace joynr;
 using namespace joynr_logging;
-using namespace std::chrono;
 
-Logger* logger = Logging::getInstance()->getLogger("MSG", "DelayedSchedulerTest");
+using namespace ::testing;
+using ::testing::StrictMock;
+
+using namespace std::placeholders;
+
+namespace DelayedSchedulerTest
+{
+Logger* logger = Logging::getInstance()->getLogger("MSG",
+    "DelayedSchedulerTest");
+}
 
 // Expected accuracy of the timer in milliseconds
-static qint64 timerAccuracy_ms = 25;
+static const uint64_t timerAccuracy_ms = 5U;
 
+class SimpleDelayedScheduler :
+    public joynr::DelayedScheduler
+{
 
-class DummyRunnable : public QRunnable {
 public:
-    DummyRunnable(qint64 delay, bool& wasTooEarly) :
-        eta_ms(duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count() + delay),
-        wasTooEarly(wasTooEarly)
-    {}
-    void run() {
-        int64_t now_ms = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
 
-        LOG_TRACE(logger, "Running runnable");
-        LOG_TRACE(logger, QString(" ETA        : %1").arg(eta_ms));
-        LOG_TRACE(logger, QString(" current    : %1").arg(now_ms));
-        LOG_TRACE(logger, QString(" difference : %1").arg(now_ms - eta_ms));
-        if (now_ms < eta_ms - timerAccuracy_ms) {
-            wasTooEarly = true;
-        } else {
-            wasTooEarly = false;
+    SimpleDelayedScheduler()
+        : joynr::DelayedScheduler(std::bind(&SimpleDelayedScheduler::workAvailable, this, _1)),
+          est_ms(0)
+    {
+    }
+
+    SimpleDelayedScheduler(const uint64_t delay)
+        : joynr::DelayedScheduler(std::bind(&SimpleDelayedScheduler::workAvailable, this, _1)),
+          est_ms(TimeUtils::getCurrentMillisSinceEpoch() + delay)
+    {
+    }
+
+    ~SimpleDelayedScheduler()
+    {
+
+    }
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-local-typedefs"
+    MOCK_CONST_METHOD1(workAvailableCalled, void (joynr::Runnable*));
+    MOCK_CONST_METHOD0(workAvailableInTime, void ());
+#pragma GCC diagnostic pop
+
+    void workAvailable(joynr::Runnable* runnable)
+    {
+        workAvailableCalled(runnable);
+
+        if(est_ms > 0)
+        {
+            const uint64_t now_ms = TimeUtils::getCurrentMillisSinceEpoch();
+            const uint64_t diff_ms = (now_ms > est_ms) ? now_ms - est_ms : est_ms - now_ms;
+
+            LOG_TRACE(DelayedSchedulerTest::logger, FormatString("Runnable is available").str());
+            LOG_TRACE(DelayedSchedulerTest::logger, FormatString(" ETA        : %1").arg(est_ms).str());
+            LOG_TRACE(DelayedSchedulerTest::logger, FormatString(" current    : %1").arg(now_ms).str());
+            LOG_TRACE(DelayedSchedulerTest::logger, FormatString(" difference : %1").arg(diff_ms).str());
+
+            if (diff_ms <= timerAccuracy_ms)
+            {
+                workAvailableInTime();
+            }
+        }
+        else
+        {
+            LOG_TRACE(DelayedSchedulerTest::logger, "No delay given but work available called.");
         }
     }
-    qint64 eta_ms; //time at which the runnable should be run
-    bool& wasTooEarly;
+
+private:
+    const uint64_t est_ms;
 };
 
-class TriggerRunnable : public QRunnable {
-public:
-    TriggerRunnable(qint64 delay, bool& triggered) :
-        eta_ms(duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count() + delay),
-        triggered(triggered)
-    {}
-    void run() {
-        LOG_TRACE(logger, "Running trigger runnable");
-        triggered = true;
-    }
-    qint64 eta_ms; //time at which the runnable should be run
-    bool& triggered;
-};
+TEST(DelayedSchedulerTest, startAndShutdownWithoutWork)
+{
+    SimpleDelayedScheduler scheduler;
 
-TEST(SingleThreadedDelayedSchedulerTest, runnableDoesNotRunTooEarly) {
-    LOG_TRACE(logger, "starting test");
-    qint64 delay = 500;
-    DelayedScheduler* scheduler = new SingleThreadedDelayedScheduler(QString("SingleThreadedDelayedScheduler"));
-    bool wasTooEarly(false);
-    DummyRunnable* runnable = new DummyRunnable(delay, wasTooEarly);
-    LOG_TRACE(logger, "starting runnable");
-    scheduler->schedule(runnable, delay);
-    LOG_TRACE(logger, "started runnable");
-    LOG_TRACE(logger, "starting sleep");
-    QThreadSleep::msleep(delay+100);
-    LOG_TRACE(logger, "finished sleep");
-    EXPECT_FALSE(wasTooEarly);
-
-    // Cleanup the test objects 
-    delete scheduler;
+    scheduler.shutdown();
 }
 
-TEST(SingleThreadedDelayedSchedulerTest, runnableCanBeStoppedBeforeRun) {
-    LOG_TRACE(logger, "starting test");
-    qint64 delay = 300;
-    DelayedScheduler* scheduler = new SingleThreadedDelayedScheduler(QString("SingleThreadedDelayedScheduler"));
-    bool triggered(false);
-    TriggerRunnable* runnable = new TriggerRunnable(delay, triggered);
-    LOG_TRACE(logger, "starting runnable");
-    scheduler->schedule(runnable, delay);
-    LOG_TRACE(logger, "started runnable");
-    LOG_TRACE(logger, "starting sleep");
-    QThreadSleep::msleep(delay+100);
-    LOG_TRACE(logger, "finished sleep");
-    EXPECT_TRUE(triggered);
+TEST(DelayedSchedulerTest, startAndShutdownWithPendingWork_callDtorOfRunnablesCorrect)
+{
+    SimpleDelayedScheduler scheduler;
 
-    triggered = false;
-    //now let's create a runnable, remove it from the scheduler and expect not to be triggered
-    TriggerRunnable* runnableNotToBeTriggered = new TriggerRunnable(delay, triggered);
-    LOG_TRACE(logger, "starting runnable");
-    quint32 runnableHandle = scheduler->schedule(runnableNotToBeTriggered, delay);
+    // Dtor should be called
+    StrictMock<MockRunnable>* runnable1 = new StrictMock<MockRunnable>(true);
+    scheduler.schedule(runnable1, std::chrono::milliseconds(100));
 
-    QThreadSleep::msleep(100);
-    LOG_TRACE(logger, "unschedule runnable");
-    scheduler->unschedule(runnableHandle);
-    LOG_TRACE(logger, "starting sleep");
-    QThreadSleep::msleep(delay);
-    LOG_TRACE(logger, "finished sleep");
-    // runnable shall not be triggered
-    EXPECT_FALSE(triggered);
+    // Dtor called after scheduler was cleaned
+    StrictMock<MockRunnable> runnable2(false);
+    scheduler.schedule(&runnable2, std::chrono::milliseconds(100));
 
-    // Cleanup the test objects
-    delete scheduler;
+    EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+    scheduler.shutdown();
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+    EXPECT_CALL(runnable2, dtorCalled()).Times(1);
 }
 
-TEST(MultiThreadedDelayedSchedulerTest, runnableDoesNotRunTooEarly) {
-    qint64 delay = 100;
-    QThreadPool threadpool;
-    threadpool.setMaxThreadCount(5);
-    DelayedScheduler* scheduler = new ThreadPoolDelayedScheduler(threadpool, QString("ThreadPoolDelayedScheduler"));
-    bool wasTooEarly;
-    DummyRunnable* runnable = new DummyRunnable(delay, wasTooEarly);
-    scheduler->schedule(runnable, delay);
-    QThreadSleep::msleep(delay+500);
-    EXPECT_FALSE(wasTooEarly);
-    
-    // Cleanup the test objects 
-    delete scheduler;
+TEST(DelayedSchedulerTest, testAccuracyOfDelayedScheduler)
+{
+    SimpleDelayedScheduler scheduler(5);
+    StrictMock<MockRunnable> runnable1(false);
+    scheduler.schedule(&runnable1, std::chrono::milliseconds(5));
+
+    EXPECT_CALL(scheduler, workAvailableCalled(&runnable1)).Times(1);
+    EXPECT_CALL(scheduler, workAvailableInTime()).Times(1);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+    scheduler.shutdown();
+
+    EXPECT_CALL(runnable1, dtorCalled()).Times(1);
+}
+
+TEST(DelayedSchedulerTest, avoidCallingDtorOfRunnablesAfterSchedulerHasExpired)
+{
+    SimpleDelayedScheduler scheduler;
+    StrictMock<MockRunnable> runnable1(true);
+    scheduler.schedule(&runnable1, std::chrono::milliseconds(5));
+
+    EXPECT_CALL(scheduler, workAvailableCalled(&runnable1)).Times(1);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+    scheduler.shutdown();
+
+    EXPECT_CALL(runnable1, dtorCalled()).Times(1);
+}
+
+TEST(DelayedSchedulerTest, testRunnableWithoutDelay)
+{
+    SimpleDelayedScheduler scheduler(0);
+    StrictMock<MockRunnable> runnable1(false);
+
+    EXPECT_CALL(scheduler, workAvailableCalled(&runnable1)).Times(1);
+    EXPECT_CALL(scheduler, workAvailableInTime()).Times(1);
+
+    scheduler.schedule(&runnable1, std::chrono::milliseconds::zero());
+
+    scheduler.shutdown();
+
+    EXPECT_CALL(runnable1, dtorCalled()).Times(1);
+}
+
+TEST(DelayedSchedulerTest, scheduleAndUnscheduleRunnable_NoCallToRunnable)
+{
+    SimpleDelayedScheduler scheduler(5);
+    StrictMock<MockRunnable> runnable1(false);
+    joynr::DelayedScheduler::RunnableHandle handle = scheduler.schedule(&runnable1, std::chrono::milliseconds(5));
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
+    scheduler.unschedule(handle);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+    scheduler.shutdown();
+
+    EXPECT_CALL(runnable1, dtorCalled()).Times(1);
+}
+
+TEST(DelayedSchedulerTest, scheduleAndUnscheduleRunnable_CallDtorOnUnschedule)
+{
+    SimpleDelayedScheduler scheduler(5);
+    StrictMock<MockRunnable>* runnable1 = new StrictMock<MockRunnable>(true);
+    joynr::DelayedScheduler::RunnableHandle handle = scheduler.schedule(runnable1, std::chrono::milliseconds(5));
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
+    EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
+
+    scheduler.unschedule(handle);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+    scheduler.shutdown();
 }

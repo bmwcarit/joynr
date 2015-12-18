@@ -29,8 +29,8 @@ class SubscriptionPublication;
 class MessagingQos;
 
 /**
-  * \class IPublicationSender
-  * \brief
+  * @class IPublicationSender
+  * @brief
   */
 class JOYNR_EXPORT IPublicationSender
 {

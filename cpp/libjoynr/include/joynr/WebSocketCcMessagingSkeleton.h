@@ -20,7 +20,7 @@
 #define WEBSOCKETCCMESSAGINGSKELETON_H
 
 #include <QtCore/QObject>
-#include <QtCore/QList>
+#include <vector>
 #include <QtNetwork/QAbstractSocket>
 #include <QtWebSockets/qwebsocketprotocol.h>
 
@@ -30,7 +30,7 @@
 #include "joynr/MessageRouter.h"
 #include "joynr/IMessaging.h"
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
-#include "joynr/system/RoutingTypes_QtWebSocketAddress.h"
+#include "joynr/system/RoutingTypes/WebSocketAddress.h"
 
 #include "joynr/JoynrExport.h"
 
@@ -46,7 +46,7 @@ class JOYNR_EXPORT WebSocketCcMessagingSkeleton : public QObject, public IMessag
 public:
     WebSocketCcMessagingSkeleton(MessageRouter& messageRouter,
                                  WebSocketMessagingStubFactory& messagingStubFactory,
-                                 const system::RoutingTypes::QtWebSocketAddress& serverAddress);
+                                 const system::RoutingTypes::WebSocketAddress& serverAddress);
 
     ~WebSocketCcMessagingSkeleton();
 
@@ -64,7 +64,7 @@ private:
     bool isInitializationMessage(const QString& message);
     static joynr_logging::Logger* logger;
     QWebSocketServer* webSocketServer;
-    QList<QWebSocket*> clients;
+    std::vector<QWebSocket*> clients;
     MessageRouter& messageRouter;
     WebSocketMessagingStubFactory& messagingStubFactory;
 };

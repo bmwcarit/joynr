@@ -52,6 +52,8 @@ class StdTypeHTemplate implements CompoundTypeTemplate{
 #include <string>
 #include <vector>
 
+#include "joynr/Util.h"
+
 // include complex Datatype headers.
 «FOR member: getRequiredIncludesFor(type)»
 	#include "«member»"
@@ -97,6 +99,12 @@ public:
 	 * @return stringified class content
 	 */
 	virtual std::string toString() const;
+
+	/**
+	 * @brief Returns a hash code value for this object
+	 * @return a hash code value for this object.
+	 */
+	virtual std::size_t hashCode() const;
 
 	/**
 	 * @brief assigns an object
@@ -157,7 +165,42 @@ private:
 	«ENDFOR»
 };
 
+std::size_t hash_value(«typeName» const& «typeName.toFirstLower»Value);
+
 «getNamespaceEnder(type, true)»
+
+namespace joynr
+{
+template <>
+inline std::vector<«type.typeName»> Util::valueOf<
+		std::vector<«type.typeName»>>(const Variant& variant)
+{
+	return joynr::Util::convertVariantVectorToVector<«type.typeName»>(
+			variant.get<std::vector<Variant>>());
+}
+} // namespace joynr
+
+namespace std {
+
+/**
+ * @brief Function object that implements a hash function for «type.typeName».
+ *
+ * Used by the unordered associative containers std::unordered_set, std::unordered_multiset,
+ * std::unordered_map, std::unordered_multimap as default hash function.
+ */
+template<>
+struct hash<«type.typeName»> {
+
+	/**
+	 * @brief method overriding default implementation of operator ()
+	 * @param «typeName.toFirstLower»Value the operators argument
+	 * @return the ordinal number representing the enum value
+	 */
+	std::size_t operator()(const «type.typeName»& «typeName.toFirstLower»Value) const {
+		return «type.buildPackagePath("::", true)»hash_value(«typeName.toFirstLower»Value);
+	}
+};
+} // namespace std
 
 #endif // «headerGuard»
 '''

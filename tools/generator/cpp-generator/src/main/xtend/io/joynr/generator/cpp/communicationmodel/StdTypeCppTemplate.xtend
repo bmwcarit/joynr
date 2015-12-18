@@ -47,23 +47,25 @@ class StdTypeCppTemplate implements CompoundTypeTemplate{
 #include <string>
 #include <typeinfo>
 
+#include <boost/functional/hash.hpp>
+
 #include <QMetaEnum>
 
 #include "«type.includeOf»"
 
 #include "joynr/Reply.h"
-#include "joynr/DeclareMetatypeUtil.h"
 #include "joynr/Util.h"
-#include "qjson/serializer.h"
 
 «getNamespaceStarter(type, true)»
+
+static const bool is«typeName»Registered = Variant::registerType<«type.typeName»>("«type.typeName.replace("::", ".")»");
 
 «typeName»::«typeName»()«IF !getMembersRecursive(type).empty»:«ENDIF»
 	«IF hasExtendsDeclaration(type)»
 		«getExtendedType(type).joynrName»()«IF !getMembers(type).empty»,«ENDIF»
 	«ENDIF»
 	«FOR member: getMembers(type) SEPARATOR ','»
-		«member.joynrName»()
+		«member.joynrName»(«member.defaultValue»)
 	«ENDFOR»
 {
 }
@@ -122,6 +124,20 @@ bool «typeName»::operator==(const «typeName»& other) const {
 		«ENDIF»
 }
 
+std::size_t «typeName»::hashCode() const {
+	std::size_t seed = 0;
+
+	«FOR member: getMembers(type)»
+		«val joynrName = member.joynrName»
+		boost::hash_combine(seed, get«joynrName.toFirstUpper»());
+	«ENDFOR»
+
+	«IF type.hasExtendsDeclaration»
+		boost::hash_combine(seed, «type.extendedType.joynrName»::hashCode());
+	«ENDIF»
+	return seed;
+}
+
 «FOR member: getMembers(type)»
 	«val joynrName = member.joynrName»
 	«IF isEnum(member.type) && ! isArray(member)»
@@ -150,8 +166,10 @@ std::string «typeName»::toString() const {
 			typeAsString << "«memberName»:" + get«memberName.toFirstUpper»();
 		«ELSEIF isEnum(member.type)»
 			typeAsString << "«memberName»:" + get«memberName.toFirstUpper»Internal();
-		«ELSEIF isComplex(member.type)»
+		«ELSEIF isCompound(member.type)»
 			typeAsString << "«memberName»:" + get«memberName.toFirstUpper»().toString();
+		«ELSEIF isMap(member.type)»
+			typeAsString << " unprinted Map «memberName»  ";
 		«ELSE»
 			typeAsString << "«memberName»:" + std::to_string(get«memberName.toFirstUpper»());
 		«ENDIF»
@@ -164,6 +182,12 @@ std::string «typeName»::toString() const {
 void PrintTo(const «typeName»& «typeName.toFirstLower», ::std::ostream* os) {
 	*os << "«typeName»::" << «typeName.toFirstLower».toString();
 }
+
+std::size_t hash_value(«typeName» const& «typeName.toFirstLower»Value)
+{
+	return «typeName.toFirstLower»Value.hashCode();
+}
+
 «getNamespaceEnder(type, true)»
 '''
 }

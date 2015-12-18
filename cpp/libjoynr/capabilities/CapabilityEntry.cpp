@@ -17,7 +17,6 @@
  * #L%
  */
 #include "joynr/CapabilityEntry.h"
-#include "joynr/JsonSerializer.h"
 
 namespace joynr
 {
@@ -39,11 +38,11 @@ CapabilityEntry::CapabilityEntry(const CapabilityEntry& other)
 }
 
 CapabilityEntry::CapabilityEntry(
-        const QString& domain,
-        const QString& interfaceName,
-        joynr::types::QtProviderQos qos,
-        const QString& participantId,
-        QList<joynr::types::QtCommunicationMiddleware::Enum> middlewareConnections,
+        const std::string& domain,
+        const std::string& interfaceName,
+        joynr::types::ProviderQos qos,
+        const std::string& participantId,
+        std::vector<joynr::types::CommunicationMiddleware::Enum> middlewareConnections,
         bool isGlobal,
         QObject* parent)
         : QObject(parent),
@@ -75,62 +74,62 @@ bool CapabilityEntry::operator==(const CapabilityEntry& other) const
            this->global == other.global;
 }
 
-QString CapabilityEntry::getInterfaceName() const
+std::string CapabilityEntry::getInterfaceName() const
 {
     return interfaceName;
 }
 
-QString CapabilityEntry::getDomain() const
+std::string CapabilityEntry::getDomain() const
 {
     return domain;
 }
 
-void CapabilityEntry::setInterfaceName(QString interfaceName)
+void CapabilityEntry::setInterfaceName(std::string interfaceName)
 {
     this->interfaceName = interfaceName;
 }
 
-void CapabilityEntry::setDomain(QString domain)
+void CapabilityEntry::setDomain(std::string domain)
 {
     this->domain = domain;
 }
 
-joynr::types::QtProviderQos CapabilityEntry::getQos() const
+joynr::types::ProviderQos CapabilityEntry::getQos() const
 {
     return qos;
 }
 
-void CapabilityEntry::setQos(joynr::types::QtProviderQos qos)
+void CapabilityEntry::setQos(joynr::types::ProviderQos qos)
 {
     this->qos = qos;
 }
 
-void CapabilityEntry::setParticipantId(QString participantId)
+void CapabilityEntry::setParticipantId(std::string participantId)
 {
     this->participantId = participantId;
 }
 
-QString CapabilityEntry::getParticipantId() const
+std::string CapabilityEntry::getParticipantId() const
 {
     return participantId;
 }
 
 void CapabilityEntry::setMiddlewareConnections(
-        QList<joynr::types::QtCommunicationMiddleware::Enum> middlewareConnections)
+        std::vector<joynr::types::CommunicationMiddleware::Enum> middlewareConnections)
 {
     this->middlewareConnections = middlewareConnections;
 }
 
-QList<joynr::types::QtCommunicationMiddleware::Enum> CapabilityEntry::getMiddlewareConnections()
+std::vector<joynr::types::CommunicationMiddleware::Enum> CapabilityEntry::getMiddlewareConnections()
         const
 {
     return middlewareConnections;
 }
 
 void CapabilityEntry::prependMiddlewareConnection(
-        joynr::types::QtCommunicationMiddleware::Enum middlewareConnection)
+        joynr::types::CommunicationMiddleware::Enum middlewareConnection)
 {
-    middlewareConnections.prepend(middlewareConnection);
+    middlewareConnections.insert(middlewareConnections.begin(), middlewareConnection);
 }
 
 bool CapabilityEntry::isGlobal() const
@@ -143,10 +142,10 @@ void CapabilityEntry::setGlobal(bool global)
     this->global = global;
 }
 
-QString CapabilityEntry::toString() const
+std::string CapabilityEntry::toString() const
 {
-    return QString("{ domain: " + domain + ", interfaceName: " + interfaceName +
-                   ", participantId: " + participantId + "}");
+    return std::string("{ domain: " + domain + ", interfaceName: " + interfaceName +
+                       ", participantId: " + participantId + "}");
 }
 
 } // namespace joynr

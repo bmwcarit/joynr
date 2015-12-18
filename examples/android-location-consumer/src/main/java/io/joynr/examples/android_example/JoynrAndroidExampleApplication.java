@@ -19,22 +19,27 @@ package io.joynr.examples.android_example;
  * #L%
  */
 
-import io.joynr.joynrandroidruntime.JoynrAndroidRuntime;
-import io.joynr.messaging.MessagingPropertyKeys;
-
-import java.util.Properties;
+import android.app.Application;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import android.app.Application;
+import java.util.Properties;
+
+import io.joynr.arbitration.ArbitrationStrategy;
+import io.joynr.arbitration.DiscoveryQos;
+import io.joynr.arbitration.DiscoveryScope;
+import io.joynr.joynrandroidruntime.JoynrAndroidRuntime;
+import io.joynr.messaging.MessagingQos;
+import io.joynr.proxy.ProxyBuilder;
+import joynr.vehicle.GpsProxy;
 
 public class JoynrAndroidExampleApplication extends Application {
     private static final Logger logger = LoggerFactory.getLogger(JoynrAndroidExampleApplication.class);
-
-    private final JoynrAndroidExampleLauncher joynrAndroidExampleLauncher = new JoynrAndroidExampleLauncher();
+    private static final String PROVIDER_DOMAIN = "android-domain";
 
     private JoynrAndroidRuntime runtime;
+    public GpsProxy proxy;
     private Output output;
 
     @Override
@@ -45,14 +50,55 @@ public class JoynrAndroidExampleApplication extends Application {
 
     public void initJoynrRuntime(Properties joynrConfig) {
         logToOutput("Creating joynr Runtime.");
-        logToOutput("Bounceproxy URL: " + joynrConfig.getProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL));
-        logToOutput("Channel URL Directory: " + joynrConfig.getProperty(MessagingPropertyKeys.CHANNELURLDIRECTORYURL));
-        logToOutput("Capabilities Directory: "
-                + joynrConfig.getProperty(MessagingPropertyKeys.CAPABILITIESDIRECTORYURL));
         runtime = new JoynrAndroidRuntime(getApplicationContext(), joynrConfig);
+    }
 
-        joynrAndroidExampleLauncher.setJoynAndroidRuntime(runtime);
+    public void createProxy() {
+        if (runtime == null) {
+            logger.error("runtime has not been initialized!");
+            logToOutput("runtime has not been initialized!\n");
+        }
 
+        logToOutput("Creating joynr GPS proxy and requesting location...\n");
+        MessagingQos messagingQos = new MessagingQos(2 * 60 * 1000); // 2 minutes ttl
+        DiscoveryQos discoveryQos = new DiscoveryQos(30 * 1000, // 30 second timeout to find a provider
+                                                     ArbitrationStrategy.HighestPriority,
+                                                     Integer.MAX_VALUE,
+                                                     DiscoveryScope.LOCAL_ONLY);
+        try {
+            ProxyBuilder<GpsProxy> builder = runtime.getProxyBuilder(PROVIDER_DOMAIN, GpsProxy.class);
+
+            builder.setDiscoveryQos(discoveryQos)
+                   .setMessagingQos(messagingQos)
+                   .build(new ProxyBuilder.ProxyCreatedCallback<GpsProxy>() {
+
+                       @Override
+                       public void onProxyCreated(GpsProxy newProxy) {
+                           logToOutput("Proxy created");
+                           proxy = newProxy;
+
+                       }
+
+                       @Override
+                       public void onProxyCreationError(String errorMessage) {
+                           logToOutput("Error during proxy creation: " + errorMessage + "\n");
+
+                       }
+                   });
+
+        } catch (Throwable e) {
+            logToOutput("ERROR: create proxy failed: " + e.getMessage() + "\n");
+            logger.error("create proxy failed: ", e);
+        }
+
+    }
+
+    public void getGpsLocation() {
+        new GetGpsTask(output).execute(proxy);
+    }
+
+    public void subscribeToGpsLocation() {
+        new CreateSubscriptionTask(output).execute(proxy);
     }
 
     private void logToOutput(String string) {
@@ -64,11 +110,5 @@ public class JoynrAndroidExampleApplication extends Application {
 
     public void setOutput(Output output) {
         this.output = output;
-        joynrAndroidExampleLauncher.setOutput(output);
-
-    }
-
-    public JoynrAndroidExampleLauncher getJoynAndroidExampleLauncher() {
-        return joynrAndroidExampleLauncher;
     }
 }

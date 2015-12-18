@@ -24,10 +24,11 @@
 #include "joynr/IClientCache.h"
 #include "joynr/CachedValue.h"
 
-#include <QVariant>
-#include <QString>
-#include <QMutex>
-#include <QCache>
+#include "joynr/Cache.h"
+
+#include <string>
+#include <mutex>
+#include "joynr/Variant.h"
 
 namespace joynr
 {
@@ -51,21 +52,22 @@ public:
      * Returns the stored object associated with the key 'attributeId',
      * or an empty QVariant() if the object is either not present
      */
-    QVariant lookUp(const QString& attributeId);
+    Variant lookUp(const std::string& attributeId);
     /**
       * Inserts 'value' into the cache under the key 'attributeId'.
       * The entry is associated with a time stamp guranteed to be valid for 24hrs.
       */
-    void insert(QString attributeId, QVariant value);
+    void insert(std::string attributeId, Variant value);
 
 private:
     /**
       * Time since activation in ms
       */
-    qint64 elapsed(qint64 entryTime);
-    QCache<QString, CachedValue<QVariant>> cache;
-    QMutex mutex;
+    int64_t elapsed(int64_t entryTime);
+    Cache<std::string, CachedValue<Variant>> cache;
+    std::mutex mutex;
 };
 
 } // namespace joynr
+
 #endif // ClientQCache_H

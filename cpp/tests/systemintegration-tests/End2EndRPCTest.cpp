@@ -21,19 +21,17 @@
 #include <gmock/gmock.h>
 #include <memory>
 #include <string>
-#include "tests/utils/MockObjects.h"
 
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
-#include "joynr/MessagingSettings.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/tests/testProvider.h"
 #include "joynr/tests/testProxy.h"
 #include "joynr/vehicle/GpsProxy.h"
-#include "joynr/types/QtProviderQos.h"
-#include "joynr/RequestStatus.h"
+#include "joynr/types/ProviderQos.h"
 #include "joynr/Future.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/TypeUtil.h"
+#include "joynr/LibjoynrSettings.h"
 
 using namespace ::testing;
 
@@ -52,18 +50,9 @@ public:
     {
         runtime = new JoynrClusterControllerRuntime(
                     NULL,
-                    new QSettings(QString("test-resources/integrationtest.settings"), QSettings::IniFormat)
+                    new Settings("test-resources/integrationtest.settings")
         );
-        //This is a workaround to register the Metatypes for providerQos.
-        //Normally a new datatype is registered in all datatypes that use the new datatype.
-        //However, when receiving a datatype as a returnValue of a RPC, the constructor has never been called before
-        //so the datatype is not registered, and cannot be deserialized.
-        qRegisterMetaType<joynr::types::QtProviderQos>("joynr::types::ProviderQos");
-        qRegisterMetaType<joynr__types__QtProviderQos>("joynr__types__ProviderQos");
-
-        std::string uuid = TypeUtil::toStd(QUuid::createUuid().toString());
-        uuid = uuid.substr(1, uuid.length()-2);
-        domain = "cppEnd2EndRPCTest_Domain_" + uuid;
+        domain = "cppEnd2EndRPCTest_Domain_" + Util::createUuid();
     }
     // Sets up the test fixture.
     void SetUp(){
@@ -76,9 +65,9 @@ public:
         runtime->stop(deleteChannel);
 
         // Remove participant id persistence file
-        QFile::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME());
+        std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
 
-        QThreadSleep::msleep(550);
+        std::this_thread::sleep_for(std::chrono::milliseconds(550));
     }
 
     ~End2EndRPCTest(){
@@ -93,10 +82,9 @@ TEST_F(End2EndRPCTest, call_rpc_method_and_get_expected_result)
 {
 
     std::shared_ptr<MockGpsProvider> mockProvider(new MockGpsProvider());
-    types::Localisation::GpsLocation gpsLocation1(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4);
 
     runtime->registerProvider<vehicle::GpsProvider>(domain, mockProvider);
-    QThreadSleep::msleep(550);
+    std::this_thread::sleep_for(std::chrono::milliseconds(550));
 
     ProxyBuilder<vehicle::GpsProxy>* gpsProxyBuilder = runtime->createProxyBuilder<vehicle::GpsProxy>(domain);
     DiscoveryQos discoveryQos;
@@ -133,7 +121,7 @@ TEST_F(End2EndRPCTest, call_void_operation)
     )));
 
     runtime->registerProvider<tests::testProvider>(domain, mockProvider);
-    QThreadSleep::msleep(550);
+    std::this_thread::sleep_for(std::chrono::milliseconds(550));
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime->createProxyBuilder<tests::testProxy>(domain);
     DiscoveryQos discoveryQos;
@@ -159,10 +147,9 @@ TEST_F(End2EndRPCTest, call_void_operation)
 TEST_F(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
 {
     std::shared_ptr<MockTestProvider> mockProvider(new MockTestProvider());
-    types::Localisation::GpsLocation gpsLocation1(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4);
     runtime->registerProvider<tests::testProvider>(domain, mockProvider);
 
-    QThreadSleep::msleep(550);
+    std::this_thread::sleep_for(std::chrono::milliseconds(550));
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder =
             runtime->createProxyBuilder<tests::testProxy>(domain);
@@ -191,7 +178,7 @@ TEST_F(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
                 1000 // alertInterval_ms
     );
     testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
-    QThreadSleep::msleep(1500);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1500));
     //TODO CA: shared pointer for proxy builder?
     delete testProxyBuilder;
     // This is not yet implemented in CapabilitiesClient

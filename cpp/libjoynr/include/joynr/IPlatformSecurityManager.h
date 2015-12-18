@@ -19,7 +19,7 @@
 #ifndef IPLATFORMSECURITYMANAGER_H_
 #define IPLATFORMSECURITYMANAGER_H_
 
-#include <QString>
+#include <string>
 #include <QByteArray>
 
 #include "joynr/JoynrExport.h"
@@ -37,31 +37,31 @@ public:
     }
 
     /**
-     * \return the platform user ID of the running process.
+     * @return the platform user ID of the running process.
      */
-    virtual QString getCurrentProcessUserId() = 0;
+    virtual std::string getCurrentProcessUserId() = 0;
 
     /**
-     * \param message
-     * \return signed JoynrMessage
+     * @param message
+     * @return signed JoynrMessage
      */
     virtual JoynrMessage sign(JoynrMessage message) = 0;
 
     /**
-     * \param message
-     * \return if message is valid returns true
+     * @param message
+     * @return if message is valid returns true
      */
     virtual bool validate(const JoynrMessage& message) const = 0;
 
     /**
-     * \param message
-     * \return encrypted JoynrMessage
+     * @param message
+     * @return encrypted JoynrMessage
      */
     virtual QByteArray encrypt(const QByteArray& unencryptedBytes) = 0;
 
     /**
-     * \param message
-     * \return decrypted JoynrMessage
+     * @param message
+     * @return decrypted JoynrMessage
      */
     virtual QByteArray decrypt(const QByteArray& encryptedBytes) = 0;
 };

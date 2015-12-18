@@ -26,15 +26,17 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/ISubscriptionCallback.h"
-#include <QString>
+#include <string>
 #include <memory>
+
+#include "joynr/Variant.h"
 
 namespace joynr
 {
 
 /**
-  * \class ISubscriptionManager
-  * \brief The subscription manager is used by the proxy (via the appropriate connector)
+  * @class ISubscriptionManager
+  * @brief The subscription manager is used by the proxy (via the appropriate connector)
   * to manage a subscription. This includes the registration and unregistration of attribute
   * subscriptions. In order to subscribe, a SubscriptionListener is passed in from the application
  * and
@@ -60,9 +62,9 @@ public:
      * @param qos
      * @param subscriptionRequest
      */
-    virtual void registerSubscription(const QString& subscribeToName,
+    virtual void registerSubscription(const std::string& subscribeToName,
                                       std::shared_ptr<ISubscriptionCallback> subscriptionCaller,
-                                      std::shared_ptr<QtSubscriptionQos> qos,
+                                      const Variant& qos,
                                       SubscriptionRequest& subscriptionRequest) = 0;
 
     /**
@@ -71,7 +73,7 @@ public:
      *
      * @param subscriptionId
      */
-    virtual void unregisterSubscription(const QString& subscriptionId) = 0;
+    virtual void unregisterSubscription(const std::string& subscriptionId) = 0;
 
     /**
      * @brief Sets the time of last received publication (incoming attribute value) to the current
@@ -79,7 +81,7 @@ public:
      *
      * @param subscriptionId
      */
-    virtual void touchSubscriptionState(const QString& subscriptionId) = 0;
+    virtual void touchSubscriptionState(const std::string& subscriptionId) = 0;
 
     /**
      * @brief Get a shared pointer to the subscription callback. The shared pointer points to null
@@ -89,7 +91,7 @@ public:
      * @return std::shared_ptr<ISubscriptionCallback>
      */
     virtual std::shared_ptr<ISubscriptionCallback> getSubscriptionCallback(
-            const QString& subscriptionId) = 0;
+            const std::string& subscriptionId) = 0;
 };
 } // namespace joynr
 #endif // ISUBSCRIPTIONMANAGER_H

@@ -25,16 +25,20 @@ import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.websocket.WebsocketModule;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.pubsub.subscription.AttributeSubscriptionAdapter;
 import io.joynr.runtime.AbstractJoynrApplication;
+import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
+import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -46,6 +50,7 @@ import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.vehicle.Country;
 import joynr.vehicle.GeoPosition;
+import joynr.vehicle.Radio.AddFavoriteStationErrorEnum;
 import joynr.vehicle.RadioBroadcastInterface;
 import joynr.vehicle.RadioBroadcastInterface.NewStationDiscoveredBroadcastFilterParameters;
 import joynr.vehicle.RadioBroadcastInterface.WeakSignalBroadcastAdapter;
@@ -59,7 +64,9 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
+import com.google.inject.Module;
 import com.google.inject.name.Named;
+import com.google.inject.util.Modules;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -87,16 +94,29 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
     public static void main(String[] args) throws IOException {
         // run application from cmd line using Maven:
         // mvn exec:java -Dexec.mainClass="io.joynr.demo.MyRadioConsumerApplication" -Dexec.args="<provider-domain>"
-        if (args.length != 1) {
-            LOG.error("USAGE: java {} <provider-domain>", MyRadioConsumerApplication.class.getName());
+        if (args.length != 1 && args.length != 2) {
+            LOG.error("USAGE: java {} <provider-domain> [websocket]", MyRadioConsumerApplication.class.getName());
             return;
         }
         String providerDomain = args[0];
-        LOG.debug("Searching for providers on domain \"{}\"", providerDomain);
 
         // joynr config properties are used to set joynr configuration at compile time. They are set on the
         // JoynInjectorFactory.
         Properties joynrConfig = new Properties();
+        Module runtimeModule = null;
+        if (args.length == 2 && args[1].equalsIgnoreCase("websocket")) {
+            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST, "localhost");
+            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT, "4242");
+            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL, "ws");
+            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "");
+            runtimeModule = new LibjoynrWebSocketRuntimeModule();
+        } else {
+            runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(new AtmosphereMessagingModule());
+        }
+
+        LOG.debug("Using the following runtime module: " + runtimeModule.getClass().getSimpleName());
+        LOG.debug("Searching for providers on domain \"{}\"", providerDomain);
+
         // Set a custom static persistence file (default is joynr.properties in the working dir) to store
         // joynr configuration. It allows for changing the joynr configuration at runtime. Custom persistence
         // files support running the consumer and provider applications from within the same directory.
@@ -137,8 +157,8 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
         Properties appConfig = new Properties();
         appConfig.setProperty(APP_CONFIG_PROVIDER_DOMAIN, providerDomain);
 
-        JoynrApplication myRadioConsumerApp = new JoynrInjectorFactory(joynrConfig).createApplication(new JoynrApplicationModule(MyRadioConsumerApplication.class,
-                                                                                                                                 appConfig));
+        JoynrApplication myRadioConsumerApp = new JoynrInjectorFactory(joynrConfig, runtimeModule).createApplication(new JoynrApplicationModule(MyRadioConsumerApplication.class,
+                                                                                                                                                appConfig));
         myRadioConsumerApp.run();
 
         myRadioConsumerApp.shutdown();
@@ -319,9 +339,15 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
                          + PRINT_BORDER);
                 success = radioProxy.addFavoriteStation(favoriteStation);
             } catch (ApplicationException exception) {
-                String errorName = exception.getError().name();
-                String expectation = errorName.equals(joynr.vehicle.Radio.AddFavoriteStationErrorEnum.DUPLICATE_RADIOSTATION.name()) ? "expected" : "unexpected";
-                LOG.info(PRINT_BORDER + "METHOD: addFavoriteStation failed with the following " + expectation + " exception: " + errorName);
+                AddFavoriteStationErrorEnum error = exception.getError();
+                switch (error) {
+                case DUPLICATE_RADIOSTATION:
+                    LOG.info(PRINT_BORDER + "METHOD: addFavoriteStation failed with the following excpected error: " + error);
+                    break;
+                default:
+                    LOG.error(PRINT_BORDER + "METHOD: addFavoriteStation failed with an unexpected error: " + error);
+                    break;
+                }
             }
 
             try {

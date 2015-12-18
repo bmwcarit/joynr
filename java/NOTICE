@@ -36,6 +36,9 @@ This project has dependencies to:
   atmosphere-runtime under CDDL or Apache License 2.0
   Bean Validation API under Apache License, Version 2.0
   CDI APIs under Apache License, Version 2.0
+  clustercontroller-inprocess-runtime under The Apache Software License, Version 2.0
+  clustercontroller-standalone under The Apache Software License, Version 2.0
+  clustercontroller-websocket-runtime under The Apache Software License, Version 2.0
   Common Annotations 1.1 API under lgpl
   Commons Codec under The Apache Software License, Version 2.0
   Commons Collections under The Apache Software License, Version 2.0
@@ -77,9 +80,12 @@ This project has dependencies to:
   io.joynr.java.backend-services:discovery-directory-servlet under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:domain-access-controller under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:domain-access-controller-servlet under The Apache Software License, Version 2.0
+  io.joynr.java.common:access-control-common under The Apache Software License, Version 2.0
+  io.joynr.java.common:discovery-common under The Apache Software License, Version 2.0
   io.joynr.java.common:distributed-logging-appender under The Apache Software License, Version 2.0
   io.joynr.java.common:guice-integration under The Apache Software License, Version 2.0
   io.joynr.java.common:infrastructure-common under The Apache Software License, Version 2.0
+  io.joynr.java.core:clustercontroller under The Apache Software License, Version 2.0
   io.joynr.java.core:joynr-types under The Apache Software License, Version 2.0
   io.joynr.java.core:libjoynr under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy.bounceproxy-controller-persistence:ehcache under The Apache Software License, Version 2.0
@@ -92,6 +98,9 @@ This project has dependencies to:
   io.joynr.java.messaging.bounceproxy:bounceproxy-controller-persistence under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:controlled-bounceproxy under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:single-bounceproxy under The Apache Software License, Version 2.0
+  io.joynr.java.messaging.websocket:joynr-websocket-client under The Apache Software License, Version 2.0
+  io.joynr.java.messaging.websocket:joynr-websocket-common under The Apache Software License, Version 2.0
+  io.joynr.java.messaging.websocket:joynr-websocket-server under The Apache Software License, Version 2.0
   io.joynr.java.messaging:bounceproxy under The Apache Software License, Version 2.0
   io.joynr.java.messaging:bounceproxy-controller-service under The Apache Software License, Version 2.0
   io.joynr.java.messaging:channel-service under The Apache Software License, Version 2.0
@@ -100,6 +109,7 @@ This project has dependencies to:
   io.joynr.java.messaging:messaging-servlet under The Apache Software License, Version 2.0
   io.joynr.java.messaging:service-common under The Apache Software License, Version 2.0
   io.joynr.java.messaging:servlet-common under The Apache Software License, Version 2.0
+  io.joynr.java.messaging:websocket under The Apache Software License, Version 2.0
   io.joynr.java:backend-services under The Apache Software License, Version 2.0
   io.joynr.java:common under The Apache Software License, Version 2.0
   io.joynr.java:core under The Apache Software License, Version 2.0
@@ -161,6 +171,7 @@ This project has dependencies to:
   Jetty :: Websocket :: Server under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Websocket :: Servlet Interface under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: XML utilities under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
+  JLine under The BSD License
   JMS 1.1 under The Apache Software License, Version 2.0
   JMS 1.1 API under lgpl
   JPA 2.0 API under Sun Binary Code License
@@ -171,6 +182,7 @@ This project has dependencies to:
   JSR-181 Maintenance Release 1 under CDDL+GPLv2
   JTA 1.1 under The Apache Software License, Version 2.0
   JUnit under Common Public License Version 1.0
+  libjoynr-websocket-runtime under The Apache Software License, Version 2.0
   Logging under The Apache Software License, Version 2.0
   MIME streaming extension under Dual license consisting of the CDDL v1.1 and GPL v2
   Mockito under The MIT License

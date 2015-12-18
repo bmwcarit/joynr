@@ -20,13 +20,10 @@
 #ifndef IACCESSCONTROLLER_H
 #define IACCESSCONTROLLER_H
 
-#include "joynr/infrastructure/DacTypes_QtTrustLevel.h"
+#include "joynr/infrastructure/DacTypes/TrustLevel.h"
 
 #include <memory>
-
-QT_BEGIN_NAMESPACE
-class QString;
-QT_END_NAMESPACE
+#include <string>
 
 namespace joynr
 {
@@ -65,8 +62,8 @@ public:
     /**
      * Does the given request message have permission to reach the provider?
      *
-     * \param message The message to check
-     * \param callback An object that will be called back with the result
+     * @param message The message to check
+     * @param callback An object that will be called back with the result
      */
     virtual void hasConsumerPermission(
             const JoynrMessage& message,
@@ -76,16 +73,16 @@ public:
      * Does the provider with given userId and given trust level, have permission to expose given
      *domain interface?
      *
-     * \param userId The provider userId
-     * \param trustLevel The trustLevel for given userId
-     * \param domain The domain where provider interface belongs to
-     * \param interfaceName The interface provider wants to register
-     * \return true if the message has permission, false otherwise
+     * @param userId The provider userId
+     * @param trustLevel The trustLevel for given userId
+     * @param domain The domain where provider interface belongs to
+     * @param interfaceName The interface provider wants to register
+     * @return true if the message has permission, false otherwise
      */
-    virtual bool hasProviderPermission(const QString& userId,
-                                       infrastructure::DacTypes::QtTrustLevel::Enum trustLevel,
-                                       const QString& domain,
-                                       const QString& interfaceName) = 0;
+    virtual bool hasProviderPermission(const std::string& userId,
+                                       infrastructure::DacTypes::TrustLevel::Enum trustLevel,
+                                       const std::string& domain,
+                                       const std::string& interfaceName) = 0;
     /**
      * @brief addParticipantToWhitelist Adds a participant to the internal
      * whitelist. Access control to participants on the whitelist is always
@@ -93,7 +90,7 @@ public:
      *
      * @param participantId the participant ID to add to the whitelist.
      */
-    virtual void addParticipantToWhitelist(const QString& participantId) = 0;
+    virtual void addParticipantToWhitelist(const std::string& participantId) = 0;
 };
 
 } // namespace joynr

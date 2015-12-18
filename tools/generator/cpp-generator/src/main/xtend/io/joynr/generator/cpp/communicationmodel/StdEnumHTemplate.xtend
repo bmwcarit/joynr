@@ -51,6 +51,8 @@ class StdEnumHTemplate implements EnumTemplate {
 #include <cstdint>
 #include <ostream>
 #include <string>
+#include "joynr/Util.h"
+#include "joynr/Variant.h"
 
 «IF type.hasExtendsDeclaration»
 	#include "«type.extendedType.includeOf»"
@@ -97,14 +99,14 @@ struct «getDllExportMacro()»«typeName» {
 	 * @param «typeName.toFirstLower»Value The ordinal number
 	 * @return The string representing the enum for the given ordinal number
 	 */
-	static std::string getLiteral(«typeName»::«getNestedEnumName()» «typeName.toFirstLower»Value);
+	static std::string getLiteral(const «typeName»::«getNestedEnumName()»& «typeName.toFirstLower»Value);
 
 	/**
 	 * @brief Get the matching enum for a string
 	 * @param «typeName.toFirstLower»String The string representing the enum value
 	 * @return The enum value representing the string
 	 */
-	static «typeName»::«getNestedEnumName()» getEnum(std::string «typeName.toFirstLower»String);
+	static «typeName»::«getNestedEnumName()» getEnum(const std::string& «typeName.toFirstLower»String);
 
 	/**
 	 * @brief Get the matching ordinal number for an enum
@@ -126,14 +128,26 @@ struct «getDllExportMacro()»«typeName» {
  * @param messagingQos The current object instance
  * @param os The output stream to send the output to
  */
-void PrintTo(const «typeName»::«getNestedEnumName()»& «typeName.toFirstLower»Value, ::std::ostream* os);
+void PrintTo(const «type.typeName»& «typeName.toFirstLower»Value, ::std::ostream* os);
 
 «getNamespaceEnder(type, true)»
 
+namespace «joynrGenerationPrefix» {
+
+template <>
+inline «type.typeName» joynr::Util::valueOf<«type.typeName»>(const Variant& variant)
+{
+	return «joynrGenerationPrefix»::Util::convertVariantToEnum<«type.typeNameOfContainingClass»>(variant);
+}
+
+template <>
+inline std::vector<«type.typeName»> joynr::Util::valueOf<std::vector<«type.typeName»>>(const Variant& variant)
+{
+	return joynr::Util::convertVariantVectorToEnumVector<«type.typeNameOfContainingClass»>(variant.get<std::vector<Variant>>());
+}
+}
+
 namespace std {
-// Function object that implements a hash function for «type.buildPackagePath("::", true)»«typeName».
-// Used by the unordered associative containers std::unordered_set, std::unordered_multiset,
-// std::unordered_map, std::unordered_multimap as default hash function.
 
 /**
  * @brief Function object that implements a hash function for «type.buildPackagePath("::", true)»«typeName».
@@ -153,7 +167,7 @@ struct hash<«type.buildPackagePath("::", true)»«typeName»::«getNestedEnumNa
 		return «type.buildPackagePath("::", true)»«typeName»::getOrdinal(«typeName.toFirstLower»Value);
 	}
 };
-} /* namespace std */
+} // namespace std
 
 #endif // «headerGuard»
 '''

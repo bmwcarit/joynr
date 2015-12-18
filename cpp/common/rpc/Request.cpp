@@ -18,12 +18,13 @@
   */
 #include "joynr/Request.h"
 #include "joynr/Util.h"
-#include <QStringList>
 
 namespace joynr
 {
 
-Request::Request() : requestReplyId(), methodName(), params(), paramDatatypes()
+bool isRequestTypeRegistered = Variant::registerType<Request>("joynr.Request");
+
+Request::Request() : QObject(), requestReplyId(), methodName(), params(), paramDatatypes()
 {
     this->requestReplyId = Util::createUuid();
 }
@@ -52,50 +53,50 @@ bool Request::operator==(const Request& other) const
            params == other.getParams() && paramDatatypes == other.paramDatatypes;
 }
 
-const QString& Request::getRequestReplyId() const
+const std::string& Request::getRequestReplyId() const
 {
     return requestReplyId;
 }
 
-void Request::setRequestReplyId(const QString& requestReplyId)
+void Request::setRequestReplyId(const std::string& requestReplyId)
 {
     this->requestReplyId = requestReplyId;
 }
 
-const QString& Request::getMethodName() const
+const std::string& Request::getMethodName() const
 {
     return methodName;
 }
 
-void Request::setMethodName(const QString& methodName)
+void Request::setMethodName(const std::string& methodName)
 {
     this->methodName = methodName;
 }
 
-QList<QVariant> Request::getParams() const
+std::vector<Variant> Request::getParams() const
 {
     return params;
 }
 
-// Set the parameters - called by the QJson deserializer
-void Request::setParams(const QList<QVariant>& params)
+// Set the parameters - called by the json deserializer
+void Request::setParams(const std::vector<Variant>& params)
 {
     this->params = params;
 }
 
-void Request::addParam(QVariant value, QString datatype)
+void Request::addParam(Variant value, std::string datatype)
 {
-    this->params.append(value);
-    this->paramDatatypes.append(QVariant(datatype));
+    this->params.push_back(value);
+    this->paramDatatypes.push_back(datatype);
 }
 
-QList<QVariant> Request::getParamDatatypes() const
+std::vector<std::string> Request::getParamDatatypes() const
 {
     return paramDatatypes;
 }
 
-// Set the parameter datatypes - called by the QJson deserializer
-void Request::setParamDatatypes(const QList<QVariant>& paramDatatypes)
+// Set the parameter datatypes - called by the json deserializer
+void Request::setParamDatatypes(const std::vector<std::string>& paramDatatypes)
 {
     this->paramDatatypes = paramDatatypes;
 }

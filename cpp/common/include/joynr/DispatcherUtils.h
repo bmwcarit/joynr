@@ -20,13 +20,14 @@
 #define DISPATCHERUTILS_H
 
 #include "joynr/JoynrCommonExport.h"
-
-#include "joynr/DeclareMetatypeUtil.h"
 #include "joynr/joynrlogging.h"
 
 #include <stdint.h>
 #include <string>
 #include <chrono>
+#include <map>
+
+#include "joynr/Variant.h"
 
 namespace joynr
 {
@@ -45,7 +46,7 @@ class JOYNRCOMMON_EXPORT DispatcherUtils
 public:
     DispatcherUtils();
     // todo some of those could be moved  to other classes (e.g. a HeaderMap Dataclass)
-    typedef QMap<QString, QVariant>
+    typedef std::map<std::string, Variant>
             HeaderMap; // todo refactor this,  remove Headermap and create dataclass
 
     /**
@@ -59,6 +60,11 @@ public:
      * @return maximum UTC time
      */
     static JoynrTimePoint getMaxAbsoluteTime();
+    /**
+     * @brief getMinAbsoluteTime
+     * @return
+     */
+    static JoynrTimePoint getMinAbsoluteTime();
     /**
      * @brief convertAbsoluteTimeToTtl converts given UTC time to ttl
      * @param date UTC time

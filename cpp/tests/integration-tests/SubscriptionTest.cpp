@@ -19,29 +19,23 @@
 #include "joynr/PrivateCopyAssign.h"
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include "common/in-process/InProcessMessagingSkeleton.h"
-#include "joynr/MessageRouter.h"
-#include "joynr/MessagingStubFactory.h"
-#include "joynr/ClusterControllerDirectories.h"
 #include "joynr/JoynrMessage.h"
+#include "joynr/JoynrMessageFactory.h"
+#include "joynr/JoynrMessageSender.h"
 #include "joynr/Dispatcher.h"
 #include "joynr/SubscriptionCallback.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionStop.h"
-#include "joynr/JoynrMessageFactory.h"
-#include "joynr/Request.h"
-#include "joynr/Reply.h"
 #include "joynr/InterfaceRegistrar.h"
 #include "joynr/MetaTypeRegistrar.h"
 #include "joynr/tests/testRequestInterpreter.h"
 #include "tests/utils/MockObjects.h"
-#include "joynr/QtOnChangeWithKeepAliveSubscriptionQos.h"
-#include <QString>
+#include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include <string>
 #include "joynr/LibjoynrSettings.h"
-#include "joynr/tests/testTypes_QtTestEnum.h"
+#include "joynr/tests/testTypes/TestEnum.h"
 #include "joynr/tests/testRequestCaller.h"
-#include "joynr/types/Localisation_QtGpsLocation.h"
+#include "joynr/types/Localisation/GpsLocation.h"
 
 using namespace ::testing;
 
@@ -49,7 +43,7 @@ using namespace joynr;
 
 ACTION_P(ReleaseSemaphore,semaphore)
 {
-    semaphore->release(1);
+    semaphore->notify();
 }
 
 /**
@@ -59,16 +53,16 @@ class SubscriptionTest : public ::testing::Test {
 public:
     SubscriptionTest() :
         mockMessageRouter(new MockMessageRouter()),
-        mockCallback(new MockCallback<types::Localisation::QtGpsLocation>()),
+        mockCallback(new MockCallbackWithOnErrorHavingRequestStatus<types::Localisation::GpsLocation>()),
         mockRequestCaller(new MockTestRequestCaller()),
-        mockReplyCaller(new MockReplyCaller<types::Localisation::QtGpsLocation>(
-                [this](const RequestStatus& status, const types::Localisation::QtGpsLocation& location) {
+        mockReplyCaller(new MockReplyCaller<types::Localisation::GpsLocation>(
+                [this](const RequestStatus& status, const types::Localisation::GpsLocation& location) {
                     mockCallback->onSuccess(location);
                 },
-                [] (const RequestStatus status, std::shared_ptr<exceptions::JoynrException> error){
+                [] (const RequestStatus status, const exceptions::JoynrException& error){
                 })),
-        mockGpsLocationListener(new MockSubscriptionListenerOneType<types::Localisation::QtGpsLocation>()),
-        mockTestEnumSubscriptionListener(new MockSubscriptionListenerOneType<tests::testTypes::QtTestEnum::Enum>()),
+        mockGpsLocationListener(new MockSubscriptionListenerOneType<types::Localisation::GpsLocation>()),
+        mockTestEnumSubscriptionListener(new MockSubscriptionListenerOneType<tests::testTypes::TestEnum::Enum>()),
         gpsLocation1(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444),
         qos(2000),
         providerParticipantId("providerParticipantId"),
@@ -85,14 +79,14 @@ public:
     }
 
     void SetUp(){
-        QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
+        std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME().c_str()); //remove stored subscriptions
         subscriptionManager = new SubscriptionManager();
         publicationManager = new PublicationManager();
         dispatcher.registerPublicationManager(publicationManager);
         dispatcher.registerSubscriptionManager(subscriptionManager);
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
-        MetaTypeRegistrar::instance().registerMetaType<types::Localisation::QtGpsLocation>();
-        MetaTypeRegistrar::instance().registerEnumMetaType<joynr::tests::testTypes::QtTestEnum>();
+        MetaTypeRegistrar::instance().registerMetaType<types::Localisation::GpsLocation>();
+        MetaTypeRegistrar::instance().registerEnumMetaType<joynr::tests::testTypes::TestEnum>();
     }
 
     void TearDown(){
@@ -101,12 +95,12 @@ public:
 
 protected:
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
-    std::shared_ptr<MockCallback<types::Localisation::QtGpsLocation> > mockCallback;
+    std::shared_ptr<MockCallbackWithOnErrorHavingRequestStatus<types::Localisation::GpsLocation> > mockCallback;
 
     std::shared_ptr<MockTestRequestCaller> mockRequestCaller;
-    std::shared_ptr<MockReplyCaller<types::Localisation::QtGpsLocation> > mockReplyCaller;
-    std::shared_ptr<MockSubscriptionListenerOneType<types::Localisation::QtGpsLocation> > mockGpsLocationListener;
-    std::shared_ptr<MockSubscriptionListenerOneType<tests::testTypes::QtTestEnum::Enum> > mockTestEnumSubscriptionListener;
+    std::shared_ptr<MockReplyCaller<types::Localisation::GpsLocation> > mockReplyCaller;
+    std::shared_ptr<MockSubscriptionListenerOneType<types::Localisation::GpsLocation> > mockGpsLocationListener;
+    std::shared_ptr<MockSubscriptionListenerOneType<tests::testTypes::TestEnum::Enum> > mockTestEnumSubscriptionListener;
 
     types::Localisation::GpsLocation gpsLocation1;
 
@@ -114,7 +108,7 @@ protected:
     MessagingQos qos;
     std::string providerParticipantId;
     std::string proxyParticipantId;
-    QString requestReplyId;
+    std::string requestReplyId;
 
     JoynrMessageFactory messageFactory;
     JoynrMessageSender messageSender;
@@ -134,33 +128,31 @@ private:
   *             the MockCaller for the attribute.
   */
 TEST_F(SubscriptionTest, receive_subscriptionRequestAndPollAttribute) {
-    qRegisterMetaType<QtOnChangeWithKeepAliveSubscriptionQos>("QtOnChangeWithKeepAliveSubscriptionQos");
-    qRegisterMetaType<SubscriptionRequest>("SubscriptionRequest");
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
-    QSemaphore semaphore(0);
+    Semaphore semaphore(0);
     EXPECT_CALL(*mockRequestCaller, getLocation(_,_))
             .WillRepeatedly(
                 DoAll(
                     Invoke(mockRequestCaller.get(), &MockTestRequestCaller::invokeLocationOnSuccessFct),
                     ReleaseSemaphore(&semaphore)));
 
-    QString attributeName = "Location";
-    auto subscriptionQos = std::shared_ptr<QtSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
+    std::string attributeName = "Location";
+    Variant subscriptionQos = Variant::make<OnChangeWithKeepAliveSubscriptionQos>(OnChangeWithKeepAliveSubscriptionQos(
                 80, // validity_ms
                 100, // minInterval_ms
                 200, // maxInterval_ms
                 80 // alertInterval_ms
     ));
-    QString subscriptionId = "SubscriptionID";
+    std::string subscriptionId = "SubscriptionID";
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId(subscriptionId);
     subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(subscriptionQos);
 
     JoynrMessage msg = messageFactory.createSubscriptionRequest(
-                QString::fromStdString(proxyParticipantId),
-                QString::fromStdString(providerParticipantId),
+                proxyParticipantId,
+                providerParticipantId,
                 qos,
                 subscriptionRequest);
 
@@ -168,7 +160,7 @@ TEST_F(SubscriptionTest, receive_subscriptionRequestAndPollAttribute) {
     dispatcher.receive(msg);
 
     // Wait for a call to be made to the mockRequestCaller
-    ASSERT_TRUE(semaphore.tryAcquire(1,1000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
 
 
@@ -179,20 +171,18 @@ TEST_F(SubscriptionTest, receive_subscriptionRequestAndPollAttribute) {
   */
 TEST_F(SubscriptionTest, receive_publication ) {
 
-    qRegisterMetaType<SubscriptionPublication>("SubscriptionPublication");
-
     // getType is used by the ReplyInterpreterFactory to create an interpreter for the reply
     // so this has to match with the type being passed to the dispatcher in the reply
-    ON_CALL(*mockReplyCaller, getType()).WillByDefault(Return(QString("QtGpsLocation")));
+    ON_CALL(*mockReplyCaller, getType()).WillByDefault(Return(std::string("GpsLocation")));
 
     // Use a semaphore to count and wait on calls to the mockGpsLocationListener
-    QSemaphore semaphore(0);
-    EXPECT_CALL(*mockGpsLocationListener, onReceive(A<const types::Localisation::QtGpsLocation&>()))
+    joynr::Semaphore semaphore(0);
+    EXPECT_CALL(*mockGpsLocationListener, onReceive(A<const types::Localisation::GpsLocation&>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     //register the subscription on the consumer side
-    QString attributeName = "Location";
-    auto subscriptionQos = std::shared_ptr<QtSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
+    std::string attributeName = "Location";
+    Variant subscriptionQos = Variant::make<OnChangeWithKeepAliveSubscriptionQos>(OnChangeWithKeepAliveSubscriptionQos(
                 80, // validity_ms
                 100, // minInterval_ms
                 200, // maxInterval_ms
@@ -200,15 +190,15 @@ TEST_F(SubscriptionTest, receive_publication ) {
     ));
 
     SubscriptionRequest subscriptionRequest;
-    //construct a reply containing a QtGpsLocation
+    //construct a reply containing a GpsLocation
     SubscriptionPublication subscriptionPublication;
     subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    QList<QVariant> response;
-    response.append(QVariant::fromValue(types::Localisation::QtGpsLocation::createQt(gpsLocation1)));
+    std::vector<Variant> response;
+    response.push_back(Variant::make<types::Localisation::GpsLocation>(gpsLocation1));
     subscriptionPublication.setResponse(response);
 
-    std::shared_ptr<SubscriptionCallback<types::Localisation::QtGpsLocation>> subscriptionCallback(
-            new SubscriptionCallback<types::Localisation::QtGpsLocation>(mockGpsLocationListener));
+    std::shared_ptr<SubscriptionCallback<types::Localisation::GpsLocation>> subscriptionCallback(
+            new SubscriptionCallback<types::Localisation::GpsLocation>(mockGpsLocationListener));
 
 
     // subscriptionRequest is an out param
@@ -219,16 +209,16 @@ TEST_F(SubscriptionTest, receive_publication ) {
                 subscriptionRequest);
     // incoming publication from the provider
     JoynrMessage msg = messageFactory.createSubscriptionPublication(
-                QString::fromStdString(providerParticipantId),
-                QString::fromStdString(proxyParticipantId),
+                providerParticipantId,
+                proxyParticipantId,
                 qos,
                 subscriptionPublication);
 
     dispatcher.receive(msg);
 
     // Assert that only one subscription message is received by the subscription listener
-    ASSERT_TRUE(semaphore.tryAcquire(1, 1000));
-    ASSERT_FALSE(semaphore.tryAcquire(1, 250));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
+    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
 
 /**
@@ -238,20 +228,18 @@ TEST_F(SubscriptionTest, receive_publication ) {
   */
 TEST_F(SubscriptionTest, receive_enumPublication ) {
 
-    qRegisterMetaType<SubscriptionPublication>("SubscriptionPublication");
-
     // getType is used by the ReplyInterpreterFactory to create an interpreter for the reply
     // so this has to match with the type being passed to the dispatcher in the reply
-    ON_CALL(*mockReplyCaller, getType()).WillByDefault(Return(QString("QtTestEnum")));
+    ON_CALL(*mockReplyCaller, getType()).WillByDefault(Return(std::string("TestEnum")));
 
     // Use a semaphore to count and wait on calls to the mockTestEnumSubscriptionListener
-    QSemaphore semaphore(0);
-    EXPECT_CALL(*mockTestEnumSubscriptionListener, onReceive(A<const joynr::tests::testTypes::QtTestEnum::Enum&>()))
+    joynr::Semaphore semaphore(0);
+    EXPECT_CALL(*mockTestEnumSubscriptionListener, onReceive(A<const joynr::tests::testTypes::TestEnum::Enum&>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     //register the subscription on the consumer side
-    QString attributeName = "testEnum";
-    auto subscriptionQos = std::shared_ptr<QtSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
+    std::string attributeName = "testEnum";
+    Variant subscriptionQos = Variant::make<OnChangeWithKeepAliveSubscriptionQos>(OnChangeWithKeepAliveSubscriptionQos(
                 80, // validity_ms
                 100, // minInterval_ms
                 200, // maxInterval_ms
@@ -259,15 +247,15 @@ TEST_F(SubscriptionTest, receive_enumPublication ) {
     ));
 
     SubscriptionRequest subscriptionRequest;
-    //construct a reply containing a QtGpsLocation
+    //construct a reply containing a GpsLocation
     SubscriptionPublication subscriptionPublication;
     subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    QList<QVariant> response;
-    response.append(QVariant::fromValue(joynr::tests::testTypes::QtTestEnum::createQt(tests::testTypes::TestEnum::ZERO)));
+    std::vector<Variant> response;
+    response.push_back(Variant::make<joynr::tests::testTypes::TestEnum::Enum>(tests::testTypes::TestEnum::ZERO));
     subscriptionPublication.setResponse(response);
 
-    std::shared_ptr<SubscriptionCallback<joynr::tests::testTypes::QtTestEnum::Enum>> subscriptionCallback(
-            new SubscriptionCallback<joynr::tests::testTypes::QtTestEnum::Enum>(mockTestEnumSubscriptionListener));
+    std::shared_ptr<SubscriptionCallback<joynr::tests::testTypes::TestEnum::Enum>> subscriptionCallback(
+            new SubscriptionCallback<joynr::tests::testTypes::TestEnum::Enum>(mockTestEnumSubscriptionListener));
 
 
     // subscriptionRequest is an out param
@@ -278,16 +266,16 @@ TEST_F(SubscriptionTest, receive_enumPublication ) {
                 subscriptionRequest);
     // incoming publication from the provider
     JoynrMessage msg = messageFactory.createSubscriptionPublication(
-                QString::fromStdString(providerParticipantId),
-                QString::fromStdString(proxyParticipantId),
+                providerParticipantId,
+                proxyParticipantId,
                 qos,
                 subscriptionPublication);
 
     dispatcher.receive(msg);
 
     // Assert that only one subscription message is received by the subscription listener
-    ASSERT_TRUE(semaphore.tryAcquire(1, 1000));
-    ASSERT_FALSE(semaphore.tryAcquire(1, 250));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
+    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
 
 /**
@@ -298,11 +286,8 @@ TEST_F(SubscriptionTest, receive_enumPublication ) {
   */
 TEST_F(SubscriptionTest, receive_RestoresSubscription) {
 
-    qRegisterMetaType<QtOnChangeWithKeepAliveSubscriptionQos>("QtOnChangeWithKeepAliveSubscriptionQos");
-    qRegisterMetaType<SubscriptionRequest>("SubscriptionRequest");
-
     // Use a semaphore to count and wait on calls to the mockRequestCaller
-    QSemaphore semaphore(0);
+    joynr::Semaphore semaphore(0);
     EXPECT_CALL(
             *mockRequestCaller,
             getLocation(A<std::function<void(const types::Localisation::GpsLocation&)>>(),
@@ -312,14 +297,14 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription) {
                     Invoke(mockRequestCaller.get(), &MockTestRequestCaller::invokeLocationOnSuccessFct),
                     ReleaseSemaphore(&semaphore)
             ));
-    QString attributeName = "Location";
-    auto subscriptionQos = std::shared_ptr<QtSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
+    std::string attributeName = "Location";
+    Variant subscriptionQos = Variant::make<OnChangeWithKeepAliveSubscriptionQos>(OnChangeWithKeepAliveSubscriptionQos(
                 80, // validity_ms
                 100, // minInterval_ms
                 200, // maxInterval_ms
                 80 // alertInterval_ms
     ));
-    QString subscriptionId = "SubscriptionID";
+    std::string subscriptionId = "SubscriptionID";
 
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId(subscriptionId);
@@ -327,30 +312,30 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription) {
     subscriptionRequest.setQos(subscriptionQos);
 
     JoynrMessage msg = messageFactory.createSubscriptionRequest(
-                QString::fromStdString(proxyParticipantId),
-                QString::fromStdString(providerParticipantId),
+                proxyParticipantId,
+                providerParticipantId,
                 qos,
                 subscriptionRequest);
     // first received message with subscription request
 
     dispatcher.receive(msg);
     dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
-    ASSERT_TRUE(semaphore.tryAcquire(1,15000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(15000)));
     //Try to acquire a semaphore for up to 5 seconds. Acquireing the semaphore will only work, if the mockRequestCaller has been called
     //and will be much faster than waiting for 500ms to make sure it has been called
 }
 
 TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam) {
 
-    QString subscriptionId = "SubscriptionID";
-    auto subscriptionQos =
-            std::shared_ptr<QtOnChangeSubscriptionQos>(new QtOnChangeSubscriptionQos(
+    std::string subscriptionId = "SubscriptionID";
+    Variant subscriptionQos =
+            Variant::make<OnChangeSubscriptionQos>(OnChangeSubscriptionQos(
                 800, // validity_ms
                 0 // minInterval_ms
     ));
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
-    QSemaphore semaphore(0);
+    joynr::Semaphore semaphore(0);
 
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId(subscriptionId);
@@ -374,18 +359,18 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam) {
     EXPECT_CALL(*mockMessageRouter, route(
                      AllOf(
                          A<JoynrMessage>(),
-                         Property(&JoynrMessage::getHeaderFrom, Eq(QString::fromStdString(providerParticipantId))),
-                         Property(&JoynrMessage::getHeaderTo, Eq(QString::fromStdString(proxyParticipantId))))
+                         Property(&JoynrMessage::getHeaderFrom, Eq(providerParticipantId)),
+                         Property(&JoynrMessage::getHeaderTo, Eq(proxyParticipantId)))
                      ));
 
     publicationManager->add(
-                QString::fromStdString(proxyParticipantId),
-                QString::fromStdString(providerParticipantId),
+                proxyParticipantId,
+                providerParticipantId,
                 requestCaller,
                 subscriptionRequest,
                 joynrMessageSender);
 
-    ASSERT_TRUE(semaphore.tryAcquire(1,15000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(15000)));
 
     std::vector<std::string> listOfStrings;
     listOfStrings.push_back("1");
@@ -396,8 +381,8 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam) {
     EXPECT_CALL(*mockMessageRouter, route(
                      AllOf(
                          A<JoynrMessage>(),
-                         Property(&JoynrMessage::getHeaderFrom, Eq(QString::fromStdString(providerParticipantId))),
-                         Property(&JoynrMessage::getHeaderTo, Eq(QString::fromStdString(proxyParticipantId))))
+                         Property(&JoynrMessage::getHeaderFrom, Eq(providerParticipantId)),
+                         Property(&JoynrMessage::getHeaderTo, Eq(proxyParticipantId)))
                      ));
 
 
@@ -412,12 +397,9 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam) {
   * Expected:   The PublicationManager stops all subscriptions for this provider
   */
 TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications) {
-    qRegisterMetaType<QtOnChangeWithKeepAliveSubscriptionQos>("QtOnChangeWithKeepAliveSubscriptionQos");
-    qRegisterMetaType<SubscriptionRequest>("SubscriptionRequest");
-    qRegisterMetaType<SubscriptionStop>("SubscriptionStop");
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
-    QSemaphore semaphore(0);
+    joynr::Semaphore semaphore(0);
     EXPECT_CALL(*mockRequestCaller, getLocation(_,_))
             .WillRepeatedly(
                 DoAll(
@@ -425,32 +407,34 @@ TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications) {
                     ReleaseSemaphore(&semaphore)));
 
     dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
-    QString attributeName = "Location";
-    auto subscriptionQos = std::shared_ptr<QtSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
+    Variant subscriptionQos = Variant::make<OnChangeWithKeepAliveSubscriptionQos>(OnChangeWithKeepAliveSubscriptionQos(
                 1200, // validity_ms
                 10, // minInterval_ms
                 100, // maxInterval_ms
                 1100 // alertInterval_ms
     ));
-    QString subscriptionId = "SubscriptionID";
+    std::string subscriptionId = "SubscriptionID";
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId(subscriptionId);
+    std::string attributeName = "Location";
     subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(subscriptionQos);
 
     JoynrMessage msg = messageFactory.createSubscriptionRequest(
-                QString::fromStdString(proxyParticipantId),
-                QString::fromStdString(providerParticipantId),
+                proxyParticipantId,
+                providerParticipantId,
                 qos,
                 subscriptionRequest);
     // first received message with subscription request
     dispatcher.receive(msg);
     // wait for two requests from the subscription
-    ASSERT_TRUE(semaphore.tryAcquire(2, 1000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
     // remove the request caller
     dispatcher.removeRequestCaller(providerParticipantId);
     // assert that less than 2 requests happen in the next 300 milliseconds
-    ASSERT_FALSE(semaphore.tryAcquire(2, 300));
+    semaphore.waitFor(std::chrono::milliseconds(300));
+    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(300)));
 }
 
 /**
@@ -460,11 +444,8 @@ TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications) {
   */
 TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
 
-    qRegisterMetaType<QtOnChangeWithKeepAliveSubscriptionQos>("QtOnChangeWithKeepAliveSubscriptionQos");
-    qRegisterMetaType<SubscriptionRequest>("SubscriptionRequest");
-
     // Use a semaphore to count and wait on calls to the mockRequestCaller
-    QSemaphore semaphore(0);
+    joynr::Semaphore semaphore(0);
     EXPECT_CALL(*mockRequestCaller, getLocation(_,_))
             .WillRepeatedly(
                 DoAll(
@@ -472,42 +453,44 @@ TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
                     ReleaseSemaphore(&semaphore)));
 
     dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
-    QString attributeName = "Location";
-    auto subscriptionQos = std::shared_ptr<QtSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
+    std::string attributeName = "Location";
+    Variant subscriptionQos = Variant::make<OnChangeWithKeepAliveSubscriptionQos>(OnChangeWithKeepAliveSubscriptionQos(
                 1200, // validity_ms
                 10, // minInterval_ms
                 100, // maxInterval_ms
                 1100 // alertInterval_ms
     ));
-    QString subscriptionId = "SubscriptionID";
+    std::string subscriptionId = "SubscriptionID";
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId(subscriptionId);
     subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(subscriptionQos);
 
     JoynrMessage msg = messageFactory.createSubscriptionRequest(
-                QString::fromStdString(proxyParticipantId),
-                QString::fromStdString(providerParticipantId),
+                proxyParticipantId,
+                providerParticipantId,
                 qos,
                 subscriptionRequest);
     // first received message with subscription request
     dispatcher.receive(msg);
 
     // wait for two requests from the subscription
-    ASSERT_TRUE(semaphore.tryAcquire(2, 1000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
 
     SubscriptionStop subscriptionStop;
     subscriptionStop.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     // receive a subscription stop message
     msg = messageFactory.createSubscriptionStop(
-                QString::fromStdString(proxyParticipantId),
-                QString::fromStdString(providerParticipantId),
+                proxyParticipantId,
+                providerParticipantId,
                 qos,
                 subscriptionStop);
     dispatcher.receive(msg);
 
     // assert that less than 2 requests happen in the next 300 milliseconds
-    ASSERT_FALSE(semaphore.tryAcquire(2, 300));
+    semaphore.waitFor(std::chrono::milliseconds(300));
+    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(300)));
 }
 
 

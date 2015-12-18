@@ -26,11 +26,9 @@
 #include "joynr/MessagingSettings.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/ILocalChannelUrlDirectory.h"
-#include "joynr/Directory.h"
 
-#include <QString>
-#include <QSettings>
-#include <QSemaphore>
+#include <string>
+#include "joynr/Semaphore.h"
 #include <memory>
 
 class DispatcherIntegrationTest;
@@ -39,18 +37,12 @@ class CapabilitiesClientTest;
 namespace joynr
 {
 
-class JoynrMessage;
 class LongPollingMessageReceiver;
 class MessageRouter;
 
-namespace system
-{
-class QtAddress;
-}
-
 /**
-  * \class HttpReceiver
-  * \brief Implements HTTP communication to the bounce proxy (backend)
+  * @class HttpReceiver
+  * @brief Implements HTTP communication to the bounce proxy (backend)
   *
   * Implements the IMessageReceiver interface using the httpnetworking
   * subproject that uses libcurl.
@@ -66,33 +58,33 @@ public:
     /**
       * Gets the channel ID of the receive channel for incoming messages.
       */
-    virtual const QString& getReceiveChannelId() const;
+    virtual const std::string& getReceiveChannelId() const override;
 
     /**
       * Checks the MessageSettings and updates the configuration.
       * Can be called at any time to read settings.
       */
-    virtual void updateSettings();
+    virtual void updateSettings() override;
 
     /**
       * Deletes the channel on the bounceproxy. Will only try once
       */
-    virtual bool tryToDeleteChannel();
+    virtual bool tryToDeleteChannel() override;
 
     /**
       * Blocks until the ReceiveQue is started.
       */
-    virtual void waitForReceiveQueueStarted();
+    virtual void waitForReceiveQueueStarted() override;
 
-    virtual void startReceiveQueue();
+    virtual void startReceiveQueue() override;
 
     /**
       * stops the receiveQue. This might ungracefully terminate the thread of the
      * LongPollingMessageReceiver.
       */
-    virtual void stopReceiveQueue();
+    virtual void stopReceiveQueue() override;
 
-    virtual void init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory);
+    virtual void init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(HttpReceiver);
@@ -106,12 +98,12 @@ private:
        On Channel deletion, the semaphore tries to acquire a resource again, so that the next cycle
        of
        createChannel and waitForReceiveQueueStarted works as well. */
-    QSemaphore* channelCreatedSemaphore;
-    QString channelId; // currently channelid is used to construct the channelUrl or
-                       // channelLocation.
+    Semaphore* channelCreatedSemaphore;
+    std::string channelId; // currently channelid is used to construct the channelUrl or
+                           // channelLocation.
     // Receiver ID is used to uniquely identify a message receiver (X-Atmosphere-tracking-id).
     // Allows for registering multiple receivers for a single channel.
-    QString receiverId;
+    std::string receiverId;
 
     MessagingSettings settings;
     LongPollingMessageReceiver* messageReceiver;

@@ -21,14 +21,13 @@
 #include "joynr/Util.h"
 #include "cluster-controller/httpnetworking/HttpNetworking.h"
 #include "cluster-controller/http-communication-manager/LongPollingMessageReceiver.h"
-#include "joynr/ObjectWithDecayTime.h"
-#include "joynr/JsonSerializer.h"
-#include "joynr/JoynrMessage.h"
 #include "cluster-controller/httpnetworking/HttpResult.h"
 #include "cluster-controller/messaging/MessagingPropertiesPersistence.h"
 #include "joynr/Future.h"
+#include "joynr/TypeUtil.h"
 
 #include <QtCore>
+#include <QByteArray>
 
 namespace joynr
 {
@@ -39,11 +38,11 @@ Logger* HttpReceiver::logger = Logging::getInstance()->getLogger("MSG", "HttpRec
 
 HttpReceiver::HttpReceiver(const MessagingSettings& settings,
                            std::shared_ptr<MessageRouter> messageRouter)
-        : channelCreatedSemaphore(new QSemaphore(0)),
+        : channelCreatedSemaphore(new joynr::Semaphore(0)),
           channelId(),
           receiverId(),
           settings(settings),
-          messageReceiver(NULL),
+          messageReceiver(nullptr),
           channelUrlDirectory(),
           messageRouter(messageRouter)
 {
@@ -72,8 +71,8 @@ void HttpReceiver::init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDir
 void HttpReceiver::updateSettings()
 {
     // Setup the proxy to use
-    if (settings.getLocalProxyHost().isEmpty()) {
-        HttpNetworking::getInstance()->setGlobalProxy(QString());
+    if (settings.getLocalProxyHost().empty()) {
+        HttpNetworking::getInstance()->setGlobalProxy(std::string());
     } else {
         HttpNetworking::getInstance()->setGlobalProxy(settings.getLocalProxyHost() + ":" +
                                                       settings.getLocalProxyPort());
@@ -122,15 +121,14 @@ void HttpReceiver::startReceiveQueue()
                                                      channelCreatedSemaphore,
                                                      channelUrlDirectory,
                                                      messageRouter);
-    messageReceiver->setObjectName(QString("HttpCommunicationManager-MessageReceiver"));
     messageReceiver->start();
 }
 
 void HttpReceiver::waitForReceiveQueueStarted()
 {
     LOG_TRACE(logger, "waiting for ReceiveQueue to be started.");
-    channelCreatedSemaphore->acquire(1);
-    channelCreatedSemaphore->release(1);
+    channelCreatedSemaphore->wait();
+    channelCreatedSemaphore->notify();
 }
 
 void HttpReceiver::stopReceiveQueue()
@@ -138,22 +136,15 @@ void HttpReceiver::stopReceiveQueue()
     // currently channelCreatedSemaphore is not released here. This would be necessary if
     // stopReceivequeue is called, before channel is created.
     LOG_DEBUG(logger, "stopReceiveQueue");
-    if (messageReceiver != NULL) {
-        messageReceiver->interrupt();
-        messageReceiver->wait(2 * 1000);
-        if (!messageReceiver->isRunning()) {
-            delete messageReceiver;
-            messageReceiver = NULL;
-        } else {
-            messageReceiver->terminate();
-            messageReceiver->wait();
-            delete messageReceiver;
-            messageReceiver = NULL;
-        }
+    if (messageReceiver != nullptr) {
+        messageReceiver->stop();
+
+        delete messageReceiver;
+        messageReceiver = nullptr;
     }
 }
 
-const QString& HttpReceiver::getReceiveChannelId() const
+const std::string& HttpReceiver::getReceiveChannelId() const
 {
     return channelId;
 }
@@ -163,29 +154,34 @@ bool HttpReceiver::tryToDeleteChannel()
     // If more than one attempt is needed, create a deleteChannelRunnable and move this to
     // messageSender.
     // TODO channelUrl is known only to the LongPlooMessageReceiver!
-    QString deleteChannelUrl =
-            settings.getBounceProxyUrl().getDeleteChannelUrl(getReceiveChannelId()).toString();
+    std::string deleteChannelUrl = settings.getBounceProxyUrl()
+                                           .getDeleteChannelUrl(getReceiveChannelId())
+                                           .toString()
+                                           .toStdString();
     std::shared_ptr<IHttpDeleteBuilder> deleteChannelRequestBuilder(
             HttpNetworking::getInstance()->createHttpDeleteBuilder(deleteChannelUrl));
     std::shared_ptr<HttpRequest> deleteChannelRequest(
             deleteChannelRequestBuilder->withTimeout_ms(20 * 1000)->build());
-    LOG_DEBUG(logger, "sending delete channel request to " + deleteChannelUrl);
+    LOG_DEBUG(logger,
+              FormatString("sending delete channel request to %1").arg(deleteChannelUrl).str());
     HttpResult deleteChannelResult = deleteChannelRequest->execute();
     long statusCode = deleteChannelResult.getStatusCode();
     if (statusCode == 200) {
-        channelCreatedSemaphore->tryAcquire(1, 5000); // Reset the channel created Semaphore.
+        channelCreatedSemaphore->waitFor(
+                std::chrono::milliseconds(5000)); // Reset the channel created Semaphore.
         LOG_INFO(logger, "channel deletion successfull");
-        channelUrlDirectory->unregisterChannelUrlsAsync(channelId.toStdString());
+        channelUrlDirectory->unregisterChannelUrlsAsync(channelId);
         LOG_INFO(logger, "Sendeing unregister request to ChannelUrlDirectory ...");
 
         return true;
     } else if (statusCode == 204) {
-        LOG_INFO(logger, "channel did not exist: " + QString::number(statusCode));
+        LOG_INFO(logger, FormatString("channel did not exist: %1").arg(statusCode).str());
         return true;
     } else {
         LOG_INFO(logger,
-                 "channel deletion failed with status code: " +
-                         QString::number(deleteChannelResult.getStatusCode()));
+                 FormatString("channel deletion failed with status code: %1")
+                         .arg(deleteChannelResult.getStatusCode())
+                         .str());
         return false;
     }
 }

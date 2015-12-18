@@ -19,7 +19,6 @@ package io.joynr.dispatching;
  * #L%
  */
 
-import io.joynr.accesscontrol.AccessController;
 import io.joynr.dispatching.subscription.PublicationManager;
 import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.exceptions.JoynrException;
@@ -29,7 +28,6 @@ import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.proxy.Callback;
-import io.joynr.security.PlatformSecurityManager;
 
 import java.io.IOException;
 import java.util.Date;
@@ -62,9 +60,7 @@ public class DispatcherImpl implements Dispatcher {
     private SubscriptionManager subscriptionManager;
     private PublicationManager publicationManager;
     private final MessageRouter messageRouter;
-    private PlatformSecurityManager securityManager;
     private ObjectMapper objectMapper;
-    private AccessController accessController;
 
     @Inject
     @Singleton
@@ -73,16 +69,12 @@ public class DispatcherImpl implements Dispatcher {
                           SubscriptionManager subscriptionManager,
                           PublicationManager publicationManager,
                           MessageRouter messageRouter,
-                          PlatformSecurityManager securityManager,
-                          AccessController accessController,
                           JoynrMessageFactory joynrMessageFactory,
                           ObjectMapper objectMapper) {
         this.requestReplyManager = requestReplyManager;
         this.subscriptionManager = subscriptionManager;
         this.publicationManager = publicationManager;
         this.messageRouter = messageRouter;
-        this.securityManager = securityManager;
-        this.accessController = accessController;
         this.joynrMessageFactory = joynrMessageFactory;
         this.objectMapper = objectMapper;
     }
@@ -156,10 +148,6 @@ public class DispatcherImpl implements Dispatcher {
             logger.error("received messaage was null");
             return;
         }
-        if (!securityManager.validate(message)) {
-            logger.error("unable to validate received message, discarding message: {}", message.toLogMessage());
-            return;
-        }
         final long expiryDate = message.getExpiryDate();
         if (DispatcherUtils.isExpired(expiryDate)) {
             logger.debug("TTL expired, discarding message : {}", message.toLogMessage());
@@ -174,25 +162,19 @@ public class DispatcherImpl implements Dispatcher {
                 handle(reply);
             } else {
                 if (JoynrMessage.MESSAGE_TYPE_REQUEST.equals(type)) {
-                    // handle only if this message creator (userId) has permissions
-                    if (accessController.hasConsumerPermission(message)) {
-                        final Request request = objectMapper.readValue(message.getPayload(), Request.class);
-                        logger.debug("Parsed request from message payload :" + message.getPayload());
-                        handle(request, message.getFrom(), message.getTo(), expiryDate);
-                    }
+                    final Request request = objectMapper.readValue(message.getPayload(), Request.class);
+                    logger.debug("Parsed request from message payload :" + message.getPayload());
+                    handle(request, message.getFrom(), message.getTo(), expiryDate);
                 } else if (JoynrMessage.MESSAGE_TYPE_ONE_WAY.equals(type)) {
                     OneWay oneWayRequest = objectMapper.readValue(message.getPayload(), OneWay.class);
                     logger.debug("Parsed one way request from message payload :" + message.getPayload());
                     handle(oneWayRequest, message.getTo(), expiryDate);
                 } else if (JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST.equals(type)
                         || JoynrMessage.MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST.equals(type)) {
-                    // handle only if this message creator (userId) has permissions
-                    if (accessController.hasConsumerPermission(message)) {
-                        SubscriptionRequest subscriptionRequest = objectMapper.readValue(message.getPayload(),
-                                                                                         SubscriptionRequest.class);
-                        logger.debug("Parsed subscription request from message payload :" + message.getPayload());
-                        handle(subscriptionRequest, message.getFrom(), message.getTo());
-                    }
+                    SubscriptionRequest subscriptionRequest = objectMapper.readValue(message.getPayload(),
+                                                                                     SubscriptionRequest.class);
+                    logger.debug("Parsed subscription request from message payload :" + message.getPayload());
+                    handle(subscriptionRequest, message.getFrom(), message.getTo());
                 } else if (JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_STOP.equals(type)) {
                     SubscriptionStop subscriptionStop = objectMapper.readValue(message.getPayload(),
                                                                                SubscriptionStop.class);
@@ -205,7 +187,7 @@ public class DispatcherImpl implements Dispatcher {
                     handle(publication);
                 }
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             logger.error("Error parsing payload. msgId: {}. from: {} to: {}. Reason: {}. Discarding joynr message.",
                          new String[]{ message.getFrom(), message.getFrom(), message.getId(), e.getMessage() });
             return;

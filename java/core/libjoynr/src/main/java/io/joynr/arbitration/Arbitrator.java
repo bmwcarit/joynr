@@ -1,5 +1,15 @@
 package io.joynr.arbitration;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.Semaphore;
+
+import javax.annotation.CheckForNull;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * %%
@@ -19,22 +29,13 @@ package io.joynr.arbitration;
  * #L%
  */
 
-import io.joynr.capabilities.CapabilitiesCallback;
-import io.joynr.capabilities.LocalCapabilitiesDirectory;
+import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrShutdownException;
-
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.concurrent.Semaphore;
-
-import javax.annotation.CheckForNull;
-
+import io.joynr.proxy.Callback;
+import joynr.system.DiscoveryAsync;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Base class for provider arbitrators. Concrete arbitrators have to provide implementations for startArbitration() and
@@ -47,7 +48,7 @@ public class Arbitrator {
     private static final Logger logger = LoggerFactory.getLogger(Arbitrator.class);
     private final long MINIMUM_ARBITRATION_RETRY_DELAY;
     protected DiscoveryQos discoveryQos;
-    protected LocalCapabilitiesDirectory localCapabilitiesDirectory;
+    protected DiscoveryAsync localDiscoveryAggregator;
     protected ArbitrationResult arbitrationResult = new ArbitrationResult();
     protected ArbitrationStatus arbitrationStatus = ArbitrationStatus.ArbitrationNotStarted;
     protected ArbitrationCallback arbitrationListener;
@@ -61,14 +62,14 @@ public class Arbitrator {
     public Arbitrator(final String domain,
                       final String interfaceName,
                       final DiscoveryQos discoveryQos,
-                      LocalCapabilitiesDirectory localCapabilitiesDirectory,
+                      DiscoveryAsync localDiscoveryAggregator,
                       long minimumArbitrationRetryDelay,
                       ArbitrationStrategyFunction arbitrationStrategyFunction) {
         this.domain = domain;
         this.interfaceName = interfaceName;
         MINIMUM_ARBITRATION_RETRY_DELAY = minimumArbitrationRetryDelay;
         this.discoveryQos = discoveryQos;
-        this.localCapabilitiesDirectory = localCapabilitiesDirectory;
+        this.localDiscoveryAggregator = localDiscoveryAggregator;
         this.arbitrationStrategyFunction = arbitrationStrategyFunction;
         arbitrationDeadline = System.currentTimeMillis() + discoveryQos.getDiscoveryTimeout();
     }
@@ -101,25 +102,32 @@ public class Arbitrator {
         arbitrationStatus = ArbitrationStatus.ArbitrationRunning;
         notifyArbitrationStatusChanged();
 
-        localCapabilitiesDirectory.lookup(domain, interfaceName, discoveryQos, new CapabilitiesCallback() {
+        localDiscoveryAggregator.lookup(new Callback<DiscoveryEntry[]>() {
 
             @Override
-            public void processCapabilitiesReceived(@CheckForNull Collection<DiscoveryEntry> capabilities) {
-                assert (capabilities != null);
+            public void onFailure(JoynrException error) {
+                Arbitrator.this.onError(new JoynrRuntimeException(error.toString()));
+            }
 
+            @Override
+            public void onSuccess(@CheckForNull DiscoveryEntry[] discoveryEntries) {
+                assert (discoveryEntries != null);
+                List<DiscoveryEntry> discoveryEntriesList;
                 // If onChange subscriptions are required ignore providers that do not support them
                 if (discoveryQos.getProviderMustSupportOnChange()) {
-                    for (Iterator<DiscoveryEntry> iterator = capabilities.iterator(); iterator.hasNext();) {
-                        DiscoveryEntry discoveryEntry = (DiscoveryEntry) iterator.next();
+                    discoveryEntriesList = new ArrayList<DiscoveryEntry>(discoveryEntries.length);
+                    for (DiscoveryEntry discoveryEntry : discoveryEntries) {
                         ProviderQos providerQos = discoveryEntry.getQos();
-                        if (!providerQos.getSupportsOnChangeSubscriptions()) {
-                            iterator.remove();
+                        if (providerQos.getSupportsOnChangeSubscriptions()) {
+                            discoveryEntriesList.add(discoveryEntry);
                         }
                     }
+                } else {
+                    discoveryEntriesList = Arrays.asList(discoveryEntries);
                 }
 
                 DiscoveryEntry selectedCapability = arbitrationStrategyFunction.select(discoveryQos.getCustomParameters(),
-                                                                                       capabilities);
+                                                                                       discoveryEntriesList);
 
                 if (selectedCapability != null) {
                     arbitrationResult.setParticipantId(selectedCapability.getParticipantId());
@@ -129,13 +137,13 @@ public class Arbitrator {
                     restartArbitrationIfNotExpired();
                 }
             }
-
-            @Override
-            public void onError(Throwable exception) {
-                Arbitrator.this.onError(exception);
-            }
-        });
-
+        },
+                                        domain,
+                                        interfaceName,
+                                        new joynr.types.DiscoveryQos(discoveryQos.getCacheMaxAge(),
+                                                                     joynr.types.DiscoveryScope.valueOf(discoveryQos.getDiscoveryScope()
+                                                                                                                    .name()),
+                                                                     discoveryQos.getProviderMustSupportOnChange()));
     }
 
     /**

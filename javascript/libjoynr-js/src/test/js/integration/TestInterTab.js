@@ -37,8 +37,8 @@ joynrTestRequire(
             "joynr/system/RoutingTypes/CommonApiDbusAddress",
             "joynr/vehicle/RadioProxy",
             "joynr/vehicle/RadioProvider",
-            "joynr/vehicle/radiotypes/RadioStation",
             "joynr/datatypes/exampleTypes/Country",
+            "joynr/datatypes/exampleTypes/StringMap",
             "joynr/provisioning/provisioning_libjoynr",
             "integration/IntegrationUtils"
         ],
@@ -57,8 +57,8 @@ joynrTestRequire(
                 CommonApiDbusAddress,
                 RadioProxy,
                 RadioProvider,
-                RadioStation,
                 Country,
+                StringMap,
                 provisioning,
                 IntegrationUtils) {
             describe(
@@ -147,18 +147,14 @@ joynrTestRequire(
                                                             message: "CC web worker with ID " + libjoynrParentWindow.workerId
                                                                     + ": started"
                                                         }, "joynr.integration.TestInterTab");
-                                                        joynr.load(testProvisioning, function(error, newjoynr) {
-                                                            if (error) {
-                                                                throw error;
-                                                            }
-
+                                                        joynr.load(testProvisioning, true).then(function(newJoynr){
                                                             messagingQos = IntegrationUtils.messagingQos;
-
-                                                            joynr = newjoynr;
+                                                            joynr = newJoynr;
                                                             IntegrationUtils.initialize(joynr);
                                                             libjoynrLoaded = true;
-                                                        },
-                                                        true);
+                                                        }).catch(function(error){
+                                                            throw error;
+                                                        });
                                                     });
                                                 });
                             });
@@ -303,6 +299,8 @@ joynrTestRequire(
                                     var isOn = true;
                                     var enumAttribute = Country.GERMANY;
                                     var enumArrayAttribute = [Country.GERMANY];
+                                    var byteBufferAttribute = null;
+                                    var stringMapAttribute = null;
                                     var attrProvidedImpl;
                                     var mixedSubscriptions = null;
                                     var numberOfStations = 0;
@@ -345,6 +343,10 @@ joynrTestRequire(
                                         attrProvidedImpl = value;
                                     });
 
+                                    radioProvider.attributeTestingProviderInterface.registerGetter(function() {
+                                       return undefined;
+                                    });
+ 
                                     radioProvider.mixedSubscriptions.registerGetter(function() {
                                         return "interval";
                                     });
@@ -375,6 +377,22 @@ joynrTestRequire(
 
                                     radioProvider.enumArrayAttribute.registerSetter(function(value) {
                                         enumArrayAttribute = value;
+                                    });
+
+                                    radioProvider.byteBufferAttribute.registerSetter(function(value) {
+                                        byteBufferAttribute = value;
+                                    });
+
+                                    radioProvider.byteBufferAttribute.registerGetter(function(value) {
+                                        return byteBufferAttribute;
+                                    });
+
+                                    radioProvider.stringMapAttribute.registerSetter(function(value) {
+                                        stringMapAttribute = value;
+                                    });
+
+                                    radioProvider.stringMapAttribute.registerGetter(function(value) {
+                                        return stringMapAttribute;
                                     });
 
                                     radioProvider.failingSyncAttribute.registerGetter(function() {
@@ -434,6 +452,24 @@ joynrTestRequire(
                                         }
                                         return {
                                             enumOutput : returnValue
+                                        };
+                                    });
+
+                                    // register operation function "methodWithSingleArrayParameters"
+                                    radioProvider.methodWithSingleArrayParameters.registerOperation(function(opArgs) {
+                                        /* the dummy implementation transforms the incoming double values into
+                                         * strings.
+                                         */
+                                        var stringArrayOut = [], element;
+                                        if (opArgs.doubleArrayArg !== undefined) {
+                                            for (element in opArgs.doubleArrayArg) {
+                                                if (opArgs.doubleArrayArg.hasOwnProperty(element)) {
+                                                    stringArrayOut.push(opArgs.doubleArrayArg[element].toString());
+                                                }
+                                            }
+                                        }
+                                        return {
+                                            stringArrayOut: stringArrayOut
                                         };
                                     });
 

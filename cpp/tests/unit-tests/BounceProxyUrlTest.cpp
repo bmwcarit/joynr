@@ -16,9 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#include "gtest/gtest.h"
-#include "gmock/gmock.h"
-#include "utils/TestQString.h"
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 #include "joynr/BounceProxyUrl.h"
 
 using namespace joynr;
@@ -43,28 +42,28 @@ protected:
 
 TEST_F(BounceProxyUrlTest, getCreateChannelUrl) {
     QUrl createChannelUrl = bounceProxyUrl.getCreateChannelUrl("testMcid");
-    EXPECT_QSTREQ(QString("http://localhost:8080/bounceproxy/channels/?ccid=testMcid"), createChannelUrl.toString());
+    EXPECT_STREQ("http://localhost:8080/bounceproxy/channels/?ccid=testMcid", createChannelUrl.toString().toStdString().c_str());
     createChannelUrl = bounceProxyUrlWithTrailingSlash.getCreateChannelUrl("testMcid");
-    EXPECT_QSTREQ(QString("http://localhost:8080/bounceproxy/channels/?ccid=testMcid"), createChannelUrl.toString());
+    EXPECT_STREQ("http://localhost:8080/bounceproxy/channels/?ccid=testMcid", createChannelUrl.toString().toStdString().c_str());
 }
 
 TEST_F(BounceProxyUrlTest, getSendUrl) {
     QUrl sendUrl = bounceProxyUrl.getSendUrl("testMcid");
-    EXPECT_QSTREQ(QString("http://localhost:8080/bounceproxy/channels/testMcid/message/"), sendUrl.toString());
+    EXPECT_STREQ("http://localhost:8080/bounceproxy/channels/testMcid/message/", sendUrl.toString().toStdString().c_str());
     sendUrl = bounceProxyUrlWithTrailingSlash.getSendUrl("testMcid");
-    EXPECT_QSTREQ(QString("http://localhost:8080/bounceproxy/channels/testMcid/message/"), sendUrl.toString());
+    EXPECT_STREQ("http://localhost:8080/bounceproxy/channels/testMcid/message/", sendUrl.toString().toStdString().c_str());
 }
 
 TEST_F(BounceProxyUrlTest, getDeleteChannelUrl){
     QUrl deleteUrl = bounceProxyUrl.getDeleteChannelUrl("testMcid");
-    EXPECT_QSTREQ(QString("http://localhost:8080/bounceproxy/channels/testMcid/"), deleteUrl.toString());
+    EXPECT_STREQ("http://localhost:8080/bounceproxy/channels/testMcid/", deleteUrl.toString().toStdString().c_str());
     deleteUrl = bounceProxyUrlWithTrailingSlash.getDeleteChannelUrl("testMcid");
-    EXPECT_QSTREQ(QString("http://localhost:8080/bounceproxy/channels/testMcid/"), deleteUrl.toString());
+    EXPECT_STREQ("http://localhost:8080/bounceproxy/channels/testMcid/", deleteUrl.toString().toStdString().c_str());
 }
 
 TEST_F(BounceProxyUrlTest, getTimeCheckUrl){
     QUrl timeCheckUrl = bounceProxyUrl.getTimeCheckUrl();
-    EXPECT_QSTREQ(QString("http://localhost:8080/bounceproxy/time/"), timeCheckUrl.toString());
+    EXPECT_STREQ("http://localhost:8080/bounceproxy/time/", timeCheckUrl.toString().toStdString().c_str());
     timeCheckUrl = bounceProxyUrlWithTrailingSlash.getTimeCheckUrl();
-    EXPECT_QSTREQ(QString("http://localhost:8080/bounceproxy/time/"), timeCheckUrl.toString());
+    EXPECT_STREQ("http://localhost:8080/bounceproxy/time/", timeCheckUrl.toString().toStdString().c_str());
 }

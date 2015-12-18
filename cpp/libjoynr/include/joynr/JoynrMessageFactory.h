@@ -24,7 +24,7 @@
 #include "joynr/JoynrMessage.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/IPlatformSecurityManager.h"
-
+#include <string>
 namespace joynr
 {
 
@@ -47,43 +47,43 @@ public:
     JoynrMessageFactory();
     virtual ~JoynrMessageFactory();
 
-    JoynrMessage createRequest(const QString& senderId,
-                               const QString& receiverId,
+    JoynrMessage createRequest(const std::string& senderId,
+                               const std::string& receiverId,
                                const MessagingQos& qos,
                                const Request& payload);
 
-    JoynrMessage createReply(const QString& senderId,
-                             const QString& receiverId,
+    JoynrMessage createReply(const std::string& senderId,
+                             const std::string& receiverId,
                              const MessagingQos& qos,
                              const Reply& payload);
 
-    JoynrMessage createOneWay(const QString& senderId,
-                              const QString& receiverId,
+    JoynrMessage createOneWay(const std::string& senderId,
+                              const std::string& receiverId,
                               const MessagingQos& qos,
                               const Reply& payload);
 
-    JoynrMessage createSubscriptionPublication(const QString& senderId,
-                                               const QString& receiverId,
+    JoynrMessage createSubscriptionPublication(const std::string& senderId,
+                                               const std::string& receiverId,
                                                const MessagingQos& qos,
                                                const SubscriptionPublication& payload);
 
-    JoynrMessage createSubscriptionRequest(const QString& senderId,
-                                           const QString& receiverId,
+    JoynrMessage createSubscriptionRequest(const std::string& senderId,
+                                           const std::string& receiverId,
                                            const MessagingQos& qos,
                                            const SubscriptionRequest& payload);
 
-    JoynrMessage createBroadcastSubscriptionRequest(const QString& senderId,
-                                                    const QString& receiverId,
+    JoynrMessage createBroadcastSubscriptionRequest(const std::string& senderId,
+                                                    const std::string& receiverId,
                                                     const MessagingQos& qos,
                                                     const BroadcastSubscriptionRequest& payload);
 
-    JoynrMessage createSubscriptionReply(const QString& senderId,
-                                         const QString& receiverId,
+    JoynrMessage createSubscriptionReply(const std::string& senderId,
+                                         const std::string& receiverId,
                                          const MessagingQos& qos,
                                          const SubscriptionReply& payload);
 
-    JoynrMessage createSubscriptionStop(const QString& senderId,
-                                        const QString& receiverId,
+    JoynrMessage createSubscriptionStop(const std::string& senderId,
+                                        const std::string& receiverId,
                                         const MessagingQos& qos,
                                         const SubscriptionStop& payload);
 
@@ -91,21 +91,21 @@ private:
     DISALLOW_COPY_AND_ASSIGN(JoynrMessageFactory);
 
     void initMsg(JoynrMessage& msg,
-                 const QString& senderParticipantId,
-                 const QString& receiverParticipantId,
-                 const qint64 ttl,
-                 const QObject& payload);
+                 const std::string& senderParticipantId,
+                 const std::string& receiverParticipantId,
+                 const int64_t ttl,
+                 const std::string& payload);
 
     void initReplyMsg(JoynrMessage& msg,
-                      const QString& senderParticipantId,
-                      const QString& receiverParticipantId,
-                      const qint64 ttl,
+                      const std::string& senderParticipantId,
+                      const std::string& receiverParticipantId,
+                      const int64_t ttl,
                       const Reply& payload);
 
     void initSubscriptionPublicationMsg(JoynrMessage& msg,
-                                        const QString& senderParticipantId,
-                                        const QString& receiverParticipantId,
-                                        const qint64 ttl,
+                                        const std::string& senderParticipantId,
+                                        const std::string& receiverParticipantId,
+                                        const int64_t ttl,
                                         const SubscriptionPublication& payload);
 
     IPlatformSecurityManager* securityManager;

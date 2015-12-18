@@ -30,16 +30,16 @@
 #include "joynr/RequestStatus.h"
 #include "joynr/Directory.h"
 #include "joynr/MessageQueue.h"
+#include "joynr/ThreadPool.h"
+#include "joynr/Timer.h"
+#include "joynr/Runnable.h"
+#include "joynr/Semaphore.h"
 
-#include <QThreadPool>
-#include <QSemaphore>
 #include <QPair>
-#include <QMap>
-#include <QSet>
-#include <QMutex>
+#include <unordered_set>
+#include <mutex>
 #include <string>
 #include <memory>
-#include <QReadWriteLock>
 
 namespace joynr
 {
@@ -52,10 +52,9 @@ namespace joynr_logging
 {
 class Logger;
 }
-class MessageQueueCleanerRunnable;
 namespace system
 {
-class QtAddress;
+class Address;
 }
 
 /**
@@ -80,7 +79,7 @@ public:
                   MessageQueue* messageQueue = new MessageQueue());
 
     MessageRouter(IMessagingStubFactory* messagingStubFactory,
-                  std::shared_ptr<joynr::system::RoutingTypes::QtAddress> incomingAddress,
+                  std::shared_ptr<joynr::system::RoutingTypes::Address> incomingAddress,
                   int maxThreads = 6,
                   MessageQueue* messageQueue = new MessageQueue());
 
@@ -131,17 +130,17 @@ public:
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError);
 
     void addProvisionedNextHop(std::string participantId,
-                               std::shared_ptr<joynr::system::RoutingTypes::QtAddress> address);
+                               std::shared_ptr<system::RoutingTypes::Address> address);
 
     void setAccessController(std::shared_ptr<IAccessController> accessController);
 
     void setParentRouter(joynr::system::RoutingProxy* parentRouter,
-                         std::shared_ptr<joynr::system::RoutingTypes::QtAddress> parentAddress,
+                         std::shared_ptr<system::RoutingTypes::Address> parentAddress,
                          std::string parentParticipantId);
 
     virtual void addNextHop(
             const std::string& participantId,
-            const std::shared_ptr<joynr::system::RoutingTypes::QtAddress>& inprocessAddress,
+            const std::shared_ptr<joynr::system::RoutingTypes::Address>& inprocessAddress,
             std::function<void()> onSuccess = nullptr);
 
     friend class MessageRunnable;
@@ -150,49 +149,49 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(MessageRouter);
     IMessagingStubFactory* messagingStubFactory;
-    Directory<std::string, joynr::system::RoutingTypes::QtAddress> routingTable;
-    QReadWriteLock routingTableLock;
-    QThreadPool threadPool;
+    Directory<std::string, joynr::system::RoutingTypes::Address> routingTable;
+    ReadWriteLock routingTableLock;
+    ThreadPool threadPool;
     joynr::system::RoutingProxy* parentRouter;
-    std::shared_ptr<joynr::system::RoutingTypes::QtAddress> parentAddress;
-    std::shared_ptr<joynr::system::RoutingTypes::QtAddress> incomingAddress;
+    std::shared_ptr<joynr::system::RoutingTypes::Address> parentAddress;
+    std::shared_ptr<joynr::system::RoutingTypes::Address> incomingAddress;
     static joynr_logging::Logger* logger;
 
     MessageQueue* messageQueue;
-    MessageQueueCleanerRunnable* messageQueueCleanerRunnable;
-    QSet<QString>* runningParentResolves;
+    Timer messageQueueCleanerTimer;
+    std::unordered_set<std::string>* runningParentResolves;
     std::shared_ptr<IAccessController> accessController;
     IPlatformSecurityManager* securityManager;
-    mutable QMutex parentResolveMutex;
+    mutable std::mutex parentResolveMutex;
 
-    void init(int maxThreads);
     void addNextHopToParent(std::string participantId,
                             std::function<void(void)> callbackFct = nullptr,
                             std::function<void(const joynr::exceptions::ProviderRuntimeException&)>
                                     onError = nullptr);
 
     void sendMessage(const JoynrMessage& message,
-                     std::shared_ptr<joynr::system::RoutingTypes::QtAddress> destAddress);
+                     std::shared_ptr<system::RoutingTypes::Address> destAddress);
 
     void sendMessages(const std::string& destinationPartId,
-                      std::shared_ptr<joynr::system::RoutingTypes::QtAddress> address);
+                      std::shared_ptr<system::RoutingTypes::Address> address);
 
     bool isChildMessageRouter();
 
     void addToRoutingTable(std::string participantId,
-                           std::shared_ptr<joynr::system::RoutingTypes::QtAddress> address);
+                           std::shared_ptr<joynr::system::RoutingTypes::Address> address);
 
-    void removeRunningParentResolvers(const QString& destinationPartId);
+    void removeRunningParentResolvers(const std::string& destinationPartId);
 };
 
 /**
  * Class to send message
  */
-class MessageRunnable : public QRunnable, public ObjectWithDecayTime
+class MessageRunnable : public Runnable, public ObjectWithDecayTime
 {
 public:
     MessageRunnable(const JoynrMessage& message, std::shared_ptr<IMessaging> messagingStub);
-    void run();
+    void shutdown() override;
+    void run() override;
 
 private:
     JoynrMessage message;

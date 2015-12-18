@@ -17,13 +17,14 @@
  * #L%
  */
 #include "joynr/PrivateCopyAssign.h"
-#include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
-#include "joynr/CapabilitiesRegistrar.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/BounceProxyUrl.h"
-#include "PrettyPrint.h"
+#include "joynr/TypeUtil.h"
+#include "joynr/DispatcherUtils.h"
 #include "joynr/joynrlogging.h"
+#include "joynr/Settings.h"
 
+#include <chrono>
 #include <gtest/gtest.h>
 #include <QString>
 #include <curl/curl.h>
@@ -38,11 +39,11 @@ static char datestr[80];
 
 class ClockSkewTest : public Test {
 public:
-    QSettings settings;
+    Settings settings;
     MessagingSettings* messagingSettings;
 
     ClockSkewTest() :
-        settings("test-resources/SystemIntegrationTest1.settings", QSettings::IniFormat),
+        settings("test-resources/SystemIntegrationTest1.settings"),
         messagingSettings(new MessagingSettings(settings))
     {
     }
@@ -122,9 +123,12 @@ TEST_F(ClockSkewTest, DISABLED_checkClockSkew) {
 
     // Compare the time with the local time
     uint64_t now        = DispatcherUtils::nowInMilliseconds();
-    uint64_t remoteTime = duration_cast<milliseconds>(std::chrono::system_clock::from_time_t(epochsecs).time_since_epoch()).count();
+    uint64_t remoteTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::from_time_t(epochsecs).time_since_epoch()).count();
 
-    LOG_INFO(logger, QString("Time difference is %1 msecs").arg(QString::number(TypeUtil::toQt(now))));
-    EXPECT_TRUE(abs(now - remoteTime) < 2000) << "Time difference between local and remote is over 2 seconds";
+    auto minMaxTime = std::minmax(now, remoteTime);
+    uint64_t diff = minMaxTime.second - minMaxTime.first;
+
+    LOG_INFO(logger, FormatString("Time difference is %1 msecs").arg(now).str());
+    EXPECT_TRUE(diff < 2000) << "Time difference between local and remote is over 2 seconds";
 
 }

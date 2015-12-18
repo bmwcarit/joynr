@@ -27,6 +27,7 @@ import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FCompoundType
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FMethod
+import org.franca.core.franca.FMapType
 
 @Singleton
 public class InterfaceUtil {
@@ -89,7 +90,7 @@ public class InterfaceUtil {
 	def hasArray (FInterface fInterface) {
 		for (method : fInterface.methods) {
 			for (args : Iterables::concat(method.inputParameters, method.outputParameters)) {
-				if (args.isArray) {
+				if (isArray(args)) {
 					return true
 				}
 			}
@@ -97,14 +98,14 @@ public class InterfaceUtil {
 
 		for (broadcast : fInterface.broadcasts) {
 			for (args : broadcast.outputParameters) {
-				if (args.isArray) {
+				if (isArray(args)) {
 					return true
 				}
 			}
 		}
 
 		for (attribute : getAttributes(fInterface)) {
-			if (attribute.isArray) {
+			if (isArray(attribute)) {
 				return true
 			}
 		}
@@ -176,7 +177,7 @@ public class InterfaceUtil {
 					|| (writeAttributes && attribute.writable)
 					|| (notifyAttributes && attribute.notifiable)
 			) {
-				typeList.add(getDatatype(attribute.type));
+				typeList.addAll(getRequiredTypes(attribute.type));
 			}
 		}
 
@@ -204,11 +205,11 @@ public class InterfaceUtil {
 		getAllRequiredTypes(fInterface, includingTransitiveTypes, true, true, true, true, true, false);
 	}
 
-	def getAllComplexAndEnumTypes(FInterface fInterface, Boolean includingTransitiveTypes) {
-		getAllComplexAndEnumTypes(fInterface, includingTransitiveTypes, true, true, true, true, true)
+	def getAllComplexTypes(FInterface fInterface, Boolean includingTransitiveTypes) {
+		getAllComplexTypes(fInterface, includingTransitiveTypes, true, true, true, true, true)
 	}
 
-	def getAllComplexAndEnumTypes(
+	def getAllComplexTypes(
 			FInterface fInterface,
 			Boolean includingTransitiveTypes,
 			boolean methods,
@@ -217,10 +218,10 @@ public class InterfaceUtil {
 			boolean notifyAttributes,
 			boolean broadcasts
 			) {
-			getAllComplexAndEnumTypes(fInterface, includingTransitiveTypes, methods, readAttributes, writeAttributes, notifyAttributes, broadcasts, false)
+			getAllComplexTypes(fInterface, includingTransitiveTypes, methods, readAttributes, writeAttributes, notifyAttributes, broadcasts, false)
 			}
 
-	def getAllComplexAndEnumTypes(
+	def getAllComplexTypes(
 			FInterface fInterface,
 			Boolean includingTransitiveTypes,
 			boolean methods,
@@ -231,25 +232,28 @@ public class InterfaceUtil {
 			boolean errorTypes
 	) {
 		getAllRequiredTypes(fInterface, includingTransitiveTypes, methods, readAttributes, writeAttributes, notifyAttributes, broadcasts, errorTypes).
-			filterComplexAndEnum
+			filterComplex
 	}
 
-	def private getAllReferredDatatypes(Iterable<Object> list, HashSet<Object> cache) {
+	def private void getAllReferredDatatypes(Iterable<Object> list, HashSet<Object> cache) {
 		for(element : list){
 			if (!cache.contains(element)){
 				cache.add(element)
 				if (element instanceof FCompoundType){
 					getAllReferredDatatypes(element.members.map[e | e.type.datatype], cache)
 				}
+				if (element instanceof FMapType){
+					getAllReferredDatatypes(newArrayList(element.keyType, element.valueType), cache)
+				}
 			}
 		}
 	}
 
-	def getAllComplexAndEnumTypes(FInterface fInterface) {
-		getAllComplexAndEnumTypes(fInterface, false)
+	def getAllComplexTypes(FInterface fInterface) {
+		getAllComplexTypes(fInterface, false)
 	}
 
-	def getAllComplexAndEnumTypes(
+	def getAllComplexTypes(
 			FInterface fInterface,
 			boolean methods,
 			boolean readAttributes,
@@ -257,7 +261,7 @@ public class InterfaceUtil {
 			boolean notifyAttributes,
 			boolean broadcasts
 	) {
-		getAllComplexAndEnumTypes(fInterface, false, methods, readAttributes, writeAttributes, notifyAttributes, broadcasts)
+		getAllComplexTypes(fInterface, false, methods, readAttributes, writeAttributes, notifyAttributes, broadcasts)
 	}
 
 	def boolean hasReadAttribute(FInterface interfaceType){

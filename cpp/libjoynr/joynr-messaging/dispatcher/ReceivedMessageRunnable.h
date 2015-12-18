@@ -19,12 +19,11 @@
 #ifndef RECEIVEDMESSAGERUNNABLE_H
 #define RECEIVEDMESSAGERUNNABLE_H
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/joynrlogging.h"
+
 #include "joynr/ObjectWithDecayTime.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/MessagingQos.h"
-
-#include <QRunnable>
+#include "joynr/Runnable.h"
 
 namespace joynr
 {
@@ -36,11 +35,12 @@ class Dispatcher;
   *
   */
 
-class ReceivedMessageRunnable : public QRunnable, public ObjectWithDecayTime
+class ReceivedMessageRunnable : public joynr::Runnable, public ObjectWithDecayTime
 {
 public:
     ReceivedMessageRunnable(const JoynrMessage& message, Dispatcher& dispatcher);
 
+    void shutdown();
     void run();
 
 private:

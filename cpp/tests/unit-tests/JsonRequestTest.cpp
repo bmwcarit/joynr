@@ -16,14 +16,13 @@
  * limitations under the License.
  * #L%
  */
-#include <QUuid>
+#include <QVariant>
+#include <QVariantList>
+#include <vector>
 
 
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
-#include "utils/TestQString.h"
-#include "utils/QThreadSleep.h"
-#include "QVariant"
 #include "joynr/Request.h"
 
 using ::testing::A;
@@ -45,7 +44,7 @@ public:
         list1(mockArgument.list1)
     {}
 
-    MockArgument(QString atr1, QList<QString>& array1):
+    MockArgument(std::string atr1, std::vector<std::string>& array1):
         str1(atr1),
         list1(array1)
     {}
@@ -61,9 +60,11 @@ public:
       return !(*this == other);
     }
 
-    QString str1;
-    QList<QString> list1;
+    std::string str1;
+    std::vector<std::string> list1;
 };
+
+bool isMockArgumentRegistered = Variant::registerType<MockArgument>("MockArgument");
 
 class JsonRequestTest : public ::testing::Test {
 public:
@@ -79,17 +80,17 @@ public:
     {};
 
     void SetUp(){
-        list.append("1");
-        list.append("2");
-        list.append("3");
-        list.append("4");
+        list.push_back("1");
+        list.push_back("2");
+        list.push_back("3");
+        list.push_back("4");
 
         operationName = "operation";
         arg1 = "arg1";
         arg2 = "arg2";
         arg3 = "arg3";
         valueOfArg1 = "valueOfArg1";
-        valueOfArg2.str1 = QString("mockargumentStringValue");
+        valueOfArg2.str1 = std::string("mockargumentStringValue");
         valueOfArg2.list1 = list;
         valueOfArg3 = "valueOfArg3";
     }
@@ -100,25 +101,25 @@ public:
 
     void checkJsonRequest(Request jsonRequest) {
         ASSERT_EQ(operationName, jsonRequest.getMethodName());
-        QVariantList params = jsonRequest.getParams();
+        std::vector<Variant> params = jsonRequest.getParams();
         ASSERT_EQ(3, params.size());
 
-        ASSERT_EQ(valueOfArg1, params.at(0));
+        ASSERT_EQ(valueOfArg1, params.at(0).get<std::string>());
         // arg2 is a custom type, so need to extract QVariant value
-        ASSERT_EQ(valueOfArg2, params.at(1). value<MockArgument>());
-        ASSERT_EQ(valueOfArg3, params.at(2));
+        ASSERT_EQ(valueOfArg2, params.at(1).get<MockArgument>());
+        ASSERT_EQ(valueOfArg3, params.at(2).get<std::string>());
     }
 
 protected:
-    QList<QString> list;
-    QString operationName;
-    QString arg1;
-    QString arg2;
-    QString arg3;
+    std::vector<std::string> list;
+    std::string operationName;
+    std::string arg1;
+    std::string arg2;
+    std::string arg3;
 
-    QString valueOfArg1;
+    std::string valueOfArg1;
     MockArgument valueOfArg2;
-    QString valueOfArg3;
+    std::string valueOfArg3;
 };
 
 Q_DECLARE_METATYPE(MockArgument)
@@ -130,10 +131,10 @@ typedef JsonRequestTest JsonRequestDeathTest;
 TEST_F(JsonRequestTest, buildJsonRequest)
 {
     // Build the argument list
-    QVariantList args;
-    args.append(QVariant(valueOfArg1));
-    args.append(QVariant::fromValue(valueOfArg2));
-    args.append(QVariant(valueOfArg3));
+    std::vector<Variant> args;
+    args.push_back(Variant::make<std::string>(valueOfArg1));
+    args.push_back(Variant::make<MockArgument>(valueOfArg2));
+    args.push_back(Variant::make<std::string>(valueOfArg3));
 
     // Build the request
     Request jsonRequest;

@@ -21,14 +21,18 @@
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/Directory.h"
 #include "joynr/joynrlogging.h"
-#include "joynr/system/RoutingTypes_QtAddress.h"
-#include "joynr/types/QtProviderQos.h"
+#include "joynr/system/RoutingTypes/Address.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
+#include "joynr/system/RoutingTypes/CommonApiDbusAddress.h"
+#include "joynr/system/RoutingTypes/BrowserAddress.h"
+#include "joynr/system/RoutingTypes/WebSocketAddress.h"
+#include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
+#include "joynr/types/ProviderQos.h"
 #include "joynr/RequestStatusCode.h"
 #include "joynr/JsonSerializer.h"
 #include "cluster-controller/access-control/IAccessController.h"
 #include "joynr/IPlatformSecurityManager.h"
 
-#include <QMutexLocker>
 #include <chrono>
 
 #include <cassert>
@@ -48,23 +52,23 @@ class ConsumerPermissionCallback : public IAccessController::IHasConsumerPermiss
 public:
     ConsumerPermissionCallback(MessageRouter& owningMessageRouter,
                                const JoynrMessage& message,
-                               std::shared_ptr<system::RoutingTypes::QtAddress> destination);
+                               std::shared_ptr<system::RoutingTypes::Address> destination);
 
     void hasConsumerPermission(bool hasPermission);
 
 private:
     MessageRouter& owningMessageRouter;
     JoynrMessage message;
-    std::shared_ptr<system::RoutingTypes::QtAddress> destination;
+    std::shared_ptr<system::RoutingTypes::Address> destination;
 };
 
 //------ MessageRouter ---------------------------------------------------------
 
 MessageRouter::~MessageRouter()
 {
-    messageQueueCleanerRunnable->stop();
-    threadPool.waitForDone();
-    if (parentRouter != NULL) {
+    messageQueueCleanerTimer.shutdown();
+    threadPool.shutdown();
+    if (parentRouter != nullptr) {
         delete parentRouter;
     }
     delete messagingStubFactory;
@@ -81,62 +85,65 @@ MessageRouter::MessageRouter(IMessagingStubFactory* messagingStubFactory,
           messagingStubFactory(messagingStubFactory),
           routingTable("MessageRouter-RoutingTable"),
           routingTableLock(),
-          threadPool(),
-          parentRouter(NULL),
-          parentAddress(NULL),
+          threadPool("MessageRouter", maxThreads),
+          parentRouter(nullptr),
+          parentAddress(nullptr),
           incomingAddress(),
           messageQueue(messageQueue),
-          messageQueueCleanerRunnable(new MessageQueueCleanerRunnable(*messageQueue)),
-          runningParentResolves(new QSet<QString>()),
-          accessController(NULL),
+          messageQueueCleanerTimer(),
+          runningParentResolves(new std::unordered_set<std::string>()),
+          accessController(nullptr),
           securityManager(securityManager),
           parentResolveMutex()
 {
+    messageQueueCleanerTimer.addTimer(
+            [this](Timer::TimerId) { this->messageQueue->removeOutdatedMessages(); },
+            [](Timer::TimerId) {},
+            1000,
+            true);
+
     providerQos.setCustomParameters(std::vector<joynr::types::CustomParameter>());
     providerQos.setProviderVersion(1);
     providerQos.setPriority(1);
     providerQos.setScope(joynr::types::ProviderScope::LOCAL);
     providerQos.setSupportsOnChangeSubscriptions(false);
-    init(maxThreads);
 }
 
-MessageRouter::MessageRouter(
-        IMessagingStubFactory* messagingStubFactory,
-        std::shared_ptr<joynr::system::RoutingTypes::QtAddress> incomingAddress,
-        int maxThreads,
-        MessageQueue* messageQueue)
+MessageRouter::MessageRouter(IMessagingStubFactory* messagingStubFactory,
+                             std::shared_ptr<joynr::system::RoutingTypes::Address> incomingAddress,
+                             int maxThreads,
+                             MessageQueue* messageQueue)
         : joynr::system::RoutingAbstractProvider(),
           messagingStubFactory(messagingStubFactory),
           routingTable("MessageRouter-RoutingTable"),
           routingTableLock(),
-          threadPool(),
-          parentRouter(NULL),
-          parentAddress(NULL),
+          threadPool("MessageRouter", maxThreads),
+          parentRouter(nullptr),
+          parentAddress(nullptr),
           incomingAddress(incomingAddress),
           messageQueue(messageQueue),
-          messageQueueCleanerRunnable(new MessageQueueCleanerRunnable(*messageQueue)),
-          runningParentResolves(new QSet<QString>()),
-          accessController(NULL),
-          securityManager(NULL),
+          messageQueueCleanerTimer(),
+          runningParentResolves(new std::unordered_set<std::string>()),
+          accessController(nullptr),
+          securityManager(nullptr),
           parentResolveMutex()
 {
+    messageQueueCleanerTimer.addTimer(
+            [this](Timer::TimerId) { this->messageQueue->removeOutdatedMessages(); },
+            [](Timer::TimerId) {},
+            1000,
+            true);
+
     providerQos.setCustomParameters(std::vector<joynr::types::CustomParameter>());
     providerQos.setProviderVersion(1);
     providerQos.setPriority(1);
     providerQos.setScope(joynr::types::ProviderScope::LOCAL);
     providerQos.setSupportsOnChangeSubscriptions(false);
-    init(maxThreads);
-}
-
-void MessageRouter::init(int maxThreads)
-{
-    threadPool.setMaxThreadCount(maxThreads);
-    threadPool.start(messageQueueCleanerRunnable);
 }
 
 void MessageRouter::addProvisionedNextHop(
         std::string participantId,
-        std::shared_ptr<joynr::system::RoutingTypes::QtAddress> address)
+        std::shared_ptr<joynr::system::RoutingTypes::Address> address)
 {
     addToRoutingTable(participantId, address);
 }
@@ -149,7 +156,7 @@ void MessageRouter::setAccessController(std::shared_ptr<IAccessController> acces
 
 void MessageRouter::setParentRouter(
         joynr::system::RoutingProxy* parentRouter,
-        std::shared_ptr<joynr::system::RoutingTypes::QtAddress> parentAddress,
+        std::shared_ptr<joynr::system::RoutingTypes::Address> parentAddress,
         std::string parentParticipantId)
 {
     this->parentRouter = parentRouter;
@@ -167,7 +174,7 @@ bool MessageRouter::isChildMessageRouter()
         return false;
     }
     // if an incoming address is set, a parent message router is needed for correct configuration
-    return parentRouter != NULL && parentAddress;
+    return parentRouter != nullptr && parentAddress;
 }
 
 /**
@@ -176,73 +183,82 @@ bool MessageRouter::isChildMessageRouter()
   */
 void MessageRouter::route(const JoynrMessage& message)
 {
-    assert(messagingStubFactory != NULL);
+    assert(messagingStubFactory != nullptr);
     JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
     if (now > message.getHeaderExpiryDate()) {
         LOG_WARN(logger,
-                 QString("Received expired message. Dropping the message (ID: %1).")
-                         .arg(message.getHeaderMessageId()));
+                 FormatString("Received expired message. Dropping the message (ID: %1).")
+                         .arg(message.getHeaderMessageId())
+                         .str());
         return;
     }
 
     // Validate the message if possible
-    if (securityManager != NULL && !securityManager->validate(message)) {
+    if (securityManager != nullptr && !securityManager->validate(message)) {
         LOG_ERROR(logger,
-                  QString("messageId %1 failed validation").arg(message.getHeaderMessageId()));
+                  FormatString("messageId %1 failed validation")
+                          .arg(message.getHeaderMessageId())
+                          .str());
         return;
     }
 
     LOG_DEBUG(logger,
-              QString("Route message with Id %1 and payload %2")
+              FormatString("Route message with Id %1 and payload %2")
                       .arg(message.getHeaderMessageId())
-                      .arg(QString(message.getPayload())));
+                      .arg(message.getPayload())
+                      .str());
     // search for the destination address
-    const QString destinationPartId = message.getHeaderTo();
-    std::shared_ptr<joynr::system::RoutingTypes::QtAddress> destAddress(NULL);
+    const std::string destinationPartId = message.getHeaderTo();
+    std::shared_ptr<joynr::system::RoutingTypes::Address> destAddress(nullptr);
 
-    routingTableLock.lockForRead();
-    destAddress = routingTable.lookup(destinationPartId.toStdString());
-    routingTableLock.unlock();
+    {
+        ReadLocker lock(routingTableLock);
+        destAddress = routingTable.lookup(destinationPartId);
+    }
     // if destination address is not known
     if (!destAddress) {
         // save the message for later delivery
         messageQueue->queueMessage(message);
-        LOG_DEBUG(logger, QString("message queued: %1").arg(QString(message.getPayload())));
+        LOG_DEBUG(logger, FormatString("message queued: %1").arg(message.getPayload()).str());
 
         // and try to resolve destination address via parent message router
         if (isChildMessageRouter()) {
-            QMutexLocker locker(&parentResolveMutex);
-            if (!runningParentResolves->contains(destinationPartId)) {
+            std::lock_guard<std::mutex> lock(parentResolveMutex);
+            if (runningParentResolves->find(destinationPartId) == runningParentResolves->end()) {
                 runningParentResolves->insert(destinationPartId);
                 std::function<void(const bool&)> onSuccess =
                         [this, destinationPartId](const bool& resolved) {
                     if (resolved) {
                         LOG_INFO(this->logger,
-                                 "Got destination address for participant " + destinationPartId);
+                                 FormatString("Got destination address for participant %1")
+                                         .arg(destinationPartId)
+                                         .str());
                         // save next hop in the routing table
-                        this->addProvisionedNextHop(
-                                destinationPartId.toStdString(), this->parentAddress);
+                        this->addProvisionedNextHop(destinationPartId, this->parentAddress);
                         this->removeRunningParentResolvers(destinationPartId);
-                        this->sendMessages(destinationPartId.toStdString(), this->parentAddress);
+                        this->sendMessages(destinationPartId, this->parentAddress);
                     } else {
-                        LOG_ERROR(
-                                this->logger,
-                                "Failed to resolve next hop for participant " + destinationPartId);
+                        LOG_ERROR(this->logger,
+                                  FormatString("Failed to resolve next hop for participant %1")
+                                          .arg(destinationPartId)
+                                          .str());
                         // TODO error handling in case of failing submission (?)
                     }
                 };
 
                 // TODO error handling in case of failing submission (?)
-                parentRouter->resolveNextHopAsync(destinationPartId.toStdString(), onSuccess);
+                parentRouter->resolveNextHopAsync(destinationPartId, onSuccess);
             }
         } else {
             // no parent message router to resolve destination address
             LOG_WARN(logger,
-                     QString("No routing information found for destination participant ID \"%1\" "
+                     FormatString(
+                             "No routing information found for destination participant ID \"%1\" "
                              "so far. Waiting for participant registration. "
                              "Queueing message (ID : %2)")
                              .arg(message.getHeaderTo())
-                             .arg(message.getHeaderMessageId()));
+                             .arg(message.getHeaderMessageId())
+                             .str());
         }
         return;
     }
@@ -260,14 +276,16 @@ void MessageRouter::route(const JoynrMessage& message)
     sendMessage(message, destAddress);
 }
 
-void MessageRouter::removeRunningParentResolvers(const QString& destinationPartId)
+void MessageRouter::removeRunningParentResolvers(const std::string& destinationPartId)
 {
-    QMutexLocker locker(&parentResolveMutex);
-    runningParentResolves->remove(destinationPartId);
+    std::lock_guard<std::mutex> lock(parentResolveMutex);
+    if (runningParentResolves->find(destinationPartId) != runningParentResolves->end()) {
+        runningParentResolves->erase(destinationPartId);
+    }
 }
 
 void MessageRouter::sendMessages(const std::string& destinationPartId,
-                                 std::shared_ptr<joynr::system::RoutingTypes::QtAddress> address)
+                                 std::shared_ptr<joynr::system::RoutingTypes::Address> address)
 {
     while (true) {
         MessageQueueItem* item = messageQueue->getNextMessageForParticipant(destinationPartId);
@@ -280,17 +298,24 @@ void MessageRouter::sendMessages(const std::string& destinationPartId,
 }
 
 void MessageRouter::sendMessage(const JoynrMessage& message,
-                                std::shared_ptr<joynr::system::RoutingTypes::QtAddress> destAddress)
+                                std::shared_ptr<joynr::system::RoutingTypes::Address> destAddress)
 {
     auto stub = messagingStubFactory->create(*destAddress);
     if (stub) {
-        threadPool.start(new MessageRunnable(message, stub));
+        threadPool.execute(new MessageRunnable(message, stub));
+    } else {
+        LOG_WARN(
+                logger,
+                FormatString("Messag with payload %1 could not be send to %2. Stub creation failed")
+                        .arg(message.getPayload())
+                        .arg((*destAddress).toString())
+                        .str());
     }
 }
 
 void MessageRouter::addNextHop(
         const std::string& participantId,
-        const std::shared_ptr<joynr::system::RoutingTypes::QtAddress>& inprocessAddress,
+        const std::shared_ptr<joynr::system::RoutingTypes::Address>& inprocessAddress,
         std::function<void()> onSuccess)
 {
     addToRoutingTable(participantId, inprocessAddress);
@@ -307,9 +332,7 @@ void MessageRouter::addNextHop(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    std::shared_ptr<joynr::system::RoutingTypes::QtChannelAddress> address(
-            new joynr::system::RoutingTypes::QtChannelAddress(
-                    joynr::system::RoutingTypes::QtChannelAddress::createQt(channelAddress)));
+    auto address = std::make_shared<joynr::system::RoutingTypes::ChannelAddress>(channelAddress);
     addToRoutingTable(participantId, address);
 
     addNextHopToParent(participantId, onSuccess, onError);
@@ -324,10 +347,8 @@ void MessageRouter::addNextHop(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    std::shared_ptr<joynr::system::RoutingTypes::QtCommonApiDbusAddress> address(
-            new joynr::system::RoutingTypes::QtCommonApiDbusAddress(
-                    joynr::system::RoutingTypes::QtCommonApiDbusAddress::createQt(
-                            commonApiDbusAddress)));
+    auto address = std::make_shared<joynr::system::RoutingTypes::CommonApiDbusAddress>(
+            commonApiDbusAddress);
     addToRoutingTable(participantId, address);
 
     addNextHopToParent(participantId, onSuccess, onError);
@@ -342,9 +363,7 @@ void MessageRouter::addNextHop(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    std::shared_ptr<joynr::system::RoutingTypes::QtBrowserAddress> address(
-            new joynr::system::RoutingTypes::QtBrowserAddress(
-                    joynr::system::RoutingTypes::QtBrowserAddress::createQt(browserAddress)));
+    auto address = std::make_shared<joynr::system::RoutingTypes::BrowserAddress>(browserAddress);
     addToRoutingTable(participantId, address);
 
     addNextHopToParent(participantId, onSuccess, onError);
@@ -359,9 +378,8 @@ void MessageRouter::addNextHop(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    std::shared_ptr<joynr::system::RoutingTypes::QtWebSocketAddress> address(
-            new joynr::system::RoutingTypes::QtWebSocketAddress(
-                    joynr::system::RoutingTypes::QtWebSocketAddress::createQt(webSocketAddress)));
+    auto address =
+            std::make_shared<joynr::system::RoutingTypes::WebSocketAddress>(webSocketAddress);
     addToRoutingTable(participantId, address);
 
     addNextHopToParent(participantId, onSuccess, onError);
@@ -376,10 +394,8 @@ void MessageRouter::addNextHop(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    std::shared_ptr<joynr::system::RoutingTypes::QtWebSocketClientAddress> address(
-            new joynr::system::RoutingTypes::QtWebSocketClientAddress(
-                    joynr::system::RoutingTypes::QtWebSocketClientAddress::createQt(
-                            webSocketClientAddress)));
+    auto address = std::make_shared<joynr::system::RoutingTypes::WebSocketClientAddress>(
+            webSocketClientAddress);
     addToRoutingTable(participantId, address);
 
     addNextHopToParent(participantId, onSuccess, onError);
@@ -399,63 +415,46 @@ void MessageRouter::addNextHopToParent(
 
     // add to parent router
     if (isChildMessageRouter()) {
-        if (incomingAddress->inherits("joynr::system::RoutingTypes::QtChannelAddress")) {
+        if (auto channelAddress =
+                    std::dynamic_pointer_cast<joynr::system::RoutingTypes::ChannelAddress>(
+                            incomingAddress)) {
             parentRouter->addNextHopAsync(
-                    participantId,
-                    joynr::system::RoutingTypes::QtChannelAddress::createStd(
-                            *dynamic_cast<joynr::system::RoutingTypes::QtChannelAddress*>(
-                                    incomingAddress.get())),
-                    onSuccess,
-                    onErrorWrapper);
+                    participantId, *channelAddress, onSuccess, onErrorWrapper);
         }
-        if (incomingAddress->inherits("joynr::system::RoutingTypes::QtCommonApiDbusAddress")) {
+        if (auto commonApiDbusAddress =
+                    std::dynamic_pointer_cast<joynr::system::RoutingTypes::CommonApiDbusAddress>(
+                            incomingAddress)) {
             parentRouter->addNextHopAsync(
-                    participantId,
-                    joynr::system::RoutingTypes::QtCommonApiDbusAddress::createStd(
-                            *dynamic_cast<joynr::system::RoutingTypes::QtCommonApiDbusAddress*>(
-                                    incomingAddress.get())),
-                    onSuccess,
-                    onErrorWrapper);
+                    participantId, *commonApiDbusAddress, onSuccess, onErrorWrapper);
         }
-        if (incomingAddress->inherits("joynr::system::RoutingTypes::QtBrowserAddress")) {
+        if (auto browserAddress =
+                    std::dynamic_pointer_cast<joynr::system::RoutingTypes::BrowserAddress>(
+                            incomingAddress)) {
             parentRouter->addNextHopAsync(
-                    participantId,
-                    joynr::system::RoutingTypes::QtBrowserAddress::createStd(
-                            *dynamic_cast<joynr::system::RoutingTypes::QtBrowserAddress*>(
-                                    incomingAddress.get())),
-                    onSuccess,
-                    onErrorWrapper);
+                    participantId, *browserAddress, onSuccess, onErrorWrapper);
         }
-        if (incomingAddress->inherits("joynr::system::RoutingTypes::QtWebSocketAddress")) {
+        if (auto webSocketAddress =
+                    std::dynamic_pointer_cast<joynr::system::RoutingTypes::WebSocketAddress>(
+                            incomingAddress)) {
             parentRouter->addNextHopAsync(
-                    participantId,
-                    joynr::system::RoutingTypes::QtWebSocketAddress::createStd(
-                            *dynamic_cast<joynr::system::RoutingTypes::QtWebSocketAddress*>(
-                                    incomingAddress.get())),
-                    onSuccess,
-                    onErrorWrapper);
+                    participantId, *webSocketAddress, onSuccess, onErrorWrapper);
         }
-        if (incomingAddress->inherits("joynr::system::RoutingTypes::QtWebSocketClientAddress")) {
+        if (auto webSocketClientAddress =
+                    std::dynamic_pointer_cast<joynr::system::RoutingTypes::WebSocketClientAddress>(
+                            incomingAddress)) {
             parentRouter->addNextHopAsync(
-                    participantId,
-                    joynr::system::RoutingTypes::QtWebSocketClientAddress::createStd(
-                            *dynamic_cast<joynr::system::RoutingTypes::QtWebSocketClientAddress*>(
-                                    incomingAddress.get())),
-                    onSuccess,
-                    onErrorWrapper);
+                    participantId, *webSocketClientAddress, onSuccess, onErrorWrapper);
         }
     } else if (onSuccess) {
         onSuccess();
     }
 }
 
-void MessageRouter::addToRoutingTable(
-        std::string participantId,
-        std::shared_ptr<joynr::system::RoutingTypes::QtAddress> address)
+void MessageRouter::addToRoutingTable(std::string participantId,
+                                      std::shared_ptr<joynr::system::RoutingTypes::Address> address)
 {
-    routingTableLock.lockForWrite();
+    WriteLocker lock(routingTableLock);
     routingTable.add(participantId, address);
-    routingTableLock.unlock();
 }
 
 // inherited from joynr::system::RoutingProvider
@@ -464,9 +463,10 @@ void MessageRouter::removeNextHop(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    routingTableLock.lockForWrite();
-    routingTable.remove(participantId);
-    routingTableLock.unlock();
+    {
+        WriteLocker lock(routingTableLock);
+        routingTable.remove(participantId);
+    }
 
     std::function<void(const exceptions::JoynrException&)> onErrorWrapper =
             [onError](const exceptions::JoynrException& error) {
@@ -485,12 +485,10 @@ void MessageRouter::removeNextHop(
 void MessageRouter::resolveNextHop(
         const std::string& participantId,
         std::function<void(const bool& resolved)> onSuccess,
-        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> /*onError*/)
 {
-    (void)onError;
-    routingTableLock.lockForRead();
+    ReadLocker lock(routingTableLock);
     bool resolved = routingTable.contains(participantId);
-    routingTableLock.unlock();
     onSuccess(resolved);
 }
 
@@ -502,9 +500,14 @@ Logger* MessageRunnable::logger = Logging::getInstance()->getLogger("MSG", "Mess
 
 MessageRunnable::MessageRunnable(const JoynrMessage& message,
                                  std::shared_ptr<IMessaging> messagingStub)
-        : ObjectWithDecayTime(message.getHeaderExpiryDate()),
+        : joynr::Runnable(true),
+          ObjectWithDecayTime(message.getHeaderExpiryDate()),
           message(message),
           messagingStub(messagingStub)
+{
+}
+
+void MessageRunnable::shutdown()
 {
 }
 
@@ -513,9 +516,10 @@ void MessageRunnable::run()
     if (!isExpired()) {
         messagingStub->transmit(message);
     } else {
-        LOG_ERROR(
-                logger,
-                QString("Message with ID %1 expired: dropping!").arg(message.getHeaderMessageId()));
+        LOG_ERROR(logger,
+                  FormatString("Message with ID %1 expired: dropping!")
+                          .arg(message.getHeaderMessageId())
+                          .str());
     }
 }
 
@@ -526,7 +530,7 @@ void MessageRunnable::run()
 ConsumerPermissionCallback::ConsumerPermissionCallback(
         MessageRouter& owningMessageRouter,
         const JoynrMessage& message,
-        std::shared_ptr<system::RoutingTypes::QtAddress> destination)
+        std::shared_ptr<system::RoutingTypes::Address> destination)
         : owningMessageRouter(owningMessageRouter), message(message), destination(destination)
 {
 }

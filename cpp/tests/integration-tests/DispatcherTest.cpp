@@ -18,26 +18,24 @@
  */
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include "PrettyPrint.h"
-#include "common/in-process/InProcessMessagingSkeleton.h"
+#include <string>
 #include "joynr/MessageRouter.h"
-#include "joynr/MessagingStubFactory.h"
-#include "joynr/ClusterControllerDirectories.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/Dispatcher.h"
 #include "joynr/SubscriptionCallback.h"
-#include "QString"
 #include <string>
+#include <vector>
 #include "joynr/JoynrMessageFactory.h"
+#include "joynr/JoynrMessageSender.h"
+#include "joynr/Dispatcher.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/InterfaceRegistrar.h"
-#include "joynr/joynrlogging.h"
 
 #include "joynr/tests/Itest.h"
 #include "joynr/tests/testRequestInterpreter.h"
-#include "joynr/types/Localisation_QtGpsLocation.h"
+#include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/MetaTypeRegistrar.h"
 
 using namespace ::testing;
@@ -49,13 +47,13 @@ public:
     DispatcherTest() :
         logger(joynr_logging::Logging::getInstance()->getLogger("TST", "DispatcherTest")),
         mockMessageRouter(new MockMessageRouter()),
-        mockCallback(new MockCallback<types::Localisation::GpsLocation>()),
+        mockCallback(new MockCallbackWithOnErrorHavingRequestStatus<types::Localisation::GpsLocation>()),
         mockRequestCaller(new MockTestRequestCaller()),
-        mockReplyCaller(new MockReplyCaller<types::Localisation::QtGpsLocation>(
-                [this] (const joynr::RequestStatus& status, const joynr::types::Localisation::QtGpsLocation& location) {
-                    mockCallback->onSuccess(types::Localisation::QtGpsLocation::createStd(location));
+        mockReplyCaller(new MockReplyCaller<types::Localisation::GpsLocation>(
+                [this] (const joynr::RequestStatus& status, const joynr::types::Localisation::GpsLocation& location) {
+                    mockCallback->onSuccess(location);
                 },
-                [] (const joynr::RequestStatus& status, std::shared_ptr<exceptions::JoynrException> exception) {
+                [] (const joynr::RequestStatus& status, const exceptions::JoynrException& exception) {
                 })),
         mockSubscriptionListener(new MockSubscriptionListenerOneType<types::Localisation::GpsLocation>()),
         gpsLocation1(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444),
@@ -87,10 +85,10 @@ public:
 protected:
     joynr_logging::Logger* logger;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
-    std::shared_ptr<MockCallback<types::Localisation::GpsLocation> > mockCallback;
+    std::shared_ptr<MockCallbackWithOnErrorHavingRequestStatus<types::Localisation::GpsLocation> > mockCallback;
 
     std::shared_ptr<MockTestRequestCaller> mockRequestCaller;
-    std::shared_ptr<MockReplyCaller<types::Localisation::QtGpsLocation> > mockReplyCaller;
+    std::shared_ptr<MockReplyCaller<types::Localisation::GpsLocation> > mockReplyCaller;
     std::shared_ptr<MockSubscriptionListenerOneType<types::Localisation::GpsLocation> > mockSubscriptionListener;
 
     types::Localisation::GpsLocation gpsLocation1;
@@ -110,7 +108,6 @@ protected:
 // from JoynrDispatcher.receive(Request) to IRequestCaller.operation(params)
 // this test goes a step further and makes sure that the response is visible in Messaging
 TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
-    qRegisterMetaType<Request>("Request");
 
     // Expect the mock object MockGpsRequestCaller in MockObjects.h to be called.
     // The OUT param Gpslocation is set with gpsLocation1
@@ -125,35 +122,35 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
     qos.setTtl(1000);
     // build request for location from mock Gps Provider
     Request request;
-    request.setRequestReplyId(QString::fromStdString(requestReplyId));
+    request.setRequestReplyId(requestReplyId);
     request.setMethodName("getLocation");
-    request.setParams(QList<QVariant>());
-    request.setParamDatatypes(QList<QVariant>());
+    request.setParams(std::vector<Variant>());
+    request.setParamDatatypes(std::vector<std::string>());
 
 
     JoynrMessage msg = messageFactory.createRequest(
-                QString::fromStdString(proxyParticipantId),
-                QString::fromStdString(providerParticipantId),
+                proxyParticipantId,
+                providerParticipantId,
                 qos,
                 request
     );
 
     // construct the result we expect in messaging.transmit. The JoynrMessage
     // contains a serialized version of the response with the gps location.
-    QList<QVariant> value;
+    std::vector<Variant> value;
 
-    value.append(QVariant::fromValue(types::Localisation::QtGpsLocation::createQt(gpsLocation1)));
+    value.push_back(Variant::make<types::Localisation::GpsLocation>(gpsLocation1));
     Reply reply;
-    reply.setResponse(value);
-    reply.setRequestReplyId(QString::fromStdString(requestReplyId));
+    reply.setResponse(std::move(value));
+    reply.setRequestReplyId(requestReplyId);
     JoynrMessage expectedReply = messageFactory.createReply(
-                QString::fromStdString(proxyParticipantId),
-                QString::fromStdString(providerParticipantId),
+                proxyParticipantId,
+                providerParticipantId,
                 qos,
                 reply
     );
 
-    LOG_DEBUG(logger, QString("expectedReply.payload()=%1").arg(QString(expectedReply.getPayload())));
+    LOG_DEBUG(logger, FormatString("expectedReply.payload()=%1").arg(expectedReply.getPayload()).str());
     // setup MockMessaging to expect the response
     EXPECT_CALL(
                 *mockMessageRouter,
@@ -170,30 +167,29 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
     dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
 
     dispatcher.receive(msg);
-    QThreadSleep::msleep(250);
+    std::this_thread::sleep_for(std::chrono::milliseconds(250));
 }
 
 TEST_F(DispatcherTest, receive_interpreteReplyAndCallReplyCaller) {
 
-    qRegisterMetaType<Reply>("Reply");
-    joynr::MetaTypeRegistrar::instance().registerReplyMetaType<types::Localisation::QtGpsLocation>();
+    joynr::MetaTypeRegistrar::instance().registerReplyMetaType<types::Localisation::GpsLocation>();
     // Expect the mock callback's onSuccess method to be called with the reply (a gps location)
     EXPECT_CALL(*mockCallback, onSuccess(Eq(gpsLocation1)));
 
     // getType is used by the ReplyInterpreterFactory to create an interpreter for the reply
     // so this has to match with the type being passed to the dispatcher in the reply
-    ON_CALL(*mockReplyCaller, getType()).WillByDefault(Return(QString("types::Localisation::QtGpsLocation")));
+    ON_CALL(*mockReplyCaller, getType()).WillByDefault(Return(std::string("types::Localisation::GpsLocation")));
 
-    //construct a reply containing a QtGpsLocation
+    //construct a reply containing a GpsLocation
     Reply reply;
-    reply.setRequestReplyId(QString::fromStdString(requestReplyId));
-    QList<QVariant> response;
-    response.append(QVariant::fromValue(types::Localisation::QtGpsLocation::createQt(gpsLocation1)));
-    reply.setResponse(response);
+    reply.setRequestReplyId(requestReplyId);
+    std::vector<Variant> response;
+    response.push_back(Variant::make<types::Localisation::GpsLocation>(gpsLocation1));
+    reply.setResponse(std::move(response));
 
     JoynrMessage msg = messageFactory.createReply(
-                QString::fromStdString(proxyParticipantId),
-                QString::fromStdString(providerParticipantId),
+                proxyParticipantId,
+                providerParticipantId,
                 qos,
                 reply
     );
@@ -204,8 +200,7 @@ TEST_F(DispatcherTest, receive_interpreteReplyAndCallReplyCaller) {
     dispatcher.addReplyCaller(requestReplyId, mockReplyCaller, qos);
     dispatcher.receive(msg);
 
-
-    QThreadSleep::msleep(250);
+    std::this_thread::sleep_for(std::chrono::milliseconds(250));
 }
 
 

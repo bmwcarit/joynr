@@ -28,14 +28,14 @@
 #include "joynr/MessageRouter.h"
 #include "joynr/system/IDiscovery.h"
 #include "joynr/joynrlogging.h"
-#include "joynr/types/QtDiscoveryEntry.h"
+#include "joynr/types/DiscoveryEntry.h"
 #include "joynr/Future.h"
 
-#include <QString>
 #include <string>
-#include <QList>
+#include <vector>
 #include <cassert>
 #include <memory>
+#include <tuple>
 
 namespace joynr
 {
@@ -47,11 +47,11 @@ class JOYNR_EXPORT CapabilitiesRegistrar
 {
 public:
     CapabilitiesRegistrar(
-            QList<IDispatcher*> dispatcherList,
+            std::vector<IDispatcher*> dispatcherList,
             joynr::system::IDiscoverySync& discoveryProxy,
-            std::shared_ptr<joynr::system::RoutingTypes::QtAddress> messagingStubAddress,
+            std::shared_ptr<joynr::system::RoutingTypes::Address> messagingStubAddress,
             std::shared_ptr<ParticipantIdStorage> participantIdStorage,
-            std::shared_ptr<joynr::system::RoutingTypes::QtAddress> dispatcherAddress,
+            std::shared_ptr<joynr::system::RoutingTypes::Address> dispatcherAddress,
             std::shared_ptr<MessageRouter> messageRouter);
 
     template <class T>
@@ -66,7 +66,7 @@ public:
         std::string participantId =
                 participantIdStorage->getProviderParticipantId(domain, interfaceName);
 
-        foreach (IDispatcher* currentDispatcher, dispatcherList) {
+        for (IDispatcher* currentDispatcher : dispatcherList) {
             // TODO will the provider be registered at all dispatchers or
             //     should it be configurable which ones are used to contact it.
             assert(currentDispatcher != NULL);
@@ -81,13 +81,15 @@ public:
             discoveryProxy.add(entry);
         } catch (exceptions::JoynrException& e) {
             LOG_ERROR(logger,
-                      QString("Unable to add provider (participant ID: %1, domain: %2, interface: "
+                      FormatString(
+                              "Unable to add provider (participant ID: %1, domain: %2, interface: "
                               "%3) "
                               "to discovery. Error: %4.")
-                              .arg(QString::fromStdString(participantId))
-                              .arg(QString::fromStdString(domain))
-                              .arg(QString::fromStdString(interfaceName))
-                              .arg(QString::fromStdString(e.getMessage())));
+                              .arg(participantId)
+                              .arg(domain)
+                              .arg(interfaceName)
+                              .arg(e.getMessage())
+                              .str());
         }
 
         // add next hop to dispatcher
@@ -105,7 +107,7 @@ public:
     std::string remove(const std::string& domain, std::shared_ptr<T> provider)
 
     {
-        Q_UNUSED(provider)
+        std::ignore = provider;
 
         std::string interfaceName = provider->getInterfaceName();
 
@@ -113,7 +115,7 @@ public:
         std::string participantId =
                 participantIdStorage->getProviderParticipantId(domain, interfaceName);
 
-        foreach (IDispatcher* currentDispatcher, dispatcherList) {
+        for (IDispatcher* currentDispatcher : dispatcherList) {
             // TODO will the provider be registered at all dispatchers or
             //     should it be configurable which ones are used to contact it.
             assert(currentDispatcher != NULL);
@@ -124,13 +126,14 @@ public:
             discoveryProxy.remove(participantId);
         } catch (exceptions::JoynrException& e) {
             LOG_ERROR(logger,
-                      QString("Unable to remove provider (participant ID: %1, domain: %2, "
-                              "interface: %3) "
-                              "to discovery. Status code: %4.")
-                              .arg(QString::fromStdString(participantId))
-                              .arg(QString::fromStdString(domain))
-                              .arg(QString::fromStdString(interfaceName))
-                              .arg(QString::fromStdString(e.getMessage())));
+                      FormatString("Unable to remove provider (participant ID: %1, domain: %2, "
+                                   "interface: %3) "
+                                   "to discovery. Status code: %4.")
+                              .arg(participantId)
+                              .arg(domain)
+                              .arg(interfaceName)
+                              .arg(e.getMessage())
+                              .str());
         }
 
         std::shared_ptr<joynr::Future<void>> future(new Future<void>());
@@ -140,8 +143,10 @@ public:
 
         if (!future->getStatus().successful()) {
             LOG_ERROR(logger,
-                      QString("Unable to remove next hop (participant ID: %1) from message router.")
-                              .arg(QString::fromStdString(participantId)));
+                      FormatString(
+                              "Unable to remove next hop (participant ID: %1) from message router.")
+                              .arg(participantId)
+                              .str());
         }
 
         return participantId;
@@ -152,11 +157,11 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesRegistrar);
-    QList<IDispatcher*> dispatcherList;
+    std::vector<IDispatcher*> dispatcherList;
     joynr::system::IDiscoverySync& discoveryProxy;
-    std::shared_ptr<joynr::system::RoutingTypes::QtAddress> messagingStubAddress;
+    std::shared_ptr<joynr::system::RoutingTypes::Address> messagingStubAddress;
     std::shared_ptr<ParticipantIdStorage> participantIdStorage;
-    std::shared_ptr<joynr::system::RoutingTypes::QtAddress> dispatcherAddress;
+    std::shared_ptr<joynr::system::RoutingTypes::Address> dispatcherAddress;
     std::shared_ptr<MessageRouter> messageRouter;
     static joynr_logging::Logger* logger;
 };

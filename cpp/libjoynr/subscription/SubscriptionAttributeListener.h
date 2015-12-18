@@ -22,12 +22,13 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/IAttributeListener.h"
 
-#include <QString>
+#include <string>
 
 namespace joynr
 {
 
 class PublicationManager;
+class Variant;
 
 /**
  * An attribute listener used for onChange subscriptions
@@ -38,14 +39,14 @@ public:
     /**
      * Create an attribute listener linked to a subscription
      */
-    SubscriptionAttributeListener(const QString& subscriptionId,
+    SubscriptionAttributeListener(const std::string& subscriptionId,
                                   PublicationManager& publicationManager);
 
     // Implementation of IAttributeListener::attributeValueChanged
-    void attributeValueChanged(const QVariant& value);
+    void attributeValueChanged(const Variant& value);
 
 private:
-    QString subscriptionId;
+    std::string subscriptionId;
     PublicationManager& publicationManager;
 };
 

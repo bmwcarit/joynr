@@ -17,12 +17,11 @@
  * #L%
  */
 #include "joynr/MetaTypeRegistrar.h"
-#include "joynr/DeclareMetatypeUtil.h"
 
 namespace joynr
 {
 
-MetaTypeRegistrar* MetaTypeRegistrar::registrarInstance = 0;
+MetaTypeRegistrar* MetaTypeRegistrar::registrarInstance = nullptr;
 
 MetaTypeRegistrar::MetaTypeRegistrar()
         : publicationInterpreters(),
@@ -31,26 +30,32 @@ MetaTypeRegistrar::MetaTypeRegistrar()
           replyInterpretersMutex()
 {
     // Register known types
-    registerMetaType<QString>();
+    registerMetaType<std::string>();
     registerMetaType<bool>();
-    registerMetaType<int>();
+    registerMetaType<float>();
     registerMetaType<double>();
-    registerMetaType<qint64>();
-    registerMetaType<qint8>();
+    registerMetaType<int8_t>();
+    registerMetaType<uint8_t>();
+    registerMetaType<int16_t>();
+    registerMetaType<uint16_t>();
+    registerMetaType<int32_t>();
+    registerMetaType<uint32_t>();
+    registerMetaType<int64_t>();
+    registerMetaType<uint64_t>();
 
     // Register a reply interpreter for void type
-    QMutexLocker locker(&replyInterpretersMutex);
-    replyInterpreters.insert(Util::getTypeId<void>(), new ReplyInterpreter<void>());
+    std::lock_guard<std::mutex> lock(replyInterpretersMutex);
+    replyInterpreters.insert({Util::getTypeId<void>(), new ReplyInterpreter<void>()});
 }
 
 MetaTypeRegistrar& MetaTypeRegistrar::instance()
 {
-    static QMutex mutex;
+    static std::mutex mutex;
 
     // Use double-checked locking so that, under normal use, a
     // mutex lock is not required.
     if (!registrarInstance) {
-        QMutexLocker locker(&mutex);
+        std::lock_guard<std::mutex> lock(mutex);
         if (!registrarInstance) {
             registrarInstance = new MetaTypeRegistrar();
         }
@@ -61,9 +66,13 @@ MetaTypeRegistrar& MetaTypeRegistrar::instance()
 
 IPublicationInterpreter& MetaTypeRegistrar::getPublicationInterpreter(int typeId)
 {
-    QMutexLocker locker(&publicationInterpretersMutex);
+    std::lock_guard<std::mutex> lock(publicationInterpretersMutex);
 
-    IPublicationInterpreter* ret = publicationInterpreters.value(typeId);
+    IPublicationInterpreter* ret = nullptr;
+    auto search = publicationInterpreters.find(typeId);
+    if (search != publicationInterpreters.end()) {
+        ret = search->second;
+    }
 
     // It is a programming error if the interpreter does not exist
     assert(ret);
@@ -72,9 +81,13 @@ IPublicationInterpreter& MetaTypeRegistrar::getPublicationInterpreter(int typeId
 
 IReplyInterpreter& MetaTypeRegistrar::getReplyInterpreter(int typeId)
 {
-    QMutexLocker locker(&replyInterpretersMutex);
+    std::lock_guard<std::mutex> lock(replyInterpretersMutex);
 
-    IReplyInterpreter* ret = replyInterpreters.value(typeId);
+    IReplyInterpreter* ret = nullptr;
+    auto search = replyInterpreters.find(typeId);
+    if (search != replyInterpreters.end()) {
+        ret = search->second;
+    }
 
     // It is a programming error if the interpreter does not exist
     assert(ret);

@@ -46,10 +46,13 @@ class StdEnumCppTemplate implements EnumTemplate {
 «getDllExportIncludeStatement()»
 
 #include "«type.includeOf»"
+#include <sstream>
 
 «getNamespaceStarter(type, true)»
 
-std::string «typeName»::getLiteral(«typeName»::«getNestedEnumName()» «typeName.toFirstLower»Value) {
+static const bool is«typeName»Registered = Variant::registerType<«type.typeName»>("«type.typeNameOfContainingClass.replace("::", ".")»");
+
+std::string «typeName»::getLiteral(const «typeName»::«getNestedEnumName()»& «typeName.toFirstLower»Value) {
 	std::string literal;
 	switch («typeName.toFirstLower»Value) {
 	«FOR literal : getEnumElementsAndBaseEnumElements(type)»
@@ -59,19 +62,20 @@ std::string «typeName»::getLiteral(«typeName»::«getNestedEnumName()» «typ
 	«ENDFOR»
 	}
 	if (literal.empty()) {
-		throw "«typeName»: No literal found for value \"" + std::to_string(«typeName.toFirstLower»Value) + "\"";
+		throw std::invalid_argument("«typeName»: No literal found for value \"" + std::to_string(«typeName.toFirstLower»Value) + "\"");
 	}
 	return literal;
 }
 
-«typeName»::«getNestedEnumName()»
-«typeName»::getEnum(std::string «typeName.toFirstLower»String) {
+«typeName»::«getNestedEnumName()» «typeName»::getEnum(const std::string& «typeName.toFirstLower»String) {
 	«FOR literal : getEnumElementsAndBaseEnumElements(type)»
 		if («typeName.toFirstLower»String == std::string("«literal.joynrName»")) {
 			return «literal.joynrName»;
 		}
 	«ENDFOR»
-	throw "No enum value found";
+	std::stringstream errorMessage(«typeName.toFirstLower»String);
+    errorMessage << " is unknown literal for «type.joynrName»";
+    throw std::invalid_argument(errorMessage.str());
 }
 
 std::string «typeName»::getTypeName() {

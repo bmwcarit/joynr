@@ -20,17 +20,19 @@
 #define BROADCASTSUBSCRIPTIONREQUEST_H
 
 #include "joynr/SubscriptionRequest.h"
-#include "joynr/QtBroadcastFilterParameters.h"
-#include "joynr/QtOnChangeSubscriptionQos.h"
+#include "joynr/BroadcastFilterParameters.h"
+#include "joynr/OnChangeSubscriptionQos.h"
 
-#include <QString>
+#include <string>
 #include <memory>
+
+#include "joynr/Variant.h"
 
 namespace joynr
 {
 
-/** \class BroadcastSubscriptionRequest
-  * \brief SubscriptionRequest stores the information that is necessary to store a broadcast
+/** @class BroadcastSubscriptionRequest
+  * @brief SubscriptionRequest stores the information that is necessary to store a broadcast
   * subscription-Request on subscriber side, while Aribtration is handled.
   */
 
@@ -38,7 +40,8 @@ class JOYNR_EXPORT BroadcastSubscriptionRequest : public SubscriptionRequest
 {
     Q_OBJECT
 
-    Q_PROPERTY(QVariant filterParameters READ getFilterParametersData WRITE setFilterParametersData)
+    Q_PROPERTY(BroadcastFilterParameters filterParameters READ getFilterParameters WRITE
+                       setFilterParameters)
 
 public:
     BroadcastSubscriptionRequest();
@@ -47,29 +50,26 @@ public:
             const BroadcastSubscriptionRequest& subscriptionRequest);
     bool operator==(const BroadcastSubscriptionRequest& subscriptionRequest) const;
 
-    QString toQString() const;
+    std::string toString() const;
 
     // Make sure that broadcast subscriptions are only used with on change qos.
     // Method from base class is hidden. See below in private section.
-    void setQos(std::shared_ptr<QtOnChangeSubscriptionQos> qos);
+    void setQos(const OnChangeSubscriptionQos& qos);
 
-    QtBroadcastFilterParameters getFilterParameters() const;
-    void setFilterParameters(const QtBroadcastFilterParameters& filterParameters);
-
-protected:
-    void setFilterParametersData(QVariant filterParameters);
-    QVariant getFilterParametersData() const;
+    BroadcastFilterParameters getFilterParameters() const;
+    void setFilterParameters(const BroadcastFilterParameters& filterParameters);
 
 private:
     // Hide method for setting all kinds of QOS derived from base class
-    void setQos(std::shared_ptr<QtSubscriptionQos> qos);
+    void setQos(const Variant& qos);
 
-    QtBroadcastFilterParameters filterParameters;
+    BroadcastFilterParameters filterParameters;
 
     static joynr_logging::Logger* logger;
 };
 
 } // namespace joynr
 
+Q_DECLARE_METATYPE(joynr::BroadcastFilterParameters)
 Q_DECLARE_METATYPE(joynr::BroadcastSubscriptionRequest)
 #endif // BROADCASTSUBSCRIPTIONREQUEST_H

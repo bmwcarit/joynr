@@ -20,48 +20,43 @@
 #define DBUSSETTINGS_H
 
 #include "joynr/JoynrCommonExport.h"
-
 #include "joynr/joynrlogging.h"
 
-#include <QObject>
-#include <QSettings>
+#include <string>
 
 namespace joynr
 {
 
-class JOYNRCOMMON_EXPORT DbusSettings : public QObject
+class Settings;
+
+class JOYNRCOMMON_EXPORT DbusSettings
 {
-    Q_OBJECT
-
 public:
-    static const QString& SETTING_CC_MESSAGING_DOMAIN();
-    static const QString& SETTING_CC_MESSAGING_SERVICENAME();
-    static const QString& SETTING_CC_MESSAGING_PARTICIPANTID();
+    static const std::string& SETTING_CC_MESSAGING_DOMAIN();
+    static const std::string& SETTING_CC_MESSAGING_SERVICENAME();
+    static const std::string& SETTING_CC_MESSAGING_PARTICIPANTID();
 
-    static const QString& DEFAULT_DBUS_SETTINGS_FILENAME();
+    static const std::string& DEFAULT_DBUS_SETTINGS_FILENAME();
 
-    explicit DbusSettings(QSettings& settings, QObject* parent = 0);
+    explicit DbusSettings(Settings& settings);
     DbusSettings(const DbusSettings& other);
 
     ~DbusSettings();
 
-    QString getClusterControllerMessagingDomain() const;
-    void setClusterControllerMessagingDomain(const QString& domain);
-    QString getClusterControllerMessagingServiceName() const;
-    void setClusterControllerMessagingServiceName(const QString& serviceName);
-    QString getClusterControllerMessagingParticipantId() const;
-    void setClusterControllerMessagingParticipantId(const QString& participantId);
-    QString createClusterControllerMessagingAddressString() const;
+    std::string getClusterControllerMessagingDomain() const;
+    void setClusterControllerMessagingDomain(const std::string& domain);
+    std::string getClusterControllerMessagingServiceName() const;
+    void setClusterControllerMessagingServiceName(const std::string& serviceName);
+    std::string getClusterControllerMessagingParticipantId() const;
+    void setClusterControllerMessagingParticipantId(const std::string& participantId);
+    std::string createClusterControllerMessagingAddressString() const;
 
     void printSettings() const;
-
-    bool contains(const QString& key) const;
-    QVariant value(const QString& key) const;
 
 private:
     void operator=(const DbusSettings& other);
 
-    QSettings& settings;
+    Settings& settings;
     static joynr_logging::Logger* logger;
     void checkSettings() const;
 };

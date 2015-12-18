@@ -39,13 +39,12 @@ public class DiscoveryDirectoriesLauncher extends AbstractJoynrApplication {
     @Inject
     public DiscoveryDirectoriesLauncher(PersistService persistService) {
         this.persistService = persistService;
-        persistService.start();
     }
 
     @Override
     public void run() {
-        runtime.registerProvider(localDomain, channelUrlDirectoryProvider);
         runtime.registerProvider(localDomain, capabilitiesDirectoryProvider);
+        runtime.registerProvider(localDomain, channelUrlDirectoryProvider);
     }
 
     @Override

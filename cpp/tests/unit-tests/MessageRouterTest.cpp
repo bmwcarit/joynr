@@ -17,12 +17,11 @@
  * #L%
  */
 #include "joynr/PrivateCopyAssign.h"
-#include "gtest/gtest.h"
-#include <QFile>
-#include "gmock/gmock.h"
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 #include "joynr/MessageRouter.h"
 #include "tests/utils/MockObjects.h"
-#include "joynr/system/RoutingTypes_QtChannelAddress.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/MessageQueue.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
@@ -36,7 +35,7 @@ class MessageRouterTest : public ::testing::Test {
 public:
     MessageRouterTest() :
         settingsFileName("MessageRouterTest.settings"),
-        settings(settingsFileName, QSettings::IniFormat),
+        settings(settingsFileName),
         messagingSettings(settings),
         messagingStubFactory(new MockMessagingStubFactory()),
         messageQueue(new MessageQueue()),
@@ -44,21 +43,23 @@ public:
         joynrMessage()
     {
         // provision global capabilities directory
-        std::shared_ptr<joynr::system::RoutingTypes::QtAddress> addressCapabilitiesDirectory(
-            new system::RoutingTypes::QtChannelAddress(messagingSettings.getCapabilitiesDirectoryChannelId())
+        std::shared_ptr<joynr::system::RoutingTypes::Address> addressCapabilitiesDirectory(
+            new system::RoutingTypes::ChannelAddress(
+                        messagingSettings.getCapabilitiesDirectoryChannelId())
         );
-        messageRouter->addProvisionedNextHop(messagingSettings.getCapabilitiesDirectoryParticipantId().toStdString(), addressCapabilitiesDirectory);
+        messageRouter->addProvisionedNextHop(messagingSettings.getCapabilitiesDirectoryParticipantId(), addressCapabilitiesDirectory);
         // provision channel url directory
-        std::shared_ptr<joynr::system::RoutingTypes::QtAddress> addressChannelUrlDirectory(
-            new system::RoutingTypes::QtChannelAddress(messagingSettings.getChannelUrlDirectoryChannelId())
+        std::shared_ptr<joynr::system::RoutingTypes::Address> addressChannelUrlDirectory(
+            new system::RoutingTypes::ChannelAddress(
+                        messagingSettings.getChannelUrlDirectoryChannelId())
         );
-        messageRouter->addProvisionedNextHop(messagingSettings.getChannelUrlDirectoryParticipantId().toStdString(), addressChannelUrlDirectory);
+        messageRouter->addProvisionedNextHop(messagingSettings.getChannelUrlDirectoryParticipantId(), addressChannelUrlDirectory);
         JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
         joynrMessage.setHeaderExpiryDate(now + milliseconds(100));
     }
 
     ~MessageRouterTest() {
-        QFile::remove(settingsFileName);
+        std::remove(settingsFileName.c_str());
     }
 
     void SetUp(){
@@ -67,8 +68,8 @@ public:
     void TearDown(){
     }
 protected:
-    QString settingsFileName;
-    QSettings settings;
+    std::string settingsFileName;
+    Settings settings;
     MessagingSettings messagingSettings;
     MockMessagingStubFactory* messagingStubFactory;
     MessageQueue* messageQueue;
@@ -114,7 +115,7 @@ TEST_F(MessageRouterTest, resendMessageWhenDestinationAddressIsAdded){
     EXPECT_EQ(messageQueue->getQueueLength(), 1);
 
     // add destination address -> message should be routed
-    std::shared_ptr<system::RoutingTypes::QtChannelAddress> address(new system::RoutingTypes::QtChannelAddress("TEST"));
+    std::shared_ptr<system::RoutingTypes::ChannelAddress> address(new system::RoutingTypes::ChannelAddress("TEST"));
     messageRouter->addNextHop("TEST", address);
     EXPECT_EQ(messageQueue->getQueueLength(), 0);
 }
@@ -124,6 +125,6 @@ TEST_F(MessageRouterTest, outdatedMessagesAreRemoved){
     EXPECT_EQ(messageQueue->getQueueLength(), 1);
 
     // we wait for the time out (500ms) and the thread sleep (1000ms)
-    QThread::msleep(1200);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1200));
     EXPECT_EQ(messageQueue->getQueueLength(), 0);
 }

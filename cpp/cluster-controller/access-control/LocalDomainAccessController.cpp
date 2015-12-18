@@ -21,20 +21,19 @@
 #include "LocalDomainAccessStore.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerProxy.h"
 
-#include "joynr/infrastructure/DacTypes_QtDomainRoleEntry.h"
+#include "joynr/infrastructure/DacTypes/DomainRoleEntry.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerDomainRoleEntryChangedBroadcastFilterParameters.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerMasterAccessControlEntryChangedBroadcastFilterParameters.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerOwnerAccessControlEntryChangedBroadcastFilterParameters.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerMediatorAccessControlEntryChangedBroadcastFilterParameters.h"
-#include "joynr/SubscriptionListener.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/OnChangeSubscriptionQos.h"
-#include <vector>
 #include "joynr/joynrlogging.h"
 #include "joynr/TypeUtil.h"
 
 #include <cassert>
-#include <QAtomicInt>
+#include <atomic>
+#include <tuple>
 
 namespace joynr
 {
@@ -67,8 +66,8 @@ public:
     void abort();
 
 private:
-    QAtomicInt counter;
-    QAtomicInt aborted;
+    std::atomic<uint8_t> counter;
+    std::atomic<bool> aborted;
     LocalDomainAccessController& parent;
     std::string domain;
     std::string interfaceName;
@@ -79,7 +78,7 @@ class LocalDomainAccessController::DomainRoleEntryChangedBroadcastListener
                                        infrastructure::DacTypes::DomainRoleEntry>
 {
 public:
-    DomainRoleEntryChangedBroadcastListener(LocalDomainAccessController& parent);
+    explicit DomainRoleEntryChangedBroadcastListener(LocalDomainAccessController& parent);
     void onReceive(const infrastructure::DacTypes::ChangeType::Enum& changeType,
                    const infrastructure::DacTypes::DomainRoleEntry& changedDre);
     void onError(const exceptions::JoynrRuntimeException& error);
@@ -93,7 +92,7 @@ class LocalDomainAccessController::MasterAccessControlEntryChangedBroadcastListe
                                        infrastructure::DacTypes::MasterAccessControlEntry>
 {
 public:
-    MasterAccessControlEntryChangedBroadcastListener(LocalDomainAccessController& parent);
+    explicit MasterAccessControlEntryChangedBroadcastListener(LocalDomainAccessController& parent);
     void onReceive(const infrastructure::DacTypes::ChangeType::Enum& changeType,
                    const infrastructure::DacTypes::MasterAccessControlEntry& changedMasterAce);
     void onError(const exceptions::JoynrRuntimeException& error);
@@ -107,7 +106,8 @@ class LocalDomainAccessController::MediatorAccessControlEntryChangedBroadcastLis
                                        infrastructure::DacTypes::MasterAccessControlEntry>
 {
 public:
-    MediatorAccessControlEntryChangedBroadcastListener(LocalDomainAccessController& parent);
+    explicit MediatorAccessControlEntryChangedBroadcastListener(
+            LocalDomainAccessController& parent);
     void onReceive(const infrastructure::DacTypes::ChangeType::Enum& changeType,
                    const infrastructure::DacTypes::MasterAccessControlEntry& changedMediatorAce);
     void onError(const exceptions::JoynrRuntimeException& error);
@@ -121,7 +121,7 @@ class LocalDomainAccessController::OwnerAccessControlEntryChangedBroadcastListen
                                        infrastructure::DacTypes::OwnerAccessControlEntry>
 {
 public:
-    OwnerAccessControlEntryChangedBroadcastListener(LocalDomainAccessController& parent);
+    explicit OwnerAccessControlEntryChangedBroadcastListener(LocalDomainAccessController& parent);
     void onReceive(const infrastructure::DacTypes::ChangeType::Enum& changeType,
                    const infrastructure::DacTypes::OwnerAccessControlEntry& changedOwnerAce);
     void onError(const exceptions::JoynrRuntimeException& error);
@@ -163,25 +163,25 @@ void LocalDomainAccessController::init(
     this->globalDomainAccessControllerProxy = globalDomainAccessControllerProxy;
 }
 
-bool LocalDomainAccessController::hasRole(const QString& userId,
-                                          const QString& domain,
-                                          QtRole::Enum role)
+bool LocalDomainAccessController::hasRole(const std::string& userId,
+                                          const std::string& domain,
+                                          Role::Enum role)
 {
-    LOG_DEBUG(logger, QString("execute: entering hasRole"));
+    LOG_DEBUG(logger, "execute: entering hasRole");
 
     // See if the user has the given role
     bool hasRole = false;
-    Optional<QtDomainRoleEntry> dre = localDomainAccessStore->getDomainRole(userId, role);
+    Optional<DomainRoleEntry> dre = localDomainAccessStore->getDomainRole(userId, role);
     if (dre) {
-        QList<QString> domains = dre.getValue().getDomains();
-        if (domains.contains(domain)) {
+        std::vector<std::string> domains = dre.getValue().getDomains();
+        if (vectorContains(domains, domain)) {
             hasRole = true;
         }
     }
 
     // Subscribe changes in the users roles
-    if (!dreSubscriptions.contains(userId)) {
-        dreSubscriptions.insert(userId, subscribeForDreChange(userId));
+    if (!dreSubscriptions.count(userId)) {
+        dreSubscriptions.insert(std::make_pair(userId, subscribeForDreChange(userId)));
     }
 
     return hasRole;
@@ -194,14 +194,14 @@ void LocalDomainAccessController::getConsumerPermission(
         TrustLevel::Enum trustLevel,
         std::shared_ptr<IGetConsumerPermissionCallback> callback)
 {
-    LOG_DEBUG(logger, QString("Entering getConsumerPermission with unknown operation"));
+    LOG_DEBUG(logger, "Entering getConsumerPermission with unknown operation");
 
     // Is the ACL for this domain/interface available?
     std::string compoundKey = createCompoundKey(domain, interfaceName);
     bool needsInit = false;
     {
-        QMutexLocker lock(&initStateMutex);
-        if (!aceSubscriptions.contains(QString::fromStdString(compoundKey))) {
+        std::lock_guard<std::mutex> lock(initStateMutex);
+        if (!aceSubscriptions.count(compoundKey)) {
             // Queue the request
             ConsumerPermissionRequest request = {
                     userId, domain, interfaceName, trustLevel, callback};
@@ -225,21 +225,12 @@ void LocalDomainAccessController::getConsumerPermission(
     }
 
     // If this point is reached the data for the ACL check is available
-    QList<QtMasterAccessControlEntry> masterAces =
-            localDomainAccessStore->getMasterAccessControlEntries(
-                    QString::fromStdString(userId),
-                    QString::fromStdString(domain),
-                    QString::fromStdString(interfaceName));
-    QList<QtMasterAccessControlEntry> mediatorAces =
-            localDomainAccessStore->getMediatorAccessControlEntries(
-                    QString::fromStdString(userId),
-                    QString::fromStdString(domain),
-                    QString::fromStdString(interfaceName));
-    QList<QtOwnerAccessControlEntry> ownerAces =
-            localDomainAccessStore->getOwnerAccessControlEntries(
-                    QString::fromStdString(userId),
-                    QString::fromStdString(domain),
-                    QString::fromStdString(interfaceName));
+    std::vector<MasterAccessControlEntry> masterAces =
+            localDomainAccessStore->getMasterAccessControlEntries(userId, domain, interfaceName);
+    std::vector<MasterAccessControlEntry> mediatorAces =
+            localDomainAccessStore->getMediatorAccessControlEntries(userId, domain, interfaceName);
+    std::vector<OwnerAccessControlEntry> ownerAces =
+            localDomainAccessStore->getOwnerAccessControlEntries(userId, domain, interfaceName);
 
     // The operations of the ACEs should only contain wildcards, if not
     // getConsumerPermission should be called with an operation
@@ -248,44 +239,33 @@ void LocalDomainAccessController::getConsumerPermission(
         callback->operationNeeded();
     } else {
         // The operations are all wildcards
-        QtPermission::Enum permission = getConsumerPermission(
+        Permission::Enum permission = getConsumerPermission(
                 userId, domain, interfaceName, LocalDomainAccessStore::WILDCARD, trustLevel);
-        callback->consumerPermission(QtPermission::createStd(permission));
+        callback->consumerPermission(permission);
     }
 }
 
-QtPermission::Enum LocalDomainAccessController::getConsumerPermission(
+Permission::Enum LocalDomainAccessController::getConsumerPermission(
         const std::string& userId,
         const std::string& domain,
         const std::string& interfaceName,
         const std::string& operation,
         TrustLevel::Enum trustLevel)
 {
-    LOG_DEBUG(logger, QString("Entering getConsumerPermission with known operation"));
+    LOG_DEBUG(logger, "Entering getConsumerPermission with known operation");
 
-    Optional<QtMasterAccessControlEntry> masterAceOptional =
+    Optional<MasterAccessControlEntry> masterAceOptional =
             localDomainAccessStore->getMasterAccessControlEntry(
-                    QString::fromStdString(userId),
-                    QString::fromStdString(domain),
-                    QString::fromStdString(interfaceName),
-                    QString::fromStdString(operation));
-    Optional<QtMasterAccessControlEntry> mediatorAceOptional =
+                    userId, domain, interfaceName, operation);
+    Optional<MasterAccessControlEntry> mediatorAceOptional =
             localDomainAccessStore->getMediatorAccessControlEntry(
-                    QString::fromStdString(userId),
-                    QString::fromStdString(domain),
-                    QString::fromStdString(interfaceName),
-                    QString::fromStdString(operation));
-    Optional<QtOwnerAccessControlEntry> ownerAceOptional =
+                    userId, domain, interfaceName, operation);
+    Optional<OwnerAccessControlEntry> ownerAceOptional =
             localDomainAccessStore->getOwnerAccessControlEntry(
-                    QString::fromStdString(userId),
-                    QString::fromStdString(domain),
-                    QString::fromStdString(interfaceName),
-                    QString::fromStdString(operation));
+                    userId, domain, interfaceName, operation);
 
-    return accessControlAlgorithm.getConsumerPermission(masterAceOptional,
-                                                        mediatorAceOptional,
-                                                        ownerAceOptional,
-                                                        QtTrustLevel::createQt(trustLevel));
+    return accessControlAlgorithm.getConsumerPermission(
+            masterAceOptional, mediatorAceOptional, ownerAceOptional, trustLevel);
 }
 
 std::vector<MasterAccessControlEntry> LocalDomainAccessController::getMasterAccessControlEntries(
@@ -414,23 +394,23 @@ Permission::Enum LocalDomainAccessController::getProviderPermission(
         const std::string& interfaceName,
         TrustLevel::Enum trustLevel)
 {
-    Q_ASSERT_X(false, "getProviderPermission", "Not implemented yet");
-    Q_UNUSED(uid);
-    Q_UNUSED(domain);
-    Q_UNUSED(interfaceName);
+    assert(false && "Not implemented yet");
+    std::ignore = uid;
+    std::ignore = domain;
+    std::ignore = interfaceName;
 
-    return QtPermission::createStd(accessControlAlgorithm.getProviderPermission(
-            Optional<QtMasterAccessControlEntry>::createNull(),
-            Optional<QtMasterAccessControlEntry>::createNull(),
-            Optional<QtOwnerAccessControlEntry>::createNull(),
-            QtTrustLevel::createQt(trustLevel)));
+    return accessControlAlgorithm.getProviderPermission(
+            Optional<MasterAccessControlEntry>::createNull(),
+            Optional<MasterAccessControlEntry>::createNull(),
+            Optional<OwnerAccessControlEntry>::createNull(),
+            trustLevel);
 }
 
 std::vector<MasterRegistrationControlEntry> LocalDomainAccessController::
         getMasterRegistrationControlEntries(const std::string& uid)
 {
-    Q_ASSERT_X(false, "getMasterRegistrationControlEntries", "Not implemented yet");
-    Q_UNUSED(uid);
+    assert(false && "Not implemented yet");
+    std::ignore = uid;
 
     return std::vector<MasterRegistrationControlEntry>();
 }
@@ -440,8 +420,8 @@ std::vector<MasterRegistrationControlEntry> LocalDomainAccessController::
 std::vector<MasterRegistrationControlEntry> LocalDomainAccessController::
         getEditableMasterRegistrationControlEntries(const std::string& uid)
 {
-    Q_ASSERT_X(false, "getEditableMasterRegistrationControlEntries", "Not implemented yet");
-    Q_UNUSED(uid);
+    assert(false && "Not implemented yet");
+    std::ignore = uid;
 
     return std::vector<MasterRegistrationControlEntry>();
 }
@@ -449,8 +429,8 @@ std::vector<MasterRegistrationControlEntry> LocalDomainAccessController::
 bool LocalDomainAccessController::updateMasterRegistrationControlEntry(
         const MasterRegistrationControlEntry& updatedMasterRce)
 {
-    Q_ASSERT_X(false, "updateMasterRegistrationControlEntry", "Not implemented yet");
-    Q_UNUSED(updatedMasterRce);
+    assert(false && "Not implemented yet");
+    std::ignore = updatedMasterRce;
 
     return false;
 }
@@ -460,10 +440,10 @@ bool LocalDomainAccessController::removeMasterRegistrationControlEntry(
         const std::string& domain,
         const std::string& interfaceName)
 {
-    Q_ASSERT_X(false, "removeMasterRegistrationControlEntry", "Not implemented yet");
-    Q_UNUSED(uid);
-    Q_UNUSED(domain);
-    Q_UNUSED(interfaceName);
+    assert(false && "Not implemented yet");
+    std::ignore = uid;
+    std::ignore = domain;
+    std::ignore = interfaceName;
 
     return false;
 }
@@ -471,8 +451,8 @@ bool LocalDomainAccessController::removeMasterRegistrationControlEntry(
 std::vector<MasterRegistrationControlEntry> LocalDomainAccessController::
         getMediatorRegistrationControlEntries(const std::string& uid)
 {
-    Q_ASSERT_X(false, "getMediatorRegistrationControlEntries", "Not implemented yet");
-    Q_UNUSED(uid);
+    assert(false && "Not implemented yet");
+    std::ignore = uid;
 
     return std::vector<MasterRegistrationControlEntry>();
 }
@@ -480,8 +460,8 @@ std::vector<MasterRegistrationControlEntry> LocalDomainAccessController::
 std::vector<MasterRegistrationControlEntry> LocalDomainAccessController::
         getEditableMediatorRegistrationControlEntries(const std::string& uid)
 {
-    Q_ASSERT_X(false, "getEditableMediatorRegistrationControlEntries", "Not implemented yet");
-    Q_UNUSED(uid);
+    assert(false && "Not implemented yet");
+    std::ignore = uid;
 
     return std::vector<MasterRegistrationControlEntry>();
 }
@@ -489,8 +469,8 @@ std::vector<MasterRegistrationControlEntry> LocalDomainAccessController::
 bool LocalDomainAccessController::updateMediatorRegistrationControlEntry(
         const MasterRegistrationControlEntry& updatedMediatorRce)
 {
-    Q_ASSERT_X(false, "updateMediatorRegistrationControlEntry", "Not implemented yet");
-    Q_UNUSED(updatedMediatorRce);
+    assert(false && "Not implemented yet");
+    std::ignore = updatedMediatorRce;
 
     return false;
 }
@@ -500,10 +480,10 @@ bool LocalDomainAccessController::removeMediatorRegistrationControlEntry(
         const std::string& domain,
         const std::string& interfaceName)
 {
-    Q_ASSERT_X(false, "removeMediatorRegistrationControlEntry", "Not implemented yet");
-    Q_UNUSED(uid);
-    Q_UNUSED(domain);
-    Q_UNUSED(interfaceName);
+    assert(false && "Not implemented yet");
+    std::ignore = uid;
+    std::ignore = domain;
+    std::ignore = interfaceName;
 
     return false;
 }
@@ -511,8 +491,8 @@ bool LocalDomainAccessController::removeMediatorRegistrationControlEntry(
 std::vector<OwnerRegistrationControlEntry> LocalDomainAccessController::
         getOwnerRegistrationControlEntries(const std::string& uid)
 {
-    Q_ASSERT_X(false, "getOwnerRegistrationControlEntries", "Not implemented yet");
-    Q_UNUSED(uid);
+    assert(false && "Not implemented yet");
+    std::ignore = uid;
 
     return std::vector<OwnerRegistrationControlEntry>();
 }
@@ -520,8 +500,8 @@ std::vector<OwnerRegistrationControlEntry> LocalDomainAccessController::
 std::vector<OwnerRegistrationControlEntry> LocalDomainAccessController::
         getEditableOwnerRegistrationControlEntries(const std::string& uid)
 {
-    Q_ASSERT_X(false, "getEditableOwnerRegistrationControlEntries", "Not implemented yet");
-    Q_UNUSED(uid);
+    assert(false && "Not implemented yet");
+    std::ignore = uid;
 
     return std::vector<OwnerRegistrationControlEntry>();
 }
@@ -529,8 +509,8 @@ std::vector<OwnerRegistrationControlEntry> LocalDomainAccessController::
 bool LocalDomainAccessController::updateOwnerRegistrationControlEntry(
         const OwnerRegistrationControlEntry& updatedOwnerRce)
 {
-    Q_ASSERT_X(false, "updateOwnerRegistrationControlEntry", "Not implemented yet");
-    Q_UNUSED(updatedOwnerRce);
+    assert(false && "Not implemented yet");
+    std::ignore = updatedOwnerRce;
 
     return false;
 }
@@ -540,10 +520,10 @@ bool LocalDomainAccessController::removeOwnerRegistrationControlEntry(
         const std::string& domain,
         const std::string& interfaceName)
 {
-    Q_ASSERT_X(false, "removeOwnerRegistrationControlEntry", "Not implemented yet");
-    Q_UNUSED(uid);
-    Q_UNUSED(domain);
-    Q_UNUSED(interfaceName);
+    assert(false && "Not implemented yet");
+    std::ignore = uid;
+    std::ignore = domain;
+    std::ignore = interfaceName;
 
     return false;
 }
@@ -555,17 +535,18 @@ void LocalDomainAccessController::unregisterProvider(const std::string& domain,
     std::string compoundKey = createCompoundKey(domain, interfaceName);
     AceSubscription subscriptionIds;
     {
-        QMutexLocker lock(&initStateMutex);
-        if (!aceSubscriptions.contains(QString::fromStdString(compoundKey))) {
+        std::lock_guard<std::mutex> lock(initStateMutex);
+        if (!aceSubscriptions.count(compoundKey)) {
             return;
         }
-        subscriptionIds = aceSubscriptions.value(QString::fromStdString(compoundKey));
+        subscriptionIds = aceSubscriptions[compoundKey];
     }
 
     LOG_DEBUG(logger,
-              QString("Unsubscribing from ACL broadcasts for domain %1, interface %2")
-                      .arg(QString::fromStdString(domain))
-                      .arg(QString::fromStdString(interfaceName)));
+              FormatString("Unsubscribing from ACL broadcasts for domain %1, interface %2")
+                      .arg(domain)
+                      .arg(interfaceName)
+                      .str());
 
     // Unsubscribe from ACE change subscriptions
     globalDomainAccessControllerProxy->unsubscribeFromMasterAccessControlEntryChangedBroadcast(
@@ -589,8 +570,8 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
     std::function<void(const std::vector<DomainRoleEntry>& domainRoleEntries)> domainRoleOnSuccess =
             [this, initialiser](const std::vector<DomainRoleEntry>& domainRoleEntries) {
         // Add the results
-        foreach (const DomainRoleEntry& dre, domainRoleEntries) {
-            localDomainAccessStore->updateDomainRole(QtDomainRoleEntry::createQt(dre));
+        for (const DomainRoleEntry& dre : domainRoleEntries) {
+            localDomainAccessStore->updateDomainRole(dre);
         }
         initialiser->update();
     };
@@ -598,8 +579,9 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
     std::function<void(const exceptions::JoynrException&)> domainRoleOnError =
             [this, initialiser](const exceptions::JoynrException& error) {
         LOG_ERROR(logger,
-                  QString("Aborting ACL initialisation due to communication error:\n%1")
-                          .arg(QString::fromStdString(error.getMessage())));
+                  FormatString("Aborting ACL initialisation due to communication error:\n%1")
+                          .arg(error.getMessage())
+                          .str());
 
         // Abort the initialisation
         initialiser->abort();
@@ -612,9 +594,8 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
             masterAceOnSuccess =
                     [this, initialiser](const std::vector<MasterAccessControlEntry>& masterAces) {
         // Add the results
-        foreach (const MasterAccessControlEntry& masterAce, masterAces) {
-            localDomainAccessStore->updateMasterAccessControlEntry(
-                    QtMasterAccessControlEntry::createQt(masterAce));
+        for (const MasterAccessControlEntry& masterAce : masterAces) {
+            localDomainAccessStore->updateMasterAccessControlEntry(masterAce);
         }
         initialiser->update();
     };
@@ -622,8 +603,9 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
     std::function<void(const exceptions::JoynrException& error)> masterAceOnError =
             [this, initialiser](const exceptions::JoynrException& error) {
         LOG_ERROR(logger,
-                  QString("Aborting ACL initialisation due to communication error:\n%1")
-                          .arg(QString::fromStdString(error.getMessage())));
+                  FormatString("Aborting ACL initialisation due to communication error:\n%1")
+                          .arg(error.getMessage())
+                          .str());
 
         // Abort the initialisation
         initialiser->abort();
@@ -637,9 +619,8 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
             mediatorAceOnSuccess =
                     [this, initialiser](const std::vector<MasterAccessControlEntry>& mediatorAces) {
         // Add the results
-        foreach (const MasterAccessControlEntry& mediatorAce, mediatorAces) {
-            localDomainAccessStore->updateMediatorAccessControlEntry(
-                    QtMasterAccessControlEntry::createQt(mediatorAce));
+        for (const MasterAccessControlEntry& mediatorAce : mediatorAces) {
+            localDomainAccessStore->updateMediatorAccessControlEntry(mediatorAce);
         }
         initialiser->update();
     };
@@ -647,8 +628,9 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
     std::function<void(const exceptions::JoynrException& error)> mediatorAceOnError =
             [this, initialiser](const exceptions::JoynrException& error) {
         LOG_ERROR(logger,
-                  QString("Aborting ACL initialisation due to communication error:\n%1")
-                          .arg(QString::fromStdString(error.getMessage())));
+                  FormatString("Aborting ACL initialisation due to communication error:\n%1")
+                          .arg(error.getMessage())
+                          .str());
 
         // Abort the initialisation
         initialiser->abort();
@@ -661,9 +643,8 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
     std::function<void(const std::vector<OwnerAccessControlEntry>& ownerAces)> ownerAceOnSuccess =
             [this, initialiser](const std::vector<OwnerAccessControlEntry>& ownerAces) {
         // Add the results
-        foreach (const OwnerAccessControlEntry& ownerAce, ownerAces) {
-            localDomainAccessStore->updateOwnerAccessControlEntry(
-                    QtOwnerAccessControlEntry::createQt(ownerAce));
+        for (const OwnerAccessControlEntry& ownerAce : ownerAces) {
+            localDomainAccessStore->updateOwnerAccessControlEntry(ownerAce);
         }
         initialiser->update();
     };
@@ -671,8 +652,9 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
     std::function<void(const exceptions::JoynrException& error)> ownerAceOnError =
             [this, initialiser](const exceptions::JoynrException& error) {
         LOG_ERROR(logger,
-                  QString("Aborting ACL initialisation due to communication error:\n%1")
-                          .arg(QString::fromStdString(error.getMessage())));
+                  FormatString("Aborting ACL initialisation due to communication error:\n%1")
+                          .arg(error.getMessage())
+                          .str());
 
         // Abort the initialisation
         initialiser->abort();
@@ -687,18 +669,19 @@ void LocalDomainAccessController::initialised(const std::string& domain,
                                               const std::string& interfaceName)
 {
     std::string compoundKey = createCompoundKey(domain, interfaceName);
-    QList<ConsumerPermissionRequest> requests;
+    std::vector<ConsumerPermissionRequest> requests;
 
     {
-        QMutexLocker lock(&initStateMutex);
+        std::lock_guard<std::mutex> lock(initStateMutex);
 
         // Subscribe to ACL broadcasts about this domain/interface
-        aceSubscriptions.insert(QString::fromStdString(compoundKey),
-                                subscribeForAceChange(QString::fromStdString(domain),
-                                                      QString::fromStdString(interfaceName)));
+        aceSubscriptions.insert(
+                std::make_pair(compoundKey, subscribeForAceChange(domain, interfaceName)));
 
         // Remove requests for processing
-        requests = consumerPermissionRequests.take(QString::fromStdString(compoundKey));
+        auto it = consumerPermissionRequests.find(compoundKey);
+        requests = it->second;
+        consumerPermissionRequests.erase(it);
     }
 
     // Handle any queued requests for this domain/interface
@@ -709,23 +692,26 @@ void LocalDomainAccessController::abortInitialisation(const std::string& domain,
                                                       const std::string& interfaceName)
 {
     LOG_INFO(logger,
-             QString("Removing outstanding ACL requests for domain %1, interface %2")
-                     .arg(QString::fromStdString(domain))
-                     .arg(QString::fromStdString(interfaceName)));
+             FormatString("Removing outstanding ACL requests for domain %1, interface %2")
+                     .arg(domain)
+                     .arg(interfaceName)
+                     .str());
 
     std::string compoundKey = createCompoundKey(domain, interfaceName);
-    QList<ConsumerPermissionRequest> requests;
+    std::vector<ConsumerPermissionRequest> requests;
 
     {
-        QMutexLocker lock(&initStateMutex);
+        std::lock_guard<std::mutex> lock(initStateMutex);
 
         // Remove requests that cannot be processed
-        requests = consumerPermissionRequests.take(QString::fromStdString(compoundKey));
+        auto it = consumerPermissionRequests.find(compoundKey);
+        requests = it->second;
+        consumerPermissionRequests.erase(it);
     }
 
     // Mark all the requests as failed - we have no information from the Global
     // Domain Access Controller
-    foreach (const ConsumerPermissionRequest& request, requests) {
+    for (const ConsumerPermissionRequest& request : requests) {
         request.callbacks->consumerPermission(Permission::NO);
     }
 }
@@ -736,21 +722,21 @@ bool LocalDomainAccessController::queueConsumerRequest(const std::string& key,
 {
     // This function assumes that the initStateMutex has already been obtained
 
-    if (consumerPermissionRequests.contains(QString::fromStdString(key))) {
-        consumerPermissionRequests[QString::fromStdString(key)].append(request);
+    if (consumerPermissionRequests.count(key)) {
+        consumerPermissionRequests[key].push_back(request);
         return true;
     } else {
-        QList<ConsumerPermissionRequest> requestList;
-        requestList << request;
-        consumerPermissionRequests.insert(QString::fromStdString(key), requestList);
+        std::vector<ConsumerPermissionRequest> requestList;
+        requestList.push_back(request);
+        consumerPermissionRequests.insert(std::make_pair(key, requestList));
         return false;
     }
 }
 
 void LocalDomainAccessController::processConsumerRequests(
-        const QList<ConsumerPermissionRequest>& requests)
+        const std::vector<ConsumerPermissionRequest>& requests)
 {
-    foreach (const ConsumerPermissionRequest& request, requests) {
+    for (const ConsumerPermissionRequest& request : requests) {
         getConsumerPermission(request.userId,
                               request.domain,
                               request.interfaceName,
@@ -759,7 +745,7 @@ void LocalDomainAccessController::processConsumerRequests(
     }
 }
 
-QString LocalDomainAccessController::subscribeForDreChange(const QString& userId)
+std::string LocalDomainAccessController::subscribeForDreChange(const std::string& userId)
 {
     OnChangeSubscriptionQos broadcastSubscriptionQos;
     broadcastSubscriptionQos.setMinInterval(broadcastMinIntervalMs);
@@ -767,7 +753,7 @@ QString LocalDomainAccessController::subscribeForDreChange(const QString& userId
     broadcastSubscriptionQos.setPublicationTtl(broadcastPublicationTtlMs);
     GlobalDomainAccessControllerDomainRoleEntryChangedBroadcastFilterParameters
             domainRoleFilterParameters;
-    domainRoleFilterParameters.setUserIdOfInterest(TypeUtil::toStd(userId));
+    domainRoleFilterParameters.setUserIdOfInterest(userId);
 
     std::string subscriptionId =
             globalDomainAccessControllerProxy->subscribeToDomainRoleEntryChangedBroadcast(
@@ -777,12 +763,12 @@ QString LocalDomainAccessController::subscribeForDreChange(const QString& userId
                             domainRoleEntryChangedBroadcastListener),
                     broadcastSubscriptionQos);
 
-    return QString::fromStdString(subscriptionId);
+    return subscriptionId;
 }
 
 LocalDomainAccessController::AceSubscription LocalDomainAccessController::subscribeForAceChange(
-        const QString& domain,
-        const QString& interfaceName)
+        const std::string& domain,
+        const std::string& interfaceName)
 {
     OnChangeSubscriptionQos broadcastSubscriptionQos;
 
@@ -794,8 +780,8 @@ LocalDomainAccessController::AceSubscription LocalDomainAccessController::subscr
 
     GlobalDomainAccessControllerMasterAccessControlEntryChangedBroadcastFilterParameters
             masterAcefilterParameters;
-    masterAcefilterParameters.setDomainOfInterest(TypeUtil::toStd(domain));
-    masterAcefilterParameters.setInterfaceOfInterest(TypeUtil::toStd(interfaceName));
+    masterAcefilterParameters.setDomainOfInterest(domain);
+    masterAcefilterParameters.setInterfaceOfInterest(interfaceName);
     subscriptionIds.masterAceSubscriptionId =
             globalDomainAccessControllerProxy->subscribeToMasterAccessControlEntryChangedBroadcast(
                     masterAcefilterParameters,
@@ -806,8 +792,8 @@ LocalDomainAccessController::AceSubscription LocalDomainAccessController::subscr
 
     GlobalDomainAccessControllerMediatorAccessControlEntryChangedBroadcastFilterParameters
             mediatorAceFilterParameters;
-    mediatorAceFilterParameters.setDomainOfInterest(TypeUtil::toStd(domain));
-    mediatorAceFilterParameters.setInterfaceOfInterest(TypeUtil::toStd(interfaceName));
+    mediatorAceFilterParameters.setDomainOfInterest(domain);
+    mediatorAceFilterParameters.setInterfaceOfInterest(interfaceName);
     subscriptionIds.mediatorAceSubscriptionId =
             globalDomainAccessControllerProxy
                     ->subscribeToMediatorAccessControlEntryChangedBroadcast(
@@ -820,8 +806,8 @@ LocalDomainAccessController::AceSubscription LocalDomainAccessController::subscr
 
     GlobalDomainAccessControllerOwnerAccessControlEntryChangedBroadcastFilterParameters
             ownerAceFilterParameters;
-    ownerAceFilterParameters.setDomainOfInterest(TypeUtil::toStd(domain));
-    ownerAceFilterParameters.setInterfaceOfInterest(TypeUtil::toStd(interfaceName));
+    ownerAceFilterParameters.setDomainOfInterest(domain);
+    ownerAceFilterParameters.setInterfaceOfInterest(interfaceName);
     subscriptionIds.ownerAceSubscriptionId =
             globalDomainAccessControllerProxy->subscribeToOwnerAccessControlEntryChangedBroadcast(
                     ownerAceFilterParameters,
@@ -833,21 +819,14 @@ LocalDomainAccessController::AceSubscription LocalDomainAccessController::subscr
     return subscriptionIds;
 }
 
-QString LocalDomainAccessController::createCompoundKey(const QString& domain,
-                                                       const QString& interfaceName)
-{
-    QString subscriptionMapKey(domain);
-    subscriptionMapKey.append('\x1e'); // ascii record separator
-    subscriptionMapKey.append(interfaceName);
-
-    return subscriptionMapKey;
-}
-
 std::string LocalDomainAccessController::createCompoundKey(const std::string& domain,
                                                            const std::string& interfaceName)
 {
-    return createCompoundKey(QString::fromStdString(domain), QString::fromStdString(interfaceName))
-            .toStdString();
+    std::string subscriptionMapKey(domain);
+    subscriptionMapKey.push_back('\x1e'); // ascii record separator
+    subscriptionMapKey.insert(0, interfaceName);
+
+    return subscriptionMapKey;
 }
 
 //--- Implementation of Initialiser --------------------------------------------
@@ -855,16 +834,17 @@ std::string LocalDomainAccessController::createCompoundKey(const std::string& do
 LocalDomainAccessController::Initialiser::Initialiser(LocalDomainAccessController& parent,
                                                       const std::string& domain,
                                                       const std::string& interfaceName)
-        : counter(4), aborted(0), parent(parent), domain(domain), interfaceName(interfaceName)
+        : counter(4), aborted(false), parent(parent), domain(domain), interfaceName(interfaceName)
 // counter == 4, because there are 4 init operations (DRT, MasterACE, MediatorACE, OwnerACE)
 {
 }
 
 void LocalDomainAccessController::Initialiser::update()
 {
-    if (counter.deref() == false) {
+    uint8_t prevValue = counter--;
+    if (prevValue == 1) {
         // Initialisation has finished
-        if (aborted.load() == 1) {
+        if (aborted) {
             parent.abortInitialisation(domain, interfaceName);
         } else {
             parent.initialised(domain, interfaceName);
@@ -874,7 +854,7 @@ void LocalDomainAccessController::Initialiser::update()
 
 void LocalDomainAccessController::Initialiser::abort()
 {
-    aborted.store(1);
+    aborted = true;
     update();
 }
 
@@ -891,20 +871,18 @@ void LocalDomainAccessController::DomainRoleEntryChangedBroadcastListener::onRec
         const DomainRoleEntry& changedDre)
 {
     if (changeType != ChangeType::REMOVE) {
-        parent.localDomainAccessStore->updateDomainRole(QtDomainRoleEntry::createQt(changedDre));
+        parent.localDomainAccessStore->updateDomainRole(changedDre);
     } else {
-        parent.localDomainAccessStore->removeDomainRole(QString::fromStdString(changedDre.getUid()),
-                                                        QtRole::createQt(changedDre.getRole()));
+        parent.localDomainAccessStore->removeDomainRole(changedDre.getUid(), changedDre.getRole());
     }
-    LOG_DEBUG(parent.logger,
-              QString("Changed DRE: %1").arg(QString::fromStdString(changedDre.toString())));
+    LOG_DEBUG(parent.logger, FormatString("Changed DRE: %1").arg(changedDre.toString()).str());
 }
 
 void LocalDomainAccessController::DomainRoleEntryChangedBroadcastListener::onError(
         const exceptions::JoynrRuntimeException& error)
 {
     (void)error;
-    LOG_ERROR(parent.logger, QString("Change of DRE failed!"));
+    LOG_ERROR(parent.logger, "Change of DRE failed!");
 }
 
 LocalDomainAccessController::MasterAccessControlEntryChangedBroadcastListener::
@@ -918,20 +896,17 @@ void LocalDomainAccessController::MasterAccessControlEntryChangedBroadcastListen
         const MasterAccessControlEntry& changedMasterAce)
 {
     if (changeType != ChangeType::REMOVE) {
-        parent.localDomainAccessStore->updateMasterAccessControlEntry(
-                QtMasterAccessControlEntry::createQt(changedMasterAce));
+        parent.localDomainAccessStore->updateMasterAccessControlEntry(changedMasterAce);
         LOG_DEBUG(parent.logger,
-                  QString("Changed MasterAce: %1")
-                          .arg(QString::fromStdString(changedMasterAce.toString())));
+                  FormatString("Changed MasterAce: %1").arg(changedMasterAce.toString()).str());
     } else {
         parent.localDomainAccessStore->removeMasterAccessControlEntry(
-                QString::fromStdString(changedMasterAce.getUid()),
-                QString::fromStdString(changedMasterAce.getDomain()),
-                QString::fromStdString(changedMasterAce.getInterfaceName()),
-                QString::fromStdString(changedMasterAce.getOperation()));
+                changedMasterAce.getUid(),
+                changedMasterAce.getDomain(),
+                changedMasterAce.getInterfaceName(),
+                changedMasterAce.getOperation());
         LOG_DEBUG(parent.logger,
-                  QString("Removed MasterAce: %1")
-                          .arg(QString::fromStdString(changedMasterAce.toString())));
+                  FormatString("Removed MasterAce: %1").arg(changedMasterAce.toString()).str());
     }
 }
 
@@ -939,7 +914,7 @@ void LocalDomainAccessController::MasterAccessControlEntryChangedBroadcastListen
         const exceptions::JoynrRuntimeException& error)
 {
     (void)error;
-    LOG_ERROR(parent.logger, QString("Change of MasterAce failed!"));
+    LOG_ERROR(parent.logger, "Change of MasterAce failed!");
 }
 
 LocalDomainAccessController::MediatorAccessControlEntryChangedBroadcastListener::
@@ -953,25 +928,23 @@ void LocalDomainAccessController::MediatorAccessControlEntryChangedBroadcastList
         const MasterAccessControlEntry& changedMediatorAce)
 {
     if (changeType != ChangeType::REMOVE) {
-        parent.localDomainAccessStore->updateMediatorAccessControlEntry(
-                QtMasterAccessControlEntry::createQt(changedMediatorAce));
+        parent.localDomainAccessStore->updateMediatorAccessControlEntry(changedMediatorAce);
     } else {
         parent.localDomainAccessStore->removeMediatorAccessControlEntry(
-                QString::fromStdString(changedMediatorAce.getUid()),
-                QString::fromStdString(changedMediatorAce.getDomain()),
-                QString::fromStdString(changedMediatorAce.getInterfaceName()),
-                QString::fromStdString(changedMediatorAce.getOperation()));
+                changedMediatorAce.getUid(),
+                changedMediatorAce.getDomain(),
+                changedMediatorAce.getInterfaceName(),
+                changedMediatorAce.getOperation());
     }
     LOG_DEBUG(parent.logger,
-              QString("Changed MediatorAce: %1")
-                      .arg(QString::fromStdString(changedMediatorAce.toString())));
+              FormatString("Changed MediatorAce: %1").arg(changedMediatorAce.toString()).str());
 }
 
 void LocalDomainAccessController::MediatorAccessControlEntryChangedBroadcastListener::onError(
         const exceptions::JoynrRuntimeException& error)
 {
     (void)error;
-    LOG_ERROR(parent.logger, QString("Change of MediatorAce failed!"));
+    LOG_ERROR(parent.logger, "Change of MediatorAce failed!");
 }
 
 LocalDomainAccessController::OwnerAccessControlEntryChangedBroadcastListener::
@@ -985,31 +958,29 @@ void LocalDomainAccessController::OwnerAccessControlEntryChangedBroadcastListene
         const OwnerAccessControlEntry& changedOwnerAce)
 {
     if (changeType != ChangeType::REMOVE) {
-        parent.localDomainAccessStore->updateOwnerAccessControlEntry(
-                QtOwnerAccessControlEntry::createQt(changedOwnerAce));
+        parent.localDomainAccessStore->updateOwnerAccessControlEntry(changedOwnerAce);
     } else {
         parent.localDomainAccessStore->removeOwnerAccessControlEntry(
-                QString::fromStdString(changedOwnerAce.getUid()),
-                QString::fromStdString(changedOwnerAce.getDomain()),
-                QString::fromStdString(changedOwnerAce.getInterfaceName()),
-                QString::fromStdString(changedOwnerAce.getOperation()));
+                changedOwnerAce.getUid(),
+                changedOwnerAce.getDomain(),
+                changedOwnerAce.getInterfaceName(),
+                changedOwnerAce.getOperation());
     }
     LOG_DEBUG(parent.logger,
-              QString("Changed OwnerAce: %1")
-                      .arg(QString::fromStdString(changedOwnerAce.toString())));
+              FormatString("Changed OwnerAce: %1").arg(changedOwnerAce.toString()).str());
 }
 
 void LocalDomainAccessController::OwnerAccessControlEntryChangedBroadcastListener::onError(
         const exceptions::JoynrRuntimeException& error)
 {
     (void)error;
-    LOG_ERROR(parent.logger, QString("Change of OwnerAce failed!"));
+    LOG_ERROR(parent.logger, "Change of OwnerAce failed!");
 }
 
 template <typename T>
-bool LocalDomainAccessController::onlyWildcardOperations(const QList<T> aceEntries)
+bool LocalDomainAccessController::onlyWildcardOperations(const std::vector<T>& aceEntries)
 {
-    if (aceEntries.isEmpty()) {
+    if (aceEntries.empty()) {
         return true;
     }
 
@@ -1017,7 +988,7 @@ bool LocalDomainAccessController::onlyWildcardOperations(const QList<T> aceEntri
         return false;
     }
 
-    return aceEntries.first().getOperation() == LocalDomainAccessStore::WILDCARD;
+    return aceEntries.begin()->getOperation() == LocalDomainAccessStore::WILDCARD;
 }
 
 } // namespace joynr

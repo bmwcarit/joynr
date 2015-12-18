@@ -48,13 +48,13 @@ public class BroadcastUtil {
 	def getAllRequiredTypes(FBroadcast broadcast) {
 		var typeList = new HashSet<Object>();
 		for (outParameter : broadcast.outputParameters.filterNull) {
-			typeList.add(getDatatype(outParameter.type));
+			typeList.addAll(getRequiredTypes(outParameter.type));
 		}
 		return typeList
 	}
 
-	def getAllComplexAndEnumTypes(FBroadcast broadcast) {
-		broadcast.allRequiredTypes.filterComplexAndEnum
+	def getAllComplexTypes(FBroadcast broadcast) {
+		broadcast.allRequiredTypes.filterComplex
 	}
 
 	def getFilterParameters(FBroadcast broadcast) {

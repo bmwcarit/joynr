@@ -224,10 +224,7 @@ Country = require("../generated/js/joynr/vehicle/Country");
 require("../generated/js/joynr/vehicle/GeoPosition");
 var AddFavoriteStationErrorEnum = require("../generated/js/joynr/vehicle/Radio/AddFavoriteStationErrorEnum");
 var RadioProxy = require("../generated/js/joynr/vehicle/RadioProxy.js");
-joynr.load(provisioning, function(error, loadedJoynr) {
-    if (error) {
-        throw error;
-    }
+joynr.load(provisioning).then(function(loadedJoynr) {
     log("joynr started");
     joynr = loadedJoynr;
     var messagingQos = new joynr.messaging.MessagingQos({
@@ -251,4 +248,6 @@ joynr.load(provisioning, function(error, loadedJoynr) {
     }).catch(function(error) {
         log("error running radioProxy: " + error);
     });
+}).catch(function(error){
+    throw error;
 });

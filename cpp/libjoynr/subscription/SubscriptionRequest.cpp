@@ -19,9 +19,9 @@
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/JsonSerializer.h"
 #include "joynr/Util.h"
-#include "joynr/QtOnChangeSubscriptionQos.h"
-#include "joynr/QtOnChangeWithKeepAliveSubscriptionQos.h"
-#include "joynr/QtPeriodicSubscriptionQos.h"
+#include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/PeriodicSubscriptionQos.h"
 
 #include <cassert>
 
@@ -32,21 +32,16 @@ using namespace joynr_logging;
 Logger* SubscriptionRequest::logger =
         Logging::getInstance()->getLogger("MSG", "SubscriptionRequest");
 
+static const bool isSubscriptionRequestRegistered =
+        Variant::registerType<SubscriptionRequest>("joynr.SubscriptionRequest");
+
 SubscriptionRequest::SubscriptionRequest()
         : QObject(),
           subscriptionId(),
           subscribedToName(),
-          qos(std::shared_ptr<QtSubscriptionQos>(new QtOnChangeSubscriptionQos()))
+          qos(Variant::make<OnChangeSubscriptionQos>(OnChangeSubscriptionQos()))
 {
     subscriptionId = Util::createUuid();
-    qRegisterMetaType<QtSubscriptionQos>("QtSubscriptionQos");
-
-    qRegisterMetaType<QtOnChangeSubscriptionQos>("QtOnChangeSubscriptionQos");
-
-    qRegisterMetaType<QtOnChangeWithKeepAliveSubscriptionQos>(
-            "QtOnChangeWithKeepAliveSubscriptionQos");
-
-    qRegisterMetaType<QtPeriodicSubscriptionQos>("QtPeriodicSubscriptionQos");
 }
 
 SubscriptionRequest::SubscriptionRequest(const SubscriptionRequest& subscriptionRequest)
@@ -57,25 +52,37 @@ SubscriptionRequest::SubscriptionRequest(const SubscriptionRequest& subscription
 {
 }
 
-QString SubscriptionRequest::getSubscriptionId() const
+std::string SubscriptionRequest::getSubscriptionId() const
 {
     return subscriptionId;
 }
 
-QString SubscriptionRequest::getSubscribeToName() const
+std::string SubscriptionRequest::getSubscribeToName() const
 {
     return subscribedToName;
 }
 
-std::shared_ptr<QtSubscriptionQos> SubscriptionRequest::getQos() const
+const Variant& SubscriptionRequest::getQos() const
 {
     return qos;
 }
 
-QVariant SubscriptionRequest::getQosData() const
+const SubscriptionQos* SubscriptionRequest::getSubscriptionQosPtr()
 {
-    int typeId = QMetaType::type(qos->metaObject()->className());
-    return QVariant(typeId, qos.get());
+    if (qos.is<OnChangeWithKeepAliveSubscriptionQos>()) {
+        return &qos.get<OnChangeWithKeepAliveSubscriptionQos>();
+    }
+    if (qos.is<PeriodicSubscriptionQos>()) {
+        return &qos.get<PeriodicSubscriptionQos>();
+    }
+    if (qos.is<OnChangeSubscriptionQos>()) {
+        return &qos.get<OnChangeSubscriptionQos>();
+    }
+    if (qos.is<SubscriptionQos>()) {
+        return &qos.get<SubscriptionQos>();
+    }
+
+    return nullptr;
 }
 
 SubscriptionRequest& SubscriptionRequest::operator=(const SubscriptionRequest& subscriptionRequest)
@@ -88,35 +95,27 @@ SubscriptionRequest& SubscriptionRequest::operator=(const SubscriptionRequest& s
 
 bool SubscriptionRequest::operator==(const SubscriptionRequest& subscriptionRequest) const
 {
-    bool equal = getQos()->equals(*subscriptionRequest.getQos());
+    bool equal = getQos() == subscriptionRequest.getQos();
     return subscriptionId == subscriptionRequest.getSubscriptionId() &&
            subscribedToName == subscriptionRequest.getSubscribeToName() && equal;
 }
 
-void SubscriptionRequest::setSubscriptionId(const QString& id)
+void SubscriptionRequest::setSubscriptionId(const std::string& id)
 {
     this->subscriptionId = id;
 }
 
-void SubscriptionRequest::setSubscribeToName(const QString& attributeName)
+void SubscriptionRequest::setSubscribeToName(const std::string& attributeName)
 {
     this->subscribedToName = attributeName;
 }
 
-void SubscriptionRequest::setQos(std::shared_ptr<QtSubscriptionQos> qos)
+void SubscriptionRequest::setQos(const Variant& qos)
 {
     this->qos = qos;
 }
 
-void SubscriptionRequest::setQosData(QVariant qos)
-{
-    // copy the object
-    QMetaType type(qos.userType());
-    auto newQos = static_cast<QtSubscriptionQos*>(type.create(qos.constData()));
-    this->qos = std::shared_ptr<QtSubscriptionQos>(newQos);
-}
-
-QString SubscriptionRequest::toQString() const
+std::string SubscriptionRequest::toString() const
 {
     return JsonSerializer::serialize(*this);
 }

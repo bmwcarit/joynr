@@ -98,7 +98,7 @@ class JoynrJavaGeneratorExtensions extends io.joynr.generator.templates.util.Joy
 	}
 
 	def Iterable<String> getRequiredIncludesFor(FCompoundType datatype, boolean includingExendedType){
-		val members = getComplexAndEnumMembers(datatype);
+		val members = getComplexMembers(datatype);
 
 		val typeList = new TreeSet<String>();
 		if (hasExtendsDeclaration(datatype)){
@@ -131,7 +131,7 @@ class JoynrJavaGeneratorExtensions extends io.joynr.generator.templates.util.Joy
 			boolean broadcasts
 	) {
 		val includeSet = new TreeSet<String>();
-		for(datatype : getAllComplexAndEnumTypes(serviceInterface, methods, readAttributes, writeAttributes, notifyAttributes, broadcasts)) {
+		for(datatype : getAllComplexTypes(serviceInterface, methods, readAttributes, writeAttributes, notifyAttributes, broadcasts)) {
 			if (datatype instanceof FType){
 				val include = getIncludeOf(datatype);
 				if (include != null) {
@@ -147,7 +147,7 @@ class JoynrJavaGeneratorExtensions extends io.joynr.generator.templates.util.Joy
 
 	def Iterable<String> getRequiredIncludesFor(FBroadcast broadcast) {
 		val includeSet = new TreeSet<String>();
-		for(datatype: getAllComplexAndEnumTypes(broadcast)) {
+		for(datatype: getAllComplexTypes(broadcast)) {
 			if (datatype instanceof FType) {
 				includeSet.add(getIncludeOf(datatype));
 			}

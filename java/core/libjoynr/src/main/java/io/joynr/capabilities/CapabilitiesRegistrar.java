@@ -20,6 +20,7 @@ package io.joynr.capabilities;
  */
 
 import io.joynr.provider.JoynrProvider;
+import io.joynr.proxy.Future;
 
 public interface CapabilitiesRegistrar {
 
@@ -33,7 +34,7 @@ public interface CapabilitiesRegistrar {
      *            Provider instance.
      * @return registration future
      */
-    RegistrationFuture registerProvider(String domain, JoynrProvider provider);
+    Future<Void> registerProvider(String domain, JoynrProvider provider);
 
     void unregisterProvider(String domain, JoynrProvider provider);
 

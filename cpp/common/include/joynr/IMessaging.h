@@ -40,7 +40,6 @@ public:
     // MessagingSkeleton on libjoynr calls Dispatcher.receive
     // MessagingSkeleton on CC calls MessageRouter.route
     virtual void transmit(JoynrMessage& message) = 0;
-    // virtual void send(const QString& senderParticipantId, const QString& responderParticipantId,
     // const MessagingQos& QoS, const QVariant& payload) = 0;
 };
 

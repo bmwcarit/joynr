@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,119 +20,121 @@
 #define DELAYED_SCHEDULER_H_
 
 #include "joynr/JoynrCommonExport.h"
+#include "joynr/PrivateCopyAssign.h"
 
-#include <QThreadPool>
-#include <QRunnable>
-#include <QHash>
-#include <QAtomicInt>
-#include <QMutex>
-#include <QSemaphore>
-#include <QEventLoop>
-#include <QTimer>
+#include "joynr/Timer.h"
+#include "joynr/Optional.h"
+
+#include <unordered_map>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <chrono>
 
 namespace joynr
 {
-
+class Runnable;
 namespace joynr_logging
 {
 class Logger;
 }
 
 /**
-  * An abstract base class to schedule QRunnables to be executed at some time in the future.
-  *
-  * Internally uses a newly started thread with a QT event queue.
-  * Because the thread is stopped in the destructor, destruction of this object can take some time.
-  */
-class JOYNRCOMMON_EXPORT DelayedScheduler : public QObject
+ * @class DelayedScheduler
+ * @brief Using a @ref Timer and @ref BlockingQueue to execute a runnable delayed
+ */
+class JOYNRCOMMON_EXPORT DelayedScheduler
 {
-    Q_OBJECT
-
 public:
-    DelayedScheduler(const QString& eventThreadName, int delay_ms = 0);
-    virtual ~DelayedScheduler();
+    /*! Handle to reference a @ref Runnable scheduled to work */
+    typedef Timer::TimerId RunnableHandle;
 
-    static quint32 INVALID_RUNNABLE_HANDLE();
+    /*! Invalid handle */
+    static const RunnableHandle INVALID_RUNNABLE_HANDLE = 0;
 
     /**
-      * Schedules a runnable to be executed after delay_ms has passed.
-      * If no delay is supplied the default delay specified in the constructor is used.
-      */
-    virtual quint32 schedule(QRunnable* runnable, int delay_ms = -1);
-    virtual void unschedule(quint32& runnableHandle);
+     * @brief Constructor
+     * @param onWorkAvailable Callback done if work is available after timer
+     *      has expired
+     * @param defaultDelayMs Default delay used by @ref schedule
+     */
+    DelayedScheduler(std::function<void(Runnable*)> onWorkAvailable,
+                     std::chrono::milliseconds defaultDelayMs = std::chrono::milliseconds::zero());
 
-protected:
-    virtual void executeRunnable(QRunnable* runnable) = 0;
-    void shutdown();
+    /**
+     * @brief Destructor
+     * @note Be sure to call @ref shutdown and wait for return before
+     *      destroying this object
+     */
+    virtual ~DelayedScheduler();
 
-private slots:
-    void scheduleUsingTimer(void* runnable, quint32 runnableHandle, int delay_ms);
-    void run();
+    /**
+     * @brief Schedule a @ref Runnable to be added to execution queue
+     * @param runnable Runnable to be added to queue
+     * @param delay Number of milliseconds to delay adding the @ref Runnable
+     *      to the queue. This parameter is @ref Optional and
+     *      if it's value is std::chrono::duration::zero() it will be directly added to the queue.
+     *      If this parameter value is invalid (aka null) its default value will be used.
+     * @return Handle referencing the given @ref Runnable in this scheduler. If
+     *      @ref INVALID_RUNNABLE_HANDLE is returned, the @ref Runnable either
+     *      is directly submitted to run or the @ref DelayedScheduler is already
+     *      shutting down.
+     */
+    virtual RunnableHandle schedule(Runnable* runnable, std::chrono::milliseconds delay);
 
-private:
-    class EventThread : public QThread
-    {
-    public:
-        EventThread();
-        virtual ~EventThread();
-        void run();
-    };
+    /**
+     * @brief Schedule a @ref Runnable to be added to execution queue
+     *
+     * This method calls @ref schedule with the default delay.
+     *
+     * @param runnable Runnable to be added to queue
+     * @return Handle referencing the given @ref Runnable in this scheduler. If
+     *      @ref INVALID_RUNNABLE_HANDLE is returned, the @ref Runnable either
+     *      is directly submitted to run or the @ref DelayedScheduler is already
+     *      shutting down.
+     */
+    virtual RunnableHandle schedule(Runnable* runnable);
 
-    int delay_ms;
-    quint32 runnableHandle;
+    /**
+     * @brief Try to remove a @ref Runnable while waiting
+     * @param runnableHandle Handle given by @ref schedule
+     */
+    virtual void unschedule(const RunnableHandle runnableHandle);
 
-    EventThread eventThread;
-    QHash<quint32, QRunnable*> runnables;
-    QHash<QTimer*, quint32> timers;
-    QMutex mutex;
-    bool stoppingScheduler;
-    static joynr_logging::Logger* logger;
-};
-
-/**
-  * An implementation of the DelayedScheduler that uses the ThreadPool passed in the constructor to
- * execute the runnables.
-  */
-class JOYNRCOMMON_EXPORT ThreadPoolDelayedScheduler : public DelayedScheduler
-{
-    Q_OBJECT
-
-public:
-    ThreadPoolDelayedScheduler(QThreadPool& threadPool,
-                               const QString& eventThreadName,
-                               int delay_ms = 0);
-    virtual ~ThreadPoolDelayedScheduler();
-
-    void reportRunnableStarted();
-
-protected:
-    void executeRunnable(QRunnable* runnable);
-
-private:
-    static joynr_logging::Logger* logger;
-    QThreadPool& threadPool;
-    int waitingRunnablesCount;
-    QMutex waitingRunnablesCountMutex;
-
-    class ThreadPoolRunnable;
-};
-
-/**
-  * An implementation of the DelayedScheduler that uses the event thread to execute the runnables.
-  * This implementation should not be used for runnables that take substantial time to complete.
-  */
-class JOYNRCOMMON_EXPORT SingleThreadedDelayedScheduler : public DelayedScheduler
-{
-    Q_OBJECT
-
-public:
-    SingleThreadedDelayedScheduler(const QString& eventThreadName, int delay_ms = 0);
-    virtual ~SingleThreadedDelayedScheduler();
-
-protected:
-    void executeRunnable(QRunnable* runnable);
+    /**
+     * @brief Does an ordinary shutdown of @ref DelayedScheduler
+     * @note Must be called before destructor is called
+     */
+    virtual void shutdown();
 
 private:
+    /*! @ref DelayedScheduler is not allowed to be copied */
+    DISALLOW_COPY_AND_ASSIGN(DelayedScheduler);
+
+    virtual void timerForRunnableExpired(Timer::TimerId timerId);
+
+    virtual void timerForRunnableRemoved(Timer::TimerId timerId);
+
+private:
+    /*! Default delay set by the constructor */
+    const std::chrono::milliseconds defaultDelayMs;
+
+    /*! Callback on timer expired */
+    std::function<void(Runnable*)> onWorkAvailable;
+
+    /*! Flag indicating @ref DelayedScheduler will be stopped */
+    bool stoppingDelayedScheduler;
+
+    /*! Lookup a @ref Runnable from a expiring @ref Timer */
+    std::unordered_map<RunnableHandle, Runnable*> timedRunnables;
+
+    /*! Guard to limit write access to @ref timedRunnables */
+    std::mutex writeLock;
+
+    /*! Timer to delay added @ref Runnable */
+    Timer timer;
+
+    /*! Logger */
     static joynr_logging::Logger* logger;
 };
 

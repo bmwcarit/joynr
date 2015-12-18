@@ -17,12 +17,12 @@
  * #L%
  */
 #include "joynr/InProcessPublicationSender.h"
-#include "joynr/JsonSerializer.h"
 #include "joynr/MetaTypeRegistrar.h"
 #include "joynr/IPublicationInterpreter.h"
 #include "joynr/SubscriptionPublication.h"
 
 #include <cassert>
+#include <tuple>
 
 namespace joynr
 {
@@ -46,25 +46,27 @@ void InProcessPublicationSender::sendSubscriptionPublication(
         const MessagingQos& qos,
         const SubscriptionPublication& subscriptionPublication)
 {
-    Q_UNUSED(senderParticipantId); // interface has sourcePartId, because JoynrMessages have a
-                                   // source and dest. partId. Those are not necessary for in
-                                   // process
-    Q_UNUSED(receiverParticipantId);
-    Q_UNUSED(qos);
+    std::ignore = senderParticipantId; // interface has sourcePartId, because JoynrMessages have a
+                                       // source and dest. partId. Those are not necessary for in
+                                       // process
+    std::ignore = receiverParticipantId;
+    std::ignore = qos;
 
     /**
       * just call the InProcessDispatcher!
       */
 
-    QString subscriptionId = subscriptionPublication.getSubscriptionId();
-    LOG_TRACE(logger, "Sending publication. id=" + subscriptionId);
-    assert(subscriptionManager != NULL);
+    std::string subscriptionId = subscriptionPublication.getSubscriptionId();
+    LOG_TRACE(logger, FormatString("Sending publication. id=%1").arg(subscriptionId).str());
+    assert(subscriptionManager != nullptr);
     subscriptionManager->touchSubscriptionState(subscriptionId);
     std::shared_ptr<ISubscriptionCallback> callback =
             subscriptionManager->getSubscriptionCallback(subscriptionId);
     if (!callback) {
         LOG_ERROR(logger,
-                  "Dropping reply for non/no more existing subscription with id=" + subscriptionId);
+                  FormatString("Dropping reply for non/no more existing subscription with id=%1")
+                          .arg(subscriptionId)
+                          .str());
         return;
     }
 
@@ -74,7 +76,7 @@ void InProcessPublicationSender::sendSubscriptionPublication(
     // PublicationInterpreter polymorphism
     IPublicationInterpreter& interpreter =
             MetaTypeRegistrar::instance().getPublicationInterpreter(typeId);
-    LOG_TRACE(logger, "Interpreting publication. id=" + subscriptionId);
+    LOG_TRACE(logger, FormatString("Interpreting publication. id=%1").arg(subscriptionId).str());
     interpreter.execute(callback, subscriptionPublication);
 }
 

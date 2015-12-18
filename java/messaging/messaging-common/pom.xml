@@ -27,11 +27,16 @@
 	<parent>
 		<groupId>io.joynr.java</groupId>
 		<artifactId>messaging</artifactId>
-		<version>0.12.3</version>
+		<version>0.13.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<dependencies>
+		<dependency>
+			<groupId>io.joynr.java</groupId>
+			<artifactId>javaapi</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.core</groupId>
 			<artifactId>joynr-types</artifactId>

@@ -22,16 +22,19 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/MessagingQos.h"
-#include "joynr/QtSubscriptionQos.h"
+#include "joynr/SubscriptionQos.h"
+#include <QObject>
 
-#include <QString>
 #include <memory>
+#include <string>
+
+#include "joynr/Variant.h"
 
 namespace joynr
 {
 
-/** \class SubscriptionRequest
-  * \brief SubscriptionRequest stores the information that is necessary to store a
+/** @class SubscriptionRequest
+  * @brief SubscriptionRequest stores the information that is necessary to store a
  * subscription-Request on
   * subscriber side, while Aribtration is handled.
   */
@@ -40,9 +43,9 @@ class JOYNR_EXPORT SubscriptionRequest : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString subscriptionId READ getSubscriptionId WRITE setSubscriptionId)
-    Q_PROPERTY(QString subscribedToName READ getSubscribeToName WRITE setSubscribeToName)
-    Q_PROPERTY(QVariant qos READ getQosData WRITE setQosData)
+    Q_PROPERTY(std::string subscriptionId READ getSubscriptionId WRITE setSubscriptionId)
+    Q_PROPERTY(std::string subscribedToName READ getSubscribeToName WRITE setSubscribeToName)
+    Q_PROPERTY(Variant qos READ getQos WRITE setQos)
 
 public:
     SubscriptionRequest();
@@ -53,20 +56,18 @@ public:
     }
     bool operator==(const SubscriptionRequest& subscriptionRequest) const;
 
-    QString getSubscriptionId() const;
-    void setSubscriptionId(const QString& id);
+    std::string getSubscriptionId() const;
+    void setSubscriptionId(const std::string& id);
 
-    QString getSubscribeToName() const;
-    void setSubscribeToName(const QString& subscribedToName);
+    std::string getSubscribeToName() const;
+    void setSubscribeToName(const std::string& subscribedToName);
 
-    void setQos(std::shared_ptr<QtSubscriptionQos> qos);
-    std::shared_ptr<QtSubscriptionQos> getQos() const;
+    void setQos(const Variant& qos);
+    const Variant& getQos() const;
 
-    QString toQString() const;
+    const SubscriptionQos* getSubscriptionQosPtr();
 
-protected:
-    void setQosData(QVariant qos);
-    QVariant getQosData() const;
+    std::string toString() const;
 
 private:
     /*
@@ -76,9 +77,9 @@ private:
       be determined when registering
       the subscription, and thus must be stored while waiting for arbitrations.
       */
-    QString subscriptionId;
-    QString subscribedToName;
-    std::shared_ptr<QtSubscriptionQos> qos;
+    std::string subscriptionId;
+    std::string subscribedToName;
+    Variant qos;
 
     static joynr_logging::Logger* logger;
 };
@@ -86,5 +87,4 @@ private:
 } // namespace joynr
 
 Q_DECLARE_METATYPE(joynr::SubscriptionRequest)
-Q_DECLARE_SMART_POINTER_METATYPE(std::shared_ptr)
 #endif // SUBSCRIPTIONREQUEST_H

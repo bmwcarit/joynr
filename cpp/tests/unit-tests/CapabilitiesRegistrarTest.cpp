@@ -17,21 +17,18 @@
  * #L%
  */
 #include <memory>
+#include <string>
 
 #include "joynr/PrivateCopyAssign.h"
-#include "PrettyPrint.h"
-#include "gtest/gtest.h"
-#include "gmock/gmock.h"
-#include <string>
-#include "utils/TestQString.h"
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 #include "joynr/CapabilitiesRegistrar.h"
 #include "tests/utils/MockObjects.h"
-#include "joynr/types/QtProviderQos.h"
 
 using namespace ::testing;
 using namespace joynr;
 
-const QString participantIdFile("test_participantids.settings");
+const std::string participantIdFile = "test_participantids.settings";
 
 class CapabilitiesRegistrarTest : public ::testing::Test {
 public:
@@ -49,9 +46,9 @@ public:
 
     }
     void SetUp(){
-        QList<IDispatcher*> dispatcherList;
+        std::vector<IDispatcher*> dispatcherList;
         mockDispatcher = new MockDispatcher();
-        dispatcherList.append(mockDispatcher);
+        dispatcherList.push_back(mockDispatcher);
 
         capabilitiesRegistrar = new CapabilitiesRegistrar(
                     dispatcherList,
@@ -70,7 +67,7 @@ public:
 protected:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesRegistrarTest);
     MockDispatcher* mockDispatcher;
-    std::shared_ptr<joynr::system::RoutingTypes::QtAddress> messagingStubAddress;
+    std::shared_ptr<joynr::system::RoutingTypes::Address> messagingStubAddress;
     std::shared_ptr<MockParticipantIdStorage> mockParticipantIdStorage;
     MockDiscovery mockDiscovery;
     CapabilitiesRegistrar* capabilitiesRegistrar;

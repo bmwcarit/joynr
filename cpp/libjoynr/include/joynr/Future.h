@@ -22,13 +22,13 @@
 #include "joynr/RequestStatus.h"
 #include "joynr/joynrlogging.h"
 
-#include <QSemaphore>
 #include <cassert>
 #include <functional>
 #include <joynr/Util.h>
 #include <stdint.h>
 #include "joynr/TypeUtil.h"
 #include "joynr/exceptions/JoynrException.h"
+#include "joynr/Semaphore.h"
 
 namespace joynr
 {
@@ -112,8 +112,9 @@ public:
             : error(NULL), status(RequestStatusCode::IN_PROGRESS), results(), resultReceived(0)
     {
         LOG_INFO(logger,
-                 QString("resultReceived.available():") +
-                         QString::number(resultReceived.available()));
+                 FormatString("resultReceived.getStatus():%1")
+                         .arg(resultReceived.getStatus())
+                         .str());
     }
 
     /** @brief ResultCopier helper to copy tuple entries to function arguments */
@@ -218,8 +219,8 @@ public:
      */
     void wait(uint16_t timeOut)
     {
-        if (resultReceived.tryAcquire(1, TypeUtil::toQt(timeOut))) {
-            resultReceived.release(1);
+        if (resultReceived.waitFor(std::chrono::milliseconds(timeOut))) {
+            resultReceived.notify();
         } else {
             throw exceptions::JoynrTimeOutException("Request did not finish in time");
         }
@@ -232,10 +233,11 @@ public:
     void wait()
     {
         LOG_INFO(logger,
-                 QString("resultReceived.available():") +
-                         QString::number(resultReceived.available()));
-        resultReceived.acquire(1);
-        resultReceived.release(1);
+                 FormatString("resultReceived.getStatus():%1")
+                         .arg(resultReceived.getStatus())
+                         .str());
+        resultReceived.wait();
+        resultReceived.notify();
     }
 
     /**
@@ -258,7 +260,7 @@ public:
         status.setCode(RequestStatusCode::OK);
         // transform variadic templates into a std::tuple
         this->results = std::make_tuple(results...);
-        resultReceived.release();
+        resultReceived.notify();
     }
 
     /**
@@ -271,14 +273,14 @@ public:
         LOG_INFO(logger, "onError has been invoked");
         this->error.reset(error.clone());
         this->status = RequestStatus(status);
-        resultReceived.release();
+        resultReceived.notify();
     }
 
 private:
     std::shared_ptr<exceptions::JoynrException> error;
     RequestStatus status;
     std::tuple<Ts...> results;
-    QSemaphore resultReceived;
+    Semaphore resultReceived;
 
     static joynr_logging::Logger* logger;
 };
@@ -354,8 +356,8 @@ public:
      */
     void wait(uint16_t timeOut)
     {
-        if (resultReceived.tryAcquire(1, TypeUtil::toQt(timeOut))) {
-            resultReceived.release(1);
+        if (resultReceived.waitFor(std::chrono::milliseconds(timeOut))) {
+            resultReceived.notify();
         } else {
             throw exceptions::JoynrTimeOutException("Request did not finish in time");
         }
@@ -369,8 +371,8 @@ public:
      */
     void wait()
     {
-        resultReceived.acquire(1);
-        resultReceived.release(1);
+        resultReceived.wait();
+        resultReceived.notify();
     }
 
     /**
@@ -389,7 +391,7 @@ public:
     void onSuccess()
     {
         status.setCode(RequestStatusCode::OK);
-        resultReceived.release(1);
+        resultReceived.notify();
     }
 
     /**
@@ -401,13 +403,13 @@ public:
     {
         this->error.reset(error.clone());
         this->status = RequestStatus(status);
-        resultReceived.release(1);
+        resultReceived.notify();
     }
 
 private:
     std::shared_ptr<exceptions::JoynrException> error;
     RequestStatus status;
-    QSemaphore resultReceived;
+    joynr::Semaphore resultReceived;
 };
 
 } // namespace joynr

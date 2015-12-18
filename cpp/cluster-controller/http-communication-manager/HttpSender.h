@@ -25,68 +25,84 @@
 #include "joynr/ContentWithDecayTime.h"
 #include "joynr/BounceProxyUrl.h"
 #include "joynr/joynrlogging.h"
-#include "cluster-controller/http-communication-manager/IChannelUrlSelector.h"
 #include "joynr/ILocalChannelUrlDirectory.h"
-
-#include <QString>
-#include <QByteArray>
-#include <QThreadPool>
 #include "joynr/DispatcherUtils.h"
+#include "joynr/ThreadPoolDelayedScheduler.h"
+#include "joynr/Runnable.h"
+
+#include <string>
+#include <QByteArray>
+
 #include <memory>
 
 namespace joynr
 {
 
 class JoynrMessage;
-class DelayedScheduler;
 class MessagingSettings;
 class HttpResult;
+class IChannelUrlSelector;
 
 class HttpSender : public IMessageSender
 {
 public:
-    static const qint64& MIN_ATTEMPT_TTL();
-    static const qint64& MAX_ATTEMPT_TTL();
-    static const qint64& FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIAL();
+    static const int64_t& MIN_ATTEMPT_TTL();
+    static const int64_t& MAX_ATTEMPT_TTL();
+    static const int64_t& FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIAL();
 
     HttpSender(const BounceProxyUrl& bounceProxyUrl,
-               qint64 maxAttemptTtl_ms,
+               int64_t maxAttemptTtl_ms,
                int messageSendRetryInterval); // int messageSendRetryInterval
     virtual ~HttpSender();
     /**
     * @brief Sends the message to the given channel.
     */
-    void sendMessage(const QString& channelId, const JoynrMessage& message);
+    void sendMessage(const std::string& channelId, const JoynrMessage& message) override;
     /**
     * @brief The MessageSender needs the localChannelUrlDirectory to obtain Url's for
     * the channelIds.
     */
     void init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
-              const MessagingSettings& settings);
+              const MessagingSettings& settings) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(HttpSender);
     const BounceProxyUrl bounceProxyUrl;
     IChannelUrlSelector* channelUrlCache;
-    const qint64 maxAttemptTtl_ms;
+    const int64_t maxAttemptTtl_ms;
     const int messageSendRetryInterval;
     static joynr_logging::Logger* logger;
 
-    QThreadPool threadPool; // used to send messages once an Url is known
-    DelayedScheduler* delayedScheduler;
-    QThreadPool channelUrlContactorThreadPool; // obtaining an url must be in a different threadpool
-    DelayedScheduler* channelUrlContactorDelayedScheduler;
+    /**
+     * @brief @ref ThreadPool used to send messages once an URL is known
+     * @todo Replace by @ref ThreadPool instead of @ref ThreadPoolDelayedScheduler
+     */
+    ThreadPoolDelayedScheduler delayedScheduler;
 
-    class SendMessageRunnable : public QRunnable, public ObjectWithDecayTime
+    /**
+     * @brief ThreadPool to obtain an URL
+     * @note Obtaining an URL must be in a different ThreadPool
+     *
+     * Create a different scheduler for the ChannelURL directory. Ideally,
+     * this should not delay messages by default. However, a race condition
+     * exists that causes intermittent errors in the system integration tests
+     * when the default delay is 0.
+     */
+    ThreadPoolDelayedScheduler channelUrlContactorDelayedScheduler;
+
+    class SendMessageRunnable : public joynr::Runnable, public ObjectWithDecayTime
     {
     public:
         SendMessageRunnable(HttpSender* messageSender,
-                            const QString& channelId,
+                            const std::string& channelId,
                             const JoynrTimePoint& decayTime,
-                            const QByteArray& data,
+                            std::string&& data,
                             DelayedScheduler& delayedScheduler,
-                            qint64 maxAttemptTtl_ms);
+                            int64_t maxAttemptTtl_ms);
         ~SendMessageRunnable();
+
+        void shutdown();
+
         /**
          * @brief run
          * 1) Obtains the 'best' Url for the channelId from the ChannelUrlSelector.
@@ -101,13 +117,13 @@ private:
 
     private:
         DISALLOW_COPY_AND_ASSIGN(SendMessageRunnable);
-        HttpResult buildRequestAndSend(const QString& url, qint64 curlTimeout);
-        QString resolveUrlForChannelId(qint64 curlTimeout);
-        QString channelId;
-        QByteArray data;
+        HttpResult buildRequestAndSend(const std::string& url, int64_t curlTimeout);
+        std::string resolveUrlForChannelId(int64_t curlTimeout);
+        std::string channelId;
+        std::string data;
         DelayedScheduler& delayedScheduler;
         HttpSender* messageSender;
-        qint64 maxAttemptTtl_ms;
+        int64_t maxAttemptTtl_ms;
 
         static joynr_logging::Logger* logger;
         static int messageRunnableCounter;

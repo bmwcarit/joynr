@@ -20,7 +20,6 @@ package io.joynr.generator.cpp.filter
 import com.google.inject.Inject
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
-import io.joynr.generator.cpp.util.QtTypeUtil
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.BroadcastTemplate
 import io.joynr.generator.templates.util.BroadcastUtil
@@ -36,16 +35,15 @@ class FilterTemplate implements BroadcastTemplate {
 	@Inject extension NamingUtil
 	@Inject extension BroadcastUtil
 
-	@Inject
-	private QtTypeUtil qtTypeUtil
-
 	def getCommaSeperatedEventArgumentListFromQList(Iterable<FArgument> arguments) {
 		val returnStringBuilder = new StringBuilder();
 		var i = 0
 		for (FArgument argument : arguments) {
-			val argumentVar = "eventValues[" + i++ + "].value<" + qtTypeUtil.getTypeName(argument) + ">()";
-			returnStringBuilder.append(qtTypeUtil.fromQTTypeToStdType(argument, argumentVar));
-			returnStringBuilder.append(",\n");
+			returnStringBuilder.append("eventValues[");
+			returnStringBuilder.append(i++);
+			returnStringBuilder.append("].get<");
+			returnStringBuilder.append(getTypeName(argument));
+			returnStringBuilder.append(">(),\n");
 		}
 		val returnString = returnStringBuilder.toString();
 		if (returnString.length() == 0) {
@@ -69,9 +67,6 @@ class FilterTemplate implements BroadcastTemplate {
 
 #include "joynr/PrivateCopyAssign.h"
 «FOR parameterType: getRequiredIncludesFor(serviceInterface)»
-#include «parameterType»
-«ENDFOR»
-«FOR parameterType : qtTypeUtil.getRequiredIncludesFor(serviceInterface)»
 #include «parameterType»
 «ENDFOR»
 
@@ -114,7 +109,7 @@ private:
 	DISALLOW_COPY_AND_ASSIGN(«className»);
 
 	virtual bool filter(
-			const QList<QVariant>& eventValues,
+			const std::vector<Variant>& eventValues,
 			const BroadcastFilterParameters& filterParameters
 	) {
 		«serviceInterface.joynrName.toFirstUpper + broadcastName.toFirstUpper»BroadcastFilterParameters params;

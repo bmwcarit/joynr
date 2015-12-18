@@ -30,14 +30,16 @@
 #include <stdint.h>
 #include <chrono>
 
+#include "joynr/Variant.h"
+
 using namespace std::chrono;
 
 namespace joynr
 {
 
 /**
-  * \class TypeUtil
-  * \brief Container class for helper methods related with the used datatypes
+  * @class TypeUtil
+  * @brief Container class for helper methods related with the used datatypes
   */
 class JOYNRCOMMON_EXPORT TypeUtil
 {
@@ -441,21 +443,21 @@ public:
     }
 
     /**
-      * Converts a qint64 into a int64_t
+      * Converts a int64_t into a int64_t
       */
-    static int64_t toStdInt64(const qint64& qtValue)
+    static int64_t toStdInt64(const int64_t& qtValue)
     {
         return static_cast<int64_t>(qtValue);
     }
 
     /**
-      * Converts a list of qint64 values into a vector of int64_t objects
+      * Converts a list of int64_t values into a vector of int64_t objects
       */
-    static std::vector<int64_t> toStdInt64(const QList<qint64>& qtValues)
+    static std::vector<int64_t> toStdInt64(const QList<int64_t>& qtValues)
     {
         std::vector<int64_t> stdValues;
 
-        for (qint64 qtValue : qtValues) {
+        for (int64_t qtValue : qtValues) {
             stdValues.push_back(toStdInt64(qtValue));
         }
 
@@ -463,11 +465,11 @@ public:
     }
 
     /**
-      * Converts a vector of int64_t objects into a list of qint64 objects
+      * Converts a vector of int64_t objects into a list of int64_t objects
       */
-    static QList<qint64> toQt(const std::vector<int64_t>& stdValues)
+    static QList<int64_t> toQt(const std::vector<int64_t>& stdValues)
     {
-        QList<qint64> qtValues;
+        QList<int64_t> qtValues;
 
         for (int64_t stdValue : stdValues) {
             qtValues.append(toQt(stdValue));
@@ -477,29 +479,29 @@ public:
     }
 
     /**
-      * Converts a int64_t object into a qint64 object
+      * Converts a int64_t object into a int64_t object
       */
-    static qint64 toQt(const int64_t& stdValue)
+    static int64_t toQt(const int64_t& stdValue)
     {
-        return static_cast<qint64>(stdValue);
+        return static_cast<int64_t>(stdValue);
     }
 
     /**
-      * Converts a qint64 into a uint64_t
+      * Converts a int64_t into a uint64_t
       */
-    static uint64_t toStdUInt64(const qint64& qtValue)
+    static uint64_t toStdUInt64(const int64_t& qtValue)
     {
         return static_cast<uint64_t>(qtValue);
     }
 
     /**
-      * Converts a list of qint64 values into a vector of uint64_t objects
+      * Converts a list of int64_t values into a vector of uint64_t objects
       */
-    static std::vector<uint64_t> toStdUInt64(const QList<qint64>& qtValues)
+    static std::vector<uint64_t> toStdUInt64(const QList<int64_t>& qtValues)
     {
         std::vector<uint64_t> stdValues;
 
-        for (qint64 qtValue : qtValues) {
+        for (int64_t qtValue : qtValues) {
             stdValues.push_back(toStdUInt64(qtValue));
         }
 
@@ -507,11 +509,11 @@ public:
     }
 
     /**
-      * Converts a vector of uint64_t objects into a list of qint64 objects
+      * Converts a vector of uint64_t objects into a list of int64_t objects
       */
-    static QList<qint64> toQt(const std::vector<uint64_t>& stdValues)
+    static QList<int64_t> toQt(const std::vector<uint64_t>& stdValues)
     {
-        QList<qint64> qtValues;
+        QList<int64_t> qtValues;
 
         for (uint64_t stdValue : stdValues) {
             qtValues.append(toQt(stdValue));
@@ -521,11 +523,11 @@ public:
     }
 
     /**
-      * Converts a uint64_t object into a qint64 object
+      * Converts a uint64_t object into a int64_t object
       */
-    static qint64 toQt(const uint64_t& stdValue)
+    static int64_t toQt(const uint64_t& stdValue)
     {
-        return static_cast<qint64>(stdValue);
+        return static_cast<int64_t>(stdValue);
     }
 
     /**
@@ -625,19 +627,60 @@ public:
     /**
       * Converts a std::chrono::system_clock::time_point to milliseconds
       */
-    static uint64_t toMilliseconds(const system_clock::time_point& timePoint)
+    static uint64_t toMilliseconds(const std::chrono::system_clock::time_point& timePoint)
     {
-        return duration_cast<milliseconds>(timePoint.time_since_epoch()).count();
+        return std::chrono::duration_cast<std::chrono::milliseconds>(timePoint.time_since_epoch())
+                .count();
     }
 
     /**
       * Converts a std::chrono::system_clock::time_point to a printable string
       */
-    static std::string toDateString(const system_clock::time_point& timePoint)
+    static std::string toDateString(const std::chrono::system_clock::time_point& timePoint)
     {
-        std::time_t time = system_clock::to_time_t(timePoint);
+        std::time_t time = std::chrono::system_clock::to_time_t(timePoint);
         return std::ctime(&time);
+    }
+
+    /**
+      * Converts a vector of typename T objects into a vector of Variant objects
+      */
+    template <typename T>
+    static std::vector<Variant> toVectorOfVariants(const std::vector<T>& values)
+    {
+        std::vector<Variant> variantValues;
+        variantValues.reserve(values.size());
+
+        for (const T& value : values) {
+            variantValues.push_back(Variant::make<T>(value));
+        }
+
+        return variantValues;
+    }
+
+    /**
+      * Converts a vector of typename T objects into a Variant object
+      */
+    template <typename T>
+    static Variant toVariant(const std::vector<T>& values)
+    {
+        std::vector<Variant> variantValues;
+        variantValues.reserve(values.size());
+
+        for (const T& value : values) {
+            variantValues.push_back(Variant::make<T>(value));
+        }
+
+        return toVariant(variantValues);
+    }
+
+    /**
+      * Converts a vector of Variant objects into a Variant object
+      */
+    static Variant toVariant(const std::vector<Variant>& values)
+    {
+        return Variant::make<std::vector<Variant>>(values);
     }
 };
 } // namespace joynr
-#endif /* TYPE_UTIL_H_ */
+#endif // TYPE_UTIL_H_

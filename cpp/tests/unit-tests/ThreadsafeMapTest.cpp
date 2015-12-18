@@ -17,11 +17,11 @@
  * #L%
  */
 #include "joynr/PrivateCopyAssign.h"
-#include "gtest/gtest.h"
-#include "gmock/gmock.h"
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 #include "joynr/ThreadSafeMap.h"
 
-#include <QString>
+#include <string>
 #include <memory>
 
 using ::testing::Property;
@@ -44,22 +44,22 @@ class ThreadsafeMapTest : public ::testing::Test
     }
 
     void SetUp(){
-        map = new ThreadSafeMap<QString, std::shared_ptr<QString> >();
-        testValue = std::shared_ptr<QString>(new QString("testValue"));
-        secondTestValue = std::shared_ptr<QString>(new QString("secondTestValue"));
-        firstKey = QString("firstKey");
-        secondKey = QString("secondKey");
+        map = new ThreadSafeMap<std::string, std::shared_ptr<std::string> >();
+        testValue = std::shared_ptr<std::string>(new std::string("testValue"));
+        secondTestValue = std::shared_ptr<std::string>(new std::string("secondTestValue"));
+        firstKey = std::string("firstKey");
+        secondKey = std::string("secondKey");
     }
     void TearDown(){
         delete map;
     }
 
 protected:
-    ThreadSafeMap<QString, std::shared_ptr<QString> >* map;
-    std::shared_ptr<QString> testValue;
-    std::shared_ptr<QString> secondTestValue;
-    QString firstKey;
-    QString secondKey;
+    ThreadSafeMap<std::string, std::shared_ptr<std::string> >* map;
+    std::shared_ptr<std::string> testValue;
+    std::shared_ptr<std::string> secondTestValue;
+    std::string firstKey;
+    std::string secondKey;
 private:
     DISALLOW_COPY_AND_ASSIGN(ThreadsafeMapTest);
 };
@@ -84,8 +84,8 @@ TEST_F(ThreadsafeMapTest, value)
 {
     map->insert(firstKey, testValue);
     map->insert(secondKey,secondTestValue);
-    std::shared_ptr<QString> result1 = map->value(firstKey);
-    std::shared_ptr<QString> result2 = map->value(secondKey);
+    std::shared_ptr<std::string> result1 = map->value(firstKey);
+    std::shared_ptr<std::string> result2 = map->value(secondKey);
     ASSERT_EQ(result1, testValue);
     ASSERT_EQ(result2, secondTestValue);
 }
@@ -111,8 +111,3 @@ TEST_F(ThreadsafeMapTest, take)
     ASSERT_FALSE(map->contains(firstKey));
     ASSERT_TRUE(map->contains(secondKey));
 }
-
-
-
-
-

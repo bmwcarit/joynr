@@ -21,10 +21,10 @@
 
 #include "joynr/JoynrExport.h"
 
-class QVariant;
-
 namespace joynr
 {
+
+class Variant;
 
 class JOYNR_EXPORT IAttributeListener
 {
@@ -32,7 +32,7 @@ public:
     virtual ~IAttributeListener()
     {
     }
-    virtual void attributeValueChanged(const QVariant& value) = 0;
+    virtual void attributeValueChanged(const Variant& value) = 0;
 };
 
 } // namespace joynr

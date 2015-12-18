@@ -28,10 +28,10 @@
 #include "joynr/JoynrExport.h"
 
 #include <QObject>
-#include <QString>
+#include <string>
 #include <QDataStream>
-#include "joynr/types/QtProviderQos.h"
-#include "joynr/types/QtCommunicationMiddleware.h"
+#include "joynr/types/ProviderQos.h"
+#include "joynr/types/CommunicationMiddleware.h"
 
 namespace joynr
 {
@@ -39,11 +39,11 @@ namespace joynr
 class JOYNR_EXPORT CapabilityEntry : QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString interface READ getInterfaceName WRITE setInterfaceName)
-    Q_PROPERTY(QString domain READ getDomain WRITE setDomain)
-    Q_PROPERTY(joynr__types__QtProviderQos qos READ getQos WRITE setQos)
-    Q_PROPERTY(QString participantId READ getParticipantId WRITE setParticipantId)
-    Q_PROPERTY(QList<joynr::types::QtCommunicationMiddleware::Enum> middlewareConnections READ
+    Q_PROPERTY(std::string interface READ getInterfaceName WRITE setInterfaceName)
+    Q_PROPERTY(std::string domain READ getDomain WRITE setDomain)
+    Q_PROPERTY(joynr::types::ProviderQos qos READ getQos WRITE setQos)
+    Q_PROPERTY(std::string participantId READ getParticipantId WRITE setParticipantId)
+    Q_PROPERTY(std::vector<joynr::types::CommunicationMiddleware::Enum> middlewareConnections READ
                        getMiddlewareConnections WRITE setMiddlewareConnections)
     Q_PROPERTY(bool global READ isGlobal)
 
@@ -52,11 +52,11 @@ public:
 
     CapabilityEntry(const CapabilityEntry& other);
 
-    CapabilityEntry(const QString& domain,
-                    const QString& interfaceName,
-                    joynr::types::QtProviderQos qos,
-                    const QString& participantId,
-                    QList<joynr::types::QtCommunicationMiddleware::Enum> middlewareConnections,
+    CapabilityEntry(const std::string& domain,
+                    const std::string& interfaceName,
+                    joynr::types::ProviderQos qos,
+                    const std::string& participantId,
+                    std::vector<joynr::types::CommunicationMiddleware::Enum> middlewareConnections,
                     bool isGlobal,
                     QObject* parent = 0);
 
@@ -64,35 +64,35 @@ public:
 
     bool operator==(const CapabilityEntry& other) const;
 
-    QString getInterfaceName() const;
-    QString getDomain() const;
-    void setInterfaceName(QString interfaceName);
-    void setDomain(QString domain);
+    std::string getInterfaceName() const;
+    std::string getDomain() const;
+    void setInterfaceName(std::string interfaceName);
+    void setDomain(std::string domain);
 
-    types::QtProviderQos getQos() const;
-    void setQos(joynr::types::QtProviderQos qos);
+    types::ProviderQos getQos() const;
+    void setQos(joynr::types::ProviderQos qos);
 
-    QString getParticipantId() const;
-    void setParticipantId(QString participantId);
+    std::string getParticipantId() const;
+    void setParticipantId(std::string participantId);
 
     void setMiddlewareConnections(
-            QList<joynr::types::QtCommunicationMiddleware::Enum> middlewareConnections);
-    QList<joynr::types::QtCommunicationMiddleware::Enum> getMiddlewareConnections() const;
+            std::vector<joynr::types::CommunicationMiddleware::Enum> middlewareConnections);
+    std::vector<joynr::types::CommunicationMiddleware::Enum> getMiddlewareConnections() const;
 
     void prependMiddlewareConnection(
-            joynr::types::QtCommunicationMiddleware::Enum middlewareConnection);
+            joynr::types::CommunicationMiddleware::Enum middlewareConnection);
 
     bool isGlobal() const;
     void setGlobal(bool global);
 
-    QString toString() const;
+    std::string toString() const;
 
 private:
-    QString domain;
-    QString interfaceName;
-    types::QtProviderQos qos;
-    QString participantId;
-    QList<joynr::types::QtCommunicationMiddleware::Enum> middlewareConnections;
+    std::string domain;
+    std::string interfaceName;
+    types::ProviderQos qos;
+    std::string participantId;
+    std::vector<joynr::types::CommunicationMiddleware::Enum> middlewareConnections;
     bool global;
 };
 

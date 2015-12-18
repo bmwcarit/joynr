@@ -17,8 +17,13 @@
  * #L%
  */
 #include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/Variant.h"
 
 using namespace joynr;
+
+// Register the OnChangeSubscriptionQos type id
+static const bool isOnChangeSubscriptionQosRegistered =
+        Variant::registerType<OnChangeSubscriptionQos>("joynr.OnChangeSubscriptionQos");
 
 const int64_t& OnChangeSubscriptionQos::DEFAULT_MIN_INTERVAL()
 {

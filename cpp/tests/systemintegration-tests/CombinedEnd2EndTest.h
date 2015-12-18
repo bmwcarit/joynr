@@ -24,15 +24,13 @@
 #include <gmock/gmock.h>
 #include <string>
 
-#include <QtConcurrent/QtConcurrent>
-#include <QFile>
-
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrRuntime.h"
-#include "joynr/types/QtProviderQos.h"
-#include "joynr/types/QtCapabilityInformation.h"
+#include "joynr/types/ProviderQos.h"
+#include "joynr/types/CapabilityInformation.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/joynrlogging.h"
+#include "joynr/Semaphore.h"
 
  /*
   * This test creates two Runtimes and will test communication
@@ -47,19 +45,17 @@ public:
     void SetUp();
     void TearDown();
 
-    joynr::types::QtProviderQos qRegisterMetaTypeQos; //this is necessary to force a qRegisterMetaType<types::QtProviderQos>(); during setup
-    joynr::types::QtCapabilityInformation qRegisterMetaTypeCi; //this is necessary to force a qRegisterMetaType<types::QtProviderQos>(); during setup
     joynr::JoynrRuntime* runtime1;
     joynr::JoynrRuntime* runtime2;
     std::string registeredSubscriptionId;
-    QSettings settings1;
-    QSettings settings2;
+    joynr::Settings settings1;
+    joynr::Settings settings2;
     joynr::MessagingSettings messagingSettings1;
     joynr::MessagingSettings messagingSettings2;
     std::string baseUuid;
     std::string uuid;
     std::string domainName;
-    QSemaphore semaphore;
+    joynr::Semaphore semaphore;
 
     static joynr::joynr_logging::Logger* logger;
 

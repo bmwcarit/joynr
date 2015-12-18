@@ -71,7 +71,7 @@ public abstract class AbstractJoynrInjectorFactory extends InjectorFactory<Joynr
             return (JoynrApplication) result;
         }
         throw new AssertionError("The injector factory " + this.getClass()
-                + " has been configured wrong: de.bmw.guice.IApplication has not been bind to a suptype of "
+                + " has been configured wrong: io.joynr.guice.IApplication has not been bind to a suptype of "
                 + JoynrApplication.class.getSimpleName());
     }
 

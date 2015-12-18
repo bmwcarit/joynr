@@ -24,32 +24,28 @@
 #include "joynr/BounceProxyUrl.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/Directory.h"
+#include "joynr/Thread.h"
 
-#include <QThread>
-#include <QSemaphore>
-#include <QMutex>
+#include <mutex>
+#include <condition_variable>
+
+#include "joynr/Semaphore.h"
 #include <memory>
+#include <string>
 
 namespace joynr
 {
 
 class ILocalChannelUrlDirectory;
-
-class IMessageReceiver;
 class MessageRouter;
-
-namespace system
-{
-class QtAddress;
-}
 
 /**
  * Structure used for configuring the long poll message receiver
  */
 struct LongPollingMessageReceiverSettings
 {
-    qint64 bounceProxyTimeout_ms;
-    qint64 longPollTimeout_ms;
+    int64_t bounceProxyTimeout_ms;
+    int64_t longPollTimeout_ms;
     int longPollRetryInterval_ms;
     int createChannelRetryInterval_ms;
 };
@@ -57,39 +53,40 @@ struct LongPollingMessageReceiverSettings
 /**
  * Class that makes long polling requests to the bounce proxy
  */
-class LongPollingMessageReceiver : public QThread
+class LongPollingMessageReceiver : public joynr::Thread
 {
-    Q_OBJECT
-
 public:
     LongPollingMessageReceiver(const BounceProxyUrl& bounceProxyUrl,
-                               const QString& channelId,
-                               const QString& receiverId,
+                               const std::string& channelId,
+                               const std::string& receiverId,
                                const LongPollingMessageReceiverSettings& settings,
-                               QSemaphore* channelCreatedSemaphore,
+                               joynr::Semaphore* channelCreatedSemaphore,
                                std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
                                std::shared_ptr<MessageRouter> messageRouter);
+    void stop();
     void run();
     void interrupt();
     bool isInterrupted();
 
     void processReceivedInput(const QByteArray& receivedInput);
-    void processReceivedQjsonObjects(const QByteArray& jsonObject);
+    void processReceivedJsonObjects(const std::string& jsonObject);
 
 private:
     void checkServerTime();
     DISALLOW_COPY_AND_ASSIGN(LongPollingMessageReceiver);
     const BounceProxyUrl bounceProxyUrl;
-    const QString channelId;
-    const QString receiverId;
+    const std::string channelId;
+    const std::string receiverId;
     const LongPollingMessageReceiverSettings settings;
 
-    QMutex interruptedMutex;
     bool interrupted;
+    std::mutex interruptedMutex;
+    std::condition_variable interruptedWait;
+
     std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory;
 
     static joynr_logging::Logger* logger;
-    QSemaphore* channelCreatedSemaphore;
+    joynr::Semaphore* channelCreatedSemaphore;
     std::shared_ptr<MessageRouter> messageRouter;
 };
 

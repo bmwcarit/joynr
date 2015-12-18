@@ -53,6 +53,7 @@ public:
             tStringArray({"New York", "London", "Berlin", "Tokio"}),
             word(TestTypes::Word()),
             wordArray({TestTypes::Word()}),
+            stringMap(),
             tEverything1(
                     tInt8,
                     tUInt8,
@@ -72,7 +73,9 @@ public:
                     tEnumArray,
                     tStringArray,
                     word,
-                    wordArray),
+                    wordArray,
+                    stringMap
+                ),
             tBooleanExtended(false),
             tStringExtended("extended"),
             tEverythingExtended1(
@@ -95,6 +98,7 @@ public:
                     tStringArray,
                     word,
                     wordArray,
+                    stringMap,
                     tBooleanExtended,
                     tStringExtended)
     {}
@@ -124,6 +128,7 @@ protected:
     std::vector<std::string>  tStringArray;
     TestTypes::Word word;
     std::vector<TestTypes::Word>  wordArray;
+    TestTypes::TStringKeyMap stringMap;
     TestTypes::TEverythingStruct tEverything1;
 
     bool tBooleanExtended;
@@ -340,6 +345,7 @@ TEST_F(StdComplexDataTypeTest, equalsExtendedComplexDataTypeNotEqualBaseType) {
             tStringArray,
             word,
             wordArray,
+            stringMap,
             tBooleanExtended,
             tStringExtended,
             tStringExtendedExtended);

@@ -25,9 +25,11 @@
 #include "joynr/JoynrMessage.h"
 #include "joynr/ContentWithDecayTime.h"
 
-#include <QMutex>
+#include <mutex>
 #include <QRunnable>
 #include <string>
+#include <map>
+#include <cstdint>
 
 namespace joynr
 {
@@ -41,35 +43,19 @@ public:
 
     ~MessageQueue();
 
-    qint64 getQueueLength();
+    std::size_t getQueueLength();
 
-    qint64 queueMessage(const JoynrMessage& message);
+    std::size_t queueMessage(const JoynrMessage& message);
 
     MessageQueueItem* getNextMessageForParticipant(const std::string destinationPartId);
 
-    qint64 removeOutdatedMessages();
+    int64_t removeOutdatedMessages();
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MessageQueue);
 
-    QMap<std::string, MessageQueueItem*>* queue;
-    mutable QMutex queueMutex;
-};
-
-/**
- * Runnable to remove outdated message from message queue
- */
-class JOYNR_EXPORT MessageQueueCleanerRunnable : public QRunnable
-{
-public:
-    MessageQueueCleanerRunnable(MessageQueue& messageQueue, qint64 sleepInterval = 1000);
-    void run();
-    void stop();
-
-private:
-    MessageQueue& messageQueue;
-    bool stopped;
-    qint64 sleepInterval;
+    std::multimap<std::string, MessageQueueItem*>* queue;
+    mutable std::mutex queueMutex;
 };
 }
 

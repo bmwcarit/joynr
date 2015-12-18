@@ -43,8 +43,9 @@
 #include "joynr/MetaTypeRegistrar.h"
 #include "joynr/Request.h"
 #include "joynr/exceptions/JoynrException.h"
+#include "joynr/exceptions/JoynrExceptionUtil.h"
+#include "joynr/TypeUtil.h"
 
-#include <QUuid>
 #include <chrono>
 #include <stdint.h>
 #include <cassert>
@@ -61,43 +62,36 @@ Dispatcher::Dispatcher(JoynrMessageSender* messageSender, int maxThreads)
         : messageSender(messageSender),
           requestCallerDirectory("Dispatcher-RequestCallerDirectory"),
           replyCallerDirectory("Dispatcher-ReplyCallerDirectory"),
-          publicationManager(NULL),
-          subscriptionManager(NULL),
-          handleReceivedMessageThreadPool(),
+          publicationManager(nullptr),
+          subscriptionManager(nullptr),
+          handleReceivedMessageThreadPool("Dispatcher", maxThreads),
           subscriptionHandlingMutex()
 
 {
-    handleReceivedMessageThreadPool.setMaxThreadCount(maxThreads);
-
-    // Register metatypes
-    qRegisterMetaType<Request>();
-    qRegisterMetaType<Reply>();
-    qRegisterMetaType<SubscriptionRequest>();
 }
 
 Dispatcher::~Dispatcher()
 {
     LOG_DEBUG(logger, "Destructing Dispatcher");
-    handleReceivedMessageThreadPool.waitForDone();
+    handleReceivedMessageThreadPool.shutdown();
     delete publicationManager;
     delete subscriptionManager;
-    publicationManager = NULL;
-    subscriptionManager = NULL;
+    publicationManager = nullptr;
+    subscriptionManager = nullptr;
     LOG_DEBUG(logger, "Destructing finished");
 }
 
 void Dispatcher::addRequestCaller(const std::string& participantId,
                                   std::shared_ptr<RequestCaller> requestCaller)
 {
-    QMutexLocker locker(&subscriptionHandlingMutex);
-    LOG_DEBUG(logger, "addRequestCaller id= " + QString::fromStdString(participantId));
+    std::lock_guard<std::mutex> lock(subscriptionHandlingMutex);
+    LOG_DEBUG(logger, FormatString("addRequestCaller id= %1").arg(participantId).str());
     requestCallerDirectory.add(participantId, requestCaller);
 
-    if (publicationManager != NULL) {
+    if (publicationManager != nullptr) {
         // publication manager queues received subscription requests, that are
         // received before the corresponding request caller is added
-        publicationManager->restore(
-                QString::fromStdString(participantId), requestCaller, messageSender);
+        publicationManager->restore(participantId, requestCaller, messageSender);
     } else {
         LOG_DEBUG(logger, "No publication manager available!");
     }
@@ -105,12 +99,12 @@ void Dispatcher::addRequestCaller(const std::string& participantId,
 
 void Dispatcher::removeRequestCaller(const std::string& participantId)
 {
-    QMutexLocker locker(&subscriptionHandlingMutex);
-    LOG_DEBUG(logger, "removeRequestCaller id= " + QString::fromStdString(participantId));
+    std::lock_guard<std::mutex> lock(subscriptionHandlingMutex);
+    LOG_DEBUG(logger, FormatString("removeRequestCaller id= %1").arg(participantId).str());
     // TODO if a provider is removed, all publication runnables are stopped
     // the subscription request is deleted,
     // Q: Should it be restored once the provider is registered again?
-    publicationManager->removeAllSubscriptions(QString::fromStdString(participantId));
+    publicationManager->removeAllSubscriptions(participantId);
     requestCallerDirectory.remove(participantId);
 }
 
@@ -118,38 +112,41 @@ void Dispatcher::addReplyCaller(const std::string& requestReplyId,
                                 std::shared_ptr<IReplyCaller> replyCaller,
                                 const MessagingQos& qosSettings)
 {
-    LOG_DEBUG(logger, "addReplyCaller id= " + QString::fromStdString(requestReplyId));
+    LOG_DEBUG(logger, FormatString("addReplyCaller id= %1").arg(requestReplyId).str());
     // add the callback to the registry that is responsible for reply messages
     replyCallerDirectory.add(requestReplyId, replyCaller, qosSettings.getTtl());
 }
 
 void Dispatcher::removeReplyCaller(const std::string& requestReplyId)
 {
-    LOG_DEBUG(logger, "removeReplyCaller id= " + QString::fromStdString(requestReplyId));
+    LOG_DEBUG(logger, FormatString("removeReplyCaller id= %1").arg(requestReplyId).str());
     replyCallerDirectory.remove(requestReplyId);
 }
 
 void Dispatcher::receive(const JoynrMessage& message)
 {
-    LOG_DEBUG(logger,
-              QString("receive(message). Message payload: %1").arg(QString(message.getPayload())));
+    LOG_DEBUG(
+            logger,
+            FormatString("receive(message). Message payload: %1").arg(message.getPayload()).str());
     ReceivedMessageRunnable* receivedMessageRunnable = new ReceivedMessageRunnable(message, *this);
-    handleReceivedMessageThreadPool.start(receivedMessageRunnable);
+    handleReceivedMessageThreadPool.execute(receivedMessageRunnable);
 }
 
 void Dispatcher::handleRequestReceived(const JoynrMessage& message)
 {
-    std::string senderId = message.getHeaderFrom().toStdString();
-    std::string receiverId = message.getHeaderTo().toStdString();
+    std::string senderId = message.getHeaderFrom();
+    std::string receiverId = message.getHeaderTo();
 
     // json request
     // lookup necessary data
-    QByteArray jsonRequest = message.getPayload();
+    std::string jsonRequest = message.getPayload();
     std::shared_ptr<RequestCaller> caller = requestCallerDirectory.lookup(receiverId);
-    if (caller == NULL) {
+    if (caller == nullptr) {
         LOG_ERROR(logger,
-                  "caller not found in the RequestCallerDirectory for receiverId " +
-                          QString::fromStdString(receiverId) + ", ignoring");
+                  FormatString("caller not found in the RequestCallerDirectory for receiverId %1, "
+                               "ignoring")
+                          .arg(receiverId)
+                          .str());
         return;
     }
     std::string interfaceName = caller->getInterfaceName();
@@ -160,28 +157,30 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
 
     // deserialize json
     Request* request = JsonSerializer::deserialize<Request>(jsonRequest);
-    if (request == Q_NULLPTR) {
+    if (request == nullptr) {
         LOG_ERROR(logger,
-                  QString("Unable to deserialize request object from: %1")
-                          .arg(QString::fromUtf8(jsonRequest)));
+                  FormatString("Unable to deserialize request object from: %1")
+                          .arg(jsonRequest)
+                          .str());
         return;
     }
 
-    QString requestReplyId = request->getRequestReplyId();
+    std::string requestReplyId = request->getRequestReplyId();
     JoynrTimePoint requestExpiryDate = message.getHeaderExpiryDate();
 
-    std::function<void(const QList<QVariant>&)> onSuccess =
+    std::function<void(std::vector<Variant>)> onSuccess =
             [requestReplyId, requestExpiryDate, this, senderId, receiverId](
-                    const QList<QVariant>& returnValueQVar) {
+                    std::vector<Variant> returnValueVar) {
         Reply reply;
         reply.setRequestReplyId(requestReplyId);
-        reply.setResponse(returnValueQVar);
+        reply.setResponse(std::move(returnValueVar));
         // send reply back to the original sender (ie. sender and receiver ids are reversed
         // on
         // purpose)
         LOG_DEBUG(logger,
-                  QString("Got reply from RequestInterpreter for requestReplyId %1")
-                          .arg(requestReplyId));
+                  FormatString("Got reply from RequestInterpreter for requestReplyId %1")
+                          .arg(requestReplyId)
+                          .str());
         JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
         int64_t ttl = duration_cast<milliseconds>(requestExpiryDate - now).count();
         messageSender->sendReply(receiverId, // receiver of the request is sender of reply
@@ -195,14 +194,11 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
                     const exceptions::JoynrException& exception) {
         Reply reply;
         reply.setRequestReplyId(requestReplyId);
-        std::shared_ptr<exceptions::JoynrException> error;
-        // TODO This clone is a workaround which must be removed after the new serializer has been
-        // introduced and the reply object has been refactored
-        error.reset(exception.clone());
-        reply.setError(error);
+        reply.setError(joynr::exceptions::JoynrExceptionUtil::createVariant(exception));
         LOG_DEBUG(logger,
-                  QString("Got error reply from RequestInterpreter for requestReplyId %1")
-                          .arg(requestReplyId));
+                  FormatString("Got error reply from RequestInterpreter for requestReplyId %1")
+                          .arg(requestReplyId)
+                          .str());
         JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
         int64_t ttl = duration_cast<milliseconds>(requestExpiryDate - now).count();
         messageSender->sendReply(receiverId, // receiver of the request is sender of reply
@@ -211,25 +207,12 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
                                  reply);
     };
     // execute request
-    try {
-        requestInterpreter->execute(caller,
-                                    request->getMethodName(),
-                                    request->getParams(),
-                                    request->getParamDatatypes(),
-                                    onSuccess,
-                                    onError);
-    } catch (exceptions::ProviderRuntimeException& e) {
-        std::string message = "Could not perform an RPC invocation, caught exception: " +
-                              e.getTypeName() + ":" + e.getMessage();
-        LOG_ERROR(logger, message.c_str());
-        onError(e);
-    } catch (exceptions::JoynrException& e) {
-        std::string message = "Could not perform an RPC invocation, caught exception: " +
-                              e.getTypeName() + ":" + e.getMessage();
-        LOG_ERROR(logger, message.c_str());
-        onError(exceptions::ProviderRuntimeException("caught exception: " + e.getTypeName() + ":" +
-                                                     e.getMessage()));
-    }
+    requestInterpreter->execute(caller,
+                                request->getMethodName(),
+                                request->getParams(),
+                                request->getParamDatatypes(),
+                                onSuccess,
+                                onError);
 
     delete request;
 }
@@ -238,29 +221,27 @@ void Dispatcher::handleReplyReceived(const JoynrMessage& message)
 {
     // json request
     // lookup necessary data
-    QByteArray jsonReply = message.getPayload();
+    std::string jsonReply = message.getPayload();
 
     // deserialize the jsonReply
-    // TODO This is a workaround which must be replaced by the generic deserialize function after
-    // the new serializer is introduced
-    Reply* reply = JsonSerializer::deserializeReply(jsonReply);
-    if (reply == Q_NULLPTR) {
+    Reply* reply = JsonSerializer::deserialize<Reply>(jsonReply);
+    if (reply == nullptr) {
         LOG_ERROR(logger,
-                  QString("Unable to deserialize reply object from: %1")
-                          .arg(QString::fromUtf8(jsonReply)));
+                  FormatString("Unable to deserialize reply object from: %1").arg(jsonReply).str());
         return;
     }
-    QString requestReplyId = reply->getRequestReplyId();
+    std::string requestReplyId = reply->getRequestReplyId();
 
-    std::shared_ptr<IReplyCaller> caller =
-            replyCallerDirectory.lookup(requestReplyId.toStdString());
-    if (caller == NULL) {
+    std::shared_ptr<IReplyCaller> caller = replyCallerDirectory.lookup(requestReplyId);
+    if (caller == nullptr) {
         // This used to be a fatal error, but it is possible that the replyCallerDirectory removed
         // the caller
         // because its lifetime exceeded TTL
         LOG_INFO(logger,
-                 "caller not found in the ReplyCallerDirectory for requestid " + requestReplyId +
-                         ", ignoring");
+                 FormatString(
+                         "caller not found in the ReplyCallerDirectory for requestid %1, ignoring")
+                         .arg(requestReplyId)
+                         .str());
         return;
     }
 
@@ -274,7 +255,7 @@ void Dispatcher::handleReplyReceived(const JoynrMessage& message)
 
     // Clean up
     delete reply;
-    removeReplyCaller(requestReplyId.toStdString());
+    removeReplyCaller(requestReplyId);
 }
 
 void Dispatcher::handleSubscriptionRequestReceived(const JoynrMessage& message)
@@ -282,21 +263,22 @@ void Dispatcher::handleSubscriptionRequestReceived(const JoynrMessage& message)
     LOG_TRACE(logger, "Starting handleSubscriptionReceived");
     // Make sure that noone is registering a Caller at the moment, because a racing condition could
     // occour.
-    QMutexLocker locker(&subscriptionHandlingMutex);
-    assert(publicationManager != NULL);
+    std::lock_guard<std::mutex> lock(subscriptionHandlingMutex);
+    assert(publicationManager != nullptr);
 
-    QString receiverId = message.getHeaderTo();
-    std::shared_ptr<RequestCaller> caller = requestCallerDirectory.lookup(receiverId.toStdString());
+    std::string receiverId = message.getHeaderTo();
+    std::shared_ptr<RequestCaller> caller = requestCallerDirectory.lookup(receiverId);
 
-    QByteArray jsonSubscriptionRequest = message.getPayload();
+    std::string jsonSubscriptionRequest = message.getPayload();
 
     // PublicationManager is responsible for deleting SubscriptionRequests
     SubscriptionRequest* subscriptionRequest =
             JsonSerializer::deserialize<SubscriptionRequest>(jsonSubscriptionRequest);
-    if (subscriptionRequest == Q_NULLPTR) {
+    if (subscriptionRequest == nullptr) {
         LOG_ERROR(logger,
-                  QString("Unable to deserialize subscription request object from: %1")
-                          .arg(QString::fromUtf8(jsonSubscriptionRequest)));
+                  FormatString("Unable to deserialize subscription request object from: %1")
+                          .arg(jsonSubscriptionRequest)
+                          .str());
         return;
     }
 
@@ -321,21 +303,23 @@ void Dispatcher::handleBroadcastSubscriptionRequestReceived(const JoynrMessage& 
     LOG_TRACE(logger, "Starting handleBroadcastSubscriptionRequestReceived");
     // Make sure that noone is registering a Caller at the moment, because a racing condition could
     // occour.
-    QMutexLocker locker(&subscriptionHandlingMutex);
-    assert(publicationManager != NULL);
+    std::lock_guard<std::mutex> lock(subscriptionHandlingMutex);
+    assert(publicationManager != nullptr);
 
-    QString receiverId = message.getHeaderTo();
-    std::shared_ptr<RequestCaller> caller = requestCallerDirectory.lookup(receiverId.toStdString());
+    std::string receiverId = message.getHeaderTo();
+    std::shared_ptr<RequestCaller> caller = requestCallerDirectory.lookup(receiverId);
 
-    QByteArray jsonSubscriptionRequest = message.getPayload();
+    std::string jsonSubscriptionRequest = message.getPayload();
 
     // PublicationManager is responsible for deleting SubscriptionRequests
     BroadcastSubscriptionRequest* subscriptionRequest =
             JsonSerializer::deserialize<BroadcastSubscriptionRequest>(jsonSubscriptionRequest);
-    if (subscriptionRequest == Q_NULLPTR) {
-        LOG_ERROR(logger,
-                  QString("Unable to deserialize broadcast subscription request object from: %1")
-                          .arg(QString::fromUtf8(jsonSubscriptionRequest)));
+    if (subscriptionRequest == nullptr) {
+        LOG_ERROR(
+                logger,
+                FormatString("Unable to deserialize broadcast subscription request object from: %1")
+                        .arg(jsonSubscriptionRequest)
+                        .str());
         return;
     }
 
@@ -358,42 +342,46 @@ void Dispatcher::handleBroadcastSubscriptionRequestReceived(const JoynrMessage& 
 void Dispatcher::handleSubscriptionStopReceived(const JoynrMessage& message)
 {
     LOG_DEBUG(logger, "handleSubscriptionStopReceived");
-    QByteArray jsonSubscriptionStop = message.getPayload();
+    std::string jsonSubscriptionStop = message.getPayload();
 
     SubscriptionStop* subscriptionStop =
             JsonSerializer::deserialize<SubscriptionStop>(jsonSubscriptionStop);
-    if (subscriptionStop == Q_NULLPTR) {
+    if (subscriptionStop == nullptr) {
         LOG_ERROR(logger,
-                  QString("Unable to deserialize subscription stop object from: %1")
-                          .arg(QString::fromUtf8(jsonSubscriptionStop)));
+                  FormatString("Unable to deserialize subscription stop object from: %1")
+                          .arg(jsonSubscriptionStop)
+                          .str());
         return;
     }
-    QString subscriptionId = subscriptionStop->getSubscriptionId();
-    assert(publicationManager != NULL);
+    std::string subscriptionId = subscriptionStop->getSubscriptionId();
+    assert(publicationManager != nullptr);
     publicationManager->stopPublication(subscriptionId);
 }
 
 void Dispatcher::handlePublicationReceived(const JoynrMessage& message)
 {
-    QByteArray jsonSubscriptionPublication = message.getPayload();
+    std::string jsonSubscriptionPublication = message.getPayload();
 
     SubscriptionPublication* subscriptionPublication =
-            JsonSerializer::deserializeSubscriptionPublication(jsonSubscriptionPublication);
-    if (subscriptionPublication == Q_NULLPTR) {
+            JsonSerializer::deserialize<SubscriptionPublication>(jsonSubscriptionPublication);
+    if (subscriptionPublication == nullptr) {
         LOG_ERROR(logger,
-                  QString("Unable to deserialize subscription publication object from: %1")
-                          .arg(QString::fromUtf8(jsonSubscriptionPublication)));
+                  FormatString("Unable to deserialize subscription publication object from: %1")
+                          .arg(jsonSubscriptionPublication)
+                          .str());
         return;
     }
-    QString subscriptionId = subscriptionPublication->getSubscriptionId();
+    std::string subscriptionId = subscriptionPublication->getSubscriptionId();
 
-    assert(subscriptionManager != NULL);
+    assert(subscriptionManager != nullptr);
 
     std::shared_ptr<ISubscriptionCallback> callback =
             subscriptionManager->getSubscriptionCallback(subscriptionId);
     if (!callback) {
         LOG_ERROR(logger,
-                  "Dropping reply for non/no more existing subscription with id=" + subscriptionId);
+                  FormatString("Dropping reply for non/no more existing subscription with id=%1")
+                          .arg(subscriptionId)
+                          .str());
         delete subscriptionPublication;
         return;
     }

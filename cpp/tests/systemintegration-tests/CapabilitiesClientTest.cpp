@@ -22,20 +22,10 @@
 #include <string>
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
-#include "joynr/vehicle/GpsProxy.h"
-#include "joynr/tests/testProxy.h"
-#include "joynr/types/Localisation_QtTrip.h"
-#include "joynr/types/Localisation_QtGpsLocation.h"
-#include "joynr/CapabilitiesRegistrar.h"
-#include "utils/QThreadSleep.h"
-#include "PrettyPrint.h"
 #include "cluster-controller/capabilities-client/CapabilitiesClient.h"
 #include "joynr/infrastructure/IGlobalCapabilitiesDirectory.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
-#include "cluster-controller/capabilities-client/IGlobalCapabilitiesCallback.h"
-#include "joynr/joynrlogging.h"
 #include "cluster-controller/messaging/MessagingPropertiesPersistence.h"
-#include "joynr/SettingsMerger.h"
 #include "joynr/TypeUtil.h"
 
 using namespace ::testing;
@@ -43,32 +33,34 @@ using namespace joynr;
 
 ACTION_P(ReleaseSemaphore,semaphore)
 {
-    semaphore->release(1);
+    semaphore->notify();
 }
 
-static const QString messagingPropertiesPersistenceFileName("CapabilitiesClientTest-joynr.settings");
-static const QString settingsFilename("test-resources/SystemIntegrationTest1.settings");
-static const QString libJoynrSettingsFilename("test-resources/libjoynrSystemIntegration1.settings");
+static const std::string messagingPropertiesPersistenceFileName("CapabilitiesClientTest-joynr.settings");
+static const std::string settingsFilename("test-resources/SystemIntegrationTest1.settings");
+static const std::string libJoynrSettingsFilename("test-resources/libjoynrSystemIntegration1.settings");
 
 class CapabilitiesClientTest : public Test {
 public:
     joynr_logging::Logger* logger;
     JoynrClusterControllerRuntime* runtime;
-    QSettings settings;
+    Settings settings;
     MessagingSettings messagingSettings;
     std::string channelId;
 
     CapabilitiesClientTest() :
         logger(joynr_logging::Logging::getInstance()->getLogger("TEST", "CapabilitiesClientTest")),
         runtime(NULL),
-        settings(settingsFilename, QSettings::IniFormat),
+        settings(settingsFilename),
         messagingSettings(settings)
     {
         messagingSettings.setMessagingPropertiesPersistenceFilename(messagingPropertiesPersistenceFileName);
         MessagingPropertiesPersistence storage(messagingSettings.getMessagingPropertiesPersistenceFilename());
-        channelId = storage.getChannelId().toStdString();
-        QSettings* settings = SettingsMerger::mergeSettings(settingsFilename);
-        SettingsMerger::mergeSettings(libJoynrSettingsFilename, settings);
+        channelId = storage.getChannelId();
+        Settings* settings = new Settings(settingsFilename);
+        Settings libjoynrSettings{libJoynrSettingsFilename};
+        Settings::merge(libjoynrSettings, *settings, false);
+
         runtime = new JoynrClusterControllerRuntime(NULL, settings);
     }
 
@@ -94,7 +86,7 @@ TEST_F(CapabilitiesClientTest, registerAndRetrieveCapability) {
     CapabilitiesClient* capabilitiesClient = new CapabilitiesClient(channelId);// ownership of this is not transferred
     ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>* capabilitiesProxyBuilder =
             runtime->createProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(
-                TypeUtil::toStd(messagingSettings.getDiscoveryDirectoriesDomain())
+                messagingSettings.getDiscoveryDirectoriesDomain()
             );
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY); //actually only one provider should be available
@@ -119,12 +111,12 @@ TEST_F(CapabilitiesClientTest, registerAndRetrieveCapability) {
     capabilitiesClient->add(capabilitiesInformationList);
     LOG_DEBUG(logger,"Registered capabilities");
     //sync methods are not yet implemented
-//    std::vector<types::QtCapabilityInformation> capResultList = capabilitiesClient->lookup(capDomain, capInterface);
+//    std::vector<types::CapabilityInformation> capResultList = capabilitiesClient->lookup(capDomain, capInterface);
 //    EXPECT_EQ(capResultList, capabilitiesInformationList);
     std::shared_ptr<GlobalCapabilitiesMock> callback(new GlobalCapabilitiesMock());
 
     // use a semaphore to wait for capabilities to be received
-    QSemaphore semaphore(0);
+    joynr::Semaphore semaphore(0);
     EXPECT_CALL(*callback, capabilitiesReceived(A<const std::vector<types::CapabilityInformation>&>()))
            .WillRepeatedly(
                 DoAll(
@@ -138,7 +130,7 @@ TEST_F(CapabilitiesClientTest, registerAndRetrieveCapability) {
 
     LOG_DEBUG(logger,"get capabilities");
     capabilitiesClient->lookup(capDomain, capInterface, onSuccess);
-    semaphore.tryAcquire(1,10000);
+    semaphore.waitFor(std::chrono::milliseconds(10000));
     LOG_DEBUG(logger,"finished get capabilities");
 
     delete capabilitiesProxyBuilder;

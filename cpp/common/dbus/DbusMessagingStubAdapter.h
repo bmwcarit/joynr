@@ -44,7 +44,7 @@ class JOYNRCOMMON_EXPORT DbusMessagingStubAdapter
           public IMessaging
 {
 public:
-    DbusMessagingStubAdapter(QString serviceAddress);
+    DbusMessagingStubAdapter(std::string serviceAddress);
     virtual void transmit(JoynrMessage& message);
 
 private:

@@ -18,7 +18,8 @@
  */
 #include "joynr-messaging/DummyPlatformSecurityManager.h"
 #include "joynr/JoynrMessage.h"
-#include <QtGlobal>
+#include <cassert>
+#include <tuple>
 
 namespace joynr
 {
@@ -29,35 +30,35 @@ DummyPlatformSecurityManager::DummyPlatformSecurityManager()
 {
 }
 
-QString DummyPlatformSecurityManager::getCurrentProcessUserId()
+std::string DummyPlatformSecurityManager::getCurrentProcessUserId()
 {
-    return QString(qgetenv("USER"));
+    return std::string(qgetenv("USER"));
 }
 
 JoynrMessage DummyPlatformSecurityManager::sign(JoynrMessage message)
 {
-    Q_UNUSED(message);
-    Q_ASSERT_X(false, "sign", "Not implemented yet");
+    std::ignore = message;
+    assert(false && "Not implemented yet");
     return JoynrMessage();
 }
 
 bool DummyPlatformSecurityManager::validate(const JoynrMessage& message) const
 {
-    Q_UNUSED(message);
+    std::ignore = message;
     return true;
 }
 
 QByteArray DummyPlatformSecurityManager::encrypt(const QByteArray& unencryptedBytes)
 {
-    Q_UNUSED(unencryptedBytes);
-    Q_ASSERT_X(false, "encrypt", "Not implemented yet");
+    std::ignore = unencryptedBytes;
+    assert(false && "Not implemented yet");
     return QByteArray();
 }
 
 QByteArray DummyPlatformSecurityManager::decrypt(const QByteArray& encryptedBytes)
 {
-    Q_UNUSED(encryptedBytes);
-    Q_ASSERT_X(false, "decrypt", "Not implemented yet");
+    std::ignore = encryptedBytes;
+    assert(false && "Not implemented yet");
     return QByteArray();
 }
 

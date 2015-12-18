@@ -406,8 +406,7 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                             throw new Error("no subscription error handler registered for publication "
                                 + JSONSerializer.stringify(publication));
                         }
-                    }
-                    if (publication.response) {
+                    } else if (publication.response) {
                         if (subscriptionListener.onReceive) {
                             subscriptionListener.onReceive(publication.response);
                         } else {

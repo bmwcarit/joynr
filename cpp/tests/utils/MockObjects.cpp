@@ -17,9 +17,17 @@
  * #L%
  */
 #include "tests/utils/MockObjects.h"
+#include "joynr/TimeUtils.h"
 
+#include "joynr/joynrlogging.h"
 
 using namespace joynr;
+using namespace joynr_logging;
+
+namespace MockObjects
+{
+Logger* logger = Logging::getInstance()->getLogger("MSG", "MockObjects");
+}
 
 const std::string& IMockProviderInterface::INTERFACE_NAME()
 {
@@ -30,4 +38,35 @@ const std::string& IMockProviderInterface::INTERFACE_NAME()
 std::string MockProvider::getInterfaceName() const
 {
     return INTERFACE_NAME();
+}
+
+MockRunnableWithAccuracy::MockRunnableWithAccuracy(
+    bool deleteMe,
+    const uint64_t delay)
+    : joynr::Runnable(deleteMe),
+      est_ms(TimeUtils::getCurrentMillisSinceEpoch() + delay)
+{
+}
+
+MockRunnableWithAccuracy::~MockRunnableWithAccuracy()
+{
+    dtorCalled();
+}
+
+void MockRunnableWithAccuracy::run()
+{
+    runCalled();
+
+    const uint64_t now_ms = TimeUtils::getCurrentMillisSinceEpoch();
+
+    const uint64_t diff = (now_ms > est_ms) ? now_ms - est_ms : est_ms - now_ms;
+    LOG_TRACE(MockObjects::logger, FormatString("Runnable run() is called").str());
+    LOG_TRACE(MockObjects::logger, FormatString(" ETA        : %1").arg(est_ms).str());
+    LOG_TRACE(MockObjects::logger, FormatString(" current    : %1").arg(now_ms).str());
+    LOG_TRACE(MockObjects::logger, FormatString(" difference : %1").arg(diff).str());
+
+    if (diff <= timerAccuracyTolerance_ms)
+    {
+        runCalledInTime();
+    }
 }

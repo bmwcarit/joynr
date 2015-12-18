@@ -20,6 +20,18 @@ package io.joynr.proxy;
  */
 
 import static org.mockito.Mockito.times;
+
+import java.lang.reflect.Method;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+
+import com.fasterxml.jackson.databind.JsonMappingException;
+
 import io.joynr.arbitration.ArbitrationResult;
 import io.joynr.dispatcher.rpc.JoynrAsyncInterface;
 import io.joynr.dispatcher.rpc.JoynrSyncInterface;
@@ -34,22 +46,10 @@ import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.proxy.invocation.UnsubscribeInvocation;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
-
-import java.lang.reflect.Method;
-
 import joynr.PeriodicSubscriptionQos;
-import joynr.system.RoutingTypes.ChannelAddress;
+import joynr.system.RoutingTypes.Address;
 import joynr.types.Localisation.GpsPosition;
 import joynr.vehicle.LocalisationSubscriptionInterface;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-
-import com.fasterxml.jackson.databind.JsonMappingException;
 
 public class ConnectorTests {
 
@@ -59,23 +59,20 @@ public class ConnectorTests {
     private SubscriptionManager subscriptionManager;
     @Mock
     private RequestReplyManager requestReplyManager;
-
     @Mock
     private MessageRouter messageRouter;
+    @Mock
+    private Address libJoynrMessagingAddress;
 
     private String fromParticipantId;
     private String toParticipantId;
-    private String channelId;
     private MessagingQos qosSettings;
-    private ChannelAddress address;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         fromParticipantId = "fromParticipantId";
         toParticipantId = "toParticipantId";
-        channelId = "testChannelId";
-        address = new ChannelAddress(channelId);
         qosSettings = new MessagingQos();
 
     }
@@ -106,7 +103,7 @@ public class ConnectorTests {
             Assert.fail("Calling a method with missing callback annotation did not throw an exception.");
         } catch (Exception e) {
             // This is what is supposed to happen -> no error handling
-            Assert.assertEquals(JsonMappingException.class, e.getClass());
+            Assert.assertEquals(JoynrIllegalStateException.class, e.getClass());
         }
 
     }
@@ -176,7 +173,9 @@ public class ConnectorTests {
         JoynrMessagingConnectorFactory joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(requestReplyManager,
                                                                                                            replyCallerDirectory,
                                                                                                            subscriptionManager);
-        ConnectorFactory connectorFactory = new ConnectorFactory(joynrMessagingConnectorFactory, messageRouter);
+        ConnectorFactory connectorFactory = new ConnectorFactory(joynrMessagingConnectorFactory,
+                                                                 messageRouter,
+                                                                 libJoynrMessagingAddress);
         ConnectorInvocationHandler connector = connectorFactory.create(fromParticipantId,
                                                                        arbitrationResult,
                                                                        qosSettings);

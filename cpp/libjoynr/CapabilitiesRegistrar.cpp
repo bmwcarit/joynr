@@ -20,6 +20,8 @@
 #include "joynr/ParticipantIdStorage.h"
 #include "joynr/RequestStatus.h"
 
+#include <algorithm>
+
 namespace joynr
 {
 
@@ -27,11 +29,11 @@ joynr_logging::Logger* CapabilitiesRegistrar::logger =
         joynr_logging::Logging::getInstance()->getLogger("DIS", "CapabilitiesRegistrar");
 
 CapabilitiesRegistrar::CapabilitiesRegistrar(
-        QList<IDispatcher*> dispatcherList,
+        std::vector<IDispatcher*> dispatcherList,
         joynr::system::IDiscoverySync& discoveryProxy,
-        std::shared_ptr<joynr::system::RoutingTypes::QtAddress> messagingStubAddress,
+        std::shared_ptr<joynr::system::RoutingTypes::Address> messagingStubAddress,
         std::shared_ptr<ParticipantIdStorage> participantIdStorage,
-        std::shared_ptr<joynr::system::RoutingTypes::QtAddress> dispatcherAddress,
+        std::shared_ptr<system::RoutingTypes::Address> dispatcherAddress,
         std::shared_ptr<MessageRouter> messageRouter)
         : dispatcherList(dispatcherList),
           discoveryProxy(discoveryProxy),
@@ -44,17 +46,18 @@ CapabilitiesRegistrar::CapabilitiesRegistrar(
 
 void CapabilitiesRegistrar::remove(const std::string& participantId)
 {
-    foreach (IDispatcher* currentDispatcher, dispatcherList) {
+    for (IDispatcher* currentDispatcher : dispatcherList) {
         currentDispatcher->removeRequestCaller(participantId);
     }
     try {
         discoveryProxy.remove(participantId);
     } catch (exceptions::JoynrException& e) {
         LOG_ERROR(logger,
-                  QString("Unable to remove provider (participant ID: %1) "
-                          "to discovery. Error: %2.")
-                          .arg(QString::fromStdString(participantId))
-                          .arg(QString::fromStdString(e.getMessage())));
+                  FormatString("Unable to remove provider (participant ID: %1) "
+                               "to discovery. Error: %2.")
+                          .arg(participantId)
+                          .arg(e.getMessage())
+                          .str());
     }
 
     std::shared_ptr<joynr::Future<void>> future(new Future<void>());
@@ -63,20 +66,22 @@ void CapabilitiesRegistrar::remove(const std::string& participantId)
     future->wait();
 
     if (!future->getStatus().successful()) {
-        LOG_ERROR(logger,
-                  QString("Unable to remove next hop (participant ID: %1) from message router.")
-                          .arg(QString::fromStdString(participantId)));
+        LOG_ERROR(
+                logger,
+                FormatString("Unable to remove next hop (participant ID: %1) from message router.")
+                        .arg(participantId)
+                        .str());
     }
 }
 
 void CapabilitiesRegistrar::addDispatcher(IDispatcher* dispatcher)
 {
-    dispatcherList.append(dispatcher);
+    dispatcherList.push_back(dispatcher);
 }
 
 void CapabilitiesRegistrar::removeDispatcher(IDispatcher* dispatcher)
 {
-    dispatcherList.removeAll(dispatcher);
+    removeAll(dispatcherList, dispatcher);
 }
 
 } // namespace joynr

@@ -17,8 +17,10 @@
  * #L%
  */
 #include "joynr/SystemServicesSettings.h"
-#include <assert.h>
-#include "joynr/SettingsMerger.h"
+#include "joynr/Settings.h"
+#include "joynr/TypeUtil.h"
+
+#include <cassert>
 
 namespace joynr
 {
@@ -28,17 +30,15 @@ using namespace joynr_logging;
 Logger* SystemServicesSettings::logger =
         Logging::getInstance()->getLogger("MSG", "SystemServicesSettings");
 
-SystemServicesSettings::SystemServicesSettings(QSettings& settings, QObject* parent)
-        : QObject(parent), settings(settings)
+SystemServicesSettings::SystemServicesSettings(Settings& settings) : settings(settings)
 {
-    QSettings defaultSystemServicesSettings(
-            DEFAULT_SYSTEM_SERVICES_SETTINGS_FILENAME(), QSettings::IniFormat);
-    SettingsMerger::mergeSettings(defaultSystemServicesSettings, this->settings, false);
+    Settings defaultSystemServicesSettings{DEFAULT_SYSTEM_SERVICES_SETTINGS_FILENAME()};
+    Settings::merge(defaultSystemServicesSettings, this->settings, false);
     checkSettings();
 }
 
 SystemServicesSettings::SystemServicesSettings(const SystemServicesSettings& other)
-        : QObject(other.parent()), settings(other.settings)
+        : settings(other.settings)
 {
 }
 
@@ -46,102 +46,97 @@ SystemServicesSettings::~SystemServicesSettings()
 {
 }
 
-const QString& SystemServicesSettings::SETTING_DOMAIN()
+const std::string& SystemServicesSettings::SETTING_DOMAIN()
 {
-    static const QString value("system.services/domain");
+    static const std::string value("system.services/domain");
     return value;
 }
 
-const QString& SystemServicesSettings::SETTING_CC_ROUTINGPROVIDER_AUTHENTICATIONTOKEN()
+const std::string& SystemServicesSettings::SETTING_CC_ROUTINGPROVIDER_AUTHENTICATIONTOKEN()
 {
-    static const QString value("system.services/cc-routingprovider-authenticationtoken");
+    static const std::string value("system.services/cc-routingprovider-authenticationtoken");
     return value;
 }
 
-const QString& SystemServicesSettings::SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID()
+const std::string& SystemServicesSettings::SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID()
 {
-    static const QString value("system.services/cc-routingprovider-participantid");
+    static const std::string value("system.services/cc-routingprovider-participantid");
     return value;
 }
 
-const QString& SystemServicesSettings::SETTING_CC_DISCOVERYPROVIDER_AUTHENTICATIONTOKEN()
+const std::string& SystemServicesSettings::SETTING_CC_DISCOVERYPROVIDER_AUTHENTICATIONTOKEN()
 {
-    static const QString value("system.services/cc-discoveryprovider-authenticationtoken");
+    static const std::string value("system.services/cc-discoveryprovider-authenticationtoken");
     return value;
 }
 
-const QString& SystemServicesSettings::SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID()
+const std::string& SystemServicesSettings::SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID()
 {
-    static const QString value("system.services/cc-discoveryprovider-participantid");
+    static const std::string value("system.services/cc-discoveryprovider-participantid");
     return value;
 }
 
-const QString& SystemServicesSettings::DEFAULT_SYSTEM_SERVICES_SETTINGS_FILENAME()
+const std::string& SystemServicesSettings::DEFAULT_SYSTEM_SERVICES_SETTINGS_FILENAME()
 {
-    static const QString value("resources/default-system-services.settings");
+    static const std::string value("resources/default-system-services.settings");
     return value;
 }
 
-QString SystemServicesSettings::getDomain() const
+std::string SystemServicesSettings::getDomain() const
 {
-    return settings.value(SETTING_DOMAIN()).toString();
+    return settings.get<std::string>(SETTING_DOMAIN());
 }
 
-void SystemServicesSettings::setJoynrSystemServicesDomain(const QString& systemServicesDomain)
+void SystemServicesSettings::setJoynrSystemServicesDomain(const std::string& systemServicesDomain)
 {
-    settings.setValue(SETTING_DOMAIN(), systemServicesDomain);
+    settings.set(SETTING_DOMAIN(), systemServicesDomain);
 }
 
-QString SystemServicesSettings::getCcRoutingProviderAuthenticationToken() const
+std::string SystemServicesSettings::getCcRoutingProviderAuthenticationToken() const
 {
-    return settings.value(SETTING_CC_ROUTINGPROVIDER_AUTHENTICATIONTOKEN()).toString();
+    return settings.get<std::string>(SETTING_CC_ROUTINGPROVIDER_AUTHENTICATIONTOKEN());
 }
 
 void SystemServicesSettings::setCcRoutingProviderAuthenticationToken(
-        const QString& authenticationToken)
+        const std::string& authenticationToken)
 {
-    settings.setValue(SETTING_CC_ROUTINGPROVIDER_AUTHENTICATIONTOKEN(), authenticationToken);
+    settings.set(SETTING_CC_ROUTINGPROVIDER_AUTHENTICATIONTOKEN(), authenticationToken);
 }
 
-QString SystemServicesSettings::getCcRoutingProviderParticipantId() const
+std::string SystemServicesSettings::getCcRoutingProviderParticipantId() const
 {
-    return settings.value(SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID()).toString();
+    return settings.get<std::string>(SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID());
 }
 
-void SystemServicesSettings::setCcRoutingProviderParticipantId(const QString& participantId)
+void SystemServicesSettings::setCcRoutingProviderParticipantId(const std::string& participantId)
 {
-    settings.setValue(SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID(), participantId);
+    settings.set(SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID(), participantId);
 }
 
-QString SystemServicesSettings::getCcDiscoveryProviderAuthenticationToken() const
+std::string SystemServicesSettings::getCcDiscoveryProviderAuthenticationToken() const
 {
-    return settings.value(SETTING_CC_DISCOVERYPROVIDER_AUTHENTICATIONTOKEN()).toString();
+    return settings.get<std::string>(SETTING_CC_DISCOVERYPROVIDER_AUTHENTICATIONTOKEN());
 }
 
 void SystemServicesSettings::setCcDiscoveryProviderAuthenticationToken(
-        const QString& authenticationToken)
+        const std::string& authenticationToken)
 {
-    settings.setValue(SETTING_CC_DISCOVERYPROVIDER_AUTHENTICATIONTOKEN(), authenticationToken);
+    settings.set(SETTING_CC_DISCOVERYPROVIDER_AUTHENTICATIONTOKEN(), authenticationToken);
 }
 
-QString SystemServicesSettings::getCcDiscoveryProviderParticipantId() const
+std::string SystemServicesSettings::getCcDiscoveryProviderParticipantId() const
 {
-    return settings.value(SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID()).toString();
+    return settings.get<std::string>(SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID());
 }
 
-void SystemServicesSettings::setCcDiscoveryProviderParticipantId(const QString& participantId)
+void SystemServicesSettings::setCcDiscoveryProviderParticipantId(const std::string& participantId)
 {
-    settings.setValue(SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID(), participantId);
+    settings.set(SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID(), participantId);
 }
 
-bool SystemServicesSettings::contains(const QString& key) const
+bool SystemServicesSettings::contains(const std::string& key) const
 {
     return settings.contains(key);
-}
-
-QVariant SystemServicesSettings::value(const QString& key) const
-{
-    return settings.value(key);
 }
 
 // Checks messaging settings and sets defaults
@@ -157,20 +152,32 @@ void SystemServicesSettings::checkSettings() const
 void SystemServicesSettings::printSettings() const
 {
     LOG_DEBUG(logger,
-              "SETTING: " + SETTING_DOMAIN() + " = " + settings.value(SETTING_DOMAIN()).toString());
+              FormatString("SETTING: %1 = %2")
+                      .arg(SETTING_DOMAIN())
+                      .arg(settings.get<std::string>(SETTING_DOMAIN()))
+                      .str());
     LOG_DEBUG(logger,
-              "SETTING: " + SETTING_CC_ROUTINGPROVIDER_AUTHENTICATIONTOKEN() + " = " +
-                      settings.value(SETTING_CC_ROUTINGPROVIDER_AUTHENTICATIONTOKEN()).toString());
+              FormatString("SETTING: %1 = %2")
+                      .arg(SETTING_CC_ROUTINGPROVIDER_AUTHENTICATIONTOKEN())
+                      .arg(settings.get<std::string>(
+                              SETTING_CC_ROUTINGPROVIDER_AUTHENTICATIONTOKEN()))
+                      .str());
     LOG_DEBUG(logger,
-              "SETTING: " + SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID() + " = " +
-                      settings.value(SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID()).toString());
-    LOG_DEBUG(
-            logger,
-            "SETTING: " + SETTING_CC_DISCOVERYPROVIDER_AUTHENTICATIONTOKEN() + " = " +
-                    settings.value(SETTING_CC_DISCOVERYPROVIDER_AUTHENTICATIONTOKEN()).toString());
+              FormatString("SETTING: %1 = %2")
+                      .arg(SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID())
+                      .arg(settings.get<std::string>(SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID()))
+                      .str());
     LOG_DEBUG(logger,
-              "SETTING: " + SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID() + " = " +
-                      settings.value(SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID()).toString());
+              FormatString("SETTING: %1 = %2")
+                      .arg(SETTING_CC_DISCOVERYPROVIDER_AUTHENTICATIONTOKEN())
+                      .arg(settings.get<std::string>(
+                              SETTING_CC_DISCOVERYPROVIDER_AUTHENTICATIONTOKEN()))
+                      .str());
+    LOG_DEBUG(logger,
+              FormatString("SETTING: %1 = %2")
+                      .arg(SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID())
+                      .arg(settings.get<std::string>(SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID()))
+                      .str());
 }
 
 } // namespace joynr

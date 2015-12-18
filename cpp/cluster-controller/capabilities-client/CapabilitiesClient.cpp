@@ -27,8 +27,7 @@
 #include "joynr/DispatcherUtils.h"
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
 #include "joynr/Future.h"
-
-#include <QString>
+#include "joynr/types/CapabilityInformation.h"
 #include <string>
 #include <stdint.h>
 #include <cassert>
@@ -44,12 +43,8 @@ CapabilitiesClient::CapabilitiesClient(const std::string& localChannelId)
           defaultRequestRoundtripTTL(40000),
           capabilitiesClientParticipantId(),
           localChannelId(localChannelId),
-          capabilitiesProxy(NULL)
+          capabilitiesProxy(nullptr)
 {
-    // We will be deserializing QtCapabilityInformation - register the metatypes
-    qRegisterMetaType<joynr::types::QtCapabilityInformation>(
-            "joynr::types::QtCapabilityInformation");
-    qRegisterMetaType<joynr__types__QtCapabilityInformation>("joynr__types__CapabilityInformation");
 }
 
 CapabilitiesClient::~CapabilitiesClient()
@@ -80,8 +75,7 @@ void CapabilitiesClient::add(std::vector<types::CapabilityInformation> capabilit
         std::function<void(const exceptions::JoynrException&)> onError =
                 [](const exceptions::JoynrException& error) {
             (void)error;
-            LOG_ERROR(logger,
-                      QString("Error occured during the execution of capabilitiesProxy->add"));
+            LOG_ERROR(logger, "Error occured during the execution of capabilitiesProxy->add");
         };
         capabilitiesProxy->addAsync(capabilitiesInformationList, nullptr, onError);
     }

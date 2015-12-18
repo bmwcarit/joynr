@@ -22,6 +22,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <memory>
+#include <chrono>
 #include "PrettyPrint.h"
 #include "LibJoynrMockObjects.h"
 
@@ -32,14 +33,11 @@
 #include "joynr/vehicle/DefaultGpsProvider.h"
 #include "joynr/tests/TestLocationUpdateSelectiveBroadcastFilter.h"
 #include "QtCore"
-#include "utils/TestQString.h"
 #include <string>
 #include <vector>
-#include "utils/QThreadSleep.h"
 #include "joynr/DelayedScheduler.h"
+#include "joynr/Runnable.h"
 #include "joynr/vehicle/GpsRequestCaller.h"
-#include "joynr/types/Localisation_QtGpsLocation.h"
-#include "joynr/types/Localisation_QtTrip.h"
 #include "joynr/IMessageReceiver.h"
 #include "joynr/IDispatcher.h"
 #include "joynr/IMessaging.h"
@@ -54,7 +52,7 @@
 #include "joynr/JoynrMessageFactory.h"
 #include "joynr/JoynrMessageSender.h"
 
-#include "joynr/system/RoutingTypes_QtAddress.h"
+#include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 #include "joynr/SubscriptionReply.h"
@@ -93,6 +91,8 @@
 #include "joynr/BounceProxyUrl.h"
 #include "joynr/Directory.h"
 #include "joynr/exceptions/JoynrException.h"
+#include "joynr/Variant.h"
+#include "joynr/Settings.h"
 
 using ::testing::A;
 using ::testing::_;
@@ -139,13 +139,93 @@ public:
     MOCK_METHOD1(transmit, void(joynr::JoynrMessage& message));
 };
 
-class MockDelayedScheduler : public joynr::SingleThreadedDelayedScheduler
+class MockDelayedScheduler : public joynr::DelayedScheduler
 {
 public:
-    MockDelayedScheduler(QString name) : SingleThreadedDelayedScheduler(name){};
-    MOCK_METHOD1(executeRunnable, void(QRunnable* runnable));
-    MOCK_METHOD1(stopRunnable, void(QRunnable* runnable));
-    MOCK_METHOD2(schedule, quint32(QRunnable* runnable, int delay_ms));
+    MockDelayedScheduler()
+        : joynr::DelayedScheduler([](joynr::Runnable*){ assert(false); }, std::chrono::milliseconds::zero())
+    {
+    };
+
+    void shutdown() { joynr::DelayedScheduler::shutdown(); }
+    MOCK_METHOD1(unschedule, void (DelayedScheduler::RunnableHandle));
+    MOCK_METHOD2(schedule, DelayedScheduler::RunnableHandle (joynr::Runnable*, std::chrono::milliseconds delay));
+};
+
+class MockRunnable : public joynr::Runnable
+{
+public:
+    MockRunnable(bool deleteMe) : joynr::Runnable(deleteMe) {}
+
+    MOCK_CONST_METHOD0(dtorCalled, void ());
+    ~MockRunnable() { dtorCalled(); }
+
+    MOCK_METHOD0(shutdown, void ());
+    MOCK_METHOD0(run, void ());
+};
+
+class MockRunnableWithAccuracy : public joynr::Runnable
+{
+public:
+    static const uint64_t timerAccuracyTolerance_ms = 5U;
+
+    MockRunnableWithAccuracy(bool deleteMe,
+                             const uint64_t delay);
+
+    MOCK_CONST_METHOD0(dtorCalled, void ());
+    ~MockRunnableWithAccuracy();
+
+    MOCK_METHOD0(shutdown, void ());
+
+    MOCK_CONST_METHOD0(runCalled, void());
+    MOCK_CONST_METHOD0(runCalledInTime, void());
+    virtual void run();
+
+private:
+    const uint64_t est_ms;
+};
+
+#include <mutex>
+#include <condition_variable>
+
+class MockRunnableBlocking : public joynr::Runnable
+{
+public:
+    MockRunnableBlocking(bool deleteMe = false)
+        : joynr::Runnable(deleteMe),
+          mutex(),
+          wait()
+    {
+    }
+
+    MOCK_CONST_METHOD0(dtorCalled, void ());
+    ~MockRunnableBlocking() { dtorCalled(); }
+
+    MOCK_METHOD0(shutdownCalled, void ());
+    void shutdown()
+    {
+        wait.notify_all();
+        shutdownCalled();
+    }
+
+    void manualShutdown()
+    {
+        wait.notify_all();
+    }
+
+    MOCK_CONST_METHOD0(runEntry, void ());
+    MOCK_CONST_METHOD0(runExit, void ());
+    void run()
+    {
+        runEntry();
+        std::unique_lock<std::mutex> lock(mutex);
+        wait.wait(lock);
+        runExit();
+    }
+
+private:
+    std::mutex mutex;
+    std::condition_variable wait;
 };
 
 class MockInProcessConnectorFactory : public joynr::InProcessConnectorFactory {
@@ -155,7 +235,7 @@ public:
         : InProcessConnectorFactory(NULL,NULL,NULL,NULL) {
     }
 
-    MOCK_METHOD1(canBeCreated, bool(const std::shared_ptr<joynr::system::RoutingTypes::QtAddress> address));
+    MOCK_METHOD1(canBeCreated, bool(const std::shared_ptr<joynr::system::RoutingTypes::Address> address));
 };
 
 class MockDispatcher : public joynr::IDispatcher {
@@ -190,7 +270,7 @@ public:
 
     }
     MOCK_METHOD1(route, void(const joynr::JoynrMessage& message));
-    MOCK_METHOD2(addNextHop, void(std::string participantId, std::shared_ptr<joynr::system::RoutingTypes::QtAddress> inprocessAddress));
+    MOCK_METHOD2(addNextHop, void(std::string participantId, std::shared_ptr<joynr::system::RoutingTypes::Address> inprocessAddress));
     MOCK_METHOD1(removeNextHop, void(std::string participantId));
 };
 
@@ -278,10 +358,10 @@ template <typename T>
 class MockReplyCaller : public joynr::ReplyCaller<T> {
 public:
     MockReplyCaller(std::function<void(const joynr::RequestStatus& status, const T& returnValue)> callbackFct,
-                    std::function<void(const joynr::RequestStatus& status, std::shared_ptr<joynr::exceptions::JoynrException> error)> errorFct) : joynr::ReplyCaller<T>(callbackFct, errorFct) {}
+                    std::function<void(const joynr::RequestStatus& status, const joynr::exceptions::JoynrException& error)> errorFct) : joynr::ReplyCaller<T>(callbackFct, errorFct) {}
     MOCK_METHOD1_T(returnValue, void(const T& payload));
     MOCK_METHOD0_T(timeOut, void());
-    MOCK_CONST_METHOD0_T(getType, QString());
+    MOCK_CONST_METHOD0_T(getType, std::string());
 };
 
 class MockGpsFloatSubscriptionListener
@@ -307,8 +387,8 @@ public:
 
 class MockClientCache : public joynr::IClientCache {
 public:
-   MOCK_METHOD1(lookUp, QVariant(const QString& attributeId));
-   MOCK_METHOD2(insert, void(QString attributeId, QVariant value));
+   MOCK_METHOD1(lookUp, joynr::Variant(const std::string& attributeId));
+   MOCK_METHOD2(insert, void(std::string attributeId, joynr::Variant value));
 };
 
 class MockDiscovery : public joynr::system::IDiscovery {
@@ -410,7 +490,7 @@ class MockMessageReceiver : public joynr::IMessageReceiver
 public:
     MockMessageReceiver(){};
     MOCK_METHOD1(init, void(std::shared_ptr<joynr::ILocalChannelUrlDirectory> channelUrlDirectory));
-    MOCK_CONST_METHOD0(getReceiveChannelId, QString&());
+    MOCK_CONST_METHOD0(getReceiveChannelId, std::string&());
     MOCK_METHOD0(startReceiveQueue, void());
     MOCK_METHOD0(stopReceiveQueue, void());
     MOCK_METHOD0(waitForReceiveQueueStarted, void());
@@ -421,7 +501,7 @@ public:
 class MockMessageSender : public joynr::IMessageSender
 {
 public:
-    MOCK_METHOD2(sendMessage,void(const QString&, const joynr::JoynrMessage&));
+    MOCK_METHOD2(sendMessage,void(const std::string&, const joynr::JoynrMessage&));
     MOCK_METHOD2(init,void(std::shared_ptr<joynr::ILocalChannelUrlDirectory> channelUrlDirectory,const joynr::MessagingSettings& settings));
 };
 
@@ -432,8 +512,7 @@ template <typename ... Ts>
 class MockCallback{
 public:
     MOCK_METHOD1_T(onSuccess, void(const Ts&... result));
-    MOCK_METHOD2_T(onError, void(const joynr::RequestStatus& status,
-                std::shared_ptr<joynr::exceptions::JoynrException> error));
+    MOCK_METHOD1_T(onError, void(const joynr::exceptions::JoynrException& error));
 };
 
 template<>
@@ -441,15 +520,31 @@ class MockCallback<void> {
 
 public:
     MOCK_METHOD0(onSuccess, void(void));
+    MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrException& error));
+};
+
+template <typename ... Ts>
+class MockCallbackWithOnErrorHavingRequestStatus{
+public:
+    MOCK_METHOD1_T(onSuccess, void(const Ts&... result));
+    MOCK_METHOD2_T(onError, void(const joynr::RequestStatus& status,
+                const joynr::exceptions::JoynrException& error));
+};
+
+template<>
+class MockCallbackWithOnErrorHavingRequestStatus<void> {
+
+public:
+    MOCK_METHOD0(onSuccess, void(void));
     MOCK_METHOD2(onError, void(const joynr::RequestStatus& status,
-            std::shared_ptr<joynr::exceptions::JoynrException> error));
+            const joynr::exceptions::JoynrException& error));
 };
 
 class MockMessagingStubFactory : public joynr::IMessagingStubFactory {
 public:
-    MOCK_METHOD1(create, std::shared_ptr<joynr::IMessaging>(const joynr::system::RoutingTypes::QtAddress& destEndpointAddress));
-    MOCK_METHOD1(remove, void(const joynr::system::RoutingTypes::QtAddress& destEndpointAddress));
-    MOCK_METHOD1(contains, bool(const joynr::system::RoutingTypes::QtAddress& destEndpointAddress));
+    MOCK_METHOD1(create, std::shared_ptr<joynr::IMessaging>(const joynr::system::RoutingTypes::Address& destEndpointAddress));
+    MOCK_METHOD1(remove, void(const joynr::system::RoutingTypes::Address& destEndpointAddress));
+    MOCK_METHOD1(contains, bool(const joynr::system::RoutingTypes::Address& destEndpointAddress));
 };
 
 class GlobalCapabilitiesMock {
@@ -467,12 +562,7 @@ class MockGpsProvider : public joynr::vehicle::DefaultGpsProvider
     {
         qDebug() << "I am being destroyed_ MockProvider";
     };
-    /*RequestStatus getLocation(QtGpsLocation& result)
-    {
-        result = QtGpsLocation(QtGpsFixEnum::MODE2D, 4,5,6,7);
-        return RequestStatus(RequestStatusCode::OK);
-    }
-    */
+
     MOCK_METHOD1(getLocation, void(joynr::types::Localisation::GpsLocation& result) );
     MOCK_METHOD1(setLocation, void(joynr::types::Localisation::GpsLocation gpsLocation));
     //MOCK_METHOD2(calculateAvailableSatellites,joynr::RequestStatus(int32_t& result));
@@ -503,25 +593,56 @@ public:
     }
 
     void invokeListOfStringsOnSuccessFct(std::function<void(const std::vector<std::string>&)> onSuccess,
-                            std::function<void(const joynr::exceptions::JoynrException&)> onError) {
+                            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) {
         std::vector<std::string> listOfStrings;
         listOfStrings.push_back("firstString");
         onSuccess(listOfStrings);
     }
 
+    void invokeGetterOnErrorFunctionWithProviderRuntimeException(std::function<void(const int32_t&)> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) {
+        onError(joynr::exceptions::ProviderRuntimeException(providerRuntimeExceptionTestMsg));
+    }
+
+    void invokeMethodOnErrorFunctionWithProviderRuntimeException(std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::JoynrException&)> onError) {
+        onError(joynr::exceptions::ProviderRuntimeException(providerRuntimeExceptionTestMsg));
+    }
+
+    void invokeMapParametersOnSuccessFct(const joynr::types::TestTypes::TStringKeyMap& tStringMapIn,
+                                         std::function<void(const joynr::types::TestTypes::TStringKeyMap&)> onSuccess,
+                                         std::function<void(const joynr::exceptions::JoynrException&)>) {
+        onSuccess(tStringMapIn);
+    }
+
     MockTestRequestCaller() :
             joynr::tests::testRequestCaller(std::make_shared<MockTestProvider>())
     {
-        EXPECT_CALL(
+        ON_CALL(
                 *this,
                 getLocation(_,_)
         )
-                .WillRepeatedly(testing::Invoke(this, &MockTestRequestCaller::invokeLocationOnSuccessFct));
-        EXPECT_CALL(
+                .WillByDefault(testing::Invoke(this, &MockTestRequestCaller::invokeLocationOnSuccessFct));
+        ON_CALL(
                 *this,
                 getListOfStrings(_,_)
         )
-                .WillRepeatedly(testing::Invoke(this, &MockTestRequestCaller::invokeListOfStringsOnSuccessFct));
+                .WillByDefault(testing::Invoke(this, &MockTestRequestCaller::invokeListOfStringsOnSuccessFct));
+        ON_CALL(
+                *this,
+                getAttributeWithProviderRuntimeException(_,_)
+        )
+                .WillByDefault(testing::Invoke(this, &MockTestRequestCaller::invokeGetterOnErrorFunctionWithProviderRuntimeException));
+        ON_CALL(
+                *this,
+                methodWithProviderRuntimeException(_,_)
+        )
+                .WillByDefault(testing::Invoke(this, &MockTestRequestCaller::invokeMethodOnErrorFunctionWithProviderRuntimeException));
+        ON_CALL(
+                *this,
+                mapParameters(_,_,_)
+        )
+                .WillByDefault(testing::Invoke(this, &MockTestRequestCaller::invokeMapParametersOnSuccessFct));
 
     }
     MockTestRequestCaller(testing::Cardinality getLocationCardinality) :
@@ -543,14 +664,25 @@ public:
     MOCK_METHOD2(getLocation,
                  void(std::function<void(const joynr::types::Localisation::GpsLocation& location)>,
                       std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>));
+    MOCK_METHOD3(mapParameters,
+                 void(const joynr::types::TestTypes::TStringKeyMap&,
+                      std::function<void(const joynr::types::TestTypes::TStringKeyMap&)>,
+                      std::function<void(const joynr::exceptions::JoynrException&)>));
     MOCK_METHOD2(getListOfStrings,
                  void(std::function<void(const std::vector<std::string>& listOfStrings)>,
                       std::function<void(const joynr::exceptions::JoynrException& exception)>));
+    MOCK_METHOD2(getAttributeWithProviderRuntimeException,
+                 void(std::function<void(const int32_t&)>,
+                      std::function<void(const joynr::exceptions::ProviderRuntimeException&)>));
+    MOCK_METHOD2(methodWithProviderRuntimeException,
+                 void(std::function<void()>,
+                      std::function<void(const joynr::exceptions::JoynrException&)>));
     MOCK_METHOD2(registerAttributeListener, void(const std::string& attributeName, joynr::IAttributeListener* attributeListener));
     MOCK_METHOD2(registerBroadcastListener, void(const std::string& broadcastName, joynr::IBroadcastListener* broadcastListener));
     MOCK_METHOD2(unregisterAttributeListener, void(const std::string& attributeName, joynr::IAttributeListener* attributeListener));
     MOCK_METHOD2(unregisterBroadcastListener, void(const std::string& broadcastName, joynr::IBroadcastListener* broadcastListener));
 
+    std::string providerRuntimeExceptionTestMsg = "ProviderRuntimeExceptionTestMessage";
 };
 
 class MockGpsRequestCaller : public joynr::vehicle::GpsRequestCaller {
@@ -569,7 +701,7 @@ public:
     MOCK_METHOD1(containsRequestCaller, bool(const std::string& participantId));
 };
 
-class MockEndpointAddress : public joynr::system::RoutingTypes::QtAddress {
+class MockEndpointAddress : public joynr::system::RoutingTypes::Address {
 
 };
 
@@ -584,42 +716,42 @@ public:
     MOCK_METHOD2_T(add, void(const Key &keyId, T* value));
     MOCK_METHOD2_T(add, void(const Key& keyId, std::shared_ptr < T > value));
 
-    MOCK_METHOD3_T(add, void(const Key &keyId, T* value, qint64 ttl_ms));
-    MOCK_METHOD3_T(add, void(const Key& keyId, std::shared_ptr < T > value, qint64 ttl_ms));
+    MOCK_METHOD3_T(add, void(const Key &keyId, T* value, int64_t ttl_ms));
+    MOCK_METHOD3_T(add, void(const Key& keyId, std::shared_ptr < T > value, int64_t ttl_ms));
     MOCK_METHOD1_T(remove, void(const Key& keyId));
 };
 
-typedef MockDirectory<QString, joynr::system::RoutingTypes::QtAddress> MockMessagingEndpointDirectory;
+typedef MockDirectory<std::string, joynr::system::RoutingTypes::Address> MockMessagingEndpointDirectory;
 
 
 
 
 class MockSubscriptionManager : public joynr::SubscriptionManager {
 public:
-    MOCK_METHOD1(getSubscriptionCallback,std::shared_ptr<joynr::ISubscriptionCallback>(const QString& subscriptionId));
-    MOCK_METHOD4(registerSubscription,void(const QString& subscribeToName,
+    MOCK_METHOD1(getSubscriptionCallback,std::shared_ptr<joynr::ISubscriptionCallback>(const std::string& subscriptionId));
+    MOCK_METHOD4(registerSubscription,void(const std::string& subscribeToName,
                                                     std::shared_ptr<joynr::ISubscriptionCallback> subscriptionCaller, // SubMgr gets ownership of ptr
-                                                    std::shared_ptr<joynr::QtSubscriptionQos> qos,
+                                                    const joynr::Variant& qosVariant,
                                                     joynr::SubscriptionRequest& subscriptionRequest));
-    MOCK_METHOD1(unregisterSubscription, void(const QString& subscriptionId));
-    MOCK_METHOD1(touchSubscriptionState,void(const QString& subscriptionId));
+    MOCK_METHOD1(unregisterSubscription, void(const std::string& subscriptionId));
+    MOCK_METHOD1(touchSubscriptionState,void(const std::string& subscriptionId));
 };
 
 
 class MockPublicationManager : public joynr::PublicationManager {
 public:
-    MOCK_METHOD2(attributeValueChanged, void(const QString& subscriptionId, const QVariant& value));
+    MOCK_METHOD2(attributeValueChanged, void(const std::string& subscriptionId, const joynr::Variant& value));
 };
 
 //virtual public IChannelUrlDirectory, virtual public ChannelUrlDirectorySyncProxy, virtual public ChannelUrlDirectoryAsyncProxy
 class MockChannelUrlDirectoryProxy : public virtual joynr::infrastructure::ChannelUrlDirectoryProxy {
 public:
     MockChannelUrlDirectoryProxy() :
-        ChannelUrlDirectoryProxy(std::make_shared<joynr::system::RoutingTypes::QtAddress>(), NULL, NULL, "domain", joynr::MessagingQos(), false),
+        ChannelUrlDirectoryProxy(std::make_shared<joynr::system::RoutingTypes::Address>(), NULL, NULL, "domain", joynr::MessagingQos(), false),
         joynr::ProxyBase(NULL, NULL, "domain", "INTERFACE_NAME", joynr::MessagingQos(), false),
-        ChannelUrlDirectoryProxyBase(std::make_shared<joynr::system::RoutingTypes::QtAddress>(), NULL, NULL, "domain", joynr::MessagingQos(), false),
-        ChannelUrlDirectorySyncProxy(std::make_shared<joynr::system::RoutingTypes::QtAddress>(), NULL, NULL, "domain", joynr::MessagingQos(), false),
-        ChannelUrlDirectoryAsyncProxy(std::make_shared<joynr::system::RoutingTypes::QtAddress>(), NULL, NULL, "domain", joynr::MessagingQos(), false){}
+        ChannelUrlDirectoryProxyBase(std::make_shared<joynr::system::RoutingTypes::Address>(), NULL, NULL, "domain", joynr::MessagingQos(), false),
+        ChannelUrlDirectorySyncProxy(std::make_shared<joynr::system::RoutingTypes::Address>(), NULL, NULL, "domain", joynr::MessagingQos(), false),
+        ChannelUrlDirectoryAsyncProxy(std::make_shared<joynr::system::RoutingTypes::Address>(), NULL, NULL, "domain", joynr::MessagingQos(), false){}
 
     MOCK_METHOD3(getUrlsForChannelAsync,
                  std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> (
@@ -670,7 +802,7 @@ public:
     MOCK_METHOD4(getUrlsForChannelAsync,
                  std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>>(
                      const std::string& channelId,
-                     const qint64& timeout_ms,
+                     const int64_t& timeout_ms,
                      std::function<void(const joynr::types::ChannelUrlInformation&)> onSuccess,
                      std::function<void(const joynr::exceptions::JoynrException& error)> onError
                  )
@@ -693,12 +825,11 @@ public:
                      const joynr::types::Localisation::GpsLocation &location,
                      const joynr::tests::TestLocationUpdateSelectiveBroadcastFilterParameters &filterParameters));
 };
-
 class MockGlobalDomainAccessControllerProxy : public virtual joynr::infrastructure::GlobalDomainAccessControllerProxy {
 public:
     MockGlobalDomainAccessControllerProxy() :
         GlobalDomainAccessControllerProxy(
-                std::shared_ptr<joynr::system::RoutingTypes::QtAddress> (new joynr::system::RoutingTypes::QtAddress()),
+                std::shared_ptr<joynr::system::RoutingTypes::Address> (new joynr::system::RoutingTypes::Address()),
                 NULL,
                 NULL,
                 "domain",
@@ -712,21 +843,21 @@ public:
                 joynr::MessagingQos(),
                 false),
         GlobalDomainAccessControllerProxyBase(
-                std::shared_ptr<joynr::system::RoutingTypes::QtAddress> (new joynr::system::RoutingTypes::QtAddress()),
+                std::shared_ptr<joynr::system::RoutingTypes::Address> (new joynr::system::RoutingTypes::Address()),
                 NULL,
                 NULL,
                 "domain",
                 joynr::MessagingQos(),
                 false),
         GlobalDomainAccessControllerSyncProxy(
-                std::shared_ptr<joynr::system::RoutingTypes::QtAddress> (new joynr::system::RoutingTypes::QtAddress()),
+                std::shared_ptr<joynr::system::RoutingTypes::Address> (new joynr::system::RoutingTypes::Address()),
                 NULL,
                 NULL,
                 "domain",
                 joynr::MessagingQos(),
                 false),
         GlobalDomainAccessControllerAsyncProxy(
-                std::shared_ptr<joynr::system::RoutingTypes::QtAddress> (new joynr::system::RoutingTypes::QtAddress()),
+                std::shared_ptr<joynr::system::RoutingTypes::Address> (new joynr::system::RoutingTypes::Address()),
                 NULL,
                 NULL,
                 "domain",
@@ -787,25 +918,25 @@ public:
                      joynr::infrastructure::GlobalDomainAccessControllerDomainRoleEntryChangedBroadcastFilterParameters,
                      std::shared_ptr<joynr::ISubscriptionListener<joynr::infrastructure::DacTypes::DomainRoleEntry,
                                                                  joynr::infrastructure::DacTypes::ChangeType::Enum>>,
-                     std::shared_ptr<joynr::QtOnChangeSubscriptionQos>));
+                     std::shared_ptr<joynr::OnChangeSubscriptionQos>));
     MOCK_METHOD3(subscribeToOwnerAccessControlEntryChangedBroadcast,
                  std::string(
                      joynr::infrastructure::GlobalDomainAccessControllerOwnerAccessControlEntryChangedBroadcastFilterParameters,
                      std::shared_ptr<joynr::ISubscriptionListener<joynr::infrastructure::DacTypes::OwnerAccessControlEntry,
                                                                  joynr::infrastructure::DacTypes::ChangeType::Enum>>,
-                     std::shared_ptr<joynr::QtOnChangeSubscriptionQos>));
+                     std::shared_ptr<joynr::OnChangeSubscriptionQos>));
     MOCK_METHOD3(subscribeToMediatorAccessControlEntryChangedBroadcast,
                  std::string(
                      joynr::infrastructure::GlobalDomainAccessControllerMediatorAccessControlEntryChangedBroadcastFilterParameters,
                      std::shared_ptr<joynr::ISubscriptionListener<joynr::infrastructure::DacTypes::ChangeType::Enum,
                                                                  joynr::infrastructure::DacTypes::MasterAccessControlEntry>>,
-                     std::shared_ptr<joynr::QtOnChangeSubscriptionQos>));
+                     std::shared_ptr<joynr::OnChangeSubscriptionQos>));
     MOCK_METHOD3(subscribeToMasterAccessControlEntryChangedBroadcast,
                  std::string(
                      joynr::infrastructure::GlobalDomainAccessControllerMasterAccessControlEntryChangedBroadcastFilterParameters,
                      std::shared_ptr<joynr::ISubscriptionListener<joynr::infrastructure::DacTypes::ChangeType::Enum,
                                                                  joynr::infrastructure::DacTypes::MasterAccessControlEntry>>,
-                     std::shared_ptr<joynr::QtOnChangeSubscriptionQos>));
+                     std::shared_ptr<joynr::OnChangeSubscriptionQos>));
 
 };
 
@@ -823,7 +954,7 @@ public:
                      std::shared_ptr<joynr::LocalDomainAccessController::IGetConsumerPermissionCallback> callback));
 
     MOCK_METHOD5(getConsumerPermission,
-                 joynr::infrastructure::DacTypes::QtPermission::Enum(
+                 joynr::infrastructure::DacTypes::Permission::Enum(
                      const std::string& userId,
                      const std::string& domain,
                      const std::string& interfaceName,
@@ -833,14 +964,14 @@ public:
 
 class MockMessagingSettings : public joynr::MessagingSettings {
 public:
-    MockMessagingSettings(QSettings& settings):
+    MockMessagingSettings(joynr::Settings& settings):
         MessagingSettings(settings){}
     MOCK_METHOD0(
             getDiscoveryDirectoriesDomain,
-            QString());
+            std::string());
     MOCK_METHOD0(
             getCapabilitiesDirectoryParticipantId,
-            QString());
+            std::string());
 };
 
 class MockLocalCapabilitiesDirectory : public joynr::LocalCapabilitiesDirectory {
@@ -874,4 +1005,4 @@ public:
 // restore GCC diagnostic state
 #pragma GCC diagnostic pop
 
-#endif /* MOCKOBJECTS_H_ */
+#endif // MOCKOBJECTS_H_

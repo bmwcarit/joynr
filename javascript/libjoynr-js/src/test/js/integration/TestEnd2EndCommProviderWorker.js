@@ -33,6 +33,7 @@ importScripts("provisioning_end2end_common.js");
 importScripts("../joynr/vehicle/RadioProvider.js");
 importScripts("../joynr/vehicle/radiotypes/RadioStation.js");
 importScripts("../joynr/datatypes/exampleTypes/Country.js");
+importScripts("../joynr/datatypes/exampleTypes/StringMap.js");
 importScripts("../joynr/vehicle/radiotypes/ErrorList.js");
 importScripts("../../classes/lib/bluebird.js");
 
@@ -44,6 +45,8 @@ var enumArrayAttribute = [Country.GERMANY];
 var attrProvidedImpl;
 var numberOfStations = -1;
 var mixedSubscriptions = null;
+var byteBufferAttribute = null;
+var stringMapAttribute = null;
 
 var providerDomain;
 var libjoynrAsync;
@@ -86,11 +89,7 @@ function initializeTest(provisioningSuffix, providedDomain) {
             }
         };
 
-        joynr.load(joynr.provisioning, function(error, asynclib) {
-            if (error) {
-                throw error;
-            }
-
+        joynr.load(joynr.provisioning).then(function(asynclib){
             libjoynrAsync = asynclib;
             providerQos = new libjoynrAsync.types.ProviderQos({
                 customParameters : [],
@@ -128,6 +127,10 @@ function initializeTest(provisioningSuffix, providedDomain) {
                 mixedSubscriptions = value;
             });
 
+            radioProvider.attributeTestingProviderInterface.registerGetter(function() {
+               return undefined;
+            });
+
             radioProvider.failingSyncAttribute.registerGetter(function() {
                 throw new joynr.exceptions.ProviderRuntimeException({
                     detailMessage: "failure in failingSyncAttribute getter"
@@ -163,6 +166,22 @@ function initializeTest(provisioningSuffix, providedDomain) {
 
             radioProvider.enumArrayAttribute.registerSetter(function(value) {
                 enumArrayAttribute = value;
+            });
+
+            radioProvider.byteBufferAttribute.registerSetter(function(value) {
+                byteBufferAttribute = value;
+            });
+
+            radioProvider.byteBufferAttribute.registerGetter(function(value) {
+                return byteBufferAttribute;
+            });
+
+            radioProvider.stringMapAttribute.registerSetter(function(value) {
+                stringMapAttribute = value;
+            });
+
+            radioProvider.stringMapAttribute.registerGetter(function() {
+                return stringMapAttribute;
             });
 
             // register operation functions
@@ -271,6 +290,24 @@ function initializeTest(provisioningSuffix, providedDomain) {
                 };
             });
 
+            // register operation function "methodWithSingleArrayParameters"
+            radioProvider.methodWithSingleArrayParameters.registerOperation(function(opArgs) {
+                /* the dummy implementation transforms the incoming double values into
+                 * strings.
+                 */
+                var stringArrayOut = [], element;
+                if (opArgs.doubleArrayArg !== undefined) {
+                    for (element in opArgs.doubleArrayArg) {
+                        if (opArgs.doubleArrayArg.hasOwnProperty(element)) {
+                            stringArrayOut.push(opArgs.doubleArrayArg[element].toString());
+                        }
+                    }
+                }
+                return {
+                    stringArrayOut: stringArrayOut
+                };
+            });
+
             radioProvider.methodProvidedImpl.registerOperation(function(opArgs) {
                 return {
                     returnValue : opArgs.arg
@@ -299,6 +336,8 @@ function initializeTest(provisioningSuffix, providedDomain) {
                 reject(error);
                 throw new Error("error registering provider: " + error);
             });
+        }).catch(function(error){
+            throw error;
         });
     });
 }

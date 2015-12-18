@@ -86,8 +86,13 @@ public class ApplicationException extends Exception implements JoynrException {
     /**
      * @return the reported error enum
      */
-    public Enum<?> getError() {
-        return this.error;
+    @SuppressWarnings("unchecked")
+    public <T extends Enum<?>> T getError() {
+        try {
+            return (T) this.error;
+        } catch (ClassCastException e) {
+            throw new MethodInvocationException("cannot cast enum " + this.getError().name());
+        }
     }
 
     @Override

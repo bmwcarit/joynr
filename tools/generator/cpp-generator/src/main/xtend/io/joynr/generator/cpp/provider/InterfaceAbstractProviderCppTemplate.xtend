@@ -20,7 +20,6 @@ package io.joynr.generator.cpp.provider
 import com.google.inject.Inject
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
-import io.joynr.generator.cpp.util.QtTypeUtil
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.BroadcastUtil
@@ -31,7 +30,6 @@ class InterfaceAbstractProviderCppTemplate implements InterfaceTemplate {
 
 	@Inject private extension TemplateBase
 	@Inject private extension CppStdTypeUtil
-	@Inject private QtTypeUtil qtTypeUtil
 	@Inject private extension JoynrCppGeneratorExtensions
 	@Inject private extension NamingUtil
 	@Inject private extension BroadcastUtil
@@ -46,7 +44,7 @@ class InterfaceAbstractProviderCppTemplate implements InterfaceTemplate {
 #include "joynr/RequestStatus.h"
 #include "joynr/TypeUtil.h"
 
-«FOR parameterType: qtTypeUtil.getRequiredIncludesFor(serviceInterface)»
+«FOR parameterType: getRequiredIncludesFor(serviceInterface)»
 	#include «parameterType»
 «ENDFOR»
 
@@ -73,22 +71,16 @@ std::string «interfaceName»AbstractProvider::getInterfaceName() const {
 	void «interfaceName»AbstractProvider::«attributeName»Changed(
 			const «attributeType»& «attributeName»
 	) {
-		«val paramRef = qtTypeUtil.fromStdTypeToQTType(attribute, attributeName, true)»
-		«IF !isEnum(attribute.type) && isArray(attribute)»
-			QList<QVariant> «attributeName»QVarList = joynr::Util::convertListToVariantList(«paramRef»);
-		«ENDIF»
 		onAttributeValueChanged(
 				"«attributeName»",
-				«IF isEnum(attribute.type) && isArray(attribute)»
-					joynr::Util::convertListToVariantList(«paramRef»)
-				«ELSEIF isEnum(attribute.type)»
-					QVariant::fromValue(«paramRef»)
-				«ELSEIF isArray(attribute)»
-					QVariant::fromValue(«attributeName»QVarList)
-				«ELSEIF isComplex(attribute.type)»
-					QVariant::fromValue(«paramRef»)
+				«IF isArray(attribute)»
+					«IF isEnum(attribute.type)»
+						Variant::make<std::vector<Variant>>(Util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(attribute.type.derived)»>(«attribute.joynrName»))
+					«ELSE»
+						Variant::make<std::vector<Variant>>(TypeUtil::toVectorOfVariants(«attribute.joynrName»))
+					«ENDIF»
 				«ELSE»
-					QVariant(«paramRef»)
+					Variant::make<«getTypeName(attribute.type)»>(«attribute.joynrName»)
 				«ENDIF»
 		);
 	}
@@ -99,20 +91,16 @@ std::string «interfaceName»AbstractProvider::getInterfaceName() const {
 	void «interfaceName»AbstractProvider::fire«broadcastName.toFirstUpper»(
 			«broadcast.commaSeperatedTypedConstOutputParameterList.substring(1)»
 	) {
-		QList<QVariant> broadcastValues;
-		«FOR param: getOutputParameters(broadcast)»
-			«val paramRef = qtTypeUtil.fromStdTypeToQTType(param, param.joynrName, true)»
-			«IF isEnum(param.type) && isArray(param)»
-				broadcastValues.append(joynr::Util::convertListToVariantList(«paramRef»));
-			«ELSEIF isEnum(param.type)»
-				broadcastValues.append(QVariant::fromValue(«paramRef»));
-			«ELSEIF isArray(param)»
-				QList<QVariant> «param.joynrName»QVarList = joynr::Util::convertListToVariantList(«paramRef»);
-				broadcastValues.append(QVariant::fromValue(«param.joynrName»QVarList));
-			«ELSEIF isComplex(param.type)»
-				broadcastValues.append(QVariant::fromValue(«paramRef»));
+		std::vector<Variant> broadcastValues;
+		«FOR parameter: getOutputParameters(broadcast)»
+			«IF isArray(parameter)»
+				«IF isEnum(parameter.type)»
+					broadcastValues.push_back(Variant::make<std::vector<Variant>>(Util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(parameter.type.derived)»>(«parameter.joynrName»)));
+				«ELSE»
+					broadcastValues.push_back(Variant::make<std::vector<Variant>>(TypeUtil::toVectorOfVariants(«parameter.joynrName»)));
+				«ENDIF»
 			«ELSE»
-				broadcastValues.append(QVariant(«paramRef»));
+				broadcastValues.push_back(Variant::make<«getTypeName(parameter.type)»>(«parameter.joynrName»));
 			«ENDIF»
 		«ENDFOR»
 		fireBroadcast("«broadcastName»", broadcastValues);

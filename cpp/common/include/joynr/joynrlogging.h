@@ -21,10 +21,10 @@
 
 #include "joynr/joynrloggingmacros.h"
 #include "joynr/JoynrCommonExport.h"
+#include "FormatString.h"
+#include <string>
 
 #define NOGDI
-
-class QString;
 
 namespace joynr
 {
@@ -66,13 +66,13 @@ public:
      * @param className
      * @return Logger instance registered for given contextId and className
      */
-    virtual Logger* getLogger(QString contextId, QString className) = 0;
+    virtual Logger* getLogger(std::string contextId, std::string className) = 0;
     /**
      * @brief destroyLogger Logger previously registered for given contextId and className
      * @param contextId
      * @param className
      */
-    virtual void destroyLogger(QString contextId, QString className) = 0;
+    virtual void destroyLogger(std::string contextId, std::string className) = 0;
     /**
      * @brief getInstance
      * @return singleton Logging instance
@@ -103,7 +103,7 @@ public:
      * @param logLevel
      * @param message
      */
-    virtual void log(LogLevel logLevel, const QString& message) = 0;
+    virtual void log(LogLevel logLevel, const std::string& message) = 0;
 };
 
 } // namespace joynr

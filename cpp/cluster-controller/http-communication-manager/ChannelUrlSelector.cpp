@@ -20,6 +20,8 @@
 #include "joynr/MessagingSettings.h"
 #include "joynr/Future.h"
 #include "joynr/DispatcherUtils.h"
+#include "joynr/TypeUtil.h"
+#include <boost/algorithm/string/predicate.hpp>
 
 #include <cmath>
 #include <memory>
@@ -35,14 +37,14 @@ const double& ChannelUrlSelector::PUNISHMENT_FACTOR()
     static const double value = 0.4;
     return value;
 }
-const qint64& ChannelUrlSelector::TIME_FOR_ONE_RECOUPERATION()
+const int64_t& ChannelUrlSelector::TIME_FOR_ONE_RECOUPERATION()
 {
-    static const qint64 value = 1000 * 60 * 3;
+    static const int64_t value = 1000 * 60 * 3;
     return value;
 }
 
 ChannelUrlSelector::ChannelUrlSelector(const BounceProxyUrl& bounceProxyUrl,
-                                       qint64 timeForOneRecouperation,
+                                       int64_t timeForOneRecouperation,
                                        double punishmentFactor)
         : channelUrlDirectory(),
           bounceProxyUrl(bounceProxyUrl),
@@ -58,13 +60,14 @@ ChannelUrlSelector::ChannelUrlSelector(const BounceProxyUrl& bounceProxyUrl,
 ChannelUrlSelector::~ChannelUrlSelector()
 {
     // Delete all entries
-    QMapIterator<QString, ChannelUrlSelectorEntry*> i(entries);
+    auto it = entries.begin();
     ChannelUrlSelectorEntry* v;
-    while (i.hasNext()) {
-        i.next();
-        v = i.value();
-        if (v)
+    while (it != entries.end()) {
+        v = *it;
+        if (v) {
             delete v;
+        }
+        ++it;
     }
     LOG_TRACE(logger, "Destroyed ...");
 }
@@ -77,15 +80,15 @@ void ChannelUrlSelector::init(std::shared_ptr<ILocalChannelUrlDirectory> channel
     channelUrlDirectoryUrl = settings.getChannelUrlDirectoryUrl();
 }
 
-QString ChannelUrlSelector::obtainUrl(const QString& channelId,
-                                      RequestStatus& status,
-                                      const qint64& timeout_ms)
+std::string ChannelUrlSelector::obtainUrl(const std::string& channelId,
+                                          RequestStatus& status,
+                                          const int64_t& timeout_ms)
 {
 
     LOG_TRACE(logger, "entering obtainUrl ...");
     status.setCode(RequestStatusCode::IN_PROGRESS);
 
-    QString url("");
+    std::string url("");
 
     if (!channelUrlDirectory) {
         LOG_DEBUG(logger, "obtainUrl: channelUrlDirectoryProxy not available ...");
@@ -97,42 +100,56 @@ QString ChannelUrlSelector::obtainUrl(const QString& channelId,
     }
 
     if (entries.contains(channelId)) {
-        LOG_DEBUG(logger, "obtainUrl: using cached Urls for id = " + channelId);
+        LOG_DEBUG(logger,
+                  FormatString("obtainUrl: using cached Urls for id = %1").arg(channelId).str());
         ChannelUrlSelectorEntry* entry = entries.value(channelId);
         status.setCode(RequestStatusCode::OK);
         return constructUrl(entry->best());
     }
-    LOG_DEBUG(logger,
-              "obtainUrl: trying to obtain Urls from remote ChannelUrlDirectory for id = " +
-                      channelId);
+    LOG_DEBUG(
+            logger,
+            FormatString(
+                    "obtainUrl: trying to obtain Urls from remote ChannelUrlDirectory for id = %1")
+                    .arg(channelId)
+                    .str());
     std::shared_ptr<Future<types::ChannelUrlInformation>> proxyFuture(
-            channelUrlDirectory->getUrlsForChannelAsync(channelId.toStdString(), timeout_ms));
+            channelUrlDirectory->getUrlsForChannelAsync(channelId, timeout_ms));
     status = proxyFuture->getStatus();
 
     if (status.successful()) {
-        LOG_DEBUG(logger,
-                  "obtainUrl: obtained Urls from remote ChannelUrlDirectory for id = " + channelId);
+        LOG_DEBUG(
+                logger,
+                FormatString("obtainUrl: obtained Urls from remote ChannelUrlDirectory for id = %1")
+                        .arg(channelId)
+                        .str());
         types::ChannelUrlInformation urlInformation;
         proxyFuture->get(urlInformation);
         if (urlInformation.getUrls().empty()) {
-            LOG_DEBUG(logger, "obtainUrl: empty list of urls obtained from id = " + channelId);
-            LOG_DEBUG(logger, "obtainUrl: constructing default url for id = " + channelId);
+            LOG_DEBUG(logger,
+                      FormatString("obtainUrl: empty list of urls obtained from id = %1")
+                              .arg(channelId)
+                              .str());
+            LOG_DEBUG(logger,
+                      FormatString("obtainUrl: constructing default url for id = %1")
+                              .arg(channelId)
+                              .str());
             status.setCode(RequestStatusCode::ERROR);
             url = constructDefaultUrl(channelId);
             return constructUrl(url);
         }
-        url = QString::fromStdString(urlInformation.getUrls().at(0)); // return the first, store all
+        url = urlInformation.getUrls().at(0); // return the first, store all
         entries.insert(channelId,
-                       new ChannelUrlSelectorEntry(
-                               types::QtChannelUrlInformation::createQt(urlInformation),
-                               punishmentFactor,
-                               timeForOneRecouperation)); // deleted where?
+                       new ChannelUrlSelectorEntry(urlInformation,
+                                                   punishmentFactor,
+                                                   timeForOneRecouperation)); // deleted where?
         status.setCode(RequestStatusCode::OK);
         return constructUrl(url);
     } else {
         LOG_DEBUG(logger,
-                  "obtainUrl: FAILED to obtain Urls from remote ChannelUrlDirectory for id = " +
-                          channelId);
+                  FormatString("obtainUrl: FAILED to obtain Urls from remote ChannelUrlDirectory "
+                               "for id = %1")
+                          .arg(channelId)
+                          .str());
         status.setCode(RequestStatusCode::ERROR);
         url = constructDefaultUrl(channelId);
         return constructUrl(url);
@@ -140,9 +157,8 @@ QString ChannelUrlSelector::obtainUrl(const QString& channelId,
     return url;
 }
 
-void ChannelUrlSelector::feedback(bool success, const QString& channelId, QString url)
+void ChannelUrlSelector::feedback(bool success, const std::string& channelId, std::string url)
 {
-
     LOG_TRACE(logger, "entering feedback ...");
     if (success) {
         LOG_TRACE(logger, "feedback was positive");
@@ -152,41 +168,42 @@ void ChannelUrlSelector::feedback(bool success, const QString& channelId, QStrin
         LOG_DEBUG(logger, "feedback for an unknown channelId");
         return;
     }
-    LOG_TRACE(logger, "feedback: punishing Url = " + url);
-    LOG_TRACE(logger, " for channelId= " + channelId);
+    LOG_TRACE(logger, FormatString("feedback: punishing Url = %1").arg(url).str());
+    LOG_TRACE(logger, FormatString(" for channelId= %1").arg(channelId).str());
     ChannelUrlSelectorEntry* entry = entries.value(channelId);
-    int cutoff = url.indexOf("/" + BounceProxyUrl::SEND_MESSAGE_PATH_APPENDIX());
+    std::string::size_type cutoff = url.find("/" + BounceProxyUrl::SEND_MESSAGE_PATH_APPENDIX(), 0);
     url.resize(cutoff);
     entry->punish(url);
     url.append("/"); // necessary because an Url can be provided without the ending /
     entry->punish(url);
 }
 
-QString ChannelUrlSelector::constructUrl(const QString& baseUrl)
+std::string ChannelUrlSelector::constructUrl(const std::string& baseUrl)
 {
-    QUrl sendUrl(baseUrl);
-    QString path = sendUrl.path();
-    if (!path.endsWith("/")) {
+    QUrl sendUrl(QString::fromStdString(baseUrl));
+    std::string path = sendUrl.path().toStdString();
+    using boost::algorithm::ends_with;
+    if (!ends_with(path, "/")) {
         path.append("/");
     }
     path.append(BounceProxyUrl::SEND_MESSAGE_PATH_APPENDIX());
     path.append("/");
-    sendUrl.setPath(path);
-    return sendUrl.toString();
+    sendUrl.setPath(QString::fromStdString(path));
+    return sendUrl.toString().toStdString();
 }
 
 // TODO: needs to be removed in future when directoy is working! OR: declare as default strategy
-QString ChannelUrlSelector::constructDefaultUrl(const QString& channelId)
+std::string ChannelUrlSelector::constructDefaultUrl(const std::string& channelId)
 {
     LOG_DEBUG(
             logger,
             "constructDefaultUrl ... using default Url inferred from channelId and BounceProxyUrl");
     if (!useDefaultUrl)
         assert(false);
-    QString url = bounceProxyUrl.getBounceProxyBaseUrl().toString() + channelId;
-    types::QtChannelUrlInformation urlInformation;
-    QList<QString> urls;
-    urls << url;
+    std::string url = bounceProxyUrl.getBounceProxyBaseUrl().toString().toStdString() + channelId;
+    types::ChannelUrlInformation urlInformation;
+    std::vector<std::string> urls;
+    urls.push_back(url);
     urlInformation.setUrls(urls);
     entries.insert(
             channelId,
@@ -205,10 +222,9 @@ QString ChannelUrlSelector::constructDefaultUrl(const QString& channelId)
 joynr_logging::Logger* ChannelUrlSelectorEntry::logger =
         joynr_logging::Logging::getInstance()->getLogger("MSG", "ChannelUrlSelectorEntry");
 
-ChannelUrlSelectorEntry::ChannelUrlSelectorEntry(
-        const types::QtChannelUrlInformation& urlInformation,
-        double punishmentFactor,
-        qint64 timeForOneRecouperation)
+ChannelUrlSelectorEntry::ChannelUrlSelectorEntry(const types::ChannelUrlInformation& urlInformation,
+                                                 double punishmentFactor,
+                                                 int64_t timeForOneRecouperation)
         : lastUpdate(DispatcherUtils::nowInMilliseconds()),
           fitness(),
           urlInformation(urlInformation),
@@ -225,15 +241,15 @@ ChannelUrlSelectorEntry::~ChannelUrlSelectorEntry()
     LOG_TRACE(logger, "Destroyed ...");
 }
 
-QString ChannelUrlSelectorEntry::best()
+std::string ChannelUrlSelectorEntry::best()
 {
     LOG_TRACE(logger, "best ...");
     updateFitness();
-    QList<QString> urls = urlInformation.getUrls();
-    double temp = fitness.first();
+    const std::vector<std::string>& urls = urlInformation.getUrls();
+    double temp = fitness[0];
     int posOfMax = 0;
 
-    for (int i = 0; i < urls.size(); i++) {
+    for (std::size_t i = 0; i < urls.size(); i++) {
         if (temp < fitness.at(i)) {
             temp = fitness.at(i);
             posOfMax = i;
@@ -242,28 +258,30 @@ QString ChannelUrlSelectorEntry::best()
     return urls.at(posOfMax);
 }
 
-void ChannelUrlSelectorEntry::punish(const QString& url)
+void ChannelUrlSelectorEntry::punish(const std::string& url)
 {
     LOG_TRACE(logger, "punish ...");
-    QList<QString> urls = urlInformation.getUrls();
-    if (!urls.contains(url)) {
+    const std::string stdUrl = url;
+    const std::vector<std::string>& urls = urlInformation.getUrls();
+    if (!vectorContains(urls, stdUrl)) {
         LOG_DEBUG(logger, "Url not contained in cache entry ...");
         return;
     }
     updateFitness();
-    int urlPosition = urls.indexOf(url);
+    auto urlIt = std::find(urls.cbegin(), urls.cend(), stdUrl);
+    std::size_t urlPosition = std::distance(urls.cbegin(), urlIt);
     double urlFitness = fitness.at(urlPosition);
     urlFitness -= punishmentFactor;
-    fitness.replace(urlPosition, urlFitness);
+    fitness[urlPosition] = urlFitness;
 }
 
 void ChannelUrlSelectorEntry::initFitness()
 {
     LOG_TRACE(logger, "initFitness ...");
-    QList<QString> urls = urlInformation.getUrls();
+    const std::vector<std::string>& urls = urlInformation.getUrls();
     double rank = urls.size();
-    for (int i = 0; i < urls.size(); i++) {
-        fitness.append(rank);
+    for (std::size_t i = 0; i < urls.size(); i++) {
+        fitness.push_back(rank);
         rank -= 1;
     }
 }
@@ -278,23 +296,23 @@ void ChannelUrlSelectorEntry::updateFitness()
     if (numberOfIncreases < 1) {
         return;
     }
-    QList<QString> urls = urlInformation.getUrls();
+    std::vector<std::string> urls = urlInformation.getUrls();
     double increase = numberOfIncreases * punishmentFactor;
     double urlFitness = 0;
 
-    for (int i = 0; i < urls.size(); i++) {
+    for (std::size_t i = 0; i < urls.size(); i++) {
         urlFitness = fitness.at(i);
         urlFitness += increase; // did the fitness increase above the allowed value?
         if (urlFitness >
             urls.size() - i) { // the fitness of an url of rank eg 2 cannot be hiher than 2
             urlFitness = urls.size() - i;
         }
-        fitness.replace(i, urlFitness);
+        fitness[i] = urlFitness;
     }
     lastUpdate = DispatcherUtils::nowInMilliseconds();
 }
 
-QList<double> ChannelUrlSelectorEntry::getFitness()
+std::vector<double> ChannelUrlSelectorEntry::getFitness()
 {
     return fitness;
 }

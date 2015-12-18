@@ -20,6 +20,7 @@ package io.joynr.capabilities.directory;
  */
 
 import io.joynr.runtime.AbstractJoynrApplication;
+import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
@@ -31,6 +32,7 @@ import joynr.infrastructure.GlobalCapabilitiesDirectoryAbstractProvider;
 import com.google.inject.Inject;
 import com.google.inject.persist.PersistService;
 import com.google.inject.persist.jpa.JpaPersistModule;
+import com.google.inject.util.Modules;
 
 public class CapabilitiesDirectoryLauncher extends AbstractJoynrApplication {
 
@@ -52,8 +54,9 @@ public class CapabilitiesDirectoryLauncher extends AbstractJoynrApplication {
 
         // LongPollingMessagingModule is only added in main(), since the servletMessagingModule will be used otherwise
         JoynrInjectorFactory injectorFactory = new JoynrInjectorFactory(joynrConfig,
-                                                                        new JpaPersistModule("CapabilitiesDirectory"),
-                                                                        new CapabilitiesDirectoryModule());
+                                                                        Modules.override(new JpaPersistModule("CapabilitiesDirectory"),
+                                                                                         new CCInProcessRuntimeModule())
+                                                                               .with(new CapabilitiesDirectoryModule()));
         capabilitiesDirectoryLauncher = injectorFactory.createApplication(new JoynrApplicationModule("capabilitiesDirectoryLauncher",
                                                                                                      CapabilitiesDirectoryLauncher.class));
         capabilitiesDirectoryLauncher.run();
@@ -67,7 +70,6 @@ public class CapabilitiesDirectoryLauncher extends AbstractJoynrApplication {
     @Inject
     public CapabilitiesDirectoryLauncher(PersistService persistService) {
         this.persistService = persistService;
-        persistService.start();
     }
 
     @Override

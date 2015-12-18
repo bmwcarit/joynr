@@ -24,13 +24,13 @@
 #include "joynr/IJoynrProvider.h"
 #include "joynr/types/ProviderQos.h"
 #include "joynr/IBroadcastFilter.h"
+#include "joynr/ReadWriteLock.h"
 
-#include <QReadWriteLock>
-#include <QMap>
-#include <QList>
 #include <QVariant>
 #include <string>
 #include <memory>
+#include <map>
+#include <vector>
 
 namespace joynr
 {
@@ -108,14 +108,14 @@ protected:
      * @param attributeName The name of the attribute whose value changes
      * @param value The new value of the attribute
      */
-    void onAttributeValueChanged(const std::string& attributeName, const QVariant& value);
+    void onAttributeValueChanged(const std::string& attributeName, const Variant& value);
 
     /**
      * @brief Called by subclasses when a broadcast occurs
      * @param broadcastName The name of the broadcast that occurred
      * @param values The output values of the broadcast
      */
-    void fireBroadcast(const std::string& broadcastName, const QList<QVariant>& values);
+    void fireBroadcast(const std::string& broadcastName, const std::vector<Variant>& values);
 
     /** @brief The provider quality settings */
     types::ProviderQos providerQos;
@@ -123,10 +123,10 @@ protected:
 private:
     DISALLOW_COPY_AND_ASSIGN(AbstractJoynrProvider);
 
-    QReadWriteLock lock;
-    QMap<std::string, QList<IAttributeListener*>> attributeListeners;
-    QMap<std::string, QList<IBroadcastListener*>> broadcastListeners;
-    QMap<std::string, QList<std::shared_ptr<IBroadcastFilter>>> broadcastFilters;
+    ReadWriteLock lock;
+    std::map<std::string, std::vector<IAttributeListener*>> attributeListeners;
+    std::map<std::string, std::vector<IBroadcastListener*>> broadcastListeners;
+    std::map<std::string, std::vector<std::shared_ptr<IBroadcastFilter>>> broadcastFilters;
 
     friend class End2EndBroadcastTest;
 };

@@ -20,7 +20,6 @@
 #ifndef LIBJOYNRWEBSOCKETRUNTIME_H
 #define LIBJOYNRWEBSOCKETRUNTIME_H
 
-#include <QtCore/QSettings>
 #include <QtWebSockets/QWebSocket>
 
 #include "joynr/PrivateCopyAssign.h"
@@ -39,7 +38,7 @@ class LibJoynrWebSocketRuntime : public LibJoynrRuntime
     QWebSocket* websocket;
 
 public:
-    LibJoynrWebSocketRuntime(QSettings* settings);
+    LibJoynrWebSocketRuntime(Settings* settings);
     virtual ~LibJoynrWebSocketRuntime();
 
 protected:

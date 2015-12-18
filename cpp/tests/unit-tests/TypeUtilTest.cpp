@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#include "gtest/gtest.h"
-#include "gmock/gmock.h"
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 #include "joynr/TypeUtil.h"
 #include <QString>
 #include <string>
@@ -316,11 +316,11 @@ TEST_F(TypeUtilTest, testIntToInt32Conversion)
     EXPECT_EQ(expectedValue, result);
 }
 
-TEST_F(TypeUtilTest, testUInt64ToQInt64Conversion)
+TEST_F(TypeUtilTest, testUInt64Toint64_tConversion)
 {
 
     uint64_t expectedValue(1);
-    qint64 testData = 1;
+    int64_t testData = 1;
 
     uint64_t result = TypeUtil::toStdUInt64(testData);
 
@@ -333,13 +333,13 @@ TEST_F(TypeUtilTest, testUInt64ToQInt64Conversion)
     EXPECT_EQ(expectedValue, result);
 }
 
-TEST_F(TypeUtilTest, testQInt64ToUInt64Conversion)
+TEST_F(TypeUtilTest, testint64_tToUInt64Conversion)
 {
 
-    qint64 expectedValue(1);
+    int64_t expectedValue(1);
     uint64_t testData = 1;
 
-    qint64 result = TypeUtil::toQt(testData);
+    int64_t result = TypeUtil::toQt(testData);
 
     EXPECT_EQ(expectedValue, result);
 
@@ -350,11 +350,11 @@ TEST_F(TypeUtilTest, testQInt64ToUInt64Conversion)
     EXPECT_EQ(expectedValue, result);
 }
 
-TEST_F(TypeUtilTest, testInt64ToQInt64Conversion)
+TEST_F(TypeUtilTest, testInt64Toint64_tConversion)
 {
 
     int64_t expectedValue(-1);
-    qint64 testData = -1;
+    int64_t testData = -1;
 
     int64_t result = TypeUtil::toStdInt64(testData);
 
@@ -367,13 +367,13 @@ TEST_F(TypeUtilTest, testInt64ToQInt64Conversion)
     EXPECT_EQ(expectedValue, result);
 }
 
-TEST_F(TypeUtilTest, testQInt64ToInt64Conversion)
+TEST_F(TypeUtilTest, testint64_tToInt64Conversion)
 {
 
-    qint64 expectedValue(-1);
+    int64_t expectedValue(-1);
     int64_t testData = -1;
 
-    qint64 result = TypeUtil::toQt(testData);
+    int64_t result = TypeUtil::toQt(testData);
 
     EXPECT_EQ(expectedValue, result);
 

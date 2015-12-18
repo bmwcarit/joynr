@@ -38,12 +38,12 @@ SubscriptionStop& SubscriptionStop::operator=(const SubscriptionStop& other)
     return *this;
 }
 
-QString SubscriptionStop::getSubscriptionId() const
+std::string SubscriptionStop::getSubscriptionId() const
 {
     return subscriptionId;
 }
 
-void SubscriptionStop::setSubscriptionId(QString subscriptionId)
+void SubscriptionStop::setSubscriptionId(const std::string& subscriptionId)
 {
     this->subscriptionId = subscriptionId;
 }

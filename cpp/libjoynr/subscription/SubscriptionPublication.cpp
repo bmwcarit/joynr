@@ -22,9 +22,13 @@
 namespace joynr
 {
 
+static bool isSubscriptionPublicationRegistered =
+        Variant::registerType<SubscriptionPublication>("joynr.SubscriptionPublication");
+
 const SubscriptionPublication SubscriptionPublication::NULL_RESPONSE = SubscriptionPublication();
 
-SubscriptionPublication::SubscriptionPublication() : subscriptionId(), response(), error(NULL)
+SubscriptionPublication::SubscriptionPublication()
+        : subscriptionId(), response(), error(Variant::NULL_VARIANT())
 {
 }
 SubscriptionPublication::SubscriptionPublication(const SubscriptionPublication& other)
@@ -43,39 +47,39 @@ SubscriptionPublication& SubscriptionPublication::operator=(const SubscriptionPu
     return *this;
 }
 
-QString SubscriptionPublication::getSubscriptionId() const
+std::string SubscriptionPublication::getSubscriptionId() const
 {
     return subscriptionId;
 }
 
-void SubscriptionPublication::setSubscriptionId(QString subscriptionId)
+void SubscriptionPublication::setSubscriptionId(const std::string& subscriptionId)
 {
     this->subscriptionId = subscriptionId;
 }
 
-QList<QVariant> SubscriptionPublication::getResponse() const
+std::vector<Variant> SubscriptionPublication::getResponse() const
 {
     return response;
 }
 
-void SubscriptionPublication::setResponse(QList<QVariant> response)
+void SubscriptionPublication::setResponse(const std::vector<Variant>& response)
 {
     this->response = response;
 }
 
-std::shared_ptr<exceptions::JoynrRuntimeException> SubscriptionPublication::getError() const
+const Variant& SubscriptionPublication::getError() const
 {
     return this->error;
 }
 
-void SubscriptionPublication::setError(std::shared_ptr<exceptions::JoynrRuntimeException> error)
+void SubscriptionPublication::setError(const Variant& error)
 {
     this->error = error;
 }
 
 bool SubscriptionPublication::operator==(const SubscriptionPublication& other) const
 {
-    return subscriptionId == other.getSubscriptionId() && error == other.error;
+    return subscriptionId == other.getSubscriptionId();
 }
 
 bool SubscriptionPublication::operator!=(const SubscriptionPublication& other) const

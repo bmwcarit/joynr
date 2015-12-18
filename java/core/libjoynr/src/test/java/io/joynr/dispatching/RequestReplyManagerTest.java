@@ -62,7 +62,6 @@ import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.JoynrMessagingConnectorFactory;
-import io.joynr.security.PlatformSecurityManager;
 import joynr.JoynrMessage;
 import joynr.OneWay;
 import joynr.Reply;
@@ -109,7 +108,6 @@ public class RequestReplyManagerTest {
                 bind(MessageRouter.class).toInstance(messageRouterMock);
                 bind(RequestReplyManager.class).to(RequestReplyManagerImpl.class);
                 bind(RequestReplyManager.class).to(RequestReplyManagerImpl.class);
-                bind(PlatformSecurityManager.class).toInstance(mock(PlatformSecurityManager.class));
                 requestStaticInjection(RpcUtils.class, Request.class, JoynrMessagingConnectorFactory.class);
 
                 ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.Cleanup-%d").build();

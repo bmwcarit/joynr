@@ -39,6 +39,8 @@ import org.franca.core.franca.FMethod
 import org.franca.core.franca.FModel
 import org.franca.core.franca.FModelElement
 import org.franca.core.franca.FType
+import org.franca.core.franca.FMapType
+import io.joynr.generator.templates.MapTemplate
 
 abstract class JoynrGeneratorExtensions {
 
@@ -129,8 +131,8 @@ abstract class JoynrGeneratorExtensions {
 		return referencedFTypes
 	}
 
-	def getComplexDataTypes(FModel fModel) {
-		getDataTypes(fModel).filter(type | type.isComplex)
+	def getCompoundDataTypes(FModel fModel) {
+		getDataTypes(fModel).filter(type | type.isCompound).map(type | type.compoundType).filterNull
 	}
 
 	def getPrimitiveDataTypes() {
@@ -138,9 +140,12 @@ abstract class JoynrGeneratorExtensions {
 	}
 
 	def getEnumDataTypes(FModel fModel) {
-		getDataTypes(fModel).filter(type | type.isEnum)
+		getDataTypes(fModel).filter(type | type.isEnum).map(type | type.enumType).filterNull
 	}
 
+	def getMapDataTypes(FModel fModel) {
+		getDataTypes(fModel).filter(type | type.isMap).map(type | type.mapType).filterNull
+	}
 
 	def prependCommaIfNotEmpty(String input) {
 		if (input.equals("")) {
@@ -215,6 +220,20 @@ abstract class JoynrGeneratorExtensions {
 		}
 		if (generate) {
 			fsa.generateFile(path, generator.generate(enumType).toString);
+		}
+	}
+
+	def generateFile(
+		IFileSystemAccess fsa,
+		String path,
+		MapTemplate generator,
+		FMapType mapType
+	) {
+		if (clean) {
+			fsa.deleteFile(path);
+		}
+		if (generate) {
+			fsa.generateFile(path, generator.generate(mapType).toString);
 		}
 	}
 

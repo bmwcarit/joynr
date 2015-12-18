@@ -25,11 +25,13 @@ import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.guice.LowerCaseProperties;
 import io.joynr.integration.util.ServersUtil;
+import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilder;
+import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.PropertyLoader;
@@ -53,6 +55,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Injector;
+import com.google.inject.util.Modules;
 
 public class ChannelUrlDirectoryTest {
     private static final Logger logger = LoggerFactory.getLogger(ChannelUrlDirectoryTest.class);
@@ -79,7 +82,8 @@ public class ChannelUrlDirectoryTest {
         // prints the tests name in the log so we know what we are testing
         String methodName = name.getMethodName();
         logger.info(methodName + " setup beginning...");
-        injectorConsumer = new JoynrInjectorFactory().getInjector();
+        injectorConsumer = new JoynrInjectorFactory(Modules.override(new CCInProcessRuntimeModule())
+                                                           .with(new AtmosphereMessagingModule())).getInjector();
     }
 
     @After

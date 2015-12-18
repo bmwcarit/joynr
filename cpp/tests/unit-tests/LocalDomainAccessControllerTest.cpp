@@ -19,12 +19,12 @@
 
 #include "joynr/PrivateCopyAssign.h"
 #include "tests/utils/MockObjects.h"
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include "cluster-controller/access-control/LocalDomainAccessController.h"
 #include "cluster-controller/access-control/LocalDomainAccessStore.h"
-#include "cluster-controller/access-control/AccessControlAlgorithm.h"
 
-#include <QSemaphore>
+#include "joynr/Semaphore.h"
+#include <string>
 
 using namespace ::testing;
 using namespace joynr;
@@ -46,11 +46,11 @@ public:
     void consumerPermission(Permission::Enum permission) {
         this->permission = permission;
         isValid = true;
-        sem.release(1);
+        sem.notify();
     }
 
     void operationNeeded() {
-        sem.release(1); // isValid stays false
+        sem.notify(); // isValid stays false
     }
 
     bool isPermissionAvailable() const {
@@ -63,13 +63,13 @@ public:
 
     // Returns true if the callback was made
     bool expectCallback(int millisecs) {
-        return sem.tryAcquire(1, millisecs);
+        return sem.waitFor(std::chrono::milliseconds(millisecs));
     }
 
 private:
     bool isValid;
     Permission::Enum permission;
-    QSemaphore sem;
+    joynr::Semaphore sem;
 };
 
 // Test class
@@ -157,21 +157,21 @@ const std::string LocalDomainAccessControllerTest::joynrDomain("LocalDomainAcces
 //----- Tests ------------------------------------------------------------------
 
 TEST_F(LocalDomainAccessControllerTest, testHasRole) {
-    localDomainAccessStore->updateDomainRole(QtDomainRoleEntry::createQt(userDre));
+    localDomainAccessStore->updateDomainRole(userDre);
 
-    QString defaultString;
-    DefaultValue<QString>::Set(defaultString);
+    std::string defaultString;
+    DefaultValue<std::string>::Set(defaultString);
 
-    EXPECT_TRUE(localDomainAccessController->hasRole(QString::fromStdString(LocalDomainAccessControllerTest::TEST_USER),
-                                                     QString::fromStdString(LocalDomainAccessControllerTest::TEST_DOMAIN1),
-                                                     QtRole::OWNER));
+    EXPECT_TRUE(localDomainAccessController->hasRole(LocalDomainAccessControllerTest::TEST_USER,
+                                                     LocalDomainAccessControllerTest::TEST_DOMAIN1,
+                                                     Role::OWNER));
 }
 
 TEST_F(LocalDomainAccessControllerTest, consumerPermission) {
-    localDomainAccessStore->updateOwnerAccessControlEntry(QtOwnerAccessControlEntry::createQt(ownerAce));
+    localDomainAccessStore->updateOwnerAccessControlEntry(ownerAce);
 
-    QString defaultString;
-    DefaultValue<QString>::Set(defaultString);
+    std::string defaultString;
+    DefaultValue<std::string>::Set(defaultString);
     EXPECT_EQ(
             Permission::YES,
             localDomainAccessController->getConsumerPermission(
@@ -185,7 +185,7 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermission) {
 }
 
 TEST_F(LocalDomainAccessControllerTest, consumerPermissionInvalidOwnerAce) {
-    localDomainAccessStore->updateOwnerAccessControlEntry(QtOwnerAccessControlEntry::createQt(ownerAce));
+    localDomainAccessStore->updateOwnerAccessControlEntry(ownerAce);
 
     // Update the MasterACE so that it does not permit Permission::YES
     std::vector<Permission::Enum> possiblePermissions = {
@@ -193,10 +193,10 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionInvalidOwnerAce) {
     };
     masterAce.setDefaultConsumerPermission(Permission::ASK);
     masterAce.setPossibleConsumerPermissions(possiblePermissions);
-    localDomainAccessStore->updateMasterAccessControlEntry(QtMasterAccessControlEntry::createQt(masterAce));
+    localDomainAccessStore->updateMasterAccessControlEntry(masterAce);
 
-    QString defaultString;
-    DefaultValue<QString>::Set(defaultString);
+    std::string defaultString;
+    DefaultValue<std::string>::Set(defaultString);
     EXPECT_EQ(
             Permission::NO,
             localDomainAccessController->getConsumerPermission(
@@ -212,11 +212,11 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionInvalidOwnerAce) {
 TEST_F(LocalDomainAccessControllerTest, consumerPermissionOwnerAceOverrulesMaster) {
     ownerAce.setRequiredTrustLevel(TrustLevel::MID);
     ownerAce.setConsumerPermission(Permission::ASK);
-    localDomainAccessStore->updateOwnerAccessControlEntry(QtOwnerAccessControlEntry::createQt(ownerAce));
-    localDomainAccessStore->updateMasterAccessControlEntry(QtMasterAccessControlEntry::createQt(masterAce));
+    localDomainAccessStore->updateOwnerAccessControlEntry(ownerAce);
+    localDomainAccessStore->updateMasterAccessControlEntry(masterAce);
 
-    QString defaultString;
-    DefaultValue<QString>::Set(defaultString);
+    std::string defaultString;
+    DefaultValue<std::string>::Set(defaultString);
     EXPECT_EQ(
             Permission::ASK,
             localDomainAccessController->getConsumerPermission(
@@ -241,10 +241,10 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionOwnerAceOverrulesMaste
 
 TEST_F(LocalDomainAccessControllerTest, consumerPermissionOperationWildcard) {
     ownerAce.setOperation(LocalDomainAccessStore::WILDCARD);
-    localDomainAccessStore->updateOwnerAccessControlEntry(QtOwnerAccessControlEntry::createQt(ownerAce));
+    localDomainAccessStore->updateOwnerAccessControlEntry(ownerAce);
 
-    QString defaultString;
-    DefaultValue<QString>::Set(defaultString);
+    std::string defaultString;
+    DefaultValue<std::string>::Set(defaultString);
     EXPECT_EQ(
             Permission::YES,
             localDomainAccessController->getConsumerPermission(
@@ -293,8 +293,8 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionAmbigious) {
             ));
 
     // Set default return value for Google mock
-    QString defaultString;
-    DefaultValue<QString>::Set(defaultString);
+    std::string defaultString;
+    DefaultValue<std::string>::Set(defaultString);
 
     // Get the consumer permission (async)
     std::shared_ptr<ConsumerPermissionCallback> getConsumerPersmissionCallback(
@@ -365,8 +365,8 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionCommunicationFailure) 
             ));
 
     // Set default return value for Google mock
-    QString defaultString;
-    DefaultValue<QString>::Set(defaultString);
+    std::string defaultString;
+    DefaultValue<std::string>::Set(defaultString);
 
     // Get the consumer permission (async)
     std::shared_ptr<ConsumerPermissionCallback> getConsumerPermissionCallback(
@@ -425,8 +425,8 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionQueuedRequests) {
             ));
 
     // Set default return value for Google mock
-    QString defaultString;
-    DefaultValue<QString>::Set(defaultString);
+    std::string defaultString;
+    DefaultValue<std::string>::Set(defaultString);
 
     // Get the consumer permission (async)
     std::shared_ptr<ConsumerPermissionCallback> getConsumerPermissionCallback1(

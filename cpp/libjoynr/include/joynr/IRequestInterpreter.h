@@ -21,9 +21,10 @@
 
 #include <functional>
 #include <memory>
-#include <QVariant>
-#include <QMap>
+#include <string>
+#include <vector>
 #include "joynr/exceptions/JoynrException.h"
+#include "joynr/Variant.h"
 
 namespace joynr
 {
@@ -31,7 +32,7 @@ namespace joynr
 class RequestCaller;
 
 /**
-  * Common interface for all \class <Intf>RequestInterpreter.
+  * Common interface for all @class <Intf>RequestInterpreter.
   */
 class IRequestInterpreter
 {
@@ -41,15 +42,15 @@ public:
     }
 
     /**
-      * Executes method \param methodName with parameters \param methodParams
-      * on the \param requestCaller object.
+      * Executes method @param methodName with parameters @param methodParams
+      * on the @param requestCaller object.
       */
     virtual void execute(
             std::shared_ptr<RequestCaller> requestCaller,
-            const QString& methodName,
-            const QList<QVariant>& paramValues,
-            const QList<QVariant>& paramTypes,
-            std::function<void(const QList<QVariant>& outParams)> onSuccess,
+            const std::string& methodName,
+            const std::vector<Variant>& paramValues,
+            const std::vector<std::string>& paramTypes,
+            std::function<void(std::vector<Variant>&& outParams)> onSuccess,
             std::function<void(const exceptions::JoynrException& exception)> onError) = 0;
 };
 

@@ -24,7 +24,7 @@
 #include <vector>
 #include "joynr/ProviderArbitrator.h"
 #include <string>
-#include "joynr/types/QtDiscoveryEntry.h"
+#include "joynr/types/DiscoveryEntry.h"
 
 namespace joynr
 {

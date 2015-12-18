@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 
 import joynr.types.CustomParameter;
 import joynr.types.ProviderQos;
+import joynr.types.ProviderScope;
 import joynr.types.Localisation.GpsFixEnum;
 import joynr.types.Localisation.GpsLocation;
 import joynr.vehicle.DefaultGpsProvider;
@@ -104,7 +105,12 @@ public class AndroidLocationProvider extends DefaultGpsProvider {
 
     @Override
     public ProviderQos getProviderQos() {
-        return providerQos;
+        CustomParameter[] customParameters = {};
+        Integer providerVersion = 1;
+        Long priority = System.currentTimeMillis();
+        ProviderScope scope = ProviderScope.LOCAL;
+        Boolean supportsOnChangeSubscriptions = false;
+        return new ProviderQos(customParameters, providerVersion, priority, scope, supportsOnChangeSubscriptions);
     }
 
     private void logToOutput(String string) {

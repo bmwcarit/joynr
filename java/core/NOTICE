@@ -23,6 +23,9 @@ This project has dependencies to:
   Apache Log4j under The Apache Software License, Version 2.0
   Apache Log4j API under The Apache Software License, Version 2.0
   Apache Log4j SLF4J Binding under The Apache Software License, Version 2.0
+  clustercontroller-inprocess-runtime under The Apache Software License, Version 2.0
+  clustercontroller-standalone under The Apache Software License, Version 2.0
+  clustercontroller-websocket-runtime under The Apache Software License, Version 2.0
   Commons Codec under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
   Data Mapper for Jackson under The Apache Software License, Version 2.0
@@ -37,11 +40,17 @@ This project has dependencies to:
   Guava: Google Core Libraries for Java under The Apache Software License, Version 2.0
   Hamcrest Core under New BSD License
   Hamcrest library under New BSD License
+  io.joynr.java.common:access-control-common under The Apache Software License, Version 2.0
+  io.joynr.java.common:discovery-common under The Apache Software License, Version 2.0
   io.joynr.java.common:guice-integration under The Apache Software License, Version 2.0
   io.joynr.java.common:infrastructure-common under The Apache Software License, Version 2.0
+  io.joynr.java.core:clustercontroller under The Apache Software License, Version 2.0
   io.joynr.java.core:joynr-types under The Apache Software License, Version 2.0
   io.joynr.java.core:libjoynr under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:single-bounceproxy under The Apache Software License, Version 2.0
+  io.joynr.java.messaging.websocket:joynr-websocket-client under The Apache Software License, Version 2.0
+  io.joynr.java.messaging.websocket:joynr-websocket-common under The Apache Software License, Version 2.0
+  io.joynr.java.messaging.websocket:joynr-websocket-server under The Apache Software License, Version 2.0
   io.joynr.java.messaging:messaging-common under The Apache Software License, Version 2.0
   io.joynr.java:core under The Apache Software License, Version 2.0
   io.joynr.java:javaapi under The Apache Software License, Version 2.0
@@ -65,9 +74,11 @@ This project has dependencies to:
   Jetty :: Websocket :: Server under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Websocket :: Servlet Interface under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: XML utilities under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
+  JLine under The BSD License
   json-path under Apache 2.0
   JSON.simple under The Apache Software License, Version 2.0
   JUnit under Common Public License Version 1.0
+  libjoynr-websocket-runtime under The Apache Software License, Version 2.0
   Logging under The Apache Software License, Version 2.0
   Mockito under The MIT License
   Reflections under WTFPL

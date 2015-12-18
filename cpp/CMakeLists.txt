@@ -5,10 +5,10 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(joynr-0.12.3)
+project(joynr-0.13.0)
 set(JOYNR_MAJOR_VERSION 0)
-set(JOYNR_MINOR_VERSION 12)
-set(JOYNR_PATCH_VERSION 3)
+set(JOYNR_MINOR_VERSION 13)
+set(JOYNR_PATCH_VERSION 0)
 set(
     JOYNR_VERSION
     ${JOYNR_MAJOR_VERSION}.${JOYNR_MINOR_VERSION}.${JOYNR_PATCH_VERSION}
@@ -19,10 +19,35 @@ if(POLICY CMP0020)
     cmake_policy(SET CMP0020 OLD)
 endif(POLICY CMP0020)
 
+if(NOT CMAKE_BUILD_TYPE)
+    message(STATUS "setting default value 'Debug' for CMAKE_BUILD_TYPE")
+    set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build type" FORCE)
+endif()
+
+set_property(
+    CACHE
+    CMAKE_BUILD_TYPE
+    PROPERTY STRINGS
+    "Debug"
+    "Release"
+)
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake")
+message(STATUS "variable CMAKE_MODULE_PATH=" ${CMAKE_MODULE_PATH})
+message(STATUS "variable CMAKE_PREFIX_PATH=" ${CMAKE_PREFIX_PATH})
+message(STATUS "variable CMAKE_VERSION=" ${CMAKE_VERSION})
+message(STATUS "variable CMAKE_ROOT=" ${CMAKE_ROOT})
+message(STATUS "variable CMAKE_SOURCE_DIR=" ${CMAKE_SOURCE_DIR})
+message(STATUS "variable CMAKE_CURRENT_SOURCE_DIR=" ${CMAKE_CURRENT_SOURCE_DIR})
+
 set(INSTALL_LIB_DIR lib CACHE PATH "Installation sub directory for libraries")
 set(INSTALL_BIN_DIR bin CACHE PATH "Installation sub directory for executables")
 set(INSTALL_INCLUDE_DIR include CACHE PATH "Installation sub directory for header files")
 set(INSTALL_CMAKE_DIR lib/cmake/Joynr CACHE PATH "Installation sub directory for CMake files")
+
+if(NOT INSTALL_TEST_DIR)
+    set(INSTALL_TEST_DIR "${INSTALL_BIN_DIR}" CACHE PATH "Installation sub directory for tests")
+endif(NOT INSTALL_TEST_DIR)
 
 # Make absolute paths relative (otherwise the export files break for cross-compiling)
 foreach(p LIB BIN INCLUDE CMAKE)
@@ -40,11 +65,10 @@ message(STATUS "----------------- INSTALL LOCATIONS -----------------")
 message(STATUS "CMAKE_INSTALL_PREFIX = ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "INSTALL_LIB_DIR      = ${INSTALL_LIB_DIR}")
 message(STATUS "INSTALL_BIN_DIR      = ${INSTALL_BIN_DIR}")
+message(STATUS "INSTALL_TEST_DIR     = ${INSTALL_TEST_DIR}")
 message(STATUS "INSTALL_INCLUDE_DIR  = ${INSTALL_INCLUDE_DIR}")
 message(STATUS "INSTALL_CMAKE_DIR    = ${INSTALL_CMAKE_DIR}")
 message(STATUS "-----------------------------------------------------")
-
-message(STATUS "############ OPTIONS ############")
 
 # should we use DBUS to communicate between libjoynr and cluster-controller
 option(
@@ -75,11 +99,81 @@ option(
 )
 message(STATUS "option ENABLE_DOXYGEN=" ${ENABLE_DOXYGEN})
 
+include(LocateProgram)
+
+#### BEGIN clang-format ####
+
 option(
     ENABLE_CLANG_FORMATTER
     "Use clang-formatter to format source code?"
     ON
 )
+
+message(STATUS "option ENABLE_CLANG_FORMATTER=" ${ENABLE_CLANG_FORMATTER})
+
+if(${ENABLE_CLANG_FORMATTER})
+    set(CLANG_FORMAT_PATH "CLANG_FORMAT_PATH-NOTFOUND" CACHE FILEPATH "Path to 'clang-format' executable")
+    LocateProgram(clang-format CLANG_FORMAT_PATH)
+endif(${ENABLE_CLANG_FORMATTER})
+
+#### END clang-format ####
+
+
+#### BEGIN include-what-you-use ####
+
+# include-what-you-use can be used with CMake 3.3.0 and higher
+if("${CMAKE_VERSION}" VERSION_GREATER 3.3.0)
+
+    option(
+        ENABLE_INCLUDE_WHAT_YOU_USE
+        "Use include-what-you-use to identify missing/superfluous includes?"
+        OFF
+    )
+
+    message(STATUS "option ENABLE_INCLUDE_WHAT_YOU_USE=" ${ENABLE_INCLUDE_WHAT_YOU_USE})
+
+    if(${ENABLE_INCLUDE_WHAT_YOU_USE})
+        set(INCLUDE_WHAT_YOU_USE_PATH "INCLUDE_WHAT_YOU_USE_PATH-NOTFOUND" CACHE FILEPATH "Path to 'include-what-you-use' executable")
+        LocateProgram(include-what-you-use INCLUDE_WHAT_YOU_USE_PATH)
+    endif(${ENABLE_INCLUDE_WHAT_YOU_USE})
+
+    set(INCLUDE_WHAT_YOU_USE_OPTIONS "" CACHE STRING "additional options for include-what-you-use")
+    
+    set(INCLUDE_WHAT_YOU_USE_PATH_AND_OPTIONS
+        ${INCLUDE_WHAT_YOU_USE_PATH}
+        ${INCLUDE_WHAT_YOU_USE_OPTIONS}
+    )
+
+endif("${CMAKE_VERSION}" VERSION_GREATER 3.3.0)
+
+include(AddIncludeWhatYouUse)
+
+#### END include-what-you-use ####
+
+
+#### BEGIN clang-tidy ####
+
+option(
+    ENABLE_CLANG_TIDY
+    "Use clang-tidy for code analysis/cleanup?"
+    OFF
+)
+
+message(STATUS "option ENABLE_CLANG_TIDY=" ${ENABLE_CLANG_TIDY})
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+if(${ENABLE_CLANG_TIDY})
+    set(CLANG_TIDY_PATH "CLANG_TIDY_PATH-NOTFOUND" CACHE FILEPATH "Path to 'clang-tidy' executable")
+    LocateProgram(clang-tidy CLANG_TIDY_PATH)
+    add_custom_target(tidy)
+endif(${ENABLE_CLANG_TIDY})
+
+set(CLANG_TIDY_OPTIONS -checks=* CACHE LIST "additional options for clang-tidy")
+
+include(AddClangTidy)
+
+#### END clang-tidy ####
+
 
 option(
     BUILD_CLUSTER_CONTROLLER
@@ -88,10 +182,6 @@ option(
 )
 
 message(STATUS "option BUILD_CLUSTER_CONTROLLER=" ${BUILD_CLUSTER_CONTROLLER})
-message(STATUS "option ENABLE_CLANG_FORMATTER=" ${ENABLE_CLANG_FORMATTER})
-
-
-message(STATUS "############ VARIABLES ############")
 
 if(NOT DEFINED JOYNR_SERVER)
     set(JOYNR_SERVER "localhost:8080")
@@ -100,12 +190,7 @@ message(STATUS "variable JOYNR_SERVER=" ${JOYNR_SERVER})
 
 message(STATUS "variable CMAKE_BUILD_TYPE=" ${CMAKE_BUILD_TYPE})
 
-message(STATUS "variable CMAKE_MODULE_PATH=" ${CMAKE_MODULE_PATH})
-message(STATUS "variable CMAKE_PREFIX_PATH=" ${CMAKE_PREFIX_PATH})
-message(STATUS "variable CMAKE_VERSION=" ${CMAKE_VERSION})
-message(STATUS "variable CMAKE_ROOT=" ${CMAKE_ROOT})
-message(STATUS "variable CMAKE_SOURCE_DIR=" ${CMAKE_SOURCE_DIR})
-message(STATUS "variable CMAKE_CURRENT_SOURCE_DIR=" ${CMAKE_CURRENT_SOURCE_DIR})
+include(AddClangFormat)
 
 # Set the binary directory
 set(JOYNR_BINARY_DIR ${CMAKE_BINARY_DIR}/bin)
@@ -114,6 +199,7 @@ message(STATUS "variable JOYNR_BINARY_DIR=" ${JOYNR_BINARY_DIR})
 if(${ENABLE_GCOV})
     list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake/code-coverage")
     include(CodeCoverage)
+    setup_target_for_coverage("UnitCoverageHtml" g_UnitTests "coverage")
     setup_target_for_coverage_cobertura("UnitCoverageTarget" g_UnitTests "coverage" "--gtest_output=xml:g_UnitTests.junit.xml" "'.*/libs/.*|.*/build/.*|.*/tests/.*|.*/generated/.*'")
     # copy the resource folder to the build folder, because some files are required for the tests
     add_custom_target(CopyResourceFolderToBuildDir
@@ -125,7 +211,8 @@ if(${ENABLE_GCOV})
     add_dependencies(UnitCoverageTarget CopyResourceFolderToBuildDir)
     #setup_target_for_coverage_cobertura("IntegrationCoverageTarget" g_IntegrationTests "integrationCoverage.xml")
     message(STATUS "setting flags to measure test coverage.")
-    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage")
     #set(LDFLAGS "{$LDFLAGS} -fprofile-arcs -ftest-coverage")
 endif(${ENABLE_GCOV})
 
@@ -182,6 +269,18 @@ get_target_property(Qt5Sql_LOCATION Qt5::Sql LOCATION)
 message(STATUS "variable Qt5Sql LOCATION=${Qt5Sql_LOCATION}")
 message(STATUS "variable Qt5Sql_LIBRARIES=${Qt5Sql_LIBRARIES}")
 message(STATUS "variable Qt5Sql_DEFINITIONS=${Qt5Sql_DEFINITIONS}")
+
+
+######## Add Boost ########
+
+find_package(Boost 1.56.0 REQUIRED
+    COMPONENTS
+    system
+    thread
+)
+
+include_directories(${Boost_INCLUDE_DIRS})
+
 
 message(STATUS "############ Import: cURL ############")
 if(${WIN32})
@@ -253,43 +352,7 @@ else(${WIN32})
     find_package(CURL REQUIRED)
 endif(${WIN32})
 
-message(STATUS "############ Download: spdlog ############")
-# Enable ExternalProject CMake module
-include(ExternalProject)
-
-# Set default ExternalProject root directory
-set_directory_properties(PROPERTIES EP_PREFIX ${CMAKE_BINARY_DIR}/ThirdParty)
-
-### Add spdlog ###########################################################
-set(SPDLOG_SOURCE_URL "https://github.com/gabime/spdlog")
-set(SPDLOG_SOURCE_TYPE "GIT_REPOSITORY")
-if(SPDLOG_ROOT)
-    set(SPDLOG_SOURCE_URL "${SPDLOG_ROOT}")
-    set(SPDLOG_SOURCE_TYPE "URL")
-endif(SPDLOG_ROOT)
-message(STATUS "Using source for spdlog: ${SPDLOG_SOURCE_URL}")
-
-
-ExternalProject_Add(
-    spdlog
-    ${SPDLOG_SOURCE_TYPE} "${SPDLOG_SOURCE_URL}"
-    TIMEOUT 10
-    # Disable svn update
-    UPDATE_COMMAND ""
-    # Disable configure step
-    CONFIGURE_COMMAND ""
-    # Disable build step
-    BUILD_COMMAND ""
-    # Disable install step
-    INSTALL_COMMAND ""
-    # Wrap download, configure and build steps in a script to log output
-    LOG_DOWNLOAD ON
-    LOG_CONFIGURE ON
-    LOG_BUILD ON
-)
-
-ExternalProject_Get_Property(spdlog SOURCE_DIR)
-set(spdlog_SOURCE_DIR ${SOURCE_DIR})
+include(AddExternalProject)
 
 message(STATUS "variable CURL_FOUND=" ${CURL_FOUND})
 message(STATUS "variable CURL_VERSION_STRING=" ${CURL_VERSION_STRING})
@@ -303,8 +366,6 @@ endif()
 include_directories(
    SYSTEM ${CURL_INCLUDE_DIRS}
 )
-
-
 
 # ---------------------------------------------- Build library --------------------------------------------------
 
@@ -327,7 +388,27 @@ link_directories(
 # JOYNR_MAX_LOG_LEVEL_DEBUG
 # JOYNR_MAX_LOG_LEVEL_TRACE
 
-add_definitions(-DJOYNR_MAX_LOG_LEVEL_TRACE)
+# for every other build type than debug we limit log messages to level ERROR
+string(TOLOWER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE_TOLOWER)
+if(CMAKE_BUILD_TYPE_TOLOWER MATCHES debug)
+    set(JOYNR_MAX_LOG_LEVEL "TRACE" CACHE STRING "joynr max log level")
+else()
+    set(JOYNR_MAX_LOG_LEVEL "ERROR" CACHE STRING "joynr max log level")
+endif()
+
+set_property(
+             CACHE
+             JOYNR_MAX_LOG_LEVEL
+             PROPERTY STRINGS
+             FATAL
+             ERROR
+             WARN
+             INFO
+             DEBUG
+             TRACE
+)
+
+add_definitions("-DJOYNR_MAX_LOG_LEVEL_${JOYNR_MAX_LOG_LEVEL}")
 
 ######## DEFAULT COMPILER FLAGS #############
 
@@ -353,7 +434,6 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 endif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    # libs/CMakeLists.txt overwrites CMAKE_CXX_FLAGS to deactivate warnings for 3rd-Party code.
     # common-api/CMakeLists.txt overwrites CMAKE_CXX_FLAGS to deactivate warnings for CommonAPI
     # generated code.
     # All changes to CMAKE_CXX_FLAGS that are not warnings should be added there as well.
@@ -384,7 +464,21 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 endif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++11 --stdlib=libc++ -Wno-unknown-pragmas")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++11 -Wno-unknown-pragmas")
+    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        option(
+            USE_STDLIB_LIBCPP
+            "use libc++"
+            OFF
+        )
+        if(USE_STDLIB_LIBCPP)
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+        endif()
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+    else()
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+    endif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        
     add_definitions(-DGTEST_USE_OWN_TR1_TUPLE=1)
 endif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 
@@ -415,12 +509,37 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     link_directories(${DBUS1_LIBRARY_DIRS} ${COMMONAPI_LIBRARY_DIRS} ${COMMONAPI_DBUS_LIBRARY_DIRS})
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
+
+### Add spdlog ###########################################################
+message(STATUS "############ Download: spdlog ############")
+set(SPDLOG_SOURCE_URL "https://github.com/gabime/spdlog")
+set(SPDLOG_SOURCE_TYPE "GIT_REPOSITORY")
+if(SPDLOG_ROOT)
+    set(SPDLOG_SOURCE_URL "${SPDLOG_ROOT}")
+    set(SPDLOG_SOURCE_TYPE "URL")
+endif(SPDLOG_ROOT)
+message(STATUS "Using source for spdlog: ${SPDLOG_SOURCE_URL}")
+
+
+AddExternalProject(
+    spdlog
+    ${SPDLOG_SOURCE_TYPE} "${SPDLOG_SOURCE_URL}"
+    TIMEOUT 10
+    # Disable configure step
+    CONFIGURE_COMMAND ""
+    # Disable build step
+    BUILD_COMMAND ""
+)
+
+ExternalProject_Get_Property(spdlog SOURCE_DIR)
+set(spdlog_SOURCE_DIR ${SOURCE_DIR})
+
 ######## Add submodules ########
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     add_subdirectory(common-api)
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
-add_subdirectory(libs)
 add_subdirectory(common)
+add_subdirectory(jsonserializer)
 add_subdirectory(libjoynr)
 if(${BUILD_CLUSTER_CONTROLLER})
     add_subdirectory(cluster-controller)
@@ -445,7 +564,7 @@ set(
     JoynrCommon
     Joynr
     JoynrWsRuntime
-    qjson
+    jsonserializer
 )
 
 if(${BUILD_CLUSTER_CONTROLLER})
@@ -488,7 +607,7 @@ set(
     JoynrConfig_LIBRARIES
     JoynrCommon
     Joynr
-    qjson
+    jsonserializer
 )
 
 if(${BUILD_CLUSTER_CONTROLLER})
@@ -504,7 +623,7 @@ set(
     JoynrConfig_LIB_WS_LIBRARIES
     JoynrCommon
     Joynr
-    qjson
+    jsonserializer
     JoynrWsRuntime
 )
 
@@ -513,7 +632,7 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         JoynrConfig_LIB_DBUS_LIBRARIES
         JoynrCommon
         Joynr
-        qjson
+        jsonserializer
         JoynrDbusRuntime
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
@@ -521,14 +640,16 @@ endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 # ... for the build tree
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
-get_target_property(qjson_PUBLIC_INCLUDE_DIRECTORY qjson PUBLIC_INCLUDE_DIRECTORY)
+get_target_property(jsonserializer_PUBLIC_INCLUDE_DIRECTORY jsonserializer PUBLIC_INCLUDE_DIRECTORY)
+message(STATUS "variable jsonserializer_PUBLIC_INCLUDE_DIRECTORY=" ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY})
 
 set(
     JoynrConfig_INCLUDE_DIRS
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
-    ${qjson_PUBLIC_INCLUDE_DIRECTORY}
     ${spdlog_SOURCE_DIR}/include
+    ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
+    ${jsmn_SOURCE_DIR}
 )
 if(${BUILD_CLUSTER_CONTROLLER})
     get_target_property(JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY JoynrClusterController PUBLIC_INCLUDE_DIRECTORY)
@@ -544,16 +665,18 @@ set(
     JoynrConfig_LIB_WS_INCLUDE_DIRS
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
-    ${qjson_PUBLIC_INCLUDE_DIRECTORY}
     ${spdlog_SOURCE_DIR}/include
+    ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
+    ${jsmn_SOURCE_DIR}
 )
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     set(
         JoynrConfig_LIB_DBUS_INCLUDE_DIRS
         ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
         ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
-        ${qjson_PUBLIC_INCLUDE_DIRECTORY}
         ${spdlog_SOURCE_DIR}/include
+        ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
+        ${jsmn_SOURCE_DIR}
     )
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 set(JoynrConfig_TARGETS_FILE "${JOYNR_BINARY_DIR}/JoynrTargets.cmake")

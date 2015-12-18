@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@
  */
 #include "AbstractSyncAsyncTest.cpp"
 #include "joynr/tests/testJoynrMessagingConnector.h"
-#include "joynr/tests/ItestConnector.h"
 #include "joynr/IReplyCaller.h"
 #include <string>
 #include "utils/MockObjects.h"
@@ -39,7 +38,7 @@ using namespace joynr;
 
 ACTION_P(ReleaseSemaphore,semaphore)
 {
-    semaphore->release(1);
+    semaphore->notify();
 }
 
 /**
@@ -50,11 +49,11 @@ public:
 
     TestJoynrMessagingConnectorTest():
         mockSubscriptionManager(new MockSubscriptionManager()),
-        gpsLocation(types::Localisation::QtGpsLocation(
+        gpsLocation(types::Localisation::GpsLocation(
                         9.0,
                         51.0,
                         508.0,
-                        types::Localisation::QtGpsFixEnum::MODE2D,
+                        types::Localisation::GpsFixEnum::MODE2D,
                         0.0,
                         0.0,
                         0.0,
@@ -86,7 +85,7 @@ public:
                         Eq(proxyParticipantId), // sender participant ID
                         Eq(providerParticipantId), // receiver participant ID
                         _, // messaging QoS
-                        Property(&Request::getMethodName, Eq(QString::fromStdString(methodName))), // request object to send
+                        Property(&Request::getMethodName, Eq(methodName)), // request object to send
                         Property(
                             &std::shared_ptr<IReplyCaller>::get,
                             AllOf(NotNull(), Property(&IReplyCaller::getTypeId, Eq(expectedTypeId)))
@@ -96,9 +95,9 @@ public:
     }
 
     MockSubscriptionManager* mockSubscriptionManager;
-    joynr::types::Localisation::QtGpsLocation gpsLocation;
+    joynr::types::Localisation::GpsLocation gpsLocation;
     float floatValue;
-    QSemaphore semaphore;
+    joynr::Semaphore semaphore;
 
     tests::testJoynrMessagingConnector* createConnector(bool cacheEnabled) {
         return new tests::testJoynrMessagingConnector(
@@ -116,16 +115,16 @@ public:
         return dynamic_cast<tests::Itest*>(createConnector(cacheEnabled));
     }
 
-    void invokeSubscriptionCallback(const QString& subscribeToName,
+    void invokeSubscriptionCallback(const std::string& subscribeToName,
                                       std::shared_ptr<ISubscriptionCallback> callback,
-                                      std::shared_ptr<QtSubscriptionQos> qos,
+                                      const Variant& qosVariant,
                                       SubscriptionRequest& subscriptionRequest) {
         std::ignore = subscribeToName;
-        std::ignore = qos;
+        std::ignore = qosVariant;
         std::ignore = subscriptionRequest;
 
-        std::shared_ptr<SubscriptionCallback<joynr::types::Localisation::QtGpsLocation, double>> typedCallbackQsp =
-                std::dynamic_pointer_cast<SubscriptionCallback<joynr::types::Localisation::QtGpsLocation, double>>(callback);
+        std::shared_ptr<SubscriptionCallback<joynr::types::Localisation::GpsLocation, float>> typedCallbackQsp =
+                std::dynamic_pointer_cast<SubscriptionCallback<joynr::types::Localisation::GpsLocation, float>>(callback);
 
         typedCallbackQsp->onSuccess(gpsLocation, floatValue);
     }
@@ -158,6 +157,78 @@ TEST_F(TestJoynrMessagingConnectorTest, sync_getAttributeCached) {
     testSync_getAttributeCached();
 }
 
+TEST_F(TestJoynrMessagingConnectorTest, async_getterCallReturnsProviderRuntimeException) {
+    testAsync_getterCallReturnsProviderRuntimeException();
+}
+
+TEST_F(TestJoynrMessagingConnectorTest, sync_getterCallReturnsProviderRuntimeException) {
+    testSync_getterCallReturnsProviderRuntimeException();
+}
+
+TEST_F(TestJoynrMessagingConnectorTest, async_getterCallReturnsMethodInvocationException) {
+    testAsync_getterCallReturnsMethodInvocationException();
+}
+
+TEST_F(TestJoynrMessagingConnectorTest, sync_getterCallReturnsMethodInvocationException) {
+    testSync_getterCallReturnsMethodInvocationException();
+}
+
+TEST_F(TestJoynrMessagingConnectorTest, async_setterCallReturnsProviderRuntimeException) {
+    testAsync_setterCallReturnsProviderRuntimeException();
+}
+
+TEST_F(TestJoynrMessagingConnectorTest, sync_setterCallReturnsProviderRuntimeException) {
+    testSync_setterCallReturnsProviderRuntimeException();
+}
+
+TEST_F(TestJoynrMessagingConnectorTest, async_setterCallReturnsMethodInvocationException) {
+    testAsync_setterCallReturnsMethodInvocationException();
+}
+
+TEST_F(TestJoynrMessagingConnectorTest, sync_setterCallReturnsMethodInvocationException) {
+    testSync_setterCallReturnsMethodInvocationException();
+}
+
+TEST_F(TestJoynrMessagingConnectorTest, async_methodCallReturnsProviderRuntimeException) {
+    testAsync_methodCallReturnsProviderRuntimeException();
+}
+
+TEST_F(TestJoynrMessagingConnectorTest, sync_methodCallReturnsProviderRuntimeException) {
+    testSync_methodCallReturnsProviderRuntimeException();
+}
+
+TEST_F(TestJoynrMessagingConnectorTest, async_methodCallReturnsMethodInvocationException) {
+    testAsync_methodCallReturnsMethodInvocationException();
+}
+
+TEST_F(TestJoynrMessagingConnectorTest, sync_methodCallReturnsMethodInvocationException) {
+    testSync_methodCallReturnsMethodInvocationException();
+}
+
+TEST_F(TestJoynrMessagingConnectorTest, async_methodCallReturnsErrorEnum) {
+    testAsync_methodCallReturnsErrorEnum();
+}
+
+TEST_F(TestJoynrMessagingConnectorTest, sync_methodCallReturnsErrorEnum) {
+    testSync_methodCallReturnsErrorEnum();
+}
+
+TEST_F(TestJoynrMessagingConnectorTest, async_methodCallReturnsExtendedErrorEnum) {
+    testAsync_methodCallReturnsExtendedErrorEnum();
+}
+
+TEST_F(TestJoynrMessagingConnectorTest, sync_methodCallReturnsExtendedErrorEnum) {
+    testSync_methodCallReturnsExtendedErrorEnum();
+}
+
+TEST_F(TestJoynrMessagingConnectorTest, async_methodCallReturnsInlineErrorEnum) {
+    testAsync_methodCallReturnsInlineErrorEnum();
+}
+
+TEST_F(TestJoynrMessagingConnectorTest, sync_methodCallReturnsInlineErrorEnum) {
+    testSync_methodCallReturnsInlineErrorEnum();
+}
+
 TEST_F(TestJoynrMessagingConnectorTest, async_OperationWithNoArguments) {
     testAsync_OperationWithNoArguments();
 }
@@ -182,16 +253,16 @@ TEST_F(TestJoynrMessagingConnectorTest, testBroadcastListenerWrapper) {
                             _,
                             _, // messaging QoS
                             _
-                        )).WillRepeatedly(testing::Invoke(this, &TestJoynrMessagingConnectorTest::invokeSubscriptionCallback));
+                        )).WillOnce(testing::Invoke(this, &TestJoynrMessagingConnectorTest::invokeSubscriptionCallback));
     //   joynr::tests::LocationUpdateWithSpeedSelectiveBroadcastSubscriptionListenerWrapper
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, onReceive(Eq(joynr::types::Localisation::QtGpsLocation::createStd(gpsLocation)), Eq(floatValue)))
+    EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation), Eq(floatValue)))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
     joynr::OnChangeSubscriptionQos qos;
     connector->subscribeToLocationUpdateWithSpeedBroadcast(mockListener, qos);
 
     // Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(1, 2000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(2000)));
 }

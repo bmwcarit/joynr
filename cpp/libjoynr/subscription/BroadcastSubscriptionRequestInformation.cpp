@@ -23,17 +23,22 @@
 namespace joynr
 {
 
+static bool isBroadcastSubscriptionRequestInformationRegistered =
+        Variant::registerType<BroadcastSubscriptionRequestInformation>(
+                "joynr.BroadcastSubscriptionRequestInformation");
+
 using namespace joynr_logging;
 Logger* BroadcastSubscriptionRequestInformation::logger =
         Logging::getInstance()->getLogger("MSG", "BroadcastSubscriptionRequestInformation");
 
 BroadcastSubscriptionRequestInformation::BroadcastSubscriptionRequestInformation()
+        : BroadcastSubscriptionRequest(), SubscriptionInformation()
 {
 }
 
 BroadcastSubscriptionRequestInformation::BroadcastSubscriptionRequestInformation(
-        const QString& proxyParticipantId,
-        const QString& providerParticipantId,
+        const std::string& proxyParticipantId,
+        const std::string& providerParticipantId,
         const BroadcastSubscriptionRequest& subscriptionRequest)
         : BroadcastSubscriptionRequest(subscriptionRequest),
           SubscriptionInformation(proxyParticipantId, providerParticipantId)
@@ -63,7 +68,7 @@ bool BroadcastSubscriptionRequestInformation::operator==(
            SubscriptionInformation::operator==(subscriptionRequestInformation);
 }
 
-QString BroadcastSubscriptionRequestInformation::toQString() const
+std::string BroadcastSubscriptionRequestInformation::toString() const
 {
     return JsonSerializer::serialize(*this);
 }

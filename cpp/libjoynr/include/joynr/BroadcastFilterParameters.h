@@ -28,8 +28,8 @@ namespace joynr
 {
 
 /**
- * \class BroadcastFilterParameters
- * \brief The BroadcastFilterParameters class represents generic filter parameters
+ * @class BroadcastFilterParameters
+ * @brief The BroadcastFilterParameters class represents generic filter parameters
  * for selective broadcasts by using std types
  */
 class JOYNRCOMMON_EXPORT BroadcastFilterParameters

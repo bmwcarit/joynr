@@ -75,6 +75,8 @@ function freeze(joynr, capabilitiesWritable) {
     });
 }
 
+var Promise;
+
 /**
  * @name joynr
  * @class
@@ -84,23 +86,24 @@ var joynr = {
      * @name joynr#load
      * @function
      * @param provisioning
-     * @param callback
      * @param capabilitiesWriteable
+     * @return Promise object being resolved in case all libjoynr dependencies are loaded
      */
-    load : function load(provisioning, callback, capabilitiesWritable) {
-        requirejs([ 'libjoynr-deps'
-        ], function(joynrapi) {
-            var runtime;
-            runtime = new joynrapi.Runtime(provisioning);
-            runtime.start().then(function() {
-                populateJoynrApi(joynr, joynrapi);
-                //remove Runtime, as it is not required for the end user
-                delete joynr.Runtime;
-                populateJoynrApi(joynr, runtime);
-                freeze(joynr, capabilitiesWritable);
-                callback(undefined, joynr);
-            }).catch(function(error) {
-                callback(error);
+    load : function load(provisioning, capabilitiesWritable) {
+        return new Promise(function(resolve, reject) {
+            requirejs([ 'libjoynr-deps' ], function(joynrapi) {
+                var runtime;
+                runtime = new joynrapi.Runtime(provisioning);
+                runtime.start().then(function() {
+                    populateJoynrApi(joynr, joynrapi);
+                    //remove Runtime, as it is not required for the end user
+                    delete joynr.Runtime;
+                    populateJoynrApi(joynr, runtime);
+                    freeze(joynr, capabilitiesWritable);
+                    resolve(joynr);
+                }).catch(function(error) {
+                    reject(error);
+                });
             });
         });
     },
@@ -119,8 +122,12 @@ var joynr = {
      *            isEnum - optional flag if the added type is an enumeration type
      */
     addType : function registerType(name, type, isEnum) {
-        requirejs([ "joynr/types/TypeRegistrySingleton"
-        ], function(TypeRegistrySingleton) {
+        requirejs([
+                      "joynr/types/TypeRegistrySingleton"
+                  ],
+                  function(
+                      TypeRegistrySingleton
+                  ) {
             TypeRegistrySingleton.getInstance().addType(name, type, isEnum);
         });
     },
@@ -132,7 +139,13 @@ if (typeof define === 'function' && define.amd) {
     // expose joynr to requirejs in the event that requirejs is being
     // used natively, or by almond in the event that it has overwritten
     // define
-    define([], function() {
+    define([
+               "global/Promise"
+           ],
+           function(
+               PromiseDep
+           ) {
+        Promise = PromiseDep;
         return joynr;
     });
 }
@@ -140,7 +153,12 @@ if (typeof define === 'function' && define.amd) {
 // using optimized joynr, never used with nodejs
 if (typeof requireJsDefine === 'function' && requireJsDefine.amd) {
     // define has been mapped to almond's define
-    requireJsDefine([], function() {
+    requireJsDefine([
+                        "global/Promise"
+                    ],
+                    function(
+                        PromiseDep) {
+        Promise = PromiseDep;
         return joynr;
     });
 
@@ -150,6 +168,7 @@ if (typeof requireJsDefine === 'function' && requireJsDefine.amd) {
     var requirejsConfig = require("./require.config.node.js");
     requirejs = require("requirejs");
     requirejs.config(requirejsConfig);
+    Promise = requirejs("global/Promise");
     if ((module !== undefined) && module.exports) {
         exports.joynr = module.exports = joynr;
     } else {
@@ -159,6 +178,7 @@ if (typeof requireJsDefine === 'function' && requireJsDefine.amd) {
 
     // not using AMD
 } else if (typeof window === "object") {
+    Promise = window.Promise;
     // export namespace fragment or module read-only to the parent namespace
     Object.defineProperty(window, "joynr", {
         readable : true,

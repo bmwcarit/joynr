@@ -22,6 +22,7 @@ import com.google.inject.Inject
 import io.joynr.generator.templates.util.AbstractTypeUtil
 import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
+import java.io.File
 import java.util.Collections
 import java.util.HashMap
 import java.util.Map
@@ -79,45 +80,68 @@ class JSTypeUtil extends AbstractTypeUtil {
 			case FBasicTypeId::BOOLEAN: return "Boolean"
 			case FBasicTypeId::FLOAT: return "Number"
 			case FBasicTypeId::DOUBLE: return "Number"
-			case FBasicTypeId::BYTE_BUFFER:
-				throw new UnsupportedOperationException("basicType" +
-					datatype.joynrName + " could not be mapped to a primitive type name")
-			case FBasicTypeId::UNDEFINED:
-				throw new UnsupportedOperationException("basicType" +
-					datatype.joynrName + " could not be mapped to a primitive type name")
-		}
-		throw new UnsupportedOperationException("basicType" +
-			datatype.joynrName + " could not be mapped to a primitive type name")
+			case FBasicTypeId::BYTE_BUFFER:return "Array.<Number>"
+			default: throw new UnsupportedOperationException("Unsupported basic type: " + datatype.joynrName)
+			}
 	}
 
 	override getTypeName(FType datatype) {
 		if (isEnum(datatype)){
-			return getEnumType(datatype).joynrName;
+			return datatype.enumType.joynrName;
 		}
 		if (isPrimitive(datatype)){
-			return getTypeName(getPrimitive(datatype))
+			return datatype.getPrimitive.typeName
 		}
-		if (isComplex(datatype)){
-			return getComplexType(datatype).joynrName
+		if (isCompound(datatype)){
+			return datatype.compoundType.joynrName
+		}
+		if (isMap(datatype)){
+			return datatype.mapType.joynrName
 		}
 		throw new IllegalStateException("JoynrJSGeneratorExtensions.getMappedDatatype: unsupported state, datatype " +
 			datatype.joynrName + " could not be mapped to an implementation datatype")
 	}
 
 	override getTypeNameForList(FBasicTypeId datatype) {
-		// unused
-		"";
+		toTypesEnum(datatype) + " + \"" + typeNameExtensionForArrays + "\""
 	}
 
 	override getTypeNameForList(FType datatype) {
-		// unused
-		"";
+		"\"" + toTypesEnum(datatype) + typeNameExtensionForArrays + "\""
 	}
 
+	def checkPropertyTypeName(FTypedElement element) {
+		checkPropertyTypeName(element.type, isArray(element))
+	}
+
+	def checkPropertyTypeName(FTypeRef type, boolean isArray) {
+		if (isArray || type.byteBuffer) {
+			return "\"Array\""
+		}
+		if (type.isPrimitive) {
+			if (type.getPrimitive.bool) {
+				return "\"Boolean\""
+			}
+			if (type.getPrimitive.string) {
+				return "\"String\""
+			}
+			return "\"Number\""
+		} else {
+			if (type.isCompound || type.isMap) {
+				return "\"" + type.derived.joynrName + "\""
+			}
+			else {
+				/* TODO in the final version, enumerations must always be represented as object.
+				 * Thus, String must be removed here once enums are fully supported
+				 */
+				return  "[\"String\", \"Object\", \"" + type.derived.joynrName + "\"]" 
+			}
+		}
+	}
 
 	def String getJsdocTypeName (FTypedElement typedElement) {
 		var result =
-				if (typedElement.isArray())
+				if (isArray(typedElement))
 					typedElement.type.jsdocTypeNameForList
 				else
 					typedElement.type.jsdocTypeName
@@ -128,14 +152,17 @@ class JSTypeUtil extends AbstractTypeUtil {
 	}
 
 	def getJsdocTypeName(FType datatype) {
-		if (isEnum(datatype)){
+		if (datatype.isEnum){
 			return  datatype.name
 		}
-		if (isPrimitive(datatype)){
-			return getTypeName(getPrimitive(datatype))
+		if (datatype.isPrimitive){
+			return datatype.getPrimitive.typeName
 		}
-		if (isComplex(datatype)){
-			return getComplexType(datatype).joynrName
+		if (datatype.isCompound){
+			return datatype.compoundType.joynrName
+		}
+		if (datatype.isMap){
+			return datatype.mapType.joynrName
 		}
 		throw new IllegalStateException("JoynrJSGeneratorExtensions.getMappedDatatype: unsupported state, datatype " +
 			datatype.joynrName + " could not be mapped to an implementation datatype")
@@ -191,7 +218,7 @@ class JSTypeUtil extends AbstractTypeUtil {
 		«ENDFOR»
 		«IF operation.outputParameters.size==1»
 			«val returnParam = operation.outputParameters.iterator.next»
-			«prefix»@returns {«returnParam.typeName»} «returnParam.joynrName» -
+			«prefix»@returns {«returnParam.jsdocTypeName»} «returnParam.joynrName» -
 			«IF returnParam.comment!=null»
 			«prefix»«FOR comment: returnParam.comment.elements»«comment.comment.replaceAll("\n\\s*", "\n" + prefix)»«ENDFOR»
 			«ENDIF»
@@ -228,9 +255,13 @@ class JSTypeUtil extends AbstractTypeUtil {
 	//				return member.getDEFAULTVALUE();
 	//			}
 	//		} else
-			if (isComplex(element.type)) {
+			if (element.type.isCompound) {
 				buffer.append("new ")
-				buffer.append(getComplexType(element.type).joynrName)
+				buffer.append(getCompoundType(element.type).joynrName)
+				buffer.append("()");
+			} else if (element.type.isMap) {
+				buffer.append("new ")
+				buffer.append(element.type.mapType.joynrName)
 				buffer.append("()");
 			} else if (isEnum(element.type)){
 				val enumType = getEnumType(element.type);
@@ -261,11 +292,6 @@ class JSTypeUtil extends AbstractTypeUtil {
 		return buffer.toString;
 	}
 
-	/**
-	 * This method is used for assembling the list of parameter types for the attribute and
-	 * operations, the types are mapped to ones that are understood by the joynr framework
-	 * when sending requests.
-	 */
 	def toTypesEnum(FType datatype) {
 		if (isPrimitive(datatype)) {
 			return toTypesEnum(getPrimitive(datatype))
@@ -274,11 +300,12 @@ class JSTypeUtil extends AbstractTypeUtil {
 		}
 	}
 
-	def toTypesEnum(FBasicTypeId basicType) {
+	private def toTypesEnum(FBasicTypeId basicType) {
 		switch (basicType){
 		case FBasicTypeId::STRING: return "TypesEnum.STRING"
 		case FBasicTypeId::INT8: return "TypesEnum.BYTE"
 		case FBasicTypeId::UINT8: return "TypesEnum.BYTE"
+		case FBasicTypeId::BYTE_BUFFER: return "TypesEnum.BYTE"
 		case FBasicTypeId::INT16: return "TypesEnum.SHORT"
 		case FBasicTypeId::UINT16: return "TypesEnum.SHORT"
 		case FBasicTypeId::INT32: return "TypesEnum.INT"
@@ -288,50 +315,37 @@ class JSTypeUtil extends AbstractTypeUtil {
 		case FBasicTypeId::BOOLEAN: return "TypesEnum.BOOL"
 		case FBasicTypeId::FLOAT: return "TypesEnum.FLOAT"
 		case FBasicTypeId::DOUBLE: return "TypesEnum.DOUBLE"
-		case FBasicTypeId::BYTE_BUFFER:
-			throw new UnsupportedOperationException("basicType" + basicType.joynrName +
-				" could not be mapped to a primitive type name")
-		case FBasicTypeId::UNDEFINED:
-			throw new UnsupportedOperationException("basicType" + basicType.joynrName +
+		default: throw new UnsupportedOperationException("basicType" + basicType.joynrName +
 				" could not be mapped to a primitive type name")
 		}
-		throw new UnsupportedOperationException("basicType" + basicType.joynrName +
-			" could not be mapped to a primitive type name")
 	}
 
-	private def getTypeNameForListParameter(String typeName) {
-		"\"" + typeName + "[]\""
+	private def getTypeNameExtensionForArrays() {
+		"[]"
 	}
 
-	def getTypeNameForParameter(FType datatype, boolean array) {
-		val mappedDatatype = toTypesEnum(datatype);
-		var result = mappedDatatype;
-
-		// special cases: ByteBuffer => byte-array, arrays => Lists,
-		if (array || (getPrimitive(datatype) == FBasicTypeId::BYTE_BUFFER)) {
-			return getTypeNameForListParameter(result);
-		}
-
-		if (!isPrimitive(datatype)) {
-			return "\"" + result +  "\"";
-		}
-	}
-
-	def getTypeNameForParameter(FBasicTypeId datatype, boolean array) {
-		val mappedDatatype = toTypesEnum(datatype);
+	private def getTypeNameForParameter(FType datatype, boolean array) {
 		if (array) {
-			return getTypeNameForListParameter(mappedDatatype);
+			getTypeNameForList(datatype)
 		} else {
-			return mappedDatatype;
+			"\"" + toTypesEnum(datatype) + "\""
+		}
+	}
+
+	private def getTypeNameForParameter(FBasicTypeId datatype, boolean array) {
+		if (array) {
+			return getTypeNameForList(datatype);
+		} else {
+			return toTypesEnum(datatype);
 		}
 	}
 
 	def String getTypeNameForParameter(FTypedElement typedElement){
-		if (typedElement.type.derived != null){
-			getTypeNameForParameter(typedElement.type.derived, typedElement.isArray())
+		if (isPrimitive(typedElement.type)){
+			getTypeNameForParameter(getPrimitive(typedElement.type), isArray(typedElement) ||  isByteBuffer(getPrimitive(typedElement.type)))
 		}
 		else{
-			getTypeNameForParameter(typedElement.type.predefined, typedElement.isArray())
+			getTypeNameForParameter(typedElement.type.derived, isArray(typedElement)  || isByteBuffer(getPrimitive(typedElement.type)))
 		}
 	}
 
@@ -343,5 +357,11 @@ class JSTypeUtil extends AbstractTypeUtil {
 
 	def getTypeNameForErrorEnumType(FMethod method, FEnumerationType errorEnumType) {
 		joynrGenerationPrefix + "." + method.packageName + "." + errorEnumType.joynrName
+	}
+
+	def getDependencyPath(FType datatype) {
+		return datatype.buildPackagePath(File.separator, true)
+					+ File.separator
+					+ datatype.joynrName
 	}
 }

@@ -20,15 +20,15 @@
 #define MOCKCAPABILITIESRESULTCALLBACK_H_
 
 #include <vector>
-#include <QSemaphore>
 #include "joynr/ILocalCapabilitiesCallback.h"
+#include "joynr/Semaphore.h"
 
 class MockLocalCapabilitiesDirectoryCallback : public joynr::ILocalCapabilitiesCallback {
 
 public:
     MockLocalCapabilitiesDirectoryCallback();
 
-    virtual void capabilitiesReceived(std::vector<joynr::CapabilityEntry> capabilities);
+    virtual void capabilitiesReceived(std::vector<joynr::CapabilityEntry> capabilities) override;
 
     std::vector<joynr::CapabilityEntry> getResults(int timeout);
     void clearResults();
@@ -37,7 +37,7 @@ public:
 
 private:
     std::vector<joynr::CapabilityEntry> results;
-    QSemaphore semaphore;
+    joynr::Semaphore semaphore;
 };
 
 #endif //MOCKCAPABILITIESRESULTCALLBACK_H_

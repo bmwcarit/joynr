@@ -21,7 +21,7 @@ package io.joynr.integration;
 
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.dispatching.subscription.PubSubTestProviderImpl;
+import io.joynr.dispatching.subscription.SubscriptionTestsProviderImpl;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilder;
@@ -48,7 +48,9 @@ import java.util.UUID;
 
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 /*
  * This testClass registers one consumer and one provider both on the same runtime. It can be used to test local
@@ -58,7 +60,7 @@ public abstract class AbstractLocalCommunicationTest {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractLocalCommunicationTest.class);
     private JoynrRuntime runtimeA;
-    private PubSubTestProviderImpl provider;
+    private SubscriptionTestsProviderImpl provider;
     private String domain;
     private testProxy proxy;
 
@@ -82,7 +84,7 @@ public abstract class AbstractLocalCommunicationTest {
         customProperties.put(MessagingPropertyKeys.CHANNELID, channelId);
         runtimeA = getRuntime(customProperties);
 
-        provider = new PubSubTestProviderImpl();
+        provider = new SubscriptionTestsProviderImpl();
         domain = "TestDomain" + System.currentTimeMillis();
 
         runtimeA.registerProvider(domain, provider);

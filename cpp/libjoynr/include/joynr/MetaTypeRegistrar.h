@@ -23,10 +23,11 @@
 
 #include "joynr/PublicationInterpreter.h"
 #include "joynr/ReplyInterpreter.h"
-#include <QMutex>
-#include <QMutexLocker>
-#include <QHash>
+#include <mutex>
+#include <unordered_map>
 #include <QMetaType>
+
+#include "joynr/JoynrTypeId.h"
 
 namespace joynr
 {
@@ -115,31 +116,32 @@ private:
     void addPublicationInterpreterForBroadcastType();
 
     // A threadsafe hash holding PublicationInterpreters
-    QHash<int, IPublicationInterpreter*> publicationInterpreters;
-    QMutex publicationInterpretersMutex;
+    std::unordered_map<int, IPublicationInterpreter*> publicationInterpreters;
+    std::mutex publicationInterpretersMutex;
 
     // A threadsafe hash holding ReplyInterpreters
-    QHash<int, IReplyInterpreter*> replyInterpreters;
-    QMutex replyInterpretersMutex;
+    std::unordered_map<int, IReplyInterpreter*> replyInterpreters;
+    std::mutex replyInterpretersMutex;
 };
 
 template <class T>
 void MetaTypeRegistrar::addEnumPublicationInterpreter(int typeId)
 {
-    if (!publicationInterpreters.contains(typeId)) {
-        publicationInterpreters.insert(typeId, new EnumPublicationInterpreter<T>());
+    if (publicationInterpreters.find(typeId) == publicationInterpreters.end()) {
+        publicationInterpreters.insert({typeId, new EnumPublicationInterpreter<T>()});
     }
 }
 
-// For enums, the metatype Id is T::Enum or QList<T::Enum>
+// For enums, the metatype Id is T::Enum or std::vector<T::Enum>
 // However, the publication and reply interpreters must be created as type T or QList<T>
 template <class T>
 void MetaTypeRegistrar::registerEnumMetaType()
 {
     {
-        QMutexLocker locker(&publicationInterpretersMutex);
+        std::lock_guard<std::mutex> lock(publicationInterpretersMutex);
         addEnumPublicationInterpreter<T>(Util::getTypeId<typename T::Enum>());
-        addEnumPublicationInterpreter<QList<T>>(Util::getTypeId<QList<typename T::Enum>>());
+        addEnumPublicationInterpreter<std::vector<T>>(
+                Util::getTypeId<std::vector<typename T::Enum>>());
     }
 }
 
@@ -147,9 +149,9 @@ template <class T>
 void MetaTypeRegistrar::registerMetaType()
 {
     {
-        QMutexLocker locker(&publicationInterpretersMutex);
+        std::lock_guard<std::mutex> lock(publicationInterpretersMutex);
         addPublicationInterpreter<T>();
-        addPublicationInterpreter<QList<T>>();
+        addPublicationInterpreter<std::vector<T>>();
     }
 }
 
@@ -157,7 +159,7 @@ template <class T1, class T2, class... Ts>
 void MetaTypeRegistrar::registerMetaType()
 {
     {
-        QMutexLocker locker(&publicationInterpretersMutex);
+        std::lock_guard<std::mutex> lock(publicationInterpretersMutex);
         addPublicationInterpreter<T1, T2, Ts...>();
     }
 }
@@ -167,8 +169,8 @@ void MetaTypeRegistrar::addPublicationInterpreter()
 {
     int typeId = Util::getTypeId<Ts...>();
 
-    if (!publicationInterpreters.contains(typeId)) {
-        publicationInterpreters.insert(typeId, new PublicationInterpreter<Ts...>());
+    if (publicationInterpreters.find(typeId) == publicationInterpreters.end()) {
+        publicationInterpreters.insert({typeId, new PublicationInterpreter<Ts...>()});
     }
 }
 
@@ -176,11 +178,11 @@ template <class... Ts>
 void MetaTypeRegistrar::registerReplyMetaType()
 {
     {
-        QMutexLocker locker(&replyInterpretersMutex);
+        std::lock_guard<std::mutex> lock(replyInterpretersMutex);
         int typeId = Util::getTypeId<Ts...>();
 
-        if (!replyInterpreters.contains(typeId)) {
-            replyInterpreters.insert(typeId, new ReplyInterpreter<Ts...>());
+        if (replyInterpreters.find(typeId) == replyInterpreters.end()) {
+            replyInterpreters.insert({typeId, new ReplyInterpreter<Ts...>()});
         }
     }
 }

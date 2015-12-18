@@ -23,6 +23,7 @@
 #include "joynr/ILocalChannelUrlDirectory.h"
 #include "joynr/RequestStatus.h"
 #include <memory>
+#include <string>
 
 namespace joynr
 {
@@ -37,9 +38,8 @@ class IChannelUrlSelector
 {
 
 public:
-    virtual ~IChannelUrlSelector()
-    {
-    }
+    virtual ~IChannelUrlSelector() = default;
+
     /**
     * @brief Uses the ChannelUrlDirectoryProxy to query the remote ChannelUrlDirectory
     *
@@ -56,11 +56,11 @@ public:
     * @param channelId
     * @param status
     * @param timeout
-    * @return QString
+    * @return std::string
     */
-    virtual QString obtainUrl(const QString& channelId,
-                              RequestStatus& status,
-                              const qint64& timeout_ms) = 0;
+    virtual std::string obtainUrl(const std::string& channelId,
+                                  RequestStatus& status,
+                                  const int64_t& timeout_ms) = 0;
     /**
     * @brief Provide feedback on performance of URL: was the connection successful or not?
     *
@@ -68,7 +68,7 @@ public:
     * @param channelId
     * @param url
     */
-    virtual void feedback(bool success, const QString& channelId, QString url) = 0;
+    virtual void feedback(bool success, const std::string& channelId, std::string url) = 0;
 };
 
 } // namespace joynr

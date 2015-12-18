@@ -2,7 +2,8 @@ message(STATUS "#############################################")
 message(STATUS "Configuring JoynrLib...")
 message(STATUS "#############################################\n")
 
-get_target_property(qjson_PUBLIC_INCLUDE_DIRECTORY qjson PUBLIC_INCLUDE_DIRECTORY)
+get_target_property(jsonserializer_PUBLIC_INCLUDE_DIRECTORY jsonserializer PUBLIC_INCLUDE_DIRECTORY)
+get_target_property(jsmn_PUBLIC_INCLUDE_DIRECTORY jsmn PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 
 set(
@@ -15,14 +16,15 @@ set(
     JoynrLib_INCLUDE_DIRECTORIES
     ${JoynrLib_PUBLIC_INCLUDE_DIRECTORY}
     "../"
-    ${qjson_PUBLIC_INCLUDE_DIRECTORY}
+    ${jsmn_PUBLIC_INCLUDE_DIRECTORY}
+    ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
 )
 
 set(
     JoynrLib_TARGET_LIBRARIES
     JoynrCommon
-    qjson
+    jsonserializer
 )
 
 set(
@@ -46,6 +48,7 @@ file(
     "dispatcher/*.h"
     "in-process/*.h"
     "joynr-messaging/*.h"
+    "json/*.h"
     "some-ip/*.h"
     "provider/*.h"
     "proxy/*.h"
@@ -53,6 +56,7 @@ file(
     "websocket/*.h"
     "CapabilitiesRegistrar.h"
     "LibjoynrSettings.h"
+    "JsonExceptionSerializer.h"
 )
 
 
@@ -71,6 +75,7 @@ file(
     "dispatcher/*.cpp"
     "in-process/*.cpp"
     "joynr-messaging/*.cpp"
+    "json/*.cpp"
     "some-ip/*.cpp"
     "provider/*.cpp"
     "proxy/*.cpp"
@@ -78,6 +83,7 @@ file(
     "websocket/*.cpp"
     "CapabilitiesRegistrar.cpp"
     "LibjoynrSettings.cpp"
+    "JsonExceptionSerializer.cpp"
 )
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
@@ -119,22 +125,11 @@ add_library(
     ${JoynrLib_SOURCES}
 )
 
+AddClangFormat(Joynr)
 
-if(${ENABLE_CLANG_FORMATTER})
-    set(COMMENT "running C++ code formatter: clang-format")
-    set(COMMENT "${COMMENT}\nworking directory: ${CMAKE_CURRENT_SOURCE_DIR}")
-    set(COMMENT "${COMMENT}\nprocessing header files:\n${JoynrLib_HEADERS}")
-    set(COMMENT "${COMMENT}\nprocessing source files:\n${JoynrLib_SOURCES}")
+AddIncludeWhatYouUse(Joynr)
 
-    add_custom_target(
-        format-Joynr
-        COMMAND clang-format -i ${JoynrLib_HEADERS} ${JoynrLib_SOURCES}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        COMMENT "${COMMENT}"
-        VERBATIM
-    )
-    add_dependencies(Joynr format-Joynr)
-endif(${ENABLE_CLANG_FORMATTER})
+AddClangTidy(Joynr)
 
 set_target_properties(
     Joynr
@@ -149,7 +144,10 @@ generate_export_header(
     EXPORT_FILE_NAME "${CMAKE_CURRENT_SOURCE_DIR}/${JoynrLib_EXPORT_HEADER}"
 )
 
-target_link_libraries(Joynr ${JoynrLib_TARGET_LIBRARIES})
+target_link_libraries(Joynr
+    ${JoynrLib_TARGET_LIBRARIES}
+    ${Boost_LIBRARIES}
+)
 
 install(
     TARGETS Joynr

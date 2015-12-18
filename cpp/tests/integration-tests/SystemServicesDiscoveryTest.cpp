@@ -16,24 +16,25 @@
  * limitations under the License.
  * #L%
  */
-#include "PrettyPrint.h"
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <string>
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/TypeUtil.h"
+#include "joynr/LibjoynrSettings.h"
 
 #include "joynr/system/DiscoveryProxy.h"
+#include "joynr/Settings.h"
 
 using namespace joynr;
 
 class SystemServicesDiscoveryTest : public ::testing::Test {
 public:
-    QString settingsFilename;
-    QSettings* settings;
+    std::string settingsFilename;
+    Settings* settings;
     std::string discoveryDomain;
-    QString discoveryProviderParticipantId;
+    std::string discoveryProviderParticipantId;
     JoynrClusterControllerRuntime* runtime;
     IMessageReceiver* mockMessageReceiver;
     DiscoveryQos discoveryQos;
@@ -42,7 +43,7 @@ public:
 
     SystemServicesDiscoveryTest() :
         settingsFilename("test-resources/SystemServicesDiscoveryTest.settings"),
-        settings(new QSettings(settingsFilename, QSettings::IniFormat)),
+        settings(new Settings(settingsFilename)),
         discoveryDomain(),
         discoveryProviderParticipantId(),
         runtime(NULL),
@@ -53,15 +54,15 @@ public:
     {
         SystemServicesSettings systemSettings(*settings);
         systemSettings.printSettings();
-        discoveryDomain = TypeUtil::toStd(systemSettings.getDomain());
+        discoveryDomain = systemSettings.getDomain();
         discoveryProviderParticipantId = systemSettings.getCcDiscoveryProviderParticipantId();
 
         discoveryQos.setCacheMaxAge(1000);
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
-        discoveryQos.addCustomParameter("fixedParticipantId", TypeUtil::toStd(discoveryProviderParticipantId));
+        discoveryQos.addCustomParameter("fixedParticipantId", discoveryProviderParticipantId);
         discoveryQos.setDiscoveryTimeout(50);
 
-        QString channelId("SystemServicesDiscoveryTest.ChannelId");
+        std::string channelId("SystemServicesDiscoveryTest.ChannelId");
         EXPECT_CALL(*(dynamic_cast<MockMessageReceiver*>(mockMessageReceiver)), getReceiveChannelId())
                 .WillRepeatedly(::testing::ReturnRefOfCopy(channelId));
 
@@ -76,8 +77,7 @@ public:
         runtime->deleteChannel();
         runtime->stopMessaging();
         delete runtime;
-        delete settings;
-        QFile::remove(settingsFilename);
+        std::remove(settingsFilename.c_str());
     }
 
     void SetUp(){
@@ -86,8 +86,10 @@ public:
     }
 
     void TearDown(){
-        QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME());
-        QFile::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME());
+        std::remove(
+                    LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME().c_str());
+        std::remove(
+                    LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
         delete discoveryProxy;
         delete discoveryProxyBuilder;
     }

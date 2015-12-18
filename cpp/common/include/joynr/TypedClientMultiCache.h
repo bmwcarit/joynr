@@ -22,10 +22,12 @@
 #include "joynr/CachedValue.h"
 
 #include <QCache>
-#include <QList>
-#include <QMutex>
+#include <vector>
+#include <QVector>
+#include <mutex>
 #include <chrono>
 #include <stdint.h>
+#include "joynr/Util.h"
 
 namespace joynr
 {
@@ -53,15 +55,15 @@ public:
     /*
     * Returns the list of values stored for the attributeId filtered by a maximum age. If none
     *exists, it returns an empty
-    * QList object that can be tested for by using the isEmpty() method.
+    * std::vector object that can be tested for by using the empty() method.
     * maxAcceptedAgeInMs -1 returns all values.
     *
     */
-    QList<T> lookUp(const Key& key, qint64 maxAcceptedAgeInMs);
+    std::vector<T> lookUp(const Key& key, int64_t maxAcceptedAgeInMs);
     /*
      *  Returns the list of values stored for the attribute not considering their age.
       */
-    QList<T> lookUpAll(const Key& key);
+    std::vector<T> lookUpAll(const Key& key);
     /*
     * Inserts the key (e.g. attributeId) and object into the cache.  If the attributeId already
     * exists in the cache the value is added to a list (no overwrite).
@@ -82,7 +84,7 @@ public:
     * entries for an attributeID are too old will the key become invalid (deleted).
     * Can be used to clear the cache of all entries by setting 'maxAcceptedAgeInMs = 0'.
     */
-    void cleanup(qint64 maxAcceptedAgeInMs);
+    void cleanup(int64_t maxAcceptedAgeInMs);
 
     bool contains(const Key& key);
 
@@ -96,9 +98,9 @@ private:
     /*
      * Returns time since activation in ms (elapsed())
      */
-    qint64 elapsed(qint64 entryTime);
-    QCache<Key, QList<CachedValue<T>>> cache;
-    QMutex mutex;
+    int64_t elapsed(int64_t entryTime);
+    QCache<Key, std::vector<CachedValue<T>>> cache;
+    std::mutex mutex;
 };
 
 template <class Key, class T>
@@ -109,40 +111,40 @@ TypedClientMultiCache<Key, T>::TypedClientMultiCache(int maxCost)
 }
 
 template <class Key, class T>
-QList<T> TypedClientMultiCache<Key, T>::lookUp(const Key& key, qint64 maxAcceptedAgeInMs)
+std::vector<T> TypedClientMultiCache<Key, T>::lookUp(const Key& key, int64_t maxAcceptedAgeInMs)
 {
     if (maxAcceptedAgeInMs == -1) {
         return lookUpAll(key);
     }
-    QMutexLocker locker(&mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     if (!cache.contains(key)) {
-        return QList<T>();
+        return std::vector<T>();
     }
-    QList<CachedValue<T>>* list = cache.object(key);
-    QList<T> result;
-    qint64 time;
+    std::vector<CachedValue<T>>* list = cache.object(key);
+    std::vector<T> result;
+    int64_t time;
 
-    for (int i = 0; i < list->size(); i++) {
-        time = list->value(i).getTimestamp();
+    for (std::size_t i = 0; i < list->size(); i++) {
+        time = list->at(i).getTimestamp();
         if (elapsed(time) <= maxAcceptedAgeInMs) {
-            result.append(list->value(i).getValue());
+            result.push_back(list->at(i).getValue());
         }
     }
     return result;
 }
 
 template <class Key, class T>
-QList<T> TypedClientMultiCache<Key, T>::lookUpAll(const Key& key)
+std::vector<T> TypedClientMultiCache<Key, T>::lookUpAll(const Key& key)
 {
-    QMutexLocker locker(&mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     if (!cache.contains(key)) {
-        return QList<T>();
+        return std::vector<T>();
     }
-    QList<CachedValue<T>>* list = cache.object(key);
-    QList<T> result;
+    std::vector<CachedValue<T>>* list = cache.object(key);
+    std::vector<T> result;
 
-    for (int i = 0; i < list->size(); i++) {
-        result.append(list->value(i).getValue());
+    for (std::size_t i = 0; i < list->size(); i++) {
+        result.push_back(list->at(i).getValue());
     }
     return result;
 }
@@ -150,15 +152,15 @@ QList<T> TypedClientMultiCache<Key, T>::lookUpAll(const Key& key)
 template <class Key, class T>
 void TypedClientMultiCache<Key, T>::insert(const Key& key, T object)
 {
-    QMutexLocker locker(&mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
     CachedValue<T> cachedValue = CachedValue<T>(object, now);
     if (cache.contains(key)) {
-        cache.object(key)->append(cachedValue);
+        cache.object(key)->push_back(cachedValue);
         return;
     } else {
-        QList<CachedValue<T>>* list = new QList<CachedValue<T>>();
-        list->append(cachedValue);
+        std::vector<CachedValue<T>>* list = new std::vector<CachedValue<T>>();
+        list->push_back(cachedValue);
         cache.insert(key, list);
     }
 }
@@ -166,18 +168,19 @@ void TypedClientMultiCache<Key, T>::insert(const Key& key, T object)
 template <class Key, class T>
 void TypedClientMultiCache<Key, T>::remove(const Key& key, T object)
 {
-    QMutexLocker locker(&mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     if (!cache.contains(key)) {
         return;
     }
-    QList<CachedValue<T>>* list = cache.object(key);
+    std::vector<CachedValue<T>>* list = cache.object(key);
     int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
     CachedValue<T> cachedValue = CachedValue<T>(object, now);
-    if (!list->contains(cachedValue)) {
+    auto position = std::find(list->cbegin(), list->cend(), cachedValue);
+    if (position == list->cend()) {
         return;
     }
-    list->removeOne(cachedValue);
-    if (list->isEmpty()) {
+    list->erase(position);
+    if (list->empty()) {
         cache.remove(key);
     }
 }
@@ -185,7 +188,7 @@ void TypedClientMultiCache<Key, T>::remove(const Key& key, T object)
 template <class Key, class T>
 void TypedClientMultiCache<Key, T>::removeAll(const Key& key)
 {
-    QMutexLocker locker(&mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     if (!cache.contains(key)) {
         return;
     }
@@ -193,38 +196,38 @@ void TypedClientMultiCache<Key, T>::removeAll(const Key& key)
 }
 
 template <class Key, class T>
-void TypedClientMultiCache<Key, T>::cleanup(qint64 maxAcceptedAgeInMs)
+void TypedClientMultiCache<Key, T>::cleanup(int64_t maxAcceptedAgeInMs)
 {
-    QMutexLocker locker(&mutex);
-    QList<Key> keyset = cache.keys();
-    QList<CachedValue<T>>* entries;
-    CachedValue<T> avalue;
-    QList<int> attributesToBeRemoved;
-    QList<Key> listsToBeRemoved;
+    std::unique_lock<std::mutex> lock(mutex);
+    std::vector<Key> keyset = cache.keys().toVector().toStdVector();
+    std::vector<CachedValue<T>>* entries;
+    std::vector<int> attributesToBeRemoved;
+    std::vector<Key> listsToBeRemoved;
 
-    for (int i = 0; i < keyset.size(); i++) {
-        entries = cache.object(keyset.value(i));
+    for (std::size_t i = 0; i < keyset.size(); i++) {
+        entries = cache.object(keyset[i]);
         attributesToBeRemoved.clear();
-        for (int e = 0; e < entries->size(); e++) {
-            if (elapsed(entries->value(e).getTimestamp()) >= maxAcceptedAgeInMs) {
+        for (std::size_t e = 0; e < entries->size(); e++) {
+            if (elapsed(entries->at(e).getTimestamp()) >= maxAcceptedAgeInMs) {
                 attributesToBeRemoved.push_back(e);
             }
         }
-        for (int u = 0; u < attributesToBeRemoved.size(); u++) {
+        for (std::size_t u = 0; u < attributesToBeRemoved.size(); u++) {
             // size of list shrinks as an entry is removed
-            cache.object(keyset.value(i))->removeAt(attributesToBeRemoved.value(u) - u);
+            auto begin = cache.object(keyset[i])->begin();
+            cache.object(keyset[i])->erase(begin + (attributesToBeRemoved[u] - u));
         }
-        if (cache.object(keyset.value(i))->isEmpty()) {
-            listsToBeRemoved.append(keyset.value(i));
+        if (cache.object(keyset[i])->empty()) {
+            listsToBeRemoved.push_back(keyset[i]);
         }
     }
-    for (int v = 0; v < listsToBeRemoved.size(); v++) {
-        cache.remove(listsToBeRemoved.value(v));
+    for (std::size_t v = 0; v < listsToBeRemoved.size(); v++) {
+        cache.remove(listsToBeRemoved[v]);
     }
 }
 
 template <class Key, class T>
-qint64 TypedClientMultiCache<Key, T>::elapsed(qint64 entryTime)
+int64_t TypedClientMultiCache<Key, T>::elapsed(int64_t entryTime)
 {
     int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
     return now - entryTime;
@@ -236,7 +239,7 @@ bool TypedClientMultiCache<Key, T>::contains(const Key& key)
     if (!cache.contains(key)) {
         return false;
     } else {
-        return !cache.object(key)->isEmpty();
+        return !cache.object(key)->empty();
     }
 }
 
@@ -244,13 +247,14 @@ template <class Key, class T>
 T TypedClientMultiCache<Key, T>::take(const Key& key)
 {
     if (cache.contains(key)) {
-        QList<CachedValue<T>>* list = cache.object(key);
-        CachedValue<T> cachedValue = list->first();
-        list->removeOne(cachedValue);
-        if (list->isEmpty()) {
+        std::vector<CachedValue<T>>* list = cache.object(key);
+        auto cachedValue = list->begin();
+        auto returnCopy = *cachedValue;
+        list->erase(cachedValue);
+        if (list->empty()) {
             cache.remove(key);
         }
-        return cachedValue.getValue();
+        return returnCopy.getValue();
     } else {
         return T();
     }

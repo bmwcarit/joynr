@@ -1,7 +1,7 @@
 FROM fedora:21
 
 # set this date to cause all images to be updated
-ENV REFRESHED_AT 2015-04-10
+ENV REFRESHED_AT 2015-09-12
 
 ###################################################
 # set timezone
@@ -21,6 +21,7 @@ RUN yum update -y \
 	expat-devel \
 	file \
 	gcc-c++ \
+	gdb \
 	git \
 	glibc.i686 \
 	icecream \
@@ -67,7 +68,7 @@ RUN cd /opt \
 ###################################################
 WORKDIR /opt
 
-ENV MAVEN_VERSION=3.2.5
+ENV MAVEN_VERSION=3.3.3
 RUN wget http://mirror.serversupportforum.de/apache/maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz \
 	&& tar -xf apache-maven-${MAVEN_VERSION}-bin.tar.gz \
 	&& rm apache-maven-${MAVEN_VERSION}-bin.tar.gz \

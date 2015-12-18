@@ -19,9 +19,9 @@ package io.joynr.runtime;
  * #L%
  */
 
-import io.joynr.capabilities.RegistrationFuture;
 import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.provider.JoynrProvider;
+import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 
 /**
@@ -38,9 +38,9 @@ public interface JoynrRuntime {
      *            the provider.
      * @param provider
      *            Instance of the provider implementation (has to extend a generated ...AbstractProvider).
-     * @return Returns a RegistrationFuture which can be used to check the local and global registration status.
+     * @return Returns a Future which can be used to check the registration status.
      */
-    RegistrationFuture registerProvider(String domain, JoynrProvider provider);
+    Future<Void> registerProvider(String domain, JoynrProvider provider);
 
     /**
      * Unregisters the provider from the joynr framework. It can no longer be used or discovered.

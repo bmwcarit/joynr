@@ -24,7 +24,7 @@
 #include <memory>
 #include "PrettyPrint.h"
 
-#include "joynr/types/Localisation_QtGpsLocation.h"
+#include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/tests/DefaulttestProvider.h"
 #include "joynr/ISubscriptionListener.h"
 
@@ -213,6 +213,55 @@ public:
         listOfStringsChanged(listOfStrings);
         onSuccess();
     }
+
+    void methodWithAllPossiblePrimitiveParameters(
+            const bool& booleanArg,
+            const double& doubleArg,
+            const float& floatArg,
+            const int16_t& int16Arg,
+            const int32_t& int32Arg,
+            const int64_t& int64Arg,
+            const int8_t& int8Arg,
+            const std::string& stringArg,
+            const uint16_t& uInt16Arg,
+            const uint32_t& uInt32Arg,
+            const uint64_t& uInt64Arg,
+            const uint8_t& uInt8Arg,
+            std::function<void(
+                    const bool& booleanOut,
+                    const double& doubleOut,
+                    const float& floatOut,
+                    const int16_t& int16Out,
+                    const int32_t& int32Out,
+                    const int64_t& int64Out,
+                    const int8_t& int8Out,
+                    const std::string& stringOut,
+                    const uint16_t& uInt16Out,
+                    const uint32_t& uInt32Out,
+                    const uint64_t& uInt64Out,
+                    const uint8_t& uInt8Out
+            )> onSuccess,
+            std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
+    ) {
+        (void) onError;
+        onSuccess(
+                booleanArg, doubleArg, floatArg, int16Arg, int32Arg, int64Arg, int8Arg, stringArg, uInt16Arg, uInt32Arg, uInt64Arg, uInt8Arg
+        );
+    }
+
+    void mapParameters(
+            const joynr::types::TestTypes::TStringKeyMap& tStringMapIn,
+            std::function<void(
+                    const joynr::types::TestTypes::TStringKeyMap& tStringMapOut
+            )> onSuccess,
+            std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
+    ) {
+        (void) onError;
+        onSuccess(
+                tStringMapIn
+        );
+    }
+    std::string providerRuntimeExceptionTestMsg = "ProviderRuntimeExceptionTestMessage";
 
 private:
     std::vector<std::string> listOfStrings;

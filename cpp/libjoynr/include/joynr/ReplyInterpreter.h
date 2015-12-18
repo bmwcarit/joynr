@@ -23,7 +23,6 @@
 #include "joynr/ReplyCaller.h"
 #include "joynr/Reply.h"
 #include "joynr/joynrlogging.h"
-#include "joynr/JsonSerializer.h"
 #include "joynr/Util.h"
 #include <memory>
 
@@ -45,16 +44,15 @@ public:
         std::shared_ptr<ReplyCaller<Ts...>> typedCallerQsp =
                 std::dynamic_pointer_cast<ReplyCaller<Ts...>>(caller);
 
-        std::shared_ptr<exceptions::JoynrException> error = reply.getError();
-        if (error) {
-            caller->returnError(error);
+        const Variant& error = reply.getError();
+        if (!error.isEmpty()) {
+            caller->returnError(error.get<exceptions::JoynrException>());
             return;
         }
 
-        if ((reply.getResponse()).isEmpty()) {
-            LOG_ERROR(logger, QString("Unexpected empty reply object. Calling error callback"));
-            caller->returnError(std::make_shared<exceptions::JoynrRuntimeException>(
-                    "Reply object had no response."));
+        if ((reply.getResponse()).empty()) {
+            LOG_ERROR(logger, "Unexpected empty reply object. Calling error callback");
+            caller->returnError(exceptions::JoynrRuntimeException("Reply object had no response."));
             return;
         }
 
@@ -78,16 +76,15 @@ class ReplyInterpreter<void> : public IReplyInterpreter
 public:
     ReplyInterpreter()
     {
-        qRegisterMetaType<Reply>();
     }
 
     void execute(std::shared_ptr<IReplyCaller> caller, const Reply& reply)
     {
         assert(caller);
 
-        std::shared_ptr<exceptions::JoynrException> error = reply.getError();
-        if (error) {
-            caller->returnError(error);
+        const Variant& error = reply.getError();
+        if (!error.isEmpty()) {
+            caller->returnError(error.get<exceptions::JoynrException>());
             return;
         }
 

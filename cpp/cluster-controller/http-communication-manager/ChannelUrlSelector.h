@@ -23,10 +23,8 @@
 #include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/joynrlogging.h"
 #include "cluster-controller/http-communication-manager/IChannelUrlSelector.h"
-#include "joynr/ILocalChannelUrlDirectory.h"
-#include "joynr/types/QtChannelUrlInformation.h"
+#include "joynr/types/ChannelUrlInformation.h"
 #include "joynr/BounceProxyUrl.h"
-#include <QtGlobal>
 #include <stdint.h>
 #include <memory>
 
@@ -38,6 +36,7 @@ class ChannelUrlSelectorTest_initFittnessTest_Test;
 namespace joynr
 {
 
+class ILocalChannelUrlDirectory;
 class ChannelUrlSelectorEntry;
 
 /**
@@ -57,7 +56,7 @@ class JOYNRCLUSTERCONTROLLER_EXPORT ChannelUrlSelector : public IChannelUrlSelec
 {
 
 public:
-    static const qint64& TIME_FOR_ONE_RECOUPERATION();
+    static const int64_t& TIME_FOR_ONE_RECOUPERATION();
     static const double& PUNISHMENT_FACTOR();
     /**
      * @brief Initialize
@@ -67,7 +66,7 @@ public:
      * @param punishmentFactor
      */
     explicit ChannelUrlSelector(const BounceProxyUrl& bounceProxyUrl,
-                                qint64 timeForOneRecouperation,
+                                int64_t timeForOneRecouperation,
                                 double punishmentFactor);
 
     virtual ~ChannelUrlSelector();
@@ -78,7 +77,7 @@ public:
     * @param channelUrlDirectoryProxy
     */
     virtual void init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
-                      const MessagingSettings& settings);
+                      const MessagingSettings& settings) override;
 
     /**
     * @brief Get the "best" URL for this channel. Feedback is used to figure out which
@@ -88,11 +87,11 @@ public:
     * @param channelId
     * @param status
     * @param timeout
-    * @return QString
+    * @return std::string
     */
-    virtual QString obtainUrl(const QString& channelId,
-                              RequestStatus& status,
-                              const qint64& timeout_ms);
+    virtual std::string obtainUrl(const std::string& channelId,
+                                  RequestStatus& status,
+                                  const int64_t& timeout_ms) override;
     /**
     * @brief Provide feedback on performance of URL: was the connection successful or not?
     *
@@ -100,18 +99,18 @@ public:
     * @param channelId
     * @param url
     */
-    virtual void feedback(bool success, const QString& channelId, QString url);
+    virtual void feedback(bool success, const std::string& channelId, std::string url) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ChannelUrlSelector);
-    QString constructDefaultUrl(const QString& channelId);
-    QString constructUrl(const QString& baseUrl);
+    std::string constructDefaultUrl(const std::string& channelId);
+    std::string constructUrl(const std::string& baseUrl);
     std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory;
     const BounceProxyUrl& bounceProxyUrl;
-    QMap<QString, ChannelUrlSelectorEntry*> entries;
-    qint64 timeForOneRecouperation;
+    QMap<std::string, ChannelUrlSelectorEntry*> entries;
+    int64_t timeForOneRecouperation;
     double punishmentFactor;
-    QString channelUrlDirectoryUrl;
+    std::string channelUrlDirectoryUrl;
     bool useDefaultUrl;
     static joynr_logging::Logger* logger;
 };
@@ -127,22 +126,22 @@ private:
 class JOYNRCLUSTERCONTROLLER_EXPORT ChannelUrlSelectorEntry
 {
 public:
-    ChannelUrlSelectorEntry(const types::QtChannelUrlInformation& urlInformation,
+    ChannelUrlSelectorEntry(const types::ChannelUrlInformation& urlInformation,
                             double punishmentFactor,
-                            qint64 timeForOneRecouperation);
+                            int64_t timeForOneRecouperation);
     ~ChannelUrlSelectorEntry();
     /**
      * @brief Returns the Url with the higest fitness value.
      *
-     * @return QString
+     * @return std::string
      */
-    QString best();
+    std::string best();
     /**
      * @brief Reduces the fitness value of Url url.
      *
      * @param url
      */
-    void punish(const QString& url);
+    void punish(const std::string& url);
     /**
      * @brief Initializes the fitness values, ranks the Urls according to their position
      * (first Url has highest rank).
@@ -159,7 +158,7 @@ public:
      * @brief Returns the current fitness values.
      *
      */
-    QList<double> getFitness();
+    std::vector<double> getFitness();
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ChannelUrlSelectorEntry);
@@ -169,10 +168,10 @@ private:
     friend class ::ChannelUrlSelectorTest_initFittnessTest_Test;
 
     uint64_t lastUpdate;
-    QList<double> fitness;
-    types::QtChannelUrlInformation urlInformation;
+    std::vector<double> fitness;
+    types::ChannelUrlInformation urlInformation;
     double punishmentFactor;
-    qint64 timeForOneRecouperation;
+    int64_t timeForOneRecouperation;
     static joynr_logging::Logger* logger;
 };
 

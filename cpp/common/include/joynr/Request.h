@@ -21,10 +21,12 @@
 
 #include "joynr/JoynrCommonExport.h"
 
-#include <QObject>
-#include <QVariant>
+#include "joynr/Variant.h"
 
+#include <QObject>
 #include <memory>
+#include <string>
+#include <vector>
 
 namespace joynr
 {
@@ -33,10 +35,11 @@ class JOYNRCOMMON_EXPORT Request : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString requestReplyId READ getRequestReplyId WRITE setRequestReplyId)
-    Q_PROPERTY(QString methodName READ getMethodName WRITE setMethodName)
-    Q_PROPERTY(QList<QVariant> params READ getParams WRITE setParams)
-    Q_PROPERTY(QList<QVariant> paramDatatypes READ getParamDatatypes WRITE setParamDatatypes)
+    Q_PROPERTY(std::string requestReplyId READ getRequestReplyId WRITE setRequestReplyId)
+    Q_PROPERTY(std::string methodName READ getMethodName WRITE setMethodName)
+    Q_PROPERTY(std::vector<Variant> params READ getParams WRITE setParams)
+    Q_PROPERTY(std::vector<std::string> paramDatatypes READ getParamDatatypes WRITE
+                       setParamDatatypes)
 
 public:
     Request();
@@ -45,27 +48,27 @@ public:
     Request& operator=(const Request& other);
     bool operator==(const Request& other) const;
 
-    const QString& getRequestReplyId() const;
-    void setRequestReplyId(const QString& requestReplyId);
+    const std::string& getRequestReplyId() const;
+    void setRequestReplyId(const std::string& requestReplyId);
 
-    const QString& getMethodName() const;
-    void setMethodName(const QString& methodName);
+    const std::string& getMethodName() const;
+    void setMethodName(const std::string& methodName);
 
-    QList<QVariant> getParams() const;
-    void setParams(const QList<QVariant>& params);
+    std::vector<Variant> getParams() const;
+    void setParams(const std::vector<Variant>& params);
 
-    void addParam(QVariant value, QString datatype);
+    void addParam(Variant value, std::string datatype);
 
-    QList<QVariant> getParamDatatypes() const;
-    void setParamDatatypes(const QList<QVariant>& paramDatatypes);
+    std::vector<std::string> getParamDatatypes() const;
+    void setParamDatatypes(const std::vector<std::string>& paramDatatypes);
 
 private:
-    static QVariant parameterType(const QVariant& param);
+    static Variant parameterType(const Variant& param);
 
-    QString requestReplyId;
-    QString methodName;
-    QList<QVariant> params;
-    QList<QVariant> paramDatatypes;
+    std::string requestReplyId;
+    std::string methodName;
+    std::vector<Variant> params;
+    std::vector<std::string> paramDatatypes;
 };
 
 } // namespace joynr

@@ -52,12 +52,6 @@ class ProxyGenerator {
 		return relativePath
 	}
 
-	def getDependencyPath(FType datatype) {
-		return datatype.buildPackagePath(File.separator, true)
-					+ File.separator
-					+ datatype.joynrName
-	}
-
 	def generateProxy(FInterface fInterface, Iterable<FType> types, IFileSystemAccess fsa){
 		var containerpath = File::separator //+ "generated" + File::separator
 
@@ -225,7 +219,7 @@ class ProxyGenerator {
 
 		«fInterface.proxyName».getUsedDatatypes = function getUsedDatatypes(){
 			return [
-						«FOR datatype : fInterface.getAllComplexAndEnumTypes.filter[a | a instanceof FType] SEPARATOR ','»
+						«FOR datatype : fInterface.getAllComplexTypes.filter[a | a instanceof FType] SEPARATOR ','»
 						"«(datatype as FType).toTypesEnum»"
 						«ENDFOR»
 					];
@@ -235,7 +229,7 @@ class ProxyGenerator {
 		// AMD support
 		if (typeof define === 'function' && define.amd) {
 			define(«fInterface.defineName(fInterface.proxyName)»[
-				«FOR datatype : fInterface.getAllComplexAndEnumTypes.filter[a | a instanceof FType] SEPARATOR ','»
+				«FOR datatype : fInterface.getAllComplexTypes.filter[a | a instanceof FType] SEPARATOR ','»
 						"«(datatype as FType).getDependencyPath»"
 				«ENDFOR»
 				], function () {
@@ -243,7 +237,7 @@ class ProxyGenerator {
 				});
 		} else if (typeof exports !== 'undefined' ) {
 			if ((module !== undefined) && module.exports) {				
-				«FOR datatype : getAllComplexAndEnumTypes(fInterface, false, true, true, true, true, true, false).filter[a | a instanceof FType]»
+				«FOR datatype : getAllComplexTypes(fInterface, false, true, true, true, true, true, false).filter[a | a instanceof FType]»
 					require("«relativePathToBase() + (datatype as FType).getDependencyPath()»");
 				«ENDFOR»
 				exports = module.exports = «fInterface.proxyName»;

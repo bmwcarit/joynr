@@ -289,7 +289,7 @@ define(
                             log.info("subscription stop "
                                 + settings.subscriptionStop.subscriptionId, DiagnosticTags
                                     .forSubscriptionStop({
-                                        subscriptionStop : settings.subscriptionStop,
+                                        subscriptionId : settings.subscriptionStop.subscriptionId,
                                         to : settings.to,
                                         from : settings.from
                                     }));

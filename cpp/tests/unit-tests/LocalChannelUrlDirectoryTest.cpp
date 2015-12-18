@@ -18,12 +18,9 @@
  */
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include <QSettings>
-#include <QFile>
 #include <string>
 #include "joynr/MessagingSettings.h"
 #include "joynr/LocalChannelUrlDirectory.h"
-#include "utils/QThreadSleep.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/Future.h"
 
@@ -59,12 +56,12 @@ class LocalChannelUrlDirectoryTest : public ::testing::Test {
 public:
     LocalChannelUrlDirectoryTest() :
         settingsFileName("LocalChannelUrlDirectoryTest.settings"),
-        settings(settingsFileName, QSettings::IniFormat),
+        settings(settingsFileName),
         messagingSettings(settings)
     {}
 
     ~LocalChannelUrlDirectoryTest() {
-        QFile::remove(settingsFileName);
+        std::remove(settingsFileName.c_str());
     }
 
     void SetUp(){
@@ -76,8 +73,8 @@ public:
     }
 
 protected:
-    QString settingsFileName;
-    QSettings settings;
+    std::string settingsFileName;
+    Settings settings;
     MessagingSettings messagingSettings;
 };
 
@@ -96,7 +93,7 @@ TEST_F(LocalChannelUrlDirectoryTest, getChannelUrlsUsesInternalProxy) {
     std::shared_ptr<Future<types::ChannelUrlInformation> > futureUrls(
                 localDirectory.getUrlsForChannelAsync(
                     "pseudoChannelID",
-                    20000,
+                    20000ll,
                     [](const types::ChannelUrlInformation& url) {},
                     [](const exceptions::JoynrException& error) {}));
 

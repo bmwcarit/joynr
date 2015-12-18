@@ -19,7 +19,6 @@
 #ifndef IMIDDLEWAREMESSAGINGSTUBFACTORY_H
 #define IMIDDLEWAREMESSAGINGSTUBFACTORY_H
 
-#include <QString>
 #include <memory>
 
 namespace joynr
@@ -30,7 +29,7 @@ namespace system
 
 namespace RoutingTypes
 {
-class QtAddress;
+class Address;
 }
 }
 class IMessaging;
@@ -42,8 +41,8 @@ public:
     {
     }
     virtual std::shared_ptr<IMessaging> create(
-            const joynr::system::RoutingTypes::QtAddress& destAddress) = 0;
-    virtual bool canCreate(const joynr::system::RoutingTypes::QtAddress& destAddress) = 0;
+            const joynr::system::RoutingTypes::Address& destAddress) = 0;
+    virtual bool canCreate(const joynr::system::RoutingTypes::Address& destAddress) = 0;
 };
 
 } // namespace joynr

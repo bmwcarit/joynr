@@ -20,18 +20,17 @@
 #define PRETTYPRINT_H_
 
 #include <gtest/gtest.h>
-#include <QString>
 #include <QChar>
 #include <QByteArray>
 #include <QtCore/QUrl>
 #include <iostream>
 
 #include "joynr/JsonSerializer.h"
+#include "joynr/JoynrMessage.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/RequestStatusCode.h"
-#include "joynr/types/QtDiscoveryEntry.h"
+#include "joynr/types/DiscoveryEntry.h"
 
-#define EXPECT_EQ_QSTRING(a, b) EXPECT_EQ(a, b) << "  Actual: " << b.toStdString() << std::endl << "Expected: " << a.toStdString() << std::endl
 #define EXPECT_EQ_QBYTEARRAY(a, b) EXPECT_EQ(a, b) << "  Actual: " << b.constData() << std::endl << "Expected: " << a.constData() << std::endl
 
 //void initPretty(void);
@@ -48,19 +47,12 @@ namespace joynr {
 //    void PrintTo(const joynr::JoynrMessage& value, ::std::ostream* os);
 //    class MessagingQos;
 //    void PrintTo(const joynr::MessagingQos& value, ::std::ostream* os);
-namespace types {
-    class QtTStruct;
-    void PrintTo(const joynr::types::QtTStruct& value, ::std::ostream* os);
-    class QtGpsLocation;
-    void PrintTo(const joynr::types::QtGpsLocation& value, ::std::ostream* os);
-    class QtTrip;
-    void PrintTo(const joynr::types::QtTrip& value, ::std::ostream* os);
-}
+
 namespace system {
-    class QtDiscoveryEntry;
-    void PrintTo(const joynr::types::QtDiscoveryEntry& value, ::std::ostream* os);
-    class QtWebSocketAddress;
-    void PrintTo(const joynr::system::QtWebSocketAddress& value, ::std::ostream* os);
+    class DiscoveryEntry;
+    void PrintTo(const joynr::types::DiscoveryEntry& value, ::std::ostream* os);
+    class WebSocketAddress;
+    void PrintTo(const joynr::system::WebSocketAddress& value, ::std::ostream* os);
 }
 }
 void PrintTo(const QString& value, ::std::ostream* os);
@@ -71,5 +63,5 @@ void PrintTo(const QUrl& value, ::std::ostream* os);
 //void PrintTo(const QVariant& value, ::std::ostream* os);
 void PrintTo(const joynr::RequestStatusCode& value, ::std::ostream* os);
 void PrintTo(const joynr::RequestStatus& value, ::std::ostream* os);
-
-#endif /* PRETTYPRINT_H_ */
+void PrintTo(const joynr::JoynrMessage& value, ::std::ostream* os);
+#endif // PRETTYPRINT_H_

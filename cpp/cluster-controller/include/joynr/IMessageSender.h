@@ -23,7 +23,7 @@
 #include "joynr/ILocalChannelUrlDirectory.h"
 #include "joynr/JoynrMessage.h"
 
-#include <QString>
+#include <string>
 #include <QDateTime>
 #include <memory>
 
@@ -39,7 +39,7 @@ public:
     /**
     * @brief Sends the message to the given channel.
     */
-    virtual void sendMessage(const QString& channelId, const JoynrMessage& message) = 0;
+    virtual void sendMessage(const std::string& channelId, const JoynrMessage& message) = 0;
     /**
     * @brief The MessageSender needs the localChannelUrlDirectory to obtain Url's for
     * the channelIds.

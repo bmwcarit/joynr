@@ -20,12 +20,15 @@
 #define DBUSSKELETONWRAPPER_H
 
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/JoynrCommonExport.h"
 
 #include "joynr/joynrlogging.h"
-#include <QString>
+#include "joynr/TypeUtil.h"
+
+#include <string>
 #include <CommonAPI/CommonAPI.h>
 
-#include "joynr/JoynrCommonExport.h"
+#include <chrono>
 
 namespace joynr
 {
@@ -36,12 +39,14 @@ template <class _SkeletonClass, class _CallBackClass>
 class JOYNRCOMMON_EXPORT IDbusSkeletonWrapper
 {
 public:
-    IDbusSkeletonWrapper(_CallBackClass& callBack, QString serviceAddress)
+    IDbusSkeletonWrapper(_CallBackClass& callBack, std::string serviceAddress)
             : // factory(NULL),
               serviceAddress(serviceAddress),
               logger(Logging::getInstance()->getLogger("MSG", "DbusSkeletonWrapper"))
     {
-        LOG_INFO(logger, "Registering dbus skeleton on address: " + serviceAddress);
+        LOG_INFO(
+                logger,
+                FormatString("Registering dbus skeleton on address: %1").arg(serviceAddress).str());
 
         // create the skeleton
         std::shared_ptr<_SkeletonClass> skeleton = std::make_shared<_SkeletonClass>(callBack);
@@ -49,42 +54,53 @@ public:
         // register skeleton
         auto runtime = CommonAPI::Runtime::load("DBus");
         bool success = runtime->getServicePublisher()->registerService(
-                skeleton, serviceAddress.toStdString(), runtime->createFactory());
+                skeleton, serviceAddress, runtime->createFactory());
         // wait some time so that the service is registered and ready to use on dbus level
         std::this_thread::sleep_for(std::chrono::milliseconds(25));
 
         if (success) {
-            LOG_INFO(logger, QString("registering service %1: SUCCESS").arg(serviceAddress));
+            LOG_INFO(logger,
+                     FormatString("registering service %1: SUCCESS").arg(serviceAddress).str());
         } else {
-            LOG_FATAL(logger, QString("registering service %1: ERROR").arg(serviceAddress));
+            LOG_FATAL(logger,
+                      FormatString("registering service %1: ERROR").arg(serviceAddress).str());
         }
     }
 
     ~IDbusSkeletonWrapper()
     {
-        LOG_INFO(logger, "Unregistering dbus skeleton from address: " + serviceAddress);
+        LOG_INFO(logger,
+                 FormatString("Unregistering dbus skeleton from address: %1")
+                         .arg(serviceAddress)
+                         .str());
 
         auto runtime = CommonAPI::Runtime::load("DBus");
-        bool success =
-                runtime->getServicePublisher()->unregisterService(serviceAddress.toStdString());
+        bool success = runtime->getServicePublisher()->unregisterService(serviceAddress);
         // wait some time so that the service is unregistered on dbus level
         std::this_thread::sleep_for(std::chrono::milliseconds(25));
 
         if (success) {
-            LOG_INFO(logger, QString("unregistering service %1: SUCCESS").arg(serviceAddress));
+            LOG_INFO(logger,
+                     FormatString("unregistering service %1: SUCCESS").arg(serviceAddress).str());
         } else {
-            LOG_FATAL(logger, QString("unregistering service %1: ERROR").arg(serviceAddress));
+            LOG_FATAL(logger,
+                      FormatString("unregistering service %1: ERROR").arg(serviceAddress).str());
         }
     }
 
-    void logMethodCall(const QString& method, const QString& adapter)
+    void logMethodCall(const std::string& method, const std::string& adapter)
     {
-        LOG_INFO(logger, "Call method " + adapter + ":" + serviceAddress + "-> " + method);
+        LOG_INFO(logger,
+                 FormatString("Call method %1:%2-> %3")
+                         .arg(adapter)
+                         .arg(serviceAddress)
+                         .arg(method)
+                         .str());
     }
 
 private:
     DISALLOW_COPY_AND_ASSIGN(IDbusSkeletonWrapper);
-    QString serviceAddress;
+    std::string serviceAddress;
     joynr_logging::Logger* logger;
 };
 

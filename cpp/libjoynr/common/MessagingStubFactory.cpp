@@ -21,15 +21,16 @@
 #include "joynr/IMessaging.h"
 
 #include <cassert>
-#include <QMutexLocker>
 
 namespace joynr
 {
 
 MessagingStubFactory::~MessagingStubFactory()
 {
-    while (!factoryList.isEmpty()) {
-        delete factoryList.takeFirst();
+    while (!factoryList.empty()) {
+        auto it = factoryList.begin();
+        delete *it;
+        factoryList.erase(it);
     }
 }
 
@@ -41,21 +42,21 @@ MessagingStubFactory::MessagingStubFactory()
 }
 
 std::shared_ptr<IMessaging> MessagingStubFactory::create(
-        const joynr::system::RoutingTypes::QtAddress& destinationAddress)
+        const joynr::system::RoutingTypes::Address& destinationAddress)
 {
     {
-        QMutexLocker locker(&this->mutex);
+        std::lock_guard<std::mutex> lock(this->mutex);
 
         if (!address2MessagingStubDirectory.contains(destinationAddress)) {
             // search for the corresponding factory
-            for (QList<IMiddlewareMessagingStubFactory*>::iterator it = this->factoryList.begin();
+            for (std::vector<IMiddlewareMessagingStubFactory*>::iterator it =
+                         this->factoryList.begin();
                  it != factoryList.end();
                  ++it) {
                 if ((*it)->canCreate(destinationAddress)) {
                     std::shared_ptr<IMessaging> stub = (*it)->create(destinationAddress);
                     address2MessagingStubDirectory.add(destinationAddress, stub);
 
-                    assert(stub);
                     return stub;
                 }
             }
@@ -65,20 +66,19 @@ std::shared_ptr<IMessaging> MessagingStubFactory::create(
     return address2MessagingStubDirectory.lookup(destinationAddress);
 }
 
-void MessagingStubFactory::remove(const joynr::system::RoutingTypes::QtAddress& destinationAddress)
+void MessagingStubFactory::remove(const joynr::system::RoutingTypes::Address& destinationAddress)
 {
     address2MessagingStubDirectory.remove(destinationAddress);
 }
 
-bool MessagingStubFactory::contains(
-        const joynr::system::RoutingTypes::QtAddress& destinationAddress)
+bool MessagingStubFactory::contains(const joynr::system::RoutingTypes::Address& destinationAddress)
 {
     return address2MessagingStubDirectory.contains(destinationAddress);
 }
 
 void MessagingStubFactory::registerStubFactory(IMiddlewareMessagingStubFactory* factory)
 {
-    this->factoryList.append(factory);
+    this->factoryList.push_back(factory);
 }
 
 } // namespace joynr

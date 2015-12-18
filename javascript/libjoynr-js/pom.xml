@@ -30,7 +30,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>javascript</artifactId>
-		<version>0.12.3</version>
+		<version>0.13.0</version>
 	</parent>
 
 	<properties>
@@ -253,6 +253,17 @@
 						</configuration>
 					</execution>
 					<execution>
+						<id>testTypes</id>
+						<phase>generate-test-sources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<model>TestTypes.fidl</model>
+							<outputPath>${basedir}/src/test/generated</outputPath>
+						</configuration>
+					</execution>
+					<execution>
 						<id>generate-franca-name-test-model</id>
 						<phase>generate-test-sources</phase>
 						<goals>
@@ -300,43 +311,6 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
 				<executions>
-					<execution>
-						<id>copy-backend-wars</id>
-						<phase>initialize</phase>
-						<goals>
-							<goal>copy</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>io.joynr.java.messaging.bounceproxy</groupId>
-									<artifactId>single-bounceproxy</artifactId>
-									<version>${project.version}</version>
-									<type>war</type>
-									<outputDirectory>${project.build.directory}</outputDirectory>
-									<destFileName>bounceproxy.war</destFileName>
-								</artifactItem>
-								<artifactItem>
-									<groupId>io.joynr.java.backend-services</groupId>
-									<artifactId>domain-access-controller-servlet</artifactId>
-									<version>${project.version}</version>
-									<type>war</type>
-									<outputDirectory>${project.build.directory}</outputDirectory>
-									<destFileName>accesscontrol.war</destFileName>
-								</artifactItem>
-								<artifactItem>
-									<groupId>io.joynr.java.backend-services</groupId>
-									<artifactId>discovery-directory-servlet</artifactId>
-									<version>${project.version}</version>
-									<type>war</type>
-									<outputDirectory>${project.build.directory}</outputDirectory>
-									<destFileName>discovery.war</destFileName>
-								</artifactItem>
-							</artifactItems>
-							<overWriteReleases>false</overWriteReleases>
-							<overWriteSnapshots>true</overWriteSnapshots>
-						</configuration>
-					</execution>
 					<execution>
 						<id>unpack-public-js-source-dependencies</id>
 						<goals>
@@ -827,7 +801,51 @@
 			</activation>
 			<build>
 				<plugins>
-					<!-- jetty only needs to run in case of test execution -->
+			<!-- Unpack JavaScript dependencies -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-backend-wars</id>
+						<phase>initialize</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>io.joynr.java.messaging.bounceproxy</groupId>
+									<artifactId>single-bounceproxy</artifactId>
+									<version>${project.version}</version>
+									<type>war</type>
+									<outputDirectory>${project.build.directory}</outputDirectory>
+									<destFileName>bounceproxy.war</destFileName>
+								</artifactItem>
+								<artifactItem>
+									<groupId>io.joynr.java.backend-services</groupId>
+									<artifactId>domain-access-controller-servlet</artifactId>
+									<version>${project.version}</version>
+									<type>war</type>
+									<outputDirectory>${project.build.directory}</outputDirectory>
+									<destFileName>accesscontrol.war</destFileName>
+								</artifactItem>
+								<artifactItem>
+									<groupId>io.joynr.java.backend-services</groupId>
+									<artifactId>discovery-directory-servlet</artifactId>
+									<version>${project.version}</version>
+									<type>war</type>
+									<outputDirectory>${project.build.directory}</outputDirectory>
+									<destFileName>discovery.war</destFileName>
+								</artifactItem>
+							</artifactItems>
+							<overWriteReleases>false</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- jetty only needs to run in case of test execution -->
 					<plugin>
 						<groupId>org.eclipse.jetty</groupId>
 						<artifactId>jetty-maven-plugin</artifactId>

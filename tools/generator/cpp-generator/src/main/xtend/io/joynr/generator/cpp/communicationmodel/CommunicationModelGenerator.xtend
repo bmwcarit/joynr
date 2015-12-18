@@ -18,18 +18,19 @@ package io.joynr.generator.cpp.communicationmodel
  */
 
 import com.google.inject.Inject
-import io.joynr.generator.cpp.communicationmodel.qt.EnumHTemplate
-import io.joynr.generator.cpp.communicationmodel.qt.TypeCppTemplate
-import io.joynr.generator.cpp.communicationmodel.qt.TypeHTemplate
+import io.joynr.generator.cpp.communicationmodel.serializer.EnumSerializerCppTemplate
+import io.joynr.generator.cpp.communicationmodel.serializer.EnumSerializerHTemplate
+import io.joynr.generator.cpp.communicationmodel.serializer.MapSerializerCppTemplate
+import io.joynr.generator.cpp.communicationmodel.serializer.MapSerializerHTemplate
+import io.joynr.generator.cpp.communicationmodel.serializer.TypeSerializerCppTemplate
+import io.joynr.generator.cpp.communicationmodel.serializer.TypeSerializerHTemplate
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
-import io.joynr.generator.cpp.util.QtTypeUtil
+import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.NamingUtil
 import io.joynr.generator.templates.util.TypeUtil
-import io.joynr.generator.templates.util.InterfaceUtil
 import java.io.File
 import org.eclipse.xtext.generator.IFileSystemAccess
-import org.franca.core.franca.FCompoundType
 import org.franca.core.franca.FEnumerationType
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FModel
@@ -41,9 +42,6 @@ class CommunicationModelGenerator {
 
 	@Inject
 	private extension TypeUtil
-
-	@Inject
-	private QtTypeUtil qtTypeUtil
 
 	@Inject
 	private CppStdTypeUtil stdTypeUtil
@@ -61,25 +59,26 @@ class CommunicationModelGenerator {
 	InterfaceCppTemplate interfaceCpp;
 
 	@Inject
-	EnumHTemplate enumh;
-
-	@Inject
 	StdEnumHTemplate stdEnumH;
 
 	@Inject
 	StdEnumCppTemplate stdEnumCpp;
 
 	@Inject
-	TypeHTemplate typeH;
-
-	@Inject
-	TypeCppTemplate typeCpp;
-
-	@Inject
 	StdTypeHTemplate stdTypeH;
 
 	@Inject
 	StdTypeCppTemplate stdTypeCpp;
+
+	@Inject MapHTemplate mapH;
+	@Inject MapCppTemplate mapCpp;
+
+	@Inject TypeSerializerHTemplate typeSerializerH;
+	@Inject TypeSerializerCppTemplate typeSerializerCpp;
+	@Inject MapSerializerHTemplate mapSerializerH;
+	@Inject MapSerializerCppTemplate mapSerializerCpp;
+	@Inject EnumSerializerHTemplate enumSerializerH;
+	@Inject EnumSerializerCppTemplate enumSerializerCpp;
 
 	def doGenerate(FModel fModel,
 		IFileSystemAccess sourceFileSystem,
@@ -88,83 +87,112 @@ class CommunicationModelGenerator {
 		String headerContainerPath
 	){
 		val dataTypePath = sourceContainerPath + "datatypes" + File::separator
-		val headerDataTypePath = 
-			if (sourceFileSystem == headerFileSystem) 
+		val headerDataTypePath =
+			if (sourceFileSystem == headerFileSystem)
 				headerContainerPath + "datatypes" + File::separator
 			else
 				headerContainerPath
 
-		for( type: getComplexDataTypes(fModel)){
-			if(type instanceof FCompoundType) {
-				var sourcepath = dataTypePath + getPackageSourceDirectory(type) + File::separator
-				var headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
-				var sourcepathQt = sourcepath
-				var headerpathQt = headerpath
-
-				if (type.isPartOfTypeCollection) {
-					headerpath += type.typeCollectionName + File::separator
-					sourcepath += type.typeCollectionName + File::separator
-					headerpathQt += type.typeCollectionName + "_"
-					sourcepathQt += type.typeCollectionName + "_"
-				}
-
-				generateFile(
-					headerFileSystem,
-					headerpathQt + qtTypeUtil.getGenerationTypeName(type) + ".h",
-					typeH,
-					type
-				)
-
-				generateFile(
-					sourceFileSystem,
-					sourcepathQt + qtTypeUtil.getGenerationTypeName(type) + ".cpp",
-					typeCpp,
-					type
-				)
-
-				generateFile(
-					headerFileSystem,
-					headerpath + stdTypeUtil.getGenerationTypeName(type) + ".h",
-					stdTypeH,
-					type
-				)
-
-				generateFile(
-					sourceFileSystem,
-					sourcepath + stdTypeUtil.getGenerationTypeName(type) + ".cpp",
-					stdTypeCpp,
-					type
-				)
+		for( type: getCompoundDataTypes(fModel)){
+			var sourcepath = dataTypePath + getPackageSourceDirectory(type) + File::separator
+			var headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
+			if (type.isPartOfTypeCollection) {
+				headerpath += type.typeCollectionName + File::separator
+				sourcepath += type.typeCollectionName + File::separator
 			}
+
+			generateFile(
+				headerFileSystem,
+				headerpath + stdTypeUtil.getGenerationTypeName(type) + ".h",
+				stdTypeH,
+				type
+			)
+
+			generateFile(
+				sourceFileSystem,
+				sourcepath + stdTypeUtil.getGenerationTypeName(type) + ".cpp",
+				stdTypeCpp,
+				type
+			)
+
+			generateFile(
+				headerFileSystem,
+				headerpath + stdTypeUtil.getGenerationTypeName(type) + "Serializer.h",
+				typeSerializerH,
+				type
+			)
+
+			generateFile(
+				sourceFileSystem,
+				sourcepath + stdTypeUtil.getGenerationTypeName(type) + "Serializer.cpp",
+				typeSerializerCpp,
+				type
+			)
 		}
 
 		for (type : getEnumDataTypes(fModel)) {
 			var sourcepath = dataTypePath + getPackageSourceDirectory(type) + File::separator
 			var headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
-			var headerpathQt = headerpath
 			if (type.isPartOfTypeCollection) {
 				headerpath += type.typeCollectionName + File::separator
 				sourcepath += type.typeCollectionName + File::separator
-				headerpathQt += type.typeCollectionName + "_"
 			}
 
 			generateEnum(
 				headerFileSystem,
 				sourceFileSystem,
-				type as FEnumerationType,
-				headerpathQt + qtTypeUtil.getGenerationTypeName(type) + ".h",
-				headerpath + stdTypeUtil.getGenerationTypeName(type) + ".h",
-				sourcepath + stdTypeUtil.getGenerationTypeName(type) + ".cpp"
+				type,
+				headerpath + stdTypeUtil.getGenerationTypeName(type),
+				sourcepath + stdTypeUtil.getGenerationTypeName(type)
 			);
+
+		}
+
+		for (type : getMapDataTypes(fModel)) {
+			var sourcepath = dataTypePath + getPackageSourceDirectory(type) + File::separator
+			var headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
+			if (type.isPartOfTypeCollection) {
+				headerpath += type.typeCollectionName + File::separator
+				sourcepath += type.typeCollectionName + File::separator
+			}
+			val headerFilename = headerpath + stdTypeUtil.getGenerationTypeName(type)
+			val sourceFilename = sourcepath + stdTypeUtil.getGenerationTypeName(type)
+
+			generateFile(
+				headerFileSystem,
+				headerFilename + ".h",
+				mapH,
+				type
+			)
+
+			generateFile(
+				sourceFileSystem,
+				sourceFilename + ".cpp",
+				mapCpp,
+				type
+			)
+
+			generateFile(
+				headerFileSystem,
+				headerFilename + "Serializer.h",
+				mapSerializerH,
+				type
+			)
+			generateFile(
+				sourceFileSystem,
+				sourceFilename + "Serializer.cpp",
+				mapSerializerCpp,
+				type
+			)
 		}
 
 		val interfacePath = sourceContainerPath + "interfaces" + File::separator
-		val headerInterfacePath = 
-			if (sourceFileSystem == headerFileSystem) 
+		val headerInterfacePath =
+			if (sourceFileSystem == headerFileSystem)
 				headerContainerPath + "interfaces" + File::separator
 			else
 				headerContainerPath
-		
+
 		for(serviceInterface: fModel.interfaces){
 			val sourcepath = interfacePath + getPackageSourceDirectory(serviceInterface) + File::separator 
 			val headerpath = headerInterfacePath + getPackagePathWithJoynrPrefix(serviceInterface, File::separator) + File::separator 
@@ -175,7 +203,7 @@ class CommunicationModelGenerator {
 				interfaceH,
 				serviceInterface
 			);
-			
+
 			generateFile(
 				sourceFileSystem,
 				sourcepath + "I" + serviceInterface.joynrName + ".cpp",
@@ -200,16 +228,14 @@ class CommunicationModelGenerator {
 			if (enumType != null) {
 				enumType.name = methodToErrorEnumName.get(method);
 				val path = getPackagePathWithJoynrPrefix(enumType, File::separator)
-				val headerFilename = path + File::separator + stdTypeUtil.getGenerationTypeName(enumType) + ".h"
+				val headerFilename = path + File::separator + stdTypeUtil.getGenerationTypeName(enumType)
 				val sourceFilepath = dataTypePath + getPackageSourceDirectory(fInterface) + File::separator + fInterface.joynrName;
-				val sourceFilename = sourceFilepath + File::separator + stdTypeUtil.getGenerationTypeName(enumType) + ".cpp"
-				val headerFilenameQt = path + File::separator + qtTypeUtil.getGenerationTypeName(enumType) + ".h"
+				val sourceFilename = sourceFilepath + File::separator + stdTypeUtil.getGenerationTypeName(enumType)
 
 				generateEnum(
 					headerFileSystem,
 					sourceFileSystem,
 					enumType,
-					headerFilenameQt,
 					headerFilename,
 					sourceFilename
 				)
@@ -221,29 +247,35 @@ class CommunicationModelGenerator {
 		IFileSystemAccess headerFileSystem,
 		IFileSystemAccess sourceFileSystem,
 		FEnumerationType enumType,
-		String headerFilenameQt,
 		String headerFilename,
 		String sourceFilename
 	) {
 		generateFile(
 			headerFileSystem,
-			headerFilenameQt,
-			enumh,
-			enumType
-		)
-
-		generateFile(
-			headerFileSystem,
-			headerFilename,
+			headerFilename + ".h",
 			stdEnumH,
 			enumType
 		)
 
 		generateFile(
 			sourceFileSystem,
-			sourceFilename,
+			sourceFilename + ".cpp",
 			stdEnumCpp,
 			enumType
 		)
+
+		generateFile(
+			headerFileSystem,
+			headerFilename + "Serializer.h",
+			enumSerializerH,
+			enumType
+		)
+		generateFile(
+			sourceFileSystem,
+			sourceFilename + "Serializer.cpp",
+			enumSerializerCpp,
+			enumType
+		)
+
 	}
 }

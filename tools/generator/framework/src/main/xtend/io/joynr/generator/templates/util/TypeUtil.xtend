@@ -20,6 +20,7 @@ package io.joynr.generator.templates.util
 import com.google.common.collect.Iterables
 import com.google.inject.Inject
 import java.util.ArrayList
+import java.util.Comparator
 import java.util.Set
 import org.eclipse.emf.common.util.BasicEList
 import org.eclipse.emf.common.util.EList
@@ -46,6 +47,15 @@ import org.franca.core.franca.FTypeDef
 import org.franca.core.franca.FTypeRef
 import org.franca.core.franca.FTypedElement
 import org.franca.core.franca.FUnionType
+
+public class FMapTypeAsLastComparator implements Comparator<Object> {
+	override int compare (Object object1, Object object2)
+	{
+		val object1Type = if (object1 instanceof FMapType) 1 else 0
+		val object2Type = if (object2 instanceof FMapType) 1 else 0
+		return object1Type - object2Type
+	}
+}
 
 class TypeUtil {
 
@@ -102,9 +112,7 @@ class TypeUtil {
 			return type
 		}
 		if (type instanceof FMapType){
-			throw new IllegalStateException("JoynGeneratorExtensions.xtend: isComplex for map types is not implemented!")
-//			val mapType = type as FMapType
-//			return (isComplex(mapType.keyType) || isComplex(mapType.valueType));
+			return type
 		}
 
 	}
@@ -128,6 +136,14 @@ class TypeUtil {
 		return type == FBasicTypeId::DOUBLE;
 	}
 
+	def boolean isDouble(FTypeRef typeRef) {
+		return getPrimitive(typeRef) == FBasicTypeId::DOUBLE;
+	}
+
+	def boolean isFloat(FTypeRef typeRef) {
+		return getPrimitive(typeRef) == FBasicTypeId::FLOAT;
+	}
+
 	def boolean isFloat(FBasicTypeId type) {
 		return type == FBasicTypeId::FLOAT;
 	}
@@ -136,13 +152,20 @@ class TypeUtil {
 		return type == FBasicTypeId::BOOLEAN;
 	}
 
-	def boolean isInt(FBasicTypeId type) {
-		return type == FBasicTypeId::INT16 || type == FBasicTypeId::INT32
-			|| type == FBasicTypeId::UINT16 || type == FBasicTypeId::UINT32;
+	def boolean isShort(FBasicTypeId type) {
+		return type == FBasicTypeId::INT16 || type == FBasicTypeId::UINT16;
+	}
+
+	def boolean isInteger(FBasicTypeId type) {
+		return type == FBasicTypeId::INT32 || type == FBasicTypeId::UINT32;
 	}
 
 	def boolean isString(FBasicTypeId type) {
 		return type == FBasicTypeId::STRING;
+	}
+
+	def boolean isString(FTypeRef typeRef) {
+		return getPrimitive(typeRef) == FBasicTypeId::STRING;
 	}
 
 	def boolean isByte(FBasicTypeId type) {
@@ -161,16 +184,11 @@ class TypeUtil {
 	}
 
 	def boolean isPrimitive(FType type){
-		if (type instanceof FMapType){
-			throw new IllegalStateException("JoynGeneratorExtensions.xtend: isPrimitive for map types is not implemented!")
+		if (type instanceof FArrayType){
+			return isPrimitive(type.elementType)
 		}
-		else {
-			if (type instanceof FArrayType){
-				return isPrimitive(type.elementType)
-			}
-			if (type instanceof FTypeDef){
-				return isPrimitive(type.actualType)
-			}
+		if (type instanceof FTypeDef){
+			return isPrimitive(type.actualType)
 		}
 		return false;
 	}
@@ -206,10 +224,20 @@ class TypeUtil {
 		return false
 	}
 
+	def boolean isMap(FTypeRef typeRef) {
+		if (typeRef == null){
+			return false;
+		}
+		if (typeRef.derived!=null){
+			return isMap(typeRef.derived)
+		}
+		return false
+	}
+
 	def boolean isPrimitive(FTypeRef typeRef){
 		if (typeRef== null){
 			return false;
-		} 
+		}
 
 		if (typeRef.predefined!=null && typeRef.predefined!=FBasicTypeId::UNDEFINED){
 			return true;
@@ -219,27 +247,27 @@ class TypeUtil {
 		}
 	}
 
-	def FCompoundType getComplexType(FType type){
+	def FCompoundType getCompoundType(FType type){
 		if (type == null){
 			return null;
 		}
 		if (type instanceof FArrayType){
-			return getComplexType(type.elementType)
+			return getCompoundType(type.elementType)
 		}
 		else if (type instanceof FCompoundType){
 			return type;
 		}
 		else if (type instanceof FTypeDef){
-			return getComplexType(type.actualType)
+			return getCompoundType(type.actualType)
 		}
 	}
 
-	def FCompoundType getComplexType(FTypeRef type){
+	def FCompoundType getCompoundType(FTypeRef type){
 		if (type==null){
 			return null;
 		}
 		else{
-			return getComplexType(type.derived)
+			return getCompoundType(type.derived)
 		}
 	}
 
@@ -249,6 +277,30 @@ class TypeUtil {
 		}
 		else{
 			return getEnumType(type.derived)
+		}
+	}
+
+	def FMapType getMapType(FType type){
+		if (type == null){
+			return null;
+		}
+		if (type instanceof FArrayType){
+			return getMapType(type.elementType)
+		}
+		else if (type instanceof FMapType){
+			return type;
+		}
+		else if (type instanceof FTypeDef){
+			return getMapType(type.actualType)
+		}
+	}
+
+	def FMapType getMapType(FTypeRef type){
+		if (type==null){
+			return null;
+		}
+		else{
+			return getMapType(type.derived)
 		}
 	}
 
@@ -267,36 +319,50 @@ class TypeUtil {
 		}
 	}
 
-	def boolean isComplex(FType type) {
+	def boolean isCompound(FType type) {
 		if (type==null){
 			return false
 		}
 		if (type instanceof FArrayType){
-			return isComplex(type.elementType)
+			return isCompound(type.elementType)
 		}
 		if (type instanceof FCompoundType){
 			return true
 		}
 		if (type instanceof FTypeDef){
-			return isComplex(type.actualType)
+			return isCompound(type.actualType)
 		}
 		if (type instanceof FEnumerationType){
 			return false
 		}
 		if (type instanceof FMapType){
-			throw new IllegalStateException("JoynGeneratorExtensions.xtend: isComplex for map types is not implemented!")
-//			val mapType = type as FMapType
-//			return (isComplex(mapType.keyType) || isComplex(mapType.valueType));
+			return false
 		}
 		return false
 	}
 
-	def boolean isComplex(FTypeRef typeRef) {
+	def boolean isCompound(FTypeRef typeRef) {
 		if (typeRef == null){
 			return false;
 		}
 		if (typeRef.derived!=null){
-			return isComplex(typeRef.derived)
+			return isCompound(typeRef.derived)
+		}
+		return false
+	}
+
+	def boolean isMap(FType type) {
+		if (type == null){
+			return false;
+		}
+		if (type instanceof FArrayType){
+			isMap(type.elementType)
+		}
+		if (type instanceof FTypeDef){
+			isMap(type.actualType)
+		}
+		if (type instanceof FMapType){
+			return true;
 		}
 		return false
 	}
@@ -316,11 +382,6 @@ class TypeUtil {
 		}
 		if (type instanceof FEnumerationType){
 			return true
-		}
-		if (type instanceof FMapType){
-			throw new IllegalStateException("JoynGeneratorExtensions.xtend: isEnum for map types is not implemented!")
-//			val mapType = type as FMapType
-//			return (isComplex(mapType.keyType) || isComplex(mapType.valueType));
 		}
 		return false
 	}
@@ -369,16 +430,16 @@ class TypeUtil {
 		datatype.elements.filter(element | isEnum(element.type));
 	}
 
+	def getCompoundMembers(FCompoundType datatype) {
+		datatype.elements.filter(element | isCompound(element.type));
+	}
+
 	def getComplexMembers(FCompoundType datatype) {
-		datatype.elements.filter(element | isComplex(element.type));
+		datatype.elements.filter(element | isMap(element.type) || isCompound(element.type) || isEnum(element.type) || isArray(element));
 	}
 
-	def getComplexAndEnumMembers(FCompoundType datatype) {
-		datatype.elements.filter(element | isComplex(element.type) || isEnum(element.type) || element.array);
-	}
-
-	def filterComplexAndEnum(Iterable<Object> iterable) {
-		iterable.filter[type | type instanceof FType && ((type as FType).complex || (type as FType).enum) ]
+	def filterComplex(Iterable<Object> iterable) {
+		iterable.filter[type | type instanceof FType && ((type as FType).map || (type as FType).compound || (type as FType).enum || (type as FType).map)]
 	}
 
 	def boolean isPartOfTypeCollection(FType datatype) {
@@ -459,5 +520,24 @@ class TypeUtil {
 		}
 
 		return type
+	}
+
+	def Iterable<Object> getRequiredTypes(FTypeRef typeRef) {
+		val type = typeRef.datatype
+		val result = newArrayList(type)
+		if (type instanceof FMapType) {
+			result.addAll(getRequiredTypes(type.keyType))
+			result.addAll(getRequiredTypes(type.valueType))
+		}
+		return result
+	}
+
+	def hasMapMember(FCompoundType type) {
+		for (member : type.membersRecursive) {
+			if (member.type.isMap) {
+				return true
+			}
+		}
+		return false
 	}
 }

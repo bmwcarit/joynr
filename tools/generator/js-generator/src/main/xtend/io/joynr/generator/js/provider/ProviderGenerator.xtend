@@ -43,12 +43,22 @@ class ProviderGenerator {
 	@Inject private extension BroadcastUtil
 	@Inject private extension InterfaceUtil
 
+	int packagePathDepth
+
+	def relativePathToBase() {
+		var relativePath = ""
+		for (var i=0; i<packagePathDepth; i++) {
+			relativePath += ".." + File::separator
+		}
+		return relativePath
+	}
+
 	def generateProvider(FInterface fInterface, Iterable<FType> types, IFileSystemAccess fsa){
 		var containerpath = File::separator
+		val packagePath = getPackagePathWithJoynrPrefix(fInterface, File::separator)
+		val path = containerpath + packagePath + File::separator
 
-		val path = containerpath +
-			getPackagePathWithJoynrPrefix(fInterface, File::separator) +
-			File::separator
+		packagePathDepth = packagePath.split(File::separator).length
 
 		val fileName = path + "" + fInterface.providerName + ".js"
 		if (clean) {
@@ -236,12 +246,19 @@ class ProviderGenerator {
 		«IF requireJSSupport»
 		// AMD support
 		if (typeof define === 'function' && define.amd) {
-			define(«fInterface.defineName(fInterface.providerName)»[], function () {
+			define(«fInterface.defineName(fInterface.providerName)»[
+				«FOR datatype : fInterface.getAllComplexTypes.filter[a | a instanceof FType] SEPARATOR ','»
+						"«(datatype as FType).getDependencyPath»"
+				«ENDFOR»
+				], function () {
 					return «fInterface.providerName»;
 				}
 			);
 		} else if (typeof exports !== 'undefined' ) {
 			if ((module !== undefined) && module.exports) {
+				«FOR datatype : getAllComplexTypes(fInterface, false, true, true, true, true, true, false).filter[a | a instanceof FType]»
+					require("«relativePathToBase() + (datatype as FType).getDependencyPath()»");
+				«ENDFOR»
 				exports = module.exports = «fInterface.providerName»;
 			}
 			else {

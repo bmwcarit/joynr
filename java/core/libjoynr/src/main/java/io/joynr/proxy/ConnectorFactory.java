@@ -22,12 +22,10 @@ package io.joynr.proxy;
 import io.joynr.arbitration.ArbitrationResult;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
-
+import joynr.system.RoutingTypes.Address;
 import javax.annotation.CheckForNull;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import javax.inject.Named;
+import io.joynr.runtime.SystemServicesSettings;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -36,20 +34,22 @@ public class ConnectorFactory {
 
     JoynrMessagingConnectorFactory joynrMessagingConnectorFactory;
 
-    private static final Logger logger = LoggerFactory.getLogger(ConnectorFactory.class);
-
     private MessageRouter messageRouter;
+    private Address libjoynrMessagingAddress;
 
     @Inject
-    public ConnectorFactory(JoynrMessagingConnectorFactory joynrMessagingConnectorFactory, MessageRouter messageRouter) {
+    public ConnectorFactory(JoynrMessagingConnectorFactory joynrMessagingConnectorFactory,
+                            MessageRouter messageRouter,
+                            @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress) {
         this.joynrMessagingConnectorFactory = joynrMessagingConnectorFactory;
         this.messageRouter = messageRouter;
+        this.libjoynrMessagingAddress = dispatcherAddress;
     }
 
     /**
      * Creates a new connector object using concrete connector factories chosen by the endpointAddress which is passed
      * in.
-     * 
+     *
      * @param fromParticipantId origin participant id
      * @param arbitrationResult result of arbitration
      * @param qosSettings QOS settings
@@ -59,7 +59,7 @@ public class ConnectorFactory {
     public ConnectorInvocationHandler create(final String fromParticipantId,
                                              final ArbitrationResult arbitrationResult,
                                              final MessagingQos qosSettings) {
-
+        messageRouter.addNextHop(fromParticipantId, libjoynrMessagingAddress);
         return joynrMessagingConnectorFactory.create(fromParticipantId,
                                                      arbitrationResult.getParticipantId(),
                                                      qosSettings);

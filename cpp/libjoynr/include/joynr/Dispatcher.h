@@ -26,12 +26,14 @@
 #ifndef DISPATCHER_H_
 #define DISPATCHER_H_
 #include "joynr/PrivateCopyAssign.h"
-
 #include "joynr/JoynrExport.h"
-#include <string>
+
 #include "joynr/IDispatcher.h"
 #include "joynr/LibJoynrDirectories.h"
 #include "joynr/joynrlogging.h"
+#include "joynr/ThreadPool.h"
+
+#include <string>
 #include <memory>
 
 namespace joynr
@@ -86,12 +88,12 @@ private:
     ReplyCallerDirectory replyCallerDirectory;
     PublicationManager* publicationManager;
     ISubscriptionManager* subscriptionManager;
-    QThreadPool handleReceivedMessageThreadPool;
+    ThreadPool handleReceivedMessageThreadPool;
     static joynr_logging::Logger* logger;
-    QMutex subscriptionHandlingMutex;
+    std::mutex subscriptionHandlingMutex;
 
     friend class ReceivedMessageRunnable;
 };
 
 } // namespace joynr
-#endif /* DISPATCHER_H_ */
+#endif // DISPATCHER_H_

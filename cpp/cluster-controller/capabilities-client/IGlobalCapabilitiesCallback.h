@@ -31,9 +31,9 @@ namespace joynr
  * Now that Code is generated the new interface for callbacks using ICallback.h is needed
  * to access the proxy.
  * For this reason, we currently have two callbacks: One GlobalCapabilitiesInformationCallback :
- * ICallback<types::QtCapabilityInformation> for the proxy
+ * ICallback<types::CapabilityInformation> for the proxy
  * and one IGlobalCapabilitiesCallback for the application. The
- * ICallback<types::QtCapabilityInformation> just calls the
+ * ICallback<types::CapabilityInformation> just calls the
  * IGlobalCapabilitiesCallback.
  * Those two callbacks should be merged into one.
  */

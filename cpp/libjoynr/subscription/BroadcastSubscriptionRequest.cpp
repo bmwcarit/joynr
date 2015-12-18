@@ -28,9 +28,12 @@ using namespace joynr_logging;
 Logger* BroadcastSubscriptionRequest::logger =
         Logging::getInstance()->getLogger("MSG", "BroadcastSubscriptionRequest");
 
+// Register the BroadcastSubscriptionRequest type id
+static const bool isBroadcastSubscriptionRequestRegistered =
+        Variant::registerType<BroadcastSubscriptionRequest>("joynr.BroadcastSubscriptionRequest");
+
 BroadcastSubscriptionRequest::BroadcastSubscriptionRequest() : filterParameters()
 {
-    qRegisterMetaType<QtBroadcastFilterParameters>("QtBroadcastFilterParameters");
 }
 
 BroadcastSubscriptionRequest::BroadcastSubscriptionRequest(
@@ -52,39 +55,30 @@ bool BroadcastSubscriptionRequest::operator==(
         const BroadcastSubscriptionRequest& subscriptionRequest) const
 {
 
-    bool equal = getQos()->equals(*subscriptionRequest.getQos()) &&
-                 getFilterParameters().equals(subscriptionRequest.getFilterParameters());
+    bool equal = getQos() == subscriptionRequest.getQos() &&
+                 getFilterParameters() == subscriptionRequest.getFilterParameters();
     return getSubscriptionId() == subscriptionRequest.getSubscriptionId() &&
            getSubscribeToName() == subscriptionRequest.getSubscribeToName() && equal;
 }
 
-void BroadcastSubscriptionRequest::setFilterParametersData(QVariant filterParameters)
-{
-    this->filterParameters = filterParameters.value<QtBroadcastFilterParameters>();
-}
-
-QString BroadcastSubscriptionRequest::toQString() const
+std::string BroadcastSubscriptionRequest::toString() const
 {
     return JsonSerializer::serialize(*this);
 }
 
-void BroadcastSubscriptionRequest::setQos(std::shared_ptr<QtOnChangeSubscriptionQos> qos)
+void BroadcastSubscriptionRequest::setQos(const OnChangeSubscriptionQos& qos)
 {
-    SubscriptionRequest::setQos(qos);
+    Variant qosVariant = Variant::make<OnChangeSubscriptionQos>(qos);
+    SubscriptionRequest::setQos(qosVariant);
 }
 
-QVariant BroadcastSubscriptionRequest::getFilterParametersData() const
-{
-    return QVariant::fromValue(filterParameters);
-}
-
-QtBroadcastFilterParameters BroadcastSubscriptionRequest::getFilterParameters() const
+BroadcastFilterParameters BroadcastSubscriptionRequest::getFilterParameters() const
 {
     return filterParameters;
 }
 
 void BroadcastSubscriptionRequest::setFilterParameters(
-        const QtBroadcastFilterParameters& filterParameters)
+        const BroadcastFilterParameters& filterParameters)
 {
     this->filterParameters = filterParameters;
 }

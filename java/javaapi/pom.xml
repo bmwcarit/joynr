@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>java</artifactId>
-		<version>0.12.3</version>
+		<version>0.13.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -40,11 +40,6 @@
 		<dependency>
 			<groupId>io.joynr.java.core</groupId>
 			<artifactId>joynr-types</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>io.joynr.java.messaging</groupId>
-			<artifactId>messaging-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
@@ -169,7 +164,6 @@
 						</goals>
 						<configuration>
 							<sources>
-								<!-- <source>src/main/xtend</source> <source>src/main/xtend-gen</source> -->
 								<source>src/main/generated</source>
 							</sources>
 						</configuration>

@@ -21,31 +21,34 @@
 #include <QtCore/QObject>
 
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
-#include "joynr/system/RoutingTypes_QtWebSocketClientAddress.h"
+#include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 #include "libjoynr/websocket/WebSocketLibJoynrMessagingSkeleton.h"
 #include "joynr/Util.h"
+#include "joynr/TypeUtil.h"
 #include "joynr/JsonSerializer.h"
-
+#include <QString>
 namespace joynr
 {
 
 joynr_logging::Logger* LibJoynrWebSocketRuntime::logger =
         joynr_logging::Logging::getInstance()->getLogger("MSG", "LibJoynrWebSocketRuntime");
 
-LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(QSettings* settings)
+LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(Settings* settings)
         : LibJoynrRuntime(settings),
           wsSettings(*settings),
-          websocket(Q_NULLPTR),
-          wsLibJoynrMessagingSkeleton(Q_NULLPTR)
+          websocket(nullptr),
+          wsLibJoynrMessagingSkeleton(nullptr)
 {
-    QString messagingUuid = Util::createUuid().replace("-", "");
-    QString libjoynrMessagingId("libjoynr.messaging.participantid_" + messagingUuid);
-    std::shared_ptr<joynr::system::RoutingTypes::QtAddress> libjoynrMessagingAddress(
-            new system::RoutingTypes::QtWebSocketClientAddress(libjoynrMessagingId));
+    std::string uuid = Util::createUuid();
+    // remove dashes
+    uuid.erase(std::remove(uuid.begin(), uuid.end(), '-'), uuid.end());
+    std::string libjoynrMessagingId = "libjoynr.messaging.participantid_" + uuid;
+    std::shared_ptr<joynr::system::RoutingTypes::WebSocketClientAddress> libjoynrMessagingAddress(
+            new system::RoutingTypes::WebSocketClientAddress(libjoynrMessagingId));
 
     // create connection to parent routing service
-    std::shared_ptr<joynr::system::RoutingTypes::QtWebSocketAddress> ccMessagingAddress(
-            new joynr::system::RoutingTypes::QtWebSocketAddress(
+    std::shared_ptr<joynr::system::RoutingTypes::WebSocketAddress> ccMessagingAddress(
+            new joynr::system::RoutingTypes::WebSocketAddress(
                     wsSettings.createClusterControllerMessagingAddress()));
 
     websocket = new QWebSocket();
@@ -58,12 +61,13 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(QSettings* settings)
     loop.exec();
 
     // send intialization message containing libjoynr messaging address
-    QString initializationMsg(JsonSerializer::serialize(*libjoynrMessagingAddress));
+    std::string initializationMsg = JsonSerializer::serialize(*libjoynrMessagingAddress);
     LOG_TRACE(logger,
-              QString("OUTGOING sending websocket intialization message\nmessage: %0\nto: %1")
+              FormatString("OUTGOING sending websocket intialization message\nmessage: %1\nto: %2")
                       .arg(initializationMsg)
-                      .arg(libjoynrMessagingAddress->toString()));
-    websocket->sendTextMessage(initializationMsg);
+                      .arg(libjoynrMessagingAddress->toString())
+                      .str());
+    websocket->sendTextMessage(QString::fromStdString(initializationMsg));
 
     WebSocketMessagingStubFactory* factory = new WebSocketMessagingStubFactory();
     factory->addServer(*ccMessagingAddress, websocket);
@@ -74,7 +78,7 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(QSettings* settings)
 LibJoynrWebSocketRuntime::~LibJoynrWebSocketRuntime()
 {
     delete wsLibJoynrMessagingSkeleton;
-    wsLibJoynrMessagingSkeleton = Q_NULLPTR;
+    wsLibJoynrMessagingSkeleton = nullptr;
 }
 
 void LibJoynrWebSocketRuntime::startLibJoynrMessagingSkeleton(MessageRouter& messageRouter)

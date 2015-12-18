@@ -27,12 +27,14 @@ import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FCompoundType
 import org.franca.core.franca.FEnumerationType
 import org.franca.core.franca.FType
+import org.franca.core.franca.FMapType
 
 class TypesGenerator {
 
 	@Inject extension JoynrJSGeneratorExtensions
 	@Inject extension EnumTypeGenerator
 	@Inject extension CompoundTypeGenerator
+	@Inject extension MapTypeGenerator
 	@Inject private extension NamingUtil
 
 	def generateTypes(Iterable<FType> types, IFileSystemAccess fsa) {
@@ -59,6 +61,8 @@ class TypesGenerator {
 			generateEnumType(type)
 		} else if (type instanceof FCompoundType) {
 			generateCompoundType(type, generatedTypes)
+		} else if (type instanceof FMapType) {
+			generateMapType(type)
 		}
 	}
 }

@@ -19,7 +19,7 @@
 #include "joynr/ClientQCache.h"
 
 #include <chrono>
-#include <stdint.h>
+#include <cstdint>
 
 namespace joynr
 {
@@ -30,28 +30,28 @@ static const int MAX_CUMMULATIVE_CACHE_COST = 1000;
 
 ClientQCache::ClientQCache() : cache(), mutex()
 {
-    cache.setMaxCost(MAX_CUMMULATIVE_CACHE_COST);
+    cache.setCacheCapacity(MAX_CUMMULATIVE_CACHE_COST);
 }
 
-QVariant ClientQCache::lookUp(const QString& attributeId)
+Variant ClientQCache::lookUp(const std::string& attributeId)
 {
-    QMutexLocker locker(&mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     if (!cache.contains(attributeId)) {
-        return QVariant();
+        return Variant::NULL_VARIANT();
     }
-    CachedValue<QVariant>* entry = cache.object(attributeId);
+    CachedValue<Variant>* entry = cache.object(attributeId);
     return entry->getValue();
 }
 
-void ClientQCache::insert(QString attributeId, QVariant value)
+void ClientQCache::insert(std::string attributeId, Variant value)
 {
-    QMutexLocker locker(&mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-    CachedValue<QVariant>* cachedValue = new CachedValue<QVariant>(value, now);
+    CachedValue<Variant>* cachedValue = new CachedValue<Variant>(value, now);
     cache.insert(attributeId, cachedValue);
 }
 
-qint64 ClientQCache::elapsed(qint64 entryTime)
+int64_t ClientQCache::elapsed(int64_t entryTime)
 {
     int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
     return now - entryTime;

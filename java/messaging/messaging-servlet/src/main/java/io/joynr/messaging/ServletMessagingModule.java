@@ -1,5 +1,7 @@
 package io.joynr.messaging;
 
+import com.google.inject.AbstractModule;
+
 /*
  * #%L
  * %%
@@ -24,17 +26,15 @@ import io.joynr.dispatcher.ServletMessageReceiverImpl;
 
 /**
  * Used in conjunction with DefaultDispatcherModule to inject the application side
- * 
+ *
  */
-public class ServletMessagingModule extends MessagingModule {
+public class ServletMessagingModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        super.configure();
-        // bind(String.class).annotatedWith(Names.named("joynr.messaging.channelId")).toInstance(channelId);
+        install(new MessagingModule());
         bind(MessageListeners.class).to(MessageListenersImpl.class).asEagerSingleton();
-        bind(MessageReceiver.class).to(ServletMessageReceiverImpl.class);
         bind(ServletMessageReceiver.class).to(ServletMessageReceiverImpl.class);
+        bind(MessageReceiver.class).to(ServletMessageReceiverImpl.class);
     }
-
 }

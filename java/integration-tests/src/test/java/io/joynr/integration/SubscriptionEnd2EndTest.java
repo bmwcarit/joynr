@@ -20,10 +20,14 @@ package io.joynr.integration;
  */
 
 import com.google.inject.Module;
+import com.google.inject.util.Modules;
+
 import io.joynr.integration.util.DummyJoynrApplication;
 import io.joynr.integration.util.ServersUtil;
+import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
 import org.eclipse.jetty.server.Server;
@@ -57,14 +61,17 @@ public class SubscriptionEnd2EndTest extends AbstractSubscriptionEnd2EndTest {
 
     @Override
     protected JoynrRuntime getRuntime(Properties joynrConfig, Module... modules) {
+        Module runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(new AtmosphereMessagingModule());
+        Module modulesWithRuntime = Modules.override(modules).with(runtimeModule);
         DummyJoynrApplication application = (DummyJoynrApplication)
-                new JoynrInjectorFactory(joynrConfig, modules)
+                new JoynrInjectorFactory(joynrConfig, modulesWithRuntime)
                         .createApplication(DummyJoynrApplication.class);
 
         dummyApplications.add(application);
         return application.getRuntime();
     }
 
+    @Override
     @After
     public void tearDown() throws InterruptedException {
 

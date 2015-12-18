@@ -21,6 +21,7 @@
 #include <gmock/gmock.h>
 #include <memory>
 #include <string>
+#include <vector>
 #include <stdint.h>
 #include "joynr/DispatcherUtils.h"
 #include "tests/utils/MockObjects.h"
@@ -36,7 +37,6 @@
 #include "tests/utils/MockObjects.h"
 
 #include "joynr/Future.h"
-#include <memory>
 #include "joynr/TypeUtil.h"
 
 using namespace ::testing;
@@ -46,7 +46,7 @@ using namespace joynr;
 class End2EndDbusTest : public Test {
 
 public:
-    QString messageSettingsFilename;
+    std::string messageSettingsFilename;
 
     JoynrClusterControllerRuntime* clusterControllerRuntime;
     LibJoynrDbusRuntime* runtime1;
@@ -55,7 +55,7 @@ public:
     tests::testProxy* testProxy;
 
     std::string domain;
-    QSemaphore semaphore;
+    joynr::Semaphore semaphore;
 
     End2EndDbusTest() :
         messageSettingsFilename("test-resources/SystemIntegrationTest1.settings"),
@@ -69,14 +69,14 @@ public:
         // create the cluster controller runtime
         clusterControllerRuntime = new JoynrClusterControllerRuntime(
                     NULL,
-                    new QSettings(messageSettingsFilename, QSettings::IniFormat)
+                    new Settings(messageSettingsFilename)
         );
         clusterControllerRuntime->registerRoutingProvider();
         clusterControllerRuntime->registerDiscoveryProvider();
 
         // create lib joynr runtimes
-        runtime1 = new LibJoynrDbusRuntime(new QSettings(messageSettingsFilename, QSettings::IniFormat));
-        runtime2 = new LibJoynrDbusRuntime(new QSettings(messageSettingsFilename, QSettings::IniFormat));
+        runtime1 = new LibJoynrDbusRuntime(new Settings(messageSettingsFilename));
+        runtime2 = new LibJoynrDbusRuntime(new Settings(messageSettingsFilename));
     }
 
     void SetUp() {
@@ -135,7 +135,7 @@ private:
 
 ACTION_P(ReleaseSemaphore,semaphore)
 {
-    semaphore->release(1);
+    semaphore->notify();
 }
 
 TEST_F(End2EndDbusTest, instantiate_Runtimes)
@@ -247,7 +247,8 @@ TEST_F(End2EndDbusTest, subscriptionlistener)
     testProxy->subscribeToTestAttribute(subscriptionListener, subscriptionQos);
 
     // Wait for 2 subscription messages to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(3, 20000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
 }
 
 TEST_F(End2EndDbusTest, performance_sendManyRequests) {
@@ -258,7 +259,7 @@ TEST_F(End2EndDbusTest, performance_sendManyRequests) {
     connectProxy();
 
     uint64_t startTime = DispatcherUtils::nowInMilliseconds();
-    QList<std::shared_ptr<Future<int32_t> > >testFutureList;
+    std::vector<std::shared_ptr<Future<int32_t> > >testFutureList;
     int numberOfMessages = 500;
     int successFullMessages = 0;
     for (int32_t i=0; i<numberOfMessages; i++){
@@ -267,7 +268,7 @@ TEST_F(End2EndDbusTest, performance_sendManyRequests) {
         list.push_back(4);
         list.push_back(8);
         list.push_back(i);
-        testFutureList.append(testProxy->sumIntsAsync(list));
+        testFutureList.push_back(testProxy->sumIntsAsync(list));
     }
 
     for (int i=0; i<numberOfMessages; i++){
@@ -289,5 +290,5 @@ TEST_F(End2EndDbusTest, performance_sendManyRequests) {
     //check if all Messages were received:
     EXPECT_EQ(numberOfMessages, successFullMessages);
     Logger* logger = Logging::getInstance()->getLogger("TEST", "End2EndDbusTest");
-    LOG_INFO(logger,"Required Time for " + QString::number(numberOfMessages) + " Messages: " + QString::number(TypeUtil::toQt(stopTime - startTime)));
+    LOG_INFO(logger,FormatString("Required Time for %1 Messages: %2").arg(numberOfMessages).arg((stopTime - startTime)).str());
 }

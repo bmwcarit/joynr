@@ -25,13 +25,8 @@
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrClusterControllerRuntimeExport.h"
-#include "joynr/JoynrConfig.h"
-#include "joynr/ProxyBuilder.h"
 #include "joynr/ClientQCache.h"
-#include "joynr/MessageRouter.h"
-#include "joynr/MessagingStubFactory.h"
 #include "joynr/joynrlogging.h"
-#include "joynr/LibjoynrSettings.h"
 #include "joynr/JoynrRuntime.h"
 #include "libjoynr/websocket/WebSocketSettings.h"
 
@@ -48,42 +43,40 @@ class JoynrClusterControllerRuntimeTest;
 namespace joynr
 {
 
-class InProcessLibJoynrMessagingSkeleton;
 class InProcessClusterControllerMessagingSkeleton;
 class LocalCapabilitiesDirectory;
 class ILocalChannelUrlDirectory;
 class IMessageReceiver;
 class IMessageSender;
-class CapabilitiesClient;
 class ICapabilitiesClient;
-class PublicationManager;
 class SubscriptionManager;
 class InProcessDispatcher;
 class ConnectorFactory;
 class InProcessConnectorFactory;
 class JoynrMessagingConnectorFactory;
 class MessagingSettings;
-class Dispatcher;
+class IDispatcher;
 class InProcessPublicationSender;
 class WebSocketCcMessagingSkeleton;
+class InProcessMessagingSkeleton;
 class IPlatformSecurityManager;
+class Settings;
+class LibjoynrSettings;
 
 namespace infrastructure
 {
 class ChannelUrlDirectoryProxy;
 }
-template <typename Key, typename T>
-class Directory;
 
 class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrClusterControllerRuntime : public JoynrRuntime
 {
 public:
     JoynrClusterControllerRuntime(QCoreApplication* app,
-                                  QSettings* settings,
+                                  Settings* settings,
                                   IMessageReceiver* messageReceiver = NULL,
                                   IMessageSender* = NULL);
 
-    static JoynrClusterControllerRuntime* create(QSettings* settings);
+    static JoynrClusterControllerRuntime* create(Settings* settings);
 
     virtual ~JoynrClusterControllerRuntime();
 
@@ -133,13 +126,13 @@ protected:
     std::shared_ptr<IMessageReceiver> messageReceiver;
     std::shared_ptr<IMessageSender> messageSender;
 
-    QList<IDispatcher*> dispatcherList;
+    std::vector<IDispatcher*> dispatcherList;
     InProcessConnectorFactory* inProcessConnectorFactory;
     InProcessPublicationSender* inProcessPublicationSender;
     JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory;
     ConnectorFactory* connectorFactory;
     // take ownership, so a pointer is used
-    QSettings* settings;
+    Settings* settings;
     // use pointer for settings object to check the configuration before initialization
     MessagingSettings* messagingSettings;
     LibjoynrSettings* libjoynrSettings;

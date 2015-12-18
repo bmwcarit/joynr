@@ -19,21 +19,25 @@ package io.joynr.integration;
  * #L%
  */
 
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeast;
-import static org.mockito.Mockito.atMost;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.dispatching.subscription.PubSubTestProviderImpl;
+import io.joynr.dispatching.subscription.SubscriptionTestsProviderImpl;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrIllegalStateException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilder;
@@ -45,13 +49,17 @@ import io.joynr.runtime.PropertyLoader;
 
 import java.util.Properties;
 import java.util.UUID;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 import joynr.OnChangeSubscriptionQos;
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
 import joynr.PeriodicSubscriptionQos;
+import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.tests.testProxy;
 import joynr.tests.testTypes.TestEnum;
+import joynr.types.ProviderQos;
 import joynr.types.Localisation.GpsLocation;
 
 import org.junit.After;
@@ -61,6 +69,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,14 +87,18 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
     @Rule
     public TestName name = new TestName();
 
-    private static PubSubTestProviderImpl provider;
+    private SubscriptionTestsProviderImpl provider;
     private String domain;
-    private static testProxy proxy;
+    private testProxy proxy;
 
-    private int period_ms = 200;
+    private int period_ms = 400;
 
     private JoynrRuntime providerRuntime;
     private JoynrRuntime consumerRuntime;
+
+    protected ProviderQos providerQos = new ProviderQos();
+    protected MessagingQos messagingQos = new MessagingQos(10000);
+    protected DiscoveryQos discoveryQos = new DiscoveryQos(10000, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
 
     // Overridden by test environment implementations
     protected abstract JoynrRuntime getRuntime(Properties joynrConfig, Module... modules);
@@ -96,7 +110,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         String methodName = name.getMethodName();
         logger.info("Starting {} ...", methodName);
         domain = "ProviderDomain-SubscriptionEnd2End-" + methodName + "-" + System.currentTimeMillis();
-        provisionPermissiveAccessControlEntry(domain, PubSubTestProviderImpl.INTERFACE_NAME);
+        provisionPermissiveAccessControlEntry(domain, SubscriptionTestsProviderImpl.INTERFACE_NAME);
 
         setupProviderRuntime(methodName);
         setupConsumerRuntime(methodName);
@@ -108,7 +122,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         consumerRuntime.shutdown(true);
     }
 
-    private void setupProviderRuntime(String methodName) throws InterruptedException {
+    private void setupProviderRuntime(String methodName) throws InterruptedException, ApplicationException {
         Properties factoryPropertiesProvider;
 
         String channelIdProvider = "JavaTest-" + UUID.randomUUID().getLeastSignificantBits()
@@ -120,8 +134,8 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         factoryPropertiesProvider.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, domain);
         providerRuntime = getRuntime(factoryPropertiesProvider, new StaticDomainAccessControlProvisioningModule());
 
-        provider = new PubSubTestProviderImpl();
-        providerRuntime.registerProvider(domain, provider).waitForFullRegistration(CONST_DEFAULT_TEST_TIMEOUT);
+        provider = new SubscriptionTestsProviderImpl(providerQos);
+        providerRuntime.registerProvider(domain, provider).get(CONST_DEFAULT_TEST_TIMEOUT);
     }
 
     private void setupConsumerRuntime(String methodName) throws DiscoveryException, JoynrIllegalStateException,
@@ -136,9 +150,6 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
                 + UUID.randomUUID().toString());
 
         consumerRuntime = getRuntime(factoryPropertiesB);
-
-        MessagingQos messagingQos = new MessagingQos(5000);
-        DiscoveryQos discoveryQos = new DiscoveryQos(5000, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
 
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
@@ -170,22 +181,32 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         verify(integerListener, times(1)).onReceive(eq(45));
 
         proxy.unsubscribeFromTestAttribute(subscriptionId);
+        provider.waitForAttributeUnsubscription("testAttribute");
     }
 
     @SuppressWarnings("unchecked")
     @Test
     public void registerSubscriptionForComplexDatatype() throws InterruptedException {
+        final Semaphore onReceiveSemaphore = new Semaphore(0);
         AttributeSubscriptionListener<GpsLocation> gpsListener = mock(AttributeSubscriptionListener.class);
-        int subscriptionDuration = (period_ms * 4);
+
+        doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocation) {
+                onReceiveSemaphore.release();
+                return (Void) null;
+            }
+        }).when(gpsListener).onReceive(eq(provider.getComplexTestAttributeSync()));
+        int periods = 2;
+        long subscriptionDuration = (period_ms * periods) + expected_latency_ms;
         long alertInterval_ms = 500;
         long expiryDate_ms = System.currentTimeMillis() + subscriptionDuration;
         SubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(period_ms, expiryDate_ms, alertInterval_ms, 0);
 
         String subscriptionId = proxy.subscribeToComplexTestAttribute(gpsListener, subscriptionQos);
-        Thread.sleep(subscriptionDuration);
-        // 100 2100 4100 6100
+
+        assertTrue(onReceiveSemaphore.tryAcquire(periods, subscriptionDuration + 1000, TimeUnit.MILLISECONDS));
         verify(gpsListener, times(0)).onError(null);
-        verify(gpsListener, atLeast(4)).onReceive(eq(provider.getComplexTestAttributeSync()));
 
         proxy.unsubscribeFromComplexTestAttribute(subscriptionId);
     }
@@ -193,20 +214,31 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
     @SuppressWarnings("unchecked")
     @Test
     public void subscribeToEnumAttribute() throws InterruptedException {
+        final Semaphore onReceiveSemaphore = new Semaphore(0);
         AttributeSubscriptionListener<TestEnum> testEnumListener = mock(AttributeSubscriptionListener.class);
+
+        doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocation) {
+                onReceiveSemaphore.release();
+                return (Void) null;
+            }
+        }).when(testEnumListener).onReceive(any(TestEnum.class));
+
         TestEnum expectedTestEnum = TestEnum.TWO;
         provider.setEnumAttribute(expectedTestEnum);
 
-        int subscriptionDuration = (period_ms * 4);
+        int periods = 2;
+        long subscriptionDuration = (period_ms * periods) + expected_latency_ms;
         long alertInterval_ms = 500;
         long expiryDate_ms = System.currentTimeMillis() + subscriptionDuration;
         SubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(period_ms, expiryDate_ms, alertInterval_ms, 0);
 
         String subscriptionId = proxy.subscribeToEnumAttribute(testEnumListener, subscriptionQos);
-        Thread.sleep(subscriptionDuration);
-        // 100 2100 4100 6100
+
+        assertTrue(onReceiveSemaphore.tryAcquire(periods, subscriptionDuration + 1000, TimeUnit.MILLISECONDS));
+
         verify(testEnumListener, times(0)).onError(null);
-        verify(testEnumListener, atLeast(4)).onReceive(eq(expectedTestEnum));
 
         proxy.unsubscribeFromEnumAttribute(subscriptionId);
     }
@@ -214,21 +246,30 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
     @SuppressWarnings("unchecked")
     @Test
     public void registerSubscriptionForListAndReceiveUpdates() throws InterruptedException {
+        final Semaphore onReceiveSemaphore = new Semaphore(0);
         AttributeSubscriptionListener<Integer[]> integersListener = mock(AttributeSubscriptionListener.class);
+        doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocation) {
+                onReceiveSemaphore.release();
+                return (Void) null;
+            }
+        }).when(integersListener).onReceive(any(Integer[].class));
+
         provider.setTestAttribute(42);
 
-        int subscriptionDuration = (period_ms * 3);
+        int periods = 2;
+        long subscriptionDuration = (period_ms * periods) + expected_latency_ms;
         long expiryDate_ms = System.currentTimeMillis() + subscriptionDuration;
         SubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(period_ms, expiryDate_ms, 0, 0);
 
         String subscriptionId = proxy.subscribeToListOfInts(integersListener, subscriptionQos);
-        Thread.sleep(subscriptionDuration);
+        assertTrue(onReceiveSemaphore.tryAcquire(periods, subscriptionDuration + 1000, TimeUnit.MILLISECONDS));
+
         verify(integersListener, times(0)).onError(null);
 
         verify(integersListener, times(1)).onReceive(eq(new Integer[]{ 42 }));
         verify(integersListener, times(1)).onReceive(eq(new Integer[]{ 42, 43 }));
-        verify(integersListener, times(1)).onReceive(eq(new Integer[]{ 42, 43, 44 }));
-        verifyNoMoreInteractions(integersListener);
 
         proxy.unsubscribeFromListOfInts(subscriptionId);
     }
@@ -250,13 +291,14 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         Thread.sleep(subscriptionDuration);
         verifyNoMoreInteractions(integerListener);
         proxy.unsubscribeFromTestAttribute(subscriptionId);
+        provider.waitForAttributeUnsubscription("testAttribute");
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     @Ignore
     public void testOnChangeWithKeepAliveSubscriptionSendsOnChange() throws InterruptedException {
-        AttributeSubscriptionListener<Integer> integerListener = mock(AttributeSubscriptionListener.class);
+        final Semaphore onReceiveSemaphore = new Semaphore(0);
+        AttributeSubscriptionListener<Integer> integerListener = prepareOnReceiveListenerMock(onReceiveSemaphore);
 
         // NOTE: 50 is the minimum minInterval supported
         long minInterval_ms = 50;
@@ -273,32 +315,60 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
                                                                                         publicationTtl_ms);
 
         String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQosMixed);
-        verify(integerListener, times(0)).onError(null);
-        Thread.sleep(expected_latency_ms);
+        provider.waitForAttributeSubscription("testAttribute");
 
         // when subscribing, we automatically get 1 publication. Expect the starting-publication
-        verify(integerListener, times(1)).onReceive(anyInt());
+        verify(integerListener, times(0)).onError(null);
+        assertTrue(onReceiveSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 
         // Wait minimum time between onChanged
         Thread.sleep(minInterval_ms);
         provider.setTestAttribute(5);
-        Thread.sleep(expected_latency_ms);
         // expect the onChangeSubscription to have arrived
-        verify(integerListener, times(2)).onReceive(anyInt());
+        assertTrue(onReceiveSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 
         Thread.sleep(subscriptionDuration);
         // expect no more publications to arrive
         verifyNoMoreInteractions(integerListener);
 
         proxy.unsubscribeFromTestAttribute(subscriptionId);
-
+        provider.waitForAttributeUnsubscription("testAttribute");
     }
 
     @SuppressWarnings("unchecked")
+    private AttributeSubscriptionListener<Integer> prepareOnReceiveListenerMock(final Semaphore onReceiveSemaphore) {
+        AttributeSubscriptionListener<Integer> integerListener = mock(AttributeSubscriptionListener.class);
+
+        doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocation) {
+                onReceiveSemaphore.release();
+                return (Void) null;
+            }
+        }).when(integerListener).onReceive(anyInt());
+        return integerListener;
+    }
+
+    @SuppressWarnings("unchecked")
+    private AttributeSubscriptionListener<Integer> prepareOnErrorListenerMock(final Semaphore onErrorSemaphore,
+                                                                              JoynrRuntimeException expectation) {
+        AttributeSubscriptionListener<Integer> integerListener = mock(AttributeSubscriptionListener.class);
+
+        doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocation) {
+                onErrorSemaphore.release();
+                return (Void) null;
+            }
+        }).when(integerListener).onError(expectation);
+        return integerListener;
+    }
+
     @Ignore
     @Test
     public void testOnChangeWithKeepAliveSubscriptionSendsKeepAlive() throws InterruptedException {
-        AttributeSubscriptionListener<Integer> integerListener = mock(AttributeSubscriptionListener.class);
+        Semaphore onReceiveSemaphore = new Semaphore(0);
+        AttributeSubscriptionListener<Integer> integerListener = prepareOnReceiveListenerMock(onReceiveSemaphore);
 
         // NOTE: 50 is the minimum minInterval supported
         long minInterval_ms = 50;
@@ -318,27 +388,25 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
                                                                                         publicationTtl_ms);
 
         String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQosMixed);
-        verify(integerListener, times(0)).onError(null);
-        Thread.sleep(expected_latency_ms);
+        provider.waitForAttributeSubscription("testAttribute");
 
         // when subscribing, we automatically get 1 publication. Expect the
         // starting-publication
-        verify(integerListener, times(1)).onReceive(anyInt());
+        verify(integerListener, times(0)).onError(null);
+        assertTrue(onReceiveSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 
         for (int i = 1; i <= numberExpectedKeepAlives; i++) {
-
-            Thread.sleep(maxInterval_ms + expected_latency_ms);
-            // expect the next keep alive notification to have now arrived (plus the original one at subscription start)
-            verify(integerListener, times(i + 1)).onReceive(anyInt());
+            assertTrue(onReceiveSemaphore.tryAcquire(maxInterval_ms + expected_latency_ms, TimeUnit.MILLISECONDS));
         }
 
         proxy.unsubscribeFromTestAttribute(subscriptionId);
+        provider.waitForAttributeUnsubscription("testAttribute");
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testOnChangeWithKeepAliveSubscription() throws InterruptedException {
-        AttributeSubscriptionListener<Integer> integerListener = mock(AttributeSubscriptionListener.class);
+        Semaphore onReceiveSemaphore = new Semaphore(0);
+        AttributeSubscriptionListener<Integer> integerListener = prepareOnReceiveListenerMock(onReceiveSemaphore);
 
         long minInterval_ms = 50; // NOTE: 50 is the minimum minInterval
         // supported
@@ -356,32 +424,30 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
                                                                                         publicationTtl_ms);
 
         String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQosMixed);
-        verify(integerListener, times(0)).onError(null);
-        Thread.sleep(expected_latency_ms);
+        provider.waitForAttributeSubscription("testAttribute");
 
         // when subscribing, we automatically get 1 publication. Expect the
         // starting-publication
-        verify(integerListener, times(1)).onReceive(anyInt());
+        verify(integerListener, times(0)).onError(null);
+        assertTrue(onReceiveSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 
         // Wait minimum time between onChanged
         Thread.sleep(minInterval_ms);
         provider.setTestAttribute(5);
-        Thread.sleep(expected_latency_ms);
         // expect the onChangeSubscription to have arrived
-        verify(integerListener, times(2)).onReceive(anyInt());
+        assertTrue(onReceiveSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 
-        Thread.sleep(maxInterval_ms + 50);
-        // expect a keep alive notification to have now arrived
-        verify(integerListener, atLeast(3)).onReceive(anyInt());
+        // expect the third publication due to exceeding the maxInterval_ms
+        assertTrue(onReceiveSemaphore.tryAcquire(maxInterval_ms + 1000, TimeUnit.MILLISECONDS));
 
         proxy.unsubscribeFromTestAttribute(subscriptionId);
-
+        provider.waitForAttributeUnsubscription("testAttribute");
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testOnChangeSubscription() throws InterruptedException {
-        AttributeSubscriptionListener<Integer> integerListener = mock(AttributeSubscriptionListener.class);
+        Semaphore onReceiveSemaphore = new Semaphore(0);
+        AttributeSubscriptionListener<Integer> integerListener = prepareOnReceiveListenerMock(onReceiveSemaphore);
 
         long minInterval_ms = 0;
         long publicationTtl_ms = 1000;
@@ -390,72 +456,82 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         SubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms, expiryDate_ms, publicationTtl_ms);
 
         String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQos);
-        Thread.sleep(expected_latency_ms);
+        provider.waitForAttributeSubscription("testAttribute");
+
         verify(integerListener, times(0)).onError(null);
-        // when subscribing, we automatically get 1 publication. This might not
-        // be the case in java?
-        verify(integerListener, times(1)).onReceive(anyInt());
+        assertTrue(onReceiveSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 
         provider.setTestAttribute(5);
-        Thread.sleep(expected_latency_ms);
-
-        verify(integerListener, times(2)).onReceive(anyInt());
+        assertTrue(onReceiveSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 
         proxy.unsubscribeFromTestAttribute(subscriptionId);
-
+        provider.waitForAttributeUnsubscription("testAttribute");
     }
 
-    @SuppressWarnings("unchecked")
-    @Test
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void subscribeToAttributeWithProviderRuntimeException() throws InterruptedException {
-        AttributeSubscriptionListener<Integer> providerRuntimeExceptionListener = mock(AttributeSubscriptionListener.class);
-        ProviderRuntimeException expectedException = new ProviderRuntimeException(PubSubTestProviderImpl.MESSAGE_PROVIDERRUNTIMEEXCEPTION);
+        Semaphore onErrorSemaphore = new Semaphore(0);
+        ProviderRuntimeException expectedException = new ProviderRuntimeException(SubscriptionTestsProviderImpl.MESSAGE_PROVIDERRUNTIMEEXCEPTION);
+        AttributeSubscriptionListener<Integer> listener = prepareOnErrorListenerMock(onErrorSemaphore,
+                                                                                     expectedException);
 
-        int periods = 4;
+        int periods = 2;
         int subscriptionDuration = (period_ms * periods);
-        long alertInterval_ms = 500;
+        long alertInterval_ms = 1000;
         long expiryDate_ms = System.currentTimeMillis() + subscriptionDuration;
         SubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(period_ms, expiryDate_ms, alertInterval_ms, 0);
 
-        String subscriptionId = proxy.subscribeToAttributeWithProviderRuntimeException(providerRuntimeExceptionListener,
-                                                                                       subscriptionQos);
-        Thread.sleep(subscriptionDuration);
-        // 100 2100 4100 6100
-        verify(providerRuntimeExceptionListener, atLeast(periods)).onError(expectedException);
-        verify(providerRuntimeExceptionListener, atMost(periods + 1)).onError(expectedException);
-        verify(providerRuntimeExceptionListener, times(0)).onReceive(null);
+        String subscriptionId = proxy.subscribeToAttributeWithProviderRuntimeException(listener, subscriptionQos);
 
-        proxy.unsubscribeFromEnumAttribute(subscriptionId);
+        long timeBeforeTest = System.currentTimeMillis();
+        long timeout = subscriptionDuration + expected_latency_ms;
+
+        //expect at least #periods errors
+        assertTrue(onErrorSemaphore.tryAcquire(periods, timeout, TimeUnit.MILLISECONDS));
+        //expect at most #periods+1 errors
+        timeout = Math.max(timeout - (System.currentTimeMillis() - timeBeforeTest), 100);
+        assertFalse(onErrorSemaphore.tryAcquire(2, timeout, TimeUnit.MILLISECONDS));
+        //expect no successful subscription callback
+        verify(listener, times(0)).onReceive(anyInt());
+
+        proxy.unsubscribeFromAttributeWithProviderRuntimeException(subscriptionId);
     }
 
-    @SuppressWarnings("unchecked")
-    @Test
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void subscribeToAttributeWithThrownException() throws InterruptedException {
-        AttributeSubscriptionListener<Integer> providerRuntimeExceptionListener = mock(AttributeSubscriptionListener.class);
-        ProviderRuntimeException expectedException = new ProviderRuntimeException(new IllegalArgumentException(PubSubTestProviderImpl.MESSAGE_THROWN_PROVIDERRUNTIMEEXCEPTION).toString());
+        Semaphore onErrorSemaphore = new Semaphore(0);
+        ProviderRuntimeException expectedException = new ProviderRuntimeException(new IllegalArgumentException(SubscriptionTestsProviderImpl.MESSAGE_THROWN_PROVIDERRUNTIMEEXCEPTION).toString());
+        AttributeSubscriptionListener<Integer> listener = prepareOnErrorListenerMock(onErrorSemaphore,
+                                                                                     expectedException);
 
-        int periods = 4;
+        int periods = 2;
         int subscriptionDuration = (period_ms * periods);
-        long alertInterval_ms = 500;
+        long alertInterval_ms = 1000;
         long expiryDate_ms = System.currentTimeMillis() + subscriptionDuration;
         SubscriptionQos subscriptionQos = new PeriodicSubscriptionQos(period_ms, expiryDate_ms, alertInterval_ms, 0);
 
-        String subscriptionId = proxy.subscribeToAttributeWithThrownException(providerRuntimeExceptionListener,
-                                                                              subscriptionQos);
-        Thread.sleep(subscriptionDuration);
-        // 100 2100 4100 6100
-        verify(providerRuntimeExceptionListener, atLeast(periods)).onError(expectedException);
-        verify(providerRuntimeExceptionListener, atMost(periods + 1)).onError(expectedException);
-        verify(providerRuntimeExceptionListener, times(0)).onReceive(null);
+        String subscriptionId = proxy.subscribeToAttributeWithThrownException(listener, subscriptionQos);
 
-        proxy.unsubscribeFromEnumAttribute(subscriptionId);
+        long timeBeforeTest = System.currentTimeMillis();
+        long timeout = subscriptionDuration + expected_latency_ms;
+
+        //expect at least #periods errors
+        assertTrue(onErrorSemaphore.tryAcquire(periods, timeout, TimeUnit.MILLISECONDS));
+        //expect at most #periods+1 errors
+
+        timeout = Math.max(timeout - (System.currentTimeMillis() - timeBeforeTest), 100);
+        assertFalse(onErrorSemaphore.tryAcquire(2, timeout, TimeUnit.MILLISECONDS));
+        //expect no successful subscription callback
+        verify(listener, times(0)).onReceive(anyInt());
+
+        proxy.unsubscribeFromAttributeWithThrownException(subscriptionId);
     }
 
-    @SuppressWarnings("unchecked")
     @Ignore
     @Test
     public void testExpiredOnChangeSubscription() throws InterruptedException {
-        AttributeSubscriptionListener<Integer> integerListener = mock(AttributeSubscriptionListener.class);
+        Semaphore onReceiveSemaphore = new Semaphore(0);
+        AttributeSubscriptionListener<Integer> integerListener = prepareOnReceiveListenerMock(onReceiveSemaphore);
 
         // Only get onChange messages
         long minInterval_ms = 0;
@@ -468,18 +544,19 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         SubscriptionQos subscriptionQos = new OnChangeSubscriptionQos(minInterval_ms, expiryDate_ms, publicationTtl_ms);
 
         String subscriptionId = proxy.subscribeToTestAttribute(integerListener, subscriptionQos);
-        Thread.sleep(expected_latency_ms);
-        // There should have only been one call - the automatic publication when a subscription is made
-        verify(integerListener, times(1)).onReceive(anyInt());
+        provider.waitForAttributeSubscription("testAttribute");
 
+        // There should have only been one call - the automatic publication when a subscription is made
+        assertTrue(onReceiveSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
+
+        verifyNoMoreInteractions(integerListener);
         Thread.sleep(duration + expected_latency_ms);
         // We should now have an expired onChange subscription
         provider.setTestAttribute(5);
-        Thread.sleep(100);
-        verifyNoMoreInteractions(integerListener);
+        assertFalse(onReceiveSemaphore.tryAcquire(100, TimeUnit.MILLISECONDS));
 
         proxy.unsubscribeFromTestAttribute(subscriptionId);
-
+        provider.waitForAttributeUnsubscription("testAttribute");
     }
 
     @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NP_NULL_ON_SOME_PATH_EXCEPTION", justification = "NPE in test would fail test")
@@ -497,9 +574,9 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
             proxyBuilder = consumerRuntime.getProxyBuilder(nonExistentDomain, testProxy.class);
             proxyToNonexistentDomain = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
         } catch (DiscoveryException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
         } catch (JoynrIllegalStateException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
         }
 
         // This should not cause an exception
@@ -511,5 +588,6 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         String subscriptionId = proxyToNonexistentDomain.subscribeToTestAttribute(integerListener, subscriptionQos);
         Thread.sleep(4000);
         proxyToNonexistentDomain.unsubscribeFromTestAttribute(subscriptionId);
+        provider.waitForAttributeUnsubscription("testAttribute");
     }
 }

@@ -17,8 +17,8 @@
  * #L%
  */
 #include "joynr/PrivateCopyAssign.h"
-#include "gtest/gtest.h"
-#include "gmock/gmock.h"
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 #include "cluster-controller/capabilities-client/CapabilitiesClient.h"
 #include "tests/utils/MockObjects.h"
 

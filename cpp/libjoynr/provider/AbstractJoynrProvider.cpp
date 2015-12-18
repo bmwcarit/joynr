@@ -22,8 +22,6 @@
 #include "joynr/IBroadcastListener.h"
 
 #include <QVariant>
-#include <QWriteLocker>
-#include <QReadLocker>
 
 namespace joynr
 {
@@ -36,7 +34,8 @@ AbstractJoynrProvider::AbstractJoynrProvider()
 AbstractJoynrProvider::~AbstractJoynrProvider()
 {
     // Delete all attribute listeners
-    foreach (const QList<IAttributeListener*>& listeners, attributeListeners) {
+    for (auto& mapEntry : attributeListeners) {
+        const std::vector<IAttributeListener*>& listeners(mapEntry.second);
         foreach (IAttributeListener* listener, listeners) {
             delete listener;
         }
@@ -51,35 +50,38 @@ types::ProviderQos AbstractJoynrProvider::getProviderQos() const
 void AbstractJoynrProvider::registerAttributeListener(const std::string& attributeName,
                                                       IAttributeListener* attributeListener)
 {
-    QWriteLocker locker(&lock);
-    attributeListeners[attributeName].append(attributeListener);
+    WriteLocker locker(lock);
+    attributeListeners[attributeName].push_back(attributeListener);
 }
 
 void AbstractJoynrProvider::unregisterAttributeListener(const std::string& attributeName,
                                                         IAttributeListener* attributeListener)
 {
-    QWriteLocker locker(&lock);
-    QList<IAttributeListener*>& listeners = attributeListeners[attributeName];
+    WriteLocker locker(lock);
+    std::vector<IAttributeListener*>& listeners = attributeListeners[attributeName];
 
     // Find and delete the attribute listener
-    for (int i = 0; i < listeners.length(); i++) {
-        if (listeners[i] == attributeListener) {
-            IAttributeListener* listener = listeners[i];
-            listeners.removeAt(i);
+    auto it = listeners.begin();
+    while (it != listeners.end()) {
+        if (*it == attributeListener) {
+            IAttributeListener* listener = *it;
+            it = listeners.erase(it);
             delete listener;
+        } else {
+            ++it;
         }
     }
 }
 
 void AbstractJoynrProvider::onAttributeValueChanged(const std::string& attributeName,
-                                                    const QVariant& value)
+                                                    const Variant& value)
 {
-    QReadLocker locker(&lock);
+    ReadLocker locker(lock);
 
-    const QList<IAttributeListener*>& listeners = attributeListeners[attributeName];
+    const std::vector<IAttributeListener*>& listeners = attributeListeners[attributeName];
 
     // Inform all the attribute listeners for this attribute
-    foreach (IAttributeListener* listener, listeners) {
+    for (IAttributeListener* listener : listeners) {
         listener->attributeValueChanged(value);
     }
 }
@@ -87,43 +89,50 @@ void AbstractJoynrProvider::onAttributeValueChanged(const std::string& attribute
 void AbstractJoynrProvider::registerBroadcastListener(const std::string& broadcastName,
                                                       IBroadcastListener* broadcastListener)
 {
-    QWriteLocker locker(&lock);
-    broadcastListeners[broadcastName].append(broadcastListener);
+    WriteLocker locker(lock);
+    broadcastListeners[broadcastName].push_back(broadcastListener);
 }
 
 void AbstractJoynrProvider::unregisterBroadcastListener(const std::string& broadcastName,
                                                         IBroadcastListener* broadcastListener)
 {
-    QWriteLocker locker(&lock);
-    QList<IBroadcastListener*>& listeners = broadcastListeners[broadcastName];
+    WriteLocker locker(lock);
+    std::vector<IBroadcastListener*>& listeners = broadcastListeners[broadcastName];
 
-    int listenerIndex = listeners.indexOf(broadcastListener);
-    delete listeners.takeAt(listenerIndex);
+    auto listenerIt = std::find(listeners.cbegin(), listeners.cend(), broadcastListener);
+    assert(listenerIt != listeners.cend());
+    delete *listenerIt;
+    listeners.erase(listenerIt);
 }
 
 void AbstractJoynrProvider::fireBroadcast(const std::string& broadcastName,
-                                          const QList<QVariant>& values)
+                                          const std::vector<Variant>& values)
 {
-    QReadLocker locker(&lock);
+    ReadLocker locker(lock);
 
-    const QList<IBroadcastListener*>& listeners = broadcastListeners[broadcastName];
+    const std::vector<IBroadcastListener*>& listeners = broadcastListeners[broadcastName];
 
     // Inform all the broadcast listeners for this broadcast
-    foreach (IBroadcastListener* listener, listeners) {
-        listener->broadcastOccurred(values, broadcastFilters.value(broadcastName));
+    for (IBroadcastListener* listener : listeners) {
+        auto broadcastFiletersIterator = broadcastFilters.find(broadcastName);
+        if (broadcastFiletersIterator != broadcastFilters.end()) {
+            listener->broadcastOccurred(values, broadcastFiletersIterator->second);
+        } else {
+            listener->broadcastOccurred(values, std::vector<std::shared_ptr<IBroadcastFilter>>());
+        }
     }
 }
 
 void AbstractJoynrProvider::addBroadcastFilter(std::shared_ptr<IBroadcastFilter> filter)
 {
-    QMap<std::string, QList<std::shared_ptr<IBroadcastFilter>>>::iterator it =
+    std::map<std::string, std::vector<std::shared_ptr<IBroadcastFilter>>>::iterator it =
             broadcastFilters.find(filter->getName());
 
     if (it != broadcastFilters.end()) {
-        it.value().append(filter);
+        it->second.push_back(filter);
     } else {
-        broadcastFilters.insert(
-                filter->getName(), QList<std::shared_ptr<IBroadcastFilter>>({filter}));
+        broadcastFilters.insert(std::make_pair(
+                filter->getName(), std::vector<std::shared_ptr<IBroadcastFilter>>({filter})));
     }
 }
 

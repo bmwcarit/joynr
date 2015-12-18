@@ -22,9 +22,11 @@
 namespace joynr
 {
 
+bool isReplyRegistered = Variant::registerType<Reply>("joynr.Reply");
+
 const Reply Reply::NULL_RESPONSE = Reply();
 
-Reply::Reply() : requestReplyId(), response(), error(NULL)
+Reply::Reply() : requestReplyId(), response(), error(Variant::NULL_VARIANT())
 {
 }
 Reply::Reply(const Reply& other)
@@ -43,32 +45,32 @@ Reply& Reply::operator=(const Reply& other)
     return *this;
 }
 
-QString Reply::getRequestReplyId() const
+std::string Reply::getRequestReplyId() const
 {
     return requestReplyId;
 }
 
-void Reply::setRequestReplyId(QString requestReplyId)
+void Reply::setRequestReplyId(const std::string& requestReplyId)
 {
     this->requestReplyId = requestReplyId;
 }
 
-QList<QVariant> Reply::getResponse() const
+std::vector<Variant> Reply::getResponse() const
 {
     return response;
 }
 
-void Reply::setResponse(QList<QVariant> response)
+void Reply::setResponse(std::vector<Variant> response)
 {
-    this->response = response;
+    this->response = std::move(response);
 }
 
-std::shared_ptr<exceptions::JoynrException> Reply::getError() const
+const Variant& Reply::getError() const
 {
     return this->error;
 }
 
-void Reply::setError(std::shared_ptr<exceptions::JoynrException> error)
+void Reply::setError(const Variant& error)
 {
     this->error = error;
 }

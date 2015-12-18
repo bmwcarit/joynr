@@ -19,9 +19,7 @@ package io.joynr.generator.cpp.joynrmessaging
 
 import com.google.inject.Inject
 import io.joynr.generator.cpp.util.CppStdTypeUtil
-import io.joynr.generator.cpp.util.DatatypeSystemTransformation
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
-import io.joynr.generator.cpp.util.QtTypeUtil
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
@@ -29,16 +27,15 @@ import io.joynr.generator.templates.util.BroadcastUtil
 import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
+import java.io.File
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FMethod
 import org.franca.core.franca.FType
-import java.io.File
 
 class InterfaceJoynrMessagingConnectorCppTemplate implements InterfaceTemplate{
 
 	@Inject private extension TemplateBase
-	@Inject private extension QtTypeUtil qtTypeUtil
-	@Inject private CppStdTypeUtil cppStdTypeUtil
+	@Inject private extension CppStdTypeUtil
 	@Inject private extension JoynrCppGeneratorExtensions
 	@Inject private extension NamingUtil
 	@Inject private extension AttributeUtil
@@ -49,20 +46,20 @@ class InterfaceJoynrMessagingConnectorCppTemplate implements InterfaceTemplate{
 	def produceParameterSetters(FMethod method)
 '''
 joynr::Request internalRequestObject;
-internalRequestObject.setMethodName(QString("«method.joynrName»"));
+internalRequestObject.setMethodName("«method.joynrName»");
 «FOR param : getInputParameters(method)»
-	«val paramRef = qtTypeUtil.fromStdTypeToQTType(param, param.joynrName, true)»
 	«IF isEnum(param.type) && isArray(param)»
-		internalRequestObject.addParam(joynr::Util::convertListToVariantList(«paramRef»), "«getJoynrTypeName(param)»");
+		internalRequestObject.addParam(joynr::TypeUtil::toVariant(Util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(param.type.derived)»>(«param.name»)), "«getJoynrTypeName(param)»");
 	«ELSEIF isEnum(param.type)»
-		internalRequestObject.addParam(QVariant::fromValue(«paramRef»), "«getJoynrTypeName(param)»");
+		internalRequestObject.addParam(Variant::make<«getTypeName(param)»>(«param.name»), "«getJoynrTypeName(param)»");
 	«ELSEIF isArray(param)»
-		QList<QVariant> «param.joynrName»QVarList = joynr::Util::convertListToVariantList(«paramRef»);
-		internalRequestObject.addParam(QVariant::fromValue(«param.joynrName»QVarList), "«getJoynrTypeName(param)»");
-	«ELSEIF isComplex(param.type)»
-		internalRequestObject.addParam(QVariant::fromValue(«paramRef»), "«getJoynrTypeName(param)»");
+		internalRequestObject.addParam(TypeUtil::toVariant<«getTypeName(param.type)»>(«param.name»), "«getJoynrTypeName(param)»");
+	«ELSEIF isCompound(param.type)»
+		internalRequestObject.addParam(Variant::make<«getTypeName(param)»>(«param.name»), "«getJoynrTypeName(param)»");
+	«ELSEIF isMap(param.type)»
+		internalRequestObject.addParam(Variant::make<«getTypeName(param)»>(«param.name»), "«getJoynrTypeName(param)»");
 	«ELSE»
-		internalRequestObject.addParam(QVariant(«paramRef»), "«getJoynrTypeName(param)»");
+		internalRequestObject.addParam(Variant::make<«getTypeName(param)»>(«param.name»), "«getJoynrTypeName(param)»");
 	«ENDIF»
 «ENDFOR»
 '''
@@ -88,6 +85,7 @@ internalRequestObject.setMethodName(QString("«method.joynrName»"));
 #include "joynr/RequestStatusCode.h"
 #include <chrono>
 #include <stdint.h>
+#include "joynr/SubscriptionUtil.h"
 «FOR method : getMethods(serviceInterface)»
 	«IF method.hasErrorEnum»
 		«var enumType = method.errors»
@@ -100,9 +98,9 @@ internalRequestObject.setMethodName(QString("«method.joynrName»"));
 	«ENDIF»
 «ENDFOR»
 
-«FOR datatype: getAllComplexAndEnumTypes(serviceInterface)»
+«FOR datatype: getAllComplexTypes(serviceInterface)»
 «IF datatype instanceof FType»
-	«IF isComplex(datatype)»
+	«IF isCompound(datatype) || isMap(datatype)»
 		#include "«getIncludeOf(datatype)»"
 	«ENDIF»
 «ENDIF»
@@ -130,48 +128,47 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 }
 
 «FOR attribute: getAttributes(serviceInterface)»
-	«val returnTypeStd = cppStdTypeUtil.getTypeName(attribute)»
-	«val returnTypeQT = qtTypeUtil.getTypeName(attribute)»
+	«val returnType = getTypeName(attribute)»
 	«val attributeName = attribute.joynrName»
 	«IF attribute.readable»
 		void «interfaceName»JoynrMessagingConnector::get«attributeName.toFirstUpper»(
-				«returnTypeStd»& «attributeName»
+				«returnType»& «attributeName»
 		) {
-			std::shared_ptr<joynr::Future<«returnTypeStd»> > future(new joynr::Future<«returnTypeStd»>());
+			std::shared_ptr<joynr::Future<«returnType»> > future(new joynr::Future<«returnType»>());
 
-			std::function<void(const joynr::RequestStatus& status, const «returnTypeQT»& «attributeName»)> onSuccess =
-					[future] (const joynr::RequestStatus& status, const «returnTypeQT»& «attributeName») {
+			std::function<void(const joynr::RequestStatus& status, const «returnType»& «attributeName»)> onSuccess =
+					[future] (const joynr::RequestStatus& status, const «returnType»& «attributeName») {
 						if (status.getCode() == joynr::RequestStatusCode::OK) {
-							future->onSuccess(«qtTypeUtil.fromQTTypeToStdType(attribute, attribute.joynrName)»);
+							future->onSuccess(«attributeName»);
 						} else {
 							future->onError(status, exceptions::JoynrRuntimeException(status.toString()));
 						}
 					};
 
-			std::function<void(const joynr::RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error)> onError =
-					[future] (const joynr::RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error) {
-						future->onError(status, *error);
+			std::function<void(const joynr::RequestStatus& status, const exceptions::JoynrException& error)> onError =
+					[future] (const joynr::RequestStatus& status, const exceptions::JoynrException& error) {
+						future->onError(status, error);
 					};
 
-			std::shared_ptr<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«returnTypeQT»>(
+			std::shared_ptr<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«returnType»>(
 					onSuccess,
 					onError));
-			attributeRequest<«returnTypeQT»>(QString("get«attributeName.toFirstUpper»"), replyCaller);
+			attributeRequest<«returnType»>("get«attributeName.toFirstUpper»", replyCaller);
 			future->get(«attributeName»);
 		}
 
-		std::shared_ptr<joynr::Future<«returnTypeStd»>> «interfaceName»JoynrMessagingConnector::get«attributeName.toFirstUpper»Async(
-				std::function<void(const «returnTypeStd»& «attributeName»)> onSuccess,
+		std::shared_ptr<joynr::Future<«returnType»>> «interfaceName»JoynrMessagingConnector::get«attributeName.toFirstUpper»Async(
+				std::function<void(const «returnType»& «attributeName»)> onSuccess,
 				std::function<void(const exceptions::JoynrException& error)> onError
 		) {
-			std::shared_ptr<joynr::Future<«returnTypeStd»> > future(new joynr::Future<«returnTypeStd»>());
+			std::shared_ptr<joynr::Future<«returnType»> > future(new joynr::Future<«returnType»>());
 
-			std::function<void(const joynr::RequestStatus& status, const «returnTypeQT»& «attributeName»)> onSuccessWrapper =
-					[future, onSuccess, onError] (const joynr::RequestStatus& status, const «returnTypeQT»& «attributeName») {
+			std::function<void(const joynr::RequestStatus& status, const «returnType»& «attributeName»)> onSuccessWrapper =
+					[future, onSuccess, onError] (const joynr::RequestStatus& status, const «returnType»& «attributeName») {
 						if (status.getCode() == joynr::RequestStatusCode::OK) {
-							future->onSuccess(«qtTypeUtil.fromQTTypeToStdType(attribute, attribute.joynrName)»);
+							future->onSuccess(«attributeName»);
 							if (onSuccess){
-								onSuccess(«qtTypeUtil.fromQTTypeToStdType(attribute, attribute.joynrName)»);
+								onSuccess(«attributeName»);
 							}
 						} else {
 							exceptions::JoynrRuntimeException error = exceptions::JoynrRuntimeException(status.toString());
@@ -182,18 +179,18 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 						}
 					};
 
-			std::function<void(const joynr::RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error)> onErrorWrapper =
-					[future, onError] (const joynr::RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error) {
-						future->onError(status, *error);
+			std::function<void(const joynr::RequestStatus& status, const exceptions::JoynrException& error)> onErrorWrapper =
+					[future, onError] (const joynr::RequestStatus& status, const exceptions::JoynrException& error) {
+						future->onError(status, error);
 						if (onError){
-							onError(*error);
+							onError(error);
 						}
 					};
 
-			std::shared_ptr<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«returnTypeQT»>(
+			std::shared_ptr<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«returnType»>(
 					onSuccessWrapper,
 					onErrorWrapper));
-			attributeRequest<«returnTypeQT»>(QString("get«attributeName.toFirstUpper»"), replyCaller);
+			attributeRequest<«returnType»>("get«attributeName.toFirstUpper»", replyCaller);
 
 			return future;
 		}
@@ -201,17 +198,16 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 	«ENDIF»
 	«IF attribute.writable»
 		std::shared_ptr<joynr::Future<void>> «interfaceName»JoynrMessagingConnector::set«attributeName.toFirstUpper»Async(
-				«returnTypeStd» «attributeName»,
+				«returnType» «attributeName»,
 				std::function<void(void)> onSuccess,
 				std::function<void(const exceptions::JoynrException& error)> onError
 		) {
 			joynr::Request internalRequestObject;
-			internalRequestObject.setMethodName(QString("set«attributeName.toFirstUpper»"));
+			internalRequestObject.setMethodName("set«attributeName.toFirstUpper»");
 			«IF isArray(attribute)»
-				QList<QVariant> «attributeName»QVarList = joynr::Util::convertListToVariantList(«qtTypeUtil.fromStdTypeToQTType(attribute, attributeName)»);
-				internalRequestObject.addParam(QVariant::fromValue(«attributeName»QVarList), "«getJoynrTypeName(attribute)»");
+				internalRequestObject.addParam(TypeUtil::toVariant(«attributeName»), "«getJoynrTypeName(attribute)»");
 			«ELSE»
-				internalRequestObject.addParam(QVariant::fromValue(«qtTypeUtil.fromStdTypeToQTType(attribute, attributeName)»), "«getJoynrTypeName(attribute)»");
+				internalRequestObject.addParam(Variant::make<«getTypeName(attribute)»>(«attributeName»), "«getJoynrTypeName(attribute)»");
 			«ENDIF»
 
 			std::shared_ptr<joynr::Future<void>> future(new joynr::Future<void>());
@@ -232,11 +228,11 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 						}
 					};
 
-			std::function<void(const joynr::RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error)> onErrorWrapper =
-				[future, onError] (const joynr::RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error) {
-					future->onError(status, *error);
+			std::function<void(const joynr::RequestStatus& status, const exceptions::JoynrException& error)> onErrorWrapper =
+				[future, onError] (const joynr::RequestStatus& status, const exceptions::JoynrException& error) {
+					future->onError(status, error);
 					if (onError) {
-						onError(*error);
+						onError(error);
 					}
 				};
 
@@ -248,15 +244,14 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 		}
 
 		void «interfaceName»JoynrMessagingConnector::set«attributeName.toFirstUpper»(
-				const «returnTypeStd»& «attributeName»
+				const «returnType»& «attributeName»
 		) {
 			joynr::Request internalRequestObject;
-			internalRequestObject.setMethodName(QString("set«attributeName.toFirstUpper»"));
+			internalRequestObject.setMethodName("set«attributeName.toFirstUpper»");
 			«IF isArray(attribute)»
-				QList<QVariant> «attributeName»QVarList = joynr::Util::convertListToVariantList(«qtTypeUtil.fromStdTypeToQTType(attribute, attributeName)»);
-				internalRequestObject.addParam(QVariant::fromValue(«attributeName»QVarList), "«getJoynrTypeName(attribute)»");
+				internalRequestObject.addParam(TypeUtil::toVariant(«attributeName»), "«getJoynrTypeName(attribute)»");
 			«ELSE»
-				internalRequestObject.addParam(QVariant::fromValue(«qtTypeUtil.fromStdTypeToQTType(attribute, attributeName)»), "«getJoynrTypeName(attribute)»");
+				internalRequestObject.addParam(Variant::make<«getTypeName(attribute)»>(«attributeName»), "«getJoynrTypeName(attribute)»");
 			«ENDIF»
 
 			std::shared_ptr<joynr::Future<void> > future( new joynr::Future<void>());
@@ -271,9 +266,9 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 						}
 					};
 
-			std::function<void(const joynr::RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error)> onError =
-					[future] (const joynr::RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error) {
-						future->onError(status, *error);
+			std::function<void(const joynr::RequestStatus& status, const exceptions::JoynrException& error)> onError =
+					[future] (const joynr::RequestStatus& status, const exceptions::JoynrException& error) {
+						future->onError(status, error);
 					};
 
 			std::shared_ptr<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<void>(
@@ -286,7 +281,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 	«ENDIF»
 	«IF attribute.notifiable»
 		std::string «interfaceName»JoynrMessagingConnector::subscribeTo«attributeName.toFirstUpper»(
-					std::shared_ptr<joynr::ISubscriptionListener<«returnTypeStd» > > subscriptionListener,
+					std::shared_ptr<joynr::ISubscriptionListener<«returnType» > > subscriptionListener,
 					const joynr::SubscriptionQos& subscriptionQos
 		) {
 			joynr::SubscriptionRequest subscriptionRequest;
@@ -294,23 +289,23 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 		}
 
 		std::string «interfaceName»JoynrMessagingConnector::subscribeTo«attributeName.toFirstUpper»(
-					std::shared_ptr<joynr::ISubscriptionListener<«returnTypeStd» > > subscriptionListener,
+					std::shared_ptr<joynr::ISubscriptionListener<«returnType» > > subscriptionListener,
 					const joynr::SubscriptionQos& subscriptionQos,
 					std::string& subscriptionId
 		) {
 
 			joynr::SubscriptionRequest subscriptionRequest;
-			subscriptionRequest.setSubscriptionId(QString::fromStdString(subscriptionId));
+			subscriptionRequest.setSubscriptionId(subscriptionId);
 			return subscribeTo«attributeName.toFirstUpper»(subscriptionListener, subscriptionQos, subscriptionRequest);
 		}
 
 		std::string «interfaceName»JoynrMessagingConnector::subscribeTo«attributeName.toFirstUpper»(
-					std::shared_ptr<joynr::ISubscriptionListener<«returnTypeStd»> > subscriptionListener,
+					std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
 					const joynr::SubscriptionQos& subscriptionQos,
 					SubscriptionRequest& subscriptionRequest
 		) {
 			LOG_DEBUG(logger, "Subscribing to «attributeName».");
-			QString attributeName("«attributeName»");
+			std::string attributeName("«attributeName»");
 			joynr::MessagingQos clonedMessagingQos(qosSettings);
 			if (subscriptionQos.getExpiryDate() == joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
 				clonedMessagingQos.setTtl(joynr::SubscriptionQos::NO_EXPIRY_DATE_TTL());
@@ -320,34 +315,29 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 				clonedMessagingQos.setTtl(subscriptionQos.getExpiryDate() - now);
 			}
 
-			«val subscriptionListenerName = if (needsDatatypeConversion(attribute)) "subscriptionListenerWrapper" else "subscriptionListener"»
-			«IF needsDatatypeConversion(attribute)»
-				std::shared_ptr<«attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper> subscriptionListenerWrapper(
-					new «attribute.joynrName.toFirstUpper»AttributeSubscriptionListenerWrapper(subscriptionListener));
-			«ENDIF»
-			std::shared_ptr<joynr::SubscriptionCallback<«returnTypeQT»>> subscriptionCallback(new joynr::SubscriptionCallback<«returnTypeQT»>(«subscriptionListenerName»));
+			std::shared_ptr<joynr::SubscriptionCallback<«returnType»>> subscriptionCallback(new joynr::SubscriptionCallback<«returnType»>(subscriptionListener));
 			subscriptionManager->registerSubscription(
 						attributeName,
 						subscriptionCallback,
-						std::shared_ptr<QtSubscriptionQos>(QtSubscriptionQos::createQt(subscriptionQos)),
+						SubscriptionUtil::getVariant(subscriptionQos),
 						subscriptionRequest);
-			LOG_DEBUG(logger, subscriptionRequest.toQString());
+			LOG_DEBUG(logger, subscriptionRequest.toString());
 			joynrMessageSender->sendSubscriptionRequest(
 						proxyParticipantId,
 						providerParticipantId,
 						clonedMessagingQos,
 						subscriptionRequest
 			);
-			return subscriptionRequest.getSubscriptionId().toStdString();
+			return subscriptionRequest.getSubscriptionId();
 		}
 
 		void «interfaceName»JoynrMessagingConnector::unsubscribeFrom«attributeName.toFirstUpper»(
 				std::string& subscriptionId
 		) {
 			joynr::SubscriptionStop subscriptionStop;
-			subscriptionStop.setSubscriptionId(QString::fromStdString(subscriptionId));
+			subscriptionStop.setSubscriptionId(subscriptionId);
 
-			subscriptionManager->unregisterSubscription(QString::fromStdString(subscriptionId));
+			subscriptionManager->unregisterSubscription(subscriptionId);
 			joynrMessageSender->sendSubscriptionStop(
 						proxyParticipantId,
 						providerParticipantId,
@@ -360,23 +350,21 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 «ENDFOR»
 
 «FOR method: getMethods(serviceInterface)»
-	«var outputTypedConstParamListQT = prependCommaIfNotEmpty(qtTypeUtil.getCommaSeperatedTypedConstOutputParameterList(method))»
-	«var outputTypedConstParamListStd = cppStdTypeUtil.getCommaSeperatedTypedConstOutputParameterList(method)»
-	«val outputTypedParamListStd = cppStdTypeUtil.getCommaSeperatedTypedOutputParameterList(method)»
-	«val outputParametersStd = cppStdTypeUtil.getCommaSeparatedOutputParameterTypes(method)»
-	«val outputParametersQT = qtTypeUtil.getCommaSeparatedOutputParameterTypes(method)»
-	«var outputUntypedParamList = qtTypeUtil.getCommaSeperatedUntypedOutputParameterList(method, DatatypeSystemTransformation::FROM_QT_TO_STANDARD)»
-	«val inputTypedParamListStd = cppStdTypeUtil.getCommaSeperatedTypedConstInputParameterList(method)»
+	«var outputTypedConstParamList = getCommaSeperatedTypedConstOutputParameterList(method)»
+	«val outputTypedParamList = getCommaSeperatedTypedOutputParameterList(method)»
+	«val outputParameters = getCommaSeparatedOutputParameterTypes(method)»
+	«var outputUntypedParamList = getCommaSeperatedUntypedOutputParameterList(method)»
+	«val inputTypedParamList = getCommaSeperatedTypedConstInputParameterList(method)»
 	«val methodName = method.joynrName»
 	void «interfaceName»JoynrMessagingConnector::«methodName»(
-		«outputTypedParamListStd»«IF method.outputParameters.size > 0 && method.inputParameters.size > 0», «ENDIF»«inputTypedParamListStd»
+		«outputTypedParamList»«IF method.outputParameters.size > 0 && method.inputParameters.size > 0», «ENDIF»«inputTypedParamList»
 	) {
 		«produceParameterSetters(method)»
-		std::shared_ptr<joynr::Future<«outputParametersStd»> > future(
-				new joynr::Future<«outputParametersStd»>());
+		std::shared_ptr<joynr::Future<«outputParameters»> > future(
+				new joynr::Future<«outputParameters»>());
 
-		std::function<void(const joynr::RequestStatus& status«outputTypedConstParamListQT»)> onSuccess =
-				[future] (const joynr::RequestStatus& status«outputTypedConstParamListQT») {
+		std::function<void(const joynr::RequestStatus& status«IF !outputTypedConstParamList.isEmpty», «ENDIF»«outputTypedConstParamList»)> onSuccess =
+				[future] (const joynr::RequestStatus& status«IF !outputTypedConstParamList.isEmpty», «ENDIF»«outputTypedConstParamList») {
 					if (status.getCode() == joynr::RequestStatusCode::OK) {
 						future->onSuccess(«outputUntypedParamList»);
 					} else {
@@ -385,55 +373,31 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 					}
 				};
 
-		std::function<void(const joynr::RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error)> onError =
-			[future] (const joynr::RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error) {
-				«IF method.hasErrorEnum»
-					«var enumType = method.errors»
-					«IF enumType == null»
-						«{enumType = method.errorEnum; ""}»
-					«ENDIF»
-					// reconstruct original ApplicationException with correct error enumeration
-					if (error->getTypeName() == exceptions::ApplicationException::TYPE_NAME) {
-						std::shared_ptr<exceptions::ApplicationException> applicationException =
-							std::dynamic_pointer_cast<exceptions::ApplicationException>(error);
-						«val expectedTypeName = enumType.buildPackagePath(".", true) + enumType.joynrName»
-						if (applicationException->getErrorTypeName() != "«expectedTypeName»") {
-							future->onError(status, exceptions::JoynrRuntimeException(
-								"Received ApplicationException does not contain an error enumeration of the expected type «expectedTypeName»"));
-							return;
-						}
-						try {
-							applicationException->setError(«enumType.buildPackagePath("::", true) + enumType.joynrName»::getEnum(applicationException->getName()));
-						} catch (const char* e) {
-							future->onError(status, exceptions::JoynrRuntimeException(
-								"Received ApplicationException does not contain a valid error enumeration."));
-							return;
-						}
-					}
-				«ENDIF»
-				future->onError(status, *error);
+		std::function<void(const joynr::RequestStatus& status, const exceptions::JoynrException& error)> onError =
+			[future] (const joynr::RequestStatus& status, const exceptions::JoynrException& error) {
+				future->onError(status, error);
 			};
 
-		std::shared_ptr<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«outputParametersQT»>(
+		std::shared_ptr<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«outputParameters»>(
 				onSuccess,
 				onError));
 		operationRequest(replyCaller, internalRequestObject);
-		future->get(«cppStdTypeUtil.getCommaSeperatedUntypedOutputParameterList(method)»);
+		future->get(«getCommaSeperatedUntypedOutputParameterList(method)»);
 	}
 
-	std::shared_ptr<joynr::Future<«outputParametersStd»> > «interfaceName»JoynrMessagingConnector::«methodName»Async(
-			«cppStdTypeUtil.getCommaSeperatedTypedConstInputParameterList(method)»«IF !method.inputParameters.empty»,«ENDIF»
-			std::function<void(«outputTypedConstParamListStd»)> onSuccess,
+	std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»JoynrMessagingConnector::«methodName»Async(
+			«getCommaSeperatedTypedConstInputParameterList(method)»«IF !method.inputParameters.empty»,«ENDIF»
+			std::function<void(«outputTypedConstParamList»)> onSuccess,
 			std::function<void(const exceptions::JoynrException& error)> onError
 	)
 	{
 		«produceParameterSetters(method)»
 
-		std::shared_ptr<joynr::Future<«outputParametersStd»> > future(
-				new joynr::Future<«outputParametersStd»>());
+		std::shared_ptr<joynr::Future<«outputParameters»> > future(
+				new joynr::Future<«outputParameters»>());
 
-		std::function<void(const joynr::RequestStatus& status«outputTypedConstParamListQT»)> onSuccessWrapper =
-				[future, onSuccess, onError] (const joynr::RequestStatus& status«outputTypedConstParamListQT») {
+		std::function<void(const joynr::RequestStatus& status«IF !outputTypedConstParamList.isEmpty», «ENDIF»«outputTypedConstParamList»)> onSuccessWrapper =
+				[future, onSuccess, onError] (const joynr::RequestStatus& status«IF !outputTypedConstParamList.isEmpty», «ENDIF»«outputTypedConstParamList») {
 					if (status.getCode() == joynr::RequestStatusCode::OK) {
 						future->onSuccess(«outputUntypedParamList»);
 						if (onSuccess) {
@@ -448,39 +412,15 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 					}
 				};
 
-		std::function<void(const joynr::RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error)> onErrorWrapper =
-				[future, onError] (const joynr::RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error) {
-				«IF method.hasErrorEnum»
-					«var enumType = method.errors»
-					«IF enumType == null»
-						«{enumType = method.errorEnum; ""}»
-					«ENDIF»
-					// reconstruct original ApplicationException with correct error enumeration
-					if (error->getTypeName() == exceptions::ApplicationException::TYPE_NAME) {
-						std::shared_ptr<exceptions::ApplicationException> applicationException =
-							std::dynamic_pointer_cast<exceptions::ApplicationException>(error);
-						«val expectedTypeName = enumType.buildPackagePath(".", true) + enumType.joynrName»
-						if (applicationException->getErrorTypeName() != "«expectedTypeName»") {
-							future->onError(status, exceptions::JoynrRuntimeException(
-								"Received ApplicationException does not contain an error enumeration of the expected type «expectedTypeName»"));
-							return;
-						}
-						try {
-							applicationException->setError(«enumType.buildPackagePath("::", true) + enumType.joynrName»::getEnum(applicationException->getName()));
-						} catch (const char* e) {
-							future->onError(status, exceptions::JoynrRuntimeException(
-								"Received ApplicationException does not contain a valid error enumeration."));
-							return;
-						}
-					}
-				«ENDIF»
-				future->onError(status, *error);
+		std::function<void(const joynr::RequestStatus& status, const exceptions::JoynrException& error)> onErrorWrapper =
+				[future, onError] (const joynr::RequestStatus& status, const exceptions::JoynrException& error) {
+				future->onError(status, error);
 				if (onError) {
-					onError(*error);
+					onError(error);
 				}
 			};
 
-		std::shared_ptr<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«outputParametersQT»>(
+		std::shared_ptr<joynr::IReplyCaller> replyCaller(new joynr::ReplyCaller<«outputParameters»>(
 				onSuccessWrapper,
 				onErrorWrapper));
 		operationRequest(replyCaller, internalRequestObject);
@@ -490,8 +430,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 «ENDFOR»
 
 «FOR broadcast: serviceInterface.broadcasts»
-	«val returnTypes = cppStdTypeUtil.getCommaSeparatedOutputParameterTypes(broadcast)»
-	«val returnTypesQt = qtTypeUtil.getCommaSeparatedOutputParameterTypes(broadcast)»
+	«val returnTypes = getCommaSeparatedOutputParameterTypes(broadcast)»
 	«val broadcastName = broadcast.joynrName»
 	«IF isSelective(broadcast)»
 		std::string «interfaceName»JoynrMessagingConnector::subscribeTo«broadcastName.toFirstUpper»Broadcast(
@@ -506,7 +445,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 	) {
 		joynr::BroadcastSubscriptionRequest subscriptionRequest;
 		«IF isSelective(broadcast)»
-			subscriptionRequest.setFilterParameters(QtBroadcastFilterParameters::createQt(filterParameters));
+			subscriptionRequest.setFilterParameters(filterParameters);
 		«ENDIF»
 		return subscribeTo«broadcastName.toFirstUpper»Broadcast(subscriptionListener, subscriptionQos, subscriptionRequest);
 	}
@@ -526,9 +465,9 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 	) {
 		joynr::BroadcastSubscriptionRequest subscriptionRequest;
 		«IF isSelective(broadcast)»
-			subscriptionRequest.setFilterParameters(QtBroadcastFilterParameters::createQt(filterParameters));
+			subscriptionRequest.setFilterParameters(filterParameters);
 		«ENDIF»
-		subscriptionRequest.setSubscriptionId(QString::fromStdString(subscriptionId));
+		subscriptionRequest.setSubscriptionId(subscriptionId);
 		return subscribeTo«broadcastName.toFirstUpper»Broadcast(subscriptionListener, subscriptionQos, subscriptionRequest);
 	}
 
@@ -538,7 +477,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 				BroadcastSubscriptionRequest& subscriptionRequest
 	) {
 		LOG_DEBUG(logger, "Subscribing to «broadcastName» broadcast.");
-		QString broadcastName("«broadcastName»");
+		std::string broadcastName("«broadcastName»");
 		joynr::MessagingQos clonedMessagingQos(qosSettings);
 		if (subscriptionQos.getExpiryDate() == joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
 			clonedMessagingQos.setTtl(joynr::SubscriptionQos::NO_EXPIRY_DATE_TTL());
@@ -548,35 +487,30 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 			clonedMessagingQos.setTtl(subscriptionQos.getExpiryDate() - now);
 		}
 
-		«val subscriptionListenerName = if (needsDatatypeConversion(broadcast)) "subscriptionListenerWrapper" else "subscriptionListener"»
-		«IF needsDatatypeConversion(broadcast)»
-			std::shared_ptr<«broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper> subscriptionListenerWrapper(
-				new «broadcast.joynrName.toFirstUpper»BroadcastSubscriptionListenerWrapper(subscriptionListener));
-		«ENDIF»
-		std::shared_ptr<joynr::SubscriptionCallback<«returnTypesQt»>> subscriptionCallback(
-					new joynr::SubscriptionCallback<«returnTypesQt»>(«subscriptionListenerName»));
+		std::shared_ptr<joynr::SubscriptionCallback<«returnTypes»>> subscriptionCallback(
+					new joynr::SubscriptionCallback<«returnTypes»>(subscriptionListener));
 		subscriptionManager->registerSubscription(
 					broadcastName,
 					subscriptionCallback,
-					std::shared_ptr<QtOnChangeSubscriptionQos>(QtSubscriptionQos::createQt(subscriptionQos)),
+					Variant::make<OnChangeSubscriptionQos>(subscriptionQos),
 					subscriptionRequest);
-		LOG_DEBUG(logger, subscriptionRequest.toQString());
+		LOG_DEBUG(logger, subscriptionRequest.toString());
 		joynrMessageSender->sendBroadcastSubscriptionRequest(
 					proxyParticipantId,
 					providerParticipantId,
 					clonedMessagingQos,
 					subscriptionRequest
 		);
-		return subscriptionRequest.getSubscriptionId().toStdString();
+		return subscriptionRequest.getSubscriptionId();
 	}
 
 	void «interfaceName»JoynrMessagingConnector::unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(
 			std::string& subscriptionId
 	) {
 		joynr::SubscriptionStop subscriptionStop;
-		subscriptionStop.setSubscriptionId(QString::fromStdString(subscriptionId));
+		subscriptionStop.setSubscriptionId(subscriptionId);
 
-		subscriptionManager->unregisterSubscription(QString::fromStdString(subscriptionId));
+		subscriptionManager->unregisterSubscription(subscriptionId);
 		joynrMessageSender->sendSubscriptionStop(
 					proxyParticipantId,
 					providerParticipantId,

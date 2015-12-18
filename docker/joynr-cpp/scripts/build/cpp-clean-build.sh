@@ -2,15 +2,15 @@
 
 source /data/src/docker/joynr-base/scripts/global.sh
 
+DBUS='OFF'
+GCOV='OFF'
+JOBS=8
+
 function usage
 {
     echo "usage: cpp-clean-build.sh [--dbus ON|OFF --gcov ON|OFF --jobs X]"
-    echo "default dbus is OFF, gcov is OFF, jobs is 20"
+    echo "default dbus is $DBUS, gcov is $GCOV, jobs is $JOBS"
 }
-
-DBUS='OFF'
-GCOV='OFF'
-JOBS=20
 
 while [ "$1" != "" ]; do
     case $1 in
@@ -30,6 +30,9 @@ while [ "$1" != "" ]; do
 done
 
 log "CPP CLEAN BUILD DBUS: $DBUS GCOV: $GCOV JOBS: $JOBS"
+
+log "Enable core dumps"
+ulimit -c unlimited
 
 START=$(date +%s)
 
@@ -62,7 +65,8 @@ fi
 log "BUILD C++ JOYNR"
 make -j $JOBS
 log "BUILD C++ JOYNR DOXYGEN DOCUMENTATION"
-make doxygen
+log "doxygen is disabled"
+#make doxygen
 
 END=$(date +%s)
 DIFF=$(( $END - $START ))

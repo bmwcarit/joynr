@@ -16,18 +16,10 @@
  * limitations under the License.
  * #L%
  */
-#include <QUuid>
-
-
-#include "gtest/gtest.h"
-#include "gmock/gmock.h"
-#include "utils/TestQString.h"
-#include "utils/QThreadSleep.h"
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 #include <string>
-
-
-#include "joynr/IDispatcher.h"
-#include "joynr/IMessaging.h"
+#include <vector>
 
 #include "joynr/MessagingQos.h"
 #include "joynr/JoynrMessage.h"
@@ -36,7 +28,7 @@
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 #include "joynr/SubscriptionPublication.h"
-#include "joynr/QtPeriodicSubscriptionQos.h"
+#include "joynr/PeriodicSubscriptionQos.h"
 #include "tests/utils/MockObjects.h"
 
 using ::testing::A;
@@ -64,7 +56,7 @@ public:
 
 
     void SetUp(){
-        postFix = "_" + QUuid::createUuid().toString().toStdString();
+        postFix = "_" + Util::createUuid();
         senderID = "senderId" + postFix;
         receiverID = "receiverID" + postFix;
         requestID = "requestId" + postFix;
@@ -97,18 +89,18 @@ TEST_F(JoynrMessageSenderTest, sendRequest_normal){
 
     Request request;
     request.setMethodName("methodName");
-    QList<QVariant> params;
-    params.append(42);
-    params.append("value");
+    std::vector<Variant> params;
+    params.push_back(Variant::make<int>(42));
+    params.push_back(Variant::make<std::string>("value"));
     request.setParams(params);
-    QList<QVariant> paramDatatypes;
-    paramDatatypes.append("java.lang.Integer");
-    paramDatatypes.append("java.lang.String");
+    std::vector<std::string> paramDatatypes;
+    paramDatatypes.push_back("java.lang.Integer");
+    paramDatatypes.push_back("java.lang.String");
     request.setParamDatatypes(paramDatatypes);
 
     JoynrMessage message = messageFactory.createRequest(
-                QString::fromStdString(senderID),
-                QString::fromStdString(receiverID),
+                senderID,
+                receiverID,
                 qosSettings,
                 request
     );
@@ -143,14 +135,14 @@ TEST_F(JoynrMessageSenderTest, sendReply_normal){
     JoynrMessageSender joynrMessageSender(messagingStubQsp);
     joynrMessageSender.registerDispatcher(&mockDispatcher);
     Reply reply;
-    reply.setRequestReplyId(QUuid::createUuid().toString());
-    QList<QVariant> response;
-    response.append(QVariant("response"));
-    reply.setResponse(response);
+    reply.setRequestReplyId(Util::createUuid());
+    std::vector<Variant> response;
+    response.push_back(Variant::make<std::string>("response"));
+    reply.setResponse(std::move(response));
 
     JoynrMessage message = messageFactory.createReply(
-                QString::fromStdString(senderID),
-                QString::fromStdString(receiverID),
+                senderID,
+                receiverID,
                 qosSettings,
                 reply);
 
@@ -166,19 +158,19 @@ TEST_F(JoynrMessageSenderTest, sendSubscriptionRequest_normal){
     MockDispatcher mockDispatcher;
     std::shared_ptr<MockMessageRouter> messagingStubQsp(new MockMessageRouter());
 
-    qint64 period = 2000;
-    qint64 validity = 100000;
-    qint64 alert = 4000;
-    auto qos = std::shared_ptr<QtSubscriptionQos>(new QtPeriodicSubscriptionQos(validity, period, alert));
+    int64_t period = 2000;
+    int64_t validity = 100000;
+    int64_t alert = 4000;
+    Variant qos = Variant::make<PeriodicSubscriptionQos>(PeriodicSubscriptionQos(validity, period, alert));
 
     SubscriptionRequest subscriptionRequest;
-    subscriptionRequest.setSubscriptionId(QString("subscriptionId"));
-    subscriptionRequest.setSubscribeToName(QString("attributeName"));
+    subscriptionRequest.setSubscriptionId("subscriptionId");
+    subscriptionRequest.setSubscribeToName("attributeName");
     subscriptionRequest.setQos(qos);
 
     JoynrMessage message = messageFactory.createSubscriptionRequest(
-                QString::fromStdString(senderID),
-                QString::fromStdString(receiverID),
+                senderID,
+                receiverID,
                 qosSettings,
                 subscriptionRequest);
 
@@ -197,21 +189,21 @@ TEST_F(JoynrMessageSenderTest, sendBroadcastSubscriptionRequest_normal){
     MockDispatcher mockDispatcher;
     std::shared_ptr<MockMessageRouter> messagingStubQsp(new MockMessageRouter());
 
-    qint64 minInterval = 2000;
-    qint64 validity = 100000;
-    auto qos = std::shared_ptr<QtOnChangeSubscriptionQos>(new QtOnChangeSubscriptionQos(validity, minInterval));
+    int64_t minInterval = 2000;
+    int64_t validity = 100000;
+    OnChangeSubscriptionQos qos{validity, minInterval};
 
     BroadcastSubscriptionRequest subscriptionRequest;
-    QtBroadcastFilterParameters filter;
+    BroadcastFilterParameters filter;
     filter.setFilterParameter("MyParameter", "MyValue");
     subscriptionRequest.setFilterParameters(filter);
-    subscriptionRequest.setSubscriptionId(QString("subscriptionId"));
-    subscriptionRequest.setSubscribeToName(QString("broadcastName"));
+    subscriptionRequest.setSubscriptionId("subscriptionId");
+    subscriptionRequest.setSubscribeToName("broadcastName");
     subscriptionRequest.setQos(qos);
 
     JoynrMessage message = messageFactory.createBroadcastSubscriptionRequest(
-                QString::fromStdString(senderID),
-                QString::fromStdString(receiverID),
+                senderID,
+                receiverID,
                 qosSettings,
                 subscriptionRequest);
 
@@ -231,7 +223,7 @@ TEST_F(JoynrMessageSenderTest, DISABLED_sendSubscriptionReply_normal){
 
     MockDispatcher mockDispatcher;
     std::shared_ptr<MockMessageRouter> messagingStubQsp(new MockMessageRouter());
-    QVariant payload = QVariant("subscriptionReply");
+    std::string payload("subscriptionReply");
     EXPECT_CALL(*(messagingStubQsp.get()), route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY)),
                                                   Property(&JoynrMessage::getPayload, Eq(payload)))));
 
@@ -240,7 +232,7 @@ TEST_F(JoynrMessageSenderTest, DISABLED_sendSubscriptionReply_normal){
     JoynrMessageSender joynrMessageSender(messagingStubQsp);
     joynrMessageSender.registerDispatcher(&mockDispatcher);
 
-//    joynrMessageSender.sendSubscriptionReply(QUuid::createUuid().toString(), payload, senderID, receiverID, qosSettings);
+//    joynrMessageSender.sendSubscriptionReply(Util::createUuid(), payload, senderID, receiverID, qosSettings);
 }
 
 TEST_F(JoynrMessageSenderTest, sendPublication_normal){
@@ -252,12 +244,12 @@ TEST_F(JoynrMessageSenderTest, sendPublication_normal){
     joynrMessageSender.registerDispatcher(&mockDispatcher);
     SubscriptionPublication publication;
     publication.setSubscriptionId("ignoresubscriptionid");
-    QList<QVariant> response;
-    response.append("publication");
+    std::vector<Variant> response;
+    response.push_back(Variant::make<std::string>("publication"));
     publication.setResponse(response);
     JoynrMessage message = messageFactory.createSubscriptionPublication(
-                QString::fromStdString(senderID),
-                QString::fromStdString(receiverID),
+                senderID,
+                receiverID,
                 qosSettings,
                 publication);
 

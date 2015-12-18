@@ -17,51 +17,78 @@
  * #L%
  */
 #include "joynr/SubscriptionUtil.h"
-
-#include "joynr/QtOnChangeSubscriptionQos.h"
-#include "joynr/QtOnChangeWithKeepAliveSubscriptionQos.h"
-#include "joynr/QtPeriodicSubscriptionQos.h"
+#include "joynr/Variant.h"
+#include "joynr/exceptions/JoynrException.h"
+#include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/PeriodicSubscriptionQos.h"
 
 namespace joynr
 {
 
-bool SubscriptionUtil::isOnChangeSubscription(QtSubscriptionQos* qos)
+bool SubscriptionUtil::isOnChangeSubscription(const Variant& qos)
 {
-    return qos->inherits(QtOnChangeSubscriptionQos::staticMetaObject.className()) ||
-           qos->inherits(QtOnChangeWithKeepAliveSubscriptionQos::staticMetaObject.className());
+    return qos.is<OnChangeWithKeepAliveSubscriptionQos>() || qos.is<OnChangeSubscriptionQos>();
 }
 
-qint64 SubscriptionUtil::getAlertInterval(QtSubscriptionQos* qos)
+int64_t SubscriptionUtil::getAlertInterval(const Variant& qos)
 {
-    if (qos->inherits(QtPeriodicSubscriptionQos::staticMetaObject.className())) {
-        return (qobject_cast<QtPeriodicSubscriptionQos*>(qos))->getAlertAfterInterval();
+    if (qos.is<OnChangeWithKeepAliveSubscriptionQos>()) {
+        const OnChangeWithKeepAliveSubscriptionQos* subscriptionQosPtr =
+                &qos.get<OnChangeWithKeepAliveSubscriptionQos>();
+        return subscriptionQosPtr->getAlertAfterInterval();
     }
-    if (qos->inherits(QtOnChangeWithKeepAliveSubscriptionQos::staticMetaObject.className())) {
-        return (qobject_cast<QtOnChangeWithKeepAliveSubscriptionQos*>(qos))
-                ->getAlertAfterInterval();
+    if (qos.is<PeriodicSubscriptionQos>()) {
+        const PeriodicSubscriptionQos* subscriptionQosPtr = &qos.get<PeriodicSubscriptionQos>();
+        return subscriptionQosPtr->getAlertAfterInterval();
     }
     return -1;
 }
 
-qint64 SubscriptionUtil::getMinInterval(QtSubscriptionQos* qos)
+int64_t SubscriptionUtil::getMinInterval(const Variant& qos)
 {
-    if (qos->inherits(QtOnChangeSubscriptionQos::staticMetaObject.className())) {
-        return (qobject_cast<QtOnChangeSubscriptionQos*>(qos))->getMinInterval();
+    if (qos.is<OnChangeWithKeepAliveSubscriptionQos>()) {
+        const OnChangeWithKeepAliveSubscriptionQos* subscriptionQosPtr =
+                &qos.get<OnChangeWithKeepAliveSubscriptionQos>();
+        return subscriptionQosPtr->getMinInterval();
     }
-    if (qos->inherits(QtOnChangeWithKeepAliveSubscriptionQos::staticMetaObject.className())) {
-        return (qobject_cast<QtOnChangeWithKeepAliveSubscriptionQos*>(qos))->getMinInterval();
+    if (qos.is<OnChangeSubscriptionQos>()) {
+        const OnChangeSubscriptionQos* subscriptionQosPtr = &qos.get<OnChangeSubscriptionQos>();
+        return subscriptionQosPtr->getMinInterval();
     }
     return -1;
 }
 
-qint64 SubscriptionUtil::getPeriodicPublicationInterval(QtSubscriptionQos* qos)
+int64_t SubscriptionUtil::getPeriodicPublicationInterval(const Variant& qos)
 {
-    if (qos->inherits(QtOnChangeWithKeepAliveSubscriptionQos::staticMetaObject.className())) {
-        return (qobject_cast<QtOnChangeWithKeepAliveSubscriptionQos*>(qos))->getMaxInterval();
+    if (qos.is<OnChangeWithKeepAliveSubscriptionQos>()) {
+        const OnChangeWithKeepAliveSubscriptionQos* subscriptionQosPtr =
+                &qos.get<OnChangeWithKeepAliveSubscriptionQos>();
+        return subscriptionQosPtr->getMaxInterval();
     }
-    if (qos->inherits(QtPeriodicSubscriptionQos::staticMetaObject.className())) {
-        return (qobject_cast<QtPeriodicSubscriptionQos*>(qos))->getPeriod();
+    if (qos.is<PeriodicSubscriptionQos>()) {
+        const PeriodicSubscriptionQos* subscriptionQosPtr = &qos.get<PeriodicSubscriptionQos>();
+        return subscriptionQosPtr->getPeriod();
     }
     return -1;
 }
+
+Variant SubscriptionUtil::getVariant(const SubscriptionQos& qos)
+{
+    if (dynamic_cast<const OnChangeWithKeepAliveSubscriptionQos*>(&qos) != nullptr) {
+        return Variant::make<OnChangeWithKeepAliveSubscriptionQos>(
+                static_cast<const OnChangeWithKeepAliveSubscriptionQos&>(qos));
+    } else if (dynamic_cast<const OnChangeSubscriptionQos*>(&qos) != nullptr) {
+        return Variant::make<OnChangeSubscriptionQos>(
+                static_cast<const OnChangeSubscriptionQos&>(qos));
+    } else if (dynamic_cast<const PeriodicSubscriptionQos*>(&qos) != nullptr) {
+        return Variant::make<PeriodicSubscriptionQos>(
+                static_cast<const PeriodicSubscriptionQos&>(qos));
+    }
+
+    assert(false);
+    throw exceptions::JoynrRuntimeException(
+            "Exception in SubscriptionUtil: reference to unknown SubscriptionQos has been sent");
 }
+
+} // namespace joynr

@@ -2,18 +2,13 @@ message(STATUS "#############################################")
 message(STATUS "Configuring tests...")
 message(STATUS "#############################################\n")
 
-# Enable ExternalProject CMake module
-include(ExternalProject)
-# Set default ExternalProject root directory
-set_directory_properties(PROPERTIES EP_PREFIX ${CMAKE_BINARY_DIR}/ThirdParty)
-
 if(${WIN32})
     set(DISABLE_PTHREAD_CMAKE_ARG ON)
 else()
 endif(${WIN32})
 
 ### Add google test ###########################################################
-ExternalProject_Add(
+AddExternalProject(
     googletest
     SVN_REPOSITORY http://googletest.googlecode.com/svn/tags/release-1.6.0
     TIMEOUT 10
@@ -25,14 +20,7 @@ ExternalProject_Add(
                -DBUILD_SHARED_LIBS=OFF
                -Dgtest_force_shared_crt=ON
                -Dgtest_disable_pthreads=${DISABLE_PTHREAD_CMAKE_ARG}
-    # Disable svn update
-    UPDATE_COMMAND ""
-    # Disable install step
-    INSTALL_COMMAND ""
-    # Wrap download, configure and build steps in a script to log output
-    LOG_DOWNLOAD ON
-    LOG_CONFIGURE ON
-    LOG_BUILD ON
+    BUILD_BYPRODUCTS("${CMAKE_BINARY_DIR}/ThirdParty/src/googletest-build/libgtest.a")
 )
 
 # Specify include dir
@@ -46,7 +34,7 @@ set(googletest_binary_dir ${binary_dir})
 message(STATUS "variable googletest_binary_dir=${googletest_binary_dir}")
 
 ### Add google mock ###########################################################
-ExternalProject_Add(
+AddExternalProject(
     googlemock
     SVN_REPOSITORY http://googlemock.googlecode.com/svn/tags/release-1.6.0
     TIMEOUT 10
@@ -58,14 +46,7 @@ ExternalProject_Add(
                -DBUILD_SHARED_LIBS=OFF
                -Dgtest_force_shared_crt=ON
                -Dgtest_disable_pthreads=${DISABLE_PTHREAD_CMAKE_ARG}
-    # Disable svn update
-    UPDATE_COMMAND ""
-    # Disable install step
-    INSTALL_COMMAND ""
-    # Wrap download, configure and build steps in a script to log output
-    LOG_DOWNLOAD ON
-    LOG_CONFIGURE ON
-    LOG_BUILD ON
+    BUILD_BYPRODUCTS("${CMAKE_BINARY_DIR}/ThirdParty/src/googlemock-build/libgmock.a")
 )
 
 # Specify include dir
@@ -110,9 +91,13 @@ endif(${CMAKE_GENERATOR} MATCHES "Visual Studio")
 
 ### set up stuff common for all test targets ##################################
 
+include(AddTest.cmake)
+
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
-get_target_property(qjson_PUBLIC_INCLUDE_DIRECTORY qjson PUBLIC_INCLUDE_DIRECTORY)
+get_target_property(jsonserializer_PUBLIC_INCLUDE_DIRECTORY jsonserializer PUBLIC_INCLUDE_DIRECTORY)
+get_target_property(jsmn_PUBLIC_INCLUDE_DIRECTORY jsmn PUBLIC_INCLUDE_DIRECTORY)
+
 get_target_property(joynrwsruntime_PUBLIC_INCLUDE_DIRECTORY JoynrWsRuntime PUBLIC_INCLUDE_DIRECTORY)
 if(${BUILD_CLUSTER_CONTROLLER})
     get_target_property(JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY JoynrClusterController PUBLIC_INCLUDE_DIRECTORY)
@@ -138,8 +123,9 @@ set(
     "${CMAKE_CURRENT_SOURCE_DIR}/gen/include"
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
-    ${qjson_PUBLIC_INCLUDE_DIRECTORY}
     ${spdlog_SOURCE_DIR}/include
+    ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
+    ${jsmn_PUBLIC_INCLUDE_DIRECTORY}
     ${joynrwsruntime_PUBLIC_INCLUDE_DIRECTORY}
 )
 
@@ -147,7 +133,7 @@ set(
     test_TARGET_LIBRARIES
     JoynrCommon
     Joynr
-    qjson
+    jsonserializer
 )
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
@@ -217,18 +203,41 @@ set(
     cluster_controller_test_HEADERS
     "PrettyPrint.h"
     "utils/MockObjects.h"
-    "utils/TestQString.h"
-    "utils/QThreadSleep.h"
+    "utils/LibJoynrMockObjects.h"
     "utils/MockLocalCapabilitiesDirectoryCallback.h"
     ${JoynrTest_GENHEADERS}
+)
+
+file(
+    GLOB_RECURSE JsonSerailizerTest_GENSOURCES
+    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    #"gen/*.cpp" uncomment this when generate-test-sources prepared for jsonserializer
+    "unit-tests/jsonserializer/generated/*.cpp" #remove this when generate-test-sources prepared for jsonserializer
+)
+
+file(
+    GLOB_RECURSE JsonSerailizerTest_GENHEADERS
+    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    #"gen/*.h" uncomment this when generate-test-sources prepared for jsonserializer
+    "unit-tests/jsonserializer/generated/*.h" #remove this when generate-test-sources prepared for jsonserializer
+)
+
+set(
+    libjsonserializer_test_HEADERS
+    "unit-tests/jsonserializer/ExampleTypes.h"
+    ${JsonSerailizerTest_GENHEADERS}
+)
+
+set(
+    libjsonserializer_test_SOURCES
+    "unit-tests/jsonserializer/ExampleTypes.cpp"
+    ${JsonSerailizerTest_GENSOURCES}
 )
 
 set(
     libjoynr_test_HEADERS
     "PrettyPrint.h"
     "utils/LibJoynrMockObjects.h"
-    "utils/TestQString.h"
-    "utils/QThreadSleep.h"
     ${JoynrTest_GENHEADERS}
 )
 
@@ -257,6 +266,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
         GLOB g_UnitTests_SOURCES
         "unit-tests/*.cpp"
         "unit-tests/websocket/*.cpp"
+        "unit-tests/jsonserializer/*.cpp"
     )
 
     if(${USE_DBUS_COMMONAPI_COMMUNICATION})
@@ -266,26 +276,19 @@ if(${BUILD_CLUSTER_CONTROLLER})
         )
     endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
-    add_executable(
+    AddTest(
         g_UnitTests
         ${cluster_controller_test_HEADERS}
         ${cluster_controller_test_SOURCES}
+        ${libjsonserializer_test_HEADERS}
+        ${libjsonserializer_test_SOURCES}
         ${g_UnitTests_SOURCES}
     )
-
-    add_dependencies(g_UnitTests googletest)
-    add_dependencies(g_UnitTests googlemock)
 
     target_link_libraries(
         g_UnitTests
         Qt5::Test
         ${cluster_controller_test_TARGET_LIBRARIES}
-    )
-
-    set_target_properties(
-        g_UnitTests
-        PROPERTIES
-        COMPILE_FLAGS "-Wno-effc++ -Wno-unused-parameter"
     )
 
     target_include_directories(
@@ -313,22 +316,14 @@ if(${BUILD_CLUSTER_CONTROLLER})
        )
     endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
-    add_executable(
+    AddTest(
        g_IntegrationTests
        ${cluster_controller_test_HEADERS}
        ${cluster_controller_test_SOURCES}
        ${g_IntegrationTests_SOURCES}
     )
-    add_dependencies(g_IntegrationTests googletest)
-    add_dependencies(g_IntegrationTests googlemock)
 
     target_link_libraries(g_IntegrationTests ${cluster_controller_test_TARGET_LIBRARIES})
-
-    set_target_properties(
-       g_IntegrationTests
-       PROPERTIES
-       COMPILE_FLAGS "-Wno-effc++ -Wno-unused-parameter"
-    )
 
     target_include_directories(
         g_IntegrationTests
@@ -354,15 +349,12 @@ if(${BUILD_CLUSTER_CONTROLLER})
        )
     endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
-    add_executable(
+    AddTest(
        g_SystemIntegrationTests
        ${cluster_controller_test_HEADERS}
        ${cluster_controller_test_SOURCES}
        ${g_SystemIntegrationTests_SOURCES}
     )
-
-    add_dependencies(g_SystemIntegrationTests googletest)
-    add_dependencies(g_SystemIntegrationTests googlemock)
 
     target_link_libraries(g_SystemIntegrationTests ${cluster_controller_test_TARGET_LIBRARIES})
 
@@ -392,26 +384,17 @@ else()
         "unit-tests/JsonSerializerTest.cpp"
     )
 
-    add_executable(
+    AddTest(
         g_UnitTests
         ${libjoynr_test_HEADERS}
         ${libjoynr_test_SOURCES}
         ${g_UnitTests_SOURCES}
     )
 
-    add_dependencies(g_UnitTests googletest)
-    add_dependencies(g_UnitTests googlemock)
-
     target_link_libraries(
         g_UnitTests
         Qt5::Test
         ${libjoynr_test_TARGET_LIBRARIES}
-    )
-
-    set_target_properties(
-        g_UnitTests
-        PROPERTIES
-        COMPILE_FLAGS "-Wno-effc++ -Wno-unused-parameter"
     )
 
     target_include_directories(
@@ -433,23 +416,14 @@ else()
        "systemintegration-tests/CombinedEnd2EndTest.cpp"
     )
 
-    add_executable(
+    AddTest(
        g_SystemIntegrationTests
        ${libjoynr_test_HEADERS}
        ${libjoynr_test_SOURCES}
        ${g_SystemIntegrationTests_SOURCES}
     )
 
-    add_dependencies(g_SystemIntegrationTests googletest)
-    add_dependencies(g_SystemIntegrationTests googlemock)
-
     target_link_libraries(g_SystemIntegrationTests ${libjoynr_test_TARGET_LIBRARIES})
-
-    set_target_properties(
-       g_SystemIntegrationTests
-       PROPERTIES
-       COMPILE_FLAGS "-Wno-effc++ -Wno-unused-parameter"
-    )
 
     target_include_directories(
         g_SystemIntegrationTests
@@ -460,3 +434,11 @@ else()
     )
 
 endif(${BUILD_CLUSTER_CONTROLLER})
+
+install(TARGETS g_UnitTests g_IntegrationTests g_SystemIntegrationTests
+        DESTINATION ${INSTALL_TEST_DIR} COMPONENT tests
+)
+
+install(DIRECTORY resources
+        DESTINATION ${INSTALL_TEST_DIR} COMPONENT tests
+)

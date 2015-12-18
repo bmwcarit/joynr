@@ -20,18 +20,18 @@
 #include "libjoynr/subscription/SubscriptionAttributeListener.h"
 #include "joynr/PublicationManager.h"
 
-#include <QVariant>
+#include "joynr/Variant.h"
 
 namespace joynr
 {
 
-SubscriptionAttributeListener::SubscriptionAttributeListener(const QString& subscriptionId,
+SubscriptionAttributeListener::SubscriptionAttributeListener(const std::string& subscriptionId,
                                                              PublicationManager& publicationManager)
         : subscriptionId(subscriptionId), publicationManager(publicationManager)
 {
 }
 
-void SubscriptionAttributeListener::attributeValueChanged(const QVariant& value)
+void SubscriptionAttributeListener::attributeValueChanged(const Variant& value)
 {
     publicationManager.attributeValueChanged(subscriptionId, value);
 }

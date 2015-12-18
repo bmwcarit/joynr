@@ -16,21 +16,16 @@
  * limitations under the License.
  * #L%
  */
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include "joynr/JoynrMessageFactory.h"
-#include "utils/TestQString.h"
-#include "utils/QThreadSleep.h"
 #include "joynr/Request.h"
-#include "joynr/DeclareMetatypeUtil.h"
-#include "common/rpc/RpcMetaTypes.h"
 #include "joynr/Reply.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/SubscriptionStop.h"
-#include "joynr/QtOnChangeSubscriptionQos.h"
-#include "joynr/joynrlogging.h"
 #include "joynr/DispatcherUtils.h"
+#include "joynr/OnChangeSubscriptionQos.h"
 #include <chrono>
 #include <stdint.h>
 
@@ -40,7 +35,7 @@ using namespace std::chrono;
 class JoynrMessageFactoryTest : public ::testing::Test {
 public:
     JoynrMessageFactoryTest()
-        : logger(joynr_logging::Logging::getInstance()->getLogger(QString("TEST"), QString("JoynrMessageFactoryTest"))),
+        : logger(joynr_logging::Logging::getInstance()->getLogger("TEST","JoynrMessageFactoryTest")),
           messageFactory(),
           senderID(),
           receiverID(),
@@ -50,28 +45,27 @@ public:
           reply(),
           subscriptionPublication()
     {
-        registerRpcMetaTypes();
     }
 
     void SetUp(){
-        senderID = QString("senderId");
-        receiverID = QString("receiverID");
-        requestReplyID = QString("requestReplyID");
+        senderID = std::string("senderId");
+        receiverID = std::string("receiverID");
+        requestReplyID = "requestReplyID";
         qos = MessagingQos(456000);
         request.setMethodName("methodName");
         request.setRequestReplyId(requestReplyID);
         ;
-        request.addParam(42, "java.lang.Integer");
-        request.addParam("value", "java.lang.String");
+        request.addParam(Variant::make<int>(42), "java.lang.Integer");
+        request.addParam(Variant::make<std::string>("value"), "java.lang.String");
         reply.setRequestReplyId(requestReplyID);
-        QList<QVariant> response;
-        response.append(QVariant("response"));
-        reply.setResponse(response);
+        std::vector<Variant> response;
+        response.push_back(Variant::make<std::string>("response"));
+        reply.setResponse(std::move(response));
 
-        QString subscriptionId("subscriptionTestId");
+        std::string subscriptionId("subscriptionTestId");
         subscriptionPublication.setSubscriptionId(subscriptionId);
         response.clear();
-        response.append("publication");
+        response.push_back(Variant::make<std::string>("publication"));
         subscriptionPublication.setResponse(response);
     }
     void TearDown(){
@@ -79,49 +73,46 @@ public:
     }
     void checkHeaderCreatorFromTo(const JoynrMessage& joynrMessage){
         EXPECT_TRUE(joynrMessage.containsHeaderCreatorUserId());
-        EXPECT_QSTREQ(senderID, joynrMessage.getHeaderFrom());
-        EXPECT_QSTREQ(receiverID, joynrMessage.getHeaderTo());
+        EXPECT_STREQ(senderID.c_str(), joynrMessage.getHeaderFrom().c_str());
+        EXPECT_STREQ(receiverID.c_str(), joynrMessage.getHeaderTo().c_str());
     }
 
     void checkRequest(const JoynrMessage& joynrMessage){
         //TODO create expected string from params and methodName
-        QString expectedPayload = QString(
-                    "{\"_typeName\":\"joynr.Request\","
-                    "\"methodName\":\"methodName\","
-                    "\"paramDatatypes\":[\"java.lang.Integer\",\"java.lang.String\"],"
-                    "\"params\":[42,\"value\"],"
-                    "\"requestReplyId\":\"%1\"}"
-        );
-        expectedPayload = expectedPayload.arg(request.getRequestReplyId());
-        EXPECT_EQ(expectedPayload, QString(joynrMessage.getPayload()));
+        std::stringstream expectedPayloadStream;
+        expectedPayloadStream << R"({"_typeName":"joynr.Request",)";
+        expectedPayloadStream << R"("methodName": "methodName",)";
+        expectedPayloadStream << R"("paramDatatypes": ["java.lang.Integer","java.lang.String"],)";
+        expectedPayloadStream << R"("params": [42,"value"],)";
+        expectedPayloadStream << R"("requestReplyId": ")" << request.getRequestReplyId() << R"("})";
+        std::string expectedPayload = expectedPayloadStream.str();
+        EXPECT_EQ(expectedPayload, joynrMessage.getPayload());
     }
 
     void checkReply(const JoynrMessage& joynrMessage){
-        QString expectedPayload = QString(
-                    "{\"_typeName\":\"joynr.Reply\","
-                    "\"requestReplyId\":\"%1\","
-                    "\"response\":[\"response\"]}"
-        );
-        expectedPayload = expectedPayload.arg(reply.getRequestReplyId());
-        EXPECT_EQ(expectedPayload, QString(joynrMessage.getPayload()));
+        std::stringstream expectedPayloadStream;
+        expectedPayloadStream << R"({"_typeName":"joynr.Reply",)";
+        expectedPayloadStream << R"("requestReplyId": ")" << reply.getRequestReplyId() << R"(",)";
+        expectedPayloadStream << R"("response": ["response"]})";
+        std::string expectedPayload = expectedPayloadStream.str();
+        EXPECT_EQ(expectedPayload, joynrMessage.getPayload());
     }
 
     void checkSubscriptionPublication(const JoynrMessage& joynrMessage){
-        QString expectedPayload = QString(
-                    "{\"_typeName\":\"joynr.SubscriptionPublication\","
-                    "\"response\":[\"publication\"],"
-                    "\"subscriptionId\":\"%1\"}"
-        );
-        expectedPayload = expectedPayload.arg(subscriptionPublication.getSubscriptionId());
-        EXPECT_EQ(expectedPayload, QString(joynrMessage.getPayload()));
+        std::stringstream expectedPayloadStream;
+        expectedPayloadStream << R"({"_typeName":"joynr.SubscriptionPublication",)";
+        expectedPayloadStream << R"("subscriptionId": ")" << subscriptionPublication.getSubscriptionId() << R"(",)";
+        expectedPayloadStream << R"("response": ["publication"]})";
+        std::string expectedPayload = expectedPayloadStream.str();
+        EXPECT_EQ(expectedPayload, joynrMessage.getPayload());
     }
 
 protected:
     joynr_logging::Logger* logger;
     JoynrMessageFactory messageFactory;
-    QString senderID;
-    QString receiverID;
-    QString requestReplyID;
+    std::string senderID;
+    std::string receiverID;
+    std::string requestReplyID;
     MessagingQos qos;
     Request request;
     Reply reply;
@@ -147,21 +138,21 @@ TEST_F(JoynrMessageFactoryTest, createRequest){
     );
     //warning if prepareRequest needs to long this assert will fail as it compares absolute timestamps
     JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
-    JoynrTimePoint expectedExpiryDate = now + milliseconds(qos.getTtl());
+    JoynrTimePoint expectedExpiryDate = now + duration<long long>(qos.getTtl());
     JoynrTimePoint expiryDate = joynrMessage.getHeaderExpiryDate();
     EXPECT_NEAR(expectedExpiryDate.time_since_epoch().count(), expiryDate.time_since_epoch().count(), 100.);
     LOG_DEBUG(logger,
-              QString("expiryDate: %1 [%2]")
-              .arg(QString::fromStdString(DispatcherUtils::convertAbsoluteTimeToTtlString(expiryDate)))
-              .arg(duration_cast<milliseconds>(expiryDate.time_since_epoch()).count()));
+              FormatString("expiryDate: %1 [%2]")
+              .arg(DispatcherUtils::convertAbsoluteTimeToTtlString(expiryDate))
+              .arg(duration_cast<milliseconds>(expiryDate.time_since_epoch()).count()).str());
     LOG_DEBUG(logger,
-              QString("expectedExpiryDate: %1 [%2]")
-              .arg(QString::fromStdString(DispatcherUtils::convertAbsoluteTimeToTtlString(expectedExpiryDate)))
-              .arg(duration_cast<milliseconds>(expectedExpiryDate.time_since_epoch()).count()));
+              FormatString("expectedExpiryDate: %1 [%2]")
+              .arg(DispatcherUtils::convertAbsoluteTimeToTtlString(expectedExpiryDate))
+              .arg(duration_cast<milliseconds>(expectedExpiryDate.time_since_epoch()).count()).str());
 
     checkHeaderCreatorFromTo(joynrMessage);
     checkRequest(joynrMessage);
-    EXPECT_QSTREQ(JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST, joynrMessage.getType());
+    EXPECT_EQ(JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST, joynrMessage.getType());
 }
 
 TEST_F(JoynrMessageFactoryTest, createReply){
@@ -173,7 +164,7 @@ TEST_F(JoynrMessageFactoryTest, createReply){
     );
     checkHeaderCreatorFromTo(joynrMessage);
     checkReply(joynrMessage);
-    EXPECT_QSTREQ(JoynrMessage::VALUE_MESSAGE_TYPE_REPLY, joynrMessage.getType());
+    EXPECT_EQ(JoynrMessage::VALUE_MESSAGE_TYPE_REPLY, joynrMessage.getType());
 }
 
 TEST_F(JoynrMessageFactoryTest, createOneWay){
@@ -185,15 +176,15 @@ TEST_F(JoynrMessageFactoryTest, createOneWay){
     );
     checkHeaderCreatorFromTo(joynrMessage);
     checkReply(joynrMessage);
-    EXPECT_QSTREQ(JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY, joynrMessage.getType());
+    EXPECT_EQ(JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY, joynrMessage.getType());
 }
 
 //TEST_F(JoynrMessageFactoryTest, createSubscriptionReply){
-//    QString subscriptionId("subscriptionTestId");
+//    std::string subscriptionId("subscriptionTestId");
 //    JoynrMessage joynrMessage = JoynrMessageFactory::prepareSubscriptionReply(senderID, receiverID, payload, subscriptionId);
 //    checkHeaderCreatorFromTo(joynrMessage);
 //    checkPayload(joynrMessage);
-//    EXPECT_QSTREQ(subscriptionId, joynrMessage.getHeader<QString>(JoynrMessage::HEADER_NAME_SUBSCRIPTION_ID));
+//    EXPECT_QSTREQ(subscriptionId, joynrMessage.getHeader<std::string>(JoynrMessage::HEADER_NAME_SUBSCRIPTION_ID));
 //    EXPECT_QSTREQ(JoynrMessage::MESSAGE_TYPE_SUBSCRIPTION_REPLY, joynrMessage.getType());
 //}
 
@@ -206,14 +197,14 @@ TEST_F(JoynrMessageFactoryTest, createPublication){
     );
     checkHeaderCreatorFromTo(joynrMessage);
     checkSubscriptionPublication(joynrMessage);
-    EXPECT_QSTREQ(JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION, joynrMessage.getType());
+    EXPECT_EQ(JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION, joynrMessage.getType());
 }
 
 TEST_F(JoynrMessageFactoryTest, createSubscriptionRequest){
-    auto subscriptionQos = std::shared_ptr<QtSubscriptionQos>(new QtOnChangeSubscriptionQos());
+    Variant subscriptionQos = Variant::make<OnChangeSubscriptionQos>(OnChangeSubscriptionQos());
     SubscriptionRequest subscriptionRequest;
-    subscriptionRequest.setSubscriptionId(QString("subscriptionId"));
-    subscriptionRequest.setSubscribeToName(QString("attributeName"));
+    subscriptionRequest.setSubscriptionId("subscriptionId");
+    subscriptionRequest.setSubscribeToName("attributeName");
     subscriptionRequest.setQos(subscriptionQos);
     JoynrMessage joynrMessage = messageFactory.createSubscriptionRequest(
                 senderID,
@@ -222,11 +213,11 @@ TEST_F(JoynrMessageFactoryTest, createSubscriptionRequest){
                 subscriptionRequest
     );
     checkHeaderCreatorFromTo(joynrMessage);
-    EXPECT_QSTREQ(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST, joynrMessage.getType());
+    EXPECT_EQ(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST, joynrMessage.getType());
 }
 
 TEST_F(JoynrMessageFactoryTest, createSubscriptionStop){
-    QString subscriptionId("TEST-SubscriptionId");
+    std::string subscriptionId("TEST-SubscriptionId");
     SubscriptionStop subscriptionStop;
     subscriptionStop.setSubscriptionId(subscriptionId);
     JoynrMessage joynrMessage = messageFactory.createSubscriptionStop(
@@ -236,14 +227,14 @@ TEST_F(JoynrMessageFactoryTest, createSubscriptionStop){
                 subscriptionStop
     );
     checkHeaderCreatorFromTo(joynrMessage);
-    EXPECT_QSTREQ(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP, joynrMessage.getType());
+    EXPECT_EQ(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP, joynrMessage.getType());
 }
 
 TEST_F(JoynrMessageFactoryTest, testRequestContentType){
     Request request;
-    QVariantList params;
-    params.append("test");
-    request.setMethodName(QString("methodName"));
+    std::vector<Variant> params;
+    params.push_back(Variant::make<std::string>("test"));
+    request.setMethodName("methodName");
     request.setParams(params);
 
     JoynrMessage message = messageFactory.createRequest(
@@ -252,5 +243,5 @@ TEST_F(JoynrMessageFactoryTest, testRequestContentType){
                 qos,
                 request
     );
-    EXPECT_QSTREQ(JoynrMessage::VALUE_CONTENT_TYPE_APPLICATION_JSON, message.getHeaderContentType());
+    EXPECT_EQ(JoynrMessage::VALUE_CONTENT_TYPE_APPLICATION_JSON, message.getHeaderContentType());
 }

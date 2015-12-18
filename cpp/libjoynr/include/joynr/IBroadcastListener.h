@@ -21,13 +21,12 @@
 
 #include "joynr/JoynrExport.h"
 #include <memory>
-
-template <typename T>
-class QList;
-class QVariant;
+#include <vector>
 
 namespace joynr
 {
+
+class Variant;
 
 class IBroadcastFilter;
 
@@ -37,8 +36,9 @@ public:
     virtual ~IBroadcastListener()
     {
     }
-    virtual void broadcastOccurred(const QList<QVariant>& values,
-                                   const QList<std::shared_ptr<IBroadcastFilter>>& filters) = 0;
+    virtual void broadcastOccurred(
+            const std::vector<Variant>& values,
+            const std::vector<std::shared_ptr<IBroadcastFilter>>& filters) = 0;
 };
 
 } // namespace joynr

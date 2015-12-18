@@ -23,7 +23,7 @@
 
 #include "joynr/JsonSerializer.h"
 #include "joynr/JoynrMessage.h"
-#include "joynr/system/RoutingTypes_QtAddress.h"
+#include "joynr/system/RoutingTypes/Address.h"
 
 namespace joynr
 {
@@ -31,7 +31,7 @@ namespace joynr
 joynr_logging::Logger* WebSocketMessagingStub::logger =
         joynr_logging::Logging::getInstance()->getLogger("MSG", "WebSocketMessagingStub");
 
-WebSocketMessagingStub::WebSocketMessagingStub(system::RoutingTypes::QtAddress* address,
+WebSocketMessagingStub::WebSocketMessagingStub(const system::RoutingTypes::Address* address,
                                                QWebSocket* webSocket,
                                                QObject* parent)
         : QObject(parent), address(address), webSocket(webSocket)
@@ -53,37 +53,45 @@ WebSocketMessagingStub::~WebSocketMessagingStub()
     // QWebSocket.close() is a slot - call from the event loop
     QMetaObject::invokeMethod(webSocket, "close", Qt::QueuedConnection);
     webSocket->deleteLater();
-    address->deleteLater();
+    delete address;
 }
 
 void WebSocketMessagingStub::onSocketDisconnected()
 {
-    LOG_DEBUG(logger, QString("Web Socket disconnected: %0").arg(address->toString()));
+    LOG_DEBUG(logger, FormatString("Web Socket disconnected: %1").arg(address->toString()).str());
     emit closed(*address);
 }
 
 void WebSocketMessagingStub::sendTextMessage(const QString& message)
 {
-    LOG_TRACE(
-            logger, QString("OUTGOING\nmessage: %0\nto: %1").arg(message).arg(address->toString()));
-    qint64 bytesSent = webSocket->sendTextMessage(message);
+    LOG_TRACE(logger,
+              FormatString("OUTGOING\nmessage: %1\nto: %2")
+                      .arg(message.toStdString())
+                      .arg(address->toString())
+                      .str());
+    int64_t bytesSent = webSocket->sendTextMessage(message);
     bool flushed = webSocket->flush();
     LOG_TRACE(logger,
-              QString("bytes actually sent (%0): %1 of %2").arg(flushed).arg(bytesSent).arg(
-                      message.size()));
+              FormatString("bytes actually sent (%1): %2 of %3")
+                      .arg(flushed)
+                      .arg(bytesSent)
+                      .arg(message.size())
+                      .str());
 }
 
 void WebSocketMessagingStub::transmit(JoynrMessage& message)
 {
     if (!webSocket->isValid()) {
         LOG_ERROR(logger,
-                  QString("WebSocket not ready %0. Unable to send message %1.")
+                  FormatString("WebSocket not ready %1. Unable to send message %2.")
                           .arg(address->toString())
-                          .arg(QString(JsonSerializer::serialize(message))));
+                          .arg(JsonSerializer::serialize(message))
+                          .str());
         return;
     }
 
-    QByteArray serializedMessage(JsonSerializer::serialize(message));
+    QByteArray serializedMessage =
+            QString::fromStdString(JsonSerializer::serialize(message)).toUtf8();
     emit queueTextMessage(serializedMessage);
 }
 

@@ -16,10 +16,7 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/DeclareMetatypeUtil.h"
 #include "joynr/ProxyBase.h"
-
-#include <QUuid>
 
 namespace joynr
 {
@@ -41,10 +38,9 @@ ProxyBase::ProxyBase(ConnectorFactory* connectorFactory,
           cached(cached),
           providerParticipantId(""),
           proxyParticipantId(""),
-          connection(NULL)
+          connection(nullptr)
 {
-    QString internalId = QUuid::createUuid().toString();
-    proxyParticipantId = internalId.mid(1, internalId.length() - 2).toStdString();
+    proxyParticipantId = Util::createUuid();
 }
 
 ProxyBase::~ProxyBase()

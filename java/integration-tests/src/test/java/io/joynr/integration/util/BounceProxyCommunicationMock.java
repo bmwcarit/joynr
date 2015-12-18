@@ -20,9 +20,6 @@ package io.joynr.integration.util;
  */
 
 import static com.jayway.restassured.RestAssured.given;
-import io.joynr.common.ExpiryDate;
-import io.joynr.messaging.MessagingModule;
-import io.joynr.messaging.util.Utilities;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
@@ -34,8 +31,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.hamcrest.CoreMatchers;
-
-import joynr.JoynrMessage;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -54,13 +49,18 @@ import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
 
+import io.joynr.common.ExpiryDate;
+import io.joynr.messaging.JsonMessageSerializerModule;
+import io.joynr.messaging.util.Utilities;
+import joynr.JoynrMessage;
+
 /**
  * Contains methods that can be used by different test classes that test
  * bounceproxy functionality. This is an object because it is configured for one
  * communication partner, e.g. receiver ID and object mapper are set.
- * 
+ *
  * @author christina.strobel
- * 
+ *
  */
 public class BounceProxyCommunicationMock {
 
@@ -72,7 +72,7 @@ public class BounceProxyCommunicationMock {
     public BounceProxyCommunicationMock(String bounceProxyUrl, String receiverId) {
         this(bounceProxyUrl, receiverId, null);
 
-        Injector injector = Guice.createInjector(new MessagingModule());
+        Injector injector = Guice.createInjector(new JsonMessageSerializerModule());
         this.objectMapper = injector.getInstance(ObjectMapper.class);
     }
 
@@ -86,7 +86,7 @@ public class BounceProxyCommunicationMock {
 
     /**
      * initialize a RequestSpecification with no timeout
-     * 
+     *
      * @return a rest-assured RequestSpecification
      */
     public RequestSpecification onrequest() {
@@ -95,7 +95,7 @@ public class BounceProxyCommunicationMock {
 
     /**
      * initialize a RequestSpecification with the given timeout
-     * 
+     *
      * @param timeout_ms
      *            : a SocketTimeoutException will be thrown if no response is
      *            received in this many milliseconds
@@ -114,7 +114,7 @@ public class BounceProxyCommunicationMock {
      * Create a channel with the given channelId. The {@link #receiverId} is
      * used as tracking ID.
      * A status code 201 Created is expected as response code.
-     * 
+     *
      * @param myChannelId
      */
     public Response createChannel(String myChannelId) {
@@ -133,7 +133,7 @@ public class BounceProxyCommunicationMock {
     /**
      * Post the given payload string in a messageWrapper to the given channelID.
      * The message is posted in its own thread.
-     * 
+     *
      * @param myChannelId
      * @param relativeTtlMs
      * @param postPayload
@@ -147,6 +147,7 @@ public class BounceProxyCommunicationMock {
                                                                                      JsonMappingException, IOException {
         ScheduledFuture<Response> scheduledFuture = scheduler.schedule(new Callable<Response>() {
 
+            @Override
             public Response call() throws JsonGenerationException, JsonMappingException, IOException {
 
                 return postMessage(myChannelId, relativeTtlMs, postPayload);
@@ -157,7 +158,7 @@ public class BounceProxyCommunicationMock {
 
     /**
      * Post the given payload string in a messageWrapper to the given channelID.
-     * 
+     *
      * @param myChannelId
      * @param relativeTtlMs
      * @param postPayload
@@ -172,7 +173,7 @@ public class BounceProxyCommunicationMock {
 
     /**
      * Post the given payload string in a messageWrapper to the given channelID.
-     * 
+     *
      * @param myChannelId
      * @param relativeTtlMs
      * @param postPayload
@@ -200,7 +201,7 @@ public class BounceProxyCommunicationMock {
 
     /**
      * Long poll on the given channel
-     * 
+     *
      * @param myChannelId
      * @param timeout_ms
      * @param cacheIndex
@@ -215,7 +216,7 @@ public class BounceProxyCommunicationMock {
     /**
      * Long poll on the given channel, expecting the given status code. The long
      * poll is setup in its own thread.
-     * 
+     *
      * @param myChannelId
      * @param timeout_ms
      * @return
@@ -225,6 +226,7 @@ public class BounceProxyCommunicationMock {
                                                          final int timeout_ms,
                                                          final int statusCode) throws SocketTimeoutException {
         ScheduledFuture<Response> scheduledFuture = scheduler.schedule(new Callable<Response>() {
+            @Override
             public Response call() throws SocketTimeoutException {
                 return longPoll(myChannelId, timeout_ms, statusCode);
             }
@@ -256,7 +258,7 @@ public class BounceProxyCommunicationMock {
 
     /**
      * Creates a serialized joynr message from a payload and a relative ttl.
-     * 
+     *
      * @param relativeTtlMs
      * @param postPayload
      * @return
@@ -270,7 +272,7 @@ public class BounceProxyCommunicationMock {
     /**
      * Creates a serialized joynr message from a payload, a message ID and a
      * relative ttl.
-     * 
+     *
      * @param relativeTtlMs
      * @param postPayload
      * @param msgId
@@ -343,7 +345,7 @@ public class BounceProxyCommunicationMock {
 
         /**
          * Copy Constructor
-         * 
+         *
          * @param messageWrapper
          */
         public MessageWrapper(MessageWrapper messageWrapper) {
@@ -357,7 +359,7 @@ public class BounceProxyCommunicationMock {
         /**
          * Overriden to provide string represention of the message object for
          * Atmosphere used in response.
-         * 
+         *
          * @return
          */
         @Override

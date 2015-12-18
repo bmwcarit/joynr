@@ -17,7 +17,8 @@
  * #L%
  */
 #include "MockLocalCapabilitiesDirectoryCallback.h"
-#include "utils/QThreadSleep.h"
+
+#include <thread>
 
 using namespace joynr;
 
@@ -25,20 +26,20 @@ MockLocalCapabilitiesDirectoryCallback::MockLocalCapabilitiesDirectoryCallback()
     : ILocalCapabilitiesCallback(),
       results(),
       semaphore(1) {
-    semaphore.acquire();
+    semaphore.wait();
 }
 
 void MockLocalCapabilitiesDirectoryCallback::capabilitiesReceived(std::vector<CapabilityEntry> capabilities) {
     this->results = capabilities;
-    semaphore.release();
+    semaphore.notify();
 }
 
 std::vector<CapabilityEntry> MockLocalCapabilitiesDirectoryCallback::getResults(int timeout) {
     const int waitInterval = 20;
     for (int i = 0; i < timeout; i += waitInterval) {
-        QThreadSleep::msleep(waitInterval);
-        if (semaphore.tryAcquire()) {
-            semaphore.release();
+        std::this_thread::sleep_for(std::chrono::milliseconds(waitInterval));
+        if (semaphore.waitFor()) {
+            semaphore.notify();
             return results;
         }
     }
@@ -47,8 +48,8 @@ std::vector<CapabilityEntry> MockLocalCapabilitiesDirectoryCallback::getResults(
 }
 
 void MockLocalCapabilitiesDirectoryCallback::clearResults(){
+    semaphore.waitFor();
     results.clear();
-    semaphore.tryAcquire(1);
 }
 
 MockLocalCapabilitiesDirectoryCallback::~MockLocalCapabilitiesDirectoryCallback() {

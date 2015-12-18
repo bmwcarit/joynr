@@ -20,42 +20,39 @@
 #define WEBSOCKETSETTINGS_H
 
 #include "joynr/joynrlogging.h"
+#include "joynr/system/RoutingTypes/WebSocketAddress.h"
 
-#include <QObject>
-#include <QSettings>
-
-#include "joynr/system/RoutingTypes_QtWebSocketAddress.h"
+#include <string>
 
 namespace joynr
 {
 
-class WebSocketSettings : public QObject
+class Settings;
+
+class WebSocketSettings
 {
-    Q_OBJECT
-
 public:
-    static const QString& SETTING_CC_MESSAGING_URL();
+    static const std::string& SETTING_CC_MESSAGING_URL();
 
-    static const QString& DEFAULT_WEBSOCKET_SETTINGS_FILENAME();
+    static const std::string& DEFAULT_WEBSOCKET_SETTINGS_FILENAME();
 
-    explicit WebSocketSettings(QSettings& settings, QObject* parent = 0);
+    explicit WebSocketSettings(Settings& settings);
     WebSocketSettings(const WebSocketSettings& other);
 
     ~WebSocketSettings();
 
-    QString getClusterControllerMessagingUrl() const;
-    void setClusterControllerMessagingUrl(const QString& url);
-    system::RoutingTypes::QtWebSocketAddress createClusterControllerMessagingAddress() const;
+    std::string getClusterControllerMessagingUrl() const;
+    void setClusterControllerMessagingUrl(const std::string& url);
+    system::RoutingTypes::WebSocketAddress createClusterControllerMessagingAddress() const;
 
     void printSettings() const;
 
-    bool contains(const QString& key) const;
-    QVariant value(const QString& key) const;
+    bool contains(const std::string& key) const;
 
 private:
     void operator=(const WebSocketSettings& other);
 
-    QSettings& settings;
+    Settings& settings;
     static joynr_logging::Logger* logger;
     void checkSettings() const;
 };

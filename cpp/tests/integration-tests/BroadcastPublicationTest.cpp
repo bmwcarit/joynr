@@ -23,10 +23,9 @@
 #include "tests/utils/MockObjects.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/JoynrMessageSender.h"
-#include "joynr/QtOnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/tests/TestLocationUpdateSelectiveBroadcastFilterParameters.h"
 
-#include "joynr/types/Localisation_QtGpsLocation.h"
 #include "libjoynr/subscription/SubscriptionBroadcastListener.h"
 
 using namespace ::testing;
@@ -58,7 +57,7 @@ public:
 
     void SetUp(){
         //remove stored subscriptions
-        QFile::remove(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME());
+        std::remove(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME().c_str());
         publicationManager = new PublicationManager();
         subscriptionBroadcastListener =
                 new SubscriptionBroadcastListener(subscriptionId, *publicationManager);
@@ -67,23 +66,22 @@ public:
         request.setSubscribeToName("locationUpdateSelective");
         request.setSubscriptionId(subscriptionId);
 
-        auto subscriptionQos =
-                std::shared_ptr<QtOnChangeSubscriptionQos>(new QtOnChangeWithKeepAliveSubscriptionQos(
+        OnChangeWithKeepAliveSubscriptionQos qos{
                     80, // validity_ms
                     100, // minInterval_ms
                     200, // maxInterval_ms
                     80 // alertInterval_ms
-        ));
-        request.setQos(subscriptionQos);
-        request.setFilterParameters(QtBroadcastFilterParameters::createQt(filterParameters));
+        };
+        request.setQos(qos);
+        request.setFilterParameters(filterParameters);
 
         requestCaller->registerBroadcastListener(
                     "locationUpdateSelective",
                     subscriptionBroadcastListener);
 
         publicationManager->add(
-                    QString::fromStdString(proxyParticipantId),
-                    QString::fromStdString(providerParticipantId),
+                    proxyParticipantId,
+                    providerParticipantId,
                     requestCaller,
                     request,
                     publicationSender);
@@ -106,7 +104,7 @@ protected:
 
     std::string providerParticipantId;
     std::string proxyParticipantId;
-    QString subscriptionId;
+    std::string subscriptionId;
     PublicationManager* publicationManager;
     MockPublicationSender* publicationSender;
     BroadcastSubscriptionRequest request;
@@ -162,13 +160,12 @@ TEST_F(BroadcastPublicationTest, sendPublication_FilterChainSuccess) {
 
 TEST_F(BroadcastPublicationTest, sendPublication_broadcastwithSingleArrayParam) {
 
-    auto subscriptionQos =
-            std::shared_ptr<QtOnChangeSubscriptionQos>(new QtOnChangeSubscriptionQos(
+    OnChangeSubscriptionQos qos{
                 800, // validity_ms
                 0 // minInterval_ms
-    ));
-    request.setQos(subscriptionQos);
-    request.setFilterParameters(QtBroadcastFilterParameters::createQt(filterParameters));
+    };
+    request.setQos(qos);
+    request.setFilterParameters(filterParameters);
 
     requestCaller->registerBroadcastListener(
                 "broadcastWithSingleArrayParameter",
@@ -177,8 +174,8 @@ TEST_F(BroadcastPublicationTest, sendPublication_broadcastwithSingleArrayParam) 
     std::shared_ptr<MockMessageRouter> mockMessageRouter(std::shared_ptr<MockMessageRouter>(new MockMessageRouter()));
     JoynrMessageSender* joynrMessageSender = new JoynrMessageSender(mockMessageRouter);
     publicationManager->add(
-                QString::fromStdString(proxyParticipantId),
-                QString::fromStdString(providerParticipantId),
+                proxyParticipantId,
+                providerParticipantId,
                 requestCaller,
                 request,
                 joynrMessageSender);
@@ -191,8 +188,8 @@ TEST_F(BroadcastPublicationTest, sendPublication_broadcastwithSingleArrayParam) 
     EXPECT_CALL(*mockMessageRouter, route(
                      AllOf(
                          A<JoynrMessage>(),
-                         Property(&JoynrMessage::getHeaderFrom, Eq(QString::fromStdString(providerParticipantId))),
-                         Property(&JoynrMessage::getHeaderTo, Eq(QString::fromStdString(proxyParticipantId))))
+                         Property(&JoynrMessage::getHeaderFrom, Eq(providerParticipantId)),
+                         Property(&JoynrMessage::getHeaderTo, Eq(proxyParticipantId)))
                      ));
 
     provider->fireBroadcastWithSingleArrayParameter(singleParam);

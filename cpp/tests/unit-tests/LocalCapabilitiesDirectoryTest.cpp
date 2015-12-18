@@ -17,20 +17,17 @@
  * #L%
  */
 #include "joynr/PrivateCopyAssign.h"
-#include "gtest/gtest.h"
-#include "gmock/gmock.h"
-#include <QFile>
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 #include <string>
 #include <stdint.h>
-#include "utils/TestQString.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
 #include "joynr/ClusterControllerDirectories.h"
-#include "joynr/system/RoutingTypes_QtChannelAddress.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "common/capabilities/CapabilitiesMetaTypes.h"
 #include "tests/utils/MockLocalCapabilitiesDirectoryCallback.h"
 #include "cluster-controller/capabilities-client/IGlobalCapabilitiesCallback.h"
-#include "utils/QThreadSleep.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/CapabilityEntry.h"
@@ -41,7 +38,7 @@ class LocalCapabilitiesDirectoryTest : public ::testing::Test {
 public:
     LocalCapabilitiesDirectoryTest() :
         settingsFileName("LocalCapabilitiesDirectoryTest.settings"),
-        settings(settingsFileName, QSettings::IniFormat),
+        settings(settingsFileName),
         messagingSettings(settings),
         capabilitiesClient(new MockCapabilitiesClient()),
         mockMessageRouter(),
@@ -56,31 +53,30 @@ public:
     }
 
     ~LocalCapabilitiesDirectoryTest() {
-        QFile::remove(settingsFileName);
+        std::remove(settingsFileName.c_str());
     }
 
     void SetUp(){
         registerCapabilitiesMetaTypes();
 
         //TODO the participantId should be provided by the provider
-        dummyParticipantId1 = QUuid::createUuid().toString().toStdString();
-        dummyParticipantId2 = QUuid::createUuid().toString().toStdString();
-        dummyParticipantId3 = QUuid::createUuid().toString().toStdString();
-        localJoynrMessagingAddress1 = std::shared_ptr<system::RoutingTypes::QtChannelAddress>(new system::RoutingTypes::QtChannelAddress("LOCAL_CHANNEL_ID"));
+        dummyParticipantId1 = Util::createUuid();
+        dummyParticipantId2 = Util::createUuid();
+        dummyParticipantId3 = Util::createUuid();
+        localJoynrMessagingAddress1 = std::shared_ptr<system::RoutingTypes::ChannelAddress>(new system::RoutingTypes::ChannelAddress("LOCAL_CHANNEL_ID"));
         callback = std::shared_ptr<MockLocalCapabilitiesDirectoryCallback>(new MockLocalCapabilitiesDirectoryCallback());
         discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL);
         discoveryQos.setCacheMaxAge(10000);
         EXPECT_CALL(*capabilitiesClient, getLocalChannelId()).WillRepeatedly(Return(LOCAL_CHANNEL_ID));
 
         // init a capentry recieved from the global capabilities directory
-        types::QtProviderQos qos;
-        QList<joynr::types::QtCommunicationMiddleware::Enum> connections;
-        connections.push_back(joynr::types::QtCommunicationMiddleware::JOYNR);
+        types::ProviderQos qos;
+        std::vector<joynr::types::CommunicationMiddleware::Enum> connections = {joynr::types::CommunicationMiddleware::JOYNR};
         CapabilityEntry globalCapEntry(
-                    QString::fromStdString(DOMAIN_1_NAME),
-                    QString::fromStdString(INTERFACE_1_NAME),
+                    DOMAIN_1_NAME,
+                    INTERFACE_1_NAME,
                     qos,
-                    QString::fromStdString(dummyParticipantId3),
+                    dummyParticipantId3,
                     connections,
                     true
         );
@@ -190,8 +186,8 @@ public:
     }
 
 protected:
-    QString settingsFileName;
-    QSettings settings;
+    std::string settingsFileName;
+    Settings settings;
     MessagingSettings messagingSettings;
     MockCapabilitiesClient* capabilitiesClient;
     MockMessageRouter mockMessageRouter;
@@ -199,7 +195,7 @@ protected:
     std::string dummyParticipantId1;
     std::string dummyParticipantId2;
     std::string dummyParticipantId3;
-    std::shared_ptr<system::RoutingTypes::QtChannelAddress> localJoynrMessagingAddress1;
+    std::shared_ptr<system::RoutingTypes::ChannelAddress> localJoynrMessagingAddress1;
     joynr::types::DiscoveryQos discoveryQos;
     QMap<std::string, CapabilityEntry> globalCapEntryMap;
 
@@ -387,9 +383,9 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForInterfaceAddressDelegatesToCapab
     bool secondParticipantIdFound = false;
     for (uint16_t i = 0; i < capabilities.size(); i++) {
         CapabilityEntry entry = capabilities.at(i);
-        EXPECT_EQ(DOMAIN_1_NAME, entry.getDomain().toStdString());
-        EXPECT_EQ(INTERFACE_1_NAME, entry.getInterfaceName().toStdString());
-        std::string participantId = entry.getParticipantId().toStdString();
+        EXPECT_EQ(DOMAIN_1_NAME, entry.getDomain());
+        EXPECT_EQ(INTERFACE_1_NAME, entry.getInterfaceName());
+        std::string participantId = entry.getParticipantId();
         if (participantId == dummyParticipantId1) {
             firstParticipantIdFound = true;
         } else if (participantId == dummyParticipantId2) {
@@ -411,6 +407,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdReturnsCachedValues
             .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithTwoResults));
 
     localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
+    std::vector<CapabilityEntry> capabilities = callback->getResults(TIMEOUT);
+    EXPECT_EQ(2, capabilities.size());
     callback->clearResults();
     EXPECT_CALL(*capabilitiesClient, lookup(
                     _,
@@ -418,7 +416,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdReturnsCachedValues
                     A<std::function<void(const exceptions::JoynrException& error)>>()))
             .Times(0);
     localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
-    std::vector<CapabilityEntry> capabilities = callback->getResults(TIMEOUT);
+    capabilities = callback->getResults(TIMEOUT);
     EXPECT_EQ(2, capabilities.size());
 
 }
@@ -440,9 +438,9 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdDelegatesToCapabili
     bool interfaceAddress2Found = false;
     for (uint16_t i = 0; i < capabilities.size(); i++) {
         CapabilityEntry entry = capabilities.at(i);
-        if ((entry.getDomain().toStdString() == DOMAIN_1_NAME) && (entry.getInterfaceName().toStdString() == INTERFACE_1_NAME)) {
+        if ((entry.getDomain() == DOMAIN_1_NAME) && (entry.getInterfaceName() == INTERFACE_1_NAME)) {
             interfaceAddress1Found = true;
-        } else if ((entry.getDomain().toStdString() == DOMAIN_2_NAME) && (entry.getInterfaceName().toStdString() == INTERFACE_2_NAME)) {
+        } else if ((entry.getDomain() == DOMAIN_2_NAME) && (entry.getInterfaceName() == INTERFACE_2_NAME)) {
             interfaceAddress2Found = true;
         }
     }
@@ -462,10 +460,10 @@ TEST_F(LocalCapabilitiesDirectoryTest, cleanCacheRemovesOldEntries) {
             .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithTwoResults));
 
     localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
-    QThreadSleep::msleep(1000);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
     // this should remove all entries in the cache
-    localCapabilitiesDirectory->cleanCache(100);
+    localCapabilitiesDirectory->cleanCache(100ll);
     // retrieving capabilities will force a call to the backend as the cache is empty
     EXPECT_CALL(*capabilitiesClient, lookup(
                     _,
@@ -818,7 +816,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocalThenG
     EXPECT_EQ(1, callback->getResults(10).size());
     callback->clearResults();
 
-    QThreadSleep::msleep(200);
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
 
     // get the global, but timeout occured
     EXPECT_CALL(*capabilitiesClient, lookup(_,_,_,_))

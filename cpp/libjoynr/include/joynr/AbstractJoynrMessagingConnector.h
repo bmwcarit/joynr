@@ -23,8 +23,6 @@
 #include "joynr/Reply.h"
 #include "joynr/Request.h"
 #include "joynr/MessagingQos.h"
-
-#include "joynr/DeclareMetatypeUtil.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/ArbitrationStatus.h"
 #include "joynr/IArbitrationListener.h"
@@ -69,24 +67,28 @@ public:
 
      */
     template <typename T>
-    void attributeRequest(QString methodName, std::shared_ptr<IReplyCaller> replyCaller)
+    void attributeRequest(const std::string& methodName, std::shared_ptr<IReplyCaller> replyCaller)
     {
-        QString attributeID = QString::fromStdString(domain) + ":" +
-                              QString::fromStdString(interfaceName) + ":" + methodName;
+        std::string attributeID = domain + ":" + interfaceName + ":" + methodName;
 
         if (cached) {
-            QVariant entry = cache->lookUp(attributeID);
-            if (!entry.isValid()) {
-                LOG_DEBUG(logger, "Cached value for " + methodName + " is not valid");
-            } else if (!entry.canConvert<T>()) {
+            Variant entry = cache->lookUp(attributeID);
+            if (entry.isEmpty()) {
                 LOG_DEBUG(logger,
-                          "Cached value for " + methodName + " cannot be converted to type T");
+                          FormatString("Cached value for %1 is not valid").arg(methodName).str());
+            } else if (!entry.is<T>()) {
+                LOG_DEBUG(logger,
+                          FormatString("Cached value for %1 cannot be converted to type T")
+                                  .arg(methodName)
+                                  .str());
                 assert(false);
             } else {
-                LOG_DEBUG(logger, "Returning cached value for method " + methodName);
+                LOG_DEBUG(
+                        logger,
+                        FormatString("Returning cached value for method %1").arg(methodName).str());
                 std::shared_ptr<ReplyCaller<T>> typedReplyCaller =
                         std::dynamic_pointer_cast<ReplyCaller<T>>(replyCaller);
-                typedReplyCaller->returnValue(entry.value<T>());
+                typedReplyCaller->returnValue(entry.get<T>());
             }
         } else {
             Request request;
@@ -121,8 +123,6 @@ private:
 
     // Request jsonRequest;
     void sendRequest(const Request& request, std::shared_ptr<IReplyCaller> replyCaller);
-
-    Reply makeRequest(QString methodName, RequestStatus* status, QVariantMap params);
 };
 
 } // namespace joynr

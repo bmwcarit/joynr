@@ -26,89 +26,23 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>android</artifactId>
-		<version>0.12.3</version>
+		<version>0.13.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<dependencies>
 		<dependency>
-			<groupId>io.joynr.java.core</groupId>
-			<artifactId>libjoynr</artifactId>
+			<groupId>io.joynr.java.android</groupId>
+			<artifactId>joynr-android</artifactId>
 			<version>${project.version}</version>
+			<classifier>all</classifier>
+			<scope>compile</scope>
 			<exclusions>
 				<exclusion>
-					<artifactId>commons-logging</artifactId>
-					<groupId>commons-logging</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>slf4j-api</artifactId>
-					<groupId>org.slf4j</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>slf4j-log4j12</artifactId>
-					<groupId>org.slf4j</groupId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.google.inject</groupId>
-					<artifactId>guice</artifactId>
-				</exclusion>
-				<exclusion>
-					<artifactId>xml-apis</artifactId>
-					<groupId>xml-apis</groupId>
-				</exclusion>
-				<!--
-					Must exclude httpclient here to avoid duplicate file errors when
-					building the apk, because we are using the android port
-					httpclient-android of httpclient.
-				 -->
-				<exclusion>
-					<artifactId>httpclient</artifactId>
-					<groupId>org.apache.httpcomponents</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>jsr305</artifactId>
-					<groupId>com.google.code.findbugs</groupId>
+					<groupId>*</groupId>
+					<artifactId>*</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient-android</artifactId>
-		</dependency>
-		<!-- The Android SDK must be deployed to the local repository using
-                     https://github.com/simpligility/maven-android-sdk-deployer
-		-->
-		<dependency>
-			<groupId>android</groupId>
-			<artifactId>android</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-android</artifactId>
-			<version>1.6.1-RC1</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.roboguice</groupId>
-			<artifactId>roboguice</artifactId>
-			<version>2.0</version>
-		</dependency>
 	</dependencies>
-
-
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<excludes>
-						<exclude>**/Abstract*Test.java</exclude>
-					</excludes>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 </project>

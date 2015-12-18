@@ -49,7 +49,7 @@ public class InjectorFactory<T extends ApplicationModule, S extends IApplication
         if (fInjector == null) {
             this.modules = upateModules;
         } else {
-            throw new RuntimeException("updateModels shall be invoked BEFORE the factory gets used for the first time!");
+            throw new RuntimeException("updateModules shall be invoked BEFORE the factory gets used for the first time!");
         }
     }
 

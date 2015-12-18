@@ -20,7 +20,7 @@ package io.joynr.integration;
  */
 
 import com.google.inject.Injector;
-import io.joynr.messaging.LongPollingMessagingModule;
+import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.runtime.JoynrBaseModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
@@ -33,7 +33,7 @@ public class LocalCommunicationTest extends AbstractLocalCommunicationTest {
 
     @Override
     protected JoynrRuntime getRuntime(Properties joynrConfig) {
-        injectorA = new JoynrInjectorFactory(new JoynrBaseModule(joynrConfig, new LongPollingMessagingModule())).getInjector();
+        injectorA = new JoynrInjectorFactory(new JoynrBaseModule(joynrConfig, new AtmosphereMessagingModule())).getInjector();
         return injectorA.getInstance(JoynrRuntime.class);
     }
 

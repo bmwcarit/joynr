@@ -23,11 +23,11 @@
 #include "joynr/exceptions/JoynrException.h"
 
 #include <QObject>
-#include <QString>
-#include <QVariant>
-#include <QList>
+#include <vector>
 
 #include <memory>
+
+#include "joynr/Variant.h"
 
 namespace joynr
 {
@@ -36,8 +36,8 @@ class JOYNR_EXPORT SubscriptionPublication : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString subscriptionId READ getSubscriptionId WRITE setSubscriptionId)
-    Q_PROPERTY(QList<QVariant> response READ getResponse WRITE setResponse)
+    Q_PROPERTY(std::string subscriptionId READ getSubscriptionId WRITE setSubscriptionId)
+    Q_PROPERTY(std::vector<Variant> response READ getResponse WRITE setResponse)
 public:
     SubscriptionPublication& operator=(const SubscriptionPublication& other);
     bool operator==(const SubscriptionPublication& other) const;
@@ -48,19 +48,19 @@ public:
     SubscriptionPublication(const SubscriptionPublication& other);
     SubscriptionPublication();
 
-    QString getSubscriptionId() const;
-    void setSubscriptionId(QString subscriptionId);
+    std::string getSubscriptionId() const;
+    void setSubscriptionId(const std::string& subscriptionId);
 
-    QList<QVariant> getResponse() const;
-    void setResponse(QList<QVariant> response);
+    std::vector<Variant> getResponse() const;
+    void setResponse(const std::vector<Variant>& response);
 
-    std::shared_ptr<exceptions::JoynrRuntimeException> getError() const;
-    void setError(std::shared_ptr<exceptions::JoynrRuntimeException> error);
+    const Variant& getError() const;
+    void setError(const Variant& error);
 
 private:
-    QString subscriptionId;
-    QList<QVariant> response;
-    std::shared_ptr<exceptions::JoynrRuntimeException> error;
+    std::string subscriptionId;
+    std::vector<Variant> response;
+    Variant error;
 };
 
 } // namespace joynr

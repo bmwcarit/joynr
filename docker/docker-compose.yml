@@ -1,21 +1,21 @@
 java:
         image: joynr-android:latest
         volumes:
-                - ..:/data/src
-                - ~/.m2:/home/joynr/.m2
-                - ../install:/data/install
+                - ..:/data/src:Z
+                - ~/.m2:/home/joynr/.m2:Z
+                - ../install:/data/install:Z
         hostname: joynr-build
 
 javascript:
         image: joynr-javascript:latest
         volumes:
-                - ..:/data/src
-                - ~/.m2:/home/joynr/.m2
-                - .:/data/build
+                - ..:/data/src:Z
+                - ~/.m2:/home/joynr/.m2:Z
+                - .:/data/build:Z
 
 cpp:
         image: joynr-cpp:latest
         volumes:
-                - ..:/data/src
-                - ~/.m2:/home/joynr/.m2
-                - ../build:/data/build
+                - ..:/data/src:Z
+                - ~/.m2:/home/joynr/.m2:Z
+                - ../build:/data/build:Z

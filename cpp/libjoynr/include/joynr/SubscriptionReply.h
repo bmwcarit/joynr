@@ -22,7 +22,7 @@
 #include "joynr/JoynrExport.h"
 
 #include <QObject>
-#include <QString>
+#include <string>
 
 #include <memory>
 
@@ -33,7 +33,7 @@ class JOYNR_EXPORT SubscriptionReply : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString subscriptionId READ getSubscriptionId WRITE setSubscriptionId)
+    Q_PROPERTY(std::string subscriptionId READ getSubscriptionId WRITE setSubscriptionId)
 public:
     SubscriptionReply& operator=(const SubscriptionReply& other);
     bool operator==(const SubscriptionReply& other) const;
@@ -44,11 +44,11 @@ public:
     SubscriptionReply(const SubscriptionReply& other);
     SubscriptionReply();
 
-    QString getSubscriptionId() const;
-    void setSubscriptionId(QString subscriptionId);
+    std::string getSubscriptionId() const;
+    void setSubscriptionId(const std::string& subscriptionId);
 
 private:
-    QString subscriptionId;
+    std::string subscriptionId;
 };
 
 } // namespace joynr

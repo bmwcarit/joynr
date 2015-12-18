@@ -24,15 +24,14 @@
 #include "tests/utils/MockObjects.h"
 
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
-#include "joynr/MessagingSettings.h"
-#include "joynr/SettingsMerger.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/vehicle/GpsProxy.h"
-#include "joynr/types/QtProviderQos.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/Future.h"
 #include "joynr/Util.h"
 #include "joynr/TypeUtil.h"
+#include "joynr/Settings.h"
+#include "joynr/LibjoynrSettings.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -46,11 +45,13 @@ public:
         domain(),
         runtime(NULL)
     {
-        QSettings* settings = SettingsMerger::mergeSettings(QString("test-resources/integrationtest.settings"));
-        SettingsMerger::mergeSettings(QString("test-resources/sslintegrationtest.settings"), settings);
-        SettingsMerger::mergeSettings(QString("test-resources/libjoynrintegrationtest.settings"), settings);
+        Settings* settings = new Settings("test-resources/integrationtest.settings");
+        Settings sslSettings{"test-resources/sslintegrationtest.settings"};
+        Settings integrationTestSettings{"test-resources/libjoynrintegrationtest.settings"};
+        Settings::merge(sslSettings, *settings, false);
+        Settings::merge(integrationTestSettings, *settings, false);
         runtime = new JoynrClusterControllerRuntime(NULL, settings);
-        std::string uuid = TypeUtil::toStd(Util::createUuid());
+        std::string uuid = Util::createUuid();
         domain = "cppEnd2EndSSLTest_Domain_" + uuid;
     }
 
@@ -65,8 +66,8 @@ public:
         runtime->stop(deleteChannel);
 
         // Remove participant id persistence file
-        QFile::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME());
-        QThreadSleep::msleep(550);
+        std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
+        std::this_thread::sleep_for(std::chrono::milliseconds(550));
     }
 
     ~End2EndSSLTest(){
@@ -83,7 +84,7 @@ TEST_F(End2EndSSLTest, call_rpc_method_and_get_expected_result)
     // Create a provider
     std::shared_ptr<MockGpsProvider> mockProvider(new MockGpsProvider());
     runtime->registerProvider<vehicle::GpsProvider>(domain, mockProvider);
-    QThreadSleep::msleep(550);
+    std::this_thread::sleep_for(std::chrono::milliseconds(550));
 
     // Build a proxy
     ProxyBuilder<vehicle::GpsProxy>* gpsProxyBuilder = runtime->createProxyBuilder<vehicle::GpsProxy>(domain);

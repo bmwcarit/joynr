@@ -22,11 +22,15 @@ package io.joynr.examples.android_example;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.websocket.WebsocketModule;
 import io.joynr.runtime.AbstractJoynrApplication;
+import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
+import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -41,6 +45,8 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
+import com.google.inject.Module;
+import com.google.inject.util.Modules;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -54,8 +60,8 @@ public class MyGpsProviderApplication extends AbstractJoynrApplication {
         // run application from cmd line using Maven:
         // mvn exec:java -Dexec.mainClass="io.joynr.demo.MyRadioProviderApplication" -Dexec.args="<local-domain>"
         // Get the provider domain from the command line
-        if (args.length != 1) {
-            LOG.error("\n\nUSAGE: java {} <local-domain>\n\n NOTE: Providers are registered on the local domain.",
+        if (args.length != 1 && args.length != 2) {
+            LOG.error("\n\nUSAGE: java {} <local-domain> [websocket] \n\n NOTE: Providers are registered on the local domain.",
                       MyGpsProviderApplication.class.getName());
             return;
         }
@@ -137,9 +143,22 @@ public class MyGpsProviderApplication extends AbstractJoynrApplication {
 
         provisionAccessControl(joynrConfig, localDomain);
 
+        Module runtimeModule = null;
+        if (args.length == 2 && args[1].equalsIgnoreCase("websocket")) {
+            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST, "localhost");
+            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT, "4242");
+            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL, "ws");
+            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "");
+            runtimeModule = new LibjoynrWebSocketRuntimeModule();
+        } else {
+            runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(new AtmosphereMessagingModule());
+        }
+        LOG.debug("Using the following runtime module: " + runtimeModule.getClass().getSimpleName());
+
         JoynrApplication joynrApplication = new JoynrInjectorFactory(joynrConfig,
-                                                                     new StaticDomainAccessControlProvisioningModule()).createApplication(new JoynrApplicationModule(MyGpsProviderApplication.class,
-                                                                                                                                                                     appConfig));
+                                                                     new StaticDomainAccessControlProvisioningModule(),
+                                                                     runtimeModule).createApplication(new JoynrApplicationModule(MyGpsProviderApplication.class,
+                                                                                                                                 appConfig));
         joynrApplication.run();
 
         joynrApplication.shutdown();

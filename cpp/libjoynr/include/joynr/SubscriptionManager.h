@@ -20,18 +20,20 @@
 #ifndef SUBSCRIPTIONMANAGER_H
 #define SUBSCRIPTIONMANAGER_H
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/JoynrExport.h"
 
 #include "joynr/joynrlogging.h"
-#include "joynr/ISubscriptionManager.h"
-#include "joynr/JoynrExport.h"
-#include "joynr/SubscriptionRequest.h"
+
 #include "joynr/ISubscriptionCallback.h"
+#include "joynr/ISubscriptionManager.h"
+#include "joynr/SubscriptionRequest.h"
 #include "joynr/ObjectWithDecayTime.h"
 #include "joynr/MessagingQos.h"
-#include <QReadWriteLock>
-#include <QThreadPool>
-#include <QString>
-#include <QMap>
+#include "joynr/Runnable.h"
+#include "joynr/ReadWriteLock.h"
+#include "joynr/ThreadSafeMap.h"
+
+#include <string>
 #include <memory>
 #include <stdint.h>
 
@@ -40,8 +42,8 @@ namespace joynr
 
 class DelayedScheduler;
 /**
-  * \class SubscriptionManager
-  * \brief The subscription manager is used by the proxy (via the appropriate connector)
+  * @class SubscriptionManager
+  * @brief The subscription manager is used by the proxy (via the appropriate connector)
   * to manage a subscription. This includes the registration and unregistration of attribute
   * subscriptions. In order to subscribe, a SubscriptionListener is passed in from the application
  * and
@@ -57,7 +59,7 @@ public:
 
     SubscriptionManager();
 
-    SubscriptionManager(DelayedScheduler* scheduler);
+    explicit SubscriptionManager(DelayedScheduler* scheduler);
     /**
      * @brief Subscribe to an attribute. Modifies the subscription request to include all
      * necessary information (side effect). Takes ownership of the ISubscriptionCallback, i.e.
@@ -68,10 +70,10 @@ public:
      * @param qos
      * @param subscriptionRequest
      */
-    void registerSubscription(const QString& subscribeToName,
+    void registerSubscription(const std::string& subscribeToName,
                               std::shared_ptr<ISubscriptionCallback> subscriptionCaller,
-                              std::shared_ptr<QtSubscriptionQos> qos,
-                              SubscriptionRequest& subscriptionRequest);
+                              const Variant& qosVariant,
+                              SubscriptionRequest& subscriptionRequest) override;
 
     /**
      * @brief Stop the subscription. Removes the callback and stops the notifications
@@ -79,7 +81,7 @@ public:
      *
      * @param subscriptionId
      */
-    void unregisterSubscription(const QString& subscriptionId);
+    void unregisterSubscription(const std::string& subscriptionId) override;
 
     /**
      * @brief Sets the time of last received publication (incoming attribute value) to the current
@@ -87,7 +89,7 @@ public:
      *
      * @param subscriptionId
      */
-    void touchSubscriptionState(const QString& subscriptionId);
+    void touchSubscriptionState(const std::string& subscriptionId) override;
 
     /**
      * @brief Get a shared pointer to the subscription callback. The shared pointer points to null
@@ -96,68 +98,72 @@ public:
      * @param subscriptionId
      * @return std::shared_ptr<ISubscriptionCallback>
      */
-    std::shared_ptr<ISubscriptionCallback> getSubscriptionCallback(const QString& subscriptionId);
+    std::shared_ptr<ISubscriptionCallback> getSubscriptionCallback(
+            const std::string& subscriptionId) override;
 
 private:
+    //    void checkMissedPublication(const Timer::TimerId id);
+
     DISALLOW_COPY_AND_ASSIGN(SubscriptionManager);
     class Subscription;
 
-    QMap<QString, std::shared_ptr<Subscription>> subscriptions;
-
-    QReadWriteLock subscriptionsLock;
+    ThreadSafeMap<std::string, std::shared_ptr<Subscription>> subscriptions;
 
     DelayedScheduler* missedPublicationScheduler;
     static joynr_logging::Logger* logger;
     /**
-      * \class SubscriptionManager::MissedPublicationRunnable
-      * \brief
+      * @class SubscriptionManager::MissedPublicationRunnable
+      * @brief
       */
-    class MissedPublicationRunnable : public QRunnable, public ObjectWithDecayTime
+    class MissedPublicationRunnable : public Runnable, public ObjectWithDecayTime
     {
     public:
         MissedPublicationRunnable(const JoynrTimePoint& expiryDate,
-                                  const qint64& expectedIntervalMSecs,
-                                  const QString& subscriptionId,
+                                  const int64_t& expectedIntervalMSecs,
+                                  const std::string& subscriptionId,
                                   std::shared_ptr<Subscription> subscription,
                                   SubscriptionManager& subscriptionManager,
-                                  const qint64& alertAfterInterval);
+                                  const int64_t& alertAfterInterval);
+
+        void shutdown() override;
 
         /**
          * @brief Checks whether a publication arrived in time, whether it is expired or
          *interrupted.
          *
          */
-        void run();
+        void run() override;
 
     private:
         DISALLOW_COPY_AND_ASSIGN(MissedPublicationRunnable);
-        qint64 timeSinceLastExpectedPublication(const qint64& timeSinceLastPublication);
-        qint64 expectedIntervalMSecs;
+        int64_t timeSinceLastExpectedPublication(const int64_t& timeSinceLastPublication);
+        int64_t expectedIntervalMSecs;
         std::shared_ptr<Subscription> subscription;
-        const QString subscriptionId;
-        qint64 alertAfterInterval;
+        const std::string subscriptionId;
+        int64_t alertAfterInterval;
         SubscriptionManager& subscriptionManager;
         static joynr_logging::Logger* logger;
     };
     /**
-      * \class SubscriptionManager::SubscriptionEndRunnable
-      * \brief
+      * @class SubscriptionManager::SubscriptionEndRunnable
+      * @brief
       */
-    class SubscriptionEndRunnable : public QRunnable
+    class SubscriptionEndRunnable : public Runnable
     {
     public:
-        SubscriptionEndRunnable(const QString& subscriptionId,
+        SubscriptionEndRunnable(const std::string& subscriptionId,
                                 SubscriptionManager& subscriptionManager);
 
+        void shutdown() override;
         /**
          * @brief removes subscription once running.
          *
          */
-        void run();
+        void run() override;
 
     private:
         DISALLOW_COPY_AND_ASSIGN(SubscriptionEndRunnable);
-        QString subscriptionId;
+        std::string subscriptionId;
         SubscriptionManager& subscriptionManager;
         static joynr_logging::Logger* logger;
     };

@@ -19,41 +19,41 @@ package io.joynr.proxy;
  * #L%
  */
 
-import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.dispatcher.rpc.JoynrInterface;
-import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.routing.MessageRouter;
 
 import javax.inject.Inject;
 
 import com.google.inject.name.Named;
 
+import io.joynr.runtime.SystemServicesSettings;
+import joynr.system.DiscoveryAsync;
 import joynr.system.RoutingTypes.Address;
 
 public class ProxyBuilderFactoryImpl implements ProxyBuilderFactory {
 
-    private final LocalCapabilitiesDirectory capabilitiesDirectory;
+    private final DiscoveryAsync localDiscoveryAggregator;
     private final ProxyInvocationHandlerFactory proxyInvocationHandlerFactory;
     private final MessageRouter messageRouter;
     private final Address libjoynrMessagingAddress;
 
     @Inject
-    public ProxyBuilderFactoryImpl(LocalCapabilitiesDirectory capabilitiesDirectory,
+    public ProxyBuilderFactoryImpl(DiscoveryAsync localDiscoveryAggregator,
                                    ProxyInvocationHandlerFactory proxyInvocationHandlerFactory,
                                    MessageRouter messageRouter,
-                                   @Named(ConfigurableMessagingSettings.PROPERTY_LIBJOYNR_MESSAGING_ADDRESS) Address libjoynrMessagingAddress) {
-        this.capabilitiesDirectory = capabilitiesDirectory;
+                                   @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address libjoynrMessagingAddress) {
+        this.localDiscoveryAggregator = localDiscoveryAggregator;
         this.proxyInvocationHandlerFactory = proxyInvocationHandlerFactory;
         this.messageRouter = messageRouter;
         this.libjoynrMessagingAddress = libjoynrMessagingAddress;
     }
 
     public <T extends JoynrInterface> ProxyBuilder<T> get(String domain, Class<T> interfaceClass) {
-        return new ProxyBuilderDefaultImpl<T>(capabilitiesDirectory,
-                                              domain,
-                                              interfaceClass,
-                                              proxyInvocationHandlerFactory,
-                                              messageRouter,
-                                              libjoynrMessagingAddress);
+        return new ProxyBuilderDefaultImpl<>(localDiscoveryAggregator,
+                domain,
+                interfaceClass,
+                proxyInvocationHandlerFactory,
+                messageRouter,
+                libjoynrMessagingAddress);
     }
 }

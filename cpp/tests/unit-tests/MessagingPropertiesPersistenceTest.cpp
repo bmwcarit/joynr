@@ -18,14 +18,15 @@
  */
 
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include "cluster-controller/messaging/MessagingPropertiesPersistence.h"
+#include "joynr/TypeUtil.h"
 
-#include <QFile>
+#include <cstdio>
 
 using namespace joynr;
 
-static const QString persistenceFilename("messagingPropertiesPersistenceTest.settings");
+static const std::string persistenceFilename("messagingPropertiesPersistenceTest.settings");
 
 class MessagingPropertiesPersistenceTest : public ::testing::Test {
 public:
@@ -33,7 +34,7 @@ public:
 
     void SetUp()
     {
-        QFile::remove(persistenceFilename);
+        std::remove(persistenceFilename.c_str());
     }
 
 };
@@ -42,7 +43,7 @@ public:
 TEST_F(MessagingPropertiesPersistenceTest, createChannelId)
 {
     MessagingPropertiesPersistence persist(persistenceFilename);
-    QString channelId = persist.getChannelId();
+    std::string channelId = persist.getChannelId();
 
     // Check that the channel Id looks like a UUID
     ASSERT_TRUE(channelId.size() > 32);
@@ -52,14 +53,14 @@ TEST_F(MessagingPropertiesPersistenceTest, createChannelId)
 TEST_F(MessagingPropertiesPersistenceTest, persistChannelId)
 {
     MessagingPropertiesPersistence *persist = new MessagingPropertiesPersistence(persistenceFilename);
-    QString firstChannelId = persist->getChannelId();
+    std::string firstChannelId = persist->getChannelId();
 
     // Remove the persistence object and then create a new one
     delete persist;
     persist = new MessagingPropertiesPersistence(persistenceFilename);
 
     // Check that the channel id was persisted
-    QString secondChannelId = persist->getChannelId();
+    std::string secondChannelId = persist->getChannelId();
     ASSERT_EQ(firstChannelId, secondChannelId);
     delete persist;
 

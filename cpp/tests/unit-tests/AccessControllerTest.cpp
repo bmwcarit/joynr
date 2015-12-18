@@ -19,10 +19,10 @@
 
 #include "joynr/PrivateCopyAssign.h"
 #include "tests/utils/MockObjects.h"
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include "cluster-controller/access-control/AccessController.h"
 #include "cluster-controller/access-control/LocalDomainAccessStore.h"
-#include "joynr/types/QtDiscoveryEntry.h"
+#include "joynr/types/DiscoveryEntry.h"
 #include <string>
 
 using namespace ::testing;
@@ -36,7 +36,7 @@ using namespace joynr::infrastructure::DacTypes;
 class ConsumerPermissionCallbackMaker
 {
 public:
-    ConsumerPermissionCallbackMaker(Permission::Enum permission) :
+    explicit ConsumerPermissionCallbackMaker(Permission::Enum permission) :
         permission(permission)
     {}
 
@@ -102,13 +102,13 @@ public:
     }
 
     void SetUp(){
-        request.setMethodName(QString::fromStdString(TEST_OPERATION));
+        request.setMethodName(TEST_OPERATION);
         messagingQos = MessagingQos(5000);
-        message = messageFactory.createRequest(QString::fromStdString(fromParticipantId),
-                                     QString::fromStdString(toParticipantId),
+        message = messageFactory.createRequest(fromParticipantId,
+                                     toParticipantId,
                                      messagingQos,
                                      request);
-        message.setHeaderCreatorUserId(QString::fromStdString(DUMMY_USERID));
+        message.setHeaderCreatorUserId(DUMMY_USERID);
 
         ON_CALL(
                 messagingSettingsMock,
@@ -144,7 +144,7 @@ public:
 protected:
     MockLocalDomainAccessController localDomainAccessControllerMock;
     std::shared_ptr<MockConsumerPermissionCallback> accessControllerCallback;
-    QSettings settings;
+    Settings settings;
     MockMessagingSettings messagingSettingsMock;
     MockLocalCapabilitiesDirectory localCapabilitiesDirectoryMock;
     AccessController accessController;
@@ -218,7 +218,7 @@ TEST_F(AccessControllerTest, accessWithOperationLevelAccessControl) {
                     TrustLevel::HIGH
             )
     )
-            .WillOnce(Return(QtPermission::createQt(permissionYes)));
+            .WillOnce(Return(permissionYes));
 
     EXPECT_CALL(*accessControllerCallback, hasConsumerPermission(true))
             .Times(1);
@@ -241,10 +241,8 @@ TEST_F(AccessControllerTest, accessWithOperationLevelAccessControlAndFaultyMessa
     EXPECT_CALL(*accessControllerCallback, hasConsumerPermission(false))
             .Times(1);
 
-    QString payload("invalid serialization of Request object");
-    QByteArray buff;
-    buff.append(payload);
-    message.setPayload(buff);
+    std::string payload("invalid serialization of Request object");
+    message.setPayload(payload);
 
     accessController.hasConsumerPermission(
             message,

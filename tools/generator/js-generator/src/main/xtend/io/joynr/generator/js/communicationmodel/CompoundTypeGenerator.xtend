@@ -25,7 +25,6 @@ import io.joynr.generator.templates.util.NamingUtil
 import java.util.Date
 import java.util.Set
 import org.franca.core.franca.FCompoundType
-import org.franca.core.franca.FField
 import org.franca.core.franca.FStructType
 import org.franca.core.franca.FUnionType
 
@@ -53,31 +52,6 @@ class CompoundTypeGenerator {
 	def generateUnionType(FUnionType type) '''
 		//TODO generate union type «type.joynrName»
 	'''
-
-	def checkPropertyTypeName(FField field) {
-		if (field.isArray) {
-			return "\"Array\""
-		}
-		if (field.type.isPrimitive) {
-			if (field.type.getPrimitive.bool) {
-				return "\"Boolean\""
-			}
-			if (field.type.getPrimitive.string) {
-				return "\"String\""
-			}
-			return "\"Number\""
-		} else {
-			if (field.type.complex) {
-				return "\"" + field.type.derived.joynrName + "\""
-			}
-			else {
-				/* TODO in the final version, enumerations must always be represented as object.
-				 * Thus, String must be removed here once enums are fully supported
-				 */
-				return  "[\"String\", \"Object\", \"" + field.type.derived.joynrName + "\"]" 
-			}
-		}
-	}
 
 	def generateStructType(FStructType type) '''
 		«val generationDate = (new Date()).toString»

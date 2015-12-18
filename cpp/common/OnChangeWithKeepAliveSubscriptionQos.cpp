@@ -17,8 +17,13 @@
  * #L%
  */
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/Variant.h"
 
 using namespace joynr;
+
+static bool isOnChangeWithKeepAliveSubscriptionQosSerializer =
+        Variant::registerType<OnChangeWithKeepAliveSubscriptionQos>(
+                "joynr.OnChangeWithKeepAliveSubscriptionQos");
 
 const int64_t& OnChangeWithKeepAliveSubscriptionQos::MAX_MAX_INTERVAL()
 {

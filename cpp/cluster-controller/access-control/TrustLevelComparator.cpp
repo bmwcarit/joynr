@@ -25,7 +25,7 @@ namespace joynr
 
 using namespace infrastructure::DacTypes;
 
-int TrustLevelComparator::compare(QtTrustLevel::Enum a, QtTrustLevel::Enum b)
+int TrustLevelComparator::compare(TrustLevel::Enum a, TrustLevel::Enum b)
 {
     int ordinalA = trustLevelOrdinal(a);
     int ordinalB = trustLevelOrdinal(b);
@@ -39,16 +39,16 @@ int TrustLevelComparator::compare(QtTrustLevel::Enum a, QtTrustLevel::Enum b)
     }
 }
 
-int TrustLevelComparator::trustLevelOrdinal(QtTrustLevel::Enum trustLevel)
+int TrustLevelComparator::trustLevelOrdinal(TrustLevel::Enum trustLevel)
 {
     switch (trustLevel) {
-    case QtTrustLevel::NONE:
+    case TrustLevel::NONE:
         return 0;
-    case QtTrustLevel::LOW:
+    case TrustLevel::LOW:
         return 1;
-    case QtTrustLevel::MID:
+    case TrustLevel::MID:
         return 2;
-    case QtTrustLevel::HIGH:
+    case TrustLevel::HIGH:
         return 3;
     default:
         assert(false);

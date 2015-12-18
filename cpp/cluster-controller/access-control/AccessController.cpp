@@ -24,18 +24,19 @@
 
 #include "joynr/JsonSerializer.h"
 #include "joynr/JoynrMessage.h"
-#include "joynr/types/QtDiscoveryEntry.h"
+#include "joynr/types/DiscoveryEntry.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/Request.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
-#include "joynr/system/RoutingTypes_QtAddress.h"
+#include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/joynrlogging.h"
+
+#include <tuple>
 
 #include <QByteArray>
 #include <QScopedPointer>
 
-#include <cassert>
 #include "joynr/JsonSerializer.h"
 
 namespace joynr
@@ -58,9 +59,9 @@ public:
     LdacConsumerPermissionCallback(
             AccessController& owningAccessController,
             const JoynrMessage& message,
-            const QString& domain,
-            const QString& interfaceName,
-            QtTrustLevel::Enum trustlevel,
+            const std::string& domain,
+            const std::string& interfaceName,
+            TrustLevel::Enum trustlevel,
             std::shared_ptr<IAccessController::IHasConsumerPermissionCallback> callback);
 
     // Callbacks made from the LocalDomainAccessController
@@ -70,20 +71,20 @@ public:
 private:
     AccessController& owningAccessController;
     JoynrMessage message;
-    QString domain;
-    QString interfaceName;
-    QtTrustLevel::Enum trustlevel;
+    std::string domain;
+    std::string interfaceName;
+    TrustLevel::Enum trustlevel;
     std::shared_ptr<IAccessController::IHasConsumerPermissionCallback> callback;
 
-    bool convertToBool(QtPermission::Enum permission);
+    bool convertToBool(Permission::Enum permission);
 };
 
 AccessController::LdacConsumerPermissionCallback::LdacConsumerPermissionCallback(
         AccessController& parent,
         const JoynrMessage& message,
-        const QString& domain,
-        const QString& interfaceName,
-        QtTrustLevel::Enum trustlevel,
+        const std::string& domain,
+        const std::string& interfaceName,
+        TrustLevel::Enum trustlevel,
         std::shared_ptr<IAccessController::IHasConsumerPermissionCallback> callback)
         : owningAccessController(parent),
           message(message),
@@ -97,14 +98,15 @@ AccessController::LdacConsumerPermissionCallback::LdacConsumerPermissionCallback
 void AccessController::LdacConsumerPermissionCallback::consumerPermission(
         Permission::Enum permission)
 {
-    bool hasPermission = convertToBool(QtPermission::createQt(permission));
+    bool hasPermission = convertToBool(permission);
 
     if (hasPermission == false) {
         LOG_ERROR(logger,
-                  QString("Message %1 to domain %2, interface %3 failed ACL check")
+                  FormatString("Message %1 to domain %2, interface %3 failed ACL check")
                           .arg(message.getHeaderMessageId())
                           .arg(domain)
-                          .arg(interfaceName));
+                          .arg(interfaceName)
+                          .str());
     }
     callback->hasConsumerPermission(hasPermission);
 }
@@ -112,74 +114,68 @@ void AccessController::LdacConsumerPermissionCallback::consumerPermission(
 void AccessController::LdacConsumerPermissionCallback::operationNeeded()
 {
 
-    QString operation;
-    QString messageType = message.getType();
-
-    // Deserialize the message to get the operation
-    QByteArray jsonRequest = message.getPayload();
+    std::string operation;
+    std::string messageType = message.getType();
 
     if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST) {
 
-        QScopedPointer<Request> request(JsonSerializer::deserialize<Request>(jsonRequest));
-        if (!request.isNull()) {
+        std::unique_ptr<Request> request(
+                JsonSerializer::deserialize<Request>(message.getPayload()));
+        if (request) {
             operation = request->getMethodName();
         }
     } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST) {
 
-        QScopedPointer<SubscriptionRequest> request(
-                JsonSerializer::deserialize<SubscriptionRequest>(jsonRequest));
-        if (!request.isNull()) {
+        std::unique_ptr<SubscriptionRequest> request(
+                JsonSerializer::deserialize<SubscriptionRequest>(message.getPayload()));
+        if (request) {
             operation = request->getSubscribeToName();
         }
     } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
 
-        QScopedPointer<BroadcastSubscriptionRequest> request(
-                JsonSerializer::deserialize<BroadcastSubscriptionRequest>(jsonRequest));
-        if (!request.isNull()) {
+        std::unique_ptr<BroadcastSubscriptionRequest> request(
+                JsonSerializer::deserialize<BroadcastSubscriptionRequest>(message.getPayload()));
+        if (request) {
             operation = request->getSubscribeToName();
         }
     }
 
-    if (operation.isEmpty()) {
+    if (operation.empty()) {
         LOG_ERROR(logger, "Could not deserialize request");
         callback->hasConsumerPermission(false);
         return;
     }
 
     // Get the permission for given operation
-    QtPermission::Enum permission =
+    Permission::Enum permission =
             owningAccessController.localDomainAccessController.getConsumerPermission(
-                    message.getHeaderCreatorUserId().toStdString(),
-                    domain.toStdString(),
-                    interfaceName.toStdString(),
-                    operation.toStdString(),
-                    QtTrustLevel::createStd(trustlevel));
+                    message.getHeaderCreatorUserId(), domain, interfaceName, operation, trustlevel);
 
     bool hasPermission = convertToBool(permission);
 
     if (hasPermission == false) {
-        LOG_ERROR(logger,
-                  QString("Message %1 to domain %2, interface/operation %3/%4 failed ACL check")
-                          .arg(message.getHeaderMessageId())
-                          .arg(domain)
-                          .arg(interfaceName)
-                          .arg(operation));
+        LOG_ERROR(
+                logger,
+                FormatString("Message %1 to domain %2, interface/operation %3/%4 failed ACL check")
+                        .arg(message.getHeaderMessageId())
+                        .arg(domain)
+                        .arg(interfaceName)
+                        .arg(operation)
+                        .str());
     }
 
     callback->hasConsumerPermission(hasPermission);
 }
 
-bool AccessController::LdacConsumerPermissionCallback::convertToBool(QtPermission::Enum permission)
+bool AccessController::LdacConsumerPermissionCallback::convertToBool(Permission::Enum permission)
 {
     switch (permission) {
-    case QtPermission::YES:
+    case Permission::YES:
         return true;
-    case QtPermission::ASK:
-        Q_ASSERT_X(false,
-                   "hasConsumerPermission",
-                   "QtPermission.ASK user dialog not yet implemented.");
+    case Permission::ASK:
+        assert(false && "Permission.ASK user dialog not yet implemented.");
         return false;
-    case QtPermission::NO:
+    case Permission::NO:
         return false;
     default:
         return false;
@@ -192,13 +188,13 @@ class AccessController::ProviderRegistrationObserver
         : public LocalCapabilitiesDirectory::IProviderRegistrationObserver
 {
 public:
-    ProviderRegistrationObserver(LocalDomainAccessController& localDomainAccessController)
+    explicit ProviderRegistrationObserver(LocalDomainAccessController& localDomainAccessController)
             : localDomainAccessController(localDomainAccessController)
     {
     }
     virtual void onProviderAdd(const DiscoveryEntry& discoveryEntry)
     {
-        Q_UNUSED(discoveryEntry)
+        std::ignore = discoveryEntry;
         // Ignored
     }
 
@@ -228,18 +224,18 @@ AccessController::~AccessController()
     localCapabilitiesDirectory.removeProviderRegistrationObserver(providerRegistrationObserver);
 }
 
-void AccessController::addParticipantToWhitelist(const QString& participantId)
+void AccessController::addParticipantToWhitelist(const std::string& participantId)
 {
-    whitelistParticipantIds.append(participantId);
+    whitelistParticipantIds.push_back(participantId);
 }
 
 bool AccessController::needsPermissionCheck(const JoynrMessage& message)
 {
-    if (whitelistParticipantIds.contains(message.getHeaderTo())) {
+    if (vectorContains(whitelistParticipantIds, message.getHeaderTo())) {
         return false;
     }
 
-    QString messageType = message.getType();
+    std::string messageType = message.getType();
     if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_REPLY ||
         messageType == JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION) {
         // reply messages don't need permission check
@@ -261,13 +257,14 @@ void AccessController::hasConsumerPermission(
     }
 
     // Get the domain and interface of the message destination
-    std::string participantId = message.getHeaderTo().toStdString();
+    std::string participantId = message.getHeaderTo();
     std::function<void(const types::DiscoveryEntry&)> lookupSuccessCallback =
             [this, message, callback, participantId](const types::DiscoveryEntry& discoveryEntry) {
         if (discoveryEntry.getParticipantId() != participantId) {
             LOG_ERROR(logger,
-                      QString("Failed to get capabilities for participantId %1")
-                              .arg(QString::fromStdString(participantId)));
+                      FormatString("Failed to get capabilities for participantId %1")
+                              .arg(participantId)
+                              .str());
             callback->hasConsumerPermission(false);
             return;
         }
@@ -283,18 +280,14 @@ void AccessController::hasConsumerPermission(
 
         // Create a callback object
         std::shared_ptr<LocalDomainAccessController::IGetConsumerPermissionCallback> ldacCallback(
-                new LdacConsumerPermissionCallback(*this,
-                                                   message,
-                                                   QString::fromStdString(domain),
-                                                   QString::fromStdString(interfaceName),
-                                                   QtTrustLevel::HIGH,
-                                                   callback));
+                new LdacConsumerPermissionCallback(
+                        *this, message, domain, interfaceName, TrustLevel::HIGH, callback));
 
         // Try to determine permission without expensive message deserialization
-        // For now QtTrustLevel::HIGH is assumed.
-        QString msgCreatorUid = message.getHeaderCreatorUserId();
+        // For now TrustLevel::HIGH is assumed.
+        std::string msgCreatorUid = message.getHeaderCreatorUserId();
         localDomainAccessController.getConsumerPermission(
-                msgCreatorUid.toStdString(), domain, interfaceName, TrustLevel::HIGH, ldacCallback);
+                msgCreatorUid, domain, interfaceName, TrustLevel::HIGH, ldacCallback);
     };
 
     std::function<void(const joynr::exceptions::ProviderRuntimeException&)> lookupErrorCallback =
@@ -305,17 +298,17 @@ void AccessController::hasConsumerPermission(
     localCapabilitiesDirectory.lookup(participantId, lookupSuccessCallback, lookupErrorCallback);
 }
 
-bool AccessController::hasProviderPermission(const QString& userId,
-                                             QtTrustLevel::Enum trustLevel,
-                                             const QString& domain,
-                                             const QString& interfaceName)
+bool AccessController::hasProviderPermission(const std::string& userId,
+                                             TrustLevel::Enum trustLevel,
+                                             const std::string& domain,
+                                             const std::string& interfaceName)
 {
-    Q_UNUSED(userId)
-    Q_UNUSED(trustLevel)
-    Q_UNUSED(domain)
-    Q_UNUSED(interfaceName)
+    std::ignore = userId;
+    std::ignore = trustLevel;
+    std::ignore = domain;
+    std::ignore = interfaceName;
 
-    Q_ASSERT_X(false, "hasProviderPermission", "Not yet implemented.");
+    assert(false && "Not yet implemented.");
     return true;
 }
 

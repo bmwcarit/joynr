@@ -34,17 +34,8 @@ namespace joynr
 
 JoynrMessageFactory::JoynrMessageFactory()
         : securityManager(new DummyPlatformSecurityManager()),
-          logger(joynr_logging::Logging::getInstance()->getLogger(QString("LIB"),
-                                                                  QString("JoynrMessageFactory")))
+          logger(joynr_logging::Logging::getInstance()->getLogger("LIB", "JoynrMessageFactory"))
 {
-    qRegisterMetaType<Reply>();
-    qRegisterMetaType<Request>();
-    qRegisterMetaType<SubscriptionRequest>();
-    qRegisterMetaType<BroadcastSubscriptionRequest>();
-    qRegisterMetaType<SubscriptionReply>();
-    qRegisterMetaType<SubscriptionStop>();
-    qRegisterMetaType<SubscriptionPublication>();
-    qRegisterMetaType<JoynrMessage>();
 }
 
 JoynrMessageFactory::~JoynrMessageFactory()
@@ -52,102 +43,122 @@ JoynrMessageFactory::~JoynrMessageFactory()
     delete securityManager;
 }
 
-JoynrMessage JoynrMessageFactory::createRequest(const QString& senderId,
-                                                const QString& receiverId,
+JoynrMessage JoynrMessageFactory::createRequest(const std::string& senderId,
+                                                const std::string& receiverId,
                                                 const MessagingQos& qos,
                                                 const Request& payload)
 {
     // create message and set type
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST);
-    initMsg(msg, senderId, receiverId, qos.getTtl(), payload);
+    initMsg(msg, senderId, receiverId, qos.getTtl(), JsonSerializer::serialize<Request>(payload));
     return msg;
 }
 
-JoynrMessage JoynrMessageFactory::createReply(const QString& senderId,
-                                              const QString& receiverId,
+JoynrMessage JoynrMessageFactory::createReply(const std::string& senderId,
+                                              const std::string& receiverId,
                                               const MessagingQos& qos,
                                               const Reply& payload)
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_REPLY);
-    initReplyMsg(msg, senderId, receiverId, qos.getTtl(), payload);
+    initMsg(msg, senderId, receiverId, qos.getTtl(), JsonSerializer::serialize<Reply>(payload));
     return msg;
 }
 
-JoynrMessage JoynrMessageFactory::createOneWay(const QString& senderId,
-                                               const QString& receiverId,
+JoynrMessage JoynrMessageFactory::createOneWay(const std::string& senderId,
+                                               const std::string& receiverId,
                                                const MessagingQos& qos,
                                                const Reply& payload)
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY);
-    initMsg(msg, senderId, receiverId, qos.getTtl(), payload);
+    initMsg(msg, senderId, receiverId, qos.getTtl(), JsonSerializer::serialize<Reply>(payload));
     return msg;
 }
 
 JoynrMessage JoynrMessageFactory::createSubscriptionPublication(
-        const QString& senderId,
-        const QString& receiverId,
+        const std::string& senderId,
+        const std::string& receiverId,
         const MessagingQos& qos,
         const SubscriptionPublication& payload)
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION);
-    initSubscriptionPublicationMsg(msg, senderId, receiverId, qos.getTtl(), payload);
+    initMsg(msg,
+            senderId,
+            receiverId,
+            qos.getTtl(),
+            JsonSerializer::serialize<SubscriptionPublication>(payload));
     return msg;
 }
 
-JoynrMessage JoynrMessageFactory::createSubscriptionRequest(const QString& senderId,
-                                                            const QString& receiverId,
+JoynrMessage JoynrMessageFactory::createSubscriptionRequest(const std::string& senderId,
+                                                            const std::string& receiverId,
                                                             const MessagingQos& qos,
                                                             const SubscriptionRequest& payload)
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST);
-    initMsg(msg, senderId, receiverId, qos.getTtl(), payload);
+    initMsg(msg,
+            senderId,
+            receiverId,
+            qos.getTtl(),
+            JsonSerializer::serialize<SubscriptionRequest>(payload));
     return msg;
 }
 
 JoynrMessage JoynrMessageFactory::createBroadcastSubscriptionRequest(
-        const QString& senderId,
-        const QString& receiverId,
+        const std::string& senderId,
+        const std::string& receiverId,
         const MessagingQos& qos,
         const BroadcastSubscriptionRequest& payload)
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST);
-    initMsg(msg, senderId, receiverId, qos.getTtl(), payload);
+    initMsg(msg,
+            senderId,
+            receiverId,
+            qos.getTtl(),
+            JsonSerializer::serialize<BroadcastSubscriptionRequest>(payload));
     return msg;
 }
 
-JoynrMessage JoynrMessageFactory::createSubscriptionReply(const QString& senderId,
-                                                          const QString& receiverId,
+JoynrMessage JoynrMessageFactory::createSubscriptionReply(const std::string& senderId,
+                                                          const std::string& receiverId,
                                                           const MessagingQos& qos,
                                                           const SubscriptionReply& payload)
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY);
-    initMsg(msg, senderId, receiverId, qos.getTtl(), payload);
+    initMsg(msg,
+            senderId,
+            receiverId,
+            qos.getTtl(),
+            JsonSerializer::serialize<SubscriptionReply>(payload));
     return msg;
 }
 
-JoynrMessage JoynrMessageFactory::createSubscriptionStop(const QString& senderId,
-                                                         const QString& receiverId,
+JoynrMessage JoynrMessageFactory::createSubscriptionStop(const std::string& senderId,
+                                                         const std::string& receiverId,
                                                          const MessagingQos& qos,
                                                          const SubscriptionStop& payload)
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP);
-    initMsg(msg, senderId, receiverId, qos.getTtl(), payload);
+    initMsg(msg,
+            senderId,
+            receiverId,
+            qos.getTtl(),
+            JsonSerializer::serialize<SubscriptionStop>(payload));
     return msg;
 }
 
 void JoynrMessageFactory::initMsg(JoynrMessage& msg,
-                                  const QString& senderParticipantId,
-                                  const QString& receiverParticipantId,
-                                  const qint64 ttl,
-                                  const QObject& payload)
+                                  const std::string& senderParticipantId,
+                                  const std::string& receiverParticipantId,
+                                  const int64_t ttl,
+                                  const std::string& payload)
 {
     msg.setHeaderCreatorUserId(securityManager->getCurrentProcessUserId());
     msg.setHeaderFrom(senderParticipantId);
@@ -161,50 +172,7 @@ void JoynrMessageFactory::initMsg(JoynrMessage& msg,
     msg.setHeaderContentType(JoynrMessage::VALUE_CONTENT_TYPE_APPLICATION_JSON);
 
     // set payload
-    msg.setPayload(JsonSerializer::serialize(payload));
-}
-
-// TODO This is a workaround which must be removed after the new serializer is introduced
-void JoynrMessageFactory::initReplyMsg(JoynrMessage& msg,
-                                       const QString& senderParticipantId,
-                                       const QString& receiverParticipantId,
-                                       const qint64 ttl,
-                                       const Reply& payload)
-{
-    msg.setHeaderCreatorUserId(securityManager->getCurrentProcessUserId());
-    msg.setHeaderFrom(senderParticipantId);
-    msg.setHeaderTo(receiverParticipantId);
-
-    // calculate expiry date
-    JoynrTimePoint expiryDate = DispatcherUtils::convertTtlToAbsoluteTime(ttl);
-    msg.setHeaderExpiryDate(expiryDate);
-
-    // add content type and class
-    msg.setHeaderContentType(JoynrMessage::VALUE_CONTENT_TYPE_APPLICATION_JSON);
-
-    // set payload
-    msg.setPayload(JsonSerializer::serializeReply(payload));
-}
-
-void JoynrMessageFactory::initSubscriptionPublicationMsg(JoynrMessage& msg,
-                                                         const QString& senderParticipantId,
-                                                         const QString& receiverParticipantId,
-                                                         const qint64 ttl,
-                                                         const SubscriptionPublication& payload)
-{
-    msg.setHeaderCreatorUserId(securityManager->getCurrentProcessUserId());
-    msg.setHeaderFrom(senderParticipantId);
-    msg.setHeaderTo(receiverParticipantId);
-
-    // calculate expiry date
-    JoynrTimePoint expiryDate = DispatcherUtils::convertTtlToAbsoluteTime(ttl);
-    msg.setHeaderExpiryDate(expiryDate);
-
-    // add content type and class
-    msg.setHeaderContentType(JoynrMessage::VALUE_CONTENT_TYPE_APPLICATION_JSON);
-
-    // set payload
-    msg.setPayload(JsonSerializer::serializeSubscriptionPublication(payload));
+    msg.setPayload(payload);
 }
 
 } // namespace joynr

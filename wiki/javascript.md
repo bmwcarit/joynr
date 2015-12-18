@@ -88,10 +88,12 @@ The Javascript application must load and initialize the joynr runtime environmen
 any other Joynr API.
 
 ```javascript
-joynr.load(provisioning, function(error, loadedJoynr) {
+joynr.load(provisioning).then(function(loadedJoynr) {
     joynr = loadedJoynr;
 
     // build one or more proxies and optionally set up event handlers
+}).catch(function(error) {
+    // error handling
 });
 
 ```
@@ -568,11 +570,7 @@ $(function() {
     var provisioning = {};
     provisioning.channelId = "someChannel";
 
-    joynr.load(provisioning, function(error, loadedJoynr) {
-        if (error) {
-            throw error;
-        }
-
+    joynr.load(provisioning).then(function(loadedJoynr) {
         joynr = loadedJoynr;
 
         // when applications starts up:
@@ -582,6 +580,10 @@ $(function() {
         ...
         // when application ends:
         // unregister <Interface>provider
+    }).catch(function(error){
+        if (error) {
+            throw error;
+        }
     });
 })();
 ```

@@ -33,6 +33,7 @@ import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FBroadcast
 import org.franca.core.franca.FCompoundType
 import org.franca.core.franca.FInterface
+import org.franca.core.franca.FMapType
 import org.franca.core.franca.FMethod
 import org.franca.core.franca.FType
 import org.franca.core.franca.FTypedElement
@@ -196,7 +197,8 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 			else{
 				return member.getDEFAULTVALUE();
 			}
-		} else */if (isComplex(element.type)) {
+		} else */
+		if (isCompound(element.type) || element.type.isMap) {
 			return "";
 		} else if (isArray(element)){
 			return "";
@@ -210,7 +212,7 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 	}
 
 	def Iterable<String> getRequiredIncludesFor(FCompoundType datatype){
-		val members = getComplexAndEnumMembers(datatype);
+		val members = getComplexMembers(datatype);
 
 		val typeList = new TreeSet<String>();
 		if (hasExtendsDeclaration(datatype)){
@@ -226,6 +228,21 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 		return typeList;
 	}
 
+    def Iterable<String> getRequiredIncludesFor(FMapType datatype){
+        val typeList = new TreeSet<String>();
+        var type = getDatatype(datatype.keyType);
+        if (type instanceof FType){
+            typeList.add(getIncludeOf(type));
+        }
+
+        type = getDatatype(datatype.valueType)
+        if (type instanceof FType){
+            typeList.add(getIncludeOf(type));
+        }
+    
+        return typeList;
+    }
+
 	def Set<String> getIncludesFor(Iterable<FBasicTypeId> datatypes)
 
 	abstract def String getIncludeForArray()
@@ -234,7 +251,7 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 
 	def Set<String> getRequiredIncludesFor(FInterface serviceInterface){
 		val includeSet = new HashSet<String>();
-		for(datatype: getAllComplexAndEnumTypes(
+		for(datatype: getAllComplexTypes(
 			serviceInterface,
 			false,
 			true,

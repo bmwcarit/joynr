@@ -105,6 +105,17 @@ define(
                     providerAttribute.unregisterObserver(observer);
                 };
 
+                /**
+                 * See [ProviderAttribute.checkGet]{@link ProviderAttribute#checkGet}
+                 *
+                 * @function ProviderAttributeNotifyRead#check
+                 *
+                 * @returns {Boolean}
+                 */
+                this.check = function check() {
+                    return providerAttribute.checkGet();
+                };
+
                 return Object.freeze(this);
             }
 

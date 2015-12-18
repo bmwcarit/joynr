@@ -82,7 +82,6 @@ public class CapabilitiesStorePersistedTest {
             }
         });
         service = injector.getInstance(PersistService.class);
-        service.start();
         store = injector.getInstance(CapabilitiesStore.class);
     }
 

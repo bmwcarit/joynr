@@ -24,6 +24,7 @@ import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
+import io.joynr.generator.templates.util.FMapTypeAsLastComparator
 import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
@@ -60,11 +61,11 @@ class InterfaceHTemplate implements InterfaceTemplate{
 #ifndef «headerGuard»
 #define «headerGuard»
 
-«FOR datatype: getAllComplexAndEnumTypes(serviceInterface)»
+«FOR datatype: IterableExtensions.sortWith(getAllComplexTypes(serviceInterface),new FMapTypeAsLastComparator())»
 	«IF datatype instanceof FType»
-		«IF isComplex(datatype)»
+		«IF isCompound(datatype)»
 			«getNamespaceStarter(datatype, true)»
-				class «(datatype).joynrName»;
+			class «(datatype).joynrName»;
 			«getNamespaceEnder(datatype, true)»
 		«ELSE »
 			#include "«getIncludeOf(datatype)»"

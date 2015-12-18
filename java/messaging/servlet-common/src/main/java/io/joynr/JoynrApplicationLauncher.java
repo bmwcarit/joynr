@@ -43,7 +43,8 @@ import com.google.inject.Injector;
 import com.google.inject.Module;
 
 /**
- * Scans all subpackages under "de.bmw" for instances of AbstractJoynApplication, which are then injected and run.
+ * Used to start joynr applications using a common injector
+ *
  */
 public class JoynrApplicationLauncher {
 

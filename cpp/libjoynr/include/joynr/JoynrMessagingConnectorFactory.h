@@ -20,9 +20,10 @@
 #define JOYNRMESSAGINGCONNECTORFACTORY_H
 
 #include "joynr/JoynrExport.h"
-#include "joynr/types/QtCommunicationMiddleware.h"
+#include "joynr/types/CommunicationMiddleware.h"
 
 #include <string>
+#include <tuple>
 
 namespace joynr
 {
@@ -31,10 +32,6 @@ class IJoynrMessageSender;
 class ISubscriptionManager;
 class MessagingQos;
 class IClientCache;
-namespace system
-{
-class QtAddress;
-}
 
 // Default implementation of a JoynrMessagingConnectorFactoryHelper
 // Template specializations are found in the generated *JoynrMessagingConnector.h files
@@ -52,15 +49,15 @@ public:
               IClientCache* cache,
               bool cached)
     {
-        Q_UNUSED(messageSender);
-        Q_UNUSED(subscriptionManager);
-        Q_UNUSED(domain);
-        Q_UNUSED(interfaceName);
-        Q_UNUSED(proxyParticipantId);
-        Q_UNUSED(providerParticipantId);
-        Q_UNUSED(qosSettings);
-        Q_UNUSED(cache);
-        Q_UNUSED(cached);
+        std::ignore = messageSender;
+        std::ignore = subscriptionManager;
+        std::ignore = domain;
+        std::ignore = interfaceName;
+        std::ignore = proxyParticipantId;
+        std::ignore = providerParticipantId;
+        std::ignore = qosSettings;
+        std::ignore = cache;
+        std::ignore = cached;
         notImplemented();
         return 0;
     }

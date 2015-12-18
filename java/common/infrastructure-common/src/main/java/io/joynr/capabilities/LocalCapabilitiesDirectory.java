@@ -20,11 +20,14 @@ package io.joynr.capabilities;
  */
 
 import io.joynr.arbitration.DiscoveryQos;
+import io.joynr.provider.DeferredVoid;
+import io.joynr.provider.Promise;
+import joynr.system.DiscoveryProvider;
 import joynr.types.DiscoveryEntry;
 
 import javax.annotation.CheckForNull;
 
-public interface LocalCapabilitiesDirectory {
+public interface LocalCapabilitiesDirectory extends DiscoveryProvider {
     /**
      * Adds a capability to the list of registered local capabilities. May also transmit the updated list to the
      * capabilities directory.
@@ -32,7 +35,7 @@ public interface LocalCapabilitiesDirectory {
      * @param discoveryEntry The capability to be added.
      * @return future to get the async result of the call
      */
-    RegistrationFuture add(DiscoveryEntry discoveryEntry);
+    Promise<DeferredVoid> add(DiscoveryEntry discoveryEntry);
 
     /**
      * Removes capabilities from the list of local capabilities and at the capabilities directory.

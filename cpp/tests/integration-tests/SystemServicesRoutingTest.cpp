@@ -16,13 +16,14 @@
  * limitations under the License.
  * #L%
  */
-#include "PrettyPrint.h"
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <string>
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/TypeUtil.h"
+#include "joynr/Settings.h"
+#include "joynr/LibjoynrSettings.h"
 
 #include "joynr/system/RoutingProxy.h"
 
@@ -30,10 +31,10 @@ using namespace joynr;
 
 class SystemServicesRoutingTest : public ::testing::Test {
 public:
-    QString settingsFilename;
-    QSettings* settings;
+    std::string settingsFilename;
+    Settings* settings;
     std::string routingDomain;
-    QString routingProviderParticipantId;
+    std::string routingProviderParticipantId;
     JoynrClusterControllerRuntime* runtime;
     IMessageReceiver* mockMessageReceiver;
     MockMessageSender* mockMessageSender;
@@ -43,7 +44,7 @@ public:
 
     SystemServicesRoutingTest() :
             settingsFilename("test-resources/SystemServicesRoutingTest.settings"),
-            settings(new QSettings(settingsFilename, QSettings::IniFormat)),
+            settings(new Settings(settingsFilename)),
             routingDomain(),
             routingProviderParticipantId(),
             runtime(NULL),
@@ -55,15 +56,15 @@ public:
     {
         SystemServicesSettings systemSettings(*settings);
         systemSettings.printSettings();
-        routingDomain = TypeUtil::toStd(systemSettings.getDomain());
+        routingDomain = systemSettings.getDomain();
         routingProviderParticipantId = systemSettings.getCcRoutingProviderParticipantId();
         
         discoveryQos.setCacheMaxAge(1000);
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
-        discoveryQos.addCustomParameter("fixedParticipantId", TypeUtil::toStd(routingProviderParticipantId));
+        discoveryQos.addCustomParameter("fixedParticipantId", routingProviderParticipantId);
         discoveryQos.setDiscoveryTimeout(50);
 
-        QString channelId("SystemServicesRoutingTest.ChannelId");
+        std::string channelId("SystemServicesRoutingTest.ChannelId");
         EXPECT_CALL(*(dynamic_cast<MockMessageReceiver*>(mockMessageReceiver)), getReceiveChannelId())
                 .WillRepeatedly(::testing::ReturnRefOfCopy(channelId));
 
@@ -78,8 +79,7 @@ public:
         runtime->deleteChannel();
         runtime->stopMessaging();
         delete runtime;
-        delete settings;
-        QFile::remove(settingsFilename);
+        std::remove(settingsFilename.c_str());
     }
 
     void SetUp(){
@@ -88,8 +88,8 @@ public:
     }
 
     void TearDown(){
-        QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME());
-        QFile::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME());
+        std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME().c_str());
+        std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
         delete routingProxy;
         delete routingProxyBuilder;
     }

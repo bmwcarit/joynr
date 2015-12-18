@@ -2,7 +2,8 @@ message(STATUS "#############################################")
 message(STATUS "Configuring runtimes...")
 message(STATUS "#############################################\n")
 
-get_target_property(qjson_PUBLIC_INCLUDE_DIRECTORY qjson PUBLIC_INCLUDE_DIRECTORY)
+get_target_property(jsmn_PUBLIC_INCLUDE_DIRECTORY jsmn PUBLIC_INCLUDE_DIRECTORY)
+get_target_property(jsonserializer_PUBLIC_INCLUDE_DIRECTORY jsonserializer PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
 
@@ -22,6 +23,7 @@ set(
     ${runtime_PUBLIC_INCLUDE_DIRECTORY}
     "../"
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
+    ${jsmn_PUBLIC_INCLUDE_DIRECTORY}
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
 )
 
@@ -79,21 +81,11 @@ if(${BUILD_CLUSTER_CONTROLLER})
         ${JoynrClusterControllerRuntime_SOURCES}
     )
 
-    if(${ENABLE_CLANG_FORMATTER})
-        set(COMMENT "running C++ code formatter: clang-format")
-        set(COMMENT "${COMMENT}\nworking directory: ${CMAKE_CURRENT_SOURCE_DIR}")
-        set(COMMENT "${COMMENT}\nprocessing header files:\n${JoynrClusterControllerRuntime_HEADERS}")
-        set(COMMENT "${COMMENT}\nprocessing source files:\n${JoynrClusterControllerRuntime_SOURCES}")
+    AddClangFormat(JoynrClusterControllerRuntime)
 
-        add_custom_command(
-            TARGET JoynrClusterControllerRuntime
-            PRE_BUILD
-            COMMAND clang-format -i ${JoynrClusterControllerRuntime_HEADERS} ${JoynrClusterControllerRuntime_SOURCES}
-            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-            COMMENT "${COMMENT}"
-            VERBATIM
-        )
-    endif(${ENABLE_CLANG_FORMATTER})
+    AddIncludeWhatYouUse(JoynrClusterControllerRuntime)
+
+    AddClangTidy(JoynrClusterControllerRuntime)
 
     set_target_properties(
         JoynrClusterControllerRuntime
@@ -169,7 +161,7 @@ set(
 
 include_directories(
     ${JoynrRuntime_INCLUDE_DIRECTORIES}
-    ${qjson_PUBLIC_INCLUDE_DIRECTORY}
+    ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
 )
 
 add_library(
@@ -181,31 +173,17 @@ add_library(
     ${JoynrWsRuntime_SOURCES}
 )
 
-if(${ENABLE_CLANG_FORMATTER})
-    set(COMMENT "running C++ code formatter: clang-format")
-    set(COMMENT "${COMMENT}\nworking directory: ${CMAKE_CURRENT_SOURCE_DIR}")
-    set(COMMENT "${COMMENT}\nprocessing header files:\n${JoynrRuntime_PRIVATE_HEADERS};${JoynrWsRuntime_PRIVATE_HEADERS}")
-    set(COMMENT "${COMMENT}\nprocessing source files:\n${JoynrRuntime_SOURCES};${JoynrWsRuntime_SOURCES}")
+AddClangFormat(JoynrWsRuntime)
 
-    add_custom_target(
-        format-JoynrWsRuntime
-        COMMAND clang-format -i
-            ${JoynrRuntime_PRIVATE_HEADERS}
-            ${JoynrWsRuntime_PRIVATE_HEADERS}
-            ${JoynrRuntime_SOURCES}
-            ${JoynrWsRuntime_SOURCES}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        COMMENT "${COMMENT}"
-        VERBATIM
-    )
-    add_dependencies(JoynrWsRuntime format-JoynrWsRuntime)
-endif(${ENABLE_CLANG_FORMATTER})
+AddIncludeWhatYouUse(JoynrWsRuntime)
+
+AddClangTidy(JoynrWsRuntime)
 
 target_link_libraries(
     JoynrWsRuntime
     JoynrCommon
     Joynr
-    qjson
+    jsonserializer
 )
 
 generate_export_header(
@@ -274,21 +252,11 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         ${JoynrDbusRuntime_SOURCES}
     )
 
-    if(${ENABLE_CLANG_FORMATTER})
-        set(COMMENT "running C++ code formatter: clang-format")
-        set(COMMENT "${COMMENT}\nworking directory: ${CMAKE_CURRENT_SOURCE_DIR}")
-        set(COMMENT "${COMMENT}\nprocessing header files:\n${JoynrDbusRuntime_PRIVATE_HEADERS}")
-        set(COMMENT "${COMMENT}\nprocessing source files:\n${JoynrDbusRuntime_SOURCES}")
+    AddClangFormat(JoynrDbusRuntime)
 
-        add_custom_target(
-            format-JoynrDbusRuntime
-            COMMAND clang-format -i ${JoynrDbusRuntime_PRIVATE_HEADERS} ${JoynrDbusRuntime_SOURCES}
-            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-            COMMENT "${COMMENT}"
-            VERBATIM
-        )
-    add_dependencies(JoynrDbusRuntime format-JoynrDbusRuntime)
-    endif(${ENABLE_CLANG_FORMATTER})
+    AddIncludeWhatYouUse(JoynrDbusRuntime)
+
+    AddClangTidy(JoynrDbusRuntime)
 
     target_link_libraries(
         JoynrDbusRuntime
@@ -330,30 +298,22 @@ if(${BUILD_CLUSTER_CONTROLLER})
     #executable to start the cluster controller
     set(
         cluster-controller_HEADERS
-        StartClusterController.cpp
     )
+
     set(
         cluster-controller_SOURCES
         StartClusterController.cpp
     )
 
-    add_executable(cluster-controller StartClusterController.cpp)
+    add_executable(
+        cluster-controller
+        ${cluster-controller_HEADERS}
+        ${cluster-controller_SOURCES}
+    )
 
-    if(${ENABLE_CLANG_FORMATTER})
-        set(COMMENT "running C++ code formatter: clang-format")
-        set(COMMENT "${COMMENT}\nworking directory: ${CMAKE_CURRENT_SOURCE_DIR}")
-        set(COMMENT "${COMMENT}\nprocessing header files:\n${cluster-controller_HEADERS}")
-        set(COMMENT "${COMMENT}\nprocessing source files:\n${cluster-controller_SOURCES}")
+    AddClangFormat(cluster-controller)
 
-        add_custom_target(
-            format-cluster-controller
-            COMMAND clang-format -i ${cluster-controller_HEADERS} ${cluster-controller_SOURCES}
-            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-            COMMENT "${COMMENT}"
-            VERBATIM
-        )
-        add_dependencies(cluster-controller format-cluster-controller)
-    endif(${ENABLE_CLANG_FORMATTER})
+    AddClangTidy(cluster-controller)
 
     if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         target_link_libraries(cluster-controller

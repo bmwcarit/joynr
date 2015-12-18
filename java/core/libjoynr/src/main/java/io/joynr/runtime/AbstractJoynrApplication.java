@@ -24,9 +24,9 @@ import com.google.inject.name.Named;
 
 public abstract class AbstractJoynrApplication extends JoynrApplication {
     public static final String PROPERTY_JOYNR_DOMAIN_LOCAL = "joynr.domain.local";
-    @Inject
+    @Inject(optional = true)
     @Named(PROPERTY_JOYNR_DOMAIN_LOCAL)
-    protected String localDomain;
+    protected String localDomain = "localdomain";
 
     @Inject
     protected JoynrRuntime runtime;

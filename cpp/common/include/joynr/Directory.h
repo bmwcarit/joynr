@@ -20,18 +20,18 @@
 #define DIRECTORY_H
 #include "joynr/PrivateCopyAssign.h"
 
-#include "joynr/DelayedScheduler.h"
+#include "joynr/SingleThreadedDelayedScheduler.h"
+#include "joynr/Runnable.h"
 #include "joynr/ITimeoutListener.h"
 #include "joynr/joynrlogging.h"
-#include <typeinfo>
 #include "joynr/IReplyCaller.h"
 
-#include <QString>
 #include <string>
 #include <functional>
+
 #include <QtGlobal>
-#include <QMutex>
-#include <QHash>
+#include <mutex>
+#include <unordered_map>
 
 #include <memory>
 
@@ -47,10 +47,10 @@ namespace joynr
   * entry will be removed automatically after this time. The methods are thread-safe.
   *
   * This template can be used on libJoynr and ClusterController sides:
-  *     MessagingEndpointDirectory,         CC
-  *     ParticipantDirectory,               CC
-  *     <Middleware>RequestCallerDirectory, libjoynr
-  *     ReplyCallerDirectory,               libjoynr
+  *     MessagingEndpointDirectory,           CC
+  *     ParticipantDirectory,                 CC
+  *     \<Middleware\>RequestCallerDirectory, libjoynr
+  *     ReplyCallerDirectory,                 libjoynr
   */
 
 template <typename Key, typename T>
@@ -66,8 +66,8 @@ public:
     virtual void add(const Key& keyId, T* value) = 0;
     virtual void add(const Key& keyId, std::shared_ptr<T> value) = 0;
 
-    virtual void add(const Key& keyId, T* value, qint64 ttl_ms) = 0;
-    virtual void add(const Key& keyId, std::shared_ptr<T> value, qint64 ttl_ms) = 0;
+    virtual void add(const Key& keyId, T* value, int64_t ttl_ms) = 0;
+    virtual void add(const Key& keyId, std::shared_ptr<T> value, int64_t ttl_ms) = 0;
     virtual void remove(const Key& keyId) = 0;
 };
 
@@ -88,23 +88,24 @@ public:
     /*
      * Adds an element and removes it automatically after ttl_ms milliseconds have past.
      */
-    void add(const Key& keyId, T* value, qint64 ttl_ms);
-    void add(const Key& keyId, std::shared_ptr<T> value, qint64 ttl_ms);
+    void add(const Key& keyId, T* value, int64_t ttl_ms);
+    void add(const Key& keyId, std::shared_ptr<T> value, int64_t ttl_ms);
     void remove(const Key& keyId);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(Directory);
-    QHash<Key, std::shared_ptr<T>> callbackMap;
-    QMutex mutex;
+    std::unordered_map<Key, std::shared_ptr<T>> callbackMap;
+    std::mutex mutex;
     SingleThreadedDelayedScheduler callBackRemoverScheduler;
     static joynr_logging::Logger* logger;
 };
 
 template <typename Key, typename T>
-class RemoverRunnable : public QRunnable
+class RemoverRunnable : public Runnable
 {
 public:
     RemoverRunnable(const Key& keyId, Directory<Key, T>* directory);
+    void shutdown();
     void run();
 
 private:
@@ -125,31 +126,29 @@ joynr_logging::Logger* Directory<Key, T>::logger =
 template <typename Key, typename T>
 Directory<Key, T>::~Directory()
 {
+    callBackRemoverScheduler.shutdown();
     LOG_TRACE(logger,
-              QString("destructor: number of entries = ") + QString::number(callbackMap.size()));
+              FormatString("destructor: number of entries = %1").arg(callbackMap.size()).str());
 }
 
 template <typename Key, typename T>
-Directory<Key, T>::Directory(const std::string& directoryName)
-        : callbackMap(),
-          mutex(),
-          callBackRemoverScheduler(QString::fromStdString(directoryName) +
-                                   QString("-CleanUpScheduler"))
+Directory<Key, T>::Directory(const std::string& /*directoryName*/)
+        : callbackMap(), mutex(), callBackRemoverScheduler("DirRemover")
 {
 }
 
 template <typename Key, typename T>
 std::shared_ptr<T> Directory<Key, T>::lookup(const Key& keyId)
 {
-    QMutexLocker locker(&mutex);
-    return callbackMap.value(keyId);
+    std::lock_guard<std::mutex> lock(mutex);
+    return callbackMap[keyId];
 }
 
 template <typename Key, typename T>
 bool Directory<Key, T>::contains(const Key& keyId)
 {
-    QMutexLocker locker(&mutex);
-    return callbackMap.contains(keyId);
+    std::lock_guard<std::mutex> lock(mutex);
+    return callbackMap.find(keyId) != callbackMap.cend();
 }
 
 template <typename Key, typename T>
@@ -163,42 +162,47 @@ void Directory<Key, T>::add(const Key& keyId, T* value)
 template <typename Key, typename T>
 void Directory<Key, T>::add(const Key& keyId, std::shared_ptr<T> value)
 {
-    QMutexLocker locker(&mutex);
-    callbackMap.insert(keyId, value);
+    std::lock_guard<std::mutex> lock(mutex);
+    callbackMap[keyId] = value;
 }
 
 // ownership passed off to the directory, which passes off to SharedPointer
 template <typename Key, typename T>
-void Directory<Key, T>::add(const Key& keyId, T* value, qint64 ttl_ms)
+void Directory<Key, T>::add(const Key& keyId, T* value, int64_t ttl_ms)
 {
     std::shared_ptr<T> valuePtr = std::shared_ptr<T>(value);
     add(keyId, valuePtr, ttl_ms);
 }
 
 template <typename Key, typename T>
-void Directory<Key, T>::add(const Key& keyId, std::shared_ptr<T> value, qint64 ttl_ms)
+void Directory<Key, T>::add(const Key& keyId, std::shared_ptr<T> value, int64_t ttl_ms)
 {
     // Insert the value
     {
-        QMutexLocker locker(&mutex);
-        callbackMap.insert(keyId, value);
+        std::lock_guard<std::mutex> lock(mutex);
+        callbackMap[keyId] = value;
     }
 
     // make a removerRunnable and shedule it to remove the entry after ttl!
     RemoverRunnable<Key, T>* removerRunnable = new RemoverRunnable<Key, T>(keyId, this);
-    callBackRemoverScheduler.schedule(removerRunnable, ttl_ms);
+    callBackRemoverScheduler.schedule(removerRunnable, std::chrono::milliseconds(ttl_ms));
 }
 
 template <typename Key, typename T>
 void Directory<Key, T>::remove(const Key& keyId)
 {
-    QMutexLocker locker(&mutex);
-    callbackMap.remove(keyId);
+    std::lock_guard<std::mutex> lock(mutex);
+    callbackMap.erase(keyId);
 }
 
 template <typename Key, typename T>
 RemoverRunnable<Key, T>::RemoverRunnable(const Key& keyId, Directory<Key, T>* directory)
-        : keyId(keyId), directory(directory)
+        : Runnable(true), keyId(keyId), directory(directory)
+{
+}
+
+template <typename Key, typename T>
+void RemoverRunnable<Key, T>::shutdown()
 {
 }
 
@@ -220,10 +224,11 @@ void RemoverRunnable<Key, T>::run()
  */
 
 template <typename Key>
-class RemoverRunnable<Key, IReplyCaller> : public QRunnable
+class RemoverRunnable<Key, IReplyCaller> : public Runnable
 {
 public:
     RemoverRunnable(const Key& keyId, Directory<Key, IReplyCaller>* directory);
+    void shutdown();
     void run();
 
 private:
@@ -232,6 +237,11 @@ private:
     Directory<Key, IReplyCaller>* directory;
     static joynr_logging::Logger* logger;
 };
+
+template <typename Key>
+void RemoverRunnable<Key, IReplyCaller>::shutdown()
+{
+}
 
 template <typename Key>
 void RemoverRunnable<Key, IReplyCaller>::run()
@@ -246,7 +256,7 @@ void RemoverRunnable<Key, IReplyCaller>::run()
 template <typename Key>
 RemoverRunnable<Key, IReplyCaller>::RemoverRunnable(const Key& keyId,
                                                     Directory<Key, IReplyCaller>* directory)
-        : keyId(keyId), directory(directory)
+        : Runnable(true), keyId(keyId), directory(directory)
 {
 }
 
@@ -256,6 +266,8 @@ joynr_logging::Logger* RemoverRunnable<Key, IReplyCaller>::logger =
 
 } // namespace joynr
 
+#ifndef STRING_QHASH
+#define STRING_QHASH
 namespace std
 {
 // using std::strings as key in a Directory requires qHash to be implemented
@@ -264,5 +276,5 @@ inline uint qHash(const std::string& key)
     return std::hash<std::string>()(key);
 }
 }
-
+#endif // STRING_QHASH
 #endif // DIRECTORY_H

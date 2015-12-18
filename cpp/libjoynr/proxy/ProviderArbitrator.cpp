@@ -16,16 +16,16 @@
  * limitations under the License.
  * #L%
  */
-#include <QTime>
 #include <vector>
-
+#include <chrono>
 #include "joynr/ProviderArbitrator.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/system/IDiscovery.h"
 
 #include "joynr/TypeUtil.h"
-#include "joynr/types/QtDiscoveryScope.h"
+#include "joynr/types/DiscoveryScope.h"
+#include "joynr/Semaphore.h"
 
 #include <cassert>
 
@@ -49,7 +49,7 @@ ProviderArbitrator::ProviderArbitrator(const std::string& domain,
           participantId(""),
           connection(joynr::types::CommunicationMiddleware::NONE),
           arbitrationStatus(ArbitrationStatus::ArbitrationRunning),
-          listener(NULL),
+          listener(nullptr),
           listenerSemaphore(0)
 {
 }
@@ -60,13 +60,12 @@ ProviderArbitrator::~ProviderArbitrator()
 
 void ProviderArbitrator::startArbitration()
 {
-    QTime timer;
-    QSemaphore semaphore;
+    joynr::Semaphore semaphore;
 
     // Arbitrate until successful or timed out
     while (true) {
 
-        timer.start();
+        auto start = std::chrono::system_clock::now();
 
         // Attempt arbitration (overloaded in subclasses)
         attemptArbitration();
@@ -76,15 +75,19 @@ void ProviderArbitrator::startArbitration()
             return;
 
         // Reduce the timeout by the elapsed time
-        discoveryQos.setDiscoveryTimeout(discoveryQos.getDiscoveryTimeout() - timer.restart());
+        auto now = std::chrono::system_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
+        discoveryQos.setDiscoveryTimeout(discoveryQos.getDiscoveryTimeout() - duration.count());
         if (discoveryQos.getDiscoveryTimeout() <= 0)
             break;
 
         // If there are no suitable providers, wait for a second before trying again
-        semaphore.tryAcquire(1, discoveryQos.getRetryInterval());
+        semaphore.waitFor(std::chrono::milliseconds(discoveryQos.getRetryInterval()));
 
         // Reduce the timeout again
-        discoveryQos.setDiscoveryTimeout(discoveryQos.getDiscoveryTimeout() - timer.elapsed());
+        now = std::chrono::system_clock::now();
+        duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
+        discoveryQos.setDiscoveryTimeout(discoveryQos.getDiscoveryTimeout() - duration.count());
         if (discoveryQos.getDiscoveryTimeout() <= 0)
             break;
     }
@@ -141,10 +144,10 @@ std::string ProviderArbitrator::getParticipantId()
 void ProviderArbitrator::setParticipantId(std::string participantId)
 {
     this->participantId = participantId;
-    if (listenerSemaphore.tryAcquire(1)) {
-        assert(listener != NULL);
+    if (listenerSemaphore.waitFor()) {
+        assert(listener != nullptr);
         listener->setParticipantId(participantId);
-        listenerSemaphore.release(1);
+        listenerSemaphore.notify();
     }
 }
 
@@ -162,10 +165,10 @@ void ProviderArbitrator::setConnection(
         const joynr::types::CommunicationMiddleware::Enum& connection)
 {
     this->connection = connection;
-    if (listenerSemaphore.tryAcquire(1)) {
-        assert(listener != NULL);
+    if (listenerSemaphore.waitFor()) {
+        assert(listener != nullptr);
         listener->setConnection(connection);
-        listenerSemaphore.release(1);
+        listenerSemaphore.notify();
     }
 }
 
@@ -183,33 +186,34 @@ void ProviderArbitrator::setArbitrationStatus(
         ArbitrationStatus::ArbitrationStatusType arbitrationStatus)
 {
     this->arbitrationStatus = arbitrationStatus;
-    if (listenerSemaphore.tryAcquire(1)) {
+    if (listenerSemaphore.waitFor()) {
         try {
-            assert(listener != NULL);
+            assert(listener != nullptr);
             listener->setArbitrationStatus(arbitrationStatus);
         } catch (exceptions::DiscoveryException& e) {
             LOG_ERROR(logger,
-                      "Exception while setting arbitration status: " +
-                              QString::fromStdString(e.getMessage()));
-            listenerSemaphore.release(1);
+                      FormatString("Exception while setting arbitration status: %1")
+                              .arg(e.getMessage())
+                              .str());
+            listenerSemaphore.notify();
             throw;
         }
-        listenerSemaphore.release(1);
+        listenerSemaphore.notify();
     }
 }
 
 void ProviderArbitrator::removeArbitationListener()
 {
-    if (listener != NULL) {
-        this->listener = NULL;
-        listenerSemaphore.acquire(1);
+    if (listener != nullptr) {
+        this->listener = nullptr;
+        listenerSemaphore.wait();
     }
 }
 
 void ProviderArbitrator::setArbitrationListener(IArbitrationListener* listener)
 {
     this->listener = listener;
-    listenerSemaphore.release(1);
+    listenerSemaphore.notify();
     if (arbitrationStatus == ArbitrationStatus::ArbitrationSuccessful) {
         listener->setParticipantId(participantId);
         listener->setConnection(connection);

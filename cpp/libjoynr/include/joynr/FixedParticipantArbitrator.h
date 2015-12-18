@@ -31,7 +31,6 @@ namespace joynr
 namespace system
 {
 class IDiscoverySync;
-class QtDiscoveryEntry;
 }
 
 class FixedParticipantArbitrator : public ProviderArbitrator
@@ -54,7 +53,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(FixedParticipantArbitrator);
     static joynr_logging::Logger* logger;
     std::string participantId;
-    qint64 reqCacheDataFreshness;
+    int64_t reqCacheDataFreshness;
 };
 
 } // namespace joynr

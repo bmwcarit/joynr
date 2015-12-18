@@ -19,11 +19,12 @@ package io.joynr.arbitration;
  * #L%
  */
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_ARBITRATION_MINIMUMRETRYDELAY;
-import io.joynr.capabilities.LocalCapabilitiesDirectory;
+
 import io.joynr.exceptions.DiscoveryException;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import joynr.system.DiscoveryAsync;
 
 public final class ArbitratorFactory {
 
@@ -44,7 +45,7 @@ public final class ArbitratorFactory {
      *            Provided interface.
      * @param discoveryQos
      *            Arbitration settings like arbitration strategy, timeout and strategy specific parameters.
-     * @param capabilitiesSource
+     * @param localDiscoveryAggregator
      *            Source for capabilities lookup.
      * @return the created Arbitrator object
      * @throws DiscoveryException if arbitration strategy is unknown
@@ -52,35 +53,35 @@ public final class ArbitratorFactory {
     public static Arbitrator create(final String domain,
                                     final String interfaceName,
                                     final DiscoveryQos discoveryQos,
-                                    LocalCapabilitiesDirectory capabilitiesSource) throws DiscoveryException {
+                                    DiscoveryAsync localDiscoveryAggregator) throws DiscoveryException {
 
         switch (discoveryQos.getArbitrationStrategy()) {
         case FixedChannel:
             return new Arbitrator(domain,
                                   interfaceName,
                                   discoveryQos,
-                                  capabilitiesSource,
+                                  localDiscoveryAggregator,
                                   minimumArbitrationRetryDelay,
                                   new FixedParticipantArbitrationStrategyFunction());
         case Keyword:
             return new Arbitrator(domain,
                                   interfaceName,
                                   discoveryQos,
-                                  capabilitiesSource,
+                                  localDiscoveryAggregator,
                                   minimumArbitrationRetryDelay,
                                   new KeywordArbitrationStrategyFunction());
         case HighestPriority:
             return new Arbitrator(domain,
                                   interfaceName,
                                   discoveryQos,
-                                  capabilitiesSource,
+                                  localDiscoveryAggregator,
                                   minimumArbitrationRetryDelay,
                                   new HighestPriorityArbitrationStrategyFunction());
         case Custom:
             return new Arbitrator(domain,
                                   interfaceName,
                                   discoveryQos,
-                                  capabilitiesSource,
+                                  localDiscoveryAggregator,
                                   minimumArbitrationRetryDelay,
                                   discoveryQos.getArbitrationStrategyFunction());
 

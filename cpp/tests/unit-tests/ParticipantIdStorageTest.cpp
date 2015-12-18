@@ -17,11 +17,11 @@
  * #L%
  */
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include "joynr/ParticipantIdStorage.h"
 #include <string>
 
-#include <QFile>
+#include <cstdio>
 using namespace joynr;
 
 static const std::string storageFile("participantIdStorageTest.settings");
@@ -32,7 +32,7 @@ public:
 
     void SetUp()
     {
-        QFile::remove(QString::fromStdString(storageFile));
+        std::remove(storageFile.c_str());
     }
 
 };

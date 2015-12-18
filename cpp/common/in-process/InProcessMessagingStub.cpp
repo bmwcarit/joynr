@@ -30,7 +30,7 @@ InProcessMessagingStub::InProcessMessagingStub(std::shared_ptr<InProcessMessagin
 
 void InProcessMessagingStub::transmit(JoynrMessage& message)
 {
-    assert(skeleton != NULL);
+    assert(skeleton != nullptr);
     skeleton->transmit(message);
 }
 

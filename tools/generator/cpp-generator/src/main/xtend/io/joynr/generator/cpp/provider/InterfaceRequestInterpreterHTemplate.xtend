@@ -47,8 +47,10 @@ class InterfaceRequestInterpreterHTemplate implements InterfaceTemplate{
 #include "joynr/joynrlogging.h"
 #include "joynr/exceptions/JoynrException.h"
 
-#include <QVariant>
+#include "joynr/Variant.h"
 #include <memory>
+#include <string>
+#include <vector>
 
 «getNamespaceStarter(serviceInterface)»
 
@@ -73,10 +75,10 @@ public:
 	 * @param onError A callback function to be called once the asynchronous computation fails. It must expect the exception.
 	 */
 	void execute(std::shared_ptr<joynr::RequestCaller> requestCaller,
-					 const QString& methodName,
-					 const QList<QVariant>& paramValues,
-					 const QList<QVariant>& paramTypes,
-					 std::function<void (const QList<QVariant>& outParams)> onSuccess,
+					 const std::string& methodName,
+					 const std::vector<Variant>& paramValues,
+					 const std::vector<std::string>& paramTypes,
+					 std::function<void (std::vector<Variant>&& outParams)> onSuccess,
 					 std::function<void (const exceptions::JoynrException& exception)> onError);
 
 private:

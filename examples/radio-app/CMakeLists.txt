@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(radio-app-0.12.3)
+project(radio-app-0.13.0)
 
 # Compile to a bin directory current directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
@@ -26,7 +26,7 @@ message(STATUS "option ENABLE_CLANG_FORMATTER=" ${ENABLE_CLANG_FORMATTER})
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
-find_package(Joynr 0.12.3 REQUIRED)
+find_package(Joynr 0.13.0 REQUIRED)
 message(STATUS "joynr variable JOYNR_INCLUDE_DIRS=${JOYNR_INCLUDE_DIRS}")
 message(STATUS "joynr variable JOYNR_LIB_DBUS_INCLUDE_DIRS=${JOYNR_LIB_DBUS_INCLUDE_DIRS}")
 message(STATUS "joynr variable JOYNR_LIB_WS_INCLUDE_DIRS=${JOYNR_LIB_WS_INCLUDE_DIRS}")
@@ -113,10 +113,12 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     link_directories(${DBUS1_LIBRARY_DIRS} ${COMMONAPI_LIBRARY_DIRS} ${COMMONAPI_DBUS_LIBRARY_DIRS})
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
-add_library(radio-app STATIC
+add_library(radio-app SHARED
     ${GENERATED_HEADERS}
     ${GENERATED_SOURCES}
 )
+
+target_link_libraries(radio-app ${JOYNR_LIBRARIES})
 
 # Compile the provider application (running in-process with cluster controller)
 add_executable(radio-app-provider-cc

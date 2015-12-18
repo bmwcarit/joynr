@@ -16,109 +16,134 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/PrivateCopyAssign.h"
 #include "gtest/gtest.h"
-#include <QFile>
 #include "gmock/gmock.h"
+
+#include "joynr/PrivateCopyAssign.h"
+
 #include "joynr/MessageQueue.h"
-#include "QThread"
-#include <QThreadPool>
+#include "joynr/Timer.h"
+
 #include <chrono>
 #include <stdint.h>
-
 
 using namespace joynr;
 using namespace std::chrono;
 
 class MessageQueueTest : public ::testing::Test {
 public:
-    MessageQueueTest():
-        messageQueue(new MessageQueue()),
-        threadPool(),
-        cleanerRunnable(new MessageQueueCleanerRunnable(*messageQueue, 50))
+    MessageQueueTest()
+        : messageQueue(),
+          cleanerTimer(),
+          expiryDate(time_point_cast<milliseconds>(system_clock::now()) + milliseconds(100))
     {
-        threadPool.setMaxThreadCount(1);
-        threadPool.start(cleanerRunnable);
     }
 
-    ~MessageQueueTest(){
-        cleanerRunnable->stop();
-        threadPool.waitForDone();
-        delete messageQueue;
+    ~MessageQueueTest()
+    {
     }
+
+    void SetUp()
+    {
+        cleanerTimer.addTimer(
+            [this](joynr::Timer::TimerId) {
+                this->messageQueue.removeOutdatedMessages();
+            },
+            [](Timer::TimerId) { },
+            50,
+            true
+        );
+    }
+
+    void TearDown()
+    {
+        cleanerTimer.shutdown();
+    }
+
 
 protected:
-    MessageQueue* messageQueue;
-    QThreadPool threadPool;
-    MessageQueueCleanerRunnable* cleanerRunnable;
+    MessageQueue messageQueue;
+    Timer cleanerTimer;
+    JoynrTimePoint expiryDate;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MessageQueueTest);
 };
 
 TEST_F(MessageQueueTest, initialQueueIsEmpty) {
-    EXPECT_EQ(messageQueue->getQueueLength(), 0);
+    EXPECT_EQ(messageQueue.getQueueLength(), 0);
 }
 
 TEST_F(MessageQueueTest, addMultipleMessages) {
-    EXPECT_EQ(messageQueue->queueMessage(JoynrMessage()), 1);
-    EXPECT_EQ(messageQueue->queueMessage(JoynrMessage()), 2);
-    EXPECT_EQ(messageQueue->queueMessage(JoynrMessage()), 3);
-    EXPECT_EQ(messageQueue->queueMessage(JoynrMessage()), 4);
+    JoynrMessage msg1;
+    msg1.setHeaderExpiryDate(expiryDate);
+    EXPECT_EQ(messageQueue.queueMessage(msg1), 1);
+    JoynrMessage msg2;
+    msg2.setHeaderExpiryDate(expiryDate);
+    EXPECT_EQ(messageQueue.queueMessage(msg2), 2);
+    JoynrMessage msg3;
+    msg3.setHeaderExpiryDate(expiryDate);
+    EXPECT_EQ(messageQueue.queueMessage(msg3), 3);
+    JoynrMessage msg4;
+    msg4.setHeaderExpiryDate(expiryDate);
+    EXPECT_EQ(messageQueue.queueMessage(msg4), 4);
 }
 
 TEST_F(MessageQueueTest, queueDequeueMessages) {
     // add messages to the queue
     JoynrMessage msg1;
     msg1.setHeaderTo("TEST1");
-    messageQueue->queueMessage(msg1);
+    msg1.setHeaderExpiryDate(expiryDate);
+    messageQueue.queueMessage(msg1);
 
     JoynrMessage msg2;
     msg2.setHeaderTo("TEST2");
-    messageQueue->queueMessage(msg2);
-    EXPECT_EQ(messageQueue->getQueueLength(), 2);
+    msg2.setHeaderExpiryDate(expiryDate);
+    messageQueue.queueMessage(msg2);
+    EXPECT_EQ(messageQueue.getQueueLength(), 2);
 
     // get messages from queue
-    MessageQueueItem* item = messageQueue->getNextMessageForParticipant("TEST1");
+    MessageQueueItem* item = messageQueue.getNextMessageForParticipant("TEST1");
     EXPECT_EQ(item->getContent(), msg1);
-    EXPECT_EQ(messageQueue->getQueueLength(), 1);
+    EXPECT_EQ(messageQueue.getQueueLength(), 1);
 
-    item = messageQueue->getNextMessageForParticipant("TEST2");
+    item = messageQueue.getNextMessageForParticipant("TEST2");
     EXPECT_EQ(item->getContent(), msg2);
-    EXPECT_EQ(messageQueue->getQueueLength(), 0);
+    EXPECT_EQ(messageQueue.getQueueLength(), 0);
 }
 
 TEST_F(MessageQueueTest, queueDequeueMultipleMessagesForOneParticipant) {
     // add messages to the queue
     JoynrMessage msg;
     msg.setHeaderTo("TEST");
-    messageQueue->queueMessage(msg);
-    messageQueue->queueMessage(msg);
-    EXPECT_EQ(messageQueue->getQueueLength(), 2);
+    msg.setHeaderExpiryDate(expiryDate);
+    messageQueue.queueMessage(msg);
+    messageQueue.queueMessage(msg);
+    EXPECT_EQ(messageQueue.getQueueLength(), 2);
 
     // get messages from queue
-    MessageQueueItem* item = messageQueue->getNextMessageForParticipant("TEST");
+    MessageQueueItem* item = messageQueue.getNextMessageForParticipant("TEST");
     EXPECT_EQ(item->getContent(), msg);
-    EXPECT_EQ(messageQueue->getQueueLength(), 1);
+    EXPECT_EQ(messageQueue.getQueueLength(), 1);
 
-    item = messageQueue->getNextMessageForParticipant("TEST");
+    item = messageQueue.getNextMessageForParticipant("TEST");
     EXPECT_EQ(item->getContent(), msg);
-    EXPECT_EQ(messageQueue->getQueueLength(), 0);
+    EXPECT_EQ(messageQueue.getQueueLength(), 0);
 }
 
 TEST_F(MessageQueueTest, dequeueInvalidParticipantId) {
-    EXPECT_FALSE(messageQueue->getNextMessageForParticipant("TEST"));
+    EXPECT_FALSE(messageQueue.getNextMessageForParticipant("TEST"));
 }
 
 TEST_F(MessageQueueTest, removeOutdatedMessage) {
     JoynrMessage msg10;
     JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
     msg10.setHeaderExpiryDate(now + milliseconds(10));
-    EXPECT_EQ(messageQueue->queueMessage(msg10), 1);
-    QThread::msleep(5);
-    EXPECT_EQ(messageQueue->removeOutdatedMessages(), 0);
-    QThread::msleep(6);
-    EXPECT_EQ(messageQueue->removeOutdatedMessages(), 1);
+    EXPECT_EQ(messageQueue.queueMessage(msg10), 1);
+    std::this_thread::sleep_for(std::chrono::milliseconds(5));
+    EXPECT_EQ(messageQueue.removeOutdatedMessages(), 0);
+    std::this_thread::sleep_for(std::chrono::milliseconds(6));
+    EXPECT_EQ(messageQueue.removeOutdatedMessages(), 1);
 }
 
 TEST_F(MessageQueueTest, removeOutdatedMessagesWithRunnable) {
@@ -129,15 +154,15 @@ TEST_F(MessageQueueTest, removeOutdatedMessagesWithRunnable) {
     msg250.setHeaderExpiryDate(now + milliseconds(250));
     JoynrMessage msg300;
     msg300.setHeaderExpiryDate(now + milliseconds(250));
-    EXPECT_EQ(messageQueue->queueMessage(msg25), 1);
-    EXPECT_EQ(messageQueue->queueMessage(msg250), 2);
-    EXPECT_EQ(messageQueue->queueMessage(msg300), 3);
+    EXPECT_EQ(messageQueue.queueMessage(msg25), 1);
+    EXPECT_EQ(messageQueue.queueMessage(msg250), 2);
+    EXPECT_EQ(messageQueue.queueMessage(msg300), 3);
 
     // wait to remove the first message
-    QThread::msleep(100);
-    EXPECT_EQ(messageQueue->getQueueLength(), 2);
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    EXPECT_EQ(messageQueue.getQueueLength(), 2);
 
     // wait to remove all messages
-    QThread::msleep(500);
-    EXPECT_EQ(messageQueue->getQueueLength(), 0);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    EXPECT_EQ(messageQueue.getQueueLength(), 0);
 }

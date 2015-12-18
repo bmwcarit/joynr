@@ -23,7 +23,7 @@
 namespace joynr
 {
 
-InterfaceRegistrar* InterfaceRegistrar::registrarInstance = 0;
+InterfaceRegistrar* InterfaceRegistrar::registrarInstance = nullptr;
 
 InterfaceRegistrar::InterfaceRegistrar()
         : requestInterpreters(), requestInterpretersMutex(), requestInterpreterCounts()
@@ -32,12 +32,12 @@ InterfaceRegistrar::InterfaceRegistrar()
 
 InterfaceRegistrar& InterfaceRegistrar::instance()
 {
-    static QMutex mutex;
+    static std::mutex mutex;
 
     // Use double-checked locking so that, under normal use, a
     // mutex lock is not required.
     if (!registrarInstance) {
-        QMutexLocker locker(&mutex);
+        std::lock_guard<std::mutex> lock(mutex);
         if (!registrarInstance) {
             registrarInstance = new InterfaceRegistrar();
         }
@@ -48,34 +48,37 @@ InterfaceRegistrar& InterfaceRegistrar::instance()
 
 void InterfaceRegistrar::unregisterRequestInterpreter(const std::string& interfaceName)
 {
-    QMutexLocker locker(&requestInterpretersMutex);
+    std::lock_guard<std::mutex> lock(requestInterpretersMutex);
 
-    QString qInterfaceName(QString::fromStdString(interfaceName));
     // It is a programming error if the request interpreter does not exist
-    assert(requestInterpreters.contains(qInterfaceName));
+    assert(requestInterpreters.find(interfaceName) != requestInterpreters.end());
 
-    int count = --requestInterpreterCounts[qInterfaceName];
+    int count = --requestInterpreterCounts[interfaceName];
 
     // Remove the requestInterpreter if it is no longer needed
     if (count == 0) {
-        requestInterpreters.remove(qInterfaceName);
-        requestInterpreterCounts.remove(qInterfaceName);
+        if (requestInterpreters.find(interfaceName) != requestInterpreters.end()) {
+            requestInterpreters.erase(interfaceName);
+        }
+
+        if (requestInterpreterCounts.find(interfaceName) != requestInterpreterCounts.end()) {
+            requestInterpreterCounts.erase(interfaceName);
+        }
     }
 }
 
 std::shared_ptr<IRequestInterpreter> InterfaceRegistrar::getRequestInterpreter(
         const std::string& interfaceName)
 {
-    QMutexLocker locker(&requestInterpretersMutex);
-    QString qInterfaceName(QString::fromStdString(interfaceName));
+    std::lock_guard<std::mutex> lock(requestInterpretersMutex);
 
-    assert(requestInterpreters.contains(qInterfaceName));
-    return requestInterpreters[qInterfaceName];
+    assert(requestInterpreters.find(interfaceName) != requestInterpreters.end());
+    return requestInterpreters[interfaceName];
 }
 
 void InterfaceRegistrar::reset()
 {
-    QMutexLocker locker(&requestInterpretersMutex);
+    std::lock_guard<std::mutex> lock(requestInterpretersMutex);
     requestInterpreters.clear();
     requestInterpreterCounts.clear();
 }

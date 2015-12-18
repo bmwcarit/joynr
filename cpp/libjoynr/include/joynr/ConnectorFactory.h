@@ -26,17 +26,13 @@
 #include "joynr/MessagingQos.h"
 #include "joynr/InProcessConnectorFactory.h"
 #include "joynr/JoynrMessagingConnectorFactory.h"
-#include "joynr/types/QtCommunicationMiddleware.h"
+#include "joynr/types/CommunicationMiddleware.h"
 
 #include <string>
 
 namespace joynr
 {
 
-namespace system
-{
-class QtAddress;
-}
 class InProcessDispatcher;
 
 class JOYNR_EXPORT ConnectorFactory

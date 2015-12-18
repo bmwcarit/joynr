@@ -31,6 +31,7 @@ import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.AbstractJoynrApplication;
+import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 
 import java.util.Properties;
@@ -46,6 +47,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.util.Modules;
 
 public class ShutdownTest {
 
@@ -65,16 +67,14 @@ public class ShutdownTest {
 
         MockitoAnnotations.initMocks(this);
         dummyApplication = (DummyJoynrApplication) new JoynrInjectorFactory(factoryPropertiesProvider,
-                                                                            new AbstractModule() {
-
-                                                                                @Override
-                                                                                protected void configure() {
-
-                                                                                    bind(MessageReceiver.class).toInstance(messageReceiverMock);
-                                                                                    bind(MessageSender.class).toInstance(messageSenderMock);
-
-                                                                                }
-                                                                            }).createApplication(DummyJoynrApplication.class);
+                                                                            Modules.override(new CCInProcessRuntimeModule())
+                                                                                   .with(new AbstractModule() {
+                                                                                       @Override
+                                                                                       protected void configure() {
+                                                                                           bind(MessageReceiver.class).toInstance(messageReceiverMock);
+                                                                                           bind(MessageSender.class).toInstance(messageSenderMock);
+                                                                                       }
+                                                                                   })).createApplication(DummyJoynrApplication.class);
 
         provider = new DefaulttestProvider();
     }

@@ -16,14 +16,13 @@
  * limitations under the License.
  * #L%
  */
-#include "gtest/gtest.h"
-#include "gmock/gmock.h"
-#include "utils/QThreadSleep.h"
+#include <chrono>
+#include <thread>
+#include <stdint.h>
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 #include "joynr/ContentWithDecayTime.h"
 #include "joynr/JoynrMessage.h"
-
-#include <chrono>
-#include <stdint.h>
 
 using namespace joynr;
 using namespace std::chrono;
@@ -39,12 +38,12 @@ TEST(ContentWithDecayTimeTest, messageWithDecayTime)
     EXPECT_LT(mwdt.getRemainingTtl_ms(), 2500);
     EXPECT_EQ(decaytime, mwdt.getDecayTime());
     EXPECT_EQ(message, mwdt.getContent());
-    QThreadSleep::msleep(1000);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     EXPECT_GT( mwdt.getRemainingTtl_ms(), 500);
     EXPECT_LT( mwdt.getRemainingTtl_ms(), 1500 );
     EXPECT_TRUE(!mwdt.isExpired());
 
-    QThreadSleep::msleep(1500);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1500));
     EXPECT_TRUE(mwdt.isExpired());
     EXPECT_LT(mwdt.getRemainingTtl_ms(), 0 );
 }

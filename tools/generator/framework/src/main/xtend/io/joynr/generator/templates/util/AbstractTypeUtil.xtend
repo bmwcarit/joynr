@@ -53,7 +53,7 @@ abstract class AbstractTypeUtil extends TypeUtil{
 
 	def String getTypeName (FTypedElement typedElement) {
 		var result =
-				if (typedElement.array)
+				if (isArray(typedElement))
 					typedElement.type.typeNameForList
 				else
 					typedElement.type.typeName

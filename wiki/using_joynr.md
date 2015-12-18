@@ -127,7 +127,7 @@ The bounceproxy is also tested with glassfish 3.1.2.2. See [Glassfish settings]
 (Glassfish-settings.md) for configuration details.
 
 >*Note: This is only for test purposes. You need to have Maven installed. Joynr is built and tested
->with Maven 3.2.5, but more recent versions of Maven might also work.*
+>with Maven 3.3.3, but more recent versions of Maven might also work.*
 
 ### Discovery Directories
 Centralized directory to discover providers for a given domain and interface.
@@ -143,7 +143,7 @@ common components](java_building_joynr.md))
 ```
 
 >*Note: This is only for test purposes. You need to have Maven installed. Joynr is built and tested
->with Maven 3.2.5, but more recent versions of Maven might also work.*
+>with Maven 3.3.3, but more recent versions of Maven might also work.*
 
 Use the following links to check whether all components are running:
 

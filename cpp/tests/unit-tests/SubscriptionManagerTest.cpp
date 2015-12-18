@@ -20,18 +20,16 @@
 #include <gmock/gmock.h>
 #include "joynr/SubscriptionManager.h"
 #include "joynr/ISubscriptionCallback.h"
-#include <QRunnable>
-#include <QThreadPool>
 #include "tests/utils/MockObjects.h"
-#include "utils/TestQString.h"
-#include "utils/QThreadSleep.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/SubscriptionCallback.h"
-#include "joynr/DelayedScheduler.h"
+#include "joynr/ThreadPoolDelayedScheduler.h"
+#include "joynr/SingleThreadedDelayedScheduler.h"
+#include "joynr/Runnable.h"
+#include "joynr/TimeUtils.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/Directory.h"
-#include "joynr/QtPeriodicSubscriptionQos.h"
-#include "joynr/QtOnChangeSubscriptionQos.h"
+#include "joynr/PeriodicSubscriptionQos.h"
 #include "joynr/Util.h"
 #include <chrono>
 #include <stdint.h>
@@ -54,79 +52,78 @@ MATCHER_P(publicationMissedException, subscriptionId, "") {
 
 using namespace joynr;
 
-using namespace std::chrono;
-
 TEST(SubscriptionManagerTest, registerSubscription_subscriptionRequestIsCorrect) {
     SubscriptionManager subscriptionManager;
-    std::shared_ptr<ISubscriptionListener<types::Localisation::QtGpsLocation> > mockGpsSubscriptionListener(
-            new MockSubscriptionListenerOneType<types::Localisation::QtGpsLocation>()
+    std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation> > mockGpsSubscriptionListener(
+            new MockSubscriptionListenerOneType<types::Localisation::GpsLocation>()
     );
-    std::shared_ptr<SubscriptionCallback<types::Localisation::QtGpsLocation> > gpslocationCallback(
-                new SubscriptionCallback<types::Localisation::QtGpsLocation>(mockGpsSubscriptionListener));
-    std::shared_ptr<QtSubscriptionQos> qos(new QtOnChangeSubscriptionQos());
-    int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-    qos->setExpiryDate(now + 10000);
+    std::shared_ptr<SubscriptionCallback<types::Localisation::GpsLocation> > gpslocationCallback(
+                new SubscriptionCallback<types::Localisation::GpsLocation>(mockGpsSubscriptionListener));
+    OnChangeSubscriptionQos qos{};
+    int64_t now = TimeUtils::getCurrentMillisSinceEpoch();
+    qos.setExpiryDate(now + 10000);
+    Variant qosVariant = Variant::make<OnChangeSubscriptionQos>(qos);
     SubscriptionRequest subscriptionRequest;
     subscriptionManager.registerSubscription(
                 "methodName",
                 gpslocationCallback,
-                qos,
+                qosVariant,
                 subscriptionRequest);
 
     EXPECT_EQ("methodName", subscriptionRequest.getSubscribeToName());
-    EXPECT_EQ(qos, subscriptionRequest.getQos());
+    EXPECT_EQ(qos, subscriptionRequest.getQos().get<OnChangeSubscriptionQos>());
 }
 
 TEST(SubscriptionManagerTest, registerSubscription_missedPublicationRunnableWorks) {
-    std::shared_ptr<MockSubscriptionListenerOneType<types::Localisation::QtGpsLocation> > mockGpsSubscriptionListener(
-            new MockSubscriptionListenerOneType<types::Localisation::QtGpsLocation>()
+    std::shared_ptr<MockSubscriptionListenerOneType<types::Localisation::GpsLocation> > mockGpsSubscriptionListener(
+            new MockSubscriptionListenerOneType<types::Localisation::GpsLocation>()
     );
     SubscriptionRequest subscriptionRequest;
     EXPECT_CALL(*mockGpsSubscriptionListener,
-                onError(publicationMissedException(subscriptionRequest.getSubscriptionId().toStdString())))
+                onError(publicationMissedException(subscriptionRequest.getSubscriptionId())))
             .Times(AtLeast(4));
-    std::shared_ptr<SubscriptionCallback<types::Localisation::QtGpsLocation> > gpslocationCallback(
-            new SubscriptionCallback<types::Localisation::QtGpsLocation>(mockGpsSubscriptionListener));
+    std::shared_ptr<SubscriptionCallback<types::Localisation::GpsLocation> > gpslocationCallback(
+            new SubscriptionCallback<types::Localisation::GpsLocation>(mockGpsSubscriptionListener));
     SubscriptionManager subscriptionManager;
-    std::shared_ptr<QtPeriodicSubscriptionQos> qos(new QtPeriodicSubscriptionQos(1100, 100, 200));
+    Variant qos = Variant::make<PeriodicSubscriptionQos>(PeriodicSubscriptionQos(1100, 100, 200));
     subscriptionManager.registerSubscription(
                 "methodName",
                 gpslocationCallback,
                 qos,
                 subscriptionRequest
     );
-    QThreadSleep::msleep(1200);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1200));
 }
 
 TEST(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_missedPublicationRunnableWorks) {
-    std::shared_ptr<MockSubscriptionListenerOneType<types::Localisation::QtGpsLocation> > mockGpsSubscriptionListener(
-            new MockSubscriptionListenerOneType<types::Localisation::QtGpsLocation>()
+    std::shared_ptr<MockSubscriptionListenerOneType<types::Localisation::GpsLocation> > mockGpsSubscriptionListener(
+            new MockSubscriptionListenerOneType<types::Localisation::GpsLocation>()
     );
     SubscriptionRequest subscriptionRequest;
     EXPECT_CALL(*mockGpsSubscriptionListener,
-                onError(publicationMissedException(subscriptionRequest.getSubscriptionId().toStdString())))
+                onError(publicationMissedException(subscriptionRequest.getSubscriptionId())))
             .Times(AtMost(6));
-    std::shared_ptr<SubscriptionCallback<types::Localisation::QtGpsLocation> > gpslocationCallback(
-            new SubscriptionCallback<types::Localisation::QtGpsLocation>(mockGpsSubscriptionListener));
+    std::shared_ptr<SubscriptionCallback<types::Localisation::GpsLocation> > gpslocationCallback(
+            new SubscriptionCallback<types::Localisation::GpsLocation>(mockGpsSubscriptionListener));
     SubscriptionManager subscriptionManager;
-    std::shared_ptr<QtPeriodicSubscriptionQos> qos(new QtPeriodicSubscriptionQos(1100, 100, 100));
+    Variant qos = Variant::make<PeriodicSubscriptionQos>(PeriodicSubscriptionQos(1100, 100, 100));
     subscriptionManager.registerSubscription(
                 "methodName",
                 gpslocationCallback,
                 qos,
                 subscriptionRequest
     );
-    QThreadSleep::msleep(300);
+    std::this_thread::sleep_for(std::chrono::milliseconds(300));
 
-    std::shared_ptr<MockSubscriptionListenerOneType<types::Localisation::QtGpsLocation> > mockGpsSubscriptionListener2(
-            new MockSubscriptionListenerOneType<types::Localisation::QtGpsLocation>()
+    std::shared_ptr<MockSubscriptionListenerOneType<types::Localisation::GpsLocation> > mockGpsSubscriptionListener2(
+            new MockSubscriptionListenerOneType<types::Localisation::GpsLocation>()
     );
     EXPECT_CALL(*mockGpsSubscriptionListener2,
                 onError(_))
             .Times(0);
-    std::shared_ptr<SubscriptionCallback<types::Localisation::QtGpsLocation> > gpslocationCallback2(
-            new SubscriptionCallback<types::Localisation::QtGpsLocation>(mockGpsSubscriptionListener2));
-    std::shared_ptr<QtOnChangeSubscriptionQos> qos2(new QtOnChangeSubscriptionQos(700, 100));
+    std::shared_ptr<SubscriptionCallback<types::Localisation::GpsLocation> > gpslocationCallback2(
+            new SubscriptionCallback<types::Localisation::GpsLocation>(mockGpsSubscriptionListener2));
+    Variant qos2 = Variant::make<OnChangeSubscriptionQos>(OnChangeSubscriptionQos(700, 100));
     subscriptionManager.registerSubscription(
                 "methodName",
                 gpslocationCallback2,
@@ -135,21 +132,21 @@ TEST(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_missedP
     );
 
     // now, no new publicationMissed callbacks are expected for the first subscriptionRequest
-    QThreadSleep::msleep(900);
+    std::this_thread::sleep_for(std::chrono::milliseconds(900));
 }
 
 TEST(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_correctDealingWithEnlargedExpiryDate) {
-    std::shared_ptr<MockSubscriptionListenerOneType<types::Localisation::QtGpsLocation> > mockGpsSubscriptionListener(
-            new MockSubscriptionListenerOneType<types::Localisation::QtGpsLocation>()
+    std::shared_ptr<MockSubscriptionListenerOneType<types::Localisation::GpsLocation> > mockGpsSubscriptionListener(
+            new MockSubscriptionListenerOneType<types::Localisation::GpsLocation>()
     );
     SubscriptionRequest subscriptionRequest;
     EXPECT_CALL(*mockGpsSubscriptionListener,
-                onError(publicationMissedException(subscriptionRequest.getSubscriptionId().toStdString())))
+                onError(publicationMissedException(subscriptionRequest.getSubscriptionId())))
             .Times(AtLeast(6));
-    std::shared_ptr<SubscriptionCallback<types::Localisation::QtGpsLocation> > gpslocationCallback(
-            new SubscriptionCallback<types::Localisation::QtGpsLocation>(mockGpsSubscriptionListener));
+    std::shared_ptr<SubscriptionCallback<types::Localisation::GpsLocation> > gpslocationCallback(
+            new SubscriptionCallback<types::Localisation::GpsLocation>(mockGpsSubscriptionListener));
     SubscriptionManager subscriptionManager;
-    std::shared_ptr<QtPeriodicSubscriptionQos> qos(new QtPeriodicSubscriptionQos(300, 100, 100));
+    Variant qos = Variant::make<PeriodicSubscriptionQos>(PeriodicSubscriptionQos(300, 100, 100));
     subscriptionManager.registerSubscription(
                 "methodName",
                 gpslocationCallback,
@@ -157,7 +154,7 @@ TEST(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_correct
                 subscriptionRequest
     );
 
-    qos = std::shared_ptr<QtPeriodicSubscriptionQos>(new QtPeriodicSubscriptionQos(1000, 100, 100));
+    qos = Variant::make<PeriodicSubscriptionQos>(PeriodicSubscriptionQos(1000, 100, 100));
     subscriptionManager.registerSubscription(
                 "methodName",
                 gpslocationCallback,
@@ -166,21 +163,21 @@ TEST(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_correct
     );
 
     // now, no new publicationMissed callbacks are expected for the first subscriptionRequest
-    QThreadSleep::msleep(1000);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 }
 
 TEST(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_correctDealingWithReducedExpiryDate) {
-    std::shared_ptr<MockSubscriptionListenerOneType<types::Localisation::QtGpsLocation> > mockGpsSubscriptionListener(
-            new MockSubscriptionListenerOneType<types::Localisation::QtGpsLocation>()
+    std::shared_ptr<MockSubscriptionListenerOneType<types::Localisation::GpsLocation> > mockGpsSubscriptionListener(
+            new MockSubscriptionListenerOneType<types::Localisation::GpsLocation>()
     );
     SubscriptionRequest subscriptionRequest;
     EXPECT_CALL(*mockGpsSubscriptionListener,
-                onError(publicationMissedException(subscriptionRequest.getSubscriptionId().toStdString())))
+                onError(publicationMissedException(subscriptionRequest.getSubscriptionId())))
             .Times(AtMost(6));
-    std::shared_ptr<SubscriptionCallback<types::Localisation::QtGpsLocation> > gpslocationCallback(
-            new SubscriptionCallback<types::Localisation::QtGpsLocation>(mockGpsSubscriptionListener));
+    std::shared_ptr<SubscriptionCallback<types::Localisation::GpsLocation> > gpslocationCallback(
+            new SubscriptionCallback<types::Localisation::GpsLocation>(mockGpsSubscriptionListener));
     SubscriptionManager subscriptionManager;
-    std::shared_ptr<QtPeriodicSubscriptionQos> qos(new QtPeriodicSubscriptionQos(1000, 100, 100));
+    Variant qos = Variant::make<PeriodicSubscriptionQos>(PeriodicSubscriptionQos(1000, 100, 100));
     subscriptionManager.registerSubscription(
                 "methodName",
                 gpslocationCallback,
@@ -188,7 +185,7 @@ TEST(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_correct
                 subscriptionRequest
     );
 
-    qos = std::shared_ptr<QtPeriodicSubscriptionQos>(new QtPeriodicSubscriptionQos(300, 100, 100));
+    qos = Variant::make<PeriodicSubscriptionQos>(PeriodicSubscriptionQos(300, 100, 100));
     subscriptionManager.registerSubscription(
                 "methodName",
                 gpslocationCallback,
@@ -197,21 +194,21 @@ TEST(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_correct
     );
 
     // now, no new publicationMissed callbacks are expected for the first subscriptionRequest
-    QThreadSleep::msleep(1000);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 }
 
 TEST(SubscriptionManagerTest, registerSubscription_withoutExpiryDate) {
-    std::shared_ptr<ISubscriptionListener<types::Localisation::QtGpsLocation> > mockGpsSubscriptionListener(
-            new MockSubscriptionListenerOneType<types::Localisation::QtGpsLocation>()
+    std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation> > mockGpsSubscriptionListener(
+            new MockSubscriptionListenerOneType<types::Localisation::GpsLocation>()
     );
-    std::shared_ptr<SubscriptionCallback<types::Localisation::QtGpsLocation>> gpslocationCallback(
-            new SubscriptionCallback<types::Localisation::QtGpsLocation>(mockGpsSubscriptionListener));
-    MockDelayedScheduler* mockDelayedScheduler = new MockDelayedScheduler(QString("SubscriptionManager-MockScheduler"));
+    std::shared_ptr<SubscriptionCallback<types::Localisation::GpsLocation>> gpslocationCallback(
+            new SubscriptionCallback<types::Localisation::GpsLocation>(mockGpsSubscriptionListener));
+    MockDelayedScheduler* mockDelayedScheduler = new MockDelayedScheduler();
     EXPECT_CALL(*mockDelayedScheduler,
                 schedule(_,_))
             .Times(0);
     SubscriptionManager subscriptionManager(mockDelayedScheduler);
-    std::shared_ptr<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(-1, 100));
+    Variant qos = Variant::make<OnChangeSubscriptionQos>(OnChangeSubscriptionQos(-1, 100));
     SubscriptionRequest subscriptionRequest;
     subscriptionManager.registerSubscription(
                 "methodName",
@@ -221,25 +218,25 @@ TEST(SubscriptionManagerTest, registerSubscription_withoutExpiryDate) {
     );
 }
 
-quint32 internalRunnableHandle = 1;
+DelayedScheduler::RunnableHandle internalRunnableHandle = 1;
 
-quint32 runnableHandle()
+DelayedScheduler::RunnableHandle runnableHandle()
 {
     return internalRunnableHandle++;
 }
 
 TEST(SubscriptionManagerTest, registerSubscription_withExpiryDate) {
-    std::shared_ptr<ISubscriptionListener<types::Localisation::QtGpsLocation> > mockGpsSubscriptionListener(
-            new MockSubscriptionListenerOneType<types::Localisation::QtGpsLocation>()
+    std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation> > mockGpsSubscriptionListener(
+            new MockSubscriptionListenerOneType<types::Localisation::GpsLocation>()
     );
-    std::shared_ptr<SubscriptionCallback<types::Localisation::QtGpsLocation>> gpslocationCallback(
-            new SubscriptionCallback<types::Localisation::QtGpsLocation>(mockGpsSubscriptionListener));
-    MockDelayedScheduler* mockDelayedScheduler = new MockDelayedScheduler(QString("SubscriptionManager-MockScheduler"));
+    std::shared_ptr<SubscriptionCallback<types::Localisation::GpsLocation>> gpslocationCallback(
+            new SubscriptionCallback<types::Localisation::GpsLocation>(mockGpsSubscriptionListener));
+    MockDelayedScheduler* mockDelayedScheduler = new MockDelayedScheduler();
     EXPECT_CALL(*mockDelayedScheduler,
-                schedule(A<QRunnable*>(),_))
+                schedule(A<Runnable*>(),_))
             .Times(1).WillRepeatedly(::testing::Return(runnableHandle()));
     SubscriptionManager subscriptionManager(mockDelayedScheduler);
-    std::shared_ptr<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(1000, 100));
+    Variant qos = Variant::make<OnChangeSubscriptionQos>(OnChangeSubscriptionQos(1000, 100));
     SubscriptionRequest subscriptionRequest;
     subscriptionManager.registerSubscription(
                 "methodName",
@@ -250,17 +247,17 @@ TEST(SubscriptionManagerTest, registerSubscription_withExpiryDate) {
 }
 
 TEST(SubscriptionManagerTest, unregisterSubscription_unregisterLeadsToStoppingMissedPublicationRunnables) {
-    std::shared_ptr<MockSubscriptionListenerOneType<types::Localisation::QtGpsLocation> > mockGpsSubscriptionListener(
-            new MockSubscriptionListenerOneType<types::Localisation::QtGpsLocation>()
+    std::shared_ptr<MockSubscriptionListenerOneType<types::Localisation::GpsLocation> > mockGpsSubscriptionListener(
+            new MockSubscriptionListenerOneType<types::Localisation::GpsLocation>()
     );
     SubscriptionRequest subscriptionRequest;
     EXPECT_CALL(*mockGpsSubscriptionListener,
-                onError(publicationMissedException(subscriptionRequest.getSubscriptionId().toStdString())))
+                onError(publicationMissedException(subscriptionRequest.getSubscriptionId())))
             .Times(Between(2,3));
     SubscriptionManager subscriptionManager;
-    std::shared_ptr<SubscriptionCallback<types::Localisation::QtGpsLocation>> gpslocationCallback(
-                new SubscriptionCallback<types::Localisation::QtGpsLocation>(mockGpsSubscriptionListener));
-    std::shared_ptr<QtPeriodicSubscriptionQos> qos(new QtPeriodicSubscriptionQos(
+    std::shared_ptr<SubscriptionCallback<types::Localisation::GpsLocation>> gpslocationCallback(
+                new SubscriptionCallback<types::Localisation::GpsLocation>(mockGpsSubscriptionListener));
+    Variant qos = Variant::make<PeriodicSubscriptionQos>(PeriodicSubscriptionQos(
                 2000, // validity
                 100,  // period
                 400   // alert after interval
@@ -270,30 +267,35 @@ TEST(SubscriptionManagerTest, unregisterSubscription_unregisterLeadsToStoppingMi
                 gpslocationCallback,
                 qos,
                 subscriptionRequest);
-     QThreadSleep::msleep(900);
+     std::this_thread::sleep_for(std::chrono::milliseconds(900));
      subscriptionManager.unregisterSubscription(subscriptionRequest.getSubscriptionId());
-     QThreadSleep::msleep(1100);
+     std::this_thread::sleep_for(std::chrono::milliseconds(1100));
 }
 
 TEST(SubscriptionManagerTest, unregisterSubscription_unregisterLeadsOnNonExistantSubscription) {
-    std::shared_ptr<ISubscriptionListener<types::Localisation::QtGpsLocation> > mockGpsSubscriptionListener(
-            new MockSubscriptionListenerOneType<types::Localisation::QtGpsLocation>()
+    std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation> > mockGpsSubscriptionListener(
+            new MockSubscriptionListenerOneType<types::Localisation::GpsLocation>()
     );
     SubscriptionManager subscriptionManager;
     subscriptionManager.unregisterSubscription("superId");
 }
 
-class TestRunnable : public QRunnable {
+class TestRunnable : public Runnable {
 public:
     virtual ~TestRunnable() {
 
     }
-    TestRunnable() {
+    TestRunnable()
+        : joynr::Runnable(true)
+    {
 
+    }
+    void shutdown() {
+        LOG_TRACE(logger, "shutdown called...");
     }
     void run() {
         LOG_TRACE(logger, "run: entering...");
-        QThreadSleep::msleep(200);
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
         LOG_TRACE(logger, "run: leaving...");
     }
 private:
@@ -302,16 +304,17 @@ private:
 joynr_logging::Logger* TestRunnable::logger = joynr_logging::Logging::getInstance()->getLogger("MSG", "TestRunnable");
 
 TEST(SingleThreadedDelayedSchedulerTest, schedule_deletingRunnablesCorrectly) {
-    SingleThreadedDelayedScheduler scheduler(QString("SingleThreadedDelayedScheduler"));
+    SingleThreadedDelayedScheduler scheduler("SingleThread");
     TestRunnable* runnable = new TestRunnable();
-    scheduler.schedule(runnable, 1);
-    QThreadSleep::msleep(100);
+    scheduler.schedule(runnable, std::chrono::milliseconds(1));
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    scheduler.shutdown();
 }
 
 TEST(ThreadPoolDelayedSchedulerTest, schedule_deletingRunnablesCorrectly) {
-    QThreadPool threadPool;
-    ThreadPoolDelayedScheduler scheduler(threadPool, QString("ThreadPoolDelayedScheduler"));
+    ThreadPoolDelayedScheduler scheduler(3, "ThreadPool");
     TestRunnable* runnable = new TestRunnable();
-    scheduler.schedule(runnable, 1);
-    QThreadSleep::msleep(100);
+    scheduler.schedule(runnable, std::chrono::milliseconds(1));
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    scheduler.shutdown();
 }

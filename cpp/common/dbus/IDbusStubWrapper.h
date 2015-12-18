@@ -20,15 +20,14 @@
 #define IDBUSSTUBWRAPPER_H
 
 #include "joynr/PrivateCopyAssign.h"
-
 #include "joynr/JoynrCommonExport.h"
 
 #include <CommonAPI/CommonAPI.h>
 
 #include "joynr/joynrlogging.h"
+#include "joynr/TypeUtil.h"
 
-#include <QString>
-#include <thread>
+#include <string>
 #include <chrono>
 
 namespace joynr
@@ -38,7 +37,7 @@ template <template <class...> class _ProxyClass>
 class JOYNRCOMMON_EXPORT IDbusStubWrapper
 {
 public:
-    IDbusStubWrapper(QString serviceAddress)
+    IDbusStubWrapper(std::string serviceAddress)
             : serviceAddress(serviceAddress),
               proxy(NULL),
               logger(NULL),
@@ -72,7 +71,7 @@ public:
         }
     }
 
-    void printCallStatus(const CommonAPI::CallStatus& status, const QString& method)
+    void printCallStatus(const CommonAPI::CallStatus& status, const std::string& method)
     {
         switch (status) {
         case CommonAPI::CallStatus::SUCCESS:
@@ -96,18 +95,27 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(IDbusStubWrapper);
 
-    void logCallStatus(const QString method, const QString status)
+    void logCallStatus(const std::string& method, const std::string& status)
     {
-        LOG_INFO(logger, "Call status " + serviceAddress + "->" + method + ": " + status);
+        LOG_INFO(logger,
+                 FormatString("Call status %1->%2: %3")
+                         .arg(serviceAddress)
+                         .arg(method)
+                         .arg(status)
+                         .str());
     }
 
-    void logAvailabilityStatus(const QString status)
+    void logAvailabilityStatus(const std::string& status)
     {
-        LOG_INFO(logger, "Status dbus proxy on address " + serviceAddress + ": " + status);
+        LOG_INFO(logger,
+                 FormatString("Status dbus proxy on address %1: %2")
+                         .arg(serviceAddress)
+                         .arg(status)
+                         .str());
     }
 
 protected:
-    QString serviceAddress;
+    std::string serviceAddress;
     std::shared_ptr<_ProxyClass<>> proxy;
     joynr_logging::Logger* logger;
 
@@ -119,7 +127,7 @@ protected:
     {
         // get proxy
         auto factory = CommonAPI::Runtime::load("DBus")->createFactory();
-        proxy = factory->buildProxy<_ProxyClass>(serviceAddress.toStdString());
+        proxy = factory->buildProxy<_ProxyClass>(serviceAddress);
 
         auto callBack =
                 std::bind(&IDbusStubWrapper::proxyEventListener, this, std::placeholders::_1);
@@ -139,15 +147,16 @@ protected:
         // if proxy not available log and exit
         if (!isProxyAvailable()) {
             LOG_ERROR(logger,
-                      QString("Could not connect to proxy within %1ms!")
-                              .arg(max_retries * retry_delay));
+                      FormatString("Could not connect to proxy within %1ms!")
+                              .arg((max_retries * retry_delay))
+                              .str());
             assert(false);
         }
     }
 
-    void logMethodCall(const QString& method)
+    void logMethodCall(const std::string& method)
     {
-        LOG_INFO(logger, "Call method " + serviceAddress + "-> " + method);
+        LOG_INFO(logger, FormatString("Call method %1-> %2").arg(serviceAddress).arg(method).str());
     }
 };
 

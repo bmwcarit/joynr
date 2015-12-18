@@ -21,50 +21,49 @@
 
 #include "joynr/JoynrExport.h"
 #include "joynr/joynrlogging.h"
-#include <QObject>
-#include <QSettings>
+
+#include <string>
 
 namespace joynr
 {
 
 class BounceProxyUrl;
+class Settings;
 
-class JOYNR_EXPORT MessagingSettings : public QObject
+class JOYNR_EXPORT MessagingSettings
 {
-    Q_OBJECT
-
 public:
-    explicit MessagingSettings(QSettings& settings, QObject* parent = 0);
+    explicit MessagingSettings(Settings& settings);
     MessagingSettings(const MessagingSettings& other);
 
     ~MessagingSettings();
 
-    static const QString& SETTING_BOUNCE_PROXY_URL();
-    static const QString& SETTING_DISCOVERY_DIRECTORIES_DOMAIN();
-    static const QString& SETTING_CHANNEL_URL_DIRECTORY_URL();
-    static const QString& SETTING_CHANNEL_URL_DIRECTORY_CHANNELID();
-    static const QString& SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID();
-    static const QString& SETTING_CAPABILITIES_DIRECTORY_URL();
-    static const QString& SETTING_CAPABILITIES_DIRECTORY_CHANNELID();
-    static const QString& SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID();
-    static const QString& SETTING_INDEX();
-    static const QString& SETTING_CREATE_CHANNEL_RETRY_INTERVAL();
-    static const QString& SETTING_DELETE_CHANNEL_RETRY_INTERVAL();
-    static const QString& SETTING_SEND_MSG_RETRY_INTERVAL();
-    static const QString& SETTING_LONGPOLL_RETRY_INTERVAL();
+    static const std::string& SETTING_BOUNCE_PROXY_URL();
+    static const std::string& SETTING_DISCOVERY_DIRECTORIES_DOMAIN();
+    static const std::string& SETTING_CHANNEL_URL_DIRECTORY_URL();
+    static const std::string& SETTING_CHANNEL_URL_DIRECTORY_CHANNELID();
+    static const std::string& SETTING_CHANNEL_URL_DIRECTORY_PARTICIPANTID();
+    static const std::string& SETTING_CAPABILITIES_DIRECTORY_URL();
+    static const std::string& SETTING_CAPABILITIES_DIRECTORY_CHANNELID();
+    static const std::string& SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID();
+    static const std::string& SETTING_INDEX();
+    static const std::string& SETTING_CREATE_CHANNEL_RETRY_INTERVAL();
+    static const std::string& SETTING_DELETE_CHANNEL_RETRY_INTERVAL();
+    static const std::string& SETTING_SEND_MSG_RETRY_INTERVAL();
+    static const std::string& SETTING_LONGPOLL_RETRY_INTERVAL();
 
-    static const QString& SETTING_LOCAL_PROXY_HOST();
-    static const QString& SETTING_LOCAL_PROXY_PORT();
+    static const std::string& SETTING_LOCAL_PROXY_HOST();
+    static const std::string& SETTING_LOCAL_PROXY_PORT();
 
-    static const QString& SETTING_CERTIFICATE_AUTHORITY();
-    static const QString& SETTING_CLIENT_CERTIFICATE();
-    static const QString& SETTING_CLIENT_CERTIFICATE_PASSWORD();
+    static const std::string& SETTING_CERTIFICATE_AUTHORITY();
+    static const std::string& SETTING_CLIENT_CERTIFICATE();
+    static const std::string& SETTING_CLIENT_CERTIFICATE_PASSWORD();
 
-    static const QString& SETTING_HTTP_DEBUG();
-    static const QString& SETTING_PERSISTENCE_FILENAME();
-    static const QString& SETTING_LONGPOLL_TIMEOUT_MS();
-    static const QString& SETTING_HTTP_CONNECT_TIMEOUT_MS();
-    static const QString& SETTING_BOUNCEPROXY_TIMEOUT_MS();
+    static const std::string& SETTING_HTTP_DEBUG();
+    static const std::string& SETTING_PERSISTENCE_FILENAME();
+    static const std::string& SETTING_LONGPOLL_TIMEOUT_MS();
+    static const std::string& SETTING_HTTP_CONNECT_TIMEOUT_MS();
+    static const std::string& SETTING_BOUNCEPROXY_TIMEOUT_MS();
     /**
      * @brief SETTING_DISCOVERY_MESSAGES_TTL_MS Time-to-live of messages used
      * in communication between the local discovery service and the discovery
@@ -73,32 +72,33 @@ public:
      * @return the TTL used for discovery messages send to the backend
      * discovery service.
      */
-    static const QString& SETTING_DISCOVERY_MESSAGES_TTL_MS();
-    static const QString& SETTING_SEND_MESSAGE_MAX_TTL();
+    static const std::string& SETTING_DISCOVERY_MESSAGES_TTL_MS();
+    static const std::string& SETTING_SEND_MESSAGE_MAX_TTL();
 
-    static const QString& DEFAULT_MESSAGING_SETTINGS_FILENAME();
-    static const QString& DEFAULT_PERSISTENCE_FILENAME();
-    static qint64 DEFAULT_LONGPOLL_TIMEOUT_MS();
-    static qint64 DEFAULT_HTTP_CONNECT_TIMEOUT_MS();
-    static qint64 DEFAULT_BOUNCEPROXY_TIMEOUT_MS();
-    static qint64 DEFAULT_DISCOVERY_REQUEST_TIMEOUT_MS();
-    static qint64 DEFAULT_SEND_MESSAGE_MAX_TTL();
+    static const std::string& DEFAULT_MESSAGING_SETTINGS_FILENAME();
+    static const std::string& DEFAULT_PERSISTENCE_FILENAME();
+    static int64_t DEFAULT_LONGPOLL_TIMEOUT_MS();
+    static int64_t DEFAULT_HTTP_CONNECT_TIMEOUT_MS();
+    static int64_t DEFAULT_BOUNCEPROXY_TIMEOUT_MS();
+    static int64_t DEFAULT_DISCOVERY_REQUEST_TIMEOUT_MS();
+    static int64_t DEFAULT_SEND_MESSAGE_MAX_TTL();
 
     BounceProxyUrl getBounceProxyUrl() const;
+    std::string getBounceProxyUrlString() const;
     void setBounceProxyUrl(const BounceProxyUrl& bounceProxyUrl);
 
-    QString getDiscoveryDirectoriesDomain() const;
+    std::string getDiscoveryDirectoriesDomain() const;
 
-    QString getChannelUrlDirectoryUrl() const;
-    QString getChannelUrlDirectoryChannelId() const;
-    QString getChannelUrlDirectoryParticipantId() const;
+    std::string getChannelUrlDirectoryUrl() const;
+    std::string getChannelUrlDirectoryChannelId() const;
+    std::string getChannelUrlDirectoryParticipantId() const;
 
-    QString getCapabilitiesDirectoryUrl() const;
-    QString getCapabilitiesDirectoryChannelId() const;
-    QString getCapabilitiesDirectoryParticipantId() const;
+    std::string getCapabilitiesDirectoryUrl() const;
+    std::string getCapabilitiesDirectoryChannelId() const;
+    std::string getCapabilitiesDirectoryParticipantId() const;
 
-    qint64 getIndex() const;
-    void setIndex(qint64 index);
+    int64_t getIndex() const;
+    void setIndex(int64_t index);
     int getCreateChannelRetryInterval() const;
     void setCreateChannelRetryInterval(const int& retryInterval);
     int getDeleteChannelRetryInterval() const;
@@ -107,43 +107,39 @@ public:
     void setSendMsgRetryInterval(const int& retryInterval);
     int getLongPollRetryInterval() const;
     void setLongPollRetryInterval(const int& retryInterval);
-    QString getLocalProxyHost() const;
-    void setLocalProxyHost(const QString& localProxyHost);
-    QString getLocalProxyPort() const;
+    std::string getLocalProxyHost() const;
+    void setLocalProxyHost(const std::string& localProxyHost);
+    std::string getLocalProxyPort() const;
     void setLocalProxyPort(const int& localProxyPort);
     void setHttpDebug(const bool& httpDebug);
     bool getHttpDebug() const;
-    QString getCertificateAuthority() const;
-    void setCertificateAuthority(const QString& certificateAuthority);
-    QString getClientCertificate() const;
-    void setClientCertificate(const QString& clientCertificate);
-    QString getClientCertificatePassword() const;
-    void setClientCertificatePassword(const QString& clientCertificatePassword);
-    QString getMessagingPropertiesPersistenceFilename() const;
-    void setMessagingPropertiesPersistenceFilename(const QString& persistenceFilename);
-    qint64 getLongPollTimeout() const;
-    void setLongPollTimeout(qint64 timeout_ms);
-    qint64 getHttpConnectTimeout() const;
-    void setHttpConnectTimeout(qint64 timeout_ms);
-    qint64 getBounceProxyTimeout() const;
-    void setBounceProxyTimeout(qint64 timeout_ms);
-    qint64 getDiscoveryMessagesTtl() const;
-    void setDiscoveryMessagesTtl(qint64 ttl_ms);
-    qint64 getSendMsgMaxTtl() const;
-    void setSendMsgMaxTtl(qint64 ttl_ms);
+    std::string getCertificateAuthority() const;
+    void setCertificateAuthority(const std::string& certificateAuthority);
+    std::string getClientCertificate() const;
+    void setClientCertificate(const std::string& clientCertificate);
+    std::string getClientCertificatePassword() const;
+    void setClientCertificatePassword(const std::string& clientCertificatePassword);
+    std::string getMessagingPropertiesPersistenceFilename() const;
+    void setMessagingPropertiesPersistenceFilename(const std::string& persistenceFilename);
+    int64_t getLongPollTimeout() const;
+    void setLongPollTimeout(int64_t timeout_ms);
+    int64_t getHttpConnectTimeout() const;
+    void setHttpConnectTimeout(int64_t timeout_ms);
+    int64_t getBounceProxyTimeout() const;
+    void setBounceProxyTimeout(int64_t timeout_ms);
+    int64_t getDiscoveryMessagesTtl() const;
+    void setDiscoveryMessagesTtl(int64_t ttl_ms);
+    int64_t getSendMsgMaxTtl() const;
+    void setSendMsgMaxTtl(int64_t ttl_ms);
 
-    bool contains(const QString& key) const;
-    QVariant value(const QString& key) const;
+    bool contains(const std::string& key) const;
 
-signals:
-
-public slots:
     void printSettings() const;
 
 private:
     void operator=(const MessagingSettings& other);
 
-    QSettings& settings;
+    Settings& settings;
     static joynr_logging::Logger* logger;
     void checkSettings() const;
 };

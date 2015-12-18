@@ -19,16 +19,10 @@
 #include "JoynrClusterControllerRuntime.h"
 #include "joynr/Dispatcher.h"
 #include "libjoynr/in-process/InProcessLibJoynrMessagingSkeleton.h"
-#include "common/in-process/InProcessMessagingStub.h"
 #include "cluster-controller/http-communication-manager/HttpReceiver.h"
 #include "cluster-controller/http-communication-manager/HttpSender.h"
-#include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
-#include "joynr/CapabilitiesRegistrar.h"
 #include "joynr/MessagingSettings.h"
-#include "cluster-controller/capabilities-client/FakeCapabilitiesClient.h"
 #include "cluster-controller/capabilities-client/CapabilitiesClient.h"
-#include "joynr/Request.h"
-#include "runtimes/JoynrMetaTypes.h"
 #include "joynr/CapabilitiesRegistrar.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/InProcessDispatcher.h"
@@ -37,14 +31,13 @@
 #include "joynr/PublicationManager.h"
 #include "joynr/InProcessConnectorFactory.h"
 #include "joynr/JoynrMessagingConnectorFactory.h"
+#include "joynr/MessagingStubFactory.h"
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/InProcessPublicationSender.h"
 #include "joynr/JoynrMessageSender.h"
-#include "joynr/Directory.h"
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
 #include "joynr/LocalChannelUrlDirectory.h"
-#include "joynr/SystemServicesSettings.h"
-#include "joynr/system/RoutingTypes_QtChannelAddress.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include "cluster-controller/messaging/joynr-messaging/JoynrMessagingStubFactory.h"
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
@@ -52,12 +45,15 @@
 #include "joynr/LocalDiscoveryAggregator.h"
 #include "libjoynr/joynr-messaging/DummyPlatformSecurityManager.h"
 #include "joynr/TypeUtil.h"
+#include "joynr/Settings.h"
+#include "joynr/LibjoynrSettings.h"
+
+#include "joynr/system/RoutingTypes/WebSocketAddress.h"
 
 #include "joynr/system/DiscoveryRequestCaller.h"
 #include "joynr/system/DiscoveryInProcessConnector.h"
 #include <QCoreApplication>
 #include <QThread>
-#include <QMutex>
 #include <cassert>
 
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
@@ -73,53 +69,42 @@ Logger* JoynrClusterControllerRuntime::logger =
                                           "JoynrClusterControllerRuntime");
 
 JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(QCoreApplication* app,
-                                                             QSettings* settings,
+                                                             Settings* settings,
                                                              IMessageReceiver* messageReceiver,
                                                              IMessageSender* messageSender)
         : JoynrRuntime(*settings),
-          joynrDispatcher(NULL),
-          inProcessDispatcher(NULL),
-          ccDispatcher(NULL),
-          subscriptionManager(NULL),
-          joynrMessagingSendSkeleton(NULL),
-          joynrMessageSender(NULL),
+          joynrDispatcher(nullptr),
+          inProcessDispatcher(nullptr),
+          ccDispatcher(nullptr),
+          subscriptionManager(nullptr),
+          joynrMessagingSendSkeleton(nullptr),
+          joynrMessageSender(nullptr),
           app(app),
-          capabilitiesClient(NULL),
-          localCapabilitiesDirectory(NULL),
+          capabilitiesClient(nullptr),
+          localCapabilitiesDirectory(nullptr),
           channelUrlDirectory(),
           cache(),
-          channelUrlDirectoryProxy(NULL),
-          libJoynrMessagingSkeleton(NULL),
+          channelUrlDirectoryProxy(nullptr),
+          libJoynrMessagingSkeleton(nullptr),
           messageReceiver(messageReceiver),
           messageSender(messageSender),
           dispatcherList(),
-          inProcessConnectorFactory(NULL),
-          inProcessPublicationSender(NULL),
-          joynrMessagingConnectorFactory(NULL),
-          connectorFactory(NULL),
+          inProcessConnectorFactory(nullptr),
+          inProcessPublicationSender(nullptr),
+          joynrMessagingConnectorFactory(nullptr),
+          connectorFactory(nullptr),
           settings(settings),
-          messagingSettings(NULL),
-          libjoynrSettings(NULL),
+          messagingSettings(nullptr),
+          libjoynrSettings(nullptr),
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
           dbusSettings(NULL),
           ccDbusMessageRouterAdapter(NULL),
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
           wsSettings(*settings),
-          wsCcMessagingSkeleton(NULL),
-          securityManager(NULL),
+          wsCcMessagingSkeleton(nullptr),
+          securityManager(nullptr),
           messagingIsRunning(false)
 {
-    /*
-      * WARNING - metatypes are not registered yet here.
-      */
-
-    // This is a workaround to register the Metatypes for providerQos.
-    // Normally a new datatype is registered in all datatypes that use the new datatype.
-    // However, when receiving a datatype as a returnValue of a RPC, the constructor has never been
-    // called before
-    // so the datatype is not registered, and cannot be deserialized.
-
-    registerJoynrMetaTypes();
     initializeAllDependencies();
 }
 
@@ -152,27 +137,26 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     messageRouter = std::shared_ptr<MessageRouter>(
             new MessageRouter(messagingStubFactory, securityManager));
     // provision global capabilities directory
-    std::shared_ptr<joynr::system::RoutingTypes::QtAddress> globalCapabilitiesDirectoryAddress(
-            new system::RoutingTypes::QtChannelAddress(
+    std::shared_ptr<joynr::system::RoutingTypes::Address> globalCapabilitiesDirectoryAddress(
+            new system::RoutingTypes::ChannelAddress(
                     messagingSettings->getCapabilitiesDirectoryChannelId()));
-    messageRouter->addProvisionedNextHop(
-            messagingSettings->getCapabilitiesDirectoryParticipantId().toStdString(),
-            globalCapabilitiesDirectoryAddress);
+    messageRouter->addProvisionedNextHop(messagingSettings->getCapabilitiesDirectoryParticipantId(),
+                                         globalCapabilitiesDirectoryAddress);
     // provision channel url directory
-    std::shared_ptr<joynr::system::RoutingTypes::QtAddress> globalChannelUrlDirectoryAddress(
-            new system::RoutingTypes::QtChannelAddress(
+    std::shared_ptr<joynr::system::RoutingTypes::Address> globalChannelUrlDirectoryAddress(
+            new system::RoutingTypes::ChannelAddress(
                     messagingSettings->getChannelUrlDirectoryChannelId()));
-    messageRouter->addProvisionedNextHop(
-            messagingSettings->getChannelUrlDirectoryParticipantId().toStdString(),
-            globalChannelUrlDirectoryAddress);
+    messageRouter->addProvisionedNextHop(messagingSettings->getChannelUrlDirectoryParticipantId(),
+                                         globalChannelUrlDirectoryAddress);
 
     // setup CC WebSocket interface
     WebSocketMessagingStubFactory* wsMessagingStubFactory = new WebSocketMessagingStubFactory();
     messagingStubFactory->registerStubFactory(wsMessagingStubFactory);
+    system::RoutingTypes::WebSocketAddress wsAddress =
+            wsSettings.createClusterControllerMessagingAddress();
+
     wsCcMessagingSkeleton =
-            new WebSocketCcMessagingSkeleton(*messageRouter,
-                                             *wsMessagingStubFactory,
-                                             wsSettings.createClusterControllerMessagingAddress());
+            new WebSocketCcMessagingSkeleton(*messageRouter, *wsMessagingStubFactory, wsAddress);
 
     /* LibJoynr */
     assert(messageRouter);
@@ -199,7 +183,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                 new HttpReceiver(*messagingSettings, messageRouter));
     }
 
-    QString channelId = messageReceiver->getReceiveChannelId();
+    std::string channelId = messageReceiver->getReceiveChannelId();
 
     // create message sender
     if (!messageSender) {
@@ -219,8 +203,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     // CapabilitiesServer.
     bool usingRealCapabilitiesClient =
             /*when switching this to true, turn on the UUID in systemintegrationtests again*/ true;
-    capabilitiesClient =
-            new CapabilitiesClient(channelId.toStdString()); // ownership of this is not transferred
+    capabilitiesClient = new CapabilitiesClient(channelId); // ownership of this is not transferred
     // try using the real capabilitiesClient again:
     // capabilitiesClient = new CapabilitiesClient(channelId);// ownership of this is not
     // transferred
@@ -231,7 +214,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     dbusSettings = new DbusSettings(*settings);
     dbusSettings->printSettings();
     // register dbus skeletons for capabilities and messaging interfaces
-    QString ccMessagingAddress(dbusSettings->createClusterControllerMessagingAddressString());
+    std::string ccMessagingAddress(dbusSettings->createClusterControllerMessagingAddressString());
     ccDbusMessageRouterAdapter = new DBusMessageRouterAdapter(*messageRouter, ccMessagingAddress);
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
 
@@ -242,7 +225,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     publicationManager = new PublicationManager();
     subscriptionManager = new SubscriptionManager();
     inProcessPublicationSender = new InProcessPublicationSender(subscriptionManager);
-    std::shared_ptr<joynr::system::RoutingTypes::QtAddress> libjoynrMessagingAddress(
+    std::shared_ptr<joynr::system::RoutingTypes::Address> libjoynrMessagingAddress(
             new InProcessMessagingAddress(libJoynrMessagingSkeleton));
     // subscriptionManager = new SubscriptionManager(...)
     inProcessConnectorFactory = new InProcessConnectorFactory(
@@ -258,20 +241,20 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     proxyFactory = new ProxyFactory(libjoynrMessagingAddress, connectorFactory, &cache);
 
-    dispatcherList.append(joynrDispatcher);
-    dispatcherList.append(inProcessDispatcher);
+    dispatcherList.push_back(joynrDispatcher);
+    dispatcherList.push_back(inProcessDispatcher);
 
     // Set up the persistence file for storing provider participant ids
-    QString persistenceFilename = libjoynrSettings->getParticipantIdsPersistenceFilename();
-    participantIdStorage = std::shared_ptr<ParticipantIdStorage>(
-            new ParticipantIdStorage(persistenceFilename.toStdString()));
+    std::string persistenceFilename = libjoynrSettings->getParticipantIdsPersistenceFilename();
+    participantIdStorage =
+            std::shared_ptr<ParticipantIdStorage>(new ParticipantIdStorage(persistenceFilename));
 
     dispatcherAddress = libjoynrMessagingAddress;
     discoveryProxy = new LocalDiscoveryAggregator(
             *dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher), systemServicesSettings);
 
     std::string discoveryProviderParticipantId(
-            systemServicesSettings.getCcDiscoveryProviderParticipantId().toStdString());
+            systemServicesSettings.getCcDiscoveryProviderParticipantId());
     std::shared_ptr<RequestCaller> discoveryRequestCaller(
             new joynr::system::DiscoveryRequestCaller(localCapabilitiesDirectory));
     std::shared_ptr<InProcessAddress> discoveryProviderAddress(
@@ -300,12 +283,12 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     /**
      * Finish initialising Capabilitiesclient by building a Proxy and passing it
      */
-    qint64 discoveryMessagesTtl = messagingSettings->getDiscoveryMessagesTtl();
+    int64_t discoveryMessagesTtl = messagingSettings->getDiscoveryMessagesTtl();
 
     if (usingRealCapabilitiesClient) {
         ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>* capabilitiesProxyBuilder =
                 createProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(
-                        TypeUtil::toStd(messagingSettings->getDiscoveryDirectoriesDomain()));
+                        messagingSettings->getDiscoveryDirectoriesDomain());
         DiscoveryQos discoveryQos(10000);
         discoveryQos.setArbitrationStrategy(
                 DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY); // actually only one provider
@@ -320,7 +303,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     ProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>* channelUrlDirectoryProxyBuilder =
             createProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>(
-                    TypeUtil::toStd(messagingSettings->getDiscoveryDirectoriesDomain()));
+                    messagingSettings->getDiscoveryDirectoriesDomain());
 
     DiscoveryQos discoveryQos(10000);
     discoveryQos.setArbitrationStrategy(
@@ -347,11 +330,10 @@ ConnectorFactory* JoynrClusterControllerRuntime::createConnectorFactory(
 
 void JoynrClusterControllerRuntime::registerRoutingProvider()
 {
-    std::string domain(systemServicesSettings.getDomain().toStdString());
+    std::string domain(systemServicesSettings.getDomain());
     std::shared_ptr<joynr::system::RoutingProvider> routingProvider(messageRouter);
     std::string interfaceName(routingProvider->getInterfaceName());
-    std::string participantId(
-            systemServicesSettings.getCcRoutingProviderParticipantId().toStdString());
+    std::string participantId(systemServicesSettings.getCcRoutingProviderParticipantId());
 
     // provision the participant ID for the routing provider
     participantIdStorage->setProviderParticipantId(domain, interfaceName, participantId);
@@ -361,11 +343,10 @@ void JoynrClusterControllerRuntime::registerRoutingProvider()
 
 void JoynrClusterControllerRuntime::registerDiscoveryProvider()
 {
-    std::string domain(systemServicesSettings.getDomain().toStdString());
+    std::string domain(systemServicesSettings.getDomain());
     std::shared_ptr<joynr::system::DiscoveryProvider> discoveryProvider(localCapabilitiesDirectory);
     std::string interfaceName(discoveryProvider->getInterfaceName());
-    std::string participantId(
-            systemServicesSettings.getCcDiscoveryProviderParticipantId().toStdString());
+    std::string participantId(systemServicesSettings.getCcDiscoveryProviderParticipantId());
 
     // provision the participant ID for the discovery provider
     participantIdStorage->setProviderParticipantId(domain, interfaceName, participantId);
@@ -378,19 +359,19 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
     LOG_TRACE(logger, "entering ~JoynrClusterControllerRuntime");
     stopMessaging();
 
-    if (joynrDispatcher != NULL) {
+    if (joynrDispatcher != nullptr) {
         LOG_TRACE(logger, "joynrDispatcher");
         // joynrDispatcher->stopMessaging();
         delete joynrDispatcher;
     }
 
     delete inProcessDispatcher;
-    inProcessDispatcher = NULL;
+    inProcessDispatcher = nullptr;
     delete capabilitiesClient;
-    capabilitiesClient = NULL;
+    capabilitiesClient = nullptr;
 
     delete inProcessPublicationSender;
-    inProcessPublicationSender = NULL;
+    inProcessPublicationSender = nullptr;
     delete joynrMessageSender;
     delete proxyFactory;
     delete messagingSettings;
@@ -401,8 +382,7 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
     delete ccDbusMessageRouterAdapter;
     delete dbusSettings;
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
-    settings->clear();
-    settings->deleteLater();
+    delete settings;
 
     LOG_TRACE(logger, "leaving ~JoynrClusterControllerRuntime");
 }
@@ -412,7 +392,7 @@ void JoynrClusterControllerRuntime::startMessaging()
     //    assert(joynrDispatcher!=NULL);
     //    joynrDispatcher->startMessaging();
     //    joynrDispatcher->waitForMessaging();
-    assert(messageReceiver != NULL);
+    assert(messageReceiver != nullptr);
     if (!messagingIsRunning) {
         messageReceiver->startReceiveQueue();
         messagingIsRunning = true;
@@ -433,11 +413,11 @@ void JoynrClusterControllerRuntime::runForever()
     app->exec();
 }
 
-JoynrClusterControllerRuntime* JoynrClusterControllerRuntime::create(QSettings* settings)
+JoynrClusterControllerRuntime* JoynrClusterControllerRuntime::create(Settings* settings)
 {
     // Only allow one QCoreApplication instance
     static int argc = 0;
-    static char* argv[] = {0};
+    static char* argv[] = {nullptr};
     static QCoreApplication* coreApplication =
             (QCoreApplication::instance() == nullptr) ? new QCoreApplication(argc, argv) : nullptr;
 

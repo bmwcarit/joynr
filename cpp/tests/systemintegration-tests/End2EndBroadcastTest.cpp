@@ -24,20 +24,13 @@
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "joynr/tests/testProxy.h"
-#include "joynr/types/Localisation_QtGpsLocation.h"
-#include "joynr/types/QtProviderQos.h"
-#include "joynr/types/QtCapabilityInformation.h"
-#include "joynr/CapabilitiesRegistrar.h"
-#include "utils/QThreadSleep.h"
-#include "joynr/LocalCapabilitiesDirectory.h"
+#include "joynr/types/ProviderQos.h"
 #include "joynr/MessagingSettings.h"
-#include "joynr/SettingsMerger.h"
-#include "joynr/QtOnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"
-#include "joynr/LocalChannelUrlDirectory.h"
 #include "joynr/tests/TestLocationUpdateSelectiveBroadcastFilter.h"
 #include "joynr/TypeUtil.h"
 #include "joynr/tests/testAbstractProvider.h"
+#include "joynr/LibjoynrSettings.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -45,12 +38,12 @@ using namespace joynr_logging;
 
 ACTION_P(ReleaseSemaphore,semaphore)
 {
-    semaphore->release(1);
+    semaphore->notify();
 }
 
-static const QString messagingPropertiesPersistenceFileName1(
+static const std::string messagingPropertiesPersistenceFileName1(
         "End2EndBroadcastTest-runtime1-joynr.settings");
-static const QString messagingPropertiesPersistenceFileName2(
+static const std::string messagingPropertiesPersistenceFileName2(
         "End2EndBroadcastTest-runtime2-joynr.settings");
 
 namespace joynr {
@@ -87,19 +80,17 @@ public:
 
 class End2EndBroadcastTest : public Test {
 public:
-    types::QtProviderQos qRegisterMetaTypeQos;
-//    types::QtCapabilityInformation qRegisterMetaTypeCi;
     JoynrClusterControllerRuntime* runtime1;
     JoynrClusterControllerRuntime* runtime2;
-    QSettings settings1;
-    QSettings settings2;
+    Settings settings1;
+    Settings settings2;
     MessagingSettings messagingSettings1;
     MessagingSettings messagingSettings2;
     std::string baseUuid;
     std::string uuid;
     std::string domainName;
-    QSemaphore semaphore;
-    QSemaphore altSemaphore;
+    joynr::Semaphore semaphore;
+    joynr::Semaphore altSemaphore;
     joynr::tests::TestLocationUpdateSelectiveBroadcastFilterParameters filterParameters;
     std::shared_ptr<MockLocationUpdatedSelectiveFilter> filter;
     unsigned long registerProviderWait;
@@ -111,15 +102,13 @@ public:
     joynr::types::Localisation::GpsLocation gpsLocation4;
 
     End2EndBroadcastTest() :
-        qRegisterMetaTypeQos(),
-//        qRegisterMetaTypeCi(),
         runtime1(NULL),
         runtime2(NULL),
-        settings1("test-resources/SystemIntegrationTest1.settings", QSettings::IniFormat),
-        settings2("test-resources/SystemIntegrationTest2.settings", QSettings::IniFormat),
+        settings1("test-resources/SystemIntegrationTest1.settings"),
+        settings2("test-resources/SystemIntegrationTest2.settings"),
         messagingSettings1(settings1),
         messagingSettings2(settings2),
-        baseUuid(TypeUtil::toStd(QUuid::createUuid().toString())),
+        baseUuid(Util::createUuid()),
         uuid( "_" + baseUuid.substr(1, baseUuid.length()-2)),
         domainName("cppEnd2EndBroadcastTest_Domain" + uuid),
         semaphore(0),
@@ -172,17 +161,16 @@ public:
         messagingSettings2.setMessagingPropertiesPersistenceFilename(
                     messagingPropertiesPersistenceFileName2);
 
-        QSettings* settings_1 = SettingsMerger::mergeSettings(
-                    QString("test-resources/SystemIntegrationTest1.settings"));
-        SettingsMerger::mergeSettings(
-                    QString("test-resources/libjoynrSystemIntegration1.settings"),
-                    settings_1);
+        Settings* settings_1 = new Settings("test-resources/SystemIntegrationTest1.settings");
+        Settings integration1Settings{"test-resources/libjoynrSystemIntegration1.settings"};
+        Settings::merge(integration1Settings, *settings_1, false);
+
         runtime1 = new JoynrClusterControllerRuntime(NULL, settings_1);
-        QSettings* settings_2 = SettingsMerger::mergeSettings(
-                    QString("test-resources/SystemIntegrationTest2.settings"));
-        SettingsMerger::mergeSettings(
-                    QString("test-resources/libjoynrSystemIntegration2.settings"),
-                    settings_2);
+
+        Settings* settings_2 = new Settings("test-resources/SystemIntegrationTest2.settings");
+        Settings integration2Settings{"test-resources/libjoynrSystemIntegration2.settings"};
+        Settings::merge(integration2Settings, *settings_2, false);
+
         runtime2 = new JoynrClusterControllerRuntime(NULL, settings_2);
 
         filterParameters.setCountry("Germany");
@@ -200,11 +188,11 @@ public:
         runtime2->stop(deleteChannel);
 
         // Delete the persisted participant ids so that each test uses different participant ids
-        QFile::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME());
+        std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
     }
 
     /*
-     *  This wait is necessary, because subcriptions are async, and a broadcast could occur
+     *  This wait is necessary, because subcriptions are async, and a publication could occur
      * before the subscription has started.
      */
     void waitForAttributeSubscriptionArrivedAtProvider(
@@ -213,11 +201,14 @@ public:
     {
         unsigned long delay = 0;
 
-        while (testProvider->attributeListeners.value(attributeName).isEmpty() && delay <= subscribeToAttributeWait) {
-            QThreadSleep::msleep(50);
+        while (testProvider->attributeListeners.find(attributeName) == testProvider->attributeListeners.cend()
+               && delay <= subscribeToAttributeWait
+        ) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
             delay+=50;
         }
-        EXPECT_FALSE(testProvider->attributeListeners.value(attributeName).isEmpty());
+        EXPECT_FALSE(testProvider->attributeListeners.find(attributeName) == testProvider->attributeListeners.cend() ||
+                     testProvider->attributeListeners.find(attributeName)->second.empty());
     }
 
     /*
@@ -230,11 +221,14 @@ public:
     {
         unsigned long delay = 0;
 
-        while (testProvider->broadcastListeners.value(broadcastName).isEmpty() && delay <= subscribeToBroadcastWait) {
-            QThreadSleep::msleep(50);
+        while (testProvider->broadcastListeners.find(broadcastName) == testProvider->broadcastListeners.cend()
+               && delay <= subscribeToBroadcastWait
+        ) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
             delay+=50;
         }
-        EXPECT_FALSE(testProvider->broadcastListeners.value(broadcastName).isEmpty());
+        EXPECT_FALSE(testProvider->broadcastListeners.find(broadcastName) == testProvider->broadcastListeners.cend() ||
+                     testProvider->broadcastListeners.find(broadcastName)->second.empty());
     }
 
     ~End2EndBroadcastTest(){
@@ -266,7 +260,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithEnumOutput) {
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
-    QThreadSleep::msleep(registerProviderWait);
+    std::this_thread::sleep_for(std::chrono::milliseconds(registerProviderWait));
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder
             = runtime2->createProxyBuilder<tests::testProxy>(domainName);
@@ -296,7 +290,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithEnumOutput) {
     testProvider->fireBroadcastWithEnumOutput(expectedTestEnum);
 
     // Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(3000)));
 
     delete testProxyBuilder;
     delete testProxy;
@@ -329,7 +323,7 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
-    QThreadSleep::msleep(registerProviderWait);
+    std::this_thread::sleep_for(std::chrono::milliseconds(registerProviderWait));
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder
             = runtime2->createProxyBuilder<tests::testProxy>(domainName);
@@ -356,43 +350,43 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
 
     // This wait is necessary, because subcriptions are async, and a broadcast could occur
     // before the subscription has started.
-    QThreadSleep::msleep(subscribeToBroadcastWait);
+    std::this_thread::sleep_for(std::chrono::milliseconds(subscribeToBroadcastWait));
 
     testProvider->fireLocationUpdate(
                 gpsLocation2);
 
 //     Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(3000)));
 
     // Waiting between   occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
-    QThreadSleep::msleep(minInterval_ms);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
 
     testProvider->fireLocationUpdate(gpsLocation2);
 
 //     Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(3000)));
 
     // update subscription, much longer minInterval_ms
     subscriptionQos.setMinInterval(5000);
     testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener2, subscriptionQos, subscriptionId);
 
-    QThreadSleep::msleep(subscribeToBroadcastWait);
+    std::this_thread::sleep_for(std::chrono::milliseconds(subscribeToBroadcastWait));
     testProvider->fireLocationUpdate(gpsLocation2);
 //     Wait for a subscription message to arrive
-    ASSERT_TRUE(altSemaphore.tryAcquire(1, 3000));
+    ASSERT_TRUE(altSemaphore.waitFor(std::chrono::milliseconds(3000)));
 
     // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
-    QThreadSleep::msleep(minInterval_ms);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
 
     //now, the next broadcast shall not be received, as the minInterval has been updated
     testProvider->fireLocationUpdate(gpsLocation2);
 
 //     Wait for a subscription message to arrive
-    ASSERT_FALSE(altSemaphore.tryAcquire(1, 1000));
+    ASSERT_FALSE(altSemaphore.waitFor(std::chrono::milliseconds(1000)));
     //the "old" semaphore shall not be touced, as listener has been replaced with listener2 as callback
-    ASSERT_FALSE(semaphore.tryAcquire(1, 1000));
+    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(1000)));
 
     delete testProxyBuilder;
 }
@@ -416,7 +410,7 @@ TEST_F(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
-    QThreadSleep::msleep(registerProviderWait);
+    std::this_thread::sleep_for(std::chrono::milliseconds(registerProviderWait));
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder
             = runtime2->createProxyBuilder<tests::testProxy>(domainName);
@@ -443,23 +437,23 @@ TEST_F(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
 
     // This wait is necessary, because subcriptions are async, and a broadcast could occur
     // before the subscription has started.
-    QThreadSleep::msleep(subscribeToBroadcastWait);
+    std::this_thread::sleep_for(std::chrono::milliseconds(subscribeToBroadcastWait));
 
     testProvider->fireLocationUpdate(gpsLocation2);
 
 //     Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(3000)));
 
     // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
-    QThreadSleep::msleep(minInterval_ms);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
 
 
     testProxy->unsubscribeFromLocationUpdateBroadcast(subscriptionId);
 
     testProvider->fireLocationUpdate(gpsLocation3);
 //     Wait for a subscription message to arrive
-    ASSERT_FALSE(semaphore.tryAcquire(1, 2000));
+    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(2000)));
 }
 
 TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
@@ -484,7 +478,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
-    QThreadSleep::msleep(registerProviderWait);
+    std::this_thread::sleep_for(std::chrono::milliseconds(registerProviderWait));
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder
             = runtime2->createProxyBuilder<tests::testProxy>(domainName);
@@ -514,23 +508,23 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
     testProvider->fireLocationUpdate(gpsLocation2);
 
 //     Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(3000)));
 
     // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
-    QThreadSleep::msleep(minInterval_ms);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
 
     testProvider->fireLocationUpdate(gpsLocation3);
 //     Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(3000)));
 
     // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
-    QThreadSleep::msleep(minInterval_ms);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
 
     testProvider->fireLocationUpdate(gpsLocation4);
 //     Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(3000)));
 
     delete testProxyBuilder;
 }
@@ -557,7 +551,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
-    QThreadSleep::msleep(registerProviderWait);
+    std::this_thread::sleep_for(std::chrono::milliseconds(registerProviderWait));
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder
             = runtime2->createProxyBuilder<tests::testProxy>(domainName);
@@ -589,23 +583,23 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
     testProvider->fireLocationUpdateWithSpeed(gpsLocation2, 100);
 
 //     Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(3000)));
 
     // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
-    QThreadSleep::msleep(minInterval_ms);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
 
     testProvider->fireLocationUpdateWithSpeed(gpsLocation3, 200);
 //     Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(3000)));
 
     // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
-    QThreadSleep::msleep(minInterval_ms);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
 
     testProvider->fireLocationUpdateWithSpeed(gpsLocation4, 300);
 //     Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(3000)));
 
     delete testProxyBuilder;
 }
@@ -635,7 +629,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
-    QThreadSleep::msleep(registerProviderWait);
+    std::this_thread::sleep_for(std::chrono::milliseconds(registerProviderWait));
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder
             = runtime2->createProxyBuilder<tests::testProxy>(domainName);
@@ -670,25 +664,25 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
     testProvider->fireLocationUpdateSelective(gpsLocation2);
 
     // Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(3000)));
 
     // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
-    QThreadSleep::msleep(minInterval_ms);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
 
     testProvider->fireLocationUpdateSelective(gpsLocation3);
 
     // Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(3000)));
 
     // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
-    QThreadSleep::msleep(minInterval_ms);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
 
     testProvider->fireLocationUpdateSelective(gpsLocation4);
 
     // Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(1, 3000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(3000)));
 
     delete testProxyBuilder;
 }
@@ -712,7 +706,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
-    QThreadSleep::msleep(registerProviderWait);
+    std::this_thread::sleep_for(std::chrono::milliseconds(registerProviderWait));
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder
             = runtime2->createProxyBuilder<tests::testProxy>(domainName);
@@ -747,25 +741,25 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
     testProvider->fireLocationUpdate(gpsLocation2);
 
     // Wait for a subscription message to arrive
-    ASSERT_FALSE(semaphore.tryAcquire(1, 500));
+    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(500)));
 
     // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
-    QThreadSleep::msleep(minInterval_ms);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
 
     testProvider->fireLocationUpdateSelective(gpsLocation3);
 
     // Wait for a subscription message to arrive
-    ASSERT_FALSE(semaphore.tryAcquire(1, 500));
+    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(500)));
 
     // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
-    QThreadSleep::msleep(minInterval_ms);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
 
     testProvider->fireLocationUpdateSelective(gpsLocation4);
 
     // Wait for a subscription message to arrive
-    ASSERT_FALSE(semaphore.tryAcquire(1, 500));
+    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(500)));
 
     delete testProxyBuilder;
 }
@@ -798,7 +792,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
-    QThreadSleep::msleep(registerProviderWait);
+    std::this_thread::sleep_for(std::chrono::milliseconds(registerProviderWait));
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder
             = runtime2->createProxyBuilder<tests::testProxy>(domainName);
@@ -833,21 +827,21 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
     waitForBroadcastSubscriptionArrivedAtProvider(testProvider, "location");
 
     // Initial attribute publication
-    ASSERT_TRUE(semaphore.tryAcquire(1, 500));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(500)));
 
-    QThreadSleep::msleep(minInterval_ms); //ensure to wait for the minInterval_ms before changing location
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms)); //ensure to wait for the minInterval_ms before changing location
 
     // Change attribute
     testProvider->locationChanged(gpsLocation2);
 
     // Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(1, 500));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(500)));
 
     // Emit broadcast
     testProvider->fireLocation(gpsLocation3);
 
     // Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(1, 500));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(500)));
 
     delete testProxyBuilder;
 }

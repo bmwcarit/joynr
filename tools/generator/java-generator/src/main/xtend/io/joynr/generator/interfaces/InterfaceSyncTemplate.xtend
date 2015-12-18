@@ -88,7 +88,6 @@ class InterfaceSyncTemplate implements InterfaceTemplate{
 		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
 		val hasMethodWithArguments = hasMethodWithArguments(serviceInterface);
 		val hasWriteAttribute = hasWriteAttribute(serviceInterface);
-		val hasMethodWithReturnValue = hasMethodWithReturnValue(serviceInterface);
 		'''
 «warning()»
 

@@ -19,26 +19,17 @@
 #ifndef IMESSAGERECEIVER_H
 #define IMESSAGERECEIVER_H
 
-#include <QString>
 #include <memory>
-
-#include "joynr/Directory.h"
+#include <string>
 
 namespace joynr
 {
 
-class JoynrMessage;
-class MessageRouter;
 class ILocalChannelUrlDirectory;
 
-namespace system
-{
-class QtAddress;
-}
-
 /**
-  * \class IMessageReceiver
-  * \brief Interface for message receiver
+  * @class IMessageReceiver
+  * @brief Interface for message receiver
   *
   * This interface describes basic messaging functionality available in
   * the Joynr framework. Especially, it offers a method to notify about
@@ -55,7 +46,7 @@ public:
     /**
       * Gets the channel ID of the receive channel for incoming messages.
       */
-    virtual const QString& getReceiveChannelId() const = 0;
+    virtual const std::string& getReceiveChannelId() const = 0;
 
     /**
       * Starts processing incomming messages. This method must be called

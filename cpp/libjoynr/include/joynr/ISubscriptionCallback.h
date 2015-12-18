@@ -19,15 +19,14 @@
 #ifndef ISUBSCRIPTIONCALLBACK_H
 #define ISUBSCRIPTIONCALLBACK_H
 
-#include <QString>
 #include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
 {
 
 /**
-  * \class ISubscriptionCallback
-  * \brief
+  * @class ISubscriptionCallback
+  * @brief
   */
 
 class ISubscriptionCallback

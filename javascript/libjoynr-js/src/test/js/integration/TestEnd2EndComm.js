@@ -29,6 +29,7 @@ joynrTestRequire(
             "joynr/vehicle/radiotypes/RadioStation",
             "joynr/vehicle/radiotypes/ErrorList",
             "joynr/datatypes/exampleTypes/Country",
+            "joynr/datatypes/exampleTypes/StringMap",
             "integration/IntegrationUtils",
             "joynr/provisioning/provisioning_cc",
             "integration/provisioning_end2end_common"
@@ -40,6 +41,7 @@ joynrTestRequire(
                 RadioStation,
                 ErrorList,
                 Country,
+                StringMap,
                 IntegrationUtils,
                 provisioning,
                 provisioning_end2end) {
@@ -68,11 +70,7 @@ joynrTestRequire(
                                             provisioningSuffix);
 
                             runs(function() {
-                                joynr.load(testProvisioning, function(error, newjoynr) {
-                                    if (error) {
-                                        throw error;
-                                    }
-
+                                joynr.load(testProvisioning).then(function(newjoynr) {
                                     joynr = newjoynr;
                                     IntegrationUtils.initialize(joynr);
 
@@ -102,6 +100,8 @@ joynrTestRequire(
                                     }).then(function(newRadioProxy) {
                                         radioProxy = newRadioProxy;
                                     });
+                                }).catch(function(error){
+                                    throw error;
                                 });
                             });
                             waitsFor(function() {
@@ -463,6 +463,22 @@ joynrTestRequire(
                             getAttribute("enumAttribute", Country.AUSTRIA);
                             setAttribute("enumAttribute", Country.AUSTRALIA);
                             getAttribute("enumAttribute", Country.AUSTRALIA);
+                        });
+
+                        it("sets the byteBufferAttribute", function() {
+                            var testByteBuffer = [1,2,3,4];
+                            setAttribute("byteBufferAttribute", testByteBuffer);
+                            getAttribute("byteBufferAttribute", testByteBuffer);
+                            setAttribute("byteBufferAttribute", testByteBuffer);
+                            getAttribute("byteBufferAttribute", testByteBuffer);
+                        });
+
+                        it("sets the stringMapAttribute", function() {
+                            var stringMap = new StringMap({key1: "value1"});
+                            setAttribute("stringMapAttribute", stringMap);
+                            getAttribute("stringMapAttribute", stringMap);
+                            setAttribute("stringMapAttribute", stringMap);
+                            getAttribute("stringMapAttribute", stringMap);
                         });
 
                         it("subscribe to failingSyncAttribute", function() {
@@ -866,6 +882,19 @@ joynrTestRequire(
                                             },
                                             {
                                                 enumOutput : [Country.CANADA, Country.AUSTRIA, Country.ITALY, Country.GERMANY]
+                                            });
+                               });
+
+                        it(
+                                "can call an operation with double array as argument and string array as return type",
+                                function() {
+                                    callOperation(
+                                            "methodWithSingleArrayParameters",
+                                            {
+                                                doubleArrayArg : [0.01,1.1,2.2,3.3]
+                                            },
+                                            {
+                                                stringArrayOut : ["0.01", "1.1", "2.2", "3.3"]
                                             });
                                });
 

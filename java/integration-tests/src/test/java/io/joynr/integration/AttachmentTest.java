@@ -19,6 +19,8 @@ package io.joynr.integration;
  * #L%
  */
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static com.jayway.restassured.RestAssured.given;
 import io.joynr.integration.setup.BounceProxyServerSetup;
 import io.joynr.integration.setup.SingleBounceProxy;
@@ -36,7 +38,6 @@ import javax.annotation.Nullable;
 
 import joynr.JoynrMessage;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -116,10 +117,10 @@ public class AttachmentTest {
 
         List<JoynrMessage> messages = bpMock.getJoynrMessagesFromResponse(longPoll);
 
-        Assert.assertEquals(1, messages.size());
+        assertEquals(1, messages.size());
 
         JoynrMessage message = messages.get(0);
-        Assert.assertTrue(message.getPayload() != null);
+        assertTrue(message.getPayload() != null);
 
         Response attachment = getAttachment(channelId, msgId);
         logger.debug("received attachment: " + convertStreamToString(attachment.getBody().asInputStream()));

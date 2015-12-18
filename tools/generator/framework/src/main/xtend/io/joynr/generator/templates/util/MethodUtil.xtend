@@ -58,10 +58,10 @@ public class MethodUtil {
 		var Object datatype = null
 		var typeList = new HashSet<Object>();
 		for(returnParameter : getOutputParameters(method).filterNull){
-			typeList.add(getDatatype(returnParameter.type));
+			typeList.addAll(getRequiredTypes(returnParameter.type));
 		}
 		for (inputParameter : getInputParameters(method).filterNull) {
-			typeList.add(getDatatype(inputParameter.type));
+			typeList.addAll(getRequiredTypes(inputParameter.type));
 		}
 		if (errorTypes) {
 			if (method.errors !== null) {
@@ -135,7 +135,7 @@ public class MethodUtil {
 		for (FArgument argument : arguments) {
 			nameStringBuilder.append(argument.name.toFirstUpper);
 			var typeName = argument.type.joynrName;
-			if (argument.array) {
+			if (isArray(argument)) {
 				typeName = "List"+typeName
 			}
 			nameStringBuilder.append(typeName.objectDataTypeForPlainType);

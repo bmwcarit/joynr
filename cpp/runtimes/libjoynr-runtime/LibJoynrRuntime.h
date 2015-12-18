@@ -20,8 +20,6 @@
 #ifndef LIBJOYNRRUNTIME_H
 #define LIBJOYNRRUNTIME_H
 
-#include <QtCore/QSemaphore>
-#include <QtCore/QSettings>
 #include <string>
 #include <memory>
 
@@ -37,6 +35,7 @@
 #include "joynr/CapabilitiesRegistrar.h"
 #include "runtimes/libjoynr-runtime/JoynrRuntimeExecutor.h"
 #include "joynr/SubscriptionManager.h"
+#include "joynr/Semaphore.h"
 
 namespace joynr
 {
@@ -46,12 +45,13 @@ class JoynrMessageSender;
 class MessageRouter;
 class InProcessMessagingSkeleton;
 class IMiddlewareMessagingStubFactory;
+class Settings;
 
 class LibJoynrRuntime : public JoynrRuntime
 {
 
 public:
-    LibJoynrRuntime(QSettings* settings);
+    explicit LibJoynrRuntime(Settings* settings);
     virtual ~LibJoynrRuntime();
 
     static LibJoynrRuntime* create(JoynrRuntimeExecutor* runtimeExecutor);
@@ -69,7 +69,7 @@ protected:
     IDispatcher* inProcessDispatcher;
 
     // take ownership, so a pointer is used
-    QSettings* settings;
+    Settings* settings;
     // use pointer for settings object to check the configuration before initialization
     LibjoynrSettings* libjoynrSettings;
 
@@ -78,8 +78,8 @@ protected:
     virtual void startLibJoynrMessagingSkeleton(MessageRouter& messageRouter) = 0;
 
     void init(IMiddlewareMessagingStubFactory* middlewareMessagingStubFactory,
-              std::shared_ptr<joynr::system::RoutingTypes::QtAddress> libjoynrMessagingAddress,
-              std::shared_ptr<joynr::system::RoutingTypes::QtAddress> ccMessagingAddress);
+              std::shared_ptr<system::RoutingTypes::Address> libjoynrMessagingAddress,
+              std::shared_ptr<system::RoutingTypes::Address> ccMessagingAddress);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LibJoynrRuntime);

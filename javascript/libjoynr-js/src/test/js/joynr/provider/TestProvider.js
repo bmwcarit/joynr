@@ -24,6 +24,7 @@ joynrTestRequire(
         [
             "joynr/vehicle/RadioProvider",
             "joynr/datatypes/exampleTypes/Country",
+            "joynr/datatypes/exampleTypes/StringMap",
             "joynr/provider/ProviderAttributeNotifyReadWrite",
             "joynr/provider/ProviderAttributeNotifyRead",
             "joynr/provider/ProviderAttributeNotifyWrite",
@@ -39,6 +40,7 @@ joynrTestRequire(
         function(
                 RadioProvider,
                 Country,
+                StringMap,
                 ProviderAttributeNotifyReadWrite,
                 ProviderAttributeNotifyRead,
                 ProviderAttributeNotifyWrite,
@@ -117,6 +119,24 @@ joynrTestRequire(
                                                 this.value = newValue;
                                             }
                                         },
+                                        byteBufferAttribute : {
+                                            value : [],
+                                            get : function() {
+                                                return this.value;
+                                            },
+                                            set : function(newValue) {
+                                                this.value = newValue;
+                                            }
+                                        },
+                                        stringMapAttribute : {
+                                            value : {},
+                                            get : function() {
+                                                return this.value;
+                                            },
+                                            set : function(newValue) {
+                                                this.value = newValue;
+                                            }
+                                        },
                                         failingSyncAttribute : {
                                             value : 0,
                                             get : function() {
@@ -138,6 +158,11 @@ joynrTestRequire(
                                                 this.value = newValue;
                                             }
                                         },
+                                        attributeTestingProviderInterface : {
+                                            get : function() {
+                                                return undefined;
+                                            }
+                                        },
                                         addFavoriteStation : jasmine
                                                 .createSpy("addFavoriteStation"),
                                         weakSignal : jasmine.createSpy("weakSignal"),
@@ -150,6 +175,8 @@ joynrTestRequire(
                                                 .createSpy("operationWithMultipleOutputParameters"),
                                         operationWithEnumsAsInputAndEnumArrayAsOutput : jasmine
                                                 .createSpy("operationWithEnumsAsInputAndEnumArrayAsOutput"),
+                                        methodWithSingleArrayParameters : jasmine
+                                                .createSpy("methodWithSingleArrayParameters"),
                                         broadcastWithEnum : jasmine.createSpy("broadcastWithEnum")
                                     };
                         });

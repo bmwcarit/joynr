@@ -20,7 +20,6 @@ package io.joynr.generator.cpp.inprocess
 import com.google.inject.Inject
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
-import io.joynr.generator.cpp.util.QtTypeUtil
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.AttributeUtil
@@ -35,7 +34,6 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 
 	@Inject private extension TemplateBase
 	@Inject private extension CppStdTypeUtil cppStdTypeUtil
-	@Inject private QtTypeUtil qtTypeUtil
 	@Inject private extension NamingUtil
 	@Inject private extension AttributeUtil
 	@Inject private extension MethodUtil
@@ -51,10 +49,9 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»InProcessConnector.h"
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«interfaceName»RequestCaller.h"
-#include "joynr/DeclareMetatypeUtil.h"
-«FOR datatype: getAllComplexAndEnumTypes(serviceInterface)»
+«FOR datatype: getAllComplexTypes(serviceInterface)»
 «IF datatype instanceof FType»
-	«IF isComplex(datatype)»
+	«IF isCompound(datatype) || isMap(datatype)»
 		#include "«getIncludeOf(datatype)»"
 	«ENDIF»
 «ENDIF»
@@ -70,6 +67,7 @@ class InterfaceInProcessConnectorCPPTemplate implements InterfaceTemplate{
 #include "joynr/TypeUtil.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/RequestStatusCode.h"
+#include "joynr/SubscriptionUtil.h"
 
 «getNamespaceStarter(serviceInterface)»
 
@@ -99,7 +97,6 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 
 «FOR attribute : getAttributes(serviceInterface)»
 	«val returnType = cppStdTypeUtil.getTypeName(attribute)»
-	«val returnTypeQt = qtTypeUtil.getTypeName(attribute)»
 	«val attributeName = attribute.joynrName»
 	«val setAttributeName = "set" + attribute.joynrName.toFirstUpper»
 	«IF attribute.readable»
@@ -234,7 +231,7 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 				std::string& subscriptionId)
 		{
 			joynr::SubscriptionRequest subscriptionRequest;
-			subscriptionRequest.setSubscriptionId(QString::fromStdString(subscriptionId));
+			subscriptionRequest.setSubscriptionId(subscriptionId);
 			return subscribeTo«attributeName.toFirstUpper»(subscriptionListener, subscriptionQos, subscriptionRequest);
 		}
 
@@ -262,27 +259,23 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 			«ELSE»
 				LOG_DEBUG(logger, "Subscribing to «attributeName».");
 				assert(subscriptionManager != NULL);
-				QString attributeName("«attributeName»");
-				std::shared_ptr<joynr::SubscriptionCallback<«returnTypeQt»>> subscriptionCallback(
-						«IF qtTypeUtil.needsDatatypeConversion(attribute)»
-							new «attribute.joynrName.toFirstUpper»AttributeSubscriptionCallbackWrapper(
-						«ELSE»
-							new joynr::SubscriptionCallback<«returnTypeQt»>(
-						«ENDIF»
-								subscriptionListener
-						)
-				);
+				std::string attributeName("«attributeName»");
+				auto subscriptionCallback = std::make_shared<
+						joynr::SubscriptionCallback<«returnType»>
+				>(subscriptionListener);
 				subscriptionManager->registerSubscription(
 						attributeName,
 						subscriptionCallback,
-						std::shared_ptr<QtSubscriptionQos>(QtSubscriptionQos::createQt(subscriptionQos)),
+						SubscriptionUtil::getVariant(subscriptionQos),
 						subscriptionRequest);
-				LOG_DEBUG(logger, "Registered subscription: " + subscriptionRequest.toQString());
+				LOG_DEBUG(logger, FormatString("Registered subscription: %1")
+						.arg(subscriptionRequest.toString()).str()
+				);
 				assert(address);
 				std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
 				assert(caller);
 				std::shared_ptr<«interfaceName»RequestCaller> requestCaller = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
-				std::string subscriptionId(subscriptionRequest.getSubscriptionId().toStdString());
+				std::string subscriptionId(subscriptionRequest.getSubscriptionId());
 
 				if(!caller) {
 					assert(publicationManager != NULL);
@@ -291,9 +284,9 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 					* Dispatcher will call publicationManger->restore when a new provider is added to activate
 					* subscriptions for that provider
 					*/
-					publicationManager->add(QString::fromStdString(proxyParticipantId), QString::fromStdString(providerParticipantId), subscriptionRequest);
+					publicationManager->add(proxyParticipantId, providerParticipantId, subscriptionRequest);
 				} else {
-					publicationManager->add(QString::fromStdString(proxyParticipantId), QString::fromStdString(providerParticipantId), caller, subscriptionRequest, inProcessPublicationSender);
+					publicationManager->add(proxyParticipantId, providerParticipantId, caller, subscriptionRequest, inProcessPublicationSender);
 				}
 				return subscriptionId;
 			«ENDIF»
@@ -308,14 +301,13 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 				LOG_FATAL(logger, "enum return values are currently not supported in C++ client (attribute name: «interfaceName».«attributeName»)");
 				assert(false);
 			«ELSE»
-				QString subscriptionIdQT(QString::fromStdString(subscriptionId));
-				LOG_DEBUG(logger, "Unsubscribing. Id=" +subscriptionIdQT);
+				LOG_DEBUG(logger, FormatString("Unsubscribing. Id=%1").arg(subscriptionId).str());
 				assert(publicationManager != NULL);
 				LOG_DEBUG(logger, "Stopping publications by publication manager.");
-				publicationManager->stopPublication(subscriptionIdQT);
+				publicationManager->stopPublication(subscriptionId);
 				assert(subscriptionManager != NULL);
 				LOG_DEBUG(logger, "Unregistering attribute subscription.");
-				subscriptionManager->unregisterSubscription(subscriptionIdQT);
+				subscriptionManager->unregisterSubscription(subscriptionId);
 			«ENDIF»
 		}
 
@@ -396,7 +388,6 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 
 «FOR broadcast: serviceInterface.broadcasts»
 	«val returnTypes = cppStdTypeUtil.getCommaSeparatedOutputParameterTypes(broadcast)»
-	«val returnTypesQt = qtTypeUtil.getCommaSeparatedOutputParameterTypes(broadcast)»
 	«val broadcastName = broadcast.joynrName»
 
 	«IF isSelective(broadcast)»
@@ -412,10 +403,10 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 	) {
 		LOG_DEBUG(logger, "Subscribing to «broadcastName».");
 		assert(subscriptionManager != NULL);
-		QString broadcastName("«broadcastName»");
+		std::string broadcastName("«broadcastName»");
 		joynr::BroadcastSubscriptionRequest subscriptionRequest;
 		«IF isSelective(broadcast)»
-			subscriptionRequest.setFilterParameters(QtBroadcastFilterParameters::createQt(filterParameters));
+			subscriptionRequest.setFilterParameters(filterParameters);
 		«ENDIF»
 		return subscribeTo«broadcastName.toFirstUpper»Broadcast(
 					subscriptionListener,
@@ -438,9 +429,9 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 	) {
 		joynr::BroadcastSubscriptionRequest subscriptionRequest;
 		«IF isSelective(broadcast)»
-			subscriptionRequest.setFilterParameters(QtBroadcastFilterParameters::createQt(filterParameters));
+			subscriptionRequest.setFilterParameters(filterParameters);
 		«ENDIF»
-		subscriptionRequest.setSubscriptionId(QString::fromStdString(subscriptionId));
+		subscriptionRequest.setSubscriptionId(subscriptionId);
 		return subscribeTo«broadcastName.toFirstUpper»Broadcast(
 					subscriptionListener,
 					subscriptionQos,
@@ -454,28 +445,22 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 	) {
 		LOG_DEBUG(logger, "Subscribing to «broadcastName».");
 		assert(subscriptionManager != NULL);
-		QString broadcastName("«broadcastName»");
+		std::string broadcastName("«broadcastName»");
 
-		std::shared_ptr<joynr::SubscriptionCallback<«returnTypesQt»>> subscriptionCallback(
-				«IF qtTypeUtil.needsDatatypeConversion(broadcast)»
-					new «broadcastName.toFirstUpper»BroadcastSubscriptionCallbackWrapper(
-				«ELSE»
-					new joynr::SubscriptionCallback<«returnTypesQt»>(
-				«ENDIF»
-						subscriptionListener
-				)
-		);
+		auto subscriptionCallback = std::make_shared<
+				joynr::SubscriptionCallback<«returnTypes»>
+		>(subscriptionListener);
 		subscriptionManager->registerSubscription(
 					broadcastName,
 					subscriptionCallback,
-					std::shared_ptr<QtOnChangeSubscriptionQos>(QtSubscriptionQos::createQt(subscriptionQos)),
+					Variant::make<OnChangeSubscriptionQos>(subscriptionQos),
 					subscriptionRequest);
-		LOG_DEBUG(logger, "Registered broadcast subscription: " + subscriptionRequest.toQString());
+		LOG_DEBUG(logger, FormatString("Registered broadcast subscription: %1").arg(subscriptionRequest.toString()).str());
 		assert(address);
 		std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
 		assert(caller);
 		std::shared_ptr<«interfaceName»RequestCaller> requestCaller = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
-		std::string subscriptionId(subscriptionRequest.getSubscriptionId().toStdString());
+		std::string subscriptionId(subscriptionRequest.getSubscriptionId());
 
 		if(!caller) {
 			assert(publicationManager != NULL);
@@ -484,11 +469,11 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 			* Dispatcher will call publicationManger->restore when a new provider is added to activate
 			* subscriptions for that provider
 			*/
-			publicationManager->add(QString::fromStdString(proxyParticipantId), QString::fromStdString(providerParticipantId), subscriptionRequest);
+			publicationManager->add(proxyParticipantId, providerParticipantId, subscriptionRequest);
 		} else {
 			publicationManager->add(
-						QString::fromStdString(proxyParticipantId),
-						QString::fromStdString(providerParticipantId),
+						proxyParticipantId,
+						providerParticipantId,
 						caller,
 						subscriptionRequest,
 						inProcessPublicationSender);
@@ -499,14 +484,13 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 	void «interfaceName»InProcessConnector::unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(
 			std::string& subscriptionId
 	) {
-		QString subscriptionIdQT(QString::fromStdString(subscriptionId));
-		LOG_DEBUG(logger, "Unsubscribing broadcast. Id=" + subscriptionIdQT);
+		LOG_DEBUG(logger, FormatString("Unsubscribing broadcast. Id=%1").arg(subscriptionId).str());
 		assert(publicationManager != NULL);
 		LOG_DEBUG(logger, "Stopping publications by publication manager.");
-		publicationManager->stopPublication(subscriptionIdQT);
+		publicationManager->stopPublication(subscriptionId);
 		assert(subscriptionManager != NULL);
 		LOG_DEBUG(logger, "Unregistering broadcast subscription.");
-		subscriptionManager->unregisterSubscription(subscriptionIdQT);
+		subscriptionManager->unregisterSubscription(subscriptionId);
 	}
 «ENDFOR»
 «getNamespaceEnder(serviceInterface)»

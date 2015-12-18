@@ -18,14 +18,11 @@
  */
 #include "joynr/LocalDiscoveryAggregator.h"
 
-#include <vector>
-
 #include "joynr/IRequestCallerDirectory.h"
 #include "joynr/SystemServicesSettings.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/RequestStatusCode.h"
 
-#include "joynr/types/QtDiscoveryEntry.h"
 #include "joynr/types/DiscoveryEntry.h"
 #include "joynr/types/DiscoveryQos.h"
 #include "joynr/system/IRouting.h"
@@ -39,32 +36,30 @@ namespace joynr
 LocalDiscoveryAggregator::LocalDiscoveryAggregator(
         IRequestCallerDirectory& requestCallerDirectory,
         const SystemServicesSettings& systemServicesSettings)
-        : discoveryProxy(NULL),
+        : discoveryProxy(nullptr),
           hasOwnershipOfDiscoveryProxy(false),
           requestCallerDirectory(requestCallerDirectory),
           provisionedDiscoveryEntries(),
           systemServicesSettings(systemServicesSettings)
 {
-    QList<joynr::types::QtCommunicationMiddleware::Enum> connections;
-    connections << joynr::types::QtCommunicationMiddleware::JOYNR;
-    joynr::types::QtDiscoveryEntry routingProviderDiscoveryEntry(
+    std::vector<joynr::types::CommunicationMiddleware::Enum> connections;
+    connections.push_back(joynr::types::CommunicationMiddleware::JOYNR);
+    joynr::types::DiscoveryEntry routingProviderDiscoveryEntry(
             systemServicesSettings.getDomain(),
-            TypeUtil::toQt(joynr::system::IRouting::INTERFACE_NAME()),
+            joynr::system::IRouting::INTERFACE_NAME(),
             systemServicesSettings.getCcRoutingProviderParticipantId(),
-            joynr::types::QtProviderQos(),
+            joynr::types::ProviderQos(),
             connections);
-    provisionedDiscoveryEntries.insert(
-            routingProviderDiscoveryEntry.getParticipantId().toStdString(),
-            routingProviderDiscoveryEntry);
-    joynr::types::QtDiscoveryEntry discoveryProviderDiscoveryEntry(
+    provisionedDiscoveryEntries.insert(std::make_pair(
+            routingProviderDiscoveryEntry.getParticipantId(), routingProviderDiscoveryEntry));
+    joynr::types::DiscoveryEntry discoveryProviderDiscoveryEntry(
             systemServicesSettings.getDomain(),
-            TypeUtil::toQt(joynr::system::IDiscovery::INTERFACE_NAME()),
+            joynr::system::IDiscovery::INTERFACE_NAME(),
             systemServicesSettings.getCcDiscoveryProviderParticipantId(),
-            joynr::types::QtProviderQos(),
+            joynr::types::ProviderQos(),
             connections);
-    provisionedDiscoveryEntries.insert(
-            discoveryProviderDiscoveryEntry.getParticipantId().toStdString(),
-            discoveryProviderDiscoveryEntry);
+    provisionedDiscoveryEntries.insert(std::make_pair(
+            discoveryProviderDiscoveryEntry.getParticipantId(), discoveryProviderDiscoveryEntry));
 }
 
 LocalDiscoveryAggregator::~LocalDiscoveryAggregator()
@@ -83,7 +78,7 @@ void LocalDiscoveryAggregator::setDiscoveryProxy(joynr::system::IDiscoverySync* 
 // inherited from joynr::system::IDiscoverySync
 void LocalDiscoveryAggregator::add(const joynr::types::DiscoveryEntry& discoveryEntry)
 {
-    if (discoveryProxy == NULL) {
+    if (discoveryProxy == nullptr) {
         throw exceptions::JoynrRuntimeException(
                 "LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
                 "local capabilitites directory.");
@@ -110,7 +105,7 @@ void LocalDiscoveryAggregator::lookup(std::vector<joynr::types::DiscoveryEntry>&
                                       const std::string& interfaceName,
                                       const joynr::types::DiscoveryQos& discoveryQos)
 {
-    if (discoveryProxy == NULL) {
+    if (discoveryProxy == nullptr) {
         throw exceptions::JoynrRuntimeException(
                 "LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
                 "local capabilitites directory.");
@@ -126,11 +121,11 @@ void LocalDiscoveryAggregator::lookup(std::vector<joynr::types::DiscoveryEntry>&
 void LocalDiscoveryAggregator::lookup(joynr::types::DiscoveryEntry& result,
                                       const std::string& participantId)
 {
-    if (provisionedDiscoveryEntries.contains(participantId)) {
-        result = joynr::types::QtDiscoveryEntry::createStd(
-                provisionedDiscoveryEntries.value(participantId));
+    auto entry = provisionedDiscoveryEntries.find(participantId);
+    if (entry != provisionedDiscoveryEntries.end()) {
+        result = entry->second;
     } else {
-        if (discoveryProxy == NULL) {
+        if (discoveryProxy == nullptr) {
             throw exceptions::JoynrRuntimeException(
                     "LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
                     "local capabilitites directory.");
@@ -143,7 +138,7 @@ void LocalDiscoveryAggregator::lookup(joynr::types::DiscoveryEntry& result,
 // inherited from joynr::system::IDiscoverySync
 void LocalDiscoveryAggregator::remove(const std::string& participantId)
 {
-    if (discoveryProxy == NULL) {
+    if (discoveryProxy == nullptr) {
         throw exceptions::JoynrRuntimeException(
                 "LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
                 "local capabilitites directory.");

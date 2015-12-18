@@ -21,17 +21,10 @@
 #include <gmock/gmock.h>
 #include <string>
 #include "tests/utils/MockObjects.h"
-#include "joynr/ProxyBuilder.h"
-#include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
 #include "joynr/vehicle/GpsProxy.h"
 #include "joynr/InProcessConnectorFactory.h"
 #include "joynr/ConnectorFactory.h"
-#include "joynr/SubscriptionPublication.h"
-#include "joynr/SubscriptionStop.h"
-#include "joynr/SubscriptionReply.h"
-#include "joynr/system/RoutingTypes_QtChannelAddress.h"
-#include "joynr/Request.h"
-#include "joynr/Reply.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
 
 using ::testing::A;
 using ::testing::_;
@@ -58,7 +51,7 @@ public:
         mockJoynrMessageSender(new MockJoynrMessageSender()),
         domain("cppProxyIntegrationTestDomain"),
         messagingQos(),
-        endPointAddress(new system::RoutingTypes::QtChannelAddress("endPointAddress"))
+        endPointAddress(new system::RoutingTypes::ChannelAddress("endPointAddress"))
     {
     }
 
@@ -84,7 +77,7 @@ protected:
     MockJoynrMessageSender* mockJoynrMessageSender;
     std::string domain;
     MessagingQos messagingQos;
-    std::shared_ptr<system::RoutingTypes::QtChannelAddress> endPointAddress;
+    std::shared_ptr<system::RoutingTypes::ChannelAddress> endPointAddress;
 
 
 private:

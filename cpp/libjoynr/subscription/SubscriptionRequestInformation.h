@@ -22,7 +22,7 @@
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/SubscriptionInformation.h"
 
-#include <QString>
+#include <string>
 
 namespace joynr
 {
@@ -32,13 +32,13 @@ class JOYNR_EXPORT SubscriptionRequestInformation : public SubscriptionRequest,
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString proxyId READ getProxyId WRITE setProxyId)
-    Q_PROPERTY(QString providerId READ getProviderId WRITE setProviderId)
+    Q_PROPERTY(std::string proxyId READ getProxyId WRITE setProxyId)
+    Q_PROPERTY(std::string providerId READ getProviderId WRITE setProviderId)
 
 public:
     SubscriptionRequestInformation();
-    SubscriptionRequestInformation(const QString& proxyParticipantId,
-                                   const QString& providerParticipantId,
+    SubscriptionRequestInformation(const std::string& proxyParticipantId,
+                                   const std::string& providerParticipantId,
                                    const SubscriptionRequest& subscriptionRequest);
 
     SubscriptionRequestInformation(
@@ -51,7 +51,7 @@ public:
             const SubscriptionRequestInformation& subscriptionRequestInformation);
     bool operator==(const SubscriptionRequestInformation& subscriptionRequestInformation) const;
 
-    QString toQString() const;
+    std::string toString() const;
 
 private:
     static joynr_logging::Logger* logger;

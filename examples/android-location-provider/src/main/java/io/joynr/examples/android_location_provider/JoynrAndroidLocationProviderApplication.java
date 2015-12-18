@@ -20,7 +20,6 @@ package io.joynr.examples.android_location_provider;
  */
 
 import io.joynr.joynrandroidruntime.JoynrAndroidRuntime;
-import io.joynr.messaging.MessagingPropertyKeys;
 
 import java.util.Properties;
 
@@ -43,11 +42,8 @@ public class JoynrAndroidLocationProviderApplication extends Application {
 
     public void initJoynrRuntime(Properties joynrConfig) {
         logToOutput("Creating joynr Runtime.");
-        logToOutput("Bounceproxy URL: " + joynrConfig.getProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL));
-        logToOutput("Channel URL Directory: " + joynrConfig.getProperty(MessagingPropertyKeys.CHANNELURLDIRECTORYURL));
-        logToOutput("Capabilities Directory: "
-                + joynrConfig.getProperty(MessagingPropertyKeys.CAPABILITIESDIRECTORYURL));
         runtime = new JoynrAndroidRuntime(getApplicationContext(), joynrConfig);
+        logToOutput("Finished creating joynr Runtime.");
     }
 
     public void registerProvider(final String domain) {
@@ -62,7 +58,6 @@ public class JoynrAndroidLocationProviderApplication extends Application {
         } else {
             logToOutput("Failed to bind service. Can not register provider\n");
         }
-
     }
 
     public void unregisterProvider(final String domain) {

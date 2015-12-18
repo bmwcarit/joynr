@@ -18,8 +18,8 @@ package io.joynr.generator.cpp.provider
  */
 
 import com.google.inject.Inject
+import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
-import io.joynr.generator.cpp.util.QtTypeUtil
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.util.InterfaceUtil
@@ -30,7 +30,7 @@ import org.franca.core.franca.FType
 class InterfaceProviderCppTemplate implements InterfaceTemplate{
 
 	@Inject private extension TemplateBase
-	@Inject private extension QtTypeUtil
+	@Inject private extension CppStdTypeUtil
 	@Inject private extension JoynrCppGeneratorExtensions
 	@Inject private extension NamingUtil
 	@Inject private extension InterfaceUtil
@@ -56,7 +56,7 @@ class InterfaceProviderCppTemplate implements InterfaceTemplate{
 	// Register a request interpreter to interpret requests to this interface
 	joynr::InterfaceRegistrar::instance().registerRequestInterpreter<«interfaceName»RequestInterpreter>(INTERFACE_NAME());
 
-	«val typeObjs = getAllComplexAndEnumTypes(serviceInterface, true)»
+	«val typeObjs = getAllComplexTypes(serviceInterface, true)»
 
 	«IF !typeObjs.isEmpty()»
 		joynr::MetaTypeRegistrar& registrar = joynr::MetaTypeRegistrar::instance();
@@ -67,13 +67,11 @@ class InterfaceProviderCppTemplate implements InterfaceTemplate{
 		// Register metatype «datatype.typeName»
 		«IF isEnum(datatype)»
 		{
-			«registerMetatypeStatement(datatype.typeNameOfContainingClass)»
-			int id = «registerMetatypeStatement(datatype.typeName)»
-			registrar.registerEnumMetaType<«datatype.typeNameOfContainingClass»>();
-			QJson::Serializer::registerEnum(id, «datatype.typeNameOfContainingClass»::staticMetaObject.enumerator(0));
+«««			«registerMetatypeStatement(datatype.typeNameOfContainingClass)»
+«««			int id = «registerMetatypeStatement(datatype.typeName)»
+«««			registrar.registerEnumMetaType<«datatype.typeNameOfContainingClass»>();
 		}
 		«ELSE»
-			«registerMetatypeStatement(datatype.typeName)»
 			registrar.registerMetaType<«datatype.typeName»>();
 		«ENDIF»
 	«ENDFOR»

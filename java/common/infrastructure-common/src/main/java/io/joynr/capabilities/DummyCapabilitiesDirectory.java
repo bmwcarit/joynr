@@ -1,5 +1,17 @@
 package io.joynr.capabilities;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
+import javax.annotation.CheckForNull;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
+
 /*
  * #%L
  * %%
@@ -19,19 +31,14 @@ package io.joynr.capabilities;
  * #L%
  */
 
+import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
-
-import java.util.ArrayList;
-
-import javax.annotation.CheckForNull;
-
+import io.joynr.arbitration.DiscoveryScope;
+import io.joynr.dispatcher.rpc.annotation.JoynrRpcParam;
+import io.joynr.provider.DeferredVoid;
+import io.joynr.provider.Promise;
+import joynr.exceptions.ProviderRuntimeException;
 import joynr.types.DiscoveryEntry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Lists;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
 
 public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirectory {
     private static final Logger logger = LoggerFactory.getLogger(DummyCapabilitiesDirectory.class);
@@ -47,10 +54,57 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
     }
 
     @Override
-    public RegistrationFuture add(DiscoveryEntry discoveryEntry) {
+    public Promise<DeferredVoid> add(DiscoveryEntry discoveryEntry) {
+        DeferredVoid deferred = new DeferredVoid();
         registeredCapabilities.add(discoveryEntry);
         notifyCapabilityAdded(discoveryEntry);
-        return new RegistrationFuture(RegistrationStatus.DONE, discoveryEntry.getParticipantId());
+        deferred.resolve();
+        return new Promise<DeferredVoid>(deferred);
+    }
+
+    @Override
+    public Promise<Lookup1Deferred> lookup(@JoynrRpcParam("domain") String domain,
+                                           @JoynrRpcParam("interfaceName") String interfaceName,
+                                           @JoynrRpcParam("discoveryQos") joynr.types.DiscoveryQos discoveryQos) {
+        final Lookup1Deferred deferred = new Lookup1Deferred();
+        CapabilitiesCallback callback = new CapabilitiesCallback() {
+            @Override
+            public void processCapabilitiesReceived(@CheckForNull Collection<DiscoveryEntry> capabilities) {
+                if (capabilities != null) {
+                    deferred.resolve(capabilities.toArray(new DiscoveryEntry[0]));
+                } else {
+                    deferred.reject(new ProviderRuntimeException("Received capabilities list was null"));
+                }
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                deferred.reject(new ProviderRuntimeException(e.toString()));
+            }
+        };
+        DiscoveryScope discoveryScope = DiscoveryScope.valueOf(discoveryQos.getDiscoveryScope().name());
+        lookup(domain, interfaceName, new DiscoveryQos(30000,
+                                                       ArbitrationStrategy.NotSet,
+                                                       discoveryQos.getCacheMaxAge(),
+                                                       discoveryScope), callback);
+
+        return new Promise<Lookup1Deferred>(deferred);
+    }
+
+    @Override
+    public Promise<Lookup2Deferred> lookup(@JoynrRpcParam("participantId") String participantId) {
+        Lookup2Deferred deferred = new Lookup2Deferred();
+        DiscoveryEntry discoveryEntry = lookup(participantId, DiscoveryQos.NO_FILTER);
+        deferred.resolve(discoveryEntry);
+        return new Promise<Lookup2Deferred>(deferred);
+    }
+
+    @Override
+    public Promise<DeferredVoid> remove(@JoynrRpcParam("participantId") String participantId) {
+        DeferredVoid deferred = new DeferredVoid();
+        logger.info("!!!!!!!!!!!!!!!removeCapabilities");
+        deferred.resolve();
+        return new Promise<DeferredVoid>(deferred);
     }
 
     @Override

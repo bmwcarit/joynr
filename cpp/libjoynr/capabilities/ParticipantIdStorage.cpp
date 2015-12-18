@@ -19,7 +19,8 @@
 #include "joynr/ParticipantIdStorage.h"
 #include "joynr/Util.h"
 
-#include <QSettings>
+#include "joynr/Settings.h"
+#include <algorithm>
 
 namespace joynr
 {
@@ -28,9 +29,9 @@ ParticipantIdStorage::ParticipantIdStorage(const std::string& filename) : filena
 {
 }
 
-const QString& ParticipantIdStorage::STORAGE_FORMAT_STRING()
+const std::string& ParticipantIdStorage::STORAGE_FORMAT_STRING()
 {
-    static const QString value("joynr.participant.%1.%2.%3");
+    static const std::string value("joynr.participant.%1.%2.%3");
     return value;
 }
 
@@ -39,11 +40,11 @@ void ParticipantIdStorage::setProviderParticipantId(const std::string& domain,
                                                     const std::string& participantId,
                                                     const std::string& authenticationToken)
 {
-    // Access the persistence file through a threadsafe QSettings object
-    QSettings settings(QString::fromStdString(filename), QSettings::IniFormat);
+    // Access the persistence file through a threadsafe Settings object
+    Settings settings(filename);
 
     std::string providerKey = createProviderKey(domain, interfaceName, authenticationToken);
-    settings.setValue(QString::fromStdString(providerKey), QString::fromStdString(participantId));
+    settings.set(providerKey, participantId);
     settings.sync();
 }
 
@@ -59,28 +60,24 @@ std::string ParticipantIdStorage::getProviderParticipantId(const std::string& do
                                                            const std::string& defaultValue,
                                                            const std::string& authenticationToken)
 {
-    // Access the persistence file through a threadsafe QSettings object
-    QSettings settings(QString::fromStdString(filename), QSettings::IniFormat);
+    // Access the persistence file through a threadsafe Settings object
+    Settings settings(filename);
 
     // Arrange the provider ids by authentication token
     std::string authToken =
             (!authenticationToken.empty()) ? authenticationToken : std::string("default");
     std::string providerKey = createProviderKey(domain, interfaceName, authToken);
 
-    // Lookup the participant id
     std::string participantId;
-    QVariant value = settings.value(QString::fromStdString(providerKey));
-
-    if (!value.isValid()) {
+    // Lookup the participant id
+    if (!settings.contains(providerKey)) {
         // Persist a new participant Id, using the defaultValue if possible
-        participantId = (!defaultValue.empty()) ? defaultValue : Util::createUuid().toStdString();
-        settings.setValue(
-                QString::fromStdString(providerKey), QString::fromStdString(participantId));
+        participantId = (!defaultValue.empty()) ? defaultValue : Util::createUuid();
+        settings.set(providerKey, participantId);
         settings.sync();
     } else {
-        participantId = value.toString().toStdString();
+        participantId = settings.get<std::string>(providerKey);
     }
-
     return participantId;
 }
 
@@ -88,12 +85,13 @@ std::string ParticipantIdStorage::createProviderKey(const std::string& domain,
                                                     const std::string& interfaceName,
                                                     const std::string& authenticationToken)
 {
-    QString key = STORAGE_FORMAT_STRING()
-                          .arg(QString::fromStdString(domain))
-                          .arg(QString::fromStdString(interfaceName))
-                          .arg(QString::fromStdString(authenticationToken));
-
-    return key.replace("/", ".").toStdString();
+    std::string key = FormatString(STORAGE_FORMAT_STRING())
+                              .arg(domain)
+                              .arg(interfaceName)
+                              .arg(authenticationToken)
+                              .str();
+    std::replace(key.begin(), key.end(), '/', '.');
+    return key;
 }
 
 } // namespace joynr

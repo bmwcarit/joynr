@@ -21,7 +21,6 @@
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrExport.h"
-#include "QString"
 #include <string>
 
 namespace joynr
@@ -43,7 +42,7 @@ public:
     {
     }
 
-    static const QString& STORAGE_FORMAT_STRING();
+    static const std::string& STORAGE_FORMAT_STRING();
 
     /**
      * @brief setProviderParticipantId Sets a participant ID for a specific

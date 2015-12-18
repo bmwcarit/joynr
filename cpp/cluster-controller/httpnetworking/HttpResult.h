@@ -21,7 +21,8 @@
 
 #include "joynr/JoynrClusterControllerExport.h"
 #include <QMultiMap>
-#include <QString>
+#include <string>
+#include <QByteArray>
 
 #include <memory>
 
@@ -39,21 +40,21 @@ public:
     HttpResult(long curlError,
                int statusCode,
                QByteArray* body,
-               QMultiMap<QString, QString>* headers);
+               QMultiMap<std::string, std::string>* headers);
     ~HttpResult();
 
     bool isCurlError() const;
     int getCurlError() const;
     int getStatusCode() const;
-    QString getErrorMessage() const;
+    std::string getErrorMessage() const;
     const QByteArray& getBody() const;
-    const QMultiMap<QString, QString>& getHeaders() const;
+    const QMultiMap<std::string, std::string>& getHeaders() const;
 
 private:
     int curlError;
     int statusCode;
     std::shared_ptr<QByteArray> body;
-    std::shared_ptr<QMultiMap<QString, QString>> headers;
+    std::shared_ptr<QMultiMap<std::string, std::string>> headers;
 };
 
 } // namespace joynr

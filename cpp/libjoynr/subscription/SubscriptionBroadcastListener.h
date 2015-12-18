@@ -22,8 +22,11 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/IBroadcastListener.h"
 
-#include <QString>
+#include <string>
 #include <memory>
+#include <vector>
+
+#include "joynr/Variant.h"
 
 namespace joynr
 {
@@ -40,15 +43,15 @@ public:
     /**
      * Create an broadcast listener linked to a subscription
      */
-    SubscriptionBroadcastListener(const QString& subscriptionId,
+    SubscriptionBroadcastListener(const std::string& subscriptionId,
                                   PublicationManager& publicationManager);
 
     // Implementation of IBroadcastListener::receive
-    void broadcastOccurred(const QList<QVariant>& values,
-                           const QList<std::shared_ptr<IBroadcastFilter>>& filters);
+    void broadcastOccurred(const std::vector<Variant>& values,
+                           const std::vector<std::shared_ptr<IBroadcastFilter>>& filters) override;
 
 private:
-    QString subscriptionId;
+    std::string subscriptionId;
     PublicationManager& publicationManager;
 };
 

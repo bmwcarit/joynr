@@ -41,7 +41,7 @@ class ReplyCaller : public IReplyCaller
 public:
     ReplyCaller(std::function<void(const joynr::RequestStatus& status, const Ts&...)> callbackFct,
                 std::function<void(const joynr::RequestStatus& status,
-                                   std::shared_ptr<exceptions::JoynrException> error)> errorFct)
+                                   const exceptions::JoynrException& error)> errorFct)
             : callbackFct(callbackFct), errorFct(errorFct), hasTimeOutOccurred(false)
     {
     }
@@ -58,7 +58,7 @@ public:
         }
     }
 
-    void returnError(std::shared_ptr<exceptions::JoynrException> error)
+    void returnError(const exceptions::JoynrException& error)
     {
         errorFct(RequestStatus(RequestStatusCode::ERROR), error);
     }
@@ -68,8 +68,7 @@ public:
         hasTimeOutOccurred = true;
 
         errorFct(RequestStatus(RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE),
-                 std::make_shared<exceptions::JoynrTimeOutException>(
-                         "timeout waiting for the response"));
+                 exceptions::JoynrTimeOutException("timeout waiting for the response"));
     }
 
     int getTypeId() const
@@ -79,8 +78,8 @@ public:
 
 private:
     std::function<void(const joynr::RequestStatus& status, const Ts&... returnValue)> callbackFct;
-    std::function<void(const joynr::RequestStatus& status,
-                       std::shared_ptr<exceptions::JoynrException> error)> errorFct;
+    std::function<void(const joynr::RequestStatus& status, const exceptions::JoynrException& error)>
+            errorFct;
     bool hasTimeOutOccurred;
 };
 
@@ -94,7 +93,7 @@ class ReplyCaller<void> : public IReplyCaller
 public:
     ReplyCaller(std::function<void(const joynr::RequestStatus& status)> callbackFct,
                 std::function<void(const joynr::RequestStatus& status,
-                                   std::shared_ptr<exceptions::JoynrException> error)> errorFct)
+                                   const exceptions::JoynrException& error)> errorFct)
             : callbackFct(callbackFct), errorFct(errorFct), hasTimeOutOccurred(false)
     {
     }
@@ -110,7 +109,7 @@ public:
         }
     }
 
-    void returnError(std::shared_ptr<exceptions::JoynrException> error)
+    void returnError(const exceptions::JoynrException& error)
     {
         errorFct(RequestStatus(RequestStatusCode::ERROR), error);
     }
@@ -119,8 +118,7 @@ public:
     {
         hasTimeOutOccurred = true;
         errorFct(RequestStatus(RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE),
-                 std::make_shared<exceptions::JoynrTimeOutException>(
-                         "timeout waiting for the response"));
+                 exceptions::JoynrTimeOutException("timeout waiting for the response"));
     }
 
     int getTypeId() const
@@ -130,8 +128,8 @@ public:
 
 private:
     std::function<void(const joynr::RequestStatus& status)> callbackFct;
-    std::function<void(const joynr::RequestStatus& status,
-                       std::shared_ptr<exceptions::JoynrException> error)> errorFct;
+    std::function<void(const joynr::RequestStatus& status, const exceptions::JoynrException& error)>
+            errorFct;
     bool hasTimeOutOccurred;
 };
 

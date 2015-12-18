@@ -54,11 +54,6 @@ class EnumTypeGenerator {
 				return new «type.joynrName»(members);
 			}
 
-			if (settings !== undefined) {
-				this.name = settings.name;
-				this.value = settings.value;
-			}
-
 			/**
 			 * Used for serialization.
 			 * @name «type.joynrName»#_typeName
@@ -72,6 +67,11 @@ class EnumTypeGenerator {
 				enumerable : true,
 				value : "«type.toTypesEnum»"
 			});
+
+			if (settings !== undefined) {
+				this.name = settings.name;
+				this.value = settings.value;
+			}
 
 		};
 

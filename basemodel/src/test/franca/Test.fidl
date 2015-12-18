@@ -85,6 +85,8 @@ interface test {
 
 	attribute testTypes.TestEnum enumAttributeReadOnly readonly
 
+	attribute testTypes.TestEnum[] listOfEnumsAttribute
+
 	attribute GpsLocation location
 	attribute Trip mytrip readonly
 	attribute GpsLocation yourLocation readonly
@@ -118,6 +120,8 @@ interface test {
 	attribute Int32 attributeWithProviderRuntimeException
 
 	attribute Int32 attributeWithThrownException
+
+	attribute TEverythingMap EverythingMap
 
 	attribute testTypes.HavingComplexArrayMemberStruct[] attributeArrayOfNestedStructs
 
@@ -251,6 +255,15 @@ interface test {
 		in {
 			String stringParam
 			Boolean boolParam
+		}
+	}
+
+	method mapParameters{
+		in {
+			TStringKeyMap tStringMapIn
+		}
+		out {
+			TStringKeyMap tStringMapOut
 		}
 	}
 
@@ -514,6 +527,12 @@ interface test {
 	broadcast broadcastWithSingleArrayParameter {
 		out {
 			String[] singleParam
+		}
+	}
+
+	broadcast broadcastWithMapParameters {
+		out {
+			TStringKeyMap mapParam
 		}
 	}
 

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,14 +20,14 @@
 #include <gmock/gmock.h>
 #include "tests/utils/MockObjects.h"
 #include "joynr/InterfaceRegistrar.h"
-#include "joynr/vehicle/GpsRequestInterpreter.h"
 #include "joynr/tests/testRequestInterpreter.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/IAttributeListener.h"
 #include "joynr/IBroadcastListener.h"
-#include "joynr/QtPeriodicSubscriptionQos.h"
-#include "joynr/QtOnChangeSubscriptionQos.h"
+#include "joynr/PeriodicSubscriptionQos.h"
 #include "joynr/LibjoynrSettings.h"
+#include "joynr/TimeUtils.h"
+#include <thread>
 
 using ::testing::A;
 using ::testing::_;
@@ -40,19 +40,19 @@ using ::testing::MatchResultListener;
 using ::testing::Matcher;
 using ::testing::MakeMatcher;
 #include <string>
-#include <chrono>
 #include <stdint.h>
 
 using namespace joynr;
-
-using namespace std::chrono;
 
 class PublicationManagerTest : public testing::Test {
 public:
     PublicationManagerTest() :
         logger(joynr_logging::Logging::getInstance()->getLogger("TST", "PublicationManagerTest"))
     {}
-
+    void TearDown(){
+        std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME().c_str()); //remove stored subscriptions
+        std::remove(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_STORAGE_FILENAME().c_str()); //remove stored broadcastsubscriptions
+    }
 protected:
     joynr_logging::Logger* logger;
 };
@@ -62,7 +62,7 @@ class SubscriptionPublicationMatcherInterface : public MatcherInterface<const jo
   private:
      SubscriptionPublication& expectedSubscriptionPublication;
   public:
-    SubscriptionPublicationMatcherInterface (SubscriptionPublication& expectedSubscriptionPublication) : expectedSubscriptionPublication(expectedSubscriptionPublication){}
+     explicit SubscriptionPublicationMatcherInterface (SubscriptionPublication& expectedSubscriptionPublication) : expectedSubscriptionPublication(expectedSubscriptionPublication){}
   virtual void DescribeTo(::std::ostream* os) const {}
   virtual bool MatchAndExplain(const joynr::SubscriptionPublication& subscriptionPublication,
                                MatchResultListener* listener) const {
@@ -75,8 +75,6 @@ inline Matcher<const SubscriptionPublication&> SubscriptionPublicationMatcher(Su
 }
 
 TEST_F(PublicationManagerTest, add_requestCallerIsCalledCorrectlyByPublisherRunnables) {
-    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
-
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<joynr::tests::testRequestInterpreter>(joynr::tests::testProvider::INTERFACE_NAME());
 
@@ -94,30 +92,29 @@ TEST_F(PublicationManagerTest, add_requestCallerIsCalledCorrectlyByPublisherRunn
     PublicationManager publicationManager;
 
     //SubscriptionRequest
-    QString senderId = "SenderId";
-    QString receiverId = "ReceiverId";
+    std::string senderId = "SenderId";
+    std::string receiverId = "ReceiverId";
     std::string attributeName("Location");
     // SUbscriptionQos
-    qint64 period_ms = 100;
-    qint64 validity_ms = 500;
-    qint64 alertInterval_ms = 2000;
-    std::shared_ptr<QtSubscriptionQos> qos(new QtPeriodicSubscriptionQos(
+    int64_t period_ms = 100;
+    int64_t validity_ms = 500;
+    int64_t alertInterval_ms = 2000;
+    Variant qos = Variant::make<PeriodicSubscriptionQos>(PeriodicSubscriptionQos(
                         validity_ms,
                         period_ms,
                         alertInterval_ms));
 
     // will be deleted by the publication manager
     SubscriptionRequest subscriptionRequest;
-    subscriptionRequest.setSubscribeToName(QString::fromStdString(attributeName));
+    subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(qos);
     LOG_DEBUG(logger, "adding request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
-    QThreadSleep::msleep(500);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 }
 
 
 TEST_F(PublicationManagerTest, stop_publications) {
-    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
     MockPublicationSender mockPublicationSender;
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller(AtMost(2));
 
@@ -132,20 +129,20 @@ TEST_F(PublicationManagerTest, stop_publications) {
     PublicationManager publicationManager;
 
     //SubscriptionRequest
-    QString senderId = "SenderId";
-    QString receiverId = "ReceiverId";
+    std::string senderId = "SenderId";
+    std::string receiverId = "ReceiverId";
     std::string attributeName("Location");
-    //QtSubscriptionQos
-    qint64 period_ms = 100;
-    qint64 validity_ms = 10000;
-    qint64 alertInterval_ms = 1000;
-    std::shared_ptr<QtSubscriptionQos> qos(new QtPeriodicSubscriptionQos(
+    //SubscriptionQos
+    int64_t period_ms = 100;
+    int64_t validity_ms = 10000;
+    int64_t alertInterval_ms = 1000;
+    Variant qos = Variant::make<PeriodicSubscriptionQos>(PeriodicSubscriptionQos(
                         validity_ms,
                         period_ms,
                         alertInterval_ms));
 
     SubscriptionRequest subscriptionRequest;
-    subscriptionRequest.setSubscribeToName(QString::fromStdString(attributeName));
+    subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(qos);
 
     publicationManager.add(
@@ -155,13 +152,12 @@ TEST_F(PublicationManagerTest, stop_publications) {
                 subscriptionRequest,
                 &mockPublicationSender
     );
-    QThreadSleep::msleep(80);
+    std::this_thread::sleep_for(std::chrono::milliseconds(80));
     publicationManager.stopPublication(subscriptionRequest.getSubscriptionId());
-    QThreadSleep::msleep(300);
+    std::this_thread::sleep_for(std::chrono::milliseconds(300));
 }
 
 TEST_F(PublicationManagerTest, remove_all_publications) {
-    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
     MockPublicationSender mockPublicationSender;
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller(AtMost(2));
 
@@ -176,31 +172,29 @@ TEST_F(PublicationManagerTest, remove_all_publications) {
     PublicationManager publicationManager;
 
     //SubscriptionRequest
-    QString senderId = "SenderId";
-    QString receiverId = "ReceiverId";
+    std::string senderId = "SenderId";
+    std::string receiverId = "ReceiverId";
     std::string attributeName("Location");
-    //QtSubscriptionQos
-    qint64 period_ms = 100;
-    qint64 validity_ms = 10000;
-    qint64 alertInterval_ms = 1000;
-    std::shared_ptr<QtSubscriptionQos> qos(new QtPeriodicSubscriptionQos(
+    //SubscriptionQos
+    int64_t period_ms = 100;
+    int64_t validity_ms = 10000;
+    int64_t alertInterval_ms = 1000;
+    Variant qos = Variant::make<PeriodicSubscriptionQos>(PeriodicSubscriptionQos(
                         validity_ms,
                         period_ms,
                         alertInterval_ms));
 
     SubscriptionRequest subscriptionRequest;
-    subscriptionRequest.setSubscribeToName(QString::fromStdString(attributeName));
+    subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(qos);
 
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
-    QThreadSleep::msleep(80);
+    std::this_thread::sleep_for(std::chrono::milliseconds(80));
     publicationManager.removeAllSubscriptions(receiverId);
-    QThreadSleep::msleep(300);
+    std::this_thread::sleep_for(std::chrono::milliseconds(300));
 }
 
 TEST_F(PublicationManagerTest, restore_publications) {
-    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME());
-    qRegisterMetaType<QtPeriodicSubscriptionQos>("QtPeriodicSubscriptionQos");
     MockPublicationSender mockPublicationSender;
 
     //the first publicationManager will get this requestCaller:
@@ -212,30 +206,30 @@ TEST_F(PublicationManagerTest, restore_publications) {
 
     //the second publicationManager will get this requestCaller
     //if restoring works, this caller will be called as well.
-    std::shared_ptr<MockTestRequestCaller> requestCaller2(new MockTestRequestCaller(AtLeast(2)));
+    std::shared_ptr<MockTestRequestCaller> requestCaller2(new MockTestRequestCaller(AtLeast(1)));
 
     PublicationManager* publicationManager = new PublicationManager() ;
 
     //SubscriptionRequest
-    QString senderId = "SenderId";
-    QString receiverId = "ReceiverId";
+    std::string senderId = "SenderId";
+    std::string receiverId = "ReceiverId";
     std::string attributeName("Location");
-    //QtSubscriptionQos
-    qint64 period_ms = 100;
-    qint64 validity_ms = 1000;
-    qint64 alertInterval_ms = 1000;
-    std::shared_ptr<QtSubscriptionQos> qos(new QtPeriodicSubscriptionQos(
+    //SubscriptionQos
+    int64_t period_ms = 100;
+    int64_t validity_ms = 1000;
+    int64_t alertInterval_ms = 1000;
+    Variant qos = Variant::make<PeriodicSubscriptionQos>(PeriodicSubscriptionQos(
                         validity_ms,
                         period_ms,
                         alertInterval_ms));
 
     // will be delete by the publication manager (destructor PublicationState)
     SubscriptionRequest subscriptionRequest;
-    subscriptionRequest.setSubscribeToName(QString::fromStdString(attributeName));
+    subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(qos);
 
     publicationManager->add(senderId, receiverId,requestCaller,subscriptionRequest,&mockPublicationSender);
-    QThreadSleep::msleep(100); //make sure, that the first request caller is actually called.
+    std::this_thread::sleep_for(std::chrono::milliseconds(100)); //make sure, that the first request caller is actually called.
     delete publicationManager;
 
     PublicationManager* publicationManager2 = new PublicationManager();
@@ -243,13 +237,11 @@ TEST_F(PublicationManagerTest, restore_publications) {
     publicationManager2->restore(receiverId,
                                 requestCaller2,
                                 &mockPublicationSender);
-    QThreadSleep::msleep(350);
+    std::this_thread::sleep_for(std::chrono::milliseconds(350));
     delete publicationManager2;
 }
 
 TEST_F(PublicationManagerTest, add_onChangeSubscription) {
-    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
-
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
@@ -257,15 +249,15 @@ TEST_F(PublicationManagerTest, add_onChangeSubscription) {
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // The attribute will change to this value
-    joynr::types::Localisation::QtGpsLocation gpsLocation;
-    QVariant attributeValue = QVariant::fromValue(gpsLocation);
+    joynr::types::Localisation::GpsLocation gpsLocation;
+    Variant attributeValue = Variant::make<joynr::types::Localisation::GpsLocation>(gpsLocation);
 
     SubscriptionRequest subscriptionRequest;
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    QList<QVariant> response;
-    response.append(attributeValue);
+    std::vector<Variant> response;
+    response.push_back(attributeValue);
     expectedPublication.setResponse(response);
     // Expect an attribute change to send a publication as well as during registering subscription request
     EXPECT_CALL(
@@ -300,30 +292,28 @@ TEST_F(PublicationManagerTest, add_onChangeSubscription) {
     PublicationManager publicationManager;
 
     //SubscriptionRequest
-    QString senderId = "SenderId";
-    QString receiverId = "ReceiverId";
-    //QtSubscriptionQos
-    qint64 minInterval_ms = 50;
-    qint64 validity_ms = 500;
-    std::shared_ptr<QtSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
+    std::string senderId = "SenderId";
+    std::string receiverId = "ReceiverId";
+    //SubscriptionQos
+    int64_t minInterval_ms = 50;
+    int64_t validity_ms = 500;
+    Variant qos = Variant::make<OnChangeSubscriptionQos>(OnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
 
     // will be deleted by the publication manager
-    subscriptionRequest.setSubscribeToName(QString::fromStdString(attributeName));
+    subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(qos);
     LOG_DEBUG(logger, "adding request");
-    publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
+    publicationManager.add(senderId, receiverId, requestCaller, subscriptionRequest, &mockPublicationSender);
 
     // Fake an attribute change
     attributeListener->attributeValueChanged(attributeValue);
 
-    QThreadSleep::msleep(500);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 }
 
 TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
-    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
-
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
@@ -331,15 +321,15 @@ TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // The attribute will change to this value
-    joynr::types::Localisation::QtGpsLocation gpsLocation;
-    QVariant attributeValue = QVariant::fromValue(gpsLocation);
+    joynr::types::Localisation::GpsLocation gpsLocation;
+    Variant attributeValue = Variant::make<joynr::types::Localisation::GpsLocation>(gpsLocation);
 
     SubscriptionRequest subscriptionRequest;
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    QList<QVariant> response;
-    response.append(attributeValue);
+    std::vector<Variant> response;
+    response.push_back(attributeValue);
     expectedPublication.setResponse(response);
     // Expect a single attribute change to send a publication + one publication when registering sub request -> 2
     EXPECT_CALL(
@@ -367,23 +357,23 @@ TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
     PublicationManager publicationManager;
 
     //SubscriptionRequest
-    QString senderId = "SenderId";
-    QString receiverId = "ReceiverId";
-    //QtSubscriptionQos
-    qint64 minInterval_ms = 500;
-    qint64 validity_ms = -1; //no expiry date -> infinite subscription
-    std::shared_ptr<QtSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
+    std::string senderId = "SenderId";
+    std::string receiverId = "ReceiverId";
+    //SubscriptionQos
+    int64_t minInterval_ms = 500;
+    int64_t validity_ms = -1; //no expiry date -> infinite subscription
+    Variant qos = Variant::make<OnChangeSubscriptionQos>(OnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
 
     // will be deleted by the publication manager
-    subscriptionRequest.setSubscribeToName(QString::fromStdString(attributeName));
+    subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(qos);
     LOG_DEBUG(logger, "adding request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
     // Sleep so that the first publication is sent
-    QThreadSleep::msleep(50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
     // Fake many attribute changes - but expect only one publication to be sent by this loop
     for (int i = 0; i < 10; i++) {
@@ -391,14 +381,12 @@ TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
     }
 
     // Wait for the subscription to finish
-    QThreadSleep::msleep(700);
+    std::this_thread::sleep_for(std::chrono::milliseconds(700));
 
 }
 
 
 TEST_F(PublicationManagerTest, add_onChangeWithMinInterval) {
-    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
-
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
@@ -406,15 +394,15 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval) {
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // The attribute will change to this value
-    joynr::types::Localisation::QtGpsLocation gpsLocation;
-    QVariant attributeValue = QVariant::fromValue(gpsLocation);
+    joynr::types::Localisation::GpsLocation gpsLocation;
+    Variant attributeValue = Variant::make<joynr::types::Localisation::GpsLocation>(gpsLocation);
 
     SubscriptionRequest subscriptionRequest;
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    QList<QVariant> response;
-    response.append(attributeValue);
+    std::vector<Variant> response;
+    response.push_back(attributeValue);
     expectedPublication.setResponse(response);
     // Expect a single attribute change to send a publication + one publication when registering sub request -> 2
     EXPECT_CALL(
@@ -442,22 +430,22 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval) {
     PublicationManager publicationManager;
 
     //SubscriptionRequest
-    QString senderId = "SenderId";
-    QString receiverId = "ReceiverId";
-    //QtSubscriptionQos
-    qint64 minInterval_ms = 500;
-    qint64 validity_ms = 600;
-    std::shared_ptr<QtSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
+    std::string senderId = "SenderId";
+    std::string receiverId = "ReceiverId";
+    //SubscriptionQos
+    int64_t minInterval_ms = 500;
+    int64_t validity_ms = 600;
+    Variant qos = Variant::make<OnChangeSubscriptionQos>(OnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
 
-    subscriptionRequest.setSubscribeToName(QString::fromStdString(attributeName));
+    subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(qos);
     LOG_DEBUG(logger, "adding request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
     // Sleep so that the first publication is sent
-    QThreadSleep::msleep(50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
     // Fake many attribute changes - but expect only one publication to be sent by this loop
     for (int i = 0; i < 10; i++) {
@@ -465,13 +453,11 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval) {
     }
 
     // Wait for the subscription to finish
-    QThreadSleep::msleep(700);
+    std::this_thread::sleep_for(std::chrono::milliseconds(700));
 
 }
 
 TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
-    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
-
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
@@ -483,8 +469,8 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
     MockPublicationSender mockPublicationSender2;
 
     // The attribute will change to this value
-    joynr::types::Localisation::QtGpsLocation gpsLocation;
-    QVariant attributeValue = QVariant::fromValue(gpsLocation);
+    joynr::types::Localisation::GpsLocation gpsLocation;
+    Variant attributeValue = Variant::make<joynr::types::Localisation::GpsLocation>(gpsLocation);
 
     // Expect calls to register an unregister an attribute listener
     std::string attributeName("Location");
@@ -494,8 +480,8 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    QList<QVariant> response;
-    response.append(attributeValue);
+    std::vector<Variant> response;
+    response.push_back(attributeValue);
     expectedPublication.setResponse(response);
     EXPECT_CALL(
                 mockPublicationSender,
@@ -537,56 +523,56 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
     PublicationManager publicationManager;
 
     //SubscriptionRequest
-    QString senderId = "SenderId";
-    QString receiverId = "ReceiverId";
-    //QtSubscriptionQos
-    qint64 minInterval_ms = 100;
-    qint64 validity_ms = 600;
-    std::shared_ptr<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
-                        validity_ms,
-                        minInterval_ms));
+    std::string senderId = "SenderId";
+    std::string receiverId = "ReceiverId";
+    //SubscriptionQos
+    int64_t minInterval_ms = 100;
+    int64_t validity_ms = 600;
+    OnChangeSubscriptionQos qos{validity_ms,minInterval_ms};
 
-    int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-    qos->setExpiryDate(now + 5000);
+    int64_t now = joynr::TimeUtils::getCurrentMillisSinceEpoch();
+    qos.setExpiryDate(now + 5000);
 
-    subscriptionRequest.setSubscribeToName(QString::fromStdString(attributeName));
-    subscriptionRequest.setQos(qos);
+    Variant qosVariant = Variant::make<OnChangeSubscriptionQos>(qos);
+    subscriptionRequest.setSubscribeToName(attributeName);
+    subscriptionRequest.setQos(qosVariant);
     LOG_DEBUG(logger, "adding attribute subscription request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
     // Sleep so that the first publication is sent
-    QThreadSleep::msleep(minInterval_ms + 50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms + 50));
 
     // Fake attribute change
     attributeListener->attributeValueChanged(attributeValue);
 
-    QThreadSleep::msleep(50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
     // now, we assume that two publications have been occured
 
-    QThreadSleep::msleep(minInterval_ms);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
 
     // Fake attribute change
     attributeListener->attributeValueChanged(attributeValue);
 
-    QThreadSleep::msleep(minInterval_ms + 50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms + 50));
     // now, we assume that three publications have been occured
 
     //now, let's update the subscription and check if the provided data is correctly processed by the PublicationManager
     // will be deleted by the publication manager
 
-    qos->setMinInterval(minInterval_ms + 500);
-    subscriptionRequest.setQos(qos);
+    qos.setMinInterval(minInterval_ms + 500);
+    qosVariant = Variant::make<OnChangeSubscriptionQos>(qos);
+    subscriptionRequest.setQos(qosVariant);
     LOG_DEBUG(logger, "update attribute subscription request");
     publicationManager.add(senderId, receiverId, requestCaller2,subscriptionRequest,&mockPublicationSender2);
 
     // Sleep so that the first publication is sent
-    QThreadSleep::msleep(minInterval_ms + 50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms + 50));
 
     // Fake attribute change
     attributeListener->attributeValueChanged(attributeValue);
 
     // sleep, waiting for the async publication (which shouldn't come)
-    QThreadSleep::msleep(50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
     // until now, only one publication should be arrived to mockPublicationSender2
 
@@ -594,14 +580,12 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
     attributeListener->attributeValueChanged(attributeValue);
 
     // Wait for the subscription to finish
-    QThreadSleep::msleep(minInterval_ms + 500);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms + 500));
 
     // now, we should got 2 publications on mockPublicationSender2
 }
 
 TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_withGreaterExpiryDate) {
-    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
-
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
@@ -609,8 +593,8 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // The attribute will change to this value
-    joynr::types::Localisation::QtGpsLocation gpsLocation;
-    QVariant attributeValue = QVariant::fromValue(gpsLocation);
+    joynr::types::Localisation::GpsLocation gpsLocation;
+    Variant attributeValue = Variant::make<joynr::types::Localisation::GpsLocation>(gpsLocation);
 
     // Expect calls to register an unregister an attribute listener
     std::string attributeName("Location");
@@ -620,8 +604,8 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    QList<QVariant> response;
-    response.append(attributeValue);
+    std::vector<Variant> response;
+    response.push_back(attributeValue);
     expectedPublication.setResponse(response);
     EXPECT_CALL(
                 mockPublicationSender,
@@ -645,56 +629,56 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
     PublicationManager publicationManager;
 
     //SubscriptionRequest
-    QString senderId = "SenderId";
-    QString receiverId = "ReceiverId";
-    //QtSubscriptionQos
-    qint64 minInterval_ms = 50;
-    qint64 validity_ms = 600;
-    qint64 testRelExpiryDate = 500;
-    int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    std::string senderId = "SenderId";
+    std::string receiverId = "ReceiverId";
+    //SubscriptionQos
+    int64_t minInterval_ms = 50;
+    int64_t validity_ms = 600;
+    int64_t testRelExpiryDate = 500;
+    int64_t now = joynr::TimeUtils::getCurrentMillisSinceEpoch();
     int64_t testAbsExpiryDate = now + testRelExpiryDate;
-    std::shared_ptr<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
-                        validity_ms,
-                        minInterval_ms));
+    OnChangeSubscriptionQos qos{validity_ms,minInterval_ms};
 
-    qos->setExpiryDate(testAbsExpiryDate);
+    qos.setExpiryDate(testAbsExpiryDate);
 
-    subscriptionRequest.setSubscribeToName(QString::fromStdString(attributeName));
-    subscriptionRequest.setQos(qos);
+    Variant qosVariant = Variant::make<OnChangeSubscriptionQos>(qos);
+    subscriptionRequest.setSubscribeToName(attributeName);
+    subscriptionRequest.setQos(qosVariant);
 
     LOG_DEBUG(logger, "adding attribute subscription request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
     // exceed the minInterval
-    QThreadSleep::msleep(minInterval_ms+50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms+50));
 
     // now, we expect that one publication has been performed
 
     // now, let's update the subscription and check if the provided data is correctly processed by the PublicationManager
     // extend the expiry date
-    qos->setExpiryDate(testAbsExpiryDate + 1000);
-    subscriptionRequest.setQos(qos);
+    qos.setExpiryDate(testAbsExpiryDate + 1000);
+    qosVariant = Variant::make<OnChangeSubscriptionQos>(qos);
+    subscriptionRequest.setQos(qosVariant);
     LOG_DEBUG(logger, "adding request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
     // Sleep so that the first publication is sent
-    QThreadSleep::msleep(50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
     //now we expect that two puclications have been performed
 
     //now, exceed the original expiryDate, and make an attribute change
-    QThreadSleep::msleep(testRelExpiryDate);
+    std::this_thread::sleep_for(std::chrono::milliseconds(testRelExpiryDate));
     attributeListener->attributeValueChanged(attributeValue);
 
     // wait for the async publication
-    QThreadSleep::msleep(50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
     // now, three publications should be noticed
 
     // wait for the subscription to finish
-    QThreadSleep::msleep(minInterval_ms + testRelExpiryDate);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms + testRelExpiryDate));
 }
 
 TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_withLowerExpiryDate) {
-    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
+    LOG_DEBUG(logger, FormatString("DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME: %1").arg(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()).str());
 
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
@@ -703,8 +687,8 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // The attribute will change to this value
-    joynr::types::Localisation::QtGpsLocation gpsLocation;
-    QVariant attributeValue = QVariant::fromValue(gpsLocation);
+    joynr::types::Localisation::GpsLocation gpsLocation;
+    Variant attributeValue = Variant::make<joynr::types::Localisation::GpsLocation>(gpsLocation);
 
     // Expect calls to register an unregister an attribute listener
     std::string attributeName("Location");
@@ -714,8 +698,8 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-    QList<QVariant> response;
-    response.append(attributeValue);
+    std::vector<Variant> response;
+    response.push_back(attributeValue);
     expectedPublication.setResponse(response);
     EXPECT_CALL(
                 mockPublicationSender,
@@ -739,58 +723,56 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
     PublicationManager publicationManager;
 
     //SubscriptionRequest
-    QString senderId = "SenderId";
-    QString receiverId = "ReceiverId";
-    //QtSubscriptionQos
-    qint64 minInterval_ms = 50;
-    qint64 validity_ms = 600;
-    qint64 testExpiryDate_shift = 2500;
-    qint64 testRelExpiryDate = 500 + testExpiryDate_shift;
-    int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    std::string senderId = "SenderId";
+    std::string receiverId = "ReceiverId";
+    //SubscriptionQos
+    int64_t minInterval_ms = 50;
+    int64_t validity_ms = 600;
+    int64_t testExpiryDate_shift = 2500;
+    int64_t testRelExpiryDate = 500 + testExpiryDate_shift;
+    int64_t now = joynr::TimeUtils::getCurrentMillisSinceEpoch();
     int64_t testAbsExpiryDate = now + testRelExpiryDate;
-    std::shared_ptr<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
-                        validity_ms,
-                        minInterval_ms));
+    OnChangeSubscriptionQos qos{validity_ms,minInterval_ms};
 
-    qos->setExpiryDate(testAbsExpiryDate);
+    qos.setExpiryDate(testAbsExpiryDate);
 
-    subscriptionRequest.setSubscribeToName(QString::fromStdString(attributeName));
-    subscriptionRequest.setQos(qos);
+    Variant qosVariant = Variant::make<OnChangeSubscriptionQos>(qos);
+    subscriptionRequest.setSubscribeToName(attributeName);
+    subscriptionRequest.setQos(qosVariant);
     LOG_DEBUG(logger, "adding attribute subscription request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
     // exceed the minInterval
-    QThreadSleep::msleep(50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
     attributeListener->attributeValueChanged(attributeValue);
-    QThreadSleep::msleep(minInterval_ms + 50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms + 50));
 
     // now, we expect that two publications have been performed
 
     // now, let's update the subscription and check if the provided data is correctly processed by the PublicationManager
     // reduce the expiry date
-    qos->setExpiryDate(testAbsExpiryDate - testExpiryDate_shift);
-    subscriptionRequest.setQos(qos);
+    qos.setExpiryDate(testAbsExpiryDate - testExpiryDate_shift);
+    qosVariant = Variant::make<OnChangeSubscriptionQos>(qos);
+    subscriptionRequest.setQos(qosVariant);
     LOG_DEBUG(logger, "update attribute subscription request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
     // Sleep so that the first publication is sent
-    QThreadSleep::msleep(50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
     // now we expect that three puclications have been performed
 
     // now, exceed the new expiryDate, and make an attribute change
-    QThreadSleep::msleep(testRelExpiryDate - testExpiryDate_shift);
+    std::this_thread::sleep_for(std::chrono::milliseconds(testRelExpiryDate - testExpiryDate_shift));
     // now, the subscription should be death
 
     attributeListener->attributeValueChanged(attributeValue);
 
     // wait for the async publication, which shouldn't arrive
-    QThreadSleep::msleep(50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
 }
 
 TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
-    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
-
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
@@ -801,17 +783,19 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     MockPublicationSender mockPublicationSender2;
 
     // The broacast will fire this value
-    joynr::types::Localisation::QtGpsLocation gpsLocation;
-    QList<QVariant> broadcastValues;
-    broadcastValues.append(QVariant::fromValue(gpsLocation));
+    joynr::types::Localisation::GpsLocation gpsLocation;
+    std::vector<Variant> broadcastValues;
+    broadcastValues.push_back(Variant::make<joynr::types::Localisation::GpsLocation>(gpsLocation));
 
-    QList<std::shared_ptr<IBroadcastFilter> > filters;
+    std::vector<std::shared_ptr<IBroadcastFilter> > filters;
 
     // Expect calls to register an unregister an broadcast listener
     std::string broadcastName("Location");
     IBroadcastListener* broadcastListener;
 
     BroadcastSubscriptionRequest subscriptionRequest;
+    BroadcastFilterParameters filterParameters;
+    subscriptionRequest.setFilterParameters(filterParameters);
 
     SubscriptionPublication expectedPublication;
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
@@ -857,18 +841,17 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     PublicationManager publicationManager;
 
     //SubscriptionRequest
-    QString senderId = "SenderId";
-    QString receiverId = "ReceiverId";
-    //QtSubscriptionQos
-    qint64 minInterval_ms = 100;
-    qint64 validity_ms = 600;
-    std::shared_ptr<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
-                        validity_ms,
-                        minInterval_ms));
-    int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-    qos->setExpiryDate(now + 5000);
+    std::string senderId = "SenderId";
+    std::string receiverId = "ReceiverId";
+    //SubscriptionQos
+    int64_t minInterval_ms = 100;
+    int64_t validity_ms = 600;
+    OnChangeSubscriptionQos qos{validity_ms,minInterval_ms};
 
-    subscriptionRequest.setSubscribeToName(QString::fromStdString(broadcastName));
+    int64_t now = joynr::TimeUtils::getCurrentMillisSinceEpoch();
+    qos.setExpiryDate(now + 5000);
+
+    subscriptionRequest.setSubscribeToName(broadcastName);
     subscriptionRequest.setQos(qos);
     LOG_DEBUG(logger, "adding broadcast subscription request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
@@ -876,21 +859,21 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     // Fake broadcast
     broadcastListener->broadcastOccurred(broadcastValues, filters);
 
-    QThreadSleep::msleep(50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
     // now, we assume that one publication has been occured
-    QThreadSleep::msleep(minInterval_ms);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
 
     // Fake broadcast
     broadcastListener->broadcastOccurred(broadcastValues, filters);
 
-    qint64 newMinInterval = minInterval_ms + 500;
-    QThreadSleep::msleep(50 + newMinInterval);
+    int64_t newMinInterval = minInterval_ms + 500;
+    std::this_thread::sleep_for(std::chrono::milliseconds(50 + newMinInterval));
     // now, we assume that two publications have been occured
 
     //now, let's update the subscription an check if the provided data is correctly processed by the PublicationManager
 
-    qos->setMinInterval(newMinInterval);
+    qos.setMinInterval(newMinInterval);
     subscriptionRequest.setQos(qos);
     LOG_DEBUG(logger, "update broadcast subscription request");
     publicationManager.add(senderId, receiverId, requestCaller2,subscriptionRequest,&mockPublicationSender2);
@@ -899,21 +882,19 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     broadcastListener->broadcastOccurred(broadcastValues, filters);
 
     // sleep, waiting for the async publication (which shouldn't come)
-    QThreadSleep::msleep(50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
     // until now, only one publication should be arrived to mockPublicationSender2
 
-    QThreadSleep::msleep(minInterval_ms + 50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms + 50));
 
     // Fake broadcast. This change shall not result in a new broadcast to the client
     broadcastListener->broadcastOccurred(broadcastValues, filters);
 
     // Wait for the subscription to finish
-    QThreadSleep::msleep(500);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 }
 
 TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_withGreaterExpiryDate) {
-    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
-
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
@@ -921,11 +902,11 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // The value will be fired by the broadcast
-    joynr::types::Localisation::QtGpsLocation gpsLocation;
-    QList<QVariant> broadcastValues;
-    broadcastValues.append(QVariant::fromValue(gpsLocation));
+    joynr::types::Localisation::GpsLocation gpsLocation;
+    std::vector<Variant> broadcastValues;
+    broadcastValues.push_back(Variant::make<joynr::types::Localisation::GpsLocation>(gpsLocation));
 
-    QList<std::shared_ptr<IBroadcastFilter> > filters;
+    std::vector<std::shared_ptr<IBroadcastFilter> > filters;
 
     // Expect calls to register an unregister a broadcast listener
     std::string broadcastName("Location");
@@ -959,50 +940,46 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     PublicationManager publicationManager;
 
     //SubscriptionRequest
-    QString senderId = "SenderId";
-    QString receiverId = "ReceiverId";
-    //QtSubscriptionQos
-    qint64 minInterval_ms = 50;
-    qint64 validity_ms = 600;
-    qint64 testRelExpiryDate = 500;
-    int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    std::string senderId = "SenderId";
+    std::string receiverId = "ReceiverId";
+    //SubscriptionQos
+    int64_t minInterval_ms = 50;
+    int64_t validity_ms = 600;
+    int64_t testRelExpiryDate = 500;
+    int64_t now = joynr::TimeUtils::getCurrentMillisSinceEpoch();
     int64_t testAbsExpiryDate = now + testRelExpiryDate;
-    std::shared_ptr<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
-                        validity_ms,
-                        minInterval_ms));
+    OnChangeSubscriptionQos qos{validity_ms,minInterval_ms};
 
-    qos->setExpiryDate(testAbsExpiryDate);
+    qos.setExpiryDate(testAbsExpiryDate);
 
-    subscriptionRequest.setSubscribeToName(QString::fromStdString(broadcastName));
+    subscriptionRequest.setSubscribeToName(broadcastName);
     subscriptionRequest.setQos(qos);
     LOG_DEBUG(logger, "add broadcast subscription request");
     publicationManager.add(senderId, receiverId, requestCaller, subscriptionRequest, &mockPublicationSender);
 
     broadcastListener->broadcastOccurred(broadcastValues, filters);
     // exceed the minInterval
-    QThreadSleep::msleep(minInterval_ms+50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms+50));
 
     // now, we expect that one publication has been performed
 
     // now, let's update the subscription and check if the provided data is correctly processed by the PublicationManager
     // extend the expiry date
-    qos->setExpiryDate(testAbsExpiryDate + 1000);
+    qos.setExpiryDate(testAbsExpiryDate + 1000);
     subscriptionRequest.setQos(qos);
     LOG_DEBUG(logger, "update broadcast subscription request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
     //now, exceed the original expiryDate, and make a broadcast
-    QThreadSleep::msleep(testRelExpiryDate);
+    std::this_thread::sleep_for(std::chrono::milliseconds(testRelExpiryDate));
     broadcastListener->broadcastOccurred(broadcastValues, filters);
 
     // wait for the async publication
-    QThreadSleep::msleep(50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
     //now, two publications should be noticed, even if the original subscription is expired
 }
 
 TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_withLowerExpiryDate) {
-    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
-
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
@@ -1010,11 +987,11 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     MockTestRequestCaller* mockTestRequestCaller = new MockTestRequestCaller();
 
     // The broadcast will fire this value
-    joynr::types::Localisation::QtGpsLocation gpsLocation;
-    QList<QVariant> broadcastValues;
-    broadcastValues.append(QVariant::fromValue(gpsLocation));
+    joynr::types::Localisation::GpsLocation gpsLocation;
+    std::vector<Variant> broadcastValues;
+    broadcastValues.push_back(Variant::make<joynr::types::Localisation::GpsLocation>(gpsLocation));
 
-    QList<std::shared_ptr<IBroadcastFilter> > filters;
+    std::vector<std::shared_ptr<IBroadcastFilter> > filters;
 
     // Expect calls to register an unregister a broadcast listener
     std::string broadcastName("Location");
@@ -1048,54 +1025,50 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     PublicationManager publicationManager;
 
     //SubscriptionRequest
-    QString senderId = "SenderId";
-    QString receiverId = "ReceiverId";
-    //QtSubscriptionQos
-    qint64 minInterval_ms = 50;
-    qint64 validity_ms = 600;
-    qint64 testExpiryDate_shift = 2500;
-    qint64 testRelExpiryDate = 500 + testExpiryDate_shift;
-    int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    std::string senderId = "SenderId";
+    std::string receiverId = "ReceiverId";
+    //SubscriptionQos
+    int64_t minInterval_ms = 50;
+    int64_t validity_ms = 600;
+    int64_t testExpiryDate_shift = 2500;
+    int64_t testRelExpiryDate = 500 + testExpiryDate_shift;
+    int64_t now = joynr::TimeUtils::getCurrentMillisSinceEpoch();
     int64_t testAbsExpiryDate = now + testRelExpiryDate;
-    std::shared_ptr<QtOnChangeSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
-                        validity_ms,
-                        minInterval_ms));
+    OnChangeSubscriptionQos qos{validity_ms,minInterval_ms};
 
-    qos->setExpiryDate(testAbsExpiryDate);
+    qos.setExpiryDate(testAbsExpiryDate);
 
-    subscriptionRequest.setSubscribeToName(QString::fromStdString(broadcastName));
+    subscriptionRequest.setSubscribeToName(broadcastName);
     subscriptionRequest.setQos(qos);
     LOG_DEBUG(logger, "adding broadcast subscription request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
     broadcastListener->broadcastOccurred(broadcastValues, filters);
-    QThreadSleep::msleep(50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
     // now, we expect that one publications have been performed
 
     // now, let's update the subscription and check if the provided data is correctly processed by the PublicationManager
     // reduce the expiry date
-    qos->setExpiryDate(testAbsExpiryDate - testExpiryDate_shift);
+    qos.setExpiryDate(testAbsExpiryDate - testExpiryDate_shift);
     subscriptionRequest.setQos(qos);
     LOG_DEBUG(logger, "update broadcast subscription request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
     // now, exceed the new expiryDate, and make a broadcast
-    QThreadSleep::msleep(testRelExpiryDate - testExpiryDate_shift);
+    std::this_thread::sleep_for(std::chrono::milliseconds(testRelExpiryDate - testExpiryDate_shift));
     // now, the subscription should be death
 
     broadcastListener->broadcastOccurred(broadcastValues, filters);
 
     // wait for the async publication (which shouldn't arrive)
-    QThreadSleep::msleep(50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
     // now, no new publication should be received, even if the expiry date of the original request hasn't been expired
     // -> one publication expected
 }
 
 TEST_F(PublicationManagerTest, remove_onChangeSubscription) {
-    QFile::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME()); //remove stored subscriptions
-
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
@@ -1128,22 +1101,127 @@ TEST_F(PublicationManagerTest, remove_onChangeSubscription) {
     PublicationManager publicationManager;
 
     //SubscriptionRequest
-    QString senderId = "SenderId";
-    QString receiverId = "ReceiverId";
-    //QtSubscriptionQos
-    qint64 minInterval_ms = 1;
-    qint64 validity_ms = 100;
-    std::shared_ptr<QtSubscriptionQos> qos(new QtOnChangeSubscriptionQos(
+    std::string senderId = "SenderId";
+    std::string receiverId = "ReceiverId";
+    //SubscriptionQos
+    int64_t minInterval_ms = 1;
+    int64_t validity_ms = 100;
+    Variant qos = Variant::make<OnChangeSubscriptionQos>(OnChangeSubscriptionQos(
                         validity_ms,
                         minInterval_ms));
 
     // will be deleted by the publication manager
     SubscriptionRequest subscriptionRequest;
-    subscriptionRequest.setSubscribeToName(QString::fromStdString(attributeName));
+    subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(qos);
     LOG_DEBUG(logger, "adding request");
     publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
 
     // Wait for the subscription to expire
-    QThreadSleep::msleep(200);
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+}
+
+TEST_F(PublicationManagerTest, forwardProviderRuntimeExceptionToPublicationSender) {
+    QFile::remove(TypeUtil::toQt(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME())); //remove stored subscriptions
+
+    // Register the request interpreter that calls the request caller
+    InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
+
+    MockPublicationSender mockPublicationSender;
+    std::shared_ptr<MockTestRequestCaller> requestCaller = std::make_shared<MockTestRequestCaller>();
+
+    // The value will be fired by the broadcast
+    Variant expected =
+            Variant::make<exceptions::ProviderRuntimeException>(requestCaller->providerRuntimeExceptionTestMsg);
+
+    //SubscriptionRequest
+    std::string senderId = "SenderId";
+    std::string receiverId = "ReceiverId";
+    std::string attributeName("attributeWithProviderRuntimeException");
+    int64_t period_ms = 100;
+    int64_t validity_ms = 1000;
+    int64_t alertInterval_ms = 1000;
+    Variant qos = Variant::make<PeriodicSubscriptionQos>(PeriodicSubscriptionQos(
+                        validity_ms,
+                        period_ms,
+                        alertInterval_ms));
+    SubscriptionRequest subscriptionRequest;
+    subscriptionRequest.setSubscribeToName(attributeName);
+    subscriptionRequest.setQos(qos);
+
+    SubscriptionPublication expectedPublication;
+    expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
+    expectedPublication.setError(expected);
+
+    EXPECT_CALL(
+                mockPublicationSender,
+                sendSubscriptionPublication(
+                    Eq(receiverId), // sender participant ID
+                    Eq(senderId), // receiver participant ID
+                    _, // messaging QoS
+                    SubscriptionPublicationMatcher(expectedPublication) // subscription publication
+                )
+    )
+            .Times(2);
+
+    PublicationManager publicationManager;
+
+    publicationManager.add(senderId, receiverId, requestCaller, subscriptionRequest, &mockPublicationSender);
+
+    // wait for the async publication
+    std::this_thread::sleep_for(std::chrono::milliseconds(150));
+    //now, two publications should be noticed, even if the original subscription is expired
+}
+
+TEST_F(PublicationManagerTest, forwardMethodInvocationExceptionToPublicationSender) {
+    QFile::remove(TypeUtil::toQt(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME())); //remove stored subscriptions
+
+    // Register the request interpreter that calls the request caller
+    InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
+
+    MockPublicationSender mockPublicationSender;
+    std::shared_ptr<MockTestRequestCaller> requestCaller = std::make_shared<MockTestRequestCaller>();
+
+    // The value will be fired by the broadcast
+    Variant expected =
+            Variant::make<exceptions::MethodInvocationException>("unknown method name for interface test: getNotExistingAttribute");
+
+    //SubscriptionRequest
+    std::string senderId = "SenderId";
+    std::string receiverId = "ReceiverId";
+    std::string attributeName("notExistingAttribute");
+    //QtSubscriptionQos
+    int64_t period_ms = 100;
+    int64_t validity_ms = 1000;
+    int64_t alertInterval_ms = 1000;
+    Variant qos = Variant::make<PeriodicSubscriptionQos>(PeriodicSubscriptionQos(
+                        validity_ms,
+                        period_ms,
+                        alertInterval_ms));
+    SubscriptionRequest subscriptionRequest;
+    subscriptionRequest.setSubscribeToName(attributeName);
+    subscriptionRequest.setQos(qos);
+
+    SubscriptionPublication expectedPublication;
+    expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
+    expectedPublication.setError(expected);
+
+    EXPECT_CALL(
+                mockPublicationSender,
+                sendSubscriptionPublication(
+                    Eq(receiverId), // sender participant ID
+                    Eq(senderId), // receiver participant ID
+                    _, // messaging QoS
+                    SubscriptionPublicationMatcher(expectedPublication) // subscription publication
+                )
+    )
+            .Times(2);
+
+    PublicationManager publicationManager;
+
+    publicationManager.add(senderId, receiverId, requestCaller, subscriptionRequest, &mockPublicationSender);
+
+    // wait for the async publication
+    std::this_thread::sleep_for(std::chrono::milliseconds(150));
+    //now, two publications should be noticed, even if the original subscription is expired
 }

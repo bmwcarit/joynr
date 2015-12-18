@@ -32,8 +32,7 @@
 #include "joynr/system/IDiscovery.h"
 #include "Future.h"
 #include <QCoreApplication>
-#include <QSemaphore>
-#include <QList>
+#include "joynr/Semaphore.h"
 #include <string>
 #include <stdint.h>
 #include <joynr/TypeUtil.h>
@@ -69,7 +68,7 @@ public:
     ProxyBuilder(ProxyFactory* proxyFactory,
                  joynr::system::IDiscoverySync& discoveryProxy,
                  const std::string& domain,
-                 std::shared_ptr<joynr::system::RoutingTypes::QtAddress> dispatcherAddress,
+                 std::shared_ptr<joynr::system::RoutingTypes::Address> dispatcherAddress,
                  std::shared_ptr<MessageRouter> messageRouter);
 
     /** Destructor */
@@ -186,23 +185,22 @@ private:
     ProxyFactory* proxyFactory;
     joynr::system::IDiscoverySync& discoveryProxy;
     ProviderArbitrator* arbitrator;
-    QSemaphore arbitrationSemaphore;
+    joynr::Semaphore arbitrationSemaphore;
     std::string participantId;
     joynr::types::CommunicationMiddleware::Enum connection;
     ArbitrationStatus::ArbitrationStatusType arbitrationStatus;
-    qint64 discoveryTimeout;
+    int64_t discoveryTimeout;
 
-    std::shared_ptr<joynr::system::RoutingTypes::QtAddress> dispatcherAddress;
+    std::shared_ptr<joynr::system::RoutingTypes::Address> dispatcherAddress;
     std::shared_ptr<MessageRouter> messageRouter;
 };
 
 template <class T>
-ProxyBuilder<T>::ProxyBuilder(
-        ProxyFactory* proxyFactory,
-        joynr::system::IDiscoverySync& discoveryProxy,
-        const std::string& domain,
-        std::shared_ptr<joynr::system::RoutingTypes::QtAddress> dispatcherAddress,
-        std::shared_ptr<MessageRouter> messageRouter)
+ProxyBuilder<T>::ProxyBuilder(ProxyFactory* proxyFactory,
+                              joynr::system::IDiscoverySync& discoveryProxy,
+                              const std::string& domain,
+                              std::shared_ptr<system::RoutingTypes::Address> dispatcherAddress,
+                              std::shared_ptr<MessageRouter> messageRouter)
         : domain(domain),
           cached(false),
           hasArbitrationStarted(false),
@@ -292,7 +290,7 @@ ProxyBuilder<T>* ProxyBuilder<T>::setDiscoveryQos(const DiscoveryQos& discoveryQ
     discoveryTimeout = discoveryQos.getDiscoveryTimeout();
     arbitrator = ProviderArbitratorFactory::createArbitrator(
             domain, T::INTERFACE_NAME(), discoveryProxy, discoveryQos);
-    arbitrationSemaphore.acquire();
+    arbitrationSemaphore.wait();
     arbitrator->setArbitrationListener(this);
     arbitrator->startArbitration();
     hasArbitrationStarted = true;
@@ -306,7 +304,7 @@ void ProxyBuilder<T>::setArbitrationStatus(
     this->arbitrationStatus = arbitrationStatus;
     if (arbitrationStatus == ArbitrationStatus::ArbitrationSuccessful) {
         if (!participantId.empty() && connection != joynr::types::CommunicationMiddleware::NONE) {
-            arbitrationSemaphore.release();
+            arbitrationSemaphore.notify();
         } else {
             throw exceptions::DiscoveryException("Arbitration was set to successfull by "
                                                  "arbitrator, but either ParticipantId or "
@@ -361,10 +359,10 @@ void ProxyBuilder<T>::waitForArbitration()
 template <class T>
 void ProxyBuilder<T>::waitForArbitration(uint16_t timeout)
 {
-    if (!arbitrationSemaphore.tryAcquire(1, TypeUtil::toQt(timeout))) {
+    if (!arbitrationSemaphore.waitFor(std::chrono::milliseconds(timeout))) {
         throw exceptions::DiscoveryException("Arbitration could not be finished in time.");
     }
-    arbitrationSemaphore.release();
+    arbitrationSemaphore.notify();
 }
 
 } // namespace joynr

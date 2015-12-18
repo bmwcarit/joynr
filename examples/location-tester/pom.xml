@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>examples</artifactId>
-		<version>0.12.3</version>
+		<version>0.13.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -37,7 +37,12 @@
 	<dependencies>
 		<dependency>
 			<groupId>io.joynr.java.core</groupId>
-			<artifactId>libjoynr</artifactId>
+			<artifactId>clustercontroller-inprocess-runtime</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.core</groupId>
+			<artifactId>libjoynr-websocket-runtime</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>

@@ -44,6 +44,23 @@ RUN cd /opt/qt5 \
 	&& make install \
 	&& rm -rf /opt/qt5
 
+
+###################################################
+# install boost
+###################################################
+WORKDIR /opt
+
+RUN curl -L  http://downloads.sourceforge.net/project/boost/boost/1.56.0/boost_1_56_0.tar.gz > boost.tar.gz \
+	&& mkdir -p /opt/boost \
+	&& tar -zxf boost.tar.gz -C /opt/boost --strip-components=1 \
+	&& rm boost.tar.gz
+
+RUN cd /opt/boost \
+	&& ./bootstrap.sh --prefix=/usr/local \
+	&& ./b2 --without-wave --without-python --without-mpi --without-iostreams --without-graph_parallel -j8 install \
+	&& rm -rf /opt/boost
+
+
 ###################################################
 # install common api
 ###################################################

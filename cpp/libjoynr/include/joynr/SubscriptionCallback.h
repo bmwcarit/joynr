@@ -32,8 +32,8 @@ namespace joynr
 {
 
 /**
-  * \class SubscriptionCallback
-  * \brief
+  * @class SubscriptionCallback
+  * @brief
   */
 
 template <typename T, typename... Ts>

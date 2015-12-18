@@ -19,6 +19,7 @@ package io.joynr.integration;
  * #L%
  */
 
+import static org.junit.Assert.assertEquals;
 import com.google.inject.Module;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.arbitration.ArbitrationStrategy;
@@ -32,7 +33,6 @@ import io.joynr.runtime.PropertyLoader;
 import joynr.tests.DefaulttestProvider;
 import joynr.tests.testProxy;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -129,7 +129,7 @@ public abstract class AbstractSSLEnd2EndTest extends JoynrEnd2EndTest {
 
         // Get the attribute value
         int actual = proxy.getReadWriteAttribute();
-        Assert.assertEquals(value, actual);
+        assertEquals(value, actual);
     }
 
 }

@@ -13,7 +13,6 @@ configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/include/joynr/RuntimeConfig.h"
 )
 
-get_target_property(qjson_PUBLIC_INCLUDE_DIRECTORY qjson PUBLIC_INCLUDE_DIRECTORY)
 
 set(
     JoynrCommon_PUBLIC_INCLUDE_DIRECTORY
@@ -24,14 +23,13 @@ set(
     JoynrCommon_INCLUDE_DIRECTORIES
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     "../"
-    ${qjson_PUBLIC_INCLUDE_DIRECTORY}
+    ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
 )
 
 set(
     JoynrCommon_TARGET_LIBRARIES
     Qt5::Core
     Qt5::WebSockets
-    qjson
 )
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
@@ -73,6 +71,7 @@ file(
     "capabilities/*.h"
     "rpc/*.h"
     "exceptions/*.h"
+    "concurrency/*.h"
 )
 
 set(
@@ -92,12 +91,14 @@ file(
     "rpc/*.cpp"
     "exceptions/*.cpp"
     "SettingsMerger.cpp"
+    "concurrency/*.cpp"
 )
 
 
 list(
     APPEND JoynrCommon_SOURCES
     "logging/SpdlogLogging.cpp"
+    "logging/FormatString.cpp"
 )
 
 
@@ -158,22 +159,11 @@ target_link_libraries(JoynrCommon ${JoynrCommon_TARGET_LIBRARIES})
 
 add_dependencies(JoynrCommon spdlog)
 
-if(${ENABLE_CLANG_FORMATTER})
-    set(COMMENT "running C++ code formatter: clang-format")
-    set(COMMENT "${COMMENT}\nworking directory: ${CMAKE_CURRENT_SOURCE_DIR}")
-    set(COMMENT "${COMMENT}\nprocessing header files:\n${JoynrCommon_HEADERS}")
-    set(COMMENT "${COMMENT}\nprocessing source files:\n${JoynrCommon_SOURCES}")
+AddClangFormat(JoynrCommon)
 
-    add_custom_target(
-        format-JoynrCommon
-        COMMAND clang-format -i ${JoynrCommon_HEADERS} ${JoynrCommon_SOURCES}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        COMMENT "${COMMENT}"
-        VERBATIM
-    )
-    add_dependencies(JoynrCommon format-JoynrCommon)
+AddIncludeWhatYouUse(JoynrCommon)
 
-endif(${ENABLE_CLANG_FORMATTER})
+AddClangTidy(JoynrCommon)
 
 install(
     TARGETS JoynrCommon

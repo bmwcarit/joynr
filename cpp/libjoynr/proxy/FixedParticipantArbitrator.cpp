@@ -19,9 +19,8 @@
 #include "joynr/FixedParticipantArbitrator.h"
 #include "joynr/ArbitrationStatus.h"
 #include "joynr/system/IDiscovery.h"
-#include "joynr/types/QtDiscoveryEntry.h"
 #include "joynr/types/DiscoveryEntry.h"
-#include "joynr/system/RoutingTypes_QtChannelAddress.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/RequestStatus.h"
 #include "joynr/DiscoveryQos.h"
 
@@ -57,11 +56,12 @@ void FixedParticipantArbitrator::attemptArbitration()
                 ArbitrationStatus::ArbitrationSuccessful, participantId, preferredConnection);
     } catch (exceptions::JoynrException& e) {
         LOG_ERROR(logger,
-                  QString("Unable to lookup provider (domain: %1, interface: %2) "
-                          "from discovery. Error: %3.")
-                          .arg(QString::fromStdString(domain))
-                          .arg(QString::fromStdString(interfaceName))
-                          .arg(QString::fromStdString(e.getMessage())));
+                  FormatString("Unable to lookup provider (domain: %1, interface: %2) "
+                               "from discovery. Error: %3.")
+                          .arg(domain)
+                          .arg(interfaceName)
+                          .arg(e.getMessage())
+                          .str());
     }
 }
 

@@ -20,13 +20,16 @@
 #define WEBSOCKETMESSAGINGSTUBFACTORY_H
 
 #include <QtCore/QObject>
-#include <QtCore/QHash>
-#include <QtCore/QMutex>
+#include <unordered_map>
 #include <QtCore/QUrl>
 #include <memory>
+#include <mutex>
 
 #include "joynr/joynrlogging.h"
 #include "joynr/IMiddlewareMessagingStubFactory.h"
+#include "joynr/system/RoutingTypes/Address.h"
+#include "joynr/system/RoutingTypes/WebSocketAddress.h"
+#include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 
 class QWebSocket;
 
@@ -38,9 +41,9 @@ namespace system
 
 namespace RoutingTypes
 {
-class QtAddress;
-class QtWebSocketAddress;
-class QtWebSocketClientAddress;
+class Address;
+class WebSocketAddress;
+class WebSocketClientAddress;
 }
 }
 
@@ -49,27 +52,27 @@ class WebSocketMessagingStubFactory : public QObject, public IMiddlewareMessagin
     Q_OBJECT
 
 public:
-    WebSocketMessagingStubFactory(QObject* parent = Q_NULLPTR);
-    std::shared_ptr<IMessaging> create(const joynr::system::RoutingTypes::QtAddress& destAddress);
-    bool canCreate(const joynr::system::RoutingTypes::QtAddress& destAddress);
-    void addClient(const joynr::system::RoutingTypes::QtWebSocketClientAddress& clientAddress,
+    explicit WebSocketMessagingStubFactory(QObject* parent = nullptr);
+    std::shared_ptr<IMessaging> create(const joynr::system::RoutingTypes::Address& destAddress);
+    bool canCreate(const joynr::system::RoutingTypes::Address& destAddress);
+    void addClient(const system::RoutingTypes::WebSocketClientAddress* clientAddress,
                    QWebSocket* webSocket);
-    void removeClient(const joynr::system::RoutingTypes::QtWebSocketClientAddress& clientAddress);
-    void addServer(const joynr::system::RoutingTypes::QtWebSocketAddress& serverAddress,
+    void removeClient(const joynr::system::RoutingTypes::WebSocketClientAddress& clientAddress);
+    void addServer(const joynr::system::RoutingTypes::WebSocketAddress& serverAddress,
                    QWebSocket* webSocket);
 
     static QUrl convertWebSocketAddressToUrl(
-            const joynr::system::RoutingTypes::QtWebSocketAddress& address);
+            const joynr::system::RoutingTypes::WebSocketAddress& address);
 
 private Q_SLOTS:
-    void onMessagingStubClosed(const joynr::system::RoutingTypes::QtAddress& address);
+    void onMessagingStubClosed(const system::RoutingTypes::Address& address);
 
 private:
-    QHash<joynr::system::RoutingTypes::QtWebSocketAddress, std::shared_ptr<IMessaging>>
+    std::unordered_map<joynr::system::RoutingTypes::WebSocketAddress, std::shared_ptr<IMessaging>>
             serverStubMap;
-    QHash<joynr::system::RoutingTypes::QtWebSocketClientAddress, std::shared_ptr<IMessaging>>
-            clientStubMap;
-    QMutex mutex;
+    std::unordered_map<joynr::system::RoutingTypes::WebSocketClientAddress,
+                       std::shared_ptr<IMessaging>> clientStubMap;
+    std::mutex mutex;
 
     static joynr_logging::Logger* logger;
 };

@@ -112,6 +112,18 @@ define("joynr/provider/ProviderAttributeReadWrite", [ "joynr/provider/ProviderAt
             return providerAttribute.set(value);
         };
 
+        /**
+         * Check Getter and Setter functions.
+         * See [ProviderAttribute.checkGet]{@link ProviderAttribute#checkGet}
+         * and [ProviderAttribute.checkSet]{@link ProviderAttribute#checkSet}
+         *
+         * @function ProviderAttributeNotifyReadWrite#check
+         *
+         * @returns {Boolean}
+         */
+        this.check = function check() {
+            return providerAttribute.checkGet() && providerAttribute.checkSet();
+        };
         return Object.freeze(this);
     }
 

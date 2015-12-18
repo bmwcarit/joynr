@@ -16,9 +16,7 @@
  * limitations under the License.
  * #L%
  */
-#include "gtest/gtest.h"
-
-#include "joynr/joynrlogging.h"
+#include <gtest/gtest.h>
 #include "joynr/DispatcherUtils.h"
 #include <chrono>
 #include <stdint.h>
@@ -30,7 +28,7 @@ using namespace std::chrono;
 class DispatcherUtilsTest : public ::testing::Test {
 public:
     DispatcherUtilsTest() :
-            logger(joynr_logging::Logging::getInstance()->getLogger(QString("TEST"), QString("DispatcherUtilsTest")))
+            logger(joynr_logging::Logging::getInstance()->getLogger("TEST", "DispatcherUtilsTest"))
     {
     }
 
@@ -48,9 +46,9 @@ TEST_F(DispatcherUtilsTest, maxAbsoluteTimeIsValid) {
     JoynrTimePoint maxDate(DispatcherUtils::getMaxAbsoluteTime());
     LOG_DEBUG(
                 logger,
-                QString("date: %1 [%2]")
-                .arg(QString::fromStdString(DispatcherUtils::convertAbsoluteTimeToTtlString(maxDate)))
-                .arg(duration_cast<milliseconds>(maxDate.time_since_epoch()).count())
+                FormatString("date: %1 [%2]")
+                .arg(DispatcherUtils::convertAbsoluteTimeToTtlString(maxDate))
+                .arg(duration_cast<milliseconds>(maxDate.time_since_epoch()).count()).str()
     );
     JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
     EXPECT_LT(now, maxDate);
@@ -60,9 +58,9 @@ TEST_F(DispatcherUtilsTest, convertTtlToAbsoluteTimeReturnsValidDateTime) {
     JoynrTimePoint ttl60s(DispatcherUtils::convertTtlToAbsoluteTime(60000));
     LOG_DEBUG(
                 logger,
-                QString("60s TTL: %1 [%2]")
-                .arg(QString::fromStdString(DispatcherUtils::convertAbsoluteTimeToTtlString(ttl60s)))
-                .arg(duration_cast<milliseconds>(ttl60s.time_since_epoch()).count())
+                FormatString("60s TTL: %1 [%2]")
+                .arg(DispatcherUtils::convertAbsoluteTimeToTtlString(ttl60s))
+                .arg(duration_cast<milliseconds>(ttl60s.time_since_epoch()).count()).str()
     );
     int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
     int64_t ttl60sMillis = ttl60s.time_since_epoch().count();
@@ -70,24 +68,24 @@ TEST_F(DispatcherUtilsTest, convertTtlToAbsoluteTimeReturnsValidDateTime) {
 }
 
 TEST_F(DispatcherUtilsTest, convertTtlToAbsoluteTimeDetectsPositiveOverflow) {
-    JoynrTimePoint ttlMaxInt64(DispatcherUtils::convertTtlToAbsoluteTime(std::numeric_limits<int64_t>::max()));
+    JoynrTimePoint ttlMaxInt64(DispatcherUtils::getMaxAbsoluteTime());
     LOG_DEBUG(
                 logger,
-                QString("ttlMaxInt64: %1 [%2]")
-                .arg(QString::fromStdString(DispatcherUtils::convertAbsoluteTimeToTtlString(ttlMaxInt64)))
-                .arg(duration_cast<milliseconds>(ttlMaxInt64.time_since_epoch()).count())
+                FormatString("ttlMaxInt64: %1 [%2]")
+                .arg(DispatcherUtils::convertAbsoluteTimeToTtlString(ttlMaxInt64))
+                .arg(duration_cast<milliseconds>(ttlMaxInt64.time_since_epoch()).count()).str()
     );
     JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
     EXPECT_LT(now, ttlMaxInt64);
 }
 
 TEST_F(DispatcherUtilsTest, convertTtlToAbsoluteTimeDetectsNegativeOverflow) {
-    JoynrTimePoint ttlMinInt64(DispatcherUtils::convertTtlToAbsoluteTime(std::numeric_limits<int64_t>::min()));
+    JoynrTimePoint ttlMinInt64(DispatcherUtils::getMinAbsoluteTime());
     LOG_DEBUG(
                 logger,
-                QString("ttlMinInt64: %1 [%2]")
-                .arg(QString::fromStdString(DispatcherUtils::convertAbsoluteTimeToTtlString(ttlMinInt64)))
-                .arg(duration_cast<milliseconds>(ttlMinInt64.time_since_epoch()).count())
+                FormatString("ttlMinInt64: %1 [%2]")
+                .arg(DispatcherUtils::convertAbsoluteTimeToTtlString(ttlMinInt64))
+                .arg(duration_cast<milliseconds>(ttlMinInt64.time_since_epoch()).count()).str()
     );
     JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
     EXPECT_GT(now, ttlMinInt64);
@@ -97,9 +95,9 @@ TEST_F(DispatcherUtilsTest, convertTtlToAbsoluteTimeHandelsNegativeTtl) {
     JoynrTimePoint ttlNegative(DispatcherUtils::convertTtlToAbsoluteTime(-1));
     LOG_DEBUG(
                 logger,
-                QString("ttlNegative: %1 [%2]")
-                .arg(QString::fromStdString(DispatcherUtils::convertAbsoluteTimeToTtlString(ttlNegative)))
-                .arg(duration_cast<milliseconds>(ttlNegative.time_since_epoch()).count())
+                FormatString("ttlNegative: %1 [%2]")
+                .arg(DispatcherUtils::convertAbsoluteTimeToTtlString(ttlNegative))
+                .arg(duration_cast<milliseconds>(ttlNegative.time_since_epoch()).count()).str()
     );
     JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
     EXPECT_GT(now, ttlNegative);
@@ -109,9 +107,9 @@ TEST_F(DispatcherUtilsTest, convertTtlToAbsoluteTimeHandelsZeroTtl) {
     JoynrTimePoint ttlZero(DispatcherUtils::convertTtlToAbsoluteTime(0));
     LOG_DEBUG(
                 logger,
-                QString("ttlZero: %1 [%2]")
-                .arg(QString::fromStdString(DispatcherUtils::convertAbsoluteTimeToString(ttlZero)))
-                .arg(duration_cast<milliseconds>(ttlZero.time_since_epoch()).count())
+                FormatString("ttlZero: %1 [%2]")
+                .arg(DispatcherUtils::convertAbsoluteTimeToString(ttlZero))
+                .arg(duration_cast<milliseconds>(ttlZero.time_since_epoch()).count()).str()
     );
     JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
     EXPECT_TRUE(duration_cast<milliseconds>(now - ttlZero).count() < 10);
@@ -127,10 +125,10 @@ TEST_F(DispatcherUtilsTest, testJoynrTimePointWithWithHugeNumbers) {
     JoynrTimePoint delta{std::chrono::milliseconds(deltaInMs)};
     LOG_DEBUG(
                 logger,
-                QString("time delta between %1 and %2: %3")
-                .arg(QString::number(hugeNumber))
-                .arg(QString::number(nowInMs))
-                .arg(QString::number(deltaInMs))
+                FormatString("time delta between %1 and %2: %3")
+                .arg(hugeNumber)
+                .arg(nowInMs)
+                .arg(deltaInMs).str()
     );
 
     EXPECT_EQ(deltaInMs, duration_cast<milliseconds>(fixture.time_since_epoch()).count() - duration_cast<milliseconds>(now.time_since_epoch()).count());

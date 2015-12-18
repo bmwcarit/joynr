@@ -27,11 +27,37 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+
+import java.io.IOException;
+import java.util.UUID;
+
+import io.joynr.runtime.SystemServicesSettings;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.node.TextNode;
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
+import com.google.inject.assistedinject.FactoryModuleBuilder;
+import com.google.inject.name.Named;
+
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.capabilities.CapabilitiesCallback;
-import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.common.ExpiryDate;
+import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.dispatcher.rpc.JoynrAsyncInterface;
 import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.dispatcher.rpc.JoynrSyncInterface;
@@ -55,15 +81,11 @@ import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.UUID;
-
 import joynr.OnChangeSubscriptionQos;
 import joynr.Reply;
 import joynr.Request;
 import joynr.exceptions.ApplicationException;
+import joynr.system.RoutingTypes.Address;
 import joynr.types.CommunicationMiddleware;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
@@ -71,25 +93,6 @@ import joynr.vehicle.NavigationBroadcastInterface.LocationUpdateBroadcastListene
 import joynr.vehicle.NavigationBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters;
 import joynr.vehicle.NavigationBroadcastInterface.LocationUpdateSelectiveBroadcastListener;
 import joynr.vehicle.NavigationProxy;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.node.TextNode;
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.assistedinject.FactoryModuleBuilder;
 
 public class ProxyTest {
     private DiscoveryQos discoveryQos;
@@ -110,7 +113,7 @@ public class ProxyTest {
     RoutingTable routingTable;
 
     @Mock
-    private LocalCapabilitiesDirectory capabilitiesClient;
+    private LocalDiscoveryAggregator localDiscoveryAggregator;
 
     private String domain;
     private String toParticipantId;
@@ -162,11 +165,19 @@ public class ProxyTest {
                 install(new FactoryModuleBuilder().implement(ProxyInvocationHandler.class,
                                                              ProxyInvocationHandlerImpl.class)
                                                   .build(ProxyInvocationHandlerFactory.class));
+
+            }
+
+            @Provides
+            @Singleton
+            @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS)
+            Address getDispatcherAddress() {
+                return new InProcessAddress();
             }
 
         });
 
-        proxyBuilderFactory = new ProxyBuilderFactoryImpl(capabilitiesClient,
+        proxyBuilderFactory = new ProxyBuilderFactoryImpl(localDiscoveryAggregator,
                                                           injector.getInstance(ProxyInvocationHandlerFactory.class),
                                                           messageRouter,
                                                           new InProcessAddress(new InProcessLibjoynrMessagingSkeleton(dispatcher)));
@@ -175,23 +186,22 @@ public class ProxyTest {
             @Override
             public Object answer(InvocationOnMock invocation) {
                 Object[] args = invocation.getArguments();
-                ArrayList<DiscoveryEntry> fakeCapabilitiesResult = new ArrayList<DiscoveryEntry>();
                 DiscoveryEntry discoveryEntry = new DiscoveryEntry(domain,
                                                                    TestInterface.INTERFACE_NAME,
                                                                    toParticipantId,
                                                                    new ProviderQos(),
                                                                    new CommunicationMiddleware[]{ CommunicationMiddleware.JOYNR });
 
-                fakeCapabilitiesResult.add(discoveryEntry);
-                ((CapabilitiesCallback) args[3]).processCapabilitiesReceived(fakeCapabilitiesResult);
+                DiscoveryEntry[] fakeCapabilitiesResult = { discoveryEntry };
+                ((Callback) args[0]).resolve((Object) fakeCapabilitiesResult);
                 return null;
             }
         })
-               .when(capabilitiesClient)
-               .lookup(Mockito.<String> any(),
+               .when(localDiscoveryAggregator)
+               .lookup(Mockito.<Callback> any(),
                        Mockito.<String> any(),
-                       Mockito.<DiscoveryQos> any(),
-                       Mockito.<CapabilitiesCallback> any());
+                       Mockito.<String> any(),
+                       Mockito.<joynr.types.DiscoveryQos> any());
 
         Mockito.doAnswer(new Answer<Object>() {
             @Override

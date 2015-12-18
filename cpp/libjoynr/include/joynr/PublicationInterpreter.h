@@ -24,6 +24,7 @@
 #include "joynr/SubscriptionCallback.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/Util.h"
+#include "joynr/exceptions/JoynrExceptionUtil.h"
 #include <functional>
 
 #include <cassert>
@@ -31,8 +32,6 @@
 
 namespace joynr
 {
-
-using namespace joynr_logging;
 
 template <class... Ts>
 class PublicationInterpreter : public IPublicationInterpreter
@@ -46,16 +45,16 @@ public:
     {
         assert(callback);
 
-        std::shared_ptr<exceptions::JoynrRuntimeException> error =
-                subscriptionPublication.getError();
-        if (error) {
-            callback->onError(*error);
+        const Variant& error = subscriptionPublication.getError();
+        if (!error.isEmpty()) {
+            callback->onError(
+                    joynr::exceptions::JoynrExceptionUtil::extractJoynrRuntimeException(error));
             return;
         }
 
-        QList<QVariant> response = subscriptionPublication.getResponse();
-        if (response.isEmpty()) {
-            LOG_ERROR(logger, QString("Publication object has no response, discarding message"));
+        std::vector<Variant> response = subscriptionPublication.getResponse();
+        if (response.empty()) {
+            LOG_ERROR(logger, "Publication object has no response, discarding message");
             exceptions::JoynrRuntimeException error(
                     "Publication object had no response, discarded message");
             callback->onError(error);
@@ -95,15 +94,15 @@ public:
     {
         assert(callback);
 
-        std::shared_ptr<exceptions::JoynrRuntimeException> error =
-                subscriptionPublication.getError();
-        if (error) {
-            callback->onError(*error);
+        const Variant& error = subscriptionPublication.getError();
+        if (!error.isEmpty()) {
+            callback->onError(
+                    joynr::exceptions::JoynrExceptionUtil::extractJoynrRuntimeException(error));
             return;
         }
 
-        if (subscriptionPublication.getResponse().isEmpty()) {
-            LOG_ERROR(logger, QString("Publication object has no response, discarding message"));
+        if (subscriptionPublication.getResponse().empty()) {
+            LOG_ERROR(logger, "Publication object has no response, discarding message");
             exceptions::JoynrRuntimeException error(
                     "Publication object had no response, discarded message");
             callback->onError(error);
@@ -111,7 +110,7 @@ public:
         }
 
         typename T::Enum value =
-                Util::convertVariantToEnum<T>(subscriptionPublication.getResponse().first());
+                Util::convertVariantToEnum<T>(subscriptionPublication.getResponse().front());
 
         std::shared_ptr<SubscriptionCallback<typename T::Enum>> typedCallbackQsp =
                 std::dynamic_pointer_cast<SubscriptionCallback<typename T::Enum>>(callback);
@@ -130,7 +129,7 @@ joynr_logging::Logger* EnumPublicationInterpreter<T>::logger =
         joynr_logging::Logging::getInstance()->getLogger("MSG", "EnumPublicationInterpreter");
 
 template <class T>
-class EnumPublicationInterpreter<QList<T>> : public IPublicationInterpreter
+class EnumPublicationInterpreter<std::vector<T>> : public IPublicationInterpreter
 {
 public:
     EnumPublicationInterpreter()
@@ -142,25 +141,26 @@ public:
     {
         assert(callback);
 
-        std::shared_ptr<exceptions::JoynrRuntimeException> error =
-                subscriptionPublication.getError();
-        if (error) {
-            callback->onError(*error);
+        const Variant& error = subscriptionPublication.getError();
+        if (!error.isEmpty()) {
+            callback->onError(
+                    joynr::exceptions::JoynrExceptionUtil::extractJoynrRuntimeException(error));
             return;
         }
 
-        QList<QVariant> qvList = subscriptionPublication.getResponse();
-        if (qvList.isEmpty()) {
-            LOG_ERROR(logger, QString("Publication object has no response, discarding message"));
+        std::vector<Variant> qvList = subscriptionPublication.getResponse();
+        if (qvList.empty()) {
+            LOG_ERROR(logger, "Publication object has no response, discarding message");
             exceptions::JoynrRuntimeException error(
                     "Publication object had no response, discarded message");
             callback->onError(error);
             return;
         }
 
-        std::shared_ptr<SubscriptionCallback<QList<typename T::Enum>>> typedCallbackQsp =
-                std::dynamic_pointer_cast<SubscriptionCallback<QList<typename T::Enum>>>(callback);
-        QList<typename T::Enum> valueList = Util::convertVariantListToEnumList<T>(qvList);
+        std::shared_ptr<SubscriptionCallback<std::vector<typename T::Enum>>> typedCallbackQsp =
+                std::dynamic_pointer_cast<SubscriptionCallback<std::vector<typename T::Enum>>>(
+                        callback);
+        std::vector<typename T::Enum> valueList = Util::convertVariantVectorToEnumVector<T>(qvList);
 
         // value is copied in onSuccess
         typedCallbackQsp->onSuccess(valueList);
@@ -171,9 +171,9 @@ private:
 };
 
 template <class T>
-joynr_logging::Logger* EnumPublicationInterpreter<QList<T>>::logger =
+joynr_logging::Logger* EnumPublicationInterpreter<std::vector<T>>::logger =
         joynr_logging::Logging::getInstance()->getLogger("MSG",
-                                                         "EnumPublicationInterpreter<QList>");
+                                                         "EnumPublicationInterpreter<std::vector>");
 
 } // namespace joynr
 #endif // PUBLICATIONINTERPRETER_H

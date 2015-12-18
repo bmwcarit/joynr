@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2015 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#include "gtest/gtest.h"
-#include "gmock/gmock.h"
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 #include "joynr/ReplyCaller.h"
 #include "tests/utils/MockObjects.h"
 
@@ -29,8 +29,13 @@ using ::testing::_;
 using namespace ::testing;
 
 MATCHER(timeoutException, "") {
-    return arg->getTypeName() == joynr::exceptions::JoynrTimeOutException::TYPE_NAME
-            && arg->getMessage() == "timeout waiting for the response";
+    return (dynamic_cast<const joynr::exceptions::JoynrTimeOutException*>(&arg) != nullptr)
+            && arg.getMessage() == "timeout waiting for the response";
+}
+
+MATCHER_P(providerRuntimeException, msg, "") {
+    return arg.getTypeName() == joynr::exceptions::ProviderRuntimeException::TYPE_NAME
+            && arg.getMessage() == msg;
 }
 
 using namespace joynr;
@@ -42,16 +47,16 @@ using namespace joynr;
 class ReplyCallerTest : public ::testing::Test {
 public:
     ReplyCallerTest()
-        : intCallback(new MockCallback<int>()),
-          intFixture(std::bind(&MockCallback<int>::onSuccess, intCallback, std::placeholders::_2),
-                     std::bind(&MockCallback<int>::onError, intCallback, std::placeholders::_1, std::placeholders::_2)),
-          voidCallback(new MockCallback<void>()),
-          voidFixture(std::bind(&MockCallback<void>::onSuccess, voidCallback),
-                      std::bind(&MockCallback<void>::onError, voidCallback, std::placeholders::_1, std::placeholders::_2)) {}
+        : intCallback(new MockCallbackWithOnErrorHavingRequestStatus<int>()),
+          intFixture(std::bind(&MockCallbackWithOnErrorHavingRequestStatus<int>::onSuccess, intCallback, std::placeholders::_2),
+                     std::bind(&MockCallbackWithOnErrorHavingRequestStatus<int>::onError, intCallback, std::placeholders::_1, std::placeholders::_2)),
+          voidCallback(new MockCallbackWithOnErrorHavingRequestStatus<void>()),
+          voidFixture(std::bind(&MockCallbackWithOnErrorHavingRequestStatus<void>::onSuccess, voidCallback),
+                      std::bind(&MockCallbackWithOnErrorHavingRequestStatus<void>::onError, voidCallback, std::placeholders::_1, std::placeholders::_2)) {}
 
-    std::shared_ptr<MockCallback<int>> intCallback;
+    std::shared_ptr<MockCallbackWithOnErrorHavingRequestStatus<int>> intCallback;
     ReplyCaller<int> intFixture;
-    std::shared_ptr<MockCallback<void>> voidCallback;
+    std::shared_ptr<MockCallbackWithOnErrorHavingRequestStatus<void>> voidCallback;
     ReplyCaller<void> voidFixture;
 };
 
@@ -61,26 +66,26 @@ TEST_F(ReplyCallerTest, getType) {
     ASSERT_EQ(Util::getTypeId<int>(), intFixture.getTypeId());
 }
 
-TEST_F(ReplyCallerTest, getTypeQInt64) {
-    std::shared_ptr<MockCallback<qint64>> callback(new MockCallback<qint64>());
-    ReplyCaller<qint64> qint64ReplyCaller(
-                [callback](const RequestStatus& status, const qint64& value) {
+TEST_F(ReplyCallerTest, getTypeInt64_t) {
+    std::shared_ptr<MockCallbackWithOnErrorHavingRequestStatus<int64_t>> callback(new MockCallbackWithOnErrorHavingRequestStatus<int64_t>());
+    ReplyCaller<int64_t> int64_tReplyCaller(
+                [callback](const RequestStatus& status, const int64_t& value) {
                     callback->onSuccess(value);
                 },
-                [](const RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error){
+                [](const RequestStatus& status, const exceptions::JoynrException& error){
                 });
-    ASSERT_EQ(Util::getTypeId<qint64>(), qint64ReplyCaller.getTypeId());
+    ASSERT_EQ(Util::getTypeId<int64_t>(), int64_tReplyCaller.getTypeId());
 }
 
-TEST_F(ReplyCallerTest, getTypeQInt8) {
-    std::shared_ptr<MockCallback<qint8>> callback(new MockCallback<qint8>());
-    ReplyCaller<qint8> qint8ReplyCaller(
-                [callback](const RequestStatus& status, const qint8& value) {
+TEST_F(ReplyCallerTest, getTypeInt8_t) {
+    std::shared_ptr<MockCallbackWithOnErrorHavingRequestStatus<int8_t>> callback(new MockCallbackWithOnErrorHavingRequestStatus<int8_t>());
+    ReplyCaller<int8_t> int8_tReplyCaller(
+                [callback](const RequestStatus& status, const int8_t& value) {
                     callback->onSuccess(value);
                 },
-                [](const RequestStatus& status, std::shared_ptr<exceptions::JoynrException> error){
+                [](const RequestStatus& status, const exceptions::JoynrException& error){
                 });
-    ASSERT_EQ(Util::getTypeId<qint8>(), qint8ReplyCaller.getTypeId());
+    ASSERT_EQ(Util::getTypeId<int8_t>(), int8_tReplyCaller.getTypeId());
 }
 
 TEST_F(ReplyCallerTest, getTypeForVoid) {
@@ -90,24 +95,44 @@ TEST_F(ReplyCallerTest, getTypeForVoid) {
 
 
 TEST_F(ReplyCallerTest, timeOut) {
+    EXPECT_CALL(*intCallback, onSuccess(_)).Times(0);
     EXPECT_CALL(*intCallback, onError(
-                    Property(&RequestStatus::getCode, RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE),timeoutException()));
+                    Property(&RequestStatus::getCode, RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE),timeoutException())).Times(1);
     intFixture.timeOut();
 }
 
 TEST_F(ReplyCallerTest, timeOutForVoid) {
+    EXPECT_CALL(*intCallback, onSuccess(_)).Times(0);
     EXPECT_CALL(*voidCallback, onError(
-                    Property(&RequestStatus::getCode, RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE),timeoutException()));
+                    Property(&RequestStatus::getCode, RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE),timeoutException())).Times(1);
     voidFixture.timeOut();
+}
+
+TEST_F(ReplyCallerTest, errorReceived) {
+    std::string errorMsg = "errorMsgFromProvider";
+    EXPECT_CALL(*intCallback, onError(
+                    Property(&RequestStatus::getCode, RequestStatusCode::ERROR),providerRuntimeException(errorMsg))).Times(1);
+    EXPECT_CALL(*intCallback, onSuccess(_)).Times(0);
+    intFixture.returnError(exceptions::ProviderRuntimeException(errorMsg));
+}
+
+TEST_F(ReplyCallerTest, errorReceivedForVoid) {
+    std::string errorMsg = "errorMsgFromProvider";
+    EXPECT_CALL(*voidCallback, onError(
+                    Property(&RequestStatus::getCode, RequestStatusCode::ERROR),providerRuntimeException(errorMsg))).Times(1);
+    EXPECT_CALL(*voidCallback, onSuccess()).Times(0);
+    voidFixture.returnError(exceptions::ProviderRuntimeException(errorMsg));
 }
 
 TEST_F(ReplyCallerTest, resultReceived) {
     EXPECT_CALL(*intCallback, onSuccess(7));
+    EXPECT_CALL(*intCallback, onError(_,_)).Times(0);
     intFixture.returnValue(7);
 }
 
 TEST_F(ReplyCallerTest, resultReceivedForVoid) {
     EXPECT_CALL(*voidCallback, onSuccess());
+    EXPECT_CALL(*voidCallback, onError(_,_)).Times(0);
     voidFixture.returnValue();
 }
 

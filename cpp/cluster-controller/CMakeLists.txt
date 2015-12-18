@@ -4,7 +4,8 @@ message(STATUS "#############################################\n")
 
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(JoynrLib_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
-get_target_property(qjson_PUBLIC_INCLUDE_DIRECTORY qjson PUBLIC_INCLUDE_DIRECTORY)
+get_target_property(jsmn_PUBLIC_INCLUDE_DIRECTORY jsmn PUBLIC_INCLUDE_DIRECTORY)
+get_target_property(jsonserializer_PUBLIC_INCLUDE_DIRECTORY jsonserializer PUBLIC_INCLUDE_DIRECTORY)
 
 set(
     JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY
@@ -17,7 +18,8 @@ set(
     "../"
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${JoynrLib_PUBLIC_INCLUDE_DIRECTORY}
-    ${qjson_PUBLIC_INCLUDE_DIRECTORY}
+    ${jsmn_PUBLIC_INCLUDE_DIRECTORY}
+    ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
 )
 
 set(
@@ -123,21 +125,11 @@ add_library(
     ${JoynrClusterController_SOURCES}
 )
 
-if(${ENABLE_CLANG_FORMATTER})
-    set(COMMENT "running C++ code formatter: clang-format")
-    set(COMMENT "${COMMENT}\nworking directory: ${CMAKE_CURRENT_SOURCE_DIR}")
-    set(COMMENT "${COMMENT}\nprocessing header files:\n${JoynrClusterController_HEADERS}")
-    set(COMMENT "${COMMENT}\nprocessing source files:\n${JoynrClusterController_SOURCES}")
+AddClangFormat(JoynrClusterController)
 
-    add_custom_target(
-        format-JoynrClusterController
-        COMMAND clang-format -i ${JoynrClusterController_HEADERS} ${JoynrClusterController_SOURCES}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        COMMENT "${COMMENT}"
-        VERBATIM
-    )
-    add_dependencies(JoynrClusterController format-JoynrClusterController)
-endif(${ENABLE_CLANG_FORMATTER})
+AddIncludeWhatYouUse(JoynrClusterController)
+
+AddClangTidy(JoynrClusterController)
 
 set_target_properties(
     JoynrClusterController

@@ -144,31 +144,31 @@ private:
 
 int main(int argc, char* argv[])
 {
+    using joynr::vehicle::Radio::AddFavoriteStationErrorEnum;
     // Get a logger
     Logger* logger = Logging::getInstance()->getLogger("DEMO", "MyRadioConsumerApplication");
 
     // Check the usage
     QString programName(argv[0]);
     if (argc != 2) {
-        LOG_ERROR(logger, QString("USAGE: %1 <provider-domain>").arg(programName));
+        LOG_ERROR(logger,
+                  FormatString("USAGE: %1 <provider-domain>").arg(programName.toStdString()).str());
         return 1;
     }
 
     // Get the provider domain
     std::string providerDomain(argv[1]);
-    LOG_INFO(logger,
-             QString("Creating proxy for provider on domain \"%1\"")
-                     .arg(TypeUtil::toQt(providerDomain)));
+    LOG_INFO(
+            logger,
+            FormatString("Creating proxy for provider on domain \"%1\"").arg(providerDomain).str());
 
     // Get the current program directory
     QString dir(QFileInfo(programName).absolutePath());
 
     // Initialise the JOYn runtime
     QString pathToMessagingSettings(dir + QString("/resources/radio-app-consumer.settings"));
-    QString pathToLibJoynrSettings(dir +
-                                   QString("/resources/radio-app-consumer.libjoynr.settings"));
-    JoynrRuntime* runtime = JoynrRuntime::createRuntime(
-            TypeUtil::toStd(pathToLibJoynrSettings), TypeUtil::toStd(pathToMessagingSettings));
+
+    JoynrRuntime* runtime = JoynrRuntime::createRuntime(TypeUtil::toStd(pathToMessagingSettings));
 
     // Create proxy builder
     ProxyBuilder<vehicle::RadioProxy>* proxyBuilder =
@@ -283,10 +283,9 @@ int main(int argc, char* argv[])
     vehicle::RadioNewStationDiscoveredBroadcastFilterParameters
             newStationDiscoveredBroadcastFilterParams;
     newStationDiscoveredBroadcastFilterParams.setHasTrafficService("true");
-    vehicle::QtGeoPosition positionOfInterest(48.1351250, 11.5819810); // Munich
-    QString positionOfInterestJson(JsonSerializer::serialize(positionOfInterest));
-    newStationDiscoveredBroadcastFilterParams.setPositionOfInterest(
-            TypeUtil::toStd(positionOfInterestJson));
+    vehicle::GeoPosition positionOfInterest(48.1351250, 11.5819810); // Munich
+    std::string positionOfInterestJson(JsonSerializer::serialize(positionOfInterest));
+    newStationDiscoveredBroadcastFilterParams.setPositionOfInterest(positionOfInterestJson);
     newStationDiscoveredBroadcastFilterParams.setRadiusOfInterestArea("200000"); // 200 km
     std::string newStationDiscoveredBroadcastSubscriptionId =
             proxy->subscribeToNewStationDiscoveredBroadcast(
@@ -303,8 +302,8 @@ int main(int argc, char* argv[])
                                          .arg(QString::fromStdString(favoriteStation.toString())));
         proxy->addFavoriteStation(success, favoriteStation);
     } catch (exceptions::ApplicationException& e) {
-        if (e.getError() ==
-            joynr::vehicle::Radio::AddFavoriteStationErrorEnum::DUPLICATE_RADIOSTATION) {
+        if (e.getError<AddFavoriteStationErrorEnum::Enum>() ==
+            AddFavoriteStationErrorEnum::DUPLICATE_RADIOSTATION) {
             MyRadioHelper::prettyLog(
                     logger,
                     QString("METHOD: add favorite station a second time failed with the following "

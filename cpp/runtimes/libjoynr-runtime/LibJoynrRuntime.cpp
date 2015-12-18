@@ -22,7 +22,7 @@
 
 #include "joynr/Dispatcher.h"
 #include "joynr/InProcessDispatcher.h"
-#include "joynr/system/RoutingTypes_QtCommonApiDbusAddress.h"
+#include "joynr/system/RoutingTypes/CommonApiDbusAddress.h"
 #include "joynr/PublicationManager.h"
 #include "joynr/SubscriptionManager.h"
 #include "joynr/InProcessPublicationSender.h"
@@ -34,27 +34,27 @@
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include "joynr/system/DiscoveryProxy.h"
 #include "joynr/TypeUtil.h"
-
 #include "joynr/Util.h"
+#include <vector>
 
 namespace joynr
 {
 
-LibJoynrRuntime::LibJoynrRuntime(QSettings* settings)
+LibJoynrRuntime::LibJoynrRuntime(Settings* settings)
         : JoynrRuntime(*settings),
-          connectorFactory(NULL),
-          subscriptionManager(NULL),
-          inProcessPublicationSender(NULL),
-          inProcessConnectorFactory(NULL),
-          joynrMessagingConnectorFactory(NULL),
-          joynrMessagingSendStub(NULL),
-          joynrMessageSender(NULL),
-          joynrDispatcher(NULL),
-          inProcessDispatcher(NULL),
+          connectorFactory(nullptr),
+          subscriptionManager(nullptr),
+          inProcessPublicationSender(nullptr),
+          inProcessConnectorFactory(nullptr),
+          joynrMessagingConnectorFactory(nullptr),
+          joynrMessagingSendStub(nullptr),
+          joynrMessageSender(nullptr),
+          joynrDispatcher(nullptr),
+          inProcessDispatcher(nullptr),
           settings(settings),
           libjoynrSettings(new LibjoynrSettings(*settings)),
-          dispatcherMessagingSkeleton(NULL),
-          runtimeExecutor(NULL)
+          dispatcherMessagingSkeleton(nullptr),
+          runtimeExecutor(nullptr)
 {
     libjoynrSettings->printSettings();
 }
@@ -67,20 +67,19 @@ LibJoynrRuntime::~LibJoynrRuntime()
     delete joynrMessageSender;
     delete joynrDispatcher;
     delete libjoynrSettings;
-    libjoynrSettings = Q_NULLPTR;
-    settings->clear();
-    settings->deleteLater();
-    if (runtimeExecutor != Q_NULLPTR) {
+    libjoynrSettings = nullptr;
+    delete settings;
+    if (runtimeExecutor != nullptr) {
         runtimeExecutor->stop();
         runtimeExecutor->deleteLater();
-        runtimeExecutor = Q_NULLPTR;
+        runtimeExecutor = nullptr;
     }
 }
 
 void LibJoynrRuntime::init(
         IMiddlewareMessagingStubFactory* middlewareMessagingStubFactory,
-        std::shared_ptr<joynr::system::RoutingTypes::QtAddress> libjoynrMessagingAddress,
-        std::shared_ptr<joynr::system::RoutingTypes::QtAddress> ccMessagingAddress)
+        std::shared_ptr<joynr::system::RoutingTypes::Address> libjoynrMessagingAddress,
+        std::shared_ptr<joynr::system::RoutingTypes::Address> ccMessagingAddress)
 {
     // create messaging stub factory
     MessagingStubFactory* messagingStubFactory = new MessagingStubFactory();
@@ -100,7 +99,7 @@ void LibJoynrRuntime::init(
     // create the inprocess skeleton for the dispatcher
     dispatcherMessagingSkeleton = std::shared_ptr<InProcessMessagingSkeleton>(
             new InProcessLibJoynrMessagingSkeleton(joynrDispatcher));
-    dispatcherAddress = std::shared_ptr<joynr::system::RoutingTypes::QtAddress>(
+    dispatcherAddress = std::shared_ptr<joynr::system::RoutingTypes::Address>(
             new InProcessMessagingAddress(dispatcherMessagingSkeleton));
 
     publicationManager = new PublicationManager();
@@ -119,25 +118,25 @@ void LibJoynrRuntime::init(
     connectorFactory =
             new ConnectorFactory(inProcessConnectorFactory, joynrMessagingConnectorFactory);
 
-    proxyFactory = new ProxyFactory(libjoynrMessagingAddress, connectorFactory, NULL);
+    proxyFactory = new ProxyFactory(libjoynrMessagingAddress, connectorFactory, nullptr);
 
     // Set up the persistence file for storing provider participant ids
-    QString persistenceFilename = libjoynrSettings->getParticipantIdsPersistenceFilename();
-    participantIdStorage = std::shared_ptr<ParticipantIdStorage>(
-            new ParticipantIdStorage(persistenceFilename.toStdString()));
+    std::string persistenceFilename = libjoynrSettings->getParticipantIdsPersistenceFilename();
+    participantIdStorage =
+            std::shared_ptr<ParticipantIdStorage>(new ParticipantIdStorage(persistenceFilename));
 
     // initialize the dispatchers
-    QList<IDispatcher*> dispatcherList;
-    dispatcherList.append(inProcessDispatcher);
-    dispatcherList.append(joynrDispatcher);
+    std::vector<IDispatcher*> dispatcherList;
+    dispatcherList.push_back(inProcessDispatcher);
+    dispatcherList.push_back(joynrDispatcher);
 
     joynrDispatcher->registerPublicationManager(publicationManager);
     joynrDispatcher->registerSubscriptionManager(subscriptionManager);
 
     discoveryProxy = new LocalDiscoveryAggregator(
             *dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher), systemServicesSettings);
-    std::string systemServicesDomain = TypeUtil::toStd(systemServicesSettings.getDomain());
-    QString routingProviderParticipantId =
+    std::string systemServicesDomain = systemServicesSettings.getDomain();
+    std::string routingProviderParticipantId =
             systemServicesSettings.getCcRoutingProviderParticipantId();
 
     DiscoveryQos routingProviderDiscoveryQos;
@@ -145,7 +144,7 @@ void LibJoynrRuntime::init(
     routingProviderDiscoveryQos.setArbitrationStrategy(
             DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
     routingProviderDiscoveryQos.addCustomParameter(
-            "fixedParticipantId", TypeUtil::toStd(routingProviderParticipantId));
+            "fixedParticipantId", routingProviderParticipantId);
     routingProviderDiscoveryQos.setDiscoveryTimeout(50);
 
     auto routingProxyBuilder =
@@ -154,19 +153,18 @@ void LibJoynrRuntime::init(
                                 ->setCached(false)
                                 ->setDiscoveryQos(routingProviderDiscoveryQos)
                                 ->build();
-    messageRouter->setParentRouter(
-            routingProxy, ccMessagingAddress, routingProviderParticipantId.toStdString());
+    messageRouter->setParentRouter(routingProxy, ccMessagingAddress, routingProviderParticipantId);
     delete routingProxyBuilder;
 
     // setup discovery
-    QString discoveryProviderParticipantId =
+    std::string discoveryProviderParticipantId =
             systemServicesSettings.getCcDiscoveryProviderParticipantId();
     DiscoveryQos discoveryProviderDiscoveryQos;
     discoveryProviderDiscoveryQos.setCacheMaxAge(1000);
     discoveryProviderDiscoveryQos.setArbitrationStrategy(
             DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
     discoveryProviderDiscoveryQos.addCustomParameter(
-            "fixedParticipantId", TypeUtil::toStd(discoveryProviderParticipantId));
+            "fixedParticipantId", discoveryProviderParticipantId);
     discoveryProviderDiscoveryQos.setDiscoveryTimeout(1000);
 
     ProxyBuilder<joynr::system::DiscoveryProxy>* discoveryProxyBuilder =

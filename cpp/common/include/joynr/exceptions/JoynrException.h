@@ -22,9 +22,9 @@
 #include "joynr/JoynrCommonExport.h"
 
 #include <exception>
-#include <QString>
 #include <string>
 #include <memory>
+#include "joynr/Variant.h"
 
 namespace joynr
 {
@@ -43,16 +43,16 @@ public:
      *
      * @param other The JoynrException to be copied from.
      */
-    JoynrException(const JoynrException& other) throw();
-    virtual ~JoynrException() throw();
+    JoynrException(const JoynrException& other) noexcept;
+    virtual ~JoynrException() noexcept;
     /**
      * @return The detail message string of the exception.
      */
-    virtual const char* what() const throw();
+    virtual const char* what() const noexcept;
     /**
      * @return The detail message string of the exception.
      */
-    virtual const std::string getMessage() const throw();
+    virtual const std::string getMessage() const noexcept;
     /**
      * return The typeName of the exception used for serialization.
      */
@@ -62,9 +62,19 @@ public:
      */
     virtual JoynrException* clone() const;
     /**
+     * Equality operator
+     */
+    virtual bool operator==(const JoynrException& other) const;
+    /**
      * @brief The typeName of the exception used for serialization.
      */
     static const std::string TYPE_NAME;
+    /**
+     * @brief Set the detail message of the exception.
+     *
+     * @param message Further description of the reported error (detail message).
+     */
+    virtual void setMessage(const std::string& message);
 
 protected:
     /**
@@ -74,19 +84,13 @@ protected:
     /**
      * @brief Constructor for a JoynrException without detail message.
      */
-    JoynrException() throw();
+    JoynrException() noexcept;
     /**
      * @brief Constructor for a JoynrException with detail message.
      *
      * @param message Further description of the reported error (detail message).
      */
-    JoynrException(const std::string& message) throw();
-    /**
-     * @brief Set the detail message of the exception.
-     *
-     * @param message Further description of the reported error (detail message).
-     */
-    virtual void setMessage(std::string message);
+    JoynrException(const std::string& message) noexcept;
 };
 
 /**
@@ -96,11 +100,16 @@ class JOYNRCOMMON_EXPORT JoynrRuntimeException : public JoynrException
 {
 public:
     /**
+     * @brief Constructor for a JoynrRuntimeException without detail message.
+     */
+    JoynrRuntimeException() noexcept = default;
+
+    /**
      * @brief Constructor for a JoynrRuntimeException with detail message.
      *
      * @param message Further description of the reported runtime error
      */
-    JoynrRuntimeException(const std::string& message) throw();
+    JoynrRuntimeException(const std::string& message) noexcept;
     virtual const std::string getTypeName() const;
     virtual JoynrRuntimeException* clone() const;
     /**
@@ -116,11 +125,15 @@ class JOYNRCOMMON_EXPORT JoynrTimeOutException : public JoynrRuntimeException
 {
 public:
     /**
+     * @brief Constructor for a JoynrTimeOutException without detail message.
+     */
+    JoynrTimeOutException() noexcept = default;
+    /**
      * @brief Constructor for a JoynrTimeOutException with detail message.
      *
      * @param message Further description of the reported timeout
      */
-    JoynrTimeOutException(const std::string& message) throw();
+    JoynrTimeOutException(const std::string& message) noexcept;
     virtual const std::string getTypeName() const;
     virtual JoynrTimeOutException* clone() const;
     /**
@@ -140,7 +153,7 @@ public:
      *
      * @param message Further description of the reported parse error
      */
-    JoynrParseError(const std::string& message) throw();
+    JoynrParseError(const std::string& message) noexcept;
 };
 
 /**
@@ -150,11 +163,15 @@ class JOYNRCOMMON_EXPORT DiscoveryException : public JoynrRuntimeException
 {
 public:
     /**
+     * @brief Constructor for a DiscoveryException without detail message.
+     */
+    DiscoveryException() noexcept = default;
+    /**
      * @brief Constructor for a DiscoveryException with detail message.
      *
      * @param message Further description of the reported discovery error
      */
-    DiscoveryException(const std::string& message) throw();
+    DiscoveryException(const std::string& message) noexcept;
     virtual const std::string getTypeName() const;
     virtual DiscoveryException* clone() const;
     /**
@@ -171,11 +188,15 @@ class JOYNRCOMMON_EXPORT MethodInvocationException : public JoynrRuntimeExceptio
 {
 public:
     /**
+     * @brief Constructor for a MethodInvocationException without detail message.
+     */
+    MethodInvocationException() noexcept = default;
+    /**
      * @brief Constructor for a MethodInvocationException with detail message.
      *
      * @param message Further description of the reported invocation error
      */
-    MethodInvocationException(const std::string& message) throw();
+    MethodInvocationException(const std::string& message) noexcept;
     virtual const std::string getTypeName() const;
     virtual MethodInvocationException* clone() const;
     /**
@@ -193,11 +214,15 @@ class JOYNRCOMMON_EXPORT ProviderRuntimeException : public JoynrRuntimeException
 {
 public:
     /**
+     * @brief Constructor for a ProviderRuntimeException without detail message.
+     */
+    ProviderRuntimeException() noexcept = default;
+    /**
      * @brief Constructor for a ProviderRuntimeException with detail message.
      *
      * @param message Further description of the reported error
      */
-    ProviderRuntimeException(const std::string& message) throw();
+    ProviderRuntimeException(const std::string& message) noexcept;
     virtual const std::string getTypeName() const;
     virtual ProviderRuntimeException* clone() const;
     /**
@@ -213,25 +238,40 @@ class JOYNRCOMMON_EXPORT PublicationMissedException : public JoynrRuntimeExcepti
 {
 public:
     /**
+     * @brief Constructor for a PublicationMissedException without subscription ID.
+     */
+    PublicationMissedException() noexcept;
+    /**
      * @brief Copy Constructor
      *
      * @param other The PublicationMissedException to copy from.
      */
-    PublicationMissedException(const PublicationMissedException& other) throw();
+    PublicationMissedException(const PublicationMissedException& other) noexcept;
     /**
      * @brief Constructor for a PublicationMissedException with subscription ID.
      *
      * @param subscriptionId The subscription ID of the subscription the missed
      * publication belongs to.
      */
-    PublicationMissedException(const std::string& subscriptionId) throw();
+    PublicationMissedException(const std::string& subscriptionId) noexcept;
     /**
      * @return The subscription ID of the subscription the missed publication
      * belongs to.
      */
-    std::string getSubscriptionId() const throw();
+    std::string getSubscriptionId() const noexcept;
+    /**
+     * @brief Set the subscriptionId of the exception.
+     *
+     * @param subscriptionId The subscription ID of the subscription the missed
+     * publication belongs to.
+     */
+    virtual void setSubscriptionId(const std::string& subscriptionId) noexcept;
     virtual const std::string getTypeName() const;
     virtual PublicationMissedException* clone() const;
+    /**
+     * Equality operator
+     */
+    virtual bool operator==(const PublicationMissedException& other) const;
     /**
      * @brief The typeName used for serialization.
      */
@@ -249,21 +289,17 @@ class JOYNRCOMMON_EXPORT ApplicationException : public JoynrException
 {
 public:
     /**
+     * @brief Constructor for an ApplicationException without detail message.
+     */
+    ApplicationException() noexcept;
+
+    /**
      * @brief Copy Constructor
      *
      * @param other The ApplicationException to copy from.
      */
-    ApplicationException(const ApplicationException& other) throw();
-    /**
-     * @brief Constructor for an ApplicationException without detail message.
-     *
-     * @param value The error Enum value
-     * @param name The error Enum literal
-     * @param typeName the typeName of the error enumeration type (used for serialization)
-     */
-    ApplicationException(const uint32_t& value,
-                         const std::string& name,
-                         const std::string& typeName) throw();
+    ApplicationException(const ApplicationException& other) noexcept;
+
     /**
      * @brief Constructor for an ApplicationException with detail message.
      *
@@ -273,39 +309,63 @@ public:
      * @param typeName the type name of the error enumeration type (used for serialization)
      */
     ApplicationException(const std::string& message,
-                         const uint32_t& value,
+                         const Variant& value,
                          const std::string& name,
-                         const std::string& typeName) throw();
+                         const std::string& typeName) noexcept;
     /**
      * @return The reported error Enum value.
      */
-    uint32_t getError() const throw();
+    template <class T>
+    const T& getError() const;
     /**
      * @brief Set the error Enum value.
      *
      * @param value The error Enum value.
      */
-    void setError(const uint32_t& value);
+    void setError(const Variant& value) noexcept;
     /**
      * @return The error Enum literal.
      */
-    std::string getName() const throw();
+    std::string getName() const noexcept;
+    /**
+     * @brief Set the error Enum literal.
+     *
+     * @param name the error Enum lital.
+     */
+    void setName(const std::string& name) noexcept;
     /**
      * @return The type name of the error enumeration.
      */
-    std::string getErrorTypeName() const throw();
-    virtual const std::string getTypeName() const;
+    std::string getErrorTypeName() const noexcept;
+
+    /**
+     * @brief Set the type name of the error enumeration.
+     *
+     * @param type name the type name of the error enumeration.
+     */
+    void setErrorTypeName(const std::string& typeName) noexcept;
+    const std::string getTypeName() const;
     virtual ApplicationException* clone() const;
+    /**
+     * Equality operator
+     */
+    virtual bool operator==(const ApplicationException& other) const;
     /**
      * @brief The typeName of the exception used for serialization.
      */
     static const std::string TYPE_NAME;
 
 private:
-    uint32_t value;
+    Variant value;
     std::string name;
     std::string typeName;
 };
+
+template <class T>
+const T& ApplicationException::getError() const
+{
+    return value.get<T>();
+}
 
 } // namespace exceptions
 

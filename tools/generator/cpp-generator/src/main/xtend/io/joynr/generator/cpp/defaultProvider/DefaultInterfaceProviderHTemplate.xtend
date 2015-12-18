@@ -64,7 +64,6 @@ class DefaultInterfaceProviderHTemplate implements InterfaceTemplate{
 
 «getDllExportIncludeStatement()»
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«interfaceName».h"
-#include "joynr/DeclareMetatypeUtil.h"
 #include "joynr/joynrlogging.h"
 
 «FOR parameterType: getRequiredIncludesFor(serviceInterface)»

@@ -21,7 +21,8 @@
 #include <gmock/gmock.h>
 #include <memory>
 #include <string>
-#include <stdint.h>
+#include <cstdint>
+#include <chrono>
 #include <QtConcurrent/QtConcurrent>
 
 #include "systemintegration-tests/CombinedEnd2EndTest.h"
@@ -30,20 +31,19 @@
 #include "joynr/JoynrRuntime.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/tests/testProxy.h"
-#include "joynr/tests/testTypes_QtDerivedStruct.h"
-#include "joynr/tests/testTypes_QtAnotherDerivedStruct.h"
-#include "joynr/types/Localisation_QtTrip.h"
-#include "joynr/types/Localisation_QtGpsLocation.h"
-#include "joynr/types/QtProviderQos.h"
-#include "joynr/types/QtCapabilityInformation.h"
+#include "joynr/tests/testTypes/DerivedStruct.h"
+#include "joynr/tests/testTypes/AnotherDerivedStruct.h"
+#include "joynr/types/Localisation/Trip.h"
+#include "joynr/types/Localisation/GpsLocation.h"
+#include "joynr/types/ProviderQos.h"
+#include "joynr/types/CapabilityInformation.h"
 #include "joynr/CapabilitiesRegistrar.h"
-#include "utils/QThreadSleep.h"
 #include "PrettyPrint.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/Future.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"
-
+#include "joynr/joynrlogging.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -51,41 +51,29 @@ using namespace joynr_logging;
 
 ACTION_P(ReleaseSemaphore,semaphore)
 {
-    semaphore->release(1);
+    semaphore->notify();
 }
 
-static const QString messagingPropertiesPersistenceFileName1("CombinedEnd2EndTest-runtime1-joynr.settings");
-static const QString messagingPropertiesPersistenceFileName2("CombinedEnd2EndTest-runtime2-joynr.settings");
+static const std::string messagingPropertiesPersistenceFileName1("CombinedEnd2EndTest-runtime1-joynr.settings");
+static const std::string messagingPropertiesPersistenceFileName2("CombinedEnd2EndTest-runtime2-joynr.settings");
 
 joynr_logging::Logger* CombinedEnd2EndTest::logger =
         joynr_logging::Logging::getInstance()->getLogger("MSG", "CombinedEnd2EndTest");
 
 CombinedEnd2EndTest::CombinedEnd2EndTest() :
-        qRegisterMetaTypeQos(),
-        qRegisterMetaTypeCi(),
         runtime1(NULL),
         runtime2(NULL),
-        settings1("test-resources/SystemIntegrationTest1.settings", QSettings::IniFormat),
-        settings2("test-resources/SystemIntegrationTest2.settings", QSettings::IniFormat),
+        settings1("test-resources/SystemIntegrationTest1.settings"),
+        settings2("test-resources/SystemIntegrationTest2.settings"),
         messagingSettings1(settings1),
         messagingSettings2(settings2),
-        baseUuid(TypeUtil::toStd(QUuid::createUuid().toString())),
+        baseUuid(Util::createUuid()),
         uuid( "_" + baseUuid.substr(1, baseUuid.length()-2)),
         domainName("cppCombinedEnd2EndTest_Domain" + uuid),
         semaphore(0)
 {
     messagingSettings1.setMessagingPropertiesPersistenceFilename(messagingPropertiesPersistenceFileName1);
     messagingSettings2.setMessagingPropertiesPersistenceFilename(messagingPropertiesPersistenceFileName2);
-
-    //This is a workaround to register the Metatypes for providerQos.
-    //Normally a new datatype is registered in all datatypes that use the new datatype.
-    //However, when receiving a datatype as a returnValue of a RPC, the constructor has never been called before
-    //so the datatype is not registered, and cannot be deserialized.
-    joynr::types::QtProviderQos a;
-    joynr__types__QtProviderQos b;
-//        qRegisterMetaType<types::QtProviderQos>("types::QtProviderQos");
-//        //TODO: also remove the variables qRegisterMetaTypeQos
-//        qRegisterMetaType<types__ProviderQos>("types__ProviderQos");
 }
 
 void CombinedEnd2EndTest::SetUp()
@@ -97,8 +85,8 @@ void CombinedEnd2EndTest::SetUp()
     std::string systemSettingsFile = configuration.getDefaultSystemSettingsFile();
     std::string websocketSettingsFile = configuration.getDefaultWebsocketSettingsFile();
 
-    LOG_DEBUG(logger, QString("Default system settings file: %1").arg(systemSettingsFile.c_str()));
-    LOG_DEBUG(logger, QString("Default websocket settings file: %1").arg(websocketSettingsFile.c_str()));
+    LOG_DEBUG(logger, FormatString("Default system settings file: %1").arg(systemSettingsFile.c_str()).str());
+    LOG_DEBUG(logger, FormatString("Default websocket settings file: %1").arg(websocketSettingsFile.c_str()).str());
 
     if (systemSettingsFile.empty() && websocketSettingsFile.empty()) {
         runtime1 = JoynrRuntime::createRuntime("test-resources/libjoynrSystemIntegration1.settings",
@@ -118,7 +106,7 @@ void CombinedEnd2EndTest::TearDown()
     delete runtime2;
 
     // Delete the persisted participant ids so that each test uses different participant ids
-    QFile::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME());
+    std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
 }
 
 CombinedEnd2EndTest::~CombinedEnd2EndTest()
@@ -128,25 +116,15 @@ CombinedEnd2EndTest::~CombinedEnd2EndTest()
 TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
 
     // Provider: (runtime1)
-    //This is a workaround to register the Metatypes for providerQos.
-    //Normally a new datatype is registered in all datatypes that use the new datatype.
-    //However, when receiving a datatype as a returnValue of a RPC, the constructor has never been called before
-    //so the datatype is not registered, and cannot be deserialized.
-    qRegisterMetaType<types::QtProviderQos>("types::QtProviderQos");
-    //TODO: also remove the variables qRegisterMetaTypeQos
-    types::QtProviderQos();
-//    qRegisterMetaType<types__ProviderQos>("types__ProviderQos");
-
-
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
     std::shared_ptr<tests::testProvider> testProvider(new MockTestProvider(providerQos));
 
-    QThreadSleep::msleep(1000);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
-    QThreadSleep::msleep(1000);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
     //consumer for testinterface
     // Testing Lists
@@ -156,7 +134,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
         discoveryQos.setDiscoveryTimeout(1000);
 
-        qlonglong qosRoundTripTTL = 40000;
+        std::uint64_t qosRoundTripTTL = 40000;
 
         // Send a message and expect to get a result
         std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
@@ -180,7 +158,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
 
      /*
       * Testing TRIP
-      * Now try to send a QtTrip (which contains a list) and check if the returned trip is identical.
+      * Now try to send a Trip (which contains a list) and check if the returned trip is identical.
       */
 
         std::vector<types::Localisation::GpsLocation> inputLocationList;
@@ -220,13 +198,13 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
      * Now try to send a List of Vowels and see if it is returned correctly.
      */
 // does not compile, see 654
-//       std::vector<QtVowel> inputWord;
+//       std::vector<Vowel> inputWord;
 //       inputWord.push_back("h");
 //       inputWord.push_back("e");
 //       inputWord.push_back("l");
 //       inputWord.push_back("l");
 //       inputWord.push_back("o");
-//       std::shared_ptr<Future<std::vector<QtVowel> > > wordFuture (new std::shared_ptr<Future<std::vector<QtVowel> > >());
+//       std::shared_ptr<Future<std::vector<Vowel> > > wordFuture (new std::shared_ptr<Future<std::vector<Vowel> > >());
 //       testProxy->optimizeWord(wordFuture, inputTrip);
 //       wordFuture->wait();
 //       ASSERT_EQ(RequestStatusCode::OK, wordFuture->getStatus().getCode());
@@ -352,7 +330,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
             testProxy->setEnumAttribute(static_cast<tests::testTypes::TestEnum::Enum>(999));
             ASSERT_FALSE(true) << "This line of code should never be reached";
         } catch (joynr::exceptions::MethodInvocationException e) {
-            LOG_DEBUG(logger, TypeUtil::toQt("Expected joynr::exceptions::MethodInvocationException has been thrown. Message: " + e.getMessage()));
+            LOG_DEBUG(logger, FormatString("Expected joynr::exceptions::MethodInvocationException has been thrown. Message: %1").arg(e.getMessage()).str());
         } catch (std::exception e) {
             ASSERT_FALSE(true) << "joynr::exceptions::MethodInvocationException is expected, however exception with message " << e.what() << "is thrown";
         }
@@ -366,7 +344,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
         discoveryQos.setDiscoveryTimeout(1000);
 
-        qlonglong qosRoundTripTTL = 1;
+        std::uint64_t qosRoundTripTTL = 1;
         std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
                                                    ->setMessagingQos(MessagingQos(qosRoundTripTTL))
                                                    ->setCached(false)
@@ -386,7 +364,7 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
         discoveryQos.setDiscoveryTimeout(1000);
 
-        qlonglong qosRoundTripTTL = 40000;
+        std::uint64_t qosRoundTripTTL = 40000;
 
         // Send a message and expect to get a result
         std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
@@ -404,6 +382,105 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         testProxy->getAttributeArrayOfNestedStructs(result);
         ASSERT_EQ(result, setValue);
     }
+
+    // TESTING getter/setter and operation calls with different kinds of parameters (maps, complex structs, ...)
+    {
+        using namespace joynr::types::TestTypes;
+        ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domainName);
+        DiscoveryQos discoveryQos;
+        discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
+        discoveryQos.setDiscoveryTimeout(1000);
+
+        std::uint64_t qosRoundTripTTL = 40000;
+
+        // Send a message and expect to get a result
+        std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
+                                                   ->setMessagingQos(MessagingQos(qosRoundTripTTL))
+                                                   ->setCached(false)
+                                                   ->setDiscoveryQos(discoveryQos)
+                                                   ->build());
+
+        TEverythingMap setValue;
+        setValue.insert({TEnum::TLITERALA, TEverythingExtendedStruct()});
+        setValue.insert({TEnum::TLITERALB, TEverythingExtendedStruct()});
+        testProxy->setEverythingMap(setValue);
+
+        TEverythingMap result;
+        testProxy->getEverythingMap(result);
+        ASSERT_EQ(result, setValue);
+
+        TStringKeyMap mapParameterResult;
+        TStringKeyMap stringKeyMap;
+        stringKeyMap.insert({"StringKey1", "StringValue1"});
+        stringKeyMap.insert({"StringKey2", "StringValue2"});
+
+        testProxy->mapParameters(mapParameterResult, stringKeyMap);
+        ASSERT_EQ(mapParameterResult, stringKeyMap);
+
+        bool booleanOut;
+        double doubleOut;
+        float floatOut;
+        int8_t int8Out;
+        int16_t int16Out;
+        int32_t int32Out;
+        int64_t int64Out;
+        uint8_t uint8Out;
+        uint16_t uint16Out;
+        uint32_t uint32Out;
+        uint64_t uint64Out;
+        std::string stringOut;
+
+        bool booleanArg = true;
+        double doubleArg = 1.1;
+        float floatArg = 2.2;
+        int8_t int8Arg = 6;
+        int16_t int16Arg = 3;
+        int32_t int32Arg = 4;
+        int64_t int64Arg = 5;
+        std::string stringArg = "7";
+        uint16_t uint16Arg = 8;
+        uint32_t uint32Arg = 9;
+        uint64_t uint64Arg = 10;
+        uint8_t uint8Arg = 11;
+        testProxy->methodWithAllPossiblePrimitiveParameters(booleanOut,
+                                                            doubleOut,
+                                                            floatOut,
+                                                            int16Out,
+                                                            int32Out,
+                                                            int64Out,
+                                                            int8Out,
+                                                            stringOut,
+                                                            uint16Out,
+                                                            uint32Out,
+                                                            uint64Out,
+                                                            uint8Out,
+                                                            booleanArg,
+                                                            doubleArg,
+                                                            floatArg,
+                                                            int16Arg,
+                                                            int32Arg,
+                                                            int64Arg,
+                                                            int8Arg,
+                                                            stringArg,
+                                                            uint16Arg,
+                                                            uint32Arg,
+                                                            uint64Arg,
+                                                            uint8Arg);
+
+        EXPECT_EQ(booleanOut, booleanArg);
+        EXPECT_DOUBLE_EQ(doubleOut, doubleArg);
+        EXPECT_FLOAT_EQ(floatOut, floatArg);
+        EXPECT_EQ(stringOut, stringArg);
+        EXPECT_EQ(int8Out, int8Arg);
+        EXPECT_EQ(int16Out, int16Arg);
+        EXPECT_EQ(int32Out, int32Arg);
+        EXPECT_EQ(int64Out, int64Arg);
+        EXPECT_EQ(uint8Out, uint8Arg);
+        EXPECT_EQ(uint16Out, uint16Arg);
+        EXPECT_EQ(uint32Out, uint32Arg);
+        EXPECT_EQ(uint64Out, uint64Arg);
+    }
+
     // Operation overloading is not currently supported
 #if 0
     // Testing operation overloading
@@ -413,8 +490,8 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HighestPriority);
         discoveryQos.setDiscoveryTimeout(1000);
 
-        qlonglong qosOneWayTTL = 40000;
-        qlonglong qosRoundTripTTL = 40000;
+        std::uint64_t qosOneWayTTL = 40000;
+        std::uint64_t qosRoundTripTTL = 40000;
 
         // Send a message and expect to get a result
         std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
@@ -427,10 +504,10 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         std::string anotherDerivedStructResult;
 
         // Check that the operation overloading worked and the result is of the correct type
-        testProxy->overloadedOperation(derivedStructResult, tests::QtDerivedStruct());
-        testProxy->overloadedOperation(anotherDerivedStructResult, tests::QtAnotherDerivedStruct());
-        EXPECT_EQ(derivedStructResult, "QtDerivedStruct");
-        EXPECT_EQ(anotherDerivedStructResult, "QtAnotherDerivedStruct");
+        testProxy->overloadedOperation(derivedStructResult, tests::DerivedStruct());
+        testProxy->overloadedOperation(anotherDerivedStructResult, tests::AnotherDerivedStruct());
+        EXPECT_EQ(derivedStructResult, "DerivedStruct");
+        EXPECT_EQ(anotherDerivedStructResult, "AnotherDerivedStruct");
     }
 #endif
 
@@ -438,12 +515,6 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
 
 
 TEST_F(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply) {
-
-    //This is a workaround to register the Metatypes for providerQos.
-    //Normally a new datatype is registered in all datatypes that use the new datatype.
-    //However, when receiving a datatype as a returnValue of a RPC, the constructor has never been called before
-    //so the datatype is not registered, and cannot be deserialized.
-    qRegisterMetaType<types::QtProviderQos>("types::QtProviderQos");
 
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
@@ -457,12 +528,11 @@ TEST_F(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply) {
 
     std::shared_ptr<tests::testProvider> testProvider(new tests::DefaulttestProvider());
     //MockGpsProvider* gpsProvider = new MockGpsProvider();
-    types::Localisation::GpsLocation gpsLocation1;
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
-    QThreadSleep::msleep(5000);
+    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder
             = runtime2->createProxyBuilder<tests::testProxy>(domainName);
@@ -470,7 +540,7 @@ TEST_F(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply) {
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
 
-    qlonglong qosRoundTripTTL = 40000;
+    std::uint64_t qosRoundTripTTL = 40000;
 
     // Send a message and expect to get a result
     std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
@@ -483,26 +553,22 @@ TEST_F(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply) {
     int64_t maxInterval_ms = 2000;
 
     OnChangeWithKeepAliveSubscriptionQos subscriptionQos(
-                                    500000,   // validity_ms
+                                    10000,   // validity_ms
                                     minInterval_ms,
                                     maxInterval_ms,
                                     3000);  // alertInterval_ms
     std::string subscriptionId = testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
 
     // Wait for 2 subscription messages to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(2, 20000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
+
+    testProxy->unsubscribeFromLocation(subscriptionId);
 
     delete testProxyBuilder;
 }
 
 TEST_F(CombinedEnd2EndTest, subscribeToOnChange) {
-
-    //This is a workaround to register the Metatypes for providerQos.
-    //Normally a new datatype is registered in all datatypes that use the new datatype.
-    //However, when receiving a datatype as a returnValue of a RPC, the constructor has never been called before
-    //so the datatype is not registered, and cannot be deserialized.
-    qRegisterMetaType<types::QtProviderQos>("types::QtProviderQos");
-
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
     // Use a semaphore to count and wait on calls to the mock listener
@@ -518,7 +584,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToOnChange) {
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
-    QThreadSleep::msleep(5000);
+    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder
             = runtime2->createProxyBuilder<tests::testProxy>(domainName);
@@ -526,7 +592,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToOnChange) {
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
 
-    qlonglong qosRoundTripTTL = 40000;
+    std::uint64_t qosRoundTripTTL = 40000;
 
     // Send a message and expect to get a result
     std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
@@ -547,47 +613,45 @@ TEST_F(CombinedEnd2EndTest, subscribeToOnChange) {
 
     //This wait is necessary, because subcriptions are async, and an attribute could be changed before
     // before the subscription has started.
-    QThreadSleep::msleep(5000);
+    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
 
     // Change the location once
     testProxy->setLocation(types::Localisation::GpsLocation(9.0, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 1));
 
     // Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(1, 20000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
 
     // Change the location 3 times
     testProxy->setLocation(types::Localisation::GpsLocation(9.0, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 2));
-    QThreadSleep::msleep(minInterval_ms + 50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms + 50));
     testProxy->setLocation(types::Localisation::GpsLocation(9.0, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 3));
-    QThreadSleep::msleep(minInterval_ms + 50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms + 50));
     testProxy->setLocation(types::Localisation::GpsLocation(9.0, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4));
 
     // Wait for 3 subscription messages to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(3, 20000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
 
     delete testProxyBuilder;
 }
 
 TEST_F(CombinedEnd2EndTest, subscribeToListAttribute) {
 
-    //This is a workaround to register the Metatypes for providerQos.
-    //Normally a new datatype is registered in all datatypes that use the new datatype.
-    //However, when receiving a datatype as a returnValue of a RPC, the constructor has never been called before
-    //so the datatype is not registered, and cannot be deserialized.
-    qRegisterMetaType<types::QtProviderQos>("types::QtProviderQos");
+    MockSubscriptionListenerOneType<std::vector<int>> *mockListener = new MockSubscriptionListenerOneType<std::vector<int>>();
 
-    MockSubscriptionListenerOneType<std::vector<int> > *mockListener = new MockSubscriptionListenerOneType<std::vector<int> >();
-
+    std::vector<int> expectedValues = {1000, 2000, 3000};
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, onReceive(A<const std::vector<int>& >()))
+    EXPECT_CALL(*mockListener, onReceive(Eq(expectedValues)))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
-    std::shared_ptr<ISubscriptionListener<std::vector<int> > > subscriptionListener(mockListener);
+    std::shared_ptr<ISubscriptionListener<std::vector<int>>> subscriptionListener(mockListener);
     // Provider: (runtime1)
 
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
     std::shared_ptr<tests::testProvider> testProvider(new MockTestProvider(providerQos));
+    testProvider->setListOfInts(expectedValues, [](){}, [](const joynr::exceptions::JoynrRuntimeException&){});
     std::string providerParticipantId = runtime1->registerProvider<tests::testProvider>(
             domainName,
             testProvider
@@ -595,7 +659,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToListAttribute) {
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
-    QThreadSleep::msleep(5000);
+    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
 
     ProxyBuilder<tests::testProxy>* proxyBuilder
             = runtime2->createProxyBuilder<tests::testProxy>(domainName);
@@ -603,7 +667,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToListAttribute) {
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
 
-    qlonglong qosRoundTripTTL = 40000;
+    std::uint64_t qosRoundTripTTL = 40000;
 
     // Send a message and expect to get a result
     std::shared_ptr<tests::testProxy> testProxy(proxyBuilder
@@ -620,7 +684,8 @@ TEST_F(CombinedEnd2EndTest, subscribeToListAttribute) {
     std::string subscriptionId = testProxy->subscribeToListOfInts(subscriptionListener, subscriptionQos);
 
     // Wait for 2 subscription messages to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(2, 20000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
 
     testProxy->unsubscribeFromListOfInts(subscriptionId);
     runtime1->unregisterProvider(providerParticipantId);
@@ -630,7 +695,6 @@ TEST_F(CombinedEnd2EndTest, subscribeToListAttribute) {
 TEST_F(CombinedEnd2EndTest, subscribeToNonExistentDomain) {
 
 	// Setup a mock listener - this will never be called
-    qRegisterMetaType<types::QtProviderQos>("types::QtProviderQos");
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
     std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation> > subscriptionListener(mockListener);
 
@@ -645,13 +709,12 @@ TEST_F(CombinedEnd2EndTest, subscribeToNonExistentDomain) {
 
     const int arbitrationTimeout = 5000;
 
-    qlonglong qosRoundTripTTL = 40000;
+    std::uint64_t qosRoundTripTTL = 40000;
     discoveryQos.setDiscoveryTimeout(arbitrationTimeout);
 
     // Time how long arbitration takes
-    QTime timer;
-    timer.start();
-	bool haveDiscoveryException = false;
+    auto start = std::chrono::system_clock::now();
+    bool haveDiscoveryException = false;
     int elapsed = 0;
 
 	// Expect an ArbitrationException
@@ -671,8 +734,10 @@ TEST_F(CombinedEnd2EndTest, subscribeToNonExistentDomain) {
         std::string subscriptionId = testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
 
 	} catch (exceptions::DiscoveryException& e) {
-		haveDiscoveryException = true;
-        elapsed = timer.elapsed();
+        haveDiscoveryException = true;
+        auto now = std::chrono::system_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
+        elapsed = duration.count();
 	}
 
 	ASSERT_TRUE(haveDiscoveryException);
@@ -700,14 +765,14 @@ TEST_F(CombinedEnd2EndTest, unsubscribeViaHttpReceiver) {
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished. See Joynr 805 for details
-    QThreadSleep::msleep(5000);
+    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
 
-    qlonglong qosRoundTripTTL = 40000;
+    std::uint64_t qosRoundTripTTL = 40000;
 
     // Send a message and expect to get a result
     std::shared_ptr<tests::testProxy> gpsProxy(testProxyBuilder
@@ -723,12 +788,16 @@ TEST_F(CombinedEnd2EndTest, unsubscribeViaHttpReceiver) {
     std::string subscriptionId = gpsProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
 
     // Wait for 2 subscription messages to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(2, 20000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
 
     gpsProxy->unsubscribeFromLocation(subscriptionId);
 
     // Check that the unsubscribe is eventually successful
-    ASSERT_FALSE(semaphore.tryAcquire(4, 10000));
+    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(10000)));
+    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(10000)));
+    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(10000)));
+    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(10000)));
 
     delete testProxyBuilder;
 }
@@ -741,14 +810,14 @@ TEST_F(CombinedEnd2EndTest, deleteChannelViaReceiver) {
     //MockGpsProvider* gpsProvider = new MockGpsProvider();
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
-    QThreadSleep::msleep(1000); //This wait is necessary, because registerProvider is async, and a lookup could occour before the register has finished.
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000)); //This wait is necessary, because registerProvider is async, and a lookup could occour before the register has finished.
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
 
-    qlonglong qosRoundTripTTL = 40000;
+    std::uint64_t qosRoundTripTTL = 40000;
 
     // Send a message and expect to get a result
     std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
@@ -756,7 +825,7 @@ TEST_F(CombinedEnd2EndTest, deleteChannelViaReceiver) {
                                                ->setCached(false)
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
-    QThreadSleep::msleep(150);
+    std::this_thread::sleep_for(std::chrono::milliseconds(150));
     std::shared_ptr<Future<int> > testFuture(testProxy->addNumbersAsync(1, 2, 3));
     testFuture->wait();
 
@@ -776,7 +845,7 @@ tests::testProxy* createTestProxy(JoynrRuntime *runtime, const std::string& doma
    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
    discoveryQos.setDiscoveryTimeout(1000);
 
-   qlonglong qosRoundTripTTL = 40000;
+   std::uint64_t qosRoundTripTTL = 40000;
 
    // Send a message and expect to get a result
    tests::testProxy* testProxy(testProxyBuilder
@@ -801,7 +870,7 @@ void subscribeToLocation(std::shared_ptr<ISubscriptionListener<types::Localisati
     testSuite->registeredSubscriptionId = testProxy->subscribeToLocation(listener, subscriptionQos);
 }
 
-// A function that subscribes to a QtGpsPosition - to be run in a background thread
+// A function that subscribes to a GpsPosition - to be run in a background thread
 static void unsubscribeFromLocation(tests::testProxy* testProxy,
                             std::string subscriptionId) {
     testProxy->unsubscribeFromLocation(subscriptionId);
@@ -811,13 +880,10 @@ static void unsubscribeFromLocation(tests::testProxy* testProxy,
 // This test was written to model a bug report where a subscription started in a background thread
 // causes a runtime error to be reported by Qt
 TEST_F(CombinedEnd2EndTest, subscribeInBackgroundThread) {
-
-    qRegisterMetaType<types::QtProviderQos>("types::QtProviderQos");
-
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    // QSemaphore semaphore(0);
+    // joynr::Semaphore semaphore(0);
     EXPECT_CALL(*mockListener, onReceive(A<const types::Localisation::GpsLocation&>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
@@ -832,14 +898,15 @@ TEST_F(CombinedEnd2EndTest, subscribeInBackgroundThread) {
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
-    QThreadSleep::msleep(5000);
+    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
 
     tests::testProxy* testProxy = createTestProxy(runtime2, domainName);
     // Subscribe in a background thread
     QtConcurrent::run(subscribeToLocation, subscriptionListener, testProxy, this);
 
     // Wait for 2 subscription messages to arrive
-    ASSERT_TRUE(semaphore.tryAcquire(2, 20000));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
 
     unsubscribeFromLocation(testProxy, registeredSubscriptionId);
 
@@ -851,18 +918,18 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation) {
     providerQos.setPriority(2);
     std::shared_ptr<tests::testProvider> testProvider(new MockTestProvider(providerQos));
 
-    QThreadSleep::msleep(100);
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
-    QThreadSleep::msleep(100);
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
 
-    qlonglong qosRoundTripTTL = 20000;
+    std::uint64_t qosRoundTripTTL = 20000;
 
     // Send a message and expect to get a result
     std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
@@ -895,21 +962,21 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation_failure) {
     providerQos.setPriority(2);
     std::shared_ptr<tests::testProvider> testProvider(new MockTestProvider(providerQos));
 
-    QThreadSleep::msleep(2550);
+    std::this_thread::sleep_for(std::chrono::milliseconds(2550));
 
     std::string testProviderParticipantId = runtime1->registerProvider<tests::testProvider>(
             domainName,
             testProvider
     );
 
-    QThreadSleep::msleep(2550);
+    std::this_thread::sleep_for(std::chrono::milliseconds(2550));
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeout(1000);
 
-    qlonglong qosRoundTripTTL = 20000;
+    std::uint64_t qosRoundTripTTL = 20000;
 
     // Send a message and expect to get a result
     std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
@@ -921,7 +988,7 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation_failure) {
     // Shut down the provider
     //runtime1->stopMessaging();
     runtime1->unregisterProvider(domainName, testProvider);
-    QThreadSleep::msleep(5000);
+    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
 
     // Setup an onError callback function
     std::function<void(const exceptions::JoynrException&)> onError =

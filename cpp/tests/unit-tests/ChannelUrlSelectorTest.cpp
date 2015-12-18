@@ -18,13 +18,12 @@
  */
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include "cluster-controller/http-communication-manager/ChannelUrlSelector.h"
-#include "joynr/BounceProxyUrl.h"
-#include "utils/QThreadSleep.h"
-#include "tests/utils/MockObjects.h"
-#include "joynr/Future.h"
 #include <string>
 #include <memory>
+#include "cluster-controller/http-communication-manager/ChannelUrlSelector.h"
+#include "joynr/BounceProxyUrl.h"
+#include "tests/utils/MockObjects.h"
+#include "joynr/Future.h"
 
 using ::testing::A;
 using ::testing::_;
@@ -39,7 +38,7 @@ using ::testing::WithArgs;
 using namespace joynr;
 
 // global function used for calls to the MockChannelUrlSelectorProxy
-std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> pseudoGetChannelUrls(const std::string&  channelId, const qint64& timeout) {
+std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> pseudoGetChannelUrls(const std::string&  channelId, const int64_t& timeout) {
     types::ChannelUrlInformation urlInformation;
     std::vector<std::string> urls = { "firstUrl", "secondUrl", "thirdUrl" };
     urlInformation.setUrls(urls);
@@ -51,15 +50,15 @@ std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> pseudoGetCha
 
 // No longer desired behavior!
 TEST(ChannelUrlSelectorTest, DISABLED_usesBounceProxyUrlIfNotProvidedWithChannelUrlDir) {
-    const QString bounceProxyBaseUrl = "http://www.urltest.org/pseudoBp";
+    const std::string bounceProxyBaseUrl = "http://www.urltest.org/pseudoBp";
     BounceProxyUrl bounceProxyUrl(bounceProxyBaseUrl);
     ChannelUrlSelector* urlCache = new ChannelUrlSelector(
                 bounceProxyUrl,
                 ChannelUrlSelector::TIME_FOR_ONE_RECOUPERATION(),
                 ChannelUrlSelector::PUNISHMENT_FACTOR());
     RequestStatus* status = new RequestStatus();
-    QString channelId = "testChannelId";
-    QString url = urlCache->obtainUrl(channelId,*status, 20000);
+    std::string channelId = "testChannelId";
+    std::string url = urlCache->obtainUrl(channelId,*status, 20000);
     EXPECT_EQ("http://www.urltest.org/pseudoBp/testChannelId/message/", url);
     delete urlCache;
     delete status;
@@ -67,8 +66,8 @@ TEST(ChannelUrlSelectorTest, DISABLED_usesBounceProxyUrlIfNotProvidedWithChannel
 
 
 TEST(ChannelUrlSelectorTest, obtainUrlUsesLocalDirectory) {
-    const QString bounceProxyBaseUrl = "http://www.UrlTest.org/pseudoBp";
-    const QString settingsFileName ("test-resources/ChannelUrlSelectorTest.settings");
+    const std::string bounceProxyBaseUrl = "http://www.UrlTest.org/pseudoBp";
+    const std::string settingsFileName ("test-resources/ChannelUrlSelectorTest.settings");
 
     BounceProxyUrl bounceProxyUrl(bounceProxyBaseUrl);
     ChannelUrlSelector* urlCache = new ChannelUrlSelector(
@@ -78,38 +77,35 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesLocalDirectory) {
 
     MockLocalChannelUrlDirectory* mockDir = new MockLocalChannelUrlDirectory();
     std::shared_ptr<MockLocalChannelUrlDirectory>  mockDirectory(mockDir);
-    QSettings *qsettings = new QSettings(settingsFileName, QSettings::IniFormat);
-    MessagingSettings *settings = new MessagingSettings(*qsettings);
+    Settings *baseSettings = new Settings(settingsFileName);
+    MessagingSettings *settings = new MessagingSettings(*baseSettings);
     urlCache->init(
                 mockDirectory,
                 *settings);
 
     EXPECT_CALL(*mockDir, getUrlsForChannelAsync(
                     A<const std::string&>(),
-                    A<const qint64&>(),
+                    A<const int64_t&>(),
                     A<std::function<void(const types::ChannelUrlInformation& urls)>>(),
                     A<std::function<void(const exceptions::JoynrException& error)>>()))
             .WillOnce(WithArgs<0,1>(Invoke(pseudoGetChannelUrls)));
 
     RequestStatus* status = new RequestStatus();
-    QString channelId = "testChannelId";
+    std::string channelId = "testChannelId";
 
-    QString url = urlCache->obtainUrl(channelId,*status, 20000);
+    std::string url = urlCache->obtainUrl(channelId,*status, 20000);
     EXPECT_EQ("firstUrl/message/", url);
 
     delete status;
     delete urlCache;
-    // MessageSettings requires a message loop to delete qsettings.
-    // QSettings must still exist when the destructor of MessageSettings is called.
-    // When unittesting we have to delete manually because there is no message loop.
     delete settings;
-    delete qsettings;
+    delete baseSettings;
 }
 
 
 TEST(ChannelUrlSelectorTest, obtainUrlUsesFeedbackToChangeProviderUrl) {
-    const QString bounceProxyBaseUrl = "http://www.UrlTest.org/pseudoBp";
-    const QString settingsFileName("test-resources/ChannelUrlSelectorTest.settings");
+    const std::string bounceProxyBaseUrl = "http://www.UrlTest.org/pseudoBp";
+    const std::string settingsFileName("test-resources/ChannelUrlSelectorTest.settings");
 
     BounceProxyUrl bounceProxyUrl(bounceProxyBaseUrl);
     ChannelUrlSelector* urlCache = new ChannelUrlSelector(
@@ -119,23 +115,23 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesFeedbackToChangeProviderUrl) {
 
     MockLocalChannelUrlDirectory* mockDir = new MockLocalChannelUrlDirectory();
     std::shared_ptr<ILocalChannelUrlDirectory> mockDirectory(mockDir);
-    QSettings *qsettings = new QSettings(settingsFileName, QSettings::IniFormat);
-    MessagingSettings *settings = new MessagingSettings(*qsettings);
+    Settings *baseSettings = new Settings(settingsFileName);
+    MessagingSettings *settings = new MessagingSettings(*baseSettings);
     urlCache->init(
                 mockDirectory,
                 *settings);
 
     EXPECT_CALL(*mockDir, getUrlsForChannelAsync(
                     A<const std::string&>(),
-                    A<const qint64&>(),
+                    A<const int64_t&>(),
                     A<std::function<void(const types::ChannelUrlInformation& urls)>>(),
                     A<std::function<void(const exceptions::JoynrException& error)>>()))
             .WillOnce(WithArgs<0,1>(Invoke(pseudoGetChannelUrls)));
 
     RequestStatus* status = new RequestStatus();
-    QString channelId = "testChannelId";
+    std::string channelId = "testChannelId";
 
-    QString url = urlCache->obtainUrl(channelId,*status, 20000);
+    std::string url = urlCache->obtainUrl(channelId,*status, 20000);
     EXPECT_EQ("firstUrl/message/", url);
 
     urlCache->feedback(false,channelId,url);
@@ -152,18 +148,15 @@ TEST(ChannelUrlSelectorTest, obtainUrlUsesFeedbackToChangeProviderUrl) {
 
     delete status;
     delete urlCache;
-    // MessageSettings requires a message loop to delete qsettings.
-    // QSettings must still exist when the destructor of MessageSettings is called.
-    // When unittesting we have to delete manually because there is no message loop.
     delete settings;
-    delete qsettings;
+    delete baseSettings;
 }
 
 
 TEST(ChannelUrlSelectorTest, obtainUrlRetriesUrlOfHigherPriority) {
-    const QString bounceProxyBaseUrl = "http://www.UrlTest.org/pseudoBp";
-    const QString settingsFileName("test-resources/ChannelUrlSelectorTest.settings");
-    qint64 timeForOneRecouperation = 1000; //half a minute
+    const std::string bounceProxyBaseUrl = "http://www.UrlTest.org/pseudoBp";
+    const std::string settingsFileName("test-resources/ChannelUrlSelectorTest.settings");
+    int64_t timeForOneRecouperation = 1000; //half a minute
     double punishmentFactor = 0.4;//three punishments will lead to a try of the second Url
     BounceProxyUrl bounceProxyUrl(bounceProxyBaseUrl);
 
@@ -174,22 +167,22 @@ TEST(ChannelUrlSelectorTest, obtainUrlRetriesUrlOfHigherPriority) {
 
     MockLocalChannelUrlDirectory* mockDir = new MockLocalChannelUrlDirectory();
     std::shared_ptr<ILocalChannelUrlDirectory>  mockDirectory(mockDir);
-    QSettings* qsettings = new QSettings(settingsFileName, QSettings::IniFormat);
-    MessagingSettings *settings = new MessagingSettings(*qsettings);
+    Settings* baseSettings = new Settings(settingsFileName);
+    MessagingSettings *settings = new MessagingSettings(*baseSettings);
     urlCache->init(
                 mockDirectory,
                 *settings);
 
     EXPECT_CALL(*mockDir, getUrlsForChannelAsync(
                     A<const std::string&>(),
-                    A<const qint64&>(),
+                    A<const int64_t&>(),
                     A<std::function<void(const types::ChannelUrlInformation& urls)>>(),
                     A<std::function<void(const exceptions::JoynrException& error)>>()))
             .WillOnce(WithArgs<0,1>(Invoke(pseudoGetChannelUrls)));
 
     RequestStatus* status = new RequestStatus();
-    QString channelId = "testChannelId";
-    QString url = urlCache->obtainUrl(channelId,*status, 20000);
+    std::string channelId = "testChannelId";
+    std::string url = urlCache->obtainUrl(channelId,*status, 20000);
 
     urlCache->feedback(false,channelId,url);
     urlCache->feedback(false,channelId,url);
@@ -197,30 +190,26 @@ TEST(ChannelUrlSelectorTest, obtainUrlRetriesUrlOfHigherPriority) {
     url = urlCache->obtainUrl(channelId,*status, 20000);
     EXPECT_EQ("secondUrl/message/", url);
 
-    QThreadSleep::msleep(timeForOneRecouperation + 100);
+    std::this_thread::sleep_for(std::chrono::milliseconds(timeForOneRecouperation + 100));
     url = urlCache->obtainUrl(channelId,*status, 20000);
     EXPECT_EQ("firstUrl/message/", url);
 
     delete status;
     delete urlCache;
-    // MessageSettings requires a message loop to delete qsettings.
-    // QSettings must still exist when the destructor of MessageSettings is called.
-    // When unittesting we have to delete manually because there is no message loop.
     delete settings;
-    delete qsettings;
+    delete baseSettings;
 }
 
 
 TEST(ChannelUrlSelectorTest, initFitnessTest) {
-    types::QtChannelUrlInformation urlInformation;
-    QList<QString> urls;
-    urls << "firstUrl" << "secondUrl" << "thirdUrl";
+    types::ChannelUrlInformation urlInformation;
+    std::vector<std::string> urls = {"firstUrl", "secondUrl", "thirdUrl"};
     urlInformation.setUrls(urls);
     ChannelUrlSelectorEntry* entry = new ChannelUrlSelectorEntry(
                 urlInformation,
                 ChannelUrlSelector::PUNISHMENT_FACTOR(),
                 ChannelUrlSelector::TIME_FOR_ONE_RECOUPERATION());
-    QList<double> fitness = entry->getFitness();
+    std::vector<double> fitness = entry->getFitness();
     EXPECT_EQ(3,fitness.size());
     EXPECT_EQ(3,fitness.at(0));
     EXPECT_EQ(2,fitness.at(1));
@@ -229,9 +218,8 @@ TEST(ChannelUrlSelectorTest, initFitnessTest) {
 }
 
 TEST(ChannelUrlSelectorTest, punishTest) {
-    types::QtChannelUrlInformation urlInformation;
-    QList<QString> urls;
-    urls << "firstUrl" << "secondUrl" << "thirdUrl";
+    types::ChannelUrlInformation urlInformation;
+    std::vector<std::string> urls = {"firstUrl", "secondUrl", "thirdUrl"};
     urlInformation.setUrls(urls);
     double punishmentFactor = 0.4;
     ChannelUrlSelectorEntry* entry = new ChannelUrlSelectorEntry(
@@ -239,7 +227,7 @@ TEST(ChannelUrlSelectorTest, punishTest) {
                 ChannelUrlSelector::PUNISHMENT_FACTOR(),
                 ChannelUrlSelector::TIME_FOR_ONE_RECOUPERATION());
 
-    QList<double> fitness = entry->getFitness();
+    std::vector<double> fitness = entry->getFitness();
     EXPECT_EQ(3,fitness.at(0));
     entry->punish("firstUrl");
     fitness = entry->getFitness();
@@ -270,12 +258,11 @@ TEST(ChannelUrlSelectorTest, punishTest) {
 
 TEST(ChannelUrlSelectorTest, updateTest) {
 
-    types::QtChannelUrlInformation urlInformation;
-    QList<QString> urls;
-    urls << "firstUrl" << "secondUrl" << "thirdUrl";
+    types::ChannelUrlInformation urlInformation;
+    std::vector<std::string> urls = {"firstUrl", "secondUrl", "thirdUrl"};
     urlInformation.setUrls(urls);
     double punishmentFactor = 0.4;
-    qint64 timeForOneRecouperation = 300;
+    int64_t timeForOneRecouperation = 300;
     ChannelUrlSelectorEntry* entry = new ChannelUrlSelectorEntry(
                 urlInformation,
                 punishmentFactor,
@@ -286,33 +273,33 @@ TEST(ChannelUrlSelectorTest, updateTest) {
     entry->punish("thirdUrl");
     entry->punish("thirdUrl");
     entry->updateFitness();
-    QList<double> fitness = entry->getFitness();
+    std::vector<double> fitness = entry->getFitness();
     EXPECT_EQ(3 - punishmentFactor,fitness.at(0));
     EXPECT_EQ(2 - punishmentFactor,fitness.at(1));
     EXPECT_EQ(1 - punishmentFactor - punishmentFactor,fitness.at(2));
 
-    QThreadSleep::msleep(timeForOneRecouperation /3);
+    std::this_thread::sleep_for(std::chrono::milliseconds(timeForOneRecouperation /3));
     entry->updateFitness();
     fitness = entry->getFitness();
     EXPECT_EQ(3 - punishmentFactor,fitness.at(0));
     EXPECT_EQ(2 - punishmentFactor,fitness.at(1));
     EXPECT_EQ(1 - punishmentFactor - punishmentFactor, fitness.at(2));
 
-    QThreadSleep::msleep(timeForOneRecouperation );
+    std::this_thread::sleep_for(std::chrono::milliseconds(timeForOneRecouperation ));
     entry->updateFitness();
     fitness = entry->getFitness();
     EXPECT_EQ(3,fitness.at(0));
     EXPECT_EQ(2,fitness.at(1));
     EXPECT_EQ(1 - punishmentFactor,fitness.at(2));
 
-    QThreadSleep::msleep(timeForOneRecouperation);
+    std::this_thread::sleep_for(std::chrono::milliseconds(timeForOneRecouperation));
     entry->updateFitness();
     fitness = entry->getFitness();
     EXPECT_EQ(3,fitness.at(0));
     EXPECT_EQ(2,fitness.at(1));
     EXPECT_EQ(1,fitness.at(2));
 
-    QThreadSleep::msleep(timeForOneRecouperation );
+    std::this_thread::sleep_for(std::chrono::milliseconds(timeForOneRecouperation ));
     entry->updateFitness();
     fitness = entry->getFitness();
     EXPECT_EQ(3,fitness.at(0));
@@ -325,7 +312,7 @@ TEST(ChannelUrlSelectorTest, updateTest) {
     entry->punish("thirdUrl");
     entry->punish("thirdUrl");
 
-    QThreadSleep::msleep( 2 * timeForOneRecouperation + 10 );
+    std::this_thread::sleep_for(std::chrono::milliseconds( 2 * timeForOneRecouperation + 10 ));
     entry->updateFitness();
     fitness = entry->getFitness();
     EXPECT_EQ(3,fitness.at(0));
@@ -338,12 +325,11 @@ TEST(ChannelUrlSelectorTest, updateTest) {
 
 TEST(ChannelUrlSelectorTest, bestTest) {
 
-    types::QtChannelUrlInformation urlInformation;
-    QList<QString> urls;
-    urls << "firstUrl" << "secondUrl" << "thirdUrl";
+    types::ChannelUrlInformation urlInformation;
+    std::vector<std::string> urls = {"firstUrl", "secondUrl", "thirdUrl"};
     urlInformation.setUrls(urls);
     double punishmentFactor = 0.4;
-    qint64 timeForOneRecouperation = 300;
+    int64_t timeForOneRecouperation = 300;
     ChannelUrlSelectorEntry* entry = new ChannelUrlSelectorEntry(
                 urlInformation,
                 punishmentFactor,
@@ -360,9 +346,9 @@ TEST(ChannelUrlSelectorTest, bestTest) {
     EXPECT_EQ("firstUrl", entry->best());
     entry->punish("firstUrl");
     EXPECT_EQ("secondUrl", entry->best());
-    QThreadSleep::msleep(timeForOneRecouperation + 100);
+    std::this_thread::sleep_for(std::chrono::milliseconds(timeForOneRecouperation + 100));
     EXPECT_EQ("secondUrl", entry->best());
-    QThreadSleep::msleep(timeForOneRecouperation + 100);
+    std::this_thread::sleep_for(std::chrono::milliseconds(timeForOneRecouperation + 100));
     EXPECT_EQ("firstUrl", entry->best());
 
     delete entry;

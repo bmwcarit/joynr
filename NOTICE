@@ -49,6 +49,9 @@ This project has dependencies to:
   Bouncy Castle Provider under Bouncy Castle Licence
   CDI APIs under Apache License, Version 2.0
   classworlds under BSD Style License
+  clustercontroller-inprocess-runtime under The Apache Software License, Version 2.0
+  clustercontroller-standalone under The Apache Software License, Version 2.0
+  clustercontroller-websocket-runtime under The Apache Software License, Version 2.0
   codegen under Eclipse Public License - v 1.0
   Common Annotations 1.1 API under lgpl
   Common Eclipse Runtime under Eclipse Public License - v 1.0
@@ -93,7 +96,6 @@ This project has dependencies to:
   Hibernate JPA Support under GNU Lesser General Public License
   HtmlUnit under Apache License, Version 2.0
   HtmlUnit Core JS under Mozilla Public License version 2.0
-  HttpComponents Client for Android under Apache License, Version 2.0
   ICU4J under ICU License
   INFOMAS ASL :: Annotation Detector under The Apache Software License, Version 2.0
   Interceptors 1.1 API under lgpl
@@ -107,15 +109,19 @@ This project has dependencies to:
   io.joynr.examples:android-location-provider under The Apache Software License, Version 2.0
   io.joynr.examples:location-tester under The Apache Software License, Version 2.0
   io.joynr.examples:radio-app under The Apache Software License, Version 2.0
+  io.joynr.java.android:joynr-android under The Apache Software License, Version 2.0
   io.joynr.java.android:joynr-android-runtime under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:capabilities-directory under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:channel-url-directory under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:discovery-directory-servlet under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:domain-access-controller under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:domain-access-controller-servlet under The Apache Software License, Version 2.0
+  io.joynr.java.common:access-control-common under The Apache Software License, Version 2.0
+  io.joynr.java.common:discovery-common under The Apache Software License, Version 2.0
   io.joynr.java.common:distributed-logging-appender under The Apache Software License, Version 2.0
   io.joynr.java.common:guice-integration under The Apache Software License, Version 2.0
   io.joynr.java.common:infrastructure-common under The Apache Software License, Version 2.0
+  io.joynr.java.core:clustercontroller under The Apache Software License, Version 2.0
   io.joynr.java.core:joynr-types under The Apache Software License, Version 2.0
   io.joynr.java.core:libjoynr under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy.bounceproxy-controller-persistence:ehcache under The Apache Software License, Version 2.0
@@ -128,6 +134,9 @@ This project has dependencies to:
   io.joynr.java.messaging.bounceproxy:bounceproxy-controller-persistence under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:controlled-bounceproxy under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:single-bounceproxy under The Apache Software License, Version 2.0
+  io.joynr.java.messaging.websocket:joynr-websocket-client under The Apache Software License, Version 2.0
+  io.joynr.java.messaging.websocket:joynr-websocket-common under The Apache Software License, Version 2.0
+  io.joynr.java.messaging.websocket:joynr-websocket-server under The Apache Software License, Version 2.0
   io.joynr.java.messaging:bounceproxy under The Apache Software License, Version 2.0
   io.joynr.java.messaging:bounceproxy-controller-service under The Apache Software License, Version 2.0
   io.joynr.java.messaging:channel-service under The Apache Software License, Version 2.0
@@ -136,6 +145,7 @@ This project has dependencies to:
   io.joynr.java.messaging:messaging-servlet under The Apache Software License, Version 2.0
   io.joynr.java.messaging:service-common under The Apache Software License, Version 2.0
   io.joynr.java.messaging:servlet-common under The Apache Software License, Version 2.0
+  io.joynr.java.messaging:websocket under The Apache Software License, Version 2.0
   io.joynr.java:backend-services under The Apache Software License, Version 2.0
   io.joynr.java:common under The Apache Software License, Version 2.0
   io.joynr.java:core under The Apache Software License, Version 2.0
@@ -233,6 +243,7 @@ This project has dependencies to:
   JSR-181 Maintenance Release 1 under CDDL+GPLv2
   JTA 1.1 under The Apache Software License, Version 2.0
   JUnit under Common Public License Version 1.0
+  libjoynr-websocket-runtime under The Apache Software License, Version 2.0
   Logging under The Apache Software License, Version 2.0
   Maven Ant Tasks under The Apache Software License, Version 2.0
   Maven Artifact under The Apache Software License, Version 2.0
@@ -273,7 +284,6 @@ This project has dependencies to:
   Reflections under WTFPL
   REST Assured under Apache 2.0
   rest-assured-common under Apache 2.0
-  RoboGuice under Apache 2
   robolectric under MIT license
   robolectric-annotations under MIT license
   robolectric-resources under MIT license

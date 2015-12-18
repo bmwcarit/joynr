@@ -19,24 +19,26 @@
 #ifndef PUBLICATIONMANAGER_H
 #define PUBLICATIONMANAGER_H
 #include "joynr/PrivateCopyAssign.h"
-
 #include "joynr/JoynrExport.h"
 #include "joynr/SubscriptionPublication.h"
 
 #include "joynr/joynrlogging.h"
+#include "joynr/ThreadPoolDelayedScheduler.h"
+#include "joynr/ReadWriteLock.h"
+#include "joynr/ThreadSafeMap.h"
 
-#include <QMultiMap>
-#include <QString>
 #include <QVariant>
-#include <QMutex>
-#include <QReadWriteLock>
-#include <QThreadPool>
+#include <mutex>
 #include <memory>
+#include <vector>
+#include <map>
+#include <string>
+
+#include "joynr/Variant.h"
 
 namespace joynr
 {
 
-class DelayedScheduler;
 class SubscriptionRequest;
 class BroadcastSubscriptionRequest;
 class BroadcastSubscriptionRequestInformation;
@@ -44,17 +46,17 @@ class SubscriptionRequestInformation;
 class SubscriptionInformation;
 class IPublicationSender;
 class RequestCaller;
-class QtSubscriptionQos;
 class IBroadcastFilter;
 
 namespace exceptions
 {
 class JoynrException;
 }
+class SubscriptionQos;
 
 /**
-  * \class PublicationManager
-  * \brief Publication manager receives subscription requests and prepares publications,
+  * @class PublicationManager
+  * @brief Publication manager receives subscription requests and prepares publications,
   * which are send back to the subscription manager.
   * Responsible for deleting SubscriptionRequests and PublicationStates (the runnable notifies the
   * SubscriptionManager when it terminates - this triggeres the delete).
@@ -63,7 +65,7 @@ class JOYNR_EXPORT PublicationManager
 {
 public:
     explicit PublicationManager(int maxThreads = 2);
-    explicit PublicationManager(DelayedScheduler* scheduler, int maxThreads = 2);
+    PublicationManager(DelayedScheduler* scheduler);
     virtual ~PublicationManager();
     /**
      * @brief Adds the SubscriptionRequest and starts runnable to poll attributes.
@@ -71,8 +73,8 @@ public:
      * @param subscriptionRequest
      * @param publicationSender
      */
-    void add(const QString& proxyParticipantId,
-             const QString& providerParticipantId,
+    void add(const std::string& proxyParticipantId,
+             const std::string& providerParticipantId,
              std::shared_ptr<RequestCaller> requestCaller,
              SubscriptionRequest& subscriptionRequest,
              IPublicationSender* publicationSender);
@@ -83,8 +85,8 @@ public:
      *
      * @param subscriptionRequest
      */
-    void add(const QString& proxyParticipantId,
-             const QString& providerParticipantId,
+    void add(const std::string& proxyParticipantId,
+             const std::string& providerParticipantId,
              SubscriptionRequest& subscriptionRequest);
 
     /**
@@ -93,8 +95,8 @@ public:
      * @param subscriptionRequest
      * @param publicationSender
      */
-    void add(const QString& proxyParticipantId,
-             const QString& providerParticipantId,
+    void add(const std::string& proxyParticipantId,
+             const std::string& providerParticipantId,
              std::shared_ptr<RequestCaller> requestCaller,
              BroadcastSubscriptionRequest& subscriptionRequest,
              IPublicationSender* publicationSender);
@@ -105,8 +107,8 @@ public:
      *
      * @param subscriptionRequest
      */
-    void add(const QString& proxyParticipantId,
-             const QString& providerParticipantId,
+    void add(const std::string& proxyParticipantId,
+             const std::string& providerParticipantId,
              BroadcastSubscriptionRequest& subscriptionRequest);
 
     /**
@@ -114,14 +116,14 @@ public:
      *
      * @param subscriptionId
      */
-    void stopPublication(const QString& subscriptionId);
+    void stopPublication(const std::string& subscriptionId);
 
     /**
      * @brief Stops all publications for a provider
      *
      * @param providerId
      */
-    void removeAllSubscriptions(const QString& providerId);
+    void removeAllSubscriptions(const std::string& providerId);
 
     /**
      * @brief Called by the Dispatcher every time a provider is registered to check whether there
@@ -131,7 +133,7 @@ public:
      * @param requestCaller
      * @param publicationSender
      */
-    void restore(const QString& providerId,
+    void restore(const std::string& providerId,
                  std::shared_ptr<RequestCaller> requestCaller,
                  IPublicationSender* publicationSender);
 
@@ -142,7 +144,7 @@ public:
       * @param subscriptionId A subscription that was listening on the attribute
       * @param value The new attribute value
       */
-    virtual void attributeValueChanged(const QString& subscriptionId, const QVariant& value);
+    virtual void attributeValueChanged(const std::string& subscriptionId, const Variant& value);
 
     /**
       * @brief Publishes an broadcast publication message when a broadcast occurs
@@ -151,9 +153,9 @@ public:
       * @param subscriptionId A subscription that was listening on the broadcast
       * @param values The new broadcast values
       */
-    virtual void broadcastOccurred(const QString& subscriptionId,
-                                   const QList<QVariant>& values,
-                                   const QList<std::shared_ptr<IBroadcastFilter>>& filters);
+    virtual void broadcastOccurred(const std::string& subscriptionId,
+                                   const std::vector<Variant>& values,
+                                   const std::vector<std::shared_ptr<IBroadcastFilter>>& filters);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(PublicationManager);
@@ -162,53 +164,50 @@ private:
     class Publication;
 
     // Information for each publication is keyed by subcriptionId
-    QMap<QString, std::shared_ptr<Publication>> publications;
-    QMap<QString, std::shared_ptr<SubscriptionRequestInformation>>
+    ThreadSafeMap<std::string, std::shared_ptr<Publication>> publications;
+    ThreadSafeMap<std::string, std::shared_ptr<SubscriptionRequestInformation>>
             subscriptionId2SubscriptionRequest;
-    QMap<QString, std::shared_ptr<BroadcastSubscriptionRequestInformation>>
+    ThreadSafeMap<std::string, std::shared_ptr<BroadcastSubscriptionRequestInformation>>
             subscriptionId2BroadcastSubscriptionRequest;
 
-    // .. and protected with a read/write lock
-    mutable QReadWriteLock subscriptionLock;
-
-    QMutex fileWriteLock;
+    std::mutex fileWriteLock;
     // Publications are scheduled to run on a thread pool
-    QThreadPool publishingThreadPool;
     DelayedScheduler* delayedScheduler;
 
     // Support for clean shutdowns
-    QMutex shutDownMutex;
+    std::mutex shutDownMutex;
     bool shuttingDown;
 
     // Subscription persistence
-    QString subscriptionRequestStorageFileName;
-    QString broadcastSubscriptionRequestStorageFileName;
+    std::string subscriptionRequestStorageFileName;
+    std::string broadcastSubscriptionRequestStorageFileName;
 
     // Queues all subscription requests that are either received by the
     // dispatcher or restored from the subscription storage file before
     // the corresponding provider is added
-    QMultiMap<QString, std::shared_ptr<SubscriptionRequestInformation>> queuedSubscriptionRequests;
-    QMutex queuedSubscriptionRequestsMutex;
+    std::multimap<std::string, std::shared_ptr<SubscriptionRequestInformation>>
+            queuedSubscriptionRequests;
+    std::mutex queuedSubscriptionRequestsMutex;
 
     // Queues all broadcast subscription requests that are either received by the
     // dispatcher or restored from the subscription storage file before
     // the corresponding provider is added
-    QMultiMap<QString, std::shared_ptr<BroadcastSubscriptionRequestInformation>>
+    std::multimap<std::string, std::shared_ptr<BroadcastSubscriptionRequestInformation>>
             queuedBroadcastSubscriptionRequests;
-    QMutex queuedBroadcastSubscriptionRequestsMutex;
+    std::mutex queuedBroadcastSubscriptionRequestsMutex;
 
     // Logging
     static joynr_logging::Logger* logger;
 
     // List of subscriptionId's of runnables scheduled with delay <= qos.getMinInterval_ms()
-    QList<QString> currentScheduledPublications;
-    QMutex currentScheduledPublicationsMutex;
+    std::vector<std::string> currentScheduledPublications;
+    std::mutex currentScheduledPublicationsMutex;
 
     // Filters registered for broadcasts. Keyed by broadcast name.
-    QMap<QString, QList<std::shared_ptr<IBroadcastFilter>>> broadcastFilters;
+    std::map<std::string, std::vector<std::shared_ptr<IBroadcastFilter>>> broadcastFilters;
 
     // Read/write lock for broadcast filters
-    mutable QReadWriteLock broadcastFilterLock;
+    mutable ReadWriteLock broadcastFilterLock;
 
     // PublisherRunnables are used to send publications via a ThreadPool
     class PublisherRunnable;
@@ -217,22 +216,22 @@ private:
     class PublicationEndRunnable;
 
     // Functions called by runnables
-    void pollSubscription(const QString& subscriptionId);
-    void removePublication(const QString& subscriptionId);
-    void removeAttributePublication(const QString& subscriptionId);
-    void removeBroadcastPublication(const QString& subscriptionId);
+    void pollSubscription(const std::string& subscriptionId);
+    void removePublication(const std::string& subscriptionId);
+    void removeAttributePublication(const std::string& subscriptionId);
+    void removeBroadcastPublication(const std::string& subscriptionId);
 
     // Helper functions
-    bool publicationExists(const QString& subscriptionId) const;
-    void createPublishRunnable(const QString& subscriptionId);
-    void saveAttributeSubscriptionRequestsMap(const QList<QVariant>& subscriptionList);
+    bool publicationExists(const std::string& subscriptionId);
+    void createPublishRunnable(const std::string& subscriptionId);
+    void saveAttributeSubscriptionRequestsMap(const std::vector<Variant>& subscriptionList);
     void loadSavedAttributeSubscriptionRequestsMap();
-    void saveBroadcastSubscriptionRequestsMap(const QList<QVariant>& subscriptionList);
+    void saveBroadcastSubscriptionRequestsMap(const std::vector<Variant>& subscriptionList);
     void loadSavedBroadcastSubscriptionRequestsMap();
 
-    void reschedulePublication(const QString& subscriptionId, qint64 nextPublication);
+    void reschedulePublication(const std::string& subscriptionId, int64_t nextPublication);
 
-    bool isPublicationAlreadyScheduled(const QString& subscriptionId);
+    bool isPublicationAlreadyScheduled(const std::string& subscriptionId);
 
     /**
      * @brief getTimeUntilNextPublication determines the time to wait until the next publication
@@ -243,28 +242,32 @@ private:
      *          amount of ms to wait, if interval was too short;
      *          -1 on error
      */
-    qint64 getTimeUntilNextPublication(std::shared_ptr<Publication> publication,
-                                       std::shared_ptr<QtSubscriptionQos> qos);
+    int64_t getTimeUntilNextPublication(std::shared_ptr<Publication> publication, Variant qos);
 
-    void saveSubscriptionRequestsMap(const QList<QVariant>& subscriptionList,
-                                     const QString& storageFilename);
+    void saveSubscriptionRequestsMap(const std::vector<Variant>& subscriptionList,
+                                     const std::string& storageFilename);
 
     template <class RequestInformationType>
     void loadSavedSubscriptionRequestsMap(
-            const QString& storageFilename,
-            QMutex& mutex,
-            QMultiMap<QString, std::shared_ptr<RequestInformationType>>& queuedSubscriptions);
+            const std::string& storageFilename,
+            std::mutex& mutex,
+            std::multimap<std::string, std::shared_ptr<RequestInformationType>>&
+                    queuedSubscriptions);
 
     template <class RequestInformationType>
-    QList<QVariant> subscriptionMapToListCopy(
-            const QMap<QString, std::shared_ptr<RequestInformationType>>& map);
+    std::vector<QVariant> subscriptionMapToListCopy(
+            const std::map<std::string, std::shared_ptr<RequestInformationType>>& map);
+
+    template <class RequestInformationType>
+    std::vector<Variant> subscriptionMapToVectorCopy(
+            const ThreadSafeMap<std::string, std::shared_ptr<RequestInformationType>>& map);
 
     bool isShuttingDown();
-    qint64 getPublicationTtl(std::shared_ptr<SubscriptionRequest> subscriptionRequest) const;
+    int64_t getPublicationTtl(std::shared_ptr<SubscriptionRequest> subscriptionRequest) const;
     void sendPublication(std::shared_ptr<Publication> publication,
                          std::shared_ptr<SubscriptionInformation> subscriptionInformation,
                          std::shared_ptr<SubscriptionRequest> subscriptionRequest,
-                         const QList<QVariant>& value);
+                         const std::vector<Variant>& value);
     void sendSubscriptionPublication(
             std::shared_ptr<Publication> publication,
             std::shared_ptr<SubscriptionInformation> subscriptionInformation,
@@ -284,20 +287,20 @@ private:
             std::shared_ptr<RequestCaller> requestCaller,
             IPublicationSender* publicationSender);
 
-    void addOnChangePublication(const QString& subscriptionId,
+    void addOnChangePublication(const std::string& subscriptionId,
                                 std::shared_ptr<SubscriptionRequestInformation> request,
                                 std::shared_ptr<Publication> publication);
-    void addBroadcastPublication(const QString& subscriptionId,
+    void addBroadcastPublication(const std::string& subscriptionId,
                                  std::shared_ptr<BroadcastSubscriptionRequestInformation> request,
                                  std::shared_ptr<Publication> publication);
-    void removeOnChangePublication(const QString& subscriptionId,
+    void removeOnChangePublication(const std::string& subscriptionId,
                                    std::shared_ptr<SubscriptionRequestInformation> request,
                                    std::shared_ptr<Publication> publication);
     void removePublicationEndRunnable(std::shared_ptr<Publication> publication);
 
-    bool processFilterChain(const QString& subscriptionId,
-                            const QList<QVariant>& broadcastValues,
-                            const QList<std::shared_ptr<IBroadcastFilter>>& filters);
+    bool processFilterChain(const std::string& subscriptionId,
+                            const std::vector<Variant>& broadcastValues,
+                            const std::vector<std::shared_ptr<IBroadcastFilter>>& filters);
 };
 
 } // namespace joynr

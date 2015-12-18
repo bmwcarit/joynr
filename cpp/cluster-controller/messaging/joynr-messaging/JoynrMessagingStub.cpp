@@ -25,8 +25,8 @@ namespace joynr
 {
 
 JoynrMessagingStub::JoynrMessagingStub(std::shared_ptr<IMessageSender> messageSender,
-                                       QString destinationChannelId,
-                                       QString receiveChannelId)
+                                       const std::string& destinationChannelId,
+                                       const std::string& receiveChannelId)
         : messageSender(messageSender),
           destinationChannelId(destinationChannelId),
           receiveChannelId(receiveChannelId)

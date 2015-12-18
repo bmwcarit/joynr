@@ -23,6 +23,10 @@
 namespace joynr
 {
 
+static bool isSubscriptionRequestInformationRegistered =
+        Variant::registerType<SubscriptionRequestInformation>(
+                "joynr.SubscriptionRequestInformation");
+
 using namespace joynr_logging;
 Logger* SubscriptionRequestInformation::logger =
         Logging::getInstance()->getLogger("MSG", "SubscriptionRequestInformation");
@@ -32,8 +36,8 @@ SubscriptionRequestInformation::SubscriptionRequestInformation()
 }
 
 SubscriptionRequestInformation::SubscriptionRequestInformation(
-        const QString& proxyParticipantId,
-        const QString& providerParticipantId,
+        const std::string& proxyParticipantId,
+        const std::string& providerParticipantId,
         const SubscriptionRequest& subscriptionRequest)
         : SubscriptionRequest(subscriptionRequest),
           SubscriptionInformation(proxyParticipantId, providerParticipantId)
@@ -63,9 +67,9 @@ bool SubscriptionRequestInformation::operator==(
            SubscriptionInformation::operator==(subscriptionRequestInformation);
 }
 
-QString SubscriptionRequestInformation::toQString() const
+std::string SubscriptionRequestInformation::toString() const
 {
-    return JsonSerializer::serialize(*this);
+    return JsonSerializer::serialize<SubscriptionRequestInformation>(*this);
 }
 
 } // namespace joynr

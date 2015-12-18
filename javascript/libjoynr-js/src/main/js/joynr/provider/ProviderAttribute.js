@@ -118,6 +118,15 @@ define(
                                 return [ value
                                 ];
                             };
+                    /**
+                     * Check if getter function is defined.
+                     * @function ProviderAttribute#checkGet
+                     *
+                     * @returns {Boolean}
+                     */
+                    this.checkGet = function checkGet() {
+                        return typeof privateGetterFunc === "function";
+                    };
                 }
                 var privateSetterFunc = (implementation ? implementation.set : undefined);
                 if (attributeCaps.match(/WRITE/)) {
@@ -175,6 +184,17 @@ define(
                                 }
                                 return [];
                             };
+
+                    /**
+                     * Check if setter function is defined.
+                     * @function ProviderAttribute#checkSet
+                     *
+                     * @returns {Boolean}
+                     */
+                    this.checkSet = function checkSet() {
+                        return typeof privateSetterFunc === "function";
+                    };
+
                 }
                 if (attributeCaps.match(/NOTIFY/)) {
                     var callbacks = [];
@@ -222,26 +242,6 @@ define(
                      */
                     this.unregisterObserver = function unregisterObserver(observer) {
                         Util.removeElementFromArray(callbacks, observer);
-                    };
-
-                    /**
-                     * Check if setter function is defined.
-                     * @function ProviderAttribute#checkSet
-                     *
-                     * @returns {Boolean}
-                     */
-                    this.checkSet = function checkSet() {
-                        return typeof privateSetterFunc === "function";
-                    };
-
-                    /**
-                     * Check if getter function is defined.
-                     * @function ProviderAttribute#checkGet
-                     *
-                     * @returns {Boolean}
-                     */
-                    this.checkGet = function checkGet() {
-                        return typeof privateGetterFunc === "function";
                     };
                 }
 

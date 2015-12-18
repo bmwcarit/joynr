@@ -21,7 +21,7 @@
 #include <QtWebSockets/QWebSocket>
 
 #include "joynr/JsonSerializer.h"
-#include "joynr/system/RoutingTypes_QtWebSocketClientAddress.h"
+#include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 
 namespace joynr
 {
@@ -48,13 +48,15 @@ void WebSocketLibJoynrMessagingSkeleton::onTextMessageReceived(const QString& me
 {
     // deserialize message and transmit
     joynr::JoynrMessage* joynrMsg =
-            JsonSerializer::deserialize<joynr::JoynrMessage>(message.toUtf8());
-    if (joynrMsg == Q_NULLPTR) {
+            JsonSerializer::deserialize<joynr::JoynrMessage>(message.toStdString());
+    if (joynrMsg == nullptr) {
         LOG_ERROR(logger,
-                  QString("Unable to deserialize joynr message object from: %1").arg(message));
+                  FormatString("Unable to deserialize joynr message object from: %1")
+                          .arg(message.toStdString())
+                          .str());
         return;
     }
-    LOG_TRACE(logger, QString("INCOMING\nmessage: %0").arg(message));
+    LOG_TRACE(logger, FormatString("INCOMING\nmessage: %1").arg(message.toStdString()).str());
     // message router copies joynr message when scheduling thread that handles
     // message delivery
     transmit(*joynrMsg);

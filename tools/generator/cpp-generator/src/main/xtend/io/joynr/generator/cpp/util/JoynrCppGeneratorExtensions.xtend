@@ -82,9 +82,9 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 
 	def String getNameSpaceEnderFromPackageList(Iterator<String> packageList){
 		var sb = new StringBuilder();
-		sb.append("} /* namespace " + joynrGenerationPrefix + " */ ");
+		sb.append("\n} // namespace " + joynrGenerationPrefix);
 		while(packageList.hasNext){
-			sb.insert(0, "} /* namespace " + packageList.next + " */ " );
+			sb.insert(0, "\n} // namespace " + packageList.next);
 		}
 		return sb.toString();
 	}
@@ -182,10 +182,11 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 		case isEnum(datatypeRef)  : buildPackagePath(datatype, ".", true) +
 									datatype.joynrName
 		case isString(predefined) : "String"
-		case isInt(predefined)    : "Integer"
+		case isShort(predefined)  : "Short"
+		case isInteger(predefined): "Integer"
 		case isLong(predefined)   : "Long"
 		case isDouble(predefined) : "Double"
-		case isFloat(predefined)  : "Double"
+		case isFloat(predefined)  : "Float"
 		case isBool(predefined)   : "Boolean"
 		case isByte(predefined)   : "Byte"
 		case datatype != null     : buildPackagePath(datatype, ".", true) +

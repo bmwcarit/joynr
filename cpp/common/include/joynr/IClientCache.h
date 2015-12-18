@@ -19,8 +19,7 @@
 #ifndef CLIENTCACHE_H
 #define CLIENTCACHE_H
 
-#include <QVariant>
-#include <QString>
+#include "joynr/Variant.h"
 
 namespace joynr
 {
@@ -37,16 +36,16 @@ public:
 
     /*
      * Returns the value stored for the attributeId. If none exists, it return an invalid
-     * QVariant object that can be tested for by using the isValid() method of QVariant.
+     * Variant object that can be tested for by using the isValid() method of Variant.
      */
-    virtual QVariant lookUp(const QString& attributeId) = 0;
+    virtual Variant lookUp(const std::string& attributeId) = 0;
 
     /*
      * Inserts the key (attributeId) and value into the cache.  If the attributeId already
      * has a value, then this overwrites the previous value.
      * Note, this insert does not perform any validation on the value.
      */
-    virtual void insert(QString attributeId, QVariant value) = 0;
+    virtual void insert(std::string attributeId, Variant value) = 0;
 };
 
 } // namespace joynr

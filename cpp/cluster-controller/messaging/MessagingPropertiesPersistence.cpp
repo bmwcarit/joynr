@@ -18,68 +18,66 @@
  */
 #include "cluster-controller/messaging/MessagingPropertiesPersistence.h"
 #include "joynr/Util.h"
-
-#include <QSettings>
+#include "joynr/TypeUtil.h"
+#include "joynr/Settings.h"
 
 namespace joynr
 {
 
-MessagingPropertiesPersistence::MessagingPropertiesPersistence(const QString& filename)
+MessagingPropertiesPersistence::MessagingPropertiesPersistence(const std::string& filename)
         : filename(filename)
 {
 }
 
-QString MessagingPropertiesPersistence::getChannelId()
+std::string MessagingPropertiesPersistence::getChannelId()
 {
-    // Read and write to the persistence file using a QSettings object
-    QSettings settings(filename, QSettings::IniFormat);
+    // Read and write to the persistence file using a Settings object
+    Settings settings(filename);
+
+    std::string channelId;
 
     // Get the persisted channel id if one exists
-    QString channelId;
-    QVariant value = settings.value(CHANNEL_ID_KEY());
-
-    if (!value.isValid()) {
+    if (settings.contains(CHANNEL_ID_KEY())) {
+        channelId = settings.get<std::string>(CHANNEL_ID_KEY());
+    } else {
         // Create and persist a channelId
         channelId = Util::createUuid();
-        settings.setValue(CHANNEL_ID_KEY(), channelId);
+        settings.set(CHANNEL_ID_KEY(), channelId);
         settings.sync();
-    } else {
-        channelId = value.toString();
     }
 
     return channelId;
 }
 
-QString MessagingPropertiesPersistence::getReceiverId()
+std::string MessagingPropertiesPersistence::getReceiverId()
 {
-    // Read and write to the persistence file using a QSettings object
-    QSettings settings(filename, QSettings::IniFormat);
+    // Read and write to the persistence file using a Settings object
+    Settings settings(filename);
+
+    std::string receiverId;
 
     // Get the persisted receiver id if one exists
-    QString receiverId;
-    QVariant value = settings.value(RECEIVER_ID_KEY());
-
-    if (!value.isValid()) {
+    if (settings.contains(RECEIVER_ID_KEY())) {
+        receiverId = settings.get<std::string>(RECEIVER_ID_KEY());
+    } else {
         // Create and persist a receiverId
         receiverId = Util::createUuid();
-        settings.setValue(RECEIVER_ID_KEY(), receiverId);
+        settings.set(RECEIVER_ID_KEY(), receiverId);
         settings.sync();
-    } else {
-        receiverId = value.toString();
     }
 
     return receiverId;
 }
 
-const QString& MessagingPropertiesPersistence::CHANNEL_ID_KEY()
+const std::string& MessagingPropertiesPersistence::CHANNEL_ID_KEY()
 {
-    static const QString value("messaging/channelId");
+    static const std::string value("messaging/channelId");
     return value;
 }
 
-const QString& MessagingPropertiesPersistence::RECEIVER_ID_KEY()
+const std::string& MessagingPropertiesPersistence::RECEIVER_ID_KEY()
 {
-    static const QString value("messaging/receiverId");
+    static const std::string value("messaging/receiverId");
     return value;
 }
 

@@ -19,15 +19,8 @@
 #include "joynr/InterfaceRegistrar.h"
 #include "joynr/vehicle/IGps.h"
 #include "joynr/vehicle/GpsRequestInterpreter.h"
-#include "joynr/vehicle/GpsRequestCaller.h"
 #include "joynr/tests/testRequestInterpreter.h"
 #include "joynr/IRequestInterpreter.h"
-#include "joynr/JoynrMessageSender.h"
-#include "joynr/MessagingQos.h"
-#include "joynr/JoynrMessage.h"
-#include "joynr/JoynrMessageFactory.h"
-#include "joynr/Dispatcher.h"
-#include "joynr/Request.h"
 #include "tests/utils/MockObjects.h"
 
 #include <gtest/gtest.h>
@@ -36,6 +29,16 @@
 
 using ::testing::A;
 using ::testing::_;
+
+MATCHER_P(providerRuntimeException, msg, "") {
+    return arg.getTypeName() == joynr::exceptions::ProviderRuntimeException::TYPE_NAME
+            && arg.getMessage() == msg;
+}
+
+MATCHER_P(methodInvocationException, msg, "") {
+    return arg.getTypeName() == joynr::exceptions::MethodInvocationException::TYPE_NAME
+            && arg.getMessage() == msg;
+}
 
 using namespace joynr;
 
@@ -51,6 +54,36 @@ protected:
     std::string gpsInterfaceName;
 };
 
+TEST_F(RequestInterpreterTest, execute_callsMethodOnRequestCallerWithMapParameter) {
+    std::shared_ptr<MockTestRequestCaller> mockCaller(new MockTestRequestCaller());
+    EXPECT_CALL(
+            *mockCaller,
+            mapParameters(A<const types::TestTypes::TStringKeyMap&>(),
+                          A<std::function<void(const types::TestTypes::TStringKeyMap&)>>(),
+                          A<std::function<void(const exceptions::JoynrException&)>>())
+    )
+            .Times(1);
+
+    tests::testRequestInterpreter interpreter;
+    std::string methodName = "mapParameters";
+    std::vector<Variant> paramValues;
+    types::TestTypes::TStringKeyMap inputMap;
+    paramValues.push_back(Variant::make<types::TestTypes::TStringKeyMap>(inputMap));
+    std::vector<std::string> paramDatatypes;
+    paramDatatypes.push_back("joynr.types.TestTypes.TStringKeyMap");
+
+    std::shared_ptr<MockCallback<std::vector<Variant>>> callback(new MockCallback<std::vector<Variant>>());
+    std::function<void(const std::vector<Variant>& response)> onSuccess = [inputMap, callback] (const std::vector<Variant>& response) {
+        EXPECT_EQ(inputMap, response.at(0).get<types::TestTypes::TStringKeyMap>());
+        callback->onSuccess(response);
+    };
+    std::function<void(const exceptions::JoynrException& exception)> onError = [] (const exceptions::JoynrException& exception) {
+        ADD_FAILURE()<< "unexpected call of onError function";
+    };
+    EXPECT_CALL(*callback, onSuccess(A<const std::vector<Variant>&>())).Times(1);
+
+    interpreter.execute(mockCaller, methodName, paramValues, paramDatatypes, onSuccess, onError);
+}
 
 TEST_F(RequestInterpreterTest, execute_callsMethodOnRequestCaller) {
     std::shared_ptr<MockTestRequestCaller> mockCaller(new MockTestRequestCaller());
@@ -62,12 +95,146 @@ TEST_F(RequestInterpreterTest, execute_callsMethodOnRequestCaller) {
             .Times(1);
 
     tests::testRequestInterpreter interpreter;
-    QString methodName = "getLocation";
-    QVariantList paramValues;
-    QVariantList paramDatatypes;
+    std::string methodName = "getLocation";
+    std::vector<Variant> paramValues;
+    std::vector<std::string> paramDatatypes;
 
-    std::function<void(const QVariant& response)> onSuccess = [] (const QVariant& response) {};
-    std::function<void(const exceptions::JoynrException& exception)> onError = [] (const exceptions::JoynrException& exception) {};
+    std::shared_ptr<MockCallback<std::vector<Variant>>> callback(new MockCallback<std::vector<Variant>>());
+    std::function<void(const std::vector<Variant>& response)> onSuccess = [callback] (const std::vector<Variant>& response) {
+        EXPECT_EQ(types::Localisation::GpsLocation(), response.at(0).get<types::Localisation::GpsLocation>());
+        callback->onSuccess(response);
+    };
+    std::function<void(const exceptions::JoynrException& exception)> onError = [] (const exceptions::JoynrException& exception) {
+        ADD_FAILURE()<< "unexpected call of onError function";
+    };
+    EXPECT_CALL(*callback, onSuccess(A<const std::vector<Variant>&>())).Times(1);
+
+    interpreter.execute(mockCaller, methodName, paramValues, paramDatatypes, onSuccess, onError);
+}
+
+TEST_F(RequestInterpreterTest, execute_callsMethodOnRequestCallerWithProviderRuntimeException) {
+    std::shared_ptr<MockTestRequestCaller> mockCaller(new MockTestRequestCaller());
+    EXPECT_CALL(
+            *mockCaller,
+            methodWithProviderRuntimeException(A<std::function<void()>>(),
+                        A<std::function<void(const exceptions::JoynrException&)>>())
+    )
+            .Times(1);
+
+    tests::testRequestInterpreter interpreter;
+    std::string methodName = "methodWithProviderRuntimeException";
+    std::vector<Variant> paramValues;
+    std::vector<std::string> paramDatatypes;
+
+    std::shared_ptr<MockCallback<void>> callback(new MockCallback<void>());
+    std::function<void(const std::vector<Variant>&& response)> onSuccess = [] (const std::vector<Variant>&& response) {ADD_FAILURE()<< "unexpected call of onSuccess function";};
+    std::function<void(const exceptions::JoynrException& exception)> onError = [callback] (const exceptions::JoynrException& exception) {
+        callback->onError(exception);
+    };
+    EXPECT_CALL(*callback, onError(providerRuntimeException(mockCaller->providerRuntimeExceptionTestMsg))).Times(1);
+
+    interpreter.execute(mockCaller, methodName, paramValues, paramDatatypes, onSuccess, onError);
+}
+
+TEST_F(RequestInterpreterTest, execute_callsGetterMethodOnRequestCallerWithProviderRuntimeException) {
+    std::shared_ptr<MockTestRequestCaller> mockCaller(new MockTestRequestCaller());
+    EXPECT_CALL(
+            *mockCaller,
+            getAttributeWithProviderRuntimeException(A<std::function<void(const int32_t&)>>(),
+                        A<std::function<void(const exceptions::ProviderRuntimeException&)>>())
+    )
+            .Times(1);
+
+    tests::testRequestInterpreter interpreter;
+    std::string methodName = "getAttributeWithProviderRuntimeException";
+    std::vector<Variant> paramValues;
+    std::vector<std::string> paramDatatypes;
+
+    std::shared_ptr<MockCallback<int32_t>> callback(new MockCallback<int32_t>());
+    std::function<void(const std::vector<Variant>&& response)> onSuccess = [] (const std::vector<Variant>&& response) {ADD_FAILURE()<< "unexpected call of onSuccess function";};
+    std::function<void(const exceptions::JoynrException& exception)> onError = [callback] (const exceptions::JoynrException& exception) {
+        callback->onError(exception);
+    };
+    EXPECT_CALL(*callback, onError(providerRuntimeException(mockCaller->providerRuntimeExceptionTestMsg))).Times(1);
+
+    interpreter.execute(mockCaller, methodName, paramValues, paramDatatypes, onSuccess, onError);
+}
+
+TEST_F(RequestInterpreterTest, execute_callsMethodWithInvalidArguments) {
+    std::shared_ptr<MockTestRequestCaller> mockCaller(new MockTestRequestCaller());
+
+    tests::testRequestInterpreter interpreter;
+    std::string methodName = "sumInts";
+    std::vector<Variant> paramValues;
+    std::vector<std::string> paramDatatypes;
+    paramValues.push_back(Variant::make<std::string>("invalidParamCannotBeConvertedToInteger[]"));
+    paramDatatypes.push_back("Integer[]");
+
+    std::shared_ptr<MockCallback<int32_t>> callback(new MockCallback<int32_t>());
+    std::function<void(const std::vector<Variant>&& response)> onSuccess = [] (const std::vector<Variant>&& response) {ADD_FAILURE()<< "unexpected call of onSuccess function";};
+    std::function<void(const exceptions::JoynrException& exception)> onError = [callback] (const exceptions::JoynrException& exception) {
+        callback->onError(exception);
+    };
+    EXPECT_CALL(*callback, onError(methodInvocationException("Illegal argument for method sumInts: ints (Integer[])"))).Times(1);
+
+    interpreter.execute(mockCaller, methodName, paramValues, paramDatatypes, onSuccess, onError);
+}
+
+TEST_F(RequestInterpreterTest, execute_callsSetterMethodWithInvalidArguments) {
+    std::shared_ptr<MockTestRequestCaller> mockCaller(new MockTestRequestCaller());
+
+    tests::testRequestInterpreter interpreter;
+    std::string methodName = "setTestAttribute";
+    std::vector<Variant> paramValues;
+    std::vector<std::string> paramDatatypes;
+    paramValues.push_back(Variant::make<std::string>("invalidParamCannotBeConvertedToInt32_t"));
+    paramDatatypes.push_back("Doesn'tMatter");
+
+    std::shared_ptr<MockCallback<int32_t>> callback(new MockCallback<int32_t>());
+    std::function<void(const std::vector<Variant>&& response)> onSuccess = [] (const std::vector<Variant>&& response) {ADD_FAILURE()<< "unexpected call of onSuccess function";};
+    std::function<void(const exceptions::JoynrException& exception)> onError = [callback] (const exceptions::JoynrException& exception) {
+        callback->onError(exception);
+    };
+    EXPECT_CALL(*callback, onError(methodInvocationException("Illegal argument for attribute setter setTestAttribute (Integer)"))).Times(1);
+
+    interpreter.execute(mockCaller, methodName, paramValues, paramDatatypes, onSuccess, onError);
+}
+
+TEST_F(RequestInterpreterTest, execute_callsSetterMethodWithInvalidArguments2) {
+    std::shared_ptr<MockTestRequestCaller> mockCaller(new MockTestRequestCaller());
+
+    tests::testRequestInterpreter interpreter;
+    std::string methodName = "setTestAttribute";
+    std::vector<Variant> paramValues;
+    std::vector<std::string> paramDatatypes;
+    paramValues.push_back(Variant::make<joynr::types::Localisation::GpsLocation>(types::Localisation::GpsLocation()));
+    paramDatatypes.push_back("Doesn'tMatter");
+
+    std::shared_ptr<MockCallback<int32_t>> callback(new MockCallback<int32_t>());
+    std::function<void(const std::vector<Variant>&& response)> onSuccess = [] (const std::vector<Variant>&& response) {ADD_FAILURE()<< "unexpected call of onSuccess function";};
+    std::function<void(const exceptions::JoynrException& exception)> onError = [callback] (const exceptions::JoynrException& exception) {
+        callback->onError(exception);
+    };
+    EXPECT_CALL(*callback, onError(methodInvocationException("Illegal argument for attribute setter setTestAttribute (Integer)"))).Times(1);
+
+    interpreter.execute(mockCaller, methodName, paramValues, paramDatatypes, onSuccess, onError);
+}
+
+TEST_F(RequestInterpreterTest, execute_callsNonExistingMethod) {
+    std::shared_ptr<MockTestRequestCaller> mockCaller(new MockTestRequestCaller());
+
+    tests::testRequestInterpreter interpreter;
+    std::string methodName = "execute_callsNonExistingMethod";
+    std::vector<Variant> paramValues;
+    std::vector<std::string> paramDatatypes;
+
+    std::shared_ptr<MockCallback<int32_t>> callback(new MockCallback<int32_t>());
+    std::function<void(const std::vector<Variant>&& response)> onSuccess = [] (const std::vector<Variant>&& response) {ADD_FAILURE()<< "unexpected call of onSuccess function";};
+    std::function<void(const exceptions::JoynrException& exception)> onError = [callback] (const exceptions::JoynrException& exception) {
+        callback->onError(exception);
+    };
+    EXPECT_CALL(*callback, onError(methodInvocationException("unknown method name for interface test: execute_callsNonExistingMethod"))).Times(1);
+
     interpreter.execute(mockCaller, methodName, paramValues, paramDatatypes, onSuccess, onError);
 }
 

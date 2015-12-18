@@ -23,9 +23,9 @@
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/sink.h"
 
-#include <QString>
-#include <QHash>
-#include <QMutex>
+#include <string>
+#include <unordered_map>
+#include <mutex>
 
 namespace joynr
 {
@@ -50,20 +50,21 @@ public:
      * @param className
      * @return
      */
-    virtual joynr_logging::Logger* getLogger(const QString contextId, const QString className);
+    virtual joynr_logging::Logger* getLogger(const std::string contextId,
+                                             const std::string className);
     /**
      * @brief destroyLogger
      * @param contextId
      * @param className
      */
-    virtual void destroyLogger(const QString contextId, const QString className);
+    virtual void destroyLogger(const std::string contextId, const std::string className);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(SpdlogLogging);
-    typedef QHash<QString, joynr_logging::Logger*> LoggerHash;
+    typedef std::unordered_map<std::string, joynr_logging::Logger*> LoggerHash;
     LoggerHash loggers;
 
-    QMutex loggerMutex;
+    std::mutex loggerMutex;
 };
 
 /**
@@ -77,7 +78,7 @@ public:
      * @brief SpdlogLogger constructs logger marked with given prefix
      * @param prefix unique logger id
      */
-    SpdlogLogger(const QString& prefix);
+    SpdlogLogger(const std::string& prefix);
     /**
      * @brief log
      * @param logLevel
@@ -89,7 +90,7 @@ public:
      * @param logLevel
      * @param message as const string ref
      */
-    virtual void log(joynr_logging::LogLevel logLevel, const QString& message);
+    virtual void log(joynr_logging::LogLevel logLevel, const std::string& message);
 
 private:
     void configureLogger();
@@ -105,35 +106,36 @@ void SpdlogLogging::shutdown()
 {
 }
 
-joynr_logging::Logger* SpdlogLogging::getLogger(const QString contextId, const QString className)
+joynr_logging::Logger* SpdlogLogging::getLogger(const std::string contextId,
+                                                const std::string className)
 {
-    std::string prefix = contextId.toStdString() + "-" + className.toStdString();
-    if (!loggers.contains(QString::fromUtf8(prefix.c_str()))) {
-        QMutexLocker lock(&loggerMutex);
-        if (!loggers.contains(QString::fromUtf8(prefix.c_str()))) {
-            loggers.insert(QString::fromUtf8(prefix.c_str()),
-                           new SpdlogLogger(QString::fromStdString(prefix)));
+    std::string prefix = contextId + "-" + className;
+    if (loggers.find(prefix) == loggers.end()) {
+        std::lock_guard<std::mutex> lock(loggerMutex);
+        if (loggers.find(prefix) == loggers.end()) {
+            loggers.insert({prefix, new SpdlogLogger(prefix)});
         }
     }
 
-    return loggers.value(QString::fromUtf8(prefix.c_str()));
+    return loggers.find(prefix)->second;
 }
 
-void SpdlogLogging::destroyLogger(const QString contextId, const QString className)
+void SpdlogLogging::destroyLogger(const std::string contextId, const std::string className)
 {
-    std::string prefix = contextId.toStdString() + " - " + className.toStdString();
-    QMutexLocker lock(&loggerMutex);
-    if (!loggers.contains(QString::fromUtf8(prefix.c_str()))) {
+    std::string prefix = FormatString("%1 - %2").arg(contextId).arg(className).str();
+    std::lock_guard<std::mutex> lock(loggerMutex);
+    if (loggers.find(prefix) == loggers.end()) {
         return;
     }
-    delete loggers.value(QString::fromUtf8(prefix.c_str()));
-    loggers.remove(QString::fromUtf8(prefix.c_str()));
+
+    delete loggers.find(prefix)->second;
+    loggers.erase(prefix);
 }
 
-SpdlogLogger::SpdlogLogger(const QString& prefix) : logger(nullptr)
+SpdlogLogger::SpdlogLogger(const std::string& prefix) : logger(nullptr)
 {
     // create logger
-    logger = spdlog::stdout_logger_mt(prefix.toStdString());
+    logger = spdlog::stdout_logger_mt(prefix);
 
     // configure logger
     configureLogger();
@@ -163,9 +165,9 @@ void SpdlogLogger::log(joynr_logging::LogLevel logLevel, const char* message)
     }
 }
 
-void SpdlogLogger::log(joynr_logging::LogLevel logLevel, const QString& message)
+void SpdlogLogger::log(joynr_logging::LogLevel logLevel, const std::string& message)
 {
-    this->log(logLevel, message.toStdString().c_str());
+    this->log(logLevel, message.c_str());
 }
 
 void SpdlogLogger::configureLogger()

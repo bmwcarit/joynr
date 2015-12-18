@@ -19,7 +19,6 @@
 
 #include "systemintegration-tests/CombinedEnd2EndTest.h"
 #include "joynr/LocalChannelUrlDirectory.h"
-#include "utils/QThreadSleep.h"
 
 #include <QtConcurrent/QtConcurrent>
 
@@ -29,7 +28,7 @@ using namespace joynr_logging;
 TEST_F(CombinedEnd2EndTest, channelUrlProxyGetsNoUrlOnNonRegisteredChannel) {
     ProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>* channelUrlDirectoryProxyBuilder =
             runtime1->createProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>(
-                TypeUtil::toStd(messagingSettings1.getDiscoveryDirectoriesDomain())
+                messagingSettings1.getDiscoveryDirectoriesDomain()
             );
 
     DiscoveryQos discoveryQos;
@@ -49,7 +48,7 @@ TEST_F(CombinedEnd2EndTest, channelUrlProxyGetsNoUrlOnNonRegisteredChannel) {
 TEST_F(CombinedEnd2EndTest, channelUrlProxyRegistersUrlsCorrectly) {
     ProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>* channelUrlDirectoryProxyBuilder =
             runtime1->createProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>(
-                TypeUtil::toStd(messagingSettings1.getDiscoveryDirectoriesDomain())
+                messagingSettings1.getDiscoveryDirectoriesDomain()
             );
 
     DiscoveryQos discoveryQos;
@@ -64,7 +63,7 @@ TEST_F(CombinedEnd2EndTest, channelUrlProxyRegistersUrlsCorrectly) {
     // There is a race condition where the actual channel url can be set AFTER the dummy data
     // used for testing. Pause for a short time so that the dummy data is always written
     // last
-    QThreadSleep::msleep(2000);
+    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 
     // Register new channel URLs
     std::string channelId = "bogus_1";
@@ -94,7 +93,7 @@ TEST_F(CombinedEnd2EndTest, channelUrlProxyRegistersUrlsCorrectly) {
 TEST_F(CombinedEnd2EndTest, DISABLED_channelUrlProxyUnRegistersUrlsCorrectly) {
     ProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>* channelUrlDirectoryProxyBuilder =
             runtime1->createProxyBuilder<infrastructure::ChannelUrlDirectoryProxy>(
-                TypeUtil::toStd(messagingSettings1.getDiscoveryDirectoriesDomain())
+                messagingSettings1.getDiscoveryDirectoriesDomain()
             );
 
     DiscoveryQos discoveryQos;

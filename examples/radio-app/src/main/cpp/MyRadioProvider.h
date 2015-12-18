@@ -20,8 +20,8 @@
 #define MY_RADIO_PROVIDER_H
 
 #include "joynr/vehicle/DefaultRadioProvider.h"
-#include "joynr/vehicle/QtRadioStation.h"
-#include "joynr/vehicle/QtCountry.h"
+#include "joynr/vehicle/RadioStation.h"
+#include "joynr/vehicle/Country.h"
 #include "joynr/joynrlogging.h"
 #include "joynr/exceptions/JoynrException.h"
 #include <QList>

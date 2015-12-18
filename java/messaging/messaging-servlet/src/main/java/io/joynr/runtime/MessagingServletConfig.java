@@ -19,6 +19,12 @@ package io.joynr.runtime;
  * #L%
  */
 
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.Module;
+import com.google.inject.Provides;
+import com.google.inject.Scopes;
 import io.joynr.JoynrApplicationLauncher;
 import io.joynr.guice.LowerCaseProperties;
 import io.joynr.guice.servlet.AbstractJoynrServletModule;
@@ -43,11 +49,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.Module;
-import com.google.inject.Provides;
-import com.google.inject.Scopes;
 import com.google.inject.servlet.GuiceServletContextListener;
 import com.google.inject.util.Modules;
 import com.sun.jersey.guice.JerseyServletModule;
@@ -202,7 +203,11 @@ public class MessagingServletConfig extends GuiceServletContextListener {
         Set<Class<? extends AbstractJoynrInjectorFactory>> joynrInjectorFactoryClasses = reflections.getSubTypesOf(AbstractJoynrInjectorFactory.class);
         assert (joynrInjectorFactoryClasses.size() == 1);
 
-        Injector injector = Guice.createInjector();
+        Injector injector = Guice.createInjector(new AbstractModule() {
+            @Override
+            protected void configure() {
+            }
+        });
         AbstractJoynrInjectorFactory injectorFactory = injector.getInstance(joynrInjectorFactoryClasses.iterator()
                                                                                                        .next());
         appLauncher = injector.getInstance(JoynrApplicationLauncher.class);
@@ -212,8 +217,8 @@ public class MessagingServletConfig extends GuiceServletContextListener {
         appLauncher.init(properties,
                          joynrApplicationsClasses,
                          injectorFactory,
-                         Modules.override(jerseyServletModule).with(servletModule),
-                         new ServletMessagingModule());
+                         Modules.override(jerseyServletModule, new CCInProcessRuntimeModule())
+                                .with(servletModule, new ServletMessagingModule()));
 
         super.contextInitialized(servletContextEvent);
     }

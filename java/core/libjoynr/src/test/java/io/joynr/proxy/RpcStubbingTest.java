@@ -27,7 +27,26 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import io.joynr.accesscontrol.AccessController;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
+
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.dispatcher.rpc.JoynrSyncInterface;
@@ -44,7 +63,7 @@ import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
-import io.joynr.messaging.MessagingModule;
+import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
@@ -52,32 +71,11 @@ import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.Promise;
 import io.joynr.provider.RequestCallerFactory;
 import io.joynr.runtime.PropertyLoader;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
-
 import joynr.Reply;
 import joynr.Request;
 import joynr.exceptions.ApplicationException;
 import joynr.types.Localisation.GpsFixEnum;
 import joynr.types.Localisation.GpsLocation;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
-
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
 
 /**
  * Simulates consumer-side call to JoynMessagingConnectorInvocationHandler, with the request being
@@ -103,8 +101,6 @@ public class RpcStubbingTest {
             new GpsLocation(3.0d, 4.0d, 0d, GpsFixEnum.MODE2D, 0d, 0d, 0d, 0d, 0l, 0l, 0) });
 
     private static final long DEFAULT_TTL = 2000L;
-    @Mock
-    private AccessController accessControllerMock;
 
     public static interface TestSync extends JoynrSyncInterface {
         public GpsLocation returnsGpsLocation();
@@ -166,15 +162,9 @@ public class RpcStubbingTest {
         toParticipantId = UUID.randomUUID().toString();
 
         // required to inject static members of JoynMessagingConnectorFactory
-        injector = Guice.createInjector(new MessagingModule(),
-                                        new JoynrPropertiesModule(PropertyLoader.loadProperties("defaultMessaging.properties")),
-                                        new DispatcherTestModule(),
-                                        new AbstractModule() {
-                                            @Override
-                                            protected void configure() {
-                                                bind(AccessController.class).toInstance(accessControllerMock);
-                                            }
-                                        });
+        injector = Guice.createInjector(new JoynrPropertiesModule(PropertyLoader.loadProperties("defaultMessaging.properties")),
+                                        new JsonMessageSerializerModule(),
+                                        new DispatcherTestModule());
 
         final RequestInterpreter requestInterpreter = injector.getInstance(RequestInterpreter.class);
         final RequestCallerFactory requestCallerFactory = injector.getInstance(RequestCallerFactory.class);

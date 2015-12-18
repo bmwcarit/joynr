@@ -21,7 +21,6 @@
 
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/ITimeoutListener.h"
-#include <QString>
 #include <cassert>
 #include <memory>
 
@@ -50,7 +49,7 @@ public:
       * This method is not part of the interface, to allow the interface to be untemplated
       **/
 
-    virtual void returnError(std::shared_ptr<exceptions::JoynrException> error) = 0;
+    virtual void returnError(const exceptions::JoynrException& error) = 0;
 
     /**
      * @brief This method will be called by the directory when

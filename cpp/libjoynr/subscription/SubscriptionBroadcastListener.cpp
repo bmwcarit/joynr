@@ -25,15 +25,15 @@
 namespace joynr
 {
 
-SubscriptionBroadcastListener::SubscriptionBroadcastListener(const QString& subscriptionId,
+SubscriptionBroadcastListener::SubscriptionBroadcastListener(const std::string& subscriptionId,
                                                              PublicationManager& publicationManager)
         : subscriptionId(subscriptionId), publicationManager(publicationManager)
 {
 }
 
 void SubscriptionBroadcastListener::broadcastOccurred(
-        const QList<QVariant>& values,
-        const QList<std::shared_ptr<IBroadcastFilter>>& filters)
+        const std::vector<Variant>& values,
+        const std::vector<std::shared_ptr<IBroadcastFilter>>& filters)
 {
     publicationManager.broadcastOccurred(subscriptionId, values, filters);
 }

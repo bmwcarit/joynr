@@ -86,7 +86,7 @@ public:
     virtual std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>>
     getUrlsForChannelAsync(
             const std::string& channelId,
-            const qint64& timeout_ms,
+            const int64_t& timeout_ms,
             std::function<void(const types::ChannelUrlInformation& channelUrls)>
                     onSuccess = nullptr,
             std::function<void(const exceptions::JoynrException& error)> onError = nullptr);
@@ -96,7 +96,7 @@ private:
     void init();
     MessagingSettings& messagingSettings;
     std::shared_ptr<infrastructure::ChannelUrlDirectoryProxy> channelUrlDirectoryProxy;
-    QMap<QString, types::QtChannelUrlInformation> localCache;
+    QMap<QString, types::ChannelUrlInformation> localCache;
     static joynr_logging::Logger* logger;
 };
 

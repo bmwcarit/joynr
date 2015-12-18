@@ -18,14 +18,13 @@
  */
 #include "joynr/Util.h"
 
-#include "qjson/parser.h"
-#include "qjson/serializer.h"
-
 #include <QtCore/QDebug>
 #include <QByteArray>
-#include <QUuid>
 #include <cstring>
-
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <regex>
 namespace joynr
 {
 
@@ -33,10 +32,10 @@ using namespace joynr_logging;
 
 Logger* Util::logger = Logging::getInstance()->getLogger("MSG", "Util");
 
-QList<QByteArray> Util::splitIntoJsonObjects(const QByteArray& jsonStream)
+std::vector<QByteArray> Util::splitIntoJsonObjects(const QByteArray& jsonStream)
 {
     // This code relies assumes jsonStream is a valid JSON string
-    QList<QByteArray> jsonObjects;
+    std::vector<QByteArray> jsonObjects;
     int parenthesisCount = 0;
     int currentObjectStart = -1;
     bool isInsideString = false;
@@ -59,7 +58,7 @@ QList<QByteArray> Util::splitIntoJsonObjects(const QByteArray& jsonStream)
         }
         if (parenthesisCount == 0 && currentObjectStart >= 0) {
             // found end of object
-            jsonObjects += jsonStream.mid(currentObjectStart, i - currentObjectStart + 1);
+            jsonObjects.push_back(jsonStream.mid(currentObjectStart, i - currentObjectStart + 1));
 
             currentObjectStart = -1;
         }
@@ -67,42 +66,39 @@ QList<QByteArray> Util::splitIntoJsonObjects(const QByteArray& jsonStream)
     return jsonObjects;
 }
 
-QString Util::attributeGetterFromName(const QString& attributeName)
+std::string Util::attributeGetterFromName(const std::string& attributeName)
 {
-    QString result = attributeName;
-    result[0] = result[0].toUpper();
-    result.prepend("get");
+    std::string result = attributeName;
+    result[0] = std::toupper(result[0]);
+    result.insert(0, "get");
     return result;
 }
 
-QString Util::createUuid()
+std::string Util::createUuid()
 {
-    QString baseUuid = QUuid::createUuid().toString();
-    return baseUuid.mid(1, baseUuid.length() - 2);
+    boost::uuids::uuid uuid = boost::uuids::random_generator()();
+    return boost::uuids::to_string(uuid);
 }
 
 void Util::logSerializedMessage(joynr_logging::Logger* logger,
-                                const QString& explanation,
-                                const QString& message)
+                                const std::string& explanation,
+                                const std::string& message)
 {
-    if (message.length() > 2048) {
+    if (message.size() > 2048) {
         LOG_DEBUG(logger,
-                  QString("%1 %2<**truncated, length %3")
+                  FormatString("%1 %2<**truncated, length %3")
                           .arg(explanation)
-                          .arg(message.left(2048))
-                          .arg(message.length()));
+                          .arg(message.substr(0, 2048))
+                          .arg(message.length())
+                          .str());
     } else {
         LOG_DEBUG(logger,
-                  QString("%1 %2, length %3").arg(explanation).arg(message).arg(message.length()));
+                  FormatString("%1 %2, length %3")
+                          .arg(explanation)
+                          .arg(message)
+                          .arg(message.length())
+                          .str());
     }
-}
-
-QString Util::removeNamespace(const QString& className)
-{
-    static QString doubleColon = QString::fromLatin1("::");
-
-    int namespaceEnd = className.indexOf(doubleColon);
-    return (namespaceEnd == -1) ? className : className.mid(namespaceEnd + 2);
 }
 
 void Util::throwJoynrException(const exceptions::JoynrException& error)
@@ -136,4 +132,16 @@ void Util::throwJoynrException(const exceptions::JoynrException& error)
     }
 }
 
+std::string removeEscapeFromSpecialChars(const std::string& inputStr)
+{
+    std::string unEscapedString;
+    std::regex expr(R"((\\)(\\|"))");
+    std::regex_replace(std::back_inserter(unEscapedString),
+                       inputStr.begin(),
+                       inputStr.end(),
+                       expr,
+                       std::string(R"($2)"));
+
+    return unEscapedString;
+}
 } // namespace joynr

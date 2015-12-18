@@ -27,6 +27,8 @@ import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
+import org.franca.core.franca.FMethod
+import java.util.Map
 
 class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 
@@ -76,7 +78,18 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 						const exceptions::ProviderRuntimeException&
 				)> onError
 		) {
-			provider->get«attributeName.toFirstUpper»(onSuccess, onError);
+			try {
+				provider->get«attributeName.toFirstUpper»(onSuccess, onError);
+			} catch (exceptions::ProviderRuntimeException& e) {
+				std::string message = "Could not perform «interfaceName»RequestCaller::get«attributeName.toFirstUpper», caught exception: " +
+									e.getTypeName() + ":" + e.getMessage();
+				onError(e);
+			} catch (exceptions::JoynrException& e) {
+				std::string message = "Could not perform «interfaceName»RequestCaller::get«attributeName.toFirstUpper», caught exception: " +
+									e.getTypeName() + ":" + e.getMessage();
+				onError(exceptions::ProviderRuntimeException("caught exception: " + e.getTypeName() + ":" +
+															e.getMessage()));
+			}
 		}
 	«ENDIF»
 	«IF attribute.writable»
@@ -87,7 +100,18 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 						const exceptions::ProviderRuntimeException&
 				)> onError
 		) {
-			provider->set«attributeName.toFirstUpper»(«attributeName.toFirstLower», onSuccess, onError);
+			try {
+				provider->set«attributeName.toFirstUpper»(«attributeName.toFirstLower», onSuccess, onError);
+			} catch (exceptions::ProviderRuntimeException& e) {
+				std::string message = "Could not perform «interfaceName»RequestCaller::set«attributeName.toFirstUpper», caught exception: " +
+									e.getTypeName() + ":" + e.getMessage();
+				onError(e);
+			} catch (exceptions::JoynrException& e) {
+				std::string message = "Could not perform «interfaceName»RequestCaller::set«attributeName.toFirstUpper», caught exception: " +
+									e.getTypeName() + ":" + e.getMessage();
+				onError(exceptions::ProviderRuntimeException("caught exception: " + e.getTypeName() + ":" +
+															e.getMessage()));
+			}
 		}
 	«ENDIF»
 
@@ -115,34 +139,39 @@ class InterfaceRequestCallerCppTemplate implements InterfaceTemplate{
 			)> onError
 	) {
 		«IF method.hasErrorEnum»
-			«IF method.errors != null»
-				«val packagePath = getPackagePathWithJoynrPrefix(method.errors, "::")»
-				«val errorTypeName = packagePath + "::" + methodToErrorEnumName.get(method)»
-				std::function<void (const «errorTypeName»::«nestedEnumName»&)> onErrorWrapper =
-						[onError] (const «errorTypeName»::«nestedEnumName»& errorEnum) {
-							std::string typeName = «errorTypeName»::getTypeName();
-							std::string name = «errorTypeName»::getLiteral(errorEnum);
-			«ELSE»
-				«val errorTypeName = buildPackagePath(method.errorEnum, "::", true) + method.errorEnum.joynrName»
-				std::function<void (const «errorTypeName»::«nestedEnumName»&)> onErrorWrapper =
-						[onError] (const «errorTypeName»::«nestedEnumName»& errorEnum) {
-							std::string typeName = «errorTypeName»::getTypeName();
-							std::string name = «errorTypeName»::getLiteral(errorEnum);
-			«ENDIF»
-						onError(exceptions::ApplicationException(name, errorEnum, name, typeName));
-					};
+			«val errorTypeName = getErrorTypeName(method, methodToErrorEnumName)»
+			std::function<void (const «errorTypeName»::«nestedEnumName»&)> onErrorWrapper =
+					[onError] (const «errorTypeName»::«nestedEnumName»& errorEnum) {
+						std::string typeName = «errorTypeName»::getTypeName();
+						std::string name = «errorTypeName»::getLiteral(errorEnum);
+						onError(exceptions::ApplicationException(typeName + "::" + name, Variant::make<«errorTypeName»::«nestedEnumName»>(errorEnum), name, typeName));
+				};
 		«ELSE»
 		std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onErrorWrapper =
 				[onError] (const joynr::exceptions::ProviderRuntimeException& error) {
 					onError(error);
 				};
 		«ENDIF»
-		
-		provider->«methodName»(
-				«IF !method.inputParameters.empty»«inputUntypedParamList»,«ENDIF»
-				onSuccess,
-				onErrorWrapper
-		);
+		try {
+			provider->«methodName»(
+					«IF !method.inputParameters.empty»«inputUntypedParamList»,«ENDIF»
+					onSuccess,
+					onErrorWrapper
+			);
+		// ApplicationExceptions should not be created by the application itself to ensure
+		// serializability. They are treated as JoynrExceptions. They can only be handled correctly
+		// if the constructor is used properly (with the appropriate literal of the reported error
+		// enumeration).
+		} catch (exceptions::ProviderRuntimeException& e) {
+			std::string message = "Could not perform «interfaceName»RequestCaller::«methodName.toFirstUpper», caught exception: " +
+								e.getTypeName() + ":" + e.getMessage();
+			onError(e);
+		} catch (exceptions::JoynrException& e) {
+			std::string message = "Could not perform «interfaceName»RequestCaller::«methodName.toFirstUpper», caught exception: " +
+								e.getTypeName() + ":" + e.getMessage();
+			onError(exceptions::ProviderRuntimeException("caught exception: " + e.getTypeName() + ":" +
+														e.getMessage()));
+		}
 	}
 
 «ENDFOR»
@@ -169,4 +198,13 @@ void «interfaceName»RequestCaller::unregisterBroadcastListener(const std::stri
 
 «getNamespaceEnder(serviceInterface)»
 '''
+
+def getErrorTypeName(FMethod method, Map<FMethod, String> methodToErrorEnumName) {
+	if (method.errors != null) {
+		val packagePath = getPackagePathWithJoynrPrefix(method.errors, "::")
+		packagePath + "::" + methodToErrorEnumName.get(method)
+	} else{
+		buildPackagePath(method.errorEnum, "::", true) + method.errorEnum.joynrName
+	}
+}
 }

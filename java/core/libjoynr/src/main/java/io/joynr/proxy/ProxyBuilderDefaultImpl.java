@@ -25,7 +25,6 @@ import io.joynr.arbitration.ArbitrationStatus;
 import io.joynr.arbitration.Arbitrator;
 import io.joynr.arbitration.ArbitratorFactory;
 import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.dispatcher.rpc.JoynrInterface;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrIllegalStateException;
@@ -34,6 +33,7 @@ import io.joynr.messaging.routing.MessageRouter;
 
 import java.util.UUID;
 
+import joynr.system.DiscoveryAsync;
 import joynr.system.RoutingTypes.Address;
 
 import org.slf4j.Logger;
@@ -45,7 +45,7 @@ public class ProxyBuilderDefaultImpl<T extends JoynrInterface> implements ProxyB
     private DiscoveryQos discoveryQos;
     private MessagingQos messagingQos;
     private Arbitrator arbitrator;
-    private LocalCapabilitiesDirectory localCapabilitiesDirectory;
+    private DiscoveryAsync localDiscoveryAggregator;
     private String domain;
     private String proxyParticipantId;
     private boolean buildCalled;
@@ -56,7 +56,7 @@ public class ProxyBuilderDefaultImpl<T extends JoynrInterface> implements ProxyB
     private MessageRouter messageRouter;
     private Address libjoynrMessagingAddress;
 
-    ProxyBuilderDefaultImpl(LocalCapabilitiesDirectory capabilitiesDirectory,
+    ProxyBuilderDefaultImpl(DiscoveryAsync localDiscoveryAggregator,
                             String domain,
                             Class<T> interfaceClass,
                             ProxyInvocationHandlerFactory proxyInvocationHandlerFactory,
@@ -75,10 +75,10 @@ public class ProxyBuilderDefaultImpl<T extends JoynrInterface> implements ProxyB
         myClass = interfaceClass;
         this.proxyParticipantId = UUID.randomUUID().toString();
 
-        this.localCapabilitiesDirectory = capabilitiesDirectory;
+        this.localDiscoveryAggregator = localDiscoveryAggregator;
         this.domain = domain;
         discoveryQos = new DiscoveryQos();
-        arbitrator = ArbitratorFactory.create(domain, interfaceName, discoveryQos, localCapabilitiesDirectory);
+        arbitrator = ArbitratorFactory.create(domain, interfaceName, discoveryQos, localDiscoveryAggregator);
         messagingQos = new MessagingQos();
         buildCalled = false;
 
@@ -122,7 +122,7 @@ public class ProxyBuilderDefaultImpl<T extends JoynrInterface> implements ProxyB
     public ProxyBuilder<T> setDiscoveryQos(final DiscoveryQos discoveryQos) throws DiscoveryException {
         this.discoveryQos = discoveryQos;
         // TODO which interfaceName should be used here?
-        arbitrator = ArbitratorFactory.create(domain, interfaceName, discoveryQos, localCapabilitiesDirectory);
+        arbitrator = ArbitratorFactory.create(domain, interfaceName, discoveryQos, localDiscoveryAggregator);
 
         return this;
     }

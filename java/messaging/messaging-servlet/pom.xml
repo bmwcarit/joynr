@@ -29,7 +29,7 @@
 	<parent>
 		<groupId>io.joynr.java</groupId>
 		<artifactId>messaging</artifactId>
-		<version>0.12.3</version>
+		<version>0.13.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -50,7 +50,6 @@
 		<dependency>
 			<groupId>javassist</groupId>
 			<artifactId>javassist</artifactId>
-			<version>3.12.1.GA</version>
 			<classifier>sources</classifier>
 		</dependency>
 		<dependency>
@@ -113,7 +112,7 @@
 
 		<dependency>
 			<groupId>io.joynr.java.core</groupId>
-			<artifactId>libjoynr</artifactId>
+			<artifactId>clustercontroller-inprocess-runtime</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 

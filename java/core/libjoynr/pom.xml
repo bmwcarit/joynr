@@ -26,16 +26,11 @@
 	<parent>
 		<groupId>io.joynr.java</groupId>
 		<artifactId>core</artifactId>
-		<version>0.12.3</version>
+		<version>0.13.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<dependencies>
-		<dependency>
-			<groupId>io.joynr.java.common</groupId>
-			<artifactId>infrastructure-common</artifactId>
-			<version>${project.version}</version>
-		</dependency>
 		<dependency>
 			<groupId>io.joynr.java</groupId>
 			<artifactId>javaapi</artifactId>
@@ -43,40 +38,24 @@
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>messaging-common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.common</groupId>
+			<artifactId>discovery-common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		<!-- used to scan for annotations for subtypes -->
 		<dependency>
 			<groupId>org.reflections</groupId>
 			<artifactId>reflections</artifactId>
 		</dependency>
-		<!--
-			Due to compatibility reasons of httpclient library provided within the
-			Android platform, we use an Android port httpclient-android. It is
-			compiled against official Android SDK, however we must use shaded
-			(org.apache.http.**.*HC4) classes.
-
-			See also: https://hc.apache.org/httpcomponents-client-4.3.x/android-port.html
-
-			The dependency to httpclient is needed here anyway, because httpclient-android
-			is not pulling in transitive dependencies. httpclient is then excluded in
-			Android projects to avoid duplicate file errors during apk build.
-		-->
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-			<type>test-jar</type>
-			<scope>test</scope>
-		</dependency>
 		<dependency>
 			<groupId>com.google.inject.extensions</groupId>
 			<artifactId>guice-assistedinject</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
@@ -115,23 +94,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
-			<artifactId>jetty-server</artifactId>
-			<version>${jetty.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-webapp</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.jetty.websocket</groupId>
-			<artifactId>websocket-client</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.jetty.websocket</groupId>
-			<artifactId>websocket-server</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
