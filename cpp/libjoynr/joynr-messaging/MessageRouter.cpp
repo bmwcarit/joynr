@@ -303,6 +303,13 @@ void MessageRouter::sendMessage(const JoynrMessage& message,
     auto stub = messagingStubFactory->create(*destAddress);
     if (stub) {
         threadPool.execute(new MessageRunnable(message, stub));
+    } else {
+        LOG_WARN(
+                logger,
+                FormatString("Messag with payload %1 could not be send to %2. Stub creation failed")
+                        .arg(message.getPayload())
+                        .arg((*destAddress).toString())
+                        .str());
     }
 }
 

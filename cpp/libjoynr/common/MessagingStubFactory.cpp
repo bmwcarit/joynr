@@ -57,7 +57,6 @@ std::shared_ptr<IMessaging> MessagingStubFactory::create(
                     std::shared_ptr<IMessaging> stub = (*it)->create(destinationAddress);
                     address2MessagingStubDirectory.add(destinationAddress, stub);
 
-                    assert(stub);
                     return stub;
                 }
             }
