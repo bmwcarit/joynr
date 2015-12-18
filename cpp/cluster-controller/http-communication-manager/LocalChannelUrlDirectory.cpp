@@ -18,7 +18,7 @@
  */
 #include "joynr/LocalChannelUrlDirectory.h"
 #include "joynr/Future.h"
-#include "joynr/TypeUtil.h"
+#include "joynr/QtTypeUtil.h"
 
 namespace joynr
 {
@@ -51,7 +51,7 @@ void LocalChannelUrlDirectory::init()
     std::string channelUrlDirectoryUrl = messagingSettings.getChannelUrlDirectoryUrl();
     channelUrlDirectoryUrls.push_back(channelUrlDirectoryUrl);
     channelUrlDirectoryUrlInformation.setUrls(channelUrlDirectoryUrls);
-    localCache.insert(TypeUtil::toQt(messagingSettings.getChannelUrlDirectoryChannelId()),
+    localCache.insert(QtTypeUtil::toQt(messagingSettings.getChannelUrlDirectoryChannelId()),
                       channelUrlDirectoryUrlInformation);
     LOG_TRACE(logger,
               FormatString("Provisioned Global Channel URL Directory URL (%1) into Local "
@@ -65,7 +65,7 @@ void LocalChannelUrlDirectory::init()
     std::string capabilitiesDirectoryUrl = messagingSettings.getCapabilitiesDirectoryUrl();
     capabilitiesDirectoryUrls.push_back(capabilitiesDirectoryUrl);
     capabilitiesDirectoryUrlInformation.setUrls(capabilitiesDirectoryUrls);
-    localCache.insert(TypeUtil::toQt(messagingSettings.getCapabilitiesDirectoryChannelId()),
+    localCache.insert(QtTypeUtil::toQt(messagingSettings.getCapabilitiesDirectoryChannelId()),
                       capabilitiesDirectoryUrlInformation);
     LOG_TRACE(logger,
               FormatString("Provisioned Global Capabilities Directory URL (%1) into Local "

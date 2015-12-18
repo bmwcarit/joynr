@@ -26,7 +26,7 @@
 #include <QtSql/QSqlQuery>
 #include <QtSql/QSqlRecord>
 #include <QDataStream>
-#include "joynr/TypeUtil.h"
+#include "joynr/QtTypeUtil.h"
 #include <cassert>
 #include <QVector>
 #include "joynr/FormatString.h"
@@ -305,7 +305,7 @@ QByteArray LocalDomainAccessStore::serializeEnumList(const std::vector<T>& enumL
     // Serialize to a bytearray
     QByteArray serializedEnumList;
     QDataStream stream(&serializedEnumList, QIODevice::WriteOnly);
-    stream << TypeUtil::toQt(ints);
+    stream << QtTypeUtil::toQt(ints);
 
     // Return the blob for binding
     return serializedEnumList;
@@ -429,9 +429,9 @@ Optional<DomainRoleEntry> joynr::LocalDomainAccessStore::getDomainRole(const std
 {
     // Execute a query to get the domain role entry
     QSqlQuery query;
-    assert(query.prepare(TypeUtil::toQt(SELECT_DRE)));
-    query.bindValue(BIND_UID, TypeUtil::toQt(uid));
-    query.bindValue(BIND_ROLE, TypeUtil::toQt(role));
+    assert(query.prepare(QtTypeUtil::toQt(SELECT_DRE)));
+    query.bindValue(BIND_UID, QtTypeUtil::toQt(uid));
+    query.bindValue(BIND_ROLE, QtTypeUtil::toQt(role));
     assert(query.exec());
 
     int domainField = query.record().indexOf("domain");
@@ -469,8 +469,8 @@ bool LocalDomainAccessStore::removeDomainRole(const std::string& userId, Role::E
 
     QSqlQuery query;
     query.setForwardOnly(true);
-    query.prepare(TypeUtil::toQt(DELETE_DRE));
-    query.bindValue(BIND_UID, TypeUtil::toQt(userId));
+    query.prepare(QtTypeUtil::toQt(DELETE_DRE));
+    query.bindValue(BIND_UID, QtTypeUtil::toQt(userId));
     query.bindValue(BIND_ROLE, role);
 
     bool removeSuccess = query.exec();
@@ -748,12 +748,12 @@ bool LocalDomainAccessStore::updateOwnerAccessControlEntry(
 
     if (aceValidator.isOwnerValid()) {
         QSqlQuery query;
-        query.prepare(TypeUtil::toQt(UPDATE_OWNER_ACE));
+        query.prepare(QtTypeUtil::toQt(UPDATE_OWNER_ACE));
 
-        query.bindValue(BIND_UID, TypeUtil::toQt(updatedOwnerAce.getUid()));
-        query.bindValue(BIND_DOMAIN, TypeUtil::toQt(updatedOwnerAce.getDomain()));
-        query.bindValue(BIND_INTERFACE, TypeUtil::toQt(updatedOwnerAce.getInterfaceName()));
-        query.bindValue(BIND_OPERATION, TypeUtil::toQt(updatedOwnerAce.getOperation()));
+        query.bindValue(BIND_UID, QtTypeUtil::toQt(updatedOwnerAce.getUid()));
+        query.bindValue(BIND_DOMAIN, QtTypeUtil::toQt(updatedOwnerAce.getDomain()));
+        query.bindValue(BIND_INTERFACE, QtTypeUtil::toQt(updatedOwnerAce.getInterfaceName()));
+        query.bindValue(BIND_OPERATION, QtTypeUtil::toQt(updatedOwnerAce.getOperation()));
 
         query.bindValue(BIND_REQUIRED_TRUSTLEVEL, updatedOwnerAce.getRequiredTrustLevel());
         query.bindValue(
@@ -815,10 +815,10 @@ bool LocalDomainAccessStore::insertDomainRoleEntry(const std::string& userId,
         QSqlQuery query;
         std::string domain = *it;
 
-        query.prepare(TypeUtil::toQt(UPDATE_DRE));
-        query.bindValue(BIND_UID, TypeUtil::toQt(userId));
+        query.prepare(QtTypeUtil::toQt(UPDATE_DRE));
+        query.bindValue(BIND_UID, QtTypeUtil::toQt(userId));
         query.bindValue(BIND_ROLE, role);
-        query.bindValue(BIND_DOMAIN, TypeUtil::toQt(domain));
+        query.bindValue(BIND_DOMAIN, QtTypeUtil::toQt(domain));
 
         if (!query.exec()) {
             LOG_ERROR(logger,
@@ -949,13 +949,13 @@ QSqlQuery LocalDomainAccessStore::createUpdateMasterAceQuery(
 {
     QSqlQuery query;
     query.setForwardOnly(true);
-    query.prepare(TypeUtil::toQt(sqlQuery));
+    query.prepare(QtTypeUtil::toQt(sqlQuery));
 
     // Add scalar fields
-    query.bindValue(BIND_UID, TypeUtil::toQt(updatedMasterAce.getUid()));
-    query.bindValue(BIND_DOMAIN, TypeUtil::toQt(updatedMasterAce.getDomain()));
-    query.bindValue(BIND_INTERFACE, TypeUtil::toQt(updatedMasterAce.getInterfaceName()));
-    query.bindValue(BIND_OPERATION, TypeUtil::toQt(updatedMasterAce.getOperation()));
+    query.bindValue(BIND_UID, QtTypeUtil::toQt(updatedMasterAce.getUid()));
+    query.bindValue(BIND_DOMAIN, QtTypeUtil::toQt(updatedMasterAce.getDomain()));
+    query.bindValue(BIND_INTERFACE, QtTypeUtil::toQt(updatedMasterAce.getInterfaceName()));
+    query.bindValue(BIND_OPERATION, QtTypeUtil::toQt(updatedMasterAce.getOperation()));
     query.bindValue(BIND_DEFAULT_TRUSTLEVEL, updatedMasterAce.getDefaultRequiredTrustLevel());
     query.bindValue(BIND_DEFAULT_CHANGETRUSTLEVEL,
                     updatedMasterAce.getDefaultRequiredControlEntryChangeTrustLevel());
@@ -984,11 +984,11 @@ QSqlQuery LocalDomainAccessStore::createRemoveAceQuery(const std::string& sqlQue
 {
     QSqlQuery query;
     query.setForwardOnly(true);
-    query.prepare(TypeUtil::toQt(sqlQuery));
-    query.bindValue(BIND_UID, TypeUtil::toQt(uid));
-    query.bindValue(BIND_DOMAIN, TypeUtil::toQt(domain));
-    query.bindValue(BIND_INTERFACE, TypeUtil::toQt(interfaceName));
-    query.bindValue(BIND_OPERATION, TypeUtil::toQt(operation));
+    query.prepare(QtTypeUtil::toQt(sqlQuery));
+    query.bindValue(BIND_UID, QtTypeUtil::toQt(uid));
+    query.bindValue(BIND_DOMAIN, QtTypeUtil::toQt(domain));
+    query.bindValue(BIND_INTERFACE, QtTypeUtil::toQt(interfaceName));
+    query.bindValue(BIND_OPERATION, QtTypeUtil::toQt(operation));
 
     return query;
 }
@@ -999,8 +999,8 @@ QSqlQuery LocalDomainAccessStore::createGetEditableAceQuery(const std::string& s
 {
     QSqlQuery query;
     query.setForwardOnly(true);
-    query.prepare(TypeUtil::toQt(sqlQuery));
-    query.bindValue(BIND_UID, TypeUtil::toQt(uid));
+    query.prepare(QtTypeUtil::toQt(sqlQuery));
+    query.bindValue(BIND_UID, QtTypeUtil::toQt(uid));
     query.bindValue(BIND_ROLE, role);
 
     return query;
@@ -1014,11 +1014,11 @@ QSqlQuery LocalDomainAccessStore::createGetAceQuery(const std::string& sqlQuery,
 {
     QSqlQuery query;
     query.setForwardOnly(true);
-    query.prepare(TypeUtil::toQt(sqlQuery));
-    query.bindValue(BIND_UID, TypeUtil::toQt(uid));
-    query.bindValue(BIND_DOMAIN, TypeUtil::toQt(domain));
-    query.bindValue(BIND_INTERFACE, TypeUtil::toQt(interfaceName));
-    query.bindValue(BIND_OPERATION, TypeUtil::toQt(operation));
+    query.prepare(QtTypeUtil::toQt(sqlQuery));
+    query.bindValue(BIND_UID, QtTypeUtil::toQt(uid));
+    query.bindValue(BIND_DOMAIN, QtTypeUtil::toQt(domain));
+    query.bindValue(BIND_INTERFACE, QtTypeUtil::toQt(interfaceName));
+    query.bindValue(BIND_OPERATION, QtTypeUtil::toQt(operation));
 
     return query;
 }
@@ -1028,8 +1028,8 @@ QSqlQuery LocalDomainAccessStore::createGetAceQuery(const std::string& sqlQuery,
 {
     QSqlQuery query;
     query.setForwardOnly(true);
-    query.prepare(TypeUtil::toQt(sqlQuery));
-    query.bindValue(BIND_UID, TypeUtil::toQt(uid));
+    query.prepare(QtTypeUtil::toQt(sqlQuery));
+    query.bindValue(BIND_UID, QtTypeUtil::toQt(uid));
 
     return query;
 }
@@ -1040,9 +1040,9 @@ QSqlQuery LocalDomainAccessStore::createGetAceQuery(const std::string& sqlQuery,
 {
     QSqlQuery query;
     query.setForwardOnly(true);
-    query.prepare(TypeUtil::toQt(sqlQuery));
-    query.bindValue(BIND_DOMAIN, TypeUtil::toQt(domain));
-    query.bindValue(BIND_INTERFACE, TypeUtil::toQt(interfaceName));
+    query.prepare(QtTypeUtil::toQt(sqlQuery));
+    query.bindValue(BIND_DOMAIN, QtTypeUtil::toQt(domain));
+    query.bindValue(BIND_INTERFACE, QtTypeUtil::toQt(interfaceName));
 
     return query;
 }
@@ -1054,10 +1054,10 @@ QSqlQuery LocalDomainAccessStore::createGetAceQuery(const std::string& sqlQuery,
 {
     QSqlQuery query;
     query.setForwardOnly(true);
-    query.prepare(TypeUtil::toQt(sqlQuery));
-    query.bindValue(BIND_UID, TypeUtil::toQt(uid));
-    query.bindValue(BIND_DOMAIN, TypeUtil::toQt(domain));
-    query.bindValue(BIND_INTERFACE, TypeUtil::toQt(interfaceName));
+    query.prepare(QtTypeUtil::toQt(sqlQuery));
+    query.bindValue(BIND_UID, QtTypeUtil::toQt(uid));
+    query.bindValue(BIND_DOMAIN, QtTypeUtil::toQt(domain));
+    query.bindValue(BIND_INTERFACE, QtTypeUtil::toQt(interfaceName));
 
     return query;
 }

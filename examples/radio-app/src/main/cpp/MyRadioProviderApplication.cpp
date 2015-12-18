@@ -22,7 +22,7 @@
 #include "TrafficServiceBroadcastFilter.h"
 #include "GeocastBroadcastFilter.h"
 #include "joynr/JoynrRuntime.h"
-#include "joynr/TypeUtil.h"
+#include "joynr/QtTypeUtil.h"
 
 #include <QString>
 #include <QSettings>
@@ -61,7 +61,7 @@ int main(int argc, char* argv[])
     QString pathToLibJoynrSettings(dir +
                                    QString("/resources/radio-app-provider.libjoynr.settings"));
     JoynrRuntime* runtime = JoynrRuntime::createRuntime(
-            TypeUtil::toStd(pathToLibJoynrSettings), TypeUtil::toStd(pathToMessagingSettings));
+            QtTypeUtil::toStd(pathToLibJoynrSettings), QtTypeUtil::toStd(pathToMessagingSettings));
 
     // create provider instance
     std::shared_ptr<MyRadioProvider> provider(new MyRadioProvider());
@@ -78,7 +78,7 @@ int main(int argc, char* argv[])
     std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError =
             [logger](const joynr::exceptions::ProviderRuntimeException& exception) {
         MyRadioHelper::prettyLog(
-                logger, QString("Exception: %1").arg(TypeUtil::toQt(exception.getMessage())));
+                logger, QString("Exception: %1").arg(QtTypeUtil::toQt(exception.getMessage())));
     };
 
     // Run until the user hits q

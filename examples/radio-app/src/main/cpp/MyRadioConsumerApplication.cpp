@@ -33,7 +33,7 @@
 #include <cassert>
 #include <limits>
 #include "joynr/JsonSerializer.h"
-#include "joynr/TypeUtil.h"
+#include "joynr/QtTypeUtil.h"
 
 using namespace joynr;
 using joynr_logging::Logger;
@@ -168,7 +168,7 @@ int main(int argc, char* argv[])
     // Initialise the JOYn runtime
     QString pathToMessagingSettings(dir + QString("/resources/radio-app-consumer.settings"));
 
-    JoynrRuntime* runtime = JoynrRuntime::createRuntime(TypeUtil::toStd(pathToMessagingSettings));
+    JoynrRuntime* runtime = JoynrRuntime::createRuntime(QtTypeUtil::toStd(pathToMessagingSettings));
 
     // Create proxy builder
     ProxyBuilder<vehicle::RadioProxy>* proxyBuilder =

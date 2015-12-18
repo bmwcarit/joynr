@@ -62,5 +62,4 @@ uint32_t qHash(const InterfaceAddress& interfaceAddress)
     return qHash(QString::fromStdString(interfaceAddress.getDomain())) * 31 +
            qHash(QString::fromStdString(interfaceAddress.getInterface()));
 }
-
 } // namespace joynr

@@ -40,7 +40,8 @@ using ::testing::MatchResultListener;
 using ::testing::Matcher;
 using ::testing::MakeMatcher;
 #include <string>
-#include <stdint.h>
+#include <cstdint>
+#include <algorithm>
 
 using namespace joynr;
 
@@ -1122,7 +1123,7 @@ TEST_F(PublicationManagerTest, remove_onChangeSubscription) {
 }
 
 TEST_F(PublicationManagerTest, forwardProviderRuntimeExceptionToPublicationSender) {
-    QFile::remove(TypeUtil::toQt(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME())); //remove stored subscriptions
+    std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME().c_str()); //remove stored subscriptions
 
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
@@ -1174,7 +1175,7 @@ TEST_F(PublicationManagerTest, forwardProviderRuntimeExceptionToPublicationSende
 }
 
 TEST_F(PublicationManagerTest, forwardMethodInvocationExceptionToPublicationSender) {
-    QFile::remove(TypeUtil::toQt(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME())); //remove stored subscriptions
+    std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_STORAGE_FILENAME().c_str()); //remove stored subscriptions
 
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
