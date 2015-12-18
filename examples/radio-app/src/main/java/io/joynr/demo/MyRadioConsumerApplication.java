@@ -25,6 +25,7 @@ import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.websocket.WebsocketModule;
@@ -65,6 +66,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.Module;
 import com.google.inject.name.Named;
+import com.google.inject.util.Modules;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -109,7 +111,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
             joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "");
             runtimeModule = new LibjoynrWebSocketRuntimeModule();
         } else {
-            runtimeModule = new CCInProcessRuntimeModule();
+            runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(new AtmosphereMessagingModule());
         }
 
         LOG.debug("Using the following runtime module: " + runtimeModule.getClass().getSimpleName());

@@ -22,6 +22,7 @@ package io.joynr.demo;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.websocket.WebsocketModule;
 import io.joynr.runtime.AbstractJoynrApplication;
@@ -47,6 +48,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
 import com.google.inject.Inject;
 import com.google.inject.Module;
+import com.google.inject.util.Modules;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -159,7 +161,7 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
             }
         }
         //by default:
-        return new CCInProcessRuntimeModule();
+        return Modules.override(new CCInProcessRuntimeModule()).with(new AtmosphereMessagingModule());
     }
 
     private static void configureWebSocket(Properties joynrConfig) {
