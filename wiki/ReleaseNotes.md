@@ -10,25 +10,47 @@
   is performed in upcoming releases.
 * **[Java,JS,C++]** The JSON serializer in all three languages escapes already escaped
   quotas in strings incorrectly.
+* **[Java, Android]** The Android runtime now contains all necessary transitive dependencies in an
+  uber jar. The total size has been reduced so that a minimal app with joynr capability is
+  now ca. 2.5 MB large, and multi-dexing is no longer necessary.
+* **[Java]** The stand-alone cluster controller in Java is in Beta, and is not yet stable.
+  Reconnects from clients are not being handled correctly. It is configured statically to
+  disallow backend communication, so all discovery / registration requests must be set to
+  LOCAL_ONLY / LOCAL.
 
 ##API relevant changes
-* **[JS]** Async loading of libjoynr (libjoynr.load()) returns Promise object instead
-  expecting a callback function as input parameter. See the [JavaScript Tutorial](JavaScriptTutorial.md) for more details.
-* **[Java,JS,C++]** Support Franca type Map 
+* **[JS]** Async loading of libjoynr (libjoynr.load()) returns a Promise object instead
+  expecting a callback function as input parameter. See the
+  [JavaScript Tutorial](JavaScriptTutorial.md) for more details.
+* **[Java,JS,C++]** Support Franca type Map
 * **[JS]** Support Franca type Bytebuffer
 * **[C++]** ApplicationException.getError<T>() now expects a template parameter T
   to get access to the real enum value
+* **[Java]** It is no longer necessary to cast error enums retrieved from modelled
+  application exceptions.
 
 ##Other changes
+* **[Android]** The Android runtime has been modified to use an external cluster
+  controller using WebSockets, and no longer can communicate itself via HTTP.
+* **[Java, Android]** The following configuration properties must now be set when configuring
+  the joynr runtime:
+  * WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST
+  * WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT
+
+  Optionally the following can also be set:
+
+  * WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL
+  * WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH
 * **[Java]** Clear separation between libjoynr and cluster controller functionality.
-  Java applications do not need to bring its own cluster controller anymore, but can
-  communicate with one provided by the environment.
+  Java applications do not need to be deployed with their own cluster controller anymore,
+  but can instead communicate with one provided by the environment.
 * **[Java]** Libjoynr client is now able to communicate with a cluster controller
   via Websocket communication.
 * **[Java]** Cluster controller supports Websocket communication
-* **[C++]** Replaced QJson-based serializer by own implementation
-* **[C++]** Replace several Qt functionality and data types (QThreadPool,
-  QSemaphore, QMutex, QThread, QHash, QSet, QMap, QList, ...) by own or standard
+* **[C++]** Replaced QJson-based serializer with a custom implementation, thus increasing
+  speed ca 3x.
+* **[C++]** Replace Qt functionality and data types (QThreadPool,
+  QSemaphore, QMutex, QThread, QHash, QSet, QMap, QList, ...) by custom or std
   implementations.
 
 #joynr 0.12.3
