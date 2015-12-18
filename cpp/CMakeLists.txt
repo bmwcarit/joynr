@@ -169,7 +169,11 @@ if(${ENABLE_CLANG_TIDY})
     add_custom_target(tidy)
 endif(${ENABLE_CLANG_TIDY})
 
-set(CLANG_TIDY_OPTIONS -checks=* CACHE LIST "additional options for clang-tidy")
+set(
+    CLANG_TIDY_OPTIONS
+    -checks=*
+    -header-filter=.*joynr.*
+    CACHE LIST "additional options for clang-tidy")
 
 include(AddClangTidy)
 
