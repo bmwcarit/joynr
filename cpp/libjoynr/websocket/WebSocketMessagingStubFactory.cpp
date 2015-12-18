@@ -90,13 +90,21 @@ void WebSocketMessagingStubFactory::addClient(
         const joynr::system::RoutingTypes::WebSocketClientAddress* clientAddress,
         QWebSocket* webSocket)
 {
-    WebSocketMessagingStub* wsClientStub = new WebSocketMessagingStub(clientAddress, webSocket);
-    connect(wsClientStub,
-            &WebSocketMessagingStub::closed,
-            this,
-            &WebSocketMessagingStubFactory::onMessagingStubClosed);
-    std::shared_ptr<IMessaging> clientStub(wsClientStub);
-    clientStubMap[*clientAddress] = clientStub;
+
+    if (clientStubMap.count(*clientAddress) == 0) {
+        WebSocketMessagingStub* wsClientStub = new WebSocketMessagingStub(clientAddress, webSocket);
+        connect(wsClientStub,
+                &WebSocketMessagingStub::closed,
+                this,
+                &WebSocketMessagingStubFactory::onMessagingStubClosed);
+        std::shared_ptr<IMessaging> clientStub(wsClientStub);
+        clientStubMap[*clientAddress] = clientStub;
+    } else {
+        LOG_ERROR(logger,
+                  FormatString("Client with address %1 already exists in the clientStubMap")
+                          .arg(clientAddress->toString())
+                          .str());
+    }
 }
 
 void WebSocketMessagingStubFactory::removeClient(
