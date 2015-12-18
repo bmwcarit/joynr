@@ -29,16 +29,9 @@ import java.util.Properties;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
-import io.joynr.exceptions.DiscoveryException;
-import io.joynr.exceptions.JoynrCommunicationException;
-import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.joynrandroidruntime.JoynrAndroidRuntime;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilder;
-import io.joynr.pubsub.SubscriptionQos;
-import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
-import joynr.PeriodicSubscriptionQos;
-import joynr.types.Localisation.GpsLocation;
 import joynr.vehicle.GpsProxy;
 
 public class JoynrAndroidExampleApplication extends Application {

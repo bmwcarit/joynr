@@ -29,7 +29,6 @@ import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
-import io.joynr.runtime.LibjoynrWebSocketRuntime;
 import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
 import io.joynr.runtime.PropertyLoader;
 import java.io.File;
