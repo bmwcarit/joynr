@@ -47,8 +47,8 @@ public:
     WebSocketMessagingStub(const joynr::system::RoutingTypes::Address* address,
                            QWebSocket* webSocket,
                            QObject* parent = nullptr);
-    virtual ~WebSocketMessagingStub();
-    virtual void transmit(JoynrMessage& message);
+    ~WebSocketMessagingStub() override;
+    void transmit(JoynrMessage& message) override;
 
 Q_SIGNALS:
     void closed(const joynr::system::RoutingTypes::Address& address);

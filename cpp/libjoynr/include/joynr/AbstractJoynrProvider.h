@@ -48,7 +48,7 @@ public:
     AbstractJoynrProvider();
 
     /** @brief Destructor */
-    virtual ~AbstractJoynrProvider();
+    ~AbstractJoynrProvider() override;
 
     // --- Interface to be implemented by Providers ---
 
@@ -56,7 +56,7 @@ public:
      * @brief Get the provider quality of service settings
      * @return the provider quality of service settings
      */
-    virtual types::ProviderQos getProviderQos() const;
+    types::ProviderQos getProviderQos() const override;
 
     // --- Support for listening to onChange events ---
 
@@ -66,16 +66,16 @@ public:
      * @param attributeListener The listener object containing the callbacks for publications and
      * failures
      */
-    virtual void registerAttributeListener(const std::string& attributeName,
-                                           IAttributeListener* attributeListener);
+    void registerAttributeListener(const std::string& attributeName,
+                                   IAttributeListener* attributeListener) override;
 
     /**
      * @brief Unregister and delete an attribute listener
      * @param attributeName The name of the attribute for which publications shall be stopped
      * @param attributeListener The listener object to be unregisterd
      */
-    virtual void unregisterAttributeListener(const std::string& attributeName,
-                                             IAttributeListener* attributeListener);
+    void unregisterAttributeListener(const std::string& attributeName,
+                                     IAttributeListener* attributeListener) override;
 
     /**
      * @brief Register an object that will be informed when an event occurs
@@ -83,8 +83,8 @@ public:
      * @param broadcastListener The listener object containing the callbacks for publications and
      * failures
      */
-    virtual void registerBroadcastListener(const std::string& broadcastName,
-                                           IBroadcastListener* broadcastListener);
+    void registerBroadcastListener(const std::string& broadcastName,
+                                   IBroadcastListener* broadcastListener) override;
 
     /**
      * @brief Unregister and delete a broadcast listener
@@ -92,14 +92,14 @@ public:
      * @param broadcastListener The listener object containing the callbacks for publications and
      * failures
      */
-    virtual void unregisterBroadcastListener(const std::string& broadcastName,
-                                             IBroadcastListener* broadcastListener);
+    void unregisterBroadcastListener(const std::string& broadcastName,
+                                     IBroadcastListener* broadcastListener) override;
 
     /**
      * @brief Add a broadcast filter
      * @param filter The broadcast filter to be added
      */
-    virtual void addBroadcastFilter(std::shared_ptr<IBroadcastFilter> filter);
+    void addBroadcastFilter(std::shared_ptr<IBroadcastFilter> filter) override;
 
 protected:
     /**

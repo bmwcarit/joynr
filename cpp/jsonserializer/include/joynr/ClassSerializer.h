@@ -44,12 +44,12 @@ template <class T>
 class ClassSerializer : public IClassSerializer
 {
 public:
-    virtual ~ClassSerializer() = default;
+    ~ClassSerializer()  override= default;
 
     /**
      * @brief Serialize a variant
      */
-    void serializeVariant(const Variant& variant, std::ostream& stream);
+    void serializeVariant(const Variant& variant, std::ostream& stream) override;
 
     /**
      * @brief Serialize the known type T

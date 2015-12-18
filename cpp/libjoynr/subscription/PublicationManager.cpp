@@ -77,7 +77,7 @@ private:
 class PublicationManager::PublisherRunnable : public Runnable
 {
 public:
-    virtual ~PublisherRunnable() = default;
+    ~PublisherRunnable() override = default;
     PublisherRunnable(PublicationManager& publicationManager, const std::string& subscriptionId);
 
     void shutdown() override;
@@ -94,14 +94,14 @@ private:
 class PublicationManager::PublicationEndRunnable : public Runnable
 {
 public:
-    virtual ~PublicationEndRunnable() = default;
+    ~PublicationEndRunnable() override = default;
     PublicationEndRunnable(PublicationManager& publicationManager,
                            const std::string& subscriptionId);
 
-    void shutdown();
+    void shutdown() override;
 
     // Calls PublicationManager::removePublication()
-    void run();
+    void run() override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(PublicationEndRunnable);

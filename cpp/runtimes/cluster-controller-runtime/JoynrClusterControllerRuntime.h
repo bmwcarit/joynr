@@ -78,9 +78,9 @@ public:
 
     static JoynrClusterControllerRuntime* create(Settings* settings);
 
-    virtual ~JoynrClusterControllerRuntime();
+    ~JoynrClusterControllerRuntime() override;
 
-    void unregisterProvider(const std::string& participantId);
+    void unregisterProvider(const std::string& participantId) override;
     void start();
     void stop(bool deleteChannel = false);
 

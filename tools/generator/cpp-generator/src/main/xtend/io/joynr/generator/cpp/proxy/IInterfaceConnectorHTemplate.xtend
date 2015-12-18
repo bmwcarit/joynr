@@ -78,7 +78,7 @@ public:
 class «getDllExportMacro()» I«interfaceName»Connector: virtual public I«interfaceName», public joynr::IConnector, virtual public I«interfaceName»Subscription{
 
 public:
-	virtual ~I«interfaceName»Connector() = default;
+	~I«interfaceName»Connector() override = default;
 };
 
 «getNamespaceEnder(serviceInterface)»

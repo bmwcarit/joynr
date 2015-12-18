@@ -40,7 +40,7 @@ public:
     PublicationInterpreter() = default;
 
     void execute(std::shared_ptr<ISubscriptionCallback> callback,
-                 const SubscriptionPublication& subscriptionPublication)
+                 const SubscriptionPublication& subscriptionPublication) override
     {
         assert(callback);
 
@@ -88,7 +88,7 @@ public:
     EnumPublicationInterpreter() = default;
 
     void execute(std::shared_ptr<ISubscriptionCallback> callback,
-                 const SubscriptionPublication& subscriptionPublication)
+                 const SubscriptionPublication& subscriptionPublication) override
     {
         assert(callback);
 
@@ -133,7 +133,7 @@ public:
     EnumPublicationInterpreter() = default;
 
     void execute(std::shared_ptr<ISubscriptionCallback> callback,
-                 const SubscriptionPublication& subscriptionPublication)
+                 const SubscriptionPublication& subscriptionPublication) override
     {
         assert(callback);
 

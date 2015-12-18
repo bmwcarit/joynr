@@ -28,7 +28,7 @@ class MockLocalCapabilitiesDirectoryCallback : public joynr::ILocalCapabilitiesC
 public:
     MockLocalCapabilitiesDirectoryCallback();
 
-    virtual void capabilitiesReceived(std::vector<joynr::CapabilityEntry> capabilities) override;
+    void capabilitiesReceived(std::vector<joynr::CapabilityEntry> capabilities) override;
 
     std::vector<joynr::CapabilityEntry> getResults(int timeout);
     void clearResults();

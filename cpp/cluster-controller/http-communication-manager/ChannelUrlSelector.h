@@ -71,15 +71,15 @@ public:
                                 int64_t timeForOneRecouperation,
                                 double punishmentFactor);
 
-    virtual ~ChannelUrlSelector();
+    ~ChannelUrlSelector() override;
 
     /**
     * @brief Uses the ChannelUrlDirectoryProxy to query the remote ChannelUrlDirectory
     *
     * @param channelUrlDirectoryProxy
     */
-    virtual void init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
-                      const MessagingSettings& settings) override;
+    void init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
+              const MessagingSettings& settings) override;
 
     /**
     * @brief Get the "best" URL for this channel. Feedback is used to figure out which
@@ -91,9 +91,9 @@ public:
     * @param timeout
     * @return std::string
     */
-    virtual std::string obtainUrl(const std::string& channelId,
-                                  RequestStatus& status,
-                                  const int64_t& timeout_ms) override;
+    std::string obtainUrl(const std::string& channelId,
+                          RequestStatus& status,
+                          const int64_t& timeout_ms) override;
     /**
     * @brief Provide feedback on performance of URL: was the connection successful or not?
     *
@@ -101,7 +101,7 @@ public:
     * @param channelId
     * @param url
     */
-    virtual void feedback(bool success, const std::string& channelId, std::string url) override;
+    void feedback(bool success, const std::string& channelId, std::string url) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ChannelUrlSelector);

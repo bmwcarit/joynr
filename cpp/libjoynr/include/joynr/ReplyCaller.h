@@ -45,7 +45,7 @@ public:
     {
     }
 
-    ~ReplyCaller() = default;
+    ~ReplyCaller() override = default;
 
     void returnValue(const Ts&... payload)
     {
@@ -55,12 +55,12 @@ public:
         }
     }
 
-    void returnError(const exceptions::JoynrException& error)
+    void returnError(const exceptions::JoynrException& error) override
     {
         errorFct(RequestStatus(RequestStatusCode::ERROR), error);
     }
 
-    void timeOut()
+    void timeOut() override
     {
         hasTimeOutOccurred = true;
 
@@ -68,7 +68,7 @@ public:
                  exceptions::JoynrTimeOutException("timeout waiting for the response"));
     }
 
-    int getTypeId() const
+    int getTypeId() const override
     {
         return Util::getTypeId<Ts...>();
     }
@@ -95,7 +95,7 @@ public:
     {
     }
 
-    ~ReplyCaller() = default;
+    ~ReplyCaller() override = default;
 
     void returnValue()
     {
@@ -104,19 +104,19 @@ public:
         }
     }
 
-    void returnError(const exceptions::JoynrException& error)
+    void returnError(const exceptions::JoynrException& error) override
     {
         errorFct(RequestStatus(RequestStatusCode::ERROR), error);
     }
 
-    void timeOut()
+    void timeOut() override
     {
         hasTimeOutOccurred = true;
         errorFct(RequestStatus(RequestStatusCode::ERROR_TIMEOUT_WAITING_FOR_RESPONSE),
                  exceptions::JoynrTimeOutException("timeout waiting for the response"));
     }
 
-    int getTypeId() const
+    int getTypeId() const override
     {
         return Util::getTypeId<void>();
     }

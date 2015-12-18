@@ -51,7 +51,7 @@ public:
     HttpSender(const BounceProxyUrl& bounceProxyUrl,
                int64_t maxAttemptTtl_ms,
                int messageSendRetryInterval); // int messageSendRetryInterval
-    virtual ~HttpSender();
+    ~HttpSender() override;
     /**
     * @brief Sends the message to the given channel.
     */
@@ -97,7 +97,7 @@ private:
                             std::string&& data,
                             DelayedScheduler& delayedScheduler,
                             int64_t maxAttemptTtl_ms);
-        ~SendMessageRunnable();
+        ~SendMessageRunnable() override;
 
         void shutdown() override;
 

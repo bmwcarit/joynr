@@ -39,8 +39,8 @@ public:
     explicit JoynrMessagingStub(std::shared_ptr<IMessageSender> messageSender,
                                 const std::string& destinationChannelId,
                                 const std::string& receiveChannelId);
-    virtual ~JoynrMessagingStub() = default;
-    void transmit(JoynrMessage& message);
+    ~JoynrMessagingStub() override = default;
+    void transmit(JoynrMessage& message) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrMessagingStub);

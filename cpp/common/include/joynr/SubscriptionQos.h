@@ -151,7 +151,7 @@ public:
     SubscriptionQos& operator=(const SubscriptionQos& subscriptionQos);
 
     /** @brief Equality operator */
-    virtual bool operator==(const SubscriptionQos& subscriptionQos) const;
+    bool operator==(const SubscriptionQos& subscriptionQos) const;
 
     /**
      * @brief Returns the default publication time to live value in milliseconds:

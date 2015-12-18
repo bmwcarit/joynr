@@ -68,43 +68,43 @@ public:
        Add a capabilities record to the directory containing a list of capabilities and the
        channelId of the provider(the client's channelId)
       */
-    virtual void add(std::vector<types::CapabilityInformation> capabilitiesInformationList);
+    void add(std::vector<types::CapabilityInformation> capabilitiesInformationList) override;
 
     /*
       Remove previously created capabilities directory entries.
       */
-    virtual void remove(std::vector<std::string> participantIds);
+    void remove(std::vector<std::string> participantIds) override;
 
     /*
       Remove previously created capability directroy entry
      */
-    virtual void remove(const std::string& participantId);
+    void remove(const std::string& participantId) override;
 
     /*
       Synchronous lookup of capabilities for domain and interface.
       */
-    virtual std::vector<types::CapabilityInformation> lookup(const std::string& domain,
-                                                             const std::string& interfaceName);
+    std::vector<types::CapabilityInformation> lookup(const std::string& domain,
+                                                     const std::string& interfaceName) override;
 
     /*
       Asynchronous lookup of capabilities for domain and interface.
       */
-    virtual void lookup(
-            const std::string& domain,
-            const std::string& interfaceName,
-            std::function<void(const std::vector<joynr::types::CapabilityInformation>& result)>
-                    onSuccess,
-            std::function<void(const exceptions::JoynrException& error)> onError = nullptr);
+    void lookup(const std::string& domain,
+                const std::string& interfaceName,
+                std::function<void(const std::vector<joynr::types::CapabilityInformation>& result)>
+                        onSuccess,
+                std::function<void(const exceptions::JoynrException& error)> onError =
+                        nullptr) override;
 
-    virtual void lookup(
-            const std::string& participantId,
-            std::function<void(const std::vector<joynr::types::CapabilityInformation>& result)>
-                    onSuccess,
-            std::function<void(const exceptions::JoynrException& error)> onError = nullptr);
+    void lookup(const std::string& participantId,
+                std::function<void(const std::vector<joynr::types::CapabilityInformation>& result)>
+                        onSuccess,
+                std::function<void(const exceptions::JoynrException& error)> onError =
+                        nullptr) override;
 
-    virtual ~CapabilitiesClient() = default;
+    ~CapabilitiesClient() override = default;
 
-    virtual std::string getLocalChannelId();
+    std::string getLocalChannelId() override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesClient);

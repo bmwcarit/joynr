@@ -136,7 +136,7 @@ public:
      * used.
       */
     virtual IHttpPostBuilder* postContent(const QByteArray& data) = 0;
-    virtual ~IHttpPostBuilder() = default;
+    ~IHttpPostBuilder() override = default;
 };
 
 /**

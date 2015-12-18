@@ -44,13 +44,13 @@ public:
     {
     }
 
-    virtual ~SubscriptionCallback()
+    ~SubscriptionCallback() override
     {
         LOG_TRACE(logger, "destructor: entering...");
         LOG_TRACE(logger, "destructor: leaving...");
     }
 
-    virtual void onError(const exceptions::JoynrRuntimeException& error)
+    void onError(const exceptions::JoynrRuntimeException& error) override
     {
         listener->onError(error);
     }
@@ -65,7 +65,7 @@ public:
         // TODO
     }
 
-    int getTypeId() const
+    int getTypeId() const override
     {
         return Util::getTypeId<T, Ts...>();
     }

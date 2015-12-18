@@ -36,8 +36,8 @@ class DefaultHttpRequest : public HttpRequest
 {
 public:
     DefaultHttpRequest(void* handle, const QByteArray& content, curl_slist* headers);
-    HttpResult execute();
-    virtual ~DefaultHttpRequest();
+    HttpResult execute() override;
+    ~DefaultHttpRequest() override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(DefaultHttpRequest);

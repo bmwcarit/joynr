@@ -39,7 +39,7 @@ public:
 
     BroadcastSubscriptionRequestInformation(
             const BroadcastSubscriptionRequestInformation& subscriptionRequestInformation);
-    virtual ~BroadcastSubscriptionRequestInformation() = default;
+    ~BroadcastSubscriptionRequestInformation() override = default;
 
     BroadcastSubscriptionRequestInformation& operator=(
             const BroadcastSubscriptionRequestInformation& subscriptionRequestInformation) =

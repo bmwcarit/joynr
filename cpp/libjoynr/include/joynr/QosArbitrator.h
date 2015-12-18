@@ -45,7 +45,7 @@ class JOYNR_EXPORT QosArbitrator : public ProviderArbitrator
 {
 
 public:
-    virtual ~QosArbitrator() = default;
+    ~QosArbitrator() override = default;
     QosArbitrator(const std::string& domain,
                   const std::string& interfaceName,
                   joynr::system::IDiscoverySync& discoveryProxy,
@@ -54,7 +54,7 @@ public:
     /*
      *  Attempts to arbitrate. This function is called by the ProviderArbitrator
      */
-    void attemptArbitration();
+    void attemptArbitration() override;
 
     /*
      * Made public for testing purposes

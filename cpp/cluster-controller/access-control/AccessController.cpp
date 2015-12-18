@@ -62,8 +62,8 @@ public:
             std::shared_ptr<IAccessController::IHasConsumerPermissionCallback> callback);
 
     // Callbacks made from the LocalDomainAccessController
-    void consumerPermission(Permission::Enum permission);
-    void operationNeeded();
+    void consumerPermission(Permission::Enum permission) override;
+    void operationNeeded() override;
 
 private:
     AccessController& owningAccessController;
@@ -189,13 +189,13 @@ public:
             : localDomainAccessController(localDomainAccessController)
     {
     }
-    virtual void onProviderAdd(const DiscoveryEntry& discoveryEntry)
+    void onProviderAdd(const DiscoveryEntry& discoveryEntry) override
     {
         std::ignore = discoveryEntry;
         // Ignored
     }
 
-    virtual void onProviderRemove(const DiscoveryEntry& discoveryEntry)
+    void onProviderRemove(const DiscoveryEntry& discoveryEntry) override
     {
         localDomainAccessController.unregisterProvider(
                 discoveryEntry.getDomain(), discoveryEntry.getInterfaceName());

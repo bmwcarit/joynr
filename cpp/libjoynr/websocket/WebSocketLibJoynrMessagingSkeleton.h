@@ -39,9 +39,9 @@ class WebSocketLibJoynrMessagingSkeleton : public QObject, public IMessaging
 public:
     explicit WebSocketLibJoynrMessagingSkeleton(MessageRouter& messageRouter);
 
-    ~WebSocketLibJoynrMessagingSkeleton() = default;
+    ~WebSocketLibJoynrMessagingSkeleton() override = default;
 
-    virtual void transmit(JoynrMessage& message);
+    void transmit(JoynrMessage& message) override;
 
 public Q_SLOTS:
     void onTextMessageReceived(const QString& message);

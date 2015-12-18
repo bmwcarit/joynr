@@ -118,7 +118,7 @@ public:
 	 * @brief Checks whether cluster controller is used
 	 * @return true, if cluster controller is used
 	 */
-	virtual bool usesClusterController() const;
+	bool usesClusterController() const override;
 
 	«produceSyncGetters(serviceInterface, false)»
 	«produceSyncSetters(serviceInterface, false)»

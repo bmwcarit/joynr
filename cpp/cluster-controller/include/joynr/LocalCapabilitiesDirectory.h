@@ -69,7 +69,7 @@ public:
                                ICapabilitiesClient* capabilitiesClientPtr,
                                MessageRouter& messageRouter);
 
-    virtual ~LocalCapabilitiesDirectory();
+    ~LocalCapabilitiesDirectory() override;
 
     static const int64_t& NO_CACHE_FRESHNESS_REQ();
     static const int64_t& DONT_USE_CACHE();
@@ -125,27 +125,28 @@ public:
     virtual void registerReceivedCapabilities(QMap<std::string, CapabilityEntry> capabilityEntries);
 
     // inherited method from joynr::system::DiscoveryProvider
-    virtual void add(
-            const joynr::types::DiscoveryEntry& discoveryEntry,
-            std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError);
+    void add(const joynr::types::DiscoveryEntry& discoveryEntry,
+             std::function<void()> onSuccess,
+             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            override;
     // inherited method from joynr::system::DiscoveryProvider
-    virtual void lookup(
+    void lookup(
             const std::string& domain,
             const std::string& interfaceName,
             const joynr::types::DiscoveryQos& discoveryQos,
             std::function<void(const std::vector<joynr::types::DiscoveryEntry>& result)> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError);
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            override;
     // inherited method from joynr::system::DiscoveryProvider
-    virtual void lookup(
-            const std::string& participantId,
-            std::function<void(const joynr::types::DiscoveryEntry& result)> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError);
+    void lookup(const std::string& participantId,
+                std::function<void(const joynr::types::DiscoveryEntry& result)> onSuccess,
+                std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            override;
     // inherited method from joynr::system::DiscoveryProvider
-    virtual void remove(
-            const std::string& participantId,
-            std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError);
+    void remove(const std::string& participantId,
+                std::function<void()> onSuccess,
+                std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            override;
 
     /*
      * Objects that wish to receive provider register/unregister events can attach
@@ -229,10 +230,10 @@ class LocalCapabilitiesFuture : public ILocalCapabilitiesCallback
 {
 public:
     LocalCapabilitiesFuture();
-    void capabilitiesReceived(std::vector<CapabilityEntry> capabilities);
+    void capabilitiesReceived(std::vector<CapabilityEntry> capabilities) override;
     std::vector<CapabilityEntry> get();
     std::vector<CapabilityEntry> get(const int64_t& timeout_ms);
-    virtual ~LocalCapabilitiesFuture() = default;
+    ~LocalCapabilitiesFuture() override = default;
 
 private:
     joynr::Semaphore futureSemaphore;

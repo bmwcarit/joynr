@@ -82,7 +82,7 @@ public:
                   int maxThreads = 6,
                   MessageQueue* messageQueue = new MessageQueue());
 
-    virtual ~MessageRouter();
+    ~MessageRouter() override;
 
     /**
      * @brief Forwards the message towards its destination (determined by inspecting the message
@@ -93,40 +93,40 @@ public:
      */
     virtual void route(const JoynrMessage& message);
 
-    virtual void addNextHop(
-            const std::string& participantId,
-            const joynr::system::RoutingTypes::ChannelAddress& channelAddress,
-            std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError);
-    virtual void addNextHop(
-            const std::string& participantId,
-            const joynr::system::RoutingTypes::CommonApiDbusAddress& commonApiDbusAddress,
-            std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError);
-    virtual void addNextHop(
-            const std::string& participantId,
-            const joynr::system::RoutingTypes::BrowserAddress& browserAddress,
-            std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError);
-    virtual void addNextHop(
-            const std::string& participantId,
-            const joynr::system::RoutingTypes::WebSocketAddress& webSocketAddress,
-            std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError);
-    virtual void addNextHop(
+    void addNextHop(const std::string& participantId,
+                    const joynr::system::RoutingTypes::ChannelAddress& channelAddress,
+                    std::function<void()> onSuccess,
+                    std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            override;
+    void addNextHop(const std::string& participantId,
+                    const joynr::system::RoutingTypes::CommonApiDbusAddress& commonApiDbusAddress,
+                    std::function<void()> onSuccess,
+                    std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            override;
+    void addNextHop(const std::string& participantId,
+                    const joynr::system::RoutingTypes::BrowserAddress& browserAddress,
+                    std::function<void()> onSuccess,
+                    std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            override;
+    void addNextHop(const std::string& participantId,
+                    const joynr::system::RoutingTypes::WebSocketAddress& webSocketAddress,
+                    std::function<void()> onSuccess,
+                    std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            override;
+    void addNextHop(
             const std::string& participantId,
             const joynr::system::RoutingTypes::WebSocketClientAddress& webSocketClientAddress,
             std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError);
-    virtual void removeNextHop(
-            const std::string& participantId,
-            std::function<void()> onSuccess = nullptr,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)>
-                    onError = nullptr);
-    virtual void resolveNextHop(
-            const std::string& participantId,
-            std::function<void(const bool& resolved)> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError);
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            override;
+    void removeNextHop(const std::string& participantId,
+                       std::function<void()> onSuccess = nullptr,
+                       std::function<void(const joynr::exceptions::ProviderRuntimeException&)>
+                               onError = nullptr) override;
+    void resolveNextHop(const std::string& participantId,
+                        std::function<void(const bool& resolved)> onSuccess,
+                        std::function<void(const joynr::exceptions::ProviderRuntimeException&)>
+                                onError) override;
 
     void addProvisionedNextHop(std::string participantId,
                                std::shared_ptr<system::RoutingTypes::Address> address);

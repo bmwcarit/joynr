@@ -65,8 +65,8 @@ public:
                                Semaphore* channelCreatedSemaphore,
                                std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
                                std::shared_ptr<MessageRouter> messageRouter);
-    void stop();
-    void run();
+    void stop() override;
+    void run() override;
     void interrupt();
     bool isInterrupted();
 

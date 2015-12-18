@@ -53,8 +53,9 @@ class WebSocketMessagingStubFactory : public QObject, public IMiddlewareMessagin
 
 public:
     explicit WebSocketMessagingStubFactory(QObject* parent = nullptr);
-    std::shared_ptr<IMessaging> create(const joynr::system::RoutingTypes::Address& destAddress);
-    bool canCreate(const joynr::system::RoutingTypes::Address& destAddress);
+    std::shared_ptr<IMessaging> create(
+            const joynr::system::RoutingTypes::Address& destAddress) override;
+    bool canCreate(const joynr::system::RoutingTypes::Address& destAddress) override;
     void addClient(const system::RoutingTypes::WebSocketClientAddress* clientAddress,
                    QWebSocket* webSocket);
     void removeClient(const joynr::system::RoutingTypes::WebSocketClientAddress& clientAddress);

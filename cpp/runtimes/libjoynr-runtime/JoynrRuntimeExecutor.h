@@ -48,7 +48,7 @@ protected:
 
 public:
     JoynrRuntimeExecutor(Settings* settings);
-    virtual ~JoynrRuntimeExecutor();
+    ~JoynrRuntimeExecutor() override;
 
     LibJoynrRuntime* getRuntime();
     void stop();

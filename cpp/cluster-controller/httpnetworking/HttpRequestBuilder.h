@@ -44,9 +44,9 @@ class HttpRequestBuilder : public IHttpGetBuilder,
 {
 public:
     HttpRequestBuilder(const std::string& url);
-    ~HttpRequestBuilder();
+    ~HttpRequestBuilder() override;
 
-    HttpRequest* build();
+    HttpRequest* build() override;
     HttpRequestBuilder* withProxy(const std::string& proxy) override;
     HttpRequestBuilder* withDebug() override;
     HttpRequestBuilder* withCertificateAuthority(const std::string& caFile) override;

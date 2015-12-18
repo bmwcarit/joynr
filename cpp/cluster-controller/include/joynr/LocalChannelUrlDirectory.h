@@ -48,7 +48,7 @@ public:
             MessagingSettings& messagingSettings,
             std::shared_ptr<infrastructure::ChannelUrlDirectoryProxy> channelUrlDirectoryProxy);
 
-    virtual ~LocalChannelUrlDirectory();
+    ~LocalChannelUrlDirectory() override;
 
     /**
      * @brief Register a set of Url's for a channelId.
@@ -58,11 +58,11 @@ public:
      * @param onSuccess
      * @param onError
      */
-    virtual std::shared_ptr<joynr::Future<void>> registerChannelUrlsAsync(
+    std::shared_ptr<joynr::Future<void>> registerChannelUrlsAsync(
             const std::string& channelId,
             types::ChannelUrlInformation channelUrlInformation,
             std::function<void(void)> onSuccess = nullptr,
-            std::function<void(const exceptions::JoynrException&)> onError = nullptr);
+            std::function<void(const exceptions::JoynrException&)> onError = nullptr) override;
 
     /**
      * @brief Unregister ALL Url's registered for this channelId
@@ -71,10 +71,10 @@ public:
      * @param onSuccess
      * @param onError
      */
-    virtual std::shared_ptr<joynr::Future<void>> unregisterChannelUrlsAsync(
+    std::shared_ptr<joynr::Future<void>> unregisterChannelUrlsAsync(
             const std::string& channelId,
             std::function<void(void)> onSuccess = nullptr,
-            std::function<void(const exceptions::JoynrException&)> onError = nullptr);
+            std::function<void(const exceptions::JoynrException&)> onError = nullptr) override;
 
     /**
      * @brief Get ALL Url's registered in the remoteChannelUrlDirectory. Uses caching, i.e. once an
@@ -86,13 +86,13 @@ public:
      * @param onSuccess
      * @param onError
      */
-    virtual std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>>
-    getUrlsForChannelAsync(
+    std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> getUrlsForChannelAsync(
             const std::string& channelId,
             const int64_t& timeout_ms,
-            std::function<void(const types::ChannelUrlInformation& channelUrls)>
-                    onSuccess = nullptr,
-            std::function<void(const exceptions::JoynrException& error)> onError = nullptr);
+            std::function<void(const types::ChannelUrlInformation& channelUrls)> onSuccess =
+                    nullptr,
+            std::function<void(const exceptions::JoynrException& error)> onError =
+                    nullptr) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalChannelUrlDirectory);

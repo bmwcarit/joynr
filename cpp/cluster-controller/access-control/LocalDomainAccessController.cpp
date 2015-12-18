@@ -80,8 +80,8 @@ class LocalDomainAccessController::DomainRoleEntryChangedBroadcastListener
 public:
     explicit DomainRoleEntryChangedBroadcastListener(LocalDomainAccessController& parent);
     void onReceive(const infrastructure::DacTypes::ChangeType::Enum& changeType,
-                   const infrastructure::DacTypes::DomainRoleEntry& changedDre);
-    void onError(const exceptions::JoynrRuntimeException& error);
+                   const infrastructure::DacTypes::DomainRoleEntry& changedDre) override;
+    void onError(const exceptions::JoynrRuntimeException& error) override;
 
 private:
     LocalDomainAccessController& parent;
@@ -93,9 +93,10 @@ class LocalDomainAccessController::MasterAccessControlEntryChangedBroadcastListe
 {
 public:
     explicit MasterAccessControlEntryChangedBroadcastListener(LocalDomainAccessController& parent);
-    void onReceive(const infrastructure::DacTypes::ChangeType::Enum& changeType,
-                   const infrastructure::DacTypes::MasterAccessControlEntry& changedMasterAce);
-    void onError(const exceptions::JoynrRuntimeException& error);
+    void onReceive(
+            const infrastructure::DacTypes::ChangeType::Enum& changeType,
+            const infrastructure::DacTypes::MasterAccessControlEntry& changedMasterAce) override;
+    void onError(const exceptions::JoynrRuntimeException& error) override;
 
 private:
     LocalDomainAccessController& parent;
@@ -108,9 +109,10 @@ class LocalDomainAccessController::MediatorAccessControlEntryChangedBroadcastLis
 public:
     explicit MediatorAccessControlEntryChangedBroadcastListener(
             LocalDomainAccessController& parent);
-    void onReceive(const infrastructure::DacTypes::ChangeType::Enum& changeType,
-                   const infrastructure::DacTypes::MasterAccessControlEntry& changedMediatorAce);
-    void onError(const exceptions::JoynrRuntimeException& error);
+    void onReceive(
+            const infrastructure::DacTypes::ChangeType::Enum& changeType,
+            const infrastructure::DacTypes::MasterAccessControlEntry& changedMediatorAce) override;
+    void onError(const exceptions::JoynrRuntimeException& error) override;
 
 private:
     LocalDomainAccessController& parent;
@@ -122,9 +124,10 @@ class LocalDomainAccessController::OwnerAccessControlEntryChangedBroadcastListen
 {
 public:
     explicit OwnerAccessControlEntryChangedBroadcastListener(LocalDomainAccessController& parent);
-    void onReceive(const infrastructure::DacTypes::ChangeType::Enum& changeType,
-                   const infrastructure::DacTypes::OwnerAccessControlEntry& changedOwnerAce);
-    void onError(const exceptions::JoynrRuntimeException& error);
+    void onReceive(
+            const infrastructure::DacTypes::ChangeType::Enum& changeType,
+            const infrastructure::DacTypes::OwnerAccessControlEntry& changedOwnerAce) override;
+    void onError(const exceptions::JoynrRuntimeException& error) override;
 
 private:
     LocalDomainAccessController& parent;

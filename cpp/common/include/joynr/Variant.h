@@ -245,9 +245,9 @@ public:
     {
     }
 
-    ~VariantHolder() = default;
+    ~VariantHolder() override = default;
 
-    IVariantHolder* clone() const;
+    IVariantHolder* clone() const override;
 
     /**
      * @brief getPayload Get object wrapped in IVariantHolder
@@ -262,7 +262,7 @@ public:
      * @brief getTypeId of wrapped object
      * @return int unique type identifier
      */
-    int getTypeId()
+    int getTypeId() override
     {
         return JoynrTypeId<T>::getTypeId();
     }
@@ -271,7 +271,7 @@ public:
      * @brief getTypeName of wrapped object
      * @return std::string unique type identifier
      */
-    std::string getTypeName() const
+    std::string getTypeName() const override
     {
         return JoynrTypeId<T>::getTypeName();
     }

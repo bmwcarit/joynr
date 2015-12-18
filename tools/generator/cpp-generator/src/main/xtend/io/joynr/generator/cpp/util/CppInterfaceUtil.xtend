@@ -61,9 +61,9 @@ class CppInterfaceUtil {
 		* @param result The result that will be returned to the caller.
 		* @throws JoynrException if the request is not successful
 		*/
-		virtual void get«attributeName.toFirstUpper»(
+		«IF pure»virtual «ENDIF»void get«attributeName.toFirstUpper»(
 				«returnType»& result
-		)«IF pure»=0«ENDIF»;
+		) «IF pure»= 0«ELSE»override«ENDIF»;
 
 	«ENDFOR»
 '''
@@ -81,10 +81,10 @@ class CppInterfaceUtil {
 		«printOnErrorFctParamDefinition»
 		«printFutureReturnDefinition»
 		*/
-		virtual std::shared_ptr<joynr::Future<«returnType»> > get«attributeName.toFirstUpper»Async(
+		«IF pure»virtual «ENDIF»std::shared_ptr<joynr::Future<«returnType»> > get«attributeName.toFirstUpper»Async(
 				std::function<void(const «returnType»& «attributeName.toFirstLower»)> onSuccess = nullptr,
 				std::function<void(const joynr::exceptions::JoynrException& error)> onError = nullptr
-		)«IF pure»=0«ENDIF»;
+		) «IF pure»= 0«ELSE»override«ENDIF»;
 	«ENDFOR»
 '''
 
@@ -100,9 +100,9 @@ class CppInterfaceUtil {
 		* @param «attributeName.toFirstLower» The value to set.
 		* @throws JoynrException if the request is not successful
 		*/
-		virtual void set«attributeName.toFirstUpper»(
+		«IF pure»virtual «ENDIF»void set«attributeName.toFirstUpper»(
 				const «returnType»& «attributeName.toFirstLower»
-		)«IF pure»=0«ENDIF»;
+		) «IF pure»= 0«ELSE»override«ENDIF»;
 	«ENDFOR»
 '''
 
@@ -120,11 +120,11 @@ class CppInterfaceUtil {
 		«printOnErrorFctParamDefinition»
 		«printFutureReturnDefinition»
 		*/
-		virtual std::shared_ptr<joynr::Future<void> > set«attributeName.toFirstUpper»Async(
+		«IF pure»virtual «ENDIF»std::shared_ptr<joynr::Future<void> > set«attributeName.toFirstUpper»Async(
 				«returnType» «attributeName.toFirstLower»,
 				std::function<void(void)> onSuccess = nullptr,
 				std::function<void(const joynr::exceptions::JoynrException& error)> onError = nullptr
-		)«IF pure»=0«ENDIF»;
+		) «IF pure»= 0«ELSE»override«ENDIF»;
 	«ENDFOR»
 '''
 
@@ -146,9 +146,9 @@ class CppInterfaceUtil {
 		«ENDFOR»
 		* @throws JoynrException if the request is not successful
 		*/
-		virtual void «method.joynrName»(
+		«IF pure»virtual «ENDIF»void «method.joynrName»(
 				«outputTypedParamList»«IF method.outputParameters.size > 0 && method.inputParameters.size > 0», «ENDIF»«inputTypedParamList»
-		)«IF pure»=0«ENDIF»;
+		) «IF pure»= 0«ELSE»override«ENDIF»;
 	«ENDFOR»
 '''
 
@@ -165,11 +165,11 @@ class CppInterfaceUtil {
 		«printOnErrorFctParamDefinition»
 		«printFutureReturnDefinition»
 		*/
-		virtual std::shared_ptr<joynr::Future<«outputParameters»> > «method.joynrName»Async(
+		«IF pure»virtual «ENDIF»std::shared_ptr<joynr::Future<«outputParameters»> > «method.joynrName»Async(
 				«method.commaSeperatedTypedConstInputParameterList»«IF !method.inputParameters.empty»,«ENDIF»
 				std::function<void(«outputTypedParamList»)> onSuccess = nullptr,
 				std::function<void(const joynr::exceptions::JoynrException& error)> onError = nullptr
-		)«IF pure»=0«ENDIF»;
+		) «IF pure»= 0«ELSE»override«ENDIF»;
 	«ENDFOR»
 '''
 }

@@ -54,9 +54,8 @@ public:
                                const JoynrMessage& message,
                                std::shared_ptr<system::RoutingTypes::Address> destination);
 
-    void hasConsumerPermission(bool hasPermission);
+    void hasConsumerPermission(bool hasPermission) override;
 
-private:
     MessageRouter& owningMessageRouter;
     JoynrMessage message;
     std::shared_ptr<system::RoutingTypes::Address> destination;

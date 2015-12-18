@@ -135,10 +135,10 @@ public:
 	 * @brief Checks whether cluster controller is used
 	 * @return true, if cluster controller is used
 	 */
-	virtual bool usesClusterController() const;
+	bool usesClusterController() const override;
 
 	/** @brief Destructor */
-	virtual ~«interfaceName»JoynrMessagingConnector() = default;
+	~«interfaceName»JoynrMessagingConnector() override = default;
 
 	«produceSyncGetters(serviceInterface, false)»
 	«produceAsyncGetters(serviceInterface, false)»
@@ -155,9 +155,9 @@ public:
 			 * @param subscriptionQos The subscription quality of service settings
 			 * @return the subscription id as string
 			 */
-			virtual std::string subscribeTo«attributeName.toFirstUpper»(
+			std::string subscribeTo«attributeName.toFirstUpper»(
 						std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-						const joynr::SubscriptionQos& subscriptionQos);
+						const joynr::SubscriptionQos& subscriptionQos) override;
 
 			/**
 			 * @brief updates an existing subscription to attribute 
@@ -166,16 +166,16 @@ public:
 			 * @param subscriptionQos The subscription quality of service settings
 			 * @return the subscription id as string
 			 */
-			virtual std::string subscribeTo«attributeName.toFirstUpper»(
+			std::string subscribeTo«attributeName.toFirstUpper»(
 						std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
 						const joynr::SubscriptionQos& subscriptionQos,
-						std::string& subscriptionId);
+						std::string& subscriptionId) override;
 
 			/**
 			 * @brief unsubscribes from attribute «attributeName.toFirstUpper»
 			 * @param subscriptionId The subscription id returned earlier on creation of the subscription
 			 */
-			virtual void unsubscribeFrom«attributeName.toFirstUpper»(std::string& subscriptionId);
+			void unsubscribeFrom«attributeName.toFirstUpper»(std::string& subscriptionId) override;
 		«ENDIF»
 	«ENDFOR»
 
@@ -194,10 +194,10 @@ public:
 			 * @param subscriptionQos The subscription quality of service settings
 			 * @return the subscription id as string
 			 */
-			virtual std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
+			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						const «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						const joynr::OnChangeSubscriptionQos& subscriptionQos);
+						const joynr::OnChangeSubscriptionQos& subscriptionQos) override;
 
 			/**
 			 * @brief updates an existing subscription to selective broadcast «broadcastName.toFirstUpper» with filter parameters
@@ -207,11 +207,11 @@ public:
 			 * @param subscriptionId The subscription id returned earlier on creation of the subscription
 			 * @return the subscription id as string
 			 */
-			virtual std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
+			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						const «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
 						const joynr::OnChangeSubscriptionQos& subscriptionQos,
-						std::string& subscriptionId);
+						std::string& subscriptionId) override;
 		«ELSE»
 			/**
 			 * @brief subscribes to broadcast «broadcastName.toFirstUpper»
@@ -219,9 +219,9 @@ public:
 			 * @param subscriptionQos The subscription quality of service settings
 			 * @return the subscription id as string
 			 */
-			virtual std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
+			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						const joynr::OnChangeSubscriptionQos& subscriptionQos);
+						const joynr::OnChangeSubscriptionQos& subscriptionQos) override;
 
 			/**
 			 * @brief updates an existing subscription to broadcast «broadcastName.toFirstUpper»
@@ -231,17 +231,17 @@ public:
 			 * @param subscriptionId The subscription id returned earlier on creation of the subscription
 			 * @return the subscription id as string
 			 */
-			virtual std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
+			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
 						const joynr::OnChangeSubscriptionQos& subscriptionQos,
-						std::string& subscriptionId);
+						std::string& subscriptionId) override;
 		«ENDIF»
 
 		/**
 		 * @brief unsubscribes from broadcast «broadcastName.toFirstUpper»
 		 * @param subscriptionId The subscription id returned earlier on creation of the subscription
 		 */
-		virtual void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(std::string& subscriptionId);
+		void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(std::string& subscriptionId) override;
 	«ENDFOR»
 };
 «getNamespaceEnder(serviceInterface)»

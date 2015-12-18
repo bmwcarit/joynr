@@ -97,7 +97,7 @@ public:
 		 * @brief unsubscribes from attribute «attributeName.toFirstUpper»
 		 * @param subscriptionId The subscription id returned earlier on creation of the subscription
 		 */
-		void unsubscribeFrom«attributeName.toFirstUpper»(std::string &subscriptionId) {
+		void unsubscribeFrom«attributeName.toFirstUpper»(std::string &subscriptionId) override {
 			«className»Base::unsubscribeFrom«attributeName.toFirstUpper»(subscriptionId);
 		}
 
@@ -109,7 +109,7 @@ public:
 		 */
 		std::string subscribeTo«attributeName.toFirstUpper»(
 					std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-					const joynr::SubscriptionQos& subscriptionQos){
+					const joynr::SubscriptionQos& subscriptionQos) override {
 			return «className»Base::subscribeTo«attributeName.toFirstUpper»(
 						subscriptionListener,
 						subscriptionQos);
@@ -125,7 +125,7 @@ public:
 		std::string subscribeTo«attributeName.toFirstUpper»(
 					std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
 					const joynr::SubscriptionQos& subscriptionQos,
-					std::string& subscriptionId){
+					std::string& subscriptionId) override{
 			return «className»Base::subscribeTo«attributeName.toFirstUpper»(
 						subscriptionListener,
 						subscriptionQos,
@@ -141,7 +141,7 @@ public:
 		 * @brief unsubscribes from broadcast «broadcastName.toFirstUpper»
 		 * @param subscriptionId The subscription id returned earlier on creation of the subscription
 		 */
-		void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(std::string &subscriptionId) {
+		void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(std::string &subscriptionId) override {
 			«className»Base::unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(subscriptionId);
 		}
 
@@ -156,7 +156,7 @@ public:
 			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						const «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						const joynr::OnChangeSubscriptionQos& subscriptionQos){
+						const joynr::OnChangeSubscriptionQos& subscriptionQos) override {
 				return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 							filterParameters,
 							subscriptionListener,
@@ -175,7 +175,7 @@ public:
 						const «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
 						const joynr::OnChangeSubscriptionQos& subscriptionQos,
-						std::string& subscriptionId){
+						std::string& subscriptionId) override {
 				return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 							filterParameters,
 							subscriptionListener,
@@ -191,7 +191,7 @@ public:
 			 */
 			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						const joynr::OnChangeSubscriptionQos& subscriptionQos){
+						const joynr::OnChangeSubscriptionQos& subscriptionQos) override {
 				return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 							subscriptionListener,
 							subscriptionQos);
@@ -208,7 +208,7 @@ public:
 			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
 						const joynr::OnChangeSubscriptionQos& subscriptionQos,
-						std::string& subscriptionId){
+						std::string& subscriptionId) override {
 				return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 							subscriptionListener,
 							subscriptionQos,
@@ -218,7 +218,7 @@ public:
 	«ENDFOR»
 
 	/** @brief Destructor */
-	virtual ~«className»();
+	~«className»() override = default;
 
 	// attributes
 	«FOR attribute: getAttributes(serviceInterface)»

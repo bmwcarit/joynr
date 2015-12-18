@@ -143,7 +143,7 @@ public:
     PeriodicSubscriptionQos& operator=(const PeriodicSubscriptionQos& other);
 
     /** @brief Equality operator */
-    virtual bool operator==(const PeriodicSubscriptionQos& other) const;
+    bool operator==(const PeriodicSubscriptionQos& other) const;
 
     /** @brief Returns the minimum value for the period in milliseconds: 50 */
     static const int64_t& MIN_PERIOD();

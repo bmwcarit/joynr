@@ -38,7 +38,7 @@ public:
 
     SubscriptionRequestInformation(
             const SubscriptionRequestInformation& subscriptionRequestInformation);
-    virtual ~SubscriptionRequestInformation() = default;
+    ~SubscriptionRequestInformation() override = default;
 
     SubscriptionRequestInformation& operator=(
             const SubscriptionRequestInformation& subscriptionRequestInformation) = default;

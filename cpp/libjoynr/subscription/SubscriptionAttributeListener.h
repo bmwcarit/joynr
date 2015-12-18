@@ -43,7 +43,7 @@ public:
                                   PublicationManager& publicationManager);
 
     // Implementation of IAttributeListener::attributeValueChanged
-    void attributeValueChanged(const Variant& value);
+    void attributeValueChanged(const Variant& value) override;
 
 private:
     std::string subscriptionId;

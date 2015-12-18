@@ -90,7 +90,7 @@ public:
 	}
 
 	/** @brief Destructor */
-	~«className»() = default;
+	~«className»() override = default;
 
 	/**
 	 * @brief Filter method to decide whether a broadcast should be delivered.
@@ -108,10 +108,10 @@ public:
 private:
 	DISALLOW_COPY_AND_ASSIGN(«className»);
 
-	virtual bool filter(
+	bool filter (
 			const std::vector<Variant>& eventValues,
 			const BroadcastFilterParameters& filterParameters
-	) {
+	) override {
 		«serviceInterface.joynrName.toFirstUpper + broadcastName.toFirstUpper»BroadcastFilterParameters params;
 		params.setFilterParameters(filterParameters.getFilterParameters());
 

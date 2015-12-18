@@ -72,7 +72,7 @@ public:
 	explicit «interfaceName»RequestCaller(std::shared_ptr<«interfaceName»Provider> provider);
 
 	/** @brief Destructor */
-	virtual ~«interfaceName»RequestCaller() = default;
+	~«interfaceName»RequestCaller() override = default;
 
 	«IF !serviceInterface.attributes.empty»
 		// attributes
@@ -152,28 +152,28 @@ public:
 	 * @param attributeName The name of the attribute for which a listener should be registered
 	 * @param attributeListener The listener to be registered
 	 */
-	void registerAttributeListener(const std::string& attributeName, joynr::IAttributeListener* attributeListener);
+	void registerAttributeListener(const std::string& attributeName, joynr::IAttributeListener* attributeListener) override;
 
 	/**
 	 * @brief Unregister an attribute listener
 	 * @param attributeName The name of the attribute for which a listener should be unregistered
 	 * @param attributeListener The listener to be unregistered
 	 */
-	void unregisterAttributeListener(const std::string& attributeName, joynr::IAttributeListener* attributeListener);
+	void unregisterAttributeListener(const std::string& attributeName, joynr::IAttributeListener* attributeListener) override;
 
 	/**
 	 * @brief Register a broadcast listener
 	 * @param broadcastName The name of the broadcast for which a listener should be registered
 	 * @param broadcastListener The listener to be registered
 	 */
-	void registerBroadcastListener(const std::string& broadcastName, joynr::IBroadcastListener* broadcastListener);
+	void registerBroadcastListener(const std::string& broadcastName, joynr::IBroadcastListener* broadcastListener) override;
 
 	/**
 	 * @brief Unregister a broadcast listener
 	 * @param broadcastName The name of the broadcast for which a listener should be unregistered
 	 * @param broadcastListener The listener to be unregistered
 	 */
-	void unregisterBroadcastListener(const std::string& broadcastName, joynr::IBroadcastListener* broadcastListener);
+	void unregisterBroadcastListener(const std::string& broadcastName, joynr::IBroadcastListener* broadcastListener) override;
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(«interfaceName»RequestCaller);

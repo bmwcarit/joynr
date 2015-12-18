@@ -61,7 +61,7 @@ public:
 	«interfaceName»RequestInterpreter();
 
 	/** @brief Destructor */
-	virtual ~«interfaceName»RequestInterpreter() = default;
+	~«interfaceName»RequestInterpreter() override = default;
 
 	/**
 	 * @brief Implements IRequestInterpreter.execute().
@@ -79,7 +79,7 @@ public:
 					 const std::vector<Variant>& paramValues,
 					 const std::vector<std::string>& paramTypes,
 					 std::function<void (std::vector<Variant>&& outParams)> onSuccess,
-					 std::function<void (const exceptions::JoynrException& exception)> onError);
+					 std::function<void (const exceptions::JoynrException& exception)> onError) override;
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(«interfaceName»RequestInterpreter);

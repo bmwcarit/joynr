@@ -46,20 +46,19 @@ public:
     AccessController(LocalCapabilitiesDirectory& localCapabilitiesDirectory,
                      LocalDomainAccessController& localDomainAccessController);
 
-    virtual ~AccessController();
+    ~AccessController() override;
 
     //---IAccessController interface -------------------------------------------
 
-    virtual void hasConsumerPermission(
-            const JoynrMessage& message,
-            std::shared_ptr<IHasConsumerPermissionCallback> callback) override;
+    void hasConsumerPermission(const JoynrMessage& message,
+                               std::shared_ptr<IHasConsumerPermissionCallback> callback) override;
 
-    virtual bool hasProviderPermission(const std::string& userId,
-                                       infrastructure::DacTypes::TrustLevel::Enum trustLevel,
-                                       const std::string& domain,
-                                       const std::string& interfaceName) override;
+    bool hasProviderPermission(const std::string& userId,
+                               infrastructure::DacTypes::TrustLevel::Enum trustLevel,
+                               const std::string& domain,
+                               const std::string& interfaceName) override;
 
-    virtual void addParticipantToWhitelist(const std::string& participantId) override;
+    void addParticipantToWhitelist(const std::string& participantId) override;
 
 private:
     class LdacConsumerPermissionCallback;

@@ -67,13 +67,13 @@ public:
 	«interfaceName»AbstractProvider();
 
 	/** @brief Destructor */
-	virtual ~«interfaceName»AbstractProvider();
+	~«interfaceName»AbstractProvider() override;
 
 	/**
 	 * @brief Get the interface name
 	 * @return The name of the interface
 	 */
-	virtual std::string getInterfaceName() const;
+	std::string getInterfaceName() const override;
 «IF !serviceInterface.attributes.isNullOrEmpty || !serviceInterface.broadcasts.isNullOrEmpty»
 
 	protected:
@@ -89,9 +89,9 @@ public:
 		 * modifications. It is used to implement onchange subscriptions.
 		 * @param «attributeName» the new attribute value
 		 */
-		virtual void «attributeName»Changed(
+		void «attributeName»Changed(
 				const «attribute.typeName»& «attributeName»
-		);
+		) override;
 	«ENDFOR»
 	«IF !serviceInterface.broadcasts.isNullOrEmpty»
 
@@ -106,9 +106,9 @@ public:
 		 * @param «parameter.name» the value for the broadcast output parameter «parameter.name»
 		 «ENDFOR»
 		 */
-		virtual void fire«broadcastName.toFirstUpper»(
+		void fire«broadcastName.toFirstUpper»(
 				«broadcast.commaSeperatedTypedConstOutputParameterList.substring(1)»
-		);
+		) override;
 	«ENDFOR»
 
 private:

@@ -58,7 +58,7 @@ template <class T>
 class PrimitiveDeserializer : public IPrimitiveDeserializer
 {
 public:
-    ~PrimitiveDeserializer() = default;
+    ~PrimitiveDeserializer() override = default;
 
     /**
      * @brief deserialize Implementations are generated with the classes T,
@@ -74,7 +74,7 @@ public:
      * @param object
      * @return Variant (ref. IPrimitiveDeserializer)
      */
-    Variant deserializeVariant(IValue& object);
+    Variant deserializeVariant(IValue& object) override;
 };
 
 template <class T>

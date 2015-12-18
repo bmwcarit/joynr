@@ -54,14 +54,14 @@ public:
      * @brief Destructor
      * @note @ref shutdown must be called before destroying this object
      */
-    virtual ~ThreadPoolDelayedScheduler();
+    ~ThreadPoolDelayedScheduler() override;
 
     /**
      * @brief Does an ordinary shutdown of @ref SingleThreadedDelayedScheduler
      *      and its parent @ref DelayedScheduler and child @ref Thread
      * @note Must be called before destructor is called
      */
-    virtual void shutdown() override;
+    void shutdown() override;
 
 private:
     /*! Disallow copy and assign */

@@ -36,7 +36,7 @@ class IDiscoverySync;
 class FixedParticipantArbitrator : public ProviderArbitrator
 {
 public:
-    virtual ~FixedParticipantArbitrator() = default;
+    ~FixedParticipantArbitrator() override = default;
     FixedParticipantArbitrator(const std::string& domain,
                                const std::string& interfaceName,
                                joynr::system::IDiscoverySync& discoveryProxy,
@@ -45,7 +45,7 @@ public:
     /*
      * Attempt to arbitrate with a set participant id
      */
-    void attemptArbitration();
+    void attemptArbitration() override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(FixedParticipantArbitrator);

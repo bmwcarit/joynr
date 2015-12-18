@@ -92,19 +92,31 @@ public:
 	«typeName»(const «typeName»& «typeName.toFirstLower»Obj)«IF getMembers(type).size == 0» = default«ENDIF»;
 
 	/** @brief Destructor */
+	«IF !hasExtendsDeclaration(type)»
 	virtual ~«typeName»() = default;
+	«ELSE»
+	~«typeName»() override = default;
+	«ENDIF»
 
 	/**
 	 * @brief Stringifies the class
 	 * @return stringified class content
 	 */
+	«IF !hasExtendsDeclaration(type)»
 	virtual std::string toString() const;
+	«ELSE»
+	std::string toString() const override;
+	«ENDIF»
 
 	/**
 	 * @brief Returns a hash code value for this object
 	 * @return a hash code value for this object.
 	 */
-	virtual std::size_t hashCode() const;
+	 «IF !hasExtendsDeclaration(type)»
+	 virtual std::size_t hashCode() const;
+	«ELSE»
+	 std::size_t hashCode() const override;
+	«ENDIF»
 
 	/**
 	 * @brief assigns an object
@@ -117,14 +129,14 @@ public:
 	 * @param «typeName.toFirstLower»Obj reference to the object to compare to
 	 * @return true if objects are equal, false otherwise
 	 */
-	virtual bool operator==(const «typeName»& «typeName.toFirstLower»Obj) const;
+	bool operator==(const «typeName»& «typeName.toFirstLower»Obj) const;
 
 	/**
 	 * @brief unequality operator
 	 * @param «typeName.toFirstLower»Obj reference to the object to compare to
 	 * @return true if objects are not equal, false otherwise
 	 */
-	virtual bool operator!=(const «typeName»& «typeName.toFirstLower»Obj) const;
+	bool operator!=(const «typeName»& «typeName.toFirstLower»Obj) const;
 
 	// getters
 	«FOR member: getMembers(type)»

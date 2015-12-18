@@ -42,7 +42,7 @@ public:
                       const std::string& interfaceName,
                       joynr::system::IDiscoverySync& discoveryProxy,
                       const DiscoveryQos& discoveryQos);
-    virtual void attemptArbitration();
+    void attemptArbitration() override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(DefaultArbitrator);

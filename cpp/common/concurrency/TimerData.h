@@ -113,9 +113,9 @@ public:
                      std::function<void(joynr::Timer::TimerId)> expiryCallback,
                      std::function<void(joynr::Timer::TimerId)> removeCallback,
                      const milliseconds delay);
-    virtual ~OneShotTimerData() = default;
+    ~OneShotTimerData() override = default;
 
-    virtual system_clock::time_point getNextExpiry();
+    system_clock::time_point getNextExpiry() override;
 
 private:
     /*! Time point of exiry */
@@ -141,9 +141,9 @@ public:
                       std::function<void(joynr::Timer::TimerId)> expiryCallback,
                       std::function<void(joynr::Timer::TimerId)> removeCallback,
                       const milliseconds interval);
-    virtual ~PeriodicTimerData() = default;
+    ~PeriodicTimerData() override = default;
 
-    virtual system_clock::time_point getNextExpiry();
+    system_clock::time_point getNextExpiry() override;
 
 private:
     /*! The regular interval the timer expires */

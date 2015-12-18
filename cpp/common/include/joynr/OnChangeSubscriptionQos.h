@@ -107,7 +107,7 @@ public:
     OnChangeSubscriptionQos& operator=(const OnChangeSubscriptionQos& other);
 
     /** @brief Equality operator */
-    virtual bool operator==(const OnChangeSubscriptionQos& other) const;
+    bool operator==(const OnChangeSubscriptionQos& other) const;
 
     /**
      * @brief Returns the default value for the minimum interval setting in

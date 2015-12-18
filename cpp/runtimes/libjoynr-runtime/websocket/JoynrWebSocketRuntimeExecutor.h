@@ -35,10 +35,10 @@ class JoynrWebSocketRuntimeExecutor : public JoynrRuntimeExecutor
 
 public:
     explicit JoynrWebSocketRuntimeExecutor(Settings* settings);
-    ~JoynrWebSocketRuntimeExecutor() = default;
+    ~JoynrWebSocketRuntimeExecutor() override = default;
 
 public slots:
-    virtual void createRuntime();
+    void createRuntime() override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrWebSocketRuntimeExecutor);

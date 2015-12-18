@@ -46,7 +46,7 @@ class JOYNR_EXPORT KeywordArbitrator : public ProviderArbitrator
 {
 
 public:
-    virtual ~KeywordArbitrator() = default;
+    ~KeywordArbitrator() override = default;
 
     KeywordArbitrator(const std::string& domain,
                       const std::string& interfaceName,
@@ -56,7 +56,7 @@ public:
     /*
      *  Attempts to the arbitrate. This function is called by the ProviderArbitrator
     */
-    void attemptArbitration();
+    void attemptArbitration() override;
 
     /*
      * The key of the keyword parameter in the provider Qos parameters

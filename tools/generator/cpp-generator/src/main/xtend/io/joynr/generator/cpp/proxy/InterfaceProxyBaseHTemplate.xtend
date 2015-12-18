@@ -82,7 +82,7 @@ public:
 	);
 
 	/** @brief Destructor */
-	~«className»();
+	~«className»() override;
 
 	/**
 	 * @brief Called when arbitration is finished
@@ -92,7 +92,7 @@ public:
 	void handleArbitrationFinished(
 			const std::string &participantId,
 			const joynr::types::CommunicationMiddleware::Enum& connection
-	);
+	) override;
 
 	«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.notifiable]»
 		«val returnType = attribute.typeName»
@@ -105,7 +105,7 @@ public:
 		 */
 		std::string subscribeTo«attributeName.toFirstUpper»(
 					std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
-					const joynr::SubscriptionQos& subscriptionQos);
+					const joynr::SubscriptionQos& subscriptionQos) override;
 
 		/**
 		 * @brief updates an existing subscription to attribute «attributeName.toFirstUpper»
@@ -117,13 +117,13 @@ public:
 		std::string subscribeTo«attributeName.toFirstUpper»(
 					std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
 					const joynr::SubscriptionQos& subscriptionQos,
-					std::string& subcriptionId);
+					std::string& subcriptionId) override;
 
 		/**
 		 * @brief unsubscribes from attribute «attributeName.toFirstUpper»
 		 * @param subscriptionId The subscription id returned earlier on creation of the subscription
 		 */
-		void unsubscribeFrom«attributeName.toFirstUpper»(std::string& subscriptionId);
+		void unsubscribeFrom«attributeName.toFirstUpper»(std::string& subscriptionId) override;
 	«ENDFOR»
 
 	«FOR broadcast: serviceInterface.broadcasts»
@@ -140,7 +140,7 @@ public:
 			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						const «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						const joynr::OnChangeSubscriptionQos& subscriptionQos);
+						const joynr::OnChangeSubscriptionQos& subscriptionQos) override;
 
 			/**
 			 * @brief updates an existing subscription to selective broadcast «broadcastName.toFirstUpper» with filter parameters
@@ -154,7 +154,7 @@ public:
 						const «interfaceName.toFirstUpper»«broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters,
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
 						const joynr::OnChangeSubscriptionQos& subscriptionQos,
-						std::string& subscriptionId);
+						std::string& subscriptionId) override;
 		«ELSE»
 			/**
 			 * @brief subscribes to broadcast «broadcastName.toFirstUpper»
@@ -164,7 +164,7 @@ public:
 			 */
 			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
-						const joynr::OnChangeSubscriptionQos& subscriptionQos);
+						const joynr::OnChangeSubscriptionQos& subscriptionQos) override;
 
 			/**
 			 * @brief updates an existing subscription to broadcast «broadcastName.toFirstUpper»
@@ -177,14 +177,14 @@ public:
 			std::string subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
 						const joynr::OnChangeSubscriptionQos& subscriptionQos,
-						std::string& subscriptionId);
+						std::string& subscriptionId) override;
 		«ENDIF»
 
 		/**
 		 * @brief unsubscribes from broadcast «broadcastName.toFirstUpper»
 		 * @param subscriptionId The subscription id returned earlier on creation of the subscription
 		 */
-		void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(std::string& subscriptionId);
+		void unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(std::string& subscriptionId) override;
 
 	«ENDFOR»
 

@@ -48,9 +48,9 @@ public:
                                  WebSocketMessagingStubFactory& messagingStubFactory,
                                  const system::RoutingTypes::WebSocketAddress& serverAddress);
 
-    ~WebSocketCcMessagingSkeleton();
+    ~WebSocketCcMessagingSkeleton() override;
 
-    virtual void transmit(JoynrMessage& message);
+    void transmit(JoynrMessage& message) override;
 
 private Q_SLOTS:
     void onNewConnection();

@@ -39,12 +39,12 @@ class LibJoynrWebSocketRuntime : public LibJoynrRuntime
 
 public:
     LibJoynrWebSocketRuntime(Settings* settings);
-    virtual ~LibJoynrWebSocketRuntime();
+    ~LibJoynrWebSocketRuntime() override;
 
 protected:
     WebSocketLibJoynrMessagingSkeleton* wsLibJoynrMessagingSkeleton;
 
-    virtual void startLibJoynrMessagingSkeleton(MessageRouter& messageRouter);
+    void startLibJoynrMessagingSkeleton(MessageRouter& messageRouter) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LibJoynrWebSocketRuntime);

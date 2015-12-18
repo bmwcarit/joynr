@@ -50,30 +50,30 @@ namespace joynr {
 
 class MyTestProvider : public tests::DefaulttestProvider {
 public:
-    virtual void locationChanged(const joynr::types::Localisation::GpsLocation& location) {
+    void locationChanged(const joynr::types::Localisation::GpsLocation& location) override {
         tests::testAbstractProvider::locationChanged(location);
     }
 
-    virtual void fireLocation(const joynr::types::Localisation::GpsLocation& location) {
+    void fireLocation(const joynr::types::Localisation::GpsLocation& location) override {
         tests::testAbstractProvider::fireLocation(location);
     }
 
-    virtual void fireBroadcastWithEnumOutput(const joynr::tests::testTypes::TestEnum::Enum& testEnum) {
+    void fireBroadcastWithEnumOutput(const joynr::tests::testTypes::TestEnum::Enum& testEnum) override {
         tests::testAbstractProvider::fireBroadcastWithEnumOutput(testEnum);
     }
 
-    virtual void fireLocationUpdate(const joynr::types::Localisation::GpsLocation& location) {
+    void fireLocationUpdate(const joynr::types::Localisation::GpsLocation& location) override {
         tests::testAbstractProvider::fireLocationUpdate(location);
     }
 
-    virtual void fireLocationUpdateWithSpeed(
+    void fireLocationUpdateWithSpeed(
             const joynr::types::Localisation::GpsLocation& location,
-            const double& currentSpeed
-    ) {
+            const float& currentSpeed
+    ) override {
         tests::testAbstractProvider::fireLocationUpdateWithSpeed(location, currentSpeed);
     }
 
-    virtual void fireLocationUpdateSelective(const joynr::types::Localisation::GpsLocation& location) {
+    void fireLocationUpdateSelective(const joynr::types::Localisation::GpsLocation& location) override {
         tests::testAbstractProvider::fireLocationUpdateSelective(location);
     }
 };

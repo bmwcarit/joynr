@@ -39,7 +39,7 @@ class JOYNR_EXPORT InProcessPublicationSender : public IPublicationSender
 {
 public:
 public:
-    virtual ~InProcessPublicationSender() = default;
+    ~InProcessPublicationSender() override = default;
     InProcessPublicationSender(ISubscriptionManager* subscriptionManager);
     /**
      * @brief
@@ -50,11 +50,11 @@ public:
      * @param publication
      * @param qos
      */
-    virtual void sendSubscriptionPublication(
+    void sendSubscriptionPublication(
             const std::string& senderParticipantId,
             const std::string& receiverParticipantId,
             const MessagingQos& qos,
-            const SubscriptionPublication& subscriptionPublication);
+            const SubscriptionPublication& subscriptionPublication) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(InProcessPublicationSender);

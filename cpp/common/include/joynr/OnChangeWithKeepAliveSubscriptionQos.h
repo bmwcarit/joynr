@@ -90,7 +90,7 @@ public:
      * @see OnChangeSubscriptionQos#setMinInterval
      * @see OnChangeWithKeepAliveSubscriptionQos#setMaxInterval
      */
-    virtual void setMinInterval(const int64_t& minInterval);
+    void setMinInterval(const int64_t& minInterval) override;
 
     /**
      * @brief Gets the maximum interval in milliseconds
@@ -165,7 +165,7 @@ public:
             const OnChangeWithKeepAliveSubscriptionQos& other);
 
     /** @brief Equality operator */
-    virtual bool operator==(const OnChangeWithKeepAliveSubscriptionQos& other) const;
+    bool operator==(const OnChangeWithKeepAliveSubscriptionQos& other) const;
 
     /** @brief
      * Returns the maximum value for the maximum interval in milliseconds:

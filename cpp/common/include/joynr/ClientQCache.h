@@ -45,17 +45,17 @@ class JOYNRCOMMON_EXPORT ClientQCache : public IClientCache
 {
 public:
     ClientQCache();
-    virtual ~ClientQCache() = default;
+    ~ClientQCache() override = default;
     /**
      * Returns the stored object associated with the key 'attributeId',
      * or an empty QVariant() if the object is either not present
      */
-    Variant lookUp(const std::string& attributeId);
+    Variant lookUp(const std::string& attributeId) override;
     /**
       * Inserts 'value' into the cache under the key 'attributeId'.
       * The entry is associated with a time stamp guranteed to be valid for 24hrs.
       */
-    void insert(std::string attributeId, Variant value);
+    void insert(std::string attributeId, Variant value) override;
 
 private:
     /**

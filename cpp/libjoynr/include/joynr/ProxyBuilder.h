@@ -72,7 +72,7 @@ public:
                  std::shared_ptr<MessageRouter> messageRouter);
 
     /** Destructor */
-    ~ProxyBuilder();
+    ~ProxyBuilder() override;
 
     /**
      * @brief Build the proxy object
@@ -133,7 +133,7 @@ private:
      *
      * @param arbitrationStatus The arbitration status to set
      */
-    void setArbitrationStatus(ArbitrationStatus::ArbitrationStatusType arbitrationStatus);
+    void setArbitrationStatus(ArbitrationStatus::ArbitrationStatusType arbitrationStatus) override;
 
     /**
      * @brief Sets the participantId
@@ -143,7 +143,7 @@ private:
      *
      * @param participantId The participant's id
      */
-    void setParticipantId(const std::string& participantId);
+    void setParticipantId(const std::string& participantId) override;
 
     /**
      * @brief Sets the kind of connection
@@ -152,7 +152,7 @@ private:
      *
      * @param connection The kind of connection.
      */
-    void setConnection(const joynr::types::CommunicationMiddleware::Enum& connection);
+    void setConnection(const joynr::types::CommunicationMiddleware::Enum& connection) override;
 
     /*
      * arbitrationFinished is called when the arbitrationStatus is set to successful and the

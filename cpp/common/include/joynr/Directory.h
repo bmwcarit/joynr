@@ -73,21 +73,21 @@ class Directory : public IDirectory<Key, T>
 {
 
 public:
-    virtual ~Directory();
+    ~Directory() override;
     Directory(const std::string& directoryName);
-    std::shared_ptr<T> lookup(const Key& keyId);
-    bool contains(const Key& keyId);
+    std::shared_ptr<T> lookup(const Key& keyId) override;
+    bool contains(const Key& keyId) override;
     /*
      * Adds an element and keeps it until actively removed (using the 'remove' method)
      */
-    void add(const Key& keyId, T* value);
-    void add(const Key& keyId, std::shared_ptr<T> value);
+    void add(const Key& keyId, T* value) override;
+    void add(const Key& keyId, std::shared_ptr<T> value) override;
     /*
      * Adds an element and removes it automatically after ttl_ms milliseconds have past.
      */
-    void add(const Key& keyId, T* value, int64_t ttl_ms);
-    void add(const Key& keyId, std::shared_ptr<T> value, int64_t ttl_ms);
-    void remove(const Key& keyId);
+    void add(const Key& keyId, T* value, int64_t ttl_ms) override;
+    void add(const Key& keyId, std::shared_ptr<T> value, int64_t ttl_ms) override;
+    void remove(const Key& keyId) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(Directory);
@@ -102,8 +102,8 @@ class RemoverRunnable : public Runnable
 {
 public:
     RemoverRunnable(const Key& keyId, Directory<Key, T>* directory);
-    void shutdown();
-    void run();
+    void shutdown() override;
+    void run() override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(RemoverRunnable);
@@ -225,8 +225,8 @@ class RemoverRunnable<Key, IReplyCaller> : public Runnable
 {
 public:
     RemoverRunnable(const Key& keyId, Directory<Key, IReplyCaller>* directory);
-    void shutdown();
-    void run();
+    void shutdown() override;
+    void run() override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(RemoverRunnable);

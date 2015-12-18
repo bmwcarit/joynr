@@ -54,8 +54,8 @@ public:
                                     const MessagingQos& qosSettings,
                                     IClientCache* cache,
                                     bool cached);
-    virtual bool usesClusterController() const;
-    virtual ~AbstractJoynrMessagingConnector() = default;
+    bool usesClusterController() const override;
+    ~AbstractJoynrMessagingConnector() override = default;
 
     /**
      * @brief Makes a request and returns the received response via the callback.

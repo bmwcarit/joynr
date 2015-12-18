@@ -52,10 +52,10 @@ class LibJoynrRuntime : public JoynrRuntime
 
 public:
     explicit LibJoynrRuntime(Settings* settings);
-    virtual ~LibJoynrRuntime();
+    ~LibJoynrRuntime() override;
 
     static LibJoynrRuntime* create(JoynrRuntimeExecutor* runtimeExecutor);
-    void unregisterProvider(const std::string& participantId);
+    void unregisterProvider(const std::string& participantId) override;
 
 protected:
     ConnectorFactory* connectorFactory;

@@ -55,7 +55,7 @@ class JOYNR_EXPORT SubscriptionManager : public ISubscriptionManager
 {
 
 public:
-    ~SubscriptionManager();
+    ~SubscriptionManager() override;
 
     SubscriptionManager();
 

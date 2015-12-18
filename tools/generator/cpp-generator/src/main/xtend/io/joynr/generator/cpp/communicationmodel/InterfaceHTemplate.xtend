@@ -107,7 +107,7 @@ public:
  */
 class «getDllExportMacro()» I«interfaceName»Sync : virtual public I«interfaceName»Base {
 public:
-	virtual ~I«interfaceName»Sync() = default;
+	~I«interfaceName»Sync() override = default;
 	«produceSyncGetters(serviceInterface,true)»
 	«produceSyncSetters(serviceInterface,true)»
 	«produceSyncMethods(serviceInterface,true)»
@@ -119,7 +119,7 @@ public:
  */
 class «getDllExportMacro()» I«interfaceName»Async : virtual public I«interfaceName»Base {
 public:
-	virtual ~I«interfaceName»Async() = default;
+	~I«interfaceName»Async() override = default;
 	«produceAsyncGetters(serviceInterface,true)»
 	«produceAsyncSetters(serviceInterface,true)»
 	«produceAsyncMethods(serviceInterface,true)»
@@ -127,7 +127,7 @@ public:
 
 class «getDllExportMacro()» I«interfaceName» : virtual public I«interfaceName»Sync, virtual public I«interfaceName»Async {
 public:
-	virtual ~I«interfaceName»() = default;
+	~I«interfaceName»() override = default;
 	«FOR attribute: getAttributes(serviceInterface)»
 		«val attributeName = attribute.name.toFirstUpper»
 		«IF attribute.readable»

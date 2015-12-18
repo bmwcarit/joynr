@@ -43,21 +43,21 @@ public:
     /**
      * @brief shutdown do all necessary cleanup
      */
-    virtual void shutdown();
+    void shutdown() override;
     /**
      * @brief getLogger provides access to Logger for given contextId and className
      * @param contextId
      * @param className
      * @return
      */
-    virtual joynr_logging::Logger* getLogger(const std::string contextId,
-                                             const std::string className);
+    joynr_logging::Logger* getLogger(const std::string contextId,
+                                     const std::string className) override;
     /**
      * @brief destroyLogger
      * @param contextId
      * @param className
      */
-    virtual void destroyLogger(const std::string contextId, const std::string className);
+    void destroyLogger(const std::string contextId, const std::string className) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(SpdlogLogging);
@@ -84,13 +84,13 @@ public:
      * @param logLevel
      * @param message as char pointer
      */
-    virtual void log(joynr_logging::LogLevel logLevel, const char* message);
+    void log(joynr_logging::LogLevel logLevel, const char* message) override;
     /**
      * @brief log
      * @param logLevel
      * @param message as const string ref
      */
-    virtual void log(joynr_logging::LogLevel logLevel, const std::string& message);
+    void log(joynr_logging::LogLevel logLevel, const std::string& message) override;
 
 private:
     void configureLogger();

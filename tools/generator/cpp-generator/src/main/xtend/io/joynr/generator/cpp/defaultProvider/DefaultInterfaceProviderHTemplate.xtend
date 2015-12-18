@@ -79,7 +79,7 @@ class «getDllExportMacro()» Default«interfaceName»Provider : public «getPac
 public:
 	Default«interfaceName»Provider();
 
-	virtual ~Default«interfaceName»Provider();
+	~Default«interfaceName»Provider() override;
 
 	«IF !serviceInterface.attributes.empty»
 		// attributes
@@ -87,19 +87,19 @@ public:
 	«FOR attribute : serviceInterface.attributes»
 		«var attributeName = attribute.joynrName»
 		«IF attribute.readable»
-			virtual void get«attributeName.toFirstUpper»(
+			void get«attributeName.toFirstUpper»(
 					std::function<void(
 							const «attribute.typeName»&
 					)> onSuccess,
 					std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
-			);
+			) override;
 		«ENDIF»
 		«IF attribute.writable»
-			virtual void set«attributeName.toFirstUpper»(
+			void set«attributeName.toFirstUpper»(
 					const «attribute.typeName»& «attributeName»,
 					std::function<void()> onSuccess,
 					std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
-			);
+			) override;
 		«ENDIF»
 
 	«ENDFOR»
@@ -110,7 +110,7 @@ public:
 	«FOR method : serviceInterface.methods»
 		«val outputTypedParamList = method.commaSeperatedTypedConstOutputParameterList»
 		«val inputTypedParamList = getCommaSeperatedTypedConstInputParameterList(method)»
-		virtual void «method.joynrName»(
+		void «method.joynrName»(
 				«IF !method.inputParameters.empty»
 					«inputTypedParamList.substring(1)»,
 				«ENDIF»
@@ -131,7 +131,7 @@ public:
 				«ELSE»
 				std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
 				«ENDIF»
-		);
+		) override;
 
 	«ENDFOR»
 protected:

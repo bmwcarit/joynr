@@ -44,11 +44,11 @@ public:
      * @param other The JoynrException to be copied from.
      */
     JoynrException(const JoynrException& other) noexcept;
-    virtual ~JoynrException() noexcept = default;
+    ~JoynrException() noexcept override = default;
     /**
      * @return The detail message string of the exception.
      */
-    virtual const char* what() const noexcept;
+    const char* what() const noexcept override;
     /**
      * @return The detail message string of the exception.
      */
@@ -64,7 +64,7 @@ public:
     /**
      * Equality operator
      */
-    virtual bool operator==(const JoynrException& other) const;
+    bool operator==(const JoynrException& other) const;
     /**
      * @brief The typeName of the exception used for serialization.
      */
@@ -110,8 +110,8 @@ public:
      * @param message Further description of the reported runtime error
      */
     JoynrRuntimeException(const std::string& message) noexcept;
-    virtual const std::string getTypeName() const;
-    virtual JoynrRuntimeException* clone() const;
+    const std::string getTypeName() const override;
+    JoynrRuntimeException* clone() const override;
     /**
      * @brief The typeName used for serialization.
      */
@@ -134,8 +134,8 @@ public:
      * @param message Further description of the reported timeout
      */
     JoynrTimeOutException(const std::string& message) noexcept;
-    virtual const std::string getTypeName() const;
-    virtual JoynrTimeOutException* clone() const;
+    const std::string getTypeName() const override;
+    JoynrTimeOutException* clone() const override;
     /**
      * @brief The typeName used for serialization.
      */
@@ -172,8 +172,8 @@ public:
      * @param message Further description of the reported discovery error
      */
     DiscoveryException(const std::string& message) noexcept;
-    virtual const std::string getTypeName() const;
-    virtual DiscoveryException* clone() const;
+    const std::string getTypeName() const override;
+    DiscoveryException* clone() const override;
     /**
      * @brief The typeName used for serialization.
      */
@@ -197,8 +197,8 @@ public:
      * @param message Further description of the reported invocation error
      */
     MethodInvocationException(const std::string& message) noexcept;
-    virtual const std::string getTypeName() const;
-    virtual MethodInvocationException* clone() const;
+    const std::string getTypeName() const override;
+    MethodInvocationException* clone() const override;
     /**
      * @brief The typeName used for serialization.
      */
@@ -223,8 +223,8 @@ public:
      * @param message Further description of the reported error
      */
     ProviderRuntimeException(const std::string& message) noexcept;
-    virtual const std::string getTypeName() const;
-    virtual ProviderRuntimeException* clone() const;
+    const std::string getTypeName() const override;
+    ProviderRuntimeException* clone() const override;
     /**
      * @brief The typeName used for serialization.
      */
@@ -266,12 +266,12 @@ public:
      * publication belongs to.
      */
     virtual void setSubscriptionId(const std::string& subscriptionId) noexcept;
-    virtual const std::string getTypeName() const;
-    virtual PublicationMissedException* clone() const;
+    const std::string getTypeName() const override;
+    PublicationMissedException* clone() const override;
     /**
      * Equality operator
      */
-    virtual bool operator==(const PublicationMissedException& other) const;
+    bool operator==(const PublicationMissedException& other) const;
     /**
      * @brief The typeName used for serialization.
      */
@@ -344,12 +344,12 @@ public:
      * @param type name the type name of the error enumeration.
      */
     void setErrorTypeName(const std::string& typeName) noexcept;
-    const std::string getTypeName() const;
-    virtual ApplicationException* clone() const;
+    const std::string getTypeName() const override;
+    ApplicationException* clone() const override;
     /**
      * Equality operator
      */
-    virtual bool operator==(const ApplicationException& other) const;
+    bool operator==(const ApplicationException& other) const;
     /**
      * @brief The typeName of the exception used for serialization.
      */

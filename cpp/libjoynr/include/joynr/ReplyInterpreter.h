@@ -35,7 +35,7 @@ class ReplyInterpreter : public IReplyInterpreter
 public:
     ReplyInterpreter() = default;
 
-    void execute(std::shared_ptr<IReplyCaller> caller, const Reply& reply)
+    void execute(std::shared_ptr<IReplyCaller> caller, const Reply& reply) override
     {
         assert(caller);
 
@@ -74,7 +74,7 @@ class ReplyInterpreter<void> : public IReplyInterpreter
 public:
     ReplyInterpreter() = default;
 
-    void execute(std::shared_ptr<IReplyCaller> caller, const Reply& reply)
+    void execute(std::shared_ptr<IReplyCaller> caller, const Reply& reply) override
     {
         assert(caller);
 

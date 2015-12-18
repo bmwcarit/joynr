@@ -34,8 +34,9 @@ class JoynrMessagingStubFactory : public IMiddlewareMessagingStubFactory
 public:
     JoynrMessagingStubFactory(std::shared_ptr<IMessageSender> messageSender,
                               std::string receiveChannelId);
-    std::shared_ptr<IMessaging> create(const joynr::system::RoutingTypes::Address& destAddress);
-    bool canCreate(const joynr::system::RoutingTypes::Address& destAddress);
+    std::shared_ptr<IMessaging> create(
+            const joynr::system::RoutingTypes::Address& destAddress) override;
+    bool canCreate(const joynr::system::RoutingTypes::Address& destAddress) override;
 
 private:
     std::shared_ptr<IMessageSender> messageSender;

@@ -55,7 +55,7 @@ public:
      * @note Be sure to call @ref shutdown and wait for return before
      *      destroying this object
      */
-    virtual ~SingleThreadedDelayedScheduler();
+    ~SingleThreadedDelayedScheduler() override;
 
     /**
      * @brief Does an ordinary shutdown of @ref SingleThreadedDelayedScheduler
