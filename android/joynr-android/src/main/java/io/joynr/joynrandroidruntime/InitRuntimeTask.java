@@ -97,7 +97,7 @@ public class InitRuntimeTask extends AsyncTask<Object, String, JoynrRuntime> {
             Module combinedModules = Modules.override(new LibjoynrWebSocketRuntimeModule()).with(modules);
             Injector injectorA = new JoynrInjectorFactory(joynrConfig, combinedModules).createChildInjector();
 
-            JoynrRuntime runtime = injectorA.getInstance(LibjoynrWebSocketRuntime.class);
+            JoynrRuntime runtime = injectorA.getInstance(JoynrRuntime.class);
             if (runtime != null) {
                 Log.d("JAS", "joynr runtime started");
             } else {
