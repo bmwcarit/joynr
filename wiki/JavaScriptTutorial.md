@@ -71,3 +71,124 @@ Firefox):
 
 * Provider: http://localhost:8080/provider.html
 * Consumer: http://localhost:8080/consumer.html
+
+##Provisioning
+joynr provides four different joynr runtimes:
+
+* WebSocket libjoynr runtime: communicates
+  via WebSocket with a preexisting cluster controller
+* Inprocess runtime: provides its own cluster
+  controller
+* Intertab cluster controller runtime: runtime expected
+  to run in the browser. Allows to be
+  accessed by other browser tabs for uplink
+  communication with the joynr backend infrastructure
+* Intertab libjoynr runtime: runtime expected to run in
+  the browser. Communicates via intertab
+  communication with a preexisting cluster controller
+  in the browser
+
+Ensuring a proper startup of the several runtimes, the following objects must be provided to the constructor
+of the runtime.
+
+```
+var capabilitiesValue = [ // untyped list of provisioned capabilities
+    {
+        domain: <domain>,
+        interfaceName: <fully/qualified/interface/name>,
+        providerQos: {
+            customParameters: [
+                {
+                    name: <name>,
+                    value: <value>
+                },
+                ...
+            ],
+            providerVersion: <provider version>,
+            scope: <ProviderScope.GLOBAL|ProviderScope.LOCAL>,
+            priority: <priority>,
+            supportsOnChangeSubscriptions: <true|false>
+        },
+        participantId: <participantId>
+    },
+    ...
+];
+
+var loggingValue = {
+    ttl: <ttl>, //default value: 172800000, two days in milliseconds
+    configuration: {...} /*
+                       * log4j2-style JSON config, but as JavaScript object
+                       * See https://logging.apache.org/log4j/2.x/manual/configuration.html#JSON
+                       * for more information
+                       */
+};
+
+var internalMessagingQosValue = { //messaging qos used for joynr internal communication
+    ttl: <ttl> // round trip timeout ms for rpc requests, default value is 60000
+};
+
+var messagingValue = {
+    maxQueueSizeInKBytes: <max queue size in KB bytes> // default value is 10000
+};
+
+var websocketLibJoynrProvisioning = {
+    capabilities: capabilitiesValue, //optional
+    logging: loggingValue, //optional
+    internalMessagingQos: internalMessagingQosValue, //optional
+    messaging: messagingValue, //optional
+    ccAddress: <ccAddress>, /*
+                             * mandatory input: the address, how the cluster controller
+                             * can be reached. For the WebSocketLibjoynrRuntime, the
+                             * ccAddress expected to be of the following structure:
+                             * {
+                             *     protocol: <protocol>, //default value is "ws"
+                             *     port: <port>,
+                             *     host: <host>,
+                             *     path: <path> //default value is ""
+                             */
+};
+
+var interTabLibjoynrProvisioning = {
+    capabilities: capabilitiesValue, //optional
+    logging: loggingValue, //optional
+    internalMessagingQos: internalMessagingQosValue, //optional
+    messaging: messagingValue, //optional
+    window : <window object>,
+    windowId : windowId,
+    parentWindow : <parent windows>, // e.g. window.opener || window.top
+    parentOrigin : <paranet origin> // e.g. location.origin || (window.location.protocol+'//'+window.location.host)
+};
+
+var inProcessProvisioning = {
+    capabilities: capabilitiesValue, //optional
+    logging: loggingValue, //optional
+    internalMessagingQos: internalMessagingQosValue, //optional
+    messaging: messagingValue, //optional
+    bounceProxyBaseUrl: <base url to the bounce proxy>, // e.g. http://127.0.0.1:8080
+    bounceProxyUrl: <url to bounce proxy>, // e.g. http://127.0.0.1:8080/bounceproxy/
+    channelId: <channelId to be used>, // optional
+    channelUrls: { ... }, // optional provisioned mapping of channelId to url
+    channelQos: { // optional
+        messageProcessors: <# of message processors>, //default value is 4
+        resendDelay_ms: <resend delay>, //default value is 1000
+    }
+};
+
+var interTabClusterControllerProvisioning = {
+    capabilities: capabilitiesValue, //optional
+    logging: loggingValue, //optional
+    internalMessagingQos: internalMessagingQosValue, //optional
+    messaging: messagingValue, //optional
+    bounceProxyBaseUrl: <base url to the bounce proxy>, // e.g. http://127.0.0.1:8080
+    bounceProxyUrl: <url to bounce proxy>, // e.g. http://127.0.0.1:8080/bounceproxy/
+    channelId: <channelId to be used>, // optional
+    channelUrls: { ... }, // optional provisioned mapping of channelId to url
+    channelQos: { // optional
+        messageProcessors: <# of message processors>, //default value is 4
+        resendDelay_ms: <resend delay>, //default value is 1000
+    }
+    parentWindow : <parent windows>, // e.g. window.opener || window.top
+    parentOrigin : <paranet origin>, // e.g. location.origin || (window.location.protocol+'//'+window.location.host)
+    window : <window object>
+};
+```
