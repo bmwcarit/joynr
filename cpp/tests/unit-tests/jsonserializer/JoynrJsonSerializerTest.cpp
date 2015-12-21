@@ -296,7 +296,7 @@ void checkRequest(const Request& expectedRequest, std::function<void(const Reque
 
 TEST_F(JoynrJsonSerializerTest, exampleSerializerTestWithJoynrRequestOfPrimitiveParameters)
 {
-    // Create, initialize & check primitive Request
+    // Create, initialize & check request with primitive parameters
     Request expectedRequest;
     initializeRequestWithPrimitiveValues(expectedRequest);
     checkRequest(expectedRequest, compareRequestWithPrimitiveValues, logger);
@@ -304,7 +304,7 @@ TEST_F(JoynrJsonSerializerTest, exampleSerializerTestWithJoynrRequestOfPrimitive
 
 TEST_F(JoynrJsonSerializerTest, exampleSerializerTestWithJoynrRequestOfComplexParameters)
 {
-    // Create, initialize & check primitive Request
+    // Create, initialize & check request with complex parameters
     Request expectedRequest;
     initializeRequestWithComplexValues(expectedRequest);
     checkRequest(expectedRequest, compareRequestWithComplexValues, logger);
