@@ -118,6 +118,7 @@ if(${ENABLE_CLANG_FORMATTER})
     add_custom_target(format)
 endif(${ENABLE_CLANG_FORMATTER})
 
+include(AddClangFormat)
 #### END clang-format ####
 
 
@@ -166,13 +167,36 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 if(${ENABLE_CLANG_TIDY})
     LocateProgram(clang-tidy CLANG_TIDY_PATH)
     add_custom_target(tidy)
-endif(${ENABLE_CLANG_TIDY})
 
-set(
-    CLANG_TIDY_OPTIONS
-    -checks=*
-    -header-filter=.*joynr.*
-    CACHE LIST "additional options for clang-tidy")
+    set(
+        CLANG_TIDY_OPTIONS
+        -checks=*
+        -header-filter=.*joynr.*
+        CACHE LIST "additional options for clang-tidy")
+
+    set(CLANG_TIDY_TARGET_FILES "" CACHE LIST "files which will be cleaned up by clang-tidy")
+    option(CLANG_TIDY_APPLY_FIXES "files which will be cleaned up by clang-tidy" ON)
+    option(CLANG_TIDY_FORMAT "format files after applying fixes" ON)
+
+    set(CLANG_TIDY_FIXES_PATH "${CMAKE_BINARY_DIR}/tidy-fixes/" CACHE FILEPATH "location of exported fixes from 'clang-tidy'")
+    file(MAKE_DIRECTORY ${CLANG_TIDY_FIXES_PATH})
+
+    if(${CLANG_TIDY_APPLY_FIXES})
+        LocateProgram(clang-apply-replacements CLANG_APPLY_REPLACEMENTS_PATH)
+
+        set(CLANG_APPLY_REPLACEMENTS_OPTIONS "-remove-change-desc-files")
+        if(${CLANG_TIDY_FORMAT})
+            set(CLANG_APPLY_REPLACEMENTS_OPTIONS ${CLANG_APPLY_REPLACEMENTS_OPTIONS} "-format")
+        endif(${CLANG_TIDY_FORMAT})
+
+        add_custom_command(TARGET tidy
+                           POST_BUILD
+                           COMMAND ${CLANG_APPLY_REPLACEMENTS_PATH} ${CLANG_APPLY_REPLACEMENTS_OPTIONS} ${CLANG_TIDY_FIXES_PATH}
+                           VERBATIM
+        )
+    endif(${CLANG_TIDY_APPLY_FIXES})
+
+endif(${ENABLE_CLANG_TIDY})
 
 include(AddClangTidy)
 
@@ -193,8 +217,6 @@ endif(NOT DEFINED JOYNR_SERVER)
 message(STATUS "variable JOYNR_SERVER=" ${JOYNR_SERVER})
 
 message(STATUS "variable CMAKE_BUILD_TYPE=" ${CMAKE_BUILD_TYPE})
-
-include(AddClangFormat)
 
 # Set the binary directory
 set(JOYNR_BINARY_DIR ${CMAKE_BINARY_DIR}/bin)
