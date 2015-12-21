@@ -310,7 +310,7 @@ joynrTestRequire(
                                     testForCorrectReturnValues("testMethodHavingEnumArrayAsReturnValue",
                                                                 [ {
                                                                     name : "returnEnum",
-                                                                    // currently, we generate the type of the array element into the signature 
+                                                                    // currently, we generate the type of the array element into the signature
                                                                     type : TestEnum.ZERO._typeName
                                                                 }],
                                                                 [["ZERO", "ONE"]],
