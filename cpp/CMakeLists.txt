@@ -33,6 +33,8 @@ set_property(
 )
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake")
+include(Sanitizers)
+
 message(STATUS "variable CMAKE_MODULE_PATH=" ${CMAKE_MODULE_PATH})
 message(STATUS "variable CMAKE_PREFIX_PATH=" ${CMAKE_PREFIX_PATH})
 message(STATUS "variable CMAKE_VERSION=" ${CMAKE_VERSION})

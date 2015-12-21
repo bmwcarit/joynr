@@ -1,0 +1,5 @@
+# blacklist file for thread sanitizer
+# see http://clang.llvm.org/docs/SanitizerSpecialCaseList.html for more information
+
+# suppress harmless data race in boost::uuids::detail::seed_rng::sha1_random_digest_()
+fun:*sha1_random_digest_state*
