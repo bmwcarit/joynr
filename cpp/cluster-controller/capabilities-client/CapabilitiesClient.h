@@ -108,21 +108,11 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesClient);
-    void sendOneWayFunctionCall(std::shared_ptr<QObject> jsonFunctionCallSharedPtr,
-                                MessagingQos qosSettings);
-    Reply sendSynchronizedRequestFunctionCall(std::shared_ptr<QObject> jsonFunctionCallSharedPtr,
-                                              MessagingQos qosSettings);
-    void sendRequest(std::shared_ptr<QObject> jsonFunctionCallSharedPtr,
-                     MessagingQos qosSettings,
-                     std::shared_ptr<IReplyCaller> callBack);
 
-    int64_t defaultRequestTTL;
-    int64_t defaultRequestRoundtripTTL;
-
-    std::string capabilitiesClientParticipantId;
     std::string localChannelId;
 
-    // capabilitiesProxy is a QSP, because ownership is shared between CapabilitiesClient and Joynr
+    // capabilitiesProxy is a shared_ptr, because ownership is shared between CapabilitiesClient and
+    // Joynr
     std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy;
 
     static joynr_logging::Logger* logger;

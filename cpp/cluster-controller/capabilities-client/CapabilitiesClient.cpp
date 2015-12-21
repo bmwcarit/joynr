@@ -39,11 +39,7 @@ joynr_logging::Logger* CapabilitiesClient::logger =
         joynr_logging::Logging::getInstance()->getLogger("MSG", "CapabilitiesClient");
 
 CapabilitiesClient::CapabilitiesClient(const std::string& localChannelId)
-        : defaultRequestTTL(30000),
-          defaultRequestRoundtripTTL(40000),
-          capabilitiesClientParticipantId(),
-          localChannelId(localChannelId),
-          capabilitiesProxy(nullptr)
+        : localChannelId(localChannelId), capabilitiesProxy(nullptr)
 {
 }
 
