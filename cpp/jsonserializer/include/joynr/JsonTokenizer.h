@@ -82,7 +82,7 @@ public:
      * @brief JsonField
      * @param tokenizer
      */
-    JsonField(JsonTokenizer& tokenizer);
+    explicit JsonField(JsonTokenizer& tokenizer);
     JsonField(const JsonField& other) = default;
     JsonField(JsonField&& other) = default;
     JsonField& operator=(const JsonField& other) = default;
@@ -121,7 +121,7 @@ public:
      * @brief JsonObject
      * @param tokenizer
      */
-    JsonObject(JsonTokenizer& tokenizer);
+    explicit JsonObject(JsonTokenizer& tokenizer);
     JsonObject(const JsonObject& other) = default;
     JsonObject& operator=(const JsonObject& other) = default;
     JsonObject& operator=(JsonObject&& other) = default;
@@ -161,7 +161,7 @@ public:
      * @brief JsonArray
      * @param tokenizer
      */
-    JsonArray(JsonTokenizer& tokenizer);
+    explicit JsonArray(JsonTokenizer& tokenizer);
     /**
      * @brief JsonArray
      * @param array
@@ -201,7 +201,7 @@ public:
      * @brief JsonValue
      * @param tokenizer
      */
-    JsonValue(JsonTokenizer& tokenizer);
+    explicit JsonValue(JsonTokenizer& tokenizer);
     JsonValue(JsonValue&& array) = default;
     JsonValue(const JsonValue& other) = default;
     JsonValue& operator=(const JsonValue& other) = default;
@@ -280,7 +280,7 @@ public:
      * @param json The JSON to parse. Must remain valid for the lifetime
      *             of the object.
      */
-    JsonTokenizer(const std::string& json);
+    explicit JsonTokenizer(const std::string& json);
     JsonTokenizer(const JsonTokenizer& other) = default;
     JsonTokenizer(JsonTokenizer&& other) = default;
     JsonTokenizer& operator=(const JsonTokenizer& other) = default;

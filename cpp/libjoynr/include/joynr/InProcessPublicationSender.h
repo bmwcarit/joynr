@@ -40,7 +40,7 @@ class JOYNR_EXPORT InProcessPublicationSender : public IPublicationSender
 public:
 public:
     ~InProcessPublicationSender() override = default;
-    InProcessPublicationSender(ISubscriptionManager* subscriptionManager);
+    explicit InProcessPublicationSender(ISubscriptionManager* subscriptionManager);
     /**
      * @brief
      *

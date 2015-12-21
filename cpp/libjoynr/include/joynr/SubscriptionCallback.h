@@ -39,7 +39,7 @@ template <typename T, typename... Ts>
 class SubscriptionCallback : public ISubscriptionCallback
 {
 public:
-    SubscriptionCallback(std::shared_ptr<ISubscriptionListener<T, Ts...>> listener)
+    explicit SubscriptionCallback(std::shared_ptr<ISubscriptionListener<T, Ts...>> listener)
             : listener(listener)
     {
     }

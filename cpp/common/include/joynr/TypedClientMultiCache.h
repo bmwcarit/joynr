@@ -49,7 +49,7 @@ template <class Key, class T>
 class TypedClientMultiCache
 {
 public:
-    TypedClientMultiCache<Key, T>(int maxCost = MULTICACHE_DEFAULT_MAX_COST);
+    explicit TypedClientMultiCache<Key, T>(int maxCost = MULTICACHE_DEFAULT_MAX_COST);
 
     /*
     * Returns the list of values stored for the attributeId filtered by a maximum age. If none

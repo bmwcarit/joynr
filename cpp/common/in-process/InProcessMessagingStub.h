@@ -36,7 +36,7 @@ class InProcessMessagingSkeleton;
 class JOYNRCOMMON_EXPORT InProcessMessagingStub : public IMessaging
 {
 public:
-    InProcessMessagingStub(std::shared_ptr<InProcessMessagingSkeleton> skeleton);
+    explicit InProcessMessagingStub(std::shared_ptr<InProcessMessagingSkeleton> skeleton);
     ~InProcessMessagingStub() override = default;
     void transmit(JoynrMessage& message) override;
 

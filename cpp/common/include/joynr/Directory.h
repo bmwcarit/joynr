@@ -74,7 +74,7 @@ class Directory : public IDirectory<Key, T>
 
 public:
     ~Directory() override;
-    Directory(const std::string& directoryName);
+    explicit Directory(const std::string& directoryName);
     std::shared_ptr<T> lookup(const Key& keyId) override;
     bool contains(const Key& keyId) override;
     /*

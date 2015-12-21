@@ -57,7 +57,7 @@ public:
         has to be used.
        Todo: Ownership of libjoynr is not transferred, should not be a pointer.
     */
-    CapabilitiesClient(const std::string& localChannelId);
+    explicit CapabilitiesClient(const std::string& localChannelId);
 
     /*
       * The init method has to be caleld before any calls to the CapabilitiesClient are made.

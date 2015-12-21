@@ -36,7 +36,7 @@ class Variant;
 class JOYNR_EXPORT IBroadcastFilter
 {
 public:
-    IBroadcastFilter(std::string name) : name(name)
+    explicit IBroadcastFilter(std::string name) : name(name)
     {
     }
     virtual ~IBroadcastFilter() = default;

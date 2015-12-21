@@ -54,7 +54,7 @@ public:
      * @see SubscriptionQos#setValidity
      * @see SubscriptionQos#setPublicationTtl
      */
-    SubscriptionQos(const int64_t& validity);
+    explicit SubscriptionQos(const int64_t& validity);
 
     /** Destructor */
     virtual ~SubscriptionQos() = default;

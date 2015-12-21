@@ -47,7 +47,7 @@ protected:
     joynr::Semaphore runtimeSemaphore;
 
 public:
-    JoynrRuntimeExecutor(Settings* settings);
+    explicit JoynrRuntimeExecutor(Settings* settings);
     ~JoynrRuntimeExecutor() override;
 
     LibJoynrRuntime* getRuntime();

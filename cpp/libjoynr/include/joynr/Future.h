@@ -268,11 +268,21 @@ public:
      * @param status The failure status
      * @param error The JoynrException describing the failure
      */
+    void onError(const RequestStatusCode& status, const exceptions::JoynrException& error)
+    {
+        onError(RequestStatus(status), error);
+    }
+
+    /**
+     * @brief Callback which indicates the operation has finished and has failed.
+     * @param status The failure status
+     * @param error The JoynrException describing the failure
+     */
     void onError(const RequestStatus& status, const exceptions::JoynrException& error)
     {
         LOG_INFO(logger, "onError has been invoked");
         this->error.reset(error.clone());
-        this->status = RequestStatus(status);
+        this->status = status;
         resultReceived.notify();
     }
 
@@ -399,10 +409,20 @@ public:
      * @param status The failure status
      * @param error The JoynrException describing the failure
      */
+    void onError(const RequestStatusCode& status, const exceptions::JoynrException& error)
+    {
+        onError(RequestStatus(status), error);
+    }
+
+    /**
+     * @brief Callback which indicates the operation has finished and has failed.
+     * @param status The failure status
+     * @param error The JoynrException describing the failure
+     */
     void onError(const RequestStatus& status, const exceptions::JoynrException& error)
     {
         this->error.reset(error.clone());
-        this->status = RequestStatus(status);
+        this->status = status;
         resultReceived.notify();
     }
 

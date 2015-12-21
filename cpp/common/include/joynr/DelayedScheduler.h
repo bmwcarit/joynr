@@ -58,8 +58,9 @@ public:
      *      has expired
      * @param defaultDelayMs Default delay used by @ref schedule
      */
-    DelayedScheduler(std::function<void(Runnable*)> onWorkAvailable,
-                     std::chrono::milliseconds defaultDelayMs = std::chrono::milliseconds::zero());
+    explicit DelayedScheduler(
+            std::function<void(Runnable*)> onWorkAvailable,
+            std::chrono::milliseconds defaultDelayMs = std::chrono::milliseconds::zero());
 
     /**
      * @brief Destructor

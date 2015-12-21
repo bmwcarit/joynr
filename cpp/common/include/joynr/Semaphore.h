@@ -41,7 +41,7 @@ public:
      * @note If the initial counter value is set to @c 0 the first call to
      *      @ref lock will block
      */
-    Semaphore(int8_t initialValue = 0);
+    explicit Semaphore(int8_t initialValue = 0);
 
     /**
      * @brief Destructor

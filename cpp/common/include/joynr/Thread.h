@@ -44,7 +44,7 @@ public:
      * @brief Constructor
      * @param name Name of the thread
      */
-    Thread(const std::string& name);
+    explicit Thread(const std::string& name);
 
     /**
      * @brief Destructor

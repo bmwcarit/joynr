@@ -78,7 +78,7 @@ public:
      * @brief SpdlogLogger constructs logger marked with given prefix
      * @param prefix unique logger id
      */
-    SpdlogLogger(const std::string& prefix);
+    explicit SpdlogLogger(const std::string& prefix);
     /**
      * @brief log
      * @param logLevel

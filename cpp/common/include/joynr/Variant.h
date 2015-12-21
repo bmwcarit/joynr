@@ -195,7 +195,7 @@ private:
      * Should only be accessed by make().
      * @param variantHolder pointer to IVariantHolder
      */
-    Variant(IVariantHolder* variantHolder) : pointer(variantHolder)
+    explicit Variant(IVariantHolder* variantHolder) : pointer(variantHolder)
     {
     }
 

@@ -38,7 +38,7 @@ public:
      * @brief Base constructor
      * @param ttl The time to live in milliseconds
      */
-    MessagingQos(uint64_t ttl = 60000);
+    explicit MessagingQos(uint64_t ttl = 60000);
     /** @brief Copy constructor */
     MessagingQos(const MessagingQos& other) = default;
 

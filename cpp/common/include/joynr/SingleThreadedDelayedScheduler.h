@@ -46,7 +46,7 @@ public:
      * @param threadName Name of the thread to be used for debugging reasons
      * @param defaultDelayMs Default delay used by @ref DelayedScheduler::schedule
      */
-    SingleThreadedDelayedScheduler(
+    explicit SingleThreadedDelayedScheduler(
             const std::string& threadName,
             std::chrono::milliseconds defaultDelayMs = std::chrono::milliseconds::zero());
 

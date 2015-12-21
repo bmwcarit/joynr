@@ -38,7 +38,7 @@ class LibJoynrWebSocketRuntime : public LibJoynrRuntime
     QWebSocket* websocket;
 
 public:
-    LibJoynrWebSocketRuntime(Settings* settings);
+    explicit LibJoynrWebSocketRuntime(Settings* settings);
     ~LibJoynrWebSocketRuntime() override;
 
 protected:

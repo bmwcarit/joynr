@@ -43,7 +43,7 @@ class HttpRequestBuilder : public IHttpGetBuilder,
                            public IHttpDeleteBuilder
 {
 public:
-    HttpRequestBuilder(const std::string& url);
+    explicit HttpRequestBuilder(const std::string& url);
     ~HttpRequestBuilder() override;
 
     HttpRequest* build() override;

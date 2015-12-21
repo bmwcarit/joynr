@@ -46,7 +46,7 @@ public:
      * @brief Cache with initialy customized cacheCapacity
      * @param cacheCapacity
      */
-    Cache(uint32_t cacheCapacity)
+    explicit Cache(uint32_t cacheCapacity)
             : cacheMap(), cacheCapacity(static_cast<std::size_t>(cacheCapacity))
     {
     }

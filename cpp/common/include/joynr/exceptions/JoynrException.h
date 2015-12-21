@@ -90,7 +90,7 @@ protected:
      *
      * @param message Further description of the reported error (detail message).
      */
-    JoynrException(const std::string& message) noexcept;
+    explicit JoynrException(const std::string& message) noexcept;
 };
 
 /**
@@ -109,7 +109,7 @@ public:
      *
      * @param message Further description of the reported runtime error
      */
-    JoynrRuntimeException(const std::string& message) noexcept;
+    explicit JoynrRuntimeException(const std::string& message) noexcept;
     const std::string getTypeName() const override;
     JoynrRuntimeException* clone() const override;
     /**
@@ -133,7 +133,7 @@ public:
      *
      * @param message Further description of the reported timeout
      */
-    JoynrTimeOutException(const std::string& message) noexcept;
+    explicit JoynrTimeOutException(const std::string& message) noexcept;
     const std::string getTypeName() const override;
     JoynrTimeOutException* clone() const override;
     /**
@@ -153,7 +153,7 @@ public:
      *
      * @param message Further description of the reported parse error
      */
-    JoynrParseError(const std::string& message) noexcept;
+    explicit JoynrParseError(const std::string& message) noexcept;
 };
 
 /**
@@ -171,7 +171,7 @@ public:
      *
      * @param message Further description of the reported discovery error
      */
-    DiscoveryException(const std::string& message) noexcept;
+    explicit DiscoveryException(const std::string& message) noexcept;
     const std::string getTypeName() const override;
     DiscoveryException* clone() const override;
     /**
@@ -196,7 +196,7 @@ public:
      *
      * @param message Further description of the reported invocation error
      */
-    MethodInvocationException(const std::string& message) noexcept;
+    explicit MethodInvocationException(const std::string& message) noexcept;
     const std::string getTypeName() const override;
     MethodInvocationException* clone() const override;
     /**
@@ -222,7 +222,7 @@ public:
      *
      * @param message Further description of the reported error
      */
-    ProviderRuntimeException(const std::string& message) noexcept;
+    explicit ProviderRuntimeException(const std::string& message) noexcept;
     const std::string getTypeName() const override;
     ProviderRuntimeException* clone() const override;
     /**
@@ -253,7 +253,7 @@ public:
      * @param subscriptionId The subscription ID of the subscription the missed
      * publication belongs to.
      */
-    PublicationMissedException(const std::string& subscriptionId) noexcept;
+    explicit PublicationMissedException(const std::string& subscriptionId) noexcept;
     /**
      * @return The subscription ID of the subscription the missed publication
      * belongs to.

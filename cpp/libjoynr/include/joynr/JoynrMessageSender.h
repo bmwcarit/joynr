@@ -58,7 +58,7 @@ class MessageRouter;
 class JOYNR_EXPORT JoynrMessageSender : public IJoynrMessageSender
 {
 public:
-    JoynrMessageSender(std::shared_ptr<MessageRouter> messagingRouter);
+    explicit JoynrMessageSender(std::shared_ptr<MessageRouter> messagingRouter);
 
     ~JoynrMessageSender() override = default;
 
