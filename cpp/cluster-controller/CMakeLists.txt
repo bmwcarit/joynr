@@ -6,6 +6,43 @@ get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCL
 get_target_property(JoynrLib_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(jsonserializer_PUBLIC_INCLUDE_DIRECTORY jsonserializer PUBLIC_INCLUDE_DIRECTORY)
 
+### Add mosquitto mqtt ###########################################################
+if(USE_PLATFORM_MOSQUITTO)
+    find_package(mosquitto REQUIRED)
+
+    message(STATUS "variable MOSQUITTO_INCLUDE_DIRS=${MOSQUITTO_INCLUDE_DIRS}")
+    set(MOSQUITTO_INCLUDE_DIRS ${MOSQUITTO_INCLUDE_DIRS} PARENT_SCOPE)
+    get_filename_component(MOSQUITTO_BINARY_DIR ${MOSQUITTO_LIBRARY} DIRECTORY)
+    message(STATUS "variable MOSQUITTO_BINARY_DIR=${MOSQUITTO_BINARY_DIR}")
+    message(STATUS "variable MOSQUITTO_LIBRARY=${MOSQUITTO_LIBRARY}")
+else(USE_PLATFORM_MOSQUITTO)
+    message(STATUS "############ Download: mosquitto ############")
+    set(MOSQUITTO_SOURCE_URL "https://git.eclipse.org/r/mosquitto/org.eclipse.mosquitto.git")
+    set(MOSQUITTO_SOURCE_TYPE "GIT_REPOSITORY")
+    set(MOSQUITTO_VERSION 1.4.7)
+
+    AddExternalProject(
+        mosquitto
+        ${MOSQUITTO_SOURCE_TYPE} "${MOSQUITTO_SOURCE_URL}"
+        GIT_TAG v${MOSQUITTO_VERSION}
+        TIMEOUT 10
+        BUILD_BYPRODUCTS("${CMAKE_BINARY_DIR}/ThirdParty/src/mosquitto-build/lib/cpp/libmosquittopp.so")
+    )
+
+    ExternalProject_Get_Property(mosquitto SOURCE_DIR)
+    set(MOSQUITTO_INCLUDE_DIRS ${SOURCE_DIR}/lib/cpp ${SOURCE_DIR}/lib)
+    set(MOSQUITTO_INCLUDE_DIRS ${SOURCE_DIR}/lib/cpp ${SOURCE_DIR}/lib PARENT_SCOPE)
+    message(STATUS "variable MOSQUITTO_INCLUDE_DIRS=${MOSQUITTO_INCLUDE_DIRS}")
+
+    ExternalProject_Get_Property(mosquitto BINARY_DIR)
+    set(MOSQUITTO_BINARY_DIR ${BINARY_DIR}/lib/cpp)
+    message(STATUS "variable MOSQUITTO_BINARY_DIR=${MOSQUITTO_BINARY_DIR}")
+    set(MOSQUITTO_LIBRARY ${MOSQUITTO_BINARY_DIR}/libmosquittopp.so)
+    message(STATUS "variable MOSQUITTO_LIBRARY=${MOSQUITTO_LIBRARY}")
+
+endif(USE_PLATFORM_MOSQUITTO)
+
+
 set(
     JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
@@ -18,6 +55,7 @@ set(
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${JoynrLib_PUBLIC_INCLUDE_DIRECTORY}
     ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
+    ${MOSQUITTO_INCLUDE_DIRS}
 )
 
 set(
@@ -32,6 +70,7 @@ set(
     JoynrCommon
     ${CURL_LIBRARIES}
     ${Qt5Sql_LIBRARIES}
+    ${MOSQUITTO_LIBRARY}
 )
 
 set(
@@ -58,6 +97,7 @@ file(
     "messaging/*.h"
     "messaging/in-process/*.h"
     "messaging/joynr-messaging/*.h"
+    "mqtt/*.h"
 )
 
 set(
@@ -77,6 +117,7 @@ file(
     "messaging/*.cpp"
     "messaging/in-process/*.cpp"
     "messaging/joynr-messaging/*.cpp"
+    "mqtt/*.cpp"
 )
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
@@ -133,6 +174,12 @@ add_library(
     ${JoynrClusterController_HEADERS}
     ${JoynrClusterController_SOURCES}
 )
+
+target_include_directories(JoynrClusterController SYSTEM PRIVATE ${MOSQUITTO_INCLUDE_DIRS})
+
+if(NOT USE_PLATFORM_MOSQUITTO)
+    add_dependencies(JoynrClusterController mosquitto)
+endif(NOT USE_PLATFORM_MOSQUITTO)
 
 AddClangFormat(JoynrClusterController)
 

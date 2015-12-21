@@ -40,6 +40,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
         ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
         ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
         ${JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY}
+        ${MOSQUITTO_INCLUDE_DIRS}
     )
 
     set(
@@ -92,6 +93,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
         ${JoynrClusterControllerRuntime_HEADERS}
         ${JoynrClusterControllerRuntime_SOURCES}
     )
+    target_include_directories(JoynrClusterControllerRuntime SYSTEM PRIVATE ${MOSQUITTO_INCLUDE_DIRS})
 
     AddClangFormat(JoynrClusterControllerRuntime)
 
