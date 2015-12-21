@@ -7,21 +7,36 @@ if(${WIN32})
 else()
 endif(${WIN32})
 
+
+### clone googletest git repository ###########################################################
+
+# this repository contains both googletest and googlemock
+AddExternalProject(
+    googletest-repo
+    DOWNLOAD_DIR "googletest-repo"
+    TIMEOUT 10
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG ddb8012e # there is no version tag on github; this is to make sure that a working version is used
+    CONFIGURE_COMMAND "" # Disable configuring
+    BUILD_COMMAND "" # Disable building
+)
+
+get_property(EP_PREFIX DIRECTORY PROPERTY EP_PREFIX)
+
 ### Add google test ###########################################################
+
+# build googletest library
 AddExternalProject(
     googletest
-    SVN_REPOSITORY http://googletest.googlecode.com/svn/tags/release-1.6.0
-    TIMEOUT 10
-    PATCH_COMMAND svn patch ${CMAKE_SOURCE_DIR}/CMake/gtest-1.6.0-Clang.patch ${CMAKE_BINARY_DIR}/ThirdParty/src/googletest
-    # Force separate output paths for debug and release builds to allow easy
-    # identification of correct lib in subsequent TARGET_LINK_LIBRARIES commands
-    CMAKE_ARGS #-DCMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG:PATH=DebugLibs
-               #-DCMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE:PATH=ReleaseLibs
-               -DBUILD_SHARED_LIBS=OFF
-               -Dgtest_force_shared_crt=ON
+    DOWNLOAD_COMMAND "" # already downloaded by googletest-repo
+    SOURCE_DIR "${EP_PREFIX}/src/googletest-repo/googletest"
+    BUILD_BYPRODUCTS "${EP_PREFIX}/src/googletest-build/libgtest.a"
+    CMAKE_ARGS -Dgtest_force_shared_crt=ON
                -Dgtest_disable_pthreads=${DISABLE_PTHREAD_CMAKE_ARG}
-    BUILD_BYPRODUCTS("${CMAKE_BINARY_DIR}/ThirdParty/src/googletest-build/libgtest.a")
 )
+
+# build googletest AFTER downloading the sources
+add_dependencies(googletest googletest-repo)
 
 # Specify include dir
 ExternalProject_Get_Property(googletest source_dir)
@@ -34,20 +49,19 @@ set(googletest_binary_dir ${binary_dir})
 message(STATUS "variable googletest_binary_dir=${googletest_binary_dir}")
 
 ### Add google mock ###########################################################
+
+# build googlemock library
 AddExternalProject(
     googlemock
-    SVN_REPOSITORY http://googlemock.googlecode.com/svn/tags/release-1.6.0
-    TIMEOUT 10
-    PATCH_COMMAND svn patch ${CMAKE_SOURCE_DIR}/CMake/gmock-1.6.0-Clang.patch ${CMAKE_BINARY_DIR}/ThirdParty/src/googlemock
-    # Force separate output paths for debug and release builds to allow easy
-    # identification of correct lib in subsequent TARGET_LINK_LIBRARIES commands
-    CMAKE_ARGS #-DCMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG:PATH=DebugLibs
-               #-DCMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE:PATH=ReleaseLibs
-               -DBUILD_SHARED_LIBS=OFF
-               -Dgtest_force_shared_crt=ON
+    DOWNLOAD_COMMAND "" # already downloaded by googletest-repo
+    SOURCE_DIR "${EP_PREFIX}/src/googletest-repo/googlemock"
+    BUILD_BYPRODUCTS "${EP_PREFIX}/src/googlemock-build/libgmock.a"
+    CMAKE_ARGS -Dgtest_force_shared_crt=ON
                -Dgtest_disable_pthreads=${DISABLE_PTHREAD_CMAKE_ARG}
-    BUILD_BYPRODUCTS("${CMAKE_BINARY_DIR}/ThirdParty/src/googlemock-build/libgmock.a")
 )
+
+# build googlemock AFTER downloading the sources
+add_dependencies(googlemock googletest-repo)
 
 # Specify include dir
 ExternalProject_Get_Property(googlemock source_dir)
