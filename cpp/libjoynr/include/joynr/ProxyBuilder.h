@@ -207,7 +207,7 @@ ProxyBuilder<T>::ProxyBuilder(ProxyFactory* proxyFactory,
           messagingQos(),
           proxyFactory(proxyFactory),
           discoveryProxy(discoveryProxy),
-          arbitrator(NULL),
+          arbitrator(nullptr),
           arbitrationSemaphore(1),
           participantId(""),
           connection(joynr::types::CommunicationMiddleware::NONE),
@@ -221,13 +221,13 @@ ProxyBuilder<T>::ProxyBuilder(ProxyFactory* proxyFactory,
 template <class T>
 ProxyBuilder<T>::~ProxyBuilder()
 {
-    if (arbitrator != NULL) {
+    if (arbitrator != nullptr) {
         arbitrator->removeArbitationListener();
         // question: it is only safe to delete the arbitrator here, if the proxybuilder will not be
         // deleted
         // before all arbitrations are finished.
         delete arbitrator;
-        arbitrator = NULL;
+        arbitrator = nullptr;
         // TODO delete arbitrator
         // 1. delete arbitrator or
         // 2. (if std::shared_ptr) delete arbitrator

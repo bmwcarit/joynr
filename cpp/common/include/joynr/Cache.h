@@ -68,7 +68,7 @@ public:
     {
         auto elementIterator = cacheMap.find(key);
         if (elementIterator == cacheMap.end()) {
-            return 0;
+            return nullptr;
         }
         return elementIterator->second.get();
     }

@@ -150,14 +150,14 @@ protected:
      * @param settings The system service settings
      */
     explicit JoynrRuntime(Settings& settings)
-            : proxyFactory(NULL),
-              participantIdStorage(NULL),
-              capabilitiesRegistrar(NULL),
+            : proxyFactory(nullptr),
+              participantIdStorage(nullptr),
+              capabilitiesRegistrar(nullptr),
               systemServicesSettings(settings),
-              dispatcherAddress(NULL),
-              messageRouter(NULL),
-              discoveryProxy(NULL),
-              publicationManager(NULL)
+              dispatcherAddress(nullptr),
+              messageRouter(nullptr),
+              discoveryProxy(nullptr),
+              publicationManager(nullptr)
     {
         systemServicesSettings.printSettings();
     }

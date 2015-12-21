@@ -60,7 +60,7 @@ class InterfaceProxyBaseCppTemplate  implements InterfaceTemplate{
 ) :
 		joynr::ProxyBase(connectorFactory, cache, domain, interfaceName, qosSettings, cached),
 		messagingAddress(messagingAddress),
-		connector(NULL)
+		connector(nullptr)
 {
 }
 
@@ -69,7 +69,7 @@ void «className»::handleArbitrationFinished(
 		const std::string &providerParticipantId,
 		const joynr::types::CommunicationMiddleware::Enum& connection
 ) {
-	if (connector != NULL){
+	if (connector != nullptr){
 		delete connector;
 	}
 	connector = connectorFactory->create<«getPackagePathWithJoynrPrefix(fInterface, "::")»::I«serviceName»Connector>(
@@ -90,7 +90,7 @@ void «className»::handleArbitrationFinished(
 	«val returnType = attribute.typeName»
 	void «className»::unsubscribeFrom«attributeName.toFirstUpper»(std::string& subscriptionId)
 	{
-		if (connector==NULL){
+		if (connector==nullptr){
 			LOG_WARN(logger, "proxy cannot subscribe to «className».«attributeName», \
 					 because the communication end partner is not (yet) known");
 		}
@@ -103,7 +103,7 @@ void «className»::handleArbitrationFinished(
 				std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
 				const joynr::SubscriptionQos& subscriptionQos,
 				std::string& subscriptionId) {
-		if (connector==NULL){
+		if (connector==nullptr){
 			LOG_WARN(logger, "proxy cannot subscribe to «className».«attributeName», \
 					 because the communication end partner is not (yet) known");
 			return "";
@@ -119,7 +119,7 @@ void «className»::handleArbitrationFinished(
 	std::string «className»::subscribeTo«attributeName.toFirstUpper»(
 				std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
 				const joynr::SubscriptionQos& subscriptionQos) {
-		if (connector==NULL){
+		if (connector==nullptr){
 			LOG_WARN(logger, "proxy cannot subscribe to «className».«attributeName», \
 					 because the communication end partner is not (yet) known");
 			return "";
@@ -138,7 +138,7 @@ void «className»::handleArbitrationFinished(
 	«val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
 	void «className»::unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(std::string& subscriptionId)
 	{
-		if (connector==NULL){
+		if (connector==nullptr){
 			LOG_WARN(logger, "proxy cannot unsubscribe from «className».«broadcastName» broadcast, \
 					 because the communication end partner is not (yet) known");
 			return;
@@ -158,7 +158,7 @@ void «className»::handleArbitrationFinished(
 					std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»> > subscriptionListener,
 					const joynr::OnChangeSubscriptionQos& subscriptionQos) {
 	«ENDIF»
-		if (connector==NULL){
+		if (connector==nullptr){
 			LOG_WARN(logger, "proxy cannot subscribe to «className».«broadcastName» broadcast, \
 					 because the communication end partner is not (yet) known");
 			return "";
@@ -189,7 +189,7 @@ void «className»::handleArbitrationFinished(
 					const joynr::OnChangeSubscriptionQos& subscriptionQos,
 					std::string& subscriptionId) {
 	«ENDIF»
-		if (connector==NULL){
+		if (connector==nullptr){
 			LOG_WARN(logger, "proxy cannot subscribe to «className».«broadcastName» broadcast, \
 					 because the communication end partner is not (yet) known");
 			return "";
@@ -212,7 +212,7 @@ void «className»::handleArbitrationFinished(
 «ENDFOR»
 
 «className»::~«className»(){
-	if (connector != NULL){
+	if (connector != nullptr){
 		delete connector;
 	}
 }

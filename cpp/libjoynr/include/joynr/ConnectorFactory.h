@@ -61,7 +61,7 @@ public:
         }
 
         LOG_ERROR(logger, "Can not create Connector: Unknown address type.");
-        return NULL;
+        return nullptr;
     }
 
 private:

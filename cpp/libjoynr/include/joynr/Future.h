@@ -109,7 +109,7 @@ public:
      * @brief Constructor
      */
     Future<Ts...>()
-            : error(NULL), status(RequestStatusCode::IN_PROGRESS), results(), resultReceived(0)
+            : error(nullptr), status(RequestStatusCode::IN_PROGRESS), results(), resultReceived(0)
     {
         LOG_INFO(logger,
                  FormatString("resultReceived.getStatus():%1")
@@ -307,7 +307,7 @@ class Future<void>
 {
 
 public:
-    Future<void>() : error(NULL), status(RequestStatusCode::IN_PROGRESS), resultReceived(0)
+    Future<void>() : error(nullptr), status(RequestStatusCode::IN_PROGRESS), resultReceived(0)
     {
     }
 

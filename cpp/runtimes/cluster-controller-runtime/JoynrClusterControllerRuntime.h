@@ -73,8 +73,8 @@ class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrClusterControllerRuntime : publi
 public:
     JoynrClusterControllerRuntime(QCoreApplication* app,
                                   Settings* settings,
-                                  IMessageReceiver* messageReceiver = NULL,
-                                  IMessageSender* = NULL);
+                                  IMessageReceiver* messageReceiver = nullptr,
+                                  IMessageSender* = nullptr);
 
     static JoynrClusterControllerRuntime* create(Settings* settings);
 

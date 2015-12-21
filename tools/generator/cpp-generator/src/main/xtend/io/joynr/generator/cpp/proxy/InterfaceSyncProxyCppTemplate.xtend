@@ -79,7 +79,7 @@ class InterfaceSyncProxyCppTemplate  implements InterfaceTemplate{
 	«IF attribute.readable»
 		void «syncClassName»::«getAttribute»(«attributeType»& result)
 		{
-			if (connector==NULL){
+			if (connector==nullptr){
 				«val errorMsg = "proxy cannot invoke " + getAttribute + " because the communication end partner is not (yet) known"»
 				LOG_WARN(logger, "«errorMsg»");
 				exceptions::JoynrRuntimeException error("«errorMsg»");
@@ -93,7 +93,7 @@ class InterfaceSyncProxyCppTemplate  implements InterfaceTemplate{
 	«IF attribute.writable»
 		void «syncClassName»::«setAttribute»(const «attributeType»& value)
 		{
-			if (connector==NULL){
+			if (connector==nullptr){
 				«val errorMsg = "proxy cannot invoke " + setAttribute + " because the communication end partner is not (yet) known"»
 				LOG_WARN(logger, "«errorMsg»");
 				exceptions::JoynrRuntimeException error("«errorMsg»");
@@ -119,7 +119,7 @@ class InterfaceSyncProxyCppTemplate  implements InterfaceTemplate{
 	void «syncClassName»::«methodName»(
 		«outputTypedParamList»«IF method.outputParameters.size > 0 && method.inputParameters.size > 0», «ENDIF»«inputTypedParamList»)
 	{
-		if (connector==NULL){
+		if (connector==nullptr){
 			«val errorMsg = "proxy cannot invoke " + methodName + " because the communication end partner is not (yet) known"»
 			LOG_WARN(logger, "«errorMsg»");
 				exceptions::JoynrRuntimeException error("«errorMsg»");

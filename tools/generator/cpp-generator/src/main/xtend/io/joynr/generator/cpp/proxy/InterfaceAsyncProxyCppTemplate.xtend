@@ -84,7 +84,7 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 				std::function<void(const joynr::exceptions::JoynrException& error)> onError
 		)
 		{
-			if (connector==NULL){
+			if (connector==nullptr){
 				«val errorMsg = "proxy cannot invoke " + getAttribute + ", because the communication end partner is not (yet) known"»
 				LOG_WARN(logger, "«errorMsg»");
 				joynr::RequestStatus status(RequestStatusCode::ERROR, "«errorMsg»");
@@ -114,7 +114,7 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 				std::function<void(const joynr::exceptions::JoynrException& error)> onError
 		)
 		{
-			if (connector==NULL){
+			if (connector==nullptr){
 				«val errorMsg = "proxy cannot invoke " + setAttribute + ", because the communication end partner is not (yet) known"»
 				LOG_WARN(logger, "«errorMsg»");
 				joynr::RequestStatus status(RequestStatusCode::ERROR, "«errorMsg»");
@@ -147,7 +147,7 @@ class InterfaceAsyncProxyCppTemplate implements InterfaceTemplate{
 			std::function<void(const joynr::exceptions::JoynrException& error)> onError
 	)
 	{
-		if (connector==NULL){
+		if (connector==nullptr){
 			«val errorMsg = "proxy cannot invoke " + methodName + ", because the communication end partner is not (yet) known"»
 			LOG_WARN(logger, "«errorMsg»");
 			joynr::RequestStatus status(RequestStatusCode::ERROR, "«errorMsg»");

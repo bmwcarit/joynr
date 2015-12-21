@@ -69,7 +69,7 @@ public:
         for (IDispatcher* currentDispatcher : dispatcherList) {
             // TODO will the provider be registered at all dispatchers or
             //     should it be configurable which ones are used to contact it.
-            assert(currentDispatcher != NULL);
+            assert(currentDispatcher != nullptr);
             currentDispatcher->addRequestCaller(participantId, caller);
         }
 
@@ -118,7 +118,7 @@ public:
         for (IDispatcher* currentDispatcher : dispatcherList) {
             // TODO will the provider be registered at all dispatchers or
             //     should it be configurable which ones are used to contact it.
-            assert(currentDispatcher != NULL);
+            assert(currentDispatcher != nullptr);
             currentDispatcher->removeRequestCaller(participantId);
         }
 

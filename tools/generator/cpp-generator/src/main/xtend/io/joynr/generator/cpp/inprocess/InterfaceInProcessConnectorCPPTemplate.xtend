@@ -259,7 +259,7 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 				return std::string();
 			«ELSE»
 				LOG_DEBUG(logger, "Subscribing to «attributeName».");
-				assert(subscriptionManager != NULL);
+				assert(subscriptionManager != nullptr);
 				std::string attributeName("«attributeName»");
 				auto subscriptionCallback = std::make_shared<
 						joynr::SubscriptionCallback<«returnType»>
@@ -279,7 +279,7 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 				std::string subscriptionId(subscriptionRequest.getSubscriptionId());
 
 				if(!caller) {
-					assert(publicationManager != NULL);
+					assert(publicationManager != nullptr);
 					/**
 					* Provider not registered yet
 					* Dispatcher will call publicationManger->restore when a new provider is added to activate
@@ -303,10 +303,10 @@ bool «interfaceName»InProcessConnector::usesClusterController() const{
 				assert(false);
 			«ELSE»
 				LOG_DEBUG(logger, FormatString("Unsubscribing. Id=%1").arg(subscriptionId).str());
-				assert(publicationManager != NULL);
+				assert(publicationManager != nullptr);
 				LOG_DEBUG(logger, "Stopping publications by publication manager.");
 				publicationManager->stopPublication(subscriptionId);
-				assert(subscriptionManager != NULL);
+				assert(subscriptionManager != nullptr);
 				LOG_DEBUG(logger, "Unregistering attribute subscription.");
 				subscriptionManager->unregisterSubscription(subscriptionId);
 			«ENDIF»
@@ -403,7 +403,7 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 	«ENDIF»
 	) {
 		LOG_DEBUG(logger, "Subscribing to «broadcastName».");
-		assert(subscriptionManager != NULL);
+		assert(subscriptionManager != nullptr);
 		std::string broadcastName("«broadcastName»");
 		joynr::BroadcastSubscriptionRequest subscriptionRequest;
 		«IF isSelective(broadcast)»
@@ -445,7 +445,7 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 			joynr::BroadcastSubscriptionRequest& subscriptionRequest
 	) {
 		LOG_DEBUG(logger, "Subscribing to «broadcastName».");
-		assert(subscriptionManager != NULL);
+		assert(subscriptionManager != nullptr);
 		std::string broadcastName("«broadcastName»");
 
 		auto subscriptionCallback = std::make_shared<
@@ -464,7 +464,7 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 		std::string subscriptionId(subscriptionRequest.getSubscriptionId());
 
 		if(!caller) {
-			assert(publicationManager != NULL);
+			assert(publicationManager != nullptr);
 			/**
 			* Provider not registered yet
 			* Dispatcher will call publicationManger->restore when a new provider is added to activate
@@ -486,10 +486,10 @@ std::shared_ptr<joynr::Future<«outputParameters»> > «interfaceName»InProcess
 			std::string& subscriptionId
 	) {
 		LOG_DEBUG(logger, FormatString("Unsubscribing broadcast. Id=%1").arg(subscriptionId).str());
-		assert(publicationManager != NULL);
+		assert(publicationManager != nullptr);
 		LOG_DEBUG(logger, "Stopping publications by publication manager.");
 		publicationManager->stopPublication(subscriptionId);
-		assert(subscriptionManager != NULL);
+		assert(subscriptionManager != nullptr);
 		LOG_DEBUG(logger, "Unregistering broadcast subscription.");
 		subscriptionManager->unregisterSubscription(subscriptionId);
 	}
