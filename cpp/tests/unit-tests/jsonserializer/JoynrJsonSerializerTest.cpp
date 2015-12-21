@@ -37,6 +37,7 @@
 #include <string>
 #include <cassert>
 #include <initializer_list>
+#include <functional>
 
 #include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
 #include "joynr/types/TestTypes/TEverythingStruct.h"
@@ -240,13 +241,7 @@ void compareRequestWithPrimitiveValues(const Request& expectedRequest, const Req
     EXPECT_EQ(expectedRequest.getParams().at(4).get<bool>(), boolParam.get<bool>());
 }
 
-TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrRequest)
-{
-    // Create a Request
-    Request expectedRequest;
-
-    initializeRequestWithPrimitiveValues(expectedRequest);
-
+void checkRequest(const Request& expectedRequest, std::function<void(const Request&, const Request&)> compareFct, joynr::joynr_logging::Logger* logger){
     // Serialize into JSON
     std::stringstream stream;
     auto serializer = ClassSerializer<Request>();
@@ -260,8 +255,17 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrRequest)
     if (tokenizer.hasNextObject()) {
         Request request;
         ClassDeserializer<Request>::deserialize(request, tokenizer.nextObject());
-        compareRequestWithPrimitiveValues(expectedRequest, request);
+        compareFct(expectedRequest, request);
     }
+
+}
+
+TEST_F(JoynrJsonSerializerTest, exampleSerializerTestWithJoynrRequestOfPrimitiveParameters)
+{
+    // Create, initialize & check primitive Request
+    Request expectedRequest;
+    initializeRequestWithPrimitiveValues(expectedRequest);
+    checkRequest(expectedRequest, compareRequestWithPrimitiveValues, logger);
 }
 
 TEST_F(JoynrJsonSerializerTest, serializeJoynrMessage)
