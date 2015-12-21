@@ -20,15 +20,15 @@
  */
 
 (function() {
-    var setupProvisionedData = function(provisioning) {
+    var setupProvisionedData = function(provisioning, ProviderScope) {
         var discoveryCapability = {
             domain : "io.joynr",
             interfaceName : "system/Discovery",
             providerQos : {
-                qos : [],
-                version : 0,
+                customParameters: [],
+                providerVersion : 0,
                 priority : 1,
-                isLocalOnly : false,
+                scope : ProviderScope.LOCAL,
                 onChangeSubscriptions : true
             },
             participantId : "CC.DiscoveryProvider.ParticipantId"
@@ -38,10 +38,10 @@
             domain : "io.joynr",
             interfaceName : "system/Routing",
             providerQos : {
-                qos : [],
-                version : 0,
+                customParameters: [],
+                providerVersion : 0,
                 priority : 1,
-                isLocalOnly : false,
+                scope : ProviderScope.LOCAL,
                 onChangeSubscriptions : true
             },
             participantId : "CC.RoutingProvider.ParticipantId"
@@ -54,11 +54,18 @@
     // AMD support
     if (typeof define === 'function' && define.amd) {
         define("joynr/provisioning/provisioning_libjoynr",
-            ["joynr/provisioning/provisioning_common"], function(provisioning){
-            return setupProvisionedData(provisioning);
+            [
+                "joynr/provisioning/provisioning_common",
+                "joynr/types/ProviderScope"
+            ],
+            function(
+                provisioning,
+                ProviderScope
+            ){
+            return setupProvisionedData(provisioning, ProviderScope);
         });
     } else {
         // expect that joynrprovisioning.common has been loaded before
-        setupProvisionedData(window.joynr.provisioning);
+        setupProvisionedData(window.joynr.provisioning, window.ProviderScope);
     }
 }());
