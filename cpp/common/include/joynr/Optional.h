@@ -34,11 +34,19 @@ class JOYNRCOMMON_EXPORT Optional
 private:
     T value;
     bool invalid;
-    Optional<T>();
+    Optional();
 
 public:
-    Optional<T>(const T& value);
-    static Optional<T> createNull();
+    Optional(const T& value);
+    Optional(T&& value);
+
+    Optional(const Optional&) = default;
+    Optional(Optional&&) = default;
+
+    Optional& operator=(Optional&&) = default;
+    Optional& operator=(const Optional&) = default;
+
+    static Optional createNull();
 
     explicit operator bool() const;
 
@@ -59,6 +67,12 @@ Optional<T>::Optional()
 template <typename T>
 Optional<T>::Optional(const T& value)
         : value(value), invalid(false)
+{
+}
+
+template <typename T>
+Optional<T>::Optional(T&& value)
+        : value(std::move(value)), invalid(false)
 {
 }
 
