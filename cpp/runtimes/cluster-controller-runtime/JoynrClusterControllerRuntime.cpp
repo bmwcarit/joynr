@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,12 @@
  * limitations under the License.
  * #L%
  */
+#include <QCoreApplication>
+#include <QThread>
+#include <cassert>
+
+#include "mosquittopp.h"
+
 #include "JoynrClusterControllerRuntime.h"
 #include "joynr/Dispatcher.h"
 #include "libjoynr/in-process/InProcessLibJoynrMessagingSkeleton.h"
@@ -48,13 +54,14 @@
 #include "joynr/Settings.h"
 #include "joynr/LibjoynrSettings.h"
 
+#include "joynr/system/RoutingTypes/MqttProtocol.h"
+#include "cluster-controller/mqtt/MqttReceiver.h"
+#include "cluster-controller/mqtt/MqttSender.h"
+
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 
 #include "joynr/system/DiscoveryRequestCaller.h"
 #include "joynr/system/DiscoveryInProcessConnector.h"
-#include <QCoreApplication>
-#include <QThread>
-#include <cassert>
 
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
 #include "libjoynr/dbus/DbusMessagingStubFactory.h"
@@ -67,8 +74,11 @@ INIT_LOGGER(JoynrClusterControllerRuntime);
 
 JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(QCoreApplication* app,
                                                              Settings* settings,
-                                                             IMessageReceiver* messageReceiver,
-                                                             IMessageSender* messageSender)
+                                                             IMessageReceiver* httpMessageReceiver,
+                                                             IMessageSender* httpMessageSender,
+                                                             IMessageReceiver* mqttMessageReceiver,
+                                                             IMessageSender* mqttMessageSender)
+
         : JoynrRuntime(*settings),
           joynrDispatcher(nullptr),
           inProcessDispatcher(nullptr),
@@ -83,8 +93,10 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(QCoreApplication* a
           cache(),
           channelUrlDirectoryProxy(nullptr),
           libJoynrMessagingSkeleton(nullptr),
-          messageReceiver(messageReceiver),
-          messageSender(messageSender),
+          httpMessageReceiver(httpMessageReceiver),
+          httpMessageSender(httpMessageSender),
+          mqttMessageReceiver(mqttMessageReceiver),
+          mqttMessageSender(mqttMessageSender),
           dispatcherList(),
           inProcessConnectorFactory(nullptr),
           inProcessPublicationSender(nullptr),
@@ -100,7 +112,10 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(QCoreApplication* a
           wsSettings(*settings),
           wsCcMessagingSkeleton(nullptr),
           securityManager(nullptr),
-          messagingIsRunning(false)
+          httpMessagingIsRunning(false),
+          mqttMessagingIsRunning(false),
+          doMqttMessaging(false),
+          doHttpMessaging(false)
 {
     initializeAllDependencies();
 }
@@ -121,7 +136,6 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     securityManager = new DummyPlatformSecurityManager();
 
     // CAREFUL: the factory creates an old style dispatcher, not the new one!
-
     inProcessDispatcher = new InProcessDispatcher();
     /* CC */
     // create the messaging stub factory
@@ -133,6 +147,32 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     // init message router
     messageRouter = std::shared_ptr<MessageRouter>(
             new MessageRouter(messagingStubFactory, securityManager));
+
+    const BrokerUrl brokerUrl = messagingSettings->getBrokerUrl();
+
+    // If the BrokerUrl is a mqtt url, MQTT is used instead of HTTP
+    if (brokerUrl.getBrokerChannelsBaseUrl().isValid()) {
+
+        const Url url = brokerUrl.getBrokerChannelsBaseUrl();
+        std::string protocol = url.getProtocol();
+
+        std::transform(protocol.begin(), protocol.end(), protocol.begin(), ::toupper);
+
+        if (protocol == joynr::system::RoutingTypes::MqttProtocol::getLiteral(
+                                joynr::system::RoutingTypes::MqttProtocol::Enum::MQTT)) {
+            JOYNR_LOG_INFO(logger, "MQTT-Messaging");
+            doMqttMessaging = true;
+        } else {
+            JOYNR_LOG_INFO(logger, "HTTP-Messaging");
+            doHttpMessaging = true;
+        }
+    }
+
+    if (!doHttpMessaging) {
+        JOYNR_LOG_INFO(logger, "HTTP-Messaging");
+        doHttpMessaging = true;
+    }
+
     // provision global capabilities directory
     std::shared_ptr<joynr::system::RoutingTypes::Address> globalCapabilitiesDirectoryAddress(
             new system::RoutingTypes::ChannelAddress(
@@ -154,7 +194,6 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     wsCcMessagingSkeleton =
             new WebSocketCcMessagingSkeleton(*messageRouter, *wsMessagingStubFactory, wsAddress);
-
     /* LibJoynr */
     assert(messageRouter);
     joynrMessageSender = new JoynrMessageSender(messageRouter);
@@ -169,31 +208,83 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     // EndpointAddress to messagingStub is transmitted when a provider is registered
     // messagingStubFactory->registerInProcessMessagingSkeleton(libJoynrMessagingSkeleton);
 
+    std::string httpChannelId;
+    std::string mqttChannelId;
+
     /**
-      * ClusterController side
+      * ClusterController side HTTP
       *
       */
-    if (!messageReceiver) {
-        JOYNR_LOG_INFO(
-                logger,
-                "The message receiver supplied is NULL, creating the default MessageReceiver");
-        messageReceiver = std::shared_ptr<IMessageReceiver>(
-                new HttpReceiver(*messagingSettings, messageRouter));
+
+    if (doHttpMessaging) {
+
+        if (!httpMessageReceiver) {
+            JOYNR_LOG_INFO(logger,
+                           "The http message receiver supplied is NULL, creating the default "
+                           "http MessageReceiver");
+
+            httpMessageReceiver = std::make_shared<HttpReceiver>(*messagingSettings, messageRouter);
+
+            assert(httpMessageReceiver != nullptr);
+        }
+
+        httpChannelId = httpMessageReceiver->getReceiveChannelId();
+
+        // create http message sender
+        if (!httpMessageSender) {
+            JOYNR_LOG_INFO(logger,
+                           "The http message sender supplied is NULL, creating the default "
+                           "http MessageSender");
+
+            httpMessageSender = std::make_shared<HttpSender>(
+                    messagingSettings->getBrokerUrl(),
+                    std::chrono::milliseconds(messagingSettings->getSendMsgMaxTtl()),
+                    std::chrono::milliseconds(messagingSettings->getSendMsgRetryInterval()));
+        }
+
+        messagingStubFactory->registerStubFactory(new HttpMessagingStubFactory(
+                httpMessageSender, httpMessageReceiver->getReceiveChannelId()));
     }
 
-    std::string channelId = messageReceiver->getReceiveChannelId();
+    /**
+      * ClusterController side MQTT
+      *
+      */
 
-    // create message sender
-    if (!messageSender) {
-        JOYNR_LOG_INFO(
-                logger, "The message sender supplied is NULL, creating the default MessageSender");
-        messageSender = std::shared_ptr<IMessageSender>(new HttpSender(
-                messagingSettings->getBrokerUrl(),
-                std::chrono::milliseconds(messagingSettings->getSendMsgMaxTtl()),
-                std::chrono::milliseconds(messagingSettings->getSendMsgRetryInterval())));
+    if (doMqttMessaging) {
+
+        if (!mqttMessageReceiver && !mqttMessageSender) {
+            mosqpp::lib_init();
+        }
+
+        if (!mqttMessageReceiver) {
+            JOYNR_LOG_INFO(logger,
+                           "The mqtt message receiver supplied is NULL, creating the default "
+                           "mqtt MessageReceiver");
+
+            mqttMessageReceiver = std::make_shared<MqttReceiver>(*messagingSettings, messageRouter);
+
+            assert(mqttMessageReceiver != nullptr);
+        }
+
+        if (!mqttMessagingIsRunning) {
+            mqttMessageReceiver->startReceiveQueue();
+            mqttMessagingIsRunning = true;
+        }
+
+        mqttChannelId = mqttMessageReceiver->getReceiveChannelId();
+
+        // create message sender
+        if (!mqttMessageSender) {
+            JOYNR_LOG_INFO(logger,
+                           "The mqtt message sender supplied is NULL, creating the default "
+                           "mqtt MessageSender");
+
+            mqttMessageReceiver->waitForReceiveQueueStarted();
+
+            mqttMessageSender = std::make_shared<MqttSender>(messagingSettings->getBrokerUrl());
+        }
     }
-    messagingStubFactory->registerStubFactory(
-            new HttpMessagingStubFactory(messageSender, messageReceiver->getReceiveChannelId()));
 
     // joynrMessagingSendSkeleton = new DummyClusterControllerMessagingSkeleton(messageRouter);
     // ccDispatcher = DispatcherFactory::createDispatcherInSameThread(messagingSettings);
@@ -202,7 +293,13 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     // CapabilitiesServer.
     bool usingRealCapabilitiesClient =
             /*when switching this to true, turn on the UUID in systemintegrationtests again*/ true;
-    capabilitiesClient = new CapabilitiesClient(channelId); // ownership of this is not transferred
+    if (doMqttMessaging) {
+        capabilitiesClient =
+                new CapabilitiesClient(mqttChannelId); // ownership of this is not transferred
+    } else {
+        capabilitiesClient =
+                new CapabilitiesClient(httpChannelId); // ownership of this is not transferred
+    }
     // try using the real capabilitiesClient again:
     // capabilitiesClient = new CapabilitiesClient(channelId);// ownership of this is not
     // transferred
@@ -316,8 +413,12 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     channelUrlDirectory = std::shared_ptr<ILocalChannelUrlDirectory>(
             new LocalChannelUrlDirectory(*messagingSettings, channelUrlDirectoryProxy));
-    messageReceiver->init(channelUrlDirectory);
-    messageSender->init(channelUrlDirectory, *messagingSettings);
+
+    if (doHttpMessaging) {
+        httpMessageReceiver->init(channelUrlDirectory);
+        httpMessageSender->init(channelUrlDirectory, *messagingSettings);
+    }
+    // MQTT already initialized
 }
 
 ConnectorFactory* JoynrClusterControllerRuntime::createConnectorFactory(
@@ -391,19 +492,30 @@ void JoynrClusterControllerRuntime::startMessaging()
     //    assert(joynrDispatcher!=NULL);
     //    joynrDispatcher->startMessaging();
     //    joynrDispatcher->waitForMessaging();
-    assert(messageReceiver != nullptr);
-    if (!messagingIsRunning) {
-        messageReceiver->startReceiveQueue();
-        messagingIsRunning = true;
+    if (doHttpMessaging) {
+        assert(httpMessageReceiver != nullptr);
+        if (!httpMessagingIsRunning) {
+            httpMessageReceiver->startReceiveQueue();
+            httpMessagingIsRunning = true;
+        }
     }
+    // MQTT already started
 }
 
 void JoynrClusterControllerRuntime::stopMessaging()
 {
     // joynrDispatcher->stopMessaging();
-    if (messagingIsRunning) {
-        messageReceiver->stopReceiveQueue();
-        messagingIsRunning = false;
+    if (doHttpMessaging) {
+        if (httpMessagingIsRunning) {
+            httpMessageReceiver->stopReceiveQueue();
+            httpMessagingIsRunning = false;
+        }
+    }
+    if (doMqttMessaging) {
+        if (mqttMessagingIsRunning) {
+            mqttMessageReceiver->stopReceiveQueue();
+            mqttMessagingIsRunning = false;
+        }
     }
 }
 
@@ -449,12 +561,18 @@ void JoynrClusterControllerRuntime::stop(bool deleteChannel)
 
 void JoynrClusterControllerRuntime::waitForChannelCreation()
 {
-    messageReceiver->waitForReceiveQueueStarted();
+    if (doHttpMessaging) {
+        httpMessageReceiver->waitForReceiveQueueStarted();
+    }
+    // MQTT already started
 }
 
 void JoynrClusterControllerRuntime::deleteChannel()
 {
-    messageReceiver->tryToDeleteChannel();
+    if (doHttpMessaging) {
+        httpMessageReceiver->tryToDeleteChannel();
+    }
+    // Nothing to do for MQTT
 }
 
 } // namespace joynr
