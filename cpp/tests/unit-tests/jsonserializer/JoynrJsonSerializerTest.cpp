@@ -197,7 +197,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrType)
     }
 }
 
-void initializeRequestWithDummyValues(Request& request) {
+void initializeRequestWithPrimitiveValues(Request& request) {
     request.setMethodName("realMethod");
     request.setRequestReplyId("000-10000-01011");
 
@@ -219,7 +219,7 @@ void initializeRequestWithDummyValues(Request& request) {
     request.addParam(param5, "Bool");
 }
 
-void compareRequest(const Request& expectedRequest, const Request& actualRequest) {
+void compareRequestWithPrimitiveValues(const Request& expectedRequest, const Request& actualRequest) {
     std::vector<Variant> params = actualRequest.getParams();
     EXPECT_EQ(expectedRequest.getParams().size(), params.size());
     Variant intParam = params[1];
@@ -245,7 +245,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrRequest)
     // Create a Request
     Request expectedRequest;
 
-    initializeRequestWithDummyValues(expectedRequest);
+    initializeRequestWithPrimitiveValues(expectedRequest);
 
     // Serialize into JSON
     std::stringstream stream;
@@ -260,7 +260,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrRequest)
     if (tokenizer.hasNextObject()) {
         Request request;
         ClassDeserializer<Request>::deserialize(request, tokenizer.nextObject());
-        compareRequest(expectedRequest, request);
+        compareRequestWithPrimitiveValues(expectedRequest, request);
     }
 }
 
@@ -269,7 +269,7 @@ TEST_F(JoynrJsonSerializerTest, serializeJoynrMessage)
     // Create a Request
     Request expectedRequest;
 
-    initializeRequestWithDummyValues(expectedRequest);
+    initializeRequestWithPrimitiveValues(expectedRequest);
     expectedRequest.addParam(Variant::make<std::string>(R"("quotedString")"), "string");
     JoynrMessage expectedMessage = JoynrMessageFactory().createRequest("sender",
                                                                       "receiver",
@@ -291,7 +291,7 @@ TEST_F(JoynrJsonSerializerTest, serializeJoynrMessage)
         ClassDeserializer<JoynrMessage>::deserialize(message, tokenizer.nextObject());
         LOG_TRACE(logger, FormatString("JoynrMessage payload JSON: %1").arg(message.getPayload()).str());
         Request* request = JsonSerializer::deserialize<Request>(message.getPayload());
-        compareRequest(expectedRequest, *request);
+        compareRequestWithPrimitiveValues(expectedRequest, *request);
         delete request;
     }
 }
