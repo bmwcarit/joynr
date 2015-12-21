@@ -18,8 +18,6 @@
  */
 #include "runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
 
-#include <QtCore/QObject>
-
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 #include "libjoynr/websocket/WebSocketLibJoynrMessagingSkeleton.h"

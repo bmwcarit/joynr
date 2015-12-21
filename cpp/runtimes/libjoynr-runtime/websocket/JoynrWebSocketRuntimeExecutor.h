@@ -31,16 +31,12 @@ class Settings;
 
 class JoynrWebSocketRuntimeExecutor : public JoynrRuntimeExecutor
 {
-    Q_OBJECT
-
 public:
     explicit JoynrWebSocketRuntimeExecutor(Settings* settings);
     ~JoynrWebSocketRuntimeExecutor() override = default;
 
-public slots:
-    void createRuntime() override;
-
 private:
+    void createRuntime();
     DISALLOW_COPY_AND_ASSIGN(JoynrWebSocketRuntimeExecutor);
 };
 

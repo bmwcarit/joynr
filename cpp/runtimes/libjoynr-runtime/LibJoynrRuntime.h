@@ -83,7 +83,7 @@ protected:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LibJoynrRuntime);
-    JoynrRuntimeExecutor* runtimeExecutor;
+    std::unique_ptr<JoynrRuntimeExecutor> runtimeExecutor;
     void setRuntimeExecutor(JoynrRuntimeExecutor* runtimeExecutor);
 };
 

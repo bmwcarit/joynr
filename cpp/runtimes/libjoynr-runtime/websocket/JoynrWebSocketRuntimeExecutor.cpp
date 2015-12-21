@@ -27,11 +27,12 @@ namespace joynr
 JoynrWebSocketRuntimeExecutor::JoynrWebSocketRuntimeExecutor(Settings* settings)
         : JoynrRuntimeExecutor(settings)
 {
+    createRuntime();
 }
 
 void JoynrWebSocketRuntimeExecutor::createRuntime()
 {
-    runtime = new LibJoynrWebSocketRuntime(settings);
+    runtime = std::unique_ptr<LibJoynrRuntime>(new LibJoynrWebSocketRuntime(settings));
     runtimeSemaphore.notify();
 }
 

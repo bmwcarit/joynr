@@ -18,8 +18,6 @@
  */
 #include "runtimes/libjoynr-runtime/JoynrRuntimeExecutor.h"
 
-#include <QtConcurrent/QtConcurrent>
-
 #include "LibJoynrRuntime.h"
 #include "runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
 #include "joynr/Settings.h"
@@ -28,47 +26,14 @@ namespace joynr
 {
 
 JoynrRuntimeExecutor::JoynrRuntimeExecutor(Settings* settings)
-        : QObject(),
-          coreApplication(nullptr),
-          runtimeThread(new QThread()),
-          settings(settings),
-          runtime(nullptr),
-          runtimeSemaphore(0)
+        : settings(settings), runtime(), runtimeSemaphore(0)
 {
-    if (QCoreApplication::instance() == nullptr) {
-        int argc = 0;
-        char* argv[] = {nullptr};
-        coreApplication = new QCoreApplication(argc, argv);
-    }
-    runtimeThread->setObjectName("LibJoynrRuntime-Thread");
-    this->moveToThread(runtimeThread);
-    connect(runtimeThread, &QThread::finished, this, &QObject::deleteLater);
-    connect(runtimeThread, &QThread::started, this, &JoynrRuntimeExecutor::createRuntime);
-    runtimeThread->start();
-}
-
-JoynrRuntimeExecutor::~JoynrRuntimeExecutor()
-{
-    if (coreApplication != nullptr) {
-        coreApplication->deleteLater();
-        coreApplication = nullptr;
-    }
-    runtimeThread->deleteLater();
-    delete runtime;
-    runtime = nullptr;
 }
 
 LibJoynrRuntime* JoynrRuntimeExecutor::getRuntime()
 {
     runtimeSemaphore.wait();
-    LibJoynrRuntime* runtimeTmp = runtime;
-    runtime = nullptr;
-    return runtimeTmp;
-}
-
-void JoynrRuntimeExecutor::stop()
-{
-    runtimeThread->exit();
+    return runtime.release();
 }
 
 } // namespace joynr

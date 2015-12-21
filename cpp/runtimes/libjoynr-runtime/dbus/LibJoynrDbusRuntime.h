@@ -34,8 +34,8 @@ class Settings;
 class LibJoynrDbusRuntime : public LibJoynrRuntime
 {
 public:
-    LibJoynrDbusRuntime(Settings* settings);
-    virtual ~LibJoynrDbusRuntime();
+    explicit LibJoynrDbusRuntime(Settings* settings);
+    ~LibJoynrDbusRuntime() override;
 
 protected:
     DBusMessageRouterAdapter* dbusMessageRouterAdapter;
