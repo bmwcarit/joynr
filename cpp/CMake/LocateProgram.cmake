@@ -1,4 +1,5 @@
 function(LocateProgram PROGRAM_NAME PROGRAM_PATH)
+    set(${PROGRAM_PATH} "${PROGRAM_PATH}-NOTFOUND" CACHE FILEPATH "Path to '${PROGRAM_NAME}' executable")
     if("${${PROGRAM_PATH}}" STREQUAL "${PROGRAM_PATH}-NOTFOUND")
             find_program(${PROGRAM_PATH} ${PROGRAM_NAME})
             if("${${PROGRAM_PATH}}" STREQUAL "${PROGRAM_PATH}-NOTFOUND")

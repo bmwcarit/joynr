@@ -114,7 +114,6 @@ option(
 message(STATUS "option ENABLE_CLANG_FORMATTER=" ${ENABLE_CLANG_FORMATTER})
 
 if(${ENABLE_CLANG_FORMATTER})
-    set(CLANG_FORMAT_PATH "CLANG_FORMAT_PATH-NOTFOUND" CACHE FILEPATH "Path to 'clang-format' executable")
     LocateProgram(clang-format CLANG_FORMAT_PATH)
     add_custom_target(format)
 endif(${ENABLE_CLANG_FORMATTER})
@@ -136,7 +135,6 @@ if("${CMAKE_VERSION}" VERSION_GREATER 3.3.0)
     message(STATUS "option ENABLE_INCLUDE_WHAT_YOU_USE=" ${ENABLE_INCLUDE_WHAT_YOU_USE})
 
     if(${ENABLE_INCLUDE_WHAT_YOU_USE})
-        set(INCLUDE_WHAT_YOU_USE_PATH "INCLUDE_WHAT_YOU_USE_PATH-NOTFOUND" CACHE FILEPATH "Path to 'include-what-you-use' executable")
         LocateProgram(include-what-you-use INCLUDE_WHAT_YOU_USE_PATH)
     endif(${ENABLE_INCLUDE_WHAT_YOU_USE})
 
@@ -166,7 +164,6 @@ message(STATUS "option ENABLE_CLANG_TIDY=" ${ENABLE_CLANG_TIDY})
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(${ENABLE_CLANG_TIDY})
-    set(CLANG_TIDY_PATH "CLANG_TIDY_PATH-NOTFOUND" CACHE FILEPATH "Path to 'clang-tidy' executable")
     LocateProgram(clang-tidy CLANG_TIDY_PATH)
     add_custom_target(tidy)
 endif(${ENABLE_CLANG_TIDY})
