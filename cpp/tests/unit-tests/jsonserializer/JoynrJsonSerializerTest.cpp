@@ -42,6 +42,7 @@
 #include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
 #include "joynr/types/TestTypes/TEverythingStruct.h"
 #include "joynr/types/TestTypes/TStruct.h"
+#include "joynr/types/TestTypes/TEnum.h"
 #include "joynr/types/TestTypes/TEverythingMap.h"
 #include "joynr/types/TestTypes/TStringKeyMap.h"
 #include "joynr/types/TestTypes/TIntegerKeyMap.h"
@@ -198,6 +199,39 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrType)
     }
 }
 
+void initializeRequestWithComplexValues(Request& request) {
+    using namespace types::TestTypes;
+    request.setMethodName("methodWithComplexParameters");
+    request.setRequestReplyId("000-10000-01100");
+
+    Variant param1 = Variant::make<TEverythingStruct>(TEverythingStruct());
+    Variant param2 = Variant::make<TEverythingExtendedStruct>(TEverythingExtendedStruct());
+    Variant param3 = Variant::make<TDoubleKeyMap>(TDoubleKeyMap());
+    Variant param4 = Variant::make<TEnum::Enum>(TEnum::TLITERALA);
+    request.addParam(param1, "joynr.types.TestTypes.TEverythingStruct");
+    request.addParam(param2, "joynr.types.TestTypes.TEverythingExtendedStruct");
+    request.addParam(param3, "joynr.types.TestTypes.TDoubleKeyMap");
+    request.addParam(param4, "joynr.types.TestTypes.TLITERALA");
+}
+
+void compareRequestWithComplexValues(const Request& expectedRequest, const Request& actualRequest) {
+    using namespace types::TestTypes;
+    std::vector<Variant> params = actualRequest.getParams();
+    EXPECT_EQ(expectedRequest.getParams().size(), params.size());
+    Variant param1 = params[0];
+    EXPECT_TRUE(param1.is<TEverythingStruct>());
+    EXPECT_EQ(expectedRequest.getParams().at(0).get<TEverythingStruct>(), param1.get<TEverythingStruct>());
+    Variant param2 = params[1];
+    EXPECT_TRUE(param2.is<TEverythingExtendedStruct>());
+    EXPECT_EQ(expectedRequest.getParams().at(1).get<TEverythingExtendedStruct>(), param2.get<TEverythingExtendedStruct>());
+    Variant param3 = params[2];
+    EXPECT_TRUE(param3.is<TDoubleKeyMap>());
+    EXPECT_EQ(expectedRequest.getParams().at(2).get<TDoubleKeyMap>(), param3.get<TDoubleKeyMap>());
+    Variant param4 = params[3];
+    EXPECT_TRUE(param4.is<std::string>());
+    EXPECT_EQ(expectedRequest.getParams().at(3).get<TEnum::Enum>(), TEnum::getEnum(param4.get<std::string>()));
+}
+
 void initializeRequestWithPrimitiveValues(Request& request) {
     request.setMethodName("realMethod");
     request.setRequestReplyId("000-10000-01011");
@@ -266,6 +300,14 @@ TEST_F(JoynrJsonSerializerTest, exampleSerializerTestWithJoynrRequestOfPrimitive
     Request expectedRequest;
     initializeRequestWithPrimitiveValues(expectedRequest);
     checkRequest(expectedRequest, compareRequestWithPrimitiveValues, logger);
+}
+
+TEST_F(JoynrJsonSerializerTest, exampleSerializerTestWithJoynrRequestOfComplexParameters)
+{
+    // Create, initialize & check primitive Request
+    Request expectedRequest;
+    initializeRequestWithComplexValues(expectedRequest);
+    checkRequest(expectedRequest, compareRequestWithComplexValues, logger);
 }
 
 TEST_F(JoynrJsonSerializerTest, serializeJoynrMessage)
