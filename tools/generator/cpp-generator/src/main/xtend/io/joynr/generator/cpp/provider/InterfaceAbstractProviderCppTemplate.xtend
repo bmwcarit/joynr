@@ -22,6 +22,7 @@ import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
+import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.BroadcastUtil
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
@@ -32,6 +33,7 @@ class InterfaceAbstractProviderCppTemplate implements InterfaceTemplate {
 	@Inject private extension CppStdTypeUtil
 	@Inject private extension JoynrCppGeneratorExtensions
 	@Inject private extension NamingUtil
+	@Inject private extension AttributeUtil
 	@Inject private extension BroadcastUtil
 
 	override generate(FInterface serviceInterface)
@@ -66,24 +68,26 @@ std::string «interfaceName»AbstractProvider::getInterfaceName() const {
 }
 
 «FOR attribute : serviceInterface.attributes»
-	«var attributeType = attribute.typeName»
-	«var attributeName = attribute.joynrName»
-	void «interfaceName»AbstractProvider::«attributeName»Changed(
-			const «attributeType»& «attributeName»
-	) {
-		onAttributeValueChanged(
-				"«attributeName»",
-				«IF isArray(attribute)»
-					«IF isEnum(attribute.type)»
-						Variant::make<std::vector<Variant>>(Util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(attribute.type.derived)»>(«attribute.joynrName»))
+	«IF attribute.notifiable»
+		«var attributeType = attribute.typeName»
+		«var attributeName = attribute.joynrName»
+		void «interfaceName»AbstractProvider::«attributeName»Changed(
+				const «attributeType»& «attributeName»
+		) {
+			onAttributeValueChanged(
+					"«attributeName»",
+					«IF isArray(attribute)»
+						«IF isEnum(attribute.type)»
+							Variant::make<std::vector<Variant>>(Util::convertEnumVectorToVariantVector<«getTypeNameOfContainingClass(attribute.type.derived)»>(«attribute.joynrName»))
+						«ELSE»
+							Variant::make<std::vector<Variant>>(TypeUtil::toVectorOfVariants(«attribute.joynrName»))
+						«ENDIF»
 					«ELSE»
-						Variant::make<std::vector<Variant>>(TypeUtil::toVectorOfVariants(«attribute.joynrName»))
+						Variant::make<«getTypeName(attribute.type)»>(«attribute.joynrName»)
 					«ENDIF»
-				«ELSE»
-					Variant::make<«getTypeName(attribute.type)»>(«attribute.joynrName»)
-				«ENDIF»
-		);
-	}
+			);
+		}
+	«ENDIF»
 «ENDFOR»
 
 «FOR broadcast : serviceInterface.broadcasts»

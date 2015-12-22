@@ -105,7 +105,9 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider()
 		) {
 			(void) onError;
 			this->«attributeName» = «attributeName»;
-			«attributeName»Changed(«attributeName»);
+			«IF attribute.notifiable»
+				«attributeName»Changed(«attributeName»);
+			«ENDIF»
 			onSuccess();
 		}
 

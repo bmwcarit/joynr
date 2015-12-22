@@ -22,6 +22,7 @@ import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
+import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.BroadcastUtil
 import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
@@ -31,6 +32,7 @@ class InterfaceAbstractProviderHTemplate implements InterfaceTemplate {
 	@Inject private extension JoynrCppGeneratorExtensions
 	@Inject private extension CppStdTypeUtil
 	@Inject private extension NamingUtil
+	@Inject private extension AttributeUtil
 	@Inject private extension BroadcastUtil
 
 	override generate(FInterface serviceInterface)
@@ -83,15 +85,17 @@ public:
 		// attributes
 	«ENDIF»
 	«FOR attribute : serviceInterface.attributes»
-		«var attributeName = attribute.joynrName»
-		/**
-		 * @brief «attributeName»Changed must be called by a concrete provider to signal attribute
-		 * modifications. It is used to implement onchange subscriptions.
-		 * @param «attributeName» the new attribute value
-		 */
-		void «attributeName»Changed(
-				const «attribute.typeName»& «attributeName»
-		) override;
+		«IF attribute.notifiable»
+			«var attributeName = attribute.joynrName»
+			/**
+			 * @brief «attributeName»Changed must be called by a concrete provider to signal attribute
+			 * modifications. It is used to implement onchange subscriptions.
+			 * @param «attributeName» the new attribute value
+			 */
+			void «attributeName»Changed(
+					const «attribute.typeName»& «attributeName»
+			) override;
+		«ENDIF»
 	«ENDFOR»
 	«IF !serviceInterface.broadcasts.isNullOrEmpty»
 
