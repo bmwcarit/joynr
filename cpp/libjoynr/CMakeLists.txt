@@ -16,13 +16,13 @@ set(
     JoynrLib_INCLUDE_DIRECTORIES
     ${JoynrLib_PUBLIC_INCLUDE_DIRECTORY}
     "../"
-    ${jsmn_PUBLIC_INCLUDE_DIRECTORY}
-    ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
 )
 
 set(
     JoynrLib_SYS_INCLUDE_DIRS
+    ${jsmn_PUBLIC_INCLUDE_DIRECTORY}
+    ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
     ${libwebsockets_INCLUDE_DIRS}
 )
 
