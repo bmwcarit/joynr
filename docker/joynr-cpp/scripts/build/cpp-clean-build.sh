@@ -68,6 +68,8 @@ log "BUILD C++ JOYNR DOXYGEN DOCUMENTATION"
 log "doxygen is disabled"
 #make doxygen
 
+tar czf joynr-clean-build.tar.gz bin
+
 END=$(date +%s)
 DIFF=$(( $END - $START ))
 log "C++ build time: $DIFF seconds"
