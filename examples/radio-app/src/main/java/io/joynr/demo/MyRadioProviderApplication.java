@@ -40,6 +40,7 @@ import jline.console.ConsoleReader;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.TrustLevel;
+import joynr.types.ProviderScope;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,15 +58,19 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
     public static final String STATIC_PERSISTENCE_FILE = "provider-joynr.properties";
 
     private MyRadioProvider provider = null;
+
     @Inject
     private ObjectMapper jsonSerializer;
+
+    @Inject
+    private ProviderScope providerScope;
 
     public static void main(String[] args) throws Exception {
         // run application from cmd line using Maven:
         // mvn exec:java -Dexec.mainClass="io.joynr.demo.MyRadioProviderApplication" -Dexec.args="<local-domain>"
         // Get the provider domain from the command line
-        if (args.length != 1 && args.length != 2) {
-            LOG.error("\n\nUSAGE: java {} <local-domain> [websocket | websocketCC]\n\n NOTE: Providers are registered on the local domain.",
+        if (args.length < 1 || args.length > 3) {
+            LOG.error("\n\nUSAGE: java {} <local-domain> [(websocket | websocketCC) [local]]\n\n NOTE: Providers are registered on the local domain.",
                       MyRadioProviderApplication.class.getName());
             return;
         }
@@ -73,8 +78,9 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
 
         Properties joynrConfig = new Properties();
         Module runtimeModule = getRuntimeModule(args, joynrConfig);
-
+        final ProviderScope providerScope = getProviderScope(args);
         LOG.debug("Using the following runtime module: " + runtimeModule.getClass().getSimpleName());
+        LOG.debug("Registering provider with the following scope: " + providerScope.name());
         LOG.debug("Registering provider on domain \"{}\"", localDomain);
 
         // joynr config properties are used to set joynr configuration at
@@ -144,14 +150,27 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
         JoynrApplication joynrApplication = new JoynrInjectorFactory(joynrConfig,
                                                                      runtimeModule,
                                                                      new StaticDomainAccessControlProvisioningModule()).createApplication(new JoynrApplicationModule(MyRadioProviderApplication.class,
-                                                                                                                                                                     appConfig));
+                                                                                                                                                                     appConfig) {
+            @Override
+            protected void configure() {
+                super.configure();
+                bind(ProviderScope.class).toInstance(providerScope);
+            }
+        });
         joynrApplication.run();
 
         joynrApplication.shutdown();
     }
 
+    private static ProviderScope getProviderScope(String[] args) {
+        if (args.length > 2 && args[2].equalsIgnoreCase("local")) {
+            return ProviderScope.LOCAL;
+        }
+        return ProviderScope.GLOBAL;
+    }
+
     private static Module getRuntimeModule(String[] args, Properties joynrConfig) {
-        if (args.length == 2) {
+        if (args.length > 1) {
             if (args[1].equalsIgnoreCase("websocket")) {
                 configureWebSocket(joynrConfig);
                 return new LibjoynrWebSocketRuntimeModule();
@@ -173,7 +192,7 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
 
     @Override
     public void run() {
-        provider = new MyRadioProvider();
+        provider = new MyRadioProvider(providerScope);
         provider.addBroadcastFilter(new TrafficServiceBroadcastFilter());
         provider.addBroadcastFilter(new GeocastBroadcastFilter(jsonSerializer));
         runtime.registerProvider(localDomain, provider);

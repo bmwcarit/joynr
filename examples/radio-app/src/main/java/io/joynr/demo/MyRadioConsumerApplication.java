@@ -21,6 +21,7 @@ package io.joynr.demo;
 
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
+import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrException;
@@ -83,6 +84,8 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
     private RadioProxy radioProxy;
     @Inject
     private ObjectMapper objectMapper;
+    @Inject
+    private DiscoveryScope discoveryScope;
 
     /**
      * Main method. This method is responsible for: 1. Instantiating the consumer application. 2. Injecting the instance
@@ -94,8 +97,9 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
     public static void main(String[] args) throws IOException {
         // run application from cmd line using Maven:
         // mvn exec:java -Dexec.mainClass="io.joynr.demo.MyRadioConsumerApplication" -Dexec.args="<provider-domain>"
-        if (args.length != 1 && args.length != 2) {
-            LOG.error("USAGE: java {} <provider-domain> [websocket]", MyRadioConsumerApplication.class.getName());
+        if (args.length < 1 && args.length > 3) {
+            LOG.error("USAGE: java {} <provider-domain> [websocket [local]]",
+                      MyRadioConsumerApplication.class.getName());
             return;
         }
         String providerDomain = args[0];
@@ -103,16 +107,8 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
         // joynr config properties are used to set joynr configuration at compile time. They are set on the
         // JoynInjectorFactory.
         Properties joynrConfig = new Properties();
-        Module runtimeModule = null;
-        if (args.length == 2 && args[1].equalsIgnoreCase("websocket")) {
-            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST, "localhost");
-            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT, "4242");
-            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL, "ws");
-            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "");
-            runtimeModule = new LibjoynrWebSocketRuntimeModule();
-        } else {
-            runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(new AtmosphereMessagingModule());
-        }
+        Module runtimeModule = getRuntimeModule(args, joynrConfig);
+        final DiscoveryScope discoveryScope = getDiscoveryScope(args);
 
         LOG.debug("Using the following runtime module: " + runtimeModule.getClass().getSimpleName());
         LOG.debug("Searching for providers on domain \"{}\"", providerDomain);
@@ -158,10 +154,30 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
         appConfig.setProperty(APP_CONFIG_PROVIDER_DOMAIN, providerDomain);
 
         JoynrApplication myRadioConsumerApp = new JoynrInjectorFactory(joynrConfig, runtimeModule).createApplication(new JoynrApplicationModule(MyRadioConsumerApplication.class,
-                                                                                                                                                appConfig));
+                                                                                                                                                appConfig) {
+            @Override
+            protected void configure() {
+                super.configure();
+                bind(DiscoveryScope.class).toInstance(discoveryScope);
+            }
+        });
         myRadioConsumerApp.run();
 
         myRadioConsumerApp.shutdown();
+    }
+
+    private static Module getRuntimeModule(String[] args, Properties joynrConfig) {
+        Module runtimeModule;
+        if (args.length == 2 && args[1].equalsIgnoreCase("websocket")) {
+            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST, "localhost");
+            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT, "4242");
+            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL, "ws");
+            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "");
+            runtimeModule = new LibjoynrWebSocketRuntimeModule();
+        } else {
+            runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(new AtmosphereMessagingModule());
+        }
+        return runtimeModule;
     }
 
     @Override
@@ -186,6 +202,13 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
         System.exit(0);
     }
 
+    private static DiscoveryScope getDiscoveryScope(String[] args) {
+        if (args.length > 2 && args[2].equalsIgnoreCase("local")) {
+            return DiscoveryScope.LOCAL_ONLY;
+        }
+        return DiscoveryScope.LOCAL_AND_GLOBAL;
+    }
+
     @SuppressWarnings("checkstyle:methodlength")
     @Override
     public void run() {
@@ -194,6 +217,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
         // is triggered. If the discovery process does not find matching providers within the
         // arbitration timeout duration it will be terminated and you will get an arbitration exception.
         discoveryQos.setDiscoveryTimeout(10000);
+        discoveryQos.setDiscoveryScope(discoveryScope);
         // Provider entries in the global capabilities directory are cached locally. Discovery will
         // consider entries in this cache valid if they are younger as the max age of cached
         // providers as defined in the QoS. All valid entries will be processed by the arbitrator when searching
