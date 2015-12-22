@@ -3,7 +3,7 @@ package io.joynr.messaging.websocket;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,27 +19,21 @@ package io.joynr.messaging.websocket;
  * #L%
  */
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.inject.Inject;
-import io.joynr.messaging.routing.MessageRouter;
+import java.util.concurrent.TimeUnit;
 
-/**
- * Connects to the CCWebSocket server
- */
-public class LibWebSocketMessagingSkeleton extends WebSocketMessagingSkeleton {
+import io.joynr.messaging.FailureAction;
+import io.joynr.messaging.IMessaging;
+import joynr.system.RoutingTypes.Address;
 
-    @Inject
-    public LibWebSocketMessagingSkeleton(ObjectMapper objectMapper, MessageRouter messageRouter) {
-        super(objectMapper, messageRouter);
-    }
+public interface JoynrWebSocketEndpoint {
 
-    @Override
-    public void init() {
-        //nothing to do here
-    }
+    public void start();
 
-    @Override
-    public void shutdown() {
-        //nothing to do here
-    }
+    public void setMessageListener(IMessaging messaging);
+
+    public void shutdown();
+
+    public void writeText(Address to, String message, long timeout, TimeUnit unit, FailureAction failureAction);
+
+    public void reconnect();
 }

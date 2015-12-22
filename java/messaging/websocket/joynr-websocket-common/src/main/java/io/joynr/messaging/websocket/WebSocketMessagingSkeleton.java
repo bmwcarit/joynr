@@ -3,7 +3,7 @@ package io.joynr.messaging.websocket;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2016 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,40 +21,44 @@ package io.joynr.messaging.websocket;
 
 import java.io.IOException;
 
+import org.eclipse.jetty.websocket.api.WebSocketAdapter;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
+
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingSkeleton;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.JoynrMessage;
+import joynr.system.RoutingTypes.WebSocketAddress;
 
 /**
  *
  */
-public abstract class WebSocketMessagingSkeleton extends MessagingSocket implements IMessagingSkeleton {
-
-    private static final Logger logger = LoggerFactory.getLogger(WebSocketMessagingSkeleton.class);
-
+public class WebSocketMessagingSkeleton extends WebSocketAdapter implements IMessagingSkeleton {
+    MessageRouter messageRouter;
     ObjectMapper objectMapper;
-    private MessageRouter messageRouter;
+    JoynrWebSocketEndpoint webSocketEndpoint;
+    private WebSocketEndpointFactory webSocketEndpointFactory;
+    protected WebSocketAddress serverAddress;
 
-    public WebSocketMessagingSkeleton(ObjectMapper objectMapper, MessageRouter messageRouter) {
-        this.objectMapper = objectMapper;
+    @Inject
+    public WebSocketMessagingSkeleton(@Named(WebsocketModule.WEBSOCKET_SERVER_ADDRESS) WebSocketAddress serverAddress,
+                                      WebSocketEndpointFactory webSocketEndpointFactory,
+                                      MessageRouter messageRouter,
+                                      ObjectMapper objectMapper) {
+        this.serverAddress = serverAddress;
+        this.webSocketEndpointFactory = webSocketEndpointFactory;
         this.messageRouter = messageRouter;
+        this.objectMapper = objectMapper;
     }
 
     @Override
-    public void onWebSocketText(String json) {
-        super.onWebSocketText(json);
-        logger.debug("Received TEXT message: " + json);
-        try {
-            final JoynrMessage message = objectMapper.readValue(json, JoynrMessage.class);
-            messageRouter.route(message);
-        } catch (IOException e) {
-            logger.error("Failed to process websocket message: {}", e.getMessage());
-        }
+    public void init() {
+        webSocketEndpoint = webSocketEndpointFactory.create(serverAddress);
+        webSocketEndpoint.setMessageListener(this);
+        webSocketEndpoint.start();
     }
 
     @Override
@@ -68,6 +72,18 @@ public abstract class WebSocketMessagingSkeleton extends MessagingSocket impleme
 
     @Override
     public void transmit(String serializedMessage, FailureAction failureAction) {
-        // TODO Auto-generated method stub
+        try {
+            JoynrMessage message = objectMapper.readValue(serializedMessage, JoynrMessage.class);
+            transmit(message, failureAction);
+        } catch (IOException error) {
+            failureAction.execute(error);
+        }
+    }
+
+    @Override
+    public void shutdown() {
+        if (webSocketEndpoint != null) {
+            webSocketEndpoint.shutdown();
+        }
     }
 }

@@ -25,10 +25,10 @@ import io.joynr.messaging.http.HttpGlobalAddressFactory;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.MessageRouterImpl;
-import io.joynr.messaging.websocket.CCWebSocketMessagingSkeleton;
 import io.joynr.messaging.websocket.WebSocketClientMessageSerializerFactory;
 import io.joynr.messaging.websocket.WebSocketClientMessagingStubFactory;
-import io.joynr.messaging.websocket.WebsocketModule;
+import io.joynr.messaging.websocket.WebSocketMessagingSkeleton;
+import io.joynr.messaging.websocket.server.WebSocketJettyServerModule;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
 
@@ -41,13 +41,12 @@ public class CCWebSocketRuntimeModule extends ClusterControllerRuntimeModule {
     @Override
     protected void configure() {
         super.configure();
-        install(new WebsocketModule());
-        bind(ClusterControllerRuntime.class).in(Singleton.class);
+        install(new WebSocketJettyServerModule());
         bind(JoynrRuntime.class).to(ClusterControllerRuntime.class);
-        bind(WebSocketClientMessagingStubFactory.class).in(Singleton.class);
+        bind(ClusterControllerRuntime.class).in(Singleton.class);
         bind(MessageRouter.class).to(MessageRouterImpl.class).in(Singleton.class);
 
-        messagingSkeletonFactory.addBinding(WebSocketClientAddress.class).to(CCWebSocketMessagingSkeleton.class);
+        messagingSkeletonFactory.addBinding(WebSocketClientAddress.class).to(WebSocketMessagingSkeleton.class);
         messagingStubFactory.addBinding(WebSocketClientAddress.class).to(WebSocketClientMessagingStubFactory.class);
         messageSerializerFactory.addBinding(WebSocketClientAddress.class)
                                 .to(WebSocketClientMessageSerializerFactory.class);
@@ -58,7 +57,7 @@ public class CCWebSocketRuntimeModule extends ClusterControllerRuntimeModule {
     @Provides
     @Singleton
     @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS)
-    Address getCCMessagingAddress() {
+    Address provideCCMessagingAddress() {
         return new InProcessAddress();
     }
 

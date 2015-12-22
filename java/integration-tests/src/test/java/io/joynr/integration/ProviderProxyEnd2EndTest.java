@@ -44,7 +44,7 @@ public class ProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTest {
     private static Server jettyServer;
     private static Properties originalProperties;
 
-    private List<DummyJoynrApplication> dummyApplications = new ArrayList<>();
+    protected List<DummyJoynrApplication> dummyApplications = new ArrayList<>();
 
     @BeforeClass
     public static void startServer() throws Exception {
