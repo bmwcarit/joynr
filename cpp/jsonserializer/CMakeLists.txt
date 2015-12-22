@@ -7,10 +7,19 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 endif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 
+set(JSMN_SOURCE_URL "https://github.com/zserge/jsmn")
+set(JSMN_SOURCE_TYPE "GIT_REPOSITORY")
+if(JSMN_ROOT)
+    set(JSMN_SOURCE_URL "${JSMN_ROOT}")
+    set(JSMN_SOURCE_TYPE "URL")
+endif(JSMN_ROOT)
+message(STATUS "Using source for jsmn: ${JSMN_SOURCE_URL}")
+
+
 set(jsmn_LIBRARY "${CMAKE_BINARY_DIR}/ThirdParty/src/jsmn/libjsmn.a")
 AddExternalProject(
     jsmn
-    GIT_REPOSITORY https://github.com/zserge/jsmn
+    ${JSMN_SOURCE_TYPE} "${JSMN_SOURCE_URL}"
     TIMEOUT 10
     PATCH_COMMAND rm -f config.mk COMMAND git apply ${CMAKE_SOURCE_DIR}/CMake/jsmn-fpic.patch
     # Disable configure step
