@@ -47,6 +47,7 @@
 #include "joynr/types/TestTypes/TStringKeyMap.h"
 #include "joynr/types/TestTypes/TIntegerKeyMap.h"
 #include "joynr/types/TestTypes/TDoubleKeyMap.h"
+#include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/JoynrMessageFactory.h"
 #include "joynr/MessagingQos.h"
@@ -445,6 +446,31 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerMethodInvocationException)
         ASSERT_EQ(t.getMessage(), detailMessage);
     }
 }
+
+TEST_F(JoynrJsonSerializerTest, serializeDeserializerEmptyStruct)
+{
+    // Create a PublicationMissedException
+    using namespace joynr::system::RoutingTypes;
+
+    Address expectedAddress;
+
+    // Serialize into JSON
+    std::stringstream stream;
+    auto serializer = ClassSerializer<Address>{};
+    serializer.serialize(expectedAddress, stream);
+    std::string json{ stream.str() };
+    LOG_TRACE(logger, FormatString("Address JSON: %1").arg(json).str());
+
+    // Deserialize from JSON
+    JsonTokenizer tokenizer(json);
+
+    if (tokenizer.hasNextObject()) {
+        Address actualAddress;
+        ClassDeserializer<Address>::deserialize(actualAddress, tokenizer.nextObject());
+        EXPECT_EQ(expectedAddress, actualAddress);
+    }
+}
+
 TEST_F(JoynrJsonSerializerTest, exampleDeserializerPublicationMissedException)
 {
     // Create a PublicationMissedException

@@ -119,9 +119,10 @@ void ClassSerializer<«joynrName»>::serialize(const «joynrName» &«joynrName.
 	«IF type.membersRecursive.isEmpty»
 		std::ignore = «joynrName.toFirstLower»Var;
 	«ENDIF»
+	«val members = type.membersRecursive»
 	stream << "{";
-	stream << "\"_typeName\":\"" << JoynrTypeId<«joynrName»>::getTypeName() << "\",";
-	«FOR member: type.membersRecursive SEPARATOR "\nstream << \",\";"»
+	stream << "\"_typeName\":\"" << JoynrTypeId<«joynrName»>::getTypeName() << "\"«IF !members.empty»,«ENDIF»";
+	«FOR member: members SEPARATOR "\nstream << \",\";"»
 		«IF member.array»
 			«IF member.type.isPrimitive»
 				«serializePrimitiveArrayValue(member.type.predefined, member.name, joynrName.toFirstLower + "Var")»
