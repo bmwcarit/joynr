@@ -31,11 +31,11 @@ namespace joynr
 namespace system
 {
 class IDiscoverySync;
-}
+} // namespace system
 namespace types
 {
 class DiscoveryEntry;
-}
+} // namespace types
 
 /*
   * The QoS Arbitrator arbitrates according to the QoS of the provider.

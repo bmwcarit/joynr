@@ -30,7 +30,7 @@ namespace joynr
 namespace joynr_logging
 {
 class Logger;
-}
+} // namespace joynr_logging
 
 namespace infrastructure
 {
@@ -39,8 +39,8 @@ namespace DacTypes
 {
 class MasterAccessControlEntry;
 class OwnerAccessControlEntry;
-}
-}
+} // namespace DacTypes
+} // namespace infrastructure
 
 /**
  * Algorithm that decides if a provider/consumer has access to a service

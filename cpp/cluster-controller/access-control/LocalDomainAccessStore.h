@@ -34,7 +34,7 @@ namespace joynr
 namespace joynr_logging
 {
 class Logger;
-}
+} // namespace joynr_logging
 class JOYNRCLUSTERCONTROLLER_EXPORT LocalDomainAccessStore
 {
 public:
@@ -483,5 +483,5 @@ private:
      */
     void reset();
 };
-}
+} // namespace joynr
 #endif // LOCALDOMAINACCESSSTORE_H

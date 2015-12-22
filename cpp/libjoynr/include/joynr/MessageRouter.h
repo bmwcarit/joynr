@@ -50,11 +50,11 @@ class IPlatformSecurityManager;
 namespace joynr_logging
 {
 class Logger;
-}
+} // namespace joynr_logging
 namespace system
 {
 class Address;
-}
+} // namespace system
 
 /**
   * Class MessageRouter receives incoming JoynrMessages on the ClusterController

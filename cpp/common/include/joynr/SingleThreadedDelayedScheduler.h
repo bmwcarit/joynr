@@ -84,7 +84,6 @@ private:
     /*! Queue of waiting work */
     BlockingQueue queue;
 };
-}
-// namespace joynr
+} // namespace joynr
 
 #endif // SINGLETHREADEDDELAYEDSCHEDULER_H_

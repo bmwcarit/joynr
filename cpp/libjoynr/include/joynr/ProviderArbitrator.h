@@ -36,7 +36,7 @@ namespace joynr
 namespace system
 {
 class IDiscoverySync;
-}
+} // namespace system
 
 /*
  *  Base class for different arbitration strategies.

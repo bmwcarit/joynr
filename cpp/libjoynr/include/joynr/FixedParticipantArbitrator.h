@@ -31,7 +31,7 @@ namespace joynr
 namespace system
 {
 class IDiscoverySync;
-}
+} // namespace system
 
 class FixedParticipantArbitrator : public ProviderArbitrator
 {

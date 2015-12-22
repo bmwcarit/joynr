@@ -31,7 +31,7 @@ class IBroadcastFilter;
 namespace types
 {
 class ProviderQos;
-}
+} // namespace types
 
 /** @brief Interface for the provider */
 class IJoynrProvider

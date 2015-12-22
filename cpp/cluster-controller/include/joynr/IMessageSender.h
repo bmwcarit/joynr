@@ -44,6 +44,6 @@ public:
     virtual void init(std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory,
                       const MessagingSettings& settings) = 0;
 };
-}
+} // namespace joynr
 
 #endif // IMESSAGESENDER_H

@@ -37,7 +37,7 @@ namespace joynr
 namespace joynr_logging
 {
 class Logger;
-}
+} // namespace joynr_logging
 class RunnableProvider;
 class Runnable;
 

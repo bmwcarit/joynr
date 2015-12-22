@@ -50,7 +50,7 @@ class IBroadcastFilter;
 namespace exceptions
 {
 class JoynrException;
-}
+} // namespace exceptions
 class SubscriptionQos;
 
 /**

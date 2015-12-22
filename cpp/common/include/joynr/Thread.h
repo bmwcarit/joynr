@@ -87,6 +87,6 @@ private:
     /*! Name of the thread */
     const std::string name;
 };
-}
+} // namespace joynr
 
 #endif // THREAD_H_

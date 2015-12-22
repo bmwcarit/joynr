@@ -38,7 +38,7 @@ namespace system
 {
 class DiscoveryQos;
 class DiscoveryProxy;
-}
+} // namespace system
 
 /**
  * @brief The LocalDiscoveryAggregator class is a wrapper for discovery proxies. On

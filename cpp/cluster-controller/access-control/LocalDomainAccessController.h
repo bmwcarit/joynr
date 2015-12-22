@@ -45,12 +45,12 @@ namespace joynr
 namespace joynr_logging
 {
 class Logger;
-}
+} // namespace joynr_logging
 
 namespace infrastructure
 {
 class GlobalDomainAccessControllerProxy;
-}
+} // namespace infrastructure
 
 class LocalDomainAccessStore;
 

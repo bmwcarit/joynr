@@ -37,7 +37,8 @@ class TimerData;
 namespace joynr_logging
 {
 class Logger;
-}
+} // namespace joynr_logging
+
 /**
  * @class Timer
  * @brief Implementation of a single threaded timer container

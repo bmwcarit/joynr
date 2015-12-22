@@ -272,6 +272,6 @@ inline uint qHash(const std::string& key)
 {
     return std::hash<std::string>()(key);
 }
-}
+} // namespace std
 #endif // STRING_QHASH
 #endif // DIRECTORY_H

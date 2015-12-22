@@ -145,7 +145,7 @@ inline std::vector<«type.typeName»> joynr::Util::valueOf<std::vector<«type.ty
 {
 	return joynr::Util::convertVariantVectorToEnumVector<«type.typeNameOfContainingClass»>(variant.get<std::vector<Variant>>());
 }
-}
+} // namespace «joynrGenerationPrefix»
 
 namespace std {
 

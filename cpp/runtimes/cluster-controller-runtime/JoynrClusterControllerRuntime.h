@@ -66,7 +66,7 @@ class LibjoynrSettings;
 namespace infrastructure
 {
 class ChannelUrlDirectoryProxy;
-}
+} // namespace infrastructure
 
 class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrClusterControllerRuntime : public JoynrRuntime
 {

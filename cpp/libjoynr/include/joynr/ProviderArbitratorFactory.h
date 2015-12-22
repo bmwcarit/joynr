@@ -34,7 +34,7 @@ namespace joynr
 namespace system
 {
 class IDiscoverySync;
-}
+} // namespace system
 
 class JOYNR_EXPORT ProviderArbitratorFactory
 {

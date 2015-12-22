@@ -37,7 +37,7 @@ class Runnable;
 namespace joynr_logging
 {
 class Logger;
-}
+} // namespace joynr_logging
 
 /**
  * @class DelayedScheduler

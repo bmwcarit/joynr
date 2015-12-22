@@ -56,6 +56,6 @@ private:
     std::multimap<std::string, MessageQueueItem*>* queue;
     mutable std::mutex queueMutex;
 };
-}
+} // namespace joynr
 
 #endif // MESSAGEQUEUE_H

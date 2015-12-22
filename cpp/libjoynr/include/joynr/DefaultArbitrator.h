@@ -33,7 +33,7 @@ namespace system
 {
 class IDiscoverySync;
 class DiscoveryEntry;
-}
+} // namespace system
 
 class DefaultArbitrator : public ProviderArbitrator
 {

@@ -60,7 +60,7 @@ namespace joynr {
 	class ISubscriptionCallback;
 	class SubscriptionQos;
 	class OnChangeSubscriptionQos;
-}
+} // namespace joynr
 
 «getNamespaceStarter(serviceInterface)»
 class «getDllExportMacro()» I«interfaceName»Subscription{

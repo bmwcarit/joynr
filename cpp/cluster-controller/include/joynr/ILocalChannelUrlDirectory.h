@@ -32,7 +32,7 @@ class Future;
 namespace types
 {
 class ChannelUrlInformation;
-}
+} // namespace types
 
 /**
  * @brief The LocalChannelUrlDirectory is used within the cluster controller (message routing)

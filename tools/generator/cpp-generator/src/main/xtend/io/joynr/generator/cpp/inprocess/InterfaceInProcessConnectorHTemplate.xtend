@@ -71,7 +71,7 @@ namespace joynr {
 	class InProcessAddress;
 	class ISubscriptionManager;
 	class PublicationManager;
-}
+} // namespace joynr
 
 «getNamespaceStarter(serviceInterface)»
 

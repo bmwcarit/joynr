@@ -45,7 +45,7 @@ inline static uint64_t getCurrentMillisSinceEpoch()
 {
     return duration_cast<milliseconds>(getCurrentTime().time_since_epoch()).count();
 }
-}
+} // namespace TimeUtils
 
 } // namespace joynr
 

@@ -30,11 +30,11 @@ namespace joynr
 namespace system
 {
 class IDiscoverySync;
-}
+} // namespace system
 namespace types
 {
 class DiscoveryEntry;
-}
+} // namespace types
 
 /**
   * Arbitrator which requests CapabilityEntries for a give interfaceName and domain from

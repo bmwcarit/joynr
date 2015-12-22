@@ -33,7 +33,7 @@ namespace joynr
 namespace joynr_logging
 {
 class Logger;
-}
+} // namespace joynr_logging
 class Runnable;
 
 /**
@@ -106,5 +106,5 @@ private:
     /*! Mutual exclusion of the @ref queue and for @ref condition */
     mutable std::mutex conditionMutex;
 };
-}
+} // namespace joynr
 #endif // JOYNR_SCHEDULER_H

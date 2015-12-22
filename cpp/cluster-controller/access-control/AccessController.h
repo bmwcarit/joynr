@@ -35,7 +35,7 @@ class LocalDomainAccessController;
 namespace joynr_logging
 {
 class Logger;
-}
+} // namespace joynr_logging
 
 /**
  * Object that controls access to providers

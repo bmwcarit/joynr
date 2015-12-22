@@ -30,8 +30,8 @@ namespace system
 namespace RoutingTypes
 {
 class Address;
-}
-}
+} // namespace RoutingTypes
+} // namespace system
 class IMessaging;
 
 class IMiddlewareMessagingStubFactory

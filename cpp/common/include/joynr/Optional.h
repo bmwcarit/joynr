@@ -94,5 +94,5 @@ T Optional<T>::getValue() const
     assert(!this->invalid && "Optional is not initialized properly, it holds uninitialized value!");
     return value;
 }
-}
+} // namespace joynr
 #endif // JOYNROPTIONAL_H
