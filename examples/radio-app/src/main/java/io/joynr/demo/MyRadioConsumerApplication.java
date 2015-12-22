@@ -168,7 +168,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
 
     private static Module getRuntimeModule(String[] args, Properties joynrConfig) {
         Module runtimeModule;
-        if (args.length == 2 && args[1].equalsIgnoreCase("websocket")) {
+        if (args.length >= 2 && args[1].equalsIgnoreCase("websocket")) {
             joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST, "localhost");
             joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT, "4242");
             joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL, "ws");
