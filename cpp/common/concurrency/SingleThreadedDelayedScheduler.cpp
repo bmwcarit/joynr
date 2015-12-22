@@ -47,7 +47,7 @@ joynr::SingleThreadedDelayedScheduler::SingleThreadedDelayedScheduler(
 joynr::SingleThreadedDelayedScheduler::~SingleThreadedDelayedScheduler()
 {
     LOG_TRACE(logger, "Dtor called");
-    assert(keepRunning == false);
+    shutdown();
 }
 
 void joynr::SingleThreadedDelayedScheduler::shutdown()
@@ -56,9 +56,9 @@ void joynr::SingleThreadedDelayedScheduler::shutdown()
 
     keepRunning = false;
 
-    queue.shutdown();
-
     DelayedScheduler::shutdown();
+
+    queue.shutdown();
 
     if (currentlyRunning != nullptr) {
         currentlyRunning->shutdown();
