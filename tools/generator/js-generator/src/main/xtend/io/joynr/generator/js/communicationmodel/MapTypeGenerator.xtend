@@ -95,8 +95,8 @@ class MapTypeGenerator {
 
 			Object.defineProperty(this, 'get', {
 				enumerable: false,
-				value: function (key, value) {
-					this[key] = value;
+				value: function (key) {
+					return this[key];
 				}
 			});
 
