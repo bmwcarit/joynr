@@ -21,7 +21,6 @@
 #include "joynr/TypeUtil.h"
 
 #include <cassert>
-#include <QString> // for logging
 
 namespace joynr
 {

@@ -18,9 +18,6 @@
  */
 #include "common/dbus/DbusMessagingUtil.h"
 
-#include <QVariant>
-#include <QVariantMap>
-
 #include "joynr/JoynrMessage.h"
 
 namespace joynr

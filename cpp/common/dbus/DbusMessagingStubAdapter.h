@@ -23,7 +23,6 @@
 #include "joynr/JoynrCommonExport.h"
 
 #include "joynr/IMessaging.h"
-#include <QString>
 
 // save the GCC diagnostic state
 #pragma GCC diagnostic push

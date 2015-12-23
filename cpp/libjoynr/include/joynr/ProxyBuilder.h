@@ -31,7 +31,6 @@
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/system/IDiscovery.h"
 #include "Future.h"
-#include <QCoreApplication>
 #include "joynr/Semaphore.h"
 #include <string>
 #include <stdint.h>
@@ -250,14 +249,12 @@ T* ProxyBuilder<T>::build()
     auto onSuccess = [future]() { future->onSuccess(); };
     messageRouter->addNextHop(proxy->getProxyParticipantId(), dispatcherAddress, onSuccess);
 
-    // Wait in the Qt event loop until the result becomes available
-    // processEvents() processes all events delivered to this thread
+    // Wait until the result becomes available
     do {
         try {
             future->wait(100);
         } catch (exceptions::JoynrException& e) {
         }
-        QCoreApplication::processEvents();
     } while (future->getStatus().getCode() == RequestStatusCode::IN_PROGRESS);
 
     return proxy;

@@ -27,7 +27,6 @@
 #include "joynr/ReadWriteLock.h"
 #include "joynr/ThreadSafeMap.h"
 
-#include <QVariant>
 #include <mutex>
 #include <memory>
 #include <vector>
