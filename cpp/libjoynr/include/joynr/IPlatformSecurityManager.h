@@ -20,7 +20,6 @@
 #define IPLATFORMSECURITYMANAGER_H_
 
 #include <string>
-#include <QByteArray>
 
 #include "joynr/JoynrExport.h"
 
@@ -55,13 +54,13 @@ public:
      * @param message
      * @return encrypted JoynrMessage
      */
-    virtual QByteArray encrypt(const QByteArray& unencryptedBytes) = 0;
+    virtual std::string encrypt(const std::string& unencryptedBytes) = 0;
 
     /**
      * @param message
      * @return decrypted JoynrMessage
      */
-    virtual QByteArray decrypt(const QByteArray& encryptedBytes) = 0;
+    virtual std::string decrypt(const std::string& encryptedBytes) = 0;
 };
 
 } // namespace joynr

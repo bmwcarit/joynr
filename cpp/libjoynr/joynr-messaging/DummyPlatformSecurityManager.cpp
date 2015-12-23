@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr-messaging/DummyPlatformSecurityManager.h"
+#include "DummyPlatformSecurityManager.h"
 #include "joynr/JoynrMessage.h"
 #include <cassert>
 #include <tuple>
@@ -32,7 +32,7 @@ DummyPlatformSecurityManager::DummyPlatformSecurityManager()
 
 std::string DummyPlatformSecurityManager::getCurrentProcessUserId()
 {
-    return std::string(qgetenv("USER"));
+    return std::string("USER");
 }
 
 JoynrMessage DummyPlatformSecurityManager::sign(JoynrMessage message)
@@ -48,18 +48,18 @@ bool DummyPlatformSecurityManager::validate(const JoynrMessage& message) const
     return true;
 }
 
-QByteArray DummyPlatformSecurityManager::encrypt(const QByteArray& unencryptedBytes)
+std::string DummyPlatformSecurityManager::encrypt(const std::string& unencryptedBytes)
 {
     std::ignore = unencryptedBytes;
     assert(false && "Not implemented yet");
-    return QByteArray();
+    return std::string("");
 }
 
-QByteArray DummyPlatformSecurityManager::decrypt(const QByteArray& encryptedBytes)
+std::string DummyPlatformSecurityManager::decrypt(const std::string& encryptedBytes)
 {
     std::ignore = encryptedBytes;
     assert(false && "Not implemented yet");
-    return QByteArray();
+    return std::string("");
 }
 
 } // namespace joynr

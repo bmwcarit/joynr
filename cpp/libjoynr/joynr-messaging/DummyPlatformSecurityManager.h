@@ -35,8 +35,8 @@ public:
     std::string getCurrentProcessUserId() override;
     JoynrMessage sign(JoynrMessage message) override;
     bool validate(const JoynrMessage& message) const override;
-    QByteArray encrypt(const QByteArray& unencryptedBytes) override;
-    QByteArray decrypt(const QByteArray& encryptedBytes) override;
+    std::string encrypt(const std::string& unencryptedBytes) override;
+    std::string decrypt(const std::string& encryptedBytes) override;
 
 private:
     static joynr_logging::Logger* logger;
