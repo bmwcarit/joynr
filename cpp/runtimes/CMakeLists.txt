@@ -79,6 +79,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
     include_directories(
         SYSTEM
         ${Qt5WebSockets_INCLUDE_DIRS}
+        ${Qt5Core_INCLUDE_DIRS}
     )
 
     add_library(
@@ -111,6 +112,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
         JoynrClusterControllerRuntime
         ${JoynrClusterControllerRuntime_TARGET_LIBRARIES}
         ${Qt5WebSockets_LIBRARIES}
+        ${Qt5Core_LIBRARIES}
     )
 
     install(

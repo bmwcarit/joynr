@@ -18,8 +18,13 @@ set(
     "../"
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${JoynrLib_PUBLIC_INCLUDE_DIRECTORY}
-    ${jsmn_PUBLIC_INCLUDE_DIRECTORY}
     ${jsonserializer_PUBLIC_INCLUDE_DIRECTORY}
+)
+
+set(
+    JoynrClusterController_SYS_INCLUDE_DIRECTORIES
+    ${jsmn_PUBLIC_INCLUDE_DIRECTORY}
+    ${Qt5Core_INCLUDE_DIRECTORY}
 )
 
 set(
@@ -27,7 +32,7 @@ set(
     Joynr
     JoynrCommon
     ${CURL_LIBRARIES}
-    Qt5::Sql
+    ${Qt5Sql_LIBRARIES}
 )
 
 set(
@@ -116,6 +121,11 @@ endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
 include_directories(
         ${JoynrClusterController_INCLUDE_DIRECTORIES}
+)
+
+include_directories(
+    SYSTEM
+    ${JoynrClusterController_SYS_INCLUDE_DIRECTORIES}
 )
 
 add_library(

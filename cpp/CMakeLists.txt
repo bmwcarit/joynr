@@ -258,19 +258,20 @@ if(ENABLE_DOXYGEN)
     )
 endif(ENABLE_DOXYGEN)
 
-find_package(Qt5Core REQUIRED)
-
-message(STATUS "variable Qt5Core_VERSION_STRING=${Qt5Core_VERSION_STRING}")
-message(STATUS "variable Qt5Core_INCLUDE_DIRS=${Qt5Core_INCLUDE_DIRS}")
-get_target_property(Qt5Core_LOCATION Qt5::Core LOCATION)
-message(STATUS "variable Qt5::Core LOCATION=${Qt5Core_LOCATION}")
-message(STATUS "variable Qt5Core_LIBRARIES=${Qt5Core_LIBRARIES}")
-message(STATUS "variable Qt5Core_DEFINITIONS=${Qt5Core_DEFINITIONS}")
-
+find_package(Qt5Core)
 find_package(Qt5WebSockets)
+find_package(Qt5Sql)
 
-# Qt-Websockets is only needed for the Cluster-Controller
-IF(NOT ${Qt5WebSockets_FOUND})
+# Qt-Websockets and Qt-Core is only needed for the Cluster-Controller
+
+IF(${Qt5Core_FOUND} AND ${Qt5WebSockets_FOUND})
+
+    message(STATUS "variable Qt5Core_VERSION_STRING=${Qt5Core_VERSION_STRING}")
+    message(STATUS "variable Qt5Core_INCLUDE_DIRS=${Qt5Core_INCLUDE_DIRS}")
+    get_target_property(Qt5Core_LOCATION Qt5::Core LOCATION)
+    message(STATUS "variable Qt5::Core LOCATION=${Qt5Core_LOCATION}")
+    message(STATUS "variable Qt5Core_LIBRARIES=${Qt5Core_LIBRARIES}")
+    message(STATUS "variable Qt5Core_DEFINITIONS=${Qt5Core_DEFINITIONS}")
 
     message(STATUS "variable Qt5WebSockets_VERSION_STRING=${Qt5WebSockets_VERSION_STRING}")
     message(STATUS "variable Qt5WebSockets_INCLUDE_DIRS=${Qt5WebSockets_INCLUDE_DIRS}")
@@ -279,9 +280,19 @@ IF(NOT ${Qt5WebSockets_FOUND})
     message(STATUS "variable Qt5WebSockets_LIBRARIES=${Qt5WebSockets_LIBRARIES}")
     message(STATUS "variable Qt5WebSockets_DEFINITIONS=${Qt5WebSockets_DEFINITIONS}")
 
+    message(STATUS "variable Qt5Sql_VERSION_STRING=${Qt5Sql_VERSION_STRING}")
+    message(STATUS "variable Qt5Sql_INCLUDE_DIRS=${Qt5Sql_INCLUDE_DIRS}")
+    get_target_property(Qt5Sql_LOCATION Qt5::Sql LOCATION)
+    message(STATUS "variable Qt5Sql LOCATION=${Qt5Sql_LOCATION}")
+    message(STATUS "variable Qt5Sql_LIBRARIES=${Qt5Sql_LIBRARIES}")
+    message(STATUS "variable Qt5Sql_DEFINITIONS=${Qt5Sql_DEFINITIONS}")
+    
+ELSE(${Qt5Core_FOUND} AND ${Qt5WebSockets_FOUND})
+
     SET(BUILD_CLUSTER_CONTROLLER OFF)
 
-ENDIF()
+ENDIF(${Qt5Core_FOUND} AND ${Qt5WebSockets_FOUND})
+
 message(STATUS "option BUILD_CLUSTER_CONTROLLER=" ${BUILD_CLUSTER_CONTROLLER})
 
 find_package(Qt5Test REQUIRED)
@@ -291,18 +302,6 @@ get_target_property(Qt5Test_LOCATION Qt5::Test LOCATION)
 message(STATUS "variable Qt5::Test LOCATION=${Qt5Test_LOCATION}")
 message(STATUS "variable Qt5Test_LIBRARIES=${Qt5Test_LIBRARIES}")
 message(STATUS "variable Qt5Test_DEFINITIONS=${Qt5Test_DEFINITIONS}")
-
-include_directories(
-    SYSTEM ${Qt5Core_INCLUDE_DIRS}
-)
-find_package(Qt5Sql REQUIRED)
-message(STATUS "variable Qt5Sql_VERSION_STRING=${Qt5Sql_VERSION_STRING}")
-message(STATUS "variable Qt5Sql_INCLUDE_DIRS=${Qt5Sql_INCLUDE_DIRS}")
-get_target_property(Qt5Sql_LOCATION Qt5::Sql LOCATION)
-message(STATUS "variable Qt5Sql LOCATION=${Qt5Sql_LOCATION}")
-message(STATUS "variable Qt5Sql_LIBRARIES=${Qt5Sql_LIBRARIES}")
-message(STATUS "variable Qt5Sql_DEFINITIONS=${Qt5Sql_DEFINITIONS}")
-
 
 ######## Add Boost ########
 
