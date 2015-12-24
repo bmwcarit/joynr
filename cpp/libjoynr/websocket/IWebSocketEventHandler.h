@@ -26,9 +26,9 @@ namespace joynr
 class WebSocket;
 
 /**
- * @brief The WebSocketEventHandler class declares event handlers for set of websocket events.
- * WebSocket holds a reference to WebSocketEventHandler and use it to inform application context
- * about websocket events. This concept allows various implementations of WebSocketEventHandler
+ * @brief The IWebSocketEventHandler class declares event handlers for set of websocket events.
+ * WebSocket holds a reference to IWebSocketEventHandler and use it to inform application context
+ * about websocket events. This concept allows various implementations of IWebSocketEventHandler
  * (e.g. Sync, or Async variant, different implementation for testing purposes, etc.).
  */
 class IWebSocketEventHandler

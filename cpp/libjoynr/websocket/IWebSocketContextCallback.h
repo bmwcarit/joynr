@@ -29,7 +29,7 @@ namespace joynr
 {
 
 /**
- * @class WebSocketContextCallback
+ * @class IWebSocketContextCallback
  * @brief Callback interface to be used by @ref WebSocketContext
  */
 class IWebSocketContextCallback
