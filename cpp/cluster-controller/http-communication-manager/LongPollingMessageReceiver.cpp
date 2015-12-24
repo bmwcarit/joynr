@@ -34,6 +34,7 @@
 #include "joynr/JoynrMessage.h"
 
 #include <algorithm>
+#include <QString>
 
 namespace joynr
 {

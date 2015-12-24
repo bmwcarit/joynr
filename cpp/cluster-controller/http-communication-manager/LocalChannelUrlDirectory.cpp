@@ -19,6 +19,7 @@
 #include "joynr/LocalChannelUrlDirectory.h"
 #include "joynr/Future.h"
 #include "joynr/QtTypeUtil.h"
+#include <QString>
 
 namespace joynr
 {

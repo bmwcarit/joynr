@@ -20,7 +20,7 @@
 #include "joynr/MessagingSettings.h"
 #include "joynr/Future.h"
 #include "joynr/DispatcherUtils.h"
-#include "joynr/TypeUtil.h"
+#include "joynr/QtTypeUtil.h"
 #include <boost/algorithm/string/predicate.hpp>
 #include <QUrl>
 #include <cmath>

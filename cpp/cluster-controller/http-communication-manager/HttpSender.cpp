@@ -26,7 +26,7 @@
 #include "cluster-controller/http-communication-manager/ChannelUrlSelector.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/RequestStatus.h"
-#include "joynr/TypeUtil.h"
+#include "joynr/QtTypeUtil.h"
 
 #include <algorithm>
 #include <chrono>

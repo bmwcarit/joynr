@@ -21,12 +21,8 @@
 
 #include "joynr/JoynrCommonExport.h"
 
-#include <QString>
 #include <string>
-#include <QList>
-#include <qglobal.h>
 #include <vector>
-#include <QByteArray>
 #include <stdint.h>
 #include <chrono>
 
@@ -53,20 +49,6 @@ public:
     }
 
     /**
-      * Converts a list of int values into a vector of int16_t objects
-      */
-    static std::vector<int16_t> toStdInt16(const QList<int>& qtValues)
-    {
-        std::vector<int16_t> stdValues;
-
-        for (int qtValue : qtValues) {
-            stdValues.push_back(toStdInt16(qtValue));
-        }
-
-        return stdValues;
-    }
-
-    /**
       * Converts a int16_t object into a int object
       */
     static int toInt(const int16_t& stdValue)
@@ -80,20 +62,6 @@ public:
     static uint16_t toStdUInt16(const int& qtValue)
     {
         return static_cast<uint16_t>(qtValue);
-    }
-
-    /**
-      * Converts a list of int values into a vector of uint16_t objects
-      */
-    static std::vector<uint16_t> toStdUInt16(const QList<int>& qtValues)
-    {
-        std::vector<uint16_t> stdValues;
-
-        for (int qtValue : qtValues) {
-            stdValues.push_back(toStdUInt16(qtValue));
-        }
-
-        return stdValues;
     }
 
     /**
@@ -126,20 +94,6 @@ public:
     static int32_t toStdInt32(const int& qtValue)
     {
         return static_cast<int32_t>(qtValue);
-    }
-
-    /**
-      * Converts a list of int values into a vector of int32_t objects
-      */
-    static std::vector<int32_t> toStdInt32(const QList<int>& qtValues)
-    {
-        std::vector<int32_t> stdValues;
-
-        for (int qtValue : qtValues) {
-            stdValues.push_back(toStdInt32(qtValue));
-        }
-
-        return stdValues;
     }
 
     /**
@@ -180,20 +134,6 @@ public:
     static uint64_t toStdUInt64(const int64_t& qtValue)
     {
         return static_cast<uint64_t>(qtValue);
-    }
-
-    /**
-      * Converts a list of int64_t values into a vector of uint64_t objects
-      */
-    static std::vector<uint64_t> toStdUInt64(const QList<int64_t>& qtValues)
-    {
-        std::vector<uint64_t> stdValues;
-
-        for (int64_t qtValue : qtValues) {
-            stdValues.push_back(toStdUInt64(qtValue));
-        }
-
-        return stdValues;
     }
 
     /**
