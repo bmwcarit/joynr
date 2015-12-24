@@ -7,6 +7,8 @@ project(radio-app-0.14.0-SNAPSHOT)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
 add_definitions("-std=gnu++0x")
 
+find_package(Qt5Core REQUIRED)
+
 set(
     JOYNR_SERVER
     "localhost:8080"
@@ -56,6 +58,7 @@ set(GENERATED_INCLUDE_DIRS
 include_directories(
     ${GENERATED_INCLUDE_DIRS}
     ${JOYNR_INCLUDE_DIRS}
+    ${Qt5Core_INCLUDE_DIRS}
 )
 
 # Use the generated header files for the consumer application
@@ -90,6 +93,7 @@ set(radio-app-provider_SOURCES
 # Link with the joynr libraries
 set(radio-app_LIBRARIES
     ${JOYNR_LIBRARIES}
+    ${Qt5Core_LIBRARIES}
 )
 
 # Put the generated code into a library and put the library in the bin directory
@@ -169,6 +173,7 @@ add_executable(radio-app-provider-ws
 target_link_libraries(radio-app-provider-ws
     radio-app
     ${JOYNR_LIB_WS_LIBRARIES}
+    ${Qt5Core_LIBRARIES}
 )
 
 # Compile the consumer application (requires: running cluster controller)
@@ -182,6 +187,7 @@ add_executable(radio-app-consumer-ws
 target_link_libraries(radio-app-consumer-ws
     radio-app
     ${JOYNR_LIB_WS_LIBRARIES}
+    ${Qt5Core_LIBRARIES}
 )
 
 install(TARGETS
@@ -204,6 +210,7 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     target_link_libraries(radio-app-provider-dbus
         radio-app
         ${JOYNR_LIB_DBUS_LIBRARIES}
+        ${Qt5Core_LIBRARIES}
     )
 
     # Compile the consumer application (requires: Dbus and running cluster controller)
@@ -217,6 +224,7 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     target_link_libraries(radio-app-consumer-dbus
         radio-app
         ${JOYNR_LIB_DBUS_LIBRARIES}
+        ${Qt5Core_LIBRARIES}
     )
 
     install(TARGETS
