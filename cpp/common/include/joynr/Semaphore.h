@@ -39,7 +39,7 @@ public:
      * @brief Constructor
      * @param initialValue Initial counter value
      * @note If the initial counter value is set to @c 0 the first call to
-     *      @ref lock will block
+     *      @ref wait will block
      */
     explicit Semaphore(int8_t initialValue = 0);
 
@@ -56,7 +56,7 @@ public:
 
     /**
      * @brief Increases the internal counter and notifies tasks that are
-     *      waiting in @ref lock or @ref tryLock
+     *      waiting in @ref wait or @ref waitFor
      */
     void notify();
 
