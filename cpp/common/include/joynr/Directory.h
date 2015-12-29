@@ -259,15 +259,4 @@ RemoverRunnable<Key, IReplyCaller>::RemoverRunnable(const Key& keyId,
 
 } // namespace joynr
 
-#ifndef STRING_QHASH
-#define STRING_QHASH
-namespace std
-{
-// using std::strings as key in a Directory requires qHash to be implemented
-inline uint qHash(const std::string& key)
-{
-    return std::hash<std::string>()(key);
-}
-} // namespace std
-#endif // STRING_QHASH
 #endif // DIRECTORY_H

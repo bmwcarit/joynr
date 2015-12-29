@@ -45,7 +45,5 @@ private:
     std::string interfaceName;
 };
 
-JOYNRCOMMON_EXPORT uint32_t qHash(const InterfaceAddress& interfaceAddress);
-
 } // namespace joynr
 #endif // INTERFACEADDRESS_H_
