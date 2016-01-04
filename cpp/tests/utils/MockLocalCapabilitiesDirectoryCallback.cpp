@@ -29,7 +29,7 @@ MockLocalCapabilitiesDirectoryCallback::MockLocalCapabilitiesDirectoryCallback()
     semaphore.wait();
 }
 
-void MockLocalCapabilitiesDirectoryCallback::capabilitiesReceived(std::vector<CapabilityEntry> capabilities) {
+void MockLocalCapabilitiesDirectoryCallback::capabilitiesReceived(const std::vector<CapabilityEntry>& capabilities) {
     this->results = capabilities;
     semaphore.notify();
 }

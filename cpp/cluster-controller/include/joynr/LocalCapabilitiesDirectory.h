@@ -228,7 +228,7 @@ class LocalCapabilitiesFuture : public ILocalCapabilitiesCallback
 {
 public:
     LocalCapabilitiesFuture();
-    void capabilitiesReceived(std::vector<CapabilityEntry> capabilities) override;
+    void capabilitiesReceived(const std::vector<CapabilityEntry>& capabilities) override;
     std::vector<CapabilityEntry> get();
     std::vector<CapabilityEntry> get(std::chrono::milliseconds timeout);
     ~LocalCapabilitiesFuture() override = default;

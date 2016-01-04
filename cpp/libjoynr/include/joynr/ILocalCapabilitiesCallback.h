@@ -31,7 +31,7 @@ class JOYNR_EXPORT ILocalCapabilitiesCallback
 public:
     virtual ~ILocalCapabilitiesCallback() = default;
 
-    virtual void capabilitiesReceived(std::vector<CapabilityEntry> capabilities) = 0;
+    virtual void capabilitiesReceived(const std::vector<CapabilityEntry>& capabilities) = 0;
 };
 
 } // namespace joynr

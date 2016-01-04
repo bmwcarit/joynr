@@ -42,7 +42,7 @@ class IGlobalCapabilitiesCallback
 {
 public:
     virtual ~IGlobalCapabilitiesCallback() = default;
-    virtual void capabilitiesReceived(std::vector<types::CapabilityInformation> results) = 0;
+    virtual void capabilitiesReceived(const std::vector<types::CapabilityInformation>& results) = 0;
 
 private:
     static joynr_logging::Logger* logger;

@@ -603,7 +603,7 @@ LocalCapabilitiesFuture::LocalCapabilitiesFuture() : futureSemaphore(0), capabil
 {
 }
 
-void LocalCapabilitiesFuture::capabilitiesReceived(std::vector<CapabilityEntry> capabilities)
+void LocalCapabilitiesFuture::capabilitiesReceived(const std::vector<CapabilityEntry>& capabilities)
 {
     this->capabilities = capabilities;
     futureSemaphore.notify();

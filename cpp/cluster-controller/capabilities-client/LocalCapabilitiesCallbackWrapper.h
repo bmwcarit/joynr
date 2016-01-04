@@ -45,7 +45,7 @@ public:
                                      const InterfaceAddress& interfaceAddress,
                                      const joynr::types::DiscoveryQos& discoveryQos);
 
-    void capabilitiesReceived(std::vector<types::CapabilityInformation> results) override;
+    void capabilitiesReceived(const std::vector<types::CapabilityInformation>& results) override;
 
 private:
     LocalCapabilitiesDirectory* localCapabilitiesDirectory;
