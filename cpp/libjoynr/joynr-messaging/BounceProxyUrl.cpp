@@ -58,11 +58,7 @@ const std::string& BounceProxyUrl::TIMECHECK_PATH_SUFFIX()
 BounceProxyUrl::BounceProxyUrl(const std::string& bounceProxyBaseUrl)
         : bounceProxyBaseUrl(bounceProxyBaseUrl), bounceProxyChannelsBaseUrl()
 {
-    using boost::algorithm::ends_with;
-    if (!ends_with(this->bounceProxyBaseUrl, URL_PATH_SEPARATOR())) {
-        this->bounceProxyBaseUrl.append(URL_PATH_SEPARATOR());
-    }
-    std::string channelsBaseUrl(this->bounceProxyBaseUrl);
+    std::string channelsBaseUrl = bounceProxyBaseUrl;
     channelsBaseUrl.append(CHANNEL_PATH_SUFFIX());
     channelsBaseUrl.append(URL_PATH_SEPARATOR());
     this->bounceProxyChannelsBaseUrl = Url(channelsBaseUrl);
@@ -70,13 +66,14 @@ BounceProxyUrl::BounceProxyUrl(const std::string& bounceProxyBaseUrl)
 
 BounceProxyUrl& BounceProxyUrl::operator=(const BounceProxyUrl& bounceProxyUrl)
 {
+    bounceProxyBaseUrl = bounceProxyUrl.bounceProxyBaseUrl;
     bounceProxyChannelsBaseUrl = bounceProxyUrl.bounceProxyChannelsBaseUrl;
     return *this;
 }
 
 bool BounceProxyUrl::operator==(const BounceProxyUrl& bounceProxyUrl) const
 {
-    return bounceProxyChannelsBaseUrl == bounceProxyUrl.getBounceProxyBaseUrl();
+    return bounceProxyChannelsBaseUrl == bounceProxyUrl.getBounceProxyChannelsBaseUrl();
 }
 
 Url BounceProxyUrl::getCreateChannelUrl(const std::string& mcid) const
@@ -93,10 +90,6 @@ Url BounceProxyUrl::getSendUrl(const std::string& channelId) const
 {
     Url sendUrl(bounceProxyChannelsBaseUrl);
     std::string path = sendUrl.getPath();
-    using boost::algorithm::ends_with;
-    if (!ends_with(path, URL_PATH_SEPARATOR())) {
-        path.append(URL_PATH_SEPARATOR());
-    }
     path.append(channelId);
     path.append(URL_PATH_SEPARATOR());
     path.append(SEND_MESSAGE_PATH_APPENDIX());
@@ -105,15 +98,9 @@ Url BounceProxyUrl::getSendUrl(const std::string& channelId) const
     return sendUrl;
 }
 
-Url BounceProxyUrl::getBounceProxyBaseUrl() const
+Url BounceProxyUrl::getBounceProxyChannelsBaseUrl() const
 {
     Url sendUrl(bounceProxyChannelsBaseUrl);
-    std::string path = sendUrl.getPath();
-    using boost::algorithm::ends_with;
-    if (!ends_with(path, URL_PATH_SEPARATOR())) {
-        path.append(URL_PATH_SEPARATOR());
-    }
-    sendUrl.setPath(path);
     return sendUrl;
 }
 

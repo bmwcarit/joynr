@@ -47,7 +47,7 @@ public:
     Url getCreateChannelUrl(const std::string& mcid) const;
     Url getReceiveUrl(const std::string& channelId) const;
     Url getSendUrl(const std::string& channelId) const;
-    Url getBounceProxyBaseUrl() const;
+    Url getBounceProxyChannelsBaseUrl() const;
     Url getDeleteChannelUrl(const std::string& mcid) const;
     Url getTimeCheckUrl() const;
 

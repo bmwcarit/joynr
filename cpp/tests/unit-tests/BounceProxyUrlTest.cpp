@@ -26,8 +26,7 @@ using namespace joynr;
 class BounceProxyUrlTest : public ::testing::Test {
 public:
     BounceProxyUrlTest() :
-        bounceProxyUrl(BounceProxyUrl("http://localhost:8080/bounceproxy")),
-        bounceProxyUrlWithTrailingSlash(BounceProxyUrl("http://localhost:8080/bounceproxy/"))
+        bounceProxyUrl(BounceProxyUrl("http://localhost:8080/bounceproxy/"))
     {}
 
     void SetUp(){
@@ -36,7 +35,6 @@ public:
     }
 protected:
     BounceProxyUrl bounceProxyUrl;
-    BounceProxyUrl bounceProxyUrlWithTrailingSlash;
 };
 
 
@@ -44,27 +42,19 @@ protected:
 TEST_F(BounceProxyUrlTest, getCreateChannelUrl) {
     Url createChannelUrl = bounceProxyUrl.getCreateChannelUrl("testMcid");
     EXPECT_EQ("http://localhost:8080/bounceproxy/channels/?ccid=testMcid", createChannelUrl.toString());
-    createChannelUrl = bounceProxyUrlWithTrailingSlash.getCreateChannelUrl("testMcid");
-    EXPECT_EQ("http://localhost:8080/bounceproxy/channels/?ccid=testMcid", createChannelUrl.toString());
 }
 
 TEST_F(BounceProxyUrlTest, getSendUrl) {
     Url sendUrl = bounceProxyUrl.getSendUrl("testMcid");
-    EXPECT_EQ("http://localhost:8080/bounceproxy/channels/testMcid/message/", sendUrl.toString());
-    sendUrl = bounceProxyUrlWithTrailingSlash.getSendUrl("testMcid");
     EXPECT_EQ("http://localhost:8080/bounceproxy/channels/testMcid/message/", sendUrl.toString());
 }
 
 TEST_F(BounceProxyUrlTest, getDeleteChannelUrl){
     Url deleteUrl = bounceProxyUrl.getDeleteChannelUrl("testMcid");
     EXPECT_EQ("http://localhost:8080/bounceproxy/channels/testMcid/", deleteUrl.toString());
-    deleteUrl = bounceProxyUrlWithTrailingSlash.getDeleteChannelUrl("testMcid");
-    EXPECT_EQ("http://localhost:8080/bounceproxy/channels/testMcid/", deleteUrl.toString());
 }
 
 TEST_F(BounceProxyUrlTest, getTimeCheckUrl){
     Url timeCheckUrl = bounceProxyUrl.getTimeCheckUrl();
-    EXPECT_EQ("http://localhost:8080/bounceproxy/time/", timeCheckUrl.toString());
-    timeCheckUrl = bounceProxyUrlWithTrailingSlash.getTimeCheckUrl();
     EXPECT_EQ("http://localhost:8080/bounceproxy/time/", timeCheckUrl.toString());
 }
