@@ -30,7 +30,7 @@ AddExternalProject(
     googletest
     DOWNLOAD_COMMAND "" # already downloaded by googletest-repo
     SOURCE_DIR "${EP_PREFIX}/src/googletest-repo/googletest"
-    BUILD_BYPRODUCTS "${EP_PREFIX}/src/googletest-build/libgtest.a"
+    BUILD_BYPRODUCTS "${EP_PREFIX}/src/googletest-build/${CMAKE_STATIC_LIBRARY_PREFIX}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}"
     CMAKE_ARGS -Dgtest_force_shared_crt=ON
                -Dgtest_disable_pthreads=${DISABLE_PTHREAD_CMAKE_ARG}
 )
@@ -55,7 +55,7 @@ AddExternalProject(
     googlemock
     DOWNLOAD_COMMAND "" # already downloaded by googletest-repo
     SOURCE_DIR "${EP_PREFIX}/src/googletest-repo/googlemock"
-    BUILD_BYPRODUCTS "${EP_PREFIX}/src/googlemock-build/libgmock.a"
+    BUILD_BYPRODUCTS "${EP_PREFIX}/src/googlemock-build/${CMAKE_STATIC_LIBRARY_PREFIX}gmock${CMAKE_STATIC_LIBRARY_SUFFIX}"
     CMAKE_ARGS -Dgtest_force_shared_crt=ON
                -Dgtest_disable_pthreads=${DISABLE_PTHREAD_CMAKE_ARG}
 )
