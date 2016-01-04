@@ -32,6 +32,7 @@
 
 #include <string>
 #include <memory>
+#include <chrono>
 
 namespace joynr
 {
@@ -44,13 +45,12 @@ class IChannelUrlSelector;
 class HttpSender : public IMessageSender
 {
 public:
-    static const int64_t& MIN_ATTEMPT_TTL();
-    static const int64_t& MAX_ATTEMPT_TTL();
+    static std::chrono::milliseconds MIN_ATTEMPT_TTL();
     static const int64_t& FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIAL();
 
     HttpSender(const BounceProxyUrl& bounceProxyUrl,
-               int64_t maxAttemptTtl_ms,
-               int messageSendRetryInterval); // int messageSendRetryInterval
+               std::chrono::milliseconds maxAttemptTtl,
+               std::chrono::milliseconds messageSendRetryInterval);
     ~HttpSender() override;
     /**
     * @brief Sends the message to the given channel.
@@ -67,8 +67,8 @@ private:
     DISALLOW_COPY_AND_ASSIGN(HttpSender);
     const BounceProxyUrl bounceProxyUrl;
     IChannelUrlSelector* channelUrlCache;
-    const int64_t maxAttemptTtl_ms;
-    const int messageSendRetryInterval;
+    const std::chrono::milliseconds maxAttemptTtl;
+    const std::chrono::milliseconds messageSendRetryInterval;
     static joynr_logging::Logger* logger;
 
     /**
@@ -96,7 +96,7 @@ private:
                             const JoynrTimePoint& decayTime,
                             std::string&& data,
                             DelayedScheduler& delayedScheduler,
-                            int64_t maxAttemptTtl_ms);
+                            std::chrono::milliseconds maxAttemptTtl);
         ~SendMessageRunnable() override;
 
         void shutdown() override;
@@ -115,13 +115,14 @@ private:
 
     private:
         DISALLOW_COPY_AND_ASSIGN(SendMessageRunnable);
-        HttpResult buildRequestAndSend(const std::string& url, int64_t curlTimeout);
-        std::string resolveUrlForChannelId(int64_t curlTimeout);
+        HttpResult buildRequestAndSend(const std::string& url,
+                                       std::chrono::milliseconds curlTimeout);
+        std::string resolveUrlForChannelId(std::chrono::milliseconds curlTimeout);
         std::string channelId;
         std::string data;
         DelayedScheduler& delayedScheduler;
         HttpSender* messageSender;
-        int64_t maxAttemptTtl_ms;
+        std::chrono::milliseconds maxAttemptTtl;
 
         static joynr_logging::Logger* logger;
         static int messageRunnableCounter;

@@ -38,6 +38,7 @@
 #include <stdint.h>
 #include <mutex>
 #include <unordered_map>
+#include <chrono>
 
 namespace joynr
 {
@@ -457,9 +458,9 @@ private:
     LocalDomainAccessStore* localDomainAccessStore;
 
     static joynr_logging::Logger* logger;
-    static int64_t broadcastMinIntervalMs;
-    static int64_t broadcastSubscriptionValidityMs;
-    static int64_t broadcastPublicationTtlMs;
+    static std::chrono::milliseconds broadcastMinInterval;
+    static std::chrono::milliseconds broadcastSubscriptionValidity;
+    static std::chrono::milliseconds broadcastPublicationTtl;
 
     void initialiseLocalDomainAccessStore(const std::string& userId,
                                           const std::string& domain,

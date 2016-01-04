@@ -49,6 +49,7 @@
 #include <memory>
 #include <mutex>
 #include <string>
+#include <chrono>
 
 #include <QMap>
 
@@ -112,7 +113,7 @@ public:
     /*
      * Performs maintenance on the cache and removes old entries
      */
-    void cleanCache(int64_t maxAge_ms);
+    void cleanCache(std::chrono::milliseconds maxAge);
 
     /*
      * Call back methods which will update the local capabilities cache and call the
@@ -186,10 +187,10 @@ private:
                        bool localCache,
                        bool globalCache);
     std::vector<CapabilityEntry> searchCache(const InterfaceAddress& interfaceAddress,
-                                             const int64_t& maxCacheAge,
+                                             std::chrono::milliseconds maxCacheAge,
                                              bool localEntries);
     std::vector<CapabilityEntry> searchCache(const std::string& participantId,
-                                             const int64_t& maxCacheAge,
+                                             std::chrono::milliseconds maxCacheAge,
                                              bool localEntries);
 
     static void convertDiscoveryEntryIntoCapabilityEntry(
@@ -229,7 +230,7 @@ public:
     LocalCapabilitiesFuture();
     void capabilitiesReceived(std::vector<CapabilityEntry> capabilities) override;
     std::vector<CapabilityEntry> get();
-    std::vector<CapabilityEntry> get(const int64_t& timeout_ms);
+    std::vector<CapabilityEntry> get(std::chrono::milliseconds timeout);
     ~LocalCapabilitiesFuture() override = default;
 
 private:

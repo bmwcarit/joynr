@@ -97,7 +97,7 @@ std::shared_ptr<joynr::Future<void>> LocalChannelUrlDirectory::unregisterChannel
 std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> LocalChannelUrlDirectory::
         getUrlsForChannelAsync(
                 const std::string& channelId,
-                const int64_t& timeout_ms,
+                std::chrono::milliseconds timeout,
                 std::function<void(const types::ChannelUrlInformation& channelUrls)> onSuccess,
                 std::function<void(const exceptions::JoynrException& error)> onError)
 {
@@ -122,7 +122,7 @@ std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> LocalChannel
     std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> future(
             channelUrlDirectoryProxy->getUrlsForChannelAsync(channelId, onSuccess, onError));
     try {
-        future->wait(timeout_ms);
+        future->wait(timeout.count());
         if (future->getStatus().successful()) {
             LOG_INFO(logger,
                      FormatString("Received remote url information for channelId=%1")

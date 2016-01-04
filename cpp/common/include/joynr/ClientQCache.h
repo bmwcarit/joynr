@@ -58,10 +58,6 @@ public:
     void insert(std::string attributeId, Variant value) override;
 
 private:
-    /**
-      * Time since activation in ms
-      */
-    int64_t elapsed(int64_t entryTime);
     Cache<std::string, CachedValue<Variant>> cache;
     std::mutex mutex;
 };

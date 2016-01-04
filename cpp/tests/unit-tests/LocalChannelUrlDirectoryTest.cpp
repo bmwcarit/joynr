@@ -93,7 +93,7 @@ TEST_F(LocalChannelUrlDirectoryTest, getChannelUrlsUsesInternalProxy) {
     std::shared_ptr<Future<types::ChannelUrlInformation> > futureUrls(
                 localDirectory.getUrlsForChannelAsync(
                     "pseudoChannelID",
-                    20000ll,
+                    std::chrono::seconds(20),
                     [](const types::ChannelUrlInformation& url) {},
                     [](const exceptions::JoynrException& error) {}));
 

@@ -53,8 +53,8 @@ public:
     HttpRequestBuilder* withClientCertificate(const std::string& certificateFile) override;
     HttpRequestBuilder* withClientCertificatePassword(const std::string& password) override;
     HttpRequestBuilder* acceptGzip() override;
-    HttpRequestBuilder* withConnectTimeout_ms(long timeout_ms) override;
-    HttpRequestBuilder* withTimeout_ms(long timeout_ms) override;
+    HttpRequestBuilder* withConnectTimeout(std::chrono::milliseconds timeout) override;
+    HttpRequestBuilder* withTimeout(std::chrono::milliseconds timeout) override;
     HttpRequestBuilder* withContentType(const std::string& contentType) override;
     HttpRequestBuilder* addHeader(const std::string& name, const std::string& value) override;
     HttpRequestBuilder* asPost();

@@ -30,7 +30,7 @@ HttpNetworking* HttpNetworking::httpNetworking = new HttpNetworking();
 HttpNetworking::HttpNetworking()
         : curlHandlePool(nullptr),
           proxy(),
-          connectTimeout_ms(0),
+          connectTimeout(std::chrono::milliseconds::zero()),
           certificateAuthority(),
           clientCertificate(),
           clientCertificatePassword(),
@@ -62,7 +62,7 @@ HttpRequestBuilder* HttpNetworking::createRequestBuilder(const std::string& url)
         requestBuilder->withDebug();
     }
     // Set the connect timeout
-    requestBuilder->withConnectTimeout_ms(connectTimeout_ms);
+    requestBuilder->withConnectTimeout(connectTimeout);
 
     // Check for HTTPS options
     if (!certificateAuthority.empty()) {
@@ -105,9 +105,9 @@ void HttpNetworking::setHTTPDebugOn()
     this->httpDebug = true;
 }
 
-void HttpNetworking::setConnectTimeout_ms(long connectTimeout)
+void HttpNetworking::setConnectTimeout(std::chrono::milliseconds connectTimeout)
 {
-    this->connectTimeout_ms = connectTimeout;
+    this->connectTimeout = connectTimeout;
 }
 
 void HttpNetworking::setCertificateAuthority(const std::string& certificateAuthority)

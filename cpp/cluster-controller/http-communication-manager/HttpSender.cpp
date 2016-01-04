@@ -38,10 +38,9 @@ namespace joynr
 
 using namespace joynr_logging;
 
-const int64_t& HttpSender::MIN_ATTEMPT_TTL()
+std::chrono::milliseconds HttpSender::MIN_ATTEMPT_TTL()
 {
-    static int64_t value = 2 * 1000;
-    return value;
+    return std::chrono::seconds(2);
 }
 
 const int64_t& HttpSender::FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIAL()
@@ -53,18 +52,16 @@ const int64_t& HttpSender::FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIAL()
 Logger* HttpSender::logger = Logging::getInstance()->getLogger("MSG", "HttpSender");
 
 HttpSender::HttpSender(const BounceProxyUrl& bounceProxyUrl,
-                       int64_t maxAttemptTtl_ms,
-                       int messageSendRetryInterval)
+                       std::chrono::milliseconds maxAttemptTtl,
+                       std::chrono::milliseconds messageSendRetryInterval)
         : bounceProxyUrl(bounceProxyUrl),
           channelUrlCache(new ChannelUrlSelector(this->bounceProxyUrl,
                                                  ChannelUrlSelector::TIME_FOR_ONE_RECOUPERATION(),
                                                  ChannelUrlSelector::PUNISHMENT_FACTOR())),
-          maxAttemptTtl_ms(maxAttemptTtl_ms),
+          maxAttemptTtl(maxAttemptTtl),
           messageSendRetryInterval(messageSendRetryInterval),
           delayedScheduler(6, "MessageSender"),
-          channelUrlContactorDelayedScheduler(3,
-                                              "ChannelUrlContator",
-                                              std::chrono::milliseconds(messageSendRetryInterval))
+          channelUrlContactorDelayedScheduler(3, "ChannelUrlContator", messageSendRetryInterval)
 {
 }
 
@@ -110,7 +107,7 @@ void HttpSender::sendMessage(const std::string& channelId, const JoynrMessage& m
                                                 message.getHeaderExpiryDate(),
                                                 std::move(serializedMessage),
                                                 *scheduler,
-                                                maxAttemptTtl_ms));
+                                                maxAttemptTtl));
 }
 
 /**
@@ -126,14 +123,14 @@ HttpSender::SendMessageRunnable::SendMessageRunnable(HttpSender* messageSender,
                                                      const JoynrTimePoint& decayTime,
                                                      std::string&& data,
                                                      DelayedScheduler& delayedScheduler,
-                                                     int64_t maxAttemptTtl_ms)
+                                                     std::chrono::milliseconds maxAttemptTtl)
         : joynr::Runnable(true),
           ObjectWithDecayTime(decayTime),
           channelId(channelId),
           data(std::move(data)),
           delayedScheduler(delayedScheduler),
           messageSender(messageSender),
-          maxAttemptTtl_ms(maxAttemptTtl_ms)
+          maxAttemptTtl(maxAttemptTtl)
 {
     messageRunnableCounter++;
 }
@@ -149,7 +146,7 @@ void HttpSender::SendMessageRunnable::shutdown()
 
 void HttpSender::SendMessageRunnable::run()
 {
-    int64_t startTime = TypeUtil::toQt(DispatcherUtils::nowInMilliseconds());
+    auto startTime = std::chrono::system_clock::now();
     if (isExpired()) {
         LOG_DEBUG(logger,
                   FormatString("Message expired, expiration time: %1")
@@ -169,16 +166,20 @@ void HttpSender::SendMessageRunnable::run()
     // at most MAX... seconds.
     int64_t curlTimeout = std::max(
             getRemainingTtl_ms() / HttpSender::FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIAL(),
-            HttpSender::MIN_ATTEMPT_TTL());
-    std::string url = resolveUrlForChannelId(curlTimeout);
+            HttpSender::MIN_ATTEMPT_TTL().count());
+    std::string url = resolveUrlForChannelId(std::chrono::milliseconds(curlTimeout));
     LOG_TRACE(logger, "going to buildRequest");
-    HttpResult sendMessageResult = buildRequestAndSend(url, curlTimeout);
+    HttpResult sendMessageResult = buildRequestAndSend(url, std::chrono::milliseconds(curlTimeout));
 
     // Delay the next request if an error occurs
-    int64_t currentTime = TypeUtil::toQt(DispatcherUtils::nowInMilliseconds());
-    int64_t delay = messageSender->messageSendRetryInterval - (currentTime - startTime);
-    if (delay < 0)
-        delay = 10;
+    auto now = std::chrono::system_clock::now();
+    auto timeDiff = std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime);
+    std::chrono::milliseconds delay;
+    if (messageSender->messageSendRetryInterval < timeDiff) {
+        delay = std::chrono::milliseconds(10);
+    } else {
+        delay = messageSender->messageSendRetryInterval - timeDiff;
+    }
 
     if (sendMessageResult.getStatusCode() != 201) {
         messageSender->channelUrlCache->feedback(false, channelId, url);
@@ -187,7 +188,7 @@ void HttpSender::SendMessageRunnable::run()
                                                           decayTime,
                                                           std::move(data),
                                                           delayedScheduler,
-                                                          maxAttemptTtl_ms),
+                                                          maxAttemptTtl),
                                   std::chrono::milliseconds(delay));
         std::string body("NULL");
         if (!sendMessageResult.getBody().isNull()) {
@@ -209,10 +210,13 @@ void HttpSender::SendMessageRunnable::run()
                           .str());
     }
 }
-std::string HttpSender::SendMessageRunnable::resolveUrlForChannelId(int64_t curlTimeout)
+std::string HttpSender::SendMessageRunnable::resolveUrlForChannelId(
+        std::chrono::milliseconds curlTimeout)
 {
     LOG_TRACE(logger,
-              FormatString("obtaining Url with a curlTimeout of : %1").arg(curlTimeout).str());
+              FormatString("obtaining Url with a curlTimeout of : %1")
+                      .arg(curlTimeout.count())
+                      .str());
     RequestStatus status;
     // we also use the curl timeout here, to prevent long blocking during shutdown.
     std::string url = messageSender->channelUrlCache->obtainUrl(channelId, status, curlTimeout);
@@ -238,15 +242,16 @@ std::string HttpSender::SendMessageRunnable::resolveUrlForChannelId(int64_t curl
     return url;
 }
 
-HttpResult HttpSender::SendMessageRunnable::buildRequestAndSend(const std::string& url,
-                                                                int64_t curlTimeout)
+HttpResult HttpSender::SendMessageRunnable::buildRequestAndSend(
+        const std::string& url,
+        std::chrono::milliseconds curlTimeout)
 {
     std::shared_ptr<IHttpPostBuilder> sendMessageRequestBuilder(
             HttpNetworking::getInstance()->createHttpPostBuilder(url));
 
     std::shared_ptr<HttpRequest> sendMessageRequest(
             sendMessageRequestBuilder->withContentType("application/json")
-                    ->withTimeout_ms(std::min(maxAttemptTtl_ms, curlTimeout))
+                    ->withTimeout(std::min(maxAttemptTtl, curlTimeout))
                     ->postContent(QString::fromStdString(data).toUtf8())
                     ->build());
     LOG_TRACE(logger, "builtRequest");

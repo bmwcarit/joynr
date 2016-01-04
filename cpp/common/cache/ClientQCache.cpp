@@ -46,15 +46,8 @@ Variant ClientQCache::lookUp(const std::string& attributeId)
 void ClientQCache::insert(std::string attributeId, Variant value)
 {
     std::lock_guard<std::mutex> lock(mutex);
-    int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    auto now = system_clock::now();
     CachedValue<Variant>* cachedValue = new CachedValue<Variant>(value, now);
     cache.insert(attributeId, cachedValue);
 }
-
-int64_t ClientQCache::elapsed(int64_t entryTime)
-{
-    int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-    return now - entryTime;
-}
-
 } // namespace joynr

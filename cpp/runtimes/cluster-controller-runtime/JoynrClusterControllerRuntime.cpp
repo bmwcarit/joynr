@@ -188,10 +188,10 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     // create message sender
     if (!messageSender) {
         LOG_INFO(logger, "The message sender supplied is NULL, creating the default MessageSender");
-        messageSender = std::shared_ptr<IMessageSender>(
-                new HttpSender(messagingSettings->getBounceProxyUrl(),
-                               messagingSettings->getSendMsgMaxTtl(),
-                               messagingSettings->getSendMsgRetryInterval()));
+        messageSender = std::shared_ptr<IMessageSender>(new HttpSender(
+                messagingSettings->getBounceProxyUrl(),
+                std::chrono::milliseconds(messagingSettings->getSendMsgMaxTtl()),
+                std::chrono::milliseconds(messagingSettings->getSendMsgRetryInterval())));
     }
     messagingStubFactory->registerStubFactory(
             new JoynrMessagingStubFactory(messageSender, messageReceiver->getReceiveChannelId()));

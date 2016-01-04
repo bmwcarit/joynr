@@ -81,7 +81,8 @@ void HttpReceiver::updateSettings()
     }
 
     // Set the connect timeout
-    HttpNetworking::getInstance()->setConnectTimeout_ms(settings.getHttpConnectTimeout());
+    HttpNetworking::getInstance()->setConnectTimeout(
+            std::chrono::milliseconds(settings.getHttpConnectTimeout()));
 
     // HTTPS settings
     HttpNetworking::getInstance()->setCertificateAuthority(settings.getCertificateAuthority());
@@ -104,11 +105,10 @@ void HttpReceiver::startReceiveQueue()
 
     // Get the settings specific to long polling
     LongPollingMessageReceiverSettings longPollSettings = {
-            settings.getBounceProxyTimeout(),
-            settings.getLongPollTimeout(),
-            settings.getLongPollRetryInterval(),
-            settings.getCreateChannelRetryInterval(),
-    };
+            std::chrono::milliseconds(settings.getBounceProxyTimeout()),
+            std::chrono::milliseconds(settings.getLongPollTimeout()),
+            std::chrono::milliseconds(settings.getLongPollRetryInterval()),
+            std::chrono::milliseconds(settings.getCreateChannelRetryInterval())};
 
     LOG_DEBUG(logger, "startReceiveQueue");
     messageReceiver = new LongPollingMessageReceiver(settings.getBounceProxyUrl(),
@@ -156,14 +156,14 @@ bool HttpReceiver::tryToDeleteChannel()
     std::shared_ptr<IHttpDeleteBuilder> deleteChannelRequestBuilder(
             HttpNetworking::getInstance()->createHttpDeleteBuilder(deleteChannelUrl));
     std::shared_ptr<HttpRequest> deleteChannelRequest(
-            deleteChannelRequestBuilder->withTimeout_ms(20 * 1000)->build());
+            deleteChannelRequestBuilder->withTimeout(std::chrono::seconds(20))->build());
     LOG_DEBUG(logger,
               FormatString("sending delete channel request to %1").arg(deleteChannelUrl).str());
     HttpResult deleteChannelResult = deleteChannelRequest->execute();
     long statusCode = deleteChannelResult.getStatusCode();
     if (statusCode == 200) {
         channelCreatedSemaphore->waitFor(
-                std::chrono::milliseconds(5000)); // Reset the channel created Semaphore.
+                std::chrono::seconds(5)); // Reset the channel created Semaphore.
         LOG_INFO(logger, "channel deletion successfull");
         channelUrlDirectory->unregisterChannelUrlsAsync(channelId);
         LOG_INFO(logger, "Sendeing unregister request to ChannelUrlDirectory ...");

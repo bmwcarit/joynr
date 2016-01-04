@@ -32,6 +32,7 @@
 #include "joynr/Semaphore.h"
 #include <memory>
 #include <string>
+#include <chrono>
 
 #include <QByteArray>
 
@@ -46,10 +47,10 @@ class MessageRouter;
  */
 struct LongPollingMessageReceiverSettings
 {
-    int64_t bounceProxyTimeout_ms;
-    int64_t longPollTimeout_ms;
-    int longPollRetryInterval_ms;
-    int createChannelRetryInterval_ms;
+    std::chrono::milliseconds bounceProxyTimeout;
+    std::chrono::milliseconds longPollTimeout;
+    std::chrono::milliseconds longPollRetryInterval;
+    std::chrono::milliseconds createChannelRetryInterval;
 };
 
 /**

@@ -19,10 +19,12 @@
 #ifndef CACHEDVALUE_H
 #define CACHEDVALUE_H
 
-#include <cinttypes>
+#include <chrono>
 
 namespace joynr
 {
+
+using TimeStamp = std::chrono::time_point<std::chrono::system_clock>;
 
 template <class T>
 class CachedValue
@@ -31,10 +33,10 @@ class CachedValue
 public:
     CachedValue<T>();
     CachedValue<T>(const CachedValue<T>& other);
-    CachedValue<T>(T value, int64_t timestamp);
+    CachedValue<T>(T value, TimeStamp timestamp);
 
     T getValue();
-    int64_t getTimestamp();
+    TimeStamp getTimestamp();
 
     CachedValue<T>& operator=(const CachedValue<T>& other);
     bool operator==(const CachedValue<T>& other) const;
@@ -42,7 +44,7 @@ public:
 
 private:
     T value;
-    int64_t timestamp;
+    TimeStamp timestamp;
 };
 
 template <class T>
@@ -58,13 +60,13 @@ CachedValue<T>::CachedValue(const CachedValue<T>& other)
 }
 
 template <class T>
-CachedValue<T>::CachedValue(T value, int64_t timestamp)
+CachedValue<T>::CachedValue(T value, TimeStamp timestamp)
         : value(value), timestamp(timestamp)
 {
 }
 
 template <class T>
-int64_t CachedValue<T>::getTimestamp()
+TimeStamp CachedValue<T>::getTimestamp()
 {
     return timestamp;
 }

@@ -27,6 +27,7 @@
 #include "joynr/BounceProxyUrl.h"
 #include <stdint.h>
 #include <memory>
+#include <chrono>
 
 #include <QMap>
 
@@ -58,7 +59,7 @@ class JOYNRCLUSTERCONTROLLER_EXPORT ChannelUrlSelector : public IChannelUrlSelec
 {
 
 public:
-    static const int64_t& TIME_FOR_ONE_RECOUPERATION();
+    static std::chrono::milliseconds TIME_FOR_ONE_RECOUPERATION();
     static const double& PUNISHMENT_FACTOR();
     /**
      * @brief Initialize
@@ -68,7 +69,7 @@ public:
      * @param punishmentFactor
      */
     explicit ChannelUrlSelector(const BounceProxyUrl& bounceProxyUrl,
-                                int64_t timeForOneRecouperation,
+                                std::chrono::milliseconds timeForOneRecouperation,
                                 double punishmentFactor);
 
     ~ChannelUrlSelector() override;
@@ -93,7 +94,7 @@ public:
     */
     std::string obtainUrl(const std::string& channelId,
                           RequestStatus& status,
-                          const int64_t& timeout_ms) override;
+                          std::chrono::milliseconds timeout) override;
     /**
     * @brief Provide feedback on performance of URL: was the connection successful or not?
     *
@@ -110,7 +111,7 @@ private:
     std::shared_ptr<ILocalChannelUrlDirectory> channelUrlDirectory;
     const BounceProxyUrl& bounceProxyUrl;
     QMap<std::string, ChannelUrlSelectorEntry*> entries;
-    int64_t timeForOneRecouperation;
+    std::chrono::milliseconds timeForOneRecouperation;
     double punishmentFactor;
     std::string channelUrlDirectoryUrl;
     bool useDefaultUrl;
@@ -130,7 +131,7 @@ class JOYNRCLUSTERCONTROLLER_EXPORT ChannelUrlSelectorEntry
 public:
     ChannelUrlSelectorEntry(const types::ChannelUrlInformation& urlInformation,
                             double punishmentFactor,
-                            int64_t timeForOneRecouperation);
+                            std::chrono::milliseconds timeForOneRecouperation);
     ~ChannelUrlSelectorEntry();
     /**
      * @brief Returns the Url with the higest fitness value.
@@ -169,11 +170,11 @@ private:
     friend class ::ChannelUrlSelectorTest_updateTest_Test;
     friend class ::ChannelUrlSelectorTest_initFittnessTest_Test;
 
-    uint64_t lastUpdate;
+    std::chrono::time_point<std::chrono::system_clock> lastUpdate;
     std::vector<double> fitness;
     types::ChannelUrlInformation urlInformation;
     double punishmentFactor;
-    int64_t timeForOneRecouperation;
+    std::chrono::milliseconds timeForOneRecouperation;
     static joynr_logging::Logger* logger;
 };
 

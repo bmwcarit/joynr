@@ -45,10 +45,13 @@ using namespace joynr_logging;
 Logger* LocalDomainAccessController::logger =
         Logging::getInstance()->getLogger("MSG", "LocalDomainAccessController");
 
-int64_t LocalDomainAccessController::broadcastMinIntervalMs = 1 * 1000;
-int64_t LocalDomainAccessController::broadcastSubscriptionValidityMs =
-        10 * 365 * 24 * 3600 * 1000LL; // 10 years
-int64_t LocalDomainAccessController::broadcastPublicationTtlMs = 5 * 1000;
+std::chrono::milliseconds LocalDomainAccessController::broadcastMinInterval =
+        std::chrono::seconds(1);
+// 10 years
+std::chrono::milliseconds LocalDomainAccessController::broadcastSubscriptionValidity =
+        std::chrono::hours(24) * 365 * 10;
+std::chrono::milliseconds LocalDomainAccessController::broadcastPublicationTtl =
+        std::chrono::seconds(5);
 
 //--- Declarations of nested classes -------------------------------------------
 
@@ -751,9 +754,9 @@ void LocalDomainAccessController::processConsumerRequests(
 std::string LocalDomainAccessController::subscribeForDreChange(const std::string& userId)
 {
     OnChangeSubscriptionQos broadcastSubscriptionQos;
-    broadcastSubscriptionQos.setMinInterval(broadcastMinIntervalMs);
-    broadcastSubscriptionQos.setValidity(broadcastSubscriptionValidityMs);
-    broadcastSubscriptionQos.setPublicationTtl(broadcastPublicationTtlMs);
+    broadcastSubscriptionQos.setMinInterval(broadcastMinInterval.count());
+    broadcastSubscriptionQos.setValidity(broadcastSubscriptionValidity.count());
+    broadcastSubscriptionQos.setPublicationTtl(broadcastPublicationTtl.count());
     GlobalDomainAccessControllerDomainRoleEntryChangedBroadcastFilterParameters
             domainRoleFilterParameters;
     domainRoleFilterParameters.setUserIdOfInterest(userId);
@@ -775,9 +778,9 @@ LocalDomainAccessController::AceSubscription LocalDomainAccessController::subscr
 {
     OnChangeSubscriptionQos broadcastSubscriptionQos;
 
-    broadcastSubscriptionQos.setMinInterval(broadcastMinIntervalMs);
-    broadcastSubscriptionQos.setValidity(broadcastSubscriptionValidityMs);
-    broadcastSubscriptionQos.setPublicationTtl(broadcastPublicationTtlMs);
+    broadcastSubscriptionQos.setMinInterval(broadcastMinInterval.count());
+    broadcastSubscriptionQos.setValidity(broadcastSubscriptionValidity.count());
+    broadcastSubscriptionQos.setPublicationTtl(broadcastPublicationTtl.count());
 
     AceSubscription subscriptionIds;
 

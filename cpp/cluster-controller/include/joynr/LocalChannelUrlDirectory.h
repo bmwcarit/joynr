@@ -27,6 +27,7 @@
 #include "joynr/MessagingSettings.h"
 #include <string>
 #include <memory>
+#include <chrono>
 
 #include <QMap>
 #include <QString>
@@ -88,7 +89,7 @@ public:
      */
     std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>> getUrlsForChannelAsync(
             const std::string& channelId,
-            const int64_t& timeout_ms,
+            std::chrono::milliseconds timeout,
             std::function<void(const types::ChannelUrlInformation& channelUrls)> onSuccess =
                     nullptr,
             std::function<void(const exceptions::JoynrException& error)> onError =

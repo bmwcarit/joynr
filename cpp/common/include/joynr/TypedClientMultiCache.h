@@ -31,8 +31,6 @@
 namespace joynr
 {
 
-using namespace std::chrono;
-
 /**
  * Implements a typed cache. Stores SEVERAL objects with a key
  * and a timestamp in milliseconds.
@@ -55,10 +53,10 @@ public:
     * Returns the list of values stored for the attributeId filtered by a maximum age. If none
     *exists, it returns an empty
     * std::vector object that can be tested for by using the empty() method.
-    * maxAcceptedAgeInMs -1 returns all values.
+    * maxAcceptedAge -1 returns all values.
     *
     */
-    std::vector<T> lookUp(const Key& key, int64_t maxAcceptedAgeInMs);
+    std::vector<T> lookUp(const Key& key, std::chrono::milliseconds maxAcceptedAge);
     /*
      *  Returns the list of values stored for the attribute not considering their age.
       */
@@ -83,7 +81,7 @@ public:
     * entries for an attributeID are too old will the key become invalid (deleted).
     * Can be used to clear the cache of all entries by setting 'maxAcceptedAgeInMs = 0'.
     */
-    void cleanup(int64_t maxAcceptedAgeInMs);
+    void cleanup(std::chrono::milliseconds maxAcceptedAge);
 
     bool contains(const Key& key);
 
@@ -97,7 +95,7 @@ private:
     /*
      * Returns time since activation in ms (elapsed())
      */
-    int64_t elapsed(int64_t entryTime);
+    std::chrono::milliseconds elapsed(TimeStamp entryTime);
     Cache<Key, std::vector<CachedValue<T>>> cache;
     std::mutex mutex;
 };
@@ -110,9 +108,10 @@ TypedClientMultiCache<Key, T>::TypedClientMultiCache(int maxCost)
 }
 
 template <class Key, class T>
-std::vector<T> TypedClientMultiCache<Key, T>::lookUp(const Key& key, int64_t maxAcceptedAgeInMs)
+std::vector<T> TypedClientMultiCache<Key, T>::lookUp(const Key& key,
+                                                     std::chrono::milliseconds maxAcceptedAge)
 {
-    if (maxAcceptedAgeInMs == -1) {
+    if (maxAcceptedAge == std::chrono::milliseconds(-1)) {
         return lookUpAll(key);
     }
     std::lock_guard<std::mutex> lock(mutex);
@@ -121,11 +120,10 @@ std::vector<T> TypedClientMultiCache<Key, T>::lookUp(const Key& key, int64_t max
     }
     std::vector<CachedValue<T>>* list = cache.object(key);
     std::vector<T> result;
-    int64_t time;
 
     for (std::size_t i = 0; i < list->size(); i++) {
-        time = list->at(i).getTimestamp();
-        if (elapsed(time) <= maxAcceptedAgeInMs) {
+        auto time = list->at(i).getTimestamp();
+        if (elapsed(time) <= maxAcceptedAge) {
             result.push_back(list->at(i).getValue());
         }
     }
@@ -152,7 +150,7 @@ template <class Key, class T>
 void TypedClientMultiCache<Key, T>::insert(const Key& key, T object)
 {
     std::lock_guard<std::mutex> lock(mutex);
-    int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    auto now = std::chrono::system_clock::now();
     CachedValue<T> cachedValue = CachedValue<T>(object, now);
     if (cache.contains(key)) {
         cache.object(key)->push_back(cachedValue);
@@ -172,7 +170,7 @@ void TypedClientMultiCache<Key, T>::remove(const Key& key, T object)
         return;
     }
     std::vector<CachedValue<T>>* list = cache.object(key);
-    int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    auto now = std::chrono::system_clock::now();
     CachedValue<T> cachedValue = CachedValue<T>(object, now);
     auto position = std::find(list->cbegin(), list->cend(), cachedValue);
     if (position == list->cend()) {
@@ -195,7 +193,7 @@ void TypedClientMultiCache<Key, T>::removeAll(const Key& key)
 }
 
 template <class Key, class T>
-void TypedClientMultiCache<Key, T>::cleanup(int64_t maxAcceptedAgeInMs)
+void TypedClientMultiCache<Key, T>::cleanup(std::chrono::milliseconds maxAcceptedAge)
 {
     std::unique_lock<std::mutex> lock(mutex);
     std::vector<Key> keyset = cache.keys();
@@ -207,7 +205,7 @@ void TypedClientMultiCache<Key, T>::cleanup(int64_t maxAcceptedAgeInMs)
         entries = cache.object(keyset[i]);
         attributesToBeRemoved.clear();
         for (std::size_t e = 0; e < entries->size(); e++) {
-            if (elapsed(entries->at(e).getTimestamp()) >= maxAcceptedAgeInMs) {
+            if (elapsed(entries->at(e).getTimestamp()) >= maxAcceptedAge) {
                 attributesToBeRemoved.push_back(e);
             }
         }
@@ -226,10 +224,10 @@ void TypedClientMultiCache<Key, T>::cleanup(int64_t maxAcceptedAgeInMs)
 }
 
 template <class Key, class T>
-int64_t TypedClientMultiCache<Key, T>::elapsed(int64_t entryTime)
+std::chrono::milliseconds TypedClientMultiCache<Key, T>::elapsed(TimeStamp entryTime)
 {
-    int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-    return now - entryTime;
+    auto now = std::chrono::system_clock::now();
+    return std::chrono::duration_cast<std::chrono::milliseconds>(now - entryTime);
 }
 
 template <class Key, class T>

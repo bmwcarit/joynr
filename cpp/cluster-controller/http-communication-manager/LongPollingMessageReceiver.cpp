@@ -35,8 +35,6 @@
 
 #include <algorithm>
 
-using namespace std::chrono;
-
 namespace joynr
 {
 
@@ -94,7 +92,7 @@ void LongPollingMessageReceiver::run()
     std::shared_ptr<HttpRequest> createChannelRequest(
             createChannelRequestBuilder->addHeader("X-Atmosphere-tracking-id", receiverId)
                     ->withContentType("application/json")
-                    ->withTimeout_ms(settings.bounceProxyTimeout_ms)
+                    ->withTimeout(settings.bounceProxyTimeout)
                     ->build());
 
     std::string channelUrl;
@@ -115,7 +113,7 @@ void LongPollingMessageReceiver::run()
                              .str());
 
             std::unique_lock<std::mutex> lock(interruptedMutex);
-            interruptedWait.wait_for(lock, milliseconds(settings.createChannelRetryInterval_ms));
+            interruptedWait.wait_for(lock, settings.createChannelRetryInterval);
         }
     }
     /**
@@ -141,7 +139,7 @@ void LongPollingMessageReceiver::run()
                 longPollRequestBuilder->acceptGzip()
                         ->addHeader("Accept", "application/json")
                         ->addHeader("X-Atmosphere-tracking-id", receiverId)
-                        ->withTimeout_ms(settings.longPollTimeout_ms)
+                        ->withTimeout(settings.longPollTimeout)
                         ->build());
 
         LOG_DEBUG(logger,
@@ -176,8 +174,7 @@ void LongPollingMessageReceiver::run()
                                   .str());
 
                 std::unique_lock<std::mutex> lock(interruptedMutex);
-                interruptedWait.wait_for(
-                        lock, milliseconds(settings.createChannelRetryInterval_ms));
+                interruptedWait.wait_for(lock, settings.createChannelRetryInterval);
             }
         }
     }
@@ -238,15 +235,15 @@ void LongPollingMessageReceiver::checkServerTime()
             HttpNetworking::getInstance()->createHttpGetBuilder(timeCheckUrl));
     std::shared_ptr<HttpRequest> timeCheckRequest(
             timeCheckRequestBuilder->addHeader("Accept", "text/plain")
-                    ->withTimeout_ms(settings.bounceProxyTimeout_ms)
+                    ->withTimeout(settings.bounceProxyTimeout)
                     ->build());
     LOG_DEBUG(logger,
               FormatString("CheckServerTime: sending request to Bounce Proxy (%1)")
                       .arg(timeCheckUrl)
                       .str());
-    system_clock::time_point localTimeBeforeRequest = DispatcherUtils::now();
+    std::chrono::system_clock::time_point localTimeBeforeRequest = std::chrono::system_clock::now();
     HttpResult timeCheckResult = timeCheckRequest->execute();
-    system_clock::time_point localTimeAfterRequest = DispatcherUtils::now();
+    system_clock::time_point localTimeAfterRequest = std::chrono::system_clock::now();
     uint64_t localTime = (TypeUtil::toMilliseconds(localTimeBeforeRequest) +
                           TypeUtil::toMilliseconds(localTimeAfterRequest)) /
                          2;

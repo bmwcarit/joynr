@@ -802,7 +802,7 @@ public:
     MOCK_METHOD4(getUrlsForChannelAsync,
                  std::shared_ptr<joynr::Future<joynr::types::ChannelUrlInformation>>(
                      const std::string& channelId,
-                     const int64_t& timeout_ms,
+                     const std::chrono::milliseconds timeout,
                      std::function<void(const joynr::types::ChannelUrlInformation&)> onSuccess,
                      std::function<void(const joynr::exceptions::JoynrException& error)> onError
                  )

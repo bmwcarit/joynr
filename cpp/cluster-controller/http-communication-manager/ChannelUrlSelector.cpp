@@ -25,6 +25,7 @@
 #include <QUrl>
 #include <cmath>
 #include <memory>
+#include <chrono>
 
 namespace joynr
 {
@@ -37,14 +38,14 @@ const double& ChannelUrlSelector::PUNISHMENT_FACTOR()
     static const double value = 0.4;
     return value;
 }
-const int64_t& ChannelUrlSelector::TIME_FOR_ONE_RECOUPERATION()
+
+std::chrono::milliseconds ChannelUrlSelector::TIME_FOR_ONE_RECOUPERATION()
 {
-    static const int64_t value = 1000 * 60 * 3;
-    return value;
+    return std::chrono::minutes(3);
 }
 
 ChannelUrlSelector::ChannelUrlSelector(const BounceProxyUrl& bounceProxyUrl,
-                                       int64_t timeForOneRecouperation,
+                                       std::chrono::milliseconds timeForOneRecouperation,
                                        double punishmentFactor)
         : channelUrlDirectory(),
           bounceProxyUrl(bounceProxyUrl),
@@ -82,7 +83,7 @@ void ChannelUrlSelector::init(std::shared_ptr<ILocalChannelUrlDirectory> channel
 
 std::string ChannelUrlSelector::obtainUrl(const std::string& channelId,
                                           RequestStatus& status,
-                                          const int64_t& timeout_ms)
+                                          std::chrono::milliseconds timeout)
 {
 
     LOG_TRACE(logger, "entering obtainUrl ...");
@@ -113,7 +114,7 @@ std::string ChannelUrlSelector::obtainUrl(const std::string& channelId,
                     .arg(channelId)
                     .str());
     std::shared_ptr<Future<types::ChannelUrlInformation>> proxyFuture(
-            channelUrlDirectory->getUrlsForChannelAsync(channelId, timeout_ms));
+            channelUrlDirectory->getUrlsForChannelAsync(channelId, timeout));
     status = proxyFuture->getStatus();
 
     if (status.successful()) {
@@ -224,8 +225,8 @@ joynr_logging::Logger* ChannelUrlSelectorEntry::logger =
 
 ChannelUrlSelectorEntry::ChannelUrlSelectorEntry(const types::ChannelUrlInformation& urlInformation,
                                                  double punishmentFactor,
-                                                 int64_t timeForOneRecouperation)
-        : lastUpdate(DispatcherUtils::nowInMilliseconds()),
+                                                 std::chrono::milliseconds timeForOneRecouperation)
+        : lastUpdate(std::chrono::system_clock::now()),
           fitness(),
           urlInformation(urlInformation),
           punishmentFactor(punishmentFactor),
@@ -291,8 +292,11 @@ void ChannelUrlSelectorEntry::updateFitness()
     LOG_TRACE(logger, "updateFitness ...");
     // Is it time to increase the fitness of all Urls? (counterbalances punishments, forget some
     // history)
-    uint64_t timeSinceLastUpdate = DispatcherUtils::nowInMilliseconds() - lastUpdate;
-    double numberOfIncreases = floor(((double)timeSinceLastUpdate / timeForOneRecouperation));
+    std::chrono::milliseconds timeSinceLastUpdate =
+            std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() -
+                                                                  lastUpdate);
+    double numberOfIncreases =
+            floor(((double)timeSinceLastUpdate.count() / timeForOneRecouperation.count()));
     if (numberOfIncreases < 1) {
         return;
     }
@@ -309,7 +313,7 @@ void ChannelUrlSelectorEntry::updateFitness()
         }
         fitness[i] = urlFitness;
     }
-    lastUpdate = DispatcherUtils::nowInMilliseconds();
+    lastUpdate = std::chrono::system_clock::now();
 }
 
 std::vector<double> ChannelUrlSelectorEntry::getFitness()
