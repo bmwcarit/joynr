@@ -71,9 +71,6 @@ public:
 
     ~LocalCapabilitiesDirectory() override;
 
-    static const int64_t& NO_CACHE_FRESHNESS_REQ();
-    static const int64_t& DONT_USE_CACHE();
-
     void add(const joynr::types::DiscoveryEntry& entry);
 
     /*

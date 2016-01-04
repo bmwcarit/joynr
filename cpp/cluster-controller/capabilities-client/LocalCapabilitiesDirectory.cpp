@@ -35,18 +35,6 @@ using namespace joynr_logging;
 Logger* LocalCapabilitiesDirectory::logger =
         Logging::getInstance()->getLogger("MSG", "LocalCapabilitiesDirectory");
 
-const int64_t& LocalCapabilitiesDirectory::NO_CACHE_FRESHNESS_REQ()
-{
-    static int64_t value(-1);
-    return value;
-}
-
-const int64_t& LocalCapabilitiesDirectory::DONT_USE_CACHE()
-{
-    static int64_t value(0);
-    return value;
-}
-
 LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(MessagingSettings& messagingSettings,
                                                        ICapabilitiesClient* capabilitiesClientPtr,
                                                        MessageRouter& messageRouter)
