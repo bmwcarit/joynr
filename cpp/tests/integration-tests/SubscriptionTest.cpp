@@ -139,10 +139,10 @@ TEST_F(SubscriptionTest, receive_subscriptionRequestAndPollAttribute) {
 
     std::string attributeName = "Location";
     Variant subscriptionQos = Variant::make<OnChangeWithKeepAliveSubscriptionQos>(OnChangeWithKeepAliveSubscriptionQos(
-                80, // validity_ms
-                100, // minInterval_ms
-                200, // maxInterval_ms
-                80 // alertInterval_ms
+                500, // validity_ms
+                1000, // minInterval_ms
+                2000, // maxInterval_ms
+                1000 // alertInterval_ms
     ));
     std::string subscriptionId = "SubscriptionID";
     SubscriptionRequest subscriptionRequest;
@@ -183,10 +183,10 @@ TEST_F(SubscriptionTest, receive_publication ) {
     //register the subscription on the consumer side
     std::string attributeName = "Location";
     Variant subscriptionQos = Variant::make<OnChangeWithKeepAliveSubscriptionQos>(OnChangeWithKeepAliveSubscriptionQos(
-                80, // validity_ms
-                100, // minInterval_ms
-                200, // maxInterval_ms
-                80 // alertInterval_ms
+                500, // validity_ms
+                1000, // minInterval_ms
+                2000, // maxInterval_ms
+                1000 // alertInterval_ms
     ));
 
     SubscriptionRequest subscriptionRequest;
@@ -240,10 +240,10 @@ TEST_F(SubscriptionTest, receive_enumPublication ) {
     //register the subscription on the consumer side
     std::string attributeName = "testEnum";
     Variant subscriptionQos = Variant::make<OnChangeWithKeepAliveSubscriptionQos>(OnChangeWithKeepAliveSubscriptionQos(
-                80, // validity_ms
-                100, // minInterval_ms
-                200, // maxInterval_ms
-                80 // alertInterval_ms
+                500, // validity_ms
+                1000, // minInterval_ms
+                2000, // maxInterval_ms
+                1000 // alertInterval_ms
     ));
 
     SubscriptionRequest subscriptionRequest;
@@ -299,10 +299,10 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription) {
             ));
     std::string attributeName = "Location";
     Variant subscriptionQos = Variant::make<OnChangeWithKeepAliveSubscriptionQos>(OnChangeWithKeepAliveSubscriptionQos(
-                80, // validity_ms
-                100, // minInterval_ms
-                200, // maxInterval_ms
-                80 // alertInterval_ms
+                500, // validity_ms
+                1000, // minInterval_ms
+                2000, // maxInterval_ms
+                1000 // alertInterval_ms
     ));
     std::string subscriptionId = "SubscriptionID";
 
@@ -457,7 +457,7 @@ TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
     Variant subscriptionQos = Variant::make<OnChangeWithKeepAliveSubscriptionQos>(OnChangeWithKeepAliveSubscriptionQos(
                 1200, // validity_ms
                 10, // minInterval_ms
-                100, // maxInterval_ms
+                500, // maxInterval_ms
                 1100 // alertInterval_ms
     ));
     std::string subscriptionId = "SubscriptionID";
@@ -488,9 +488,7 @@ TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
                 subscriptionStop);
     dispatcher.receive(msg);
 
-    // assert that less than 2 requests happen in the next 300 milliseconds
-    semaphore.waitFor(std::chrono::milliseconds(300));
-    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(300)));
+    ASSERT_FALSE(semaphore.waitFor(std::chrono::seconds(1)));
 }
 
 
