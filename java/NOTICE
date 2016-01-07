@@ -99,6 +99,7 @@ This project has dependencies to:
   io.joynr.java.messaging.bounceproxy:bounceproxy-controller-persistence under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:controlled-bounceproxy under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:single-bounceproxy under The Apache Software License, Version 2.0
+  io.joynr.java.messaging.mqtt:joynr-mqtt-client under The Apache Software License, Version 2.0
   io.joynr.java.messaging.websocket:joynr-websocket-client under The Apache Software License, Version 2.0
   io.joynr.java.messaging.websocket:joynr-websocket-common under The Apache Software License, Version 2.0
   io.joynr.java.messaging.websocket:joynr-websocket-server under The Apache Software License, Version 2.0
@@ -108,6 +109,7 @@ This project has dependencies to:
   io.joynr.java.messaging:messaging-common under The Apache Software License, Version 2.0
   io.joynr.java.messaging:messaging-service under The Apache Software License, Version 2.0
   io.joynr.java.messaging:messaging-servlet under The Apache Software License, Version 2.0
+  io.joynr.java.messaging:mqtt under The Apache Software License, Version 2.0
   io.joynr.java.messaging:service-common under The Apache Software License, Version 2.0
   io.joynr.java.messaging:servlet-common under The Apache Software License, Version 2.0
   io.joynr.java.messaging:websocket under The Apache Software License, Version 2.0
@@ -194,6 +196,7 @@ This project has dependencies to:
   OpenJPA Persistence under Apache Software License 2.0
   OpenJPA Persistence JDBC under Apache Software License 2.0
   OpenJPA Utilities Library under Apache Software License 2.0
+  org.eclipse.paho.client.mqttv3 under Eclipse Public License - Version 1.0
   Reflections under WTFPL
   REST Assured under Apache 2.0
   rest-assured-common under Apache 2.0
