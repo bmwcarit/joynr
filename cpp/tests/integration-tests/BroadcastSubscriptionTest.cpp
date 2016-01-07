@@ -154,7 +154,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
     dispatcher.receive(msg);
 
     // Assert that only one subscription message is received by the subscription listener
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));
     ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(250)));
 }
 
@@ -207,6 +207,6 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters )
     dispatcher.receive(msg);
 
     // Assert that only one subscription message is received by the subscription listener
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));
     ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(250)));
 }

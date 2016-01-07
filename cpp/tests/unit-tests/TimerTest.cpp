@@ -134,7 +134,7 @@ TEST_F(TimerTest, testCallback) {
             .WillOnce(ReleaseSemaphore(&semaphore));
     EXPECT_CALL(*this, onTimerRemoved(id)).Times(0);
 
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));
 }
 
 TEST_F(TimerTest, reorganizeTimerByAddingAnEarlierTimer) {

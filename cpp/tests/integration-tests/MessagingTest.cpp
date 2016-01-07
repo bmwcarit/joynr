@@ -110,7 +110,7 @@ public:
     void WaitXTimes(std::uint64_t x)
     {
         for(std::uint64_t i = 0; i<x; ++i) {
-            ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
+            ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));
         }
     }
 

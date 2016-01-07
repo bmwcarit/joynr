@@ -264,5 +264,5 @@ TEST_F(TestJoynrMessagingConnectorTest, testBroadcastListenerWrapper) {
     connector->subscribeToLocationUpdateWithSpeedBroadcast(mockListener, qos);
 
     // Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(2000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(2)));
 }

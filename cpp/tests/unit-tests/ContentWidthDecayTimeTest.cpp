@@ -38,7 +38,7 @@ TEST(ContentWithDecayTimeTest, messageWithDecayTime)
     EXPECT_LT(mwdt.getRemainingTtl_ms(), 2500);
     EXPECT_EQ(decaytime, mwdt.getDecayTime());
     EXPECT_EQ(message, mwdt.getContent());
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    std::this_thread::sleep_for(std::chrono::seconds(1));
     EXPECT_GT( mwdt.getRemainingTtl_ms(), 500);
     EXPECT_LT( mwdt.getRemainingTtl_ms(), 1500 );
     EXPECT_TRUE(!mwdt.isExpired());

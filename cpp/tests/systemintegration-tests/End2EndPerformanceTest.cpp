@@ -103,7 +103,7 @@ TEST_F(End2EndPerformanceTest, sendManyRequests) {
 
     runtime1->registerProvider<tests::testProvider>(domain, testProvider);
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+    std::this_thread::sleep_for(std::chrono::seconds(2));
 
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domain);

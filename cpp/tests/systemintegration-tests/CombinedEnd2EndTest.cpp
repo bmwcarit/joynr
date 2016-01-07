@@ -120,11 +120,11 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
     providerQos.setPriority(2);
     std::shared_ptr<tests::testProvider> testProvider(new MockTestProvider(providerQos));
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    std::this_thread::sleep_for(std::chrono::seconds(1));
 
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    std::this_thread::sleep_for(std::chrono::seconds(1));
 
     //consumer for testinterface
     // Testing Lists
@@ -532,7 +532,7 @@ TEST_F(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply) {
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
-    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+    std::this_thread::sleep_for(std::chrono::seconds(5));
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder
             = runtime2->createProxyBuilder<tests::testProxy>(domainName);
@@ -560,8 +560,8 @@ TEST_F(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply) {
     std::string subscriptionId = testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
 
     // Wait for 2 subscription messages to arrive
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
 
     testProxy->unsubscribeFromLocation(subscriptionId);
 
@@ -584,7 +584,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToOnChange) {
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
-    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+    std::this_thread::sleep_for(std::chrono::seconds(5));
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder
             = runtime2->createProxyBuilder<tests::testProxy>(domainName);
@@ -613,13 +613,13 @@ TEST_F(CombinedEnd2EndTest, subscribeToOnChange) {
 
     //This wait is necessary, because subcriptions are async, and an attribute could be changed before
     // before the subscription has started.
-    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+    std::this_thread::sleep_for(std::chrono::seconds(5));
 
     // Change the location once
     testProxy->setLocation(types::Localisation::GpsLocation(9.0, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 1));
 
     // Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
 
     // Change the location 3 times
     testProxy->setLocation(types::Localisation::GpsLocation(9.0, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 2));
@@ -629,9 +629,9 @@ TEST_F(CombinedEnd2EndTest, subscribeToOnChange) {
     testProxy->setLocation(types::Localisation::GpsLocation(9.0, 51.0, 508.0, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 4));
 
     // Wait for 3 subscription messages to arrive
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
 
     delete testProxyBuilder;
 }
@@ -659,7 +659,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToListAttribute) {
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
-    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+    std::this_thread::sleep_for(std::chrono::seconds(5));
 
     ProxyBuilder<tests::testProxy>* proxyBuilder
             = runtime2->createProxyBuilder<tests::testProxy>(domainName);
@@ -684,8 +684,8 @@ TEST_F(CombinedEnd2EndTest, subscribeToListAttribute) {
     std::string subscriptionId = testProxy->subscribeToListOfInts(subscriptionListener, subscriptionQos);
 
     // Wait for 2 subscription messages to arrive
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
 
     testProxy->unsubscribeFromListOfInts(subscriptionId);
     runtime1->unregisterProvider(providerParticipantId);
@@ -765,7 +765,7 @@ TEST_F(CombinedEnd2EndTest, unsubscribeViaHttpReceiver) {
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished. See Joynr 805 for details
-    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+    std::this_thread::sleep_for(std::chrono::seconds(5));
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
@@ -788,16 +788,16 @@ TEST_F(CombinedEnd2EndTest, unsubscribeViaHttpReceiver) {
     std::string subscriptionId = gpsProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
 
     // Wait for 2 subscription messages to arrive
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
 
     gpsProxy->unsubscribeFromLocation(subscriptionId);
 
     // Check that the unsubscribe is eventually successful
-    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(10000)));
-    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(10000)));
-    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(10000)));
-    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(10000)));
+    ASSERT_FALSE(semaphore.waitFor(std::chrono::seconds(10)));
+    ASSERT_FALSE(semaphore.waitFor(std::chrono::seconds(10)));
+    ASSERT_FALSE(semaphore.waitFor(std::chrono::seconds(10)));
+    ASSERT_FALSE(semaphore.waitFor(std::chrono::seconds(10)));
 
     delete testProxyBuilder;
 }
@@ -810,7 +810,7 @@ TEST_F(CombinedEnd2EndTest, deleteChannelViaReceiver) {
     //MockGpsProvider* gpsProvider = new MockGpsProvider();
     runtime1->registerProvider<tests::testProvider>(domainName, testProvider);
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000)); //This wait is necessary, because registerProvider is async, and a lookup could occour before the register has finished.
+    std::this_thread::sleep_for(std::chrono::seconds(1)); //This wait is necessary, because registerProvider is async, and a lookup could occour before the register has finished.
 
     ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domainName);
     DiscoveryQos discoveryQos;
@@ -898,15 +898,15 @@ TEST_F(CombinedEnd2EndTest, subscribeInBackgroundThread) {
 
     //This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
-    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+    std::this_thread::sleep_for(std::chrono::seconds(5));
 
     tests::testProxy* testProxy = createTestProxy(runtime2, domainName);
     // Subscribe in a background thread
     QtConcurrent::run(subscribeToLocation, subscriptionListener, testProxy, this);
 
     // Wait for 2 subscription messages to arrive
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
 
     unsubscribeFromLocation(testProxy, registeredSubscriptionId);
 
@@ -988,7 +988,7 @@ TEST_F(CombinedEnd2EndTest, call_async_void_operation_failure) {
     // Shut down the provider
     //runtime1->stopMessaging();
     runtime1->unregisterProvider(domainName, testProvider);
-    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+    std::this_thread::sleep_for(std::chrono::seconds(5));
 
     // Setup an onError callback function
     std::function<void(const exceptions::JoynrException&)> onError =

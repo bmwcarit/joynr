@@ -163,7 +163,7 @@ TEST(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_correct
     );
 
     // now, no new publicationMissed callbacks are expected for the first subscriptionRequest
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    std::this_thread::sleep_for(std::chrono::seconds(1));
 }
 
 TEST(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_correctDealingWithReducedExpiryDate) {
@@ -194,7 +194,7 @@ TEST(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_correct
     );
 
     // now, no new publicationMissed callbacks are expected for the first subscriptionRequest
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    std::this_thread::sleep_for(std::chrono::seconds(1));
 }
 
 TEST(SubscriptionManagerTest, registerSubscription_withoutExpiryDate) {

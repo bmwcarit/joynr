@@ -247,8 +247,8 @@ TEST_F(End2EndDbusTest, subscriptionlistener)
     testProxy->subscribeToTestAttribute(subscriptionListener, subscriptionQos);
 
     // Wait for 2 subscription messages to arrive
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(20000)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
 }
 
 TEST_F(End2EndDbusTest, performance_sendManyRequests) {

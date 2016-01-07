@@ -130,7 +130,7 @@ TEST_F(CapabilitiesClientTest, registerAndRetrieveCapability) {
 
     LOG_DEBUG(logger,"get capabilities");
     capabilitiesClient->lookup(capDomain, capInterface, onSuccess);
-    semaphore.waitFor(std::chrono::milliseconds(10000));
+    semaphore.waitFor(std::chrono::seconds(10));
     LOG_DEBUG(logger,"finished get capabilities");
 
     delete capabilitiesProxyBuilder;
