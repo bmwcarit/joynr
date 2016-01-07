@@ -82,8 +82,8 @@ std::string «typeName»::getTypeName() {
 	return "«type.buildPackagePath(".", true) + type.joynrName»";
 }
 
-uint32_t «typeName»::getOrdinal(«typeName»::«getNestedEnumName()» «typeName.toFirstLower»Value) {
-	return static_cast<uint32_t>(«typeName.toFirstLower»Value);
+std::uint32_t «typeName»::getOrdinal(«typeName»::«getNestedEnumName()» «typeName.toFirstLower»Value) {
+	return static_cast<std::uint32_t>(«typeName.toFirstLower»Value);
 }
 
 // Printing «typeName» with google-test and google-mock.

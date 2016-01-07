@@ -120,11 +120,11 @@ TEST_F(ClockSkewTest, DISABLED_checkClockSkew) {
     ASSERT_FALSE(epochsecs < -1) << "Could not parse date from bounce proxy.";
 
     // Compare the time with the local time
-    uint64_t now        = DispatcherUtils::nowInMilliseconds();
-    uint64_t remoteTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::from_time_t(epochsecs).time_since_epoch()).count();
+    std::uint64_t now        = DispatcherUtils::nowInMilliseconds();
+    std::uint64_t remoteTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::from_time_t(epochsecs).time_since_epoch()).count();
 
     auto minMaxTime = std::minmax(now, remoteTime);
-    uint64_t diff = minMaxTime.second - minMaxTime.first;
+    std::uint64_t diff = minMaxTime.second - minMaxTime.first;
 
     JOYNR_LOG_INFO(logger, "Time difference is {}  msecs",now);
     EXPECT_TRUE(diff < 2000) << "Time difference between local and remote is over 2 seconds";

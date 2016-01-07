@@ -22,7 +22,7 @@
 #include "joynr/JsonSerializer.h"
 #include "joynr/DispatcherUtils.h"
 #include <cstdlib>
-#include <stdint.h>
+#include <cstdint>
 #include "joynr/TypeUtil.h"
 #include "cluster-controller/httpnetworking/HttpResult.h"
 #include "joynr/ILocalChannelUrlDirectory.h"
@@ -226,9 +226,9 @@ void LongPollingMessageReceiver::checkServerTime()
     std::chrono::system_clock::time_point localTimeBeforeRequest = std::chrono::system_clock::now();
     HttpResult timeCheckResult = timeCheckRequest->execute();
     std::chrono::system_clock::time_point localTimeAfterRequest = std::chrono::system_clock::now();
-    uint64_t localTime = (TypeUtil::toMilliseconds(localTimeBeforeRequest) +
-                          TypeUtil::toMilliseconds(localTimeAfterRequest)) /
-                         2;
+    std::uint64_t localTime = (TypeUtil::toMilliseconds(localTimeBeforeRequest) +
+                               TypeUtil::toMilliseconds(localTimeAfterRequest)) /
+                              2;
     if (timeCheckResult.getStatusCode() != 200) {
         JOYNR_LOG_ERROR(logger,
                         "CheckServerTime: Bounce Proxy not reached [statusCode={}] [body={}]",
@@ -239,11 +239,11 @@ void LongPollingMessageReceiver::checkServerTime()
                         "CheckServerTime: reply received [statusCode={}] [body={}]",
                         timeCheckResult.getStatusCode(),
                         QString(timeCheckResult.getBody()).toStdString());
-        uint64_t serverTime =
+        std::uint64_t serverTime =
                 TypeUtil::toStdUInt64(QString(timeCheckResult.getBody()).toLongLong());
 
         auto minMaxTime = std::minmax(serverTime, localTime);
-        uint64_t diff = minMaxTime.second - minMaxTime.first;
+        std::uint64_t diff = minMaxTime.second - minMaxTime.first;
 
         JOYNR_LOG_INFO(
                 logger,

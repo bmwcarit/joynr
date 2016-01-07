@@ -36,12 +36,12 @@ public:
     explicit Subscription(std::shared_ptr<ISubscriptionCallback> subscriptionCaller);
     ~Subscription() = default;
 
-    int64_t timeOfLastPublication;
+    std::int64_t timeOfLastPublication;
     std::shared_ptr<ISubscriptionCallback> subscriptionCaller;
     std::recursive_mutex mutex;
     bool isStopped;
-    uint32_t subscriptionEndRunnableHandle;
-    uint32_t missedPublicationRunnableHandle;
+    std::uint32_t subscriptionEndRunnableHandle;
+    std::uint32_t missedPublicationRunnableHandle;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(Subscription);
@@ -86,8 +86,8 @@ void SubscriptionManager::registerSubscription(
         unregisterSubscription(subscriptionId);
     }
 
-    int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
-                          std::chrono::system_clock::now().time_since_epoch()).count();
+    std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
+                               std::chrono::system_clock::now().time_since_epoch()).count();
     subscriptionRequest.setQos(qosVariant);
     const SubscriptionQos* qos = subscriptionRequest.getSubscriptionQosPtr();
     if (qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE() &&
@@ -106,9 +106,9 @@ void SubscriptionManager::registerSubscription(
         if (SubscriptionUtil::getAlertInterval(qosVariant) > 0 &&
             SubscriptionUtil::getPeriodicPublicationInterval(qosVariant) > 0) {
             JOYNR_LOG_DEBUG(logger, "Will notify if updates are missed.");
-            int64_t alertAfterInterval = SubscriptionUtil::getAlertInterval(qosVariant);
+            std::int64_t alertAfterInterval = SubscriptionUtil::getAlertInterval(qosVariant);
             JoynrTimePoint expiryDate(std::chrono::milliseconds(qos->getExpiryDate()));
-            int64_t periodicPublicationInterval =
+            std::int64_t periodicPublicationInterval =
                     SubscriptionUtil::getPeriodicPublicationInterval(qosVariant);
 
             if (expiryDate.time_since_epoch().count() == joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
@@ -125,8 +125,8 @@ void SubscriptionManager::registerSubscription(
                                                   alertAfterInterval),
                     std::chrono::milliseconds(alertAfterInterval));
         } else if (qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE()) {
-            int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
-                                  std::chrono::system_clock::now().time_since_epoch()).count();
+            std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                       std::chrono::system_clock::now().time_since_epoch()).count();
             subscription->subscriptionEndRunnableHandle = missedPublicationScheduler->schedule(
                     new SubscriptionEndRunnable(subscriptionId, *this),
                     std::chrono::milliseconds(qos->getExpiryDate() - now));
@@ -171,10 +171,10 @@ void SubscriptionManager::checkMissedPublication(
     if (!isExpired() && !subscription->isStopped)
     {
         JOYNR_LOG_DEBUG(logger, "Running MissedPublicationRunnable for subscription id= {}",subscriptionId);
-        int64_t delay = 0;
-        int64_t now = duration_cast<milliseconds>(
+        std::int64_t delay = 0;
+        std::int64_t now = duration_cast<milliseconds>(
             system_clock::now().time_since_epoch()).count();
-        int64_t timeSinceLastPublication = now
+        std::int64_t timeSinceLastPublication = now
             - subscription->timeOfLastPublication;
         bool publicationInTime = timeSinceLastPublication < alertAfterInterval;
         if (publicationInTime)
@@ -218,8 +218,8 @@ void SubscriptionManager::touchSubscriptionState(const std::string& subscription
     }
     std::shared_ptr<Subscription> subscription(subscriptions.value(subscriptionId));
     {
-        int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
-                              std::chrono::system_clock::now().time_since_epoch()).count();
+        std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                   std::chrono::system_clock::now().time_since_epoch()).count();
         std::lock_guard<std::recursive_mutex> subscriptionLocker(subscription->mutex);
         subscription->timeOfLastPublication = now;
     }
@@ -263,11 +263,11 @@ INIT_LOGGER(SubscriptionManager::MissedPublicationRunnable);
 
 SubscriptionManager::MissedPublicationRunnable::MissedPublicationRunnable(
         const JoynrTimePoint& expiryDate,
-        const int64_t& expectedIntervalMSecs,
+        const std::int64_t& expectedIntervalMSecs,
         const std::string& subscriptionId,
         std::shared_ptr<Subscription> subscription,
         SubscriptionManager& subscriptionManager,
-        const int64_t& alertAfterInterval)
+        const std::int64_t& alertAfterInterval)
         : joynr::Runnable(true),
           ObjectWithDecayTime(expiryDate),
           expectedIntervalMSecs(expectedIntervalMSecs),
@@ -290,10 +290,10 @@ void SubscriptionManager::MissedPublicationRunnable::run()
         JOYNR_LOG_DEBUG(logger,
                         "Running MissedPublicationRunnable for subscription id= {}",
                         subscriptionId);
-        int64_t delay = 0;
-        int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
-                              std::chrono::system_clock::now().time_since_epoch()).count();
-        int64_t timeSinceLastPublication = now - subscription->timeOfLastPublication;
+        std::int64_t delay = 0;
+        std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                   std::chrono::system_clock::now().time_since_epoch()).count();
+        std::int64_t timeSinceLastPublication = now - subscription->timeOfLastPublication;
         bool publicationInTime = timeSinceLastPublication < alertAfterInterval;
         if (publicationInTime) {
             JOYNR_LOG_TRACE(logger, "Publication in time!");
@@ -323,8 +323,8 @@ void SubscriptionManager::MissedPublicationRunnable::run()
     }
 }
 
-int64_t SubscriptionManager::MissedPublicationRunnable::timeSinceLastExpectedPublication(
-        const int64_t& timeSinceLastPublication)
+std::int64_t SubscriptionManager::MissedPublicationRunnable::timeSinceLastExpectedPublication(
+        const std::int64_t& timeSinceLastPublication)
 {
     return timeSinceLastPublication % expectedIntervalMSecs;
 }

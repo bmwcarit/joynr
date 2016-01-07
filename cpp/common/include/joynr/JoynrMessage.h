@@ -23,7 +23,7 @@
 
 #include "joynr/Logger.h"
 #include "joynr/DispatcherUtils.h"
-#include <stdint.h>
+#include <cstdint>
 
 #include <string>
 

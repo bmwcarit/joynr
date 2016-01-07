@@ -41,7 +41,7 @@ public:
      * @note If the initial counter value is set to @c 0 the first call to
      *      @ref wait will block
      */
-    explicit Semaphore(int8_t initialValue = 0);
+    explicit Semaphore(std::int8_t initialValue = 0);
 
     /**
      * @brief Destructor

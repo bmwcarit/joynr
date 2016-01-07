@@ -269,7 +269,7 @@ public:
     void testAsync_getterCallReturnsProviderRuntimeException() {
         asyncTestFixture = createFixture(false);
 
-        MockCallback<int32_t>* callback = new MockCallback<int32_t>();
+        MockCallback<std::int32_t>* callback = new MockCallback<std::int32_t>();
 
         exceptions::ProviderRuntimeException expected("getterCallReturnsProviderRuntimeExceptionAsyncError");
         setExpectedExceptionForSendRequestCall(expected);
@@ -278,7 +278,7 @@ public:
         EXPECT_CALL(*callback, onError(_)).Times(1);
 
         asyncTestFixture->getAttributeWithProviderRuntimeExceptionAsync(
-                [callback] (const int32_t& value) {
+                [callback] (const std::int32_t& value) {
                     callback->onSuccess(value);
                 }, [callback, expected] (const exceptions::JoynrException& error) {
                     EXPECT_EQ(expected.getTypeName(), error.getTypeName());
@@ -295,7 +295,7 @@ public:
         exceptions::ProviderRuntimeException expected("getterCallReturnsProviderRuntimeExceptionError");
         setExpectedExceptionForSendRequestCall(expected);
 
-        int32_t result;
+        std::int32_t result;
         try {
             testFixture->getAttributeWithProviderRuntimeException(result);
             ADD_FAILURE()<< "getterCallReturnsProviderRuntimeException was not successful (expected ProviderRuntimeException)";
@@ -312,7 +312,7 @@ public:
     void testAsync_getterCallReturnsMethodInvocationException() {
         asyncTestFixture = createFixture(false);
 
-        MockCallback<int32_t>* callback = new MockCallback<int32_t>();
+        MockCallback<std::int32_t>* callback = new MockCallback<std::int32_t>();
 
         exceptions::MethodInvocationException expected("getterCallReturnsMethodInvocationExceptionAsyncError");
         setExpectedExceptionForSendRequestCall(expected);
@@ -321,7 +321,7 @@ public:
         EXPECT_CALL(*callback, onError(_)).Times(1);
 
         asyncTestFixture->getAttributeWithProviderRuntimeExceptionAsync(
-                [callback] (const int32_t& value) {
+                [callback] (const std::int32_t& value) {
                     callback->onSuccess(value);
                 }, [callback, expected] (const exceptions::JoynrException& error) {
                     EXPECT_EQ(expected.getTypeName(), error.getTypeName());
@@ -338,7 +338,7 @@ public:
         exceptions::MethodInvocationException expected("getterCallReturnsMethodInvocationExceptionError");
         setExpectedExceptionForSendRequestCall(expected);
 
-        int32_t result;
+        std::int32_t result;
         try {
             testFixture->getAttributeWithProviderRuntimeException(result);
             ADD_FAILURE()<< "getterCallReturnsMethodInvocationException was not successful (expected MethodInvocationException)";
@@ -363,7 +363,7 @@ public:
         EXPECT_CALL(*callback, onSuccess()).Times(0);
         EXPECT_CALL(*callback, onError(_)).Times(1);
 
-        int32_t value = 0;
+        std::int32_t value = 0;
         asyncTestFixture->setAttributeWithProviderRuntimeExceptionAsync(
                 value,
                 [callback] () {
@@ -383,7 +383,7 @@ public:
         exceptions::ProviderRuntimeException expected("setterCallReturnsProviderRuntimeExceptionError");
         setExpectedExceptionForSendRequestCall(expected);
 
-        int32_t value;
+        std::int32_t value;
         try {
             testFixture->setAttributeWithProviderRuntimeException(value);
             ADD_FAILURE()<< "setterCallReturnsProviderRuntimeException was not successful (expected ProviderRuntimeException)";
@@ -408,7 +408,7 @@ public:
         EXPECT_CALL(*callback, onSuccess()).Times(0);
         EXPECT_CALL(*callback, onError(_)).Times(1);
 
-        int32_t value = 0;
+        std::int32_t value = 0;
         asyncTestFixture->setAttributeWithProviderRuntimeExceptionAsync(
                 value,
                 [callback] () {
@@ -427,7 +427,7 @@ public:
         exceptions::MethodInvocationException expected("setterCallReturnsMethodInvocationExceptionError");
         setExpectedExceptionForSendRequestCall(expected);
 
-        int32_t value;
+        std::int32_t value;
         try {
             testFixture->setAttributeWithProviderRuntimeException(value);
             ADD_FAILURE()<< "setterCallReturnsMethodInvocationException was not successful (expected MethodInvocationException)";

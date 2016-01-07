@@ -25,7 +25,7 @@
 #include <cassert>
 #include <functional>
 #include <joynr/Util.h>
-#include <stdint.h>
+#include <cstdint>
 #include "joynr/TypeUtil.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/Semaphore.h"
@@ -183,7 +183,7 @@ public:
      * @param values The typed return values from the request.
      * @throws JoynrException if the request is not successful
      */
-    void get(uint16_t timeOut, Ts&... values)
+    void get(std::uint16_t timeOut, Ts&... values)
     {
         wait(timeOut);
 
@@ -214,7 +214,7 @@ public:
      * @throws JoynrTimeOutException if the request does not finish in the
      * expected time.
      */
-    void wait(uint16_t timeOut)
+    void wait(std::uint16_t timeOut)
     {
         if (resultReceived.waitFor(std::chrono::milliseconds(timeOut))) {
             resultReceived.notify();
@@ -328,7 +328,7 @@ public:
      * @param timeOut The maximum number of milliseconds to wait before this request times out
      * @throws JoynrException if the request is not successful
      */
-    void get(uint16_t timeOut)
+    void get(std::uint16_t timeOut)
     {
         wait(timeOut);
 
@@ -357,7 +357,7 @@ public:
      * @throws JoynrTimeOutException if the request does not finish in the
      * expected time.
      */
-    void wait(uint16_t timeOut)
+    void wait(std::uint16_t timeOut)
     {
         if (resultReceived.waitFor(std::chrono::milliseconds(timeOut))) {
             resultReceived.notify();

@@ -106,20 +106,20 @@ public:
 
 protected:
 
-    int8_t tInt8;
-    uint8_t tUInt8;
-    int16_t tInt16;
-    uint16_t tUInt16;
-    int32_t tInt32;
-    uint32_t tUInt32;
-    int64_t tInt64;
-    uint64_t tUInt64;
+    std::int8_t tInt8;
+    std::uint8_t tUInt8;
+    std::int16_t tInt16;
+    std::uint16_t tUInt16;
+    std::int32_t tInt32;
+    std::uint32_t tUInt32;
+    std::int64_t tInt64;
+    std::uint64_t tUInt64;
     double tDouble;
     float tFloat;
     std::string tString;
     bool tBoolean;
-    std::vector<uint8_t> tByteBuffer;
-    std::vector<uint8_t>  tUInt8Array;
+    std::vector<std::uint8_t> tByteBuffer;
+    std::vector<std::uint8_t>  tUInt8Array;
     TestTypes::TEnum::Enum tEnum;
     std::vector<joynr::types::TestTypes::TEnum::Enum>  tEnumArray;
     std::vector<std::string>  tStringArray;

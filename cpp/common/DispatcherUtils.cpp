@@ -28,7 +28,7 @@ namespace joynr
 // Dispatcher Utils
 INIT_LOGGER(DispatcherUtils);
 
-JoynrTimePoint DispatcherUtils::convertTtlToAbsoluteTime(int64_t ttl_ms)
+JoynrTimePoint DispatcherUtils::convertTtlToAbsoluteTime(std::int64_t ttl_ms)
 {
     JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
             std::chrono::system_clock::now());
@@ -65,24 +65,24 @@ JoynrTimePoint DispatcherUtils::getMinAbsoluteTime()
     return maxTimePoint;
 }
 
-int64_t DispatcherUtils::convertAbsoluteTimeToTtl(JoynrTimePoint date)
+std::int64_t DispatcherUtils::convertAbsoluteTimeToTtl(JoynrTimePoint date)
 {
-    int64_t millis =
+    std::int64_t millis =
             std::chrono::duration_cast<std::chrono::milliseconds>(date.time_since_epoch()).count();
-    int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
-                          std::chrono::system_clock::now().time_since_epoch()).count();
+    std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
+                               std::chrono::system_clock::now().time_since_epoch()).count();
     return millis - now;
 }
 
 std::string DispatcherUtils::convertAbsoluteTimeToTtlString(JoynrTimePoint date)
 {
-    int64_t ttlTime = convertAbsoluteTimeToTtl(date);
+    std::int64_t ttlTime = convertAbsoluteTimeToTtl(date);
     return std::to_string(ttlTime);
 }
 
 std::string DispatcherUtils::convertAbsoluteTimeToString(JoynrTimePoint date)
 {
-    int64_t ttlTime = convertAbsoluteTimeToTtl(date);
+    std::int64_t ttlTime = convertAbsoluteTimeToTtl(date);
     char buffer[30];
     struct timeval tv;
 

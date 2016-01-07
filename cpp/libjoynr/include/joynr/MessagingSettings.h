@@ -77,11 +77,11 @@ public:
 
     static const std::string& DEFAULT_MESSAGING_SETTINGS_FILENAME();
     static const std::string& DEFAULT_PERSISTENCE_FILENAME();
-    static int64_t DEFAULT_LONGPOLL_TIMEOUT_MS();
-    static int64_t DEFAULT_HTTP_CONNECT_TIMEOUT_MS();
-    static int64_t DEFAULT_BOUNCEPROXY_TIMEOUT_MS();
-    static int64_t DEFAULT_DISCOVERY_REQUEST_TIMEOUT_MS();
-    static int64_t DEFAULT_SEND_MESSAGE_MAX_TTL();
+    static std::int64_t DEFAULT_LONGPOLL_TIMEOUT_MS();
+    static std::int64_t DEFAULT_HTTP_CONNECT_TIMEOUT_MS();
+    static std::int64_t DEFAULT_BOUNCEPROXY_TIMEOUT_MS();
+    static std::int64_t DEFAULT_DISCOVERY_REQUEST_TIMEOUT_MS();
+    static std::int64_t DEFAULT_SEND_MESSAGE_MAX_TTL();
 
     BounceProxyUrl getBounceProxyUrl() const;
     std::string getBounceProxyUrlString() const;
@@ -97,8 +97,8 @@ public:
     std::string getCapabilitiesDirectoryChannelId() const;
     std::string getCapabilitiesDirectoryParticipantId() const;
 
-    int64_t getIndex() const;
-    void setIndex(int64_t index);
+    std::int64_t getIndex() const;
+    void setIndex(std::int64_t index);
     int getCreateChannelRetryInterval() const;
     void setCreateChannelRetryInterval(const int& retryInterval);
     int getDeleteChannelRetryInterval() const;
@@ -121,16 +121,16 @@ public:
     void setClientCertificatePassword(const std::string& clientCertificatePassword);
     std::string getMessagingPropertiesPersistenceFilename() const;
     void setMessagingPropertiesPersistenceFilename(const std::string& persistenceFilename);
-    int64_t getLongPollTimeout() const;
-    void setLongPollTimeout(int64_t timeout_ms);
-    int64_t getHttpConnectTimeout() const;
-    void setHttpConnectTimeout(int64_t timeout_ms);
-    int64_t getBounceProxyTimeout() const;
-    void setBounceProxyTimeout(int64_t timeout_ms);
-    int64_t getDiscoveryMessagesTtl() const;
-    void setDiscoveryMessagesTtl(int64_t ttl_ms);
-    int64_t getSendMsgMaxTtl() const;
-    void setSendMsgMaxTtl(int64_t ttl_ms);
+    std::int64_t getLongPollTimeout() const;
+    void setLongPollTimeout(std::int64_t timeout_ms);
+    std::int64_t getHttpConnectTimeout() const;
+    void setHttpConnectTimeout(std::int64_t timeout_ms);
+    std::int64_t getBounceProxyTimeout() const;
+    void setBounceProxyTimeout(std::int64_t timeout_ms);
+    std::int64_t getDiscoveryMessagesTtl() const;
+    void setDiscoveryMessagesTtl(std::int64_t ttl_ms);
+    std::int64_t getSendMsgMaxTtl() const;
+    void setSendMsgMaxTtl(std::int64_t ttl_ms);
 
     bool contains(const std::string& key) const;
 

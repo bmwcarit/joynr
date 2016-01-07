@@ -65,7 +65,7 @@ void ClassDeserializer<SomeOtherType>::deserialize(SomeOtherType& t, IObject& o)
     while (o.hasNextField()) {
         IField& field = o.nextField();
         if (field.name() == "a") {
-            t.setA(field.value().getIntType<int32_t>());
+            t.setA(field.value().getIntType<std::int32_t>());
         }
     }
 }

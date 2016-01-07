@@ -25,7 +25,7 @@
 #include <vector>
 #include <mutex>
 #include <chrono>
-#include <stdint.h>
+#include <cstdint>
 #include "joynr/Util.h"
 
 namespace joynr

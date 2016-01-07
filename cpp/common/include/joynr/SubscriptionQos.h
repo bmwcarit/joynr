@@ -19,7 +19,7 @@
 #ifndef SUBSCRIPTIONQOS_H
 #define SUBSCRIPTIONQOS_H
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "joynr/JoynrCommonExport.h"
 
@@ -54,7 +54,7 @@ public:
      * @see SubscriptionQos#setValidity
      * @see SubscriptionQos#setPublicationTtl
      */
-    explicit SubscriptionQos(const int64_t& validity);
+    explicit SubscriptionQos(const std::int64_t& validity);
 
     /** Destructor */
     virtual ~SubscriptionQos() = default;
@@ -71,7 +71,7 @@ public:
      *
      * @see SubscriptionQos#setValidity
      */
-    int64_t getExpiryDate() const;
+    std::int64_t getExpiryDate() const;
 
     /**
      * @brief Clears the current expiry date and disables it, by setting
@@ -92,7 +92,7 @@ public:
      *
      * @see SubscriptionQos#setValidity
      */
-    virtual void setExpiryDate(const int64_t& expiryDate);
+    virtual void setExpiryDate(const std::int64_t& expiryDate);
 
     /**
      * @brief Gets the time to live value for publication messages.
@@ -108,7 +108,7 @@ public:
      *
      * @see SubscriptionQos#setExpiryDate
      */
-    virtual int64_t getPublicationTtl() const;
+    virtual std::int64_t getPublicationTtl() const;
 
     /**
      * @brief Sets the validity of the subscription in milliseconds.
@@ -123,7 +123,7 @@ public:
      *
      * @see SubscriptionQos#setExpiryDate
      */
-    virtual void setValidity(const int64_t& validity);
+    virtual void setValidity(const std::int64_t& validity);
 
     /**
      * @brief Sets the time to live for publication messages in milliseconds
@@ -145,7 +145,7 @@ public:
      *
      * @see SubscriptionQos#setExpiryDate
      */
-    virtual void setPublicationTtl(const int64_t& publicationTtl_ms);
+    virtual void setPublicationTtl(const std::int64_t& publicationTtl_ms);
 
     /** @brief Assignment operator */
     SubscriptionQos& operator=(const SubscriptionQos& subscriptionQos);
@@ -157,35 +157,35 @@ public:
      * @brief Returns the default publication time to live value in milliseconds:
      * 10 000 (10 secs)
      */
-    static const int64_t& DEFAULT_PUBLICATION_TTL();
+    static const std::int64_t& DEFAULT_PUBLICATION_TTL();
 
     /**
      * @brief Returns the minimum publication time to live value in milliseconds:
      * 100
      */
-    static const int64_t& MIN_PUBLICATION_TTL();
+    static const std::int64_t& MIN_PUBLICATION_TTL();
 
     /**
      * @brief Returns the maximum publication time to live value in milliseconds:
      * 2 592 000 000 (30 days)
      */
-    static const int64_t& MAX_PUBLICATION_TTL();
+    static const std::int64_t& MAX_PUBLICATION_TTL();
 
     /**
      * @brief Returns the value for no expiry date time to live in milliseconds:
      * 0; used only internally
      */
-    static const int64_t& NO_EXPIRY_DATE_TTL();
+    static const std::int64_t& NO_EXPIRY_DATE_TTL();
 
     /** @brief Returns the value for no expiry date in milliseconds: 0 */
-    static const int64_t& NO_EXPIRY_DATE();
+    static const std::int64_t& NO_EXPIRY_DATE();
 
 protected:
     /** @brief The expiry date in milliseconds */
-    int64_t expiryDate;
+    std::int64_t expiryDate;
 
     /** @brief The publication time to live in milliseconds */
-    int64_t publicationTtl;
+    std::int64_t publicationTtl;
 };
 
 } // namespace joynr

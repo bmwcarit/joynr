@@ -277,7 +277,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithEnumOutput) {
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
-    int64_t minInterval_ms = 50;
+    std::int64_t minInterval_ms = 50;
     OnChangeSubscriptionQos subscriptionQos(
                 500000,   // validity_ms
                 minInterval_ms);  // minInterval_ms
@@ -340,7 +340,7 @@ TEST_F(End2EndBroadcastTest, subscribeTwiceToSameBroadcast_OneOutput) {
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
 
-    int64_t minInterval_ms = 50;
+    std::int64_t minInterval_ms = 50;
     OnChangeSubscriptionQos subscriptionQos(
                 500000,   // validity_ms
                 minInterval_ms);  // minInterval_ms
@@ -427,7 +427,7 @@ TEST_F(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
 
-    int64_t minInterval_ms = 50;
+    std::int64_t minInterval_ms = 50;
     OnChangeSubscriptionQos subscriptionQos(
                 500000,   // validity_ms
                 minInterval_ms);  // minInterval_ms
@@ -495,7 +495,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
 
-    int64_t minInterval_ms = 50;
+    std::int64_t minInterval_ms = 50;
     OnChangeSubscriptionQos subscriptionQos(
                 500000,   // validity_ms
                 minInterval_ms);  // minInterval_ms
@@ -568,7 +568,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
 
-    int64_t minInterval_ms = 50;
+    std::int64_t minInterval_ms = 50;
     OnChangeSubscriptionQos subscriptionQos(
                 500000,   // validity_ms
                 minInterval_ms);  // minInterval_ms
@@ -646,7 +646,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
 
-    int64_t minInterval_ms = 50;
+    std::int64_t minInterval_ms = 50;
     OnChangeSubscriptionQos subscriptionQos(
                 500000,   // validity_ms
                 minInterval_ms);  // minInterval_ms
@@ -723,7 +723,7 @@ TEST_F(End2EndBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
 
-    int64_t minInterval_ms = 50;
+    std::int64_t minInterval_ms = 50;
     OnChangeSubscriptionQos subscriptionQos(
                 500000,   // validity_ms
                 minInterval_ms);  // minInterval_ms
@@ -809,7 +809,7 @@ TEST_F(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
 
-    int64_t minInterval_ms = 50;
+    std::int64_t minInterval_ms = 50;
     OnChangeSubscriptionQos subscriptionQos(
                 500000,   // validity_ms
                 minInterval_ms);  // minInterval_ms

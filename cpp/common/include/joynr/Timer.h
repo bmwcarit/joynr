@@ -23,7 +23,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Logger.h"
 
-#include <stdint.h>
+#include <cstdint>
 #include <map>
 #include <thread>
 #include <mutex>
@@ -42,7 +42,7 @@ class JOYNRCOMMON_EXPORT Timer
 {
 public:
     /*! Identifier for an active timer */
-    typedef uint64_t TimerId;
+    typedef std::uint64_t TimerId;
 
     /**
      * @brief Constructor
@@ -71,7 +71,7 @@ public:
      */
     TimerId addTimer(std::function<void(joynr::Timer::TimerId)> onTimerExpired,
                      std::function<void(joynr::Timer::TimerId)> onActiveTimerRemoved,
-                     uint64_t msToBeExpired,
+                     std::uint64_t msToBeExpired,
                      bool periodic = false);
 
     /**

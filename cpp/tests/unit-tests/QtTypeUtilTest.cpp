@@ -105,10 +105,10 @@ TEST_F(QtQtTypeUtilTest, testStringEnd2EndConversion)
 TEST_F(QtQtTypeUtilTest, testUInt8ToQInt8Conversion)
 {
 
-    uint8_t expectedValue(1);
+    std::uint8_t expectedValue(1);
     qint8 testData = 1;
 
-    uint8_t result = QtTypeUtil::toStdUInt8(testData);
+    std::uint8_t result = QtTypeUtil::toStdUInt8(testData);
 
     EXPECT_EQ(expectedValue, result);
 
@@ -123,7 +123,7 @@ TEST_F(QtQtTypeUtilTest, testQInt8ToUInt8Conversion)
 {
 
     qint8 expectedValue(1);
-    uint8_t testData = 1;
+    std::uint8_t testData = 1;
 
     qint8 result = QtTypeUtil::toQt(testData);
 
@@ -139,10 +139,10 @@ TEST_F(QtQtTypeUtilTest, testQInt8ToUInt8Conversion)
 TEST_F(QtQtTypeUtilTest, testInt8ToQInt8Conversion)
 {
 
-    int8_t expectedValue(-1);
+    std::int8_t expectedValue(-1);
     qint8 testData = -1;
 
-    int8_t result = QtTypeUtil::toStdInt8(testData);
+    std::int8_t result = QtTypeUtil::toStdInt8(testData);
 
     EXPECT_EQ(expectedValue, result);
 
@@ -157,7 +157,7 @@ TEST_F(QtQtTypeUtilTest, testQInt8ToInt8Conversion)
 {
 
     qint8 expectedValue(-1);
-    int8_t testData = -1;
+    std::int8_t testData = -1;
 
     qint8 result = QtTypeUtil::toQt(testData);
 
@@ -174,7 +174,7 @@ TEST_F(QtQtTypeUtilTest, testQInt8ToInt8Conversion)
 TEST_F(QtQtTypeUtilTest, testUInt8VectorToQByteArrayConversion)
 {
 
-    std::vector<uint8_t> expectedValue;
+    std::vector<std::uint8_t> expectedValue;
 
     expectedValue.push_back(3);
     expectedValue.push_back(2);
@@ -186,7 +186,7 @@ TEST_F(QtQtTypeUtilTest, testUInt8VectorToQByteArrayConversion)
     testData.append(2);
     testData.append(1);
 
-    std::vector<uint8_t> result = QtTypeUtil::toStd(testData);
+    std::vector<std::uint8_t> result = QtTypeUtil::toStd(testData);
     EXPECT_EQ(expectedValue, result);
 }
 
@@ -198,7 +198,7 @@ TEST_F(QtQtTypeUtilTest, testQByteArrayToUInt8VectorConversion)
     expectedValue.append(2);
     expectedValue.append(1);
 
-    std::vector<uint8_t> testData;
+    std::vector<std::uint8_t> testData;
 
     testData.push_back(3);
     testData.push_back(2);

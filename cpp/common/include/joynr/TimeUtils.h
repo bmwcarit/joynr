@@ -20,7 +20,7 @@
 #define TIMEUTILS_H_
 
 #include <chrono>
-#include <stdint.h>
+#include <cstdint>
 
 namespace joynr
 {
@@ -39,7 +39,7 @@ inline static std::chrono::system_clock::time_point getCurrentTime()
  * @brief Returns the current time as a relative duration in MS since epoch
  * @return Current time in milliseconds since epoch
  */
-inline static uint64_t getCurrentMillisSinceEpoch()
+inline static std::uint64_t getCurrentMillisSinceEpoch()
 {
     return std::chrono::duration_cast<std::chrono::milliseconds>(
                    getCurrentTime().time_since_epoch()).count();

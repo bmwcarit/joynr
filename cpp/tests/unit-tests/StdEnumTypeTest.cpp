@@ -96,7 +96,7 @@ TEST_F(StdEnumTypeTest, lessEqualOperator) {
 TEST_F(StdEnumTypeTest, getEnum) {
     std::string literal = TestEnum::getLiteral(TestEnum::ZERO);
     EXPECT_EQ(TestEnum::ZERO, TestEnum::getEnum(literal));
-    uint32_t ordinal = TestEnum::getOrdinal(TestEnum::ZERO);
+    std::uint32_t ordinal = TestEnum::getOrdinal(TestEnum::ZERO);
     EXPECT_EQ(ordinal, TestEnum::getEnum(literal));
 }
 

@@ -68,7 +68,7 @@ struct «getDllExportMacro()»«typeName» {
 	/**
 	«appendDoxygenSummaryAndWriteSeeAndDescription(type, " *")»
 	 */
-	enum «getNestedEnumName()» : uint32_t {
+	enum «getNestedEnumName()» : std::uint32_t {
 		«var ordinal = -1»
 		«FOR enumtype : getEnumElementsAndBaseEnumElements(type) SEPARATOR ','»
 			/**
@@ -113,7 +113,7 @@ struct «getDllExportMacro()»«typeName» {
 	 * @param «typeName.toFirstLower»Value The enum
 	 * @return The ordinal number representing the enum
 	 */
-	static uint32_t getOrdinal(«typeName»::«getNestedEnumName()» «typeName.toFirstLower»Value);
+	static std::uint32_t getOrdinal(«typeName»::«getNestedEnumName()» «typeName.toFirstLower»Value);
 
 	/**
 	 * @brief Get the typeName of the enumeration type

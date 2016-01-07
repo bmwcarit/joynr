@@ -112,22 +112,22 @@ def deserializePrimitiveValue(FBasicTypeId basicType, String varName, String fie
 		case BYTE_BUFFER : return '''
 		«val randomName = "converted" + UUID::randomUUID.toString.substring(0, 5)»
 		IArray& array = «fieldValue»;
-		auto&& «randomName» = convertArray<uint8_t>(array, convertUIntType<uint8_t>);
-		«basicType.typeName» «varName» = std::forward<std::vector<uint8_t>>(«randomName.toFirstUpper»);
+		auto&& «randomName» = convertArray<std::uint8_t>(array, convertUIntType<std::uint8_t>);
+		«basicType.typeName» «varName» = std::forward<std::vector<std::uint8_t>>(«randomName.toFirstUpper»);
 		'''
 		case STRING : '''
 		std::string «varName»;
 		PrimitiveDeserializer<std::string>::deserialize(«varName», «fieldValue»);
 		'''
 		case BOOLEAN : return deserializedValue + ".getBool();"
-		case INT8 : return deserializedValue + ".getIntType<int8_t>();"
-		case INT16 : return deserializedValue + ".getIntType<int16_t>();"
-		case INT32 : return deserializedValue + ".getIntType<int32_t>();"
-		case INT64 : return deserializedValue + ".getIntType<int64_t>();"
-		case UINT8 : return deserializedValue + ".getIntType<uint8_t>();"
-		case UINT16 : return deserializedValue + ".getIntType<uint16_t>();"
-		case UINT32 : return deserializedValue + ".getIntType<uint32_t>();"
-		case UINT64 : return deserializedValue + ".getIntType<uint64_t>();"
+		case INT8 : return deserializedValue + ".getIntType<std::int8_t>();"
+		case INT16 : return deserializedValue + ".getIntType<std::int16_t>();"
+		case INT32 : return deserializedValue + ".getIntType<std::int32_t>();"
+		case INT64 : return deserializedValue + ".getIntType<std::int64_t>();"
+		case UINT8 : return deserializedValue + ".getIntType<std::uint8_t>();"
+		case UINT16 : return deserializedValue + ".getIntType<std::uint16_t>();"
+		case UINT32 : return deserializedValue + ".getIntType<std::uint32_t>();"
+		case UINT64 : return deserializedValue + ".getIntType<std::uint64_t>();"
 		case FLOAT : return deserializedValue + ".getDoubleType<float>();"
 		case DOUBLE : return deserializedValue + ".getDoubleType<double>();"
 		default: throw new IllegalStateException("Type for varName " + varName + " could not be resolved")

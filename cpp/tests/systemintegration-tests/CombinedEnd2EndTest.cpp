@@ -418,28 +418,28 @@ TEST_F(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply) {
         bool booleanOut;
         double doubleOut;
         float floatOut;
-        int8_t int8Out;
-        int16_t int16Out;
-        int32_t int32Out;
-        int64_t int64Out;
-        uint8_t uint8Out;
-        uint16_t uint16Out;
-        uint32_t uint32Out;
-        uint64_t uint64Out;
+        std::int8_t int8Out;
+        std::int16_t int16Out;
+        std::int32_t int32Out;
+        std::int64_t int64Out;
+        std::uint8_t uint8Out;
+        std::uint16_t uint16Out;
+        std::uint32_t uint32Out;
+        std::uint64_t uint64Out;
         std::string stringOut;
 
         bool booleanArg = true;
         double doubleArg = 1.1;
         float floatArg = 2.2;
-        int8_t int8Arg = 6;
-        int16_t int16Arg = 3;
-        int32_t int32Arg = 4;
-        int64_t int64Arg = 5;
+        std::int8_t int8Arg = 6;
+        std::int16_t int16Arg = 3;
+        std::int32_t int32Arg = 4;
+        std::int64_t int64Arg = 5;
         std::string stringArg = "7";
-        uint16_t uint16Arg = 8;
-        uint32_t uint32Arg = 9;
-        uint64_t uint64Arg = 10;
-        uint8_t uint8Arg = 11;
+        std::uint16_t uint16Arg = 8;
+        std::uint32_t uint32Arg = 9;
+        std::uint64_t uint64Arg = 10;
+        std::uint8_t uint8Arg = 11;
         testProxy->methodWithAllPossiblePrimitiveParameters(booleanOut,
                                                             doubleOut,
                                                             floatOut,
@@ -547,8 +547,8 @@ TEST_F(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply) {
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
 
-    int64_t minInterval_ms = 1000;
-    int64_t maxInterval_ms = 2000;
+    std::int64_t minInterval_ms = 1000;
+    std::int64_t maxInterval_ms = 2000;
 
     OnChangeWithKeepAliveSubscriptionQos subscriptionQos(
                                     10000,   // validity_ms
@@ -603,7 +603,7 @@ TEST_F(CombinedEnd2EndTest, subscribeToOnChange) {
     // changes more often. This prevents the consumer from being flooded by updated values.
     // The filtering happens on the provider's side, thus also preventing excessive network traffic.
     // This value is provided in milliseconds. The minimum value for minInterval is 50 ms.
-    int64_t minInterval_ms = 50;
+    std::int64_t minInterval_ms = 50;
     OnChangeSubscriptionQos subscriptionQos(
                                     500000,   // validity_ms
                                     minInterval_ms);  // minInterval_ms

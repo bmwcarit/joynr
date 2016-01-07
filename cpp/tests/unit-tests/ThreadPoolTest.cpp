@@ -21,7 +21,7 @@
 #include "joynr/ThreadPool.h"
 #include "utils/MockObjects.h"
 
-#include <stdint.h>
+#include <cstdint>
 #include <cassert>
 
 using namespace ::testing;

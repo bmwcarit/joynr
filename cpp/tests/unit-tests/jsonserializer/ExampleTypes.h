@@ -68,7 +68,7 @@ void ClassDeserializer<SomeOtherType>::deserialize(SomeOtherType& t, IObject& o)
 class ExamplePermission
 {
 public:
-    enum Enum : uint32_t {
+    enum Enum : std::uint32_t {
         YES = 0, ASK = 1,  NO = 2
     };
 };

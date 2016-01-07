@@ -78,7 +78,7 @@ public:
 
 private:
     RequestStatusCode(std::uint32_t id, std::string description);
-    uint32_t id;
+    std::uint32_t id;
     std::string description;
 };
 

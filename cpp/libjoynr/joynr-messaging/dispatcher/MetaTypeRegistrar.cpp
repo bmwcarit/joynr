@@ -34,14 +34,14 @@ MetaTypeRegistrar::MetaTypeRegistrar()
     registerMetaType<bool>();
     registerMetaType<float>();
     registerMetaType<double>();
-    registerMetaType<int8_t>();
-    registerMetaType<uint8_t>();
-    registerMetaType<int16_t>();
-    registerMetaType<uint16_t>();
-    registerMetaType<int32_t>();
-    registerMetaType<uint32_t>();
-    registerMetaType<int64_t>();
-    registerMetaType<uint64_t>();
+    registerMetaType<std::int8_t>();
+    registerMetaType<std::uint8_t>();
+    registerMetaType<std::int16_t>();
+    registerMetaType<std::uint16_t>();
+    registerMetaType<std::int32_t>();
+    registerMetaType<std::uint32_t>();
+    registerMetaType<std::int64_t>();
+    registerMetaType<std::uint64_t>();
 
     // Register a reply interpreter for void type
     std::lock_guard<std::mutex> lock(replyInterpretersMutex);

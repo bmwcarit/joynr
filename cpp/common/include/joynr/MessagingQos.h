@@ -38,7 +38,7 @@ public:
      * @brief Base constructor
      * @param ttl The time to live in milliseconds
      */
-    explicit MessagingQos(uint64_t ttl = 60000);
+    explicit MessagingQos(std::uint64_t ttl = 60000);
     /** @brief Copy constructor */
     MessagingQos(const MessagingQos& other) = default;
 
@@ -55,13 +55,13 @@ public:
      * @brief Gets the current time to live settings
      * @return time to live in milliseconds
      */
-    uint64_t getTtl() const;
+    std::uint64_t getTtl() const;
 
     /**
      * @brief Sets the time to live
      * @param ttl Time to live in milliseconds
      */
-    void setTtl(const uint64_t& ttl);
+    void setTtl(const std::uint64_t& ttl);
 
     /** @brief assignment operator */
     MessagingQos& operator=(const MessagingQos& other) = default;
@@ -70,7 +70,7 @@ public:
 
 private:
     /** @brief The time to live in milliseconds */
-    uint64_t ttl;
+    std::uint64_t ttl;
 
     /**
       * @brief printing MessagingQos with google-test and google-mock

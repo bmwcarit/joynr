@@ -69,7 +69,7 @@ void QosArbitrator::receiveCapabilitiesLookupResults(
     if (discoveryEntries.size() == 0)
         return;
 
-    int64_t highestPriority = -1;
+    std::int64_t highestPriority = -1;
     for (const joynr::types::DiscoveryEntry discoveryEntry : discoveryEntries) {
         types::ProviderQos providerQos = discoveryEntry.getQos();
         JOYNR_LOG_TRACE(logger, "Looping over capabilitiesEntry: {}", discoveryEntry.toString());

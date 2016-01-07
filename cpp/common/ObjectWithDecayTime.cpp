@@ -26,12 +26,12 @@ ObjectWithDecayTime::ObjectWithDecayTime(const JoynrTimePoint& decayTime) : deca
 {
 }
 
-int64_t ObjectWithDecayTime::getRemainingTtl_ms() const
+std::int64_t ObjectWithDecayTime::getRemainingTtl_ms() const
 {
-    int64_t decayTimeMillis = std::chrono::duration_cast<std::chrono::milliseconds>(
-                                      decayTime.time_since_epoch()).count();
-    int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
-                          std::chrono::system_clock::now().time_since_epoch()).count();
+    std::int64_t decayTimeMillis = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                           decayTime.time_since_epoch()).count();
+    std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
+                               std::chrono::system_clock::now().time_since_epoch()).count();
     return decayTimeMillis - now;
 }
 JoynrTimePoint ObjectWithDecayTime::getDecayTime() const

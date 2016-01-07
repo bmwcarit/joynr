@@ -31,10 +31,10 @@ class TypeUtilTest : public ::testing::Test {
 TEST_F(TypeUtilTest, testUInt16ToIntConversion)
 {
 
-    uint16_t expectedValue(1);
+    std::uint16_t expectedValue(1);
     int testData = 1;
 
-    uint16_t result = TypeUtil::toStdUInt16(testData);
+    std::uint16_t result = TypeUtil::toStdUInt16(testData);
 
     EXPECT_EQ(expectedValue, result);
 
@@ -49,7 +49,7 @@ TEST_F(TypeUtilTest, testIntToUInt16Conversion)
 {
 
     int expectedValue(1);
-    uint16_t testData = 1;
+    std::uint16_t testData = 1;
 
     int result = TypeUtil::toInt(testData);
 
@@ -65,10 +65,10 @@ TEST_F(TypeUtilTest, testIntToUInt16Conversion)
 TEST_F(TypeUtilTest, testInt16ToIntConversion)
 {
 
-    int16_t expectedValue(-255);
+    std::int16_t expectedValue(-255);
     int testData = -255;
 
-    int16_t result = TypeUtil::toStdInt16(testData);
+    std::int16_t result = TypeUtil::toStdInt16(testData);
 
     EXPECT_EQ(expectedValue, result);
 
@@ -83,7 +83,7 @@ TEST_F(TypeUtilTest, testIntToInt16Conversion)
 {
 
     int expectedValue(-11);
-    int16_t testData = -11;
+    std::int16_t testData = -11;
 
     int result = TypeUtil::toInt(testData);
 
@@ -99,10 +99,10 @@ TEST_F(TypeUtilTest, testIntToInt16Conversion)
 TEST_F(TypeUtilTest, testUInt32ToIntConversion)
 {
 
-    uint32_t expectedValue(1);
+    std::uint32_t expectedValue(1);
     int testData = 1;
 
-    uint32_t result = TypeUtil::toStdUInt32(testData);
+    std::uint32_t result = TypeUtil::toStdUInt32(testData);
 
     EXPECT_EQ(expectedValue, result);
 
@@ -117,7 +117,7 @@ TEST_F(TypeUtilTest, testIntToUInt32Conversion)
 {
 
     int expectedValue(1);
-    uint32_t testData = 1;
+    std::uint32_t testData = 1;
 
     int result = TypeUtil::toInt(testData);
 
@@ -133,10 +133,10 @@ TEST_F(TypeUtilTest, testIntToUInt32Conversion)
 TEST_F(TypeUtilTest, testInt32ToIntConversion)
 {
 
-    int32_t expectedValue(-255555);
+    std::int32_t expectedValue(-255555);
     int testData = -255555;
 
-    int32_t result = TypeUtil::toStdInt32(testData);
+    std::int32_t result = TypeUtil::toStdInt32(testData);
 
     EXPECT_EQ(expectedValue, result);
 
@@ -151,7 +151,7 @@ TEST_F(TypeUtilTest, testIntToInt32Conversion)
 {
 
     int expectedValue(-2555551);
-    int32_t testData = -2555551;
+    std::int32_t testData = -2555551;
 
     int result = TypeUtil::toInt(testData);
 
@@ -167,10 +167,10 @@ TEST_F(TypeUtilTest, testIntToInt32Conversion)
 TEST_F(TypeUtilTest, testUInt64Toint64_tConversion)
 {
 
-    uint64_t expectedValue(1);
-    int64_t testData = 1;
+    std::uint64_t expectedValue(1);
+    std::int64_t testData = 1;
 
-    uint64_t result = TypeUtil::toStdUInt64(testData);
+    std::uint64_t result = TypeUtil::toStdUInt64(testData);
 
     EXPECT_EQ(expectedValue, result);
 
@@ -184,10 +184,10 @@ TEST_F(TypeUtilTest, testUInt64Toint64_tConversion)
 TEST_F(TypeUtilTest, testint64_tToUInt64Conversion)
 {
 
-    int64_t expectedValue(1);
-    uint64_t testData = 1;
+    std::int64_t expectedValue(1);
+    std::uint64_t testData = 1;
 
-    int64_t result = TypeUtil::toStdInt64(testData);
+    std::int64_t result = TypeUtil::toStdInt64(testData);
 
     EXPECT_EQ(expectedValue, result);
 
@@ -201,10 +201,10 @@ TEST_F(TypeUtilTest, testint64_tToUInt64Conversion)
 TEST_F(TypeUtilTest, testInt64Toint64_tConversion)
 {
 
-    int64_t expectedValue(-1);
-    int64_t testData = -1;
+    std::int64_t expectedValue(-1);
+    std::int64_t testData = -1;
 
-    int64_t result = TypeUtil::toStdInt64(testData);
+    std::int64_t result = TypeUtil::toStdInt64(testData);
 
     EXPECT_EQ(expectedValue, result);
 

@@ -37,7 +37,7 @@ Url::Url(const std::string& text)
 
 Url::Url(const std::string& protocol,
          const std::string& host,
-         uint16_t port,
+         std::uint16_t port,
          const std::string& path)
         : protocol(protocol),
           user(),
@@ -57,7 +57,7 @@ Url::Url(const std::string& protocol,
          const std::string& user,
          const std::string& password,
          const std::string& host,
-         uint16_t port,
+         std::uint16_t port,
          const std::string& path,
          const std::string& query,
          const std::string& fragment)
@@ -106,7 +106,7 @@ const std::string& Url::getHost() const
     return host;
 }
 
-uint16_t Url::getPort() const
+std::uint16_t Url::getPort() const
 {
     return port;
 }
@@ -293,7 +293,7 @@ std::string Url::toString()
     return stringBuilder.str();
 }
 
-uint16_t Url::portFromProtocol(const std::string& proto)
+std::uint16_t Url::portFromProtocol(const std::string& proto)
 {
     if (proto == "http") {
         return 80;

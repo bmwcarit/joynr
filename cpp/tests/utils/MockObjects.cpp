@@ -38,7 +38,7 @@ INIT_LOGGER(MockRunnableWithAccuracy);
 
 MockRunnableWithAccuracy::MockRunnableWithAccuracy(
     bool deleteMe,
-    const uint64_t delay)
+    const std::uint64_t delay)
     : joynr::Runnable(deleteMe),
       est_ms(TimeUtils::getCurrentMillisSinceEpoch() + delay)
 {
@@ -53,9 +53,9 @@ void MockRunnableWithAccuracy::run()
 {
     runCalled();
 
-    const uint64_t now_ms = TimeUtils::getCurrentMillisSinceEpoch();
+    const std::uint64_t now_ms = TimeUtils::getCurrentMillisSinceEpoch();
 
-    const uint64_t diff = (now_ms > est_ms) ? now_ms - est_ms : est_ms - now_ms;
+    const std::uint64_t diff = (now_ms > est_ms) ? now_ms - est_ms : est_ms - now_ms;
     JOYNR_LOG_TRACE(logger, "Runnable run() is called");
     JOYNR_LOG_TRACE(logger, " ETA        : {}",est_ms);
     JOYNR_LOG_TRACE(logger, " current    : {}",now_ms);

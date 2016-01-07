@@ -26,7 +26,7 @@
 #include "joynr/MessageQueue.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include <chrono>
-#include <stdint.h>
+#include <cstdint>
 
 using namespace joynr;
 

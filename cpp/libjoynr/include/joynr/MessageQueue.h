@@ -48,7 +48,7 @@ public:
 
     MessageQueueItem* getNextMessageForParticipant(const std::string destinationPartId);
 
-    int64_t removeOutdatedMessages();
+    std::int64_t removeOutdatedMessages();
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MessageQueue);

@@ -24,7 +24,7 @@
 #include "joynr/Logger.h"
 #include "joynr/BlockingQueue.h"
 
-#include <stdint.h>
+#include <cstdint>
 #include <vector>
 #include <set>
 #include <thread>
@@ -51,7 +51,7 @@ public:
      * @param name Name of the hosted threads
      * @param numberOfThreads Number of threads to be allocated and available
      */
-    ThreadPool(const std::string& name, const uint8_t numberOfThreads);
+    ThreadPool(const std::string& name, const std::uint8_t numberOfThreads);
 
     /**
      * Destructor

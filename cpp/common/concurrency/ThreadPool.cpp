@@ -26,10 +26,10 @@ namespace joynr
 
 INIT_LOGGER(ThreadPool);
 
-ThreadPool::ThreadPool(const std::string& /*name*/, uint8_t numberOfThreads)
+ThreadPool::ThreadPool(const std::string& /*name*/, std::uint8_t numberOfThreads)
         : threads(), scheduler(), keepRunning(true), currentlyRunning(), mutex()
 {
-    for (uint8_t i = 0; i < numberOfThreads; ++i) {
+    for (std::uint8_t i = 0; i < numberOfThreads; ++i) {
         threads.emplace_back(std::bind(&ThreadPool::threadLifecycle, this));
     }
 

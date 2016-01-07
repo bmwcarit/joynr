@@ -21,7 +21,7 @@
 #include "joynr/ThreadPoolDelayedScheduler.h"
 #include "utils/MockObjects.h"
 
-#include <stdint.h>
+#include <cstdint>
 #include <cassert>
 #include <chrono>
 

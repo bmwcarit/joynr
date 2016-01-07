@@ -208,9 +208,9 @@ const std::string& MessagingSettings::SETTING_LONGPOLL_TIMEOUT_MS()
     return value;
 }
 
-int64_t MessagingSettings::DEFAULT_LONGPOLL_TIMEOUT_MS()
+std::int64_t MessagingSettings::DEFAULT_LONGPOLL_TIMEOUT_MS()
 {
-    static const int64_t value(10 * 60 * 1000); // 10 minutes
+    static const std::int64_t value(10 * 60 * 1000); // 10 minutes
     return value;
 }
 
@@ -220,9 +220,9 @@ const std::string& MessagingSettings::SETTING_HTTP_CONNECT_TIMEOUT_MS()
     return value;
 }
 
-int64_t MessagingSettings::DEFAULT_HTTP_CONNECT_TIMEOUT_MS()
+std::int64_t MessagingSettings::DEFAULT_HTTP_CONNECT_TIMEOUT_MS()
 {
-    static const int64_t value(1 * 60 * 1000); // 1 minute
+    static const std::int64_t value(1 * 60 * 1000); // 1 minute
     return value;
 }
 
@@ -232,9 +232,9 @@ const std::string& MessagingSettings::SETTING_BOUNCEPROXY_TIMEOUT_MS()
     return value;
 }
 
-int64_t MessagingSettings::DEFAULT_BOUNCEPROXY_TIMEOUT_MS()
+std::int64_t MessagingSettings::DEFAULT_BOUNCEPROXY_TIMEOUT_MS()
 {
-    static const int64_t value(20 * 1000); // 20 seconds
+    static const std::int64_t value(20 * 1000); // 20 seconds
     return value;
 }
 
@@ -244,9 +244,9 @@ const std::string& MessagingSettings::SETTING_DISCOVERY_MESSAGES_TTL_MS()
     return value;
 }
 
-int64_t MessagingSettings::DEFAULT_DISCOVERY_REQUEST_TIMEOUT_MS()
+std::int64_t MessagingSettings::DEFAULT_DISCOVERY_REQUEST_TIMEOUT_MS()
 {
-    static const int64_t value(40 * 1000); // 40 seconds
+    static const std::int64_t value(40 * 1000); // 40 seconds
     return value;
 }
 
@@ -256,9 +256,9 @@ const std::string& MessagingSettings::SETTING_SEND_MESSAGE_MAX_TTL()
     return value;
 }
 
-int64_t MessagingSettings::DEFAULT_SEND_MESSAGE_MAX_TTL()
+std::int64_t MessagingSettings::DEFAULT_SEND_MESSAGE_MAX_TTL()
 {
-    static const int64_t value(10 * 60 * 1000); // 10 minutes
+    static const std::int64_t value(10 * 60 * 1000); // 10 minutes
     return value;
 }
 
@@ -313,12 +313,12 @@ std::string MessagingSettings::getCapabilitiesDirectoryParticipantId() const
     return settings.get<std::string>(SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID());
 }
 
-int64_t MessagingSettings::getIndex() const
+std::int64_t MessagingSettings::getIndex() const
 {
-    return settings.get<int64_t>(SETTING_INDEX());
+    return settings.get<std::int64_t>(SETTING_INDEX());
 }
 
-void MessagingSettings::setIndex(int64_t index)
+void MessagingSettings::setIndex(std::int64_t index)
 {
     settings.set(SETTING_INDEX(), index);
 }
@@ -403,52 +403,52 @@ void MessagingSettings::setMessagingPropertiesPersistenceFilename(const std::str
     settings.set(SETTING_PERSISTENCE_FILENAME(), filename);
 }
 
-int64_t MessagingSettings::getLongPollTimeout() const
+std::int64_t MessagingSettings::getLongPollTimeout() const
 {
-    return settings.get<int64_t>(SETTING_LONGPOLL_TIMEOUT_MS());
+    return settings.get<std::int64_t>(SETTING_LONGPOLL_TIMEOUT_MS());
 }
 
-void MessagingSettings::setLongPollTimeout(int64_t timeout_ms)
+void MessagingSettings::setLongPollTimeout(std::int64_t timeout_ms)
 {
     settings.set(SETTING_LONGPOLL_TIMEOUT_MS(), timeout_ms);
 }
 
-int64_t MessagingSettings::getHttpConnectTimeout() const
+std::int64_t MessagingSettings::getHttpConnectTimeout() const
 {
-    return settings.get<int64_t>(SETTING_HTTP_CONNECT_TIMEOUT_MS());
+    return settings.get<std::int64_t>(SETTING_HTTP_CONNECT_TIMEOUT_MS());
 }
 
-void MessagingSettings::setHttpConnectTimeout(int64_t timeout_ms)
+void MessagingSettings::setHttpConnectTimeout(std::int64_t timeout_ms)
 {
     settings.set(SETTING_HTTP_CONNECT_TIMEOUT_MS(), timeout_ms);
 }
 
-int64_t MessagingSettings::getBounceProxyTimeout() const
+std::int64_t MessagingSettings::getBounceProxyTimeout() const
 {
-    return settings.get<int64_t>(SETTING_BOUNCEPROXY_TIMEOUT_MS());
+    return settings.get<std::int64_t>(SETTING_BOUNCEPROXY_TIMEOUT_MS());
 }
 
-void MessagingSettings::setBounceProxyTimeout(int64_t timeout_ms)
+void MessagingSettings::setBounceProxyTimeout(std::int64_t timeout_ms)
 {
     settings.set(SETTING_BOUNCEPROXY_TIMEOUT_MS(), timeout_ms);
 }
 
-int64_t MessagingSettings::getDiscoveryMessagesTtl() const
+std::int64_t MessagingSettings::getDiscoveryMessagesTtl() const
 {
-    return settings.get<int64_t>(SETTING_DISCOVERY_MESSAGES_TTL_MS());
+    return settings.get<std::int64_t>(SETTING_DISCOVERY_MESSAGES_TTL_MS());
 }
 
-void MessagingSettings::setDiscoveryMessagesTtl(int64_t ttl_ms)
+void MessagingSettings::setDiscoveryMessagesTtl(std::int64_t ttl_ms)
 {
     settings.set(SETTING_DISCOVERY_MESSAGES_TTL_MS(), ttl_ms);
 }
 
-int64_t MessagingSettings::getSendMsgMaxTtl() const
+std::int64_t MessagingSettings::getSendMsgMaxTtl() const
 {
-    return settings.get<int64_t>(SETTING_SEND_MESSAGE_MAX_TTL());
+    return settings.get<std::int64_t>(SETTING_SEND_MESSAGE_MAX_TTL());
 }
 
-void MessagingSettings::setSendMsgMaxTtl(int64_t ttl_ms)
+void MessagingSettings::setSendMsgMaxTtl(std::int64_t ttl_ms)
 {
     settings.set(SETTING_SEND_MESSAGE_MAX_TTL(), ttl_ms);
 }

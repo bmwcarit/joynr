@@ -20,7 +20,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <string>
-#include <stdint.h>
+#include <cstdint>
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
 #include "joynr/ClusterControllerDirectories.h"
@@ -381,7 +381,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForInterfaceAddressDelegatesToCapab
     // check that the results contain the two channel ids
     bool firstParticipantIdFound = false;
     bool secondParticipantIdFound = false;
-    for (uint16_t i = 0; i < capabilities.size(); i++) {
+    for (std::uint16_t i = 0; i < capabilities.size(); i++) {
         CapabilityEntry entry = capabilities.at(i);
         EXPECT_EQ(DOMAIN_1_NAME, entry.getDomain());
         EXPECT_EQ(INTERFACE_1_NAME, entry.getInterfaceName());
@@ -436,7 +436,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdDelegatesToCapabili
     EXPECT_EQ(3, capabilities.size());
     bool interfaceAddress1Found = false;
     bool interfaceAddress2Found = false;
-    for (uint16_t i = 0; i < capabilities.size(); i++) {
+    for (std::uint16_t i = 0; i < capabilities.size(); i++) {
         CapabilityEntry entry = capabilities.at(i);
         if ((entry.getDomain() == DOMAIN_1_NAME) && (entry.getInterfaceName() == INTERFACE_1_NAME)) {
             interfaceAddress1Found = true;

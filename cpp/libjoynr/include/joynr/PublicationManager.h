@@ -228,7 +228,7 @@ private:
     void saveBroadcastSubscriptionRequestsMap(const std::vector<Variant>& subscriptionList);
     void loadSavedBroadcastSubscriptionRequestsMap();
 
-    void reschedulePublication(const std::string& subscriptionId, int64_t nextPublication);
+    void reschedulePublication(const std::string& subscriptionId, std::int64_t nextPublication);
 
     bool isPublicationAlreadyScheduled(const std::string& subscriptionId);
 
@@ -241,7 +241,7 @@ private:
      *          amount of ms to wait, if interval was too short;
      *          -1 on error
      */
-    int64_t getTimeUntilNextPublication(std::shared_ptr<Publication> publication, Variant qos);
+    std::int64_t getTimeUntilNextPublication(std::shared_ptr<Publication> publication, Variant qos);
 
     void saveSubscriptionRequestsMap(const std::vector<Variant>& subscriptionList,
                                      const std::string& storageFilename);
@@ -258,7 +258,7 @@ private:
             const ThreadSafeMap<std::string, std::shared_ptr<RequestInformationType>>& map);
 
     bool isShuttingDown();
-    int64_t getPublicationTtl(std::shared_ptr<SubscriptionRequest> subscriptionRequest) const;
+    std::int64_t getPublicationTtl(std::shared_ptr<SubscriptionRequest> subscriptionRequest) const;
     void sendPublication(std::shared_ptr<Publication> publication,
                          std::shared_ptr<SubscriptionInformation> subscriptionInformation,
                          std::shared_ptr<SubscriptionRequest> subscriptionRequest,

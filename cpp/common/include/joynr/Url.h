@@ -78,7 +78,7 @@ public:
      */
     Url(const std::string& protocol,
         const std::string& host,
-        uint16_t port,
+        std::uint16_t port,
         const std::string& path);
 
     /**
@@ -96,7 +96,7 @@ public:
         const std::string& user,
         const std::string& password,
         const std::string& host,
-        uint16_t port,
+        std::uint16_t port,
         const std::string& path,
         const std::string& query,
         const std::string& fragment);
@@ -154,7 +154,7 @@ public:
      * @brief Get the port in the Url
      * @return The port number
      */
-    uint16_t getPort() const;
+    std::uint16_t getPort() const;
 
     /**
      * @brief Get the path part of the Url
@@ -203,14 +203,14 @@ private:
     std::string user;
     std::string password;
     std::string host;
-    uint16_t port;
+    std::uint16_t port;
     std::string path;
     std::string query;
     std::string fragment;
     bool valid;
 
     void parseUrl(const std::string& text);
-    uint16_t portFromProtocol(const std::string& proto);
+    std::uint16_t portFromProtocol(const std::string& proto);
     void validate();
 };
 

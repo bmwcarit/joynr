@@ -29,7 +29,7 @@
 #include "joynr/Future.h"
 #include "joynr/types/CapabilityInformation.h"
 #include <string>
-#include <stdint.h>
+#include <cstdint>
 #include <cassert>
 
 namespace joynr
@@ -56,7 +56,7 @@ void CapabilitiesClient::add(std::vector<types::CapabilityInformation> capabilit
                        // register capabilities before messaging was started(no queueing implemented
                        // yet;
     } else {
-        for (uint32_t i = 0; i < capabilitiesInformationList.size(); i++) {
+        for (std::uint32_t i = 0; i < capabilitiesInformationList.size(); i++) {
             capabilitiesInformationList[i].setChannelId(localChannelId);
         }
         RequestStatus rs;

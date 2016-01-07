@@ -18,7 +18,7 @@
  */
 #include <chrono>
 #include <thread>
-#include <stdint.h>
+#include <cstdint>
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include "joynr/ContentWithDecayTime.h"
@@ -29,7 +29,7 @@ using namespace joynr;
 TEST(ContentWithDecayTimeTest, messageWithDecayTime)
 {
     JoynrMessage message;
-    int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     JoynrTimePoint decaytime(std::chrono::milliseconds(now + 2000));
     ContentWithDecayTime<JoynrMessage> mwdt =  ContentWithDecayTime<JoynrMessage>(message, decaytime);
     EXPECT_TRUE(!mwdt.isExpired());

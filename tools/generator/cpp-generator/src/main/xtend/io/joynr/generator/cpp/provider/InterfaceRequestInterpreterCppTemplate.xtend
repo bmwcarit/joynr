@@ -129,10 +129,10 @@ void «interfaceName»RequestInterpreter::execute(
 												"joynr::removeEscapeFromSpecialChars(" + attributeName + "Var.get<" + getTypeName(attribute) + ">())"
 											else
 												attributeName + "Var.get<" + getTypeName(attribute) + ">()"»
-						«IF getTypeName(attribute).startsWith("int")»
-							if (!(«attributeName»Var.is<uint64_t>() || «attributeName»Var.is<int64_t>())) {
-						«ELSEIF getTypeName(attribute).startsWith("uint")»
-							if (!«attributeName»Var.is<uint64_t>()) {
+						«IF getTypeName(attribute).startsWith("std::int")»
+							if (!(«attributeName»Var.is<std::uint64_t>() || «attributeName»Var.is<std::int64_t>())) {
+						«ELSEIF getTypeName(attribute).startsWith("std::uint")»
+							if (!«attributeName»Var.is<std::uint64_t>()) {
 						«ELSEIF attribute.type.float»
 							if (!«attributeName»Var.is<double>()) {
 						«ELSE»
@@ -214,10 +214,10 @@ void «interfaceName»RequestInterpreter::execute(
 												"joynr::removeEscapeFromSpecialChars(" + inputName + "Var.get<" + getTypeName(input) + ">())"
 											else
 												inputName + "Var.get<" + getTypeName(input) + ">()"»
-							«IF getTypeName(input).startsWith("int")»
-								if (!(«inputName»Var.is<uint64_t>() || «inputName»Var.is<int64_t>())) {
-							«ELSEIF getTypeName(input).startsWith("uint")»
-								if (!«inputName»Var.is<uint64_t>()) {
+							«IF getTypeName(input).startsWith("std::int")»
+								if (!(«inputName»Var.is<std::uint64_t>() || «inputName»Var.is<std::int64_t>())) {
+							«ELSEIF getTypeName(input).startsWith("std::uint")»
+								if (!«inputName»Var.is<std::uint64_t>()) {
 							«ELSEIF input.type.float»
 								if (!«inputName»Var.is<double>()) {
 							«ELSE»

@@ -46,7 +46,7 @@ public:
      * @param defaultDelayMs Default delay for work without delay
      */
     ThreadPoolDelayedScheduler(
-            uint8_t numberOfThreads,
+            std::uint8_t numberOfThreads,
             const std::string& name,
             std::chrono::milliseconds defaultDelayMs = std::chrono::milliseconds::zero());
 

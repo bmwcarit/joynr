@@ -177,10 +177,10 @@ public:
 class MockRunnableWithAccuracy : public joynr::Runnable
 {
 public:
-    static const uint64_t timerAccuracyTolerance_ms = 5U;
+    static const std::uint64_t timerAccuracyTolerance_ms = 5U;
 
     MockRunnableWithAccuracy(bool deleteMe,
-                             const uint64_t delay);
+                             const std::uint64_t delay);
 
     MOCK_CONST_METHOD0(dtorCalled, void ());
     ~MockRunnableWithAccuracy();
@@ -192,7 +192,7 @@ public:
     void run() override;
 
 private:
-    const uint64_t est_ms;
+    const std::uint64_t est_ms;
     static joynr::Logger logger;
 };
 
@@ -598,7 +598,7 @@ public:
         onSuccess(listOfStrings);
     }
 
-    void invokeGetterOnErrorFunctionWithProviderRuntimeException(std::function<void(const int32_t&)> onSuccess,
+    void invokeGetterOnErrorFunctionWithProviderRuntimeException(std::function<void(const std::int32_t&)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) {
         onError(joynr::exceptions::ProviderRuntimeException(providerRuntimeExceptionTestMsg));
     }
@@ -671,7 +671,7 @@ public:
                  void(std::function<void(const std::vector<std::string>& listOfStrings)>,
                       std::function<void(const joynr::exceptions::JoynrException& exception)>));
     MOCK_METHOD2(getAttributeWithProviderRuntimeException,
-                 void(std::function<void(const int32_t&)>,
+                 void(std::function<void(const std::int32_t&)>,
                       std::function<void(const joynr::exceptions::ProviderRuntimeException&)>));
     MOCK_METHOD2(methodWithProviderRuntimeException,
                  void(std::function<void()>,
@@ -710,8 +710,8 @@ public:
     MOCK_METHOD2_T(add, void(const Key &keyId, T* value));
     MOCK_METHOD2_T(add, void(const Key& keyId, std::shared_ptr < T > value));
 
-    MOCK_METHOD3_T(add, void(const Key &keyId, T* value, int64_t ttl_ms));
-    MOCK_METHOD3_T(add, void(const Key& keyId, std::shared_ptr < T > value, int64_t ttl_ms));
+    MOCK_METHOD3_T(add, void(const Key &keyId, T* value, std::int64_t ttl_ms));
+    MOCK_METHOD3_T(add, void(const Key& keyId, std::shared_ptr < T > value, std::int64_t ttl_ms));
     MOCK_METHOD1_T(remove, void(const Key& keyId));
 };
 

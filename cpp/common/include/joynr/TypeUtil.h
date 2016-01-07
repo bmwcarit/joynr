@@ -23,7 +23,7 @@
 
 #include <string>
 #include <vector>
-#include <stdint.h>
+#include <cstdint>
 #include <chrono>
 
 #include "joynr/Variant.h"
@@ -39,107 +39,107 @@ class JOYNRCOMMON_EXPORT TypeUtil
 {
 public:
     /**
-      * Converts a int into a int16_t
+      * Converts a int into a std::int16_t
       */
-    static int16_t toStdInt16(const int& qtValue)
+    static std::int16_t toStdInt16(const int& qtValue)
     {
-        return static_cast<int16_t>(qtValue);
+        return static_cast<std::int16_t>(qtValue);
     }
 
     /**
-      * Converts a int16_t object into a int object
+      * Converts a std::int16_t object into a int object
       */
-    static int toInt(const int16_t& stdValue)
+    static int toInt(const std::int16_t& stdValue)
     {
         return static_cast<int>(stdValue);
     }
 
     /**
-      * Converts a int into a uint16_t
+      * Converts a int into a std::uint16_t
       */
-    static uint16_t toStdUInt16(const int& qtValue)
+    static std::uint16_t toStdUInt16(const int& qtValue)
     {
-        return static_cast<uint16_t>(qtValue);
+        return static_cast<std::uint16_t>(qtValue);
     }
 
     /**
-      * Converts a uint16_t object into a int object
+      * Converts a std::uint16_t object into a int object
       */
-    static int toInt(const uint16_t& stdValue)
+    static int toInt(const std::uint16_t& stdValue)
     {
         return static_cast<int>(stdValue);
+    }
+
+    /**
+      * Converts a std::int32_t object into a int object
+      */
+    static int toInt(const std::int32_t& stdValue)
+    {
+        return static_cast<int>(stdValue);
+    }
+
+    /**
+      * Converts a std::uint32_t object into a int object
+      */
+    static int toInt(const std::uint32_t& stdValue)
+    {
+        return static_cast<int>(stdValue);
+    }
+
+    /**
+      * Converts a int into a std::int32_t
+      */
+    static std::int32_t toStdInt32(const int& qtValue)
+    {
+        return static_cast<std::int32_t>(qtValue);
     }
 
     /**
       * Converts a int32_t object into a int object
       */
-    static int toInt(const int32_t& stdValue)
+    static int toQt(const std::int32_t& stdValue)
     {
         return static_cast<int>(stdValue);
     }
 
     /**
-      * Converts a uint32_t object into a int object
+      * Converts a int into a std::uint32_t
       */
-    static int toInt(const uint32_t& stdValue)
+    static std::uint32_t toStdUInt32(const int& qtValue)
     {
-        return static_cast<int>(stdValue);
+        return static_cast<std::uint32_t>(qtValue);
     }
 
     /**
-      * Converts a int into a int32_t
+      * Converts a std::int64_t into a std::int64_t
       */
-    static int32_t toStdInt32(const int& qtValue)
+    static std::int64_t toStdInt64(const std::int64_t& qtValue)
     {
-        return static_cast<int32_t>(qtValue);
+        return static_cast<std::int64_t>(qtValue);
     }
 
     /**
-      * Converts a int32_t object into a int object
+      * Converts a std::uint64_t object into a std::int64_t object
       */
-    static int toQt(const int32_t& stdValue)
+    static std::int64_t toStdInt64(const std::uint64_t& stdValue)
     {
-        return static_cast<int>(stdValue);
+        return static_cast<std::int64_t>(stdValue);
     }
 
     /**
-      * Converts a int into a uint32_t
+      * Converts a std::int64_t into a std::uint64_t
       */
-    static uint32_t toStdUInt32(const int& qtValue)
+    static std::uint64_t toStdUInt64(const std::int64_t& qtValue)
     {
-        return static_cast<uint32_t>(qtValue);
+        return static_cast<std::uint64_t>(qtValue);
     }
 
     /**
-      * Converts a int64_t into a int64_t
+      * Converts a std::uint64_t object into a std::int64_t object
       */
-    static int64_t toStdInt64(const int64_t& qtValue)
+    static std::int64_t toQt(const std::uint64_t& stdValue)
     {
-        return static_cast<int64_t>(qtValue);
-    }
-
-    /**
-      * Converts a uint64_t object into a int64_t object
-      */
-    static int64_t toStdInt64(const uint64_t& stdValue)
-    {
-        return static_cast<int64_t>(stdValue);
-    }
-
-    /**
-      * Converts a int64_t into a uint64_t
-      */
-    static uint64_t toStdUInt64(const int64_t& qtValue)
-    {
-        return static_cast<uint64_t>(qtValue);
-    }
-
-    /**
-      * Converts a uint64_t object into a int64_t object
-      */
-    static int64_t toQt(const uint64_t& stdValue)
-    {
-        return static_cast<int64_t>(stdValue);
+        return static_cast<std::int64_t>(stdValue);
     }
 
     /**
@@ -161,7 +161,7 @@ public:
     /**
       * Converts a std::chrono::system_clock::time_point to milliseconds
       */
-    static uint64_t toMilliseconds(const std::chrono::system_clock::time_point& timePoint)
+    static std::uint64_t toMilliseconds(const std::chrono::system_clock::time_point& timePoint)
     {
         return std::chrono::duration_cast<std::chrono::milliseconds>(timePoint.time_since_epoch())
                 .count();

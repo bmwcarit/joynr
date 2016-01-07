@@ -31,18 +31,18 @@ class CppStdTypeUtil extends CppTypeUtil {
 	override getTypeName(FBasicTypeId datatype) {
 		switch datatype {
 			case FBasicTypeId::BOOLEAN: "bool"
-			case FBasicTypeId::INT8: "int8_t"
-			case FBasicTypeId::UINT8: "uint8_t"
-			case FBasicTypeId::INT16: "int16_t"
-			case FBasicTypeId::UINT16: "uint16_t"
-			case FBasicTypeId::INT32: "int32_t"
-			case FBasicTypeId::UINT32: "uint32_t"
-			case FBasicTypeId::INT64: "int64_t"
-			case FBasicTypeId::UINT64: "uint64_t"
+			case FBasicTypeId::INT8: "std::int8_t"
+			case FBasicTypeId::UINT8: "std::uint8_t"
+			case FBasicTypeId::INT16: "std::int16_t"
+			case FBasicTypeId::UINT16: "std::uint16_t"
+			case FBasicTypeId::INT32: "std::int32_t"
+			case FBasicTypeId::UINT32: "std::uint32_t"
+			case FBasicTypeId::INT64: "std::int64_t"
+			case FBasicTypeId::UINT64: "std::uint64_t"
 			case FBasicTypeId::FLOAT: "float"
 			case FBasicTypeId::DOUBLE: "double"
 			case FBasicTypeId::STRING: "std::string"
-			case FBasicTypeId::BYTE_BUFFER: "std::vector<uint8_t>"
+			case FBasicTypeId::BYTE_BUFFER: "std::vector<std::uint8_t>"
 			default: throw new IllegalArgumentException("Unsupported basic type: " + datatype.getName)
 		}
 	}
@@ -76,7 +76,7 @@ class CppStdTypeUtil extends CppTypeUtil {
 	}
 
 	def getIncludeForInteger() {
-		"<stdint.h>"
+		"<cstdint>"
 	}
 
 	override getIncludesFor(Iterable<FBasicTypeId> datatypes) {

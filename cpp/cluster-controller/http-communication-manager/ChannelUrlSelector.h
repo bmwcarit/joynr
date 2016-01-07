@@ -25,7 +25,7 @@
 #include "cluster-controller/http-communication-manager/IChannelUrlSelector.h"
 #include "joynr/types/ChannelUrlInformation.h"
 #include "joynr/BounceProxyUrl.h"
-#include <stdint.h>
+#include <cstdint>
 #include <memory>
 #include <chrono>
 

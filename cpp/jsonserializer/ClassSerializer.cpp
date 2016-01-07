@@ -26,49 +26,49 @@ namespace joynr
 {
 
 template <>
-void ClassSerializer<int8_t>::serialize(const int8_t& i, std::ostream& stream)
+void ClassSerializer<std::int8_t>::serialize(const std::int8_t& i, std::ostream& stream)
 {
     stream << std::to_string(i);
 }
 
 template <>
-void ClassSerializer<uint8_t>::serialize(const uint8_t& i, std::ostream& stream)
+void ClassSerializer<std::uint8_t>::serialize(const std::uint8_t& i, std::ostream& stream)
 {
     stream << std::to_string(i);
 }
 
 template <>
-void ClassSerializer<int16_t>::serialize(const int16_t& i, std::ostream& stream)
+void ClassSerializer<std::int16_t>::serialize(const std::int16_t& i, std::ostream& stream)
 {
     stream << std::to_string(i);
 }
 
 template <>
-void ClassSerializer<uint16_t>::serialize(const uint16_t& i, std::ostream& stream)
+void ClassSerializer<std::uint16_t>::serialize(const std::uint16_t& i, std::ostream& stream)
 {
     stream << std::to_string(i);
 }
 
 template <>
-void ClassSerializer<int32_t>::serialize(const int32_t& i, std::ostream& stream)
+void ClassSerializer<std::int32_t>::serialize(const std::int32_t& i, std::ostream& stream)
 {
     stream << std::to_string(i);
 }
 
 template <>
-void ClassSerializer<uint32_t>::serialize(const uint32_t& i, std::ostream& stream)
+void ClassSerializer<std::uint32_t>::serialize(const std::uint32_t& i, std::ostream& stream)
 {
     stream << std::to_string(i);
 }
 
 template <>
-void ClassSerializer<int64_t>::serialize(const int64_t& i, std::ostream& stream)
+void ClassSerializer<std::int64_t>::serialize(const std::int64_t& i, std::ostream& stream)
 {
     stream << std::to_string(i);
 }
 
 template <>
-void ClassSerializer<uint64_t>::serialize(const uint64_t& i, std::ostream& stream)
+void ClassSerializer<std::uint64_t>::serialize(const std::uint64_t& i, std::ostream& stream)
 {
     stream << std::to_string(i);
 }

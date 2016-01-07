@@ -33,7 +33,7 @@
 #include "Future.h"
 #include "joynr/Semaphore.h"
 #include <string>
-#include <stdint.h>
+#include <cstdint>
 #include <joynr/TypeUtil.h>
 #include <cassert>
 #include <memory>
@@ -115,12 +115,12 @@ private:
      *
      * @param timeout The timeout value in milliseconds
      */
-    void waitForArbitrationAndCheckStatus(uint16_t timeout);
+    void waitForArbitrationAndCheckStatus(std::uint16_t timeout);
 
     /**
      * @brief Waits predefined time for the arbitration to complete until
      *
-     *  Calls waitForArbitrationAndCheckStatus(uint16_t timeout) using the
+     *  Calls waitForArbitrationAndCheckStatus(std::uint16_t timeout) using the
      * one-way time-to-live value predefined in the MessagingQos.
      */
     void waitForArbitrationAndCheckStatus();
@@ -162,17 +162,19 @@ private:
     /**
      * @brief Wait for arbitration to finish until specified time interval is expired
      *
-     * waitForArbitration(uint16_t timeout) is used internally before a remote action is executed to
+     * waitForArbitration(std::uint16_t timeout) is used internally before a remote action is
+     *executed to
      * check whether arbitration is already completed.
      *
      * @param timeout specifies the maximal time to wait in milliseconds.
      */
-    void waitForArbitration(uint16_t timeout);
+    void waitForArbitration(std::uint16_t timeout);
 
     /**
      * @brief Wait for arbitration to finish until predefined time interval is expired
      *
-     * waitForArbitration() has the same functionality as waitForArbitration(uint16_t timeout), but
+     * waitForArbitration() has the same functionality as waitForArbitration(std::uint16_t timeout),
+     *but
      * uses the one-way time-to-live value predefined in the MessagingQos.
      */
     void waitForArbitration();
@@ -188,7 +190,7 @@ private:
     std::string participantId;
     joynr::types::CommunicationMiddleware::Enum connection;
     ArbitrationStatus::ArbitrationStatusType arbitrationStatus;
-    int64_t discoveryTimeout;
+    std::int64_t discoveryTimeout;
 
     std::shared_ptr<joynr::system::RoutingTypes::Address> dispatcherAddress;
     std::shared_ptr<MessageRouter> messageRouter;
@@ -331,7 +333,7 @@ void ProxyBuilder<T>::waitForArbitrationAndCheckStatus()
 }
 
 template <class T>
-void ProxyBuilder<T>::waitForArbitrationAndCheckStatus(uint16_t timeout)
+void ProxyBuilder<T>::waitForArbitrationAndCheckStatus(std::uint16_t timeout)
 {
     switch (arbitrationStatus) {
     case ArbitrationStatus::ArbitrationSuccessful:
@@ -354,7 +356,7 @@ void ProxyBuilder<T>::waitForArbitration()
 }
 
 template <class T>
-void ProxyBuilder<T>::waitForArbitration(uint16_t timeout)
+void ProxyBuilder<T>::waitForArbitration(std::uint16_t timeout)
 {
     if (!arbitrationSemaphore.waitFor(std::chrono::milliseconds(timeout))) {
         throw exceptions::DiscoveryException("Arbitration could not be finished in time.");

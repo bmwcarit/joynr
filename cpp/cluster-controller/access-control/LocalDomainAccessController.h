@@ -36,7 +36,7 @@
 #include <string>
 #include <memory>
 #include <vector>
-#include <stdint.h>
+#include <cstdint>
 #include <mutex>
 #include <unordered_map>
 #include <chrono>

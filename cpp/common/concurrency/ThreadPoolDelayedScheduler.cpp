@@ -24,7 +24,7 @@
 #include <functional>
 
 joynr::ThreadPoolDelayedScheduler::ThreadPoolDelayedScheduler(
-        uint8_t numberOfThreads,
+        std::uint8_t numberOfThreads,
         const std::string& name,
         std::chrono::milliseconds defaultDelayMs)
         : joynr::DelayedScheduler(

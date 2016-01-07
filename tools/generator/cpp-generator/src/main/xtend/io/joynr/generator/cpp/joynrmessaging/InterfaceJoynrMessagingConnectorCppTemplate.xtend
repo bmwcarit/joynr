@@ -308,7 +308,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 				clonedMessagingQos.setTtl(joynr::SubscriptionQos::NO_EXPIRY_DATE_TTL());
 			}
 			else{
-				int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+				std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 				clonedMessagingQos.setTtl(subscriptionQos.getExpiryDate() - now);
 			}
 
@@ -480,7 +480,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 			clonedMessagingQos.setTtl(joynr::SubscriptionQos::NO_EXPIRY_DATE_TTL());
 		}
 		else{
-			int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+			std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 			clonedMessagingQos.setTtl(subscriptionQos.getExpiryDate() - now);
 		}
 

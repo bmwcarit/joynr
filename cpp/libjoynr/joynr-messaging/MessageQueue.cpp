@@ -62,9 +62,9 @@ MessageQueueItem* MessageQueue::getNextMessageForParticipant(const std::string d
     return nullptr;
 }
 
-int64_t MessageQueue::removeOutdatedMessages()
+std::int64_t MessageQueue::removeOutdatedMessages()
 {
-    int64_t counter = 0;
+    std::int64_t counter = 0;
     if (queue->empty()) {
         return counter;
     }

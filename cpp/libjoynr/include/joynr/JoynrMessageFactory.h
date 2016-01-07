@@ -93,19 +93,19 @@ private:
     void initMsg(JoynrMessage& msg,
                  const std::string& senderParticipantId,
                  const std::string& receiverParticipantId,
-                 const int64_t ttl,
+                 const std::int64_t ttl,
                  const std::string& payload);
 
     void initReplyMsg(JoynrMessage& msg,
                       const std::string& senderParticipantId,
                       const std::string& receiverParticipantId,
-                      const int64_t ttl,
+                      const std::int64_t ttl,
                       const Reply& payload);
 
     void initSubscriptionPublicationMsg(JoynrMessage& msg,
                                         const std::string& senderParticipantId,
                                         const std::string& receiverParticipantId,
-                                        const int64_t ttl,
+                                        const std::int64_t ttl,
                                         const SubscriptionPublication& payload);
 
     IPlatformSecurityManager* securityManager;

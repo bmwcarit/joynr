@@ -25,7 +25,7 @@
 #include "utils/MockObjects.h"
 #include "joynr/TimeUtils.h"
 
-#include <stdint.h>
+#include <cstdint>
 #include <cassert>
 
 using namespace joynr;
@@ -35,7 +35,7 @@ using ::testing::StrictMock;
 
 
 // Expected accuracy of the timer in milliseconds
-static const uint64_t timerAccuracy_ms = 5U;
+static const std::uint64_t timerAccuracy_ms = 5U;
 
 class SimpleDelayedScheduler :
     public joynr::DelayedScheduler
@@ -49,7 +49,7 @@ public:
     {
     }
 
-    SimpleDelayedScheduler(const uint64_t delay)
+    SimpleDelayedScheduler(const std::uint64_t delay)
         : joynr::DelayedScheduler(std::bind(&SimpleDelayedScheduler::workAvailable, this, std::placeholders::_1)),
           est_ms(TimeUtils::getCurrentMillisSinceEpoch() + delay)
     {
@@ -69,8 +69,8 @@ public:
 
         if(est_ms > 0)
         {
-            const uint64_t now_ms = TimeUtils::getCurrentMillisSinceEpoch();
-            const uint64_t diff_ms = (now_ms > est_ms) ? now_ms - est_ms : est_ms - now_ms;
+            const std::uint64_t now_ms = TimeUtils::getCurrentMillisSinceEpoch();
+            const std::uint64_t diff_ms = (now_ms > est_ms) ? now_ms - est_ms : est_ms - now_ms;
 
             JOYNR_LOG_TRACE(logger, "Runnable is available");
             JOYNR_LOG_TRACE(logger, " ETA        : {}",est_ms);
@@ -89,7 +89,7 @@ public:
     }
 
 private:
-    const uint64_t est_ms;
+    const std::uint64_t est_ms;
 };
 
 TEST(DelayedSchedulerTest, startAndShutdownWithoutWork)

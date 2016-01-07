@@ -25,7 +25,7 @@
 #include "joynr/Timer.h"
 
 #include <chrono>
-#include <stdint.h>
+#include <cstdint>
 
 using namespace joynr;
 

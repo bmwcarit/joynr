@@ -46,7 +46,7 @@ class HttpSender : public IMessageSender
 {
 public:
     static std::chrono::milliseconds MIN_ATTEMPT_TTL();
-    static const int64_t& FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIAL();
+    static const std::int64_t& FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIAL();
 
     HttpSender(const BounceProxyUrl& bounceProxyUrl,
                std::chrono::milliseconds maxAttemptTtl,

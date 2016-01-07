@@ -147,21 +147,21 @@ public:
     );
 
     void sumInts(
-            const std::vector<int32_t>& ints,
-            std::function<void(const int32_t& result)> onSuccess,
+            const std::vector<std::int32_t>& ints,
+            std::function<void(const std::int32_t& result)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError) override
     {
-        int32_t result = std::accumulate(ints.begin(), ints.end(), 0);
+        std::int32_t result = std::accumulate(ints.begin(), ints.end(), 0);
         onSuccess(result);
     }
 
     void returnPrimeNumbers(
-            const int32_t &upperBound,
+            const std::int32_t &upperBound,
             std::function<void(
-                const std::vector<int32_t>& result)> onSuccess,
+                const std::vector<std::int32_t>& result)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError) override
     {
-        std::vector<int32_t> result;
+        std::vector<std::int32_t> result;
         assert(upperBound<7);
         result.clear();
         result.push_back(2);
@@ -223,28 +223,28 @@ public:
             const bool& booleanArg,
             const double& doubleArg,
             const float& floatArg,
-            const int16_t& int16Arg,
-            const int32_t& int32Arg,
-            const int64_t& int64Arg,
-            const int8_t& int8Arg,
+            const std::int16_t& int16Arg,
+            const std::int32_t& int32Arg,
+            const std::int64_t& int64Arg,
+            const std::int8_t& int8Arg,
             const std::string& stringArg,
-            const uint16_t& uInt16Arg,
-            const uint32_t& uInt32Arg,
-            const uint64_t& uInt64Arg,
-            const uint8_t& uInt8Arg,
+            const std::uint16_t& uInt16Arg,
+            const std::uint32_t& uInt32Arg,
+            const std::uint64_t& uInt64Arg,
+            const std::uint8_t& uInt8Arg,
             std::function<void(
                     const bool& booleanOut,
                     const double& doubleOut,
                     const float& floatOut,
-                    const int16_t& int16Out,
-                    const int32_t& int32Out,
-                    const int64_t& int64Out,
-                    const int8_t& int8Out,
+                    const std::int16_t& int16Out,
+                    const std::int32_t& int32Out,
+                    const std::int64_t& int64Out,
+                    const std::int8_t& int8Out,
                     const std::string& stringOut,
-                    const uint16_t& uInt16Out,
-                    const uint32_t& uInt32Out,
-                    const uint64_t& uInt64Out,
-                    const uint8_t& uInt8Out
+                    const std::uint16_t& uInt16Out,
+                    const std::uint32_t& uInt32Out,
+                    const std::uint64_t& uInt64Out,
+                    const std::uint8_t& uInt8Out
             )> onSuccess,
             std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
     ) override

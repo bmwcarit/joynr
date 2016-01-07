@@ -22,7 +22,7 @@
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/Logger.h"
 
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 #include <chrono>
 #include <map>
@@ -55,7 +55,7 @@ public:
      * @param ttl_ms time to live given in miliseconds
      * @return UTC time
      */
-    static JoynrTimePoint convertTtlToAbsoluteTime(int64_t ttl_ms);
+    static JoynrTimePoint convertTtlToAbsoluteTime(std::int64_t ttl_ms);
     /**
      * @brief getMaxAbsoluteTime
      * @return maximum UTC time
@@ -71,7 +71,7 @@ public:
      * @param date UTC time
      * @return ttl in miliseconds
      */
-    static int64_t convertAbsoluteTimeToTtl(JoynrTimePoint date);
+    static std::int64_t convertAbsoluteTimeToTtl(JoynrTimePoint date);
     /**
      * @brief convertAbsoluteTimeToTtlString converts UTC time to ttl string
      * (calculates difference between given UTC time and current time)
@@ -94,9 +94,9 @@ public:
 
     /**
      * @brief returns the current time since epoch in milliseconds
-     * @return current time in milliseconds as uint64_t
+     * @return current time in milliseconds as std::uint64_t
      */
-    static uint64_t nowInMilliseconds();
+    static std::uint64_t nowInMilliseconds();
     ADD_LOGGER(DispatcherUtils);
 };
 

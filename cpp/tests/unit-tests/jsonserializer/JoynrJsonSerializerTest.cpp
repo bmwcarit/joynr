@@ -238,7 +238,7 @@ void initializeRequestWithPrimitiveValues(Request& request) {
     std::string someString{"Hello World"};
     Variant param1 = Variant::make<std::string>(someString);
     request.addParam(param1, "String");
-    const int32_t expectedInt = 101;
+    const std::int32_t expectedInt = 101;
     Variant param2 = Variant::make<int>(expectedInt);
     request.addParam(param2, "Integer");
     SomeOtherType expectedSomeOtherType(2);
@@ -256,9 +256,9 @@ void compareRequestWithPrimitiveValues(const Request& expectedRequest, const Req
     std::vector<Variant> params = actualRequest.getParams();
     EXPECT_EQ(expectedRequest.getParams().size(), params.size());
     Variant intParam = params[1];
-    EXPECT_TRUE(intParam.is<uint64_t>());
-    EXPECT_FALSE(intParam.is<int32_t>());
-    EXPECT_EQ(expectedRequest.getParams().at(1).get<int>(), static_cast<int32_t>(intParam.get<uint64_t>()));
+    EXPECT_TRUE(intParam.is<std::uint64_t>());
+    EXPECT_FALSE(intParam.is<std::int32_t>());
+    EXPECT_EQ(expectedRequest.getParams().at(1).get<int>(), static_cast<std::int32_t>(intParam.get<std::uint64_t>()));
     Variant someOtherTypeParam = params[2];
     EXPECT_TRUE(someOtherTypeParam.is<SomeOtherType>());
     EXPECT_EQ(expectedRequest.getParams().at(2).get<SomeOtherType>().getA(), someOtherTypeParam.get<SomeOtherType>().getA());
@@ -587,7 +587,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrReply)
     std::string someString{"Hello World"};
     std::vector<Variant> expectedResponse;
     expectedResponse.push_back(Variant::make<std::string>(someString));
-    const int32_t expectedInt = 101;
+    const std::int32_t expectedInt = 101;
     expectedResponse.push_back(Variant::make<int>(expectedInt));
     SomeOtherType expectedSomeOtherType(2);
     expectedResponse.push_back(Variant::make<SomeOtherType>(expectedSomeOtherType));
@@ -618,9 +618,9 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrReply)
         EXPECT_TRUE(first.is<std::string>());
         EXPECT_EQ(someString, first.get<std::string>());
         Variant intParam = response[1];
-        EXPECT_TRUE(intParam.is<uint64_t>());
-        EXPECT_FALSE(intParam.is<int32_t>());
-        EXPECT_EQ(expectedInt, static_cast<int32_t>(intParam.get<uint64_t>()));
+        EXPECT_TRUE(intParam.is<std::uint64_t>());
+        EXPECT_FALSE(intParam.is<std::int32_t>());
+        EXPECT_EQ(expectedInt, static_cast<std::int32_t>(intParam.get<std::uint64_t>()));
         Variant someOtherTypeParam = response[2];
         EXPECT_TRUE(someOtherTypeParam.is<SomeOtherType>());
         EXPECT_EQ(expectedSomeOtherType.getA(), someOtherTypeParam.get<SomeOtherType>().getA());
@@ -706,7 +706,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerSubscriptionPublication)
     std::string someString{"Hello World"};
     std::vector<Variant> expectedResponse;
     expectedResponse.push_back(Variant::make<std::string>(someString));
-    const int32_t expectedInt = 101;
+    const std::int32_t expectedInt = 101;
     expectedResponse.push_back(Variant::make<int>(expectedInt));
     SomeOtherType expectedSomeOtherType(2);
     expectedResponse.push_back(Variant::make<SomeOtherType>(expectedSomeOtherType));
@@ -737,9 +737,9 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerSubscriptionPublication)
         EXPECT_TRUE(first.is<std::string>());
         EXPECT_EQ(someString, first.get<std::string>());
         Variant intParam = response[1];
-        EXPECT_TRUE(intParam.is<uint64_t>());
-        EXPECT_FALSE(intParam.is<int32_t>());
-        EXPECT_EQ(expectedInt, static_cast<int32_t>(intParam.get<uint64_t>()));
+        EXPECT_TRUE(intParam.is<std::uint64_t>());
+        EXPECT_FALSE(intParam.is<std::int32_t>());
+        EXPECT_EQ(expectedInt, static_cast<std::int32_t>(intParam.get<std::uint64_t>()));
         Variant someOtherTypeParam = response[2];
         EXPECT_TRUE(someOtherTypeParam.is<SomeOtherType>());
         EXPECT_EQ(expectedSomeOtherType.getA(), someOtherTypeParam.get<SomeOtherType>().getA());
@@ -880,12 +880,12 @@ TEST_F(JoynrJsonSerializerTest, serializeDeserializeTEverythingStruct)
 {
     using namespace joynr::types::TestTypes;
 
-    std::vector<uint8_t> byteBuffer(
-                std::initializer_list<uint8_t>{
+    std::vector<std::uint8_t> byteBuffer(
+                std::initializer_list<std::uint8_t>{
                     1,2,3
                 });
-    std::vector<uint8_t> uInt8Array(
-                std::initializer_list<uint8_t>{
+    std::vector<std::uint8_t> uInt8Array(
+                std::initializer_list<std::uint8_t>{
                     3,2,1
                 });
     std::vector<TEnum::Enum> enumArray(

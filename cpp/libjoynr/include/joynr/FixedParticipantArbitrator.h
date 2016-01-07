@@ -51,7 +51,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(FixedParticipantArbitrator);
     ADD_LOGGER(FixedParticipantArbitrator);
     std::string participantId;
-    int64_t reqCacheDataFreshness;
+    std::int64_t reqCacheDataFreshness;
 };
 
 } // namespace joynr

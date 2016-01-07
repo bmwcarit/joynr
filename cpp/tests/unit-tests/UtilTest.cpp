@@ -135,14 +135,14 @@ TEST_F(UtilTest, convertVectorToVariantVector){
 TEST_F(UtilTest, typeIdSingleType) {
     EXPECT_EQ(0, Util::getTypeId<void>());
     EXPECT_GT(Util::getTypeId<std::string>(), 0);
-    EXPECT_NE(Util::getTypeId<std::string>(), Util::getTypeId<int32_t>());
+    EXPECT_NE(Util::getTypeId<std::string>(), Util::getTypeId<std::int32_t>());
 }
 
 TEST_F(UtilTest, typeIdCompositeType){
-    int typeId1 = Util::getTypeId<std::string, int32_t, float>();
+    int typeId1 = Util::getTypeId<std::string, std::int32_t, float>();
     EXPECT_GT(typeId1, 0);
 
-    int typeId2 = Util::getTypeId<int32_t, std::string, float>();
+    int typeId2 = Util::getTypeId<std::int32_t, std::string, float>();
     EXPECT_NE(typeId1, typeId2);
     int typeIdTEverythingStruct = Util::getTypeId<joynr::types::TestTypes::TEverythingStruct>();
     EXPECT_GT(typeIdTEverythingStruct, 0);
@@ -151,7 +151,7 @@ TEST_F(UtilTest, typeIdCompositeType){
 }
 
 TEST_F(UtilTest, typeIdVector){
-    int typeIdVectorOfInt = Util::getTypeId<std::vector<int32_t>>();
+    int typeIdVectorOfInt = Util::getTypeId<std::vector<std::int32_t>>();
     EXPECT_NE(typeIdVectorOfInt, 0);
 
     int typeIdVectorOfTEverythingStruct = Util::getTypeId<std::vector<joynr::types::TestTypes::TEverythingStruct>>();

@@ -46,7 +46,7 @@ Timer::~Timer()
 
 Timer::TimerId Timer::addTimer(std::function<void(Timer::TimerId)> onTimerExpired,
                                std::function<void(Timer::TimerId)> onActiveTimerRemoved,
-                               uint64_t msToBeExpired,
+                               std::uint64_t msToBeExpired,
                                bool periodic)
 {
     const std::chrono::milliseconds interval(msToBeExpired);

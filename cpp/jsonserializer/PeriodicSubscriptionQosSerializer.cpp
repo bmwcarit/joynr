@@ -38,9 +38,9 @@ void ClassDeserializer<PeriodicSubscriptionQos>::deserialize(
     while (o.hasNextField()) {
         IField& field = o.nextField();
         if (field.name() == "expiryDate") {
-            qos.setExpiryDate(field.value().getIntType<int64_t>());
+            qos.setExpiryDate(field.value().getIntType<std::int64_t>());
         } else if (field.name() == "publicationTtl") {
-            qos.setPublicationTtl(field.value().getIntType<int64_t>());
+            qos.setPublicationTtl(field.value().getIntType<std::int64_t>());
         }
     }
 }

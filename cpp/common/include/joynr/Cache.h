@@ -46,7 +46,7 @@ public:
      * @brief Cache with initialy customized cacheCapacity
      * @param cacheCapacity
      */
-    explicit Cache(uint32_t cacheCapacity)
+    explicit Cache(std::uint32_t cacheCapacity)
             : cacheMap(), cacheCapacity(static_cast<std::size_t>(cacheCapacity))
     {
     }
@@ -78,7 +78,7 @@ public:
      * cache is going to be truncated by removing elements from the beginning
      * (oldest are going to be thrown away)
      */
-    void setCacheCapacity(uint32_t cacheCapacity)
+    void setCacheCapacity(std::uint32_t cacheCapacity)
     {
         std::size_t capacity = static_cast<std::size_t>(cacheCapacity);
         if (capacity < cacheMap.size()) {

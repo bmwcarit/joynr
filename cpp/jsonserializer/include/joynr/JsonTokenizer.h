@@ -249,18 +249,18 @@ public:
 
 protected:
     /**
-     * @brief conversion to int64_t, doesn't allow conversion of boolean to int
+     * @brief conversion to std::int64_t, doesn't allow conversion of boolean to int
      */
-    int64_t getInt64() const override;
+    std::int64_t getInt64() const override;
     /**
      * @brief conversion to double
      */
     double getDouble() const override;
     /**
-     * @brief conversion to uint64_t
+     * @brief conversion to std::uint64_t
      * @return
      */
-    uint64_t getUInt64() const override;
+    std::uint64_t getUInt64() const override;
 private:
     Variant value;
     JsonTokenizer& tokenizer;

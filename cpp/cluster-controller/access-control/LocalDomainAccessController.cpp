@@ -66,7 +66,7 @@ public:
     void abort();
 
 private:
-    std::atomic<uint8_t> counter;
+    std::atomic<std::uint8_t> counter;
     std::atomic<bool> aborted;
     LocalDomainAccessController& parent;
     std::string domain;
@@ -838,7 +838,7 @@ LocalDomainAccessController::Initialiser::Initialiser(LocalDomainAccessControlle
 
 void LocalDomainAccessController::Initialiser::update()
 {
-    uint8_t prevValue = counter--;
+    std::uint8_t prevValue = counter--;
     if (prevValue == 1) {
         // Initialisation has finished
         if (aborted) {

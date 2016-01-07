@@ -39,9 +39,9 @@ std::chrono::milliseconds HttpSender::MIN_ATTEMPT_TTL()
     return std::chrono::seconds(2);
 }
 
-const int64_t& HttpSender::FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIAL()
+const std::int64_t& HttpSender::FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIAL()
 {
-    static int64_t value = 3;
+    static std::int64_t value = 3;
     return value;
 }
 
@@ -158,7 +158,7 @@ void HttpSender::SendMessageRunnable::run()
     // A channelId can have several Url's. Hence, we cannot use up all the time we have for testing
     // just one (in case it is not available). So we use just a fraction, yet at least MIN... and
     // at most MAX... seconds.
-    int64_t curlTimeout = std::max(
+    std::int64_t curlTimeout = std::max(
             getRemainingTtl_ms() / HttpSender::FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIAL(),
             HttpSender::MIN_ATTEMPT_TTL().count());
     std::string url = resolveUrlForChannelId(std::chrono::milliseconds(curlTimeout));

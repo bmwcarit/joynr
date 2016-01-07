@@ -118,7 +118,7 @@ TEST_F(End2EndPerformanceTest, sendManyRequests) {
                                                ->setCached(false)
                                                ->setDiscoveryQos(discoveryQos)
                                                ->build());
-    uint64_t startTime = DispatcherUtils::nowInMilliseconds();
+    std::uint64_t startTime = DispatcherUtils::nowInMilliseconds();
     std::vector<std::shared_ptr<Future<int> > >testFutureList;
     int numberOfRequests = 150;
     int successfulRequests = 0;
@@ -141,7 +141,7 @@ TEST_F(End2EndPerformanceTest, sendManyRequests) {
             EXPECT_EQ(expectedValue, actualValue);
         }
     }
-    uint64_t stopTime = DispatcherUtils::nowInMilliseconds();
+    std::uint64_t stopTime = DispatcherUtils::nowInMilliseconds();
     //check if all Requests were successful
     EXPECT_EQ(numberOfRequests, successfulRequests);
     Logger logger("End2EndPerformanceTest");

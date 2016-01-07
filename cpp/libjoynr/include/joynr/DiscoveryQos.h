@@ -46,7 +46,7 @@ public:
      * @param cacheMaxAge The maximum age in milliseconds a cached entry will be considered for
      * discovery
      */
-    explicit DiscoveryQos(const int64_t& cacheMaxAge);
+    explicit DiscoveryQos(const std::int64_t& cacheMaxAge);
 
     /** @brief Destructor */
     virtual ~DiscoveryQos() = default;
@@ -73,13 +73,13 @@ public:
      * @brief Gets the default timeout value
      * @return the default timeout value in milliseconds
      */
-    static int64_t& DEFAULT_DISCOVERYTIMEOUT();
+    static std::int64_t& DEFAULT_DISCOVERYTIMEOUT();
 
     /**
      * @brief Gets the value signalling that no timeout has been selected
      * @return the value signalling that no timeout has been selected
      */
-    static int64_t& NO_TIMEOUT();
+    static std::int64_t& NO_TIMEOUT();
 
     /**
      * @brief Gets the default arbitration strategy value
@@ -91,13 +91,13 @@ public:
      * @brief Gets the default maximum cache age value in milliseconds
      * @return the default maximum cache age value in milliseconds
      */
-    static int64_t& DEFAULT_CACHEMAXAGE();
+    static std::int64_t& DEFAULT_CACHEMAXAGE();
 
     /**
      * @brief Gets the value signalling that no cache is to be used
      * @return the value signalling that no cache is to be used
      */
-    static int64_t& DO_NOT_USE_CACHE();
+    static std::int64_t& DO_NOT_USE_CACHE();
 
     /**
      * @brief Gets the default discovery scope value
@@ -109,7 +109,7 @@ public:
      * @brief Gets the default retry interval value
      * @return the default retry interval value
      */
-    static int64_t& DEFAULT_RETRYINTERVAL();
+    static std::int64_t& DEFAULT_RETRYINTERVAL();
 
     /**
      * @brief Sets the arbitration strategy for the discovery process
@@ -145,7 +145,7 @@ public:
      *The arbitration
      *            lookup might happen multiple times during this time span.
      */
-    void setDiscoveryTimeout(int64_t discoveryTimeout);
+    void setDiscoveryTimeout(std::int64_t discoveryTimeout);
 
     /**
      * @brief Gets the currently used discovery timeout value
@@ -156,7 +156,7 @@ public:
      *
      * @return the duration used to discover matching providers
      */
-    int64_t getDiscoveryTimeout() const;
+    std::int64_t getDiscoveryTimeout() const;
 
     /**
      * @brief Allows to add special parameters to the DiscoveryQos which will be used
@@ -200,7 +200,7 @@ public:
      * @return the maximum age of locally cached provider entries to be used during discovery and
      * arbitration
      */
-    int64_t getCacheMaxAge() const;
+    std::int64_t getCacheMaxAge() const;
 
     /**
      * @brief Sets the maximum age value for cached values
@@ -220,7 +220,7 @@ public:
      *       local capabilities directory a lookup in the global capabilitiesDirectory will
      *       take place.
      */
-    void setCacheMaxAge(const int64_t& cacheMaxAge);
+    void setCacheMaxAge(const std::int64_t& cacheMaxAge);
 
     /**
      * @brief Find out whether arbitration will only consider providers that support onChange
@@ -275,7 +275,7 @@ public:
      *
      * @return the retry interval in milliseconds
      */
-    int64_t getRetryInterval() const;
+    std::int64_t getRetryInterval() const;
 
     /**
      * @brief Determine the retry interval value (in milliseconds)
@@ -285,7 +285,7 @@ public:
      *
      * @param retryInterval the minimum interval between to arbitration retries
      */
-    void setRetryInterval(int64_t retryInterval);
+    void setRetryInterval(std::int64_t retryInterval);
 
     /*
      * Constants
@@ -301,11 +301,11 @@ public:
 private:
     std::map<std::string, types::CustomParameter> customParameters;
     ArbitrationStrategy arbitrationStrategy;
-    int64_t discoveryTimeout;
-    int64_t cacheMaxAge;
+    std::int64_t discoveryTimeout;
+    std::int64_t cacheMaxAge;
     joynr::types::DiscoveryScope::Enum discoveryScope;
     bool providerMustSupportOnChange;
-    int64_t retryInterval;
+    std::int64_t retryInterval;
 };
 
 } // namespace joynr

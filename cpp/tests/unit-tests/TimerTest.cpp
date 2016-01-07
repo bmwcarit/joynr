@@ -24,7 +24,7 @@
 
 #include "joynr/TimeUtils.h"
 #include "joynr/Semaphore.h"
-#include <stdint.h>
+#include <cstdint>
 #include <unordered_map>
 
 using namespace joynr;
@@ -33,7 +33,7 @@ using namespace ::testing;
 using ::testing::StrictMock;
 
 // Expected accuracy of the timer in milliseconds
-static const int64_t timerAccuracy_ms = 10;
+static const std::int64_t timerAccuracy_ms = 10;
 
 ACTION_P(ReleaseSemaphore, semaphore)
 {
@@ -63,10 +63,10 @@ public:
         timer.shutdown();
     }
 
-    Timer::TimerId addTimer(uint64_t ms, bool periodic)
+    Timer::TimerId addTimer(std::uint64_t ms, bool periodic)
     {
          Timer::TimerId id = timer.addTimer(expired, removed, ms, periodic);
-         uint64_t start = TimeUtils::getCurrentMillisSinceEpoch();
+         std::uint64_t start = TimeUtils::getCurrentMillisSinceEpoch();
          timerStartMapping.emplace(id, start);
          return id;
     }
@@ -76,9 +76,9 @@ public:
 
     void timerExpired(Timer::TimerId id)
     {
-        const uint64_t now_ms   = TimeUtils::getCurrentMillisSinceEpoch();
-        const uint64_t start_ms = timerStartMapping.at(id);
-        const int64_t  diff_ms  = now_ms - start_ms;
+        const std::uint64_t now_ms   = TimeUtils::getCurrentMillisSinceEpoch();
+        const std::uint64_t start_ms = timerStartMapping.at(id);
+        const std::int64_t  diff_ms  = now_ms - start_ms;
 
         JOYNR_LOG_TRACE(logger, "Timer {} expired",id);
         JOYNR_LOG_TRACE(logger, "  started    : {}",start_ms);
@@ -90,7 +90,7 @@ public:
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-local-typedefs"
-    MOCK_CONST_METHOD2(onTimerExpired, void (Timer::TimerId, int64_t));
+    MOCK_CONST_METHOD2(onTimerExpired, void (Timer::TimerId, std::int64_t));
     MOCK_CONST_METHOD1(onTimerRemoved, void (Timer::TimerId id));
 #pragma GCC diagnostic pop
 
@@ -103,7 +103,7 @@ private:
     std::function<void(Timer::TimerId)> expired;
     std::function<void(Timer::TimerId)> removed;
 
-    std::unordered_map<Timer::TimerId, uint64_t> timerStartMapping;
+    std::unordered_map<Timer::TimerId, std::uint64_t> timerStartMapping;
 };
 
 INIT_LOGGER(TimerTest);

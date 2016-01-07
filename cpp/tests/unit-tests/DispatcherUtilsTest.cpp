@@ -19,7 +19,7 @@
 #include <gtest/gtest.h>
 #include "joynr/DispatcherUtils.h"
 #include <chrono>
-#include <stdint.h>
+#include <cstdint>
 
 using namespace joynr;
 
@@ -47,8 +47,8 @@ TEST_F(DispatcherUtilsTest, maxAbsoluteTimeIsValid) {
 TEST_F(DispatcherUtilsTest, convertTtlToAbsoluteTimeReturnsValidDateTime) {
     JoynrTimePoint ttl60s(DispatcherUtils::convertTtlToAbsoluteTime(60000));
     JOYNR_LOG_DEBUG(logger, "60s TTL: {}  [{}]",DispatcherUtils::convertAbsoluteTimeToTtlString(ttl60s),std::chrono::duration_cast<std::chrono::milliseconds>(ttl60s.time_since_epoch()).count());
-    int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-    int64_t ttl60sMillis = ttl60s.time_since_epoch().count();
+    std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    std::int64_t ttl60sMillis = ttl60s.time_since_epoch().count();
     EXPECT_LT(now + 59000, ttl60sMillis);
 }
 
@@ -82,9 +82,9 @@ TEST_F(DispatcherUtilsTest, convertTtlToAbsoluteTimeHandelsZeroTtl) {
 }
 
 TEST_F(DispatcherUtilsTest, testJoynrTimePointWithWithHugeNumbers) {
-    uint64_t hugeNumber = 9007199254740991;
-    uint64_t nowInMs = DispatcherUtils::nowInMilliseconds();
-    uint64_t deltaInMs = hugeNumber - nowInMs;
+    std::uint64_t hugeNumber = 9007199254740991;
+    std::uint64_t nowInMs = DispatcherUtils::nowInMilliseconds();
+    std::uint64_t deltaInMs = hugeNumber - nowInMs;
     JoynrTimePoint now{std::chrono::milliseconds(nowInMs)};
     JoynrTimePoint fixture{std::chrono::milliseconds(hugeNumber)};
     JoynrTimePoint delta{std::chrono::milliseconds(deltaInMs)};

@@ -47,7 +47,7 @@
 #include "joynr/TypeUtil.h"
 
 #include <chrono>
-#include <stdint.h>
+#include <cstdint>
 #include <cassert>
 
 namespace joynr
@@ -172,8 +172,8 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
                 logger, "Got reply from RequestInterpreter for requestReplyId {}", requestReplyId);
         JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
                 std::chrono::system_clock::now());
-        int64_t ttl = std::chrono::duration_cast<std::chrono::milliseconds>(requestExpiryDate - now)
-                              .count();
+        std::int64_t ttl = std::chrono::duration_cast<std::chrono::milliseconds>(requestExpiryDate -
+                                                                                 now).count();
         messageSender->sendReply(receiverId, // receiver of the request is sender of reply
                                  senderId,   // sender of request is receiver of reply
                                  MessagingQos(ttl),
@@ -191,8 +191,8 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
                         requestReplyId);
         JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
                 std::chrono::system_clock::now());
-        int64_t ttl = std::chrono::duration_cast<std::chrono::milliseconds>(requestExpiryDate - now)
-                              .count();
+        std::int64_t ttl = std::chrono::duration_cast<std::chrono::milliseconds>(requestExpiryDate -
+                                                                                 now).count();
         messageSender->sendReply(receiverId, // receiver of the request is sender of reply
                                  senderId,   // sender of request is receiver of reply
                                  MessagingQos(ttl),

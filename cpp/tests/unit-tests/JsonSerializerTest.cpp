@@ -81,10 +81,10 @@ protected:
         Variant responseVariant = receivedReply->getResponse().at(0);
 
         T responseValue;
-        if (responseVariant.is<int64_t>()) {
-            responseValue = static_cast<T>(responseVariant.get<int64_t>());
-        } else if(responseVariant.is<uint64_t>()) {
-            responseValue = static_cast<T>(responseVariant.get<uint64_t>());
+        if (responseVariant.is<std::int64_t>()) {
+            responseValue = static_cast<T>(responseVariant.get<std::int64_t>());
+        } else if(responseVariant.is<std::uint64_t>()) {
+            responseValue = static_cast<T>(responseVariant.get<std::uint64_t>());
         } else {
             responseValue = responseVariant.get<T>();
         }
@@ -166,7 +166,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JoynrMessage) {
 TEST_F(JsonSerializerTest, serialize_deserialize_byte_array) {
 
     // Build a list to test with
-    std::vector<uint8_t> expectedUint8Vector;//{0x01, 0x02, 0x03, 0xff, 0xfe, 0xfd};
+    std::vector<std::uint8_t> expectedUint8Vector;//{0x01, 0x02, 0x03, 0xff, 0xfe, 0xfd};
     expectedUint8Vector.push_back(1);
     expectedUint8Vector.push_back(2);
     expectedUint8Vector.push_back(3);
@@ -208,7 +208,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_byte_array) {
     std::vector<Variant>::const_iterator deserializedIt(deserializedVariantVectorParam.begin());
     while (expectedIt != expectedVariantVectorParam.end() && deserializedIt != deserializedVariantVectorParam.end()) {
         EXPECT_EQ("UInt64", deserializedIt->getTypeName());
-        EXPECT_EQ(expectedIt->get<uint8_t>(), static_cast<uint8_t>(deserializedIt->get<uint64_t>()));
+        EXPECT_EQ(expectedIt->get<std::uint8_t>(), static_cast<std::uint8_t>(deserializedIt->get<std::uint64_t>()));
         expectedIt++;
         deserializedIt++;
     }
@@ -220,75 +220,75 @@ TEST_F(JsonSerializerTest, serialize_deserialize_byte_array) {
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_replyWithInt8) {
-    // int8_t alias (signed) char
-    int8_t int8MinValue = std::numeric_limits<int8_t>::min();
-    int8_t int8MaxValue = std::numeric_limits<int8_t>::max();
+    // std::int8_t alias (signed) char
+    std::int8_t int8MinValue = std::numeric_limits<std::int8_t>::min();
+    std::int8_t int8MaxValue = std::numeric_limits<std::int8_t>::max();
 
-    serializeDeserializeReply<int8_t>(int8MinValue);
-    serializeDeserializeReply<int8_t>(int8MaxValue);
+    serializeDeserializeReply<std::int8_t>(int8MinValue);
+    serializeDeserializeReply<std::int8_t>(int8MaxValue);
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_replyWithUnsignedInt8) {
-    // uint8_t alias unsigned char
-    uint8_t unsignedInt8MinValue = std::numeric_limits<uint8_t>::min();
-    uint8_t unsignedInt8MaxValue = std::numeric_limits<uint8_t>::max();
+    // std::uint8_t alias unsigned char
+    std::uint8_t unsignedInt8MinValue = std::numeric_limits<std::uint8_t>::min();
+    std::uint8_t unsignedInt8MaxValue = std::numeric_limits<std::uint8_t>::max();
 
-    serializeDeserializeReply<uint8_t>(unsignedInt8MinValue);
-    serializeDeserializeReply<uint8_t>(unsignedInt8MaxValue);
+    serializeDeserializeReply<std::uint8_t>(unsignedInt8MinValue);
+    serializeDeserializeReply<std::uint8_t>(unsignedInt8MaxValue);
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_replyWithInt16) {
-    // int16_t alias (signed) short
-    int16_t int16MinValue = std::numeric_limits<int16_t>::min();
-    int16_t int16MaxValue = std::numeric_limits<int16_t>::max();
+    // std::int16_t alias (signed) short
+    std::int16_t int16MinValue = std::numeric_limits<std::int16_t>::min();
+    std::int16_t int16MaxValue = std::numeric_limits<std::int16_t>::max();
 
-    serializeDeserializeReply<int16_t>(int16MinValue);
-    serializeDeserializeReply<int16_t>(int16MaxValue);
+    serializeDeserializeReply<std::int16_t>(int16MinValue);
+    serializeDeserializeReply<std::int16_t>(int16MaxValue);
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_replyWithUnsignedInt16) {
-    // uint16_t alias unsigned short
-    uint16_t unsignedInt16MinValue = std::numeric_limits<uint16_t>::min();
-    uint16_t unsignedInt16MaxValue = std::numeric_limits<uint16_t>::max();
+    // std::uint16_t alias unsigned short
+    std::uint16_t unsignedInt16MinValue = std::numeric_limits<std::uint16_t>::min();
+    std::uint16_t unsignedInt16MaxValue = std::numeric_limits<std::uint16_t>::max();
 
-    serializeDeserializeReply<uint16_t>(unsignedInt16MinValue);
-    serializeDeserializeReply<uint16_t>(unsignedInt16MaxValue);
+    serializeDeserializeReply<std::uint16_t>(unsignedInt16MinValue);
+    serializeDeserializeReply<std::uint16_t>(unsignedInt16MaxValue);
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_replyWithInt32) {
-    // int32_t alias (signed) int
-    int32_t int32MinValue = std::numeric_limits<int32_t>::min();
-    int32_t int32MaxValue = std::numeric_limits<int32_t>::max();
+    // std::int32_t alias (signed) int
+    std::int32_t int32MinValue = std::numeric_limits<std::int32_t>::min();
+    std::int32_t int32MaxValue = std::numeric_limits<std::int32_t>::max();
 
-    serializeDeserializeReply<int32_t>(int32MinValue);
-    serializeDeserializeReply<int32_t>(int32MaxValue);
+    serializeDeserializeReply<std::int32_t>(int32MinValue);
+    serializeDeserializeReply<std::int32_t>(int32MaxValue);
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_replyWithUnsignedInt32) {
-    // uint32_t alias unsigned int
-    uint32_t unsignedInt32MinValue = std::numeric_limits<uint32_t>::min();
-    uint32_t unsignedInt32MaxValue = std::numeric_limits<uint32_t>::max();
+    // std::uint32_t alias unsigned int
+    std::uint32_t unsignedInt32MinValue = std::numeric_limits<std::uint32_t>::min();
+    std::uint32_t unsignedInt32MaxValue = std::numeric_limits<std::uint32_t>::max();
 
-    serializeDeserializeReply<uint32_t>(unsignedInt32MinValue);
-    serializeDeserializeReply<uint32_t>(unsignedInt32MaxValue);
+    serializeDeserializeReply<std::uint32_t>(unsignedInt32MinValue);
+    serializeDeserializeReply<std::uint32_t>(unsignedInt32MaxValue);
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_replyWithInt64) {
-    // uint8_t alias (signed) long long
-    int64_t int64MinValue = std::numeric_limits<uint8_t>::min();
-    uint8_t int64MaxValue = std::numeric_limits<uint8_t>::max();
+    // std::uint8_t alias (signed) long long
+    std::int64_t int64MinValue = std::numeric_limits<std::uint8_t>::min();
+    std::uint8_t int64MaxValue = std::numeric_limits<std::uint8_t>::max();
 
-    serializeDeserializeReply<uint8_t>(int64MinValue);
-    serializeDeserializeReply<uint8_t>(int64MaxValue);
+    serializeDeserializeReply<std::uint8_t>(int64MinValue);
+    serializeDeserializeReply<std::uint8_t>(int64MaxValue);
 }
 
 TEST_F(JsonSerializerTest, serialize_deserialize_replyWithUnsignedInt64) {
-    // uint64_t alias unsigned long long
-    uint64_t unsignedInt64MinValue = std::numeric_limits<uint64_t>::min();
-    uint64_t unsignedInt64MaxValue = std::numeric_limits<uint64_t>::max();
+    // std::uint64_t alias unsigned long long
+    std::uint64_t unsignedInt64MinValue = std::numeric_limits<std::uint64_t>::min();
+    std::uint64_t unsignedInt64MaxValue = std::numeric_limits<std::uint64_t>::max();
 
-    serializeDeserializeReply<uint64_t>(unsignedInt64MinValue);
-    serializeDeserializeReply<uint64_t>(unsignedInt64MaxValue);
+    serializeDeserializeReply<std::uint64_t>(unsignedInt64MinValue);
+    serializeDeserializeReply<std::uint64_t>(unsignedInt64MaxValue);
 }
 
 TEST_F(JsonSerializerTest, serialize_operation_with_multiple_params1) {

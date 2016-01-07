@@ -27,7 +27,7 @@
 #include "joynr/DispatcherUtils.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include <chrono>
-#include <stdint.h>
+#include <cstdint>
 
 using namespace joynr;
 

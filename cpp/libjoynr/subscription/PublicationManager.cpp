@@ -45,7 +45,7 @@
 #include <sstream>
 #include <cassert>
 #include <chrono>
-#include <stdint.h>
+#include <cstdint>
 #include <mutex>
 
 namespace joynr
@@ -62,7 +62,7 @@ public:
                 std::shared_ptr<RequestCaller> requestCaller);
     ~Publication();
 
-    int64_t timeOfLastPublication;
+    std::int64_t timeOfLastPublication;
     IPublicationSender* sender;
     std::shared_ptr<RequestCaller> requestCaller;
     SubscriptionAttributeListener* attributeListener;
@@ -196,8 +196,8 @@ PublicationManager::PublicationManager(int maxThreads)
 
 bool isSubscriptionExpired(const SubscriptionQos* qos, int offset = 0)
 {
-    int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
-                          std::chrono::system_clock::now().time_since_epoch()).count();
+    std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
+                               std::chrono::system_clock::now().time_since_epoch()).count();
     return qos->getExpiryDate() != joynr::SubscriptionQos::NO_EXPIRY_DATE() &&
            qos->getExpiryDate() < (now + offset);
 }
@@ -245,9 +245,9 @@ void PublicationManager::handleAttributeSubscriptionRequest(
 
         // Schedule a runnable to remove the publication when it finishes
         const SubscriptionQos* qos = requestInfo->getSubscriptionQosPtr();
-        int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
-                              std::chrono::system_clock::now().time_since_epoch()).count();
-        int64_t publicationEndDelay = qos->getExpiryDate() - now;
+        std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                   std::chrono::system_clock::now().time_since_epoch()).count();
+        std::int64_t publicationEndDelay = qos->getExpiryDate() - now;
 
         // check for a valid publication end date
         if (!isSubscriptionExpired(qos)) {
@@ -383,9 +383,9 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
 
         // Schedule a runnable to remove the publication when it finishes
         const SubscriptionQos* qos = requestInfo->getSubscriptionQosPtr();
-        int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
-                              std::chrono::system_clock::now().time_since_epoch()).count();
-        int64_t publicationEndDelay = qos->getExpiryDate() - now;
+        std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                   std::chrono::system_clock::now().time_since_epoch()).count();
+        std::int64_t publicationEndDelay = qos->getExpiryDate() - now;
 
         // check for a valid publication end date
         if (!isSubscriptionExpired(qos)) {
@@ -794,7 +794,7 @@ bool PublicationManager::isShuttingDown()
     return shuttingDown;
 }
 
-int64_t PublicationManager::getPublicationTtl(
+std::int64_t PublicationManager::getPublicationTtl(
         std::shared_ptr<SubscriptionRequest> subscriptionRequest) const
 {
     const SubscriptionQos* qosPtr = subscriptionRequest->getSubscriptionQosPtr();
@@ -837,8 +837,8 @@ void PublicationManager::sendSubscriptionPublication(
                                                    subscriptionPublication);
 
     // Make note of when this publication was sent
-    int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
-                          std::chrono::system_clock::now().time_since_epoch()).count();
+    std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
+                               std::chrono::system_clock::now().time_since_epoch()).count();
     publication->timeOfLastPublication = now;
 
     {
@@ -880,14 +880,14 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
         std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
         // See if the publication is needed
         const SubscriptionQos* qos = subscriptionRequest->getSubscriptionQosPtr();
-        int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
-                              std::chrono::system_clock::now().time_since_epoch()).count();
-        int64_t publicationInterval =
+        std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                   std::chrono::system_clock::now().time_since_epoch()).count();
+        std::int64_t publicationInterval =
                 SubscriptionUtil::getPeriodicPublicationInterval(subscriptionRequest->getQos());
 
         // check if the subscription qos needs a periodic publication
         if (publicationInterval > 0) {
-            int64_t timeSinceLast = now - publication->timeOfLastPublication;
+            std::int64_t timeSinceLast = now - publication->timeOfLastPublication;
             // publish only if not published in the current interval
             if (timeSinceLast < publicationInterval) {
                 JOYNR_LOG_DEBUG(
@@ -896,7 +896,7 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
                         publicationInterval,
                         timeSinceLast);
 
-                int64_t delayUntilNextPublication = publicationInterval - timeSinceLast;
+                std::int64_t delayUntilNextPublication = publicationInterval - timeSinceLast;
                 assert(delayUntilNextPublication >= 0);
                 delayedScheduler->schedule(new PublisherRunnable(*this, subscriptionId),
                                            std::chrono::milliseconds(delayUntilNextPublication));
@@ -997,7 +997,7 @@ void PublicationManager::attributeValueChanged(const std::string& subscriptionId
     {
         std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
         if (!isPublicationAlreadyScheduled(subscriptionId)) {
-            int64_t timeUntilNextPublication =
+            std::int64_t timeUntilNextPublication =
                     getTimeUntilNextPublication(publication, subscriptionRequest->getQos());
 
             if (timeUntilNextPublication == 0) {
@@ -1037,7 +1037,7 @@ void PublicationManager::broadcastOccurred(
     {
         std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
         // Only proceed if publication can immediately be sent
-        int64_t timeUntilNextPublication =
+        std::int64_t timeUntilNextPublication =
                 getTimeUntilNextPublication(publication, subscriptionRequest->getQos());
 
         if (timeUntilNextPublication == 0) {
@@ -1069,16 +1069,17 @@ bool PublicationManager::isPublicationAlreadyScheduled(const std::string& subscr
     return vectorContains(currentScheduledPublications, subscriptionId);
 }
 
-int64_t PublicationManager::getTimeUntilNextPublication(std::shared_ptr<Publication> publication,
-                                                        Variant qos)
+std::int64_t PublicationManager::getTimeUntilNextPublication(
+        std::shared_ptr<Publication> publication,
+        Variant qos)
 {
     std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
     // Check the last publication time against the min interval
-    int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
-                          std::chrono::system_clock::now().time_since_epoch()).count();
-    int64_t minInterval = SubscriptionUtil::getMinInterval(qos);
+    std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
+                               std::chrono::system_clock::now().time_since_epoch()).count();
+    std::int64_t minInterval = SubscriptionUtil::getMinInterval(qos);
 
-    int64_t timeSinceLast = now - publication->timeOfLastPublication;
+    std::int64_t timeSinceLast = now - publication->timeOfLastPublication;
 
     if (minInterval > 0 && timeSinceLast < minInterval) {
         return minInterval - timeSinceLast;
@@ -1088,7 +1089,7 @@ int64_t PublicationManager::getTimeUntilNextPublication(std::shared_ptr<Publicat
 }
 
 void PublicationManager::reschedulePublication(const std::string& subscriptionId,
-                                               int64_t nextPublication)
+                                               std::int64_t nextPublication)
 {
     if (nextPublication > 0) {
         std::lock_guard<std::mutex> currentScheduledLocker(currentScheduledPublicationsMutex);

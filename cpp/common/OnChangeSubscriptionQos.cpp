@@ -25,21 +25,21 @@ using namespace joynr;
 static const bool isOnChangeSubscriptionQosRegistered =
         Variant::registerType<OnChangeSubscriptionQos>("joynr.OnChangeSubscriptionQos");
 
-const int64_t& OnChangeSubscriptionQos::DEFAULT_MIN_INTERVAL()
+const std::int64_t& OnChangeSubscriptionQos::DEFAULT_MIN_INTERVAL()
 {
-    static int64_t defaultMinInterval = 1000;
+    static std::int64_t defaultMinInterval = 1000;
     return defaultMinInterval;
 }
 
-const int64_t& OnChangeSubscriptionQos::MIN_MIN_INTERVAL()
+const std::int64_t& OnChangeSubscriptionQos::MIN_MIN_INTERVAL()
 {
-    static int64_t minMinInterval = 0;
+    static std::int64_t minMinInterval = 0;
     return minMinInterval;
 }
 
-const int64_t& OnChangeSubscriptionQos::MAX_MIN_INTERVAL()
+const std::int64_t& OnChangeSubscriptionQos::MAX_MIN_INTERVAL()
 {
-    static int64_t maxMinInterval = 2592000000UL;
+    static std::int64_t maxMinInterval = 2592000000UL;
     return maxMinInterval;
 }
 
@@ -48,8 +48,8 @@ OnChangeSubscriptionQos::OnChangeSubscriptionQos()
 {
 }
 
-OnChangeSubscriptionQos::OnChangeSubscriptionQos(const int64_t& validity,
-                                                 const int64_t& minInterval)
+OnChangeSubscriptionQos::OnChangeSubscriptionQos(const std::int64_t& validity,
+                                                 const std::int64_t& minInterval)
         : SubscriptionQos(validity), minInterval(DEFAULT_MIN_INTERVAL())
 {
     setMinInterval(minInterval);
@@ -60,12 +60,12 @@ OnChangeSubscriptionQos::OnChangeSubscriptionQos(const OnChangeSubscriptionQos& 
 {
 }
 
-int64_t OnChangeSubscriptionQos::getMinInterval() const
+std::int64_t OnChangeSubscriptionQos::getMinInterval() const
 {
     return minInterval;
 }
 
-void OnChangeSubscriptionQos::setMinInterval(const int64_t& minInterval)
+void OnChangeSubscriptionQos::setMinInterval(const std::int64_t& minInterval)
 {
     this->minInterval = minInterval;
     if (this->minInterval < MIN_MIN_INTERVAL()) {

@@ -32,7 +32,7 @@
 #include "joynr/PeriodicSubscriptionQos.h"
 #include "joynr/Util.h"
 #include <chrono>
-#include <stdint.h>
+#include <cstdint>
 
 using ::testing::A;
 using ::testing::_;
@@ -60,7 +60,7 @@ TEST(SubscriptionManagerTest, registerSubscription_subscriptionRequestIsCorrect)
     std::shared_ptr<SubscriptionCallback<types::Localisation::GpsLocation> > gpslocationCallback(
                 new SubscriptionCallback<types::Localisation::GpsLocation>(mockGpsSubscriptionListener));
     OnChangeSubscriptionQos qos{};
-    int64_t now = TimeUtils::getCurrentMillisSinceEpoch();
+    std::int64_t now = TimeUtils::getCurrentMillisSinceEpoch();
     qos.setExpiryDate(now + 10000);
     Variant qosVariant = Variant::make<OnChangeSubscriptionQos>(qos);
     SubscriptionRequest subscriptionRequest;
