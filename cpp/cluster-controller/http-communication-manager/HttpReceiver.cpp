@@ -160,7 +160,7 @@ bool HttpReceiver::tryToDeleteChannel()
     LOG_DEBUG(logger,
               FormatString("sending delete channel request to %1").arg(deleteChannelUrl).str());
     HttpResult deleteChannelResult = deleteChannelRequest->execute();
-    long statusCode = deleteChannelResult.getStatusCode();
+    std::int32_t statusCode = deleteChannelResult.getStatusCode();
     if (statusCode == 200) {
         channelCreatedSemaphore->waitFor(
                 std::chrono::seconds(5)); // Reset the channel created Semaphore.
