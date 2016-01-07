@@ -123,10 +123,10 @@ public:
      * will be rounded down.
      * </ul>
      *
-     * @param period
+     * @param maxInterval
      *            The publisher will send a notification at least every maxInterval_ms.
      */
-    virtual void setMaxInterval(const int64_t& period);
+    virtual void setMaxInterval(const int64_t& maxInterval);
 
     /**
      * @brief Gets the alertAfter interval in milliseconds

@@ -77,9 +77,9 @@ int64_t SubscriptionQos::getPublicationTtl() const
     return publicationTtl;
 }
 
-void SubscriptionQos::setPublicationTtl(const int64_t& publicationTtl)
+void SubscriptionQos::setPublicationTtl(const int64_t& publicationTtl_ms)
 {
-    this->publicationTtl = publicationTtl;
+    this->publicationTtl = publicationTtl_ms;
     if (this->publicationTtl > MAX_PUBLICATION_TTL()) {
         this->publicationTtl = MAX_PUBLICATION_TTL();
     }

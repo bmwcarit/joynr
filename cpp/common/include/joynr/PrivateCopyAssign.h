@@ -23,12 +23,11 @@
 // This header file should be included manually in every Joynr source file that
 // requires it.
 //
-// This defines a macro that marks a C++ copy constructor and assignment
-// operator as private.
+// This defines a macro that deletes copy constructor and assignment operator.
 //------------------------------------------------------------------------------
 
 #define DISALLOW_COPY_AND_ASSIGN(TypeName)                                                         \
-    TypeName(const TypeName&);                                                                     \
-    void operator=(const TypeName&)
+    TypeName(const TypeName&) = delete;                                                            \
+    TypeName& operator=(const TypeName&) = delete
 
 #endif // PRIVATE_COPY_ASSIGN_H

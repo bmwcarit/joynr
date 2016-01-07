@@ -35,9 +35,7 @@ class ISubscriptionListener
 {
 public:
     /** @brief Constructor */
-    ISubscriptionListener()
-    {
-    }
+    ISubscriptionListener() = default;
 
     /** @brief Destructor */
     virtual ~ISubscriptionListener() = default;

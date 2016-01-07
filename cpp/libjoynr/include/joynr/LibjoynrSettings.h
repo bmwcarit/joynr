@@ -43,7 +43,7 @@ public:
     ~LibjoynrSettings() = default;
 
     std::string getParticipantIdsPersistenceFilename() const;
-    void setParticipantIdsPersistenceFilename(const std::string& persistenceFilename);
+    void setParticipantIdsPersistenceFilename(const std::string& filename);
 
     void printSettings() const;
 

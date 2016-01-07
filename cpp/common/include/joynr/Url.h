@@ -117,7 +117,7 @@ public:
      * @brief Move constructor
      * @param other The Url to move
      */
-    Url(Url&& other) = default;
+    Url(Url&& other) noexcept = default;
 
     /**
      * @brief Indicate if two Urls are equal

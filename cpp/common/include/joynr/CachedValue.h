@@ -32,13 +32,13 @@ class CachedValue
 
 public:
     CachedValue<T>();
-    CachedValue<T>(const CachedValue<T>& other);
+    CachedValue<T>(const CachedValue<T>&) = default;
     CachedValue<T>(T value, TimeStamp timestamp);
 
     T getValue();
     TimeStamp getTimestamp();
 
-    CachedValue<T>& operator=(const CachedValue<T>& other);
+    CachedValue<T>& operator=(const CachedValue<T>&) = default;
     bool operator==(const CachedValue<T>& other) const;
     bool operator!=(const CachedValue<T>& other) const;
 
@@ -49,13 +49,7 @@ private:
 
 template <class T>
 CachedValue<T>::CachedValue()
-        : value(T()), timestamp(0)
-{
-}
-
-template <class T>
-CachedValue<T>::CachedValue(const CachedValue<T>& other)
-        : value(other.value), timestamp(other.timestamp)
+        : value(T()), timestamp(TimeStamp::min())
 {
 }
 
@@ -80,24 +74,13 @@ T CachedValue<T>::getValue()
 template <class T>
 bool CachedValue<T>::operator==(const CachedValue<T>& other) const
 {
-    if (other.value == value) {
-        return true;
-    }
-    return false;
+    return other.value == value;
 }
 
 template <class T>
 bool CachedValue<T>::operator!=(const CachedValue<T>& other) const
 {
     return !(*this == other);
-}
-
-template <class T>
-CachedValue<T>& CachedValue<T>::operator=(const CachedValue<T>& other)
-{
-    this->value = other.value;
-    this->timestamp = other.timestamp;
-    return *this;
 }
 
 } // namespace joynr

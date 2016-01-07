@@ -73,7 +73,7 @@ struct IndexList<0>
  * @return the new tuple containing the subset
  */
 template <size_t... Indices, typename Tuple>
-auto tupleSubset(const Tuple& tuple, IntegerList<Indices...> indices)
+auto tupleSubset(const Tuple& tuple, IntegerList<Indices...>)
         -> decltype(std::make_tuple(std::get<Indices>(tuple)...))
 {
     return std::make_tuple(std::get<Indices>(tuple)...);

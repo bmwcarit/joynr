@@ -184,7 +184,7 @@ std::string ChannelUrlSelector::constructUrl(const std::string& baseUrl)
     QUrl sendUrl(QString::fromStdString(baseUrl));
     std::string path = sendUrl.path().toStdString();
     using boost::algorithm::ends_with;
-    if (!ends_with(path, "/")) {
+    if (!path.empty() && !ends_with(path, "/")) {
         path.append("/");
     }
     path.append(BounceProxyUrl::SEND_MESSAGE_PATH_APPENDIX());
@@ -199,8 +199,7 @@ std::string ChannelUrlSelector::constructDefaultUrl(const std::string& channelId
     LOG_DEBUG(
             logger,
             "constructDefaultUrl ... using default Url inferred from channelId and BounceProxyUrl");
-    if (!useDefaultUrl)
-        assert(false);
+    assert(useDefaultUrl);
     std::string url = bounceProxyUrl.getBounceProxyBaseUrl().toString() + channelId;
     types::ChannelUrlInformation urlInformation;
     std::vector<std::string> urls;

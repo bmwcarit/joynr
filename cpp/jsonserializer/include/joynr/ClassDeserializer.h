@@ -78,10 +78,10 @@ public:
 };
 
 template <class T>
-Variant ClassDeserializer<T>::deserializeVariant(IObject& o)
+Variant ClassDeserializer<T>::deserializeVariant(IObject& object)
 {
     Variant variant = Variant::make<T>();
-    deserialize(variant.get<T>(), o);
+    deserialize(variant.get<T>(), object);
     return variant;
 }
 

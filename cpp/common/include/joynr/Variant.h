@@ -87,7 +87,7 @@ public:
      * @brief Register type T for use in Variants
      */
     template <typename T>
-    static bool registerType(std::string name);
+    static bool registerType(std::string typeName);
 
     /**
      * @brief Variant is copiable type
@@ -100,14 +100,14 @@ public:
      * @brief Variant move constructor
      * @param variantRvalue
      */
-    Variant(Variant&& variantRvalue) = default;
+    Variant(Variant&&) noexcept = default;
 
     /**
      * @brief operator = to support move semantics
      * @param variantRvalue
      * @return
      */
-    Variant& operator=(Variant&& variantRvalue) = default;
+    Variant& operator=(Variant&&) noexcept = default;
 
     /**
      * @brief operator = to support copy

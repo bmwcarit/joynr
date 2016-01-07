@@ -106,7 +106,7 @@ public:
     virtual void log(LogLevel logLevel, const std::string& message) = 0;
 };
 
-} // namespace joynr
 } // namespace joynr_logging
+} // namespace joynr
 
 #endif // JOYNRLOGGING_H_
