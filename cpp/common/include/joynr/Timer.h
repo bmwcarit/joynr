@@ -29,8 +29,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <functional>
-
-using namespace std::chrono;
+#include <chrono>
 
 namespace joynr
 {
@@ -102,7 +101,7 @@ private:
     TimerId currentId;
 
     /*! Sorted map by absolute time_point of active timers */
-    std::map<const system_clock::time_point, TimerData*> timers;
+    std::map<const std::chrono::system_clock::time_point, TimerData*> timers;
 
     /*! Wait condition used as a timer */
     std::condition_variable waitCondition;

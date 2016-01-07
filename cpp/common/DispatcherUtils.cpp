@@ -25,15 +25,14 @@
 namespace joynr
 {
 
-using namespace std::chrono;
-
 // Dispatcher Utils
 INIT_LOGGER(DispatcherUtils);
 
 JoynrTimePoint DispatcherUtils::convertTtlToAbsoluteTime(int64_t ttl_ms)
 {
-    JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
-    JoynrTimePoint expiryDate = now + duration<long long>(ttl_ms);
+    JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
+            std::chrono::system_clock::now());
+    JoynrTimePoint expiryDate = now + std::chrono::duration<long long>(ttl_ms);
 
     // check for overflow
     if (ttl_ms > 0) {
@@ -44,7 +43,8 @@ JoynrTimePoint DispatcherUtils::convertTtlToAbsoluteTime(int64_t ttl_ms)
     } else if (ttl_ms < 0) {
         bool negativeOverflow = expiryDate > now;
         if (negativeOverflow) {
-            return time_point_cast<milliseconds>(system_clock::time_point::min());
+            return std::chrono::time_point_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::time_point::min());
         }
     }
 
@@ -53,20 +53,24 @@ JoynrTimePoint DispatcherUtils::convertTtlToAbsoluteTime(int64_t ttl_ms)
 
 JoynrTimePoint DispatcherUtils::getMaxAbsoluteTime()
 {
-    JoynrTimePoint maxTimePoint = time_point_cast<milliseconds>(system_clock::time_point::max());
+    JoynrTimePoint maxTimePoint = std::chrono::time_point_cast<std::chrono::milliseconds>(
+            std::chrono::system_clock::time_point::max());
     return maxTimePoint;
 }
 
 JoynrTimePoint DispatcherUtils::getMinAbsoluteTime()
 {
-    JoynrTimePoint maxTimePoint = time_point_cast<milliseconds>(system_clock::time_point::min());
+    JoynrTimePoint maxTimePoint = std::chrono::time_point_cast<std::chrono::milliseconds>(
+            std::chrono::system_clock::time_point::min());
     return maxTimePoint;
 }
 
 int64_t DispatcherUtils::convertAbsoluteTimeToTtl(JoynrTimePoint date)
 {
-    int64_t millis = duration_cast<milliseconds>(date.time_since_epoch()).count();
-    int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    int64_t millis =
+            std::chrono::duration_cast<std::chrono::milliseconds>(date.time_since_epoch()).count();
+    int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
+                          std::chrono::system_clock::now().time_since_epoch()).count();
     return millis - now;
 }
 
@@ -97,13 +101,14 @@ std::string DispatcherUtils::convertAbsoluteTimeToString(JoynrTimePoint date)
     return stringStream.str();
 }
 
-system_clock::time_point DispatcherUtils::now()
+std::chrono::system_clock::time_point DispatcherUtils::now()
 {
-    return system_clock::now();
+    return std::chrono::system_clock::now();
 }
 
 std::uint64_t DispatcherUtils::nowInMilliseconds()
 {
-    return duration_cast<milliseconds>(DispatcherUtils::now().time_since_epoch()).count();
+    return std::chrono::duration_cast<std::chrono::milliseconds>(
+                   DispatcherUtils::now().time_since_epoch()).count();
 }
 } // namespace joynr

@@ -33,8 +33,6 @@
 
 #include "joynr/Variant.h"
 
-using namespace std::chrono;
-
 namespace joynr
 {
 

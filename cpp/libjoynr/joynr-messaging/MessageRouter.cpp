@@ -39,8 +39,6 @@
 namespace joynr
 {
 
-using namespace std::chrono;
-
 INIT_LOGGER(MessageRouter);
 
 //------ ConsumerPermissionCallback --------------------------------------------
@@ -181,7 +179,8 @@ bool MessageRouter::isChildMessageRouter()
 void MessageRouter::route(const JoynrMessage& message)
 {
     assert(messagingStubFactory != nullptr);
-    JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
+    JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
+            std::chrono::system_clock::now());
     if (now > message.getHeaderExpiryDate()) {
         JOYNR_LOG_WARN(logger,
                        "Received expired message. Dropping the message (ID: {}).",

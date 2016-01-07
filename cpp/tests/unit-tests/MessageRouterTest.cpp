@@ -29,7 +29,6 @@
 #include <stdint.h>
 
 using namespace joynr;
-using namespace std::chrono;
 
 class MessageRouterTest : public ::testing::Test {
 public:
@@ -54,8 +53,8 @@ public:
                         messagingSettings.getChannelUrlDirectoryChannelId())
         );
         messageRouter->addProvisionedNextHop(messagingSettings.getChannelUrlDirectoryParticipantId(), addressChannelUrlDirectory);
-        JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
-        joynrMessage.setHeaderExpiryDate(now + milliseconds(100));
+        JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
+        joynrMessage.setHeaderExpiryDate(now + std::chrono::milliseconds(100));
     }
 
     ~MessageRouterTest() {

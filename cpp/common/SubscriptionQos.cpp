@@ -29,8 +29,6 @@ namespace joynr
 static const bool isSubscriptionQosRegistered =
         Variant::registerType<SubscriptionQos>("joynr.SubscriptionQos");
 
-using namespace std::chrono;
-
 const int64_t& SubscriptionQos::DEFAULT_PUBLICATION_TTL()
 {
     static const int64_t defaultPublicationTtl = 10000;
@@ -108,7 +106,8 @@ void SubscriptionQos::setValidity(const int64_t& validity)
     if (validity == -1) {
         setExpiryDate(joynr::SubscriptionQos::NO_EXPIRY_DATE());
     } else {
-        int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+        int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
+                              std::chrono::system_clock::now().time_since_epoch()).count();
         setExpiryDate(now + validity);
     }
 }

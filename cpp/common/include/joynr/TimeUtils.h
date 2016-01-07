@@ -22,8 +22,6 @@
 #include <chrono>
 #include <stdint.h>
 
-using namespace std::chrono;
-
 namespace joynr
 {
 
@@ -33,9 +31,9 @@ namespace TimeUtils
  * @brief Returns the current time as an absolute std::time_point
  * @return Current time as a std::time_point
  */
-inline static system_clock::time_point getCurrentTime()
+inline static std::chrono::system_clock::time_point getCurrentTime()
 {
-    return system_clock::now();
+    return std::chrono::system_clock::now();
 }
 /**
  * @brief Returns the current time as a relative duration in MS since epoch
@@ -43,7 +41,8 @@ inline static system_clock::time_point getCurrentTime()
  */
 inline static uint64_t getCurrentMillisSinceEpoch()
 {
-    return duration_cast<milliseconds>(getCurrentTime().time_since_epoch()).count();
+    return std::chrono::duration_cast<std::chrono::milliseconds>(
+                   getCurrentTime().time_since_epoch()).count();
 }
 } // namespace TimeUtils
 

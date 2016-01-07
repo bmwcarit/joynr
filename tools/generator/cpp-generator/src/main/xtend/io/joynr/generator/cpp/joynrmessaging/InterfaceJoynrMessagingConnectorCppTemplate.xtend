@@ -107,8 +107,6 @@ internalRequestObject.setMethodName("«method.joynrName»");
 
 «getNamespaceStarter(serviceInterface)»
 
-using namespace std::chrono;
-
 «interfaceName»JoynrMessagingConnector::«interfaceName»JoynrMessagingConnector(
 		joynr::IJoynrMessageSender* joynrMessageSender,
 		joynr::ISubscriptionManager* subscriptionManager,
@@ -310,7 +308,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 				clonedMessagingQos.setTtl(joynr::SubscriptionQos::NO_EXPIRY_DATE_TTL());
 			}
 			else{
-				int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+				int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 				clonedMessagingQos.setTtl(subscriptionQos.getExpiryDate() - now);
 			}
 
@@ -482,7 +480,7 @@ bool «interfaceName»JoynrMessagingConnector::usesClusterController() const{
 			clonedMessagingQos.setTtl(joynr::SubscriptionQos::NO_EXPIRY_DATE_TTL());
 		}
 		else{
-			int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+			int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 			clonedMessagingQos.setTtl(subscriptionQos.getExpiryDate() - now);
 		}
 

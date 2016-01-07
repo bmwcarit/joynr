@@ -225,7 +225,7 @@ void LongPollingMessageReceiver::checkServerTime()
     JOYNR_LOG_DEBUG(logger, "CheckServerTime: sending request to Bounce Proxy ({})", timeCheckUrl);
     std::chrono::system_clock::time_point localTimeBeforeRequest = std::chrono::system_clock::now();
     HttpResult timeCheckResult = timeCheckRequest->execute();
-    system_clock::time_point localTimeAfterRequest = std::chrono::system_clock::now();
+    std::chrono::system_clock::time_point localTimeAfterRequest = std::chrono::system_clock::now();
     uint64_t localTime = (TypeUtil::toMilliseconds(localTimeBeforeRequest) +
                           TypeUtil::toMilliseconds(localTimeAfterRequest)) /
                          2;
@@ -245,11 +245,12 @@ void LongPollingMessageReceiver::checkServerTime()
         auto minMaxTime = std::minmax(serverTime, localTime);
         uint64_t diff = minMaxTime.second - minMaxTime.first;
 
-        JOYNR_LOG_INFO(logger,
-                       "CheckServerTime [server time={}] [local time={}] [diff={} ms]",
-                       TypeUtil::toDateString(JoynrTimePoint(milliseconds(serverTime))),
-                       TypeUtil::toDateString(JoynrTimePoint(milliseconds(localTime))),
-                       diff);
+        JOYNR_LOG_INFO(
+                logger,
+                "CheckServerTime [server time={}] [local time={}] [diff={} ms]",
+                TypeUtil::toDateString(JoynrTimePoint(std::chrono::milliseconds(serverTime))),
+                TypeUtil::toDateString(JoynrTimePoint(std::chrono::milliseconds(localTime))),
+                diff);
 
         if (diff > 500) {
             JOYNR_LOG_ERROR(logger, "CheckServerTime: time difference to server is {} ms", diff);

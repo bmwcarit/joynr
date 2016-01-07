@@ -53,8 +53,6 @@
 namespace joynr
 {
 
-using namespace std::chrono;
-
 INIT_LOGGER(Dispatcher);
 
 Dispatcher::Dispatcher(JoynrMessageSender* messageSender, int maxThreads)
@@ -172,8 +170,10 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
         // purpose)
         JOYNR_LOG_DEBUG(
                 logger, "Got reply from RequestInterpreter for requestReplyId {}", requestReplyId);
-        JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
-        int64_t ttl = duration_cast<milliseconds>(requestExpiryDate - now).count();
+        JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
+                std::chrono::system_clock::now());
+        int64_t ttl = std::chrono::duration_cast<std::chrono::milliseconds>(requestExpiryDate - now)
+                              .count();
         messageSender->sendReply(receiverId, // receiver of the request is sender of reply
                                  senderId,   // sender of request is receiver of reply
                                  MessagingQos(ttl),
@@ -189,8 +189,10 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
         JOYNR_LOG_DEBUG(logger,
                         "Got error reply from RequestInterpreter for requestReplyId {}",
                         requestReplyId);
-        JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
-        int64_t ttl = duration_cast<milliseconds>(requestExpiryDate - now).count();
+        JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
+                std::chrono::system_clock::now());
+        int64_t ttl = std::chrono::duration_cast<std::chrono::milliseconds>(requestExpiryDate - now)
+                              .count();
         messageSender->sendReply(receiverId, // receiver of the request is sender of reply
                                  senderId,   // sender of request is receiver of reply
                                  MessagingQos(ttl),

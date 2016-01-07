@@ -22,8 +22,6 @@
 #include <cassert>
 #include <functional>
 
-using namespace std::placeholders;
-
 namespace joynr
 {
 
@@ -65,6 +63,7 @@ DelayedScheduler::RunnableHandle DelayedScheduler::schedule(Runnable* runnable,
         return INVALID_RUNNABLE_HANDLE;
     }
 
+    using std::placeholders::_1;
     RunnableHandle currentHandle =
             timer.addTimer(std::bind(&DelayedScheduler::timerForRunnableExpired, this, _1),
                            std::bind(&DelayedScheduler::timerForRunnableRemoved, this, _1),

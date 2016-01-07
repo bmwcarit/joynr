@@ -23,13 +23,13 @@
 #include <cassert>
 #include <functional>
 
-using namespace std::placeholders;
-
 joynr::ThreadPoolDelayedScheduler::ThreadPoolDelayedScheduler(
         uint8_t numberOfThreads,
         const std::string& name,
         std::chrono::milliseconds defaultDelayMs)
-        : joynr::DelayedScheduler(std::bind(&ThreadPool::execute, &threadPool, _1), defaultDelayMs),
+        : joynr::DelayedScheduler(
+                  std::bind(&ThreadPool::execute, &threadPool, std::placeholders::_1),
+                  defaultDelayMs),
           threadPool(name, numberOfThreads)
 {
 }

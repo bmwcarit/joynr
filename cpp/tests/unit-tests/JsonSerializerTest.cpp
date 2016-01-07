@@ -49,11 +49,6 @@
 #include <sstream>
 
 using namespace joynr;
-using namespace std::chrono;
-
-// TODO:
-// 1. If the decision is made to use c++11, g++ >= version 5.5 then JSON literals can be
-//    encoded using raw string literals.
 
 class JsonSerializerTest : public testing::Test {
 
@@ -137,7 +132,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JoynrMessage) {
     expectedRequest.setMethodName("serialize_JoynrMessage");
     expectedRequest.setRequestReplyId("xyz");
     JoynrMessage expectedJoynrMessage;
-    JoynrTimePoint testExpiryDate = time_point_cast<milliseconds>(system_clock::now()) + milliseconds(10000000);
+    JoynrTimePoint testExpiryDate = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now()) + std::chrono::milliseconds(10000000);
     expectedJoynrMessage.setHeaderExpiryDate(testExpiryDate);
     expectedJoynrMessage.setType(JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST);
     expectedJoynrMessage.setPayload(JsonSerializer::serialize(expectedRequest));
@@ -937,15 +932,15 @@ TEST_F(JsonSerializerTest, serialize_deserialize_ListComplexity) {
     request1.setParams(params1);
 
     //Time request serialization
-    JoynrTimePoint start = time_point_cast<milliseconds>(system_clock::now());
+    JoynrTimePoint start = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
     std::string newSerializedContent = JsonSerializer::serialize<Request>(request1);
-    JoynrTimePoint end = time_point_cast<milliseconds>(system_clock::now());
+    JoynrTimePoint end = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
     int serializationElapsed1 = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
     // Time request deserialization
-    start = time_point_cast<milliseconds>(system_clock::now());
+    start = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
     Request* deserialized1 = JsonSerializer::deserialize<Request>(newSerializedContent);
-    end = time_point_cast<milliseconds>(system_clock::now());
+    end = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
     int deserializationElapsed1 = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
     // Double the size of the JSON list
@@ -957,9 +952,9 @@ TEST_F(JsonSerializerTest, serialize_deserialize_ListComplexity) {
     Request request2;
     request2.setMethodName("serialize_deserialize_JsonRequestTest_method");
     std::vector<Variant> params2;
-    start = time_point_cast<milliseconds>(system_clock::now());
+    start = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
     std::vector<Variant> inputv2 = TypeUtil::toVectorOfVariants(inputLocationList);
-    end = time_point_cast<milliseconds>(system_clock::now());
+    end = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
     int convertedElapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
     JOYNR_LOG_DEBUG(logger, "converted to vector<Variant> {} in {} milliseconds", firstListSize, convertedElapsed);
     // to silence unused-variable compiler warnings
@@ -968,15 +963,15 @@ TEST_F(JsonSerializerTest, serialize_deserialize_ListComplexity) {
     request2.setParams(params2);
 
     //Time request serialization with new serializer
-    start = time_point_cast<milliseconds>(system_clock::now());
+    start = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
     newSerializedContent = JsonSerializer::serialize<Request>(request2);
-    end = time_point_cast<milliseconds>(system_clock::now());
+    end = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
     int serializationElapsed2 = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
     // Time request deserialization with new serializer
-    start = time_point_cast<milliseconds>(system_clock::now());
+    start = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
     Request* deserialized2 = JsonSerializer::deserialize<Request>(newSerializedContent);
-    end = time_point_cast<milliseconds>(system_clock::now());
+    end = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
     int deserializationElapsed2 = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
     JOYNR_LOG_DEBUG(logger, "{} Objects serialized in {} milliseconds", firstListSize, serializationElapsed1);

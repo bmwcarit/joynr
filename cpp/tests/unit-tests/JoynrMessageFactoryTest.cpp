@@ -30,7 +30,6 @@
 #include <stdint.h>
 
 using namespace joynr;
-using namespace std::chrono;
 
 class JoynrMessageFactoryTest : public ::testing::Test {
 public:
@@ -138,12 +137,12 @@ TEST_F(JoynrMessageFactoryTest, createRequest){
                 request
     );
     //warning if prepareRequest needs to long this assert will fail as it compares absolute timestamps
-    JoynrTimePoint now = time_point_cast<milliseconds>(system_clock::now());
-    JoynrTimePoint expectedExpiryDate = now + duration<long long>(qos.getTtl());
+    JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
+    JoynrTimePoint expectedExpiryDate = now + std::chrono::duration<long long>(qos.getTtl());
     JoynrTimePoint expiryDate = joynrMessage.getHeaderExpiryDate();
     EXPECT_NEAR(expectedExpiryDate.time_since_epoch().count(), expiryDate.time_since_epoch().count(), 100.);
-    JOYNR_LOG_DEBUG(logger, "expiryDate: {} [{}]",DispatcherUtils::convertAbsoluteTimeToTtlString(expiryDate),duration_cast<milliseconds>(expiryDate.time_since_epoch()).count());
-    JOYNR_LOG_DEBUG(logger, "expectedExpiryDate: {}  [{}]",DispatcherUtils::convertAbsoluteTimeToTtlString(expectedExpiryDate),duration_cast<milliseconds>(expectedExpiryDate.time_since_epoch()).count());
+    JOYNR_LOG_DEBUG(logger, "expiryDate: {} [{}]",DispatcherUtils::convertAbsoluteTimeToTtlString(expiryDate), std::chrono::duration_cast<std::chrono::milliseconds>(expiryDate.time_since_epoch()).count());
+    JOYNR_LOG_DEBUG(logger, "expectedExpiryDate: {}  [{}]",DispatcherUtils::convertAbsoluteTimeToTtlString(expectedExpiryDate), std::chrono::duration_cast<std::chrono::milliseconds>(expectedExpiryDate.time_since_epoch()).count());
 
     checkHeaderCreatorFromTo(joynrMessage);
     checkRequest(joynrMessage);

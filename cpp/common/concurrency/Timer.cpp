@@ -49,7 +49,7 @@ Timer::TimerId Timer::addTimer(std::function<void(Timer::TimerId)> onTimerExpire
                                uint64_t msToBeExpired,
                                bool periodic)
 {
-    const milliseconds interval(msToBeExpired);
+    const std::chrono::milliseconds interval(msToBeExpired);
     TimerData* newTimer = nullptr;
 
     {
@@ -144,7 +144,7 @@ void Timer::runTimer()
 
             // Get the first timer in the sorted map and lock until expiry
             std::unique_lock<std::mutex> lock(mutex);
-            const system_clock::time_point& tp = timers.begin()->first;
+            const std::chrono::system_clock::time_point& tp = timers.begin()->first;
             if (waitCondition.wait_until(lock, tp) == std::cv_status::timeout) {
 
                 // In case of a race condition we should check if the time

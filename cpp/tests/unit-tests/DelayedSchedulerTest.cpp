@@ -16,8 +16,6 @@
  * limitations under the License.
  * #L%
  */
-// We need to tell boost we will use the std placeholders
-#define BOOST_BIND_NO_PLACEHOLDERS
 
 #include "gtest/gtest.h"
 #include "joynr/Logger.h"
@@ -35,7 +33,6 @@ using namespace joynr;
 using namespace ::testing;
 using ::testing::StrictMock;
 
-using namespace std::placeholders;
 
 // Expected accuracy of the timer in milliseconds
 static const uint64_t timerAccuracy_ms = 5U;
@@ -47,13 +44,13 @@ class SimpleDelayedScheduler :
 public:
 
     SimpleDelayedScheduler()
-        : joynr::DelayedScheduler(std::bind(&SimpleDelayedScheduler::workAvailable, this, _1)),
+        : joynr::DelayedScheduler(std::bind(&SimpleDelayedScheduler::workAvailable, this, std::placeholders::_1)),
           est_ms(0)
     {
     }
 
     SimpleDelayedScheduler(const uint64_t delay)
-        : joynr::DelayedScheduler(std::bind(&SimpleDelayedScheduler::workAvailable, this, _1)),
+        : joynr::DelayedScheduler(std::bind(&SimpleDelayedScheduler::workAvailable, this, std::placeholders::_1)),
           est_ms(TimeUtils::getCurrentMillisSinceEpoch() + delay)
     {
     }

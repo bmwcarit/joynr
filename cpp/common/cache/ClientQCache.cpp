@@ -24,8 +24,6 @@
 namespace joynr
 {
 
-using namespace std::chrono;
-
 static const int MAX_CUMMULATIVE_CACHE_COST = 1000;
 
 ClientQCache::ClientQCache() : cache(), mutex()
@@ -46,7 +44,7 @@ Variant ClientQCache::lookUp(const std::string& attributeId)
 void ClientQCache::insert(std::string attributeId, Variant value)
 {
     std::lock_guard<std::mutex> lock(mutex);
-    auto now = system_clock::now();
+    auto now = std::chrono::system_clock::now();
     CachedValue<Variant>* cachedValue = new CachedValue<Variant>(value, now);
     cache.insert(attributeId, cachedValue);
 }

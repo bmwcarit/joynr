@@ -31,8 +31,6 @@
 #include <algorithm>
 #include <chrono>
 
-using namespace std::chrono;
-
 namespace joynr
 {
 
