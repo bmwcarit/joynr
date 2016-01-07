@@ -71,9 +71,9 @@ public:
         messageFactory(),
         messageSender(mockMessageRouter),
         dispatcher(&messageSender),
-        subscriptionManager(NULL),
+        subscriptionManager(nullptr),
         provider(new MockTestProvider),
-        publicationManager(NULL),
+        publicationManager(nullptr),
         requestCaller(new joynr::tests::testRequestCaller(provider))
     {
     }

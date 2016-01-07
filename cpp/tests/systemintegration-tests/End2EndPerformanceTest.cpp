@@ -51,8 +51,8 @@ public:
     std::string domain;
 
     End2EndPerformanceTest() :
-        runtime1(NULL),
-        runtime2(NULL),
+        runtime1(nullptr),
+        runtime2(nullptr),
         settings1("test-resources/SystemIntegrationTest1.settings"),
         settings2("test-resources/SystemIntegrationTest2.settings"),
         baseUuid(Util::createUuid()),
@@ -63,11 +63,11 @@ public:
         Settings* settings_1 = new Settings("test-resources/SystemIntegrationTest1.settings");
         Settings integration1Settings{"test-resources/libjoynrSystemIntegration1.settings"};
         Settings::merge(integration1Settings, *settings_1, false);
-        runtime1 = new JoynrClusterControllerRuntime(NULL, settings_1);
+        runtime1 = new JoynrClusterControllerRuntime(nullptr, settings_1);
         Settings* settings_2 = new Settings("test-resources/SystemIntegrationTest2.settings");
         Settings integration2Settings{"test-resources/libjoynrSystemIntegration2.settings"};
         Settings::merge(integration2Settings, *settings_2, false);
-        runtime2 = new JoynrClusterControllerRuntime(NULL, settings_2);
+        runtime2 = new JoynrClusterControllerRuntime(nullptr, settings_2);
     }
 
     void SetUp() {

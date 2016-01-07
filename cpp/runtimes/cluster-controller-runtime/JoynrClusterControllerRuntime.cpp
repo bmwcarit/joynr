@@ -97,8 +97,8 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(QCoreApplication* a
           messagingSettings(nullptr),
           libjoynrSettings(nullptr),
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
-          dbusSettings(NULL),
-          ccDbusMessageRouterAdapter(NULL),
+          dbusSettings(nullptr),
+          ccDbusMessageRouterAdapter(nullptr),
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
           wsSettings(*settings),
           wsCcMessagingSkeleton(nullptr),

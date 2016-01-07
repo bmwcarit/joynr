@@ -61,8 +61,8 @@ joynr_logging::Logger* CombinedEnd2EndTest::logger =
         joynr_logging::Logging::getInstance()->getLogger("MSG", "CombinedEnd2EndTest");
 
 CombinedEnd2EndTest::CombinedEnd2EndTest() :
-        runtime1(NULL),
-        runtime2(NULL),
+        runtime1(nullptr),
+        runtime2(nullptr),
         settings1("test-resources/SystemIntegrationTest1.settings"),
         settings2("test-resources/SystemIntegrationTest2.settings"),
         messagingSettings1(settings1),

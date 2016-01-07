@@ -193,8 +193,8 @@ void PooledCurlHandle::clearHandle()
     curl_easy_setopt(handle, CURLOPT_POST, 0); // false
     curl_easy_setopt(handle, CURLOPT_TIMEOUT_MS, 0);
     curl_easy_setopt(handle, CURLOPT_CONNECTTIMEOUT_MS, 0);
-    curl_easy_setopt(handle, CURLOPT_HTTPHEADER, NULL);
-    curl_easy_setopt(handle, CURLOPT_CUSTOMREQUEST, NULL);
+    curl_easy_setopt(handle, CURLOPT_HTTPHEADER, nullptr);
+    curl_easy_setopt(handle, CURLOPT_CUSTOMREQUEST, nullptr);
 }
 
 // TODO make this configurable

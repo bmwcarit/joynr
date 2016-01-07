@@ -27,7 +27,6 @@
 using ::testing::Property;
 using ::testing::Eq;
 using ::testing::ByRef;
-using ::testing::NotNull;
 using ::testing::_;
 using namespace ::testing;
 using namespace joynr;
@@ -36,9 +35,9 @@ class ThreadsafeMapTest : public ::testing::Test
 {
     public:
     ThreadsafeMapTest()
-        : map(NULL),
-          testValue(NULL),
-          secondTestValue(NULL),
+        : map(nullptr),
+          testValue(nullptr),
+          secondTestValue(nullptr),
           firstKey(""),
           secondKey(""){
     }

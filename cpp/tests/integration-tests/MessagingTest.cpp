@@ -87,7 +87,7 @@ public:
         mockMessageReceiver(new MockMessageReceiver()),
         mockMessageSender(new MockMessageSender()),
         messagingStubFactory(new MessagingStubFactory()),
-        messageRouter(new MessageRouter(messagingStubFactory, NULL))
+        messageRouter(new MessageRouter(messagingStubFactory, nullptr))
     {
         // provision global capabilities directory
         std::shared_ptr<joynr::system::RoutingTypes::Address> addressCapabilitiesDirectory(

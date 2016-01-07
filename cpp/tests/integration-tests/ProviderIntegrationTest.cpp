@@ -29,7 +29,6 @@ using ::testing::A;
 using ::testing::_;
 using ::testing::Return;
 using ::testing::Eq;
-using ::testing::NotNull;
 using ::testing::AllOf;
 using ::testing::Property;
 using ::testing::Invoke;

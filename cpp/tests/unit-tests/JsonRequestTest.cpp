@@ -27,7 +27,6 @@ using ::testing::A;
 using ::testing::_;
 using ::testing::A;
 using ::testing::Eq;
-using ::testing::NotNull;
 using ::testing::AllOf;
 using ::testing::Property;
 using namespace joynr;

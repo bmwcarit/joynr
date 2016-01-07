@@ -24,7 +24,6 @@
 using ::testing::Property;
 using ::testing::Eq;
 using ::testing::ByRef;
-using ::testing::NotNull;
 using ::testing::_;
 using namespace ::testing;
 using namespace joynr;

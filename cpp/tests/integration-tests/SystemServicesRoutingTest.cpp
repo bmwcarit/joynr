@@ -47,12 +47,12 @@ public:
             settings(new Settings(settingsFilename)),
             routingDomain(),
             routingProviderParticipantId(),
-            runtime(NULL),
+            runtime(nullptr),
             mockMessageReceiver(new MockMessageReceiver()),
             mockMessageSender(new MockMessageSender()),
             discoveryQos(),
-            routingProxyBuilder(NULL),
-            routingProxy(NULL)
+            routingProxyBuilder(nullptr),
+            routingProxy(nullptr)
     {
         SystemServicesSettings systemSettings(*settings);
         systemSettings.printSettings();
@@ -70,7 +70,7 @@ public:
 
         //runtime can only be created, after MockMessageReceiver has been told to return
         //a channelId for getReceiveChannelId.
-        runtime = new JoynrClusterControllerRuntime(NULL, settings, mockMessageReceiver, mockMessageSender);
+        runtime = new JoynrClusterControllerRuntime(nullptr, settings, mockMessageReceiver, mockMessageSender);
         // routing provider is normally registered in JoynrClusterControllerRuntime::create
         runtime->registerRoutingProvider();
     }

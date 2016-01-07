@@ -35,7 +35,7 @@ joynr::ThreadPool::ThreadPool(const std::string& /*name*/, uint8_t numberOfThrea
 
 #if 0 // This is not working in g_SystemIntegrationTests
 #ifdef linux
-    if (name.c_str() != NULL) {
+    if (name.c_str() != nullptr) {
         for (auto thread = threads.begin(); thread != threads.end(); ++thread) {
             pthread_setname_np(thread->native_handle(), name.c_str());
         }

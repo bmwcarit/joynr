@@ -108,8 +108,8 @@ public:
         providerParticipantId(),
         mockClientCache(),
         endPointAddress(),
-        asyncTestFixture(NULL),
-        error(NULL)
+        asyncTestFixture(nullptr),
+        error(nullptr)
     {}
     virtual ~AbstractSyncAsyncTest() = default;
     void SetUp(){

@@ -51,7 +51,7 @@ public:
     void SetUp() {
         AbstractSyncAsyncTest::SetUp();
         mockInProcessConnectorFactory = new MockInProcessConnectorFactory();
-        JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(mockJoynrMessageSender, (SubscriptionManager*) NULL);
+        JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(mockJoynrMessageSender, (SubscriptionManager*) nullptr);
         mockConnectorFactory = new ConnectorFactory(mockInProcessConnectorFactory, joynrMessagingConnectorFactory);
     }
 

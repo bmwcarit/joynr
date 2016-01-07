@@ -65,7 +65,7 @@ public:
         messageFactory(),
         messageSender(mockMessageRouter),
         dispatcher(&messageSender),
-        subscriptionManager(NULL)
+        subscriptionManager(nullptr)
     {
     }
 

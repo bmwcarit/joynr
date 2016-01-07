@@ -33,11 +33,11 @@ const std::string participantIdFile = "test_participantids.settings";
 class CapabilitiesRegistrarTest : public ::testing::Test {
 public:
     CapabilitiesRegistrarTest() :
-            mockDispatcher(NULL),
+            mockDispatcher(nullptr),
             messagingStubAddress(),
             mockParticipantIdStorage(new MockParticipantIdStorage()),
             mockDiscovery(),
-            capabilitiesRegistrar(NULL),
+            capabilitiesRegistrar(nullptr),
             mockProvider(new MockProvider()),
             domain("testDomain"),
             expectedParticipantId("testParticipantId"),

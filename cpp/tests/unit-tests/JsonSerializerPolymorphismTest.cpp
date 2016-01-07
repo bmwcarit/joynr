@@ -106,8 +106,8 @@ TEST_F(JsonSerializerPolymorphismTest, DISABLED_serializeDerivedTypeFromSuperTyp
 
     // this means the deserialized super is actually a derived
     joynr::types::TestTypes::TStructExtended* castedDerived = dynamic_cast<joynr::types::TestTypes::TStructExtended*>(deserializedSuper);
-    EXPECT_TRUE(castedDerived != NULL); // cast successfull?
-    if(castedDerived != NULL) {
+    EXPECT_TRUE(castedDerived != nullptr); // cast successfull?
+    if(castedDerived != nullptr) {
         // causes seg-fault if cast is not successfull
         EXPECT_EQ(derived, *castedDerived);
     }

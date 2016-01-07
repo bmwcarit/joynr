@@ -43,14 +43,14 @@ public:
 
     End2EndSSLTest() :
         domain(),
-        runtime(NULL)
+        runtime(nullptr)
     {
         Settings* settings = new Settings("test-resources/integrationtest.settings");
         Settings sslSettings{"test-resources/sslintegrationtest.settings"};
         Settings integrationTestSettings{"test-resources/libjoynrintegrationtest.settings"};
         Settings::merge(sslSettings, *settings, false);
         Settings::merge(integrationTestSettings, *settings, false);
-        runtime = new JoynrClusterControllerRuntime(NULL, settings);
+        runtime = new JoynrClusterControllerRuntime(nullptr, settings);
         std::string uuid = Util::createUuid();
         domain = "cppEnd2EndSSLTest_Domain_" + uuid;
     }

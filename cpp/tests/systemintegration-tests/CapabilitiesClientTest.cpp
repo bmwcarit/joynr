@@ -50,7 +50,7 @@ public:
 
     CapabilitiesClientTest() :
         logger(joynr_logging::Logging::getInstance()->getLogger("TEST", "CapabilitiesClientTest")),
-        runtime(NULL),
+        runtime(nullptr),
         settings(settingsFilename),
         messagingSettings(settings)
     {
@@ -61,7 +61,7 @@ public:
         Settings libjoynrSettings{libJoynrSettingsFilename};
         Settings::merge(libjoynrSettings, *settings, false);
 
-        runtime = new JoynrClusterControllerRuntime(NULL, settings);
+        runtime = new JoynrClusterControllerRuntime(nullptr, settings);
     }
 
     void SetUp() {

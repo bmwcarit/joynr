@@ -116,7 +116,7 @@ TEST_F(ClockSkewTest, DISABLED_checkClockSkew) {
     ASSERT_FALSE(datestr[0] == '\0') << "Could not read date from bounce proxy";
 
     // Parse the returned date using curl
-    time_t epochsecs = curl_getdate(datestr, NULL);
+    time_t epochsecs = curl_getdate(datestr, nullptr);
 
     ASSERT_FALSE(epochsecs < -1) << "Could not parse date from bounce proxy.";
 
