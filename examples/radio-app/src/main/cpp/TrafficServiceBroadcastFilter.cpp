@@ -17,7 +17,6 @@
  * #L%
  */
 #include "TrafficServiceBroadcastFilter.h"
-#include <QtCore>
 
 TrafficServiceBroadcastFilter::TrafficServiceBroadcastFilter()
 {

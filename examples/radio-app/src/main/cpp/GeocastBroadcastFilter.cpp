@@ -17,10 +17,10 @@
  * #L%
  */
 #include "GeocastBroadcastFilter.h"
-#include <QtCore>
 #include "joynr/TypeUtil.h"
 #include "joynr/JsonSerializer.h"
 #include <string>
+#include <boost/geometry.hpp>
 
 INIT_LOGGER(GeocastBroadcastFilter);
 
@@ -42,7 +42,7 @@ bool GeocastBroadcastFilter::filter(
     joynr::vehicle::GeoPosition* positionOfInterest =
             JsonSerializer::deserialize<joynr::vehicle::GeoPosition>(
                     filterParameters.getPositionOfInterest());
-    if (positionOfInterest == Q_NULLPTR) {
+    if (positionOfInterest == nullptr) {
         JOYNR_LOG_ERROR(logger,
                         "Unable to deserialize geo position object from: {}",
                         filterParameters.getPositionOfInterest());
@@ -52,20 +52,21 @@ bool GeocastBroadcastFilter::filter(
 
     // calculate distance between two geo positions using the haversine formula
     // (cf. http://en.wikipedia.org/wiki/Haversine_formula)
-    int earthRadius = 6371000; // in meters
-    double lat1 = qDegreesToRadians(geoPosition.getLatitude());
-    double lat2 = qDegreesToRadians(positionOfInterest->getLatitude());
-    double long1 = qDegreesToRadians(geoPosition.getLongitude());
-    double long2 = qDegreesToRadians(positionOfInterest->getLongitude());
+    double earthRadius = 6371000.0; // in meters
 
-    double latSinePow = qPow(qSin((lat2 - lat1) / 2), 2.0);
-    double longSinePow = qPow(qSin((long2 - long1) / 2), 2.0);
-    double help = qSqrt(latSinePow + qCos(lat1) * qCos(lat2) * longSinePow);
-    // check for floating point errors
-    if (help > 1.0) {
-        help = 1.0;
-    }
-    double distance = 2 * earthRadius * qAsin(help);
+    typedef boost::geometry::model::point<
+            double,
+            2,
+            boost::geometry::cs::spherical_equatorial<boost::geometry::degree>> BoostGeoPosition;
+
+    BoostGeoPosition boostGeoPosition(geoPosition.getLatitude(), geoPosition.getLongitude());
+    BoostGeoPosition boostPositionOfInterest(
+            positionOfInterest->getLatitude(), positionOfInterest->getLongitude());
+
+    double distance = boost::geometry::distance(
+            boostGeoPosition,
+            boostPositionOfInterest,
+            boost::geometry::strategy::distance::haversine<double>(earthRadius));
 
     delete positionOfInterest;
     return distance < radiusOfInterestArea;
